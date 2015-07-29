@@ -758,11 +758,15 @@ class spell_jasper_chains : public SpellScriptLoader
                 Player* linkedPlayer = sObjectAccessor->GetPlayer(*target, playerLinkedGuid);
 
                 if (!caster || !target || !spell || !linkedPlayer || !linkedPlayer->isAlive() || !linkedPlayer->HasAura(spell->Id))
+                {
                     if (Aura* myaura = GetAura())
                     {
                         myaura->Remove();
                         return;
                     }
+
+                    return;
+                }
 
                 if (target->GetDistance(linkedPlayer) > spell->Effects[EFFECT_0].BasePoints)
                 {

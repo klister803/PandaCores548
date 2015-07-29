@@ -316,7 +316,11 @@ class boss_valithria_dreamwalker : public CreatureScript
 
             void JustSummoned(Creature* summon)
             {
-                if (summon && !summon->HasAura(SPELL_DREAM_PORTAL_VISUAL_PRE))
+                summons.Summon(summon);
+                if (!summon)
+                    return;
+
+                if (!summon->HasAura(SPELL_DREAM_PORTAL_VISUAL_PRE))
                     summon->AI()->AttackStart(me);
 
                 if (summon->GetEntry() == NPC_DREAM_PORTAL_PRE_EFFECT)
@@ -329,8 +333,6 @@ class boss_valithria_dreamwalker : public CreatureScript
                     summon->m_Events.AddEvent(new DelayedCastEvent(summon, SPELL_SUMMON_NIGHTMARE_PORTAL, me->GetGUID(), 6000), summon->m_Events.CalculateTime(15000));
                     summon->m_Events.AddEvent(new AuraRemoveEvent(summon, SPELL_NIGHTMARE_PORTAL_VISUAL_PRE), summon->m_Events.CalculateTime(15000));
                 }
-
-                summons.Summon(summon);
             }
 
             void SummonedCreatureDespawn(Creature* summon)

@@ -73,7 +73,7 @@ public:
         if (tokens.size() < 2)
             return false;
 
-        uint32 roles;
+        uint32 roles = 1;
         lfg::LfgDungeonSet dungeons;
         for (uint32 i = 0; i < tokens.size(); ++i)
         {

@@ -957,7 +957,7 @@ class npc_muradin_gunship : public CreatureScript
                 if (type != POINT_MOTION_TYPE)
                     return;
 
-                if (pointId = 1)
+                if (pointId == 1)
                     me->DespawnOrUnsummon(1000);
             }
 
@@ -2183,7 +2183,7 @@ class npc_saurfang_gunship : public CreatureScript
                 if (type != POINT_MOTION_TYPE)
                     return;
 
-                if (pointId = 1)
+                if (pointId == 1)
                     me->DespawnOrUnsummon(1000);
             }
 

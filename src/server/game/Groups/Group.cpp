@@ -484,10 +484,11 @@ bool Group::AddMember(Player* player)
     }
 
     SendUpdate();
-    sScriptMgr->OnGroupAddMember(this, player->GetGUID());
 
     if (player)
     {
+        sScriptMgr->OnGroupAddMember(this, player->GetGUID());
+
         if (!IsLeader(player->GetGUID()) && !isBGGroup() && !isBFGroup())
         {
             // reset the new member's instances, unless he is currently in one of them

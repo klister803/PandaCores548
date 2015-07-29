@@ -67,11 +67,11 @@ uint32 councilentry[4] =
 
 void CheckDone(InstanceScript* instance, Creature* caller, uint32 callerEntry)
 {
-    if (caller && instance)
-    {
-        if (Creature* council = caller->GetCreature(*caller, instance->GetData64(callerEntry)))
-            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, council);
-    }
+    if (!instance || !caller)
+        return;
+
+    if (Creature* council = caller->GetCreature(*caller, instance->GetData64(callerEntry)))
+        instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, council);
 
     uint8 donecount = 0;
     for (uint8 n = 0; n < 4; n++)

@@ -1292,7 +1292,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 }
                 case 92679: // Flask of Battle
                 {
-                    uint32 spellid;
+                    uint32 spellid = 0;
                     uint32 Agi = m_caster->GetStat(STAT_AGILITY);
                     uint32 Str = m_caster->GetStat(STAT_STRENGTH);
                     uint32 Int = m_caster->GetStat(STAT_INTELLECT);
@@ -1315,7 +1315,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 }
                 case 126734: // Synapse Springs (Mod II)
                 {
-                    uint32 spellid;
+                    uint32 spellid = 0;
                     uint32 Agi = m_caster->GetStat(STAT_AGILITY);
                     uint32 Str = m_caster->GetStat(STAT_STRENGTH);
                     uint32 Int = m_caster->GetStat(STAT_INTELLECT);

@@ -51,12 +51,6 @@ enum eGameObects
     GO_INNER_DOORS  = 211693,
 };
 
-enum eActions
-{
-    ACTION_1    = 1,
-    ACTION_2    = 2,
-};
-
 enum eSays
 {
     //Gurgthock

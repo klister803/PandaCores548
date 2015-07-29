@@ -5,11 +5,18 @@
 
 enum eSpells
 {
-    SPELL_ARC_NOVA           = 136338,
-    SPELL_STATIC_SHIELD      = 136341,
-    SPELL_STATIC_SHIELD_DMG  = 136343,
-    SPELL_LIGHTNING_TETHER   = 136339,
-    SPELL_STORMCLOUD         = 136340,
+    SPELL_ARC_NOVA                  = 136338,
+    SPELL_STATIC_SHIELD             = 136341,
+    SPELL_STATIC_SHIELD_DMG         = 136343,
+    SPELL_LIGHTNING_TETHER          = 136339,
+    SPELL_STORMCLOUD                = 136340,
+
+    SPELL_THROW_SPEAR               = 137660,
+    SPELL_SUMMON_ESSENCE_OF_STORM   = 137883,
+    SPELL_SIPHON_ESSENCE            = 137889,
+    SPELL_FIXATE_DEMON_CREATOR      = 130357,
+    SPELL_FIXATE_DEMON_CREATOR_2    = 101199,
+    SPELL_COMPLETE_QUEST            = 137887,
 };
 
 enum eEvents
@@ -43,6 +50,37 @@ public:
             events.Reset();
             me->SetReactState(REACT_DEFENSIVE);
             attack_ready = true;
+        }
+
+        void DoAction(int32 const action)
+        {
+            switch (action)
+            {
+                case ACTION_1:
+                    me->SetVisible(true);
+                    Talk(1);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void SpellHit(Unit* caster, SpellInfo const* spell)
+        {
+            if (spell->Id == SPELL_THROW_SPEAR)
+            {
+                events.ScheduleEvent(EVENT_5, 1 * IN_MILLISECONDS);
+                me->SetReactState(REACT_PASSIVE);
+                me->SetTarget(caster->GetGUID());
+            }
+        }
+
+        void JustSummoned(Creature* summoned)
+        {
+            summoned->AI()->AttackStart(me->GetTargetUnit());
+            summoned->GetMotionMaster()->MoveChase(me->GetTargetUnit());
+            summoned->AddAura(SPELL_SIPHON_ESSENCE, summoned);
+
         }
 
         void EnterCombat(Unit* unit)
@@ -93,8 +131,24 @@ public:
                     DoZoneInCombat(me, 75.0f);
                     attack_ready = true;
                     break;
+                case EVENT_5:
+                    events.ScheduleEvent(EVENT_6, 2 * IN_MILLISECONDS);
+                    Talk(2);
+                    break;
+                case EVENT_6:
+                    events.ScheduleEvent(EVENT_7, 2 * IN_MILLISECONDS);
+                    Talk(0);
+                    //DoCast(SPELL_SUMMON_ESSENCE_OF_STORM);
+                    me->SummonCreature(69739, 7112.963f, 5168.82f, 120.6497f, me->GetOrientation());
+                    break;
+                case EVENT_7:
+                    me->SetVisible(false);
+                    break;
+                default:
+                    break;
                 }
             }
+
             DoMeleeAttackIfReady();
         }
     };
@@ -102,6 +156,64 @@ public:
     CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_nalakAI(creature);
+    }
+};
+
+//< 69739
+class npc_essence_of_storm : public CreatureScript
+{
+public:
+    npc_essence_of_storm() : CreatureScript("npc_essence_of_storm") { }
+
+    struct npc_essence_of_stormAI : public ScriptedAI
+    {
+        npc_essence_of_stormAI(Creature* creature) : ScriptedAI(creature)
+        {
+            me->SetCanFly(true);
+            me->SetDisableGravity(true);
+            me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_HOVER);
+        }
+
+        void Reset()
+        {
+            if (Player* player = me->GetTargetUnit()->ToPlayer())
+            {
+                me->AddAura(SPELL_SIPHON_ESSENCE, me);
+                me->AddAura(SPELL_FIXATE_DEMON_CREATOR_2, player);
+            }
+        }
+
+        void EnterCombat(Unit* /*unit*/)
+        { }
+
+        void JustDied(Unit* /*killer*/)
+        {
+            if (Creature* nalak = me->FindNearestCreature(69099, 150.0f))
+                nalak->AI()->DoAction(ACTION_1);
+
+            if (Player* player = me->GetTargetUnit()->ToPlayer())
+                me->CastSpell(player, SPELL_COMPLETE_QUEST);
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
+
+            if (!me->isInCombat() && !me->GetTargetUnit())
+            {
+                me->DespawnOrUnsummon(1 * IN_MILLISECONDS);
+                if (Creature* nalak = me->FindNearestCreature(69099, 150.0f))
+                    nalak->AI()->DoAction(ACTION_1);
+            }
+
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_essence_of_stormAI(creature);
     }
 };
 
@@ -155,5 +267,6 @@ class spell_static_shield : public SpellScriptLoader
 void AddSC_boss_nalak()
 {
     new boss_nalak();
+    new npc_essence_of_storm();
     new spell_static_shield();
 }

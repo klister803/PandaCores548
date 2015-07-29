@@ -191,7 +191,7 @@ public:
 
         void SpellHit(Unit* attacker, const SpellInfo* spell)
         {
-            if ((spell->Id == SPELL_BURNING_MAN_1 || SPELL_BURNING_MAN_2) && !burn)
+            if ((spell->Id == SPELL_BURNING_MAN_1 || spell->Id == SPELL_BURNING_MAN_2) && !burn)
             {
                 burn = true;
                 if (attacker->ToCreature())

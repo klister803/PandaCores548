@@ -305,8 +305,11 @@ public:
                 case 3:
                     chest = RAID_MODE(194327, 194331);
                     break;
+                default:
+                    break;
             }
-            me->SummonGameObject(chest, 2387.8076f, -53.4829f, 424.4779f, 3.0598f, 0, 0, 1, 1, 604800); //Static pos for chest
+            if (chest)
+                me->SummonGameObject(chest, 2387.8076f, -53.4829f, 424.4779f, 3.0598f, 0, 0, 1, 1, 604800); //Static pos for chest
         }
 
         void EnterCombat(Unit* /*pWho*/)

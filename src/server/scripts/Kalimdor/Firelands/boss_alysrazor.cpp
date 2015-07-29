@@ -994,7 +994,7 @@ class npc_alysrazor_blazing_talon_initiate : public CreatureScript
 
             void SetData(uint32 type, uint32 data)
             {
-                if (type = DATA_INITIATE)
+                if (type == DATA_INITIATE)
                 {
                     waypoint = data;
                     me->GetMotionMaster()->MovePoint(POINT_INITIATE_1, initiatePos[4 + waypoint]);

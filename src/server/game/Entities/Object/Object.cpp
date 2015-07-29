@@ -3805,6 +3805,9 @@ void WorldObject::DestroyForNearbyPlayers()
         if (player == this)
             continue;
 
+        if (!player)
+            continue;
+
         if (!player->HaveAtClient(this))
             continue;
 

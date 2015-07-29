@@ -182,7 +182,7 @@ class boss_bethtilac : public CreatureScript
 
             void MovementInform(uint32 type, uint32 id)
             {
-                if (type = POINT_MOTION_TYPE)
+                if (type == POINT_MOTION_TYPE)
                     if (id == POINT_HIGH)
                     {
                         me->RemoveAurasByType(SPELL_AURA_MOD_TAUNT);
@@ -430,7 +430,10 @@ class npc_bethtilac_spiderweb_filament : public CreatureScript
             void IsSummonedBy(Unit* owner)
             {
                 if (!owner)
+                {
                     me->DespawnOrUnsummon();
+                    return;
+                }
 
                 if (owner->GetEntry() == NPC_BETHTILAC)
                 {

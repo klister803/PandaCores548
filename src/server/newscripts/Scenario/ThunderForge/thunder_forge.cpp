@@ -834,7 +834,7 @@ public:
                         ShaSpawns(NPC_SHA_FIEND);
                         break;
                     case EVENT_40:
-                        events.ScheduleEvent(EVENT_40, 30 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_40, 15 * IN_MILLISECONDS);
                         ShaSpawns(NPC_SHA_BEAST);
                         break;
                     case EVENT_19:
@@ -951,15 +951,18 @@ public:
             if (entry == NPC_SHA_FIEND)
             {
                 point = urand(0, 12);
-                if (Creature* sha = me->SummonCreature(NPC_SHA_FIEND, shaFiendPositions[0], TEMPSUMMON_DEAD_DESPAWN))
+                if (Creature* sha = me->SummonCreature(NPC_SHA_FIEND, shaFiendPositions[point], TEMPSUMMON_DEAD_DESPAWN))
                     if (Creature* target = GetClosestCreatureWithEntry(sha, NPC_CELESTIAL_BLACKSMITH, 150.f))
+                    {
                         sha->AddAura(SPELL_SMALL_SHA_FIXATE, target);
+                        sha->AI()->AttackStart(target);
+                    }
             }
+
             if (entry == NPC_SHA_BEAST)
             {
                 point = urand(0, 4);
-
-                if (Creature* sha = me->SummonCreature(NPC_SHA_FIEND, bigShaPositions[0], TEMPSUMMON_DEAD_DESPAWN))
+                if (Creature* sha = me->SummonCreature(NPC_SHA_FIEND, bigShaPositions[point], TEMPSUMMON_DEAD_DESPAWN))
                     if (Creature* target = GetClosestCreatureWithEntry(sha, NPC_CELESTIAL_BLACKSMITH, 150.f))
                         sha->AI()->AttackStart(target);
             }

@@ -344,7 +344,7 @@ bool TempSummon::InitBaseStat(uint32 creatureId, bool& damageSet)
             SetMaxHealth(GetCreateHealth());
             SetHealth(GetCreateHealth());
         }
-        else
+        else if (owner)
         {
             SetCreateHealth(stats->BaseHealth[cinfo->expansion]);
             SetMaxHealth(int32(owner->GetMaxHealth() * pStats->hp));
