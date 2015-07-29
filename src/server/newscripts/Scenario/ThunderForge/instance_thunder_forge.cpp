@@ -45,6 +45,8 @@ public:
             forgemasterGUID = 0;
             celectialBlacksmithGUID = 0;
             celectialDefenderGUID = 0;
+            warriorGUIDs[0] = 0;
+            warriorGUIDs[1] = 0;
 
             stageData = STAGE_1;
             waveCounter = 0;
@@ -80,7 +82,10 @@ public:
                     wrathionGUID = creature->GetGUID();
                     break;
                 case NPC_SHADO_PAN_WARRIOR:
-                    warriorGUIDs.push_back(creature->GetGUID());
+                    if(!warriorGUIDs[0])
+                        warriorGUIDs[0] = creature->GetGUID();
+                    else if(!warriorGUIDs[1])
+                        warriorGUIDs[1] = creature->GetGUID();
                     break;
                 case NPC_SHADO_PAN_DEFENDER:
                     defenderGUID = creature->GetGUID();
@@ -250,7 +255,7 @@ public:
         uint64 celectialBlacksmithGUID;
         uint64 celectialDefenderGUID;
 
-        std::vector<uint64> warriorGUIDs;
+        uint64 warriorGUIDs[2];
 
         uint32 stageData;
         uint32 waveCounter;
