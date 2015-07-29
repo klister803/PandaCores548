@@ -3306,6 +3306,9 @@ void Unit::_DeleteRemovedAuras()
 
 void Unit::_UpdateSpells(uint32 time)
 {
+    if (!IsInWorld())
+        return;
+
     if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL])
         _UpdateAutoRepeatSpell();
 
@@ -11078,16 +11081,13 @@ bool Unit::AttackStop()
 
     // reset only at real combat stop
     if (Creature* creature = ToCreature())
-    { 
-        if (!creature->GetMap()->IsRaid() || !creature->GetMap()->IsDungeon())
-        {
-            creature->SetNoCallAssistance(false);
+    {
+        creature->SetNoCallAssistance(false);
 
-            if (creature->HasSearchedAssistance())
-            {
-                creature->SetNoSearchAssistance(false);
-                UpdateSpeed(MOVE_RUN, false);
-            }
+        if (creature->HasSearchedAssistance())
+        {
+            creature->SetNoSearchAssistance(false);
+            UpdateSpeed(MOVE_RUN, false);
         }
     }
 
