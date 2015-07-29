@@ -205,7 +205,8 @@ void ObjectGridUnloader::Visit(GridRefManager<T> &m)
         obj->CleanupsBeforeDelete();
         volatile uint32 entryorguid = obj->GetTypeId() == TYPEID_PLAYER ? obj->GetGUIDLow() : obj->GetEntry();
         ///- object will get delinked from the manager when deleted
-        delete obj;
+        //delete obj;
+        obj->AddObjectToRemoveList();
     }
 }
 
@@ -225,20 +226,8 @@ void ObjectGridStoper::Visit(CreatureMapType &m)
     }
 }
 
-template<class T>
-void ObjectGridCleaner::Visit(GridRefManager<T> &m)
-{
-    for (typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
-        iter->getSource()->CleanupsBeforeDelete();
-}
-
 template void ObjectGridUnloader::Visit(CreatureMapType &);
 template void ObjectGridUnloader::Visit(GameObjectMapType &);
 template void ObjectGridUnloader::Visit(DynamicObjectMapType &);
 template void ObjectGridUnloader::Visit(CorpseMapType &);
 template void ObjectGridUnloader::Visit(AreaTriggerMapType &);
-template void ObjectGridCleaner::Visit(CreatureMapType &);
-template void ObjectGridCleaner::Visit<GameObject>(GameObjectMapType &);
-template void ObjectGridCleaner::Visit<DynamicObject>(DynamicObjectMapType &);
-template void ObjectGridCleaner::Visit<Corpse>(CorpseMapType &);
-template void ObjectGridCleaner::Visit<AreaTrigger>(AreaTriggerMapType &);

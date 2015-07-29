@@ -71,13 +71,6 @@ class ObjectGridEvacuator
         template<class T> void Visit(GridRefManager<T> &) {}
 };
 
-//Clean up and remove from world
-class ObjectGridCleaner
-{
-    public:
-        template<class T> void Visit(GridRefManager<T> &);
-};
-
 //Delete objects before deleting NGrid
 class ObjectGridUnloader
 {

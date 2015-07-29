@@ -943,18 +943,12 @@ bool Map::UnloadGrid(NGridType& ngrid, bool unloadAll)
         }
 
         {
-            ObjectGridCleaner worker;
-            TypeContainerVisitor<ObjectGridCleaner, GridTypeMapContainer> visitor(worker);
-            ngrid.VisitAllGrids(visitor);
-        }
-
-        RemoveAllObjectsInRemoveList();
-
-        {
             ObjectGridUnloader worker;
             TypeContainerVisitor<ObjectGridUnloader, GridTypeMapContainer> visitor(worker);
             ngrid.VisitAllGrids(visitor);
         }
+
+        RemoveAllObjectsInRemoveList();
 
         ASSERT(i_objectsToRemove.empty());
 
