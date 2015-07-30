@@ -286,7 +286,6 @@ INSERT INTO `creature` (`id`, `map`, `spawnMask`, `phaseMask`, `position_x`, `po
 (70079, 1126, 3, 1, 7353.362, 5144.927, 51.21231, 0, 7200, 0, 0), -- 70079 (Area: 6677) (Auras: 140134 - 140134)
 (69837, 1126, 3, 1, 7412.179, 5204.663, 55.41367, 3.80821, 7200, 0, 0); -- 69837 (Area: 6677)
 
-
 SET @CGUID := xxxxxxxx;
 DELETE FROM `creature` WHERE `guid` BETWEEN @CGUID+0 AND @CGUID+19;
 INSERT INTO `creature` (`guid`, `id`, `map`, `spawnMask`, `phaseMask`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `MovementType`) VALUES

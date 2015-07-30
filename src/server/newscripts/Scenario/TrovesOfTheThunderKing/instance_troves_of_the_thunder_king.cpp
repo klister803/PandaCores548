@@ -38,6 +38,7 @@ public:
         void Initialize()
         {
             start = NOT_STARTED;
+            pilarMasterGUIDs.clear();
         }
 
         void OnPlayerEnter(Player* player)
@@ -50,24 +51,34 @@ public:
             player->GetSession()->SendSetPhaseShift(std::set<uint32>(), std::set<uint32>(), WorldMapAreaIds, 8);
         }
 		
+        void OnCreatureCreate(Creature* creature)
+        {
+            switch (creature->GetEntry())
+            {
+                case NPC_LIGHTING_PILAR_TARGET_BUNNY:
+                    creature->SetReactState(REACT_PASSIVE);
+                    break;
+                case NPC_LIGHTING_PILAR_MASTER_BUNNY:
+                    pilarMasterGUIDs.push_back(creature->GetGUID());
+                    break;
+                default:
+                    break;
+            }
+        }
+
         void SetData(uint32 type, uint32 data)
         {
             switch (type)
             {
                 case DATA_EVENT_STARTED:
                     start = data;
+                    if (data == DONE)
+                        for (std::vector<uint64>::const_iterator itr = pilarMasterGUIDs.begin(); itr != pilarMasterGUIDs.end(); ++itr)
+                            if (Creature* cre = instance->GetCreature(*itr))
+                                cre->AI()->DoAction(ACTION_1);
+                    break;
                 default:
                     break;
-            }
-        }
-
-        uint64 GetData64(uint32 type)
-        {
-            switch (type)
-            {
-                case 0:
-                default:
-                    return 0;
             }
         }
 
@@ -84,6 +95,7 @@ public:
 
     private:
         uint32 start;
+        std::vector<uint64> pilarMasterGUIDs;
     };
 };
 
