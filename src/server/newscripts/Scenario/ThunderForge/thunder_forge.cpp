@@ -949,7 +949,7 @@ public:
         {
             uint8 point;
             Creature* sha = NULL;
-            Creature* target = GetClosestCreatureWithEntry(sha, NPC_CELESTIAL_BLACKSMITH, 150.f);
+            Creature* target = GetClosestCreatureWithEntry(me, NPC_CELESTIAL_BLACKSMITH, 150.f);
             if (!target)
                 return;
 
