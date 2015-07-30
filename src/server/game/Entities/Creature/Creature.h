@@ -490,7 +490,7 @@ struct TrainerSpellData
     TrainerSpell const* Find(uint32 spell_id) const;
 };
 
-typedef std::map<uint32, time_t> CreatureSpellCooldowns;
+typedef std::unordered_map<uint32, time_t> CreatureSpellCooldowns;
 
 enum PetSpellState
 {

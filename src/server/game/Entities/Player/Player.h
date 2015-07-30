@@ -199,12 +199,12 @@ struct SpellChargeData
     uint32 timer;
 };
 
-typedef std::map<uint32, double> RPPMLastSuccessfulProc;
-typedef std::map<uint32, double> RPPMLastChanceToProc;
-typedef std::map<uint32, SpellCooldown> RPPMSpellCooldowns;
-typedef std::map<uint32, SpellCooldown> SpellCooldowns;
-typedef std::map<uint32 /*categoryId*/, SpellChargeData> SpellChargeDataMap;
-typedef std::map<uint32, UncategorySpellChargeData*> UCSpellChargeDataMap;
+typedef std::unordered_map<uint32, double> RPPMLastSuccessfulProc;
+typedef std::unordered_map<uint32, double> RPPMLastChanceToProc;
+typedef std::unordered_map<uint32, SpellCooldown> RPPMSpellCooldowns;
+typedef std::unordered_map<uint32, SpellCooldown> SpellCooldowns;
+typedef std::unordered_map<uint32 /*categoryId*/, SpellChargeData> SpellChargeDataMap;
+typedef std::unordered_map<uint32, UncategorySpellChargeData*> UCSpellChargeDataMap;
 typedef UNORDERED_MAP<uint32 /*instanceId*/, time_t/*releaseTime*/> InstanceTimeMap;
 
 enum TrainerSpellState
@@ -263,7 +263,7 @@ struct ActionButton
 
 #define  MAX_ACTION_BUTTONS 132                             //checked in 5.0.5
 
-typedef std::map<uint8, ActionButton> ActionButtonList;
+typedef std::unordered_map<uint8, ActionButton> ActionButtonList;
 
 struct PlayerCreateInfoItem
 {
@@ -554,11 +554,11 @@ enum AtLoginFlags
     AT_LOGIN_LOCKED_FOR_TRANSFER    = 0x200
 };
 
-typedef std::map<uint32, QuestStatusData> QuestStatusMap;
+typedef std::unordered_map<uint32, QuestStatusData> QuestStatusMap;
 typedef std::set<uint32> RewardedQuestSet;
 
 //               quest,  keep
-typedef std::map<uint32, bool> QuestStatusSaveMap;
+typedef std::unordered_map<uint32, bool> QuestStatusSaveMap;
 
 enum QuestSlotOffsets
 {
@@ -700,7 +700,7 @@ struct EquipmentSet
 
 #define MAX_EQUIPMENT_SET_INDEX 10                          // client limit
 
-typedef std::map<uint32, EquipmentSet> EquipmentSets;
+typedef std::unordered_map<uint32, EquipmentSet> EquipmentSets;
 
 struct ItemPosCount
 {
@@ -779,7 +779,7 @@ struct KillInfo
     KillInfo() : count(0), state(KILL_NEW) {}
 };
 
-typedef std::map<uint32, KillInfo> KillInfoMap;
+typedef std::unordered_map<uint32, KillInfo> KillInfoMap;
 
 enum RestType
 {
@@ -1083,7 +1083,7 @@ struct BGData
                                             ///  when player is teleported to BG - (it is battleground's GUID)
     BattlegroundTypeId bgTypeID;
 
-    std::map<uint32, uint32> bgQueuesJoinedTime;
+    std::unordered_map<uint32, uint32> bgQueuesJoinedTime;
 
     std::set<uint32>   bgAfkReporter;
     uint8              bgAfkReportedCount;
@@ -2198,7 +2198,7 @@ class Player : public Unit, public GridObject<Player>
         }
         uint32 GetSpellIdbyReplace(uint32 replace)
         {
-            std::map<uint32, uint32>::const_iterator itr = spellMountReplacelist.find(replace);
+            std::unordered_map<uint32, uint32>::const_iterator itr = spellMountReplacelist.find(replace);
             return itr != spellMountReplacelist.end() ? itr->second : NULL;
         }
 
@@ -3396,7 +3396,7 @@ class Player : public Unit, public GridObject<Player>
         PlayerSpellMap m_spells;
         ItemSpellList m_itemSpellList;
         uint32 m_lastPotionId;                              // last used health/mana potion in combat, that block next potion use
-        std::map<uint32, uint32> spellMountReplacelist;
+        std::unordered_map<uint32, uint32> spellMountReplacelist;
 
         GlobalCooldownMgr m_GlobalCooldownMgr;
 
