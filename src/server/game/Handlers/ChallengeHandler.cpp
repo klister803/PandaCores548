@@ -101,9 +101,9 @@ void WorldSession::HandleChallengeModeRequestOpcode(WorldPacket& recvPacket)
             data << uint32(realmID);
             data.WriteGuidBytes<6>(member.guid);
         }
-        data.AppendPackedTime(bestServer ? bestServer->date : NULL);
+        data.AppendPackedTime(bestServer->date);
         data << uint32(realmID);                // 50659408
-        data << uint32(bestServer ? bestServer->recordTime : 0);  //recorde time on ms
+        data << uint32(bestServer->recordTime);  //recorde time on ms
     }
 
     data << uint32(getMSTime());
