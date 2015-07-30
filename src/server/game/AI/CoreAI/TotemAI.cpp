@@ -91,7 +91,7 @@ void TotemAI::UpdateAI(uint32 /*diff*/)
 
     if (me->IsNonMeleeSpellCasted(false))
     {
-        if (victim->HasCrowdControlAura())
+        if (victim && victim->HasCrowdControlAura())
             victim = NULL;
         else
             return;
