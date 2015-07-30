@@ -461,7 +461,6 @@ bool Map::AddPlayerToMap(Player* player)
     ASSERT (player->GetMap() == this);
     player->SetMap(this);
     player->AddToWorld();
-    player->CheckItemCapLevel(ItemLevelCap());
 
     SendInitSelf(player);
     SendInitTransports(player);

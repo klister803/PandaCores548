@@ -2720,6 +2720,8 @@ bool Player::TeleportToBGEntryPoint()
 
 void Player::ProcessDelayedOperations()
 {
+    CheckItemCapLevel(GetMap()->ItemLevelCap());
+
     if (m_DelayedOperations == 0)
         return;
 
