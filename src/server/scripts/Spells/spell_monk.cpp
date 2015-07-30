@@ -2700,12 +2700,12 @@ class spell_monk_dampen_harm : public SpellScriptLoader
         {
             PrepareAuraScript(spell_monk_dampen_harm_AuraScript);
 
-            int32 bpHealh;
+            uint32 bpHealh;
 
             bool Load()
             {
                 if (Unit* caster = GetCaster())
-                    bpHealh = int32(caster->GetMaxHealth() * float(GetSpellInfo()->Effects[EFFECT_0].BasePoints / 100.0f));
+                    bpHealh = uint32(caster->GetMaxHealth() * float(GetSpellInfo()->Effects[EFFECT_0].BasePoints / 100.0f));
                 else
                     bpHealh = 0;
                 return true;

@@ -445,7 +445,7 @@ class spell_dru_shattering_blow : public SpellScriptLoader
         class spell_dru_symbiosis_aura_AuraScript : public AuraScript
         {
             PrepareAuraScript(spell_dru_symbiosis_aura_AuraScript);
-            int32 m_checkTimer;
+            uint32 m_checkTimer;
 
             bool Load()
             {

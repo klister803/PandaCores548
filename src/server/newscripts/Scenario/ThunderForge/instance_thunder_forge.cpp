@@ -45,6 +45,7 @@ public:
             forgemasterGUID = 0;
             celectialBlacksmithGUID = 0;
             celectialDefenderGUID = 0;
+            portal = 0;
             warriorGUIDs[0] = 0;
             warriorGUIDs[1] = 0;
 
@@ -68,6 +69,10 @@ public:
                 case GO_INVISIBLE_WALL:
                     invisibleWallGUID = go->GetGUID();
                     break;
+                case GO_PORTAL_TO_THUNDER_ISLAND:
+                    go->SetVisible(false);
+                    portal = go->GetGUID();
+                    break;
                 default:
                     break;
             }
@@ -82,21 +87,25 @@ public:
                     wrathionGUID = creature->GetGUID();
                     break;
                 case NPC_SHADO_PAN_WARRIOR:
+                    creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 60.f);
                     if(!warriorGUIDs[0])
                         warriorGUIDs[0] = creature->GetGUID();
                     else if(!warriorGUIDs[1])
                         warriorGUIDs[1] = creature->GetGUID();
                     break;
                 case NPC_SHADO_PAN_DEFENDER:
+                    creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 60.f);
                     defenderGUID = creature->GetGUID();
                     break;
                 case NPC_FORGEMASTER_VULKON:
+                    creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 60.f);
                     forgemasterGUID = creature->GetGUID();
                     break;
                 case NPC_CELESTIAL_BLACKSMITH:
                     celectialBlacksmithGUID = creature->GetGUID();
                     break;
                 case NPC_CELESTIAL_DEFENDER:
+                    creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 60.f);
                     celectialDefenderGUID = creature->GetGUID();
                     break;
                 default:
@@ -192,6 +201,9 @@ public:
                             cre->AI()->DoAction(ACTION_9);
                             cre->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
                         }
+
+                        if (GameObject* obj = instance->GetGameObject(portal))
+                            obj->SetVisible(true);
                     }
                     break;
                 default:
@@ -254,6 +266,7 @@ public:
         uint64 forgemasterGUID;
         uint64 celectialBlacksmithGUID;
         uint64 celectialDefenderGUID;
+        uint64 portal;
 
         uint64 warriorGUIDs[2];
 

@@ -4229,7 +4229,7 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
                 }
                 case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_GUILD_REPUTATION: // 62
                 {
-                    if (referencePlayer->GetReputationMgr().GetReputation(REP_GUILD) < reqValue)
+                    if (referencePlayer->GetReputationMgr().GetReputation(REP_GUILD) < int32(reqValue))
                         check = false;
                     break;
                 }
@@ -4359,7 +4359,7 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
                 }
                 case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_REPUTATION: // 95
                 {
-                    if (referencePlayer->GetReputationMgr().GetReputation(reqValue) < reqCount)
+                    if (referencePlayer->GetReputationMgr().GetReputation(reqValue) < int32(reqCount))
                         check = false;
                     break;
                 }

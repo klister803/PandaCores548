@@ -1388,9 +1388,6 @@ bool Aura::CanBeSaved() const
     if (HasEffectType(SPELL_AURA_CONTROL_VEHICLE))
         return false;
 
-    if (HasEffectType(SPELL_AURA_MOD_NEXT_SPELL))
-        return false;
-
     // don't save auras casted by entering areatriggers
     if (m_fromAreatrigger)
         return false;

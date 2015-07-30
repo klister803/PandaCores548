@@ -97,7 +97,30 @@ public:
                 switch (eventId)
                 {
                     case EVENT_1:
-                        events.ScheduleEvent(EVENT_1, 5 * MINUTE * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_2, 5 * MINUTE * IN_MILLISECONDS);
+                        break;
+                    case EVENT_2:
+                    {
+                        events.ScheduleEvent(EVENT_3, 2 * IN_MILLISECONDS);
+                        Map::PlayerList const& players = me->GetMap()->GetPlayers();
+                        if (Player* player = players.begin()->getSource())
+                        {
+                            player->CastSpell(player, SPELL_SCENARIO_COMPLETION_CREDIT);
+                            player->CastSpell(player, SPELL_SCENARIO_COMPLETION_BLACKOUT_AURA);
+                        }
+                        Talk(1);
+                        break;
+                    }
+                    case EVENT_3:
+                    {
+                        events.ScheduleEvent(EVENT_4, 5 * IN_MILLISECONDS);
+                        Map::PlayerList const& players = me->GetMap()->GetPlayers();
+                        if (Player* player = players.begin()->getSource())
+                            player->NearTeleportTo(-459.669f, 1078.73f, 133.647f, 1.515818f);
+                        break;
+                    }
+                    case EVENT_4:
+                        Talk(0);
                         break;
                     default:
                         break;
@@ -116,8 +139,162 @@ public:
     }
 };
 
+class npc_lighting_pilar_master_bunny : public CreatureScript
+{
+public:
+    npc_lighting_pilar_master_bunny() : CreatureScript("npc_lighting_pilar_master_bunny") { }
+
+    struct npc_lighting_pilar_master_bunnyAI : public ScriptedAI
+    {
+        npc_lighting_pilar_master_bunnyAI(Creature* creature) : ScriptedAI(creature) { }
+
+        void Reset()
+        {
+            events.Reset();
+        }
+
+        void DoAction(int32 const action)
+        {
+            switch (action)
+            {
+                case ACTION_1:
+                    events.ScheduleEvent(EVENT_1, 2 * IN_MILLISECONDS);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EVENT_1:
+                        events.ScheduleEvent(EVENT_1, 15 * IN_MILLISECONDS);
+                        me->AddAura(SPELL_LIGHTING_SURGE_2, me);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+    private:
+        EventMap events;
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_lighting_pilar_master_bunnyAI(creature);
+    }
+};
+
+class npc_stone_sentiel : public CreatureScript
+{
+public:
+    npc_stone_sentiel() : CreatureScript("npc_stone_sentiel") { }
+
+    struct npc_stone_sentielAI : public ScriptedAI
+    {
+        npc_stone_sentielAI(Creature* creature) : ScriptedAI(creature) { }
+
+        void Reset()
+        {
+            events.Reset();
+            cast = false;
+            me->AddAura(SPELL_DESATUREATE, me);
+        }
+
+        void MoveInLineOfSight(Unit* who)
+        {
+            if (me->GetDistance(who) < 16.0f && !cast && who->GetTypeId() == TYPEID_PLAYER)
+                events.ScheduleEvent(EVENT_1, 3 * IN_MILLISECONDS);
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EVENT_1:
+                        events.ScheduleEvent(EVENT_2, 3 * IN_MILLISECONDS);
+                        me->AddAura(SPELL_STATUE_FROZEN_SLAM_PREP, me);
+                        break;
+                    case EVENT_2:
+                        events.ScheduleEvent(EVENT_3, 3 * IN_MILLISECONDS);
+                        DoCast(SPELL_STONE_SMASH);
+                        break;
+                    case EVENT_3:
+                        cast = false;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+    private:
+        EventMap events;
+        bool cast;
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_stone_sentielAI(creature);
+    }
+};
+
+class spell_lighting_surge_2 : public SpellScriptLoader
+{
+public:
+    spell_lighting_surge_2() : SpellScriptLoader("spell_lighting_surge_2") { }
+
+    class spell_lighting_surge_2_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_lighting_surge_2_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*>& unitList)
+        {
+            unitList.remove_if(CreatureTargetFilter());
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_lighting_surge_2_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENTRY);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_lighting_surge_2_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_DEST_AREA_ENTRY);
+        }
+
+    private:
+        class CreatureTargetFilter
+        {
+        public:
+            CreatureTargetFilter() { }
+
+            bool operator()(WorldObject* target)
+            {
+                return target->ToCreature()->GetEntry() != NPC_LIGHTING_PILAR_TARGET_BUNNY;
+            }
+        };
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_lighting_surge_2_SpellScript();
+    }
+};
 
 void AddSC_troves_of_the_thunder_king()
 {
     new npc_taoshi();
+    new npc_lighting_pilar_master_bunny();
+    new npc_stone_sentiel();
+
+    new spell_lighting_surge_2();
 }

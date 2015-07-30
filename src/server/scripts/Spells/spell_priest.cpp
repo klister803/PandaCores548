@@ -1466,14 +1466,14 @@ class spell_pri_void_shift : public SpellScriptLoader
                         if (targetPct < basePct)
                         {
                             if(caster->HasAura(47788))
-                                casterHeal = caster->CountPctFromMaxHealth(int32(basePct * 1.6f));
+                                casterHeal = int32(caster->CountPctFromMaxHealth(basePct * 1.6f));
                             else
-                                casterHeal = caster->CountPctFromMaxHealth(int32(basePct));
+                                casterHeal = int32(caster->CountPctFromMaxHealth(basePct));
                         }
                         else
                             casterHeal = caster->CountPctFromMaxHealth(int32(targetPct));
 
-                        if(target->GetHealth() > targetHeal)
+                        if(target->GetHealth() > uint32(targetHeal))
                         {
                             targetDamage = target->GetHealth() - targetHeal;
                             targetHeal = 0;
@@ -1481,7 +1481,7 @@ class spell_pri_void_shift : public SpellScriptLoader
                         else
                             targetHeal -= target->GetHealth();
 
-                        if(caster->GetHealth() > casterHeal)
+                        if(caster->GetHealth() > uint32(casterHeal))
                         {
                             casterDamage = caster->GetHealth() - casterHeal;
                             casterHeal = 0;

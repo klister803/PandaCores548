@@ -826,7 +826,7 @@ public:
                         events.ScheduleEvent(EVENT_19, 4 * IN_MILLISECONDS);
 
                         events.ScheduleEvent(EVENT_39, 3 * IN_MILLISECONDS);
-                        events.ScheduleEvent(EVENT_40, 15 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_40, 5 * IN_MILLISECONDS);
                         Talk(10);
                         break;
                     case EVENT_39:
@@ -948,24 +948,28 @@ public:
         void ShaSpawns(uint32 entry)
         {
             uint8 point;
-            if (entry == NPC_SHA_FIEND)
+            Creature* sha = NULL;
+            Creature* target = GetClosestCreatureWithEntry(sha, NPC_CELESTIAL_BLACKSMITH, 150.f);
+            if (!target)
+                return;
+
+            switch (entry)
             {
-                point = urand(0, 12);
-                if (Creature* sha = me->SummonCreature(NPC_SHA_FIEND, shaFiendPositions[point], TEMPSUMMON_DEAD_DESPAWN))
-                    if (Creature* target = GetClosestCreatureWithEntry(sha, NPC_CELESTIAL_BLACKSMITH, 150.f))
-                    {
+                case NPC_SHA_FIEND:
+                    point = urand(0, 12);
+                    if (sha = me->SummonCreature(NPC_SHA_FIEND, shaFiendPositions[point], TEMPSUMMON_DEAD_DESPAWN))
                         sha->AddAura(SPELL_SMALL_SHA_FIXATE, target);
-                        sha->AI()->AttackStart(target);
-                    }
+                    break;
+                case NPC_SHA_BEAST:
+                    point = urand(0, 4);
+                    sha = me->SummonCreature(NPC_SHA_FIEND, bigShaPositions[point], TEMPSUMMON_DEAD_DESPAWN);
+                    break;
+                default:
+                    break;
             }
 
-            if (entry == NPC_SHA_BEAST)
-            {
-                point = urand(0, 4);
-                if (Creature* sha = me->SummonCreature(NPC_SHA_FIEND, bigShaPositions[point], TEMPSUMMON_DEAD_DESPAWN))
-                    if (Creature* target = GetClosestCreatureWithEntry(sha, NPC_CELESTIAL_BLACKSMITH, 150.f))
-                        sha->AI()->AttackStart(target);
-            }
+            if (sha)
+                sha->AI()->AttackStart(target);
         }
 
         void ShanzeSpawns()
@@ -1000,6 +1004,9 @@ public:
                 default:
                     break;
             }
+
+            if (attakers.empty())
+                return;
 
             Creature* target = GetClosestCreatureWithEntry(me, NPC_SHADO_PAN_DEFENDER, 150.f);
             if (!target)
@@ -2385,13 +2392,10 @@ public:
 
         void UpdateAI(uint32 diff)
         {
-            if (!UpdateVictim())
+            if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
             events.Update(diff);
-
-            if (me->HasUnitState(UNIT_STATE_CASTING))
-                return;
 
             while (uint32 eventId = events.ExecuteEvent())
             {
@@ -2412,9 +2416,9 @@ public:
                         break;
                     }
                     case EVENT_2:
-                        events.ScheduleEvent(EVENT_2, urand(30, 45) * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_2, 60 * IN_MILLISECONDS);
                         Talk(0);
-                        me->AddAura(SPELL_POWER_SURGE, me);
+                        me->CastSpell(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), SPELL_POWER_SURGE);
                         break;
                     case EVENT_3:
                         events.ScheduleEvent(EVENT_3, urand(15, 25) * IN_MILLISECONDS);
@@ -2510,6 +2514,7 @@ public:
                         MovementHelper(0);
                         break;
                     case EVENT_2:
+                        me->AddAura(SPELL_THUNDER_FORGE_SPEAR_COSMETIC_SPARKLES, me);
                         MovementHelper(1);
                         Talk(0);
                         break;
@@ -2521,7 +2526,7 @@ public:
 
         void OnSpellClick(Unit* /*clicker*/)
         {
-            if (Creature* sha = me->FindNearestCreature(0, 100.0f))
+            if (Creature* sha = me->FindNearestCreature(NPC_SHA_AMALGAMATION, 100.0f))
             {
                 me->CastSpell(sha, SPELL_THROW_LANCE);
                 me->DespawnOrUnsummon(2 * IN_MILLISECONDS);
@@ -2563,7 +2568,7 @@ public:
     {
         if (InstanceScript* instance = go->GetInstanceScript())
         {
-            if (Creature* stalker = go->FindNearestCreature(NPC_ANVIL_STALKER, 10.0f))
+            if (Creature* stalker = go->FindNearestCreature(NPC_ANVIL_STALKER, 15.0f))
             {
                 if (!stalker->HasAura(SPELL_ANVIL_ACTIVATE_COSMETIC_DND))
                     return false;
@@ -2595,12 +2600,12 @@ public:
             switch (action)
             {
                 case ACTION_1:
-                    //me->AddAura(SPELL_ANVIL_ACTIVATE_COSMETIC_DND, me);
-                    //me->CastSpell(me, SPELL_ACTIVATE_CLOSEST_AVNIL); 
+                    me->AddAura(SPELL_ANVIL_ACTIVATE_COSMETIC_DND, me);
+                    DoCast(SPELL_ACTIVATE_CLOSEST_AVNIL); 
                     break;
                 case ACTION_2:
                     me->RemoveAura(SPELL_ANVIL_ACTIVATE_COSMETIC_DND);
-                    me->CastSpell(me, SPELL_THUNDER_SURGE);
+                    me->CastSpell(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), SPELL_THUNDER_SURGE);
                     break;
                 default:
                     break;
@@ -2704,6 +2709,11 @@ public:
         void JustDied(Unit* /*killer*/)
         { }
 
+        void DamageTaken(Unit* attacker, uint32& /*damage*/)
+        {
+            AttackStart(attacker);
+        }
+
         void EnterCombat(Unit* /*who*/)
         {
             events.ScheduleEvent(EVENT_EMPOWERED, 15 * IN_MILLISECONDS);
@@ -2785,6 +2795,11 @@ public:
         {
             events.ScheduleEvent(EVENT_1, 15 * IN_MILLISECONDS);
             events.ScheduleEvent(EVENT_2, 15 * IN_MILLISECONDS);
+        }
+
+        void DamageTaken(Unit* attacker, uint32& /*damage*/)
+        {
+            AttackStart(attacker);
         }
 
         void UpdateAI(uint32 diff)
@@ -2887,11 +2902,11 @@ public:
 
             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
 
-            //events.ScheduleEvent(EVENT_NSANITY, 1 * MINUTE * IN_MILLISECONDS + 30 * IN_MILLISECONDS);
-            //events.ScheduleEvent(EVENT_SHADOW_BURST, urand(40, 50) * IN_MILLISECONDS);
-            //events.ScheduleEvent(EVENT_DARK_BINDING, urand(15, 30) * IN_MILLISECONDS);
+            events.ScheduleEvent(EVENT_NSANITY, 1 * MINUTE * IN_MILLISECONDS + 30 * IN_MILLISECONDS);
+            events.ScheduleEvent(EVENT_SHADOW_BURST, urand(40, 50) * IN_MILLISECONDS);
+            events.ScheduleEvent(EVENT_DARK_BINDING, urand(15, 30) * IN_MILLISECONDS);
             events.ScheduleEvent(EVENT_METEOR_STORM, 1 * MINUTE);
-            //events.ScheduleEvent(EVENT_SHADOW_CRASH, 2 * MINUTE);
+            events.ScheduleEvent(EVENT_SHADOW_CRASH, 2 * MINUTE);
         }
 
         void UpdateAI(uint32 diff)
@@ -2915,7 +2930,7 @@ public:
                         break;
                     case EVENT_SHADOW_BURST:
                         DoCast(SPELL_SHADOW_BURST);
-                        events.ScheduleEvent(EVENT_SHADOW_BURST, urand(40, 50) * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_SHADOW_BURST, urand(40, 90) * IN_MILLISECONDS);
                         break;
                     case EVENT_DARK_BINDING:
                         events.ScheduleEvent(EVENT_DARK_BINDING, urand(30, 60) * IN_MILLISECONDS);

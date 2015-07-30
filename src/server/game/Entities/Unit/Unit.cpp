@@ -12922,15 +12922,12 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
     if (Player* modOwner = GetSpellModOwner())
         modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_CRITICAL_CHANCE, crit_chance);
 
-    if (victim)
-    {
-        AuraEffectList const& critAuras = victim->GetAuraEffectsByType(SPELL_AURA_MOD_CRIT_CHANCE_FOR_CASTER);
-        for (AuraEffectList::const_iterator i = critAuras.begin(); i != critAuras.end(); ++i)
-            if ((*i)->GetCasterGUID() == GetGUID() && (*i)->IsAffectingSpell(spellProto))
-                crit_chance += (*i)->GetAmount();
+    AuraEffectList const& critAuras = victim->GetAuraEffectsByType(SPELL_AURA_MOD_CRIT_CHANCE_FOR_CASTER);
+    for (AuraEffectList::const_iterator i = critAuras.begin(); i != critAuras.end(); ++i)
+        if ((*i)->GetCasterGUID() == GetGUID() && (*i)->IsAffectingSpell(spellProto))
+            crit_chance += (*i)->GetAmount();
 
-        CalculateFromDummy(victim, crit_chance, spellProto, 131071, false);
-    }
+    CalculateFromDummy(victim, crit_chance, spellProto, 131071, false);
 
     crit_chance = crit_chance > 0.0f ? crit_chance : 0.0f;
     critChance = crit_chance;
@@ -18421,7 +18418,7 @@ Unit* Unit::GetNearbyVictim(Unit* exclude, float dist, bool IsInFront, bool IsNe
             else
             {
                 Nearby = (*itr);
-                (*itr)->GetPosition(&pos);
+                Nearby->GetPosition(&pos);
                 nearbydist = GetDistance(pos);
             }
         }
@@ -19881,7 +19878,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
 
                     if (Aura* aura = _targetAura->GetAura(triggered_spell_id))
                     {
-                        if ((aura->GetStackAmount() + 1) > (aura->GetSpellInfo()->StackAmount - 1))
+                        if (uint32((aura->GetStackAmount() + 1)) > (aura->GetSpellInfo()->StackAmount - 1))
                         {
                             RemoveAurasDueToSpell(triggered_spell_id);
                             triggered_spell_id = itr->spell_trigger;
@@ -21046,14 +21043,13 @@ void Unit::Kill(Unit* victim, bool durabilityLoss, SpellInfo const* spellProto)
     {
         sLog->outDebug(LOG_FILTER_UNITS, "DealDamageNotPlayer");
 
-        if (creature)
-            if (!creature->isPet())
-            {
-                creature->DeleteThreatList();
-                CreatureTemplate const* cInfo = creature->GetCreatureTemplate();
-                if (cInfo && (cInfo->lootid || cInfo->maxgold > 0))
-                    creature->SetFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
-            }
+        if (!creature->isPet())
+        {
+            creature->DeleteThreatList();
+            CreatureTemplate const* cInfo = creature->GetCreatureTemplate();
+            if (cInfo && (cInfo->lootid || cInfo->maxgold > 0))
+                creature->SetFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+        }
 
         // Call KilledUnit for creatures, this needs to be called after the lootable flag is set
         if (GetTypeId() == TYPEID_UNIT && IsAIEnabled)

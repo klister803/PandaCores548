@@ -3155,7 +3155,7 @@ void Player::Regenerate(Powers power, uint32 saveTimer)
         }
 
         //Visualization for power
-        VisualForPower(power, curValue, -integerValue);
+        VisualForPower(power, curValue, -int32(integerValue));
     }
     else
     {
@@ -5071,37 +5071,36 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
 
     if (uint32 prev_id = sSpellMgr->GetPrevSpellInChain(spell_id))
     {
-        if (spellInfo)
-            if (cur_active && !spellInfo->IsStackableWithRanks() && spellInfo->IsRanked())
+        if (cur_active && !spellInfo->IsStackableWithRanks() && spellInfo->IsRanked())
+        {
+            // need manually update dependence state (learn spell ignore like attempts)
+            PlayerSpellMap::iterator prev_itr = m_spells.find(prev_id);
+            if (prev_itr != m_spells.end())
             {
-                // need manually update dependence state (learn spell ignore like attempts)
-                PlayerSpellMap::iterator prev_itr = m_spells.find(prev_id);
-                if (prev_itr != m_spells.end())
+                if (prev_itr->second->dependent != cur_dependent)
                 {
-                    if (prev_itr->second->dependent != cur_dependent)
-                    {
-                        prev_itr->second->dependent = cur_dependent;
-                        if (prev_itr->second->state != PLAYERSPELL_NEW)
-                            prev_itr->second->state = PLAYERSPELL_CHANGED;
-                    }
+                    prev_itr->second->dependent = cur_dependent;
+                    if (prev_itr->second->state != PLAYERSPELL_NEW)
+                        prev_itr->second->state = PLAYERSPELL_CHANGED;
+                }
 
-                    // now re-learn if need re-activate
-                    if (cur_active && !prev_itr->second->active && learn_low_rank)
+                // now re-learn if need re-activate
+                if (cur_active && !prev_itr->second->active && learn_low_rank)
+                {
+                    if (addSpell(prev_id, true, false, prev_itr->second->dependent, prev_itr->second->disabled))
                     {
-                        if (addSpell(prev_id, true, false, prev_itr->second->dependent, prev_itr->second->disabled))
-                        {
-                            // downgrade spell ranks in spellbook and action bar
-                            WorldPacket data(SMSG_SUPERCEDED_SPELL);
-                            data.WriteBits(1, 22);
-                            data.WriteBits(1, 22);
-                            data << uint32(spell_id);
-                            data << uint32(prev_id);
-                            GetSession()->SendPacket(&data);
-                            prev_activate = true;
-                        }
+                        // downgrade spell ranks in spellbook and action bar
+                        WorldPacket data(SMSG_SUPERCEDED_SPELL);
+                        data.WriteBits(1, 22);
+                        data.WriteBits(1, 22);
+                        data << uint32(spell_id);
+                        data << uint32(prev_id);
+                        GetSession()->SendPacket(&data);
+                        prev_activate = true;
                     }
                 }
             }
+        }
     }
 
     if (spell_id == 46917 && m_canTitanGrip)
@@ -22485,11 +22484,6 @@ void Player::_SaveSpells(SQLTransaction& trans)
         if(!itr->second)
         {
             m_spells.erase(itr++);
-            continue;
-        }
-        if (itr->second->state == PLAYERSPELL_TEMPORARY)
-        {
-            itr++;
             continue;
         }
 
