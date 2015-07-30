@@ -35,10 +35,13 @@ enum eSpells
     //Small mogu
     SPELL_HARDEN_FLESH_V         = 144922,
     SPELL_HARDEN_FLESH_DMG       = 145218,    
+    SPELL_RUSH                   = 144904,
+    SPELL_KW_ENRAGE              = 145692,
     //Special
     SPELL_LIFT_HOOK_VISUAL       = 142721,
     SPELL_AURA_BAR               = 144921,
     SPELL_AURA_BAR_S             = 148505,
+    SPELL_SOOPS_AT_VISUAL        = 145687,
 };
 
 enum Events
@@ -48,6 +51,7 @@ enum Events
     EVENT_POINT                  = 2,
     EVENT_BACK                   = 3,
     EVENT_RESET                  = 4,
+
     //Summons
     //Big mogu
     EVENT_SPAWN                  = 5,
@@ -58,6 +62,9 @@ enum Events
     EVENT_FRACTURE               = 10,
     EVENT_HARDEN_FLESH           = 11,
     EVENT_FIND_PLAYERS           = 12,
+    EVENT_RUSH                   = 13,
+    EVENT_KW_ENRAGE              = 14,
+    EVENT_IN_PROGRESS            = 15,
 
     //144281
     //146529 from death mob
@@ -71,6 +78,7 @@ Position dpos[4] =
     { 1622.80f, -5148.56f, -263.3986f, 0.0f },
 };
 
+//Big
 uint32 bigmoguentry[4] =
 {
     NPC_JUN_WEI,
@@ -79,11 +87,44 @@ uint32 bigmoguentry[4] =
     NPC_KUN_DA,
 };
 
+uint32 bigmantisentry[4] =
+{
+    NPC_COMMANDER_ZAKTAR,
+    NPC_COMMANDER_IKTAL,
+    NPC_COMMANDER_NAKAZ,
+    NPC_COMMANDER_TIK,
+};
+//
+
+//Mediom
 uint32 mediummoguentry[2] =
 {
     NPC_MODIFIED_ANIMA_GOLEM,
     NPC_MOGU_SHADOW_RITUALIST,
 };
+
+uint32 mediummantisentry[2] =
+{
+    NPC_MODIFIED_ANIMA_GOLEM,
+    NPC_MOGU_SHADOW_RITUALIST,
+};
+//
+
+//Small
+uint32 smallmoguentry[3] = 
+{
+    NPC_ANIMATED_STONE_MOGU,
+    NPC_BURIAL_URN,
+    NPC_QUILEN_GUARDIANS,
+};
+
+uint32 smallmantisentry[3] =
+{
+    NPC_SRITHIK_BOMBARDIER,
+    NPC_AMBER_ENCASED_KUNCHONG,
+    NPC_KORTHIK_WARCALLER,
+};
+//
 
 enum sActions
 {
@@ -96,46 +137,147 @@ enum sData
     DATA_UPDATE_POWER            = 1,
 };
 
+#define GOSSIP1 "We are ready"
 
-//Small mogu
-//NPC_ANIMATED_STONE_MOGU = 71380 use this npc only for test and debug
-class npc_test_controller : public CreatureScript
+//71889
+class npc_ssop_spoils : public CreatureScript
 {
 public:
-    npc_test_controller() : CreatureScript("npc_test_controller") {}
+    npc_ssop_spoils() : CreatureScript("npc_ssop_spoils") {}
 
-    struct npc_test_controllerAI : public ScriptedAI
+    struct npc_ssop_spoilsAI : public ScriptedAI
     {
-        npc_test_controllerAI(Creature* creature) : ScriptedAI(creature)
+        npc_ssop_spoilsAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             me->SetReactState(REACT_PASSIVE);
+            me->SetDisplayId(11686);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+            lastcount = 270;
+            newcount = 0;
         }
-
+        
         InstanceScript* instance;
+        EventMap events;
+        uint32 lastcount;
+        uint32 newcount;
 
-        void Reset()
+        void Reset(){}
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+        
+        void DoAction(int32 const action)
         {
             if (instance)
+            {
+                switch (action)
+                {
+                case ACTION_SSOPS_IN_PROGRESS:
+                    DoCast(me, SPELL_SOOPS_AT_VISUAL, true);
+                    events.ScheduleEvent(EVENT_IN_PROGRESS, 1000);
+                    break;
+                case ACTION_SSOPS_SECOND_ROOM:
+                    events.Reset();
+                    lastcount = 300;
+                    events.ScheduleEvent(EVENT_IN_PROGRESS, 1000);
+                    break;
+                case ACTION_SSOPS_DONE:
+                    events.Reset();
+                    std::list<AreaTrigger*> atlist;
+                    atlist.clear();
+                    me->GetAreaTriggersWithEntryInRange(atlist, 5269, me->GetGUID(), 50.0f);
+                    if (!atlist.empty())
+                        for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
+                            (*itr)->RemoveFromWorld();
+                    OfflineWorldState();
+                    break;
+                }
+            }
+        }
+
+        void OfflineWorldState()
+        {
+            Map::PlayerList const &players = me->GetMap()->GetPlayers();
+            for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+                if (Player* pl = i->getSource())
+                    if (pl->isAlive())
+                        pl->SendUpdateWorldState(8431, 0);
+        }
+
+        void SendWipe()
+        {
+            if (instance)
+            {
+                events.Reset();
+                Map::PlayerList const &players = me->GetMap()->GetPlayers();
+                for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+                    if (Player* pl = i->getSource())
+                        if (pl->isAlive())
+                            pl->Kill(pl, true);
+                
+                std::list<AreaTrigger*> atlist;
+                atlist.clear();
+                me->GetAreaTriggersWithEntryInRange(atlist, 5269, me->GetGUID(), 50.0f);
+                if (!atlist.empty())
+                    for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
+                        (*itr)->RemoveFromWorld();
+                OfflineWorldState();
                 instance->SetBossState(DATA_SPOILS_OF_PANDARIA, NOT_STARTED);
+                lastcount = 270;
+                newcount = 0;
+            }
         }
-
-        void EnterCombat(Unit* who)
-        {
-            if (instance)
-                instance->SetBossState(DATA_SPOILS_OF_PANDARIA, IN_PROGRESS);
-        }
-
+        
         void UpdateAI(uint32 diff)
         {
-            if (!UpdateVictim())
-                return;
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_IN_PROGRESS && instance)
+                {
+                    if (instance->IsWipe())
+                    {
+                        events.Reset();
+                        std::list<AreaTrigger*> atlist;
+                        atlist.clear();
+                        me->GetAreaTriggersWithEntryInRange(atlist, 5269, me->GetGUID(), 50.0f);
+                        if (!atlist.empty())
+                            for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
+                                (*itr)->RemoveFromWorld();
+                        instance->SetBossState(DATA_SPOILS_OF_PANDARIA, NOT_STARTED);
+                    }
+                    else
+                    {
+                        Map::PlayerList const &players = me->GetMap()->GetPlayers();
+                        for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+                        {
+                            if (Player* pl = i->getSource())
+                            {
+                                if (pl->isAlive())
+                                {
+                                    newcount = lastcount ? lastcount - 1 : 0;
+                                    pl->SendUpdateWorldState(8431, 1);
+                                    pl->SendUpdateWorldState(8381, newcount);
+                                    lastcount = newcount;
+                                }
+                            }
+                        }
+                        if (!newcount)
+                            SendWipe();
+                        else
+                            events.ScheduleEvent(EVENT_IN_PROGRESS, 1000);
+                    }
+                }
+            }
         }
     };
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return new npc_test_controllerAI(creature);
+        return new npc_ssop_spoilsAI(creature);
     }
 };
 
@@ -313,10 +455,15 @@ public:
                             if (omspoil->HasAura(SPELL_AURA_BAR_S) && omspoil->GetPower(POWER_ALTERNATE_POWER) == 50)
                             {
                                 if (instance->GetBossState(DATA_SPOILS_OF_PANDARIA) == SPECIAL)
+                                {
                                     instance->SetBossState(DATA_SPOILS_OF_PANDARIA, DONE);
+                                    break;
+                                }
                                 else
-                                 DoAction(ACTION_SECOND_ROOM);
-                                 break;
+                                {
+                                    DoAction(ACTION_SECOND_ROOM);
+                                    break;
+                                }
                             }
                         }
                     }
@@ -455,8 +602,8 @@ public:
                 {
                     Position pos = me->GetHomePosition();
                     me->GetMotionMaster()->MoveCharge(pos.GetPositionX(), pos.GetPositionY(), -263.3986f, 20.0f, 2);
+                    break;
                 }
-                break;
                 case EVENT_RESET:
                 {
                     Position pos = me->GetHomePosition();
@@ -484,14 +631,14 @@ public:
         npc_generic_sop_unitsAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
-            srpGuid = 0;
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            spawn = 0;
         }
 
         InstanceScript* instance;
         EventMap events;
-        uint64 srpGuid;
+        uint32 spawn;
 
         void Reset()
         {
@@ -510,7 +657,7 @@ public:
 
         void IsSummonedBy(Unit* summoner)
         {
-            events.ScheduleEvent(EVENT_SPAWN, 1500);
+            spawn = 1500;
         }
 
         void EnterCombat(Unit* who)
@@ -532,28 +679,19 @@ public:
                 break;
             //Medoum
             case NPC_MOGU_SHADOW_RITUALIST:
-                if (Creature* srp = me->SummonCreature(NPC_SHADOW_RITUALIST_PHYLACTERY, me->GetPositionX() + 5.0f, me->GetPositionY(), me->GetPositionZ()))
-                    srpGuid = srp->GetGUID();
+                break;
             //Small 
+            case NPC_QUILEN_GUARDIANS:
+                events.ScheduleEvent(EVENT_RUSH, 1000);
+                break;
             case NPC_ANIMATED_STONE_MOGU:
                 events.ScheduleEvent(EVENT_EARTHEN_SHARD, 5000);
                 break;
+            case NPC_KORTHIK_WARCALLER:
+                events.ScheduleEvent(EVENT_KW_ENRAGE, 1000);
+                break;
             default:
                 break;
-            }
-        }
-
-        void DamageTaken(Unit* attacker, uint32 &damage)
-        {
-            if (me->GetEntry() == NPC_MOGU_SHADOW_RITUALIST)
-            {
-                if (Creature* srp = me->GetCreature(*me, srpGuid))
-                {
-                    if (damage >= me->GetHealth())
-                        me->Kill(srp, true);
-                    else
-                        srp->SetHealth(srp->GetHealth() - damage);
-                }
             }
         }
 
@@ -601,6 +739,19 @@ public:
 
         void UpdateAI(uint32 diff)
         {
+            if (spawn)
+            {
+                if (spawn <= diff)
+                {
+                    spawn = 0;
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    DoZoneInCombat(me, 60.0f);
+                }
+                else 
+                    spawn -= diff;
+            }
+
             if (!UpdateVictim())
                 return;
 
@@ -613,17 +764,19 @@ public:
             {
                 switch (eventId)
                 {
-                //default events;
-                case EVENT_SPAWN:
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                    DoZoneInCombat(me, 100.0f);
+                case EVENT_KW_ENRAGE:
+                    DoCast(me, SPELL_KW_ENRAGE, true);
+                    events.ScheduleEvent(EVENT_KW_ENRAGE, 10000);
+                    break;
+                case EVENT_RUSH:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60, true))
+                        DoCast(target, SPELL_RUSH, true);
+                    events.ScheduleEvent(EVENT_RUSH, 5000);
                     break;
                 case EVENT_EARTHEN_SHARD:
                     DoCastVictim(SPELL_EARTHEN_SHARD);
                     events.ScheduleEvent(EVENT_EARTHEN_SHARD, 5000);
                     break;
-                //
                 case EVENT_MOLTEN_FIST:
                     DoCast(me, SPELL_MOLTEN_FIST);
                     events.ScheduleEvent(EVENT_MOLTEN_FIST, 5000);
@@ -649,6 +802,44 @@ public:
     CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_generic_sop_unitsAI(creature);
+    }
+};
+
+//220823,
+class go_ssop_spoils : public GameObjectScript
+{
+public:
+    go_ssop_spoils() : GameObjectScript("go_ssop_spoils") { }
+
+    bool OnGossipSelect(Player* pl, GameObject* go, uint32 /*uiSender*/, uint32 uiAction)
+    {
+        if (InstanceScript* instance = go->GetInstanceScript())
+        {
+            if (instance->GetBossState(DATA_SPOILS_OF_PANDARIA) == NOT_STARTED)
+            {
+                if (uiAction == GOSSIP_ACTION_INFO_DEF)
+                {
+                    pl->PlayerTalkClass->ClearMenus();
+                    pl->CLOSE_GOSSIP_MENU();
+                    instance->SetBossState(DATA_SPOILS_OF_PANDARIA, IN_PROGRESS);
+                }
+            }
+        }
+        return true;
+    }
+
+    bool OnGossipHello(Player* pl, GameObject* go)
+    {
+        if (InstanceScript* instance = go->GetInstanceScript())
+        {
+            if (instance->GetBossState(DATA_SPOILS_OF_PANDARIA) == NOT_STARTED)
+            {
+                pl->PrepareGossipMenu(go);
+                pl->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+                pl->SEND_GOSSIP_MENU(pl->GetGossipTextId(go), go->GetGUID());
+            }
+        }
+        return true;
     }
 };
 
@@ -687,22 +878,29 @@ public:
                 switch (go->GetEntry())
                 {
                 case GO_BIG_MOGU_BOX:
-                {
-                    uint8 entry = urand(0, 3);
-                    summoner->SummonCreature(bigmoguentry[entry], pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+                    summoner->SummonCreature(bigmoguentry[urand(0, 3)], pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
                     break;
-                }
-                case GO_BIG_MANTIS_BOX: //test
-                    summoner->SummonCreature(NPC_COMMANDER_ZAKTAR, pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+                case GO_BIG_MANTIS_BOX:
+                    summoner->SummonCreature(bigmantisentry[urand(0, 3)], pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
                     break;
                 case GO_MEDIUM_MOGU_BOX:
+                    summoner->SummonCreature(mediummoguentry[urand(0, 1)], pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+                    break;
+                case GO_MEDIUM_MANTIS_BOX:
+                    summoner->SummonCreature(mediummantisentry[urand(0, 1)], pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+                    break;
+                case GO_SMALL_MOGU_BOX:
                 {
-                    uint8 entry = urand(0, 1);
-                    summoner->SummonCreature(mediummoguentry[entry], pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+                    uint8 entry = urand(0, 2);
+                    if (entry == 2)
+                        for (uint8 n = 0; n < 4; n++)
+                            summoner->SummonCreature(smallmoguentry[entry], pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+                    else
+                        summoner->SummonCreature(smallmoguentry[entry], pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
                     break;
                 }
-                case GO_SMALL_MOGU_BOX:
-                    summoner->SummonCreature(NPC_ANIMATED_STONE_MOGU, pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+                case GO_SMALL_MANTIS_BOX:
+                    summoner->SummonCreature(smallmantisentry[urand(0, 2)], pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
                     break;
                 default:
                     break;
@@ -820,11 +1018,12 @@ public:
 
 void AddSC_boss_spoils_of_pandaria()
 {
-    new npc_test_controller(); //test only
+    new npc_ssop_spoils();
     new npc_generic_spoil();
     new npc_lever();
     new npc_lift_hook();
     new npc_generic_sop_units();
+    new go_ssop_spoils();
     new go_generic_lever();
     new go_generic_sop_box();
     new spell_shadow_volley();

@@ -684,8 +684,8 @@ class AchievementRewardScript : public ScriptObject
         bool IsDatabaseBound() const { return true; }
 
         // Called ow handling reward
-        virtual bool OnGet(Player* source, AchievementReward const* data) = 0;
-        virtual uint32 SelectItem(Player* source, AchievementReward const* data) { return 0; };
+        virtual bool OnGet(Player* /*source*/, AchievementReward const* /*data*/) {  return false; };
+        virtual uint32 SelectItem(Player* /*source*/, AchievementReward const* /*data*/) { return 0; };
 };
 
 class PlayerScript : public ScriptObject

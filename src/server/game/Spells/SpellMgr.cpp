@@ -3823,6 +3823,13 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 81751: // Atonement
+                    spellInfo->AttributesEx2 &= ~SPELL_ATTR2_CANT_CRIT;
+                    break;
+                case 90289: // Removing Death Grip cooldown
+                case 36563: // Shadowstep
+                    spellInfo->AttributesEx12 |= SPELL_ATTR12_HAVE_STABLE_FLYTIME;
+                    break;
                 case 147303: // Arena Deserter DR (Test Spell)
                     spellInfo->AttributesEx |= SPELL_ATTR1_DONT_DISPLAY_IN_AURA_BAR;
                     spellInfo->Attributes |= SPELL_ATTR0_PASSIVE;
@@ -3944,6 +3951,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 137619: // Marked for Death
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
+                    spellInfo->AttributesEx12 |= SPELL_ATTR12_DOESENT_INTERRUPT_CHANNELING;
+                    spellInfo->AttributesEx12 |= SPELL_ATTR12_HAVE_STABLE_FLYTIME;
                     break;
                 case 5487:  // Bear Form
                     spellInfo->Effects[2].BasePoints = 120;

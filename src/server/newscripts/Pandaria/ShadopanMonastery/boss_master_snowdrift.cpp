@@ -251,7 +251,10 @@ class boss_master_snowdrift : public CreatureScript
             void JustReachedHome()
             {
                 if (EncounterFinish)
+                {
+                    me->GetMap()->UpdateEncounterState(ENCOUNTER_CREDIT_CAST_SPELL, SPELL_ENCOUNTER_CREDIT, me);
                     me->HandleEmoteCommand(EMOTE_STATE_SIT);
+                }
             }
 
             void DoAction(const int32 action)

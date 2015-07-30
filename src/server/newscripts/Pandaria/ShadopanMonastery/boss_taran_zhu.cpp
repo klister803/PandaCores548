@@ -97,6 +97,7 @@ class boss_taran_zhu : public CreatureScript
                     me->SetFullHealth();
                     me->RemoveAurasDueToSpell(SPELL_CORRUPTED);
                     DoCast(SPELL_ACHIEV_CREDIT);
+                    me->GetMap()->UpdateEncounterState(ENCOUNTER_CREDIT_CAST_SPELL, SPELL_ACHIEV_CREDIT, me);
                 }
             }
 

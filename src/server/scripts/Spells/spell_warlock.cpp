@@ -157,41 +157,30 @@ class spell_warl_grimoire_of_sacrifice : public SpellScriptLoader
                     // EFFECT_11 : Duration for HB
                     switch(aurEff->GetEffIndex())
                     {
+                        case EFFECT_2:
                         case EFFECT_5:
                         case EFFECT_7:
                         case EFFECT_8:
-                        switch (player->GetSpecializationId(player->GetActiveSpec()))
                         {
-                            case SPEC_WARLOCK_DEMONOLOGY:
-                            case SPEC_WARLOCK_DESTRUCTION:
-                            case SPEC_NONE:
-                                amount = 0;
-                                break;
+                            amount = player->GetSpecializationId(player->GetActiveSpec()) == SPEC_WARLOCK_AFFLICTION ? amount : 0;
+                            break;
                         }
-                        break;
-                        case EFFECT_2:
                         case EFFECT_3:
-                        case EFFECT_9:
-                        switch (player->GetSpecializationId(player->GetActiveSpec()))
                         {
-                            case SPEC_WARLOCK_AFFLICTION:
-                            case SPEC_WARLOCK_DESTRUCTION:
-                            case SPEC_NONE:
-                                amount = 0;
-                                break;
+                            amount = player->GetSpecializationId(player->GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY ? amount : 0;
+                            break;
                         }
-                        break;
                         case EFFECT_4:
-                        case EFFECT_10:
-                        switch (player->GetSpecializationId(player->GetActiveSpec()))
                         {
-                            case SPEC_WARLOCK_AFFLICTION:
-                            case SPEC_WARLOCK_DEMONOLOGY:
-                            case SPEC_NONE:
-                                amount = 0;
-                                break;
+                            amount = player->GetSpecializationId(player->GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION ? amount : 0;
+                            break;
                         }
-                        break;
+                        case EFFECT_9:
+                        case EFFECT_10:
+                        {
+                            amount = 0;
+                            break;
+                        }
                         case EFFECT_6:
                         switch (player->GetSpecializationId(player->GetActiveSpec()))
                         {
@@ -208,6 +197,7 @@ class spell_warl_grimoire_of_sacrifice : public SpellScriptLoader
 
             void Register()
             {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_grimoire_of_sacrifice_AuraScript::CalculateAmount, EFFECT_2, SPELL_AURA_ADD_PCT_MODIFIER);
                 DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_grimoire_of_sacrifice_AuraScript::CalculateAmount, EFFECT_3, SPELL_AURA_ADD_PCT_MODIFIER);
                 DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_grimoire_of_sacrifice_AuraScript::CalculateAmount, EFFECT_4, SPELL_AURA_ADD_PCT_MODIFIER);
                 DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_grimoire_of_sacrifice_AuraScript::CalculateAmount, EFFECT_5, SPELL_AURA_ADD_PCT_MODIFIER);

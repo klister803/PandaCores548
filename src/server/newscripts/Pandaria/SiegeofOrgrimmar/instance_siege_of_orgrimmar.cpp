@@ -71,6 +71,7 @@ public:
         std::vector<uint64> sopboxGuids;
         std::vector<uint64> spoilsGuids;  //for send frames
         std::vector<uint64> spoils2Guids; //find players and send aura bar in radius
+        uint64 gossopsGuid;
         uint64 spentdoorGuid;
         uint64 spexdoorGuid;
         uint64 thokentdoorGuid;
@@ -94,6 +95,7 @@ public:
         uint64 darkfangGuid;
         uint64 gnazgrimGuid;
         uint64 amGuid;
+        uint64 npcssopsGuid;
         uint64 thokGuid;
         std::vector<uint64> prisonerGuids;
         uint64 bsGuid;
@@ -141,6 +143,7 @@ public:
             sopboxGuids.clear();
             spoilsGuids.clear();
             spoils2Guids.clear();
+            gossopsGuid             = 0;
             spentdoorGuid           = 0;
             spexdoorGuid            = 0;
             thokentdoorGuid         = 0;
@@ -162,6 +165,7 @@ public:
             darkfangGuid            = 0;
             gnazgrimGuid            = 0;
             amGuid                  = 0;
+            npcssopsGuid            = 0;
             thokGuid                = 0;
             prisonerGuids.clear();
             bsGuid                  = 0;
@@ -429,6 +433,9 @@ public:
                     amGuid = creature->GetGUID();
                     break;
                 //Spoils of Pandaria
+                case NPC_SSOP_SPOILS:
+                    npcssopsGuid = creature->GetGUID();
+                    break;
                 case NPC_MOGU_SPOILS:
                 case NPC_MOGU_SPOILS2:
                 case NPC_MANTIS_SPOILS:
@@ -567,6 +574,15 @@ public:
                     jaillistGuids.push_back(go->GetGUID());
                     break;
                 //Spoils of pandaria
+                case GO_SSOP_SPOILS:
+                    if (GetBossState(DATA_SPOILS_OF_PANDARIA) != DONE)
+                    {
+                        SetBossState(DATA_SPOILS_OF_PANDARIA, NOT_STARTED);
+                        gossopsGuid = go->GetGUID();
+                    }
+                    else if ((GetBossState(DATA_SPOILS_OF_PANDARIA) == DONE))
+                        go->Delete();
+                    break;
                 case GO_SMALL_MOGU_BOX:
                 case GO_MEDIUM_MOGU_BOX:
                 case GO_BIG_MOGU_BOX:
@@ -849,6 +865,9 @@ public:
                         }
                         break;
                     case IN_PROGRESS:
+                        if (Creature* ssops = instance->GetCreature(npcssopsGuid))
+                            ssops->AI()->DoAction(ACTION_SSOPS_IN_PROGRESS);
+
                         //Open Gates In Room
                         for (std::vector<uint64>::const_iterator itr = roomgateGuids.begin(); itr != roomgateGuids.end(); itr++)
                             if (GameObject* gate = instance->GetGameObject(*itr))
@@ -860,6 +879,7 @@ public:
                             if (Creature* spoil = instance->GetCreature(*itr))
                                 if (spoil->GetEntry() == NPC_MOGU_SPOILS2 || spoil->GetEntry() == NPC_MANTIS_SPOILS2)
                                     spoil->AI()->DoAction(ACTION_IN_PROGRESS);  
+
                         HandleGameObject(spentdoorGuid, false);
                         break;
                     case DONE:
@@ -877,13 +897,23 @@ public:
                         for (std::vector<uint64>::const_iterator itr = roomdoorGuids.begin(); itr != roomdoorGuids.end(); itr++)
                             HandleGameObject(*itr, true);
 
+                        if (Creature* ssops = instance->GetCreature(npcssopsGuid))
+                            ssops->AI()->DoAction(ACTION_SSOPS_DONE);
+
+                        if (GameObject* _ssops = instance->GetGameObject(gossopsGuid))
+                            _ssops->Delete();
+
                         //Open All Gates (for safe)
                         for (std::vector<uint64>::const_iterator itr = roomgateGuids.begin(); itr != roomgateGuids.end(); itr++)
                             HandleGameObject(*itr, true);
+
                         HandleGameObject(spentdoorGuid, true);
                         HandleGameObject(spexdoorGuid, true);
                         break;
                     case SPECIAL: //first room done, start second
+                        if (Creature* ssops = instance->GetCreature(npcssopsGuid))
+                            ssops->AI()->DoAction(ACTION_SSOPS_SECOND_ROOM);
+                        
                         //Open Next Gates In Room
                         for (std::vector<uint64>::const_iterator itr = roomgateGuids.begin(); itr != roomgateGuids.end(); itr++)
                             if (GameObject* gate = instance->GetGameObject(*itr))

@@ -2452,21 +2452,16 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
                 default:
                     break;
             }
-            // Shadowstep
-            if (m_spellInfo->Id == 36563)
-            {
-                targetInfo.timeDelay = 100LL;
-                m_delayMoment = 100LL;
-            }
         }
-    }
-    else if (m_spellInfo->Id == 90289) // Removing Death Grip cooldown
-    {
-        targetInfo.timeDelay = 100LL;
-        m_delayMoment = 100LL;
     }
     else
         targetInfo.timeDelay = 0LL;
+
+    if (m_spellInfo->AttributesEx12 & SPELL_ATTR12_HAVE_STABLE_FLYTIME)
+    {
+        targetInfo.timeDelay = 200LL;
+        m_delayMoment = 200LL;
+    }
 
     // If target reflect spell back to caster
     if (targetInfo.missCondition == SPELL_MISS_REFLECT)
@@ -3570,7 +3565,7 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
     //Containers for channeled spells have to be set
     //TODO:Apply this to all casted spells if needed
     // Why check duration? 29350: channeled triggers channeled
-    if ((_triggeredCastFlags & TRIGGERED_CAST_DIRECTLY) && (!m_spellInfo->IsChanneled() || !m_spellInfo->GetMaxDuration()))
+    if ((_triggeredCastFlags & TRIGGERED_CAST_DIRECTLY) && !(m_spellInfo->AttributesEx12 & SPELL_ATTR12_HAVE_STABLE_FLYTIME) && (!m_spellInfo->IsChanneled() || !m_spellInfo->GetMaxDuration()))
         cast(true);
     else
     {
@@ -3602,7 +3597,7 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
             TriggerGlobalCooldown();
 
         //item: first cast may destroy item and second cast causes crash
-        if (!m_casttime && !m_spellInfo->StartRecoveryTime && !m_castItemGUID && GetCurrentContainer() == CURRENT_GENERIC_SPELL)
+        if (!m_casttime && !m_spellInfo->StartRecoveryTime && !m_castItemGUID && GetCurrentContainer() == CURRENT_GENERIC_SPELL && !(m_spellInfo->AttributesEx12 & SPELL_ATTR12_HAVE_STABLE_FLYTIME))
             cast(true);
     }
 }

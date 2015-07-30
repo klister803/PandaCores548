@@ -3306,6 +3306,9 @@ void Unit::_DeleteRemovedAuras()
 
 void Unit::_UpdateSpells(uint32 time)
 {
+    if (!IsInWorld())
+        return;
+
     if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL])
         _UpdateAutoRepeatSpell();
 
@@ -3420,7 +3423,9 @@ void Unit::SetCurrentCastedSpell(Spell* pSpell)
         return;
 
     // break same type spell if it is not delayed
-    InterruptSpell(CSpellType, false);
+    if (SpellInfo const* _spellInfo = pSpell->GetSpellInfo())
+        if (!(_spellInfo->AttributesEx12 & SPELL_ATTR12_DOESENT_INTERRUPT_CHANNELING))
+            InterruptSpell(CSpellType, false);
 
     // special breakage effects:
     switch (CSpellType)
@@ -11076,16 +11081,13 @@ bool Unit::AttackStop()
 
     // reset only at real combat stop
     if (Creature* creature = ToCreature())
-    { 
-        if (!creature->GetMap()->IsRaid() || !creature->GetMap()->IsDungeon())
-        {
-            creature->SetNoCallAssistance(false);
+    {
+        creature->SetNoCallAssistance(false);
 
-            if (creature->HasSearchedAssistance())
-            {
-                creature->SetNoSearchAssistance(false);
-                UpdateSpeed(MOVE_RUN, false);
-            }
+        if (creature->HasSearchedAssistance())
+        {
+            creature->SetNoSearchAssistance(false);
+            UpdateSpeed(MOVE_RUN, false);
         }
     }
 
@@ -12908,8 +12910,12 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
     }
 
     // not critting spell
-    if ((spellProto->AttributesEx2 & SPELL_ATTR2_CANT_CRIT) || (spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS))
+    if ((spellProto->AttributesEx2 & SPELL_ATTR2_CANT_CRIT))
         return false;
+
+    if (spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS)
+        if ((spellProto->AttributesEx10 & SPELL_ATTR10_STACK_DAMAGE_OR_HEAL) || GetGUID() == victim->GetGUID())
+            return false;
 
     // percent done
     // only players use intelligence for critical chance computations
@@ -23875,7 +23881,7 @@ void Unit::ApplySoulSwapDOT(Unit* target)
 
         AddAura((*iter).Id, target);
 
-        if (Aura* aura = target->GetAura((*iter).Id))
+        if (Aura* aura = target->GetAura((*iter).Id, GetGUID()))
         {
             aura->SetStackAmount((*iter).stackAmount);
             aura->SetMaxDuration((*iter).duration);

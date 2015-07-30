@@ -2896,7 +2896,8 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
     if (reward->sender)
     {
         uint32 itemID = sScriptMgr->OnSelectItemReward(reward, GetOwner());
-        if (!itemID) itemID = reward->itemId;   //OnRewardSelectItem return 0 if no script
+        if (!itemID)
+            itemID = reward->itemId;   //OnRewardSelectItem return 0 if no script
 
         Item* item = itemID ? Item::CreateItem(itemID, 1, GetOwner()) : NULL;
 
@@ -4931,6 +4932,7 @@ void AchievementGlobalMgr::LoadRewards()
 
         const char* scriptName = fields[8].GetCString();
         uint32 scriptId = 0;
+
         if (strcmp(scriptName, "")) // not empty
             scriptId = sObjectMgr->GetScriptId(scriptName);
 
