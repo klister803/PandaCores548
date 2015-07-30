@@ -20,6 +20,9 @@ enum ssActions
 {
     ACTION_RESET                    = 255,
     ACTION_IN_PROGRESS              = 256,
+    ACTION_SSOPS_IN_PROGRESS        = 257,
+    ACTION_SSOPS_DONE               = 258,
+    ACTION_SSOPS_SECOND_ROOM        = 259,
 };
 
 enum eData
@@ -263,7 +266,7 @@ enum eCreatures
     //Mogu
     NPC_ANIMATED_STONE_MOGU         = 71380,
     NPC_BURIAL_URN                  = 71382,
-    NPC_QUILEN_GUARDIANS            = 72223, 
+    NPC_QUILEN_GUARDIANS            = 71378, //needed update sql
     //Mantis
     NPC_SRITHIK_BOMBARDIER          = 71385,
     NPC_AMBER_ENCASED_KUNCHONG      = 71388,
@@ -385,6 +388,7 @@ enum eGameObjects
     GO_MALKOROK_FENCH_2             = 221785,
 
     //Spoils of Pandaria
+    GO_SSOP_SPOILS                  = 220823,
     GO_ENT_GATE                     = 223056,
     GO_ENT_DOOR_LEFT                = 221800,
     GO_ENT_DOOR_RIGHT               = 221801,
