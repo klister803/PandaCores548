@@ -55,15 +55,13 @@ bool BattlePetMgr::SlotIsLocked(uint8 index)
 
 bool BattlePetMgr::BuildPetJournal(WorldPacket *data)
 {
-    ObjectGuid unknownPet;
     uint32 count = 0;
-    uint32 count2 = 0;
 
-    data->Initialize(SMSG_BATTLE_PET_JOURNAL);
-    uint32 bit_pos = data->bitwpos();
-    data->WriteBits(count, 19);
-
+    ByteBuffer bitData;
     ByteBuffer byteData;
+
+    uint32 countPos = bitData.bitwpos();
+    bitData.WriteBits(0, 19);
 
     for (PetJournal::const_iterator itr = m_PetJournal.begin(); itr != m_PetJournal.end(); ++itr)
     {
@@ -80,16 +78,16 @@ bool BattlePetMgr::BuildPetJournal(WorldPacket *data)
         ObjectGuid guid = itr->first;
         uint8 len = petInfo->GetCustomName() == "" ? 0 : petInfo->GetCustomName().length();
 
-        data->WriteBit(!petInfo->GetBreedID());     // hasBreed, inverse
-        data->WriteGuidMask<1, 5, 3>(guid);
-        data->WriteBit(0);                          // hasOwnerGuidInfo
-        data->WriteBit(!petInfo->GetQuality());     // hasQuality, inverse
-        data->WriteGuidMask<6, 7>(guid);
-        data->WriteBit(!petInfo->GetFlags());       // hasFlags, inverse
-        data->WriteGuidMask<0, 4>(guid);
-        data->WriteBits(len, 7);                    // custom name length
-        data->WriteGuidMask<2>(guid);
-        data->WriteBit(1);                          // hasUnk (bool noRename?), inverse
+        bitData.WriteBit(!petInfo->GetBreedID());     // hasBreed, inverse
+        bitData.WriteGuidMask<1, 5, 3>(guid);
+        bitData.WriteBit(0);                          // hasOwnerGuidInfo
+        bitData.WriteBit(!petInfo->GetQuality());     // hasQuality, inverse
+        bitData.WriteGuidMask<6, 7>(guid);
+        bitData.WriteBit(!petInfo->GetFlags());       // hasFlags, inverse
+        bitData.WriteGuidMask<0, 4>(guid);
+        bitData.WriteBits(len, 7);                    // custom name length
+        bitData.WriteGuidMask<2>(guid);
+        bitData.WriteBit(1);                          // hasUnk (bool noRename?), inverse
 
         if (petInfo->GetBreedID())
             byteData << uint16(petInfo->GetBreedID());            // breedID
@@ -116,7 +114,7 @@ bool BattlePetMgr::BuildPetJournal(WorldPacket *data)
         ++count;
     }
 
-    data->WriteBits(MAX_ACTIVE_BATTLE_PETS, 25);
+    bitData.WriteBits(MAX_ACTIVE_BATTLE_PETS, 25);
 
     // fill battle slots data
     ByteBuffer byteSlotData;
@@ -134,14 +132,14 @@ bool BattlePetMgr::BuildPetJournal(WorldPacket *data)
         if (!slot)
             return false;
 
-        data->WriteBit(!slotIndex);                                      // hasSlotIndex
-        data->WriteBit(1);                                               // hasCollarID, inverse
-        data->WriteBit(!slot->IsEmpty());                                // empty slot, inverse
-        data->WriteGuidMask<7, 1, 3, 2, 5, 0, 4, 6>(slot->GetPet());     // pet guid in slot
-        data->WriteBit(SlotIsLocked(slotIndex));                         // locked slot
+        bitData.WriteBit(!slotIndex);                                      // hasSlotIndex
+        bitData.WriteBit(1);                                               // hasCollarID, inverse
+        bitData.WriteBit(!slot->IsEmpty());                                // empty slot, inverse
+        bitData.WriteGuidMask<7, 1, 3, 2, 5, 0, 4, 6>(slot->GetPet());     // pet guid in slot
+        bitData.WriteBit(SlotIsLocked(slotIndex));                         // locked slot
 
         if (itr == itr2)
-            data->WriteBit(1);                      // !hasJournalLock
+            bitData.WriteBit(1);                      // !hasJournalLock
 
         byteSlotData.WriteGuidBytes<3, 7, 5, 1, 4, 0, 6, 2>(slot->GetPet());
         if (slotIndex)
@@ -210,6 +208,11 @@ bool BattlePetMgr::BuildPetJournal(WorldPacket *data)
         ++count2;
     }*/
 
+    bitData.FlushBits();
+    bitData.PutBits<uint32>(countPos, count, 19);
+
+    data->Initialize(SMSG_BATTLE_PET_JOURNAL);
+    data->append(bitData);
     data->append(byteSlotData);
     data->append(byteData);
 
@@ -219,7 +222,7 @@ bool BattlePetMgr::BuildPetJournal(WorldPacket *data)
     //if (count != count2)
         //return false;
 
-    data->PutBits<uint8>(bit_pos, count, 19);
+    //data->PutBits<uint8>(bit_pos, count, 19);
     return true;
 }
 
