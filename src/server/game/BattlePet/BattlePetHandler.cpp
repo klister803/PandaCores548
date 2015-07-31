@@ -41,6 +41,9 @@ void WorldSession::HandleBattlePetSummon(WorldPacket& recvData)
     if (spellId && !_player->HasActiveSpell(spellId))
         return;
 
+    if (!spellId)
+        spellId = BATTLE_PET_SUMMON_SPELL;
+
     if (_player->m_SummonSlot[SUMMON_SLOT_MINIPET])
     {
         Creature* oldSummon = _player->GetMap()->GetCreature(_player->m_SummonSlot[SUMMON_SLOT_MINIPET]);
@@ -49,22 +52,14 @@ void WorldSession::HandleBattlePetSummon(WorldPacket& recvData)
             oldSummon->ToTempSummon()->UnSummon();
         else
         {
-            _player->SetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID, guid);
-
-            if (!spellId)
-                _player->CastSpell(_player, 118301, true);
-            else
-                _player->CastSpell(_player, spellId, true);
+            _player->SetUInt64Value(PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID, guid);
+            _player->CastSpell(_player, spellId, true);
         }
     }
     else
     {
-        _player->SetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID, guid);
-
-        if (!spellId)
-            _player->CastSpell(_player, 118301, true);
-        else
-            _player->CastSpell(_player, spellId, true);
+        _player->SetUInt64Value(PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID, guid);
+        _player->CastSpell(_player, spellId, true);
     }
 }
 
