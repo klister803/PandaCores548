@@ -340,7 +340,7 @@ Unit::~Unit()
             m_currentSpells[i] = NULL;
         }
 
-    //_DeleteRemovedAuras();
+    _DeleteRemovedAuras();
 
     delete m_charmInfo;
     delete movespline;
