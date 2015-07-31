@@ -256,12 +256,7 @@ class Aura
         void SetScriptData(uint32 type, uint32 data);
         void SetScriptGuid(uint32 type, uint64 data);
         // Spell Proc Hooks
-        bool CallScriptCheckProcHandlers(AuraApplication const* aurApp, ProcEventInfo& eventInfo);
-        bool CallScriptPrepareProcHandlers(AuraApplication const* aurApp, ProcEventInfo& eventInfo);
-        void CallScriptProcHandlers(AuraApplication const* aurApp, ProcEventInfo& eventInfo);
-        void CallScriptAfterProcHandlers(AuraApplication const* aurApp, ProcEventInfo& eventInfo);
         bool CallScriptEffectProcHandlers(AuraEffect const* aurEff, AuraApplication const* aurApp, ProcEventInfo& eventInfo);
-        void CallScriptAfterEffectProcHandlers(AuraEffect const* aurEff, AuraApplication const* aurApp, ProcEventInfo& eventInfo);
 
         std::list<AuraScript*> m_loadedScripts;
         int32 m_aura_amount;

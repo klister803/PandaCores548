@@ -340,7 +340,7 @@ Unit::~Unit()
             m_currentSpells[i] = NULL;
         }
 
-    _DeleteRemovedAuras();
+    //_DeleteRemovedAuras();
 
     delete m_charmInfo;
     delete movespline;
@@ -17492,10 +17492,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         if (!sConditionMgr->IsObjectMeetToConditions(condInfo, conditions))
             continue;
 
-        // AuraScript Hook
-        if (!triggerData.aura->CallScriptCheckProcHandlers(itr->second, eventInfo))
-            continue;
-
         // Triggered spells not triggering additional spells
         bool triggered = !(spellProto->AttributesEx3 & SPELL_ATTR3_CAN_PROC_WITH_TRIGGERED) ?
             (procExtra & PROC_EX_INTERNAL_TRIGGERED && !(procFlag & PROC_FLAG_DONE_TRAP_ACTIVATION)) : false;
@@ -17575,18 +17571,14 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
 
         AuraApplication const* aurApp = i->aura->GetApplicationOfTarget(GetGUID());
 
-        bool prepare = i->aura->CallScriptPrepareProcHandlers(aurApp, eventInfo);
-
         // For players set spell cooldown if need
         double cooldown = spellInfo->procTimeRec / 1000.0;
-        if (prepare && GetTypeId() == TYPEID_PLAYER && i->spellProcEvent && G3D::fuzzyGt(i->spellProcEvent->cooldown, 0.0))
+        if (GetTypeId() == TYPEID_PLAYER && i->spellProcEvent && G3D::fuzzyGt(i->spellProcEvent->cooldown, 0.0))
             cooldown = i->spellProcEvent->cooldown;
 
         // Note: must SetCantProc(false) before return
         //if (spellInfo->AttributesEx3 & SPELL_ATTR3_DISABLE_PROC)
             //SetCantProc(true);
-
-        i->aura->CallScriptProcHandlers(aurApp, eventInfo);
 
         // This bool is needed till separate aura effect procs are still here
         bool handled = false;
@@ -17932,13 +17924,12 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                         takeCharges = true;
                         break;
                 } // switch (triggeredByAura->GetAuraType())
-                i->aura->CallScriptAfterEffectProcHandlers(triggeredByAura, aurApp, eventInfo);
                 m_triggeredEffect.erase(triggeredByAura);
             } // for (uint8 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
         } // if (!handled)
 
         // Remove charge (aura can be removed by triggers)
-        if (prepare && useCharges && takeCharges && i->aura->GetId() != 324 // Custom MoP Script - Hack Fix for Lightning Shield and Hack Fix for Arcane Charges
+        if (useCharges && takeCharges && i->aura->GetId() != 324 // Custom MoP Script - Hack Fix for Lightning Shield and Hack Fix for Arcane Charges
             && !(i->aura->GetId() == 16246 && procSpell && procSpell->Id == 8004))
         {
             // Hack Fix for Tiger Strikes
@@ -17957,8 +17948,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             if(isModifier && (procExtra & PROC_EX_ON_CAST)) // same proc use charge on cast can take only one aura, test fix
                 return;
         }
-
-        i->aura->CallScriptAfterProcHandlers(aurApp, eventInfo);
 
         //if (spellInfo->AttributesEx3 & SPELL_ATTR3_DISABLE_PROC)
             //SetCantProc(false);
