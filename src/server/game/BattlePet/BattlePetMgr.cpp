@@ -181,8 +181,10 @@ void BattlePetMgr::SendUpdatePets(std::list<uint64> &updates, bool added)
 {
     ByteBuffer bitData;
     ByteBuffer byteData;
+    int32 realCount = updates.size();
 
     bitData.WriteBit(added);
+    uint32 countPos = bitData.bitwpos();
     bitData.WriteBits(updates.size(), 19);
 
     for (std::list<uint64>::iterator i = updates.begin(); i != updates.end(); ++i)
@@ -190,7 +192,15 @@ void BattlePetMgr::SendUpdatePets(std::list<uint64> &updates, bool added)
         PetJournalInfo* petInfo = GetPetInfoByPetGUID((*i));
 
         if (!petInfo || petInfo->GetState() == STATE_DELETED)
+        {
+            --realCount;
+
+            // impossible, but....not sended packet in this case
+            if (realCount < 0)
+                return;
+
             continue;
+        }
 
         ObjectGuid guid = (*i);
         uint8 len = petInfo->GetCustomName() == "" ? 0 : petInfo->GetCustomName().length();
@@ -240,78 +250,13 @@ void BattlePetMgr::SendUpdatePets(std::list<uint64> &updates, bool added)
     }
 
     bitData.FlushBits();
+    // prevent damage update packet
+    if (updates.size() != realCount)
+        bitData.PutBits<uint32>(countPos, realCount, 19);
 
     WorldPacket data(SMSG_BATTLE_PET_UPDATES);
     data.append(bitData);
     data.append(byteData);
-
-    /*WorldPacket data(SMSG_BATTLE_PET_UPDATES);
-    data.WriteBit(added);
-    data.WriteBits(updates.size(), 19);                              // placeholder, count of update pets
-    for (std::list<uint64>::iterator i = updates.begin(); i != updates.end(); ++i)
-    {
-        PetJournalInfo* petInfo = GetPetInfoByPetGUID((*i));
-
-        if (!petInfo || petInfo->GetState() == STATE_DELETED)
-            continue;
-
-        ObjectGuid guid = (*i);
-        uint8 len = petInfo->GetCustomName() == "" ? 0 : petInfo->GetCustomName().length();
-
-        data.WriteBits(len, 7);                         // custom name length
-        data.WriteBit(!petInfo->GetFlags());            // !hasFlags
-        data.WriteBit(1);                               // !hasUnk
-        data.WriteGuidMask<2>(guid);
-        data.WriteBit(!petInfo->GetBreedID());          // !hasBreed
-        data.WriteBit(!petInfo->GetQuality());          // !hasQuality
-        data.WriteGuidMask<1, 6, 3, 7, 0, 4, 5>(guid);
-        data.WriteBit(0);                               // hasGuid
-
-        /*if (hasGuid)
-        {
-            data.WriteGuidMask<7, 0, 6, 2, 1, 3, 5, 4>(petGuid2);
-        }
-    }
-
-    for (std::list<uint64>::iterator i = updates.begin(); i != updates.end(); ++i)
-    {
-        PetJournalInfo* petInfo = GetPetInfoByPetGUID((*i));
-
-        if (!petInfo || petInfo->GetState() == STATE_DELETED)
-            continue;
-
-        ObjectGuid guid = (*i);
-        uint8 len = petInfo->GetCustomName() == "" ? 0 : petInfo->GetCustomName().length();
-
-        /*if (hasGuid)
-        {
-            data << uint32(0); // unk
-            data.WriteGuidBytes<0, 1, 2, 3, 4, 5, 7, 6>(petGuid2);
-            data << uint32(0); // unk1
-        }
-
-        data << uint16(petInfo->GetLevel());                  // level
-        data << uint32(petInfo->GetMaxHealth());              // total health
-        if (petInfo->GetFlags())
-            data << uint16(petInfo->GetFlags());              // flags
-        if (petInfo->GetQuality())
-            data << uint8(petInfo->GetQuality());             // quality
-        data.WriteGuidBytes<3>(guid);
-        data << uint32(petInfo->GetCreatureEntry());          // creature ID
-        data << uint32(petInfo->GetSpeed());                  // speed
-        if (petInfo->GetBreedID())
-            data << uint16(petInfo->GetBreedID());            // breed ID
-        data << uint32(petInfo->GetHealth());                 // remaining health
-        data << uint32(petInfo->GetDisplayID());              // display ID
-        if (len > 0)
-            data.WriteString(petInfo->GetCustomName());       // custom name
-        data.WriteGuidBytes<5, 4, 7>(guid);
-        data << uint32(petInfo->GetSpeciesID());              // species ID
-        data.WriteGuidBytes<2, 6>(guid);
-        data << uint16(petInfo->GetXP());                     // experience
-        data.WriteGuidBytes<0, 1>(guid);
-        data << uint32(petInfo->GetPower());                  // power
-    }*/
 
     m_player->GetSession()->SendPacket(&data);
 }
