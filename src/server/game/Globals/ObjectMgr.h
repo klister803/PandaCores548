@@ -1238,6 +1238,7 @@ class ObjectMgr
         // Battle Pet System
         void LoadBattlePetXPForLevel();
         void LoadBattlePetBreedsToSpecies();
+        void LoadBattlePetNpcTeamMember();
 
         BannedAddon const* GetBannedAddon(uint32 Id)
         {
@@ -1594,6 +1595,7 @@ class ObjectMgr
 
         // Battle Pets
         const std::vector<uint32>* GetPossibleBreedsForSpecies(uint32 speciesID) const;
+        const std::vector<uint32>* GetBattlePetTeamMembers(uint32 creatureEntry) const;
 
         //Get count from difficulty
         uint8 GetCountFromDifficulty(uint8 spawnmode)
@@ -1715,6 +1717,9 @@ class ObjectMgr
 
         typedef std::map<uint32, std::vector<uint32> > BattlePetPossibleBreedsToSpecies;
         BattlePetPossibleBreedsToSpecies _battlePetPossibleBreedsToSpecies;
+
+        typedef std::map<uint32, std::vector<uint32> > BattlePetNpcTeamMembers;
+        BattlePetNpcTeamMembers _battlePetNpcTeamMembers;
 
         uint32 _skipUpdateCount;
 

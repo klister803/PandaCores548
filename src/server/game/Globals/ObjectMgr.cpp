@@ -9708,6 +9708,51 @@ const std::vector<uint32>* ObjectMgr::GetPossibleBreedsForSpecies(uint32 species
     return itr != _battlePetPossibleBreedsToSpecies.end() ? &(itr->second) : NULL;
 }
 
+void ObjectMgr::LoadBattlePetNpcTeamMember()
+{
+    // Loading xp per level data
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Battle Pet Npc Team Members Data...");
+
+    // clear container
+    _battlePetNpcTeamMembers.clear();
+
+    QueryResult result = WorldDatabase.Query("SELECT npcEntry, slot0, slot1, slot2 FROM battle_pet_npc_team_member");
+
+    if (!result)
+    {
+        sLog->outError(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 possible npc team members definitions. DB table `battle_pet_npc_team_member` is empty.");
+        return;
+    }
+
+    uint32 count = 0;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 npcEntry = fields[0].GetUInt32();
+        std::vector<uint32> slots;
+
+        for (uint8 i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
+        {
+            uint32 slot = fields[i+1].GetUInt32();
+            slots.push_back(slot);
+        }
+
+        _battlePetNpcTeamMembers[npcEntry] = slots;
+        ++count;
+
+    } while (result->NextRow());
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u possible npc team members definitions.", count);
+}
+
+const std::vector<uint32>* ObjectMgr::GetBattlePetTeamMembers(uint32 creatureEntry) const
+{
+    BattlePetNpcTeamMembers::const_iterator itr = _battlePetNpcTeamMembers.find(creatureEntry);
+    return itr != _battlePetNpcTeamMembers.end() ? &(itr->second) : NULL;
+}
+
 void ObjectMgr::LoadAreaTriggerActionsAndData()
 {
     _areaTriggerData.clear();
