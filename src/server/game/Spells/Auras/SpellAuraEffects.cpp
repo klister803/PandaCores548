@@ -8824,168 +8824,17 @@ void AuraEffect::HandleProgressBar(AuraApplication const* aurApp, uint8 mode, bo
         return;
     }
 
-    uint32 startPower = 0;
-    uint32 maxPower = 0;
+    UnitPowerBarEntry const * entry = sUnitPowerBarStore.LookupEntry(GetMiscValue());
 
-    // Unknow max misc : 116
+    if (!entry)
+        return;
 
-    switch (GetMiscValue())
-    {
-        case 80:
-            maxPower = 3;
-            break;
-        case 32:
-        case 89:
-            maxPower = 4;
-            break;
-        case 30:
-        case 34:
-        case 90:
-            maxPower = 5;
-            break;
-        case 33:
-        case 35:
-            maxPower = 7;
-            break;
-        case 88:
-            maxPower = 10;
-            break;
-        case 117:
-            maxPower = 25;
-            break;
-        case 129:
-        case 133:
-            maxPower = 30;
-            break;
-        case 29:
-            maxPower = 34;
-            break;
-        case 114:
-        case 203:
-            maxPower = 40;
-            break;
-        case 64:
-            maxPower = 50;
-            break;
-        case 84:
-            maxPower = 60;
-            break;
-        case 137:
-        case 149:
-        case 195:
-            maxPower = 90;
-            break;
-        case 259: //
-        case 267: //Spoils of Pandaria
-            maxPower = 50;
-            break;
-        case 245:
-            maxPower = 160;
-            break;
-        case 23:
-        case 37:
-        case 39:
-        case 61:
-        case 65:
-        case 68:
-        case 69:
-        case 72:
-        case 78:
-        case 91:
-        case 93:
-        case 94:
-        case 103:
-        case 107:
-        case 110:
-        case 113:
-        case 134:
-        case 148:
-        case 151:
-        case 165:
-        case 176:
-        case 178:
-        case 179:
-        case 183:
-        case 199:
-        case 204:
-        case 205:
-        case 206:
-        case 207:
-        default:
-            maxPower = 100;
-            break;
-        case 258:
-            maxPower = 101;
-            break;
-        case 63:
-            maxPower = 105;
-            break;
-        case 87:
-            maxPower = 120;
-            break;
-        case 66:
-        case 67:
-            maxPower = 180;
-            break;
-        case 24:
-            maxPower = 250;
-            break;
-        case 26:
-            maxPower = 300;
-            break;
-        case 158:
-            maxPower = 700;
-            break;
-        case 36:
-            maxPower = 35000;
-            break;
-        case 244 :
-            maxPower = 200;
-            break;
-    }
+    uint32 startPower = entry->startPower;
+    uint32 maxPower = entry->maxPower;
 
-    switch (GetMiscValue())
-    {
-        case 89:
-            startPower = 4;
-            break;
-        case 34:
-        case 90:
-        case 204:
-        case 205:
-        //case 206:
-        case 207:
-            startPower = 5;
-            break;
-        case 258:
-            startPower = 75;
-            break;
-        case 88:
-        case 103:
-            startPower = 10;
-            break;
-        case 64:
-            startPower = 25;
-            break;
-        case 87:
-        case 93:
-        case 148:
-        case 151:
-        case 176:
-        case 183:
-            startPower = 50;
-            break;
-        case 178:
-            startPower = 100;
-            break;
-        case 259: //
-        case 267: //Spoils of Pandaria
-            startPower = 0;
-            break;
-        default:
-            startPower = 0;
-            break;
-    }
+    // unique strange behavoir - with value 100 bar is lost
+    if (GetMiscValue() == 258)
+        maxPower = 101;
 
     target->SetMaxPower(POWER_ALTERNATE_POWER, maxPower);
     target->SetPower(POWER_ALTERNATE_POWER, startPower);
