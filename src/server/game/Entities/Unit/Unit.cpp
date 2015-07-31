@@ -3300,6 +3300,7 @@ void Unit::_DeleteRemovedAuras()
 {
     while (!m_removedAuras.empty())
     {
+        delete m_removedAuras.front();
         m_removedAuras.pop_front();
     }
 }

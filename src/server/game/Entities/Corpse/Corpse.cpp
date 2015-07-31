@@ -60,7 +60,7 @@ void Corpse::RemoveFromWorld()
     if (IsInWorld())
         sObjectAccessor->RemoveObject(this);
 
-    Object::RemoveFromWorld();
+    WorldObject::RemoveFromWorld();
 }
 
 bool Corpse::Create(uint32 guidlow, Map* map)
