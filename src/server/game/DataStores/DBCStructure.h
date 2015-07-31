@@ -2533,6 +2533,27 @@ struct TransportAnimationEntry
     //float     zOffs;                                      // 5
     //uint32    unk;                                        // 6
 };
+
+struct UnitPowerBarEntry
+{
+    uint32 ID;                     // 0
+    uint32 minPower;               // 1
+    uint32 maxPower;               // 2
+    uint32 startPower;             // 3
+    uint32 centerPower;            // 4
+    float regenerationPeace;       // 5
+    float regenerationCombat;      // 6
+    uint32 barType;                // 7
+    //uint32 fileDataID[6];        // 8-13
+    //uint32 color[6];             // 14-19
+    uint32 flags;                  // 20
+    //char* name;
+    //char* costString;
+    //char* errorString;
+    //char* tooltipString;
+    // float
+    // float
+};
  
 #define MAX_VEHICLE_SEATS 8
 

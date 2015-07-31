@@ -200,6 +200,7 @@ const char TaxiPathNodeEntryfmt[]="diiifffiiii";
 const char TeamContributionPointsfmt[]="df";
 const char TotemCategoryEntryfmt[]="nxii";
 const char TransportAnimationEntryfmt[]="diixxxx";
+const char UnitPowerBarEntryfmt[] = "niiiiffixxxxxxxxxxxxixxxxxx";
 const char VehicleEntryfmt[]="nixffffiiiiiiiifffffffffffffffssssfifiixx";
 const char VehicleSeatEntryfmt[]="niiffffffffffiiiiiifffffffiiifffiiiiiiiffiiiixxxxxxxxxxxxxxxxxxxxx";
 const char WMOAreaTableEntryfmt[]="niiixxxxxiixxxx";
