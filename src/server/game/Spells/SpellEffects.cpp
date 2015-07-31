@@ -3750,7 +3750,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
 
                     summon = m_caster->GetMap()->SummonCreature(petInfo->GetCreatureEntry(), *destTarget, properties, duration, m_originalCaster, m_targets.GetUnitTargetGUID(), m_spellInfo->Id);
 
-                    if (!summon || !summon->HasUnitTypeMask(UNIT_MASK_MINION) || summon->GetCreatureTemplate()->type != CREATURE_TYPE_WILD_PET)
+                    if (!summon || !summon->HasUnitTypeMask(UNIT_MASK_MINION))
                         return;
 
                     // summoner operation fields
