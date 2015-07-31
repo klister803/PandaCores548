@@ -247,6 +247,9 @@ public:
                         if (!atlist.empty())
                             for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
                                 (*itr)->RemoveFromWorld();
+                        OfflineWorldState();
+                        lastcount = 270;
+                        newcount = 0;
                         instance->SetBossState(DATA_SPOILS_OF_PANDARIA, NOT_STARTED);
                     }
                     else
@@ -256,13 +259,10 @@ public:
                         {
                             if (Player* pl = i->getSource())
                             {
-                                if (pl->isAlive())
-                                {
-                                    newcount = lastcount ? lastcount - 1 : 0;
-                                    pl->SendUpdateWorldState(8431, 1);
-                                    pl->SendUpdateWorldState(8381, newcount);
-                                    lastcount = newcount;
-                                }
+                                newcount = lastcount ? lastcount - 1 : 0;
+                                pl->SendUpdateWorldState(8431, 1);
+                                pl->SendUpdateWorldState(8381, newcount);
+                                lastcount = newcount;
                             }
                         }
                         if (!newcount)
@@ -805,7 +805,7 @@ public:
     }
 };
 
-//220823,
+//220823
 class go_ssop_spoils : public GameObjectScript
 {
 public:
