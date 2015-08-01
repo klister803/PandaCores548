@@ -6689,9 +6689,7 @@ void Player::RepopAtGraveyard()
     // note: this can be called also when the player is alive
     // for example from WorldSession::HandleMovementOpcodes
 
-    AreaTableEntry const* zone = GetAreaEntryByAreaID(GetAreaId());
-    
-    if (!zone)
+    if (!vmapInfo.atEntry)
     {
         sLog->outInfo(LOG_FILTER_PLAYER, "Joueur %u dans une zone nulle; area id : %u", GetGUIDLow(), GetAreaId());
         return;
@@ -6732,12 +6730,12 @@ void Player::RepopAtGraveyard()
     }
     // Do it only if where is no grave or transport!
     // Such zones are considered unreachable as a ghost and the player must be automatically revived
-    else if ((!isAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY) || GetTransport() || GetPositionZ() < (zone ? zone->MaxDepth : -500.0f))
+    else if ((!isAlive() && vmapInfo.atEntry->flags & AREA_FLAG_NEED_FLY) || GetTransport() || GetPositionZ() < vmapInfo.atEntry->MaxDepth)
     {
         ResurrectPlayer(0.5f);
         SpawnCorpseBones();
     }
-    //else if (GetPositionZ() < zone->MaxDepth)
+    //else if (GetPositionZ() < vmapInfo.atEntry->MaxDepth)
         //TeleportTo(m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, GetOrientation());
 }
 

@@ -2204,8 +2204,7 @@ void WorldSession::HandleHearthAndResurrect(WorldPacket& /*recvData*/)
     if (_player->isInFlight())
         return;
 
-    AreaTableEntry const* atEntry = GetAreaEntryByAreaID(_player->GetAreaId());
-    if (!atEntry || !(atEntry->flags & AREA_FLAG_WINTERGRASP_2))
+    if (!_player->vmapInfo.atEntry || !(_player->vmapInfo.atEntry->flags & AREA_FLAG_WINTERGRASP_2))
         return;
 
     Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(_player->GetZoneId());

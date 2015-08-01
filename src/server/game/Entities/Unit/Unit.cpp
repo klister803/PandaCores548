@@ -3624,12 +3624,12 @@ bool Unit::IsUnderWater() const
 
 void Unit::UpdateVmapInfo(Map* m, float x, float y, float z)
 {
-    if (!isPet() && !IsVehicle())
-        return;
-
     m->getVmapInfo(x, y, z, &vmapInfo);
     m_zoneUpdateId = vmapInfo.zoneid;
     m_areaUpdateId = vmapInfo.areaid;
+
+    if (!isPet() && !IsVehicle())
+        return;
 
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit::UpdateVmapInfo m_zoneUpdateId %i m_areaUpdateId %i m_saveZoneUpdateId %i m_saveAreaUpdateId %i", m_zoneUpdateId, m_areaUpdateId, m_saveZoneUpdateId, m_saveAreaUpdateId);
 
@@ -14093,13 +14093,13 @@ void Unit::UpdateMount()
             }
             else
             {
-                AreaTableEntry const* entry;
+                /*AreaTableEntry const* entry;
                 entry = GetAreaEntryByAreaID(GetAreaId());
                 if (!entry)
-                    entry = GetAreaEntryByAreaID(GetZoneId());
+                    entry = GetAreaEntryByAreaID(GetZoneId());*/
 
-                if (entry)
-                    currentMountFlags = entry->mountFlags;
+                if (vmapInfo.atEntry)
+                    currentMountFlags = vmapInfo.atEntry->mountFlags;
             }
         }
 
