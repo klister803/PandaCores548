@@ -244,7 +244,7 @@ _creatureToMoveLock(false), i_mapEntry (sMapStore.LookupEntry(id)), i_spawnMode(
 m_unloadTimer(0), m_VisibleDistance(DEFAULT_VISIBILITY_DISTANCE),
 m_VisibilityNotifyPeriod(DEFAULT_VISIBILITY_NOTIFY_PERIOD),
 m_activeNonPlayersIter(m_activeNonPlayers.end()), i_gridExpiry(expiry),
-i_scriptLock(false), m_has_item_lvl_cap(m_has_item_lvl_cap)
+i_scriptLock(false)
 {
     m_parentMap = (_parent ? _parent : this);
     for (unsigned int idx=0; idx < MAX_NUMBER_OF_GRIDS; ++idx)
@@ -264,9 +264,6 @@ i_scriptLock(false), m_has_item_lvl_cap(m_has_item_lvl_cap)
 
     if(float _distMap = GetVisibleDistance(TYPE_VISIBLE_MAP, id))
         m_VisibleDistance = _distMap;
-    
-    if (i_spawnMode == CHALLENGE_MODE_DIFFICULTY)
-        m_has_item_lvl_cap = true;
 }
 
 void Map::InitVisibilityDistance()
@@ -3115,7 +3112,7 @@ uint32 Map::ItemLevelCap() const
     if (IsBattlegroundOrArena())
         return sWorld->getIntConfig(CONFIG_PVP_ITEM_LEVEL_CAP);
 
-    if (m_has_item_lvl_cap)
+    if (IsChallenge())
         return MIN_ITEM_LEVEL_CUP;
 
     return 0;

@@ -579,7 +579,6 @@ class Map : public GridRefManager<NGridType>
 
         ACE_Thread_Mutex Lock;
 
-        bool m_has_item_lvl_cap = false;
         MapEntry const* i_mapEntry;
         uint8 i_spawnMode;
         uint8 i_difficulty;
