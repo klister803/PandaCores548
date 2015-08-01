@@ -1149,7 +1149,7 @@ public:
             return false;
 
         // A Pandaren Legend
-        if (pPlayer->GetQuestStatus(33104) != QUEST_STATUS_REWARDED && !pPlayer->GetAchievementMgr().HasAchieved(8325))
+        if (pPlayer->GetQuestStatus(33104) != QUEST_STATUS_REWARDED && !pPlayer->HasAchieved(8325))
             pPlayer->CastSpell(pPlayer, SPELL_BANISHMENT, true);
 
         return false;

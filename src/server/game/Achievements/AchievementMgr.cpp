@@ -484,7 +484,7 @@ void AchievementMgr<T>::ResetAchievementCriteria(AchievementCriteriaTypes type, 
             continue;
 
         // don't update already completed criteria if not forced or achievement already complete
-        if ((IsCompletedCriteria(criteriaTree, achievement, criteria) && !evenIfCriteriaComplete)/* || HasAchieved(achievement->ID)*/)
+        if ((IsCompletedCriteria(criteriaTree, achievement, criteria) && !evenIfCriteriaComplete)/* || HasAchieved(achievement->ID, GetOwner()->GetGUIDLow())*/)
             continue;
 
         if (criteria->timedCriteriaStartType == miscValue1 &&
@@ -657,7 +657,7 @@ void AchievementMgr<Player>::SaveToDB(SQLTransaction& trans)
                     isAccountAchievement = false;
 
                 // store data only for real progress
-                bool hasAchieve = CanDeleteOrUpdateCreteria(achievement->ID, GetOwner()->GetGUIDLow()) || (achievement->parent && !HasAchieved(achievement->parent));
+                bool hasAchieve = HasAchieved(achievement->ID, GetOwner()->GetGUIDLow()) || (achievement->parent && !HasAchieved(achievement->parent, GetOwner()->GetGUIDLow()));
                 if (iter->second.counter != 0 && !hasAchieve)
                 {
                     uint32 achievID = iter->second.achievement ? iter->second.achievement->ID : 0;
@@ -919,7 +919,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
             else
                 achievement = sAchievementMgr->GetAchievement(achievementID);
 
-            bool hasAchieve = !achievement || CanDeleteOrUpdateCreteria(achievement->ID, GetOwner()->GetGUIDLow());
+            bool hasAchieve = !achievement || HasAchieved(achievement->ID, GetOwner()->GetGUIDLow());
             if (hasAchieve)
             {
                 // we will remove already completed criteria
@@ -2602,7 +2602,7 @@ bool AchievementMgr<T>::IsCompletedAchievement(AchievementEntry const* achieveme
         return false;
 
     // already completed and stored
-    if (CanDeleteOrUpdateCreteria(achievement->ID, referencePlayer->GetGUIDLow()))
+    if (HasAchieved(achievement->ID, referencePlayer->GetGUIDLow()))
         return false;
 
     CriteriaProgressMap* progressMap = GetCriteriaProgressMap(achievement->ID);
@@ -2761,7 +2761,7 @@ bool AchievementMgr<T>::SetCriteriaProgress(AchievementEntry const* achievement,
     if (criteriaComplete && achievement && achievement->flags & ACHIEVEMENT_FLAG_SHOW_CRITERIA_MEMBERS && !progress->CompletedGUID)
         progress->CompletedGUID = referencePlayer->GetGUID();
 
-    if (achievement && achievement->parent && !HasAchieved(achievement->parent)) //Don`t send update criteria to client if parent achievment not complete
+    if (achievement && achievement->parent && !HasAchieved(achievement->parent, referencePlayer->GetGUIDLow())) //Don`t send update criteria to client if parent achievment not complete
         return false;
 
     if (achievement && achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
@@ -3236,13 +3236,21 @@ void AchievementMgr<T>::SendAchievementInfo(Player* receiver, uint32 achievement
 template<>
 void AchievementMgr<Player>::SendAchievementInfo(Player* receiver, uint32 /*achievementId = 0 */)
 {
+    if (m_achievementProgress.empty())
+        return;
+
     ObjectGuid guid = GetOwner()->GetGUID();
     ObjectGuid counter;
 
-    size_t numCriteria = m_achievementProgress.size();
+    size_t numCriteria = 0;
+    for (AchievementProgressMap::const_iterator iter = m_achievementProgress.begin(); iter != m_achievementProgress.end(); ++iter)
+        if(CriteriaProgressMap const* progressMap = &iter->second)
+            numCriteria += progressMap->size();
 
     VisibleAchievementPred isVisible;
     size_t numAchievements = std::count_if(m_completedAchievements.begin(), m_completedAchievements.end(), isVisible);
+
+    sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementMgr::SendAchievementInfo numCriteria %i, numAchievements %u", numCriteria, numAchievements);
 
     WorldPacket data(SMSG_RESPOND_INSPECT_ACHIEVEMENTS);
 
@@ -3417,12 +3425,17 @@ void AchievementMgr<Guild>::SendAchievementInfo(Player* receiver, uint32 achieve
 }
 
 template<class T>
-bool AchievementMgr<T>::HasAchieved(uint32 achievementId) const
+bool AchievementMgr<T>::HasAchieved(uint32 achievementId, uint64 guid /*= 0*/) const
 {
-    if (m_completedAchievements.empty())
+    CompletedAchievementMap::const_iterator itr = m_completedAchievements.find(achievementId);
+
+    if (itr == m_completedAchievements.end())
         return false;
-    
-    return m_completedAchievements.find(achievementId) != m_completedAchievements.end();
+
+    if ((*itr).second.isAccountAchievement)
+        return true;
+
+    return GetCriteriaSort() == PLAYER_CRITERIA ? (*itr).second.first_guid == guid : true;
 }
 
 template<class T>
@@ -3443,20 +3456,6 @@ uint64 AchievementMgr<T>::GetFirstAchievedCharacterOnAccount(uint32 achievementI
         return 0LL;
 
     return (*itr).second.first_guid;
-}
-
-template<class T>
-bool AchievementMgr<T>::CanDeleteOrUpdateCreteria(uint32 achievementId, uint64 guid) const
-{
-    CompletedAchievementMap::const_iterator itr = m_completedAchievements.find(achievementId);
-
-    if (itr == m_completedAchievements.end())
-        return false;
-
-    if ((*itr).second.isAccountAchievement)
-        return true;
-
-    return GetCriteriaSort() == PLAYER_CRITERIA ? (*itr).second.first_guid == guid : true;
 }
 
 template<class T>

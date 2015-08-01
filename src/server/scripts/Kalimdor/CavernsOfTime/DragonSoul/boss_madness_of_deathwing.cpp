@@ -861,10 +861,10 @@ class npc_dragon_soul_thrall_1 : public CreatureScript
                     {
                         for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
                             if (Player* player = itr->getSource())
-                                if (!player->GetAchievementMgr().HasAchieved(6115))
+                                if (!player->HasAchieved(6115))
                                     return true;
                     }
-                    else if (!pPlayer->GetAchievementMgr().HasAchieved(6115))
+                    else if (!pPlayer->HasAchieved(6115))
                         return true;
                 }
 
@@ -899,10 +899,10 @@ class npc_dragon_soul_thrall_1 : public CreatureScript
                     {
                         for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
                             if (Player* player = itr->getSource())
-                                if (!player->GetAchievementMgr().HasAchieved(6115))
+                                if (!player->HasAchieved(6115))
                                     return true;
                     }
-                    else if (!pPlayer->GetAchievementMgr().HasAchieved(6115))
+                    else if (!pPlayer->HasAchieved(6115))
                         return true;
                 }
 

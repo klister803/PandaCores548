@@ -1826,7 +1826,7 @@ LfgLockMap const LFGMgr::GetLockedDungeons(uint64 guid)
                 lockData.reqItemLevel = ar->item_level;
                 lockData.status = LFG_LOCKSTATUS_TOO_LOW_GEAR_SCORE;
             }
-            else if (ar->achievement && !player->GetAchievementMgr().HasAchieved(ar->achievement))
+            else if (ar->achievement && !player->HasAchieved(ar->achievement))
                 lockData.status = LFG_LOCKSTATUS_MISSING_ACHIEVEMENT;
             else if (player->GetTeam() == ALLIANCE && ar->quest_A && !player->GetQuestRewardStatus(ar->quest_A))
                 lockData.status = LFG_LOCKSTATUS_QUEST_NOT_COMPLETED;

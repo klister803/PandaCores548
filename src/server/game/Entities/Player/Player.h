@@ -3092,6 +3092,7 @@ class Player : public Unit, public GridObject<Player>
         AchievementMgr<Player>& GetAchievementMgr() { return m_achievementMgr; }
         AchievementMgr<Player> const& GetAchievementMgr() const { return m_achievementMgr; }
         void UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, uint32 miscValue3 = 0, Unit* unit = NULL, bool ignoreGroup = false);
+        bool HasAchieved(uint32 achievementId) const;
         void CompletedAchievement(AchievementEntry const* entry);
         uint32 GetAchievementPoints() const;
         bool CanUpdateCriteria(uint32 criteriaTreeId, uint32 recursTree = 0) const { return true; }

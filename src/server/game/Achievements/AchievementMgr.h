@@ -271,10 +271,9 @@ class AchievementMgr
         void SendAllAchievementData(Player* receiver);
         void SendAllAccountCriteriaData(Player* receiver);
         void SendAchievementInfo(Player* receiver, uint32 achievementId = 0);
-        bool HasAchieved(uint32 achievementId) const;
+        bool HasAchieved(uint32 achievementId, uint64 guid = 0) const;
         bool HasAccountAchieved(uint32 achievementId) const;
         uint64 GetFirstAchievedCharacterOnAccount(uint32 achievementId) const;
-        bool CanDeleteOrUpdateCreteria(uint32 achievementId, uint64 guid) const;
         T* GetOwner() const { return _owner; }
 
         void UpdateTimedAchievements(uint32 timeDiff);

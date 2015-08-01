@@ -21166,7 +21166,7 @@ bool Player::Satisfy(AccessRequirement const* ar, uint32 target_map, bool report
 
         uint32 missingAchievement = 0;
         if (checkAchievement)
-            if (!leader || !leader->GetAchievementMgr().HasAchieved(checkAchievement))
+            if (!leader || !leader->HasAchieved(checkAchievement))
                 missingAchievement = checkAchievement;
 
         Difficulty target_difficulty = GetDifficulty(mapEntry->IsRaid());
@@ -28421,13 +28421,18 @@ void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 mis
         guild->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, this);
 
     // Quest "A Test of Valor"
-    if (GetAchievementMgr().HasAchieved(8030) || GetAchievementMgr().HasAchieved(8031))
+    if (HasAchieved(8030) || HasAchieved(8031))
         KilledMonsterCredit(69145, 0);
 }
 
 void Player::CompletedAchievement(AchievementEntry const* entry)
 {
     GetAchievementMgr().CompletedAchievement(entry, this);
+}
+
+bool Player::HasAchieved(uint32 achievementId) const
+{
+    return GetAchievementMgr().HasAchieved(achievementId, GetGUIDLow());
 }
 
 uint32 Player::GetAchievementPoints() const

@@ -45,8 +45,8 @@ bool BattlePetMgr::SlotIsLocked(uint8 index)
     switch (index)
     {
         case 0: locked = !m_player->HasSpell(119467); break;
-        case 1: locked = !m_player->GetAchievementMgr().HasAchieved(7433), false; break;
-        case 2: locked = !m_player->GetAchievementMgr().HasAchieved(6566), false; break;
+        case 1: locked = !m_player->HasAchieved(7433), false; break;
+        case 2: locked = !m_player->HasAchieved(6566), false; break;
         default: break;
     }
 

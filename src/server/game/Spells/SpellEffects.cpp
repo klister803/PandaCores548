@@ -2158,7 +2158,7 @@ void Spell::EffectTeleportUnits(SpellEffIndex /*effIndex*/)
                 if (caster->isGameMaster())
                     return;
 
-                if (caster->GetQuestStatus(33104) == QUEST_STATUS_REWARDED || caster->GetAchievementMgr().HasAchieved(8325))
+                if (caster->GetQuestStatus(33104) == QUEST_STATUS_REWARDED || caster->HasAchieved(8325))
                     return;
             }
             break;
