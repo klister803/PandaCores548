@@ -81,12 +81,13 @@ namespace VMAP
 #ifdef VMAP_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "LocationInfoCallback: trying to intersect '%s'", prims[entry].name.c_str());
 #endif
-                if (prims[entry].GetLocationInfo(point, locInfo))
+                if (prims[entry].GetLocationInfo(point, locInfo, aInfo))
                     result = true;
             }
 
             ModelInstance* prims;
             LocationInfo &locInfo;
+            AreaInfo aInfo;
             bool result;
     };
 
@@ -118,10 +119,19 @@ namespace VMAP
         return false;
     }
 
-    bool StaticMapTree::GetLocationInfo(const Vector3 &pos, LocationInfo &info) const
+    bool StaticMapTree::GetLocationInfo(Vector3 &pos, LocationInfo &locInfo, uint32 &flags, int32 &adtId, int32 &rootId, int32 &groupId) const
     {
-        LocationInfoCallback intersectionCallBack(iTreeValues, info);
+        LocationInfoCallback intersectionCallBack(iTreeValues, locInfo);
         iTree.intersectPoint(pos, intersectionCallBack);
+        if (intersectionCallBack.aInfo.result)
+        {
+            flags = intersectionCallBack.aInfo.flags;
+            adtId = intersectionCallBack.aInfo.adtId;
+            rootId = intersectionCallBack.aInfo.rootId;
+            groupId = intersectionCallBack.aInfo.groupId;
+            pos.z = intersectionCallBack.aInfo.ground_Z;
+            return true;
+        }
         return intersectionCallBack.result;
     }
 

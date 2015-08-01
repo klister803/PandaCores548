@@ -1170,8 +1170,6 @@ void Creature::SaveToDB(uint32 mapid, uint32 spawnMask, uint32 phaseMask)
             dynamicflags = 0;
     }
 
-    UpdateZoneAndAreaId();
-
     // data->guid = guid must not be updated at save
     data.id = GetEntry();
     data.mapid = mapid;

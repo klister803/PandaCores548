@@ -1679,7 +1679,7 @@ bool Map::IsOutdoors(float x, float y, float z) const
         return true;
 
     AreaTableEntry const* atEntry = 0;
-    WMOAreaTableEntry const* wmoEntry= GetWMOAreaTableEntryByTripple(rootId, adtId, groupId);
+    WMOAreaTableEntry const* wmoEntry = GetWMOAreaTableEntryByTripple(rootId, adtId, groupId);
     if (wmoEntry)
     {
         #ifdef TRINITY_DEBUG
@@ -1782,7 +1782,10 @@ ZLiquidStatus Map::getLiquidStatus(float x, float y, float z, uint8 ReqLiquidTyp
     float liquid_level = INVALID_HEIGHT;
     float ground_level = INVALID_HEIGHT;
     uint32 liquid_type = 0;
-    if (vmgr->GetLiquidLevel(GetId(), x, y, z, ReqLiquidType, liquid_level, ground_level, liquid_type))
+    uint32 mogpFlags;
+    int32 adtId, rootId, groupId;
+
+    if (vmgr->GetLiquidLevel(GetId(), x, y, z, ReqLiquidType, liquid_level, ground_level, liquid_type, mogpFlags, adtId, rootId, groupId))
     {
         #ifdef TRINITY_DEBUG
         sLog->outDebug(LOG_FILTER_MAPS, "getLiquidStatus(): vmap liquid level: %f ground: %f type: %u", liquid_level, ground_level, liquid_type);
@@ -1860,6 +1863,148 @@ ZLiquidStatus Map::getLiquidStatus(float x, float y, float z, uint8 ReqLiquidTyp
         }
     }
     return result;
+}
+
+void Map::getVmapInfo(float x, float y, float z, VMAPSInfo* vmapInfo) const
+{
+    vmapInfo->Zliquid_status = LIQUID_MAP_NO_WATER;
+    VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
+    float liquid_level = INVALID_HEIGHT;
+    float ground_level = INVALID_HEIGHT;
+    AreaTableEntry const* atEntry = NULL;
+    vmapInfo->atEntry = NULL;
+    vmapInfo->isOutdoors = true;
+    vmapInfo->areaFlag = vmapInfo->liquid_type = vmapInfo->mogpFlags = vmapInfo->adtId = vmapInfo->rootId = vmapInfo->groupId = 0;
+    bool haveAreaInfo = false;
+
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "getVmapInfo() areaid %i zoneid %i", vmapInfo->areaid, vmapInfo->zoneid);
+
+    if (vmgr->GetLiquidLevel(GetId(), x, y, z, MAP_ALL_LIQUIDS, liquid_level, ground_level, vmapInfo->liquid_type, vmapInfo->mogpFlags, vmapInfo->adtId, vmapInfo->rootId, vmapInfo->groupId))
+    {
+        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "getVmapInfo() GetLiquidLevel");
+        if(WMOAreaTableEntry const* wmoEntry = GetWMOAreaTableEntryByTripple(vmapInfo->rootId, vmapInfo->adtId, vmapInfo->groupId))
+        {
+            atEntry = GetAreaEntryByAreaID(wmoEntry->areaId);
+            if(atEntry)
+            {
+                vmapInfo->areaFlag = atEntry->exploreFlag;
+                vmapInfo->isOutdoors = IsOutdoorWMO(vmapInfo->mogpFlags, vmapInfo->adtId, vmapInfo->rootId, vmapInfo->groupId, wmoEntry, atEntry);
+                if(AreaTableEntry const* entry = GetAreaEntryByAreaFlagAndMap(atEntry->exploreFlag, GetId()))
+                {
+                    haveAreaInfo = true;
+                    vmapInfo->atEntry = entry;
+                    vmapInfo->areaid = entry->ID;
+                    vmapInfo->zoneid = (entry->zone != 0) ? entry->zone : entry->ID;
+                }
+            }
+        }
+        //#ifdef TRINITY_DEBUG
+        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "getVmapInfo(): vmap liquid level: %f ground: %f type: %u, mogpFlags %i, adtId %i, rootId %i, groupId %i isOutdoors %i", 
+        //liquid_level, ground_level, vmapInfo->liquid_type, vmapInfo->mogpFlags, vmapInfo->adtId, vmapInfo->rootId, vmapInfo->groupId, vmapInfo->isOutdoors);
+        //#endif
+        // Check water level and ground level
+        if (liquid_level > ground_level && z > ground_level - 2)
+        {
+            // All ok in water -> store data
+            // hardcoded in client like this
+            if (GetId() == 530 && vmapInfo->liquid_type == 2)
+                vmapInfo->liquid_type = 15;
+
+            uint32 liquidFlagType = 0;
+            if (LiquidTypeEntry const* liq = sLiquidTypeStore.LookupEntry(vmapInfo->liquid_type))
+                liquidFlagType = liq->Type;
+
+            if (vmapInfo->liquid_type && vmapInfo->liquid_type < 21)
+            {
+                if (atEntry)
+                {
+                    uint32 overrideLiquid = atEntry->LiquidTypeOverride[liquidFlagType];
+
+                    if (LiquidTypeEntry const* liq = sLiquidTypeStore.LookupEntry(overrideLiquid))
+                    {
+                        vmapInfo->liquid_type = overrideLiquid;
+                        liquidFlagType = liq->Type;
+                    }
+                }
+            }
+
+            vmapInfo->liquid_status.level = liquid_level;
+            vmapInfo->liquid_status.depth_level = ground_level;
+
+            vmapInfo->liquid_status.entry = vmapInfo->liquid_type;
+            vmapInfo->liquid_status.type_flags = 1 << liquidFlagType;
+
+            float delta = liquid_level - z;
+
+            // Get position delta
+            if (delta > 2.0f)                   // Under water
+            {
+                vmapInfo->Zliquid_status = LIQUID_MAP_UNDER_WATER;
+                return;
+            }
+            if (delta > 0.0f)                   // In water
+            {
+                vmapInfo->Zliquid_status = LIQUID_MAP_IN_WATER;
+                return;
+            }
+            if (delta > -0.1f)                   // Walk on water
+            {
+                vmapInfo->Zliquid_status = LIQUID_MAP_WATER_WALK;
+                return;
+            }
+            vmapInfo->Zliquid_status = LIQUID_MAP_ABOVE_WATER;
+            return;
+        }
+    }
+    else
+    {
+        if(WMOAreaTableEntry const* wmoEntry = GetWMOAreaTableEntryByTripple(vmapInfo->rootId, vmapInfo->adtId, vmapInfo->groupId))
+        {
+            atEntry = GetAreaEntryByAreaID(wmoEntry->areaId);
+            if(atEntry)
+            {
+                vmapInfo->isOutdoors = IsOutdoorWMO(vmapInfo->mogpFlags, vmapInfo->adtId, vmapInfo->rootId, vmapInfo->groupId, wmoEntry, atEntry);
+                if(AreaTableEntry const* entry = GetAreaEntryByAreaFlagAndMap(atEntry->exploreFlag, GetId()))
+                {
+                    haveAreaInfo = true;
+                    vmapInfo->atEntry = entry;
+                    vmapInfo->areaid = entry->ID;
+                    vmapInfo->zoneid = (entry->zone != 0) ? entry->zone : entry->ID;
+                }
+            }
+        }
+        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "getVmapInfo() !GetLiquidLevel type: %u, mogpFlags %i, adtId %i, rootId %i, groupId %i isOutdoors %i", 
+        //vmapInfo->liquid_type, vmapInfo->mogpFlags, vmapInfo->adtId, vmapInfo->rootId, vmapInfo->groupId, vmapInfo->isOutdoors);
+    }
+
+    if (GridMap* gmap = const_cast<Map*>(this)->GetGrid(x, y))
+    {
+        LiquidData map_data;
+        ZLiquidStatus map_result = gmap->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &map_data);
+        // Not override LIQUID_MAP_ABOVE_WATER with LIQUID_MAP_NO_WATER:
+        if (map_result != LIQUID_MAP_NO_WATER && (map_data.level > ground_level))
+        {
+            // hardcoded in client like this
+            if (GetId() == 530 && map_data.entry == 2)
+                map_data.entry = 15;
+
+            vmapInfo->liquid_status = map_data;
+            vmapInfo->Zliquid_status = map_result;
+        }
+        if(!haveAreaInfo)
+            vmapInfo->areaFlag = gmap->getArea(x, y);
+    }
+    else if(!haveAreaInfo)
+        vmapInfo->areaFlag = GetAreaFlagByMapId(GetId());
+
+    if(!haveAreaInfo)
+    {
+        AreaTableEntry const* entry = GetAreaEntryByAreaFlagAndMap(vmapInfo->areaFlag, GetId());
+        vmapInfo->atEntry = entry;
+        vmapInfo->areaid = entry ? entry->ID : 0;
+        vmapInfo->zoneid = entry ? ((entry->zone != 0) ? entry->zone : entry->ID) : 0;
+    }
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "getVmapInfo() GridMap areaid %i zoneid %i haveAreaInfo %i", vmapInfo->areaid, vmapInfo->zoneid, haveAreaInfo);
 }
 
 float Map::GetWaterLevel(float x, float y) const

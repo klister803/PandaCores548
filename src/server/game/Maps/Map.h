@@ -152,6 +152,28 @@ struct LiquidData
     float  depth_level;
 };
 
+struct VMAPSInfo
+{
+    VMAPSInfo()
+    {
+        isOutdoors = true;
+        areaFlag = 0;
+        liquid_type = 0;
+        mogpFlags = areaid = zoneid = 0;
+        adtId = rootId = groupId = 0;
+        Zliquid_status = LIQUID_MAP_NO_WATER;
+        atEntry = NULL;
+    }
+    bool isOutdoors;
+    uint16 areaFlag;
+    uint32 liquid_type;
+    uint32 mogpFlags, areaid, zoneid;
+    int32 adtId, rootId, groupId;
+    ZLiquidStatus Zliquid_status;
+    LiquidData liquid_status;
+    AreaTableEntry const* atEntry;
+};
+
 class GridMap
 {
     uint32  _flags;
@@ -321,6 +343,7 @@ class Map : public GridRefManager<NGridType>
         float GetVmapHeight(float x, float y, float z) const;
 
         ZLiquidStatus getLiquidStatus(float x, float y, float z, uint8 ReqLiquidType, LiquidData* data = 0) const;
+        void getVmapInfo(float x, float y, float z, VMAPSInfo* vmapInfo) const;
 
         uint16 GetAreaFlag(float x, float y, float z, bool *isOutdoors=0) const;
         bool GetAreaInfo(float x, float y, float z, uint32 &mogpflags, int32 &adtId, int32 &rootId, int32 &groupId) const;
