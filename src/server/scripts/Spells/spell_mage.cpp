@@ -747,14 +747,31 @@ class spell_mage_nether_tempest : public SpellScriptLoader
 
                     for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                     {
-                        GetCaster()->CastSpell(*itr, SPELL_MAGE_NETHER_TEMPEST_DIRECT_DAMAGE, true);
-                        GetCaster()->CastSpell(*itr, SPELL_MAGE_NETHER_TEMPEST_VISUAL, true);
+                        pCaster->CastSpell(*itr, SPELL_MAGE_NETHER_TEMPEST_DIRECT_DAMAGE, true);
+                        pCaster->CastSpell(*itr, SPELL_MAGE_NETHER_TEMPEST_VISUAL, true);
                         GetTarget()->CastSpell(*itr, SPELL_MAGE_NETHER_TEMPEST_MISSILE, true);
                     }
 
-                    if (GetCaster()->HasAura(SPELL_MAGE_BRAIN_FREEZE))
-                        if (roll_chance_i(10))
-                            GetCaster()->CastSpell(GetCaster(), SPELL_MAGE_BRAIN_FREEZE_TRIGGERED, true);
+                    if (pCaster->HasAura(SPELL_MAGE_BRAIN_FREEZE))
+                    {
+                        uint64 procTarget = 0;
+                        int32 maxDuration = 0;
+
+                        for (std::set<uint64>::iterator iter = pCaster->m_unitsHasCasterAura.begin(); iter != pCaster->m_unitsHasCasterAura.end(); ++iter)
+                        {
+                            if (Unit* _target = ObjectAccessor::GetUnit(*pCaster, *iter))
+                                if (Aura* aura = _target->GetAura(114923, pCaster->GetGUID()))
+                                    if (aura->GetDuration() >= maxDuration)
+                                    {
+                                        maxDuration = aura->GetDuration();
+                                        procTarget = *iter;
+                                    }
+                        }
+
+                        if (procTarget == GetTarget()->GetGUID())
+                            if (irand(0, 10000) < 833)
+                                pCaster->CastSpell(pCaster, SPELL_MAGE_BRAIN_FREEZE_TRIGGERED, true);
+                    }
                 }
             }
 
