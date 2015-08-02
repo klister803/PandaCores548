@@ -2148,9 +2148,9 @@ void Map::RemoveAllObjectsInRemoveList()
     {
         std::set<WorldObject*>::iterator itr = i_objectsToRemove.begin();
         WorldObject* obj = *itr;
-        volatile uint32 entryorguid = obj->GetTypeId() == TYPEID_PLAYER ? obj->GetGUIDLow() : obj->GetEntry();
-        volatile uint32 mapId = GetId();
-        volatile uint32 instanceId = GetInstanceId();
+        //volatile uint32 entryorguid = obj->GetTypeId() == TYPEID_PLAYER ? obj->GetGUIDLow() : obj->GetEntry();
+        //volatile uint32 mapId = GetId();
+        //volatile uint32 instanceId = GetInstanceId();
 
         switch (obj->GetTypeId())
         {
@@ -2178,8 +2178,8 @@ void Map::RemoveAllObjectsInRemoveList()
             // make sure that like sources auras/etc removed before destructor start
             obj->ToCreature()->CleanupsBeforeDelete();
             RemoveFromMap(obj->ToCreature(), true);
-            volatile uint32 appliedAurasCount = obj->ToUnit()->GetAppliedAuras().size();
-            volatile uint32 ownedAurasCount = obj->ToUnit()->GetOwnedAuras().size();
+            //volatile uint32 appliedAurasCount = obj->ToUnit()->GetAppliedAuras().size();
+            //volatile uint32 ownedAurasCount = obj->ToUnit()->GetOwnedAuras().size();
             break;
         }
         default:
