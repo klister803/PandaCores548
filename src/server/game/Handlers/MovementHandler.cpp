@@ -184,6 +184,12 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     // mount allow check
     if (!allowMount || (GetPlayer()->GetMapId() == 530 && GetPlayer()->GetZoneId() == 0)) //530 - uwow event map
         _player->RemoveAurasByType(SPELL_AURA_MOUNTED);
+
+    // update zone immediately, otherwise leave channel will cause crash in mtmap
+    uint32 newzone, newarea;
+    GetPlayer()->GetZoneAndAreaId(newzone, newarea);
+    GetPlayer()->UpdateZone(newzone, newarea);
+
     // honorless target
     if (GetPlayer()->pvpInfo.inHostileArea)
         GetPlayer()->CastSpell(GetPlayer(), 2479, true);
@@ -229,8 +235,12 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)
 
     plMover->UpdatePosition(dest, true);
 
+    uint32 newzone, newarea;
+    plMover->GetZoneAndAreaId(newzone, newarea);
+    plMover->UpdateZone(newzone, newarea);
+
     // new zone
-    if (old_zone != plMover->GetZoneId())
+    if (old_zone != newzone)
     {
         // honorless target
         if (plMover->pvpInfo.inHostileArea)
@@ -415,7 +425,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
         // movement anticheat
         plrMover->m_anti_JumpCount = 0;
         plrMover->m_anti_JumpBaseZ = 0;
-        if(!plrMover->vmapInfo.Zliquid_status)
+        if(!plrMover->Zliquid_status)
             plrMover->HandleFall(movementInfo);
     }
 
@@ -599,7 +609,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                     cClientTimeDelta = 0;
                 const float time_delta = cClientTimeDelta < 1500 ? float(cClientTimeDelta)/1000.0f : 1.5f; // normalize time - 1.5 second allowed for heavy loaded server
 
-                const float tg_z = (real_delta != 0 && !fly_auras && !plrMover->vmapInfo.Zliquid_status) ? (pow(delta_z, 2) / real_delta) : -99999; // movement distance tangents
+                const float tg_z = (real_delta != 0 && !fly_auras && !plrMover->Zliquid_status) ? (pow(delta_z, 2) / real_delta) : -99999; // movement distance tangents
 
                 if (current_speed < plrMover->m_anti_Last_HSpeed && plrMover->m_anti_LastSpeedChangeTime == 0)
                     plrMover->m_anti_LastSpeedChangeTime = movementInfo.time + uint32(floor(((plrMover->m_anti_Last_HSpeed / current_speed) * 1500)) + 100); // 100ms above for random fluctuation
@@ -611,7 +621,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
 
                     if(World::GetEnableMvAnticheatDebug())
                         sLog->outError(LOG_FILTER_NETWORKIO, "AC444 out m_anti_JupmTime %u current_speed %f allowed_delta %f real_delta %f fly_auras %u fly_flags %u _vmapHeight %f, _Height %f, ZLiquidStatus %u, opcode[%s]",
-                                        mover->m_anti_JupmTime, current_speed, allowed_delta, real_delta, fly_auras, fly_flags, _vmapHeight, _Height, plrMover->vmapInfo.Zliquid_status, GetOpcodeNameForLogging(opcode).c_str());
+                                        mover->m_anti_JupmTime, current_speed, allowed_delta, real_delta, fly_auras, fly_flags, _vmapHeight, _Height, plrMover->Zliquid_status, GetOpcodeNameForLogging(opcode).c_str());
 
                 if (movementInfo.time > plrMover->m_anti_LastSpeedChangeTime)
                 {
@@ -637,7 +647,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                 }
  
                 // Fly hack checks
-                if (!fly_auras && (fly_flags || ground_Z > 2.3f) && !forvehunit && exeption_fly && !plrMover->vmapInfo.Zliquid_status)
+                if (!fly_auras && (fly_flags || ground_Z > 2.3f) && !forvehunit && exeption_fly && !plrMover->Zliquid_status)
                 {
                     if(World::GetEnableMvAnticheatDebug())
                         sLog->outError(LOG_FILTER_NETWORKIO, "AC2-%s, flight exception. {SPELL_AURA_FLY=[%X]} {SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS=[%X]} {SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK=[%X]} {plrMover->GetVehicle()=[%X]} forvehunit=[%X], opcode[%s]",
@@ -653,7 +663,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                 }
 
                 // Teleport To Plane checks
-                if (!plrMover->vmapInfo.Zliquid_status && movementInfo.pos.GetPositionZ() < 0.0001f && movementInfo.pos.GetPositionZ() > -0.0001f)
+                if (!plrMover->Zliquid_status && movementInfo.pos.GetPositionZ() < 0.0001f && movementInfo.pos.GetPositionZ() > -0.0001f)
                 {
                     if (const Map *map = plrMover->GetMap())
                     {
@@ -709,7 +719,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
         {
             plrMover->UpdateFallInformationIfNeed(movementInfo, opcode);
 
-            float depth = plrMover->vmapInfo.atEntry ? plrMover->vmapInfo.atEntry->MaxDepth : -500.0f;
+            AreaTableEntry const* zone = GetAreaEntryByAreaID(plrMover->GetAreaId());
+            float depth = zone ? zone->MaxDepth : -500.0f;
             if (movementInfo.pos.GetPositionZ() < depth)
             {
                 if (!(plrMover->GetBattleground() && plrMover->GetBattleground()->HandlePlayerUnderMap(_player)))

@@ -6017,13 +6017,15 @@ void Spell::EffectDuel(SpellEffIndex effIndex)
         return;
 
     // Players can only fight a duel in zones with this flag
-    if (caster->vmapInfo.atEntry && !(caster->vmapInfo.atEntry->flags & AREA_FLAG_ALLOW_DUELS))
+    AreaTableEntry const* casterAreaEntry = GetAreaEntryByAreaID(caster->GetAreaId());
+    if (casterAreaEntry && !(casterAreaEntry->flags & AREA_FLAG_ALLOW_DUELS))
     {
         SendCastResult(SPELL_FAILED_NO_DUELING);            // Dueling isn't allowed here
         return;
     }
 
-    if (target->vmapInfo.atEntry && !(target->vmapInfo.atEntry->flags & AREA_FLAG_ALLOW_DUELS))
+    AreaTableEntry const* targetAreaEntry = GetAreaEntryByAreaID(target->GetAreaId());
+    if (targetAreaEntry && !(targetAreaEntry->flags & AREA_FLAG_ALLOW_DUELS))
     {
         SendCastResult(SPELL_FAILED_NO_DUELING);            // Dueling isn't allowed here
         return;

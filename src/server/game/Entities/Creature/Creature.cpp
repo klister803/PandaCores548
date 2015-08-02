@@ -1170,6 +1170,8 @@ void Creature::SaveToDB(uint32 mapid, uint32 spawnMask, uint32 phaseMask)
             dynamicflags = 0;
     }
 
+    UpdateZoneAndAreaId();
+
     // data->guid = guid must not be updated at save
     data.id = GetEntry();
     data.mapid = mapid;
@@ -1270,9 +1272,9 @@ void Creature::SelectLevel(const CreatureTemplate* cinfo)
     if (cinfo->type == CREATURE_TYPE_WILD_PET)
     {
         // random level depends on zone data
-        if (vmapInfo.atEntry)
+        if (AreaTableEntry const * aEntry = GetAreaEntryByAreaID(GetZoneId()))
         {
-            uint8 level_ = urand(vmapInfo.atEntry->m_wildBattlePetLevelMin, vmapInfo.atEntry->m_wildBattlePetLevelMax);
+            uint8 level_ = urand(aEntry->m_wildBattlePetLevelMin, aEntry->m_wildBattlePetLevelMax);
             if (!level_)
                 level_ = level;
 
