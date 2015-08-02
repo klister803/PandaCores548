@@ -1507,20 +1507,27 @@ class spell_mage_living_bomb : public SpellScriptLoader
                 if (!caster)
                     return;
 
-                std::deque<uint64>::iterator curr = std::find(caster->m_livingBombTargets.begin(), caster->m_livingBombTargets.end(), target->GetGUID());
-                if (curr != caster->m_livingBombTargets.end())
-                    caster->m_livingBombTargets.erase(curr);
+                Unit* firsttarget = NULL;
+                uint8 targetCount = 0;
+                int32 minDuration = 12000;
 
-                // Living Bomb can only be at 3 targets at once
-                while (caster->m_livingBombTargets.size() >= 3)
+                for (std::set<uint64>::iterator iter = caster->m_unitsHasCasterAura.begin(); iter != caster->m_unitsHasCasterAura.end(); ++iter)
                 {
-                    if (Unit* toRemove = Unit::GetUnit(*caster, caster->m_livingBombTargets[0]))
-                        toRemove->RemoveAurasDueToSpell(aurEff->GetId(), caster->GetGUID());
-
-                    caster->m_livingBombTargets.pop_front();
+                    if (Unit* _target = ObjectAccessor::GetUnit(*caster, *iter))
+                        if (Aura* aura = _target->GetAura(44457, caster->GetGUID()))
+                        {
+                            if (aura->GetDuration() < minDuration)
+                            {
+                                minDuration = aura->GetDuration();
+                                firsttarget = _target;
+                            }
+                            targetCount++;
+                        }
                 }
 
-                caster->m_livingBombTargets.push_back(target->GetGUID());
+                if (targetCount > 3 && firsttarget)
+                    firsttarget->RemoveAurasDueToSpell(44457, caster->GetGUID());
+
             }
             
             void OnTick(AuraEffect const* aurEff)

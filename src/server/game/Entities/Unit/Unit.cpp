@@ -3873,6 +3873,9 @@ void Unit::_ApplyAura(AuraApplication * aurApp, uint32 effMask)
 
     aura->HandleAuraSpecificMods(aurApp, caster, true, false);
 
+    if (aura->GetCasterGUID() != GetGUID())
+        caster->m_unitsHasCasterAura.insert(GetGUID());
+
     // Epicurean
     if (GetTypeId() == TYPEID_PLAYER &&
         getRace() == RACE_PANDAREN_ALLI ||
@@ -3971,6 +3974,9 @@ void Unit::_UnapplyAura(AuraApplicationMap::iterator &i, AuraRemoveMode removeMo
         caster->ModifyExcludeCasterAuraSpell(aura->GetId(), false);
 
     aura->HandleAuraSpecificMods(aurApp, caster, false, false);
+
+    if (!HasSomeCasterAura(caster->GetGUID()))
+        caster->m_unitsHasCasterAura.erase(GetGUID());
 
     // only way correctly remove all auras from list
     //if (removedAuras != m_removedAurasCount) new aura may be added
@@ -25008,5 +25014,16 @@ void Unit::SendMovementForce(WorldObject* at, float windX, float windY, float wi
         data.WriteGuidBytes<3, 6, 1, 7>(guid);
         ToPlayer()->GetSession()->SendPacket(&data);
     }
+}
+
+bool Unit::HasSomeCasterAura(uint64 guid)
+{
+    for (AuraApplicationMap::const_iterator itr = m_appliedAuras.begin(); itr != m_appliedAuras.end(); ++itr)
+    {
+        if (Aura const* aura = itr->second->GetBase())
+            if (aura->GetCasterGUID() == guid)
+                return true;
+    }
+    return false;
 }
 

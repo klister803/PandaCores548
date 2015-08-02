@@ -2504,7 +2504,9 @@ class Unit : public WorldObject
         void OnRelocated();
         bool onVisibleUpdate() const { return m_VisibilityUpdateTask; }
 
-        std::deque<uint64> m_livingBombTargets;
+        std::set<uint64> m_unitsHasCasterAura;
+
+        bool HasSomeCasterAura(uint64 guid);
 
         void SendDispelFailed(uint64 targetGuid, uint32 spellId, std::list<uint32>& spellList);
         void SendDispelLog(uint64 targetGuid, uint32 spellId, std::list<uint32>& spellList, bool broke, bool stolen);
