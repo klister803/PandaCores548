@@ -10103,16 +10103,19 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
         // Shooting Stars
         case 93399:
         {
-            if (!procSpell)
-                return false;
-
-            if (procSpell->Id != 8921 && procSpell->Id != 93402)
-                return false;
-
             if (GetTypeId() != TYPEID_PLAYER)
                 return false;
 
-            if (!(procEx & PROC_EX_CRITICAL_HIT))
+            float targetCount = 0.0f;
+
+            for (std::set<uint64>::iterator iter = m_unitsHasCasterAura.begin(); iter != m_unitsHasCasterAura.end(); ++iter)
+                if (Unit* _target = ObjectAccessor::GetUnit(*this, *iter))
+                    if (_target->HasAura(8921, GetGUID()) || _target->HasAura(93402, GetGUID()))
+                        targetCount++;
+
+            int32 chance = (30.0f * pow(targetCount, 1.0f / 2.0f) / targetCount) * 100.0f;
+
+            if (irand(0, 10000) > chance)
                 return false;
 
             break;
