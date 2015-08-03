@@ -3873,7 +3873,7 @@ void Unit::_ApplyAura(AuraApplication * aurApp, uint32 effMask)
 
     aura->HandleAuraSpecificMods(aurApp, caster, true, false);
 
-    if (aura->GetCasterGUID() != GetGUID())
+    if (aura->GetCasterGUID() != GetGUID() && caster)
         caster->m_unitsHasCasterAura.insert(GetGUID());
 
     // Epicurean
@@ -3971,12 +3971,14 @@ void Unit::_UnapplyAura(AuraApplicationMap::iterator &i, AuraRemoveMode removeMo
         ModifyAuraState(auraState, false);
 
     if (caster)
+    {
         caster->ModifyExcludeCasterAuraSpell(aura->GetId(), false);
 
-    aura->HandleAuraSpecificMods(aurApp, caster, false, false);
+        aura->HandleAuraSpecificMods(aurApp, caster, false, false);
 
-    if (!HasSomeCasterAura(caster->GetGUID()))
-        caster->m_unitsHasCasterAura.erase(GetGUID());
+        if (!HasSomeCasterAura(caster->GetGUID()))
+            caster->m_unitsHasCasterAura.erase(GetGUID());
+    }
 
     // only way correctly remove all auras from list
     //if (removedAuras != m_removedAurasCount) new aura may be added
