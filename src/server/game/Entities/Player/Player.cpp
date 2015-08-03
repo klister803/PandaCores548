@@ -13944,6 +13944,7 @@ void Player::QuickEquipItem(uint16 pos, Item* pItem)
 {
     if (pItem)
     {
+        pItem->SetLevelCap(GetMap()->ItemLevelCap(), GetMap()->IsBattlegroundOrArena());
         AddEnchantmentDurations(pItem);
         AddItemDurations(pItem);
 
