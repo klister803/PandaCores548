@@ -1880,14 +1880,6 @@ void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= tru
             {
                 if (m_spellInfo->AttributesEx5 & SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME)
                     caster->ModSpellCastTime(m_spellInfo, m_amplitude);
-
-                if (m_spellInfo->AttributesEx8 & SPELL_ATTR8_HASTE_AFFECT_DURATION)
-                {
-                    int32 _duration = GetBase()->GetMaxDuration() * caster->GetFloatValue(UNIT_MOD_CAST_HASTE);
-                    GetBase()->SetMaxDuration(_duration);
-                    GetBase()->SetDuration(_duration);
-                    m_amplitude = int32(m_amplitude * caster->GetFloatValue(UNIT_MOD_CAST_HASTE));
-                }
             }
             else
             {
@@ -1901,6 +1893,8 @@ void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= tru
                     GetBase()->SetDuration(_duration);
                 }
             }
+            if (m_spellInfo->AttributesEx8 & SPELL_ATTR8_HASTE_AFFECT_DURATION)
+                m_amplitude = int32(m_amplitude * caster->GetFloatValue(UNIT_MOD_CAST_HASTE));
         }
 
         //! If duration nod defined should we change duration? this remove aura.

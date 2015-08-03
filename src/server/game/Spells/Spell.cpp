@@ -3198,8 +3198,8 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
                         {
                             if (AttributesCustomEx5 & SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME)
                                 m_originalCaster->ModSpellCastTime(aurSpellInfo, duration, this);
-                            if (AttributesCustomEx8 & SPELL_ATTR8_HASTE_AFFECT_DURATION)
-                                m_originalCaster->ModSpellCastTime(aurSpellInfo, duration, this);
+                            else if (AttributesCustomEx8 & SPELL_ATTR8_HASTE_AFFECT_DURATION)
+                                duration = int32(duration * m_originalCaster->GetFloatValue(UNIT_MOD_CAST_HASTE));
                         }
                         else if (AttributesCustomEx5 & SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME)
                         {
