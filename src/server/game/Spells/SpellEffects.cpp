@@ -3743,42 +3743,49 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                 case SUMMON_TYPE_MINIPET:
                 {
                     uint64 guid = m_caster->GetUInt64Value(PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID);
-                    PetJournalInfo * petInfo = m_caster->ToPlayer()->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
+                    if (PetJournalInfo * petInfo = m_caster->ToPlayer()->GetBattlePetMgr()->GetPetInfoByPetGUID(guid))
+                    {
+                        if (!petInfo)
+                            return;
 
-                    if (!petInfo)
-                        return;
+                        summon = m_caster->GetMap()->SummonCreature(petInfo->GetCreatureEntry(), *destTarget, properties, duration, m_originalCaster, m_targets.GetUnitTargetGUID(), m_spellInfo->Id);
 
-                    summon = m_caster->GetMap()->SummonCreature(petInfo->GetCreatureEntry(), *destTarget, properties, duration, m_originalCaster, m_targets.GetUnitTargetGUID(), m_spellInfo->Id);
+                        if (!summon || !summon->HasUnitTypeMask(UNIT_MASK_MINION))
+                            return;
 
-                    if (!summon || !summon->HasUnitTypeMask(UNIT_MASK_MINION))
-                        return;
+                        // summoner operation fields
+                        //m_caster->SetUInt64Value(PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID, battlePetGUID);
+                        m_caster->SetUInt32Value(PLAYER_CURRENT_BATTLE_PET_BREED_QUALITY, petInfo->GetQuality());
+                        m_caster->SetUInt32Value(UNIT_FIELD_WILD_BATTLE_PET_LEVEL, petInfo->GetLevel());
 
-                    // summoner operation fields
-                    //m_caster->SetUInt64Value(PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID, battlePetGUID);
-                    m_caster->SetUInt32Value(PLAYER_CURRENT_BATTLE_PET_BREED_QUALITY, petInfo->GetQuality());
-                    m_caster->SetUInt32Value(UNIT_FIELD_WILD_BATTLE_PET_LEVEL, petInfo->GetLevel());
+                        // summon operation fields
+                        summon->SetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID, guid);
+                        // timestamp for custom name cache
+                        if (petInfo->GetCustomName() != "")
+                            summon->SetUInt32Value(UNIT_FIELD_BATTLE_PET_COMPANION_NAME_TIMESTAMP, time(NULL));
+                        // level for client
+                        summon->SetUInt32Value(UNIT_FIELD_WILD_BATTLE_PET_LEVEL, petInfo->GetLevel());
+                        // some pet data
+                        summon->SetLevel(summon->GetCreatureTemplate()->maxlevel);       // some summoned creaters have different from 1 DB data for level/hp
+                        summon->SetUInt32Value(UNIT_NPC_FLAGS, summon->GetCreatureTemplate()->npcflag);
 
-                    // summon operation fields
-                    summon->SetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID, guid);
-                    // timestamp for custom name cache
-                    if (petInfo->GetCustomName() != "")
-                        summon->SetUInt32Value(UNIT_FIELD_BATTLE_PET_COMPANION_NAME_TIMESTAMP, time(NULL));
-                    // level for client
-                    summon->SetUInt32Value(UNIT_FIELD_WILD_BATTLE_PET_LEVEL, petInfo->GetLevel());
-                    // some pet data
-                    summon->SetLevel(summon->GetCreatureTemplate()->maxlevel);       // some summoned creaters have different from 1 DB data for level/hp
-                    summon->SetUInt32Value(UNIT_NPC_FLAGS, summon->GetCreatureTemplate()->npcflag);
+                        summon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
 
-                    summon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
+                        // not flag for summons battle pets
+                        if (summon->GetCreatureTemplate()->type == CREATURE_TYPE_WILD_PET)
+                            summon->SetUInt32Value(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_NONE);
 
-                    // not flag for summons battle pets
-                    if (summon->GetCreatureTemplate()->type == CREATURE_TYPE_WILD_PET)
-                        summon->SetUInt32Value(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_NONE);
+                        summon->SetHealth(petInfo->GetHealth());
+                        summon->SetMaxHealth(petInfo->GetMaxHealth());
+                        // more....
+                    }
+                    else
+                    {
+                        summon = m_caster->GetMap()->SummonCreature(entry, *destTarget, properties, duration, m_originalCaster, m_targets.GetUnitTargetGUID(), m_spellInfo->Id);
 
-                    summon->SetHealth(petInfo->GetHealth());
-                    summon->SetMaxHealth(petInfo->GetMaxHealth());
-                    // more....
-
+                        if (!summon || !summon->HasUnitTypeMask(UNIT_MASK_MINION))
+                            return;
+                    }
                     summon->AI()->EnterEvadeMode();
                     break;
                 }
