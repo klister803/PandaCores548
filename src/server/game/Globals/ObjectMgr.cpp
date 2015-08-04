@@ -8301,6 +8301,10 @@ void ObjectMgr::AddSpellToTrainer(uint32 entry, uint32 spell, uint32 spellCost, 
         {
             spell = learnSpell;
             spellinfo = spellinfoNew;
+
+            // Hack. The recipe does not have to be studied by the test spell
+            if (spellinfo->Id == 125761)
+                spell = 104298;
         }
     }
 
