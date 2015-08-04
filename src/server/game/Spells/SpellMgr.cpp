@@ -5705,6 +5705,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 138869: // Forging
                     spellInfo->Effects[EFFECT_1].Amplitude = 655 * 2;
                     break;
+                case 109659: // Dig Rat Stew
+                    spellInfo->Effects[EFFECT_0].TriggerSpell = 6417;
+                    break;
                 default:
                     break;
             }
