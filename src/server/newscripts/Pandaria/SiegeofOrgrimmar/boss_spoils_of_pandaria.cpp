@@ -22,7 +22,6 @@
 enum eSpells
 {
     //Big Mogu
-    SPELL_EARTHEN_SHARD          = 144923,
     SPELL_STRENGTH_OF_THE_STONE  = 145998,
     SPELL_SHADOW_VOLLEY          = 148515,
     SPELL_SHADOW_VOLLEY_D        = 148516,
@@ -32,9 +31,16 @@ enum eSpells
     SPELL_JADE_TEMPEST_D         = 148583,
     SPELL_FRACTURE               = 148513,
     SPELL_FRACTURE_D             = 148514,
-    //Small mogu
-    SPELL_HARDEN_FLESH_V         = 144922,
-    SPELL_HARDEN_FLESH_DMG       = 145218,    
+
+    //Medium
+    SPELL_SET_TO_BLOW_DMG        = 145993,
+    SPELL_SET_TO_BLOW_AURA       = 145987,
+    SPELL_SET_TO_BLOW_AT         = 146365,
+
+    //NPC_ANIMATED_STONE_MOGU
+    SPELL_EARTHEN_SHARD          = 144923,
+    SPELL_HARDEN_FLESH_DMG       = 145218,   
+    //
     SPELL_RUSH                   = 144904,
     SPELL_KW_ENRAGE              = 145692,
     //Special
@@ -111,17 +117,17 @@ uint32 mediummantisentry[2] =
 //
 
 //Small
-uint32 smallmoguentry[3] = 
+uint32 smallmoguentry[2] = 
 {
     NPC_ANIMATED_STONE_MOGU,
-    NPC_BURIAL_URN,
+    //NPC_BURIAL_URN, not found visual id and not work spells
     NPC_QUILEN_GUARDIANS,
 };
 
 uint32 smallmantisentry[3] =
 {
     NPC_SRITHIK_BOMBARDIER,
-    NPC_AMBER_ENCASED_KUNCHONG,
+    NPC_AMBER_ENCASED_KUNCHONG, //not found visual spell for Encapsulated Pheromones
     NPC_KORTHIK_WARCALLER,
 };
 //
@@ -653,10 +659,6 @@ public:
             default:
                 break;
             }
-        }
-
-        void IsSummonedBy(Unit* summoner)
-        {
             spawn = 1500;
         }
 
@@ -686,6 +688,7 @@ public:
                 break;
             case NPC_ANIMATED_STONE_MOGU:
                 events.ScheduleEvent(EVENT_EARTHEN_SHARD, 5000);
+                events.ScheduleEvent(EVENT_HARDEN_FLESH, 10000);
                 break;
             case NPC_KORTHIK_WARCALLER:
                 events.ScheduleEvent(EVENT_KW_ENRAGE, 1000);
@@ -771,27 +774,32 @@ public:
                 case EVENT_RUSH:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60, true))
                         DoCast(target, SPELL_RUSH, true);
-                    events.ScheduleEvent(EVENT_RUSH, 5000);
+                    events.ScheduleEvent(EVENT_RUSH, 10000);
                     break;
                 case EVENT_EARTHEN_SHARD:
                     DoCastVictim(SPELL_EARTHEN_SHARD);
-                    events.ScheduleEvent(EVENT_EARTHEN_SHARD, 5000);
+                    events.ScheduleEvent(EVENT_EARTHEN_SHARD, 10000);
+                    break;
+                case EVENT_HARDEN_FLESH:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
+                        DoCast(target, SPELL_HARDEN_FLESH_DMG);
+                    events.ScheduleEvent(EVENT_HARDEN_FLESH, 15000);
                     break;
                 case EVENT_MOLTEN_FIST:
                     DoCast(me, SPELL_MOLTEN_FIST);
-                    events.ScheduleEvent(EVENT_MOLTEN_FIST, 5000);
+                    events.ScheduleEvent(EVENT_MOLTEN_FIST, 10000);
                     break;
                 case EVENT_SHADOW_VOLLEY:
                     DoCast(me, SPELL_SHADOW_VOLLEY);
-                    events.ScheduleEvent(EVENT_SHADOW_VOLLEY, 5000);
+                    events.ScheduleEvent(EVENT_SHADOW_VOLLEY, 10000);
                     break;
                 case EVENT_JADE_TEMPEST:
                     DoCast(me, SPELL_JADE_TEMPEST);
-                    events.ScheduleEvent(EVENT_JADE_TEMPEST, 3000);
+                    events.ScheduleEvent(EVENT_JADE_TEMPEST, 8000);
                     break;
                 case EVENT_FRACTURE:
                     DoCast(me, SPELL_FRACTURE);
-                    events.ScheduleEvent(EVENT_FRACTURE, 5000);
+                    events.ScheduleEvent(EVENT_FRACTURE, 10000);
                     break;
                 }
             }
@@ -891,10 +899,13 @@ public:
                     break;
                 case GO_SMALL_MOGU_BOX:
                 {
-                    uint8 entry = urand(0, 2);
-                    if (entry == 2)
-                        for (uint8 n = 0; n < 4; n++)
-                            summoner->SummonCreature(smallmoguentry[entry], pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+                    uint8 entry = urand(0, 1);
+                    if (entry)
+                    {
+                        for (uint8 n = 0; n < 3; n++)
+                            go->SummonCreature(smallmoguentry[entry], pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+                        summoner->SummonCreature(smallmoguentry[entry], pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+                    }
                     else
                         summoner->SummonCreature(smallmoguentry[entry], pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
                     break;
