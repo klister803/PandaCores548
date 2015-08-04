@@ -4095,7 +4095,7 @@ void Spell::EffectPickPocket(SpellEffIndex /*effIndex*/)
         return;
 
     // victim must be creature and attackable
-    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT || m_caster->IsFriendlyTo(unitTarget))
+    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT/*|| m_caster->IsFriendlyTo(unitTarget)*/)
         return;
 
     // victim have to be alive and humanoid or undead
