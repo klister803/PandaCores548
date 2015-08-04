@@ -81,7 +81,13 @@ void MotionMaster::UpdateMotion(uint32 diff)
         return;
 
     if (_owner->HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED)) // what about UNIT_STATE_DISTRACTED? Why is this not included?
+    {
+        if (_owner->HasUnitState(UNIT_STATE_EVADE))
+            if (GetMotionSlotType(MOTION_SLOT_ACTIVE) == HOME_MOTION_TYPE)
+                if (!top()->Update(*_owner, diff))
+                    MovementExpired();
         return;
+    }
 
     ASSERT(!empty());
 
