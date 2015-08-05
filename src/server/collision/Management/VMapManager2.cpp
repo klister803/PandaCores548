@@ -224,23 +224,24 @@ namespace VMAP
         return false;
     }
 
-    bool VMapManager2::GetLiquidLevel(uint32 mapId, float x, float y, float z, uint8 reqLiquidType, float& level, float& floor, uint32& type) const
+    bool VMapManager2::GetLiquidLevel(uint32 mapId, float x, float y, float z, uint8 reqLiquidType, float& level, float& floor, uint32& type, uint32& flags, int32& adtId, int32& rootId, int32& groupId) const
     {
         if (!DisableMgr::IsDisabledFor(DISABLE_TYPE_VMAP, mapId, NULL, VMAP_DISABLE_LIQUIDSTATUS))
         {
             InstanceTreeMap::const_iterator instanceTree = iInstanceMapTrees.find(mapId);
             if (instanceTree != iInstanceMapTrees.end())
             {
-                LocationInfo info;
+                LocationInfo locInfo;
                 Vector3 pos = convertPositionToInternalRep(x, y, z);
-                if (instanceTree->second->GetLocationInfo(pos, info))
+                if (instanceTree->second->GetLocationInfo(pos, locInfo, flags, adtId, rootId, groupId))
                 {
-                    floor = info.ground_Z;
+                    floor = locInfo.ground_Z;
+                    z = pos.z;
                     ASSERT(floor < std::numeric_limits<float>::max());
-                    type = info.hitModel->GetLiquidType();  // entry from LiquidType.dbc
+                    type = locInfo.hitModel->GetLiquidType();  // entry from LiquidType.dbc
                     if (reqLiquidType && !(GetLiquidFlags(type) & reqLiquidType))
                         return false;
-                    if (info.hitInstance->GetLiquidLevel(pos, info, level))
+                    if (locInfo.hitInstance->GetLiquidLevel(pos, locInfo, level))
                         return true;
                 }
             }

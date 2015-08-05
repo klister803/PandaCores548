@@ -1753,8 +1753,8 @@ m_phaseMask(PHASEMASK_NORMAL), m_phaseId(0), m_ignorePhaseIdCheck(false)
 {
     m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE | GHOST_VISIBILITY_GHOST);
     m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE);
-    m_zoneUpdateId = 0;
-    m_areaUpdateId = 0;
+    m_zoneUpdateId = m_saveZoneUpdateId = 0;
+    m_areaUpdateId = m_saveAreaUpdateId = 0;
 }
 
 void WorldObject::SetWorldObject(bool on)

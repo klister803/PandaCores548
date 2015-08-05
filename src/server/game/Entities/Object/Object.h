@@ -820,7 +820,10 @@ class WorldObject : public Object, public WorldLocation
         void UpdateZoneAndAreaId();
 
         uint32 m_zoneUpdateId;
+        uint32 m_saveZoneUpdateId;
         uint32 m_areaUpdateId;
+        uint32 m_saveAreaUpdateId;
+        VMAPSInfo vmapInfo;
 
         InstanceScript* GetInstanceScript();
 

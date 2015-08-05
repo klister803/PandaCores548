@@ -180,8 +180,6 @@ m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_o
     m_regenTimerCount = 0;
 
     m_LOSCheckTimer = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
-    m_LOSCheck_player = false;
-    m_LOSCheck_creature = false;
 
     TriggerJustRespawned = false;
     m_isTempWorldObject = false;
@@ -512,12 +510,11 @@ void Creature::Update(uint32 diff)
 {
     volatile uint32 creatureEntry = GetEntry();
 
-	if (m_LOSCheckTimer <= diff)
-	{
-		m_LOSCheck_player = true;
-		m_LOSCheck_creature = true;
-		m_LOSCheckTimer = DEFAULT_VISIBILITY_NOTIFY_PERIOD*2;
-	} else m_LOSCheckTimer -= diff;
+    if (m_LOSCheckTimer <= diff)
+    {
+        m_vmapUpdateAllow = true;
+        m_LOSCheckTimer = DEFAULT_VISIBILITY_NOTIFY_PERIOD*2;
+    } else m_LOSCheckTimer -= diff;
 
     bool isPlayersPet = false;
     if (Unit * unit = ToUnit())
@@ -1170,8 +1167,6 @@ void Creature::SaveToDB(uint32 mapid, uint32 spawnMask, uint32 phaseMask)
             dynamicflags = 0;
     }
 
-    UpdateZoneAndAreaId();
-
     // data->guid = guid must not be updated at save
     data.id = GetEntry();
     data.mapid = mapid;
@@ -1272,9 +1267,9 @@ void Creature::SelectLevel(const CreatureTemplate* cinfo)
     if (cinfo->type == CREATURE_TYPE_WILD_PET)
     {
         // random level depends on zone data
-        if (AreaTableEntry const * aEntry = GetAreaEntryByAreaID(GetZoneId()))
+        if (vmapInfo.atEntry)
         {
-            uint8 level_ = urand(aEntry->m_wildBattlePetLevelMin, aEntry->m_wildBattlePetLevelMax);
+            uint8 level_ = urand(vmapInfo.atEntry->m_wildBattlePetLevelMin, vmapInfo.atEntry->m_wildBattlePetLevelMax);
             if (!level_)
                 level_ = level;
 

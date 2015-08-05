@@ -43,11 +43,10 @@ void WorldSession::HandleJoinChannel(WorldPacket& recvPacket)
         if (!channel)
             return;
 
-        AreaTableEntry const* current_zone = GetAreaEntryByAreaID(_player->GetZoneId());
-        if (!current_zone)
+        if (!_player->vmapInfo.atEntry)
             return;
 
-        if (!_player->CanJoinConstantChannelInZone(channel, current_zone))
+        if (!_player->CanJoinConstantChannelInZone(channel, _player->vmapInfo.atEntry))
             return;
     }
 
