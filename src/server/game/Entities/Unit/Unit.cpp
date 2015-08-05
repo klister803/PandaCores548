@@ -13491,25 +13491,37 @@ bool Unit::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) cons
     // If m_immuneToEffect type contain this effect type, IMMUNE effect.
     uint32 effect = spellInfo->GetEffect(index, GetSpawnMode()).Effect;
     SpellImmuneList const& effectList = m_spellImmune[IMMUNITY_EFFECT];
-    for (SpellImmuneList::const_iterator itr = effectList.begin(); itr != effectList.end(); ++itr)
+    for (SpellImmuneList::const_iterator itr = effectList.begin(); itr != effectList.end(); itr = next)
+    {
+        next = itr;
+        ++next;
         if (itr->type == effect)
             return true;
+    }
 
     if (uint32 mechanic = spellInfo->GetEffect(index, GetSpawnMode()).Mechanic)
     {
         SpellImmuneList const& mechanicList = m_spellImmune[IMMUNITY_MECHANIC];
-        for (SpellImmuneList::const_iterator itr = mechanicList.begin(); itr != mechanicList.end(); ++itr)
+        for (SpellImmuneList::const_iterator itr = mechanicList.begin(); itr != mechanicList.end(); itr = next)
+        {
+            next = itr;
+            ++next;
             if (itr->type == mechanic)
                 return true;
+        }
     }
 
     if (uint32 aura = spellInfo->GetEffect(index, GetSpawnMode()).ApplyAuraName)
     {
         SpellImmuneList const& list = m_spellImmune[IMMUNITY_STATE];
-        for (SpellImmuneList::const_iterator itr = list.begin(); itr != list.end(); ++itr)
+        for (SpellImmuneList::const_iterator itr = list.begin(); itr != list.end(); itr = next)
+        {
+            next = itr;
+            ++next;
             if (itr->type == aura)
                 if (!(spellInfo->AttributesEx3 & SPELL_ATTR3_IGNORE_HIT_RESULT))
                     return true;
+        }
         // Check for immune to application of harmful magical effects
         AuraEffectList const& immuneAuraApply = GetAuraEffectsByType(SPELL_AURA_MOD_IMMUNE_AURA_APPLY_SCHOOL);
         for (AuraEffectList::const_iterator iter = immuneAuraApply.begin(); iter != immuneAuraApply.end(); ++iter)
