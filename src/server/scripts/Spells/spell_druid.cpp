@@ -2017,34 +2017,6 @@ class spell_dru_celestial_alignment : public SpellScriptLoader
         }
 };
 
-// Shooting Stars - 93400
-class spell_dru_shooting_stars : public SpellScriptLoader
-{
-    public:
-        spell_dru_shooting_stars() : SpellScriptLoader("spell_dru_shooting_stars") { }
-
-        class spell_dru_shooting_stars_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dru_shooting_stars_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    _player->RemoveSpellCooldown(SPELL_DRUID_STARSURGE, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_dru_shooting_stars_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dru_shooting_stars_SpellScript();
-        }
-};
-
 // Frenzied Regeneration - 22842
 class spell_dru_frenzied_regeneration : public SpellScriptLoader
 {
@@ -3849,7 +3821,6 @@ void AddSC_druid_spell_scripts()
     new spell_dru_wild_mushroom_bloom();
     new spell_dru_wild_mushroom_detonate();
     new spell_dru_astral_communion();
-    new spell_dru_shooting_stars();
     new spell_dru_celestial_alignment();
     new spell_dru_frenzied_regeneration();
     new spell_dru_stampeding_roar_speed();

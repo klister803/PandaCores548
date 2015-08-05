@@ -2100,9 +2100,6 @@ void AuraEffect::ApplySpellMod(Unit* target, bool apply)
 
     target->ToPlayer()->AddSpellMod(m_spellmod, apply);
 
-    // Auras with charges do not mod amount of passive auras
-    if (GetBase()->IsUsingCharges())
-        return;
     // reapply some passive spells after add/remove related spellmods
     // Warning: it is a dead loop if 2 auras each other amount-shouldn't happen
     switch (GetMiscValue())
@@ -2114,6 +2111,10 @@ void AuraEffect::ApplySpellMod(Unit* target, bool apply)
         case SPELLMOD_EFFECT4:
         case SPELLMOD_EFFECT5:
         {
+            // Auras with charges do not mod amount of passive auras
+            if (GetBase()->IsUsingCharges())
+                return;
+
             uint64 guid = target->GetGUID();
             Unit::AuraApplicationMap & auras = target->GetAppliedAuras();
             for (Unit::AuraApplicationMap::iterator iter = auras.begin(); iter != auras.end(); ++iter)
@@ -2158,6 +2159,29 @@ void AuraEffect::ApplySpellMod(Unit* target, bool apply)
                     }
                 }
             }
+        }
+        case SPELLMOD_CASTING_TIME:
+        {
+            if (apply)
+                if (GetAmount() == -100)
+                    if (Player* plr = target->ToPlayer())
+                    {
+                        for (PlayerSpellMap::const_iterator itr = plr->GetSpellMap().begin(); itr != plr->GetSpellMap().end(); ++itr)
+                        {
+                            if (itr->second->state == PLAYERSPELL_REMOVED)
+                                continue;
+
+                            uint32 spellId = itr->first;
+                            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+
+                            if (!spellInfo)
+                                continue;
+
+                            if (spellInfo->IsAffectedBySpellMod(m_spellmod))
+                                plr->RemoveSpellCooldown(spellInfo->Id, true);
+                        }
+                    }
+            break;
         }
         default:
             break;

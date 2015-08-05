@@ -30923,3 +30923,16 @@ void Player::HandleArenaDeserter()
             AddAura(147303, this);
     }
 }
+
+bool Player::HasInstantCastModForSpell(SpellInfo const* spellInfo)
+{
+    if (!spellInfo)
+        return false;
+
+    for (SpellModList::iterator itr = m_spellMods[SPELLMOD_CASTING_TIME].begin(); itr != m_spellMods[SPELLMOD_CASTING_TIME].end(); ++itr)
+        if ((*itr)->value == -100)
+            if (spellInfo->IsAffectedBySpellMod(*itr))
+                return true;
+
+    return false;
+}

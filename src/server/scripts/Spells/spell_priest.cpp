@@ -211,35 +211,6 @@ class spell_pri_item_s12_2p_shadow : public SpellScriptLoader
         }
 };
 
-// Divine Insight - 124430
-class spell_pri_divine_insight_shadow : public SpellScriptLoader
-{
-    public:
-        spell_pri_divine_insight_shadow() : SpellScriptLoader("spell_pri_divine_insight_shadow") { }
-
-        class spell_pri_divine_insight_shadow_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pri_divine_insight_shadow_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (_player->HasSpellCooldown(PRIEST_SPELL_MIND_BLAST))
-                        _player->RemoveSpellCooldown(PRIEST_SPELL_MIND_BLAST, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_pri_divine_insight_shadow_SpellScript::HandleOnHit);            
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pri_divine_insight_shadow_SpellScript();
-        }
-};
-
 // Power Word - Solace - 129250
 class spell_pri_power_word_solace : public SpellScriptLoader
 {
@@ -2620,35 +2591,6 @@ class spell_pri_hymn_of_hope : public SpellScriptLoader
         }
 };
 
-// Mind Blast - 8092
-class spell_pri_mind_blast : public SpellScriptLoader
-{
-    public:
-        spell_pri_mind_blast() : SpellScriptLoader("spell_pri_mind_blast") { }
-
-        class spell_pri_mind_blast_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pri_mind_blast_SpellScript);
-
-            void HandleAfterCast()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (_player->HasAura(124430))
-                        _player->RemoveSpellCooldown(PRIEST_SPELL_MIND_BLAST, true);
-            }
-
-            void Register()
-            {
-                AfterCast += SpellCastFn(spell_pri_mind_blast_SpellScript::HandleAfterCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pri_mind_blast_SpellScript();
-        }
-};
-
 // Shadowy Apparition - 148859
 class spell_pri_shadowy_apparition : public SpellScriptLoader
 {
@@ -2730,7 +2672,6 @@ void AddSC_priest_spell_scripts()
     new spell_pri_glyph_of_mass_dispel();
     new spell_pri_item_s12_4p_heal();
     new spell_pri_item_s12_2p_shadow();
-    new spell_pri_divine_insight_shadow();
     new spell_pri_power_word_solace();
     new spell_pri_shadow_word_insanity_allowing();
     new spell_pri_surge_of_light();
@@ -2778,7 +2719,6 @@ void AddSC_priest_spell_scripts()
     new spell_pri_t15_healer_4p();
     new spell_pri_lightwell_trigger();
     new spell_pri_hymn_of_hope();
-    new spell_pri_mind_blast();
     new spell_pri_void_tendrils_grasp();
     new spell_pri_divine_star_filter();
 }

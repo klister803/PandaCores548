@@ -770,7 +770,6 @@ class spell_sha_lava_surge : public SpellScriptLoader
                             if (roll_chance_i(20))
                             {
                                 _player->CastSpell(_player, SPELL_SHA_LAVA_SURGE_CAST_TIME, true);
-                                _player->RemoveSpellCooldown(51505, true);
                             }
                         }
                     }
