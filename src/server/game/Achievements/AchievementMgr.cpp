@@ -1946,10 +1946,10 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
         if (IsCompletedAchievement(achievement, referencePlayer, progressMap))
             CompletedAchievement(achievement, referencePlayer, progressMap);
 
-        if (AchievementEntryList const* achRefList = sAchievementMgr->GetAchievementByReferencedId(achievement->ID))
+        /*if (AchievementEntryList const* achRefList = sAchievementMgr->GetAchievementByReferencedId(achievement->ID))
             for (AchievementEntryList::const_iterator itr = achRefList->begin(); itr != achRefList->end(); ++itr)
                 if (IsCompletedAchievement(*itr, referencePlayer, progressMap))
-                    CompletedAchievement(*itr, referencePlayer);
+                    CompletedAchievement(*itr, referencePlayer);*/
     }
 }
 
@@ -2339,12 +2339,12 @@ bool AchievementMgr<T>::IsCompletedCriteriaTree(CriteriaTreeEntry const* criteri
         CriteriaTreeProgress const* progress = *itr;
         CriteriaEntry const* criteria = progress->criteria;
         CriteriaTreeEntry const* criteriaProgress = progress->criteriaTree;
-        uint32 requirement_count = (achievement->flags & ACHIEVEMENT_FLAG_BAR) && achievement->count > 0 ? achievement->count : criteriaProgress->requirement_count;
+        uint32 requirement_count = achievement->count > 0 ? achievement->count : criteriaProgress->requirement_count;
 
         //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "IsCompletedCriteriaTree ChildrenCriteria criteria %u, achievement %u criteria %u count %i requirement_count %i", criteriaTree->ID, achievement ? achievement->ID : 0, criteria->ID, count, requirement_count);
 
         bool check = false;
-        if(parent)
+        if(parent && achievement->count <= 0)
             count = progress->counter;
         else
             count += progress->counter;
@@ -2474,18 +2474,23 @@ bool AchievementMgr<T>::IsCompletedCriteriaTree(CriteriaTreeEntry const* criteri
             default:
                 break;
         }
-        if(parent && !check)
+        if(achievement->count <= 0)
         {
-            //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "IsCompletedCriteriaTree ChildrenCriteria parent && !check criteriaTree %u, achievement %u count %i requirement_count %i", criteriaTree->ID, achievement ? achievement->ID : 0, count, requirement_count);
-            return false;
-        }
+            if(parent && !check)
+            {
+                //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "IsCompletedCriteriaTree ChildrenCriteria parent && !check criteriaTree %u, achievement %u count %i requirement_count %i", criteriaTree->ID, achievement ? achievement->ID : 0, count, requirement_count);
+                return false;
+            }
 
-        if(!parent && check)
-        {
-            //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "IsCompletedCriteriaTree ChildrenCriteria !parent && check criteriaTree %u, achievement %u count %i requirement_count %i", criteriaTree->ID, achievement ? achievement->ID : 0, count, requirement_count);
-            treeProgress->completed = true;
-            return treeProgress->completed;
+            if(!parent && check)
+            {
+                //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "IsCompletedCriteriaTree ChildrenCriteria !parent && check criteriaTree %u, achievement %u count %i requirement_count %i", criteriaTree->ID, achievement ? achievement->ID : 0, count, requirement_count);
+                treeProgress->completed = true;
+                return treeProgress->completed;
+            }
         }
+        else if(achievement->count > 0 && check)
+            return true;
     }
 
     //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "IsCompletedCriteriaTree finish criteriaTree %u, achievement %u count %i requirement_count %i parent %u", criteriaTree->ID, achievement ? achievement->ID : 0, count, criteriaTree->requirement_count, parent);
@@ -2803,7 +2808,7 @@ bool AchievementMgr<T>::SetCriteriaProgress(AchievementEntry const* achievement,
     else
         SendCriteriaUpdate(criteria, progress, timeElapsed, progress->completed);
 
-    return progress->completed || ((progress->parent->flags & ACHIEVEMENT_CRITERIA_FLAG_SHOW_PROGRESS_BAR) || (treeEntry->flags & ACHIEVEMENT_CRITERIA_FLAG_HIDDEN) || ((achievement->flags & ACHIEVEMENT_FLAG_BAR) && achievement->count > 0));
+    return progress->completed || (progress->parent->flags & ACHIEVEMENT_CRITERIA_FLAG_SHOW_PROGRESS_BAR) || (treeEntry->flags & ACHIEVEMENT_CRITERIA_FLAG_HIDDEN);
 }
 
 template<class T>

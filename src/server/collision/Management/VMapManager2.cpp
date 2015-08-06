@@ -224,7 +224,7 @@ namespace VMAP
         return false;
     }
 
-    bool VMapManager2::GetLiquidLevel(uint32 mapId, float x, float y, float z, uint8 reqLiquidType, float& level, float& floor, uint32& type, uint32& flags, int32& adtId, int32& rootId, int32& groupId) const
+    bool VMapManager2::GetLiquidLevel(uint32 mapId, float x, float y, float z, uint8 reqLiquidType, float& level, float& floor, uint32& type, uint32& flags, int32& adtId, int32& rootId, int32& groupId, bool& getAreaInfo) const
     {
         if (!DisableMgr::IsDisabledFor(DISABLE_TYPE_VMAP, mapId, NULL, VMAP_DISABLE_LIQUIDSTATUS))
         {
@@ -237,6 +237,7 @@ namespace VMAP
                 {
                     floor = locInfo.ground_Z;
                     z = pos.z;
+                    getAreaInfo = true;
                     ASSERT(floor < std::numeric_limits<float>::max());
                     type = locInfo.hitModel->GetLiquidType();  // entry from LiquidType.dbc
                     if (reqLiquidType && !(GetLiquidFlags(type) & reqLiquidType))
@@ -244,6 +245,8 @@ namespace VMAP
                     if (locInfo.hitInstance->GetLiquidLevel(pos, locInfo, level))
                         return true;
                 }
+                else
+                    getAreaInfo = false;
             }
         }
 
