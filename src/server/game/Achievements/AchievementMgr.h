@@ -43,6 +43,8 @@ typedef std::unordered_map<uint32, AchievementEntryList> AchievementListByRefere
 
 struct CriteriaTreeProgress
 {
+    CriteriaTreeProgress() : counter(0), CompletedGUID(0), date(0), changed(false), updated(false), completed(false), deactiveted(true) { }
+
     uint32 counter;
     time_t date;                                            // latest update time.
     uint64 CompletedGUID;                                   // GUID of the player that completed this criteria (guild achievements)
@@ -59,6 +61,8 @@ struct CriteriaTreeProgress
 
 struct CriteriaProgressTree
 {
+    CriteriaProgressTree() : completed(false), achievement(NULL), criteriaTree(NULL) { }
+
     bool completed;
     AchievementEntry const* achievement = NULL;
     CriteriaTreeEntry const* criteriaTree = NULL;

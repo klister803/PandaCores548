@@ -1946,10 +1946,15 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
         if (IsCompletedAchievement(achievement, referencePlayer, progressMap))
             CompletedAchievement(achievement, referencePlayer, progressMap);
 
-        /*if (AchievementEntryList const* achRefList = sAchievementMgr->GetAchievementByReferencedId(achievement->ID))
+        if (AchievementEntryList const* achRefList = sAchievementMgr->GetAchievementByReferencedId(achievement->ID))
+        {
             for (AchievementEntryList::const_iterator itr = achRefList->begin(); itr != achRefList->end(); ++itr)
+            {
+                //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "UpdateAchievementCriteria achievement %u achRef %u", achievement->ID, (*itr)->ID);
                 if (IsCompletedAchievement(*itr, referencePlayer, progressMap))
-                    CompletedAchievement(*itr, referencePlayer);*/
+                    CompletedAchievement(*itr, referencePlayer);
+            }
+        }
     }
 }
 
@@ -2341,13 +2346,13 @@ bool AchievementMgr<T>::IsCompletedCriteriaTree(CriteriaTreeEntry const* criteri
         CriteriaTreeEntry const* criteriaProgress = progress->criteriaTree;
         uint32 requirement_count = achievement->count > 0 ? achievement->count : criteriaProgress->requirement_count;
 
-        //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "IsCompletedCriteriaTree ChildrenCriteria criteria %u, achievement %u criteria %u count %i requirement_count %i", criteriaTree->ID, achievement ? achievement->ID : 0, criteria->ID, count, requirement_count);
-
         bool check = false;
         if(parent && achievement->count <= 0)
             count = progress->counter;
         else
             count += progress->counter;
+
+        //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "IsCompletedCriteriaTree ChildrenCriteria criteria %u, achievement %u criteria %u count %i requirement_count %i", criteriaTree->ID, achievement ? achievement->ID : 0, criteria->ID, count, requirement_count);
 
         switch (criteria->type)
         {
@@ -2494,7 +2499,7 @@ bool AchievementMgr<T>::IsCompletedCriteriaTree(CriteriaTreeEntry const* criteri
     }
 
     //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "IsCompletedCriteriaTree finish criteriaTree %u, achievement %u count %i requirement_count %i parent %u", criteriaTree->ID, achievement ? achievement->ID : 0, count, criteriaTree->requirement_count, parent);
-    return parent ? true : false;
+    return parent && achievement->count <= 0 ? true : false;
 }
 
 template<class T>
@@ -2679,12 +2684,13 @@ bool AchievementMgr<T>::IsCompletedAchievement(AchievementEntry const* achieveme
         return false;
     }
 
-    //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "IsCompletedAchievement achievement %u", achievement->ID);
-
+    bool check = false;
     if(CriteriaTreeEntry const* parent = sCriteriaTreeStore.LookupEntry(achievement->criteriaTree))
-        return IsCompletedCriteriaTree(parent, achievement, progressMap, true);
-    else
-        return false;
+        check = IsCompletedCriteriaTree(parent, achievement, progressMap, true);
+
+    //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "IsCompletedAchievement achievement %u check %i", achievement->ID, check);
+
+    return check;
 }
 
 template<class T>
