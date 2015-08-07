@@ -43,7 +43,8 @@ typedef std::unordered_map<uint32, AchievementEntryList> AchievementListByRefere
 
 struct CriteriaTreeProgress
 {
-    CriteriaTreeProgress() : counter(0), CompletedGUID(0), date(0), changed(false), updated(false), completed(false), deactiveted(true) { }
+    CriteriaTreeProgress() : counter(0), CompletedGUID(0), date(0), changed(false), updated(false), completed(false), deactiveted(true)
+    , achievement(NULL), criteriaTree(NULL), parent(NULL), criteria(NULL)    { }
 
     uint32 counter;
     time_t date;                                            // latest update time.
@@ -53,10 +54,10 @@ struct CriteriaTreeProgress
     bool completed;
     bool deactiveted;
 
-    AchievementEntry const* achievement = NULL;
-    CriteriaTreeEntry const* criteriaTree = NULL;
-    CriteriaTreeEntry const* parent = NULL;
-    CriteriaEntry const* criteria = NULL;
+    AchievementEntry const* achievement;
+    CriteriaTreeEntry const* criteriaTree;
+    CriteriaTreeEntry const* parent;
+    CriteriaEntry const* criteria;
 };
 
 struct CriteriaProgressTree
