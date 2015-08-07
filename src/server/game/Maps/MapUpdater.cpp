@@ -54,7 +54,7 @@ class MapUpdateRequest : public ACE_Method_Request
             uint32 diff = getMSTime();
             m_map.Update (m_diff);
             diff = getMSTime() - diff;
-            if (diff > 40)
+            if (diff > 150)
                 sLog->outDiff("Map diff: %u. ID %i Players online: %u.", diff, m_map.GetId(), sWorld->GetActiveSessionCount());
             m_updater.update_finished();
             return 0;
