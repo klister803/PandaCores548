@@ -2344,6 +2344,9 @@ bool AchievementMgr<T>::IsCompletedCriteriaTree(CriteriaTreeEntry const* criteri
         CriteriaTreeProgress const* progress = *itr;
         CriteriaEntry const* criteria = progress->criteria;
         CriteriaTreeEntry const* criteriaProgress = progress->criteriaTree;
+        if(!criteria || !criteriaProgress)
+            return false;
+
         uint32 requirement_count = achievement->count > 0 ? achievement->count : criteriaProgress->requirement_count;
 
         bool check = false;
