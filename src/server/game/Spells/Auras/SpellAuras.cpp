@@ -1392,6 +1392,9 @@ bool Aura::CanBeSaved() const
     if (m_fromAreatrigger)
         return false;
 
+    if (HasEffectType(SPELL_AURA_MOD_NEXT_SPELL))
+        return false;
+
     // don't save auras casted by summons
     if (GetCaster() && GetCaster()->isAnySummons())
         return false;
