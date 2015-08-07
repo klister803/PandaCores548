@@ -1684,11 +1684,6 @@ struct MapEntry
     {
         return MapID == 0 || MapID == 1 || MapID == 530 || MapID == 571;
     }
-    
-    bool CantUseFlyAuraEffect() const
-    {
-        return MapID == 530 || MapID == 1064;
-    }
 
     bool IsDifficultyModeSupported(uint32 difficulty) const;
 };

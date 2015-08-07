@@ -1883,11 +1883,9 @@ SpellCastResult SpellInfo::CheckLocation(uint32 map_id, uint32 zone_id, uint32 a
     }
 
     if (HasAura(SPELL_AURA_FLY))
-    {
-        MapEntry const* mapEntry = sMapStore.LookupEntry(map_id);
-        if (!mapEntry || mapEntry->CantUseFlyAuraEffect())
+        if (map_id == 1064 || zone_id == 3433 || zone_id == 3430 || zone_id == 3487)
             return SPELL_FAILED_INCORRECT_AREA;
-    }
+
 
     // DB base check (if non empty then must fit at least single for allow)
     SpellAreaMapBounds saBounds = sSpellMgr->GetSpellAreaMapBounds(Id);
