@@ -6782,7 +6782,7 @@ void Player::CleanupChannels()
 
 void Player::UpdateLocalChannels(uint32 newZone)
 {
-    if (GetSession()->PlayerLoading() && !IsBeingTeleportedFar())
+    if (!IsInWorld() || GetSession()->PlayerLoading() && !IsBeingTeleportedFar())
         return;                                              // The client handles it automatically after loading, but not after teleporting
 
     AreaTableEntry const* current_zone = GetAreaEntryByAreaID(newZone);
@@ -27380,10 +27380,13 @@ void Player::UpdateVmapInfo(Map* m, float x, float y, float z)
 
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::UpdateVmapInfo m_zoneUpdateId %i m_areaUpdateId %i m_saveZoneUpdateId %i m_saveAreaUpdateId %i", m_zoneUpdateId, m_areaUpdateId, m_saveZoneUpdateId, m_saveAreaUpdateId);
 
-    if(m_zoneUpdateId != m_saveZoneUpdateId)
-        UpdateZone();
-    else if(m_areaUpdateId != m_saveAreaUpdateId)
-        UpdateArea();
+    if(IsInWorld())
+    {
+        if(m_zoneUpdateId != m_saveZoneUpdateId)
+            UpdateZone();
+        else if(m_areaUpdateId != m_saveAreaUpdateId)
+            UpdateArea();
+    }
 
     if (!vmapInfo.Zliquid_status)
     {
