@@ -20,7 +20,6 @@
 #include "ModelInstance.h"
 #include "VMapDefinitions.h"
 #include "MapTree.h"
-#include "Log.h"
 
 using G3D::Vector3;
 using G3D::Ray;
@@ -487,7 +486,7 @@ namespace VMAP
         return false;
     }
 
-    bool WorldModel::GetLocationInfo(const G3D::Vector3 &p, const G3D::Vector3 &down, float &dist, LocationInfo &locInfo, AreaInfo &aInfo) const
+    bool WorldModel::GetLocationInfo(const G3D::Vector3 &p, const G3D::Vector3 &down, float &dist, LocationInfo &info) const
     {
         if (groupModels.empty())
             return false;
@@ -496,12 +495,8 @@ namespace VMAP
         groupTree.intersectPoint(p, callback);
         if (callback.hit != groupModels.end())
         {
-            locInfo.hitModel = &(*callback.hit);
+            info.hitModel = &(*callback.hit);
             dist = callback.zDist;
-            aInfo.rootId = RootWMOID;
-            aInfo.groupId = callback.hit->GetWmoID();
-            aInfo.flags = callback.hit->GetMogpFlags();
-            aInfo.result = true;
             return true;
         }
         return false;

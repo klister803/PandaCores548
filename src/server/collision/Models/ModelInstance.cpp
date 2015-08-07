@@ -20,7 +20,6 @@
 #include "WorldModel.h"
 #include "MapTree.h"
 #include "VMapDefinitions.h"
-#include "Log.h"
 
 using G3D::Vector3;
 using G3D::Ray;
@@ -100,7 +99,7 @@ namespace VMAP
         }
     }
 
-    bool ModelInstance::GetLocationInfo(const G3D::Vector3& p, LocationInfo &locInfo, AreaInfo &aInfo) const
+    bool ModelInstance::GetLocationInfo(const G3D::Vector3& p, LocationInfo &info) const
     {
         if (!iModel)
         {
@@ -119,19 +118,17 @@ namespace VMAP
         Vector3 pModel = iInvRot * (p - iPos) * iInvScale;
         Vector3 zDirModel = iInvRot * Vector3(0.f, 0.f, -1.f);
         float zDist;
-        if (iModel->GetLocationInfo(pModel, zDirModel, zDist, locInfo, aInfo))
+        if (iModel->GetLocationInfo(pModel, zDirModel, zDist, info))
         {
             Vector3 modelGround = pModel + zDist * zDirModel;
             // Transform back to world space. Note that:
             // Mat * vec == vec * Mat.transpose()
             // and for rotation matrices: Mat.inverse() == Mat.transpose()
             float world_Z = ((modelGround * iInvRot) * iScale + iPos).z;
-            if (locInfo.ground_Z < world_Z) // hm...could it be handled automatically with zDist at intersection?
+            if (info.ground_Z < world_Z) // hm...could it be handled automatically with zDist at intersection?
             {
-                locInfo.ground_Z = world_Z;
-                locInfo.hitInstance = this;
-                aInfo.ground_Z = world_Z;
-                aInfo.adtId = adtId;
+                info.ground_Z = world_Z;
+                info.hitInstance = this;
                 return true;
             }
         }

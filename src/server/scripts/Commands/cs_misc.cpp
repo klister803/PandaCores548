@@ -365,8 +365,6 @@ public:
 
         handler->PSendSysMessage("Diffyculty %i spawnmask %i", map->GetDifficulty(), map->GetSpawnMode());
 
-        handler->PSendSysMessage("areaid %i zoneid %i isOutdoors %i", object->GetAreaId(), object->GetZoneId(), object->vmapInfo.isOutdoors);
-
         if (object->m_movementInfo.t_guid)
             handler->PSendSysMessage("Transport position X: %f Y: %f Z: %f O: %f", object->m_movementInfo.t_pos.GetPositionX(), object->m_movementInfo.t_pos.GetPositionY(),
             object->m_movementInfo.t_pos.GetPositionZ(), object->m_movementInfo.t_pos.GetOrientation());
@@ -375,10 +373,7 @@ public:
         ZLiquidStatus status = map->getLiquidStatus(object->GetPositionX(), object->GetPositionY(), object->GetPositionZ(), MAP_ALL_LIQUIDS, &liquidStatus);
 
         if (status)
-        {
             handler->PSendSysMessage(LANG_LIQUID_STATUS, liquidStatus.level, liquidStatus.depth_level, liquidStatus.entry, liquidStatus.type_flags, status);
-            handler->PSendSysMessage(LANG_LIQUID_STATUS, object->vmapInfo.liquid_status.level, object->vmapInfo.liquid_status.depth_level, object->vmapInfo.liquid_status.entry, object->vmapInfo.liquid_status.type_flags, object->vmapInfo.Zliquid_status);
-        }
 
         return true;
     }
