@@ -3208,6 +3208,8 @@ class Player : public Unit, public GridObject<Player>
         /*********************************************************/
         bool isWatchingMovie() const { return m_watching_movie; }
         void setWatchinMovie(bool s) { m_watching_movie = s; }
+        uint32 getCurrentUpdateAreaID() const { return m_areaUpdateId; }
+        uint32 getCurrentUpdateZoneID() const { return m_zoneUpdateId; }
 
         //
         AreaTriggerEntry const* GetLastAreaTrigger() { return LastAreaTrigger; }
@@ -3444,7 +3446,9 @@ class Player : public Unit, public GridObject<Player>
 
         bool m_zoneUpdateAllow;
         Position m_lastZoneUpdPos;
+        uint32 m_zoneUpdateId;
         uint32 m_zoneUpdateTimer;
+        uint32 m_areaUpdateId;
 
         uint32 m_deathTimer;
         time_t m_deathExpireTime;

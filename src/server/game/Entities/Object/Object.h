@@ -817,10 +817,6 @@ class WorldObject : public Object, public WorldLocation
         uint32 GetZoneId() const;
         uint32 GetAreaId() const;
         void GetZoneAndAreaId(uint32& zoneid, uint32& areaid) const;
-        void UpdateZoneAndAreaId();
-
-        uint32 m_zoneUpdateId;
-        uint32 m_areaUpdateId;
 
         InstanceScript* GetInstanceScript();
 

@@ -1204,7 +1204,7 @@ bool BfCapturePoint::Update(uint32 diff)
             for (uint8 team = 0; team < 2; ++team)
                 for (GuidSet::iterator itr = m_activePlayers[team].begin(); itr != m_activePlayers[team].end(); ++itr)
                     if (Player* player = ObjectAccessor::FindPlayer(*itr))
-                        player->UpdateAreaDependentAuras(player->GetAreaId());
+                        player->UpdateAreaDependentAuras(player->getCurrentUpdateAreaID());
         }
         return true;
     }

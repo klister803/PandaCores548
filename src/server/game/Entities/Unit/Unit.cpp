@@ -14096,6 +14096,9 @@ void Unit::UpdateMount()
 
     if (mountType)
     {
+        uint32 zoneId, areaId;
+        GetZoneAndAreaId(zoneId, areaId);
+
         uint32 ridingSkill = 5000;
         if (GetTypeId() == TYPEID_PLAYER)
             ridingSkill = ToPlayer()->GetSkillValue(SKILL_RIDING);
@@ -14113,9 +14116,9 @@ void Unit::UpdateMount()
             else
             {
                 AreaTableEntry const* entry;
-                entry = GetAreaEntryByAreaID(GetAreaId());
+                entry = GetAreaEntryByAreaID(areaId);
                 if (!entry)
-                    entry = GetAreaEntryByAreaID(GetZoneId());
+                    entry = GetAreaEntryByAreaID(zoneId);
 
                 if (entry)
                     currentMountFlags = entry->mountFlags;
@@ -14169,7 +14172,7 @@ void Unit::UpdateMount()
             if (mountCapability->RequiredMap != -1 && GetMapId() != uint32(mountCapability->RequiredMap))
                 continue;
 
-            if (mountCapability->RequiredArea && (mountCapability->RequiredArea != GetZoneId() && mountCapability->RequiredArea != GetAreaId()))
+            if (mountCapability->RequiredArea && (mountCapability->RequiredArea != zoneId && mountCapability->RequiredArea != areaId))
                 continue;
 
             if (mountCapability->RequiredAura && !HasAura(mountCapability->RequiredAura))
@@ -14226,6 +14229,8 @@ MountCapabilityEntry const* Unit::GetMountCapability(uint32 mountType) const
     if (!mountTypeEntry)
         return NULL;
 
+    uint32 zoneId, areaId;
+    GetZoneAndAreaId(zoneId, areaId);
     uint32 ridingSkill = 5000;
     if (GetTypeId() == TYPEID_PLAYER)
         ridingSkill = ToPlayer()->GetSkillValue(SKILL_RIDING);
@@ -14258,7 +14263,7 @@ MountCapabilityEntry const* Unit::GetMountCapability(uint32 mountType) const
         if (mountCapability->RequiredMap != -1 && int32(GetMapId()) != mountCapability->RequiredMap)
             continue;
 
-        if (mountCapability->RequiredArea && (mountCapability->RequiredArea != GetZoneId() && mountCapability->RequiredArea != GetAreaId()))
+        if (mountCapability->RequiredArea && (mountCapability->RequiredArea != zoneId && mountCapability->RequiredArea != areaId))
             continue;
 
         if (mountCapability->RequiredAura && !HasAura(mountCapability->RequiredAura))

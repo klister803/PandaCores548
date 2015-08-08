@@ -6923,7 +6923,10 @@ SpellCastResult Spell::CheckCast(bool strict)
     // zone check
     if (m_caster->GetTypeId() == TYPEID_UNIT || !m_caster->ToPlayer()->isGameMaster())
     {
-        SpellCastResult locRes= m_spellInfo->CheckLocation(m_caster->GetMapId(), m_caster->GetZoneId(), m_caster->GetAreaId(),
+        uint32 zone, area;
+        m_caster->GetZoneAndAreaId(zone, area);
+
+        SpellCastResult locRes= m_spellInfo->CheckLocation(m_caster->GetMapId(), zone, area,
             m_caster->GetTypeId() == TYPEID_PLAYER ? m_caster->ToPlayer() : NULL);
         if (locRes != SPELL_CAST_OK)
             return locRes;
