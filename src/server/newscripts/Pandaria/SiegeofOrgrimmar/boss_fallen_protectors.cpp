@@ -1022,7 +1022,7 @@ public:
                         for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                             if (Player* player = i->getSource())
                             {
-                                if (player->GetAreaId() != BATTLE_AREA)
+                                if (player->GetAreaId() != BATTLE_AREA && player->GetAreaId() != 0)
                                 {
                                     EnterEvadeMode();
                                     return;
