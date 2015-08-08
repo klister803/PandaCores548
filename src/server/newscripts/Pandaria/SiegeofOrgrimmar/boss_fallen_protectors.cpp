@@ -214,18 +214,21 @@ struct boss_fallen_protectors : public BossAI
             return;
         }
 
-        if ((_healthPhase == 0 && GetHealthPct(damage) <= 66.0f) ||
-            (_healthPhase == 1 && GetHealthPct(damage) <= 33.0f))
+        if (!me->IsInEvadeMode())
         {
-            ++_healthPhase;
-            me->SetInCombatWithZone();
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            me->SetReactState(REACT_PASSIVE);
-            me->AttackStop();
-            me->GetMotionMaster()->MovementExpired();
-            events.SetPhase(PHASE_DESPERATE_MEASURES);
-            events.RescheduleEvent(EVENT_DESPERATE_MEASURES, 1*IN_MILLISECONDS, 0, PHASE_DESPERATE_MEASURES);   //BreakIfAny
-            me->InterruptNonMeleeSpells(false);
+            if ((_healthPhase == 0 && GetHealthPct(damage) <= 66.0f) ||
+                (_healthPhase == 1 && GetHealthPct(damage) <= 33.0f))
+            {
+                ++_healthPhase;
+                me->SetInCombatWithZone();
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->SetReactState(REACT_PASSIVE);
+                me->AttackStop();
+                me->GetMotionMaster()->MovementExpired();
+                events.SetPhase(PHASE_DESPERATE_MEASURES);
+                events.RescheduleEvent(EVENT_DESPERATE_MEASURES, 1 * IN_MILLISECONDS, 0, PHASE_DESPERATE_MEASURES);   //BreakIfAny
+                me->InterruptNonMeleeSpells(false);
+            }
         }
     }
 
