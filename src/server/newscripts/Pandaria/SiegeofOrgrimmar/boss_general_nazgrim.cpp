@@ -132,6 +132,7 @@ class boss_general_nazgrim : public CreatureScript
                 _Reset();
                 for (uint8 n = 0; n < 3; n++)
                     me->RemoveAurasDueToSpell(stances[n]);
+                me->RemoveAurasDueToSpell(SPELL_BERSERK);
                 me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 100);
                 me->SetPower(POWER_ENERGY, 0);
@@ -357,7 +358,7 @@ class boss_general_nazgrim : public CreatureScript
                 events.ScheduleEvent(EVENT_SUMMON, 45000);
                 events.ScheduleEvent(EVENT_SUNDERING_BLOW, 10000);
                 events.ScheduleEvent(EVENT_BONECRACKER, 15000);
-                events.ScheduleEvent(EVENT_BERSERK, 6000000);
+                events.ScheduleEvent(EVENT_BERSERK, 600000);
                 if (me->GetMap()->IsHeroic())
                     events.ScheduleEvent(EVENT_EXECUTE, 20000);
             }

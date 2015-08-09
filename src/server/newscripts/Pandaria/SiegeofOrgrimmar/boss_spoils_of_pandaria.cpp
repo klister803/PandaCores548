@@ -22,55 +22,75 @@
 enum eSpells
 {
     //Big Mogu
-    SPELL_STRENGTH_OF_THE_STONE  = 145998,
-    SPELL_SHADOW_VOLLEY          = 148515,
-    SPELL_SHADOW_VOLLEY_D        = 148516,
-    SPELL_MOLTEN_FIST            = 148518,
-    SPELL_MOLTEN_FIST_D          = 148517,
-    SPELL_JADE_TEMPEST           = 148582,
-    SPELL_JADE_TEMPEST_D         = 148583,
-    SPELL_FRACTURE               = 148513,
-    SPELL_FRACTURE_D             = 148514,
+    SPELL_STRENGTH_OF_THE_STONE      = 145998,
+    SPELL_SHADOW_VOLLEY               = 148515,
+    SPELL_SHADOW_VOLLEY_D             = 148516,
+    SPELL_MOLTEN_FIST                 = 148518,
+    SPELL_MOLTEN_FIST_D               = 148517,
+    SPELL_JADE_TEMPEST                = 148582,
+    SPELL_JADE_TEMPEST_D              = 148583,
+    SPELL_FRACTURE                    = 148513,
+    SPELL_FRACTURE_D                  = 148514,
 
     //Medium
-    SPELL_SET_TO_BLOW_DMG        = 145993,
-    SPELL_SET_TO_BLOW_AURA       = 145987,
-    SPELL_SET_TO_BLOW_AT         = 146365,
+    SPELL_SET_TO_BLOW_DMG             = 145993,
+    SPELL_SET_TO_BLOW_AURA            = 145987,
+    SPELL_SET_TO_BLOW_AT              = 146365,
 
     //NPC_ANIMATED_STONE_MOGU
-    SPELL_EARTHEN_SHARD          = 144923,
-    SPELL_HARDEN_FLESH_DMG       = 145218,   
+    SPELL_EARTHEN_SHARD               = 144923,
+    SPELL_HARDEN_FLESH_DMG            = 145218,   
     //
-    SPELL_RUSH                   = 144904,
-    SPELL_KW_ENRAGE              = 145692,
+    SPELL_RUSH                        = 144904,
+    SPELL_KW_ENRAGE                   = 145692,
+
+    SPELL_KEG_TOSS                    = 146214,
+    SPELL_KEG_TOSS_DMG                = 146217,
+    SPELL_BREATH_OF_FIRE              = 146222,
+    SPELL_BREATH_OF_FIRE_DMG          = 146226,
+    SPELL_BREATH_OF_FIRE_TR           = 146235,
+    //
+    SPELL_PATH_OF_BLOSSOMS_P_D        = 124336,
+    SPELL_PATH_OF_BLOSSOMS_AT         = 146255,
+    SPELL_PATH_OF_BLOSSOMS_J          = 146256,
+    SPELL_PATH_OF_BLOSSOMS_DMG        = 146257,
+    SPELL_MASS_PARALYSIS              = 146289,
+
     //Special
-    SPELL_LIFT_HOOK_VISUAL       = 142721,
-    SPELL_AURA_BAR               = 144921,
-    SPELL_AURA_BAR_S             = 148505,
-    SPELL_SOOPS_AT_VISUAL        = 145687,
+    SPELL_GHOST_VISUAL                = 118205,
+    SPELL_LIFT_HOOK_VISUAL            = 142721,
+    SPELL_AURA_BAR                    = 144921,
+    SPELL_AURA_BAR_S                  = 148505,
+    SPELL_SOOPS_AT_VISUAL             = 145687,
+    SPELL_BLADE_OF_THE_HUNDRED_STEPS  = 146068, //tank 
+    SPELL_STAFF_OF_RESONATING_WATER   = 146099, //healer
+    SPELL_CLAW__OF_BURNING_ANGER      = 146141, //dd
 };
 
 enum Events
 {
     //Lift hook
-    EVENT_START_LIFT             = 1,
-    EVENT_POINT                  = 2,
-    EVENT_BACK                   = 3,
-    EVENT_RESET                  = 4,
+    EVENT_START_LIFT                  = 1,
+    EVENT_POINT                       = 2,
+    EVENT_BACK                        = 3,
+    EVENT_RESET                       = 4,
 
     //Summons
     //Big mogu
-    EVENT_SPAWN                  = 5,
-    EVENT_EARTHEN_SHARD          = 6, 
-    EVENT_SHADOW_VOLLEY          = 7,
-    EVENT_MOLTEN_FIST            = 8,
-    EVENT_JADE_TEMPEST           = 9,
-    EVENT_FRACTURE               = 10,
-    EVENT_HARDEN_FLESH           = 11,
-    EVENT_FIND_PLAYERS           = 12,
-    EVENT_RUSH                   = 13,
-    EVENT_KW_ENRAGE              = 14,
-    EVENT_IN_PROGRESS            = 15,
+    EVENT_SPAWN                       = 5,
+    EVENT_EARTHEN_SHARD               = 6, 
+    EVENT_SHADOW_VOLLEY               = 7,
+    EVENT_MOLTEN_FIST                 = 8,
+    EVENT_JADE_TEMPEST                = 9,
+    EVENT_FRACTURE                    = 10,
+    EVENT_HARDEN_FLESH                = 11,
+    EVENT_FIND_PLAYERS                = 12,
+    EVENT_RUSH                        = 13,
+    EVENT_KW_ENRAGE                   = 14,
+    EVENT_IN_PROGRESS                 = 15,
+    EVENT_KEG_TOSS                    = 16,
+    EVENT_BREATH_OF_FIRE              = 17,
+    EVENT_PATH_OF_BLOSSOMS            = 18,
 
     //144281
     //146529 from death mob
@@ -132,6 +152,14 @@ uint32 smallmantisentry[3] =
 };
 //
 
+//Pandaren Relic box
+uint32 pandarenrelicentry[3] = 
+{
+    NPC_NAMELESS_WINDWALKER_SPIRIT,
+    NPC_WISE_MISTWEAVER_SPIRIT,
+    NPC_ANCIENT_BREWMASTER_SPIRIT,
+};
+
 enum sActions
 {
     ACTION_SEND_AURA_BAR         = 1,
@@ -140,7 +168,17 @@ enum sActions
 
 enum sData
 {
-    DATA_UPDATE_POWER            = 1,
+    DATA_BUFF_DD                 = 1,
+    DATA_BUFF_TANK               = 2,
+    DATA_BUFF_HEALER             = 3,
+    DATA_UPDATE_POWER            = 4,
+};
+
+uint32 spellbuff[3] =
+{
+    SPELL_CLAW__OF_BURNING_ANGER,
+    SPELL_BLADE_OF_THE_HUNDRED_STEPS,
+    SPELL_STAFF_OF_RESONATING_WATER,
 };
 
 #define GOSSIP1 "We are ready"
@@ -325,8 +363,29 @@ public:
 
         void SetData(uint32 type, uint32 data)
         {
-            if (type == DATA_UPDATE_POWER)
+            switch (type)
+            {
+            case DATA_BUFF_DD:
+            case DATA_BUFF_TANK:
+            case DATA_BUFF_HEALER:
+            {
+                std::list<Player*> pllist;
+                pllist.clear();
+                GetPlayerListInGrid(pllist, me, 50.0f);
+                if (!pllist.empty())
+                {
+                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                        if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) == type)
+                            (*itr)->CastSpell(*itr, spellbuff[type], true);
+                }
+                break;
+            }
+            case DATA_UPDATE_POWER:
                 power = power + data > 50 ? 50 : power + data;
+                break;
+            default:
+                break;
+            }
         }
 
         void ActivateOrOfflineBoxes(bool state)
@@ -640,6 +699,16 @@ public:
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             spawn = 0;
+            switch (me->GetEntry())
+            {
+            case NPC_NAMELESS_WINDWALKER_SPIRIT:
+            case NPC_WISE_MISTWEAVER_SPIRIT:
+            case NPC_ANCIENT_BREWMASTER_SPIRIT:
+                DoCast(me, SPELL_GHOST_VISUAL, true);
+                break;
+            default:
+                break;
+            }
         }
 
         InstanceScript* instance;
@@ -693,6 +762,14 @@ public:
             case NPC_KORTHIK_WARCALLER:
                 events.ScheduleEvent(EVENT_KW_ENRAGE, 1000);
                 break;
+            //Pandaren Relic box
+            case NPC_NAMELESS_WINDWALKER_SPIRIT:
+                events.ScheduleEvent(EVENT_PATH_OF_BLOSSOMS, 8000);
+                break;
+            case NPC_ANCIENT_BREWMASTER_SPIRIT:
+                events.ScheduleEvent(EVENT_KEG_TOSS, 5000);
+                events.ScheduleEvent(EVENT_BREATH_OF_FIRE, 10000);
+                break;
             default:
                 break;
             }
@@ -732,11 +809,24 @@ public:
                 case NPC_KORTHIK_WARCALLER:
                     data = 1;
                     break;
+                case NPC_NAMELESS_WINDWALKER_SPIRIT:
+                    if (Unit* summoner = me->ToTempSummon()->GetSummoner())
+                        summoner->ToCreature()->AI()->SetData(DATA_BUFF_DD, 0);
+                   break;
+                case NPC_WISE_MISTWEAVER_SPIRIT:
+                    if (Unit* summoner = me->ToTempSummon()->GetSummoner())
+                        summoner->ToCreature()->AI()->SetData(DATA_BUFF_HEALER, 0);
+                    break;
+                case NPC_ANCIENT_BREWMASTER_SPIRIT:
+                    if (Unit* summoner = me->ToTempSummon()->GetSummoner())
+                        summoner->ToCreature()->AI()->SetData(DATA_BUFF_TANK, 0);
+                    break;                  
                 default:
                     break;
                 }
-                if (Unit* summoner = me->ToTempSummon()->GetSummoner())
-                    summoner->ToCreature()->AI()->SetData(DATA_UPDATE_POWER, data);
+                if (data)
+                    if (Unit* summoner = me->ToTempSummon()->GetSummoner())
+                        summoner->ToCreature()->AI()->SetData(DATA_UPDATE_POWER, data);
             }
         }
 
@@ -748,8 +838,8 @@ public:
                 {
                     spawn = 0;
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    DoZoneInCombat(me, 60.0f);
+                    //me->SetReactState(REACT_AGGRESSIVE);
+                    //DoZoneInCombat(me, 60.0f);
                 }
                 else 
                     spawn -= diff;
@@ -801,9 +891,41 @@ public:
                     DoCast(me, SPELL_FRACTURE);
                     events.ScheduleEvent(EVENT_FRACTURE, 10000);
                     break;
+                //Pandaren Relic box 
+                case EVENT_KEG_TOSS:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
+                        DoCast(target, SPELL_KEG_TOSS);
+                    events.ScheduleEvent(EVENT_KEG_TOSS, 10000);
+                    break;
+                case EVENT_BREATH_OF_FIRE:
+                    if (me->getVictim())
+                        DoCastVictim(SPELL_BREATH_OF_FIRE);
+                    events.ScheduleEvent(EVENT_BREATH_OF_FIRE, 15000);
+                    break;
+                case EVENT_PATH_OF_BLOSSOMS:
+                    me->AttackStop();
+                    me->SetReactState(REACT_PASSIVE);
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
+                    {
+                        DoCast(me, SPELL_PATH_OF_BLOSSOMS_P_D, true);
+                        DoCast(target, SPELL_PATH_OF_BLOSSOMS_J);
+                    }
+                    break;
                 }
             }
             DoMeleeAttackIfReady();
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (type == EFFECT_MOTION_TYPE)
+            {
+                if (pointId == SPELL_PATH_OF_BLOSSOMS_J)
+                {
+                    DoCast(me, SPELL_PATH_OF_BLOSSOMS_DMG, true);
+                    DoCast(me, SPELL_MASS_PARALYSIS, true);
+                }
+            }
         }
     };
 
@@ -912,6 +1034,9 @@ public:
                 }
                 case GO_SMALL_MANTIS_BOX:
                     summoner->SummonCreature(smallmantisentry[urand(0, 2)], pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+                    break;
+                case GO_PANDAREN_RELIC_BOX:
+                    summoner->SummonCreature(pandarenrelicentry[urand(0, 2)], pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
                     break;
                 default:
                     break;
@@ -1026,6 +1151,66 @@ public:
     }
 };
 
+//146222
+class spell_breath_of_fire : public SpellScriptLoader
+{
+public:
+    spell_breath_of_fire() : SpellScriptLoader("spell_breath_of_fire") { }
+
+    class spell_breath_of_fire_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_breath_of_fire_AuraScript);
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetCaster() && GetTarget())
+            {
+                GetCaster()->CastSpell(GetTarget(), SPELL_BREATH_OF_FIRE_DMG, true);
+                if (GetTarget()->HasAura(SPELL_KEG_TOSS_DMG))
+                    GetCaster()->CastSpell(GetTarget(), SPELL_BREATH_OF_FIRE_TR, true);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_breath_of_fire_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_breath_of_fire_AuraScript();
+    }
+};
+
+//SPELL_PATH_OF_BLOSSOMS_P_D        = 124336,
+class spell_path_of_blossoms_periodic : public SpellScriptLoader
+{
+public:
+    spell_path_of_blossoms_periodic() : SpellScriptLoader("spell_path_of_blossoms_periodic") { }
+
+    class spell_path_of_blossoms_periodic_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_path_of_blossoms_periodic_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (GetCaster())
+                GetCaster()->CastSpell(GetCaster(), SPELL_PATH_OF_BLOSSOMS_AT, true);
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_path_of_blossoms_periodic_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_path_of_blossoms_periodic_AuraScript();
+    }
+};
+
 
 void AddSC_boss_spoils_of_pandaria()
 {
@@ -1040,4 +1225,6 @@ void AddSC_boss_spoils_of_pandaria()
     new spell_shadow_volley();
     new spell_molten_fist();
     new spell_fracture();
+    new spell_breath_of_fire();
+    new spell_path_of_blossoms_periodic();
 }

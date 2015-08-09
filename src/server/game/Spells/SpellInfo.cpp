@@ -1202,6 +1202,7 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 142906: //Ancient Miasma Dmg
     case 143848: //Essence of yshaarj
     //Spoils of Pandaria
+    case 146068: //Blade of the hundred steps (tank buff)
     case 148515: //Shadow Volley Dummy
     case 148582: //Jade Tempest AT
     case 148583: //Jade Tempest Dmg

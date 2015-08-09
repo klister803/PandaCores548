@@ -273,6 +273,12 @@ enum eCreatures
     NPC_KORTHIK_WARCALLER           = 71383,
     //
 
+    //Pandaren Relic box                              //display id and name from - entry, needed update in DB
+    NPC_NAMELESS_WINDWALKER_SPIRIT  = 72828, //dd       71430
+    NPC_WISE_MISTWEAVER_SPIRIT      = 72810, //Healers  71428
+    NPC_ANCIENT_BREWMASTER_SPIRIT   = 72787, //Tank     71427
+    //
+
     //Special
     NPC_LEVER                       = 72281,
     NPC_LIFT_HOOK                   = 72972,

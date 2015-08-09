@@ -5176,6 +5176,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetB = 0;
                     break;
                 //Spoils of Pandaria
+                case 146068: //Blade of the hundred steps (tank buff)
+                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+                    spellInfo->Effects[0].TriggerSpell = 0;
+                    break;
                 case 148515: //Shadow Volley Dummy
                     spellInfo->Effects[1].TargetA = 22;
                     spellInfo->Effects[1].TargetB = 15;
