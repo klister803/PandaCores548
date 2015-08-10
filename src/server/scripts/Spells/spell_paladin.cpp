@@ -1131,7 +1131,7 @@ class spell_pal_stay_of_execution : public SpellScriptLoader
 
             void Register()
             {
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pal_stay_of_execution_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
+                DoEffectBeforeCalcAmount += AuraEffectCalcAmountFn(spell_pal_stay_of_execution_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
                 DoEffectChangeTickDamage += AuraEffectChangeTickDamageFn(spell_pal_stay_of_execution_AuraScript::HandleTick, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
                 OnEffectRemove += AuraEffectRemoveFn(spell_pal_stay_of_execution_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_HEAL, AURA_EFFECT_HANDLE_REAL);
             }
@@ -1198,7 +1198,7 @@ class spell_pal_execution_sentence_damage : public SpellScriptLoader
 
             void Register()
             {
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pal_execution_sentence_damage_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+                DoEffectBeforeCalcAmount += AuraEffectCalcAmountFn(spell_pal_execution_sentence_damage_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
                 DoEffectChangeTickDamage += AuraEffectChangeTickDamageFn(spell_pal_execution_sentence_damage_AuraScript::HandleTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
                 OnEffectRemove += AuraEffectRemoveFn(spell_pal_execution_sentence_damage_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
             }

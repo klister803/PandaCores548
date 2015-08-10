@@ -615,6 +615,8 @@ class Spell
 
         uint32 GetTargetCount() const { return m_UniqueTargetInfo.size(); }
         std::list<TargetInfo>* GetUniqueTargetInfo() { return &m_UniqueTargetInfo; }
+
+        int32 GetDamage() const { return m_damage; }
     protected:
         bool HasGlobalCooldown();
         void TriggerGlobalCooldown();

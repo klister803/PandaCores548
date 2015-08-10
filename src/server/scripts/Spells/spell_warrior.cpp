@@ -524,8 +524,6 @@ class spell_warr_heroic_leap : public SpellScriptLoader
         {
             PrepareSpellScript(spell_warr_heroic_leap_SpellScript);
 
-            std::list<Unit*> targetList;
-
             SpellCastResult CheckElevation()
             {
                 Unit* caster = GetCaster();
@@ -1100,8 +1098,25 @@ class spell_war_intervene : public SpellScriptLoader
                     targets.resize(1);
             }
 
+            SpellCastResult CheckCast()
+            {
+                Player* _player = GetCaster()->ToPlayer();
+                if (!_player)
+                    return SPELL_FAILED_BAD_TARGETS;
+
+                Unit* target = _player->GetSelectedUnit();
+                if (!target)
+                    return SPELL_FAILED_BAD_TARGETS;
+
+                if (!_player->IsFriendlyTo(target) || (!_player->IsInPartyWith(target) && !_player->IsInRaidWith(target)))
+                    return SPELL_FAILED_BAD_TARGETS;
+
+                return SPELL_CAST_OK;
+            }
+
             void Register()
             {
+                OnCheckCast += SpellCheckCastFn(spell_war_intervene_SpellScript::CheckCast);
                 OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_war_intervene_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_DEST_AREA_ALLY);
             }
 

@@ -1499,6 +1499,7 @@ class spell_shaman_totemic_projection : public SpellScriptLoader
                     Position pos;
                     summon->GetFirstCollisionPosition(pos, 2.5f, static_cast<float>(-M_PI/4));
                     //totem->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation());
+                    totem->UpdatePosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation(), false);
                     totem->GetMotionMaster()->MovePoint(0, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), false, 60.0f);
                     //totem->SendMovementFlagUpdate();
                 }
@@ -1507,6 +1508,7 @@ class spell_shaman_totemic_projection : public SpellScriptLoader
                     Position pos;
                     summon->GetFirstCollisionPosition(pos, 2.5f, static_cast<float>(-3*M_PI/4));
                     //totem->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation());
+                    totem->UpdatePosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation(), false);
                     totem->GetMotionMaster()->MovePoint(0, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), false, 60.0f);
                     //totem->SendMovementFlagUpdate();
                 }
@@ -1515,6 +1517,7 @@ class spell_shaman_totemic_projection : public SpellScriptLoader
                     Position pos;
                     summon->GetFirstCollisionPosition(pos, 2.5f, static_cast<float>(3*M_PI/4));
                     //totem->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation());
+                    totem->UpdatePosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation(), false);
                     totem->GetMotionMaster()->MovePoint(0, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), false, 60.0f);
                     //totem->SendMovementFlagUpdate();
                 }
@@ -1523,6 +1526,7 @@ class spell_shaman_totemic_projection : public SpellScriptLoader
                     Position pos;
                     summon->GetFirstCollisionPosition(pos, 2.5f, static_cast<float>(M_PI/4));
                     //totem->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation());
+                    totem->UpdatePosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation(), false);
                     totem->GetMotionMaster()->MovePoint(0, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), false, 60.0f);
                     //totem->SendMovementFlagUpdate();
                 }

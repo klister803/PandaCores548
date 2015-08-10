@@ -681,6 +681,17 @@ class spell_dk_blood_tap : public SpellScriptLoader
                                 _player->AddRunePower(i);
                             }
                         }
+                        /*if(runesRestor < 1)
+                        {
+                            for (int i = 0; i < MAX_RUNES ; i++)
+                            {
+                                if (_player->GetRuneCooldown(i) == RUNE_BASE_COOLDOWN && runesRestor < 1)
+                                {
+                                    runesRestor++;
+                                    _player->SetRuneCooldown(i, 0);
+                                }
+                            }
+                        }*/
                     }
                 }
             }
@@ -861,7 +872,7 @@ class spell_dk_plague_leech : public SpellScriptLoader
 
                         if (Unit* target = GetExplTargetUnit())
                         {
-                            if (!target->HasAura(DK_SPELL_BLOOD_PLAGUE) || !target->HasAura(DK_SPELL_FROST_FEVER))
+                            if (!target->HasAura(DK_SPELL_BLOOD_PLAGUE, _player->GetGUID()) || !target->HasAura(DK_SPELL_FROST_FEVER, _player->GetGUID()))
                             {
                                 Spell::SendCastResult(_player, GetSpellInfo(), 1, SPELL_FAILED_CUSTOM_ERROR, SPELL_CUSTOM_ERROR_FEVER_PLAGUE_MUST_BE_PRESENT);
                                 return SPELL_FAILED_DONT_REPORT;
@@ -1274,7 +1285,12 @@ class spell_dk_death_gate_teleport : public SpellScriptLoader
             void HandleAfterCast()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
-                    _player->TeleportTo(0, 2355.23f, -5666.4433f, 426.028f, _player->GetOrientation());
+                {
+                    if(_player->GetZoneId() == 139)
+                        _player->TeleportTo(_player->m_homebindMapId, _player->m_homebindX, _player->m_homebindY, _player->m_homebindZ, 0.0f);
+                    else
+                        _player->TeleportTo(0, 2355.23f, -5666.4433f, 426.028f, _player->GetOrientation());
+                }
             }
 
             void Register()
@@ -1469,53 +1485,19 @@ class spell_dk_blood_boil : public SpellScriptLoader
 
                         if (_player->HasAura(DK_SPELL_SCARLET_FEVER))
                         {
-                            if (Aura* aura = target->GetAura(DK_SPELL_BLOOD_PLAGUE))
+                            if (Aura* aura = target->GetAura(DK_SPELL_BLOOD_PLAGUE, _player->GetGUID()))
                                 aura->SetDuration(aura->GetMaxDuration());
 
-                            if (Aura* aura = target->GetAura(DK_SPELL_FROST_FEVER))
+                            if (Aura* aura = target->GetAura(DK_SPELL_FROST_FEVER, _player->GetGUID()))
                                 aura->SetDuration(aura->GetMaxDuration());
                         }
 
                         // Deals 50% additional damage to targets infected with Blood Plague or Frost Fever
-                        if (target->HasAura(DK_SPELL_FROST_FEVER))
-                        {
+                        if (target->HasAura(DK_SPELL_FROST_FEVER, _player->GetGUID()))
                             SetHitDamage(int32(damge * 1.5f));
-
-                            // Roiling Blood
-                            /*std::list<uint64> targets = GetSpell()->GetEffectTargets();
-                            if(!targets.empty())
-                            {
-                                for (std::list<uint64>::iterator itr = targets.begin(); itr != targets.end();)
-                                {
-                                    if(target->GetGUID() == (*itr))
-                                    {
-                                        _player->CastSpell(target, 116617, true);
-                                        GetSpell()->RemoveEffectTarget((*itr));
-                                    }
-                                    ++itr;
-                                }
-                            }*/
-                        }
-                        else if (target->HasAura(DK_SPELL_BLOOD_PLAGUE))
-                        {
+                        else if (target->HasAura(DK_SPELL_BLOOD_PLAGUE, _player->GetGUID()))
                             SetHitDamage(int32(damge * 1.5f));
-
-                            // Roiling Blood
-                            /*std::list<uint64> targets = GetSpell()->GetEffectTargets();
-                            if(!targets.empty())
-                            {
-                                for (std::list<uint64>::iterator itr = targets.begin(); itr != targets.end();)
-                                {
-                                    if(target->GetGUID() == (*itr))
-                                    {
-                                        _player->CastSpell(target, 116617, true);
-                                        GetSpell()->RemoveEffectTarget((*itr));
-                                    }
-                                    ++itr;
-                                }
-                            }*/
-                        }
-                        else if (_player->HasAura(146650))
+                        else if (_player->HasAura(146650, _player->GetGUID()))
                             SetHitDamage(int32(damge * 1.5f));
                     }
                 }
@@ -1523,24 +1505,40 @@ class spell_dk_blood_boil : public SpellScriptLoader
 
             void FilterTargets(std::list<WorldObject*>& unitList)
             {
-                if (Unit* caster = GetCaster())
-                    if (!unitList.empty())
-                        caster->CastSpell(caster, DK_SPELL_BLOOD_BOIL_TRIGGERED, true);
-
-                /*
+                Unit* caster = GetCaster();
                 if(!caster || !caster->HasAura(108170))
                     return;
+
+                if (!unitList.empty())
+                    caster->CastSpell(caster, DK_SPELL_BLOOD_BOIL_TRIGGERED, true);
 
                 for (std::list<WorldObject*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
                 {
                     if (Unit* unit = (*itr)->ToUnit())
-                    if (unit->HasAura(DK_SPELL_FROST_FEVER, caster->GetGUID()) || unit->HasAura(DK_SPELL_BLOOD_PLAGUE, caster->GetGUID()))
-                        GetSpell()->AddEffectTarget(unit->GetGUID());
-                }*/
+                        if (unit->HasAura(DK_SPELL_FROST_FEVER, caster->GetGUID()) || unit->HasAura(DK_SPELL_BLOOD_PLAGUE, caster->GetGUID()))
+                            GetSpell()->AddEffectTarget(unit->GetGUID());
+                }
+            }
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    // Roiling Blood
+                    if(uint64 targetGuid = GetSpell()->GetRndEffectTarget())
+                    {
+                        if(Unit* target = ObjectAccessor::GetUnit(*_player, targetGuid))
+                        {
+                            _player->CastSpell(target, 116617, true);
+                            GetSpell()->ClearEffectTarget();
+                        }
+                    }
+                }
             }
 
             void Register()
             {
+                AfterCast += SpellCastFn(spell_dk_blood_boil_SpellScript::HandleAfterCast);
                 OnHit += SpellHitFn(spell_dk_blood_boil_SpellScript::HandleOnHit);
                 OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dk_blood_boil_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
             }
@@ -1953,8 +1951,24 @@ class spell_dk_death_shroud : public SpellScriptLoader
                 }
             }
 
+            void CalculateMaxDuration(int32 & duration)
+            {
+                Unit* caster = GetCaster();
+                if(!caster)
+                    return;
+
+                if (Player* _player = caster->ToPlayer())
+                {
+                    if (caster->HasSpell(63560))
+                        duration = 15000;
+                    else if(_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DK_FROST)
+                        duration = 4000 + (_player->IsTwoHandUsed() ? 4000 : 2000);
+                }
+            }
+
             void Register()
             {
+                DoCalcMaxDuration += AuraCalcMaxDurationFn(spell_dk_death_shroud_AuraScript::CalculateMaxDuration);
                 DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dk_death_shroud_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_MOD_RATING);
                 DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dk_death_shroud_AuraScript::CalculateAmount1, EFFECT_1, SPELL_AURA_MOD_RATING);
             }

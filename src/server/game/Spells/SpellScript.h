@@ -740,6 +740,7 @@ class AuraScript : public _SpellScript
         // executed when aura effect calculates amount
         // example: DoEffectCalcAmount += AuraEffectCalcAmounFn(class::function, EffectIndexSpecifier, EffectAuraNameSpecifier);
         // where function is: void function (AuraEffect* aurEff, int32& amount, bool& canBeRecalculated);
+        HookList<EffectCalcAmountHandler> DoEffectBeforeCalcAmount;
         HookList<EffectCalcAmountHandler> DoEffectCalcAmount;
         #define AuraEffectCalcAmountFn(F, I, N) EffectCalcAmountHandlerFunction(&F, I, N)
 

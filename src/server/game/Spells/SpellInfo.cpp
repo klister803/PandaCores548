@@ -3475,6 +3475,9 @@ bool SpellInfo::IsAfflictionPeriodicDamage() const
 
 bool SpellInfo::CanTriggerBladeFlurry() const
 {
+    if(IsAffectingArea())
+        return false;
+
     switch (Id)
     {
         case 1752:  // Sinister Strike

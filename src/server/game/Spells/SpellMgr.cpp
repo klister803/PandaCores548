@@ -4392,7 +4392,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 1160:   // Demoralizing Shout
                 case 1966:   // Feint
                 case 50256:  // Demoralizing Roar
-                case 108212: // Burst of Speed
                     spellInfo->AttributesEx |= SPELL_ATTR1_NOT_BREAK_STEALTH;
                     break;
                 case 84745: // Shallow Insight
@@ -4424,7 +4423,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 50227:  // Sword and Board
                 case 113901: // Demonic Gateway
                 case 131116: // Raging Blow!
-				case 136050: // Malformed Blood
+                case 136050: // Malformed Blood
                     spellInfo->ProcCharges = 0;
                     break;
                 case 82926: // Fire ! (for Master Marksman)
@@ -4456,7 +4455,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 124430: // Divine Insight (Shadow)
                 case 93400:  // Shooting Stars
                 case 144569:  // Bastion of Power
-                case 144595:  // Divine Crusader
                 case 144871:  // Sage Mender
                     spellInfo->ProcCharges = 1;
                     break;
@@ -5711,6 +5709,18 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 109659: // Dig Rat Stew
                     spellInfo->Effects[EFFECT_0].TriggerSpell = 6417;
+                    break;
+                case 108212: // Burst of Speed
+                    spellInfo->AttributesEx |= SPELL_ATTR1_NOT_BREAK_STEALTH;
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(35); // 4s
+                    spellInfo->Effects[0].BasePoints = 70;
+                    break;
+                case 122016:  // Incite
+                    spellInfo->ProcCharges = 3;
+                    spellInfo->StackAmount = 0;
+                    break;
+                case 127538:  // Savage Roar (Feral)
+                    spellInfo->AttributesEx |= SPELL_ATTR1_REQ_COMBO_POINTS2;
                     break;
                 default:
                     break;

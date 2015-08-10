@@ -2650,9 +2650,9 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     if (unit->isAlive() != target->alive)
         return;
 
-    if (m_spellInfo)
-        if (getState() == SPELL_STATE_DELAYED && !m_spellInfo->IsPositive() && (getMSTime() - target->timeDelay) <= unit->m_lastSanctuaryTime)
-            return;                                             // No missinfo in that case
+    //if (m_spellInfo)
+        //if (getState() == SPELL_STATE_DELAYED && !m_spellInfo->IsPositive() && (getMSTime() - target->timeDelay) <= unit->m_lastSanctuaryTime)
+            //return;                                             // No missinfo in that case
 
     // Some spells should remove Camouflage after hit (traps, some spells that have casting time)
     if (target->targetGUID != m_caster->GetGUID() && m_spellInfo && m_spellInfo->IsBreakingCamouflageAfterHit())
@@ -3153,7 +3153,7 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
         {
             bool refresh = false;
             m_spellAura = Aura::TryRefreshStackOrCreate(aurSpellInfo, effectMask, unit,
-                m_originalCaster, (aurSpellInfo == m_spellInfo)? &m_spellValue->EffectBasePoints[0] : &basePoints[0], m_CastItem, 0, &refresh);
+                m_originalCaster, (aurSpellInfo == m_spellInfo)? &m_spellValue->EffectBasePoints[0] : &basePoints[0], m_CastItem, 0, &refresh, 0, this);
             if (m_spellAura)
             {
                 // Set aura stack amount to desired value
@@ -3245,7 +3245,9 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
                             m_spellAura->SetDuration(duration);
                         }
                     }
+
                     m_spellAura->_RegisterForTargets();
+
                     std::list<uint64> list_efftarget = GetEffectTargets();
                     if(!list_efftarget.empty())
                         m_spellAura->SetEffectTargets(list_efftarget);
@@ -3872,7 +3874,7 @@ void Spell::cast(bool skipCheck)
 
             if(infoTarget)
             {
-                procDamage = infoTarget->damage;
+                procDamage = infoTarget->crit ? infoTarget->damage * 2 : infoTarget->damage;
                 if (infoTarget->crit)
                     procEx |= PROC_EX_CRITICAL_HIT;
                 else
@@ -3959,17 +3961,18 @@ void Spell::cast(bool skipCheck)
                 }
             }
 
-            SpellNonMeleeDamage damageInfo(caster, procTarget, m_spellInfo->Id, m_spellSchoolMask);
-
             //if (!(_triggeredCastFlags & TRIGGERED_DISALLOW_PROC_EVENTS))
                 procEx |= PROC_EX_ON_CAST;
+
+            sLog->outDebug(LOG_FILTER_PROC, "Cast m_spellInfo->Id %i, m_damage %i, procDamage %i, procEx %i", m_spellInfo->Id, m_damage, procDamage, procEx);
 
             if(procAttacker)
             {
                 if(infoTarget)
                 {
+                    SpellNonMeleeDamage damageInfo(caster, procTarget, m_spellInfo->Id, m_spellSchoolMask);
                     procEx |= createProcExtendMask(&damageInfo, infoTarget->missCondition);
-                    DamageInfo dmgInfoProc = DamageInfo(damageInfo);
+                    DamageInfo dmgInfoProc = DamageInfo(caster, procTarget, procDamage, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE, procDamage);
                     caster->ProcDamageAndSpell(procTarget, procAttacker, procVictim, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell, GetSpellMods());
                 }
                 else
@@ -8116,8 +8119,9 @@ SpellCastResult Spell::CheckPower()
         if (powerType == POWER_HOLY_POWER)
         {
             m_powerCost = m_caster->HandleHolyPowerCost(m_powerCost, m_spellInfo->PowerCost);
-            if (Player* modOwner = m_caster->GetSpellModOwner())
-                modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_COST, m_powerCost);
+            if(m_powerCost)
+                if (Player* modOwner = m_caster->GetSpellModOwner())
+                    modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_COST, m_powerCost);
         }
     }
     else if (!GetSpellInfo()->NoPower())
@@ -9810,19 +9814,19 @@ void Spell::TriggerGlobalCooldown()
     // but as tests show are not affected by any spell mods.
     if (m_spellInfo->StartRecoveryTime >= MIN_GCD && m_spellInfo->StartRecoveryTime <= MAX_GCD)
     {
-        // gcd modifier auras are applied only to own spells and only players have such mods
-        if (m_caster->GetTypeId() == TYPEID_PLAYER)
-            m_caster->ToPlayer()->ApplySpellMod(m_spellInfo->Id, SPELLMOD_GLOBAL_COOLDOWN, gcd, this);
-
-        if(gcd <= 0)
-            return;
-
         // Apply haste rating
         gcd = int32(float(gcd) * m_caster->GetFloatValue(UNIT_MOD_CAST_SPEED));
         if (gcd < MIN_GCD)
             gcd = MIN_GCD;
         else if (gcd > MAX_GCD)
             gcd = MAX_GCD;
+
+        // gcd modifier auras are applied only to own spells and only players have such mods
+        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+            m_caster->ToPlayer()->ApplySpellMod(m_spellInfo->Id, SPELLMOD_GLOBAL_COOLDOWN, gcd, this);
+
+        if(gcd <= 0)
+            return;
     }
 
     // Only players or controlled units have global cooldown

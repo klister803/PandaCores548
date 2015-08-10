@@ -25797,22 +25797,21 @@ void Player::ClearComboPoints()
     // without combopoints lost (duration checked in aura)
     RemoveAurasByType(SPELL_AURA_RETAIN_COMBO_POINTS);
 
+    // omg hack
+    int32 chancekd = 0;
+    if (HasAura(79096))
+        chancekd = -2000 * m_comboPoints;
+
     m_comboPoints = 0;
 
     SendComboPoints();
 
-    // omfg hack
-    int32 chancekd = 0;
-    if (HasAura(79095))
-        chancekd = -1000;
-    else if (HasAura(79096))
-        chancekd = -2000;
     if (chancekd != 0)
     {
-        ModifySpellCooldown(51690, chancekd);
-        ModifySpellCooldown(13750, chancekd);
-        ModifySpellCooldown(2983, chancekd);
-        ModifySpellCooldown(73981, chancekd);
+        ModifySpellCooldown(51690, chancekd);  // Killing Spree
+        ModifySpellCooldown(13750, chancekd);  // Adrenaline Rush
+        ModifySpellCooldown(2983, chancekd);   // Sprint
+        ModifySpellCooldown(121471, chancekd); // Shadow Blades
     }
 
     if (Unit* target = ObjectAccessor::GetUnit(*this, m_comboTarget))

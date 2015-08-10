@@ -143,6 +143,7 @@ enum SpellTriggeredType
     SPELL_TRIGGER_NEED_COMBOPOINTS              = 35,           // Proc from spell that need compopoiunts
     SPELL_TRIGGER_HOLYPOWER_BONUS               = 36,           // Holypower bonus
     SPELL_TRIGGER_CAST_AFTER_MAX_STACK          = 37,           // Cast after max stack
+    SPELL_TRIGGER_DAM_MAXHEALTH                 = 38,           // set basepoint to spell damage or max heal percent
 };
 
 enum SpellAuraDummyType

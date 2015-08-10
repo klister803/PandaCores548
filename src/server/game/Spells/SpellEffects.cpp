@@ -1063,6 +1063,28 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     check = true;
                 }
                 break;
+                case SPELL_TRIGGER_DAM_MAXHEALTH: //38
+                {
+                    int32 percent = basepoints0;
+                    if(bp0)
+                        percent += bp0;
+                    if(bp1)
+                        percent /= bp1;
+                    if(bp2)
+                        percent *= bp2;
+
+                    basepoints0 = CalculatePct(triggerTarget->GetMaxHealth(), percent);
+
+                    triggered_spell_id = abs(spell_trigger);
+                    triggerCaster->CastCustomSpell(triggerTarget, triggered_spell_id, &basepoints0, &bp1, &bp2, true, m_CastItem, NULL, m_originalCasterGUID);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = triggerCaster->GetGuardianPet())
+                            triggerCaster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                    }
+                    check = true;
+                }
+                break;
                 case SPELL_TRIGGER_COOLDOWN: //4
                 {
                     if(Player* player = triggerTarget->ToPlayer())
@@ -2763,7 +2785,7 @@ void Spell::EffectHealPct(SpellEffIndex effIndex)
             }
             if (m_caster->HasAura(138279))
             {
-                damage *= 2;
+                //damage *= 2;
                 m_caster->RemoveAurasDueToSpell(138279);
             }
             break;
@@ -5896,9 +5918,9 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                 {
                     // And spread them on target
                     // Blood Plague
-                    if (m_targets.GetUnitTarget()->GetAura(55078))
+                    if (m_targets.GetUnitTarget()->GetAura(55078, m_caster->GetGUID()))
                     {
-                        if(Aura* aura = unitTarget->GetAura(55078)) // stop spamm update
+                        if(Aura* aura = unitTarget->GetAura(55078, m_caster->GetGUID())) // stop spamm update
                         {
                             if(aura->GetDuration() < aura->GetMaxDuration())
                                 m_caster->CastSpell(unitTarget, 55078, true);
@@ -5909,9 +5931,9 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                         m_targets.GetUnitTarget()->CastSpell(unitTarget, 91939, true); // Cosmetic - Send Diseases on target
                     }
                     // Frost Fever
-                    if (m_targets.GetUnitTarget()->GetAura(55095))
+                    if (m_targets.GetUnitTarget()->GetAura(55095, m_caster->GetGUID()))
                     {
-                        if(Aura* aura = unitTarget->GetAura(55095)) // stop spamm update
+                        if(Aura* aura = unitTarget->GetAura(55095, m_caster->GetGUID())) // stop spamm update
                         {
                             if(aura->GetDuration() < aura->GetMaxDuration())
                                 m_caster->CastSpell(unitTarget, 55078, true);
@@ -5964,7 +5986,7 @@ void Spell::EffectSanctuary(SpellEffIndex /*effIndex*/)
             ++itr;
     }
 
-    unitTarget->m_lastSanctuaryTime = getMSTime();
+    //unitTarget->m_lastSanctuaryTime = getMSTime();
 }
 
 void Spell::EffectAddComboPoints(SpellEffIndex /*effIndex*/)

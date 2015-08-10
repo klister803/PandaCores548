@@ -8200,19 +8200,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     }
                     break;
                 }
-                case 79096: // Restless Blades
-                {
-                    if (Player * plr = ToPlayer())
-                    {
-                        int32 ChangeCooldown = plr->GetComboPoints() * -2 * IN_MILLISECONDS;
-
-                        plr->ModifySpellCooldown(51690, ChangeCooldown);  // Killing Spree
-                        plr->ModifySpellCooldown(13750, ChangeCooldown);  // Adrenaline Rush
-                        plr->ModifySpellCooldown(2983, ChangeCooldown);   // Sprint
-                        plr->ModifySpellCooldown(121471, ChangeCooldown); // Shadow Blades
-                    }
-                    break;
-                }
                 case 114015: // Anticipation
                 {
                     if (GetTypeId() != TYPEID_PLAYER)
@@ -8223,6 +8210,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
 
                     if (procSpell->Id == 115190)
                         return false;
+
+                    if(ToPlayer()->GetSelection() != target->GetGUID())
+                        break;
 
                     if (ToPlayer()->GetComboPoints() < 5 && procSpell->Id != 27576) //Mutilate add 2 KP
                         return false;
@@ -8653,7 +8643,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
             {
                 case 145394:  // Item - Shaman T16 Restoration 4P Heal Trigger
                 {
-                    if(!procSpell || !victim || victim == this || !procSpell->CalcCastTime())
+                    if(!procSpell || !victim || !procSpell->CalcCastTime())
                         return false;
 
                     Unit* pPet = NULL;
@@ -17787,6 +17777,10 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     case SPELL_AURA_MOD_CASTING_SPEED:
                         // Skip melee hits or instant cast spells
                         if (procSpell && (procSpell->CalcCastTime() != 0 || procSpell->IsChanneled()))
+                            takeCharges = true;
+                        break;
+                    case SPELL_AURA_REFLECT_SPELLS:
+                            isModifier = true;
                             takeCharges = true;
                         break;
                     case SPELL_AURA_REFLECT_SPELLS_SCHOOL:
