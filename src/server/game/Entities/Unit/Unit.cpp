@@ -12412,7 +12412,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             if (calcSPDBonus)
                 calcSPDBonus = DoneAdvertisedBenefit > APbonus;
 
-            if (!calcSPDBonus)
+            if (!calcSPDBonus || spellProto->CasterAuraState == AURA_STATE_JUDGEMENT)
             {
                 DoneTotal += int32(stack * ApCoeffMod * APbonus);
 
@@ -12425,7 +12425,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             }
         }
         // Default calculation
-        if (calcSPDBonus)
+        if (calcSPDBonus || spellProto->CasterAuraState == AURA_STATE_JUDGEMENT)
         {
             float factorMod = CalculateLevelPenalty(spellProto);
 
