@@ -4171,6 +4171,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 73790: // Pain and Suffering
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_CONE_LINE;
                     break;
+                case 119072: // Holy Wrath
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
+                    spellInfo->Effects[EFFECT_1].ScalingMultiplier = 0;
+                    spellInfo->Effects[EFFECT_1].DeltaScalingMultiplier = 0;
+                    spellInfo->Effects[EFFECT_1].BonusMultiplier = 0.91f;
+                    break;
                 case 24340: // Meteor
                 case 26558: // Meteor
                 case 28884: // Meteor
@@ -4194,7 +4200,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 72624: // Ooze Eruption
                 case 72625: // Ooze Eruption
                 case 121129: // Daybreak
-                case 119072: // Holy Wrath
                 case 102792: // Wild Mushroom: Bloom
                 case 145944: // Sha Smash
                 case 106375: // Unstable Twilight
