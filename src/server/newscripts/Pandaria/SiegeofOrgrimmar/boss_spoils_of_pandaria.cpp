@@ -36,21 +36,28 @@ enum eSpells
     SPELL_SET_TO_BLOW_DMG             = 145993,
     SPELL_SET_TO_BLOW_AURA            = 145987,
     SPELL_SET_TO_BLOW_AT              = 146365,
+    SPELL_FORBIDDEN_MAGIC             = 145230,
+    SPELL_MOGU_RUNE_OF_POWER_AT       = 145458,
 
-    //NPC_ANIMATED_STONE_MOGU
+    //Small
     SPELL_EARTHEN_SHARD               = 144923,
     SPELL_HARDEN_FLESH_DMG            = 145218,   
-    //
     SPELL_RUSH                        = 144904,
     SPELL_KW_ENRAGE                   = 145692,
+    SPELL_MANTID_SWARM                = 145806,
+    SPELL_MANTID_SWARM2               = 145807,
+    SPELL_MANTID_SWARM3               = 145808,
+    SPELL_THROW_EXPLOSIVES            = 145702,
 
+    //Pandaren Relic Box
+    SPELL_EMINENCE                    = 146189,
+    SPELL_GUSTING_CRANE_KICK          = 146180,
+    SPELL_GUSTING_CRANE_KICK_DMG      = 146182,
     SPELL_KEG_TOSS                    = 146214,
     SPELL_KEG_TOSS_DMG                = 146217,
     SPELL_BREATH_OF_FIRE              = 146222,
     SPELL_BREATH_OF_FIRE_DMG          = 146226,
     SPELL_BREATH_OF_FIRE_TR           = 146235,
-    //
-    SPELL_PATH_OF_BLOSSOMS_P_D        = 124336,
     SPELL_PATH_OF_BLOSSOMS_AT         = 146255,
     SPELL_PATH_OF_BLOSSOMS_J          = 146256,
     SPELL_PATH_OF_BLOSSOMS_DMG        = 146257,
@@ -91,9 +98,12 @@ enum Events
     EVENT_KEG_TOSS                    = 16,
     EVENT_BREATH_OF_FIRE              = 17,
     EVENT_PATH_OF_BLOSSOMS            = 18,
-
-    //144281
-    //146529 from death mob
+    EVENT_PATH_OF_BLOSSOMS_PROGRESS   = 19,
+    EVENT_MANTID_SWARM                = 20,
+    EVENT_THROW_EXPLOSIVES            = 21,
+    EVENT_FORBIDDEN_MAGIC             = 22,
+    EVENT_MOGU_RUNE_OF_POWER          = 23,
+    EVENT_GUSTING_CRANE_KICK          = 24,
 };
 
 Position dpos[4] =
@@ -131,8 +141,8 @@ uint32 mediummoguentry[2] =
 
 uint32 mediummantisentry[2] =
 {
-    NPC_MODIFIED_ANIMA_GOLEM,
-    NPC_MOGU_SHADOW_RITUALIST,
+    NPC_ZARTHIK_AMBER_PRIEST,
+    NPC_SETTHIK_WIND_WIELDER,
 };
 //
 
@@ -151,6 +161,13 @@ uint32 smallmantisentry[3] =
     NPC_KORTHIK_WARCALLER,
 };
 //
+
+uint32 mantidswarm[3] =
+{
+    SPELL_MANTID_SWARM,
+    SPELL_MANTID_SWARM2,
+    SPELL_MANTID_SWARM3,
+};
 
 //Pandaren Relic box
 uint32 pandarenrelicentry[3] = 
@@ -750,6 +767,8 @@ public:
                 break;
             //Medoum
             case NPC_MOGU_SHADOW_RITUALIST:
+                events.ScheduleEvent(EVENT_FORBIDDEN_MAGIC, 10000);
+                events.ScheduleEvent(EVENT_MOGU_RUNE_OF_POWER, 5000);
                 break;
             //Small 
             case NPC_QUILEN_GUARDIANS:
@@ -759,8 +778,14 @@ public:
                 events.ScheduleEvent(EVENT_EARTHEN_SHARD, 5000);
                 events.ScheduleEvent(EVENT_HARDEN_FLESH, 10000);
                 break;
+            case NPC_ZARTHIK_AMBER_PRIEST:
+                events.ScheduleEvent(EVENT_MANTID_SWARM, 8000);
+                break;
             case NPC_KORTHIK_WARCALLER:
                 events.ScheduleEvent(EVENT_KW_ENRAGE, 1000);
+                break;
+            case NPC_SRITHIK_BOMBARDIER:
+                events.ScheduleEvent(EVENT_THROW_EXPLOSIVES, 8000);
                 break;
             //Pandaren Relic box
             case NPC_NAMELESS_WINDWALKER_SPIRIT:
@@ -770,63 +795,25 @@ public:
                 events.ScheduleEvent(EVENT_KEG_TOSS, 5000);
                 events.ScheduleEvent(EVENT_BREATH_OF_FIRE, 10000);
                 break;
+            case NPC_WISE_MISTWEAVER_SPIRIT:
+                DoCast(me, SPELL_EMINENCE, true);
+                events.ScheduleEvent(EVENT_GUSTING_CRANE_KICK, 10000);
+                break;
             default:
                 break;
             }
         }
 
-        void JustDied(Unit* killer)
+        void JustSummoned(Creature* summon)
         {
-            if (me->ToTempSummon())
+            if (summon->GetEntry() == NPC_ZARTHIK_SWARMER)
             {
-                uint8 data = 0;
-                switch (me->GetEntry())
-                {
-                //Big box
-                case NPC_JUN_WEI:
-                case NPC_ZU_YIN:
-                case NPC_XIANG_LIN:
-                case NPC_KUN_DA:
-                case NPC_COMMANDER_ZAKTAR:
-                case NPC_COMMANDER_IKTAL:
-                case NPC_COMMANDER_NAKAZ:
-                case NPC_COMMANDER_TIK:
-                    data = 14;
-                    break;
-                //Medium box
-                case NPC_MODIFIED_ANIMA_GOLEM:
-                case NPC_MOGU_SHADOW_RITUALIST:
-                case NPC_ZARTHIK_AMBER_PRIEST:
-                case NPC_SETTHIK_WIND_WIELDER:
-                    data = 4;
-                    break;
-                //Small box
-                case NPC_ANIMATED_STONE_MOGU:
-                case NPC_BURIAL_URN:
-                case NPC_QUILEN_GUARDIANS:
-                case NPC_SRITHIK_BOMBARDIER:
-                case NPC_AMBER_ENCASED_KUNCHONG:
-                case NPC_KORTHIK_WARCALLER:
-                    data = 1;
-                    break;
-                case NPC_NAMELESS_WINDWALKER_SPIRIT:
+                if (me->ToTempSummon())
                     if (Unit* summoner = me->ToTempSummon()->GetSummoner())
-                        summoner->ToCreature()->AI()->SetData(DATA_BUFF_DD, 0);
-                   break;
-                case NPC_WISE_MISTWEAVER_SPIRIT:
-                    if (Unit* summoner = me->ToTempSummon()->GetSummoner())
-                        summoner->ToCreature()->AI()->SetData(DATA_BUFF_HEALER, 0);
-                    break;
-                case NPC_ANCIENT_BREWMASTER_SPIRIT:
-                    if (Unit* summoner = me->ToTempSummon()->GetSummoner())
-                        summoner->ToCreature()->AI()->SetData(DATA_BUFF_TANK, 0);
-                    break;                  
-                default:
-                    break;
-                }
-                if (data)
-                    if (Unit* summoner = me->ToTempSummon()->GetSummoner())
-                        summoner->ToCreature()->AI()->SetData(DATA_UPDATE_POWER, data);
+                        summoner->ToCreature()->AI()->JustSummoned(summon);
+                summon->setFaction(16);
+                summon->SetReactState(REACT_AGGRESSIVE);
+                summon->AI()->DoZoneInCombat(summon, 50.0f);
             }
         }
 
@@ -838,8 +825,8 @@ public:
                 {
                     spawn = 0;
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                    //me->SetReactState(REACT_AGGRESSIVE);
-                    //DoZoneInCombat(me, 60.0f);
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    DoZoneInCombat(me, 60.0f);
                 }
                 else 
                     spawn -= diff;
@@ -857,24 +844,7 @@ public:
             {
                 switch (eventId)
                 {
-                case EVENT_KW_ENRAGE:
-                    DoCast(me, SPELL_KW_ENRAGE, true);
-                    events.ScheduleEvent(EVENT_KW_ENRAGE, 10000);
-                    break;
-                case EVENT_RUSH:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60, true))
-                        DoCast(target, SPELL_RUSH, true);
-                    events.ScheduleEvent(EVENT_RUSH, 10000);
-                    break;
-                case EVENT_EARTHEN_SHARD:
-                    DoCastVictim(SPELL_EARTHEN_SHARD);
-                    events.ScheduleEvent(EVENT_EARTHEN_SHARD, 10000);
-                    break;
-                case EVENT_HARDEN_FLESH:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
-                        DoCast(target, SPELL_HARDEN_FLESH_DMG);
-                    events.ScheduleEvent(EVENT_HARDEN_FLESH, 15000);
-                    break;
+                //Big                      
                 case EVENT_MOLTEN_FIST:
                     DoCast(me, SPELL_MOLTEN_FIST);
                     events.ScheduleEvent(EVENT_MOLTEN_FIST, 10000);
@@ -891,7 +861,54 @@ public:
                     DoCast(me, SPELL_FRACTURE);
                     events.ScheduleEvent(EVENT_FRACTURE, 10000);
                     break;
+                //Medium
+                case EVENT_MOGU_RUNE_OF_POWER:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 50.0f, true))
+                        DoCast(target, SPELL_MOGU_RUNE_OF_POWER_AT);
+                    events.ScheduleEvent(EVENT_MOGU_RUNE_OF_POWER, 15000);
+                    break;
+                case EVENT_FORBIDDEN_MAGIC:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 10.0f, true))
+                        DoCast(target, SPELL_FORBIDDEN_MAGIC);
+                    events.ScheduleEvent(EVENT_FORBIDDEN_MAGIC, 15000);
+                    break;
+                //Small
+                case EVENT_KW_ENRAGE:
+                    DoCast(me, SPELL_KW_ENRAGE, true);
+                    events.ScheduleEvent(EVENT_KW_ENRAGE, 10000);
+                    break;
+                case EVENT_EARTHEN_SHARD:
+                    DoCastVictim(SPELL_EARTHEN_SHARD);
+                    events.ScheduleEvent(EVENT_EARTHEN_SHARD, 10000);
+                    break;
+                case EVENT_HARDEN_FLESH:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
+                        DoCast(target, SPELL_HARDEN_FLESH_DMG);
+                    events.ScheduleEvent(EVENT_HARDEN_FLESH, 15000);
+                    break;
+                case EVENT_RUSH:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60, true))
+                        DoCast(target, SPELL_RUSH, true);
+                    events.ScheduleEvent(EVENT_RUSH, 10000);
+                    break;
+                case EVENT_MANTID_SWARM:
+                    for (uint8 n = 0; n < 3; n++)
+                        DoCast(me, mantidswarm[n]);
+                    events.ScheduleEvent(EVENT_MANTID_SWARM, 30000);
+                    break;
+                case EVENT_THROW_EXPLOSIVES:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
+                        DoCast(target, SPELL_THROW_EXPLOSIVES);
+                    events.ScheduleEvent(EVENT_THROW_EXPLOSIVES, 15000);
+                    break;
                 //Pandaren Relic box 
+                case EVENT_GUSTING_CRANE_KICK:
+                    me->AttackStop();
+                    me->SetReactState(REACT_PASSIVE);
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                    DoCast(me, SPELL_GUSTING_CRANE_KICK);
+                    events.ScheduleEvent(EVENT_GUSTING_CRANE_KICK, 15000); 
+                    break;
                 case EVENT_KEG_TOSS:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
                         DoCast(target, SPELL_KEG_TOSS);
@@ -906,14 +923,66 @@ public:
                     me->AttackStop();
                     me->SetReactState(REACT_PASSIVE);
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
-                    {
-                        DoCast(me, SPELL_PATH_OF_BLOSSOMS_P_D, true);
                         DoCast(target, SPELL_PATH_OF_BLOSSOMS_J);
-                    }
                     break;
                 }
             }
             DoMeleeAttackIfReady();
+        }
+
+        void JustDied(Unit* killer)
+        {
+            if (me->ToTempSummon())
+            {
+                uint8 data = 0;
+                switch (me->GetEntry())
+                {
+                    //Big box
+                case NPC_JUN_WEI:
+                case NPC_ZU_YIN:
+                case NPC_XIANG_LIN:
+                case NPC_KUN_DA:
+                case NPC_COMMANDER_ZAKTAR:
+                case NPC_COMMANDER_IKTAL:
+                case NPC_COMMANDER_NAKAZ:
+                case NPC_COMMANDER_TIK:
+                    data = 14;
+                    break;
+                    //Medium box
+                case NPC_MODIFIED_ANIMA_GOLEM:
+                case NPC_MOGU_SHADOW_RITUALIST:
+                case NPC_ZARTHIK_AMBER_PRIEST:
+                case NPC_SETTHIK_WIND_WIELDER:
+                    data = 4;
+                    break;
+                    //Small box
+                case NPC_ANIMATED_STONE_MOGU:
+                case NPC_BURIAL_URN:
+                case NPC_QUILEN_GUARDIANS:
+                case NPC_SRITHIK_BOMBARDIER:
+                case NPC_AMBER_ENCASED_KUNCHONG:
+                case NPC_KORTHIK_WARCALLER:
+                    data = 1;
+                    break;
+                case NPC_NAMELESS_WINDWALKER_SPIRIT:
+                    if (Unit* summoner = me->ToTempSummon()->GetSummoner())
+                        summoner->ToCreature()->AI()->SetData(DATA_BUFF_DD, 0);
+                    break;
+                case NPC_WISE_MISTWEAVER_SPIRIT:
+                    if (Unit* summoner = me->ToTempSummon()->GetSummoner())
+                        summoner->ToCreature()->AI()->SetData(DATA_BUFF_HEALER, 0);
+                    break;
+                case NPC_ANCIENT_BREWMASTER_SPIRIT:
+                    if (Unit* summoner = me->ToTempSummon()->GetSummoner())
+                        summoner->ToCreature()->AI()->SetData(DATA_BUFF_TANK, 0);
+                    break;
+                default:
+                    break;
+                }
+                if (data)
+                    if (Unit* summoner = me->ToTempSummon()->GetSummoner())
+                        summoner->ToCreature()->AI()->SetData(DATA_UPDATE_POWER, data);
+            }
         }
 
         void MovementInform(uint32 type, uint32 pointId)
@@ -924,6 +993,7 @@ public:
                 {
                     DoCast(me, SPELL_PATH_OF_BLOSSOMS_DMG, true);
                     DoCast(me, SPELL_MASS_PARALYSIS, true);
+                    events.ScheduleEvent(EVENT_PATH_OF_BLOSSOMS, 15000);
                 }
             }
         }
@@ -1183,33 +1253,48 @@ public:
     }
 };
 
-//SPELL_PATH_OF_BLOSSOMS_P_D        = 124336,
-class spell_path_of_blossoms_periodic : public SpellScriptLoader
+//146180
+class spell_gusting_crane_kick : public SpellScriptLoader
 {
 public:
-    spell_path_of_blossoms_periodic() : SpellScriptLoader("spell_path_of_blossoms_periodic") { }
+    spell_gusting_crane_kick() : SpellScriptLoader("spell_gusting_crane_kick") { }
 
-    class spell_path_of_blossoms_periodic_AuraScript : public AuraScript
+    class spell_gusting_crane_kick_AuraScript : public AuraScript
     {
-        PrepareAuraScript(spell_path_of_blossoms_periodic_AuraScript);
+        PrepareAuraScript(spell_gusting_crane_kick_AuraScript);
 
         void OnTick(AuraEffect const* aurEff)
         {
             if (GetCaster())
-                GetCaster()->CastSpell(GetCaster(), SPELL_PATH_OF_BLOSSOMS_AT, true);
+                GetCaster()->CastSpell(GetCaster(), SPELL_GUSTING_CRANE_KICK_DMG, true);
+        }
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+        {
+            if (GetCaster() && GetCaster()->ToCreature())
+            {
+                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+                {
+                    GetCaster()->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                    GetCaster()->ToCreature()->SetReactState(REACT_AGGRESSIVE);
+                    GetCaster()->ToCreature()->AI()->DoZoneInCombat(GetCaster()->ToCreature(), 50.0f);
+                }
+            }
         }
 
         void Register()
         {
-            OnEffectPeriodic += AuraEffectPeriodicFn(spell_path_of_blossoms_periodic_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            OnEffectRemove += AuraEffectRemoveFn(spell_gusting_crane_kick_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_gusting_crane_kick_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
         }
     };
 
     AuraScript* GetAuraScript() const
     {
-        return new spell_path_of_blossoms_periodic_AuraScript();
+        return new spell_gusting_crane_kick_AuraScript();
     }
 };
+
 
 
 void AddSC_boss_spoils_of_pandaria()
@@ -1226,5 +1311,5 @@ void AddSC_boss_spoils_of_pandaria()
     new spell_molten_fist();
     new spell_fracture();
     new spell_breath_of_fire();
-    new spell_path_of_blossoms_periodic();
+    new spell_gusting_crane_kick();
 }
