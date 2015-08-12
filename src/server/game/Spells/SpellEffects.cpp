@@ -2793,11 +2793,23 @@ void Spell::EffectHealPct(SpellEffIndex effIndex)
             break;
     }
 
-    uint32 heal = uint32(damage);
+    uint32 heal = unitTarget->CountPctFromMaxHealth(damage);
+
+    switch (m_spellInfo->Id)
+    {
+        case 149254: // Spirit Bond
+        {
+            if (Map* m_map = m_originalCaster->GetMap())
+                if (!m_map->IsDungeon())
+                    heal = m_originalCaster->CalcPvPPower(unitTarget, heal, true);
+        }
+        default:
+            break;
+    }
 
     if(damage)
     {
-        heal = m_originalCaster->SpellHealingBonusDone(unitTarget, m_spellInfo, unitTarget->CountPctFromMaxHealth(heal), HEAL, effIndex);
+        heal = m_originalCaster->SpellHealingBonusDone(unitTarget, m_spellInfo, heal, HEAL, effIndex);
         heal = unitTarget->SpellHealingBonusTaken(m_originalCaster, m_spellInfo, heal, HEAL, effIndex);
     }
 
