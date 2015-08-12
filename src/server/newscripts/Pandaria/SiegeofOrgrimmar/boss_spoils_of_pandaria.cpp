@@ -33,6 +33,7 @@ enum eSpells
     SPELL_FRACTURE_D                  = 148514,
 
     //Medium
+    SPELL_CRIMSON_RECOSTITUTION_AT    = 145270,
     SPELL_SET_TO_BLOW_DMG             = 145993,
     SPELL_SET_TO_BLOW_AURA            = 145987,
     SPELL_SET_TO_BLOW_AT              = 146365,
@@ -104,6 +105,7 @@ enum Events
     EVENT_FORBIDDEN_MAGIC             = 22,
     EVENT_MOGU_RUNE_OF_POWER          = 23,
     EVENT_GUSTING_CRANE_KICK          = 24,
+    EVENT_CRIMSON_RECOSTITUTION       = 25,
 };
 
 Position dpos[4] =
@@ -754,21 +756,24 @@ public:
             {
             //Big 
             case NPC_JUN_WEI:
-                events.ScheduleEvent(EVENT_SHADOW_VOLLEY, 5000);
+                events.ScheduleEvent(EVENT_SHADOW_VOLLEY, 8000);
                 break;
             case NPC_ZU_YIN:
-                events.ScheduleEvent(EVENT_MOLTEN_FIST, 5000);
+                events.ScheduleEvent(EVENT_MOLTEN_FIST, 8000);
                 break;
             case NPC_XIANG_LIN:
-                events.ScheduleEvent(EVENT_JADE_TEMPEST, 5000);
+                events.ScheduleEvent(EVENT_JADE_TEMPEST, 8000);
                 break;
             case NPC_KUN_DA:
-                events.ScheduleEvent(EVENT_FRACTURE, 5000);
+                events.ScheduleEvent(EVENT_FRACTURE, 8000);
                 break;
             //Medoum
             case NPC_MOGU_SHADOW_RITUALIST:
                 events.ScheduleEvent(EVENT_FORBIDDEN_MAGIC, 10000);
                 events.ScheduleEvent(EVENT_MOGU_RUNE_OF_POWER, 5000);
+                break;
+            case NPC_MODIFIED_ANIMA_GOLEM:
+                events.ScheduleEvent(EVENT_CRIMSON_RECOSTITUTION, 8000);
                 break;
             //Small 
             case NPC_QUILEN_GUARDIANS:
@@ -779,10 +784,10 @@ public:
                 events.ScheduleEvent(EVENT_HARDEN_FLESH, 10000);
                 break;
             case NPC_ZARTHIK_AMBER_PRIEST:
-                events.ScheduleEvent(EVENT_MANTID_SWARM, 8000);
+                events.ScheduleEvent(EVENT_MANTID_SWARM, 5000);
                 break;
             case NPC_KORTHIK_WARCALLER:
-                events.ScheduleEvent(EVENT_KW_ENRAGE, 1000);
+                events.ScheduleEvent(EVENT_KW_ENRAGE, 4000);
                 break;
             case NPC_SRITHIK_BOMBARDIER:
                 events.ScheduleEvent(EVENT_THROW_EXPLOSIVES, 8000);
@@ -847,21 +852,26 @@ public:
                 //Big                      
                 case EVENT_MOLTEN_FIST:
                     DoCast(me, SPELL_MOLTEN_FIST);
-                    events.ScheduleEvent(EVENT_MOLTEN_FIST, 10000);
+                    events.ScheduleEvent(EVENT_MOLTEN_FIST, 15000);
                     break;
                 case EVENT_SHADOW_VOLLEY:
                     DoCast(me, SPELL_SHADOW_VOLLEY);
-                    events.ScheduleEvent(EVENT_SHADOW_VOLLEY, 10000);
+                    events.ScheduleEvent(EVENT_SHADOW_VOLLEY, 15000);
                     break;
                 case EVENT_JADE_TEMPEST:
                     DoCast(me, SPELL_JADE_TEMPEST);
-                    events.ScheduleEvent(EVENT_JADE_TEMPEST, 8000);
+                    events.ScheduleEvent(EVENT_JADE_TEMPEST, 15000);
                     break;
                 case EVENT_FRACTURE:
                     DoCast(me, SPELL_FRACTURE);
-                    events.ScheduleEvent(EVENT_FRACTURE, 10000);
+                    events.ScheduleEvent(EVENT_FRACTURE, 15000);
                     break;
                 //Medium
+                case EVENT_CRIMSON_RECOSTITUTION:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 50.0f, true))
+                        DoCast(target, SPELL_CRIMSON_RECOSTITUTION_AT);
+                    events.ScheduleEvent(EVENT_CRIMSON_RECOSTITUTION, 15000);
+                    break;
                 case EVENT_MOGU_RUNE_OF_POWER:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 50.0f, true))
                         DoCast(target, SPELL_MOGU_RUNE_OF_POWER_AT);
@@ -875,7 +885,7 @@ public:
                 //Small
                 case EVENT_KW_ENRAGE:
                     DoCast(me, SPELL_KW_ENRAGE, true);
-                    events.ScheduleEvent(EVENT_KW_ENRAGE, 10000);
+                    events.ScheduleEvent(EVENT_KW_ENRAGE, 20000);
                     break;
                 case EVENT_EARTHEN_SHARD:
                     DoCastVictim(SPELL_EARTHEN_SHARD);
@@ -894,7 +904,7 @@ public:
                 case EVENT_MANTID_SWARM:
                     for (uint8 n = 0; n < 3; n++)
                         DoCast(me, mantidswarm[n]);
-                    events.ScheduleEvent(EVENT_MANTID_SWARM, 30000);
+                    events.ScheduleEvent(EVENT_MANTID_SWARM, 20000);
                     break;
                 case EVENT_THROW_EXPLOSIVES:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
