@@ -22,7 +22,7 @@
 enum eSpells
 {
     //Big Mogu
-    SPELL_STRENGTH_OF_THE_STONE      = 145998,
+    SPELL_STRENGTH_OF_THE_STONE       = 145998,
     SPELL_SHADOW_VOLLEY               = 148515,
     SPELL_SHADOW_VOLLEY_D             = 148516,
     SPELL_MOLTEN_FIST                 = 148518,

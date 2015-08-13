@@ -25,7 +25,7 @@ DoorData const doorData[] =
     {GO_ORGRIMMAR_GATE,                      DATA_IRON_JUGGERNAUT,        DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {GO_RUSTY_BARS,                          DATA_KORKRON_D_SHAMAN,       DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {GO_NAZGRIM_EX_DOOR,                     DATA_GENERAL_NAZGRIM,        DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
-    {GO_SP_EX_DOOR,                          DATA_MALKOROK,               DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
+    {GO_SP_EX_DOOR,                         DATA_SPOILS_OF_PANDARIA,      DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {0,                                      0,                           DOOR_TYPE_ROOM,       BOUNDARY_NONE}, // END
 };
 
@@ -813,7 +813,6 @@ public:
                     case DONE:
                         for (std::vector<uint64>::const_iterator itr = malkorokfenchGuids.begin(); itr != malkorokfenchGuids.end(); itr++)
                             HandleGameObject(*itr, true);
-                        HandleGameObject(spexdoorGuid, true);
                         break;
                     }
                     break;
