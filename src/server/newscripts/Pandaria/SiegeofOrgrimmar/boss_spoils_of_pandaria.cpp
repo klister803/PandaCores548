@@ -210,7 +210,7 @@ public:
 
     struct npc_ssop_spoilsAI : public ScriptedAI
     {
-        npc_ssop_spoilsAI(Creature* creature) : ScriptedAI(creature)
+        npc_ssop_spoilsAI(Creature* creature) : ScriptedAI(creature), _summons(me)
         {
             instance = creature->GetInstanceScript();
             me->SetReactState(REACT_PASSIVE);
@@ -221,6 +221,7 @@ public:
         }
         
         InstanceScript* instance;
+        SummonList _summons;
         EventMap events;
         uint32 lastcount;
         uint32 newcount;
@@ -230,6 +231,11 @@ public:
         void EnterCombat(Unit* who){}
 
         void EnterEvadeMode(){}
+
+        void JustSummoned(Creature* sum)
+        {
+            _summons.Summon(sum);
+        }
         
         void DoAction(int32 const action)
         {
@@ -248,6 +254,7 @@ public:
                     break;
                 case ACTION_SSOPS_DONE:
                     events.Reset();
+                    _summons.DespawnAll();
                     std::list<AreaTrigger*> atlist;
                     atlist.clear();
                     me->GetAreaTriggersWithEntryInRange(atlist, 5269, me->GetGUID(), 50.0f);
@@ -287,6 +294,7 @@ public:
                     for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
                         (*itr)->RemoveFromWorld();
                 OfflineWorldState();
+                _summons.DespawnAll();
                 instance->SetBossState(DATA_SPOILS_OF_PANDARIA, NOT_STARTED);
                 lastcount = 270;
                 newcount = 0;
@@ -311,6 +319,7 @@ public:
                             for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
                                 (*itr)->RemoveFromWorld();
                         OfflineWorldState();
+                        _summons.DespawnAll();
                         lastcount = 270;
                         newcount = 0;
                         instance->SetBossState(DATA_SPOILS_OF_PANDARIA, NOT_STARTED);
@@ -869,12 +878,12 @@ public:
                     break;
                 //Medium
                 case EVENT_CRIMSON_RECOSTITUTION:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 50.0f, true))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
                         DoCast(target, SPELL_CRIMSON_RECOSTITUTION_AT);
                     events.ScheduleEvent(EVENT_CRIMSON_RECOSTITUTION, 15000);
                     break;
                 case EVENT_MOGU_RUNE_OF_POWER:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 50.0f, true))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
                         DoCast(target, SPELL_MOGU_RUNE_OF_POWER_AT);
                     events.ScheduleEvent(EVENT_MOGU_RUNE_OF_POWER, 15000);
                     break;

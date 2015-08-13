@@ -445,6 +445,9 @@ enum eGameObjects
 
     GO_YAUNGOLIAN_JAIL             = 223005,
     GO_YAUNGOLIAN_JAIL2            = 223006,
+
+    //Paragons of the Klaxxi
+    GO_ARRENA_WALL                 = 221264,
 };
 
 enum esSpells

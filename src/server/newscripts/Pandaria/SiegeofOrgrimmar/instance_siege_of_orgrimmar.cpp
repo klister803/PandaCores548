@@ -96,6 +96,7 @@ public:
         uint64 gnazgrimGuid;
         uint64 amGuid;
         uint64 npcssopsGuid;
+        std::vector<uint64> klaxxilist; //all klaxxi
         uint64 thokGuid;
         std::vector<uint64> prisonerGuids;
         uint64 bsGuid;
@@ -166,6 +167,7 @@ public:
             gnazgrimGuid            = 0;
             amGuid                  = 0;
             npcssopsGuid            = 0;
+            klaxxilist.clear();
             thokGuid                = 0;
             prisonerGuids.clear();
             bsGuid                  = 0;
@@ -332,16 +334,6 @@ public:
                 case NPC_TOWER_NORTH:
                 case NPC_ANTIAIR_TURRET:
                 case NPC_BLACKFUSE:
-                case NPC_KILRUK:
-                case NPC_XARIL:
-                case NPC_KAZTIK:
-                case NPC_KORVEN: 
-                case NPC_IYYOKYK:
-                case NPC_KAROZ:
-                case NPC_SKEER:
-                case NPC_RIKKAL:
-                case NPC_HISEK:
-                case NPC_GARROSH:
                     easyGUIDconteiner[creature->GetEntry()] =creature->GetGUID();
                 break;
            
@@ -444,6 +436,18 @@ public:
                         spoilsGuids.push_back(creature->GetGUID());
                     else
                         spoils2Guids.push_back(creature->GetGUID());
+                    break;
+                //Paragons of the Klaxxi
+                case NPC_KILRUK:
+                case NPC_XARIL:
+                case NPC_KAZTIK:
+                case NPC_KORVEN:
+                case NPC_IYYOKYK:
+                case NPC_KAROZ:
+                case NPC_SKEER:
+                case NPC_RIKKAL:
+                case NPC_HISEK:
+                    klaxxilist.push_back(creature->GetGUID());
                     break;
                 //Thok
                 case NPC_THOK:
@@ -938,6 +942,25 @@ public:
                     }
                     break;
                 }
+                case DATA_KLAXXI:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        for (std::vector<uint64>::const_iterator itr = klaxxilist.begin(); itr != klaxxilist.end(); itr++)
+                            if (Creature* klaxxi = instance->GetCreature(*itr))
+                                SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, klaxxi);
+                        break;
+                    case IN_PROGRESS:
+                        break;
+                    case DONE:
+                        for (std::vector<uint64>::const_iterator itr = klaxxilist.begin(); itr != klaxxilist.end(); itr++)
+                            if (Creature* klaxxi = instance->GetCreature(*itr))
+                                SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, klaxxi);
+                        break;
+                    }
+                    break;
+                }
                 case DATA_THOK:
                 {
                     switch (state)
@@ -1340,7 +1363,7 @@ public:
                         }
                     }
                 case GO_PANDAREN_RELIC_BOX:
-                    return 0; //test
+                    return npcssopsGuid;
                 case NPC_THOK:
                     return thokGuid;
                 case NPC_BODY_STALKER:
