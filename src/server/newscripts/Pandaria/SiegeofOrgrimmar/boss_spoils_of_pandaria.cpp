@@ -187,17 +187,25 @@ enum sActions
 
 enum sData
 {
-    DATA_BUFF_DD                 = 1,
-    DATA_BUFF_TANK               = 2,
-    DATA_BUFF_HEALER             = 3,
+    DATA_BUFF_HEALER             = 1,
+    DATA_BUFF_DD                 = 2,
+    DATA_BUFF_TANK               = 3,
     DATA_UPDATE_POWER            = 4,
 };
 
 uint32 spellbuff[3] =
 {
-    SPELL_CLAW__OF_BURNING_ANGER,
-    SPELL_BLADE_OF_THE_HUNDRED_STEPS,
     SPELL_STAFF_OF_RESONATING_WATER,
+    SPELL_CLAW__OF_BURNING_ANGER,
+    SPELL_BLADE_OF_THE_HUNDRED_STEPS,   
+};
+
+uint32 spoilsentry[4] =
+{
+    NPC_MOGU_SPOILS,
+    NPC_MOGU_SPOILS2,
+    NPC_MANTIS_SPOILS,
+    NPC_MANTIS_SPOILS2,
 };
 
 #define GOSSIP1 "We are ready"
@@ -985,16 +993,34 @@ public:
                     data = 1;
                     break;
                 case NPC_NAMELESS_WINDWALKER_SPIRIT:
-                    if (Unit* summoner = me->ToTempSummon()->GetSummoner())
-                        summoner->ToCreature()->AI()->SetData(DATA_BUFF_DD, 0);
+                    for (uint8 n = 0; n < 4; n++)
+                    {
+                        if (Creature* nearspoils = me->FindNearestCreature(spoilsentry[n], 50.0f, true))
+                        {
+                            nearspoils->ToCreature()->AI()->SetData(DATA_BUFF_DD, 0);
+                            break;
+                        }
+                    }
                     break;
                 case NPC_WISE_MISTWEAVER_SPIRIT:
-                    if (Unit* summoner = me->ToTempSummon()->GetSummoner())
-                        summoner->ToCreature()->AI()->SetData(DATA_BUFF_HEALER, 0);
+                    for (uint8 n = 0; n < 4; n++)
+                    {
+                        if (Creature* nearspoils = me->FindNearestCreature(spoilsentry[n], 50.0f, true))
+                        {
+                            nearspoils->ToCreature()->AI()->SetData(DATA_BUFF_HEALER, 0);
+                            break;
+                        }
+                    }
                     break;
                 case NPC_ANCIENT_BREWMASTER_SPIRIT:
-                    if (Unit* summoner = me->ToTempSummon()->GetSummoner())
-                        summoner->ToCreature()->AI()->SetData(DATA_BUFF_TANK, 0);
+                    for (uint8 n = 0; n < 4; n++)
+                    {
+                        if (Creature* nearspoils = me->FindNearestCreature(spoilsentry[n], 50.0f, true))
+                        {
+                            nearspoils->ToCreature()->AI()->SetData(DATA_BUFF_TANK, 0);
+                            break;
+                        }
+                    }
                     break;
                 default:
                     break;
@@ -1126,7 +1152,8 @@ public:
                     summoner->SummonCreature(smallmantisentry[urand(0, 2)], pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
                     break;
                 case GO_PANDAREN_RELIC_BOX:
-                    summoner->SummonCreature(pandarenrelicentry[urand(0, 2)], pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+                    summoner->SummonCreature(NPC_NAMELESS_WINDWALKER_SPIRIT, pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000); //test only
+                    //summoner->SummonCreature(pandarenrelicentry[urand(0, 2)], pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
                     break;
                 default:
                     break;

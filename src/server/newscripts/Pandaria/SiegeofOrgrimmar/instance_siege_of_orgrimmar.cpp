@@ -866,6 +866,7 @@ public:
                                 box->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
                             }
                         }
+                        HandleGameObject(spentdoorGuid, true);
                         break;
                     case IN_PROGRESS:
                         if (Creature* ssops = instance->GetCreature(npcssopsGuid))
