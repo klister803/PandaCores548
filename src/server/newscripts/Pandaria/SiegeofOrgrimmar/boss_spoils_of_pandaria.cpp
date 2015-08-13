@@ -317,17 +317,18 @@ public:
                     }
                     else
                     {
+                        newcount = lastcount ? lastcount - 1 : 0;
                         Map::PlayerList const &players = me->GetMap()->GetPlayers();
                         for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
                         {
                             if (Player* pl = i->getSource())
                             {
-                                newcount = lastcount ? lastcount - 1 : 0;
                                 pl->SendUpdateWorldState(8431, 1);
                                 pl->SendUpdateWorldState(8381, newcount);
-                                lastcount = newcount;
                             }
                         }
+                        lastcount = newcount;
+
                         if (!newcount)
                             SendWipe();
                         else
