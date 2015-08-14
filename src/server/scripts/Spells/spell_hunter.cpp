@@ -51,6 +51,7 @@ enum HunterSpells
     HUNTER_SPELL_COBRA_SHOT_ENERGIZE             = 91954,
     HUNTER_SPELL_KILL_COMMAND                    = 34026,
     HUNTER_SPELL_KILL_COMMAND_TRIGGER            = 83381,
+    HUNTER_SPELL_KILL_COMMAND_CHARGE             = 118171,
     SPELL_MAGE_TEMPORAL_DISPLACEMENT             = 80354,
     HUNTER_SPELL_INSANITY                        = 95809,
     SPELL_SHAMAN_SATED                           = 57724,
@@ -1093,6 +1094,14 @@ class spell_hun_kill_command : public SpellScriptLoader
                 return true;
             }
 
+            void FilterTargets(WorldObject*& target)
+            {
+                if (Unit* caster = GetCaster())
+                    if (Unit* pet = caster->GetGuardianPet())
+                        if (pet->getVictim())
+                            target = pet->getVictim();
+            }
+
             SpellCastResult CheckCastMeet()
             {
                 Unit* caster = GetCaster();
@@ -1141,23 +1150,25 @@ class spell_hun_kill_command : public SpellScriptLoader
             
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
-                if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
-                    return;
+                if (Unit* caster = GetCaster())
+                    if (Unit* pet = caster->GetGuardianPet())
+                        if (Unit* target = GetHitUnit())
+                        {
+                            pet->CastSpell(target, HUNTER_SPELL_KILL_COMMAND_TRIGGER, false);
 
-                if (Unit* pet = GetCaster()->GetGuardianPet())
-                {
-                    Player* player = caster->ToPlayer();
-                    if(Unit* target = player->GetSelectedUnit())
-                        pet->CastSpell(target, HUNTER_SPELL_KILL_COMMAND_TRIGGER, true);
-                }
+                            if (!pet->IsWithinMeleeRange(target))
+                                pet->CastSpell(target, HUNTER_SPELL_KILL_COMMAND_CHARGE, false);
+
+                            pet->CastSpell(target, HUNTER_SPELL_HUNTERS_MARK, false);
+                        }
             }
 
             void Register()
             {
+                OnObjectTargetSelect += SpellObjectTargetSelectFn(spell_hun_kill_command_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_TARGET_ENEMY);
                 OnCheckCast += SpellCheckCastFn(spell_hun_kill_command_SpellScript::CheckCastMeet);
                 OnCheckCast += SpellCheckCastFn(spell_hun_kill_command_SpellScript::CheckIfPetInLOS);
-                OnEffectHit += SpellEffectFn(spell_hun_kill_command_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+                OnEffectHitTarget += SpellEffectFn(spell_hun_kill_command_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
             }
         };
 
