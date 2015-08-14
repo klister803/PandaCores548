@@ -371,6 +371,8 @@ class Object
         AreaTrigger* ToAreaTrigger() { if (GetTypeId() == TYPEID_AREATRIGGER) return reinterpret_cast<AreaTrigger*>(this); else return NULL; }
         AreaTrigger const* ToAreaTrigger() const { if (GetTypeId() == TYPEID_AREATRIGGER) return reinterpret_cast<AreaTrigger const*>(this); else return NULL; }
 
+        //!  Get or Init cyber ptr.
+        cyber_ptr<Object> get_ptr();
     protected:
         Object();
 
@@ -413,6 +415,7 @@ class Object
         std::vector<bool> m_dynamicChange;
 
     private:
+        cyber_ptr<Object> ptr;
         bool m_inWorld;
 
         ByteBuffer m_PackGUID;

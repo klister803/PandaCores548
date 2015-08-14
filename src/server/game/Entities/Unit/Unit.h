@@ -2525,8 +2525,6 @@ class Unit : public WorldObject
 
         void SetDynamicWorldEffects(uint32 effect, uint32 slot);
 
-        //!  Get or Init cyber ptr.
-        cyber_ptr<Unit> get_ptr();
     protected:
         explicit Unit (bool isWorldObject);
 
@@ -2659,7 +2657,6 @@ class Unit : public WorldObject
         void SetRooted(bool apply);
 
     private:
-        cyber_ptr<Unit> ptr;
         class AINotifyTask;
         class VisibilityUpdateTask;
         Position m_lastVisibilityUpdPos;
