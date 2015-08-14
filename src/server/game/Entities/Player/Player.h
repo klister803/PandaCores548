@@ -3214,7 +3214,11 @@ class Player : public Unit, public GridObject<Player>
         //
         AreaTriggerEntry const* GetLastAreaTrigger() { return LastAreaTrigger; }
         void SetLastAreaTrigger(AreaTriggerEntry const* at) { LastAreaTrigger = at; }
+
+        //!  Get or Init cyber ptr.
+        cyber_ptr<Player> get_ptr();
     protected:
+        cyber_ptr<Player> plr_ptr;
         // Gamemaster whisper whitelist
         WhisperListContainer WhisperList;
         uint32 m_regenTimerCount;
