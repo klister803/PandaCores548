@@ -1202,6 +1202,8 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 142906: //Ancient Miasma Dmg
     case 143848: //Essence of yshaarj
     //Spoils of Pandaria
+    case 146257: //Path of Blossoms Dmg
+    case 146289: //Mass Paralyses
     case 146189: //Eminence
     case 146068: //Blade of the hundred steps (tank buff)
     case 148515: //Shadow Volley Dummy
@@ -1214,6 +1216,7 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 143430: //Clump Check
     case 143445: //Fixate
     case 144115: //Flame Coating
+    //Paragons Klaxxi
         return Effects[effect];
     }
 

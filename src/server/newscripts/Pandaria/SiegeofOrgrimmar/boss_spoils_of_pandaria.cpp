@@ -72,7 +72,7 @@ enum eSpells
     SPELL_SOOPS_AT_VISUAL             = 145687,
     SPELL_BLADE_OF_THE_HUNDRED_STEPS  = 146068, //tank 
     SPELL_STAFF_OF_RESONATING_WATER   = 146099, //healer
-    SPELL_CLAW__OF_BURNING_ANGER      = 146141, //dd
+    SPELL_CLAW_OF_BURNING_ANGER       = 146141, //dd
 };
 
 enum Events
@@ -196,7 +196,7 @@ enum sData
 uint32 spellbuff[3] =
 {
     SPELL_STAFF_OF_RESONATING_WATER,
-    SPELL_CLAW__OF_BURNING_ANGER,
+    SPELL_CLAW_OF_BURNING_ANGER,
     SPELL_BLADE_OF_THE_HUNDRED_STEPS,   
 };
 
@@ -413,7 +413,7 @@ public:
                 {
                     for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
                         if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) == type)
-                            (*itr)->CastSpell(*itr, spellbuff[type], true);
+                            (*itr)->CastSpell(*itr, spellbuff[type-1], true);
                 }
                 break;
             }
@@ -1039,6 +1039,8 @@ public:
                 {
                     DoCast(me, SPELL_PATH_OF_BLOSSOMS_DMG, true);
                     DoCast(me, SPELL_MASS_PARALYSIS, true);
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    DoZoneInCombat(me, 50.0f);
                     events.ScheduleEvent(EVENT_PATH_OF_BLOSSOMS, 15000);
                 }
             }
@@ -1152,8 +1154,7 @@ public:
                     summoner->SummonCreature(smallmantisentry[urand(0, 2)], pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
                     break;
                 case GO_PANDAREN_RELIC_BOX:
-                    summoner->SummonCreature(NPC_NAMELESS_WINDWALKER_SPIRIT, pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000); //test only
-                    //summoner->SummonCreature(pandarenrelicentry[urand(0, 2)], pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+                    summoner->SummonCreature(pandarenrelicentry[urand(0, 2)], pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
                     break;
                 default:
                     break;

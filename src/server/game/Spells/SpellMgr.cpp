@@ -5174,6 +5174,14 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetB = 0;
                     break;
                 //Spoils of Pandaria
+                case 146257: //Path of Blossoms Dmg
+                    spellInfo->Effects[0].TargetA = 22;
+                    spellInfo->Effects[0].TargetB = 15;
+                    break;
+                case 146289: //Mass Paralyses
+                    spellInfo->Effects[0].TargetA = 22;
+                    spellInfo->Effects[0].TargetB = 15;
+                    break;
                 case 146189: //Eminence 
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
                     spellInfo->Effects[0].TriggerSpell = 0;
@@ -5223,6 +5231,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 144115: //Flame Coating
                     spellInfo->Effects[0].TargetB = 15;
                     break;
+                //Paragons Klaxxi
                     
                 //World Bosses
                 //Sha of Anger
