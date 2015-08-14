@@ -38,7 +38,7 @@ enum eSpells
     SPELL_SET_TO_BLOW_AURA            = 145987,
     SPELL_SET_TO_BLOW_AT              = 146365,
     SPELL_FORBIDDEN_MAGIC             = 145230,
-    SPELL_MOGU_RUNE_OF_POWER_AT       = 145458,
+    SPELL_MOGU_RUNE_OF_POWER_AT       = 145460,
 
     //Small
     SPELL_EARTHEN_SHARD               = 144923,
