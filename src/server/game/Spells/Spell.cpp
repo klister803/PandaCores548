@@ -7101,6 +7101,13 @@ SpellCastResult Spell::CheckCast(bool strict)
                 
                 switch (m_spellInfo->Id)
                 {
+                    case 104316: // Glyph of Imp Swarm
+                    {
+                        if (Player* plr = m_caster->ToPlayer())
+                            if (plr->GetSpecializationId(plr->GetActiveSpec()) != SPEC_WARLOCK_DEMONOLOGY)
+                                return SPELL_FAILED_NO_SPEC;
+                        break;
+                    }
                     case 86121:  // Soul Swap
                     {
                         if (Unit* target = m_targets.GetUnitTarget())
@@ -7199,6 +7206,19 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (GlyphPropertiesEntry const* gp = sGlyphPropertiesStore.LookupEntry(glyphId))
                     if (m_caster->HasAura(gp->SpellId))
                         return SPELL_FAILED_UNIQUE_GLYPH;
+
+                switch (m_spellInfo->Id)
+                {
+                    case 56292: // Glyph of Imp Swarm
+                    {
+                        if (Player* plr = m_caster->ToPlayer())
+                            if (plr->GetSpecializationId(plr->GetActiveSpec()) != SPEC_WARLOCK_DEMONOLOGY)
+                                return SPELL_FAILED_NO_SPEC;
+                        break;
+                    }
+                    default:
+                        break;
+                }
                 break;
             }
             case SPELL_EFFECT_FEED_PET:
