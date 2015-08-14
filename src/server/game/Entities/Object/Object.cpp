@@ -3904,3 +3904,13 @@ uint64 WorldObject::GetTransGUID() const
         return GetTransport()->GetGUID();
     return 0;
 }
+
+cyber_ptr<Object> Object::get_ptr()
+{
+    if (ptr.numerator && ptr.numerator->ready)
+        return ptr.shared_from_this();
+
+    ptr.InitParent(this);
+    ASSERT(ptr.numerator);  // It's very bad. If it hit nothing work.
+    return ptr.shared_from_this();
+}

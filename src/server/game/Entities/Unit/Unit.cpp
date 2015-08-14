@@ -25035,13 +25035,3 @@ bool Unit::HasSomeCasterAura(uint64 guid)
     }
     return false;
 }
-
-cyber_ptr<Unit> Unit::get_ptr()
-{
-    if (ptr.numerator && ptr.numerator->ready)
-        return ptr.shared_from_this();
-
-    ptr.InitParent(this);
-    ASSERT(ptr.numerator);  // It's very bad. If it hit nothing work.
-    return ptr.shared_from_this();
-}

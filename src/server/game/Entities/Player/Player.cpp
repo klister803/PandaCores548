@@ -28452,7 +28452,7 @@ m_owner(owner), type(_t), miscValue1(m1), miscValue2(m2), miscValue3(m3), ignore
 
 bool UpdateAchievementCriteriaEvent::Execute(uint64 e_time, uint32 p_time)
 {
-    m_owner->_UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit.get(), ignoreGroup);
+    m_owner->_UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit.get() ? unit.get()->ToUnit() : NULL, ignoreGroup);
     return true;
 }
 
@@ -31004,14 +31004,4 @@ bool Player::HasInstantCastModForSpell(SpellInfo const* spellInfo)
                 return true;
 
     return false;
-}
-
-cyber_ptr<Player> Player::get_ptr()
-{
-    if (plr_ptr.numerator && plr_ptr.numerator->ready)
-        return plr_ptr.shared_from_this();
-
-    plr_ptr.InitParent(this);
-    ASSERT(plr_ptr.numerator);  // It's very bad. If it hit nothing work.
-    return plr_ptr.shared_from_this();
 }
