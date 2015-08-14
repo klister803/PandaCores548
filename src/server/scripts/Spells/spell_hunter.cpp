@@ -2163,39 +2163,6 @@ class spell_hun_bestial_wrath  : public SpellScriptLoader
         }
 };
 
-// Kill Command - 83381
-class spell_hun_kill_command_damage : public SpellScriptLoader
-{
-    public:
-        spell_hun_kill_command_damage() : SpellScriptLoader("spell_hun_kill_command_damage") { }
-
-        class spell_hun_kill_command_damage_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_hun_kill_command_damage_SpellScript);
-
-            void HandleOnHit(SpellEffIndex effIndex)
-            {
-                if (Unit* caster = GetCaster()->GetOwner())
-                {
-                    AuraEffect const* aurEff = caster->GetAuraEffect(76657, EFFECT_0);
-                    float mastery = aurEff ? (aurEff->GetAmount() + 100.0f) / 100.0f : 0.0f;
-                    int32 damage = int32(1.5f * ((caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.938f) + 935) * mastery);
-                    SetHitDamage(damage);
-                }
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_hun_kill_command_damage_SpellScript::HandleOnHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_hun_kill_command_damage_SpellScript();
-        }
-};
-
 // Widow Venom - 82654
 class spell_hun_widow_venom : public SpellScriptLoader
 {
@@ -2332,7 +2299,6 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_scatter_shot();
     new spell_hun_bestial_wrath();
     new spell_hun_toss_damage();
-    new spell_hun_kill_command_damage();
     new spell_hun_widow_venom();
     new spell_hun_explosive_shot();
 }
