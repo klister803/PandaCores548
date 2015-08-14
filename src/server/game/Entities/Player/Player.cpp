@@ -28443,8 +28443,31 @@ void Player::HandleFall(MovementInfo const& movementInfo)
     RemoveAllAurasByType(SPELL_AURA_GLIDE);
 }
 
+UpdateAchievementCriteriaEvent::UpdateAchievementCriteriaEvent(Player* owner, AchievementCriteriaTypes _t, uint32 m1 /*= 0*/, uint32 m2 /*= 0*/, uint32 m3 /*= 0*/, Unit* u /*= NULL*/, bool iGroup /*= false*/) :
+m_owner(owner), type(_t), miscValue1(m1), miscValue2(m2), miscValue3(m3), ignoreGroup(iGroup)
+{
+    if (u)
+        unit = u->get_ptr();
+};
+
+bool UpdateAchievementCriteriaEvent::Execute(uint64 e_time, uint32 p_time)
+{
+    m_owner->_UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit.get(), ignoreGroup);
+    return true;
+}
+
 void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, uint32 miscValue3 /*= 0*/, Unit* unit /*= NULL*/, bool ignoreGroup /*=false*/)
 {
+    UpdateAchievementCriteriaEvent* e = new UpdateAchievementCriteriaEvent(this, type, miscValue1, miscValue2, miscValue3, unit, ignoreGroup);
+    m_Events.AddEvent(e, m_Events.CalculateTime(upd_achieve_criteria_counter * 50));
+
+    ++upd_achieve_criteria_counter;
+}
+
+void Player::_UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, uint32 miscValue3 /*= 0*/, Unit* unit /*= NULL*/, bool ignoreGroup /*=false*/)
+{
+    --upd_achieve_criteria_counter;
+
     GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, this);
 
     Map* map = GetMap();
