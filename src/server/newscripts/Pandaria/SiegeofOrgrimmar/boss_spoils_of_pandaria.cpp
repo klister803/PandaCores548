@@ -1113,8 +1113,8 @@ public:
 class go_generic_sop_box : public GameObjectScript
 {
 public:
-    go_generic_sop_box() : GameObjectScript("go_generic_sop_box") { }
-
+    go_generic_sop_box() : GameObjectScript("go_generic_sop_box"){}
+    
     bool OnGossipHello(Player* player, GameObject* go)
     {
         Position pos;
@@ -1159,6 +1159,7 @@ public:
                 default:
                     break;
                 }
+                go->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE); //fix exploit, doudle click - double summon npc
             }
         }
         return false;
