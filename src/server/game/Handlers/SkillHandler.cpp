@@ -58,6 +58,7 @@ void WorldSession::HandleSetSpecialization(WorldPacket& recvData)
         _player->SendTalentsInfoData(false);
         _player->InitSpellForLevel();
         _player->InitialPowers();
+        _player->_ApplyOrRemoveItemEquipDependentAuras(0, false);
     }
 }
 
