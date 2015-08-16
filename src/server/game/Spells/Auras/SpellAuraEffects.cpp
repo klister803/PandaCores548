@@ -4454,7 +4454,7 @@ void AuraEffect::HandleAuraModIncreaseFlightSpeed(AuraApplication const* aurApp,
         {
             target->SetCanFly(apply);
 
-            if (!apply && target->GetTypeId() == TYPEID_UNIT && !target->IsLevitating())
+            if (!apply && !target->IsLevitating()/*&& target->GetTypeId() == TYPEID_UNIT*/)
                 target->GetMotionMaster()->MoveFall();
         }
 
