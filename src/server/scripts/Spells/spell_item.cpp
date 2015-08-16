@@ -2416,6 +2416,61 @@ public:
     }
 };
 
+// Essence of Wrathion - 146428
+class spell_item_essence_of_wrathion : public SpellScriptLoader
+{
+public:
+    spell_item_essence_of_wrathion() : SpellScriptLoader("spell_item_essence_of_wrathion") { }
+
+    class spell_item_essence_of_wrathion_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_item_essence_of_wrathion_SpellScript);
+
+        void HandleOnCast()
+        {
+            if (Player* player = GetCaster()->ToPlayer())
+            {
+                if (Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_BACK))
+                {
+                    switch (item->GetEntry())
+                    {
+                        case 98149:
+                            player->CastSpell(player, 146564);
+                            break;
+                        case 98147:
+                            player->CastSpell(player, 146562);
+                            break;
+                        case 98146:
+                            player->CastSpell(player, 146560);
+                            break;
+                        case 98335:
+                            player->CastSpell(player, 146566);
+                            break;
+                        case 98148:
+                            player->CastSpell(player, 146563);
+                            break;
+                        case 98150:
+                            player->CastSpell(player, 146565);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnCast += SpellCastFn(spell_item_essence_of_wrathion_SpellScript::HandleOnCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_item_essence_of_wrathion_SpellScript();
+    }
+};
+
 void AddSC_item_spell_scripts()
 {
     // 23074 Arcanite Dragonling
@@ -2475,4 +2530,5 @@ void AddSC_item_spell_scripts()
     new spell_item_book_of_the_ages();
     new spell_item_chocolate_cookie();
     new spell_item_potion_of_illusion();
+    new spell_item_essence_of_wrathion();
 }

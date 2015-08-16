@@ -7558,6 +7558,25 @@ SpellCastResult Spell::CheckCast(bool strict)
                         if (player->HasSpell(143255))
                             return SPELL_FAILED_SPELL_LEARNED;
                         break;
+                    case 146428:                                // Timeless Essence of the Black Dragonflight
+                    {
+                        Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_BACK);
+                        if (!item)
+                            return SPELL_FAILED_EQUIPPED_ITEM;
+
+                        switch (item->GetEntry())
+                        {
+                            case 98149:
+                            case 98147:
+                            case 98146:
+                            case 98335:
+                            case 98148:
+                            case 98150:
+                                break;
+                            default:
+                                return SPELL_FAILED_EQUIPPED_ITEM;
+                        }
+                    }
                 }
                 break;
             }
