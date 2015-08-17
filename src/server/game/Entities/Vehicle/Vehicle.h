@@ -101,6 +101,7 @@ class Vehicle : public TransportBase
         void CalculatePassengerOffset(float& x, float& y, float& z, float& o);
 
         void RemovePendingEvent(VehicleJoinEvent* e);
+        void AddPendingEvent(VehicleJoinEvent* e);
         void RemovePendingEventsForSeat(int8 seatId);
 
     private:
@@ -118,6 +119,8 @@ class Vehicle : public TransportBase
 
         typedef std::list<VehicleJoinEvent*> PendingJoinEventContainer;
         PendingJoinEventContainer _pendingJoinEvents;       ///< Collection of delayed join events for prospective passengers
+
+        ACE_Thread_Mutex _lock;
 };
 
 class VehicleJoinEvent : public BasicEvent

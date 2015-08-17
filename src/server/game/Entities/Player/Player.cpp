@@ -7532,7 +7532,7 @@ void Player::SetSkill(uint16 id, uint16 step, uint16 newVal, uint16 maxVal)
 
 bool Player::HasSkill(uint32 skill) const
 {
-    if (!skill)
+    if (!skill || mSkillStatus.empty())
         return false;
 
     SkillStatusMap::const_iterator itr = mSkillStatus.find(skill);
@@ -7541,7 +7541,7 @@ bool Player::HasSkill(uint32 skill) const
 
 uint16 Player::GetSkillStep(uint16 skill) const
 {
-    if (!skill)
+    if (!skill || mSkillStatus.empty())
         return 0;
 
     SkillStatusMap::const_iterator itr = mSkillStatus.find(skill);

@@ -488,7 +488,7 @@ bool Vehicle::AddPassenger(Unit* unit, int8 seatId)
         }
 
         e->Seat = seat;
-        _pendingJoinEvents.push_back(e);
+        AddPendingEvent(e);
     }
     else
     {
@@ -500,7 +500,7 @@ bool Vehicle::AddPassenger(Unit* unit, int8 seatId)
         }
 
         e->Seat = seat;
-        _pendingJoinEvents.push_back(e);
+        AddPendingEvent(e);
         if (seat->second.Passenger)
         {
             Unit* passenger = ObjectAccessor::GetUnit(*GetBase(), seat->second.Passenger);
@@ -736,7 +736,14 @@ void Vehicle::CalculatePassengerOffset(float& x, float& y, float& z, float& o)
 
 void Vehicle::RemovePendingEvent(VehicleJoinEvent* e)
 {
+    TRINITY_GUARD(ACE_Thread_Mutex, _lock);
     _pendingJoinEvents.remove(e);
+}
+
+void Vehicle::AddPendingEvent(VehicleJoinEvent* e)
+{
+    TRINITY_GUARD(ACE_Thread_Mutex, _lock);
+    _pendingJoinEvents.push_back(e);
 }
 
 /**
