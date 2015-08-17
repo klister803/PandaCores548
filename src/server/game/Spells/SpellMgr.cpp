@@ -4466,6 +4466,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 93400:  // Shooting Stars
                 case 144569:  // Bastion of Power
                 case 144871:  // Sage Mender
+                case 144595:  // Divine Crusader
                     spellInfo->ProcCharges = 1;
                     break;
                 case 89485:  // Inner Focus
@@ -5741,9 +5742,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 122016:  // Incite
                     spellInfo->ProcCharges = 3;
                     spellInfo->StackAmount = 0;
-                    break;
-                case 127538:  // Savage Roar (Feral)
-                    spellInfo->AttributesEx |= SPELL_ATTR1_REQ_COMBO_POINTS2;
                     break;
                 default:
                     break;
