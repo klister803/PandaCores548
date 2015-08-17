@@ -2922,6 +2922,8 @@ bool SpellInfo::_IsPositiveEffect(uint8 effIndex, bool deep) const
                 case 61734: // Noblegarden Bunny
                 case 62344: // Fists of Stone
                 case 143842:// Mark of Anguish 
+                case 78627: // Deepstone Oil
+                case 78639: // Deepstone Oil mount
                     return true;
                 default:
                     break;

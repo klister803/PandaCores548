@@ -1311,6 +1311,14 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
         {
             switch (m_spellInfo->Id)
             {
+                case 78640: // Deepstone Oil
+                {
+                    if (m_caster->HasAuraType(SPELL_AURA_MOUNTED))
+                        m_caster->CastSpell(m_caster, 78639, true);
+                    else
+                        m_caster->CastSpell(m_caster, 78627, true);
+                    break;
+                }
                 case 145111: // Moonfang's Curse
                 {
                     if (roll_chance_i(30))
