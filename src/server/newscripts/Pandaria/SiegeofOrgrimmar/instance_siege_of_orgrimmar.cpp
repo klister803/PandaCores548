@@ -867,6 +867,10 @@ public:
                             }
                         }
                         HandleGameObject(spentdoorGuid, true);
+                        //Remove all buffs
+                        DoRemoveAurasDueToSpellOnPlayers(146068);
+                        DoRemoveAurasDueToSpellOnPlayers(146099);
+                        DoRemoveAurasDueToSpellOnPlayers(146141);
                         break;
                     case IN_PROGRESS:
                         if (Creature* ssops = instance->GetCreature(npcssopsGuid))
@@ -913,6 +917,10 @@ public:
 
                         HandleGameObject(spentdoorGuid, true);
                         HandleGameObject(spexdoorGuid, true);
+                        //Remove all buffs
+                        DoRemoveAurasDueToSpellOnPlayers(146068);
+                        DoRemoveAurasDueToSpellOnPlayers(146099);
+                        DoRemoveAurasDueToSpellOnPlayers(146141);
                         break;
                     case SPECIAL: //first room done, start second
                         if (Creature* ssops = instance->GetCreature(npcssopsGuid))
