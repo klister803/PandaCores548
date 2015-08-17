@@ -970,10 +970,9 @@ class go_soulwell : public GameObjectScript
                     return true;
 
                 // Don't try to add a stone if we already have one.
-                if (player->HasItemCount(_stoneId, 1))
+                if (Item* item = player->GetItemByEntry(_stoneId))
                 {
-                    if (SpellInfo const* spell = sSpellMgr->GetSpellInfo(_stoneSpell))
-                        Spell::SendCastResult(player, spell, 0, SPELL_FAILED_TOO_MANY_OF_ITEM);
+                    item->SetSpellCharges(1, -3);
                     return true;
                 }
 

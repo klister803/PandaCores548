@@ -689,6 +689,7 @@ struct SpellPrcoCheck
     int32 spelltypeMask;
     int32 combopoints;
     int32 deathstateMask;
+    int32 hasDuration;
 };
 
 struct SpellTriggered

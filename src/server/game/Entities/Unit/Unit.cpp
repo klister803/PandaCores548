@@ -14705,8 +14705,6 @@ int32 Unit::GetHealthGain(int32 dVal)
 
 void Unit::VisualForPower(Powers power, int32 curentVal, int32 modVal)
 {
-
-
     Player* player = ToPlayer();
     if(!player)
         return;
@@ -14767,7 +14765,7 @@ void Unit::VisualForPower(Powers power, int32 curentVal, int32 modVal)
             }
 
             uint32 spellid[] = {104756, 104759, 123171};
-            if(HasAura(56241))
+            if(HasAura(56241)) // Glyph of Verdant Spheres (Affliction, Destruction)
             {
                 spellid[0] = 123728;
                 spellid[1] = 123730;
@@ -19493,8 +19491,8 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     if (procSpell->DmgClass == SPELL_DAMAGE_CLASS_RANGED)
                         attType = RANGED_ATTACK;
 
-                    int32 SPD = SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
-                    int32 SPDH = SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL);
+                    int32 SPD = GetSpellPowerDamage(SPELL_SCHOOL_MASK_ALL);
+                    int32 SPDH = GetSpellPowerHealing();
                     int32 AP = GetTotalAttackPowerValue(attType);
 
                     triggered_spell_id = abs(itr->spell_trigger);
@@ -19534,6 +19532,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                             basepoints2 = AP;
                             break;
                     }
+
                     _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints1, &basepoints2, true, castItem, triggeredByAura, originalCaster);
                     if(itr->target == 6)
                     {
@@ -19615,9 +19614,9 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     int32 summ_damage = triggerAmount + dmgInfoProc->GetDamage();
                     triggered_spell_id = abs(itr->spell_trigger);
                     if (itr->bp0)
-                        limited = int32(SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL) * itr->bp0);
+                        limited = int32(GetSpellPowerDamage(SPELL_SCHOOL_MASK_ALL) * itr->bp0);
                     else if (itr->bp1)
-                        limited = int32(SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL) * itr->bp1);
+                        limited = int32(GetSpellPowerHealing() * itr->bp1);
                     else if (itr->bp2)
                     {
                         WeaponAttackType attType = BASE_ATTACK;
@@ -19929,8 +19928,10 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
 bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo const* procSpell, uint8 effect)
 {
     bool procCheck = false;
+    bool procCheckActiveted = false;
+    bool procCheckSecond = false;
+    bool procCheckSecondActiveted = false;
     uint64 casterGUID = GetGUID();
-    Unit* _checkTarget = this;
     int32 spellProcId = procSpell ? procSpell->Id : -1;
     uint32 procPowerType = procSpell ? procSpell->PowerType : 0;
     uint32 procDmgClass = procSpell ? procSpell->DmgClass : 0;
@@ -19938,11 +19939,12 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
     uint32 AllEffectsMechanicMask = procSpell ? procSpell->GetAllEffectsMechanicMask() : 0;
     uint32 SpellTypeMask = procSpell ? procSpell->GetSpellTypeMask() : 1;
     uint32 NeedsComboPoints = procSpell ? procSpell->NeedsComboPoints() : 0;
+    int32 duration = procSpell ? procSpell->GetDuration() : 0;
     int32 specCheckid = ToPlayer() ? ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) : 0;
     int32 deathstateMask = victim ? (1 << victim->getDeathState()) : 0;
 
-    //sLog->outDebug(LOG_FILTER_PROC, "SpellProcCheck: spellProto->Id %i, effect %i, spellProcId %i, procPowerType %i, procDmgClass %i, AllEffectsMechanicMask %i, specCheckid %i, SpellTypeMask %i",
-    //spellProto->Id, effect, spellProcId, procPowerType, procDmgClass, AllEffectsMechanicMask, specCheckid, SpellTypeMask);
+    sLog->outDebug(LOG_FILTER_PROC, "SpellProcCheck: spellProto->Id %i, effect %i, spellProcId %i, procPowerType %i, procDmgClass %i, AllEffectsMechanicMask %i, specCheckid %i, SpellTypeMask %i duration %i",
+    spellProto->Id, effect, spellProcId, procPowerType, procDmgClass, AllEffectsMechanicMask, specCheckid, SpellTypeMask, duration);
 
     if (std::vector<SpellPrcoCheck> const* spellCheck = sSpellMgr->GetSpellPrcoCheck(spellProto->Id))
     {
@@ -19950,6 +19952,8 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
         {
             if (!(itr->effectmask & (1<<effect)))
                 continue;
+            Unit* _checkTarget = this;
+
             if(itr->target == 1 && victim)
                 _checkTarget = victim;
             if(itr->target == 3 && ToPlayer()) //get target owner pet
@@ -19962,6 +19966,7 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
             //if this spell exist not proc
             if (itr->checkspell < 0)
             {
+                procCheckActiveted = true;
                 if (-(itr->checkspell) == spellProcId)
                 {
                     if(itr->hastalent != 0 || itr->specId != 0 || itr->spellAttr0 != 0 || itr->targetTypeMask != 0 || itr->perchp != 0 || itr->fromlevel != 0 || itr->mechanicMask != 0 || itr->combopoints != 0)
@@ -20041,6 +20046,16 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                             procCheck = true;
                             break;
                         }
+                        if(itr->hasDuration > 0 && duration < 0)
+                        {
+                            procCheck = true;
+                            break;
+                        }
+                        else if(itr->hasDuration < 0 && duration > 0)
+                        {
+                            procCheck = true;
+                            break;
+                        }
                         if(itr->chance != 0 && !roll_chance_i(itr->chance) && procCheck)
                         {
                             procCheck = false;
@@ -20057,6 +20072,7 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
             //if this spell not exist not proc
             else if (itr->checkspell == spellProcId)
             {
+                procCheckActiveted = true;
                 if(itr->hastalent > 0 && !_checkTarget->HasAura(itr->hastalent, casterGUID))
                 {
                     procCheck = true;
@@ -20137,89 +20153,110 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                     procCheck = true;
                     continue;
                 }
+                if(itr->hasDuration > 0 && duration < 0)
+                {
+                    procCheck = true;
+                    continue;
+                }
+                else if(itr->hasDuration < 0 && duration > 0)
+                {
+                    procCheck = true;
+                    continue;
+                }
                 procCheck = false;
                 break;
             }
             //other check
             else if (itr->checkspell == 0)
             {
+                procCheckSecondActiveted = true;
                 if(itr->hastalent != 0)
                 {
                     if(itr->hastalent > 0 && !_checkTarget->HasAura(itr->hastalent, casterGUID))
                     {
-                        procCheck = true;
-                        break;
+                        procCheckSecond = true;
+                        continue;
                     }
                     else if(itr->hastalent < 0 && _checkTarget->HasAura(-(itr->hastalent), casterGUID))
                     {
-                        procCheck = true;
-                        break;
+                        procCheckSecond = true;
+                        continue;
                     }
                 }
 
                 if(itr->specId > 0 && itr->specId != specCheckid)
                 {
-                    procCheck = true;
-                    break;
+                    procCheckSecond = true;
+                    continue;
                 }
                 else if(itr->specId < 0 && itr->specId == specCheckid)
                 {
-                    procCheck = true;
-                    break;
+                    procCheckSecond = true;
+                    continue;
                 }
                 if(procSpell && itr->spellAttr0 > 0 && !(procSpell->Attributes & itr->spellAttr0))
                 {
-                    procCheck = true;
-                    break;
+                    procCheckSecond = true;
+                    continue;
                 }
                 else if(procSpell && itr->spellAttr0 < 0 && (procSpell->Attributes & abs(itr->spellAttr0)))
                 {
-                    procCheck = true;
-                    break;
+                    procCheckSecond = true;
+                    continue;
                 }
                 if(itr->targetTypeMask != 0 && !(itr->targetTypeMask & (1 << _checkTarget->GetTypeId())))
                 {
-                    procCheck = true;
+                    procCheckSecond = true;
                     continue;
                 }
                 if(itr->mechanicMask != 0 && !(AllEffectsMechanicMask & itr->mechanicMask))
                 {
-                    procCheck = true;
+                    procCheckSecond = true;
                     continue;
                 }
                 if(itr->combopoints != 0 && !NeedsComboPoints)
                 {
-                    procCheck = true;
+                    procCheckSecond = true;
                     continue;
                 }
                 if(itr->spelltypeMask != 0 && !(SpellTypeMask & itr->spelltypeMask))
                 {
-                    procCheck = true;
+                    procCheckSecond = true;
                     continue;
                 }
                 if(itr->deathstateMask != 0 && !(deathstateMask & itr->deathstateMask))
                 {
-                    procCheck = true;
+                    procCheckSecond = true;
                     continue;
                 }
                 if(itr->fromlevel > 0 && _checkTarget->getLevel() < itr->fromlevel)
                 {
-                    procCheck = true;
+                    procCheckSecond = true;
                     continue;
                 }
                 else if(itr->fromlevel < 0 && _checkTarget->getLevel() >= abs(itr->fromlevel))
                 {
-                    procCheck = true;
+                    procCheckSecond = true;
                     continue;
                 }
                 if(itr->perchp > 0 && _checkTarget->GetHealthPct() < itr->perchp)
                 {
-                    procCheck = true;
+                    procCheckSecond = true;
                     continue;
                 }
                 else if(itr->perchp < 0 && _checkTarget->GetHealthPct() >= abs(itr->perchp))
                 {
-                    procCheck = true;
+                    procCheckSecond = true;
+                    continue;
+                }
+                if(itr->hasDuration > 0 && duration < 0)
+                {
+                    procCheckSecond = true;
+                    continue;
+                }
+                else if(itr->hasDuration < 0 && duration > 0)
+                {
+                    procCheckSecond = true;
                     continue;
                 }
 
@@ -20227,34 +20264,46 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                 {
                     if(itr->powertype != procPowerType || itr->dmgclass != procDmgClass)
                     {
-                        procCheck = true;
-                        break;
+                        procCheckSecond = true;
+                        continue;
                     }
                 }
                 else if(itr->dmgclass != -1 && itr->dmgclass != procDmgClass)
                 {
-                    procCheck = true;
-                    break;
+                    procCheckSecond = true;
+                    continue;
                 }
                 else if(itr->powertype != -1 && itr->powertype != procPowerType)
                 {
-                    procCheck = true;
-                    break;
+                    procCheckSecond = true;
+                    continue;
                 }
-                if(!procCheck && itr->chance != 0 && !roll_chance_i(itr->chance))
+                if(itr->chance != 0 && !roll_chance_i(itr->chance))
                 {
-                    procCheck = true;
+                    procCheckSecond = true;
                     break;
                 }
+                procCheckSecond = false;
+                break;
             }
             else
                 procCheck = true;
         }
     }
     //if check true false proc
-    if(procCheck)
+    if(procCheck && !procCheckSecondActiveted)
     {
-        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellProcCheck: spellProto->Id %i, effect %i, spellProcId %i", spellProto->Id, effect, spellProcId);
+        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellProcCheck: spellProto->Id %i, effect %i, spellProcId %i procCheck", spellProto->Id, effect, spellProcId);
+        return false;
+    }
+    if(procCheckSecond && !procCheckActiveted)
+    {
+        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellProcCheck: spellProto->Id %i, effect %i, spellProcId %i procCheckSecond", spellProto->Id, effect, spellProcId);
+        return false;
+    }
+    if(procCheck && procCheckSecond)
+    {
+        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellProcCheck: spellProto->Id %i, effect %i, spellProcId %i procCheckSecond && procCheck", spellProto->Id, effect, spellProcId, procCheckSecond);
         return false;
     }
 

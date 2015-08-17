@@ -508,11 +508,11 @@ class spell_warl_metamorphosis_cost : public SpellScriptLoader
         {
             PrepareAuraScript(spell_warl_metamorphosis_cost_AuraScript);
 
-            void OnTick(AuraEffect const* aurEff)
+            /*void OnTick(AuraEffect const* aurEff)
             {
                 if (Unit* caster = GetCaster())
                     caster->EnergizeBySpell(caster, WARLOCK_METAMORPHOSIS, -6, POWER_DEMONIC_FURY);
-            }
+            }*/
 
             void OnUpdate(uint32 diff, AuraEffect* aurEff)
             {
@@ -532,7 +532,7 @@ class spell_warl_metamorphosis_cost : public SpellScriptLoader
 
             void Register()
             {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_metamorphosis_cost_AuraScript::OnTick, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
+                //OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_metamorphosis_cost_AuraScript::OnTick, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
                 OnEffectUpdate += AuraEffectUpdateFn(spell_warl_metamorphosis_cost_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT);
                 OnEffectRemove += AuraEffectApplyFn(spell_warl_metamorphosis_cost_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT, AURA_EFFECT_HANDLE_REAL);
             }
@@ -1119,8 +1119,8 @@ class spell_warl_shadowburn : public SpellScriptLoader
         }
 };
 
-// Called By : Incinerate - 29722 and Incinerate (Fire and Brimstone) - 114654
-// Conflagrate - 17962 and Conflagrate (Fire and Brimstone) - 108685
+// Called By : Incinerate - 29722
+// Conflagrate - 17962
 // Burning Embers generate
 class spell_warl_burning_embers : public SpellScriptLoader
 {
@@ -1197,7 +1197,7 @@ class spell_warl_fel_flame : public SpellScriptLoader
         }
 };
 
-// Drain Life - 689, 89420
+// Drain Life - 689, 89420, 103990
 class spell_warl_drain_life : public SpellScriptLoader
 {
     public:
@@ -1216,11 +1216,10 @@ class spell_warl_drain_life : public SpellScriptLoader
                         return;
 
                     // In Demonology spec : Generates 10 Demonic Fury per second
-                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY)
-                        _player->EnergizeBySpell(_player, 689, 10, POWER_DEMONIC_FURY);
+                    if (GetSpellInfo()->Effects[2].IsAura(SPELL_AURA_DUMMY))
+                        _player->EnergizeBySpell(_player, 689, GetSpellInfo()->Effects[2].BasePoints, POWER_DEMONIC_FURY);
 
                     int32 basepoints = _player->CountPctFromMaxHealth(GetSpellInfo()->Effects[1].BasePoints);
-
                     _player->CastCustomSpell(_player, WARLOCK_DRAIN_LIFE_HEAL, &basepoints, NULL, NULL, true);
                 }
             }
@@ -1917,11 +1916,16 @@ class spell_warl_rain_of_fire_damage : public SpellScriptLoader
                 {
                     if(unitTarget->HasAura(348) || unitTarget->HasAura(108686))
                         SetHitDamage(int32(GetHitDamage() * 1.5f));
+
+                    GetSpell()->AddEffectTarget(unitTarget->GetGUID());
                 }
             }
 
-            void HandleAfterCast()
+            void HandleOnCast()
             {
+                if(GetSpell()->GetEffectTargets().empty())
+                    return;
+
                 if (Unit* caster = GetCaster())
                     if (roll_chance_i(30))
                         caster->ModifyPower(POWER_BURNING_EMBERS, 1);
@@ -1930,7 +1934,7 @@ class spell_warl_rain_of_fire_damage : public SpellScriptLoader
             void Register()
             {
                 OnEffectHitTarget += SpellEffectFn(spell_warl_rain_of_fire_damage_SpellScript::Damage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-                AfterCast += SpellCastFn(spell_warl_rain_of_fire_damage_SpellScript::HandleAfterCast);
+                OnCast += SpellCastFn(spell_warl_rain_of_fire_damage_SpellScript::HandleOnCast);
             }
         };
 
@@ -2478,6 +2482,234 @@ class spell_warl_seduction : public SpellScriptLoader
         }
 };
 
+// 108686 - Immolate
+class spell_warl_immolate : public SpellScriptLoader
+{
+    public:
+        spell_warl_immolate() : SpellScriptLoader("spell_warl_immolate") { }
+
+        class spell_warl_immolate_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_immolate_SpellScript);
+
+            void Damage(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                   if(Aura* aura = caster->GetAura(77220))
+                   {
+                       int32 mastery = aura->GetEffect(EFFECT_0)->GetAmount();
+                       float perc = (35 * (100 + mastery)) / 100;
+                       int32 damage = CalculatePct(GetHitDamage(), perc);
+                       SetHitDamage(damage);
+                   }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_warl_immolate_SpellScript::Damage, EFFECT_1, SPELL_EFFECT_SCHOOL_DAMAGE);
+            }
+        };
+
+        class spell_warl_immolate_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_immolate_AuraScript);
+
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                   if(Aura* aura = caster->GetAura(77220))
+                   {
+                       int32 mastery = aura->GetEffect(EFFECT_0)->GetAmount();
+                       float perc = (35 * (100 + mastery)) / 100;
+                       amount = CalculatePct(amount, perc);
+                   }
+                }
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_immolate_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_immolate_AuraScript();
+        }
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_immolate_SpellScript();
+        }
+};
+
+// 114654, 108685 - Incinerate and Conflagrate
+class spell_warl_incinerate : public SpellScriptLoader
+{
+    public:
+        spell_warl_incinerate() : SpellScriptLoader("spell_warl_incinerate") { }
+
+        class spell_warl_incinerate_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_incinerate_SpellScript);
+
+            void Damage(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                   if(Aura* aura = caster->GetAura(77220))
+                   {
+                       int32 mastery = aura->GetEffect(EFFECT_0)->GetAmount();
+                       float perc = (35 * (100 + mastery)) / 100;
+                       int32 damage = CalculatePct(GetHitDamage(), perc);
+                       SetHitDamage(damage);
+                   }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_warl_incinerate_SpellScript::Damage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_incinerate_SpellScript();
+        }
+};
+
+// Conflagrate (Fire and Brimstone) - 108685 and Incinerate (Fire and Brimstone) - 114654
+class spell_warl_burning_embers_aoe : public SpellScriptLoader
+{
+    public:
+        spell_warl_burning_embers_aoe() : SpellScriptLoader("spell_warl_burning_embers_aoe") { }
+
+        class spell_warl_burning_embers_aoe_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_burning_embers_aoe_SpellScript);
+
+            void Damage(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* unitTarget = GetHitUnit())
+                    GetSpell()->AddEffectTarget(unitTarget->GetGUID());
+            }
+
+            void HandleOnCast()
+            {
+                if(GetSpell()->GetEffectTargets().empty())
+                    return;
+
+                if (Unit* caster = GetCaster())
+                    caster->ModifyPower(POWER_BURNING_EMBERS, 1);
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_warl_burning_embers_aoe_SpellScript::Damage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+                OnCast += SpellCastFn(spell_warl_burning_embers_aoe_SpellScript::HandleOnCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_burning_embers_aoe_SpellScript();
+        }
+};
+
+// 115236 - Void Shield (Special Ability)
+class spell_warl_void_shield : public SpellScriptLoader
+{
+    public:
+        spell_warl_void_shield() : SpellScriptLoader("spell_warl_void_shield") { }
+
+        class spell_warl_void_shield_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_void_shield_AuraScript);
+
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if(Unit* caster = GetCaster())
+                {
+                    caster->CastSpell(caster, 115241, true); // Void Shield Charge 1
+                    caster->CastSpell(caster, 115242, true); // Void Shield Charge 2
+                    caster->CastSpell(caster, 115243, true); // Void Shield Charge 3
+                }
+                SetStackAmount(3);
+            }
+
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if(Unit* caster = GetCaster())
+                {
+                    caster->RemoveAurasDueToSpell(115241); // Void Shield Charge 1
+                    caster->RemoveAurasDueToSpell(115242); // Void Shield Charge 2
+                    caster->RemoveAurasDueToSpell(115243); // Void Shield Charge 3
+                }
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectApplyFn(spell_warl_void_shield_AuraScript::OnApply, EFFECT_0, SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_warl_void_shield_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_void_shield_AuraScript();
+        }
+};
+
+// 115240 - Void Shield
+class spell_warl_void_shield_damage : public SpellScriptLoader
+{
+    public:
+        spell_warl_void_shield_damage() : SpellScriptLoader("spell_warl_void_shield_damage") { }
+
+        class spell_warl_void_shield_damage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_void_shield_damage_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Aura* shield = caster->GetAura(115236))
+                    {
+                        uint8 stack = shield->GetStackAmount();
+                        switch(stack)
+                        {
+                            case 1:
+                            shield->ModStackAmount(-1);
+                            return;
+                            case 2:
+                            caster->RemoveAurasDueToSpell(115242); // Void Shield Charge 2
+                            break;
+                            case 3:
+                            caster->RemoveAurasDueToSpell(115243); // Void Shield Charge 3
+                            break;
+                        }
+                        shield->SetStackAmount(stack - 1);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_void_shield_damage_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_void_shield_damage_SpellScript();
+        }
+};
+
 void AddSC_warlock_spell_scripts()
 {
     new spell_warl_shield_of_shadow();
@@ -2534,4 +2766,9 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_demonic_slash();
     new spell_warl_demonic_gateway_at();
     new spell_warl_seduction();
+    new spell_warl_immolate();
+    new spell_warl_incinerate();
+    new spell_warl_burning_embers_aoe();
+    new spell_warl_void_shield();
+    new spell_warl_void_shield_damage();
 }

@@ -1632,9 +1632,10 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
         case 49998: // Death Strike
         {
             int32 countDamage = int32(m_caster->GetDamageCounterInPastSecs(5, DAMAGE_TAKEN_COUNTER) * 0.20f);
+            int32 countHealth = m_caster->CountPctFromMaxHealth(7);
 
-            if (int32(m_caster->CountPctFromMaxHealth(7)) > countDamage)
-                bp = m_caster->CountPctFromMaxHealth(7);
+            if (countHealth > countDamage)
+                bp = countHealth;
             else
                 bp = countDamage;
 

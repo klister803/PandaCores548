@@ -689,6 +689,7 @@ class spell_dk_blood_tap : public SpellScriptLoader
                                 {
                                     runesRestor++;
                                     _player->SetRuneCooldown(i, 0);
+                                    _player->AddRunePower(i);
                                 }
                             }
                         }*/
@@ -1959,7 +1960,7 @@ class spell_dk_death_shroud : public SpellScriptLoader
 
                 if (Player* _player = caster->ToPlayer())
                 {
-                    if (caster->HasSpell(63560))
+                    if (_player->HasSpell(63560))
                         duration = 15000;
                     else if(_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DK_FROST)
                         duration = 4000 + (_player->IsTwoHandUsed() ? 4000 : 2000);

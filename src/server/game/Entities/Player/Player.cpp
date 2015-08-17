@@ -4819,11 +4819,19 @@ void Player::learnSpell(uint32 spell_id, bool dependent)
             Unit* caster = (Unit*)this;
 
             if(i->caster == 1)
+            {
                 if (Pet* pet = GetPet())
                     caster = (Unit*)pet;
+                else
+                    continue;
+            }
             if(i->target == 1)
+            {
                 if (Pet* pet = GetPet())
                     target = (Unit*)pet;
+                else
+                    continue;
+            }
 
             switch (i->type)
             {
