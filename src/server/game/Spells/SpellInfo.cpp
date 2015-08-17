@@ -1893,9 +1893,26 @@ SpellCastResult SpellInfo::CheckLocation(uint32 map_id, uint32 zone_id, uint32 a
     }
 
     if (HasAura(SPELL_AURA_FLY))
-        if (map_id == 1064 || zone_id == 3433 || zone_id == 3430 || zone_id == 3487)
-            return SPELL_FAILED_INCORRECT_AREA;
-
+        switch (map_id)
+        {
+            case 1064:
+                return SPELL_FAILED_INCORRECT_AREA;
+            case 530:
+            {
+                switch (zone_id)
+                {
+                    case 0:
+                    case 3430:
+                    case 3433:
+                    case 3487:
+                        return SPELL_FAILED_INCORRECT_AREA;
+                    default:
+                        break;
+                }
+            }
+            default:
+                break;
+        }
 
     // DB base check (if non empty then must fit at least single for allow)
     SpellAreaMapBounds saBounds = sSpellMgr->GetSpellAreaMapBounds(Id);
