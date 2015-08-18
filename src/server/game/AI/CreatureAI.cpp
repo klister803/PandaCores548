@@ -210,7 +210,7 @@ void CreatureAI::EnterEvadeMode()
         }
         else
         {
-            if (!me->HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED))
+            if (!me->HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED) || !me->isInCombat())
                 me->AddUnitState(UNIT_STATE_EVADE);
 
             me->GetMotionMaster()->MoveTargetedHome();

@@ -76,7 +76,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             // Gnaw
             else if (spellproto->Id == 47481)
                 return DIMINISHING_CONTROLLED_STUN;
-            else if (spellproto->Id == 143301 || spellproto->Id == 125500)
+            else if (spellproto->Id == 143301 || spellproto->Id == 125500 || spellproto->Id == 112955)
                 return DIMINISHING_NONE;
             break;
         }

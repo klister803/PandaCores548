@@ -36,6 +36,7 @@ enum eSpells
     SPELL_CALL_REINFORCEMENTS   = 111755,
     SPELL_HEROIC_LEAP           = 111219,
     SPELL_BLADES_OF_LIGHT       = 111216,
+    SPELL_BLADES_OF_LIGHT_DMG   = 111215,
     SPELL_BLADES_OF_LIGHT_RIDE  = 112955,
     SPELL_BERSERKER_RAGE        = 111221,
 
@@ -84,7 +85,7 @@ public:
         void Reset()
         {
             _Reset();
-            me->GetMotionMaster()->Clear(false);
+            me->GetMotionMaster()->MoveIdle();
 
             events.Reset();
             me->SetReactState(REACT_AGGRESSIVE);
@@ -142,6 +143,7 @@ public:
             {
                 BladeActive = false;
                 me->RemoveAura(SPELL_BLADES_OF_LIGHT);
+                me->RemoveAurasDueToSpell(SPELL_BLADES_OF_LIGHT_RIDE);
                 me->SetReactState(REACT_AGGRESSIVE);
             }
         }
@@ -248,6 +250,42 @@ public:
     }
 };
 
+// 111394
+class spell_blades_of_light : public SpellScriptLoader
+{
+    public:
+        spell_blades_of_light() : SpellScriptLoader("spell_blades_of_light") { }
+
+        class spell_blades_of_light_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_blades_of_light_SpellScript);
+
+            void HandleOnHit(SpellEffIndex /*effIndex*/)
+            {
+                Unit* caster = GetCaster();
+                Unit* target = GetHitUnit();
+
+                if (!caster || !target)
+                    return;
+
+                if (!target->HasAura(SPELL_BLADES_OF_LIGHT_RIDE))
+                    target->CastSpell(caster, SPELL_BLADES_OF_LIGHT_RIDE, true);
+
+                caster->CastSpell(target, SPELL_BLADES_OF_LIGHT_DMG);
+            }
+
+            void Register()
+            {
+                OnEffectLaunchTarget += SpellEffectFn(spell_blades_of_light_SpellScript::HandleOnHit, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_blades_of_light_SpellScript();
+        }
+};
+
 // 113959
 class spell_heavy_armor : public SpellScriptLoader
 {
@@ -286,5 +324,6 @@ void AddSC_boss_armsmaster_harlan()
 {
     new boss_armsmaster_harlan();
     new npc_scarlet_defender();
+    new spell_blades_of_light();
     new spell_heavy_armor();
 }
