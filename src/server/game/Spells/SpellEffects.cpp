@@ -817,11 +817,6 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
 
         switch (m_spellInfo->Id)
         {
-            case 83381:  // Kill Command
-            {
-                AddPct(m_damage, 50);
-                break;
-            }
             case 117418: // Fists of Fury (damage)
             {
                 m_damage /= m_UniqueTargetInfo.size();
