@@ -916,6 +916,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
         case SMART_ACTION_SEND_TARGET_TO_TARGET:
         case SMART_ACTION_SET_HOME_POS:
         case SMART_ACTION_SET_HEALTH_REGEN:
+        case SMART_ACTION_SET_ROOT:
         case SMART_ACTION_BOSS_EVADE:
         case SMART_ACTION_BOSS_ANOUNCE:
         case SMART_ACTION_MOVE_Z:

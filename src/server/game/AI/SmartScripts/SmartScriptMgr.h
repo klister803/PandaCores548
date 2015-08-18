@@ -509,6 +509,7 @@ enum SMART_ACTION
     SMART_ACTION_SEND_TARGET_TO_TARGET              = 100,    // id
     SMART_ACTION_SET_HOME_POS                       = 101,    // none
     SMART_ACTION_SET_HEALTH_REGEN                   = 102,    // 0/1
+    SMART_ACTION_SET_ROOT                           = 103,    // off/on
     SMART_ACTION_BOSS_EVADE                         = 200,    // No Params
     SMART_ACTION_BOSS_ANOUNCE                       = 201,    // TextId from trinity_ctring
     SMART_ACTION_MOVE_Z                             = 202,    // TextId from trinity_ctring
@@ -949,6 +950,11 @@ struct SmartAction
         {
             uint32 regenHealth;
         } setHealthRegen;
+
+        struct
+        {
+            uint32 root;
+        } setRoot;
 
         //! Note for any new future actions
         //! All parameters must have type uint32
