@@ -1480,14 +1480,6 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                         break;
                 }
 
-                switch (spellInfo->Effects[i].TargetA.GetTarget())
-                {
-                    case TARGET_UNIT_TARGET_ANY:
-                        continue;
-                    default:
-                        break;
-                }
-
                 sLog->outError(LOG_FILTER_SQL, "SourceEntry %u SourceGroup %u in `condition` table - spell %u does not have implicit targets of types: _AREA_, _CONE_, _NEARBY_ for effect %u, SourceGroup needs correction, ignoring.", cond->SourceEntry, origGroup, cond->SourceEntry, uint32(i));
                 cond->SourceGroup &= ~(1<<i);
             }
