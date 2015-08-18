@@ -6395,11 +6395,13 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
                 if(i->cooldown != 0 && _caster->GetTypeId() == TYPEID_PLAYER && _caster->ToPlayer()->HasSpellCooldown(i->effect))
                     continue;
 
-                if(i->learnspell)
+                if (i->learnspell)
                 {
-                    if(Player* _lplayer = _caster->ToPlayer())
+                    if (Player* _lplayer = _caster->ToPlayer())
                         _lplayer->learnSpell(i->effect, false);
                 }
+                else if (i->type2 == 8)
+                    _caster->AddAura(i->effect, _target ? _target : _caster);
                 else if (i->type2 == 7)
                     _caster->CastSpell(_target ? _target : _caster, i->effect, false);
                 else if (i->type2 == 6)
