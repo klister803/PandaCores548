@@ -4225,7 +4225,7 @@ void Spell::_handle_immediate_phase()
             m_spellInfo->SpellFamilyFlags[2] & 0x00024000)) // Explosive and Immolation Trap
             procAttacker |= PROC_FLAG_DONE_TRAP_ACTIVATION;
 
-        procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS;
+        //procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS;
         procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG;
     }
 
