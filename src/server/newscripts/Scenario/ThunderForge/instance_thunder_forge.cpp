@@ -192,6 +192,8 @@ public:
                     s2p2 = data;
                     if (data == DONE)
                     {
+                        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 35754, 1);
+
                         Map::PlayerList const& players = instance->GetPlayers();
                         if (Player* plr = players.begin()->getSource())
                             plr->KilledMonsterCredit(70094, 0); //< set quest 32593 completed
