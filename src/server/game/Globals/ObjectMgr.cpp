@@ -9519,7 +9519,7 @@ void ObjectMgr::LoadResearchSiteToZoneData()
 
 void ObjectMgr::LoadDigSitePositions()
 {
-    QueryResult result = WorldDatabase.Query("SELECT map, x, y FROM archaeology_digsites");
+    QueryResult result = WorldDatabase.Query("SELECT idx, map, x, y FROM archaeology_digsites");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 dig site positions. DB table `archaeology_digsites` is empty.");
@@ -9532,9 +9532,10 @@ void ObjectMgr::LoadDigSitePositions()
     {
         Field* fields = result->Fetch();
 
-        uint32 map = fields[0].GetUInt32();
-        float x = fields[1].GetFloat();
-        float y = fields[2].GetFloat();
+        uint32 idx = fields[0].GetUInt32();
+        uint32 map = fields[1].GetUInt32();
+        float x = fields[2].GetFloat();
+        float y = fields[3].GetFloat();
 
         bool added = false;
         for (ResearchSiteDataMap::iterator itr = sResearchSiteDataMap.begin(); itr != sResearchSiteDataMap.end(); ++itr)
@@ -9557,8 +9558,8 @@ void ObjectMgr::LoadDigSitePositions()
 
         if (!added)
         {
-            sLog->outError(LOG_FILTER_SQL, "DB table `archaeology_digsites` has data for point x:%f y:%f at map %u that does not belong to any digsite!",
-                x, y, map);
+            sLog->outError(LOG_FILTER_SQL, "DB table `archaeology_digsites` has data for point idx:%u x:%f y:%f at map %u that does not belong to any digsite!",
+                idx, x, y, map);
             continue;
         }
 
