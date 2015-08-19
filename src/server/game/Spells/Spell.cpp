@@ -3674,6 +3674,22 @@ void Spell::cast(bool skipCheck)
     }
 
     volatile uint32 spellid = m_spellInfo->Id;
+
+    if (spellid == 144229) //SoP fix exploit(double click)
+    {
+        if (m_targets.GetObjectTarget()->ToGameObject())
+        {
+            if (m_targets.GetObjectTarget()->ToGameObject()->HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE))
+            {
+                SendCastResult(SPELL_FAILED_ERROR);
+                finish(false);
+                return;
+            }
+            else
+                m_targets.GetObjectTarget()->ToGameObject()->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+        }
+    }
+
     // update pointers base at GUIDs to prevent access to non-existed already object
     UpdatePointers();
 
