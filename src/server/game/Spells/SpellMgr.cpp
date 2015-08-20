@@ -4450,10 +4450,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].MiscValue = 0;
                     spellInfo->Effects[EFFECT_0].MiscValueB = 0;
                     break;
-                case 49821: // Mind Sear
-                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_DEST_CHANNEL_TARGET;
-                    spellInfo->Effects[EFFECT_0].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
-                    break;
                 case 6770:   // Sap
                 case 6346:   // Fear Ward
                 case 81292:  // Glyph of Mind Spike

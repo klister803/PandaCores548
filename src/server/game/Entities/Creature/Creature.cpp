@@ -2985,3 +2985,25 @@ bool Creature::IsAutoLoot() const
 {
     return (GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_AUTO_LOOT);
 }
+
+void Creature::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
+{
+    for (uint8 i = 0; i < GetPetCastSpellSize(); ++i)
+    {
+        uint32 spellID = GetPetCastSpellOnPos(i);
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
+        if (!spellInfo)
+            continue;
+
+        // Not send cooldown for this spells
+        if (spellInfo->Attributes & SPELL_ATTR0_DISABLED_WHILE_ACTIVE)
+            continue;
+
+        if (spellInfo->PreventionType != SPELL_PREVENTION_TYPE_SILENCE)
+            continue;
+
+        if ((idSchoolMask & spellInfo->GetSchoolMask()) && _GetSpellCooldownDelay(spellID) < unTimeMs)
+            _AddCreatureSpellCooldown(spellID, time(NULL) + unTimeMs/IN_MILLISECONDS);
+    }
+}
+

@@ -147,7 +147,7 @@ void WorldSession::HandlePetAction(WorldPacket & recvData)
             {
                 if((*itr)->ToCreature())
                 {
-                    if(!(*itr)->ToCreature()->m_Stampeded)
+                    if(!(*itr)->ToCreature()->m_Stampeded && (*itr)->HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN))
                         controlled.push_back(*itr);
                 }
                 else

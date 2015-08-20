@@ -451,6 +451,7 @@ struct PetStats
     float damage;
     int32 type;
     int32 maxspdorap;
+    int32 haste;
 };
 
 struct MailLevelReward

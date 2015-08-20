@@ -1544,7 +1544,7 @@ class spell_putricide_mutated_transformation_dmg : public SpellScriptLoader
 
             void FilterTargetsInitial(std::list<WorldObject*>& unitList)
             {
-                if (Unit* owner = ObjectAccessor::GetUnit(*GetCaster(), GetCaster()->GetCreatorGUID()))
+                if (Unit* owner = ObjectAccessor::GetUnit(*GetCaster(), GetCaster()->GetOwnerGUID()))
                     unitList.remove(owner);
             }
 

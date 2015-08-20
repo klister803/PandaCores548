@@ -951,7 +951,7 @@ private:
 public:
     explicit DamageInfo(Unit* _attacker, Unit* _victim, uint32 _damage, SpellInfo const* _spellInfo, SpellSchoolMask _schoolMask, DamageEffectType _damageType, uint32 m_damageBeforeHit);
     explicit DamageInfo(CalcDamageInfo& dmgInfo);
-    explicit DamageInfo(SpellNonMeleeDamage& dmgInfo);
+    explicit DamageInfo(SpellNonMeleeDamage& dmgInfo, SpellInfo const* _spellInfo);
 
     void ModifyDamage(int32 amount);
     void AbsorbDamage(int32 amount);
@@ -1804,9 +1804,9 @@ class Unit : public WorldObject
         DeathState getDeathState() { return m_deathState; };
         virtual void setDeathState(DeathState s);           // overwrited in Creature/Player/Pet
 
-        uint64 GetOwnerGUID() const { return GetUInt64Value(UNIT_FIELD_SUMMONEDBY); }
+        uint64 GetSummonedByGUID() const { return GetUInt64Value(UNIT_FIELD_SUMMONEDBY); }
         void SetOwnerGUID(uint64 owner);
-        uint64 GetCreatorGUID() const { return GetUInt64Value(UNIT_FIELD_CREATEDBY); }
+        uint64 GetOwnerGUID() const { return GetUInt64Value(UNIT_FIELD_CREATEDBY); }
         void SetCreatorGUID(uint64 creator) { SetUInt64Value(UNIT_FIELD_CREATEDBY, creator); }
         uint64 GetMinionGUID() const { return GetUInt64Value(UNIT_FIELD_SUMMON); }
         void SetMinionGUID(uint64 guid) { SetUInt64Value(UNIT_FIELD_SUMMON, guid); }

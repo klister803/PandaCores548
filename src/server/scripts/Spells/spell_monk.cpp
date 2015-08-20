@@ -3023,18 +3023,17 @@ class spell_monk_chi_wave_filter : public SpellScriptLoader
             void FilterTargets(std::list<WorldObject*>& targets)
             {
                 targets.remove(GetCaster());
-                //targets.remove(GetOriginalCaster());
                 targets.remove_if(OptionCheck(GetCaster()));
                 if (!GetCaster()->IsFriendlyTo(GetOriginalCaster()))
                 {
-                    targets.remove_if(FriendlyToOriginalCaster(GetOriginalCaster(), false));
+                    targets.remove_if(FriendlyToOriginalCaster(GetOriginalCaster()));
                     targets.sort(CheckHealthState());
                     if (targets.size() > 1)
                         targets.resize(1);
                 }
                 else
                 {
-                    targets.remove_if(FriendlyToOriginalCaster(GetOriginalCaster(), true));
+                    targets.remove_if(OptionCheck(GetOriginalCaster()));
                     targets.sort(CheckNearbyVictim(GetCaster()));
                     if (targets.size() > 1)
                         targets.resize(1);
@@ -3086,19 +3085,18 @@ class spell_monk_chi_wave_filter : public SpellScriptLoader
             class FriendlyToOriginalCaster
             {
             public:
-                FriendlyToOriginalCaster(Unit* caster, bool friendly) : _caster(caster), _friendly(friendly){}
+                FriendlyToOriginalCaster(Unit* caster) : _caster(caster){}
 
                 Unit* _caster;
-                bool _friendly;
 
                 bool operator()(WorldObject* unit)
                 {
                     Unit* victim = unit->ToUnit();
                     if (!victim)
-                        return !_friendly;
+                        return true;
                     if (!_caster->IsFriendlyTo(victim))
-                        return !_friendly;
-                    return _friendly;
+                        return true;
+                    return false;
                 }
             };
             class CheckHealthState

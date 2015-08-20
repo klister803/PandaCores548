@@ -142,6 +142,7 @@ class Pet : public Guardian
         void SetSpecializationId(uint32 id) { m_specialization = id; }
         void LearnSpecializationSpell();
         void UnlearnSpecializationSpell();
+        void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs);
 
     protected:
         int32   m_duration;                                 // time until unsummon (used mostly for summoned guardians and not used for controlled pets)

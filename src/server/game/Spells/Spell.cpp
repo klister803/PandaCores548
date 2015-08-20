@@ -2896,7 +2896,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
         {
-            DamageInfo dmgInfoProc = DamageInfo(damageInfo);
+            DamageInfo dmgInfoProc = DamageInfo(damageInfo, m_spellInfo);
 
             caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
             if (caster->GetTypeId() == TYPEID_PLAYER && (AttributesCustom & SPELL_ATTR0_STOP_ATTACK_TARGET) == 0 &&
@@ -5122,7 +5122,7 @@ void Spell::SendSpellGo()
         castFlags |= CAST_FLAG_PENDING;
 
     if ((m_caster->GetTypeId() == TYPEID_PLAYER ||
-        (m_caster->GetTypeId() == TYPEID_UNIT && (m_caster->ToCreature()->isPet() || m_caster->ToCreature()->IsVehicle())))
+        (m_caster->GetTypeId() == TYPEID_UNIT && (m_caster->ToCreature()->isAnySummons() || m_caster->ToCreature()->IsVehicle())))
         && !GetSpellInfo()->HasPower(POWER_HEALTH))
         castFlags |= CAST_FLAG_POWER_LEFT_SELF; // should only be sent to self, but the current messaging doesn't make that possible
 

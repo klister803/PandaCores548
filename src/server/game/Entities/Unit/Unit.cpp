@@ -117,8 +117,8 @@ m_damageType(DIRECT_DAMAGE), m_attackType(dmgInfo.attackType), m_absorb(dmgInfo.
 , m_damageBeforeHit(dmgInfo.damageBeforeHit), m_addptype(-1), m_addpower(0)
 {
 }
-DamageInfo::DamageInfo(SpellNonMeleeDamage& dmgInfo)
-: m_attacker(dmgInfo.attacker), m_victim(dmgInfo.target), m_damage(dmgInfo.damage), m_spellInfo(NULL), m_schoolMask(SpellSchoolMask(dmgInfo.schoolMask)),
+DamageInfo::DamageInfo(SpellNonMeleeDamage& dmgInfo, SpellInfo const* _spellInfo)
+: m_attacker(dmgInfo.attacker), m_victim(dmgInfo.target), m_damage(dmgInfo.damage), m_spellInfo(_spellInfo), m_schoolMask(SpellSchoolMask(dmgInfo.schoolMask)),
 m_damageType(DIRECT_DAMAGE), m_attackType(BASE_ATTACK), m_absorb(dmgInfo.absorb), m_resist(dmgInfo.resist), m_block(dmgInfo.blocked),
  m_cleanDamage(dmgInfo.cleanDamage), m_damageBeforeHit(dmgInfo.damageBeforeHit), m_addptype(-1), m_addpower(0)
 {
@@ -2195,7 +2195,7 @@ void Unit::CalcAbsorbResist(Unit* victim, SpellSchoolMask schoolMask, DamageEffe
                 }
             }
 
-            DamageInfo dmgInfoProc = DamageInfo(damageInfo);
+            DamageInfo dmgInfoProc = DamageInfo(damageInfo, (*itr)->GetSpellInfo());
             ProcDamageAndSpell(caster, m_procAttacker, m_procVictim, PROC_EX_NORMAL_HIT, &dmgInfoProc, BASE_ATTACK, (*itr)->GetSpellInfo());
 
             CleanDamage cleanDamage = CleanDamage(splitted, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
@@ -7759,7 +7759,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
 
                 basepoints0 = CalculatePct(int32(damage), triggerAmount);
 
-                if(AuraEffect const* aurEff = GetAuraEffect(47753, EFFECT_0))
+                if(AuraEffect const* aurEff = target->GetAuraEffect(47753, EFFECT_0))
                 {
                     basepoints0 += aurEff->GetAmount();
                     if(basepoints0 > int32(CountPctFromMaxHealth(40)))
@@ -10652,7 +10652,9 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
             {
                 if (procSpell->HasEffect(SPELL_EFFECT_ADD_COMBO_POINTS) || procSpell->Id == 33876)
                 {
-                    CastSpell(victim, 16953, true);
+                    if (Unit* targetCP = m_movedPlayer->GetSelectedUnit())
+                        if(targetCP == victim)
+                            CastSpell(victim, 16953, true);
                 }
             }
             break;
@@ -11326,7 +11328,7 @@ bool Unit::HasAuraState(AuraStateType flag, SpellInfo const* spellProto, Unit co
 
 void Unit::SetOwnerGUID(uint64 owner)
 {
-    if (GetOwnerGUID() == owner)
+    if (GetSummonedByGUID() == owner)
         return;
 
     SetUInt64Value(UNIT_FIELD_SUMMONEDBY, owner);
@@ -11445,10 +11447,11 @@ void Unit::SetMinion(Minion *minion, bool apply, bool stampeded)
 
     if (apply)
     {
-        if (minion->GetOwnerGUID())
+        if (minion->GetSummonedByGUID())
             return;
 
-        minion->SetOwnerGUID(GetGUID());
+        if (minion->HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN))
+            minion->SetOwnerGUID(GetGUID());
 
         if (minion->GetEntry() != 69792 && minion->GetEntry() != 69680 && minion->GetEntry() != 69791)
             m_Controlled.insert(minion);
@@ -17587,6 +17590,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             continue;
 
         bool isModifier = false;
+        bool isReflect = false;
 
         bool useCharges  = i->aura->IsUsingCharges();
         // no more charges to use, prevent proc
@@ -17787,8 +17791,8 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                             takeCharges = true;
                         break;
                     case SPELL_AURA_REFLECT_SPELLS:
-                            isModifier = true;
-                            takeCharges = true;
+                        isReflect = true;
+                        takeCharges = true;
                         break;
                     case SPELL_AURA_REFLECT_SPELLS_SCHOOL:
                         // Skip Melee hits and spells ws wrong school
@@ -17980,7 +17984,9 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             }
 
             i->aura->DropCharge();
-            if(isModifier && (procExtra & PROC_EX_ON_CAST)) // same proc use charge on cast can take only one aura, test fix
+            if(isReflect) // reflect take only one aura
+                return;
+            if(isModifier && (procExtra & PROC_EX_ON_CAST)) // same proc use charge on cast can take only one aura
                 return;
         }
 
@@ -18860,6 +18866,11 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     _caster = owner;
             if(!_caster)
                 _caster = this;
+
+            if(itr->target == 9) //get target select
+                if (Player* _player = _caster->ToPlayer())
+                    if (Unit* _select = _player->GetSelectedUnit())
+                        target = _select;
 
             if(itr->targetaura == 1) //get caster aura
                 _targetAura = triggeredByAura->GetCaster();
@@ -20829,6 +20840,8 @@ bool Unit::HandleAuraRaidProcFromChargeWithValue(AuraEffect* triggeredByAura)
             }
             if(caster->HasAura(55685) && jumps == 3) // Glyph of Prayer of Mending
                 heal *= 1.6f;
+            if(caster->HasAura(109186) && roll_chance_i(15)) // hack for From Darkness, Comes Light
+                CastSpell(this, 114255, true);
         }
     }
 

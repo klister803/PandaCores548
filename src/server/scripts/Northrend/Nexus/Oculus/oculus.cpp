@@ -327,17 +327,17 @@ class npc_ruby_emerald_amber_drake : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_WELCOME:
-                            Talk(WHISPER_DRAKES_WELCOME, me->GetCreatorGUID());
+                            Talk(WHISPER_DRAKES_WELCOME, me->GetOwnerGUID());
                             _events.ScheduleEvent(EVENT_ABILITIES, 5 * IN_MILLISECONDS);
                             break;
                         case EVENT_ABILITIES:
-                            Talk(WHISPER_DRAKES_ABILITIES, me->GetCreatorGUID());
+                            Talk(WHISPER_DRAKES_ABILITIES, me->GetOwnerGUID());
                             break;
                         case EVENT_SPECIAL_ATTACK:
-                            Talk(WHISPER_DRAKES_SPECIAL, me->GetCreatorGUID());
+                            Talk(WHISPER_DRAKES_SPECIAL, me->GetOwnerGUID());
                             break;
                         case EVENT_LOW_HEALTH:
-                            Talk(WHISPER_DRAKES_LOWHEALTH, me->GetCreatorGUID());
+                            Talk(WHISPER_DRAKES_LOWHEALTH, me->GetOwnerGUID());
                             _healthWarning = false;
                             _events.ScheduleEvent(EVENT_RESET_LOW_HEALTH, 25000);
                             break;

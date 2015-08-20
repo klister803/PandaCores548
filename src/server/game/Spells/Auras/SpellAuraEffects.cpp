@@ -4227,13 +4227,6 @@ void AuraEffect::HandleAuraModRoot(AuraApplication const* aurApp, uint8 mode, bo
     if (apply && target->HasAura(116946))
         return;
 
-    // Glyph of Intimidating Shout
-    if (m_spellInfo->Id == 5246)
-    {
-        if (apply && caster && !caster->HasAura(63327))
-            return;
-    }
-
     target->SetControlled(apply, UNIT_STATE_ROOT);
     if(GetBase()->GetDuration() > 0)
         target->SendLossOfControl(GetCaster(), GetId(), GetBase()->GetDuration(), GetBase()->GetDuration(), GetSpellInfo()->GetEffectMechanic(GetEffIndex()), 0, LOC_ROOT, apply);
@@ -8646,7 +8639,7 @@ void AuraEffect::HandlePeriodicPowerBurnAuraTick(Unit* target, Unit* caster, Spe
 
     caster->SendSpellNonMeleeDamageLog(&damageInfo);
 
-    DamageInfo dmgInfoProc = DamageInfo(damageInfo);
+    DamageInfo dmgInfoProc = DamageInfo(damageInfo, spellProto);
 
     // Set trigger flag
     uint32 procAttacker = PROC_FLAG_DONE_PERIODIC;

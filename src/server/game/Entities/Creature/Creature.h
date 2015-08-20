@@ -655,11 +655,18 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         SpellSchoolMask GetMeleeDamageSchoolMask() const { return m_meleeDamageSchoolMask; }
         void SetMeleeDamageSchool(SpellSchools school) { m_meleeDamageSchoolMask = SpellSchoolMask(1 << school); }
 
+        void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs);
         void _AddCreatureSpellCooldown(uint32 spell_id, time_t end_time);
         void _AddCreatureCategoryCooldown(uint32 category, time_t apply_time);
         void AddCreatureSpellCooldown(uint32 spellid);
         bool HasSpellCooldown(uint32 spell_id) const;
         bool HasCategoryCooldown(uint32 spell_id) const;
+        uint32 _GetSpellCooldownDelay(uint32 spell_id) const
+        {
+            CreatureSpellCooldowns::const_iterator itr = m_CreatureSpellCooldowns.find(spell_id);
+            time_t t = time(NULL);
+            return uint32(itr != m_CreatureSpellCooldowns.end() && itr->second > t ? itr->second - t : 0);
+        }
 
         bool HasSpell(uint32 spellID) const;
 

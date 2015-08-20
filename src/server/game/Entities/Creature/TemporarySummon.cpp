@@ -389,6 +389,15 @@ bool TempSummon::InitBaseStat(uint32 creatureId, bool& damageSet)
         }
         if(pStats->type)
             SetCasterPet(true);
+        //Not scale haste for any pets
+        if(!pStats->haste)
+        {
+            SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);
+            SetFloatValue(UNIT_MOD_CAST_HASTE, 1.0f);
+            SetFloatValue(UNIT_MOD_HASTE, 1.0f);
+            SetFloatValue(UNIT_MOD_HASTE_REGEN, 1.0f);
+            SetFloatValue(UNIT_FIELD_MOD_RANGED_HASTE, 1.0f);
+        }
 
         return true;
     }
