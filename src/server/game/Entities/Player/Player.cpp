@@ -28468,7 +28468,7 @@ bool UpdateAchievementCriteriaEvent::Execute(uint64 e_time, uint32 p_time)
 void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, uint32 miscValue3 /*= 0*/, Unit* unit /*= NULL*/, bool ignoreGroup /*=false*/)
 {
     UpdateAchievementCriteriaEvent* e = new UpdateAchievementCriteriaEvent(this, type, miscValue1, miscValue2, miscValue3, unit, ignoreGroup);
-    m_Events.AddEvent(e, m_Events.CalculateTime(upd_achieve_criteria_counter * 50));
+    m_Events.AddEvent(e, m_Events.CalculateTime(upd_achieve_criteria_counter * 10));
 
     ++upd_achieve_criteria_counter;
 }
