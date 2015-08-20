@@ -24490,7 +24490,7 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
             stmt->setUInt32(  ++index, it->GetEntry());
             stmt->setUInt32(  ++index, uicount);
             stmt->setUInt32(  ++index, count);
-            if(pVendor->GetEntry() == 220024 || pVendor->GetEntry() == 200203)
+            if(pVendor->GetEntry() == 220024 || pVendor->GetEntry() == 200203 || pVendor->GetEntry() == 200200)
                 stmt->setUInt32(  ++index, 2);
             else
                 stmt->setUInt32(  ++index, 0);

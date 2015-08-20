@@ -10652,9 +10652,10 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
             {
                 if (procSpell->HasEffect(SPELL_EFFECT_ADD_COMBO_POINTS) || procSpell->Id == 33876)
                 {
-                    if (Unit* targetCP = m_movedPlayer->GetSelectedUnit())
-                        if(targetCP == victim)
-                            CastSpell(victim, 16953, true);
+                    if(m_movedPlayer)
+                        if (Unit* targetCP = m_movedPlayer->GetSelectedUnit())
+                            if(targetCP == victim)
+                                CastSpell(victim, 16953, true);
                 }
             }
             break;
