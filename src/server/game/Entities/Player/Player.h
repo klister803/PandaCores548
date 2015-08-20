@@ -3777,7 +3777,7 @@ protected:
     uint32 miscValue1 = 0;
     uint32 miscValue2 = 0;
     uint32 miscValue3 = 0;
-    cyber_ptr<Object> unit;
+    C_PTR unit;
     bool ignoreGroup = false;
 };
 #endif

@@ -567,7 +567,7 @@ public:
 
     struct coun
     {
-        std::atomic<int> counter = 0;
+        std::atomic<int> counter;
         bool ready = false;
     };
 

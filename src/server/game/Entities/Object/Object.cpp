@@ -3905,7 +3905,7 @@ uint64 WorldObject::GetTransGUID() const
     return 0;
 }
 
-cyber_ptr<Object> Object::get_ptr()
+C_PTR Object::get_ptr()
 {
     if (ptr.numerator && ptr.numerator->ready)
         return ptr.shared_from_this();

@@ -124,7 +124,7 @@ class Unit;
 class Transport;
 
 typedef UNORDERED_MAP<Player*, UpdateData> UpdateDataMapType;
-
+typedef cyber_ptr<Object> C_PTR;
 class Object
 {
     public:
@@ -372,7 +372,7 @@ class Object
         AreaTrigger const* ToAreaTrigger() const { if (GetTypeId() == TYPEID_AREATRIGGER) return reinterpret_cast<AreaTrigger const*>(this); else return NULL; }
 
         //!  Get or Init cyber ptr.
-        cyber_ptr<Object> get_ptr();
+        C_PTR get_ptr();
     protected:
         Object();
 
@@ -415,7 +415,7 @@ class Object
         std::vector<bool> m_dynamicChange;
 
     private:
-        cyber_ptr<Object> ptr;
+        C_PTR ptr;
         bool m_inWorld;
 
         ByteBuffer m_PackGUID;
