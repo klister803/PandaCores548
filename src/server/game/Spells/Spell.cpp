@@ -3680,7 +3680,11 @@ void Spell::cast(bool skipCheck)
         if (m_targets.GetObjectTarget()->ToGameObject())
         {
             if (m_targets.GetObjectTarget()->ToGameObject()->HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE))
+            {
+                SendCastResult(SPELL_FAILED_ERROR);
+                finish(false);
                 return;
+            }
             else
                 m_targets.GetObjectTarget()->ToGameObject()->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
         }
