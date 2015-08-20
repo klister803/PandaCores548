@@ -3471,19 +3471,20 @@ bool AchievementMgr<T>::CanUpdateCriteria(CriteriaTreeEntry const* treeEntry, Cr
         return false;
     }
 
-    if (achievement && achievement->mapID != -1 && achievement->mapID != 530 && referencePlayer->GetMapId() != uint32(achievement->mapID))
-    {
-        // sLog->outTrace(LOG_FILTER_ACHIEVEMENTSYS, "CanUpdateCriteria: %s (Id: %u Type %s) Wrong map",
-            // treeEntry->name, criteria->ID, AchievementGlobalMgr::GetCriteriaTypeString(criteria->type));
-        InstanceTemplate const* mInstance = sObjectMgr->GetInstanceTemplate(referencePlayer->GetMapId());
-        if(mInstance)
+    if (achievement && achievement->mapID != -1 && referencePlayer->GetMapId() != uint32(achievement->mapID))
+        if (achievement->mapID != 530 && achievement->mapID != 870 && achievement->mapID != 1064)
         {
-            if(mInstance->Parent != uint32(achievement->mapID))
+            // sLog->outTrace(LOG_FILTER_ACHIEVEMENTSYS, "CanUpdateCriteria: %s (Id: %u Type %s) Wrong map",
+                // treeEntry->name, criteria->ID, AchievementGlobalMgr::GetCriteriaTypeString(criteria->type));
+            InstanceTemplate const* mInstance = sObjectMgr->GetInstanceTemplate(referencePlayer->GetMapId());
+            if (mInstance)
+            {
+                if (mInstance->Parent != uint32(achievement->mapID))
+                    return false;
+            }
+            else
                 return false;
         }
-        else
-            return false;
-    }
 
     if (achievement && (achievement->requiredFaction == ACHIEVEMENT_FACTION_HORDE && referencePlayer->GetTeam() != HORDE ||
         achievement->requiredFaction == ACHIEVEMENT_FACTION_ALLIANCE && referencePlayer->GetTeam() != ALLIANCE))
