@@ -4445,6 +4445,9 @@ void AuraEffect::HandleAuraModIncreaseFlightSpeed(AuraApplication const* aurApp,
         // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
         if (mode & AURA_EFFECT_HANDLE_SEND_FOR_CLIENT_MASK && (apply || (!target->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !target->HasAuraType(SPELL_AURA_FLY))))
         {
+            if (target->ToPlayer())
+                target->ToPlayer()->SendMovementSetCanTransitionBetweenSwimAndFly(apply);
+
             target->SetCanFly(apply);
 
             if (!apply && !target->IsLevitating() && target->GetTypeId() == TYPEID_UNIT)
