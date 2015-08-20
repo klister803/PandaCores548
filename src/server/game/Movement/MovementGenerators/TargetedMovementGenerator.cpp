@@ -495,7 +495,7 @@ template<class T>
 void FollowMovementGenerator<T>::DoFinalize(T &owner)
 {
     owner.ClearUnitState(UNIT_STATE_FOLLOW|UNIT_STATE_FOLLOW_MOVE);
-    _updateSpeed(owner);
+    //_updateSpeed(owner);
 
     //sLog->outDebug(LOG_FILTER_PETS, "FollowMovementGenerator DoFinalize owner %u", owner.GetGUIDLow());
 }
