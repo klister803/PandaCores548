@@ -136,6 +136,8 @@ class FollowMovementGenerator : public TargetedMovementGeneratorMedium<T, Follow
         bool EnableWalking() const;
         bool _lostTarget(T &) const { return false; }
         void _reachTarget(T &) {}
+    private:
+        void _updateSpeed(T &u);
 };
 
 #endif

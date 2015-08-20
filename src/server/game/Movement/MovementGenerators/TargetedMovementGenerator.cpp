@@ -457,6 +457,26 @@ bool FollowMovementGenerator<Player>::EnableWalking() const
     return false;
 }
 
+template<>
+void FollowMovementGenerator<Player>::_updateSpeed(Player &/*u*/)
+{
+    // nothing to do for Player
+}
+
+template<>
+void FollowMovementGenerator<Creature>::_updateSpeed(Creature &u)
+{
+    // pet only sync speed with owner
+    if (!((Creature&)u).isPet() || !i_target.isValid() || i_target->GetGUID() != u.GetOwnerGUID())
+        return;
+
+    //sLog->outDebug(LOG_FILTER_PETS, "FollowMovementGenerator _updateSpeed i_target %u, owner %u", i_target.getTarget()->GetGUIDLow(), u.GetGUIDLow());
+
+    u.UpdateSpeed(MOVE_RUN,true);
+    u.UpdateSpeed(MOVE_WALK,true);
+    u.UpdateSpeed(MOVE_SWIM,true);
+}
+
 template<class T, typename D>
 void TargetedMovementGeneratorMedium<T,D>::_updateSpeed(T &u)
 {
@@ -495,7 +515,7 @@ template<class T>
 void FollowMovementGenerator<T>::DoFinalize(T &owner)
 {
     owner.ClearUnitState(UNIT_STATE_FOLLOW|UNIT_STATE_FOLLOW_MOVE);
-    //_updateSpeed(owner);
+    _updateSpeed(owner);
 
     //sLog->outDebug(LOG_FILTER_PETS, "FollowMovementGenerator DoFinalize owner %u", owner.GetGUIDLow());
 }
