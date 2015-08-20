@@ -2598,6 +2598,9 @@ bool Aura::CheckAreaTarget(Unit* target)
 
 bool Aura::CanStackWith(Aura const* existingAura) const
 {
+    if(!existingAura)
+        return false;
+
     // Can stack with self
     if (this == existingAura)
         return true;
