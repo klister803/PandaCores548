@@ -3175,8 +3175,6 @@ class Player : public Unit, public GridObject<Player>
         void SetKnockBackTime(uint32 timer) { m_knockBackTimer = timer; }
         uint32 GetKnockBackTime() const { return m_knockBackTimer; }
 
-        void _LoadStore();
-
         void CheckSpellAreaOnQuestStatusChange(uint32 quest_id);
 
         bool CanSpeakLanguage(uint32 lang_id) const;
@@ -3628,8 +3626,6 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_knockBackTimer;
 
         uint32 m_groupUpdateDelay;
-
-        bool m_Store;
 
         BracketList m_BracketsList;
 

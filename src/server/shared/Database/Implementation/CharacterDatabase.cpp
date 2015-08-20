@@ -615,22 +615,6 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PrepareStatement(CHAR_REP_GUILD_FINDER_GUILD_SETTINGS, "REPLACE INTO guild_finder_guild_settings (guildId, availability, classRoles, interests, level, listed, comment) VALUES(?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_GUILD_FINDER_GUILD_SETTINGS, "DELETE FROM guild_finder_guild_settings WHERE guildId = ?", CONNECTION_ASYNC);
 
-    // Store
-    PrepareStatement(CHAR_LOAD_BOUTIQUE_ITEM,      "SELECT itemid, count, transaction FROM store_item WHERE guid= ?",                              CONNECTION_SYNCH);
-    PrepareStatement(CHAR_DEL_BOUTIQUE_ITEM,       "DELETE FROM store_item WHERE transaction = ?",                                                 CONNECTION_ASYNC);
-    PrepareStatement(CHAR_UPD_BOUTIQUE_ITEM,       "UPDATE store_item SET count = ? WHERE transaction = ?",                                        CONNECTION_ASYNC);
-    PrepareStatement(CHAR_INS_BOUTIQUE_ITEM_LOG,   "INSERT INTO log_store_item (id, transaction, guid, itemid, count) VALUES (0, ?, ?, ?, ?);",    CONNECTION_ASYNC);
-
-    PrepareStatement(CHAR_LOAD_BOUTIQUE_LEVEL,     "SELECT level FROM store_level WHERE guid = ?",                                                 CONNECTION_SYNCH);
-    PrepareStatement(CHAR_DEL_BOUTIQUE_LEVEL,      "DELETE FROM store_level WHERE guid = ?",                                                       CONNECTION_ASYNC);
-
-    PrepareStatement(CHAR_LOAD_BOUTIQUE_GOLD,      "SELECT gold, transaction FROM store_gold WHERE guid = ?",                                      CONNECTION_SYNCH);
-    PrepareStatement(CHAR_DEL_BOUTIQUE_GOLD,       "DELETE FROM store_gold WHERE transaction = ?",                                                 CONNECTION_ASYNC);
-    PrepareStatement(CHAR_INS_BOUTIQUE_GOLD_LOG,   "INSERT INTO log_store_gold (id, transaction, guid, gold) VALUES (0, ?, ?, ?);",                CONNECTION_ASYNC);
-
-    PrepareStatement(CHAR_LOAD_BOUTIQUE_METIER,    "SELECT skill, value FROM store_metier WHERE guid = ?",                                         CONNECTION_SYNCH);
-    PrepareStatement(CHAR_DEL_BOUTIQUE_METIER,     "DELETE FROM store_metier WHERE guid = ? AND skill = ? AND value = ?",                          CONNECTION_ASYNC);
-
     // Challenge
     PrepareStatement(CHAR_INS_CHALLENGE,           "INSERT INTO challenge (`id`, `guildId`, `mapID`, `recordTime`, `date`, `medal`) VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
     PrepareStatement(CHAR_INS_CHALLENGE_MEMBER,    "INSERT INTO challenge_member (`id`, `member`, `specID`) VALUES (?, ?, ?)", CONNECTION_ASYNC);
