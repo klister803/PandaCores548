@@ -26,7 +26,6 @@
 #include <string>
 #include <vector>
 #include <list>
-#include <atomic>
 
 // Searcher for map of structs
 template<typename T, class S> struct Finder
@@ -567,7 +566,7 @@ public:
 
     struct coun
     {
-        std::atomic<int> counter = 0;
+        int64 counter = 0;
         bool ready = false;
     };
 
@@ -604,9 +603,9 @@ public:
             if (parent)
                 numerator->ready = false;
 
-            --numerator->counter;
+            numerator->counter -= 1;
             // if all links already deleted - clean numerator from memory.
-            if (!numerator->counter.load())
+            if (!numerator->counter)
                 delete numerator;
         }
     }
@@ -622,19 +621,7 @@ public:
     //! Init new parent ptr
     void InitParent(X* object)
     {
-        //This shouldn't happend.
-        if (ptr)
-        {
-            sLog->outU("Already initiated numerator %u", bool(numerator));
-            if (numerator)
-            {
-                sLog->outU("numerator >> numerator->counter %u numerator->ready %u parent %u", numerator->counter, numerator->ready, parent);
-                if (numerator->ready)
-                    return;
-            }
-
-        }
-        //ASSERT(!ptr && "Already initiated");
+        ASSERT(!ptr && "Already initiated");
 
         ptr = object;
 
@@ -656,7 +643,7 @@ public:
     void incrase()
     {
         if (numerator)
-            ++numerator->counter;
+            numerator->counter += 1;
     }
     bool isParent() const { return parent; }
 
@@ -665,9 +652,9 @@ public:
     {
         //if (this != &right)
         {
+            right.incrase();
             numerator = right.numerator;
             ptr = right.ptr;
-            incrase();
         }
         return *this;
     }
@@ -676,9 +663,9 @@ public:
     {
         //if (this != &right)
         {
+            right.incrase();
             numerator = right.numerator;
             ptr = right.ptr;
-            incrase();
         }
         return *this;
     }
