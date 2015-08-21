@@ -37,6 +37,10 @@ enum eSpells
     SPELL_SET_TO_BLOW_DMG             = 145993,
     SPELL_SET_TO_BLOW_AURA            = 145987,
     SPELL_SET_TO_BLOW_AT              = 146365,
+    SPELL_SET_TO_BLOW_VISUAL_1        = 142997,
+    SPELL_SET_TO_BLOW_VISUAL_2        = 148054,
+    SPELL_SET_TO_BLOW_VISUAL_3        = 148055,
+    SPELL_SET_TO_BLOW_VISUAL_4        = 148056,
     SPELL_FORBIDDEN_MAGIC             = 145230,
     SPELL_MOGU_RUNE_OF_POWER_AT       = 145460,
 
@@ -1344,7 +1348,94 @@ public:
     }
 };
 
+//145987
+class spell_set_to_blow : public SpellScriptLoader
+{
+public:
+    spell_set_to_blow() : SpellScriptLoader("spell_set_to_blow") { }
 
+    class spell_set_to_blow_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_set_to_blow_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            Unit* caster = GetCaster();
+            if (!caster)
+                return;
+
+            if (Aura* aura = aurEff->GetBase())
+            {
+                uint8 stack = aura->GetStackAmount();
+                if (!stack)
+                {
+                    caster->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_1);
+                    return;
+                }
+
+                switch (stack)
+                {
+                    case 1:
+                        caster->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_2);
+                        caster->CastSpell(caster, SPELL_SET_TO_BLOW_VISUAL_1, true);
+                        break;
+                    case 2:
+                        caster->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_3);
+                        caster->CastSpell(caster, SPELL_SET_TO_BLOW_VISUAL_2, true);
+                        break;
+                    case 3:
+                        caster->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_4);
+                        caster->CastSpell(caster, SPELL_SET_TO_BLOW_VISUAL_3, true);
+                        break;
+                    case 4:
+                        caster->CastSpell(caster, SPELL_SET_TO_BLOW_VISUAL_4, true);
+                        break;
+                }
+            }
+        }
+
+        void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+        {
+            if (Aura* aura = aurEff->GetBase())
+                aura->SetStackAmount(4);
+        }
+
+        void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+        {
+            if (Unit* caster = GetCaster())
+            {
+                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+                {
+                    if (Aura* aura = aurEff->GetBase())
+                    {
+                        uint8 stack = aura->GetStackAmount();
+                        if (!stack)
+                            return;
+
+                        for (uint8 i = 0; i < stack; i++)
+                            caster->CastSpell(caster, SPELL_SET_TO_BLOW_DMG, true);
+                    }
+                }
+                caster->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_1);
+                caster->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_2);
+                caster->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_3);
+                caster->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_4);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_set_to_blow_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            OnEffectApply += AuraEffectApplyFn(spell_set_to_blow_AuraScript::OnApply, EFFECT_0, SPELL_AURA_OVERRIDE_SPELLS, AURA_EFFECT_HANDLE_REAL);
+            OnEffectRemove += AuraEffectRemoveFn(spell_set_to_blow_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_OVERRIDE_SPELLS, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_set_to_blow_AuraScript();
+    }
+};
 
 void AddSC_boss_spoils_of_pandaria()
 {
@@ -1361,4 +1452,5 @@ void AddSC_boss_spoils_of_pandaria()
     new spell_fracture();
     new spell_breath_of_fire();
     new spell_gusting_crane_kick();
+    new spell_set_to_blow();
 }

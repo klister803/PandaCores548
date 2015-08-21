@@ -92,8 +92,6 @@ class spell_gen_battle_fatigue : public SpellScriptLoader
 
             void AfterApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
-
-
                 if (Unit* caster = GetUnitOwner())
                     if (Player* plr = caster->ToPlayer())
                         if (plr->InArena() || plr->InRBG())

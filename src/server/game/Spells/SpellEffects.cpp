@@ -1951,6 +1951,31 @@ void Spell::EffectTriggerMissileSpell(SpellEffIndex effIndex)
 
     uint32 triggered_spell_id = m_spellInfo->GetEffect(effIndex, m_diffMode).TriggerSpell;
 
+    switch (m_spellInfo->Id)
+    {
+        case 146364: // OO: Throw Bomb
+        {
+            if (Aura * aura = m_caster->GetAura(145987))
+            {
+                uint8 stack = aura->GetStackAmount();
+                if (stack > 1)
+                {
+                    --stack;
+                    aura->SetStackAmount(stack);
+                }
+                else
+                {
+                    aura->Remove();
+                    m_caster->RemoveAura(146364);
+                }
+            }
+            triggered_spell_id = 146365;
+            break;
+        }
+        default:
+            break;
+    }
+
     // normal case
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(triggered_spell_id);
     if (!spellInfo)
