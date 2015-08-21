@@ -41,6 +41,7 @@ enum eSpells
     SPELL_SET_TO_BLOW_VISUAL_2        = 148054,
     SPELL_SET_TO_BLOW_VISUAL_3        = 148055,
     SPELL_SET_TO_BLOW_VISUAL_4        = 148056,
+    SPELL_PHEROMONE_CLOUD_DMG         = 148760,
     SPELL_FORBIDDEN_MAGIC             = 145230,
     SPELL_MOGU_RUNE_OF_POWER_AT       = 145460,
 
@@ -1437,6 +1438,35 @@ public:
     }
 };
 
+// 148762
+class spell_pheromone_cloud : public SpellScriptLoader
+{
+    public:
+        spell_pheromone_cloud() : SpellScriptLoader("spell_pheromone_cloud") { }
+
+        class spell_pheromone_cloud_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pheromone_cloud_AuraScript);
+
+            void HandlePeriodicTick(AuraEffect const* /*aurEff*/)
+            {
+                if (Creature* caster = GetCaster()->ToCreature())
+                    if (Unit* pTarget = caster->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                        caster->CastSpell(pTarget, SPELL_PHEROMONE_CLOUD_DMG, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_pheromone_cloud_AuraScript::HandlePeriodicTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pheromone_cloud_AuraScript();
+        }
+};
+
 void AddSC_boss_spoils_of_pandaria()
 {
     new npc_ssop_spoils();
@@ -1453,4 +1483,5 @@ void AddSC_boss_spoils_of_pandaria()
     new spell_breath_of_fire();
     new spell_gusting_crane_kick();
     new spell_set_to_blow();
+    new spell_pheromone_cloud();
 }

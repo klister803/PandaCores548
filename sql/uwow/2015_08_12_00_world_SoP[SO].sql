@@ -318,11 +318,16 @@ UPDATE `creature_template` SET `mechanic_immune_mask`='650854399' WHERE `entry` 
 INSERT INTO `areatrigger_actions`(`entry`,`id`,`moment`,`actionType`,`targetFlags`,`spellId`,`maxCharges`,`aura`,`hasspell`,`chargeRecoveryTime`,`scale`,`hitMaxCount`,`comment`) VALUES ( '1163','0','1','0','1','145271','0','-145271','0','0','0','0','OO:Crimson Recostitution'); 
 INSERT INTO `areatrigger_actions`(`entry`,`id`,`moment`,`actionType`,`targetFlags`,`spellId`,`maxCharges`,`aura`,`hasspell`,`chargeRecoveryTime`,`scale`,`hitMaxCount`,`comment`) VALUES ( '1163','1','2','1','1','145271','0','145271','0','0','0','0','OO:Crimson Recostitution Remove'); 
 
+delete from spell_script_names where spell_id = 145987;
+INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES 
+(145987, 'spell_set_to_blow');
 
- 
+delete from areatrigger_actions where entry = 1228;
+INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targetFlags`, `spellId`, `maxCharges`, `aura`, `hasspell`, `chargeRecoveryTime`, `scale`, `hitMaxCount`, `comment`) VALUES 
+(1228, 0, 1, 0, 9, 145993, 1, 0, 0, 0, 0, 0, 'OO: Set to Blow - Enter Cast'),
+(1228, 1, 9, 8, 296, 145993, 1, 0, 0, 0, 0, 0, 'OO: Set to Blow - Activate AT'),
+(1228, 2, 8, 0, 296, 145993, 0, 0, 0, 0, 0, 0, 'OO: Set to Blow - Despawn Cast');  
 
-
-
-
-
-  
+delete from spell_script_names where spell_id = 148762;
+INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES 
+(148762, 'spell_pheromone_cloud');
