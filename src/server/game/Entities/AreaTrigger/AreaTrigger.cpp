@@ -594,6 +594,29 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
             unit->SendMovementForce(this, atInfo.windX, atInfo.windY, atInfo.windZ, atInfo.windSpeed, atInfo.windType, false);
             break;
         }
+        case AT_ACTION_TYPE_CHANGE_DURATION_ANY_AT:
+        {
+            float searchRange = 0.0f;
+            for (uint32 j = 0; j < MAX_SPELL_EFFECTS; ++j)
+            {
+                if (float radius = spellInfo->Effects[j].CalcRadius(caster))
+                    searchRange = radius;
+            }
+            if(!searchRange)
+                break;
+            std::list<AreaTrigger*> atlist;
+            GetAreaTriggerListWithEntryInGrid(atlist, GetEntry(), searchRange);
+            if (!atlist.empty())
+            {
+                for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); ++itr)
+                {
+                    if(AreaTrigger* at = (*itr))
+                        if(at->GetDuration() > 500)
+                            at->SetDuration(100);
+                }
+            }
+            break;
+        }
     }
 
     if (action.action->hitMaxCount < 0)

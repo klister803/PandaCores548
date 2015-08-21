@@ -1489,6 +1489,24 @@ namespace Trinity
             float m_fRange;
     };
 
+    class AllAreaTriggeresOfEntryInRange
+    {
+        public:
+            AllAreaTriggeresOfEntryInRange(const WorldObject* object, uint32 entry, float maxRange) : m_pObject(object), m_uiEntry(entry), m_fRange(maxRange) {}
+            bool operator() (AreaTrigger* at)
+            {
+                if (at->GetEntry() == m_uiEntry && m_pObject->IsWithinDist(at, m_fRange, false))
+                    return true;
+
+                return false;
+            }
+
+        private:
+            const WorldObject* m_pObject;
+            uint32 m_uiEntry;
+            float m_fRange;
+    };
+
     class AllAliveCreaturesOfEntryInRange
     {
         public:

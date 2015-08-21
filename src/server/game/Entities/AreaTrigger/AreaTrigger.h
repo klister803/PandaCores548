@@ -26,28 +26,29 @@ class Spell;
 
 enum AreaTriggerActionMoment
 {
-    AT_ACTION_MOMENT_ENTER        = 0x001,                // when unit enters areatrigger
-    AT_ACTION_MOMENT_LEAVE        = 0x002,                // when unit exits areatrigger
-    AT_ACTION_MOMENT_UPDATE       = 0x004,                // on areatrigger update
-    AT_ACTION_MOMENT_DESPAWN      = 0x008,                // when areatrigger despawn
-    AT_ACTION_MOMENT_SPAWN        = 0x010,                // when areatrigger spawn
-    AT_ACTION_MOMENT_REMOVE       = 0x020,                // when areatrigger remove
+    AT_ACTION_MOMENT_ENTER        = 0x001, // when unit enters areatrigger
+    AT_ACTION_MOMENT_LEAVE        = 0x002, // when unit exits areatrigger
+    AT_ACTION_MOMENT_UPDATE       = 0x004, // on areatrigger update
+    AT_ACTION_MOMENT_DESPAWN      = 0x008, // when areatrigger despawn
+    AT_ACTION_MOMENT_SPAWN        = 0x010, // when areatrigger spawn
+    AT_ACTION_MOMENT_REMOVE       = 0x020, // when areatrigger remove
     //range should be = distance.
-    AT_ACTION_MOMENT_ON_THE_WAY   = 0x040,                // when target is betwin source and dest points. For movement only. WARN! Should add AT_ACTION_MOMENT_ENTER flag too
-    AT_ACTION_MOMENT_ON_STOP_MOVE = 0x080,                // when target is betwin source and dest points. For movement only. WARN! Should add AT_ACTION_MOMENT_ENTER flag too
+    AT_ACTION_MOMENT_ON_THE_WAY   = 0x040, // when target is betwin source and dest points. For movement only. WARN! Should add AT_ACTION_MOMENT_ENTER flag too
+    AT_ACTION_MOMENT_ON_STOP_MOVE = 0x080, // when target is betwin source and dest points. For movement only. WARN! Should add AT_ACTION_MOMENT_ENTER flag too
 };
 
 enum AreaTriggerActionType
 {
-    AT_ACTION_TYPE_CAST_SPELL           = 0, // hit mask 0x001
-    AT_ACTION_TYPE_REMOVE_AURA          = 1, // hit mask 0x002
-    AT_ACTION_TYPE_ADD_STACK            = 2, // hit mask 0x004
-    AT_ACTION_TYPE_REMOVE_STACK         = 3, // hit mask 0x008
-    AT_ACTION_TYPE_CHANGE_SCALE         = 4, // hit mask 0x010
-    AT_ACTION_TYPE_SHARE_DAMAGE         = 5, // hit mask 0x020
-    AT_ACTION_TYPE_APPLY_MOVEMENT_FORCE = 6, // hit mask 0x040
-    AT_ACTION_TYPE_REMOVE_MOVEMENT_FORCE= 7, // hit mask 0x080
-    AT_ACTION_TYPE_MAX                  = 8,
+    AT_ACTION_TYPE_CAST_SPELL             = 0, // hit mask 0x0001
+    AT_ACTION_TYPE_REMOVE_AURA            = 1, // hit mask 0x0002
+    AT_ACTION_TYPE_ADD_STACK              = 2, // hit mask 0x0004
+    AT_ACTION_TYPE_REMOVE_STACK           = 3, // hit mask 0x0008
+    AT_ACTION_TYPE_CHANGE_SCALE           = 4, // hit mask 0x0010
+    AT_ACTION_TYPE_SHARE_DAMAGE           = 5, // hit mask 0x0020
+    AT_ACTION_TYPE_APPLY_MOVEMENT_FORCE   = 6, // hit mask 0x0040
+    AT_ACTION_TYPE_REMOVE_MOVEMENT_FORCE  = 7, // hit mask 0x0080
+    AT_ACTION_TYPE_CHANGE_DURATION_ANY_AT = 8, // hit mask 0x0100
+    AT_ACTION_TYPE_MAX                    = 9,
 };
 
 enum AreaTriggerTargetFlags
