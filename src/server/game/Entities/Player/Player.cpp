@@ -2480,6 +2480,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     // reset movement flags at teleport, because player will continue move with these flags after teleport
     SetUnitMovementFlags(0);
     DisableSpline();
+    AddUnitMovementFlag(MOVEMENTFLAG_FALLING);
 
     //hack for Stand of Acient for teleportation to the ships.
     if (m_movementInfo.t_guid || mapid == 607)
