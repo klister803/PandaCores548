@@ -1129,6 +1129,15 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
             case MSECounter:
                 data.read_skip<uint32>();
                 break;
+            case MSESpeed:
+                data.read<float>(); // player->SetSpeed ?
+                break;
+            case MSEHeight:
+                data.read<float>(); // player->setHeight ?
+                break;
+            case MSEBitCounter2:
+                data.ReadBits(2); // unk shit
+                break;
             default:
                 ASSERT(false && "Incorrect sequence element detected at ReadMovementInfo");
                 break;
@@ -1343,6 +1352,9 @@ void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi, Unit* 
                 break;
             case MSEPositionX:
                 data << mi->pos.m_positionX;
+                break;
+            case MSESpeed:
+                data << float(0.f);
                 break;
             case MSEPositionY:
                 data << mi->pos.m_positionY;
