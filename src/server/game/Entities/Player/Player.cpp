@@ -4479,7 +4479,7 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
                         {
                             petguid = sObjectMgr->GenerateBattlePetGuid();
                             // generate stats
-                            // quality must be generated!
+                            // breedID, quality must be generated!
                             // level, depends of pet source
                             uint16 breedID = GetBattlePetMgr()->GetRandomBreedID(spEntry->ID);
                             uint8 quality = 2;
@@ -4491,14 +4491,6 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
                             uint32 speed = accumulator->CalculateSpeed();
                             delete accumulator;
                             GetBattlePetMgr()->AddPetToList(petguid, spEntry->ID, petEntry, level, creature->Modelid1, power, speed, health, health, quality, 0, 0, spellInfo->Id, "", breedID, STATE_UPDATED);
-                            if (learning)
-                            {
-                                std::list<uint64> newPets;
-                                newPets.clear();
-                                newPets.push_back(petguid);
-
-                                GetBattlePetMgr()->SendUpdatePets(newPets, true);
-                            }
                             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_ADD_BATTLE_PET_JOURNAL, petEntry);
                             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_OBTAIN_BATTLEPET, spEntry->ID);
                             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COLLECT_BATTLEPET);
@@ -4645,6 +4637,16 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
     {
         CastSpell(this, spellId, true);
         return false;
+    }
+
+    // If is summon companion spell, send update of battle pet journal
+    if (learning && spellInfo->Effects[0].Effect == SPELL_EFFECT_SUMMON && spellInfo->Effects[0].MiscValueB == 3221)
+    {
+        WorldPacket data;
+        if (GetBattlePetMgr()->BuildPetJournal(&data))
+            GetSession()->SendPacket(&data);
+        else
+            GetBattlePetMgr()->SendEmptyPetJournal();
     }
 
     // update used talent points count

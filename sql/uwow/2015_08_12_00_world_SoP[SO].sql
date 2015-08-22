@@ -331,8 +331,3 @@ INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targe
 delete from spell_script_names where spell_id = 148762;
 INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES 
 (148762, 'spell_pheromone_cloud');
-
-delete from spell_trigger_dummy where spell_id in (145786, 145812);
-INSERT INTO `spell_trigger_dummy` (`spell_id`, `spell_trigger`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group`, `check_spell_id`, `comment`) VALUES 
-(145786, 145790, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 'OO: Residue'),
-(145812, 145813, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 'OO: Rage of the Empress');
