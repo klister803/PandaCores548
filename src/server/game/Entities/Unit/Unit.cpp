@@ -23839,7 +23839,6 @@ bool Unit::SetCanFly(bool enable)
         AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
     else
         RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
-
     return true;
 }
 

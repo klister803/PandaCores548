@@ -1119,10 +1119,10 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
             case MSEBitAC:
                 mi->byteAC = data.ReadBit();
                 break;
-            case MSEHasAlive32:
+            case MSEHasUnkInt32:
                 mi->hasUnkInt32 = !data.ReadBit();
                 break;
-            case MSEAlive32:
+            case MSEUnkInt32:
                 if (mi->hasUnkInt32)
                     data >> mi->unkInt32;
                 break;
@@ -1420,10 +1420,10 @@ void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi, Unit* 
             case MSEBitAC:
                 data.WriteBit(mi->byteAC);
                 break;
-            case MSEHasAlive32:
+            case MSEHasUnkInt32:
                 data.WriteBit(!mi->hasUnkInt32);
                 break;
-            case MSEAlive32:
+            case MSEUnkInt32:
                 if (mi->hasUnkInt32)
                     data << mi->unkInt32;
                 break;
