@@ -929,11 +929,11 @@ public:
                     events.ScheduleEvent(EVENT_FORBIDDEN_MAGIC, 15000);
                     break;
                 case EVENT_RESIDUE:
-                    DoCast(me, SPELL_RESIDUE);
+                    DoCast(me, SPELL_RESIDUE, false);
                     events.ScheduleEvent(EVENT_RESIDUE, 15000);
                     break;
                 case EVENT_RAGE_OF_THE_EMPRESS:
-                    DoCast(me, SPELL_RAGE_OF_THE_EMPRESS);
+                    DoCast(me, SPELL_RAGE_OF_THE_EMPRESS, false);
                     events.ScheduleEvent(EVENT_RAGE_OF_THE_EMPRESS, 15000);
                     break;
                 //Small

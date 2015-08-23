@@ -379,11 +379,11 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     {
                         std::list<Player*> plist;
                         plist.clear();
-                        GetPlayerListInGrid(plist, me, 10.0f);
+                        GetPlayerListInGrid(plist, me, 20.0f);
                         if (!plist.empty())
                         {
                             for (std::list<Player*>::const_iterator itr = plist.begin(); itr != plist.end(); itr++)
-                                if (me->isInFront(*itr, 2.0f) && me->GetDistance(*itr) <= 12.0f)
+                                if (me->isInFront(*itr, 2.0f) && me->GetDistance(*itr) <= 8.0f)
                                     (*itr)->Kill(*itr, true);
                         }
                         findtargets = 700;
