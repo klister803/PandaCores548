@@ -182,8 +182,6 @@ public:
         void JustDied(Unit* /*who*/)
         {
             _JustDied();
-            me->RemoveAurasDueToSpell(SPELL_MORTALITY);
-            me->RemoveAurasDueToSpell(SPELL_MORTALITY_SELF);
             instance->SetData(DATA_BILE_O_TRON_800, 0);
             if (Creature* pBileotron800 = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_BILE_O_TRON_800)))
             {

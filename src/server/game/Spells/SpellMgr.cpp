@@ -5060,6 +5060,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 146703: // Amalgam of Corruption: Bottomless Pit
                 case 148310: // Bombard Stun
                 case 148311: // Bombard Stun
+                case 82881: // Mortality
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
                 //Fallen Protectors
