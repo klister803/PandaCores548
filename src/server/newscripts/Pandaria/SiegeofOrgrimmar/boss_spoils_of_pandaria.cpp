@@ -115,6 +115,8 @@ enum Events
     EVENT_GUSTING_CRANE_KICK          = 24,
     EVENT_CRIMSON_RECOSTITUTION       = 25,
     EVENT_SET_TO_BLOW                 = 26,
+    EVENT_RESIDUE                     = 27,
+    EVENT_RAGE_OF_THE_EMPRESS         = 28,
 };
 
 Position dpos[4] =
@@ -810,11 +812,11 @@ public:
                 events.ScheduleEvent(EVENT_CRIMSON_RECOSTITUTION, 8000);
                 break;
             case NPC_ZARTHIK_AMBER_PRIEST:
-                DoCast(me, SPELL_RESIDUE);
+                events.ScheduleEvent(EVENT_RESIDUE, 1000);
                 events.ScheduleEvent(EVENT_MANTID_SWARM, 5000);
                 break;
             case NPC_SETTHIK_WIND_WIELDER:
-                DoCast(me, SPELL_RAGE_OF_THE_EMPRESS);
+                events.ScheduleEvent(EVENT_RAGE_OF_THE_EMPRESS, 1000);
                 break;
             //Small 
             case NPC_QUILEN_GUARDIANS:
@@ -924,6 +926,14 @@ public:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 10.0f, true))
                         DoCast(target, SPELL_FORBIDDEN_MAGIC);
                     events.ScheduleEvent(EVENT_FORBIDDEN_MAGIC, 15000);
+                    break;
+                case EVENT_RESIDUE:
+                    DoCast(me, SPELL_RESIDUE);
+                    events.ScheduleEvent(EVENT_RESIDUE, 15000);
+                    break;
+                case EVENT_RAGE_OF_THE_EMPRESS:
+                    DoCast(me, SPELL_RAGE_OF_THE_EMPRESS);
+                    events.ScheduleEvent(EVENT_RAGE_OF_THE_EMPRESS, 15000);
                     break;
                 //Small
                 case EVENT_KW_ENRAGE:

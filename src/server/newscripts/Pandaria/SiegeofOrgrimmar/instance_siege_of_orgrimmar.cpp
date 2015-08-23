@@ -1273,6 +1273,8 @@ public:
                     return ShowNorthTower;
                 case DATA_NORTH_COUNT:
                     return NorthTowerCount;
+                case DATA_SEND_KLAXXI_DIE_COUNT:
+                    return klaxxidiecount;
             }
             return 0;
         }
