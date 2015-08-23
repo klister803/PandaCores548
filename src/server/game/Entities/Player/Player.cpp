@@ -4475,7 +4475,9 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
                     {
                         // check exist pet in journal
                         uint64 petguid = GetBattlePetMgr()->GetPetGUIDBySpell(spellInfo->Id);
-                        if (!petguid)
+                        // hardcode hack check on pet count
+                        uint32 petCount = GetBattlePetMgr()->GetPetCount(creature->Entry);
+                        if (!petguid && petCount < 1)
                         {
                             petguid = sObjectMgr->GenerateBattlePetGuid();
                             // generate stats
