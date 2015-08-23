@@ -47,6 +47,7 @@ enum eSpells
     SPELL_MOGU_RUNE_OF_POWER_AT       = 145460,
     SPELL_RESIDUE                     = 145786,
     SPELL_RAGE_OF_THE_EMPRESS         = 145812,
+    SPELL_RAGE_OF_THE_EMPRESS_AURA    = 145813,
 
     //Small
     SPELL_EARTHEN_SHARD               = 144923,
@@ -1498,6 +1499,53 @@ class spell_pheromone_cloud : public SpellScriptLoader
         }
 };
 
+// 145812
+class spell_rage_of_the_empress : public SpellScriptLoader
+{
+    public:
+        spell_rage_of_the_empress() : SpellScriptLoader("spell_rage_of_the_empress") { }
+
+        class spell_rage_of_the_empress_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rage_of_the_empress_SpellScript);
+
+            int32 bp0;
+            bool Load()
+            {
+                bp0 = 0;
+                return true;
+            }
+
+            void FilterTargetsDamage(std::list<WorldObject*>& targets)
+            {
+                SpellInfo const* Spell = sSpellMgr->GetSpellInfo(SPELL_RAGE_OF_THE_EMPRESS_AURA);
+                bp0 = Spell->Effects[EFFECT_0].BasePoints / targets.size();
+            }
+
+            void HandleOnHit()
+            {
+                if (!GetCaster())
+                    return;
+
+                if (!GetHitUnit())
+                    return;
+
+                GetCaster()->CastCustomSpell(GetHitUnit(), SPELL_RAGE_OF_THE_EMPRESS_AURA, &bp0, NULL, NULL, false);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_rage_of_the_empress_SpellScript::FilterTargetsDamage, EFFECT_0, TARGET_UNIT_SRC_AREA_ALLY);
+                OnHit += SpellHitFn(spell_rage_of_the_empress_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rage_of_the_empress_SpellScript();
+        }
+};
+
 void AddSC_boss_spoils_of_pandaria()
 {
     new npc_ssop_spoils();
@@ -1515,4 +1563,5 @@ void AddSC_boss_spoils_of_pandaria()
     new spell_gusting_crane_kick();
     new spell_set_to_blow();
     new spell_pheromone_cloud();
+    new spell_rage_of_the_empress();
 }

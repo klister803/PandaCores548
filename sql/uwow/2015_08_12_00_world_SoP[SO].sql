@@ -328,11 +328,17 @@ INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targe
 (1228, 1, 9, 8, 296, 145993, 1, 0, 0, 0, 0, 0, 'OO: Set to Blow - Activate AT'),
 (1228, 2, 8, 0, 296, 145993, 0, 0, 0, 0, 0, 0, 'OO: Set to Blow - Despawn Cast');  
 
-delete from spell_script_names where spell_id = 148762;
+delete from spell_script_names where spell_id in (148762, 145812);
 INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES 
-(148762, 'spell_pheromone_cloud');
+(148762, 'spell_pheromone_cloud'),
+(145812, 'spell_rage_of_the_empress');
 
-delete from spell_trigger_dummy where spell_id in (145786, 145812);
+delete from spell_trigger_dummy where spell_id = 145786;
 INSERT INTO `spell_trigger_dummy` (`spell_id`, `spell_trigger`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group`, `check_spell_id`, `comment`) VALUES 
-(145786, 145790, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 'OO: Residue'),
-(145812, 145813, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 'OO: Rage of the Empress');
+(145786, 145790, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 'OO: Residue');
+
+delete from spell_target_filter where spellId in (145786, 145812);
+INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `option`, `param1`, `param2`, `param3`, `aura`, `chance`, `effectMask`, `resizeType`, `count`, `maxcount`, `addcount`, `addcaster`, `comments`) VALUES 
+(145786, 30, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, -1, 'Residue'),
+(145812, 30, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, -1, 'Rage of the Empress');
+
