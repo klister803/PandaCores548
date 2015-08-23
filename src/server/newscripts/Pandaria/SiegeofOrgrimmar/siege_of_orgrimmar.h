@@ -23,6 +23,7 @@ enum ssActions
     ACTION_SSOPS_IN_PROGRESS        = 257,
     ACTION_SSOPS_DONE               = 258,
     ACTION_SSOPS_SECOND_ROOM        = 259,
+    ACTION_KLAXXI_IN_PROGRESS       = 260,
 };
 
 enum eData
@@ -47,6 +48,7 @@ enum eData
     DATA_FIELD_OF_SHA,
     DATA_FP_EVADE,
     DATA_SHA_PRE_EVENT,
+    DATA_BUFF_NEXT_KLAXXI,
 
     //Galakras
     DATA_GALAKRAS_PRE_EVENT,
@@ -297,16 +299,20 @@ enum eCreatures
     
     NPC_BLACKFUSE                   = 71504,
 
-    //Paragons of the Klaxxi
-    NPC_KILRUK                      = 71161,
-    NPC_XARIL                       = 71157,
-    NPC_KAZTIK                      = 71156,
-    NPC_KORVEN                      = 71155,
-    NPC_IYYOKYK                     = 71160,
-    NPC_KAROZ                       = 71154,
-    NPC_SKEER                       = 71152,
-    NPC_RIKKAL                      = 71158,
-    NPC_HISEK                       = 71153,
+    //Paragons of the Klaxxi                 
+    NPC_KILRUK                      = 71161, //       6
+    NPC_XARIL                       = 71157, //porch, 4
+    NPC_KAZTIK                      = 71156, //porch  5
+    NPC_KORVEN                      = 71155, //porch, 2
+    NPC_IYYOKYK                     = 71160, //       3
+    NPC_KAROZ                       = 71154, //porch, 1 
+
+    NPC_SKEER                       = 71152, //porch, pull
+    NPC_RIKKAL                      = 71158, //porch, pull
+    NPC_HISEK                       = 71153, //porch, pull
+
+    NPC_AMBER_PIECE                 = 71628,
+    NPC_KLAXXI_CONTROLLER           = 71592,
 
     //
     NPC_GARROSH                     = 71865,
@@ -397,7 +403,7 @@ enum eGameObjects
     GO_MALKOROK_FENCH_2             = 221785,
 
     //Spoils of Pandaria
-    GO_SSOP_SPOILS                  = 220823,
+    GO_SSOP_SPOILS                  = 220823, 
     GO_ENT_GATE                     = 223056,
     GO_ENT_DOOR_LEFT                = 221800,
     GO_ENT_DOOR_RIGHT               = 221801,
@@ -447,7 +453,7 @@ enum eGameObjects
     GO_YAUNGOLIAN_JAIL2            = 223006,
 
     //Paragons of the Klaxxi
-    GO_ARRENA_WALL                 = 221264,
+    GO_ARENA_WALL                 = 221264,
 };
 
 enum esSpells

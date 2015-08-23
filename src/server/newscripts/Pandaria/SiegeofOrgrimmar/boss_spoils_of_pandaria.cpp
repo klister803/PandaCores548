@@ -21,7 +21,7 @@
 
 enum eSpells
 {
-    //Big Mogu
+    //Big 
     SPELL_STRENGTH_OF_THE_STONE       = 145998,
     SPELL_SHADOW_VOLLEY               = 148515,
     SPELL_SHADOW_VOLLEY_D             = 148516,
@@ -31,9 +31,6 @@ enum eSpells
     SPELL_JADE_TEMPEST_D              = 148583,
     SPELL_FRACTURE                    = 148513,
     SPELL_FRACTURE_D                  = 148514,
-
-    //Medium
-    SPELL_CRIMSON_RECOSTITUTION_AT    = 145270,
     SPELL_SET_TO_BLOW_DMG             = 145993,
     SPELL_SET_TO_BLOW_AURA            = 145987,
     SPELL_SET_TO_BLOW_AT              = 146365,
@@ -41,9 +38,15 @@ enum eSpells
     SPELL_SET_TO_BLOW_VISUAL_2        = 148054,
     SPELL_SET_TO_BLOW_VISUAL_3        = 148055,
     SPELL_SET_TO_BLOW_VISUAL_4        = 148056,
+    SPELL_PHEROMONE_CLOUD             = 148762,
     SPELL_PHEROMONE_CLOUD_DMG         = 148760,
+
+    //Medium
+    SPELL_CRIMSON_RECOSTITUTION_AT    = 145270,
     SPELL_FORBIDDEN_MAGIC             = 145230,
     SPELL_MOGU_RUNE_OF_POWER_AT       = 145460,
+    SPELL_RESIDUE                     = 145786,
+    SPELL_RAGE_OF_THE_EMPRESS         = 145812,
 
     //Small
     SPELL_EARTHEN_SHARD               = 144923,
@@ -111,6 +114,7 @@ enum Events
     EVENT_MOGU_RUNE_OF_POWER          = 23,
     EVENT_GUSTING_CRANE_KICK          = 24,
     EVENT_CRIMSON_RECOSTITUTION       = 25,
+    EVENT_SET_TO_BLOW                 = 26,
 };
 
 Position dpos[4] =
@@ -790,6 +794,13 @@ public:
             case NPC_KUN_DA:
                 events.ScheduleEvent(EVENT_FRACTURE, 8000);
                 break;
+            case NPC_COMMANDER_ZAKTAR:
+            case NPC_COMMANDER_IKTAL:
+            case NPC_COMMANDER_NAKAZ:
+            case NPC_COMMANDER_TIK:
+                DoCast(me, SPELL_PHEROMONE_CLOUD, true);
+                events.ScheduleEvent(EVENT_SET_TO_BLOW, 5000);
+                break;
             //Medoum
             case NPC_MOGU_SHADOW_RITUALIST:
                 events.ScheduleEvent(EVENT_FORBIDDEN_MAGIC, 10000);
@@ -798,6 +809,13 @@ public:
             case NPC_MODIFIED_ANIMA_GOLEM:
                 events.ScheduleEvent(EVENT_CRIMSON_RECOSTITUTION, 8000);
                 break;
+            case NPC_ZARTHIK_AMBER_PRIEST:
+                DoCast(me, SPELL_RESIDUE);
+                events.ScheduleEvent(EVENT_MANTID_SWARM, 5000);
+                break;
+            case NPC_SETTHIK_WIND_WIELDER:
+                DoCast(me, SPELL_RAGE_OF_THE_EMPRESS);
+                break;
             //Small 
             case NPC_QUILEN_GUARDIANS:
                 events.ScheduleEvent(EVENT_RUSH, 1000);
@@ -805,9 +823,6 @@ public:
             case NPC_ANIMATED_STONE_MOGU:
                 events.ScheduleEvent(EVENT_EARTHEN_SHARD, 5000);
                 events.ScheduleEvent(EVENT_HARDEN_FLESH, 10000);
-                break;
-            case NPC_ZARTHIK_AMBER_PRIEST:
-                events.ScheduleEvent(EVENT_MANTID_SWARM, 5000);
                 break;
             case NPC_KORTHIK_WARCALLER:
                 events.ScheduleEvent(EVENT_KW_ENRAGE, 4000);
@@ -888,6 +903,11 @@ public:
                 case EVENT_FRACTURE:
                     DoCast(me, SPELL_FRACTURE);
                     events.ScheduleEvent(EVENT_FRACTURE, 15000);
+                    break;
+                case EVENT_SET_TO_BLOW:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
+                        DoCast(target, SPELL_SET_TO_BLOW_AURA, true);
+                    events.ScheduleEvent(EVENT_SET_TO_BLOW, 12000);
                     break;
                 //Medium
                 case EVENT_CRIMSON_RECOSTITUTION:
@@ -970,7 +990,7 @@ public:
                 uint8 data = 0;
                 switch (me->GetEntry())
                 {
-                    //Big box
+                //Big box
                 case NPC_JUN_WEI:
                 case NPC_ZU_YIN:
                 case NPC_XIANG_LIN:
@@ -981,14 +1001,14 @@ public:
                 case NPC_COMMANDER_TIK:
                     data = 14;
                     break;
-                    //Medium box
+                //Medium box
                 case NPC_MODIFIED_ANIMA_GOLEM:
                 case NPC_MOGU_SHADOW_RITUALIST:
                 case NPC_ZARTHIK_AMBER_PRIEST:
                 case NPC_SETTHIK_WIND_WIELDER:
                     data = 4;
                     break;
-                    //Small box
+                //Small box
                 case NPC_ANIMATED_STONE_MOGU:
                 case NPC_BURIAL_URN:
                 case NPC_QUILEN_GUARDIANS:
@@ -997,6 +1017,7 @@ public:
                 case NPC_KORTHIK_WARCALLER:
                     data = 1;
                     break;
+                //Pandaren Relic box
                 case NPC_NAMELESS_WINDWALKER_SPIRIT:
                     for (uint8 n = 0; n < 4; n++)
                     {
@@ -1438,7 +1459,7 @@ public:
     }
 };
 
-// 148762
+//148762
 class spell_pheromone_cloud : public SpellScriptLoader
 {
     public:
