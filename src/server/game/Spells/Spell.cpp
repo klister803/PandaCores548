@@ -797,6 +797,7 @@ void Spell::SelectEffectImplicitTargets(SpellEffIndex effIndex, SpellImplicitTar
                     }
                     break;
                 case TARGET_OBJECT_TYPE_DEST:
+                case TARGET_OBJECT_TYPE_OBJ_AND_DEST:
                      switch (targetType.GetReferenceType())
                      {
                          case TARGET_REFERENCE_TYPE_CASTER:
@@ -1679,6 +1680,10 @@ void Spell::SelectImplicitDestDestTargets(SpellEffIndex effIndex, SpellImplicitT
             return;
         case TARGET_DEST_TARGET_SELECT:
             if (Unit* target = m_targets.GetUnitTarget())
+                m_targets.SetDst(*target);
+            return;
+        case TARGET_DEST_NEARBY_ENTRY:
+            if (WorldObject* target = m_targets.GetObjectTarget())
                 m_targets.SetDst(*target);
             return;
         case TARGET_DEST_DYNOBJ_ENEMY:
@@ -9195,7 +9200,7 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier)
     float critChance = 0.0f;
 
     if (targetInfo.damage)
-        targetInfo.crit = m_caster->isSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType, critChance);
+        targetInfo.crit = (m_originalCaster ? m_originalCaster : m_caster)->isSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType, critChance);
 
     if (targetInfo.crit)
         targetInfo.damageBeforeHit += targetInfo.damageBeforeHit;

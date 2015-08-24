@@ -3774,6 +3774,8 @@ void Unit::_AddAura(UnitAura* aura, Unit* caster)
                 ++itr;
         }
     }
+    if(caster)
+        caster->GetMyCastAuras().push_back(aura);
 }
 
 // creates aura application instance and registers it in lists
@@ -4054,6 +4056,8 @@ void Unit::RemoveOwnedAura(AuraMap::iterator &i, AuraRemoveMode removeMode)
     // Unregister single target aura
     if (aura->IsSingleTarget())
         aura->UnregisterSingleTarget();
+
+    aura->UnregisterCasterAuras();
 
     aura->_Remove(removeMode);
 
@@ -7779,24 +7783,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 case 89489: // MoA Inner Focus
                 {
                     triggered_spell_id = 96267;
-                    break;
-                }
-                case 77486: // Mastery: Shadowy Recall
-                {
-                    if (roll_chance_i(triggerAmount))
-                    {
-                        switch (procSpell->Id)
-                        {
-                            case 129197: 
-                            case 15407:  triggered_spell_id = 124468; break;
-                            case 589:    triggered_spell_id = 124464; break;
-                            case 34914:  triggered_spell_id = 124465; break;
-                            case 2944:   triggered_spell_id = 124467; break;
-                            case 49821:  triggered_spell_id = 124469; break;
-                            default:
-                                break;
-                        }
-                    }
                     break;
                 }
                 // Vampiric Embrace

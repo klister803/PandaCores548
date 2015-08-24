@@ -1956,6 +1956,7 @@ class Unit : public WorldObject
 
         AuraList      & GetSingleCastAuras()       { return m_scAuras; }
         AuraList const& GetSingleCastAuras() const { return m_scAuras; }
+        AuraList      & GetMyCastAuras()       { return m_my_Auras; }
 
         AuraEffect* GetAuraEffect(uint32 spellId, uint8 effIndex, uint64 casterGUID = 0) const;
         AuraEffect* GetAuraEffectOfRankedSpell(uint32 spellId, uint8 effIndex, uint64 casterGUID = 0) const;
@@ -2509,6 +2510,7 @@ class Unit : public WorldObject
         std::set<uint64> m_unitsHasCasterAura;
 
         bool HasSomeCasterAura(uint64 guid);
+        bool HasMyAura(uint32 spellId);
 
         void SendDispelFailed(uint64 targetGuid, uint32 spellId, std::list<uint32>& spellList);
         void SendDispelLog(uint64 targetGuid, uint32 spellId, std::list<uint32>& spellList, bool broke, bool stolen);
@@ -2577,6 +2579,7 @@ class Unit : public WorldObject
 
         AuraEffectList m_modAuras[TOTAL_AURAS];
         AuraList m_scAuras;                        // casted singlecast auras
+        AuraList m_my_Auras;                       // casted auras
         AuraApplicationList m_interruptableAuras;             // auras which have interrupt mask applied on unit
         AuraStateAurasMap m_auraStateAuras;        // Used for improve performance of aura state checks on aura apply/remove
         uint32 m_interruptMask;

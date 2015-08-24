@@ -768,12 +768,13 @@ void WorldSession::HandleStableChangeSlotCallback(PreparedQueryResult result, ui
         return;
     }
 
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "WorldSession::HandleStableChangeSlotCallback: slot %i new_slot %i pet_entry %u pet_number %u", slot, new_slot, pet_entry, pet_number);
+
     // Update if its a Hunter pet
     if (new_slot != 100)
     {
         // We need to remove and add the new pet to there diffrent slots
-        GetPlayer()->cleanPetSlotForMove((PetSlot)slot, pet_number);
-        GetPlayer()->setPetSlotWithStableMoveOrRealDelete((PetSlot)new_slot, pet_number, isHunter);
+        GetPlayer()->SwapPetSlot(slot, (PetSlot)new_slot);
         timeAddIgnoreOpcode = 0;
     }
 

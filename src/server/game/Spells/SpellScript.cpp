@@ -312,6 +312,7 @@ bool SpellScript::TargetHook::CheckEffect(SpellInfo const* spellEntry, uint8 eff
             {
                 case TARGET_OBJECT_TYPE_SRC: // EMPTY
                 case TARGET_OBJECT_TYPE_DEST: // EMPTY
+                case TARGET_OBJECT_TYPE_OBJ_AND_DEST: // EMPTY
                     return false;
                 default:
                     switch (targetInfo.GetReferenceType())

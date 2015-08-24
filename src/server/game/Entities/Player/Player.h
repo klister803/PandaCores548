@@ -2917,6 +2917,7 @@ class Player : public Unit, public GridObject<Player>
         void setPetSlotWithStableMoveOrRealDelete(PetSlot slot, uint32 petID, bool isHanterPet);
         int16 SetOnAnyFreeSlot(uint32 petID);
         void cleanPetSlotForMove(PetSlot slot, uint32 petID);
+        void SwapPetSlot(PetSlot oldSlot, PetSlot newSlot);
         uint32 getPetIdBySlot(uint32 slot) const { return m_PetSlots[slot]; }
         const PlayerPetSlotList &GetPetSlotList() { return m_PetSlots; }
         PetSlot getSlotForNewPet(bool full = false);

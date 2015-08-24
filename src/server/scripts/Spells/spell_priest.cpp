@@ -702,12 +702,6 @@ class spell_pri_rapture : public SpellScriptLoader
                 if (!caster || !caster->ToPlayer())
                     return;
 
-                if (caster->HasAura(47515))
-                {
-                    float critChance = caster->ToPlayer()->GetFloatValue(PLAYER_CRIT_PERCENTAGE);
-                    if(roll_chance_f(critChance))
-                        amount *= 2;
-                }
                 if (Aura* aur = caster->GetAura(55672))// Glyph of Power Word: Shield
                 {
                     int32 percent = aur->GetEffect(EFFECT_0)->GetAmount();
@@ -866,7 +860,8 @@ class spell_pri_devouring_plague : public SpellScriptLoader
             bool Load()
             {
                 if(Unit* caster = GetCaster())
-                    orbCount = caster->GetPower(POWER_SHADOW_ORB) + 1;
+                    orbCount = caster->GetPower(POWER_SHADOW_ORB);
+                GetAura()->SetCustomData(orbCount);
                 return true;
             }
 
@@ -2667,6 +2662,43 @@ class spell_pri_void_tendrils_grasp : public SpellScriptLoader
         }
 };
 
+// Devouring Plague - 124467
+class spell_pri_devouring_plague_mastery : public SpellScriptLoader
+{
+    public:
+        spell_pri_devouring_plague_mastery() : SpellScriptLoader("spell_pri_devouring_plague_mastery") { }
+
+        class spell_pri_devouring_plague_mastery_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_devouring_plague_mastery_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if(Aura* aura = target->GetAura(2944))
+                        {
+                            int32 count = aura->GetCustomData();
+                            caster->CastCustomSpell(caster, PRIEST_DEVOURING_PLAGUE_HEAL, &count, 0, 0, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_devouring_plague_mastery_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_devouring_plague_mastery_SpellScript;
+        }
+};
+
 void AddSC_priest_spell_scripts()
 {
     new spell_pri_glyph_of_mass_dispel();
@@ -2721,4 +2753,5 @@ void AddSC_priest_spell_scripts()
     new spell_pri_hymn_of_hope();
     new spell_pri_void_tendrils_grasp();
     new spell_pri_divine_star_filter();
+    new spell_pri_devouring_plague_mastery();
 }

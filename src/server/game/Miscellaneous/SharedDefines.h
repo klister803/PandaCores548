@@ -1715,6 +1715,7 @@ enum Mechanics
     MECHANIC_INCAPACITATE     = 14,
     MECHANIC_BLEED            = 15,
     MECHANIC_PROVOKE          = 16,
+    MECHANIC_BANDAGE          = 16,
     MECHANIC_POLYMORPH        = 17,
     MECHANIC_BANISH           = 18,
     MECHANIC_SHIELD           = 19,

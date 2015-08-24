@@ -30328,12 +30328,27 @@ void Player::setPetSlotWithStableMoveOrRealDelete(PetSlot slot, uint32 petID, bo
     {
         if (isHanterPet)    // move to free stable slot
         {
+            bool find = false;
             for (uint32 i = PET_SLOT_STABLE_FIRST; i < PET_SLOT_STABLE_LAST; ++i)
-                if (!m_PetSlots[i])
+            {
+                if (m_PetSlots[i] == petID)
                 {
-                    m_PetSlots[i] = m_PetSlots[slot];
+                    find = true;
+                    SwapPetSlot(slot, (PetSlot)i);
                     break;
                 }
+            }
+            if(!find)
+            {
+                for (uint32 i = PET_SLOT_STABLE_FIRST; i < PET_SLOT_STABLE_LAST; ++i)
+                {
+                    if (!m_PetSlots[i])
+                    {
+                        m_PetSlots[i] = m_PetSlots[slot];
+                        break;
+                    }
+                }
+            }
         }
         else               // delete pet data at all. WARN! REAL DELETE!
         {
@@ -30342,6 +30357,11 @@ void Player::setPetSlotWithStableMoveOrRealDelete(PetSlot slot, uint32 petID, bo
     }
 
     m_PetSlots[slot] = petID;
+}
+
+void Player::SwapPetSlot(PetSlot oldSlot, PetSlot newSlot)
+{
+    std::swap(m_PetSlots[newSlot], m_PetSlots[oldSlot]);
 }
 
 int16 Player::SetOnAnyFreeSlot(uint32 petID)

@@ -4557,6 +4557,7 @@ void Spell::EffectTameCreature(SpellEffIndex /*effIndex*/)
 
     // add to world
     pet->GetMap()->AddToMap(pet->ToCreature());
+    pet->SetSlot(slot);
 
     // visual effect for levelup
     pet->SetUInt32Value(UNIT_FIELD_LEVEL, level);
@@ -4567,6 +4568,7 @@ void Spell::EffectTameCreature(SpellEffIndex /*effIndex*/)
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
     {
         m_caster->ToPlayer()->m_currentSummonedSlot = slot;
+        pet->SetSlot(slot);
         pet->SavePetToDB();
         m_caster->ToPlayer()->PetSpellInitialize();
         m_caster->ToPlayer()->GetSession()->SendStablePet(0);
@@ -4649,6 +4651,7 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
         if (!new_name.empty())
             pet->SetName(new_name);
     }
+    pet->SetSlot(slot);
 
     ExecuteLogEffectGeneric(effIndex, pet->GetGUID());
 }
@@ -7783,6 +7786,7 @@ void Spell::EffectCreateTamedPet(SpellEffIndex effIndex)
 
     // add to world
     pet->GetMap()->AddToMap(pet->ToCreature());
+    pet->SetSlot(slot);
 
     unitTarget->SetMinion(pet, true);
 

@@ -1494,6 +1494,17 @@ bool Aura::IsSingleTargetWith(Aura const* aura) const
     return false;
 }
 
+void Aura::UnregisterCasterAuras()
+{
+    Unit* caster = GetCaster();
+    // TODO: find a better way to do this.
+    if (!caster)
+        caster = ObjectAccessor::GetObjectInOrOutOfWorld(GetCasterGUID(), (Unit*)NULL);
+    if(!caster)
+        return;
+    caster->GetMyCastAuras().remove(this);
+}
+
 void Aura::UnregisterSingleTarget()
 {
     ASSERT(m_isSingleTarget);
