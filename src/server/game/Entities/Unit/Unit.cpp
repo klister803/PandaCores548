@@ -25086,3 +25086,14 @@ bool Unit::HasSomeCasterAura(uint64 guid)
     }
     return false;
 }
+
+bool Unit::HasMyAura(uint32 spellId)
+{
+    for (AuraList::const_iterator itr = m_my_Auras.begin(); itr != m_my_Auras.end(); ++itr)
+    {
+        if (Aura const* aura = (*itr))
+            if (aura->GetId() == spellId)
+                return true;
+    }
+    return false;
+}
