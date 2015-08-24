@@ -115,10 +115,10 @@ UPDATE `creature_template` SET `unit_flags`='0',`unit_flags2`='4194304' WHERE `e
 UPDATE `creature_template` SET `unit_flags`='0',`unit_flags2`='4194304' WHERE `entry`='71512';
 UPDATE `creature_template` SET `unit_flags`='0',`unit_flags2`='4194304' WHERE `entry`='73721';
 UPDATE `creature_template` SET `ScriptName`='npc_lever' WHERE `entry`='72281'; 
-UPDATE `creature_template` SET `ScriptName`='npc_generic_spoil' WHERE `entry`='73720'; 
-UPDATE `creature_template` SET `ScriptName`='npc_generic_spoil' WHERE `entry`='73722';
-UPDATE `creature_template` SET `ScriptName`='npc_generic_spoil' WHERE `entry`='71512';
-UPDATE `creature_template` SET `ScriptName`='npc_generic_spoil' WHERE `entry`='73721';
+UPDATE `creature_template` SET `ScriptName`='npc_generic_spoil', flags_extra = 130 WHERE `entry`='73720'; 
+UPDATE `creature_template` SET `ScriptName`='npc_generic_spoil', flags_extra = 130 WHERE `entry`='73722';
+UPDATE `creature_template` SET `ScriptName`='npc_generic_spoil', flags_extra = 130 WHERE `entry`='71512';
+UPDATE `creature_template` SET `ScriptName`='npc_generic_spoil', flags_extra = 130 WHERE `entry`='73721';
 INSERT INTO `creature` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `MovementType`, `npcflag`, `npcflag2`, `unit_flags`, `dynamicflags`, `isActive`) values(NULL ,'73721','1136','6738','6738','16536','1','0','0','1570.01','-5111.34','-289.919','5.37708','604800','0','0','1','1000','0','0','0','0','0','0');
 INSERT INTO `creature` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `MovementType`, `npcflag`, `npcflag2`, `unit_flags`, `dynamicflags`, `isActive`) values(NULL ,'71512','1136','6738','6738','16536','1','0','0','1642.99','-5059.44','-289.898','5.27106','604800','0','0','1','1000','0','0','0','0','0','0');
 INSERT INTO `creature` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `MovementType`, `npcflag`, `npcflag2`, `unit_flags`, `dynamicflags`, `isActive`) values(NULL ,'73722','1136','6738','6738','16536','1','0','0','1696.47','-5141.34','-289.903','2.13731','604800','0','0','1','1000','0','0','0','0','0','0');
