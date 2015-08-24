@@ -717,6 +717,12 @@ public:
             target->SetPower(POWER_ALTERNATE_POWER, power);
             me->DespawnOrUnsummon();
         }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (damage >= me->GetHealth())
+                damage = 0;
+        }
     };
 
     CreatureAI* GetAI(Creature* creature) const

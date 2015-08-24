@@ -1518,6 +1518,11 @@ class spell_rage_of_the_empress : public SpellScriptLoader
 
             void FilterTargetsDamage(std::list<WorldObject*>& targets)
             {
+                if (!GetCaster())
+                    return;
+
+                targets.remove(GetCaster());
+
                 SpellInfo const* Spell = sSpellMgr->GetSpellInfo(SPELL_RAGE_OF_THE_EMPRESS_AURA);
                 bp0 = Spell->Effects[EFFECT_0].BasePoints / targets.size();
             }
