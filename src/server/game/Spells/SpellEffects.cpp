@@ -1302,7 +1302,15 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
 
     // Fishing dummy
     if (m_spellInfo->Id == 131474)
-        m_caster->CastSpell(m_caster, 131476, true);
+    {
+        if (Item* fishPole = m_caster->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
+        {
+            if (fishPole->GetTemplate()->Class == ITEM_CLASS_WEAPON && fishPole->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_FISHING_POLE)
+                m_caster->CastSpell(m_caster, 131490, true);
+            else
+                m_caster->CastSpell(m_caster, 131476, true);
+        }
+    }
 
     // selection by spell family
     switch (m_spellInfo->SpellFamilyName)
