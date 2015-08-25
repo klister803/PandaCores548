@@ -4093,10 +4093,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].TargetB = 0;
                     break;
                 case 1776: // Gouge
-                case 1777:
-                case 8629:
-                case 11285:
-                case 11286:
                 case 12540:
                 case 13579:
                 case 24698:
@@ -4104,58 +4100,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 29425:
                 case 34940:
                 case 36862:
-                case 38764:
                 case 38863:
                 case 52743: // Head Smack
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_REQ_TARGET_FACING_CASTER;
                     break;
-                case 2589:
-                case 2590:
-                case 2591:
-                case 8721:
-                case 11279:
-                case 11280:
-                case 11281:
-                case 25300:
-                case 26863:
-                case 48656:
-                case 48657:
-                case 8631:
-                case 8632:
-                case 8633:
-                case 11289:
-                case 11290:
-                case 26839:
-                case 26884:
-                case 48675:
-                case 48676:
                 case 5221: // Shred
-                case 6800:
-                case 8992:
-                case 9829:
-                case 9830:
-                case 27001:
-                case 27002:
-                case 48571:
-                case 48572:
-                case 8724:
-                case 8725:
-                case 11267:
-                case 11268:
-                case 11269:
-                case 27441:
-                case 48689:
-                case 48690:
-                case 48691:
-                case 6787:
-                case 9866:
-                case 9867:
-                case 27005:
-                case 48578:
-                case 48579:
                 case 21987: // Lash of Pain
-                case 23959: // Test Stab R50
-                case 24825: // Test Backstab
                 case 58563: // Assassinate Restless Lookout
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_REQ_CASTER_BEHIND_TARGET;
                     break;
@@ -4172,9 +4122,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 43215: // Flame Breath
                 case 70461: // Coldflame Trap
                 case 72133: // Pain and Suffering
-                case 73788: // Pain and Suffering
-                case 73789: // Pain and Suffering
-                case 73790: // Pain and Suffering
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_CONE_LINE;
                     break;
                 case 119072: // Holy Wrath
@@ -4202,9 +4149,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 72373: // Shared Suffering
                 case 71904: // Chaos Bane
                 case 70492: // Ooze Eruption
-                case 72505: // Ooze Eruption
-                case 72624: // Ooze Eruption
-                case 72625: // Ooze Eruption
                 case 121129: // Daybreak
                 case 102792: // Wild Mushroom: Bloom
                 case 145944: // Sha Smash
@@ -4231,16 +4175,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 64777: // Machine Gun
                 case 65239: // Machine Gun
                 case 65919: // Impale
-                case 67858: // Impale
-                case 67859: // Impale
-                case 67860: // Impale
-                case 69293: // Wing Buffet
                 case 74439: // Machine Gun
                 case 63278: // Mark of the Faceless (General Vezax)
                 case 62544: // Thrust (Argent Tournament)
-                case 64588: // Thrust (Argent Tournament)
-                case 66479: // Thrust (Argent Tournament)
-                case 68505: // Thrust (Argent Tournament)
                 case 62709: // Counterattack! (Argent Tournament)
                 case 62626: // Break-Shield (Argent Tournament, Player)
                 case 64590: // Break-Shield (Argent Tournament, Player)
@@ -4255,11 +4192,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 63010: // Charge (Argent Tournament, NPC)
                 case 68321: // Charge (Argent Tournament, NPC)
                 case 72255: // Mark of the Fallen Champion (Deathbringer Saurfang)
-                case 72444: // Mark of the Fallen Champion (Deathbringer Saurfang)
-                case 72445: // Mark of the Fallen Champion (Deathbringer Saurfang)
-                case 72446: // Mark of the Fallen Champion (Deathbringer Saurfang)
                 case 118000: // Dragon Roar
-                case 129347: // Chaos Wave
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
                     break;
                 case 64422:  // Sonic Screech (Auriaya)
@@ -4275,7 +4208,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF1;
                     break;
-                // Custom MoP Script
                 case 82691: // Ring of Frost
                     spellInfo->AttributesEx |= SPELL_ATTR1_CANT_BE_REFLECTED;
                     spellInfo->AttributesEx5 &= ~SPELL_ATTR5_SINGLE_TARGET_SPELL;
@@ -4354,9 +4286,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 61316: // Dalaran Illumination
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
                     spellInfo->Effects[EFFECT_2].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
-                    break;
-                case 86150: // Guardian of Ancient Kings
-                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_CHECK_ENTRY;
                     break;
                 case 86674: // Ancient Healer
                     spellInfo->ProcCharges = 5;
@@ -4596,9 +4525,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 106847:
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ANY;
-                    // Wise Mari Hydrolance damage
-                case 106267:
-                    //spellInfo->Effects[EFFECT_0].TargetB = TARGET_UNIT_TARGET_ENEMY;
                     break;
                     // Wise Mari Wash Away
                 case 106334:
@@ -4652,7 +4578,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     mSpellInfoMap[spellInfo->Effects[EFFECT_0].TriggerSpell] = fishingDummy;
                     break;
                 }
-
                 // Siege of the Niuzoa temple
                 case 119941: //Puddle Void Zone
                     spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(22);
@@ -4670,12 +4595,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(48);
                     spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(48);
                     break;
-
                 // Stormstout brewery
                 case 112944: //Carrot Breath - set 4 second becaus rotate not work
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(35);
                     break;
-
                 //Scholomance
                 case 114062: //Gravity Flux
                     spellInfo->Effects[EFFECT_1].Effect = 0;
@@ -4687,13 +4610,11 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 111628: //Shadow blaze dmg
                     spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(44);
                     break;
-
                 // Mogu'shan Vault
                 // Stone Guards
                 case 129428: //Dummy Searcher(cobalt mine)
                     spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(29);
                     break;
-                //
                 // Feng
                 case 116364: //Arcane Velocity
                 case 116018: //Epicenter
@@ -4719,12 +4640,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].TargetB = 30;
                     spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
                     break;
-                //
                 //Elegon
                 case 129724: //Energy tendrols (trigger spell - grip)
                     spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_JUMP;
                     break;
-                //
                 //Will of the Imperator
                 case 116782:
                 case 116803: //Titan Gase (trigger spell)
@@ -4739,7 +4658,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(13); //10yards
                     spellInfo->Effects[EFFECT_2].RadiusEntry = sSpellRadiusStore.LookupEntry(13); //10yards
                     break;
-                //
                 case 116000:
                 case 103785: // Black Blood of the Earth dmg
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
@@ -4770,8 +4688,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 127802: // Touch of the Grave
                     spellInfo->Speed = 25.f;
                     break;
-
-
                 //Heart of Fear
                 //Garalon
                 case 122835: //Pheromones
@@ -4834,8 +4750,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 67439: // Boulder
                     spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(10);//30yards
                     break;
-
-
                 //Terrace of Endless Spring
                 //Protectors of Endless
                 case 117052: //Sha Corruption
@@ -4868,8 +4782,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
                     spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
                     break;
-
-
                 //Throne of Thunder
                 //Jinrokh
                 case 137162: //Static burst
@@ -5003,8 +4915,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].TargetA = 1;
                     spellInfo->Effects[1].TargetB = 0;
                     break;
-
-
                 //Siege of Orgrimmar
                 //Immerseus
                 case 143462: //Sha pool
@@ -5287,7 +5197,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = 6;
                     spellInfo->Effects[0].TargetB = 0;
                     break;
-
                 // Dalaran arena knockback
                 case 61698:
                     spellInfo->Attributes = 536871296;
@@ -5528,6 +5437,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_SRC_AREA_ENTRY;
                     break;
                 case 103964: // Touch of Chaos
+                case 129347: // Chaos Wave
                     spellInfo->SchoolMask &= ~SPELL_SCHOOL_MASK_NORMAL;
                     break;
                 case 53257: // Cobra Strikes
@@ -5544,8 +5454,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 146557: // Frozen Thoughts
                     spellInfo->Effects[EFFECT_0].SpellClassMask[0] |= 131616;
-                    //spellInfo->Effects[EFFECT_0].SpellClassMask[2] |= 8;
-                    //spellInfo->Effects[EFFECT_0].SpellClassMask[3] |= 4096;
                     break;
                 case 106371: // Hour of Twilight
                     spellInfo->Effects[EFFECT_0].TriggerSpell = 103327;
@@ -5588,17 +5496,18 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 // Aspects auras
                 // Increase duration up to 10 secs
-                case 106028: case 109571: case 109572: case 109573:
-                case 106027: case 109622: case 109623: case 109624:
-                case 106457: case 109640: case 109641: case 109642: case 106464: 
-                case 106029: case 109606: case 109607: case 109608:
+                case 106028:
+                case 106027:
+                case 106457:
+                case 106464:
+                case 106029:
                     spellInfo->SetDurationIndex(1); // 10 secs
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_ONLY_TARGET_PLAYERS;
                     break;
-                    case 106040: // Spellweaving
-                spellInfo->ProcChance = 10;
-                spellInfo->SetDurationIndex(1); // 10 secs
-                spellInfo->AttributesEx3 |= SPELL_ATTR3_ONLY_TARGET_PLAYERS;
+                case 106040: // Spellweaving
+                    spellInfo->ProcChance = 10;
+                    spellInfo->SetDurationIndex(1); // 10 secs
+                    spellInfo->AttributesEx3 |= SPELL_ATTR3_ONLY_TARGET_PLAYERS;
                     break;
                 // Increase amplitude
                 case 105825:
@@ -5663,7 +5572,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 54355: // Achiev Mine Sweeper
                 case 54402:
-                case 88337:
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
                     spellInfo->Effects[1].TargetA = TARGET_UNIT_CASTER;
                     break;
