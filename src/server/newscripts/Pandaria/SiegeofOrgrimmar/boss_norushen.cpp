@@ -256,10 +256,10 @@ class boss_norushen : public CreatureScript
                             me->SetFacingTo(1.791488f);
                             instance->SetBossState(DATA_NORUSHEN, IN_PROGRESS);
                             ZoneTalk(eventId + 6, me->GetGUID());
-                            me->CastSpell(Amalgan.GetPositionX(), Amalgan.GetPositionY(), Amalgan.GetPositionZ(), SPELL_EXTRACT_CORRUPTION);
+                            DoCast(me, SPELL_EXTRACT_CORRUPTION);
                             break;
                         case EVENT_3:
-                            me->CastSpell(Amalgan.GetPositionX(), Amalgan.GetPositionY(), Amalgan.GetPositionZ(), SPELL_EXTRACT_CORRUPTION_S);
+                            DoCast(me, SPELL_EXTRACT_CORRUPTION_S);
                             break;
                         case EVENT_4:
                             ZoneTalk(TEXT_GENERIC_9, me->GetGUID());
