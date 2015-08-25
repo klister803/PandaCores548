@@ -3828,6 +3828,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 45182:  // Cheat Death
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
+                    break;
                 case 123738: // Heart of the Wild VENGEANCE
                     spellInfo->Effects[EFFECT_5].Effect = SPELL_EFFECT_APPLY_AURA;
                     spellInfo->Effects[EFFECT_5].ApplyAuraName = SPELL_AURA_DUMMY;
