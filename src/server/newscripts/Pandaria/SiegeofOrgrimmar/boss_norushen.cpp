@@ -424,6 +424,9 @@ class boss_amalgam_of_corruption : public CreatureScript
                 if (Creature* HealChGreater = me->FindNearestCreature(NPC_GREATER_CORRUPTION, 200.0f))
                     me->Kill(HealChGreater);
 
+                if (Creature* rCorruption = me->FindNearestCreature(NPC_RESIDUAL_CORRUPTION, 100.0f))
+                    rCorruption->DespawnOrUnsummon();
+
                 challengeCounter.clear();
             }
 
@@ -517,6 +520,8 @@ class boss_amalgam_of_corruption : public CreatureScript
                 ApplyOrRemoveBar(false);
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PURIFIED);
+                if (Creature* rCorruption = me->FindNearestCreature(NPC_RESIDUAL_CORRUPTION, 100.0f))
+                    rCorruption->DespawnOrUnsummon();
             }
 
             void UpdateAI(uint32 diff)
