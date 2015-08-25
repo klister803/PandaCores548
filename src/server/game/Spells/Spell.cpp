@@ -1666,8 +1666,7 @@ void Spell::SelectImplicitDestDestTargets(SpellEffIndex effIndex, SpellImplicitT
         return;
     }
 
-    if (!m_targets.HasDst())
-        m_targets.SetDst(*m_caster);
+    bool exit = false;
 
     switch (targetType.GetTarget())
     {
@@ -1677,27 +1676,38 @@ void Spell::SelectImplicitDestDestTargets(SpellEffIndex effIndex, SpellImplicitT
                 AddUnitTarget(target, 1 << effIndex);
                 m_targets.SetDst(*target);
             }
-            return;
+            exit = true;
+            break;
         case TARGET_DEST_TARGET_SELECT:
             if (Unit* target = m_targets.GetUnitTarget())
                 m_targets.SetDst(*target);
-            return;
+            exit = true;
+            break;
         case TARGET_DEST_NEARBY_ENTRY:
             if (WorldObject* target = m_targets.GetObjectTarget())
                 m_targets.SetDst(*target);
-            return;
+            exit = true;
+            break;
         case TARGET_DEST_DYNOBJ_ENEMY:
         case TARGET_DEST_DYNOBJ_ALLY:
         case TARGET_DEST_DYNOBJ_NONE:
         case TARGET_DEST_DEST:
         case TARGET_UNK_128:
-            return;
+            exit = true;
+            break;
         case TARGET_DEST_TRAJ:
             SelectImplicitTrajTargets();
-            return;
+            exit = true;
+            break;
         default:
             break;
     }
+
+    if (!m_targets.HasDst())
+        m_targets.SetDst(*m_caster);
+
+    if (exit)
+        return;
 
     if(targetType.GetDirectionType() == TARGET_DIR_NONE)
         return;
