@@ -401,24 +401,23 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         if (t->isPolygon())
         {
             uint32 size = t->GetAreaTriggerInfo().polygonPoints.size();
-            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "_BuildMovementUpdate areaTriggerPolygon size %u", size);
             data->WriteBits(size, 21); // VerticesCount dword25C
             data->WriteBits(t->GetAreaTriggerInfo().polygon > 1 ? size : 0, 21); // VerticesTargetCount dword26C
         }
-        data->WriteBit(0);              // HasAbsoluteOrientation?
-        data->WriteBit(0);              // HasFollowsTerrain?
-        data->WriteBit(t->GetVisualScale()); // areaTriggerSphere
-        data->WriteBit(t->isMoving());  // areaTriggerSpline
-        data->WriteBit(0);              // HasFaceMovementDir?
-        data->WriteBit(0);              // HasAttached?
-        data->WriteBit(0);              // hasScaleCurveID?
-        data->WriteBit(0);              // hasMorphCurveID?
+        data->WriteBit(t->GetAreaTriggerInfo().HasAbsoluteOrientation);   // HasAbsoluteOrientation?
+        data->WriteBit(t->GetAreaTriggerInfo().HasFollowsTerrain);        // HasFollowsTerrain?
+        data->WriteBit(t->GetVisualScale());                              // areaTriggerSphere
+        data->WriteBit(t->isMoving());                                    // areaTriggerSpline
+        data->WriteBit(t->GetAreaTriggerInfo().HasFaceMovementDir);       // HasFaceMovementDir?
+        data->WriteBit(t->GetAreaTriggerInfo().HasAttached);              // HasAttached?
+        data->WriteBit(t->GetAreaTriggerInfo().ScaleCurveID);             // hasScaleCurveID?
+        data->WriteBit(t->GetAreaTriggerInfo().MorphCurveID);             // hasMorphCurveID?
         if (t->isMoving())
-            data->WriteBits(t->GetObjectMovementParts(), 20); // splinePointsCount
-        data->WriteBit(0);              // hasFacingCurveID?
-        data->WriteBit(0);              // HasDynamicShape?
-        data->WriteBit(t->GetAreaTriggerInfo().MoveCurveID);      // hasMoveCurveID
-        data->WriteBit(t->GetAreaTriggerCylinder());              // areaTriggerCylinder
+            data->WriteBits(t->GetObjectMovementParts(), 20);             // splinePointsCount
+        data->WriteBit(t->GetAreaTriggerInfo().FacingCurveID);            // hasFacingCurveID?
+        data->WriteBit(t->GetAreaTriggerInfo().HasDynamicShape);          // HasDynamicShape?
+        data->WriteBit(t->GetAreaTriggerInfo().MoveCurveID);              // hasMoveCurveID
+        data->WriteBit(t->GetAreaTriggerCylinder());                      // areaTriggerCylinder
     }
 
     if (flags & UPDATEFLAG_LIVING)
@@ -558,8 +557,8 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         if (t->GetAreaTriggerInfo().MoveCurveID)
             *data << uint32(t->GetAreaTriggerInfo().MoveCurveID);
 
-        //if (hasMorphCurveID)
-            //data << uint32(0);
+        if (t->GetAreaTriggerInfo().MorphCurveID)
+            *data << uint32(t->GetAreaTriggerInfo().MorphCurveID);
 
         if (t->GetVisualScale())                // areaTriggerSphere
         {
@@ -575,11 +574,11 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         else
             *data << uint32(1);                     // Elapsed Time Ms
 
-        /*if (hasFacingCurveID)
-            data << uint32(0);
+        if (t->GetAreaTriggerInfo().FacingCurveID)
+            *data << uint32(t->GetAreaTriggerInfo().FacingCurveID);
 
-        if (hasScaleCurveID)
-            data << uint32(0);*/
+        if (t->GetAreaTriggerInfo().ScaleCurveID)
+            *data << uint32(t->GetAreaTriggerInfo().ScaleCurveID);
     }
 
     if (flags & UPDATEFLAG_LIVING)
@@ -1676,6 +1675,29 @@ void Position::SimplePosXYRelocationByAngle(Position &pos, float dist, float ang
     Trinity::NormalizeMapCoord(pos.m_positionX);
     Trinity::NormalizeMapCoord(pos.m_positionY);
     pos.SetOrientation(GetOrientation());
+}
+
+void Position::SimplePosXYRelocationByAngle(float &x, float &y, float &z, float dist, float angle, bool relative) const
+{
+    if(!relative)
+        angle += GetOrientation();
+
+    x = m_positionX + dist * std::cos(angle);
+    y = m_positionY + dist * std::sin(angle);
+    z = m_positionZ;
+
+    // Prevent invalid coordinates here, position is unchanged
+    if (!Trinity::IsValidMapCoord(x, y))
+    {
+        x = m_positionX;
+        y = m_positionY;
+        z = m_positionZ;
+        sLog->outFatal(LOG_FILTER_GENERAL, "Position::SimplePosXYRelocationByAngle invalid coordinates X: %f and Y: %f were passed!", x, y);
+        return;
+    }
+
+    Trinity::NormalizeMapCoord(x);
+    Trinity::NormalizeMapCoord(y);
 }
 
 std::string Position::ToString() const

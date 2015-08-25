@@ -9766,7 +9766,8 @@ void ObjectMgr::LoadAreaTriggerActionsAndData()
     //                                                  0         1            2                3            4            5            6            7            8          9
     QueryResult result = WorldDatabase.Query("SELECT `entry`, `spellId`, `customEntry`, `customVisualId`, `Radius`, `RadiusTarget`, `Height`, `HeightTarget`, `Float4`, `Float5`,"
     //    9          10        11            12                13           14         15           16             17           18      19       20         21           22         23
-    "`isMoving`, `moveType`, `speed`, `activationDelay`, `updateDelay`, `maxCount`, `hitType`, `MoveCurveID`, `ElapsedTime`, `windX`, `windY`, `windZ`, `windSpeed`, `windType`, `polygon` FROM areatrigger_data");
+    "`isMoving`, `moveType`, `speed`, `activationDelay`, `updateDelay`, `maxCount`, `hitType`, `MoveCurveID`, `ElapsedTime`, `windX`, `windY`, `windZ`, `windSpeed`, `windType`, `polygon`,"
+    "`MorphCurveID`, `FacingCurveID`, `ScaleCurveID`, `HasFollowsTerrain`, `HasAttached`, `HasAbsoluteOrientation`, `HasDynamicShape`, `HasFaceMovementDir` FROM areatrigger_data");
 
     if (result)
     {
@@ -9802,6 +9803,14 @@ void ObjectMgr::LoadAreaTriggerActionsAndData()
             info.windSpeed = fields[i++].GetFloat();
             info.windType = fields[i++].GetUInt32();
             info.polygon = fields[i++].GetUInt32();
+            info.MorphCurveID = fields[i++].GetUInt32();
+            info.FacingCurveID = fields[i++].GetUInt32();
+            info.ScaleCurveID = fields[i++].GetUInt32();
+            info.HasFollowsTerrain = fields[i++].GetUInt32();
+            info.HasAttached = fields[i++].GetUInt32();
+            info.HasAbsoluteOrientation = fields[i++].GetUInt32();
+            info.HasDynamicShape = fields[i++].GetUInt32();
+            info.HasFaceMovementDir = fields[i++].GetUInt32();
             if(info.polygon && info.customEntry)
             {
                 QueryResult resultPolygon = WorldDatabase.PQuery("SELECT `id`, `x`, `y` FROM areatrigger_polygon WHERE `entry` = '%u' AND `spellId` = '%u'", info.customEntry, info.spellId);

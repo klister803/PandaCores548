@@ -2683,13 +2683,7 @@ public:
         void HandleOnHit(SpellEffIndex /*effIndex*/)
         {
             if(Unit* caster = GetCaster())
-            {
-                Position pos;
-                WorldLocation destPos = *GetExplTargetDest();
-                caster->GetPosition(&pos);
-                destPos.Relocate(pos);
-                GetSpell()->destTarget = &destPos;
-            }
+                GetSpell()->destTarget = &*caster;
         }
 
         void Register()

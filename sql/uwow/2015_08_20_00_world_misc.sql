@@ -39,3 +39,7 @@ ALTER TABLE `areatrigger_data`
   ADD COLUMN `HasDynamicShape` INT(11) DEFAULT 0  NOT NULL AFTER `HasAbsoluteOrientation`,
   ADD COLUMN `HasFaceMovementDir` INT(11) DEFAULT 0  NOT NULL AFTER `HasDynamicShape`;
 
+delete from areatrigger_data where entry in (1204,1265);
+insert into `areatrigger_data` (`entry`, `spellId`, `customEntry`, `customVisualId`, `Radius`, `RadiusTarget`, `Height`, `HeightTarget`, `Float4`, `Float5`, `isMoving`, `moveType`, `speed`, `activationDelay`, `updateDelay`, `maxCount`, `hitType`, `MoveCurveID`, `ElapsedTime`, `MorphCurveID`, `FacingCurveID`, `ScaleCurveID`, `HasFollowsTerrain`, `HasAttached`, `HasAbsoluteOrientation`, `HasDynamicShape`, `HasFaceMovementDir`, `windX`, `windY`, `windZ`, `windSpeed`, `windType`, `polygon`, `comment`) values
+('1204','145286','5099','34079','1','2.5','0','0','0','0','1','2','8.62','0','0','0','0','397','608','404','396','0','0','0','0','1','0','0','0','0','0','0','0','Бушующий шторм'),
+('1265','146991','5231','33504','4.5','4.5','4','4','5','5','1','1','15','0','0','0','16','416','394','0','0','0','0','0','0','0','0','0','0','0','0','0','0','Пламя Галакронда');

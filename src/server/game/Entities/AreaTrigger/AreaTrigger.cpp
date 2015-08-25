@@ -25,7 +25,7 @@
 
 AreaTrigger::AreaTrigger() : WorldObject(false), _duration(0), _activationDelay(0), _updateDelay(0), _on_unload(false), _caster(NULL),
     _radius(1.0f), atInfo(), _on_despawn(false), m_spellInfo(NULL), _moveSpeed(0.0f), _moveTime(0), _realEntry(0), _hitCount(1), _areaTriggerCylinder(false),
-    _on_remove(false)
+    _on_remove(false), _waitTime(0)
 {
     m_objectType |= TYPEMASK_AREATRIGGER;
     m_objectTypeId = TYPEID_AREATRIGGER;
@@ -33,6 +33,7 @@ AreaTrigger::AreaTrigger() : WorldObject(false), _duration(0), _activationDelay(
     m_updateFlag = UPDATEFLAG_STATIONARY_POSITION | UPDATEFLAG_AREA_TRIGGER;
 
     m_valuesCount = AREATRIGGER_END;
+    m_currentNode = 0;
 }
 
 AreaTrigger::~AreaTrigger()
@@ -154,19 +155,69 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     // culculate destination point
     if (isMoving())
     {
-        _startPosition.Relocate(pos);
-        if (atInfo.moveType)
-        {
-            _destPosition.Relocate(posMove);
-            SetDuration(int32(pos.GetExactDist2d(&posMove) * 100));
-        }
-        else
-            pos.SimplePosXYRelocationByAngle(_destPosition, GetSpellInfo()->GetMaxRange(), 0.0f);
-
         if (atInfo.speed)
             _moveSpeed = atInfo.speed;
         else
             _moveSpeed = GetSpellInfo()->GetMaxRange() / duration;
+
+        switch (atInfo.moveType)
+        {
+            case AT_MOVE_TYPE_DEFAULT:
+            {
+                Vector3 curPos, nextPos;
+                pos.PositionToVector(curPos);
+                m_movePath.push_back(curPos);
+                m_movePath.push_back(curPos);
+                pos.SimplePosXYRelocationByAngle(nextPos.x, nextPos.y, nextPos.z, GetSpellInfo()->GetMaxRange(), 0.0f);
+                m_movePath.push_back(nextPos);
+                m_movePath.push_back(nextPos);
+                break;
+            }
+            case AT_MOVE_TYPE_LIMIT:
+            {
+                Vector3 curPos, nextPos;
+                pos.PositionToVector(curPos);
+                posMove.PositionToVector(nextPos);
+                m_movePath.push_back(curPos);
+                m_movePath.push_back(curPos);
+                m_movePath.push_back(nextPos);
+                m_movePath.push_back(nextPos);
+                _waitTime = 1000;
+                duration = 5500;
+                _moveSpeed = (curPos - nextPos).length() / (duration - _waitTime) * 1000.0f;
+                SetDuration(duration);
+                break;
+            }
+            case AT_MOVE_TYPE_SPIRAL:
+            {
+                Vector3 curPos;
+                pos.PositionToVector(curPos);
+                m_movePath.push_back(curPos);
+                m_movePath.push_back(curPos);
+                float maxDist = duration / 1000.0f * _moveSpeed;
+
+                for (float a = 0;; a += 45) // next angel 45
+                {
+                    float rad = a * 3.14159265358979323846f / 180.0f;
+                    float r = 1.0f * exp(rad * 0.3f);
+                    Vector3 nextPos {curPos.x - (r * sin(rad)), curPos.y + (r * cos(rad)), curPos.z};
+                    m_movePath.push_back(nextPos);
+
+                    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::Create nextPos %f %f %f maxDist %f length %f rad %f r %f",
+                    //nextPos.x, nextPos.y, nextPos.z, maxDist, (m_movePath[m_movePath.size() - 2] - m_movePath[m_movePath.size() - 1]).length(), rad, r);
+
+                    maxDist -= (m_movePath[m_movePath.size() - 2] - m_movePath[m_movePath.size() - 1]).length();
+                    if (maxDist <= 0.0f)
+                    {
+                        m_movePath.push_back(nextPos);
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+
+        _nextMoveTime = (m_movePath[0] - m_movePath[1]).length() * _moveSpeed;
     }
 
     FillCustiomData();
@@ -177,7 +228,8 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
         return false;
 
     #ifdef WIN32
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::Create AreaTrigger caster %s spellID %u spell rage %f dist %f dest - X:%f,Y:%f,Z:%f", caster->GetString().c_str(), info->Id, _radius, GetSpellInfo()->GetMaxRange(), _destPosition.GetPositionX(), _destPosition.GetPositionY(), _destPosition.GetPositionZ());
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::Create AreaTrigger caster %s spellID %u spell rage %f dist %f dest - X:%f,Y:%f,Z:%f _nextMoveTime %i _moveSpeed %f duration %i", 
+    caster->GetString().c_str(), info->Id, _radius, GetSpellInfo()->GetMaxRange(), m_movePath.empty() ? 0.0f : m_movePath[m_currentNode].x, m_movePath.empty() ? 0.0f : m_movePath[m_currentNode].y, m_movePath.empty() ? 0.0f : m_movePath[m_currentNode].z, _nextMoveTime, _moveSpeed, duration);
     #endif
 
     if (atInfo.maxCount)
@@ -258,7 +310,7 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, AreaTriggerActionMoment acti
             else
             {
                 if (!unit->IsWithinDistInMap(searcher, GetRadius()) ||
-                    (isMoving() && _HasActionsWithCharges(AT_ACTION_MOMENT_ON_THE_WAY) && !unit->IsInBetween(this, _destPosition.GetPositionX(), _destPosition.GetPositionY())))
+                    (isMoving() && _HasActionsWithCharges(AT_ACTION_MOMENT_ON_THE_WAY) && !unit->IsInBetween(this, m_movePath[m_currentNode + 1].x, m_movePath[m_currentNode + 1].y)))
                 {
                     affectedPlayers.erase(itr);
                     AffectUnit(unit, AT_ACTION_MOMENT_LEAVE);
@@ -279,7 +331,7 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, AreaTriggerActionMoment acti
                     continue;
 
                 //No 
-                if (isMoving() && _HasActionsWithCharges(AT_ACTION_MOMENT_ON_THE_WAY) && !(*itr)->IsInBetween(this, _destPosition.GetPositionX(), _destPosition.GetPositionY()))
+                if (isMoving() && _HasActionsWithCharges(AT_ACTION_MOMENT_ON_THE_WAY) && !(*itr)->IsInBetween(this, m_movePath[m_currentNode + 1].x, m_movePath[m_currentNode + 1].y))
                     continue;
                 affectedPlayers.push_back((*itr)->GetGUID());
                 AffectUnit(*itr, actionM);
@@ -728,42 +780,79 @@ void AreaTrigger::UnbindFromCaster()
 
 uint32 AreaTrigger::GetObjectMovementParts() const
 {
-    //now only source and destination points send.
-    //ToDo: find interval calculation. On some spels only 2 points send (each 2 times)
-    return 4;
+    return m_movePath.size();
 }
 
 void AreaTrigger::PutObjectUpdateMovement(ByteBuffer* data) const
 {
-    //Source position 2 times.
-    *data << float(GetPositionX());
-    *data << float(GetPositionZ());
-    *data << float(GetPositionY());
-            
-    *data << float(GetPositionX());
-    *data << float(GetPositionZ());
-    *data << float(GetPositionY());
-
-    //Dest position 2 times.
-    *data << float(_destPosition.GetPositionX());
-    *data << float(_destPosition.GetPositionZ());
-    *data << float(_destPosition.GetPositionY());
-
-    *data << float(_destPosition.GetPositionX());
-    *data << float(_destPosition.GetPositionZ());
-    *data << float(_destPosition.GetPositionY());
+    for (uint32 i = 0; i < m_movePath.size(); ++i)
+    {
+        *data << float(m_movePath[i].x);
+        *data << float(m_movePath[i].z);
+        *data << float(m_movePath[i].y);
+    }
 }
 
 void AreaTrigger::UpdateMovement(uint32 diff)
 {
-    if (!isMoving())
+    if (!isMoving() || m_movePath.empty())
         return;
 
-    float angle = _startPosition.GetAngle(_destPosition.GetPositionX(), _destPosition.GetPositionY());
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::UpdateMovement %f %f %f %f %i angle %f", GetPositionX(), GetPositionY(), GetPositionZ(), getMoveSpeed(), _moveTime, angle);
+    if (m_currentNode == m_movePath.size() - 1)
+        return;
 
+    if (_waitTime > 0)
+    {
+        if (diff >= _waitTime)
+            _waitTime = 0;
+        else
+            _waitTime -= diff;
+        return;
+    }
+
+    Position tempPos;
+    tempPos.VectorToPosition(m_movePath[m_currentNode]);
+    float angle = tempPos.GetAngle(m_movePath[m_currentNode + 1].x, m_movePath[m_currentNode + 1].y);
+
+    //float speed = getMoveSpeed() / (((m_movePath.size() - 1) / 4) * m_currentNode);
+    float speed = getMoveSpeed();
+    if(atInfo.moveType == AT_MOVE_TYPE_SPIRAL)
+    {
+        int32 mod = int32(m_currentNode / 4);
+        if(mod)
+            speed = getMoveSpeed() / 2 * mod;
+        else
+            speed = getMoveSpeed() / 4;
+    }
     _moveTime += diff;
-    _startPosition.SimplePosXYRelocationByAngle(*this, getMoveSpeed() * _moveTime, angle, true);
+
+    if(_moveTime >= _nextMoveTime)
+    {
+        tempPos.SimplePosXYRelocationByAngle(*this, (speed * _nextMoveTime) / 1000.0f, angle, true);
+
+        m_currentNode++;
+        _moveTime = 0;
+        if (m_currentNode == m_movePath.size() - 1)
+            return;
+
+        float speedNext = getMoveSpeed();
+        if(atInfo.moveType == AT_MOVE_TYPE_SPIRAL)
+        {
+            int32 mod = int32(m_currentNode / 4);
+            if(mod)
+                speedNext = getMoveSpeed() / 2 * mod;
+            else
+                speedNext = getMoveSpeed() / 4;
+        }
+        //_caster->SummonCreature(44548, GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation(),TEMPSUMMON_TIMED_DESPAWN, 20000); // For visual point test
+        _nextMoveTime = (m_movePath[m_currentNode] - m_movePath[m_currentNode+1]).length() / speedNext * 1000;
+        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::UpdateMovement speedNext %f _nextMoveTime %u length %f abs %i", speedNext, _nextMoveTime, (m_movePath[m_currentNode] - m_movePath[m_currentNode+1]).length(), int32(m_currentNode/4));
+    }
+    else
+        tempPos.SimplePosXYRelocationByAngle(*this, (speed * _moveTime) / 1000.0f, angle, true);
+
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::UpdateMovement %f %f %f %f %i angle %f _nextMoveTime %i m_currentNode %i speed %f", GetPositionX(), GetPositionY(), GetPositionZ(), getMoveSpeed(), _moveTime, angle, _nextMoveTime, m_currentNode, speed);
+
 }
 
 bool AreaTrigger::IsInPolygon(Unit* unit, WorldObject const* obj)

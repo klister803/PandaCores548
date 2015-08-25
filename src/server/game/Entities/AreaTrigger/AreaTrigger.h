@@ -19,6 +19,7 @@
 #define TRINITYCORE_AREATRIGGER_H
 
 #include "Object.h"
+#include <G3D/Vector3.h>
 
 class Unit;
 class SpellInfo;
@@ -73,6 +74,13 @@ enum AreaTriggerTargetFlags
         AT_TARGET_FLAG_NOT_PET  | AT_TARGET_FLAG_CASTER_IS_TARGET | AT_TARGET_FLAG_NOT_FULL_HP | AT_TARGET_FLAG_ALWAYS_TRIGGER | AT_TARGET_FLAT_IN_FRONT,
 };
 
+enum AreaTriggerMoveType
+{
+    AT_MOVE_TYPE_DEFAULT = 0,
+    AT_MOVE_TYPE_LIMIT   = 1,
+    AT_MOVE_TYPE_SPIRAL  = 2,
+};
+
 struct PolygonPOI
 {
     uint32 id;
@@ -80,6 +88,7 @@ struct PolygonPOI
     float y;
 };
 typedef UNORDERED_MAP<uint32, PolygonPOI> PolygonPOIMap;
+typedef std::vector<Vector3> PositionsArray;
 
 struct AreaTriggerAction
 {
@@ -103,7 +112,9 @@ struct AreaTriggerInfo
     AreaTriggerInfo() : activationDelay(0), updateDelay(0), maxCount(0),
         visualId(1), spellId(0), customEntry(0), isMoving(false), speed(0.0f), moveType(0), hitType(0),
         Height(0.0f), RadiusTarget(0.0f), Float5(0.0f), Float4(0.0f), Radius(0.0f), HeightTarget(0.0f),
-        MoveCurveID(0), ElapsedTime(0), windX(0.0f), windY(0.0f), windZ(0.0f), windSpeed(0.0f), windType(0) {}
+        MoveCurveID(0), ElapsedTime(0), windX(0.0f), windY(0.0f), windZ(0.0f), windSpeed(0.0f), windType(0),
+        MorphCurveID(0), FacingCurveID(0), ScaleCurveID(0), HasFollowsTerrain(0), HasAttached(0), HasAbsoluteOrientation(0),
+        HasDynamicShape(0), HasFaceMovementDir(0)        {}
 
     bool isMoving;
     uint32 spellId;
@@ -124,6 +135,14 @@ struct AreaTriggerInfo
     float Float5;
     uint32 MoveCurveID;
     uint32 ElapsedTime;
+    uint32 MorphCurveID;
+    uint32 FacingCurveID;
+    uint32 ScaleCurveID;
+    uint32 HasFollowsTerrain;
+    uint32 HasAttached;
+    uint32 HasAbsoluteOrientation;
+    uint32 HasDynamicShape;
+    uint32 HasFaceMovementDir;
     uint32 windType;
     float windX;
     float windY;
@@ -216,16 +235,19 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         float _radius;
         AreaTriggerInfo atInfo;
         ActionInfoMap _actionInfo;
-        Position _destPosition;
-        Position _startPosition;
         uint32 _realEntry;
         float _moveSpeed;
         uint32 _moveTime;
+        uint32 _nextMoveTime;
+        uint32 _waitTime;
         bool _on_unload;
         bool _on_despawn;
         bool _on_remove;
         uint32 _hitCount;
         bool _areaTriggerCylinder;
+        uint32 m_currentNode;
+
+        PositionsArray m_movePath;
 
         SpellInfo const* m_spellInfo;
 };
