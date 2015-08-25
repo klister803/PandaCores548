@@ -6306,92 +6306,65 @@ bool Unit::HandleAuraProcOnPowerAmount(Unit* victim, DamageInfo* /*dmgInfoProc*/
             if (!procSpell)
                 return false;
 
-            int32 powerMod = 0;
-            bool isGlyph = false;
-
-            if(HasAura(54812) && !(HasAura(48517) || HasAura(48518)))
-            {
-                switch(procSpell->Id)
-                {
-                    case 2912:
-                    case 78674:
-                    case 5176:
-                        break;
-                    case 99:
-                    case 339:
-                    case 5211:
-                    case 33786:
-                    case 61391:
-                    case 102359:
-                    case 102355:
-                    case 106707:
-                    case 102793:
-                    case 132469:
-                        powerMod = 10;
-                        isGlyph = true;
-                        break;
-                    default:
-                        return false;
-                }
-            }
-            /*else
-            {
-                switch(procSpell->Id)
-                {
-                    case 2912:
-                    case 5176:
-                    case 78674:
-                        break;
-                    default:
-                        return false;
-                }
-            }*/
             // forbid proc when not in balance spec or while in Celestial Alignment
             if (!HasSpell(78674) || HasAura(112071))
                 return false;
 
-            int32 direction = 1;
-            if((powerAmount < 0 && !HasAura(48518)) || (powerAmount > 0 && HasAura(48517)))
-                direction = -1;
+            int32 powerMod = 0;
+            bool isGlyph = false;
+            bool aura54812 = HasAura(54812);
 
-            //powerMod *= direction;
-            // Starfire
-            if (procSpell->Id == 2912)
-                powerMod = procSpell->Effects[1].CalcValue(this);
-            // Wrath
-            else if (procSpell->Id == 5176)
-                powerMod = -procSpell->Effects[1].CalcValue(this);
-            // Starsurge
-            else if (procSpell->Id == 78674)
-                powerMod = direction * procSpell->Effects[1].CalcValue(this);
-            else if(HasAura(54812))
-                powerMod *= direction;
+            bool aura48517 = HasAura(48517);
+            bool aura48518 = HasAura(48518);
 
-            // solar Eclipse Marker
-            if (HasAura(67484))
+            bool aura67484 = HasAura(67484);
+            bool aura67483 = HasAura(67483);
+
+            
+            switch(procSpell->Id)
             {
-                if(powerMod > 0)
-                    direction = 0;
+                case 2912:
+                {
+                    powerMod = (aura67483 || (!aura67483 && !aura67484)) ? procSpell->Effects[1].CalcValue(this) : 0;
+                    break;
+                }
+                case 78674:
+                {
+                    powerMod = aura67483 ? procSpell->Effects[1].CalcValue(this) : -procSpell->Effects[1].CalcValue(this);
+                    break;
+                }
+                case 5176:
+                {
+                    powerMod = (aura67484 || (!aura67483 && !aura67484)) ? -procSpell->Effects[1].CalcValue(this) : 0;
+                    break;
+                }
+                case 99:
+                case 339:
+                case 5211:
+                case 33786:
+                case 61391:
+                case 102359:
+                case 102355:
+                case 106707:
+                case 102793:
+                case 132469:
+                {
+                    if (aura54812)
+                    {
+                        if (!aura48518 && !aura48517)
+                        {
+                            powerMod = aura67483 ? 10 : -10;
+                            isGlyph = true;
+                        }
+                    }
+                    break;
+                }
+                default:
+                    return false;
             }
-            // lunar Eclipse Marker
-            else if (HasAura(67483))
-            {
-                if(powerMod < 0)
-                    direction = 0;
-            }
-
-            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "HandleAuraProcOnPowerAmount: powerMod %i direction %i, powerAmount %i", powerMod, direction, powerAmount);
-            // proc failed if wrong spell or spell direction does not match marker direction
-            if (!powerMod || !direction)
-                return false;
-
-            if (powerMod > 0 && triggeredByAura->GetEffIndex() != EFFECT_0)
-                return false;
-            else if (powerMod < 0 && triggeredByAura->GetEffIndex() != EFFECT_1)
-                return false;
 
             // while not in Eclipse State
-            if (!HasAura(48517) && !HasAura(48518) && !isGlyph)
+            if (!aura48517 && !aura48518 && !isGlyph)
             {
                 // search Euphoria
                 if (HasAura(81062))
@@ -6399,8 +6372,22 @@ bool Unit::HandleAuraProcOnPowerAmount(Unit* victim, DamageInfo* /*dmgInfoProc*/
 
                 // Item - Druid T12 Balance 4P Bonus
                 if (HasAura(99049) && procSpell->Id != 78674)
-                    powerMod += direction * (procSpell->Id == 2912 ? 5 : 3);
+                    powerMod += (procSpell->Id == 2912 ? 5 : -3);
             }
+
+            // solar Eclipse Marker
+            if (!aura67484 && !aura67483)
+                AddAura(powerMod > 0 ? 67483 : 67484, this);
+
+            //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "HandleAuraProcOnPowerAmount: powerMod %i direction %i, powerAmount %i", powerMod, direction, powerAmount);
+            // proc failed if wrong spell or spell direction does not match marker direction
+            if (!powerMod)
+                return false;
+
+            if (powerMod > 0 && triggeredByAura->GetEffIndex() != EFFECT_0)
+                return false;
+            else if (powerMod < 0 && triggeredByAura->GetEffIndex() != EFFECT_1)
+                return false;
 
             CastCustomSpell(this, 89265, &powerMod, NULL, NULL, true);
             //ModifyPower(powerType, powerMod);
