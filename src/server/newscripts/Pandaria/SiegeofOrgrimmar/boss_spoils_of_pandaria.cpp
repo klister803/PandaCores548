@@ -1393,8 +1393,8 @@ public:
 
         void OnTick(AuraEffect const* aurEff)
         {
-            Unit* caster = GetCaster();
-            if (!caster)
+            Unit* target = GetTarget();
+            if (!target)
                 return;
 
             if (Aura* aura = aurEff->GetBase())
@@ -1402,26 +1402,26 @@ public:
                 uint8 stack = aura->GetStackAmount();
                 if (!stack)
                 {
-                    caster->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_1);
+                    target->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_1);
                     return;
                 }
 
                 switch (stack)
                 {
                     case 1:
-                        caster->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_2);
-                        caster->CastSpell(caster, SPELL_SET_TO_BLOW_VISUAL_1, true);
+                        target->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_2);
+                        target->CastSpell(target, SPELL_SET_TO_BLOW_VISUAL_1, true);
                         break;
                     case 2:
-                        caster->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_3);
-                        caster->CastSpell(caster, SPELL_SET_TO_BLOW_VISUAL_2, true);
+                        target->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_3);
+                        target->CastSpell(target, SPELL_SET_TO_BLOW_VISUAL_2, true);
                         break;
                     case 3:
-                        caster->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_4);
-                        caster->CastSpell(caster, SPELL_SET_TO_BLOW_VISUAL_3, true);
+                        target->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_4);
+                        target->CastSpell(target, SPELL_SET_TO_BLOW_VISUAL_3, true);
                         break;
                     case 4:
-                        caster->CastSpell(caster, SPELL_SET_TO_BLOW_VISUAL_4, true);
+                        target->CastSpell(target, SPELL_SET_TO_BLOW_VISUAL_4, true);
                         break;
                 }
             }
@@ -1435,25 +1435,26 @@ public:
 
         void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
         {
-            if (Unit* caster = GetCaster())
-            {
-                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
-                {
-                    if (Aura* aura = aurEff->GetBase())
-                    {
-                        uint8 stack = aura->GetStackAmount();
-                        if (!stack)
-                            return;
+            Unit* target = GetTarget();
+            if (!target)
+                return;
 
-                        for (uint8 i = 0; i < stack; i++)
-                            caster->CastSpell(caster, SPELL_SET_TO_BLOW_DMG, true);
-                    }
+            if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+            {
+                if (Aura* aura = aurEff->GetBase())
+                {
+                    uint8 stack = aura->GetStackAmount();
+                    if (!stack)
+                        return;
+
+                    for (uint8 i = 0; i < stack; i++)
+                        target->CastSpell(target, SPELL_SET_TO_BLOW_DMG, true);
                 }
-                caster->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_1);
-                caster->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_2);
-                caster->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_3);
-                caster->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_4);
             }
+            target->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_1);
+            target->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_2);
+            target->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_3);
+            target->RemoveAura(SPELL_SET_TO_BLOW_VISUAL_4);
         }
 
         void Register()
