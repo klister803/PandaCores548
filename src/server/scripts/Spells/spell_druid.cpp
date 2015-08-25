@@ -1917,13 +1917,7 @@ class spell_dru_astral_communion : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                 {
-                    int32 powerAmount = caster->GetPower(POWER_ECLIPSE);
-                    if((powerAmount < 0 && !caster->HasAura(48518)) || (powerAmount > 0 && caster->HasAura(48517)))
-                        direction = -1;
-                    else if(powerAmount == 0 && caster->HasAura(67484))
-                        direction = -1;
-                    else if(powerAmount == 0)
-                        direction = -1;
+                    direction = caster->HasAura(67483) ? 1 : -1;
 
                     if (Aura* aura = caster->GetAura(145138))
                     {
