@@ -1709,7 +1709,7 @@ void Spell::SelectImplicitDestDestTargets(SpellEffIndex effIndex, SpellImplicitT
     if (exit)
         return;
 
-    if(targetType.GetDirectionType() == TARGET_DIR_NONE)
+    if (targetType.GetDirectionType() == TARGET_DIR_NONE)
         return;
 
     float angle = targetType.CalcDirectionAngle();
