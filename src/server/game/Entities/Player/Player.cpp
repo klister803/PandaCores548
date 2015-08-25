@@ -25801,7 +25801,7 @@ void Player::ClearComboPoints()
     // omg hack
     int32 chancekd = 0;
     if (HasAura(79096))
-        chancekd = -2000 * m_comboPoints;
+        chancekd = -2000 * GetComboPoints();
 
     m_comboPoints = 0;
 
