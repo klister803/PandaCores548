@@ -4259,6 +4259,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 72445: // Mark of the Fallen Champion (Deathbringer Saurfang)
                 case 72446: // Mark of the Fallen Champion (Deathbringer Saurfang)
                 case 118000: // Dragon Roar
+                case 129347: // Chaos Wave
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
                     break;
                 case 64422:  // Sonic Screech (Auriaya)

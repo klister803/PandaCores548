@@ -276,6 +276,7 @@ class boss_iron_juggernaut : public CreatureScript
                         enrage -= diff;
                 }
 
+                EnterEvadeIfOutOfCombatArea(diff);
                 events.Update(diff);
 
                 if (me->HasUnitState(UNIT_STATE_CASTING))
