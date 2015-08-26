@@ -117,7 +117,7 @@ Position const mincharPos = {4629.3711f, 2782.6089f, 424.6390f, 0.000000f};
 
 bool IsVampire(Unit const* unit)
 {
-    for (uint8 i = 0; i < 2; ++i)
+    for (uint8 i = 0; i < 3; ++i)
         if (unit->HasAura(vampireAuras[i]))
             return true;
     return false;
