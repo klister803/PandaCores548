@@ -48,6 +48,7 @@ enum eSpells
     SPELL_RESIDUE                     = 145786,
     SPELL_RAGE_OF_THE_EMPRESS         = 145812,
     SPELL_RAGE_OF_THE_EMPRESS_AURA    = 145813,
+    SPELL_WINDSTORM_AT                = 145286,
 
     //Small
     SPELL_EARTHEN_SHARD               = 144923,
@@ -58,6 +59,7 @@ enum eSpells
     SPELL_MANTID_SWARM2               = 145807,
     SPELL_MANTID_SWARM3               = 145808,
     SPELL_THROW_EXPLOSIVES            = 145702,
+    SPELL_GUSTING_BOMB                = 145712,
 
     //Pandaren Relic Box
     SPELL_EMINENCE                    = 146189,
@@ -118,6 +120,8 @@ enum Events
     EVENT_SET_TO_BLOW                 = 26,
     EVENT_RESIDUE                     = 27,
     EVENT_RAGE_OF_THE_EMPRESS         = 28,
+    EVENT_WINDSTORM                   = 29,
+    EVENT_GUSTING_BOMB                = 30,
 };
 
 Position dpos[4] =
@@ -818,6 +822,7 @@ public:
                 break;
             case NPC_SETTHIK_WIND_WIELDER:
                 events.ScheduleEvent(EVENT_RAGE_OF_THE_EMPRESS, 1000);
+                events.ScheduleEvent(EVENT_WINDSTORM, 3000);
                 break;
             //Small 
             case NPC_QUILEN_GUARDIANS:
@@ -831,7 +836,8 @@ public:
                 events.ScheduleEvent(EVENT_KW_ENRAGE, 4000);
                 break;
             case NPC_SRITHIK_BOMBARDIER:
-                events.ScheduleEvent(EVENT_THROW_EXPLOSIVES, 8000);
+                events.ScheduleEvent(EVENT_THROW_EXPLOSIVES, 3000);
+                events.ScheduleEvent(EVENT_GUSTING_BOMB, 5000);
                 break;
             //Pandaren Relic box
             case NPC_NAMELESS_WINDWALKER_SPIRIT:
@@ -935,6 +941,10 @@ public:
                 case EVENT_RAGE_OF_THE_EMPRESS:
                     DoCast(me, SPELL_RAGE_OF_THE_EMPRESS, false);
                     events.ScheduleEvent(EVENT_RAGE_OF_THE_EMPRESS, 15000);
+                case EVENT_WINDSTORM:
+                    for (uint8 n = 0; n < 3; n++)
+                        DoCast(me, SPELL_WINDSTORM_AT);
+                    events.ScheduleEvent(EVENT_WINDSTORM, urand(25000, 30000));
                     break;
                 //Small
                 case EVENT_KW_ENRAGE:
@@ -964,6 +974,10 @@ public:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
                         DoCast(target, SPELL_THROW_EXPLOSIVES);
                     events.ScheduleEvent(EVENT_THROW_EXPLOSIVES, 15000);
+                    break;
+                case EVENT_GUSTING_BOMB:
+                    DoCast(me, SPELL_GUSTING_BOMB);
+                    events.ScheduleEvent(EVENT_GUSTING_BOMB, 10000);
                     break;
                 //Pandaren Relic box 
                 case EVENT_GUSTING_CRANE_KICK:
@@ -1500,7 +1514,7 @@ class spell_pheromone_cloud : public SpellScriptLoader
         }
 };
 
-// 145812
+//145812
 class spell_rage_of_the_empress : public SpellScriptLoader
 {
     public:
