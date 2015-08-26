@@ -1894,6 +1894,13 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
         && m_spellInfo->Category == spellInfo->Category)
         m_caster->ToPlayer()->RemoveSpellCooldown(spellInfo->Id);
 
+    // Hack. Lana'thel Vampiric Bite
+    if (m_spellInfo->Id == 71726)
+    {
+        unitTarget->CastSpell(unitTarget, 70867, false);
+        return;
+    }
+
     // original caster guid only for GO cast
     m_caster->CastSpell(targets, spellInfo, &values, TRIGGERED_FULL_MASK, NULL, NULL, m_originalCasterGUID);
 
