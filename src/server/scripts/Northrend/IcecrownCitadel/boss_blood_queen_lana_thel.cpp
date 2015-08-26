@@ -73,11 +73,11 @@ enum Shadowmourne
     SPELL_THIRST_QUENCHED                   = 72154,
 };
 
-uint32 const vampireAuras[3] =
+uint32 const vampireAuras[3] = 
 {
-    {SPELL_ESSENCE_OF_THE_BLOOD_QUEEN},
-    {SPELL_ESSENCE_OF_THE_BLOOD_QUEEN_PLR},
-    {SPELL_FRENZIED_BLOODTHIRST}
+    SPELL_ESSENCE_OF_THE_BLOOD_QUEEN, 
+    SPELL_ESSENCE_OF_THE_BLOOD_QUEEN_PLR, 
+    SPELL_FRENZIED_BLOODTHIRST
 };
 
 enum Events
