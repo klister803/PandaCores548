@@ -1700,7 +1700,6 @@ bool SpellInfo::IsNeedDelayForSpell() const
 {
     switch (Id)
     {
-        case 94315: // Early Frost visual - need for correct handling on talent learning
         case 90289: // Glyph of Resilient Grip
             return true;
     default:
@@ -1922,13 +1921,7 @@ SpellCastResult SpellInfo::CheckLocation(uint32 map_id, uint32 zone_id, uint32 a
         case 106080:
         case 106108:
         case 105925:
-        case 110070:
-        case 110069:
-        case 110068:
         case 109075:
-        case 110080:
-        case 110079:
-        case 110078:
         case 106498:
         case 106368:
             if (!player)
@@ -1949,7 +1942,6 @@ SpellCastResult SpellInfo::CheckLocation(uint32 map_id, uint32 zone_id, uint32 a
         case 105009: // Gift of Sargeras, Well of Eternity
             return (map_id == 939)? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
         case 100713: // Deluge, Ragnaros, Firelands
-        case 101015:
         case 101110: // Rage of Ragnaros, Ragnaros, Firelands
             return (area_id == 5770)? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
         case 98226: // Balance Bar, Lord Rhyolith, Firelands
@@ -2960,19 +2952,10 @@ bool SpellInfo::_IsPositiveEffect(uint8 effIndex, bool deep) const
                     break;
             }
             break;
-        case SPELLFAMILY_HUNTER:
-            // Aspect of the Viper
-            if (Id == 34074)
-                return true;
-            break;
         case SPELLFAMILY_DEATHKNIGHT:
             // Unholy Frenzy
             if (Id == 49016)
                 return true;
-            break;
-        case SPELLFAMILY_SHAMAN:
-            if (Id == 30708)
-                return false;
             break;
         case SPELLFAMILY_ROGUE:
             switch (Id)
@@ -2983,10 +2966,6 @@ bool SpellInfo::_IsPositiveEffect(uint8 effIndex, bool deep) const
                 default:
                     break;
             }
-            break;
-        case SPELLFAMILY_WARLOCK:
-            if (Id == 119049)       // Kil'jaeden's Cunning
-                return true;
             break;
         case SPELLFAMILY_MONK:
         {
@@ -3445,7 +3424,6 @@ bool SpellInfo::IsBreakingCamouflage() const
         case 13813: // Explosive Trap
         case 19263: // Deterence
         case 19434: // Aimed Shot
-        case 23989: // Readiness
         case 26297: // Berserking (Troll Racial)
         case 34477: // Misdirection
         case 34600: // Snake Trap

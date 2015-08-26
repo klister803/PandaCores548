@@ -24018,25 +24018,6 @@ bool Unit::HandleCastWhileWalkingAuraProc(Unit* victim, DamageInfo* /*dmgInfoPro
     Item* castItem = triggeredByAura->GetBase()->GetCastItemGUID() && GetTypeId() == TYPEID_PLAYER
         ? ToPlayer()->GetItemByGuid(triggeredByAura->GetBase()->GetCastItemGUID()) : NULL;
 
-    switch (triggeredByAuraSpell->Id)
-    {
-        case 108507:        // Kil'jaeden's Cunning
-        {
-            if (!procSpell || HasAura(119049))
-                return false;
-            if(SpellCastTimesEntry const* CastTimeEntry = procSpell->CastTimeEntry)
-            {
-                if(!CastTimeEntry->CastTime && !procSpell->IsChanneled())
-                    return false;
-            }
-            else
-                return false;
-
-            triggered_spell_id = 119050;
-            break;
-        }
-    }
-
     // processed charge only counting case
     if (!triggered_spell_id)
         return true;
