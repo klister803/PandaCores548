@@ -1895,7 +1895,7 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
         m_caster->ToPlayer()->RemoveSpellCooldown(spellInfo->Id);
 
     // Hack. Lana'thel Vampiric Bite
-    if (m_spellInfo->Id == 71726)
+    if (m_spellInfo->Id == 71726 || m_spellInfo->Id == 70946)
     {
         unitTarget->CastSpell(unitTarget, 70867, false);
         return;

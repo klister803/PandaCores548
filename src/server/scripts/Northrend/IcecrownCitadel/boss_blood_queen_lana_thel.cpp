@@ -44,6 +44,7 @@ enum Spells
     SPELL_SHROUD_OF_SORROW                  = 70986,
     SPELL_FRENZIED_BLOODTHIRST_VISUAL       = 71949,
     SPELL_VAMPIRIC_BITE                     = 71726,
+    SPELL_ESSENCE_OF_THE_BLOOD_QUEEN        = 70867,
     SPELL_ESSENCE_OF_THE_BLOOD_QUEEN_PLR    = 70879,
     SPELL_FRENZIED_BLOODTHIRST              = 70877,
     SPELL_UNCONTROLLABLE_FRENZY             = 70923,
@@ -72,17 +73,12 @@ enum Shadowmourne
     SPELL_THIRST_QUENCHED                   = 72154,
 };
 
-uint32 const vampireAuras[3][MAX_DIFFICULTY] =
+uint32 const vampireAuras[3] =
 {
-    {70867, 71473, 71532, 71533},
-    {70879, 71525, 71530, 71531},
-    {70877, 71474, 70877, 71474},
+    {70867},
+    {70879},
+    {70877},
 };
-
-#define ESSENCE_OF_BLOOD_QUEEN     RAID_MODE<uint32>(70867, 71473, 71532, 71533)
-#define ESSENCE_OF_BLOOD_QUEEN_PLR RAID_MODE<uint32>(70879, 71525, 71530, 71531)
-#define FRENZIED_BLOODTHIRST       RAID_MODE<uint32>(70877, 71474, 70877, 71474)
-#define DELIRIOUS_SLASH            RAID_MODE<uint32>(71623, 71624, 71625, 71626)
 
 enum Events
 {
@@ -121,8 +117,8 @@ Position const mincharPos = {4629.3711f, 2782.6089f, 424.6390f, 0.000000f};
 
 bool IsVampire(Unit const* unit)
 {
-    for (uint8 i = 0; i < 3; ++i)
-        if (unit->HasAura(vampireAuras[i][unit->GetMap()->GetSpawnMode()]))
+    for (uint8 i = 0; i < 2; ++i)
+        if (unit->HasAura(vampireAuras[i]))
             return true;
     return false;
 }
@@ -196,14 +192,14 @@ class boss_blood_queen_lana_thel : public CreatureScript
 
             void CleanAuras()
             {
-                instance->DoRemoveAurasDueToSpellOnPlayers(ESSENCE_OF_BLOOD_QUEEN);
-                instance->DoRemoveAurasDueToSpellOnPlayers(ESSENCE_OF_BLOOD_QUEEN_PLR);
-                instance->DoRemoveAurasDueToSpellOnPlayers(FRENZIED_BLOODTHIRST);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_ESSENCE_OF_THE_BLOOD_QUEEN);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_ESSENCE_OF_THE_BLOOD_QUEEN_PLR);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FRENZIED_BLOODTHIRST);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_UNCONTROLLABLE_FRENZY);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BLOOD_MIRROR_DAMAGE);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BLOOD_MIRROR_VISUAL);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BLOOD_MIRROR_DUMMY);
-                instance->DoRemoveAurasDueToSpellOnPlayers(DELIRIOUS_SLASH);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_DELIRIOUS_SLASH);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PACT_OF_THE_DARKFALLEN);
             }
 
