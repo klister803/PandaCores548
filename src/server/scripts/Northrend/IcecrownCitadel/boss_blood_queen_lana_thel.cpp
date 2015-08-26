@@ -75,9 +75,9 @@ enum Shadowmourne
 
 uint32 const vampireAuras[3] =
 {
-    {70867},
-    {70879},
-    {70877},
+    {SPELL_ESSENCE_OF_THE_BLOOD_QUEEN},
+    {SPELL_ESSENCE_OF_THE_BLOOD_QUEEN_PLR},
+    {SPELL_FRENZIED_BLOODTHIRST}
 };
 
 enum Events
