@@ -207,6 +207,7 @@ enum sData
     DATA_BUFF_DD                 = 2,
     DATA_BUFF_TANK               = 3,
     DATA_UPDATE_POWER            = 4,
+    DATA_GET_SPIRIT_SUM_COUNT    = 5,
 };
 
 uint32 spellbuff[3] =
@@ -400,9 +401,13 @@ public:
         uint64 mspoilGuid;      //main spoil 
         uint64 othermspoilguid; //other main spoil 
         uint8 power;
+        uint8 newssc;               //
+        uint8 lastssc;              //spirit summon count 
 
         void Reset()
         {
+            newssc = 0;
+            lastssc = 0; 
             power = 0;
             mspoilGuid = 0;
         }
@@ -439,6 +444,22 @@ public:
             default:
                 break;
             }
+        }
+
+        uint32 GetData(uint32 type)
+        {
+            if (type == DATA_GET_SPIRIT_SUM_COUNT)
+            {
+                if (!lastssc)
+                    newssc = urand(0, 2);
+                else if (lastssc >= 2)
+                    newssc = 0;
+                else
+                    newssc++;
+                lastssc = newssc;
+                return (uint32(newssc));
+            }
+            return 0;
         }
 
         void ActivateOrOfflineBoxes(bool state)
@@ -516,6 +537,8 @@ public:
                     events.Reset();
                     summons.DespawnAll();
                     power = 0;
+                    newssc = 0;
+                    lastssc = 0;
                     instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
                     me->RemoveAurasDueToSpell(SPELL_AURA_BAR_S);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_AURA_BAR);
@@ -1044,38 +1067,27 @@ public:
                     break;
                 //Pandaren Relic box
                 case NPC_NAMELESS_WINDWALKER_SPIRIT:
-                    for (uint8 n = 0; n < 4; n++)
-                    {
-                        if (Creature* nearspoils = me->FindNearestCreature(spoilsentry[n], 50.0f, true))
-                        {
-                            nearspoils->ToCreature()->AI()->SetData(DATA_BUFF_DD, 0);
-                            break;
-                        }
-                    }
+                {
+                    if (Creature* summoner = me->ToTempSummon()->GetSummoner()->ToCreature())
+                        summoner->AI()->SetData(DATA_BUFF_DD, 0);
                     break;
+                }
                 case NPC_WISE_MISTWEAVER_SPIRIT:
-                    for (uint8 n = 0; n < 4; n++)
-                    {
-                        if (Creature* nearspoils = me->FindNearestCreature(spoilsentry[n], 50.0f, true))
-                        {
-                            nearspoils->ToCreature()->AI()->SetData(DATA_BUFF_HEALER, 0);
-                            break;
-                        }
-                    }
+                {
+                    if (Creature* summoner = me->ToTempSummon()->GetSummoner()->ToCreature())
+                        summoner->ToCreature()->AI()->SetData(DATA_BUFF_HEALER, 0);
                     break;
+                }
                 case NPC_ANCIENT_BREWMASTER_SPIRIT:
-                    for (uint8 n = 0; n < 4; n++)
-                    {
-                        if (Creature* nearspoils = me->FindNearestCreature(spoilsentry[n], 50.0f, true))
-                        {
-                            nearspoils->ToCreature()->AI()->SetData(DATA_BUFF_TANK, 0);
-                            break;
-                        }
-                    }
+                {
+                    if (Creature* summoner = me->ToTempSummon()->GetSummoner()->ToCreature())
+                        summoner->ToCreature()->AI()->SetData(DATA_BUFF_TANK, 0);
                     break;
+                }
                 default:
                     break;
                 }
+
                 if (data)
                     if (Unit* summoner = me->ToTempSummon()->GetSummoner())
                         summoner->ToCreature()->AI()->SetData(DATA_UPDATE_POWER, data);
@@ -1206,8 +1218,28 @@ public:
                     summoner->SummonCreature(smallmantisentry[urand(0, 2)], pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
                     break;
                 case GO_PANDAREN_RELIC_BOX:
-                    summoner->SummonCreature(pandarenrelicentry[urand(0, 2)], pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+                {
+                    std::vector<uint64> activespoil;
+                    activespoil.clear();
+                    activespoil.push_back(instance->GetData64(GO_SMALL_MANTIS_BOX));
+                    activespoil.push_back(instance->GetData64(GO_SMALL_MOGU_BOX));
+                    if (!activespoil.empty())
+                    {
+                        for (std::vector<uint64>::const_iterator itr = activespoil.begin(); itr != activespoil.end(); itr++)
+                        {
+                            if (Creature* spoil = instance->instance->GetCreature(*itr))
+                            { 
+                                if (spoil->GetDistance(go) <= 50.0f)
+                                {
+                                    uint8 val = spoil->AI()->GetData(DATA_GET_SPIRIT_SUM_COUNT);
+                                    spoil->SummonCreature(pandarenrelicentry[val], pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+                                    break;
+                                }
+                            }
+                        }
+                    }
                     break;
+                }
                 default:
                     break;
                 }

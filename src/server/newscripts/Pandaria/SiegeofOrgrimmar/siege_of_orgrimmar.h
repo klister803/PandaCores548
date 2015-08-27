@@ -24,6 +24,7 @@ enum ssActions
     ACTION_SSOPS_DONE               = 258,
     ACTION_SSOPS_SECOND_ROOM        = 259,
     ACTION_KLAXXI_IN_PROGRESS       = 260,
+    ACTION_KLAXXI_DONE              = 270,
 };
 
 enum eData
@@ -50,6 +51,7 @@ enum eData
     DATA_SHA_PRE_EVENT,
     DATA_BUFF_NEXT_KLAXXI,
     DATA_SEND_KLAXXI_DIE_COUNT,
+    DATA_INTRO_NEXT_KLAXXI,
 
     //Galakras
     DATA_GALAKRAS_PRE_EVENT,

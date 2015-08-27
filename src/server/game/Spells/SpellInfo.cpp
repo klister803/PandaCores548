@@ -1221,7 +1221,8 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 143430: //Clump Check
     case 143445: //Fixate
     case 144115: //Flame Coating
-    //Paragons Klaxxi
+    //Paragons of the Klaxxi
+    case 146982: //Enrage
         return Effects[effect];
     }
 

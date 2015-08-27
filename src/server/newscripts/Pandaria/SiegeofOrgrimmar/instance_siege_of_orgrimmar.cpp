@@ -974,14 +974,15 @@ public:
                         if (Creature* klaxxi = instance->GetCreature(*itr))
                         {
                             SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, klaxxi);
-                            klaxxi->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                             klaxxi->StopMoving();
                             klaxxi->GetMotionMaster()->Clear(false);
                             klaxxi->Kill(klaxxi, true);
+                            klaxxi->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                             klaxxi->Respawn();
-                            klaxxi->NearTeleportTo(klaxxi->GetHomePosition().GetPositionX(), klaxxi->GetHomePosition().GetPositionY(), klaxxi->GetHomePosition().GetPositionZ(), klaxxi->GetHomePosition().GetOrientation());                                  
+                            klaxxi->NearTeleportTo(klaxxi->GetHomePosition().GetPositionX(), klaxxi->GetHomePosition().GetPositionY(), klaxxi->GetHomePosition().GetPositionZ(), klaxxi->GetHomePosition().GetOrientation());
                         }
                     }
+
                     for (std::vector<uint64>::const_iterator itr = klaxxiarenagateGuid.begin(); itr != klaxxiarenagateGuid.end(); itr++)
                         HandleGameObject(*itr, true);
 
@@ -994,18 +995,22 @@ public:
 
                     for (std::vector<uint64>::const_iterator itr = klaxxilist.begin(); itr != klaxxilist.end(); itr++)
                         if (Creature* klaxxi = instance->GetCreature(*itr))
+                        {
+                            klaxxi->CastSpell(klaxxi, 146983, true); //Aura Enrage
                             if (klaxxi->HasAura(143542))
                                 klaxxi->AI()->DoAction(ACTION_KLAXXI_IN_PROGRESS);
-                    break;
-                case SPECIAL:
-                    if (Creature* klaxxi = instance->GetCreature(GetData64(bonusklaxxientry[klaxxidiecount])))
-                        klaxxi->AI()->DoAction(ACTION_KLAXXI_IN_PROGRESS);
-                    klaxxidiecount++;
+                        }
                     break;
                 case DONE:
+                    if (Creature* kc = instance->GetCreature(klaxxicontrollerGuid))
+                        kc->AI()->DoAction(ACTION_KLAXXI_DONE);
+
                     for (std::vector<uint64>::const_iterator itr = klaxxilist.begin(); itr != klaxxilist.end(); itr++)
                         if (Creature* klaxxi = instance->GetCreature(*itr))
                             SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, klaxxi);
+
+                    for (std::vector<uint64>::const_iterator itr = klaxxiarenagateGuid.begin(); itr != klaxxiarenagateGuid.end(); itr++)
+                        HandleGameObject(*itr, true);
                     break;
                 }
                 break;
@@ -1241,8 +1246,19 @@ public:
                 break;
             }
             case DATA_BUFF_NEXT_KLAXXI:
-                if (Creature* klaxxi = instance->GetCreature(GetData64(bonusklaxxientry[klaxxidiecount])))
-                    klaxxi->CastSpell(klaxxi, 143542, true); //SPELL_READY_TO_FIGHT
+                if (klaxxidiecount < 6)
+                    if (Creature* klaxxi = instance->GetCreature(GetData64(bonusklaxxientry[klaxxidiecount])))
+                        klaxxi->CastSpell(klaxxi, 143542, true); //Ready to Fight 
+                break;
+            case DATA_INTRO_NEXT_KLAXXI:
+                if (klaxxidiecount < 6)
+                    if (Creature* klaxxi = instance->GetCreature(GetData64(bonusklaxxientry[klaxxidiecount])))
+                        klaxxi->AI()->DoAction(ACTION_KLAXXI_IN_PROGRESS);
+                klaxxidiecount++;
+                for (std::vector<uint64>::const_iterator itr = klaxxilist.begin(); itr != klaxxilist.end(); itr++)
+                    if (Creature* klaxxi = instance->GetCreature(*itr))
+                        if (klaxxi->isAlive())
+                            klaxxi->CastSpell(klaxxi, 143483, true); //Paragons Purpose Heal
                 break;
             }
         }
@@ -1299,7 +1315,6 @@ public:
                     return sExpertGUID;
                 case DATA_DEMOLITIONS_EXPERT_N:
                     return nExpertGUID;
-                //Paragons of the Klaxxi
                 case NPC_LOREWALKER_CHO:
                 case NPC_LOREWALKER_CHO3:
                     return LorewalkerChoGUIDtmp;
@@ -1312,7 +1327,7 @@ public:
                     return bloodclawGuid;
                 case NPC_DARKFANG:
                     return darkfangGuid;
-                //
+                //Malkorok
                 case NPC_ANCIENT_MIASMA:
                     return amGuid;
                 //Spoils of Pandaria
@@ -1403,9 +1418,8 @@ public:
                         }
                     }
                 case GO_PANDAREN_RELIC_BOX:
-                    return npcssopsGuid;
-                case NPC_KLAXXI_CONTROLLER:
-                    return klaxxicontrollerGuid;
+                    return 0;
+                //Paragons of the Klaxxi
                 case NPC_KILRUK:
                 case NPC_XARIL:
                 case NPC_KAZTIK:
@@ -1419,6 +1433,11 @@ public:
                         if (Creature* klaxxi = instance->GetCreature(*itr))
                             if (klaxxi->GetEntry() == type)
                                 return klaxxi->GetGUID();
+                case NPC_AMBER_PIECE:
+                    return amberpieceGuid;
+                case NPC_KLAXXI_CONTROLLER:
+                    return klaxxicontrollerGuid;
+                //Thok
                 case NPC_THOK:
                     return thokGuid;
                 case NPC_BODY_STALKER:

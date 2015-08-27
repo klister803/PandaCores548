@@ -5252,6 +5252,14 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
 
             switch (m_spellInfo->Id)
             {
+                case 143483: //Paragons Purpose heal, Paragons of the Klaxxi[SO]
+                {
+                    if (!unitTarget)
+                        return;
+
+                    unitTarget->CastSpell(unitTarget, 143482, true); //Paragons Purpose buff dmg
+                    return;
+                }
                 // Seafood Magnifique Feast
                 case 87806: 
                 {
