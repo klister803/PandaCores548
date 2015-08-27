@@ -1598,6 +1598,329 @@ class spell_rage_of_the_empress : public SpellScriptLoader
         }
 };
 
+// Gusting Bomb - 145712
+class spell_boss_gusting_bomb : public SpellScriptLoader
+{
+    public:
+        spell_boss_gusting_bomb() : SpellScriptLoader("spell_boss_gusting_bomb") { }
+
+        class spell_spell_boss_gusting_bomb_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_spell_boss_gusting_bomb_SpellScript);
+
+            void HandleOnCast()
+            {
+                if(Unit* caster = GetCaster())
+                {
+                    //if(!caster->ToCreature() || !caster->ToCreature()->AI())
+                        //return;
+
+                    Unit* target = caster->ToPlayer()->GetSelectedUnit();
+                    //Unit* target = caster->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true);
+                    if(!target)
+                        return;
+
+                    uint32 count = uint32(caster->GetDistance(target) / 2);
+                    float angle = caster->GetAngle(target);
+                    target->GetPosition(&GetSpell()->visualPos);
+
+                    caster->CastSpell(target, 145718, true);
+                    if(count > 0)
+                    {
+                        for(uint32 j = 1; j < count + 1; ++j)
+                        {
+                            uint32 distanceNext = j * 2;
+                            float destx = caster->GetPositionX() + distanceNext * std::cos(angle);
+                            float desty = caster->GetPositionY() + distanceNext * std::sin(angle);
+                            caster->CastSpell(destx, desty, caster->GetPositionZ(), 145714, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnCast += SpellCastFn(spell_spell_boss_gusting_bomb_SpellScript::HandleOnCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_spell_boss_gusting_bomb_SpellScript();
+        }
+};
+
+//145288 - Matter Scramble
+class spell_boss_matter_scramble : public SpellScriptLoader
+{
+public:
+    spell_boss_matter_scramble() : SpellScriptLoader("spell_boss_matter_scramble") { }
+
+    class spell_boss_matter_scramble_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_boss_matter_scramble_AuraScript);
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if(Unit* caster = GetCaster())
+            {
+                std::vector<Position>* positions = GetAura()->GetDstVector();
+                for (std::vector<Position>::const_iterator itr = positions->begin(); itr != positions->end(); ++itr)
+                    caster->SendSpellCreateVisual(GetSpellInfo(), &(*itr), NULL, 1, 32969);
+            }
+        }
+
+        void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+        {
+            if(Unit* caster = GetCaster())
+            {
+                std::vector<Position>* positions = GetAura()->GetDstVector();
+                for (std::vector<Position>::const_iterator itr = positions->begin(); itr != positions->end(); ++itr)
+                    caster->CastSpell((*itr).GetPositionX(), (*itr).GetPositionY(), (*itr).GetPositionZ(), 145369, true, NULL, aurEff);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_boss_matter_scramble_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            OnEffectRemove += AuraEffectRemoveFn(spell_boss_matter_scramble_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    class spell_boss_matter_scramble_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_boss_matter_scramble_SpellScript);
+
+        void HandleOnCast()
+        {
+            if(Unit* caster = GetCaster())
+            {
+                uint32 count = caster->GetMap()->Is25ManRaid() ? 3 : 2;
+                Position firstCenter, secondCenter, work;
+                firstCenter.Relocate(1691.27f, -5137.44f, -289.92f);
+                secondCenter.Relocate(1612.71f, -5181.84f, -289.92f);
+                if(caster->GetDistance(firstCenter) > caster->GetDistance(secondCenter))
+                    work.Relocate(secondCenter);
+                else
+                    work.Relocate(firstCenter);
+
+                float angle = float(rand_norm())*static_cast<float>(2*M_PI);
+                float angleNext = (2*M_PI) / count;
+                for (uint32 i = 0; i < count; ++i)
+                {
+                    Position second;
+                    float distance = frand(5.0f,12.0f);
+
+                    float x = work.GetPositionX() + distance * std::cos(angle);
+                    float y = work.GetPositionY() + distance * std::sin(angle);
+                    float z = work.GetPositionZ();
+
+                    Trinity::NormalizeMapCoord(x);
+                    Trinity::NormalizeMapCoord(y);
+                    second.Relocate(x, y, z);
+                    GetSpell()->AddDst(&second);
+
+                    caster->SendSpellCreateVisual(GetSpellInfo(), &second, NULL, 1, 33807);
+                    angle += angleNext;
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnCast += SpellCastFn(spell_boss_matter_scramble_SpellScript::HandleOnCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_boss_matter_scramble_SpellScript();
+    }
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_boss_matter_scramble_AuraScript();
+    }
+};
+
+//145369 - Matter Scramble
+class spell_boss_matter_scramble_filter : public SpellScriptLoader
+{
+    public:
+        spell_boss_matter_scramble_filter() : SpellScriptLoader("spell_boss_matter_scramble_filter") { }
+
+    class spell_boss_matter_scramble_filter_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_boss_matter_scramble_filter_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*>& unitList)
+        {
+            if(unitList.empty())
+            {
+                Position const* pos = GetExplTargetDest();
+                if(Unit* caster = GetCaster())
+                    caster->CastSpell(pos->GetPositionX(), pos->GetPositionY(), pos->GetPositionZ(), 145393, true);
+            }
+        }
+
+        void HandleOnHit()
+        {
+            if(Unit* target = GetHitUnit())
+            {
+                Position firstCenter, secondCenter, work, second;
+                Position const* first = GetExplTargetDest();
+                uint32 count = target->GetMap()->Is25ManRaid() ? 3 : 2;
+
+                firstCenter.Relocate(1691.27f, -5137.44f, -289.92f);
+                secondCenter.Relocate(1612.71f, -5181.84f, -289.92f);
+                if(target->GetDistance(firstCenter) > target->GetDistance(secondCenter))
+                    work.Relocate(secondCenter);
+                else
+                    work.Relocate(firstCenter);
+
+                float angle = work.GetAngle(first) + (2*M_PI) / count;
+                float distance = work.GetExactDist(first);
+
+                float x = work.GetPositionX() + distance * std::cos(angle);
+                float y = work.GetPositionY() + distance * std::sin(angle);
+                float z = work.GetPositionZ();
+
+                Trinity::NormalizeMapCoord(x);
+                Trinity::NormalizeMapCoord(y);
+                second.Relocate(x, y, z);
+
+                target->SendPlaySpellVisualKit(35643, 0);
+                target->NearTeleportTo(second.GetPositionX(), second.GetPositionY(), second.GetPositionZ(), target->GetOrientation(), true);
+            }
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_boss_matter_scramble_filter_SpellScript::HandleOnHit);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_boss_matter_scramble_filter_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
+        };
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_boss_matter_scramble_filter_SpellScript();
+    }
+};
+
+// 142983 - Torment
+class spell_boss_torment : public SpellScriptLoader
+{
+    public:
+        spell_boss_torment() : SpellScriptLoader("spell_boss_torment") { }
+
+        class spell_boss_torment_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_boss_torment_AuraScript);
+
+            void OnTick(AuraEffect const* aurEff)
+            {
+                Unit* target = GetTarget();
+                if (!target)
+                    return;
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                int32 amount = aurEff->GetAmount() + int32(aurEff->GetAmount() * 0.1f * aurEff->GetTickNumber());
+                caster->CastCustomSpell(target, 136885, &amount, 0, 0, true, 0, aurEff);
+            }
+
+            void HandleDispel(DispelInfo* /*dispelInfo*/)
+            {
+                if (Unit* owner = GetUnitOwner())
+                if (Unit* caster = GetCaster())
+                {
+                    if(!caster->ToCreature() || !caster->ToCreature()->AI())
+                        return;
+
+                    Unit* target = caster->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true);
+                    if(!target)
+                        return;
+                    owner->CastSpell(target, 142942, true, NULL, NULL, caster->GetGUID());
+                }
+            }
+
+            void Register()
+            {
+                AfterDispel += AuraDispelFn(spell_boss_torment_AuraScript::HandleDispel);
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_boss_torment_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_boss_torment_AuraScript();
+        }
+};
+
+//142942 - Torment
+class spell_boss_torment_visual : public SpellScriptLoader
+{
+    public:
+        spell_boss_torment_visual() : SpellScriptLoader("spell_boss_torment_visual") { }
+
+    class spell_boss_torment_visual_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_boss_torment_visual_SpellScript);
+
+        void HandleOnHit()
+        {
+            if(Unit* caster = GetOriginalCaster())
+                if(Unit* target = GetHitUnit())
+                    caster->CastSpell(target, 142983, true);
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_boss_torment_visual_SpellScript::HandleOnHit);
+        };
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_boss_torment_visual_SpellScript();
+    }
+};
+
+// Staff of Resonating Water - 146098
+class spell_spoils_staff_of_resonating_water : public SpellScriptLoader
+{
+public:
+    spell_spoils_staff_of_resonating_water() : SpellScriptLoader("spell_spoils_staff_of_resonating_water") { }
+
+    class spell_spoils_staff_of_resonating_water_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_spoils_staff_of_resonating_water_SpellScript);
+
+        void HandleBeforeCast()
+        {
+            if(Unit* caster = GetOriginalCaster())
+            {
+                float x, y;
+                WorldLocation loc;
+                caster->GetNearPoint2D(x, y, 40.0f, caster->GetOrientation());
+                loc.Relocate(x, y, caster->GetPositionZ());
+                GetSpell()->destAtTarget = loc;
+            }
+        }
+
+        void Register()
+        {
+            BeforeCast += SpellCastFn(spell_spoils_staff_of_resonating_water_SpellScript::HandleBeforeCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_spoils_staff_of_resonating_water_SpellScript();
+    }
+};
+
 void AddSC_boss_spoils_of_pandaria()
 {
     new npc_ssop_spoils();
@@ -1616,4 +1939,10 @@ void AddSC_boss_spoils_of_pandaria()
     new spell_set_to_blow();
     new spell_pheromone_cloud();
     new spell_rage_of_the_empress();
+    new spell_boss_gusting_bomb();
+    new spell_boss_matter_scramble();
+    new spell_boss_matter_scramble_filter();
+    new spell_boss_torment();
+    new spell_boss_torment_visual();
+    new spell_spoils_staff_of_resonating_water();
 }

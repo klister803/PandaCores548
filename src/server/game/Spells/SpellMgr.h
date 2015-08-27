@@ -725,6 +725,12 @@ struct SpellMountList
     int32 sideS;
 };
 
+enum SpellVisualType
+{
+    SPELL_VISUAL_TYPE_ON_CAST = 0,
+    SPELL_VISUAL_TYPE_CUSTOM  = 1,
+};
+
 struct SpellVisual
 {
     int32 spell_id;
@@ -733,6 +739,7 @@ struct SpellVisual
     int16 unk2;
     float speed;
     bool position;
+    int16 type;
 };
 
 struct SpellPendingCast

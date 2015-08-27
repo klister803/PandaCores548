@@ -7225,6 +7225,10 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
         case SPELLFAMILY_GENERIC:
             switch (GetId())
             {
+                case 145715: // Gusting Bomb
+                    if(caster && target)
+                        caster->CastSpell(target, 145716, true);
+                    break;
                 case 146198: // Essence of Yu'lon
                 {
                     if(caster && target)

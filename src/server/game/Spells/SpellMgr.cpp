@@ -2523,8 +2523,8 @@ void SpellMgr::LoadSpellVisual()
 
     mSpellVisualMap.clear();    // need for reload case
 
-    //                                                  0        1      2     3       4      5
-    QueryResult result = WorldDatabase.Query("SELECT spell_id, visual, unk1, unk2, speed, position FROM spell_visual_send");
+    //                                                  0        1      2     3       4      5        6
+    QueryResult result = WorldDatabase.Query("SELECT spell_id, visual, unk1, unk2, speed, position, type FROM spell_visual_send");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 visual spells. DB table `spell_visual_send` is empty.");
@@ -2542,6 +2542,7 @@ void SpellMgr::LoadSpellVisual()
         int32 unk2 = fields[3].GetUInt16();
         float speed = fields[4].GetFloat();
         bool position = bool(fields[5].GetUInt8());
+        int32 type = fields[6].GetUInt8();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(spell_id));
         if (!spellInfo)
@@ -2557,6 +2558,7 @@ void SpellMgr::LoadSpellVisual()
         templink.unk2 = unk2;
         templink.speed = speed;
         templink.position = position;
+        templink.type = type;
         mSpellVisualMap[spell_id].push_back(templink);
 
         ++count;
@@ -5540,6 +5542,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 122016:  // Incite
                     spellInfo->ProcCharges = 3;
                     spellInfo->StackAmount = 0;
+                    break;
+                case 145718:  // Gusting Bomb
+                    spellInfo->Speed = 25.f;
                     break;
                 default:
                     break;

@@ -24494,7 +24494,7 @@ void DelayCastEvent::Execute(Unit *caster)
     caster->CastSpell(target, Spell, false);
 };
 
-void Unit::SendSpellCreateVisual(SpellInfo const* spellInfo, Position* position, Unit* target)
+void Unit::SendSpellCreateVisual(SpellInfo const* spellInfo, Position const* position, Unit* target, uint32 type, uint32 visualId)
 {
     bool exist = false;
     uint32 visual = 0;
@@ -24510,6 +24510,11 @@ void Unit::SendSpellCreateVisual(SpellInfo const* spellInfo, Position* position,
         float chance = 100.0f / spell_visual->size();
         for (std::vector<SpellVisual>::const_iterator i = spell_visual->begin(); i != spell_visual->end(); ++i)
         {
+            if(i->type != type)
+                continue;
+            if(i->type == SPELL_VISUAL_TYPE_CUSTOM && i->visual != visualId)
+                continue;
+
             visual = i->visual;
             unk1 = i->unk1;
             unk2 = i->unk2;
@@ -24517,7 +24522,7 @@ void Unit::SendSpellCreateVisual(SpellInfo const* spellInfo, Position* position,
                 speed = i->speed;
             positionFind = i->position;
             exist = true;
-            if(roll_chance_f(chance))
+            if(!type && roll_chance_f(chance))
                 break;
         }
     }
@@ -24525,9 +24530,9 @@ void Unit::SendSpellCreateVisual(SpellInfo const* spellInfo, Position* position,
     if(!exist)
         return;
 
-    if(positionFind)
+    if(speed)
     {
-        if (target)
+        if (target && target != this)
         {
             positionX = target->GetPositionX();
             positionY = target->GetPositionY();

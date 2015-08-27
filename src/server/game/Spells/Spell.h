@@ -541,6 +541,8 @@ class Spell
         bool m_replaced;
         WorldLocation destAtTarget;
         WorldLocation* destTarget;
+        Position visualPos;
+        std::vector<Position> _positions;
 
         UsedSpellMods m_appliedMods;
 
@@ -617,6 +619,8 @@ class Spell
         std::list<TargetInfo>* GetUniqueTargetInfo() { return &m_UniqueTargetInfo; }
 
         int32 GetDamage() const { return m_damage; }
+
+        void AddDst(Position const* pos) { _positions.push_back(*pos); }
     protected:
         bool HasGlobalCooldown();
         void TriggerGlobalCooldown();

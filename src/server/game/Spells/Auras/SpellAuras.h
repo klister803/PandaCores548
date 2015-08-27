@@ -164,8 +164,10 @@ class Aura
         bool ModStackAmount(int32 num, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
 
         //Position from spell
-        void SetDst(Position const* pos) { _position.Relocate(pos); }
-        Position const* GetDstPos() const { return &_position; }
+        void AddDst(Position const* pos) { _positions.push_back(*pos); }
+        Position const* GetDstPos(uint32 pointId = 0) const { if(_positions.empty()) return NULL; else return &_positions[pointId]; }
+        std::vector<Position>* GetDstVector() { return &_positions; }
+        void SetDstVector(std::vector<Position> poss) { _positions = poss; }
 
         void RefreshSpellMods();
 
@@ -263,7 +265,7 @@ class Aura
         std::list<AuraScript*> m_loadedScripts;
         int32 m_aura_amount;
         int32 m_damage_amount;
-        Position _position;
+        std::vector<Position> _positions;
 
         void SetFromAreaTrigger(bool set) { m_fromAreatrigger = set; }
 

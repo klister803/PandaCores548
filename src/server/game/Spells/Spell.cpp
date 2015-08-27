@@ -498,6 +498,8 @@ m_absorb(0), m_resist(0), m_blocked(0), m_interupted(false), m_effect_targets(NU
     m_blocked = 0;
     m_addpower = 0;
     m_addptype = -1;
+
+    m_caster->GetPosition(&visualPos);
 }
 
 Spell::~Spell()
@@ -3273,7 +3275,9 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
                     if(uint64 dynObjGuid = GetSpellDynamicObject())
                         m_spellAura->SetSpellDynamicObject(dynObjGuid);
                     if (m_targets.HasDst())
-                        m_spellAura->SetDst(m_targets.GetDstPos());
+                        AddDst(m_targets.GetDstPos());
+                    if(!_positions.empty())
+                        m_spellAura->SetDstVector(_positions);
                 }
             }
         }
@@ -3856,8 +3860,6 @@ void Spell::cast(bool skipCheck)
     if (!(_triggeredCastFlags & TRIGGERED_IGNORE_POWER_AND_REAGENT_COST))
         TakePower();
 
-    Position visualPos;
-    visualPos.Relocate(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ());
     m_caster->SendSpellCreateVisual(m_spellInfo, &visualPos, m_targets.GetUnitTarget());
     // we must send smsg_spell_go packet before m_castItem delete in TakeCastItem()...
     SendSpellGo();
