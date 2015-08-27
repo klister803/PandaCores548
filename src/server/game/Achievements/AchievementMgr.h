@@ -43,16 +43,32 @@ typedef std::unordered_map<uint32, AchievementEntryList> AchievementListByRefere
 
 struct CriteriaTreeProgress
 {
+    CriteriaTreeProgress() : counter(0), CompletedGUID(0), date(0), changed(false), updated(false), completed(false), deactiveted(true)
+    , achievement(NULL), criteriaTree(NULL), parent(NULL), criteria(NULL)    { }
+
     uint32 counter;
     time_t date;                                            // latest update time.
     uint64 CompletedGUID;                                   // GUID of the player that completed this criteria (guild achievements)
     bool changed;
     bool updated;
+    bool completed;
+    bool deactiveted;
 
-    // ToDo: make cleanup after achieve getting and store Criteria there - no need find it every time.
+    AchievementEntry const* achievement;
+    CriteriaTreeEntry const* criteriaTree;
+    CriteriaTreeEntry const* parent;
+    CriteriaEntry const* criteria;
+};
+
+struct CriteriaProgressTree
+{
+    CriteriaProgressTree() : completed(false), achievement(NULL), criteriaTree(NULL) { }
+
+    bool completed;
     AchievementEntry const* achievement = NULL;
     CriteriaTreeEntry const* criteriaTree = NULL;
-    CriteriaEntry const* criteria = NULL;
+    std::vector<CriteriaProgressTree *> ChildrenTree;
+    std::vector<CriteriaTreeProgress *> ChildrenCriteria;
 };
 
 enum AchievementCriteriaDataType
@@ -244,6 +260,7 @@ struct CompletedAchievementData
 typedef std::unordered_map<uint32, CriteriaTreeProgress> CriteriaProgressMap;
 typedef std::unordered_map<uint32, CompletedAchievementData> CompletedAchievementMap;
 typedef std::unordered_map<uint32, CriteriaProgressMap > AchievementProgressMap;
+typedef std::unordered_map<uint32, CriteriaProgressTree > AchievementTreeProgressMap;
 
 enum CriteriaSort
 {
@@ -265,8 +282,8 @@ class AchievementMgr
         void SaveToDB(SQLTransaction& trans);
         void ResetAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, bool evenIfCriteriaComplete = false);
         void UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, uint32 miscValue3 = 0,Unit const* unit = NULL, Player* referencePlayer = NULL, bool init = false);
-        void CompletedAchievement(AchievementEntry const* achievement, Player* referencePlayer);
-        bool IsCompletedAchievement(AchievementEntry const* achievement, Player* referencePlayer);
+        void CompletedAchievement(AchievementEntry const* achievement, Player* referencePlayer, CriteriaProgressMap* progressMap = NULL);
+        bool IsCompletedAchievement(AchievementEntry const* achievement, Player* referencePlayer, CriteriaProgressMap* progressMap = NULL);
         void CheckAllAchievementCriteria(Player* referencePlayer);
         void SendAllAchievementData(Player* receiver);
         void SendAllAccountCriteriaData(Player* receiver);
@@ -281,11 +298,12 @@ class AchievementMgr
         void RemoveTimedAchievement(AchievementCriteriaTimedTypes type, uint32 entry);   // used for quest and scripted timed achievements
         uint32 GetAchievementPoints() const { return _achievementPoints; }
         CriteriaSort GetCriteriaSort() const;
-        bool IsCompletedCriteria(CriteriaTreeEntry const* criteriaTree, AchievementEntry const* achievement, CriteriaEntry const* criteria);
+        bool IsCompletedCriteria(CriteriaTreeEntry const* criteriaTree, AchievementEntry const* achievement, CriteriaEntry const* criteria, CriteriaProgressMap* progressMap = NULL, CriteriaTreeProgress* progress = NULL);
         uint32 IsCompletedCriteriaTreeCounter(CriteriaTreeEntry const* criteriaTree, AchievementEntry const* achievement);
-        bool IsCompletedCriteriaTree(CriteriaTreeEntry const* criteriaTree, AchievementEntry const* achievement);
+        bool IsCompletedCriteriaTree(CriteriaTreeEntry const* criteriaTree, AchievementEntry const* achievement, CriteriaProgressMap* progressMap, bool parent = false);
         bool IsCompletedScenarioTree(CriteriaTreeEntry const* criteriaTree);
         CriteriaProgressMap* GetCriteriaProgressMap(uint32 achievementId);
+        CriteriaProgressTree* GetCriteriaTreeProgressMap(uint32 criteriaTreeId);
 
     private:
         enum ProgressType { PROGRESS_SET, PROGRESS_ACCUMULATE, PROGRESS_HIGHEST };
@@ -293,24 +311,23 @@ class AchievementMgr
         void SendCriteriaUpdate(CriteriaEntry const* criteria, CriteriaTreeProgress const* progress, uint32 timeElapsed, bool timedCompleted) const;
         void SendAccountCriteriaUpdate(CriteriaEntry const* criteria, CriteriaTreeProgress const* progress, uint32 timeElapsed, bool timedCompleted) const;
 
-        CriteriaTreeProgress* GetCriteriaProgress(uint32 entry, uint32 achievementId);
-        CriteriaTreeProgress* GetCriteriaProgress(CriteriaTreeEntry const* criteriaTree, uint32 achievementId);
-        bool SetCriteriaProgress(AchievementEntry const* achievement, CriteriaTreeEntry const* treeEntry, CriteriaEntry const* criteria, uint32 changeValue, Player* referencePlayer, ProgressType ptype = PROGRESS_SET);
+        CriteriaTreeProgress* GetCriteriaProgress(uint32 entry, uint32 achievementId, CriteriaProgressMap* progressMap = NULL);
+        bool SetCriteriaProgress(AchievementEntry const* achievement, CriteriaTreeEntry const* treeEntry, CriteriaEntry const* criteria, uint32 changeValue, Player* referencePlayer, ProgressType ptype, CriteriaProgressMap*& progressMap, CriteriaTreeProgress*& progress);
         void RemoveCriteriaProgress(CriteriaTreeEntry const* criteriaTree, uint32 achievementId);
-        void CompletedCriteriaFor(AchievementEntry const* achievement, Player* referencePlayer);
         bool CanCompleteCriteria(AchievementEntry const* achievement);
 
-        bool CanUpdateCriteria(CriteriaTreeEntry const* treeEntry, CriteriaEntry const* criteria, AchievementEntry const* achievement, uint64 miscValue1, uint64 miscValue2, uint64 miscValue3, Unit const* unit, Player* referencePlayer);
+        bool CanUpdateCriteria(CriteriaTreeEntry const* treeEntry, CriteriaEntry const* criteria, AchievementEntry const* achievement, uint64 miscValue1, uint64 miscValue2, uint64 miscValue3, Unit const* unit, Player* referencePlayer, CriteriaProgressMap* progressMap, CriteriaTreeProgress* progress);
 
         void SendPacket(WorldPacket* data) const;
+        void GenerateAchievementProgressMap(AchievementEntry const* achievement, CriteriaProgressMap* progressMap, CriteriaTreeEntry const* parentTree, CriteriaProgressTree* parentTreeProgress);
 
         bool ConditionsSatisfied(CriteriaEntry const *criteria, Player* referencePlayer) const;
         bool RequirementsSatisfied(AchievementEntry const* achievement, CriteriaEntry const *criteria, uint64 miscValue1, uint64 miscValue2, uint64 miscValue3, Unit const* unit, Player* referencePlayer) const;
         bool AdditionalRequirementsSatisfied(uint32 ModifyTree, uint64 miscValue1, uint64 miscValue2, uint64 miscValue3, Unit const* unit, Player* referencePlayer) const;
 
         T* _owner;
-        CriteriaTreeProgress m_criteriaTreeProgress;
         AchievementProgressMap m_achievementProgress;
+        AchievementTreeProgressMap m_achievementTreeProgress;
         CompletedAchievementMap m_completedAchievements;
         typedef std::unordered_map<uint32, uint32> TimedAchievementMap;
         TimedAchievementMap m_timedAchievements;      // Criteria id/time left in MS
