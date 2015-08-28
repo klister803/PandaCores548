@@ -155,6 +155,8 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     // culculate destination point
     if (isMoving())
     {
+        _waitTime = atInfo.waitTime;
+
         if (atInfo.speed)
             _moveSpeed = atInfo.speed;
         else
@@ -182,8 +184,6 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
                 m_movePath.push_back(curPos);
                 m_movePath.push_back(nextPos);
                 m_movePath.push_back(nextPos);
-                _waitTime = 1000;
-                duration = 5500;
                 _moveSpeed = (curPos - nextPos).length() / (duration - _waitTime) * 1000.0f;
                 SetDuration(duration);
                 break;
@@ -668,6 +668,32 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
                 }
             }
             break;
+        }
+        case AT_ACTION_TYPE_CHANGE_AMOUNT_FROM_HEALT:
+        {
+            if(_on_remove || !action.amount)
+                return;
+
+            if (caster)
+            {
+                int32 health = unit->GetMaxHealth() - unit->GetHealth();
+                if(health >= action.amount)
+                {
+                    health = action.amount;
+                    action.amount = 0;
+                }
+                else
+                    action.amount -= health;
+
+                caster->CastCustomSpell(unit, action.action->spellId, &health, &health, &health, true);
+            }
+
+            if(!action.amount && action.charges > 0)
+            {
+                _on_despawn = true;
+                SetDuration(0);
+            }
+            return;
         }
     }
 

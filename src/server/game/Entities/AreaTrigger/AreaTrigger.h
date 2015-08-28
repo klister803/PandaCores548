@@ -49,7 +49,8 @@ enum AreaTriggerActionType
     AT_ACTION_TYPE_APPLY_MOVEMENT_FORCE   = 6, // hit mask 0x0040
     AT_ACTION_TYPE_REMOVE_MOVEMENT_FORCE  = 7, // hit mask 0x0080
     AT_ACTION_TYPE_CHANGE_DURATION_ANY_AT = 8, // hit mask 0x0100
-    AT_ACTION_TYPE_MAX                    = 9,
+    AT_ACTION_TYPE_CHANGE_AMOUNT_FROM_HEALT= 9, // hit mask 0x0200
+    AT_ACTION_TYPE_MAX                    = 10,
 };
 
 enum AreaTriggerTargetFlags
@@ -103,6 +104,7 @@ struct AreaTriggerAction
     int32 hasspell;
     float scale;
     int32 hitMaxCount;
+    int32 amount;
 };
 
 typedef std::list<AreaTriggerAction> AreaTriggerActionList;
@@ -126,6 +128,7 @@ struct AreaTriggerInfo
     AreaTriggerActionList actions;
     float speed;
     uint32 moveType;
+    uint32 waitTime;
     uint32 hitType;
     float Radius;
     float RadiusTarget;
@@ -159,11 +162,12 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         {
             ActionInfo() : charges(0), recoveryTime(0), action(NULL), hitCount(0) { }
             ActionInfo(AreaTriggerAction const* _action) :
-                charges(_action->maxCharges), recoveryTime(0), action(_action), hitCount(0) { }
+                charges(_action->maxCharges), recoveryTime(0), action(_action), hitCount(0), amount(_action->amount) { }
 
             uint32 hitCount;
             uint8 charges;
             uint32 recoveryTime;
+            int32 amount;
             AreaTriggerAction const* action;
         };
         typedef std::map<uint8, ActionInfo> ActionInfoMap;

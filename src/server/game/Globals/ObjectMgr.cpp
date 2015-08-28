@@ -9767,7 +9767,7 @@ void ObjectMgr::LoadAreaTriggerActionsAndData()
     QueryResult result = WorldDatabase.Query("SELECT `entry`, `spellId`, `customEntry`, `customVisualId`, `Radius`, `RadiusTarget`, `Height`, `HeightTarget`, `Float4`, `Float5`,"
     //    9          10        11            12                13           14         15           16             17           18      19       20         21           22         23
     "`isMoving`, `moveType`, `speed`, `activationDelay`, `updateDelay`, `maxCount`, `hitType`, `MoveCurveID`, `ElapsedTime`, `windX`, `windY`, `windZ`, `windSpeed`, `windType`, `polygon`,"
-    "`MorphCurveID`, `FacingCurveID`, `ScaleCurveID`, `HasFollowsTerrain`, `HasAttached`, `HasAbsoluteOrientation`, `HasDynamicShape`, `HasFaceMovementDir` FROM areatrigger_data");
+    "`MorphCurveID`, `FacingCurveID`, `ScaleCurveID`, `HasFollowsTerrain`, `HasAttached`, `HasAbsoluteOrientation`, `HasDynamicShape`, `HasFaceMovementDir`, `waitTime` FROM areatrigger_data");
 
     if (result)
     {
@@ -9811,6 +9811,7 @@ void ObjectMgr::LoadAreaTriggerActionsAndData()
             info.HasAbsoluteOrientation = fields[i++].GetUInt32();
             info.HasDynamicShape = fields[i++].GetUInt32();
             info.HasFaceMovementDir = fields[i++].GetUInt32();
+            info.waitTime = fields[i++].GetUInt32();
             if(info.polygon && info.customEntry)
             {
                 QueryResult resultPolygon = WorldDatabase.PQuery("SELECT `id`, `x`, `y` FROM areatrigger_polygon WHERE `entry` = '%u' AND `spellId` = '%u'", info.customEntry, info.spellId);
@@ -9867,8 +9868,8 @@ void ObjectMgr::LoadAreaTriggerActionsAndData()
     else
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 areatrigger data. DB table `areatrigger_data` is empty.");
 
-    //                                                0      1     2         3           4           5         6                7           8       9       10      11
-    QueryResult result2 = WorldDatabase.Query("SELECT entry, id, moment, actionType, targetFlags, spellId, maxCharges, chargeRecoveryTime, aura, hasspell, scale, hitMaxCount FROM areatrigger_actions");
+    //                                                0      1     2         3           4           5         6                7           8       9       10        11         12
+    QueryResult result2 = WorldDatabase.Query("SELECT entry, id, moment, actionType, targetFlags, spellId, maxCharges, chargeRecoveryTime, aura, hasspell, scale, hitMaxCount, amount FROM areatrigger_actions");
     if (result2)
     {
         uint32 counter = 0;
@@ -9890,6 +9891,7 @@ void ObjectMgr::LoadAreaTriggerActionsAndData()
             action.hasspell = fields[i++].GetInt32();
             action.scale = fields[i++].GetFloat();
             action.hitMaxCount = fields[i++].GetInt32();
+            action.amount = fields[i++].GetInt32();
 
             if (action.actionType >= AT_ACTION_TYPE_MAX)
             {
@@ -9897,6 +9899,9 @@ void ObjectMgr::LoadAreaTriggerActionsAndData()
                     action.actionType, entry);
                 continue;
             }
+
+            if (action.actionType == AT_ACTION_TYPE_CHANGE_AMOUNT_FROM_HEALT && !(action.targetFlags & AT_TARGET_FLAG_NOT_FULL_HP))
+                action.targetFlags = AreaTriggerTargetFlags(action.targetFlags | AT_TARGET_FLAG_NOT_FULL_HP);
 
             if (!sSpellMgr->GetSpellInfo(action.spellId))
             {
