@@ -960,6 +960,13 @@ struct npc_measure : public ScriptedAI
     }
 };
 
+#define MIN_X 1176.0f
+#define MAX_X 1258.0f
+#define MIN_Y 992.0f   
+#define MAX_Y 1078.0f
+#define MIN_Z 415.0f
+#define MAX_Z 425.0f
+
 class npc_measure_of_sun : public CreatureScript
 {
 public:
@@ -1020,9 +1027,11 @@ public:
                             return;
                         }
                         for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                            if (Player* player = i->getSource())
+                            if (Player* plr = i->getSource())
                             {
-                                if (player->GetAreaId() != BATTLE_AREA && player->GetAreaId() != 0)
+                                if (plr->GetPositionX() < MIN_X || plr->GetPositionX() > MAX_X ||
+                                    plr->GetPositionY() < MIN_Y || plr->GetPositionY() > MAX_Y ||
+                                    plr->GetPositionZ() < MIN_Z || plr->GetPositionZ() > MAX_Z)
                                 {
                                     EnterEvadeMode();
                                     return;

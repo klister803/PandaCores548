@@ -419,10 +419,13 @@ void ScriptedAI::SetCombatMovement(bool allowMovement)
 
 enum eNPCs
 {
-    NPC_BROODLORD   = 12017,
-    NPC_VOID_REAVER = 19516,
-    NPC_JAN_ALAI    = 23578,
-    NPC_SARTHARION  = 28860
+    NPC_BROODLORD       = 12017,
+    NPC_VOID_REAVER     = 19516,
+    NPC_JAN_ALAI        = 23578,
+    NPC_SARTHARION      = 28860,
+    NPC_ROOK_STONETOE   = 71475,
+    NPC_HE_SOFTFOOT     = 71479,
+    NPC_SUN_TENDERHEART = 71480,
 };
 
 // Hacklike storage used for misc creatures that are expected to evade of outside of a certain area.
@@ -460,6 +463,12 @@ bool ScriptedAI::EnterEvadeIfOutOfCombatArea(uint32 const diff)
             break;
         case NPC_SARTHARION:                                         // sartharion (calculate box)
             if (x > 3218.86f && x < 3275.69f && y < 572.40f && y > 484.68f)
+                return false;
+            break;
+        case NPC_ROOK_STONETOE:
+        case NPC_HE_SOFTFOOT:
+        case NPC_SUN_TENDERHEART:
+            if (x > 1176.0f && x < 1258.0f && y > 992.0f && y < 1078.0f && z > 410.0f && z < 425.0f)
                 return false;
             break;
         default: // For most of creatures that certain area is their home area.
