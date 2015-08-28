@@ -260,6 +260,7 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PrepareStatement(CHAR_REP_GUILD_ACHIEVEMENT_CRITERIA, "REPLACE INTO guild_achievement_progress (guildId, criteria, counter, date, completedGuid, achievID, completed) VALUES (?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
     PrepareStatement(CHAR_UPD_GUILD_ACHIEVEMENT_CRITERIA, "UPDATE guild_achievement_progress SET counter = ?, `date` = ?, achievID = ?, completed = ? WHERE guildId = ? AND criteria = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_GUILD_INVALID_ACHIEV_PROGRESS_CRITERIA, "DELETE FROM guild_achievement_progress WHERE criteria = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_DEL_GUILD_ACHIEV_PROGRESS_CRITERIA, "DELETE FROM guild_achievement_progress WHERE criteria = ? AND guildId = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_ALL_GUILD_ACHIEVEMENTS, "DELETE FROM guild_achievement WHERE guildId = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_ALL_GUILD_ACHIEVEMENT_CRITERIA, "DELETE FROM guild_achievement_progress WHERE guildId = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_SEL_GUILD_ACHIEVEMENT, "SELECT achievement, date, guids FROM guild_achievement WHERE guildId = ?", CONNECTION_SYNCH);
