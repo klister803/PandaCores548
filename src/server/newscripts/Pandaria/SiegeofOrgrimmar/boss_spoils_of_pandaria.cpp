@@ -49,6 +49,9 @@ enum eSpells
     SPELL_RAGE_OF_THE_EMPRESS         = 145812,
     SPELL_RAGE_OF_THE_EMPRESS_AURA    = 145813,
     SPELL_WINDSTORM_AT                = 145286,
+    SPELL_MATTER_SCRAMBLE             = 145288,
+    SPELL_TORMENT_DUMMY               = 142942,
+    SPELL_TORMENT_MAIN                = 142983,
 
     //Small
     SPELL_EARTHEN_SHARD               = 144923,
@@ -95,33 +98,33 @@ enum Events
     EVENT_RESET                       = 4,
 
     //Summons
-    //Big mogu
-    EVENT_SPAWN                       = 5,
-    EVENT_EARTHEN_SHARD               = 6, 
-    EVENT_SHADOW_VOLLEY               = 7,
-    EVENT_MOLTEN_FIST                 = 8,
-    EVENT_JADE_TEMPEST                = 9,
-    EVENT_FRACTURE                    = 10,
-    EVENT_HARDEN_FLESH                = 11,
-    EVENT_FIND_PLAYERS                = 12,
-    EVENT_RUSH                        = 13,
-    EVENT_KW_ENRAGE                   = 14,
-    EVENT_IN_PROGRESS                 = 15,
-    EVENT_KEG_TOSS                    = 16,
-    EVENT_BREATH_OF_FIRE              = 17,
-    EVENT_PATH_OF_BLOSSOMS            = 18,
-    EVENT_PATH_OF_BLOSSOMS_PROGRESS   = 19,
-    EVENT_MANTID_SWARM                = 20,
-    EVENT_THROW_EXPLOSIVES            = 21,
-    EVENT_FORBIDDEN_MAGIC             = 22,
-    EVENT_MOGU_RUNE_OF_POWER          = 23,
-    EVENT_GUSTING_CRANE_KICK          = 24,
-    EVENT_CRIMSON_RECOSTITUTION       = 25,
-    EVENT_SET_TO_BLOW                 = 26,
-    EVENT_RESIDUE                     = 27,
-    EVENT_RAGE_OF_THE_EMPRESS         = 28,
-    EVENT_WINDSTORM                   = 29,
-    EVENT_GUSTING_BOMB                = 30,
+    EVENT_EARTHEN_SHARD               = 5, 
+    EVENT_SHADOW_VOLLEY               = 6,
+    EVENT_MOLTEN_FIST                 = 7,
+    EVENT_JADE_TEMPEST                = 8,
+    EVENT_FRACTURE                    = 9,
+    EVENT_HARDEN_FLESH                = 10,
+    EVENT_FIND_PLAYERS                = 11,
+    EVENT_RUSH                        = 12,
+    EVENT_KW_ENRAGE                   = 13,
+    EVENT_IN_PROGRESS                 = 14,
+    EVENT_KEG_TOSS                    = 15,
+    EVENT_BREATH_OF_FIRE              = 16,
+    EVENT_PATH_OF_BLOSSOMS            = 17,
+    EVENT_PATH_OF_BLOSSOMS_PROGRESS   = 18,
+    EVENT_MANTID_SWARM                = 19,
+    EVENT_THROW_EXPLOSIVES            = 20,
+    EVENT_FORBIDDEN_MAGIC             = 21,
+    EVENT_MOGU_RUNE_OF_POWER          = 22,
+    EVENT_GUSTING_CRANE_KICK          = 23,
+    EVENT_CRIMSON_RECOSTITUTION       = 24,
+    EVENT_SET_TO_BLOW                 = 25,
+    EVENT_RESIDUE                     = 26,
+    EVENT_RAGE_OF_THE_EMPRESS         = 27,
+    EVENT_WINDSTORM                   = 28,
+    EVENT_GUSTING_BOMB                = 29,
+    EVENT_MATTER_SCRAMBLE             = 30,
+    EVENT_TORMENT                     = 31,
 };
 
 Position dpos[4] =
@@ -833,10 +836,12 @@ public:
                 break;
             //Medoum
             case NPC_MOGU_SHADOW_RITUALIST:
+                events.ScheduleEvent(EVENT_TORMENT, 7000);
                 events.ScheduleEvent(EVENT_FORBIDDEN_MAGIC, 10000);
                 events.ScheduleEvent(EVENT_MOGU_RUNE_OF_POWER, 5000);
                 break;
             case NPC_MODIFIED_ANIMA_GOLEM:
+                events.ScheduleEvent(EVENT_MATTER_SCRAMBLE, 7000);
                 events.ScheduleEvent(EVENT_CRIMSON_RECOSTITUTION, 8000);
                 break;
             case NPC_ZARTHIK_AMBER_PRIEST:
@@ -947,6 +952,18 @@ public:
                         DoCast(target, SPELL_CRIMSON_RECOSTITUTION_AT);
                     events.ScheduleEvent(EVENT_CRIMSON_RECOSTITUTION, 15000);
                     break;
+                case EVENT_MATTER_SCRAMBLE:
+                    DoCast(me, SPELL_MATTER_SCRAMBLE);
+                    events.ScheduleEvent(EVENT_MATTER_SCRAMBLE, 18000);
+                    break;
+                case EVENT_TORMENT:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 50.0f, true))
+                    {
+                        DoCast(target, SPELL_TORMENT_DUMMY);
+                        DoCast(target, SPELL_TORMENT_MAIN);
+                    }
+                    events.ScheduleEvent(EVENT_TORMENT, 18000);
+                    break;
                 case EVENT_MOGU_RUNE_OF_POWER:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
                         DoCast(target, SPELL_MOGU_RUNE_OF_POWER_AT);
@@ -959,15 +976,16 @@ public:
                     break;
                 case EVENT_RESIDUE:
                     DoCast(me, SPELL_RESIDUE, false);
-                    events.ScheduleEvent(EVENT_RESIDUE, 15000);
+                    events.ScheduleEvent(EVENT_RESIDUE, 18000);
                     break;
                 case EVENT_RAGE_OF_THE_EMPRESS:
                     DoCast(me, SPELL_RAGE_OF_THE_EMPRESS, false);
-                    events.ScheduleEvent(EVENT_RAGE_OF_THE_EMPRESS, 15000);
+                    events.ScheduleEvent(EVENT_RAGE_OF_THE_EMPRESS, 18000);
+                    break;
                 case EVENT_WINDSTORM:
                     for (uint8 n = 0; n < 3; n++)
                         DoCast(me, SPELL_WINDSTORM_AT);
-                    events.ScheduleEvent(EVENT_WINDSTORM, urand(25000, 30000));
+                    events.ScheduleEvent(EVENT_WINDSTORM, urand(25000, 34000));
                     break;
                 //Small
                 case EVENT_KW_ENRAGE:
@@ -981,7 +999,7 @@ public:
                 case EVENT_HARDEN_FLESH:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
                         DoCast(target, SPELL_HARDEN_FLESH_DMG);
-                    events.ScheduleEvent(EVENT_HARDEN_FLESH, 15000);
+                    events.ScheduleEvent(EVENT_HARDEN_FLESH, 8000);
                     break;
                 case EVENT_RUSH:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60, true))
@@ -991,7 +1009,7 @@ public:
                 case EVENT_MANTID_SWARM:
                     for (uint8 n = 0; n < 3; n++)
                         DoCast(me, mantidswarm[n]);
-                    events.ScheduleEvent(EVENT_MANTID_SWARM, 20000);
+                    events.ScheduleEvent(EVENT_MANTID_SWARM, 35000);
                     break;
                 case EVENT_THROW_EXPLOSIVES:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
@@ -1008,7 +1026,7 @@ public:
                     me->SetReactState(REACT_PASSIVE);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                     DoCast(me, SPELL_GUSTING_CRANE_KICK);
-                    events.ScheduleEvent(EVENT_GUSTING_CRANE_KICK, 15000); 
+                    events.ScheduleEvent(EVENT_GUSTING_CRANE_KICK, 18000); 
                     break;
                 case EVENT_KEG_TOSS:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
