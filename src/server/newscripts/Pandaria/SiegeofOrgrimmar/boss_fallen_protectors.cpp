@@ -1136,6 +1136,9 @@ public:
         {
             ownVehicle = NPC_GOLD_LOTOS_ROOK;
             ownSummoner = NPC_ROOK_STONETOE;
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
+
             switch(creature->GetEntry())
             {
                 case NPC_EMBODIED_MISERY_OF_ROOK: _spell = SPELL_DEFILED_GROUND; break;
