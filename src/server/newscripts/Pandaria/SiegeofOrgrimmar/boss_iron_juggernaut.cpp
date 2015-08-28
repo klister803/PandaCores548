@@ -143,8 +143,9 @@ class boss_iron_juggernaut : public CreatureScript
             {
                 if (instance)
                 {
-                    if (!CheckPullPlayerPos(who))
+                    if (instance->GetBossState(DATA_GALAKRAS) != DONE || !CheckPullPlayerPos(who))
                     {
+                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                         EnterEvadeMode();
                         return;
                     }
