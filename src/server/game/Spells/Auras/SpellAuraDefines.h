@@ -419,7 +419,7 @@ enum AuraType
     SPELL_AURA_WORGEN_ALTERED_FORM                          = 358,
     SPELL_AURA_MOD_HEALING_DONE2                            = 359,
     SPELL_AURA_PROC_TRIGGER_SPELL_COPY                      = 360,   // Procs the same spell that caused this proc (Dragonwrath, Tarecgosa's Rest)
-    SPELL_AURA_PROC_TRIGGER_SPELL_2                         = 361,
+    SPELL_AURA_PROC_MELEE_TRIGGER_SPELL                     = 361,
     SPELL_AURA_DUMMY2                                       = 362,  // used in 143400
     SPELL_AURA_MOD_NEXT_SPELL                               = 363,  // Used by 101601 Throw Totem - causes the client to initialize spell cast with specified spell
     SPELL_AURA_364                                          = 364,  // Not used in 4.3.4

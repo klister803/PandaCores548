@@ -3732,6 +3732,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     case SPELL_AURA_POWER_BURN:
                         spellInfo->AttributesCu |= SPELL_ATTR0_CU_NO_INITIAL_THREAT;
                         break;
+                    case SPELL_AURA_PROC_MELEE_TRIGGER_SPELL:
+                        spellInfo->ProcChance = 100;
+                        spellInfo->ProcFlags = PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS | PROC_FLAG_DONE_MELEE_AUTO_ATTACK;
+                        break;
                 }
 
                 switch (spellInfo->Effects[j].Effect)
