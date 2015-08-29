@@ -2216,41 +2216,48 @@ void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTar
         || m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_NONE
         || m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC);
 
-    switch (m_spellInfo->Id)
-    {
-        case 102359: // Mass Entanglement
-            isBouncingFar = false;
-            break;
-        default:
-            break;
-    }
+//     switch (m_spellInfo->Id)
+//     {
+//         case 102359: // Mass Entanglement
+//             isBouncingFar = false;
+//             break;
+//         default:
+//             break;
+//     }
 
     // max dist which spell can reach
-    float searchRadius = jumpRadius;
-    if (isBouncingFar)
-        searchRadius *= chainTargets;
-
-    std::list<WorldObject*> tempTargets;
-    SearchAreaTargets(tempTargets, searchRadius, m_caster, m_caster, objectType, selectType, condList);
-    tempTargets.remove(target);
-
-    // remove targets which are always invalid for chain spells
-    // for some spells allow only chain targets in front of caster (swipe for example)
-    if (!isBouncingFar)
-    {
-        for (std::list<WorldObject*>::iterator itr = tempTargets.begin(); itr != tempTargets.end();)
-        {
-            std::list<WorldObject*>::iterator checkItr = itr++;
-            if (!m_caster->HasInArc(static_cast<float>(M_PI), *checkItr))
-                tempTargets.erase(checkItr);
-        }
-    }
-
+    std::list<uint64> tempGUIDs;
+    WorldObject* nextTarget = target;
     while (chainTargets)
     {
-        // try to get unit for next chain jump
-        std::list<WorldObject*>::iterator foundItr = tempTargets.end();
-        // get unit with highest hp deficit in dist
+        std::list<WorldObject*> tempTargets;
+        SearchAreaTargets(tempTargets, jumpRadius, nextTarget, m_caster, objectType, selectType, condList);
+
+        tempGUIDs.push_back(nextTarget->GetGUID());
+
+        std::list<WorldObject*> removeTargets;
+
+        for (std::list<uint64>::iterator itr = tempGUIDs.begin(); itr != tempGUIDs.end(); ++itr)
+            for (std::list<WorldObject*>::iterator i = tempTargets.begin(); i != tempTargets.end(); ++i)
+                if (Unit* unitTarget = (*i)->ToUnit())
+                    if (*itr == unitTarget->GetGUID())
+                        removeTargets.push_back(*i);
+
+        for (std::list<WorldObject*>::iterator i = removeTargets.begin(); i != removeTargets.end(); ++i)
+            tempTargets.remove(*i);
+
+        if (!isBouncingFar)
+        {
+            for (std::list<WorldObject*>::iterator itr = tempTargets.begin(); itr != tempTargets.end();)
+            {
+                std::list<WorldObject*>::iterator checkItr = itr++;
+                if (!m_caster->HasInArc(static_cast<float>(M_PI), *checkItr))
+                    tempTargets.erase(checkItr);
+            }
+        }
+
+        WorldObject* foundItr = NULL;
+
         if (isChainHeal)
         {
             uint32 maxHPDeficit = 0;
@@ -2259,35 +2266,34 @@ void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTar
                 if (Unit* unitTarget = (*itr)->ToUnit())
                 {
                     uint32 deficit = unitTarget->GetMaxHealth() - unitTarget->GetHealth();
-                    if ((deficit > maxHPDeficit || foundItr == tempTargets.end()) && target->IsWithinDist(unitTarget, jumpRadius) && target->IsWithinLOSInMap(unitTarget))
+                    if ((deficit > maxHPDeficit || !foundItr) && nextTarget->IsWithinDist(unitTarget, jumpRadius) && nextTarget->IsWithinLOSInMap(unitTarget))
                     {
-                        foundItr = itr;
+                        foundItr = unitTarget;
                         maxHPDeficit = deficit;
                     }
                 }
             }
         }
-        // get closest object
         else
         {
             for (std::list<WorldObject*>::iterator itr = tempTargets.begin(); itr != tempTargets.end(); ++itr)
             {
-                if (foundItr == tempTargets.end())
+                if (!foundItr)
                 {
                     // isBouncingFar allow hit not in los target & IsWithinDist already checked at SearchAreaTargets
                     if (isBouncingFar || target->IsWithinLOSInMap(*itr))
-                        foundItr = itr;
+                        foundItr = *itr;
                 }
-                else if (target->GetDistanceOrder(*itr, *foundItr) && target->IsWithinLOSInMap(*itr))
-                    foundItr = itr;
+                else if (target->GetDistanceOrder(*itr, foundItr) && target->IsWithinLOSInMap(*itr))
+                    foundItr = *itr;
             }
         }
-        // not found any valid target - chain ends
-        if (foundItr == tempTargets.end())
+
+        if (!foundItr)
             break;
-        target = *foundItr;
-        tempTargets.erase(foundItr);
-        targets.push_back(target);
+
+        nextTarget = foundItr;
+        targets.push_back(nextTarget);
         --chainTargets;
     }
 }
