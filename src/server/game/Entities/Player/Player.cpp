@@ -24400,6 +24400,8 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
     ItemPosCountVec vDest;
     uint16 uiDest = 0;
     uint32 uicount = 0;
+    bool isTransDonate = pVendor->GetEntry() == 220024 || pVendor->GetEntry() == 220022 || (pVendor->GetEntry() >= 200200 && pVendor->GetEntry() <= 200203);
+
     InventoryResult msg = bStore ?
         CanStoreNewItem(bag, slot, vDest, item, count) :
         CanEquipNewItem(slot, uiDest, item, false);
@@ -24462,7 +24464,7 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
         if (!bStore)
             AutoUnequipOffhandIfNeed();
 
-        if (pProto->Flags & ITEM_PROTO_FLAG_REFUNDABLE && crItem->ExtendedCost && pProto->GetMaxStackSize() == 1)
+        if (!isTransDonate && pProto->Flags & ITEM_PROTO_FLAG_REFUNDABLE && crItem->ExtendedCost && pProto->GetMaxStackSize() == 1)
         {
             it->SetFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_REFUNDABLE);
             it->SetRefundRecipient(GetGUIDLow());
@@ -24483,10 +24485,7 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
             stmt->setUInt32(  ++index, it->GetEntry());
             stmt->setUInt32(  ++index, uicount);
             stmt->setUInt32(  ++index, count);
-            if(pVendor->GetEntry() == 220024 || pVendor->GetEntry() == 200203 || pVendor->GetEntry() == 200200)
-                stmt->setUInt32(  ++index, 2);
-            else
-                stmt->setUInt32(  ++index, 0);
+            stmt->setUInt32(  ++index, isTransDonate ? 2 : 0);
             trans->Append(stmt);
             CharacterDatabase.CommitTransaction(trans);
 
