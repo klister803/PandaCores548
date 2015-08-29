@@ -960,10 +960,10 @@ struct npc_measure : public ScriptedAI
     }
 };
 
-#define MIN_X 1176.0f
+#define MIN_X 1162.0f
 #define MAX_X 1258.0f
 #define MIN_Y 992.0f   
-#define MAX_Y 1078.0f
+#define MAX_Y 1080.0f
 #define MIN_Z 415.0f
 #define MAX_Z 425.0f
 
