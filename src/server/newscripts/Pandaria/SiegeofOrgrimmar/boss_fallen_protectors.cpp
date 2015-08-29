@@ -1398,9 +1398,9 @@ class spell_fallen_protectors_calamity : public SpellScriptLoader
                 if (Unit* caster = GetCaster())
                 {
                     if (Unit* target = GetHitUnit())
-                        target->CastSpell(target, SPELL_PROCK, false);
+                        caster->CastSpell(target, SPELL_PROCK, false);
 
-                    if(caster->GetAI())
+                    if (caster->GetAI())
                         caster->GetAI()->SetData(DATA_CALAMITY_HIT, true);
                 }
             }
