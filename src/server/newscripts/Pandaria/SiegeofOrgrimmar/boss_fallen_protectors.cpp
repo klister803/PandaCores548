@@ -1616,10 +1616,16 @@ class spell_fallen_protectors_inferno_strike : public SpellScriptLoader
 
                 unitList.resize(count);
             }
+            
+            void RecalculateDamage()
+            {
+                SetHitDamage(GetHitDamage() * GetSpellInfo()->Effects[EFFECT_0].BasePoints);
+            }
 
             void Register()
             {
                 OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_fallen_protectors_inferno_strike_SpellScript::SelectTarget, EFFECT_1, TARGET_UNIT_DEST_AREA_ENEMY);
+                OnHit += SpellHitFn(spell_fallen_protectors_inferno_strike_SpellScript::RecalculateDamage);
             }
         };
 
