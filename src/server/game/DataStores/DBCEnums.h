@@ -212,7 +212,7 @@ enum AchievementCriteriaTimedTypes
     ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET2    = 8,    // Timer is started by being target of spell with entry in timerStartEvent
     ACHIEVEMENT_TIMED_TYPE_QUEST            = 9,    // Timer is started by accepting quest with entry in timerStartEvent
     ACHIEVEMENT_TIMED_TYPE_CREATURE2        = 10,   // Timer is started by killing creature with entry in timerStartEvent
-    ACHIEVEMENT_TIMED_TYPE_UNK11            = 11,   // Unknown
+    ACHIEVEMENT_TIMED_TYPE_BATTLEPET        = 11,   // Timer is started by win in battlepet to first lose
     ACHIEVEMENT_TIMED_TYPE_ITEM2            = 12,   // Timer is started by using item with entry in timerStartEvent
     ACHIEVEMENT_TIMED_TYPE_EVENT2           = 13,   // Timer is started by internal event with id in timerStartEvent
     ACHIEVEMENT_TIMED_TYPE_SCENARIO_STAGE   = 14,   // Timer is started by changing stages in a scenario
