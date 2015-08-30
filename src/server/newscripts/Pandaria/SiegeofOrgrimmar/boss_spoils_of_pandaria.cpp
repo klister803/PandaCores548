@@ -1587,13 +1587,14 @@ class spell_rage_of_the_empress : public SpellScriptLoader
 
             void FilterTargetsDamage(std::list<WorldObject*>& targets)
             {
-                targets.remove(GetCaster());
+                Unit* caster = GetCaster();
+                targets.remove(caster);
 
                 if (targets.empty())
                     return;
 
                 SpellInfo const* Spell = sSpellMgr->GetSpellInfo(SPELL_RAGE_OF_THE_EMPRESS_AURA);
-                bp0 = Spell->Effects[EFFECT_0].BasePoints / targets.size();
+                bp0 = Spell->GetEffect(EFFECT_0, caster->GetSpawnMode()).BasePoints / targets.size();
             }
 
             void HandleOnHit()
@@ -1634,11 +1635,10 @@ class spell_boss_gusting_bomb : public SpellScriptLoader
             {
                 if(Unit* caster = GetCaster())
                 {
-                    //if(!caster->ToCreature() || !caster->ToCreature()->AI())
-                        //return;
+                    if(!caster->ToCreature() || !caster->ToCreature()->AI())
+                        return;
 
-                    Unit* target = caster->ToPlayer()->GetSelectedUnit();
-                    //Unit* target = caster->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true);
+                    Unit* target = caster->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true);
                     if(!target)
                         return;
 
