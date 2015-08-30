@@ -5055,6 +5055,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 143882: //Hunter's Mark
                     spellInfo->ExcludeTargetAuraSpell = 0;
                     break;
+                //Spoils of Pandaria
                 case 146257: //Path of Blossoms Dmg
                 case 146289: //Mass Paralyses
                     spellInfo->Effects[0].TargetA = 22;

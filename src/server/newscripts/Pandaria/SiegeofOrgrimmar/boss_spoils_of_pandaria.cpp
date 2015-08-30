@@ -84,6 +84,8 @@ enum eSpells
     SPELL_AURA_BAR                    = 144921,
     SPELL_AURA_BAR_S                  = 148505,
     SPELL_SOOPS_AT_VISUAL             = 145687,
+    SPELL_UNSTABLE_DEFENSE_SYSTEMS    = 145685, //Periodic Dummy
+    SPELL_UNSTABLE_DEFENSE_SYSTEMS_D  = 145688, //Dmg
     SPELL_BLADE_OF_THE_HUNDRED_STEPS  = 146068, //tank 
     SPELL_STAFF_OF_RESONATING_WATER   = 146099, //healer
     SPELL_CLAW_OF_BURNING_ANGER       = 146141, //dd
@@ -1943,6 +1945,34 @@ public:
     }
 };
 
+//145685
+class spell_unstable_defense_system_dummy : public SpellScriptLoader
+{
+public:
+    spell_unstable_defense_system_dummy() : SpellScriptLoader("spell_unstable_defense_system_dummy") { }
+
+    class spell_unstable_defense_system_dummy_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_unstable_defense_system_dummy_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (GetTarget())
+                GetTarget()->CastSpell(GetTarget(), SPELL_UNSTABLE_DEFENSE_SYSTEMS_D, true);
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_unstable_defense_system_dummy_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_unstable_defense_system_dummy_AuraScript();
+    }
+};
+
 void AddSC_boss_spoils_of_pandaria()
 {
     new npc_ssop_spoils();
@@ -1967,4 +1997,5 @@ void AddSC_boss_spoils_of_pandaria()
     new spell_boss_torment();
     new spell_boss_torment_visual();
     new spell_spoils_staff_of_resonating_water();
+    new spell_unstable_defense_system_dummy();
 }
