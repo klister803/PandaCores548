@@ -1418,7 +1418,7 @@ public:
                         }
                     }
                 case GO_PANDAREN_RELIC_BOX:
-                    return 0;
+                    return npcssopsGuid;
                 //Paragons of the Klaxxi
                 case NPC_KILRUK:
                 case NPC_XARIL:

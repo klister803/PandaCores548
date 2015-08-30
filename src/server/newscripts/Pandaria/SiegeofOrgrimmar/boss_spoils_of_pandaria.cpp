@@ -785,6 +785,9 @@ public:
             case NPC_ANCIENT_BREWMASTER_SPIRIT:
                 DoCast(me, SPELL_GHOST_VISUAL, true);
                 break;
+            case NPC_AMBER_ENCASED_KUNCHONG:
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                break;
             default:
                 break;
             }
@@ -845,8 +848,8 @@ public:
                 events.ScheduleEvent(EVENT_CRIMSON_RECOSTITUTION, 8000);
                 break;
             case NPC_ZARTHIK_AMBER_PRIEST:
-                events.ScheduleEvent(EVENT_RESIDUE, 1000);
-                events.ScheduleEvent(EVENT_MANTID_SWARM, 5000);
+                events.ScheduleEvent(EVENT_RESIDUE, 5000);
+                events.ScheduleEvent(EVENT_MANTID_SWARM, 2000);
                 break;
             case NPC_SETTHIK_WIND_WIELDER:
                 events.ScheduleEvent(EVENT_RAGE_OF_THE_EMPRESS, 1000);
@@ -905,8 +908,9 @@ public:
                 {
                     spawn = 0;
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    DoZoneInCombat(me, 60.0f);
+                    if (me->GetEntry() != NPC_AMBER_ENCASED_KUNCHONG)
+                        me->SetReactState(REACT_AGGRESSIVE);
+                    DoZoneInCombat(me, 50.0f);
                 }
                 else 
                     spawn -= diff;
