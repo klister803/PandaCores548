@@ -828,9 +828,6 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
                 if (uint32 titleId = reward->titleId[Player::TeamForRace(GetOwner()->getRace()) == ALLIANCE ? 0 : 1])
                     if (CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId))
                         GetOwner()->SetTitle(titleEntry);
-
-                if (reward->learnSpell && !GetOwner()->HasSpell(reward->learnSpell))
-                    GetOwner()->learnSpell(reward->learnSpell, true);
             }
 
         } 
@@ -872,9 +869,6 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
                 if (uint32 titleId = reward->titleId[Player::TeamForRace(GetOwner()->getRace()) == ALLIANCE ? 0 : 1])
                     if (CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId))
                         GetOwner()->SetTitle(titleEntry);
-
-                if (reward->learnSpell && !GetOwner()->HasSpell(reward->learnSpell))
-                    GetOwner()->learnSpell(reward->learnSpell, true);
             }
 
         }
