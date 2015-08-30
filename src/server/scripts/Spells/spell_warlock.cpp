@@ -1921,7 +1921,7 @@ class spell_warl_rain_of_fire_damage : public SpellScriptLoader
                 }
             }
 
-            void HandleOnCast()
+            void HandleAfterCast()
             {
                 if(GetSpell()->GetEffectTargets().empty())
                     return;
@@ -1934,7 +1934,7 @@ class spell_warl_rain_of_fire_damage : public SpellScriptLoader
             void Register()
             {
                 OnEffectHitTarget += SpellEffectFn(spell_warl_rain_of_fire_damage_SpellScript::Damage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-                OnCast += SpellCastFn(spell_warl_rain_of_fire_damage_SpellScript::HandleOnCast);
+                AfterCast += SpellCastFn(spell_warl_rain_of_fire_damage_SpellScript::HandleAfterCast);
             }
         };
 
@@ -2598,7 +2598,7 @@ class spell_warl_burning_embers_aoe : public SpellScriptLoader
                     GetSpell()->AddEffectTarget(unitTarget->GetGUID());
             }
 
-            void HandleOnCast()
+            void HandleAfterCast()
             {
                 if(GetSpell()->GetEffectTargets().empty())
                     return;
@@ -2610,7 +2610,7 @@ class spell_warl_burning_embers_aoe : public SpellScriptLoader
             void Register()
             {
                 OnEffectHitTarget += SpellEffectFn(spell_warl_burning_embers_aoe_SpellScript::Damage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-                OnCast += SpellCastFn(spell_warl_burning_embers_aoe_SpellScript::HandleOnCast);
+                AfterCast += SpellCastFn(spell_warl_burning_embers_aoe_SpellScript::HandleAfterCast);
             }
         };
 
