@@ -2341,7 +2341,7 @@ bool AchievementMgr<T>::IsCompletedCriteriaTree(CriteriaTreeEntry const* criteri
             return false;
     }
 
-    uint32 count = 0;
+    volatile uint32 count = 0;
     if(!treeProgress->ChildrenCriteria.empty())
     for (std::vector<CriteriaTreeProgress const*>::const_iterator itr = treeProgress->ChildrenCriteria.begin(); itr != treeProgress->ChildrenCriteria.end(); ++itr)
     {
@@ -2352,12 +2352,15 @@ bool AchievementMgr<T>::IsCompletedCriteriaTree(CriteriaTreeEntry const* criteri
         CriteriaEntry const* criteria = progress->criteria;
         CriteriaTreeEntry const* criteriaProgress = progress->criteriaTree;
 
+        //if(!criteriaProgress)
+            //continue;
+
         volatile uint32 criteriaID = criteria->ID;
         volatile uint32 criteriaProgressID = criteriaProgress->ID;
 
-        uint32 requirement_count = achievement->count > 0 ? achievement->count : criteriaProgress->requirement_count;
+        volatile uint32 requirement_count = achievement->count > 0 ? achievement->count : criteriaProgress->requirement_count;
 
-        bool check = false;
+        volatile bool check = false;
         if(parent && achievement->count <= 0)
             count = progress->counter;
         else
