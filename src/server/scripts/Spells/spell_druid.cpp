@@ -1935,6 +1935,9 @@ class spell_dru_astral_communion : public SpellScriptLoader
                 if (!player)
                     return;
 
+                if (player->HasAura(112071))
+                    return;
+
                 int32 mod = aurEff->GetAmount() * direction;
                 // energize
                 player->CastCustomSpell(player, 89265, &mod, NULL, NULL, true);
