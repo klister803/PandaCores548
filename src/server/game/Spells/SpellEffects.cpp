@@ -2635,6 +2635,12 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
         {
             case 73921:  // Healing Rain
             {
+                if (m_UniqueTargetInfo.size() > 6)
+                {
+                    addhealth *= 6;
+                    addhealth /= m_UniqueTargetInfo.size();
+                }
+
                 if (Aura* aura = caster->GetAura(73920))
                     if (AuraEffect* eff = aura->GetEffect(EFFECT_2))
                         AddPct(addhealth, eff->GetAmount());
