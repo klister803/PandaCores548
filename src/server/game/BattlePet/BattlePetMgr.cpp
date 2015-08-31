@@ -341,6 +341,14 @@ void BattlePetMgr::CreateWildBattle(Player* initiator, ObjectGuid wildCreatureGu
     m_petBattleWild->Init(wildCreatureGuid);
 }
 
+void BattlePetMgr::SendPetBattleRequestFailed(uint8 reason)
+{
+    WorldPacket data(SMSG_PET_BATTLE_REQUEST_FAILED);
+    data.WriteBit(0);
+    data << uint8(reason);
+    m_player->GetSession()->SendPacket(&data);
+}
+
 // BattlePetStatAccumulator
 BattlePetStatAccumulator::BattlePetStatAccumulator(uint32 _speciesID, uint16 _breedID) : healthMod(0), powerMod(0), speedMod(0), qualityMultiplier(0.0f)
 {

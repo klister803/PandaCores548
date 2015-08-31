@@ -333,6 +333,19 @@ void WorldSession::HandlePetBattleRequestWild(WorldPacket& recvData)
     if (!hasFacing)
         recvData >> playerOrient;
 
+    // some check before init battle
+    uint8 reason = 0;
+    if (_player->GetBattlePetMgr()->AllSlotsEmpty())
+        reason = 16;
+    else if (_player->GetBattlePetMgr()->AllSlotsDead())
+        reason = 15;
+
+    if (reason)
+    {
+        _player->GetBattlePetMgr()->SendPetBattleRequestFailed(reason);
+        return;
+    }
+
     WorldPacket data(SMSG_PET_BATTLE_FINALIZE_LOCATION);
 
     data << playerY;

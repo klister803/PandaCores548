@@ -877,6 +877,7 @@ enum Opcodes
     SMSG_PET_BATTLE_FIRST_ROUND                       = 0x0915, // 5.4.1 17538
     SMSG_PET_BATTLE_FULL_UPDATE                       = 0x002F, // 5.4.1 17538
     SMSG_PET_BATTLE_ROUND_RESULT                      = 0x0D8F, // 5.4.1 17538
+    SMSG_PET_BATTLE_REQUEST_FAILED                    = 0x110D, // 5.4.1 17538
     SMSG_PET_CAST_FAILED                              = 0x099E, // 5.4.1 17538
     SMSG_PET_LEARNED_SPELL                            = 0x0597, // 5.4.1 17538
     SMSG_PET_NAME_INVALID                             = 0x093F, // 5.4.1 17538
@@ -1191,7 +1192,6 @@ enum Opcodes
     SMSG_BATTLE_PET_PVP_CHALLENGE                     = 0xE65,  // 5.0.5 16048
     SMSG_BATTLE_PET_QUEUE_PROPOSE_MATCH               = 0xE58,  // 5.0.5 16048
     SMSG_BATTLE_PET_QUEUE_STATUS                      = 0xB51,  // 5.0.5 16048
-    SMSG_BATTLE_PET_REQUEST_FAILED                    = 0xB04,  // 5.0.5 16048
     SMSG_BATTLE_PET_SLOT_UPDATE                       = 0xF16,  // 5.0.5 16048
     SMSG_BATTLE_PET_TRAP_LEVEL                        = 0xAE1,  // 5.0.5 16048
     SMSG_BATTLEFIELD_MGR_EJECT_PENDING                = 0xB36,  // 5.0.5 16048
