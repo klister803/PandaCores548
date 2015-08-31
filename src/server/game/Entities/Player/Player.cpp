@@ -19435,7 +19435,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
         m_deathState = DEAD;
 
-    // after spell load, learn rewarded spell if need also
+    // after spell load, learn rewarded spell if need also - test on achievements
+    _LoadSpellRewards();
+    // after rewarded spell load various quest statuses
     _LoadQuestStatus(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADQUESTSTATUS));
     _LoadQuestStatusRewarded(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADQUESTSTATUSREW));
     _LoadDailyQuestStatus(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADDAILYQUESTSTATUS));
@@ -20624,6 +20626,29 @@ void Player::_LoadAccountSpells(PreparedQueryResult result)
         do
             addSpell((*result)[0].GetUInt32(), (*result)[1].GetBool(), false, false, false, true);
         while (result->NextRow());
+    }
+}
+
+void Player::_LoadSpellRewards()
+{
+    // check on achievement reward spell
+    CompletedAchievementMap const* achievs = GetAchievementMgr().GetCompletedAchievementsList();
+
+    if (!achievs || achievs->empty())
+        return;
+
+    for (CompletedAchievementMap::const_iterator iter = achievs->begin(); iter != achievs->end(); ++iter)
+    {
+        AchievementEntry const* achievement = sAchievementMgr->GetAchievement(iter->first);
+
+        if (!achievement)
+            continue;
+
+        if (AchievementReward const* reward = sAchievementMgr->GetAchievementReward(achievement))
+        {
+            if (reward->learnSpell && !HasSpell(reward->learnSpell))
+                learnSpell(reward->learnSpell, true);
+        }
     }
 }
 

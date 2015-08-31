@@ -306,6 +306,11 @@ class AchievementMgr
         CriteriaProgressTree* GetCriteriaTreeProgressMap(uint32 criteriaTreeId);
         void ClearProgressMap(CriteriaProgressMap* progressMap);
 
+        CompletedAchievementMap const* GetCompletedAchievementsList()
+        {
+            return &m_completedAchievements;
+        }
+
     private:
         enum ProgressType { PROGRESS_SET, PROGRESS_ACCUMULATE, PROGRESS_HIGHEST };
         void SendAchievementEarned(AchievementEntry const* achievement) const;
