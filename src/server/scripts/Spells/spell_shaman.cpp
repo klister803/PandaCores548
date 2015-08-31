@@ -997,8 +997,26 @@ class spell_sha_healing_rain : public SpellScriptLoader
                 }
             }
 
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Aura* aura = caster->GetAura(73685))
+                    {
+                        if (AuraEffect* eff = aura->GetEffect(EFFECT_1))
+                        {
+                            amount = eff->GetAmount();
+                            caster->RemoveAurasDueToSpell(73685);
+                        }
+                    }
+                    else
+                        amount = 0;
+                }
+            }
+
             void Register()
             {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_sha_healing_rain_AuraScript::CalculateAmount, EFFECT_2, SPELL_AURA_DUMMY);
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_sha_healing_rain_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
             }
         };

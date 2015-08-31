@@ -2633,6 +2633,13 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
         
         switch (m_spellInfo->Id)
         {
+            case 73921:  // Healing Rain
+            {
+                if (Aura* aura = caster->GetAura(73920))
+                    if (AuraEffect* eff = aura->GetEffect(EFFECT_2))
+                        AddPct(addhealth, eff->GetAmount());
+                break;
+            }
             case 148009: // Spirit of Chi-Ji
             {
                 addhealth /= m_UniqueTargetInfo.size();
