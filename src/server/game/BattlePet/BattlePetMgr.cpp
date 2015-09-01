@@ -63,9 +63,9 @@ bool BattlePetMgr::BuildPetJournal(WorldPacket *data)
     uint32 countPos = bitData.bitwpos();
     bitData.WriteBits(0, 19);
 
-    for (PetJournal::const_iterator itr = m_PetJournal.begin(); itr != m_PetJournal.end(); ++itr)
+    for (auto itr : m_PetJournal)
     {
-        PetJournalInfo* petInfo = itr->second;
+        PetJournalInfo* petInfo = itr.second;
 
         // prevent crash
         if (!petInfo)
@@ -75,7 +75,7 @@ bool BattlePetMgr::BuildPetJournal(WorldPacket *data)
         if (petInfo->GetState() == STATE_DELETED)
             continue;
 
-        ObjectGuid guid = itr->first;
+        ObjectGuid guid = itr.first;
         uint8 len = petInfo->GetCustomName() == "" ? 0 : petInfo->GetCustomName().length();
 
         bitData.WriteBit(!petInfo->GetBreedID());     // hasBreed, inverse
@@ -120,14 +120,14 @@ bool BattlePetMgr::BuildPetJournal(WorldPacket *data)
     ByteBuffer byteSlotData;
 
     // pointer to last element
-    PetBattleSlots::const_iterator itr2 = m_battleSlots.end();
+    auto itr2 = m_battleSlots.end();
     if (!m_battleSlots.empty())
         --itr2;
 
-    for (PetBattleSlots::const_iterator itr = m_battleSlots.begin(); itr != m_battleSlots.end(); ++itr)
+    for (auto itr : m_battleSlots)
     {
-        uint8 slotIndex = itr->first;
-        PetBattleSlot* slot = itr->second;
+        uint8 slotIndex = itr.first;
+        PetBattleSlot* slot = itr.second;
 
         if (!slot)
             return false;
@@ -138,7 +138,7 @@ bool BattlePetMgr::BuildPetJournal(WorldPacket *data)
         bitData.WriteGuidMask<7, 1, 3, 2, 5, 0, 4, 6>(slot->GetPet());     // pet guid in slot
         bitData.WriteBit(SlotIsLocked(slotIndex));                         // locked slot
 
-        if (itr == itr2)
+        if (itr.first == itr2->first)
             bitData.WriteBit(1);                      // !hasJournalLock
 
         byteSlotData.WriteGuidBytes<3, 7, 5, 1, 4, 0, 6, 2>(slot->GetPet());
@@ -187,9 +187,9 @@ void BattlePetMgr::SendUpdatePets(std::list<uint64> &updates, bool added)
     uint32 countPos = bitData.bitwpos();
     bitData.WriteBits(updates.size(), 19);
 
-    for (std::list<uint64>::iterator i = updates.begin(); i != updates.end(); ++i)
+    for (auto i : updates)
     {
-        PetJournalInfo* petInfo = GetPetInfoByPetGUID((*i));
+        PetJournalInfo* petInfo = GetPetInfoByPetGUID(i);
 
         if (!petInfo || petInfo->GetState() == STATE_DELETED)
         {
@@ -202,7 +202,7 @@ void BattlePetMgr::SendUpdatePets(std::list<uint64> &updates, bool added)
             continue;
         }
 
-        ObjectGuid guid = (*i);
+        ObjectGuid guid = i;
         uint8 len = petInfo->GetCustomName() == "" ? 0 : petInfo->GetCustomName().length();
 
         bitData.WriteBits(len, 7);                         // custom name length
@@ -315,15 +315,15 @@ uint16 BattlePetMgr::GetRandomBreedID(uint32 speciesID)
     if (std::vector<uint32> const* breeds = sObjectMgr->GetPossibleBreedsForSpecies(speciesID))
     {
         uint32 sum = 0;
-        for (std::vector<uint32>::const_iterator itr = breeds->begin(); itr != breeds->end(); ++itr)
-            sum += GetWeightForBreed((*itr));
+        for (auto itr : *breeds)
+            sum += GetWeightForBreed(itr);
 
         uint32 r = urand(0, sum);
         uint32 current_sum = 0;
 
-        for (std::vector<uint32>::const_iterator itr = breeds->begin(); itr != breeds->end(); ++itr)
+        for (auto itr : *breeds)
         {
-            uint16 breedID = (*itr);
+            uint16 breedID = itr;
             if (current_sum <= r && r < current_sum + GetWeightForBreed(breedID))
                 return breedID;
 
@@ -351,9 +351,9 @@ void BattlePetMgr::SendPetBattleRequestFailed(uint8 reason)
 
 bool BattlePetMgr::AllSlotsEmpty()
 {
-    for (PetBattleSlots::const_iterator s = m_battleSlots.begin(); s != m_battleSlots.end(); ++s)
+    for (auto s : m_battleSlots)
     {
-        PetBattleSlot * slot = s->second;
+        PetBattleSlot * slot = s.second;
 
         if (!slot)
             return true;
@@ -367,9 +367,9 @@ bool BattlePetMgr::AllSlotsEmpty()
 
 bool BattlePetMgr::AllSlotsDead()
 {
-    for (PetBattleSlots::const_iterator s = m_battleSlots.begin(); s != m_battleSlots.end(); ++s)
+    for (auto s : m_battleSlots)
     {
-        PetBattleSlot * slot = s->second;
+        PetBattleSlot * slot = s.second;
 
         if (!slot)
             return true;
@@ -391,9 +391,9 @@ bool BattlePetMgr::AllSlotsDead()
 
 bool BattlePetMgr::PetIsSlotted(uint64 guid)
 {
-    for (PetBattleSlots::const_iterator s = m_battleSlots.begin(); s != m_battleSlots.end(); ++s)
+    for (auto s : m_battleSlots)
     {
-        if (PetBattleSlot * slot = s->second)
+        if (PetBattleSlot * slot = s.second)
         {
             if (slot->GetPet() == guid)
                 return true;
@@ -561,9 +561,9 @@ uint8 PetBattleWild::GetTotalPetCountInTeam(uint8 team, bool onlyActive)
 {
     uint8 count = 0;
 
-    for (BattleInfo::const_iterator itr = battleInfo.begin(); itr != battleInfo.end(); ++itr)
+    for (auto itr : battleInfo)
     {
-        PetBattleInfo * pb = (*itr);
+        PetBattleInfo * pb = itr;
 
         if (!pb || pb->GetTeam() != team)
             continue;
@@ -582,9 +582,9 @@ uint8 PetBattleWild::GetTotalPetCountInTeam(uint8 team, bool onlyActive)
 
 PetBattleInfo* PetBattleWild::GetFrontPet(uint8 team)
 {
-    for (BattleInfo::const_iterator itr = battleInfo.begin(); itr != battleInfo.end(); ++itr)
+    for (auto itr : battleInfo)
     {
-        PetBattleInfo * pb = (*itr);
+        PetBattleInfo * pb = itr;
 
         if (!pb || pb->GetTeam() != team || !pb->IsFrontPet())
             continue;
@@ -597,9 +597,9 @@ PetBattleInfo* PetBattleWild::GetFrontPet(uint8 team)
 
 void PetBattleWild::SetFrontPet(uint8 team, uint8 petNumber)
 {
-    for (BattleInfo::const_iterator itr = battleInfo.begin(); itr != battleInfo.end(); ++itr)
+    for (auto itr : battleInfo)
     {
-        PetBattleInfo * pb = (*itr);
+        PetBattleInfo * pb = itr;
 
         if (!pb || pb->GetTeam() != team)
             continue;
@@ -607,9 +607,9 @@ void PetBattleWild::SetFrontPet(uint8 team, uint8 petNumber)
         pb->SetFrontPet(false);
     }
 
-    for (BattleInfo::const_iterator itr = battleInfo.begin(); itr != battleInfo.end(); ++itr)
+    for (auto itr : battleInfo)
     {
-        PetBattleInfo * pb = (*itr);
+        PetBattleInfo * pb = itr;
 
         if (!pb || pb->GetTeam() != team || pb->GetPetID() != petNumber)
             continue;
@@ -646,9 +646,9 @@ void PetBattleWild::SendFullUpdate(ObjectGuid creatureGuid)
         data.WriteBits(GetTotalPetCountInTeam(i), 2);
         data.WriteGuidMask<1>(teamGuids[i]);
 
-        for (BattleInfo::const_iterator itr = battleInfo.begin(); itr != battleInfo.end(); ++itr)
+        for (auto itr : battleInfo)
         {
-            PetBattleInfo * pb = (*itr);
+            PetBattleInfo * pb = itr;
 
             // check vaild
             if (!pb || pb->GetTeam() != i)
@@ -690,9 +690,9 @@ void PetBattleWild::SendFullUpdate(ObjectGuid creatureGuid)
 
     for (uint8 i = 0; i < 2; ++i)
     {
-        for (BattleInfo::const_iterator itr = battleInfo.begin(); itr != battleInfo.end(); ++itr)
+        for (auto itr : battleInfo)
         {
-            PetBattleInfo * pb = (*itr);
+            PetBattleInfo * pb = itr;
 
             // check vaild
             if (!pb || pb->GetTeam() != i)
@@ -857,9 +857,9 @@ void PetBattleWild::SendFirstRound(PetBattleRoundResults* firstRound)
     // effects count
     data.WriteBits(firstRound->effects.size(), 22);
 
-    for (std::list<PetBattleEffect*>::iterator itr = firstRound->effects.begin(); itr != firstRound->effects.end(); ++itr)
+    for (auto itr : firstRound->effects)
     {
-        PetBattleEffect* effect = (*itr);
+        PetBattleEffect* effect = itr;
 
         if (!effect)
             return;
@@ -871,9 +871,9 @@ void PetBattleWild::SendFirstRound(PetBattleRoundResults* firstRound)
         data.WriteBits(effect->targets.size(), 25);
         data.WriteBit(1);
 
-        for (std::list<PetBattleEffectTarget*>::iterator i = effect->targets.begin(); i != effect->targets.end(); ++i)
+        for (auto i : effect->targets)
         {
-            PetBattleEffectTarget* target = (*i);
+            PetBattleEffectTarget* target = i;
 
             if (!target)
                 return;
@@ -890,16 +890,16 @@ void PetBattleWild::SendFirstRound(PetBattleRoundResults* firstRound)
     // cooldowns count
     data.WriteBits(0, 20);
 
-    for (std::list<PetBattleEffect*>::iterator itr = firstRound->effects.begin(); itr != firstRound->effects.end(); ++itr)
+    for (auto itr : firstRound->effects)
     {
-        PetBattleEffect* effect = (*itr);
+        PetBattleEffect* effect = itr;
 
         if (!effect)
             return;
 
-        for (std::list<PetBattleEffectTarget*>::iterator i = effect->targets.begin(); i != effect->targets.end(); ++i)
+        for (auto i : effect->targets)
         {
-            PetBattleEffectTarget* target = (*i);
+            PetBattleEffectTarget* target = i;
 
             if (!target)
                 return;
@@ -957,9 +957,9 @@ void PetBattleWild::SendForceReplacePet(PetBattleRoundResults* round)
     // effect count
     data.WriteBits(round->effects.size(), 22);
 
-    for (std::list<PetBattleEffect*>::iterator itr = round->effects.begin(); itr != round->effects.end(); ++itr)
+    for (auto itr : round->effects)
     {
-        PetBattleEffect* effect = (*itr);
+        PetBattleEffect* effect = itr;
 
         if (!effect)
             return;
@@ -973,9 +973,9 @@ void PetBattleWild::SendForceReplacePet(PetBattleRoundResults* round)
         data.WriteBits(effect->targets.size(), 25);
         data.WriteBit(!effect->petBattleEffectType);
 
-        for (std::list<PetBattleEffectTarget*>::iterator i = effect->targets.begin(); i != effect->targets.end(); ++i)
+        for (auto i : effect->targets)
         {
-            PetBattleEffectTarget* target = (*i);
+            PetBattleEffectTarget* target = i;
 
             if (!target)
                 return;
@@ -995,16 +995,16 @@ void PetBattleWild::SendForceReplacePet(PetBattleRoundResults* round)
 
     data.WriteBits(round->petXDiedNumbers.size(), 3);
 
-    for (std::list<PetBattleEffect*>::iterator itr = round->effects.begin(); itr != round->effects.end(); ++itr)
+    for (auto itr : round->effects)
     {
-        PetBattleEffect* effect = (*itr);
+        PetBattleEffect* effect = itr;
 
         if (!effect)
             return;
 
-        for (std::list<PetBattleEffectTarget*>::iterator i = effect->targets.begin(); i != effect->targets.end(); ++i)
+        for (auto i : effect->targets)
         {
-            PetBattleEffectTarget* target = (*i);
+            PetBattleEffectTarget* target = i;
 
             if (!target)
                 return;
@@ -1109,9 +1109,9 @@ bool PetBattleWild::UseAbilityHandler(uint32 abilityID, uint32 roundID)
 
 int8 PetBattleWild::GetLastAlivePetID(uint8 team)
 {
-    for (BattleInfo::const_iterator itr = battleInfo.begin(); itr != battleInfo.end(); ++itr)
+    for (auto itr : battleInfo)
     {
-        PetBattleInfo * pb = (*itr);
+        PetBattleInfo * pb = itr;
 
         if (!pb || pb->GetTeam() != team)
             continue;
@@ -1367,9 +1367,9 @@ void PetBattleWild::SendRoundResults(PetBattleRoundResults* round)
     data.WriteBits(0, 20);
     // effects count
     data.WriteBits(round->effects.size(), 22);
-    for (std::list<PetBattleEffect*>::iterator itr = round->effects.begin(); itr != round->effects.end(); ++itr)
+    for (auto itr : round->effects)
     {
-        PetBattleEffect* effect = (*itr);
+        PetBattleEffect* effect = itr;
 
         if (!effect)
             return;
@@ -1382,9 +1382,9 @@ void PetBattleWild::SendRoundResults(PetBattleRoundResults* round)
         data.WriteBit(!effect->abilityEffectID); // !hasAbilityEffectID
 
         data.WriteBits(effect->targets.size(), 25);
-        for (std::list<PetBattleEffectTarget*>::iterator i = effect->targets.begin(); i != effect->targets.end(); ++i)
+        for (auto i : effect->targets)
         {
-            PetBattleEffectTarget* target = (*i);
+            PetBattleEffectTarget* target = i;
 
             if (!target)
                 return;
@@ -1414,9 +1414,9 @@ void PetBattleWild::SendRoundResults(PetBattleRoundResults* round)
     // cooldowns
     //
 
-    for (std::list<PetBattleEffect*>::iterator itr = round->effects.begin(); itr != round->effects.end(); ++itr)
+    for (auto itr : round->effects)
     {
-        PetBattleEffect* effect = (*itr);
+        PetBattleEffect* effect = itr;
 
         if (!effect)
             return;
@@ -1579,9 +1579,9 @@ void PetBattleWild::SendFinalRound()
 
     for (uint8 i = 0; i < 2; i++)
     {
-        for (BattleInfo::const_iterator itr = battleInfo.begin(); itr != battleInfo.end(); ++itr)
+        for (auto itr : battleInfo)
         {
-            PetBattleInfo * pb = (*itr);
+            PetBattleInfo * pb = itr;
 
             if (!pb || pb->GetTeam() != i)
                 continue;
@@ -1606,9 +1606,9 @@ void PetBattleWild::SendFinalRound()
 
     for (uint8 i = 0; i < 2; i++)
     {
-        for (BattleInfo::const_iterator itr = battleInfo.begin(); itr != battleInfo.end(); ++itr)
+        for (auto itr : battleInfo)
         {
-            PetBattleInfo * pb = (*itr);
+            PetBattleInfo * pb = itr;
 
             if (!pb || pb->GetTeam() != i)
                 continue;
@@ -1644,9 +1644,9 @@ void PetBattleWild::UpdatePetsAfterBattle()
     // find trapped pets
     for (uint8 i = 0; i < 2; ++i)
     {
-        for (BattleInfo::const_iterator itr = battleInfo.begin(); itr != battleInfo.end(); ++itr)
+        for (auto itr : battleInfo)
         {
-            PetBattleInfo * pb = (*itr);
+            PetBattleInfo * pb = itr;
 
             if (!pb || pb->GetTeam() != i)
                 continue;

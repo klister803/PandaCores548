@@ -626,11 +626,11 @@ public:
     explicit BattlePetMgr(Player* owner);
     ~BattlePetMgr()
     {
-        for (PetJournal::const_iterator itr = m_PetJournal.begin(); itr != m_PetJournal.end(); ++itr)
-            delete itr->second;
+        for (auto itr : m_PetJournal)
+            delete itr.second;
 
-        for (PetBattleSlots::const_iterator itr = m_battleSlots.begin(); itr != m_battleSlots.end(); ++itr)
-            delete itr->second;
+        for (auto itr : m_battleSlots)
+            delete itr.second;
     }
 
     bool BuildPetJournal(WorldPacket *data);
@@ -650,7 +650,7 @@ public:
 
     PetJournalInfo* GetPetInfoByPetGUID(uint64 guid)
     {
-        PetJournal::const_iterator pet = m_PetJournal.find(guid);
+        auto pet = m_PetJournal.find(guid);
         if (pet != m_PetJournal.end())
             return pet->second;
 
@@ -661,9 +661,9 @@ public:
     {
         uint32 count = 0;
 
-        for (PetJournal::const_iterator pet = m_PetJournal.begin(); pet != m_PetJournal.end(); ++pet)
+        for (auto pet : m_PetJournal)
         {
-            PetJournalInfo * pi = pet->second;
+            PetJournalInfo * pi = pet.second;
 
             if (!pi || pi->GetState() == STATE_DELETED)
                 continue;
@@ -677,7 +677,7 @@ public:
 
     void DeletePetByPetGUID(uint64 guid)
     {
-        PetJournal::const_iterator pet = m_PetJournal.find(guid);
+        auto pet = m_PetJournal.find(guid);
         if (pet == m_PetJournal.end())
             return;
 
@@ -686,15 +686,15 @@ public:
 
     uint64 GetPetGUIDBySpell(uint32 spell)
     {
-        for (PetJournal::const_iterator pet = m_PetJournal.begin(); pet != m_PetJournal.end(); ++pet)
+        for (auto pet : m_PetJournal)
         {
-            PetJournalInfo * pi = pet->second;
+            PetJournalInfo * pi = pet.second;
 
             if (!pi || pi->GetState() == STATE_DELETED)
                 continue;
 
             if (pi->GetSummonSpell() == spell)
-                return pet->first;
+                return pet.first;
         }
 
         return 0;
@@ -702,7 +702,7 @@ public:
 
     bool HasPet(uint64 guid)
     {
-        PetJournal::const_iterator pet = m_PetJournal.find(guid);
+        auto pet = m_PetJournal.find(guid);
         if (pet != m_PetJournal.end())
             return true;
 
@@ -713,7 +713,7 @@ public:
 
     BattlePetSpeciesEntry const* GetBattlePetSpeciesEntry(uint32 creatureEntry)
     {
-        BattlePetSpeciesBySpellIdMap::const_iterator it = sBattlePetSpeciesBySpellId.find(creatureEntry);
+        auto it = sBattlePetSpeciesBySpellId.find(creatureEntry);
         if (it != sBattlePetSpeciesBySpellId.end())
             return it->second;
 
@@ -724,7 +724,7 @@ public:
 
     uint64 GetPetGUIDBySlot(uint8 index)
     {
-        PetBattleSlots::const_iterator itr = m_battleSlots.find(index);
+        auto itr = m_battleSlots.find(index);
         if (itr != m_battleSlots.end())
             return itr->first;
 
