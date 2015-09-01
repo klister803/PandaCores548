@@ -860,7 +860,7 @@ class spell_pri_devouring_plague : public SpellScriptLoader
             bool Load()
             {
                 if(Unit* caster = GetCaster())
-                    orbCount = caster->GetPower(POWER_SHADOW_ORB);
+                    orbCount = caster->GetPower(POWER_SHADOW_ORB) + 1;
                 GetAura()->SetCustomData(orbCount);
                 return true;
             }
@@ -1615,7 +1615,7 @@ class spell_pri_psychic_horror : public SpellScriptLoader
                         Player* _player = caster->ToPlayer();
                         if (_player && _player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_PRIEST_SHADOW)
                         {
-                            int32 currentPower = caster->GetPower(POWER_SHADOW_ORB);
+                            int32 currentPower = caster->GetPower(POWER_SHADOW_ORB) + 1;
                             caster->ModifyPower(POWER_SHADOW_ORB, -currentPower, true);
 
                             // +1s per Shadow Orb consumed
