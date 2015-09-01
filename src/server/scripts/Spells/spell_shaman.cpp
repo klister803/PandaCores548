@@ -1811,6 +1811,43 @@ class spell_sha_grounding_totem : public SpellScriptLoader
         }
 };
 
+// 118475
+class spell_sha_unleashed_fury_rockbiter : public SpellScriptLoader
+{
+public:
+    spell_sha_unleashed_fury_rockbiter() : SpellScriptLoader("spell_sha_unleashed_fury_rockbiter") { }
+
+    class spell_sha_unleashed_fury_rockbiter_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_sha_unleashed_fury_rockbiter_AuraScript);
+
+        void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
+        {
+            amount = 0;
+        }
+
+        void Absorb(AuraEffect* /*AuraEffect**/, DamageInfo& dmgInfo, uint32& absorbAmount)
+        {
+            if (Unit* attacker = dmgInfo.GetAttacker())
+            {
+                if (attacker->HasAura(73684, GetCasterGUID()))
+                    absorbAmount = CalculatePct(dmgInfo.GetDamage(), 40);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectAbsorb += AuraEffectAbsorbFn(spell_sha_unleashed_fury_rockbiter_AuraScript::Absorb, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+            DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_sha_unleashed_fury_rockbiter_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_sha_unleashed_fury_rockbiter_AuraScript();
+    }
+};
+
 void AddSC_shaman_spell_scripts()
 {
     new spell_sha_prowl();
@@ -1850,4 +1887,5 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_elemental_familiars();
     new spell_sha_grounding_totem();
     new spell_shaman_totemic_projection();
+    new spell_sha_unleashed_fury_rockbiter();
 }
