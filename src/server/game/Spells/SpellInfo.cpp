@@ -1209,8 +1209,6 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     //Spoils of Pandaria
     case 146257: //Path of Blossoms Dmg
     case 146289: //Mass Paralyses
-    case 146189: //Eminence
-    case 146068: //Blade of the hundred steps (tank buff)
     case 148515: //Shadow Volley Dummy
     case 148582: //Jade Tempest AT
     case 148583: //Jade Tempest Dmg

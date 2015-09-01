@@ -9668,20 +9668,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
 
                         break;
                     }
-                    case 146068: //Blade of the hundred steps (tank buff)[SO]
-                    {
-                        CastSpell(this, 146081, true);
-                        return true;
-                    }
-                    case 146189: //Eminence[SO]
-                    {
-                        if (damage)
-                        {
-                            CastCustomSpell(146190, SPELLVALUE_BASE_POINT0, damage*1.5, this, true);
-                            return true;
-                        }
-                        return false;
-                    }
                 }
                 break;
             case SPELLFAMILY_PRIEST:
