@@ -349,6 +349,60 @@ void BattlePetMgr::SendPetBattleRequestFailed(uint8 reason)
     m_player->GetSession()->SendPacket(&data);
 }
 
+bool BattlePetMgr::AllSlotsEmpty()
+{
+    for (PetBattleSlots::const_iterator s = m_battleSlots.begin(); s != m_battleSlots.end(); ++s)
+    {
+        PetBattleSlot * slot = s->second;
+
+        if (!slot)
+            return true;
+
+        if (!slot->IsEmpty())
+            return false;
+    }
+
+    return true;
+}
+
+bool BattlePetMgr::AllSlotsDead()
+{
+    for (PetBattleSlots::const_iterator s = m_battleSlots.begin(); s != m_battleSlots.end(); ++s)
+    {
+        PetBattleSlot * slot = s->second;
+
+        if (!slot)
+            return true;
+
+        if (!slot->IsEmpty())
+        {
+            if (PetJournalInfo * pet = GetPetInfoByPetGUID(slot->GetPet()))
+            {
+                if (!pet->IsDead())
+                    return false;
+            }
+        }
+        else
+            return false;
+    }
+
+    return true;
+}
+
+bool BattlePetMgr::PetIsSlotted(uint64 guid)
+{
+    for (PetBattleSlots::const_iterator s = m_battleSlots.begin(); s != m_battleSlots.end(); ++s)
+    {
+        if (PetBattleSlot * slot = s->second)
+        {
+            if (slot->GetPet() == guid)
+                return true;
+        }
+    }
+
+    return false;
+}
+
 // BattlePetStatAccumulator
 BattlePetStatAccumulator::BattlePetStatAccumulator(uint32 _speciesID, uint16 _breedID) : healthMod(0), powerMod(0), speedMod(0), qualityMultiplier(0.0f)
 {

@@ -524,5 +524,8 @@ void WorldSession::HandleBattlePetDelete(WorldPacket& recvData)
     if (petInfo->GetFlags() & 0xC)
         return;
 
+    if (_player->GetBattlePetMgr()->PetIsSlotted(guid))
+        return;
+
     _player->GetBattlePetMgr()->DeletePetByPetGUID(guid);
 }
