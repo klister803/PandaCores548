@@ -1958,7 +1958,11 @@ public:
         void OnTick(AuraEffect const* aurEff)
         {
             if (GetTarget())
-                GetTarget()->CastSpell(GetTarget(), SPELL_UNSTABLE_DEFENSE_SYSTEMS_D, true);
+            {
+                SpellInfo const* spell = sSpellMgr->GetSpellInfo(SPELL_UNSTABLE_DEFENSE_SYSTEMS_D);
+                int32 amount = spell->GetEffect(0).BasePoints + int32(spell->GetEffect(0).BasePoints * 0.4f * aurEff->GetTickNumber());
+                GetTarget()->CastCustomSpell(SPELL_UNSTABLE_DEFENSE_SYSTEMS_D, SPELLVALUE_BASE_POINT0, amount, GetTarget(), true);
+            }
         }
 
         void Register()
