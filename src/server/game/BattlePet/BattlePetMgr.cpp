@@ -352,7 +352,14 @@ void BattlePetMgr::SendPetBattleRequestFailed(uint8 reason)
 // BattlePetStatAccumulator
 BattlePetStatAccumulator::BattlePetStatAccumulator(uint32 _speciesID, uint16 _breedID) : healthMod(0), powerMod(0), speedMod(0), qualityMultiplier(0.0f)
 {
-    for (uint32 i = 0; i < sBattlePetSpeciesStateStore.GetNumRows(); ++i)
+    BattlePetSpeciesStateBySpecMapBounds bounds = sBattlePetSpeciesStateBySpecId.equal_range(_speciesID);
+    for (auto itr = bounds.first; itr != bounds.second; ++itr)
+        Accumulate(std::get<0>(itr->second), std::get<1>(itr->second));
+
+    BattlePetBreedStateByBreedMapBounds bounds1 = sBattlePetBreedStateByBreedId.equal_range(_breedID);
+    for (auto itr1 = bounds1.first; itr1 != bounds1.second; ++itr1)
+        Accumulate(std::get<0>(itr1->second), std::get<1>(itr1->second));
+    /*for (uint32 i = 0; i < sBattlePetSpeciesStateStore.GetNumRows(); ++i)
     {
         BattlePetSpeciesStateEntry const* entry = sBattlePetSpeciesStateStore.LookupEntry(i);
 
@@ -372,7 +379,7 @@ BattlePetStatAccumulator::BattlePetStatAccumulator(uint32 _speciesID, uint16 _br
 
         if (entry1->breedID == _breedID)
             Accumulate(entry1->stateID, entry1->stateModifier);
-    }
+    }*/
 }
 
 // PetBattleWild

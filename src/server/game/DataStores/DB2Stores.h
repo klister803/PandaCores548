@@ -59,6 +59,14 @@ extern ItemUpgradeDataMap sItemUpgradeDataMap;
 typedef UNORDERED_MAP<uint32, BattlePetSpeciesEntry const*> BattlePetSpeciesBySpellIdMap;
 extern BattlePetSpeciesBySpellIdMap sBattlePetSpeciesBySpellId;
 
+typedef std::multimap<uint32, std::pair<uint32, int32>> BattlePetBreedStateByBreedMap;
+typedef std::pair<BattlePetBreedStateByBreedMap::const_iterator, BattlePetBreedStateByBreedMap::const_iterator> BattlePetBreedStateByBreedMapBounds;
+extern BattlePetBreedStateByBreedMap sBattlePetBreedStateByBreedId;
+
+typedef std::multimap<uint32, std::pair<uint32, int32>> BattlePetSpeciesStateBySpecMap;
+typedef std::pair<BattlePetSpeciesStateBySpecMap::const_iterator, BattlePetSpeciesStateBySpecMap::const_iterator> BattlePetSpeciesStateBySpecMapBounds;
+extern BattlePetSpeciesStateBySpecMap sBattlePetSpeciesStateBySpecId;
+
 typedef UNORDERED_MAP<uint32, MapChallengeModeEntry const*> MapChallengeModeEntryMap;
 extern MapChallengeModeEntryMap sMapChallengeModeEntrybyMap;
 

@@ -53,7 +53,11 @@ static std::map<uint32, std::list<uint32> > sPackageItemList;
 std::list<uint32> sGameObjectsList;
 
 ItemUpgradeDataMap sItemUpgradeDataMap;
+
 BattlePetSpeciesBySpellIdMap sBattlePetSpeciesBySpellId;
+BattlePetBreedStateByBreedMap sBattlePetBreedStateByBreedId;
+BattlePetSpeciesStateBySpecMap sBattlePetSpeciesStateBySpecId;
+
 MapChallengeModeEntryMap sMapChallengeModeEntrybyMap;
 
 uint32 DB2FilesCount = 0;
@@ -113,6 +117,7 @@ void LoadDB2Stores(const std::string& dataPath)
     StoreProblemList1 bad_db2_files;
 
     LoadDB2(bad_db2_files, sBattlePetSpeciesStore,  db2Path, "BattlePetSpecies.db2");
+
     for (uint32 i = 0; i < sBattlePetSpeciesStore.GetNumRows(); ++i)
     {
         BattlePetSpeciesEntry const* entry = sBattlePetSpeciesStore.LookupEntry(i);
@@ -125,6 +130,7 @@ void LoadDB2Stores(const std::string& dataPath)
 
         sBattlePetSpeciesBySpellId[entry->CreatureEntry] = entry;
     }
+
     LoadDB2(bad_db2_files, sBattlePetAbilityStore,  db2Path, "BattlePetAbility.db2");
     LoadDB2(bad_db2_files, sBattlePetAbilityEffectStore,  db2Path, "BattlePetAbilityEffect.db2");
     LoadDB2(bad_db2_files, sBattlePetEffectPropertiesStore,  db2Path, "BattlePetEffectProperties.db2");
@@ -135,6 +141,27 @@ void LoadDB2Stores(const std::string& dataPath)
     LoadDB2(bad_db2_files, sBattlePetStateStore,  db2Path, "BattlePetState.db2");
     LoadDB2(bad_db2_files, sBattlePetBreedQualityStore,  db2Path, "BattlePetBreedQuality.db2");
     LoadDB2(bad_db2_files, sBattlePetBreedStateStore,  db2Path, "BattlePetBreedState.db2");
+
+    for (uint32 i = 0; i < sBattlePetSpeciesStateStore.GetNumRows(); ++i)
+    {
+        BattlePetSpeciesStateEntry const* entry = sBattlePetSpeciesStateStore.LookupEntry(i);
+
+        if (!entry)
+            continue;
+
+        sBattlePetSpeciesStateBySpecId.insert(BattlePetSpeciesStateBySpecMap::value_type(entry->speciesID, std::make_pair(entry->stateID, entry->stateModifier)));
+    }
+
+    for (uint32 i = 0; i < sBattlePetBreedStateStore.GetNumRows(); ++i)
+    {
+        BattlePetBreedStateEntry const* entry = sBattlePetBreedStateStore.LookupEntry(i);
+
+        if (!entry)
+            continue;
+
+        sBattlePetBreedStateByBreedId.insert(BattlePetBreedStateByBreedMap::value_type(entry->breedID, std::make_pair(entry->stateID, entry->stateModifier)));
+    }
+
     LoadDB2(bad_db2_files, sItemStore,              db2Path, "Item.db2");
     LoadDB2(bad_db2_files, sItemCurrencyCostStore,  db2Path, "ItemCurrencyCost.db2");
     LoadDB2(bad_db2_files, sItemSparseStore,        db2Path, "Item-sparse.db2");
