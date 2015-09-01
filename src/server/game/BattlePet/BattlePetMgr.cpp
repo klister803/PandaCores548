@@ -413,27 +413,6 @@ BattlePetStatAccumulator::BattlePetStatAccumulator(uint32 _speciesID, uint16 _br
     BattlePetBreedStateByBreedMapBounds bounds1 = sBattlePetBreedStateByBreedId.equal_range(_breedID);
     for (auto itr1 = bounds1.first; itr1 != bounds1.second; ++itr1)
         Accumulate(std::get<0>(itr1->second), std::get<1>(itr1->second));
-    /*for (uint32 i = 0; i < sBattlePetSpeciesStateStore.GetNumRows(); ++i)
-    {
-        BattlePetSpeciesStateEntry const* entry = sBattlePetSpeciesStateStore.LookupEntry(i);
-
-        if (!entry)
-            continue;
-
-        if (entry->speciesID == _speciesID)
-            Accumulate(entry->stateID, entry->stateModifier);
-    }
-
-    for (uint32 i = 0; i < sBattlePetBreedStateStore.GetNumRows(); ++i)
-    {
-        BattlePetBreedStateEntry const* entry1 = sBattlePetBreedStateStore.LookupEntry(i);
-
-        if (!entry1)
-            continue;
-
-        if (entry1->breedID == _breedID)
-            Accumulate(entry1->stateID, entry1->stateModifier);
-    }*/
 }
 
 // PetBattleWild

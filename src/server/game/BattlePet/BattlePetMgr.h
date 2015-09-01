@@ -246,16 +246,9 @@ public:
     }
     void CalcQualityMultiplier(uint8 quality, uint8 level)    
     {
-        for (uint32 i = 0; i < sBattlePetBreedQualityStore.GetNumRows(); ++i)
-        {
-            BattlePetBreedQualityEntry const* qEntry = sBattlePetBreedQualityStore.LookupEntry(i);
-
-            if (!qEntry)
-                continue;
-
-            if (qEntry->quality == quality)
-                qualityMultiplier = level * 0.01f * qEntry->qualityModifier;
-        }
+        auto itr = sBattlePetQualityMultiplierId.find(quality);
+        if (itr != sBattlePetQualityMultiplierId.end())
+            qualityMultiplier = level * 0.01f * itr->second;
     }
     void Accumulate(uint32 stateID, int32 value)
     {

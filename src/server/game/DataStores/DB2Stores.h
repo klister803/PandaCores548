@@ -67,6 +67,9 @@ typedef std::multimap<uint32, std::pair<uint32, int32>> BattlePetSpeciesStateByS
 typedef std::pair<BattlePetSpeciesStateBySpecMap::const_iterator, BattlePetSpeciesStateBySpecMap::const_iterator> BattlePetSpeciesStateBySpecMapBounds;
 extern BattlePetSpeciesStateBySpecMap sBattlePetSpeciesStateBySpecId;
 
+typedef std::map<uint32, uint8> BattlePetQualityMultiplierMap;
+extern BattlePetQualityMultiplierMap sBattlePetQualityMultiplierId;
+
 typedef UNORDERED_MAP<uint32, MapChallengeModeEntry const*> MapChallengeModeEntryMap;
 extern MapChallengeModeEntryMap sMapChallengeModeEntrybyMap;
 

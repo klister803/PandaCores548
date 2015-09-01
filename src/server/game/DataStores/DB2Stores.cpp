@@ -57,6 +57,7 @@ ItemUpgradeDataMap sItemUpgradeDataMap;
 BattlePetSpeciesBySpellIdMap sBattlePetSpeciesBySpellId;
 BattlePetBreedStateByBreedMap sBattlePetBreedStateByBreedId;
 BattlePetSpeciesStateBySpecMap sBattlePetSpeciesStateBySpecId;
+BattlePetQualityMultiplierMap sBattlePetQualityMultiplierId;
 
 MapChallengeModeEntryMap sMapChallengeModeEntrybyMap;
 
@@ -160,6 +161,16 @@ void LoadDB2Stores(const std::string& dataPath)
             continue;
 
         sBattlePetBreedStateByBreedId.insert(BattlePetBreedStateByBreedMap::value_type(entry->breedID, std::make_pair(entry->stateID, entry->stateModifier)));
+    }
+
+    for (uint32 i = 0; i < sBattlePetBreedQualityStore.GetNumRows(); ++i)
+    {
+        BattlePetBreedQualityEntry const* qEntry = sBattlePetBreedQualityStore.LookupEntry(i);
+
+        if (!qEntry)
+            continue;
+
+        sBattlePetQualityMultiplierId[qEntry->quality] = qEntry->qualityModifier;
     }
 
     LoadDB2(bad_db2_files, sItemStore,              db2Path, "Item.db2");
