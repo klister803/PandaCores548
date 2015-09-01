@@ -527,6 +527,8 @@ public:
     void FinishPetBattle(bool error = false);
     void SendFinishPetBattle();
 
+    PetBattleInfo* GetPet(uint8 petNumber);
+
     PetBattleInfo* GetFrontPet(uint8 team);
     void SetFrontPet(uint8 team, uint8 petNumber);
 
@@ -559,7 +561,7 @@ public:
     // only demo
     int8 GetLastAlivePetID(uint8 team);
 
-    uint8 GetTeamIndex(uint8 petNumber)
+    uint8 GetPetTeamIndex(uint8 petNumber)
     {
         switch (petNumber)
         {

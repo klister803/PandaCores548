@@ -559,6 +559,21 @@ uint8 PetBattleWild::GetTotalPetCountInTeam(uint8 team, bool onlyActive)
     return count;
 }
 
+PetBattleInfo* PetBattleWild::GetPet(uint8 petNumber)
+{
+    for (auto itr : battleInfo)
+    {
+        PetBattleInfo * pb = itr;
+
+        if (!pb || pb->GetPetID() != petNumber)
+            continue;
+
+        return pb;
+    }
+
+    return NULL;
+}
+
 PetBattleInfo* PetBattleWild::GetFrontPet(uint8 team)
 {
     for (auto itr : battleInfo)
@@ -576,25 +591,19 @@ PetBattleInfo* PetBattleWild::GetFrontPet(uint8 team)
 
 void PetBattleWild::SetFrontPet(uint8 team, uint8 petNumber)
 {
-    for (auto itr : battleInfo)
-    {
-        PetBattleInfo * pb = itr;
+    PetBattleInfo * pb = GetFrontPet(team);
 
-        if (!pb || pb->GetTeam() != team)
-            continue;
+    if (!pb)
+        return;
 
-        pb->SetFrontPet(false);
-    }
+    pb->SetFrontPet(false);
 
-    for (auto itr : battleInfo)
-    {
-        PetBattleInfo * pb = itr;
+    PetBattleInfo * pb1 = GetPet(petNumber);
 
-        if (!pb || pb->GetTeam() != team || pb->GetPetID() != petNumber)
-            continue;
+    if (!pb1)
+        return;
 
-        pb->SetFrontPet(true);
-    }
+    pb1->SetFrontPet(true);
 }
 
 void PetBattleWild::SendFullUpdate(ObjectGuid creatureGuid)
@@ -732,7 +741,7 @@ void PetBattleWild::SendFullUpdate(ObjectGuid creatureGuid)
             data << uint16(pb->GetLevel());
             data.WriteGuidBytes<7, 5>(guid);
             data << uint32(pb->GetPower());
-            uint8 slot = GetTeamIndex(pb->GetPetID());
+            uint8 slot = GetPetTeamIndex(pb->GetPetID());
             data << uint8(slot);                       // Slot
         }
 
