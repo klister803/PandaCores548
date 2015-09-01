@@ -788,64 +788,6 @@ class spell_sha_lava_surge : public SpellScriptLoader
         }
 };
 
-// Called by Stormstrike - 17364 and Lava Lash - 60103
-// Static Shock - 51527
-class spell_sha_static_shock : public SpellScriptLoader
-{
-    public:
-        spell_sha_static_shock() : SpellScriptLoader("spell_sha_static_shock") { }
-
-        class spell_sha_static_shock_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_sha_static_shock_SpellScript);
-
-            bool Validate(SpellInfo const* /*spell*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(SPELL_SHA_LAVA_LASH) || !sSpellMgr->GetSpellInfo(SPELL_SHA_STORMSTRIKE))
-                    return false;
-                return true;
-            }
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    Unit* target = GetHitUnit();
-
-                    // While have Lightning Shield active
-                    if (target && _player->HasAura(324) && _player->HasAura(51527))
-                    {
-                        // Item - Shaman T9 Enhancement 2P Bonus (Static Shock)
-                        if (_player->HasAura(67220))
-                        {
-                            if (roll_chance_i(48))
-                            {
-                                _player->CastSpell(target, SPELL_SHA_LIGHTNING_SHIELD_ORB_DAMAGE, true);
-                            }
-                        }
-                        else
-                        {
-                            if (roll_chance_i(45))
-                            {
-                                _player->CastSpell(target, SPELL_SHA_LIGHTNING_SHIELD_ORB_DAMAGE, true);
-                            }
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_sha_static_shock_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_sha_static_shock_SpellScript();
-        }
-};
-
 // Elemental Blast - 117014
 class spell_sha_elemental_blast : public SpellScriptLoader
 {
@@ -1886,7 +1828,6 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_rolling_thunder();
     new spell_sha_fulmination();
     new spell_sha_lava_surge();
-    new spell_sha_static_shock();
     new spell_sha_elemental_blast();
     new spell_sha_earthquake_tick();
     new spell_sha_earthquake();
