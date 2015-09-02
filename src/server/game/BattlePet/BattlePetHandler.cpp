@@ -455,6 +455,7 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
         {
             petBattle->FinishPetBattle(true);
             // error response
+            return;
         }
     }
     // SkipTurn / SwapPet
@@ -464,6 +465,7 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
         {
             petBattle->FinishPetBattle(true);
             // error response
+            return;
         }
     }
     // TrapPet
@@ -473,6 +475,7 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
         {
             petBattle->FinishPetBattle(true);
             // error response
+            return;
         }
     }
     // Forfeit - handle in QuitNotify
@@ -484,6 +487,7 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
         {
             petBattle->FinishPetBattle(true);
             // error response
+            return;
         }
     }
 }
