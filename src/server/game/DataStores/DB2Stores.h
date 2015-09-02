@@ -80,6 +80,10 @@ extern BattlePetEffectEntryByTurnIdMap sBattlePetEffectEntryByTurnId;
 //typedef std::map<uint32, BattlePetEffectPropertiesEntry const*> BattlePetEffectPropEntryByPropIdMap;
 //extern BattlePetEffectPropEntryByPropIdMap sBattlePetEffectPropEntryByPropId;
 
+typedef std::multimap<uint32, BattlePetSpeciesXAbilityEntry const*> BattlePetXAbilityEntryBySpecIdMap;
+typedef std::pair<BattlePetXAbilityEntryBySpecIdMap::const_iterator, BattlePetXAbilityEntryBySpecIdMap::const_iterator> BattlePetXAbilityEntryBySpecIdMapBounds;
+extern BattlePetXAbilityEntryBySpecIdMap sBattlePetXAbilityEntryBySpecId;
+
 typedef UNORDERED_MAP<uint32, MapChallengeModeEntry const*> MapChallengeModeEntryMap;
 extern MapChallengeModeEntryMap sMapChallengeModeEntrybyMap;
 

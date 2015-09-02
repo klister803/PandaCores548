@@ -60,6 +60,7 @@ BattlePetSpeciesStateBySpecMap sBattlePetSpeciesStateBySpecId;
 BattlePetQualityMultiplierMap sBattlePetQualityMultiplierId;
 BattlePetTurnByAbilityIdMap sBattlePetTurnByAbilityId;
 BattlePetEffectEntryByTurnIdMap sBattlePetEffectEntryByTurnId;
+BattlePetXAbilityEntryBySpecIdMap sBattlePetXAbilityEntryBySpecId;
 
 MapChallengeModeEntryMap sMapChallengeModeEntrybyMap;
 
@@ -193,6 +194,16 @@ void LoadDB2Stores(const std::string& dataPath)
             continue;
 
         sBattlePetEffectEntryByTurnId[eEntry->TurnEntryID] = eEntry;
+    }
+
+    for (uint32 i = 0; i < sBattlePetSpeciesXAbilityStore.GetNumRows(); ++i)
+    {
+        BattlePetSpeciesXAbilityEntry const* xEntry = sBattlePetSpeciesXAbilityStore.LookupEntry(i);
+
+        if (!xEntry)
+            continue;
+
+        sBattlePetXAbilityEntryBySpecId[xEntry->speciesID] = xEntry;
     }
 
     LoadDB2(bad_db2_files, sItemStore,              db2Path, "Item.db2");

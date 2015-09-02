@@ -1857,63 +1857,27 @@ float PetBattleAbilityInfo::GetAttackModifier(uint8 attackType, uint8 defenseTyp
 // PetJournalInfo
 uint32 PetJournalInfo::GetAbilityID(uint8 rank)
 {
-    for (uint32 i = 0; i < sBattlePetSpeciesXAbilityStore.GetNumRows(); ++i)
+    bool customAbility = false;
+
+    switch (rank)
     {
-        BattlePetSpeciesXAbilityEntry const* xEntry = sBattlePetSpeciesXAbilityStore.LookupEntry(i);
+        case 0: customAbility = (flags & BATTLE_PET_FLAG_CUSTOM_ABILITY_1) ? true : false; break;
+        case 1: customAbility = (flags & BATTLE_PET_FLAG_CUSTOM_ABILITY_2) ? true : false; break;
+        case 2: customAbility = (flags & BATTLE_PET_FLAG_CUSTOM_ABILITY_3) ? true : false; break;
+    }
+
+    BattlePetXAbilityEntryBySpecIdMapBounds bounds = sBattlePetXAbilityEntryBySpecId.equal_range(speciesID);
+    for (auto itr = bounds.first; itr != bounds.second; ++itr)
+    {
+        BattlePetSpeciesXAbilityEntry const* xEntry = itr->second;
 
         if (!xEntry)
             continue;
 
-        if (xEntry->speciesID == speciesID && xEntry->rank == rank)
-        {
-            if (rank == 0)
-            {
-                if (flags & BATTLE_PET_FLAG_CUSTOM_ABILITY_1)
-                {
-                    if (xEntry->requiredLevel == 10)
-                        return xEntry->abilityID;
-                    else
-                        continue;
-                }
-                else
-                {
-                    if (xEntry->requiredLevel < 10)
-                        return xEntry->abilityID;
-                }
-            }
+        bool _customAbility = xEntry->requiredLevel >= 10;
 
-            if (rank == 1)
-            {
-                if (flags & BATTLE_PET_FLAG_CUSTOM_ABILITY_2)
-                {
-                    if (xEntry->requiredLevel == 15)
-                        return xEntry->abilityID;
-                    else
-                        continue;
-                }
-                else
-                {
-                    if (xEntry->requiredLevel < 15)
-                        return xEntry->abilityID;
-                }
-            }
-
-            if (rank == 2)
-            {
-                if (flags & BATTLE_PET_FLAG_CUSTOM_ABILITY_3)
-                {
-                    if (xEntry->requiredLevel == 20)
-                        return xEntry->abilityID;
-                    else
-                        continue;
-                }
-                else
-                {
-                    if (xEntry->requiredLevel < 20)
-                        return xEntry->abilityID;
-                }
-            }
-        }
+        if (xEntry->rank == rank && customAbility == _customAbility)
+            return xEntry->abilityID;
     }
 
     return 0;
