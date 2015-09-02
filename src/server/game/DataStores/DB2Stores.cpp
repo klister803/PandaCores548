@@ -203,7 +203,7 @@ void LoadDB2Stores(const std::string& dataPath)
         if (!xEntry)
             continue;
 
-        sBattlePetXAbilityEntryBySpecId[xEntry->speciesID] = xEntry;
+        sBattlePetXAbilityEntryBySpecId.insert(BattlePetXAbilityEntryBySpecIdMap::value_type(xEntry->speciesID, xEntry));
     }
 
     LoadDB2(bad_db2_files, sItemStore,              db2Path, "Item.db2");
