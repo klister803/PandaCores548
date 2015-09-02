@@ -70,6 +70,16 @@ extern BattlePetSpeciesStateBySpecMap sBattlePetSpeciesStateBySpecId;
 typedef std::map<uint32, float> BattlePetQualityMultiplierMap;
 extern BattlePetQualityMultiplierMap sBattlePetQualityMultiplierId;
 
+typedef std::multimap<uint32, std::pair<uint32, uint8>> BattlePetTurnByAbilityIdMap;
+typedef std::pair<BattlePetTurnByAbilityIdMap::const_iterator, BattlePetTurnByAbilityIdMap::const_iterator> BattlePetTurnByAbilityIdMapBounds;
+extern BattlePetTurnByAbilityIdMap sBattlePetTurnByAbilityId;
+
+typedef std::map<uint32, BattlePetAbilityEffectEntry const*> BattlePetEffectEntryByTurnIdMap;
+extern BattlePetEffectEntryByTurnIdMap sBattlePetEffectEntryByTurnId;
+
+//typedef std::map<uint32, BattlePetEffectPropertiesEntry const*> BattlePetEffectPropEntryByPropIdMap;
+//extern BattlePetEffectPropEntryByPropIdMap sBattlePetEffectPropEntryByPropId;
+
 typedef UNORDERED_MAP<uint32, MapChallengeModeEntry const*> MapChallengeModeEntryMap;
 extern MapChallengeModeEntryMap sMapChallengeModeEntrybyMap;
 

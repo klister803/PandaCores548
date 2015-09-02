@@ -58,6 +58,8 @@ BattlePetSpeciesBySpellIdMap sBattlePetSpeciesBySpellId;
 BattlePetBreedStateByBreedMap sBattlePetBreedStateByBreedId;
 BattlePetSpeciesStateBySpecMap sBattlePetSpeciesStateBySpecId;
 BattlePetQualityMultiplierMap sBattlePetQualityMultiplierId;
+BattlePetTurnByAbilityIdMap sBattlePetTurnByAbilityId;
+BattlePetEffectEntryByTurnIdMap sBattlePetEffectEntryByTurnId;
 
 MapChallengeModeEntryMap sMapChallengeModeEntrybyMap;
 
@@ -171,6 +173,26 @@ void LoadDB2Stores(const std::string& dataPath)
             continue;
 
         sBattlePetQualityMultiplierId[qEntry->quality] = qEntry->qualityModifier;
+    }
+
+    for (uint32 i = 0; i < sBattlePetAbilityTurnStore.GetNumRows(); ++i)
+    {
+        BattlePetAbilityTurnEntry const* tEntry = sBattlePetAbilityTurnStore.LookupEntry(i);
+
+        if (!tEntry)
+            continue;
+
+        sBattlePetTurnByAbilityId.insert(BattlePetTurnByAbilityIdMap::value_type(tEntry->AbilityID, std::make_pair(tEntry->ID, tEntry->turnIndex)));
+    }
+
+    for (uint32 i = 0; i < sBattlePetAbilityEffectStore.GetNumRows(); ++i)
+    {
+        BattlePetAbilityEffectEntry const* eEntry = sBattlePetAbilityEffectStore.LookupEntry(i);
+
+        if (!eEntry)
+            continue;
+
+        sBattlePetEffectEntryByTurnId[eEntry->TurnEntryID] = eEntry;
     }
 
     LoadDB2(bad_db2_files, sItemStore,              db2Path, "Item.db2");

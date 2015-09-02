@@ -1729,27 +1729,18 @@ void PetBattleWild::FinishPetBattle(bool error)
 
 uint32 PetBattleWild::GetVisualEffectIDByAbilityID(uint32 abilityID, uint8 turnIndex)
 {
-    // get turn data entry
-    for (uint32 i = 0; i < sBattlePetAbilityTurnStore.GetNumRows(); ++i)
+    BattlePetTurnByAbilityIdMapBounds bounds = sBattlePetTurnByAbilityId.equal_range(abilityID);
+    for (auto itr = bounds.first; itr != bounds.second; ++itr)
     {
-        BattlePetAbilityTurnEntry const* tEntry = sBattlePetAbilityTurnStore.LookupEntry(i);
+        uint8 _turnIndex = std::get<1>(itr->second);
 
-        if (!tEntry)
-            continue;
-
-        if (tEntry->AbilityID == abilityID && tEntry->turnIndex == turnIndex)
+        if (_turnIndex == turnIndex)
         {
-            // get effect data
-            for (uint32 j = 0; j < sBattlePetAbilityEffectStore.GetNumRows(); ++j)
-            {
-                BattlePetAbilityEffectEntry const* eEntry = sBattlePetAbilityEffectStore.LookupEntry(j);
+            uint32 turnID = std::get<0>(itr->second);
 
-                if (!eEntry)
-                    continue;
-
-                if (eEntry->TurnEntryID == tEntry->ID)
-                    return eEntry->ID;
-            }
+            auto itr = sBattlePetEffectEntryByTurnId.find(turnID);
+            if (itr != sBattlePetEffectEntryByTurnId.end())
+                return itr->second->ID;
         }
     }
 
@@ -1932,13 +1923,13 @@ uint32 PetJournalInfo::GetAbilityID(uint8 rank)
 PetBattleRoundResults::~PetBattleRoundResults()
 {
     // delete targets
-    for (std::list<PetBattleEffect*>::iterator itr = effects.begin(); itr != effects.end(); ++itr)
-        for (std::list<PetBattleEffectTarget*>::iterator itr2 = (*itr)->targets.begin(); itr2 != (*itr)->targets.end(); ++itr2)
-            delete (*itr2);
+    for (auto itr : effects)
+        for (auto itr2 : itr->targets)
+            delete itr2;
 
     // delete effects
-    for (std::list<PetBattleEffect*>::iterator itr = effects.begin(); itr != effects.end(); ++itr)
-        delete (*itr);
+    for (auto itr : effects)
+        delete itr;
 }
 
 void PetBattleRoundResults::ProcessAbilityDamage(PetBattleInfo* caster, PetBattleInfo* target, uint32 abilityID, uint32 effectID, uint8 turnInstanceID)
