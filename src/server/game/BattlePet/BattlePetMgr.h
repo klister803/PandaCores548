@@ -288,8 +288,8 @@ public:
 
     uint32 GetID() { return ID; }
     uint32 GetType() { return Type; }
-    int32 CalculateDamage(PetBattleInfo* attacker, PetBattleInfo* victim, bool crit);
-    int16 CalculateHitResult(PetBattleInfo* attacker, PetBattleInfo* victim);
+    int32 CalculateDamage(PetBattleInfo* attacker, PetBattleInfo* victim, uint32 abilityAttackType, bool crit);
+    int16 CalculateHitResult(PetBattleInfo* attacker, PetBattleInfo* victim, uint32 abilityAttackType);
     int32 GetBaseDamage(PetBattleInfo* attacker, uint32 effectIdx = 0, uint32 turnIndex = 1);
     uint32 GetEffectProperties(uint8 properties, uint32 effectIdx = 0, uint32 turnIndex = 1);
     int8 GetRequiredLevel() { return requiredLevel; }
@@ -461,6 +461,12 @@ struct PetBattleEffect
     uint8 stackDepth;
 
     void AddTarget(PetBattleEffectTarget * target) { targets.push_back(target); }
+
+    int16 CalculateHitResult(PetBattleInfo* attacker, PetBattleInfo* victim, uint32 abilityAttackType);
+    int32 GetBaseDamage(PetBattleInfo* attacker, uint32 abilityID, uint32 effectIdx = 0, uint32 turnIndex = 1);
+    int32 CalculateDamage(PetBattleInfo* attacker, PetBattleInfo* victim, uint32 abilityID, uint32 abilityAttackType, bool crit);
+    float GetAttackModifier(uint8 attackType, uint8 defenseType);
+    uint32 GetEffectProperties(uint32 abilityID, uint8 properties, uint32 effectIdx = 0, uint32 turnIndex = 1);
 };
 
 struct PetBattleRoundResults

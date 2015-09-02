@@ -1771,81 +1771,6 @@ PetBattleAbilityInfo::PetBattleAbilityInfo(uint32 _ID, uint32 _speciesID)
     }
 }
 
-uint32 PetBattleAbilityInfo::GetEffectProperties(uint8 properties, uint32 effectIdx, uint32 turnIndex)
-{
-    char* desc = "Points";
-    // get string for properties
-    switch (properties)
-    {
-        case 1: desc = "Accuracy"; break;
-        default: break;
-    }
-
-    // get turn data entry
-    for (uint32 i = 0; i < sBattlePetAbilityTurnStore.GetNumRows(); ++i)
-    {
-        BattlePetAbilityTurnEntry const* tEntry = sBattlePetAbilityTurnStore.LookupEntry(i);
-
-        if (!tEntry)
-            continue;
-
-        if (tEntry->AbilityID == ID && tEntry->turnIndex == turnIndex)
-        {
-            // get effect data
-            for (uint32 j = 0; j < sBattlePetAbilityEffectStore.GetNumRows(); ++j)
-            {
-                BattlePetAbilityEffectEntry const* eEntry = sBattlePetAbilityEffectStore.LookupEntry(j);
-
-                if (!eEntry)
-                    continue;
-
-                if (eEntry->TurnEntryID == tEntry->ID)
-                {
-                    // get effect properties data
-                    for (uint32 k = 0; k < sBattlePetEffectPropertiesStore.GetNumRows(); ++k)
-                    {
-                        BattlePetEffectPropertiesEntry const* pEntry = sBattlePetEffectPropertiesStore.LookupEntry(k);
-
-                        if (!pEntry)
-                            continue;
-
-                        if (eEntry->propertiesID == pEntry->ID)
-                        {
-                            for (uint8 l = 0; l < MAX_EFFECT_PROPERTIES; ++l)
-                            {
-                                if (!strcmp(pEntry->propertyDescs[l], desc))
-                                    return eEntry->propertyValues[l];
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    return 0;
-}
-
-float PetBattleAbilityInfo::GetAttackModifier(uint8 attackType, uint8 defenseType)
-{
-    // maybe number of attack types?
-    uint32 formulaValue = 0xA;
-    uint32 modId = defenseType * formulaValue + Type;
-
-    for (uint32 j = 0; j < sGtBattlePetTypeDamageModStore.GetNumRows(); ++j)
-    {
-        GtBattlePetTypeDamageModEntry const* gt = sGtBattlePetTypeDamageModStore.LookupEntry(j);
-
-        if (!gt)
-            continue;
-
-        if (gt->Id == modId)
-            return gt->value;
-    }
-
-    return 0.0f;
-}
-
 // PetJournalInfo
 uint32 PetJournalInfo::GetAbilityID(uint8 rank)
 {
@@ -1894,17 +1819,19 @@ void PetBattleRoundResults::ProcessAbilityDamage(PetBattleInfo* caster, PetBattl
     if (caster->IsDead() || target->IsDead())
         return;
 
+    // simple combination of effect 0 and target type 6
+    PetBattleEffect* effect = new PetBattleEffect(caster->GetPetID(), effectID, 0, 0, 0, turnInstanceID, 1);
+    PetBattleEffectTarget* t = new PetBattleEffectTarget(target->GetPetID(), 6);
+
     // base pre-calculate damage and flags
     PetBattleAbilityInfo* ainfo = new PetBattleAbilityInfo(abilityID, caster->GetSpeciesID());
-    uint16 flags = ainfo->CalculateHitResult(caster, target);
+    uint16 flags = effect->CalculateHitResult(caster, target, ainfo->GetType());
     bool crit = false;
     if (flags & PETBATTLE_EFFECT_FLAG_CRIT)
         crit = true;
-    uint32 damage = ainfo->CalculateDamage(caster, target, crit);
+    uint32 damage = effect->CalculateDamage(caster, target, ainfo->GetID(), ainfo->GetType(), crit);
 
-    // simple combination of effect 0 and target type 6
-    PetBattleEffect* effect = new PetBattleEffect(caster->GetPetID(), effectID, 0, flags, 0, turnInstanceID, 1);
-    PetBattleEffectTarget* t = new PetBattleEffectTarget(target->GetPetID(), 6);
+    effect->flags = flags;
 
     // process in battle
     int32 newHealth = target->GetHealth() - damage;
@@ -1981,18 +1908,19 @@ void PetBattleRoundResults::AuraProcessingEnd()
     AddEffect(effect);
 }
 
-int32 PetBattleAbilityInfo::GetBaseDamage(PetBattleInfo* attacker, uint32 effectIdx, uint32 turnIndex)
+// PetBattleEffect - wrappers for abilities stuff
+int32 PetBattleEffect::GetBaseDamage(PetBattleInfo* attacker, uint32 abilityID, uint32 effectIdx, uint32 turnIndex)
 {
-    uint32 basePoints = GetEffectProperties(BASEPOINTS, effectIdx, turnIndex);
+    uint32 basePoints = GetEffectProperties(abilityID, BASEPOINTS, effectIdx, turnIndex);
     return basePoints * (1 + attacker->GetPower() * 0.05f);
 }
 
-int32 PetBattleAbilityInfo::CalculateDamage(PetBattleInfo* attacker, PetBattleInfo* victim, bool crit)
+int32 PetBattleEffect::CalculateDamage(PetBattleInfo* attacker, PetBattleInfo* victim, uint32 abilityID, uint32 abilityAttackType, bool crit)
 {
-    int32 baseDamage = GetBaseDamage(attacker);
+    int32 baseDamage = GetBaseDamage(attacker, abilityID);
     int32 cleanDamage = urand(baseDamage - 5, baseDamage + 5);
     // mods
-    float mod = GetAttackModifier(GetType(), victim->GetType());
+    float mod = GetAttackModifier(abilityAttackType, victim->GetType());
     int32 finalDamage = cleanDamage * mod;
     if (crit)
         finalDamage *= 2;
@@ -2000,11 +1928,11 @@ int32 PetBattleAbilityInfo::CalculateDamage(PetBattleInfo* attacker, PetBattleIn
     return finalDamage;
 }
 
-int16 PetBattleAbilityInfo::CalculateHitResult(PetBattleInfo* attacker, PetBattleInfo* victim)
+int16 PetBattleEffect::CalculateHitResult(PetBattleInfo* attacker, PetBattleInfo* victim, uint32 abilityAttackType)
 {
     uint16 flags = PETBATTLE_EFFECT_FLAG_BASE;
     // mods
-    float mod = GetAttackModifier(GetType(), victim->GetType());
+    float mod = GetAttackModifier(abilityAttackType, victim->GetType());
 
     if (roll_chance_i(5))
         flags |= PETBATTLE_EFFECT_FLAG_CRIT;
@@ -2015,4 +1943,79 @@ int16 PetBattleAbilityInfo::CalculateHitResult(PetBattleInfo* attacker, PetBattl
         flags |= PETBATTLE_EFFECT_FLAG_WEAK;
 
     return flags;
+}
+
+uint32 PetBattleEffect::GetEffectProperties(uint32 abilityID, uint8 properties, uint32 effectIdx, uint32 turnIndex)
+{
+    char* desc = "Points";
+    // get string for properties
+    switch (properties)
+    {
+    case 1: desc = "Accuracy"; break;
+    default: break;
+    }
+
+    // get turn data entry
+    for (uint32 i = 0; i < sBattlePetAbilityTurnStore.GetNumRows(); ++i)
+    {
+        BattlePetAbilityTurnEntry const* tEntry = sBattlePetAbilityTurnStore.LookupEntry(i);
+
+        if (!tEntry)
+            continue;
+
+        if (tEntry->AbilityID == abilityID && tEntry->turnIndex == turnIndex)
+        {
+            // get effect data
+            for (uint32 j = 0; j < sBattlePetAbilityEffectStore.GetNumRows(); ++j)
+            {
+                BattlePetAbilityEffectEntry const* eEntry = sBattlePetAbilityEffectStore.LookupEntry(j);
+
+                if (!eEntry)
+                    continue;
+
+                if (eEntry->TurnEntryID == tEntry->ID)
+                {
+                    // get effect properties data
+                    for (uint32 k = 0; k < sBattlePetEffectPropertiesStore.GetNumRows(); ++k)
+                    {
+                        BattlePetEffectPropertiesEntry const* pEntry = sBattlePetEffectPropertiesStore.LookupEntry(k);
+
+                        if (!pEntry)
+                            continue;
+
+                        if (eEntry->propertiesID == pEntry->ID)
+                        {
+                            for (uint8 l = 0; l < MAX_EFFECT_PROPERTIES; ++l)
+                            {
+                                if (!strcmp(pEntry->propertyDescs[l], desc))
+                                    return eEntry->propertyValues[l];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+float PetBattleEffect::GetAttackModifier(uint8 attackType, uint8 defenseType)
+{
+    // maybe number of attack types?
+    uint32 formulaValue = 0xA;
+    uint32 modId = defenseType * formulaValue + attackType;
+
+    for (uint32 j = 0; j < sGtBattlePetTypeDamageModStore.GetNumRows(); ++j)
+    {
+        GtBattlePetTypeDamageModEntry const* gt = sGtBattlePetTypeDamageModStore.LookupEntry(j);
+
+        if (!gt)
+            continue;
+
+        if (gt->Id == modId)
+            return gt->value;
+    }
+
+    return 0.0f;
 }
