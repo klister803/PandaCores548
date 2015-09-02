@@ -591,19 +591,11 @@ PetBattleInfo* PetBattleWild::GetFrontPet(uint8 team)
 
 void PetBattleWild::SetFrontPet(uint8 team, uint8 petNumber)
 {
-    PetBattleInfo * pb = GetFrontPet(team);
+    if (PetBattleInfo * pb = GetFrontPet(team))
+        pb->SetFrontPet(false);
 
-    if (!pb)
-        return;
-
-    pb->SetFrontPet(false);
-
-    PetBattleInfo * pb1 = GetPet(petNumber);
-
-    if (!pb1)
-        return;
-
-    pb1->SetFrontPet(true);
+    if (PetBattleInfo * pb1 = GetPet(petNumber))
+        pb1->SetFrontPet(true);
 }
 
 void PetBattleWild::SendFullUpdate(ObjectGuid creatureGuid)
