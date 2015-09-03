@@ -2228,9 +2228,7 @@ void LoadLootTemplates_Bonus()
             {
                 uint32 lootId = spellInfo->Effects[i].MiscValue;
 
-                if (lootIdSet.find(lootId) == lootIdSet.end())
-                    LootTemplates_Bonus.ReportNotExistedId(lootId);
-                else
+                if (lootIdSet.find(lootId) != lootIdSet.end())
                     lootIdSetUsed.insert(lootId);
             }
         }

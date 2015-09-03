@@ -1486,7 +1486,8 @@ bool SpellInfo::NeedsToBeTriggeredByCaster() const
         if (Effects[i].IsEffect())
         {
             if (Effects[i].TargetA.GetSelectionCategory() == TARGET_SELECT_CATEGORY_CHANNEL
-                || Effects[i].TargetB.GetSelectionCategory() == TARGET_SELECT_CATEGORY_CHANNEL)
+                || Effects[i].TargetB.GetSelectionCategory() == TARGET_SELECT_CATEGORY_CHANNEL
+                || Effects[i].TargetA.GetSelectionCategory() == TARGET_UNIT_CASTER)
                 return true;
         }
     }

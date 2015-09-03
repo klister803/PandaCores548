@@ -8636,6 +8636,8 @@ void Spell::EffectBonusLoot(SpellEffIndex effIndex)
 
     Player* player = unitTarget->ToPlayer();
 
+    //sLog->outDebug(LOG_FILTER_LOOT, "Spell::EffectBonusLoot start target GUID %i", unitTarget->GetGUID());
+
     uint32 lootId = m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue;
     uint8 lootType = TYPE_CREATURE;
     if(!lootId)
@@ -8656,10 +8658,10 @@ void Spell::EffectBonusLoot(SpellEffIndex effIndex)
             lootId = plData->entry;
     }
 
-    //sLog->outDebug(LOG_FILTER_LOOT, "Spell::EffectBonusLoot spellCooldownId %i", spellCooldownId);
+    //sLog->outDebug(LOG_FILTER_LOOT, "Spell::EffectBonusLoot spellCooldownId %i lootId %i lootType %i plData %i", spellCooldownId, lootId, lootType, bool(plData));
 
     uint32 difficulty = 0;
-    if(unitTarget == m_caster)
+    if(unitTarget == m_caster && plData)
     {
         if (Aura* aura = unitTarget->GetAura(spellCooldownId))
         {
@@ -8728,10 +8730,12 @@ void Spell::EffectBonusLoot(SpellEffIndex effIndex)
         loot->AutoStoreItems();
         uint32 count = 1;
 
-        //sLog->outDebug(LOG_FILTER_LOOT, "Spell::EffectBonusLoot Other loot for item and any lootId %i", lootId);
+        sLog->outDebug(LOG_FILTER_LOOT, "Spell::EffectBonusLoot Other loot for item and any lootId %i", lootId);
         if(m_CastItem)
             player->DestroyItemCount(m_CastItem, count, true);
     }
+
+    //sLog->outDebug(LOG_FILTER_LOOT, "Spell::EffectBonusLoot end %i", lootId);
 }
 
 void Spell::EffectJoinOrLeavePlayerParty(SpellEffIndex effIndex)
