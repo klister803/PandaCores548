@@ -1251,14 +1251,14 @@ bool PetBattleWild::SwapPetHandler(uint8 newFrontPet, uint32 _roundID)
         return true;
     }
 
-    round->ProcessPetSwap(allyPet->GetPetID(), newFrontPet);
+    // cheater check
+    PetBattleInfo* _newFrontPet = GetPet(newFrontPet);
 
-    SetFrontPet(TEAM_ALLY, newFrontPet);
-    // check front pet
-    allyPet = GetFrontPet(TEAM_ALLY);
-
-    if (!allyPet)
+    if (!_newFrontPet || _newFrontPet->IsDead())
         return false;
+
+    round->ProcessPetSwap(allyPet->GetPetID(), newFrontPet);
+    SetFrontPet(TEAM_ALLY, newFrontPet);
 
     // response enemy after player pet swap
     uint32 castAbilityID = enemyPet->GetAbilityID(0);
@@ -1286,6 +1286,8 @@ bool PetBattleWild::SwapPetHandler(uint8 newFrontPet, uint32 _roundID)
     SetCurrentRoundID(round->roundID);
 
     CheckTrapStatuses(round);
+    CheckInputFlags(round);
+
     SendRoundResults(round);
 
     if (allyPet->IsDead() && GetTotalPetCountInTeam(TEAM_ALLY, true) == 1)
