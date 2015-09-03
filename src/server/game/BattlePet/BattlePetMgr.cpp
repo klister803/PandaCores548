@@ -1258,7 +1258,14 @@ bool PetBattleWild::SwapPetHandler(uint8 newFrontPet, uint32 _roundID)
         return false;
 
     round->ProcessPetSwap(allyPet->GetPetID(), newFrontPet);
+
     SetFrontPet(TEAM_ALLY, newFrontPet);
+
+    // set new front pet
+    allyPet = GetFrontPet(TEAM_ALLY);
+
+    if (!allyPet)
+        return false;
 
     // response enemy after player pet swap
     uint32 castAbilityID = enemyPet->GetAbilityID(0);
