@@ -1000,7 +1000,7 @@ public:
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     if (me->GetEntry() != NPC_AMBER_ENCASED_KUNCHONG)
                         me->SetReactState(REACT_AGGRESSIVE);
-                    DoZoneInCombat(me, 50.0f);
+                    DoZoneInCombat(me, 60.0f);
                 }
                 else 
                     spawn -= diff;
@@ -2067,57 +2067,58 @@ public:
     }
 };
 
-// Encapsulated Pheromones - 142524
+//142524
 class spell_spoils_encapsulated_pheromones : public SpellScriptLoader
 {
-    public:
-        spell_spoils_encapsulated_pheromones() : SpellScriptLoader("spell_spoils_encapsulated_pheromones") { }
-
-        class spell_spoils_encapsulated_pheromones_AuraScript : public AuraScript
+public:
+    spell_spoils_encapsulated_pheromones() : SpellScriptLoader("spell_spoils_encapsulated_pheromones") { }
+    
+    class spell_spoils_encapsulated_pheromones_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_spoils_encapsulated_pheromones_AuraScript);
+        
+        void OnTick(AuraEffect const* aurEff)
         {
-            PrepareAuraScript(spell_spoils_encapsulated_pheromones_AuraScript);
-
-            void OnTick(AuraEffect const* aurEff)
+            if (GetCaster()->ToCreature())
             {
-                if(Unit* caster = GetCaster())
+                if (InstanceScript* instance = GetCaster()->GetInstanceScript())
                 {
-                    if(!caster->ToCreature() || !caster->ToCreature()->AI())
-                        return;
-
-                    //Unit* target = caster->ToPlayer()->GetSelectedUnit(); //for custom test
-                    Unit* target = caster->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true);
-                    if(!target)
-                        return;
-
-                    Position savePos;
-                    uint32 count = uint32(caster->GetDistance(target) / 0.05f);
-                    float angle = caster->GetAngle(target);
-
-                    if(count > 0)
+                    if (Creature* caster = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(NPC_SSOP_SPOILS)))
                     {
-                        for(uint32 j = 1; j < count + 1; ++j)
+                        if (Unit* target = GetCaster()->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0f, true))
                         {
-                            uint32 distanceNext = j * 0.05f;
-                            float destx = caster->GetPositionX() + distanceNext * std::cos(angle);
-                            float desty = caster->GetPositionY() + distanceNext * std::sin(angle);
-                            savePos.Relocate(destx, desty, caster->GetPositionZ());
-                            caster->SendSpellCreateVisual(GetSpellInfo(), &savePos, NULL, 1, 34287);
+                            Position savePos;
+                            uint32 count = uint32(GetCaster()->GetDistance(target) / 0.05f);
+                            float angle = GetCaster()->GetAngle(target);
+
+                            if (count > 0)
+                            {
+                                for (uint32 j = 1; j < count + 1; ++j)
+                                {
+                                    uint32 distanceNext = j * 0.05f;
+                                    float destx = GetCaster()->GetPositionX() + distanceNext * std::cos(angle);
+                                    float desty = GetCaster()->GetPositionY() + distanceNext * std::sin(angle);
+                                    savePos.Relocate(destx, desty, GetCaster()->GetPositionZ());
+                                    GetCaster()->SendSpellCreateVisual(GetSpellInfo(), &savePos, NULL, 1, 34287);
+                                }
+                            }
+                            caster->CastSpell(target, SPELL_ENCAPSULATED_PHEROMONES_AT, true);
                         }
                     }
-                    //caster->CastSpell(target, 145285, true);
                 }
             }
-
-            void Register()
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_spoils_encapsulated_pheromones_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_spoils_encapsulated_pheromones_AuraScript();
         }
+        
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_spoils_encapsulated_pheromones_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+    
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_spoils_encapsulated_pheromones_AuraScript();
+    }
 };
 
 void AddSC_boss_spoils_of_pandaria()
