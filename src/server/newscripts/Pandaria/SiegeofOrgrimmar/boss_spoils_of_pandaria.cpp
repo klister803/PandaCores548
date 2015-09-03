@@ -2067,33 +2067,57 @@ public:
     }
 };
 
-//142524 
-class spell_encapsulated_pheromones : public SpellScriptLoader
+// Encapsulated Pheromones - 142524
+class spell_spoils_encapsulated_pheromones : public SpellScriptLoader
 {
-public:
-    spell_encapsulated_pheromones() : SpellScriptLoader("spell_encapsulated_pheromones") { }
+    public:
+        spell_spoils_encapsulated_pheromones() : SpellScriptLoader("spell_spoils_encapsulated_pheromones") { }
 
-    class spell_encapsulated_pheromones_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_encapsulated_pheromones_AuraScript);
-
-        void OnTick(AuraEffect const* aurEff)
+        class spell_spoils_encapsulated_pheromones_AuraScript : public AuraScript
         {
-            if (GetCaster() && GetCaster()->ToCreature())
-                if (Unit* target = GetCaster()->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0f, true))
-                    GetCaster()->CastSpell(target, SPELL_ENCAPSULATED_PHEROMONES_AT, true);
-        }
+            PrepareAuraScript(spell_spoils_encapsulated_pheromones_AuraScript);
 
-        void Register()
+            void OnTick(AuraEffect const* aurEff)
+            {
+                if(Unit* caster = GetCaster())
+                {
+                    if(!caster->ToCreature() || !caster->ToCreature()->AI())
+                        return;
+
+                    //Unit* target = caster->ToPlayer()->GetSelectedUnit(); //for custom test
+                    Unit* target = caster->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true);
+                    if(!target)
+                        return;
+
+                    Position savePos;
+                    uint32 count = uint32(caster->GetDistance(target) / 0.05f);
+                    float angle = caster->GetAngle(target);
+
+                    if(count > 0)
+                    {
+                        for(uint32 j = 1; j < count + 1; ++j)
+                        {
+                            uint32 distanceNext = j * 0.05f;
+                            float destx = caster->GetPositionX() + distanceNext * std::cos(angle);
+                            float desty = caster->GetPositionY() + distanceNext * std::sin(angle);
+                            savePos.Relocate(destx, desty, caster->GetPositionZ());
+                            caster->SendSpellCreateVisual(GetSpellInfo(), &savePos, NULL, 1, 34287);
+                        }
+                    }
+                    //caster->CastSpell(target, 145285, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_spoils_encapsulated_pheromones_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
         {
-            OnEffectPeriodic += AuraEffectPeriodicFn(spell_encapsulated_pheromones_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            return new spell_spoils_encapsulated_pheromones_AuraScript();
         }
-    };
-
-    AuraScript* GetAuraScript() const
-    {
-        return new spell_encapsulated_pheromones_AuraScript();
-    }
 };
 
 void AddSC_boss_spoils_of_pandaria()
@@ -2121,5 +2145,5 @@ void AddSC_boss_spoils_of_pandaria()
     new spell_boss_torment_visual();
     new spell_spoils_staff_of_resonating_water();
     new spell_unstable_defense_system_dummy();
-    new spell_encapsulated_pheromones();
+    new spell_spoils_encapsulated_pheromones();
 }
