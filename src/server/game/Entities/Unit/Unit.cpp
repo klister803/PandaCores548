@@ -8614,6 +8614,18 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         {
             switch (dummySpell->Id)
             {
+                case 144966:  // Item - Shaman T16 Enhancement 4P Bonus
+                {
+                    CastSpell(this, 144967, true);
+                    CastSpell(this, 77661, true); 
+
+                    if (Aura* aura = GetAura(77661))
+                        aura->SetStackAmount(5);
+
+                    if (Player* plr = ToPlayer())
+                        plr->RemoveSpellCooldown(60103, true);
+                    break;
+                }
                 case 145394:  // Item - Shaman T16 Restoration 4P Heal Trigger
                 {
                     if(!procSpell || !victim || !procSpell->CalcCastTime())

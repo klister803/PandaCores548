@@ -3832,6 +3832,11 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 144966: // Item - Shaman T16 Enhancement 4P Bonus
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_CASTER;
+                    break;
                 case 45182:  // Cheat Death
                     spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
                     break;
