@@ -129,6 +129,19 @@ enum Events
     EVENT_TORMENT                     = 31,
 };
 
+enum Says
+{
+    //SAY_ = 0,
+    //SAY_ = 1,
+    //SAY_ = 2,
+    SAY_START_ENCOUNTER     = 3,
+    //SAY_ = 4,
+    SAY_FIRST_MODUL         = 5,
+    //SAY_ = 6,
+    SAY_SECOND_MODUL        = 7,
+    SAY_SYSTEM_REBOOT       = 8,
+};
+
 Position dpos[4] =
 {
     { 1606.77f, -5124.41f, -263.3986f, 0.0f },
@@ -274,15 +287,19 @@ public:
                 switch (action)
                 {
                 case ACTION_SSOPS_IN_PROGRESS:
+                    ZoneTalk(SAY_START_ENCOUNTER, 0);
                     DoCast(me, SPELL_SOOPS_AT_VISUAL, true);
                     events.ScheduleEvent(EVENT_IN_PROGRESS, 1000);
                     break;
                 case ACTION_SSOPS_SECOND_ROOM:
+                    ZoneTalk(SAY_FIRST_MODUL, 0);
                     events.Reset();
                     lastcount = 300;
                     events.ScheduleEvent(EVENT_IN_PROGRESS, 1000);
                     break;
                 case ACTION_SSOPS_DONE:
+                    ZoneTalk(SAY_SECOND_MODUL, 0);
+                    ZoneTalk(SAY_SYSTEM_REBOOT, 0);
                     events.Reset();
                     _summons.DespawnAll();
                     std::list<AreaTrigger*> atlist;
