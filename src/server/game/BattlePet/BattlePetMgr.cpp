@@ -1791,15 +1791,19 @@ void PetBattleRoundResults::ProcessAbilityDamage(PetBattleInfo* caster, PetBattl
     PetBattleEffect* effect = new PetBattleEffect(caster->GetPetID(), effectID, 0, 0, 0, turnInstanceID, 1);
     PetBattleEffectTarget* t = new PetBattleEffectTarget(target->GetPetID(), 6);
 
+    // get ability data
+    if (BattlePetAbilityEntry const *entry = sBattlePetAbilityStore.LookupEntry(abilityID))
+        effect->abilityEntry = entry;
+    else return;
+
     // base pre-calculate damage and flags
-    uint32 type = effect->GetAbilityType(abilityID);
-    uint16 flags = effect->CalculateHitResult(caster, target, type);
+    uint16 flags = effect->CalculateHitResult(caster, target);
     bool crit = false;
     if (flags & PETBATTLE_EFFECT_FLAG_CRIT)
         crit = true;
-    uint32 damage = effect->CalculateDamage(caster, target, abilityID, type, crit);
-
     effect->flags = flags;
+
+    uint32 damage = effect->CalculateDamage(caster, target, crit);
 
     // process in battle
     int32 newHealth = target->GetHealth() - damage;
@@ -1877,18 +1881,18 @@ void PetBattleRoundResults::AuraProcessingEnd()
 }
 
 // PetBattleEffect - wrappers for abilities stuff
-int32 PetBattleEffect::GetBaseDamage(PetBattleInfo* attacker, uint32 abilityID, uint32 effectIdx, uint32 turnIndex)
+int32 PetBattleEffect::GetBaseDamage(PetBattleInfo* attacker, uint32 effectIdx, uint32 turnIndex)
 {
-    uint32 basePoints = GetEffectProperties(abilityID, BASEPOINTS, effectIdx, turnIndex);
+    uint32 basePoints = GetProperties(BASEPOINTS, effectIdx, turnIndex);
     return basePoints * (1 + attacker->GetPower() * 0.05f);
 }
 
-int32 PetBattleEffect::CalculateDamage(PetBattleInfo* attacker, PetBattleInfo* victim, uint32 abilityID, uint32 abilityAttackType, bool crit)
+int32 PetBattleEffect::CalculateDamage(PetBattleInfo* attacker, PetBattleInfo* victim, bool crit)
 {
-    int32 baseDamage = GetBaseDamage(attacker, abilityID);
+    int32 baseDamage = GetBaseDamage(attacker);
     int32 cleanDamage = urand(baseDamage - 5, baseDamage + 5);
     // mods
-    float mod = GetAttackModifier(abilityAttackType, victim->GetType());
+    float mod = GetAttackModifier(abilityEntry->Type, victim->GetType());
     int32 finalDamage = cleanDamage * mod;
     if (crit)
         finalDamage *= 2;
@@ -1896,11 +1900,11 @@ int32 PetBattleEffect::CalculateDamage(PetBattleInfo* attacker, PetBattleInfo* v
     return finalDamage;
 }
 
-int16 PetBattleEffect::CalculateHitResult(PetBattleInfo* attacker, PetBattleInfo* victim, uint32 abilityAttackType)
+int16 PetBattleEffect::CalculateHitResult(PetBattleInfo* attacker, PetBattleInfo* victim)
 {
     uint16 flags = PETBATTLE_EFFECT_FLAG_BASE;
     // mods
-    float mod = GetAttackModifier(abilityAttackType, victim->GetType());
+    float mod = GetAttackModifier(abilityEntry->Type, victim->GetType());
 
     if (roll_chance_i(5))
         flags |= PETBATTLE_EFFECT_FLAG_CRIT;
@@ -1913,7 +1917,7 @@ int16 PetBattleEffect::CalculateHitResult(PetBattleInfo* attacker, PetBattleInfo
     return flags;
 }
 
-uint32 PetBattleEffect::GetEffectProperties(uint32 abilityID, uint8 properties, uint32 effectIdx, uint32 turnIndex)
+uint32 PetBattleEffect::GetProperties(uint8 properties, uint32 effectIdx, uint32 turnIndex)
 {
     char* desc = "Points";
     // get string for properties
@@ -1931,7 +1935,7 @@ uint32 PetBattleEffect::GetEffectProperties(uint32 abilityID, uint8 properties, 
         if (!tEntry)
             continue;
 
-        if (tEntry->AbilityID == abilityID && tEntry->turnIndex == turnIndex)
+        if (tEntry->AbilityID == abilityEntry->ID && tEntry->turnIndex == turnIndex)
         {
             // get effect data
             for (uint32 j = 0; j < sBattlePetAbilityEffectStore.GetNumRows(); ++j)
@@ -1980,14 +1984,4 @@ float PetBattleEffect::GetAttackModifier(uint8 attackType, uint8 defenseType)
         return 0.0f;
 
     return gt->value;
-}
-
-uint32 PetBattleEffect::GetAbilityType(uint32 abilityID)
-{
-    BattlePetAbilityEntry const *abilityEntry = sBattlePetAbilityStore.LookupEntry(abilityID);
-
-    if (!abilityEntry)
-        return 0;
-
-    return abilityEntry->Type;
 }

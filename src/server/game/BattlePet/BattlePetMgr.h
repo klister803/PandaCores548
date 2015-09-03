@@ -452,7 +452,7 @@ struct PetBattleEffect
         casterPBOID(_casterPBOID), abilityEffectID(_abilityEffectID), petBattleEffectType(_petBattleEffectType), flags(_flags), sourceAuraInstanceID(_sourceAuraInstanceID), turnInstanceID(_turnInstanceID), stackDepth(_stackDepth), abilityEntry(NULL) {}
 
     std::list<PetBattleEffectTarget*> targets;
-    BattlePetAbilityEntry* abilityEntry;
+    BattlePetAbilityEntry const* abilityEntry;
     uint32 abilityEffectID;
     uint16 flags;
     uint16 sourceAuraInstanceID;
@@ -463,12 +463,11 @@ struct PetBattleEffect
 
     void AddTarget(PetBattleEffectTarget * target) { targets.push_back(target); }
 
-    int16 CalculateHitResult(PetBattleInfo* attacker, PetBattleInfo* victim, uint32 abilityAttackType);
-    int32 GetBaseDamage(PetBattleInfo* attacker, uint32 abilityID, uint32 effectIdx = 0, uint32 turnIndex = 1);
-    int32 CalculateDamage(PetBattleInfo* attacker, PetBattleInfo* victim, uint32 abilityID, uint32 abilityAttackType, bool crit);
+    int16 CalculateHitResult(PetBattleInfo* attacker, PetBattleInfo* victim);
+    int32 GetBaseDamage(PetBattleInfo* attacker, uint32 effectIdx = 0, uint32 turnIndex = 1);
+    int32 CalculateDamage(PetBattleInfo* attacker, PetBattleInfo* victim, bool crit);
     float GetAttackModifier(uint8 attackType, uint8 defenseType);
-    uint32 GetEffectProperties(uint32 abilityID, uint8 properties, uint32 effectIdx = 0, uint32 turnIndex = 1);
-    uint32 GetAbilityType(uint32 abilityID);
+    uint32 GetProperties(uint8 properties, uint32 effectIdx = 0, uint32 turnIndex = 1);
 };
 
 struct PetBattleRoundResults
