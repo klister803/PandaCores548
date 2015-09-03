@@ -127,19 +127,24 @@ enum Events
     EVENT_GUSTING_BOMB                = 29,
     EVENT_MATTER_SCRAMBLE             = 30,
     EVENT_TORMENT                     = 31,
+    EVENT_START                       = 32,
+    EVENT_START_2                     = 33,
+    EVENT_START_3                     = 34,
+    EVENT_START_SOP                   = 35,
+    EVENT_OUTRO                       = 36,
 };
 
 enum Says
 {
-    //SAY_ = 0,
-    //SAY_ = 1,
-    //SAY_ = 2,
-    SAY_START_ENCOUNTER     = 3,
-    //SAY_ = 4,
-    SAY_FIRST_MODUL         = 5,
-    //SAY_ = 6,
-    SAY_SECOND_MODUL        = 7,
-    SAY_SYSTEM_REBOOT       = 8,
+    SAY_START                         = 0,
+    SAY_START_2                       = 1,
+    SAY_START_3                       = 2,
+    SAY_START_ENCOUNTER               = 3,
+    SAY_FIRST_MODUL_PRE               = 4,
+    SAY_FIRST_MODUL_DONE              = 5,
+    SAY_SECOND_MODUL_PRE              = 6,
+    SAY_SECOND_MODUL_DONE             = 7,
+    SAY_SYSTEM_REBOOT                 = 8,
 };
 
 Position dpos[4] =
@@ -226,6 +231,7 @@ enum sData
     DATA_BUFF_TANK               = 3,
     DATA_UPDATE_POWER            = 4,
     DATA_GET_SPIRIT_SUM_COUNT    = 5,
+    DATA_ONE_MODUL_READY         = 6,
 };
 
 uint32 spellbuff[3] =
@@ -261,6 +267,9 @@ public:
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
             lastcount = 270;
             newcount = 0;
+            firstlevel = false;
+            secondlever = false;
+            done = false;
         }
         
         InstanceScript* instance;
@@ -268,6 +277,7 @@ public:
         EventMap events;
         uint32 lastcount;
         uint32 newcount;
+        bool firstlevel, secondlever, done;
 
         void Reset(){}
 
@@ -279,6 +289,32 @@ public:
         {
             _summons.Summon(sum);
         }
+
+        void SetData(uint32 type, uint32 data)
+        {
+            if (type == DATA_ONE_MODUL_READY)
+            {
+                switch (data)
+                {
+                case 0:
+                    if (!firstlevel)
+                    {
+                        firstlevel = true;
+                        ZoneTalk(SAY_FIRST_MODUL_PRE, 0);
+                    }
+                    break;
+                case 1:
+                    if (!secondlever)
+                    {
+                        secondlever = true;
+                        ZoneTalk(SAY_SECOND_MODUL_PRE, 0);
+                    }
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
         
         void DoAction(int32 const action)
         {
@@ -287,28 +323,31 @@ public:
                 switch (action)
                 {
                 case ACTION_SSOPS_IN_PROGRESS:
-                    ZoneTalk(SAY_START_ENCOUNTER, 0);
-                    DoCast(me, SPELL_SOOPS_AT_VISUAL, true);
-                    events.ScheduleEvent(EVENT_IN_PROGRESS, 1000);
+                    ZoneTalk(SAY_START, 0);
+                    events.ScheduleEvent(EVENT_START_2, 9000);
                     break;
                 case ACTION_SSOPS_SECOND_ROOM:
-                    ZoneTalk(SAY_FIRST_MODUL, 0);
                     events.Reset();
+                    ZoneTalk(SAY_FIRST_MODUL_DONE, 0);
                     lastcount = 300;
                     events.ScheduleEvent(EVENT_IN_PROGRESS, 1000);
                     break;
                 case ACTION_SSOPS_DONE:
-                    ZoneTalk(SAY_SECOND_MODUL, 0);
-                    ZoneTalk(SAY_SYSTEM_REBOOT, 0);
-                    events.Reset();
-                    _summons.DespawnAll();
-                    std::list<AreaTrigger*> atlist;
-                    atlist.clear();
-                    me->GetAreaTriggersWithEntryInRange(atlist, 5269, me->GetGUID(), 50.0f);
-                    if (!atlist.empty())
-                        for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
-                            (*itr)->RemoveFromWorld();
-                    OfflineWorldState();
+                    if (!done)
+                    {
+                        done = true;
+                        ZoneTalk(SAY_SECOND_MODUL_DONE, 0);
+                        events.Reset();
+                        _summons.DespawnAll();
+                        std::list<AreaTrigger*> atlist;
+                        atlist.clear();
+                        me->GetAreaTriggersWithEntryInRange(atlist, 5269, me->GetGUID(), 50.0f);
+                        if (!atlist.empty())
+                            for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
+                                (*itr)->RemoveFromWorld();
+                        OfflineWorldState();
+                        events.ScheduleEvent(EVENT_OUTRO, 4000);
+                    }
                     break;
                 }
             }
@@ -343,6 +382,9 @@ public:
                 OfflineWorldState();
                 _summons.DespawnAll();
                 instance->SetBossState(DATA_SPOILS_OF_PANDARIA, NOT_STARTED);
+                firstlevel = false;
+                secondlever = false;
+                done = false;
                 lastcount = 270;
                 newcount = 0;
             }
@@ -350,12 +392,33 @@ public:
         
         void UpdateAI(uint32 diff)
         {
+            if (!instance)
+                return;
+
             events.Update(diff);
 
             while (uint32 eventId = events.ExecuteEvent())
             {
-                if (eventId == EVENT_IN_PROGRESS && instance)
+                switch (eventId)
                 {
+                case EVENT_START_2:
+                    ZoneTalk(SAY_START_2, 0);
+                    events.ScheduleEvent(EVENT_START_3, 5000);
+                    break;
+                case EVENT_START_3:
+                    ZoneTalk(SAY_START_3, 0);
+                    events.ScheduleEvent(EVENT_START_SOP, 7000);
+                    break;
+                case EVENT_START_SOP:
+                    instance->SetData(DATA_SOP_START, 0);
+                    ZoneTalk(SAY_START_ENCOUNTER, 0);
+                    DoCast(me, SPELL_SOOPS_AT_VISUAL, true);
+                    events.ScheduleEvent(EVENT_IN_PROGRESS, 1000);
+                    break;
+                case EVENT_OUTRO:
+                    ZoneTalk(SAY_SYSTEM_REBOOT, 0);
+                    break;
+                case EVENT_IN_PROGRESS:
                     if (instance->IsWipe())
                     {
                         events.Reset();
@@ -367,6 +430,9 @@ public:
                                 (*itr)->RemoveFromWorld();
                         OfflineWorldState();
                         _summons.DespawnAll();
+                        firstlevel = false;
+                        secondlever = false;
+                        done = false;
                         lastcount = 270;
                         newcount = 0;
                         instance->SetBossState(DATA_SPOILS_OF_PANDARIA, NOT_STARTED);
@@ -390,6 +456,7 @@ public:
                         else
                             events.ScheduleEvent(EVENT_IN_PROGRESS, 1000);
                     }
+                    break;
                 }
             }
         }
@@ -628,6 +695,9 @@ public:
                                     break;
                                 }
                             }
+                            else
+                                if (Creature* ssops = me->GetCreature(*me, instance->GetData64(NPC_SSOP_SPOILS)))
+                                    ssops->AI()->SetData(DATA_ONE_MODUL_READY, (instance->GetBossState(DATA_SPOILS_OF_PANDARIA) == SPECIAL ? 1 : 0));
                         }
                     }
                     events.ScheduleEvent(EVENT_FIND_PLAYERS, 1000);
@@ -1979,6 +2049,8 @@ public:
                 SpellInfo const* spell = sSpellMgr->GetSpellInfo(SPELL_UNSTABLE_DEFENSE_SYSTEMS_D);
                 int32 amount = spell->GetEffect(0).BasePoints + int32(spell->GetEffect(0).BasePoints * 0.4f * aurEff->GetTickNumber());
                 GetTarget()->CastCustomSpell(SPELL_UNSTABLE_DEFENSE_SYSTEMS_D, SPELLVALUE_BASE_POINT0, amount, GetTarget(), true);
+                if (!GetTarget()->GetMap()->IsDungeon())
+                    GetTarget()->RemoveAurasDueToSpell(SPELL_UNSTABLE_DEFENSE_SYSTEMS);
             }
         }
 

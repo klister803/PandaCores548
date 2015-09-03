@@ -5112,6 +5112,13 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[4].TargetA = 1;
                     spellInfo->Effects[4].TargetB = 0;
                     break;
+                //debuffs from klaxxi
+                case 142929:
+                case 142931:
+                case 143279:
+                case 143275: 
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
+                    break;
  
                     
                 //World Bosses

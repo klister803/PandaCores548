@@ -897,16 +897,6 @@ public:
                 case IN_PROGRESS:
                     if (Creature* ssops = instance->GetCreature(npcssopsGuid))
                         ssops->AI()->DoAction(ACTION_SSOPS_IN_PROGRESS);
-                    //Open Gates In Room
-                    for (std::vector<uint64>::const_iterator itr = roomgateGuids.begin(); itr != roomgateGuids.end(); itr++)
-                        if (GameObject* gate = instance->GetGameObject(*itr))
-                            if (gate->GetEntry() == GO_ROOM_GATE2 || gate->GetEntry() == GO_ROOM_GATE4)
-                                gate->SetGoState(GO_STATE_ACTIVE);
-                    //Send Frames
-                    for (std::vector<uint64>::const_iterator itr = spoilsGuids.begin(); itr != spoilsGuids.end(); itr++)
-                        if (Creature* spoil = instance->GetCreature(*itr))
-                            if (spoil->GetEntry() == NPC_MOGU_SPOILS2 || spoil->GetEntry() == NPC_MANTIS_SPOILS2)
-                                spoil->AI()->DoAction(ACTION_IN_PROGRESS);
                     HandleGameObject(spentdoorGuid, false);
                     break;
                 case DONE:
@@ -1245,6 +1235,18 @@ public:
                 }
                 break;
             }
+            case DATA_SOP_START:
+                //Open Gates In Room
+                for (std::vector<uint64>::const_iterator itr = roomgateGuids.begin(); itr != roomgateGuids.end(); itr++)
+                    if (GameObject* gate = instance->GetGameObject(*itr))
+                        if (gate->GetEntry() == GO_ROOM_GATE2 || gate->GetEntry() == GO_ROOM_GATE4)
+                            gate->SetGoState(GO_STATE_ACTIVE);
+                //Send Frames
+                for (std::vector<uint64>::const_iterator itr = spoilsGuids.begin(); itr != spoilsGuids.end(); itr++)
+                    if (Creature* spoil = instance->GetCreature(*itr))
+                        if (spoil->GetEntry() == NPC_MOGU_SPOILS2 || spoil->GetEntry() == NPC_MANTIS_SPOILS2)
+                            spoil->AI()->DoAction(ACTION_IN_PROGRESS);
+                break;
             case DATA_BUFF_NEXT_KLAXXI:
                 if (klaxxidiecount < 6)
                     if (Creature* klaxxi = instance->GetCreature(GetData64(bonusklaxxientry[klaxxidiecount])))
@@ -1417,6 +1419,7 @@ public:
                                     return spoil->GetGUID();
                         }
                     }
+                case NPC_SSOP_SPOILS:
                 case GO_PANDAREN_RELIC_BOX:
                     return npcssopsGuid;
                 //Paragons of the Klaxxi
