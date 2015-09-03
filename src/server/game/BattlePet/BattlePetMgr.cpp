@@ -1739,38 +1739,6 @@ uint32 PetBattleWild::GetVisualEffectIDByAbilityID(uint32 abilityID, uint8 turnI
     return 0;
 }
 
-// PetBattleAbility
-PetBattleAbilityInfo::PetBattleAbilityInfo(uint32 _ID, uint32 _speciesID)
-{
-    BattlePetAbilityEntry const *abilityEntry = sBattlePetAbilityStore.LookupEntry(_ID);
-
-    if (abilityEntry)
-    {
-        // get data from abilityEntry
-        ID = abilityEntry->ID;
-        Type = abilityEntry->Type;
-        turnCooldown = abilityEntry->turnCooldown;
-        auraAbilityID = abilityEntry->auraAbilityID;
-        auraDuration = abilityEntry->auraDuration;
-        // get data from xAbilityEntry
-        // fucking blizzard...
-        for (uint32 i = 0; i < sBattlePetSpeciesXAbilityStore.GetNumRows(); ++i)
-        {
-            BattlePetSpeciesXAbilityEntry const* xEntry = sBattlePetSpeciesXAbilityStore.LookupEntry(i);
-
-            if (!xEntry)
-                continue;
-
-            if (xEntry->abilityID == abilityEntry->ID && xEntry->speciesID == _speciesID)
-            {
-                requiredLevel = xEntry->requiredLevel;
-                rank = xEntry->rank;
-                break;
-            }
-        }
-    }
-}
-
 // PetJournalInfo
 uint32 PetJournalInfo::GetAbilityID(uint8 rank)
 {
@@ -1824,12 +1792,12 @@ void PetBattleRoundResults::ProcessAbilityDamage(PetBattleInfo* caster, PetBattl
     PetBattleEffectTarget* t = new PetBattleEffectTarget(target->GetPetID(), 6);
 
     // base pre-calculate damage and flags
-    PetBattleAbilityInfo* ainfo = new PetBattleAbilityInfo(abilityID, caster->GetSpeciesID());
-    uint16 flags = effect->CalculateHitResult(caster, target, ainfo->GetType());
+    uint32 type = effect->GetAbilityType(abilityID);
+    uint16 flags = effect->CalculateHitResult(caster, target, type);
     bool crit = false;
     if (flags & PETBATTLE_EFFECT_FLAG_CRIT)
         crit = true;
-    uint32 damage = effect->CalculateDamage(caster, target, ainfo->GetID(), ainfo->GetType(), crit);
+    uint32 damage = effect->CalculateDamage(caster, target, abilityID, type, crit);
 
     effect->flags = flags;
 
@@ -2006,16 +1974,20 @@ float PetBattleEffect::GetAttackModifier(uint8 attackType, uint8 defenseType)
     uint32 formulaValue = 0xA;
     uint32 modId = defenseType * formulaValue + attackType;
 
-    for (uint32 j = 0; j < sGtBattlePetTypeDamageModStore.GetNumRows(); ++j)
-    {
-        GtBattlePetTypeDamageModEntry const* gt = sGtBattlePetTypeDamageModStore.LookupEntry(j);
+    GtBattlePetTypeDamageModEntry const* gt = sGtBattlePetTypeDamageModStore.LookupEntry(modId);
 
-        if (!gt)
-            continue;
+    if (!gt)
+        return 0.0f;
 
-        if (gt->Id == modId)
-            return gt->value;
-    }
+    return gt->value;
+}
 
-    return 0.0f;
+uint32 PetBattleEffect::GetAbilityType(uint32 abilityID)
+{
+    BattlePetAbilityEntry const *abilityEntry = sBattlePetAbilityStore.LookupEntry(abilityID);
+
+    if (!abilityEntry)
+        return 0;
+
+    return abilityEntry->Type;
 }

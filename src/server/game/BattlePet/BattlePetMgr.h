@@ -281,7 +281,7 @@ private:
 };
 
 class PetBattleInfo;
-class PetBattleAbilityInfo
+/*class PetBattleAbilityInfo
 {
 public:
     PetBattleAbilityInfo(uint32 _ID, uint32 _speciesID);
@@ -303,7 +303,7 @@ private:
     uint32 auraDuration;
     uint8 requiredLevel;
     uint8 rank;
-};
+};*/
 
 class PetBattleAura
 {
@@ -449,9 +449,10 @@ struct PetBattleEffectTarget
 struct PetBattleEffect
 {
     PetBattleEffect(int8 _casterPBOID, uint32 _abilityEffectID, uint8 _petBattleEffectType, uint16 _flags, uint16 _sourceAuraInstanceID, uint16 _turnInstanceID, uint8 _stackDepth) :
-        casterPBOID(_casterPBOID), abilityEffectID(_abilityEffectID), petBattleEffectType(_petBattleEffectType), flags(_flags), sourceAuraInstanceID(_sourceAuraInstanceID), turnInstanceID(_turnInstanceID), stackDepth(_stackDepth) {}
+        casterPBOID(_casterPBOID), abilityEffectID(_abilityEffectID), petBattleEffectType(_petBattleEffectType), flags(_flags), sourceAuraInstanceID(_sourceAuraInstanceID), turnInstanceID(_turnInstanceID), stackDepth(_stackDepth), abilityEntry(NULL) {}
 
     std::list<PetBattleEffectTarget*> targets;
+    BattlePetAbilityEntry* abilityEntry;
     uint32 abilityEffectID;
     uint16 flags;
     uint16 sourceAuraInstanceID;
@@ -467,6 +468,7 @@ struct PetBattleEffect
     int32 CalculateDamage(PetBattleInfo* attacker, PetBattleInfo* victim, uint32 abilityID, uint32 abilityAttackType, bool crit);
     float GetAttackModifier(uint8 attackType, uint8 defenseType);
     uint32 GetEffectProperties(uint32 abilityID, uint8 properties, uint32 effectIdx = 0, uint32 turnIndex = 1);
+    uint32 GetAbilityType(uint32 abilityID);
 };
 
 struct PetBattleRoundResults
