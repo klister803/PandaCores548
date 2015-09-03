@@ -63,6 +63,8 @@ enum eSpells
     SPELL_MANTID_SWARM3               = 145808,
     SPELL_THROW_EXPLOSIVES            = 145702,
     SPELL_GUSTING_BOMB                = 145712,
+    SPELL_ENCAPSULATED_PHEROMONES     = 142524,
+    SPELL_ENCAPSULATED_PHEROMONES_AT  = 145285,
 
     //Pandaren Relic Box
     SPELL_EMINENCE                    = 146189,
@@ -339,18 +341,24 @@ public:
                         ZoneTalk(SAY_SECOND_MODUL_DONE, 0);
                         events.Reset();
                         _summons.DespawnAll();
-                        std::list<AreaTrigger*> atlist;
-                        atlist.clear();
-                        me->GetAreaTriggersWithEntryInRange(atlist, 5269, me->GetGUID(), 50.0f);
-                        if (!atlist.empty())
-                            for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
-                                (*itr)->RemoveFromWorld();
+                        DespawnAllAT();
                         OfflineWorldState();
                         events.ScheduleEvent(EVENT_OUTRO, 4000);
                     }
                     break;
                 }
             }
+        }
+
+        void DespawnAllAT()
+        {
+            std::list<AreaTrigger*> atlist;
+            atlist.clear();
+            me->GetAreaTriggersWithEntryInRange(atlist, 5269, me->GetGUID(), 50.0f);
+            me->GetAreaTriggersWithEntryInRange(atlist, 5299, me->GetGUID(), 100.0f);
+            if (!atlist.empty())
+                for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
+                    (*itr)->RemoveFromWorld();
         }
 
         void OfflineWorldState()
@@ -372,13 +380,8 @@ public:
                     if (Player* pl = i->getSource())
                         if (pl->isAlive())
                             pl->Kill(pl, true);
-                
-                std::list<AreaTrigger*> atlist;
-                atlist.clear();
-                me->GetAreaTriggersWithEntryInRange(atlist, 5269, me->GetGUID(), 50.0f);
-                if (!atlist.empty())
-                    for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
-                        (*itr)->RemoveFromWorld();
+
+                DespawnAllAT();
                 OfflineWorldState();
                 _summons.DespawnAll();
                 instance->SetBossState(DATA_SPOILS_OF_PANDARIA, NOT_STARTED);
@@ -422,12 +425,7 @@ public:
                     if (instance->IsWipe())
                     {
                         events.Reset();
-                        std::list<AreaTrigger*> atlist;
-                        atlist.clear();
-                        me->GetAreaTriggersWithEntryInRange(atlist, 5269, me->GetGUID(), 50.0f);
-                        if (!atlist.empty())
-                            for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
-                                (*itr)->RemoveFromWorld();
+                        DespawnAllAT();
                         OfflineWorldState();
                         _summons.DespawnAll();
                         firstlevel = false;
@@ -944,7 +942,10 @@ public:
                 events.ScheduleEvent(EVENT_RAGE_OF_THE_EMPRESS, 1000);
                 events.ScheduleEvent(EVENT_WINDSTORM, 3000);
                 break;
-            //Small 
+            //Small
+            case NPC_AMBER_ENCASED_KUNCHONG:
+                DoCast(me, SPELL_ENCAPSULATED_PHEROMONES, true);
+                break;
             case NPC_QUILEN_GUARDIANS:
                 events.ScheduleEvent(EVENT_RUSH, 1000);
                 break;
@@ -2066,6 +2067,35 @@ public:
     }
 };
 
+//142524 
+class spell_encapsulated_pheromones : public SpellScriptLoader
+{
+public:
+    spell_encapsulated_pheromones() : SpellScriptLoader("spell_encapsulated_pheromones") { }
+
+    class spell_encapsulated_pheromones_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_encapsulated_pheromones_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (GetCaster() && GetCaster()->ToCreature())
+                if (Unit* target = GetCaster()->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0f, true))
+                    GetCaster()->CastSpell(target, SPELL_ENCAPSULATED_PHEROMONES_AT, true);
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_encapsulated_pheromones_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_encapsulated_pheromones_AuraScript();
+    }
+};
+
 void AddSC_boss_spoils_of_pandaria()
 {
     new npc_ssop_spoils();
@@ -2091,4 +2121,5 @@ void AddSC_boss_spoils_of_pandaria()
     new spell_boss_torment_visual();
     new spell_spoils_staff_of_resonating_water();
     new spell_unstable_defense_system_dummy();
+    new spell_encapsulated_pheromones();
 }
