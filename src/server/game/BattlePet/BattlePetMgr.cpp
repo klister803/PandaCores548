@@ -1794,7 +1794,9 @@ void PetBattleRoundResults::ProcessAbilityDamage(PetBattleInfo* caster, PetBattl
     // get ability data
     if (BattlePetAbilityEntry const *entry = sBattlePetAbilityStore.LookupEntry(abilityID))
         effect->abilityEntry = entry;
-    else return;
+
+    if (!effect->abilityEntry)
+        return;
 
     // base pre-calculate damage and flags
     uint16 flags = effect->CalculateHitResult(caster, target);
