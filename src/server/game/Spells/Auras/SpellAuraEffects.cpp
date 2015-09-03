@@ -2167,6 +2167,7 @@ void AuraEffect::ApplySpellMod(Unit* target, bool apply)
                 }
             }
         }
+        case SPELLMOD_COOLDOWN:
         case SPELLMOD_CASTING_TIME:
         {
             if (apply)
