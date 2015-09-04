@@ -2081,32 +2081,26 @@ public:
         
         void OnTick(AuraEffect const* aurEff)
         {
-            if (GetCaster()->ToCreature())
+            if (Unit* caster = GetCaster())
             {
-                if (InstanceScript* instance = GetCaster()->GetInstanceScript())
+                if (Unit* target = caster->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0f, true))
                 {
-                    if (Creature* caster = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(NPC_AMBER_ENCASED_KUNCHONG)))
-                    {
-                        if (Unit* target = GetCaster()->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0f, true))
-                        {
-                            Position savePos;
-                            uint32 count = uint32(GetCaster()->GetDistance(target) / 0.05f);
-                            float angle = GetCaster()->GetAngle(target);
+                    Position savePos;
+                    uint32 count = uint32(caster->GetDistance(target) / 0.05f);
+                    float angle = caster->GetAngle(target);
 
-                            if (count > 0)
-                            {
-                                for (uint32 j = 1; j < count + 1; ++j)
-                                {
-                                    uint32 distanceNext = j * 0.05f;
-                                    float destx = GetCaster()->GetPositionX() + distanceNext * std::cos(angle);
-                                    float desty = GetCaster()->GetPositionY() + distanceNext * std::sin(angle);
-                                    savePos.Relocate(destx, desty, GetCaster()->GetPositionZ());
-                                    GetCaster()->SendSpellCreateVisual(GetSpellInfo(), &savePos, NULL, 1, 34287);
-                                }
-                            }
-                            caster->CastSpell(target, SPELL_ENCAPSULATED_PHEROMONES_AT, true);
+                    if (count > 0)
+                    {
+                        for (uint32 j = 1; j < count + 1; ++j)
+                        {
+                            uint32 distanceNext = j * 0.05f;
+                            float destx = caster->GetPositionX() + distanceNext * std::cos(angle);
+                            float desty = caster->GetPositionY() + distanceNext * std::sin(angle);
+                            savePos.Relocate(destx, desty, caster->GetPositionZ());
+                            caster->SendSpellCreateVisual(GetSpellInfo(), &savePos, NULL, 1, 34287);
                         }
                     }
+                    caster->CastSpell(target, SPELL_ENCAPSULATED_PHEROMONES_AT, true);
                 }
             }
         }
