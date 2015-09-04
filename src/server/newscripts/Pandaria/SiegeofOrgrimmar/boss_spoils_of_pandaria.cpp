@@ -64,6 +64,7 @@ enum eSpells
     SPELL_THROW_EXPLOSIVES            = 145702,
     SPELL_GUSTING_BOMB                = 145712,
     SPELL_ENCAPSULATED_PHEROMONES     = 142524,
+    SPELL_ENCAPSULATED_VISUAL         = 142492,
     SPELL_ENCAPSULATED_PHEROMONES_AT  = 145285,
 
     //Pandaren Relic Box
@@ -944,6 +945,7 @@ public:
                 break;
             //Small
             case NPC_AMBER_ENCASED_KUNCHONG:
+                DoCast(me, SPELL_ENCAPSULATED_VISUAL, true);
                 DoCast(me, SPELL_ENCAPSULATED_PHEROMONES, true);
                 break;
             case NPC_QUILEN_GUARDIANS:
@@ -2083,7 +2085,7 @@ public:
             {
                 if (InstanceScript* instance = GetCaster()->GetInstanceScript())
                 {
-                    if (Creature* caster = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(NPC_SSOP_SPOILS)))
+                    if (Creature* caster = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(NPC_AMBER_ENCASED_KUNCHONG)))
                     {
                         if (Unit* target = GetCaster()->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0f, true))
                         {
