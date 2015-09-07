@@ -8614,6 +8614,28 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         {
             switch (dummySpell->Id)
             {
+                case 144964:  // Flow of the Elements
+                {
+                    if (Player* plr = ToPlayer())
+                    {
+                        Item* weapon = NULL;
+                        weapon = (procFlag & PROC_FLAG_DONE_OFFHAND_ATTACK) ? plr->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND) : plr->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+
+                        if (!weapon)
+                            return false;
+
+                        switch (weapon->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
+                        {
+                            case 5:    triggered_spell_id = 73683; break;
+                            case 2:    triggered_spell_id = 73682; break;
+                            case 3021: triggered_spell_id = 73684; break;
+                            case 283:  triggered_spell_id = 73681; break;
+                            default:
+                               break;
+                        }
+                    }
+                    break;
+                }
                 case 144966:  // Item - Shaman T16 Enhancement 4P Bonus
                 {
                     CastSpell(this, 144967, true);
