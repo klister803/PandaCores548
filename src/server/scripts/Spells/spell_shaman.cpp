@@ -556,52 +556,80 @@ class spell_sha_unleash_elements : public SpellScriptLoader
 
             void HandleAfterCast()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (Player* plr = GetCaster()->ToPlayer())
                 {
                     if (Unit* target = GetExplTargetUnit())
                     {
                         Item *weapons[2];
-                        weapons[0] = _player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-                        weapons[1] = _player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+                        weapons[0] = plr->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+                        weapons[1] = plr->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
 
                         for (int i = 0; i < 2; i++)
                         {
                             if(!weapons[i])
                                 continue;
 
-                            uint32 unleashSpell = 0;
-                            bool hostileTarget = _player->IsValidAttackTarget(target);
-                            bool hostileSpell = true;
+                            uint32 trigger_spell_id = 0;
+                            uint32 talent_trigger_spell_id = 0;
+                            bool canAddTriggerAura = false;
+                            bool canAddTalTriggerAura = false;
+                            bool hostileTarget = plr->IsValidAttackTarget(target);
+
                             switch (weapons[i]->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
                             {
                                 case 3345: // Earthliving Weapon
-                                    unleashSpell = 73685; // Unleash Life
-                                    hostileSpell = false;
+                                {
+                                    trigger_spell_id = 73685; // Unleash Life
+                                    talent_trigger_spell_id = 118473;
+
+                                    if (hostileTarget)
+                                        target = plr;
+
+                                    hostileTarget = true;
                                     break;
+                                }
                                 case 5: // Flametongue Weapon
-                                    unleashSpell = 73683; // Unleash Flame
+                                {
+                                    trigger_spell_id = 73683; // Unleash Flame
+                                    talent_trigger_spell_id = 118470;
+                                    canAddTriggerAura = true;
                                     break;
+                                }
                                 case 2: // Frostbrand Weapon
-                                    unleashSpell = 73682; // Unleash Frost
+                                {
+                                    trigger_spell_id = 73682; // Unleash Frost
+                                    talent_trigger_spell_id = 118474;
+                                    canAddTalTriggerAura = true;
                                     break;
+                                }
                                 case 3021: // Rockbiter Weapon
-                                    unleashSpell = 73684; // Unleash Earth
+                                {
+                                    trigger_spell_id = 73684; // Unleash Earth
+                                    talent_trigger_spell_id = 118475;
                                     break;
+                                }
                                 case 283: // Windfury Weapon
-                                    unleashSpell = 73681; // Unleash Wind
+                                {
+                                    trigger_spell_id = 73681; // Unleash Wind
+                                    talent_trigger_spell_id = 118472;
+                                    canAddTriggerAura = true;
+                                    canAddTalTriggerAura = true;
                                     break;
+                                }
                             }
 
-                            if (hostileSpell && !hostileTarget)
-                                continue; // don't allow to attack non-hostile targets. TODO: check this before cast
+                            if (trigger_spell_id && hostileTarget)
+                                plr->CastSpell(target, trigger_spell_id, true);
+                            else if (canAddTriggerAura)
+                                plr->AddAura(trigger_spell_id, plr);
 
-                            if (!hostileSpell && hostileTarget)
-                                target = _player;   // heal ourselves instead of the enemy
-
-                            if (unleashSpell)
-                                _player->CastSpell(target, unleashSpell, true);
-
-                            target = GetExplTargetUnit();
+                            if (plr->HasAura(117012))
+                            {
+                                if (talent_trigger_spell_id && hostileTarget)
+                                    plr->CastSpell(target, talent_trigger_spell_id, true);
+                                if (canAddTalTriggerAura)
+                                    plr->AddAura(talent_trigger_spell_id, plr);
+                            }
 
                             // If weapons are enchanted by same enchantment, only one should be unleashed
                             if (i == 0 && weapons[0] && weapons[1])
