@@ -1038,7 +1038,7 @@ public:
                     events.ScheduleEvent(EVENT_FRACTURE, 15000);
                     break;
                 case EVENT_SET_TO_BLOW:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 50.0f, true))
                         DoCast(target, SPELL_SET_TO_BLOW_AURA, true);
                     events.ScheduleEvent(EVENT_SET_TO_BLOW, 12000);
                     break;
