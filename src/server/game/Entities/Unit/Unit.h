@@ -1839,6 +1839,10 @@ class Unit : public WorldObject
         Unit* GetCharmerOrOwner() const { return GetCharmerGUID() ? GetCharmer() : GetOwner(); }
         Unit* GetCharmerOrOwnerOrSelf() const
         {
+            if (GetTypeId() == TYPEID_PLAYER)
+                if (m_ControlledByPlayer)
+                    return (Unit*)this;
+
             if (Unit* u = GetCharmerOrOwner())
                 return u;
 

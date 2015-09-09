@@ -1077,7 +1077,7 @@ void Spell::SelectImplicitBetweenTargets(SpellEffIndex effIndex, SpellImplicitTa
                 break;
         }
 
-        Trinity::WorldObjectSpellBetweenTargetCheck check(width, radius, m_caster, center, referer, m_spellInfo, selectionType, condList);
+        Trinity::WorldObjectSpellBetweenTargetCheck check(width, radius, m_caster, center, referer, m_spellInfo, selectionType, condList, effIndex);
         Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellBetweenTargetCheck> searcher(m_caster, targets, check, containerTypeMask);
         SearchTargets<Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellBetweenTargetCheck> >(searcher, containerTypeMask, m_caster, m_caster, radius);
 
@@ -1151,7 +1151,7 @@ void Spell::SelectImplicitConeTargets(SpellEffIndex effIndex, SpellImplicitTarge
 
     if (uint32 containerTypeMask = GetSearcherTypeMask(objectType, condList))
     {
-        Trinity::WorldObjectSpellConeTargetCheck check(coneAngle, radius, m_caster, m_spellInfo, selectionType, condList);
+        Trinity::WorldObjectSpellConeTargetCheck check(coneAngle, radius, m_caster, m_spellInfo, selectionType, condList, effIndex);
         Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellConeTargetCheck> searcher(m_caster, targets, check, containerTypeMask);
         SearchTargets<Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellConeTargetCheck> >(searcher, containerTypeMask, m_caster, m_caster, radius);
 
@@ -1241,7 +1241,7 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
     if(radius <= 0)
         radius = 5000.0f;
 
-    SearchAreaTargets(targets, radius, center, referer, targetType.GetObjectType(), targetType.GetCheckType(), m_spellInfo->GetEffect(effIndex, m_diffMode).ImplicitTargetConditions);
+    SearchAreaTargets(targets, radius, center, referer, targetType.GetObjectType(), targetType.GetCheckType(), m_spellInfo->GetEffect(effIndex, m_diffMode).ImplicitTargetConditions, effIndex);
 
     sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::SelectImplicitAreaTargets %u, radius %f, GetObjectType %u, targets count %u, effIndex %i, Conditions %i", m_spellInfo->Id, radius, targetType.GetObjectType(), targets.size(), effIndex, m_spellInfo->GetEffect(effIndex, m_diffMode).ImplicitTargetConditions);
 
@@ -2162,30 +2162,30 @@ void Spell::SearchTargets(SEARCHER& searcher, uint32 containerMask, Unit* refere
     }
 }
 
-WorldObject* Spell::SearchNearbyTarget(float range, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectionType, ConditionList* condList)
+WorldObject* Spell::SearchNearbyTarget(float range, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectionType, ConditionList* condList, SpellEffIndex effIndex)
 {
     WorldObject* target = NULL;
     uint32 containerTypeMask = GetSearcherTypeMask(objectType, condList);
     if (!containerTypeMask)
         return NULL;
-    Trinity::WorldObjectSpellNearbyTargetCheck check(range, m_caster, m_spellInfo, selectionType, condList);
+    Trinity::WorldObjectSpellNearbyTargetCheck check(range, m_caster, m_spellInfo, selectionType, condList, effIndex);
     Trinity::WorldObjectLastSearcher<Trinity::WorldObjectSpellNearbyTargetCheck> searcher(m_caster, target, check, containerTypeMask);
     SearchTargets<Trinity::WorldObjectLastSearcher<Trinity::WorldObjectSpellNearbyTargetCheck> > (searcher, containerTypeMask, m_caster, m_caster, range);
     return target;
 }
 
-void Spell::SearchAreaTargets(std::list<WorldObject*>& targets, float range, Position const* position, Unit* referer, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectionType, ConditionList* condList)
+void Spell::SearchAreaTargets(std::list<WorldObject*>& targets, float range, Position const* position, Unit* referer, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectionType, ConditionList* condList, SpellEffIndex effIndex)
 {
     uint32 containerTypeMask = GetSearcherTypeMask(objectType, condList);
     if (!containerTypeMask)
         return;
     Unit* caster = m_originalCaster ? m_originalCaster : m_caster;
-    Trinity::WorldObjectSpellAreaTargetCheck check(range, position, caster, referer, m_spellInfo, selectionType, condList);
+    Trinity::WorldObjectSpellAreaTargetCheck check(range, position, caster, referer, m_spellInfo, selectionType, condList, effIndex);
     Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellAreaTargetCheck> searcher(caster, targets, check, containerTypeMask);
     SearchTargets<Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellAreaTargetCheck> > (searcher, containerTypeMask, caster, position, range);
 }
 
-void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTargets, WorldObject* target, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectType, ConditionList* condList, bool isChainHeal)
+void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTargets, WorldObject* target, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectType, ConditionList* condList, bool isChainHeal, SpellEffIndex effIndex)
 {
     // max dist for jump target selection
     float jumpRadius = 0.0f;
@@ -10146,8 +10146,8 @@ namespace Trinity
 {
 
 WorldObjectSpellTargetCheck::WorldObjectSpellTargetCheck(Unit* caster, Unit* referer, SpellInfo const* spellInfo,
-            SpellTargetCheckTypes selectionType, ConditionList* condList) : _caster(caster), _referer(referer), _spellInfo(spellInfo),
-    _targetSelectionType(selectionType), _condList(condList)
+    SpellTargetCheckTypes selectionType, ConditionList* condList, SpellEffIndex effIndex) : _caster(caster), _referer(referer), _spellInfo(spellInfo),
+    _targetSelectionType(selectionType), _condList(condList), _effIndex(effIndex)
 {
     if (condList)
         _condSrcInfo = new ConditionSourceInfo(NULL, caster);
@@ -10222,7 +10222,15 @@ bool WorldObjectSpellTargetCheck::operator()(WorldObject* target)
                 if (unitTarget->isTotem())
                     return false;
                 if (!_caster->_IsValidAssistTarget(unitTarget, _spellInfo))
-                    return false;
+                {
+                    if (unitTarget->m_ControlledByPlayer)
+                    {
+                        if (_spellInfo->Effects[_effIndex].Effect != SPELL_EFFECT_DISPEL_MECHANIC || _spellInfo->Effects[_effIndex].MiscValue != 1)
+                            return false;
+                    }
+                    else
+                        return false;
+                }
                 if (!_referer->IsInRaidWith(unitTarget))
                     return false;
                 break;
@@ -10234,8 +10242,8 @@ bool WorldObjectSpellTargetCheck::operator()(WorldObject* target)
 }
 
 WorldObjectSpellNearbyTargetCheck::WorldObjectSpellNearbyTargetCheck(float range, Unit* caster, SpellInfo const* spellInfo,
-    SpellTargetCheckTypes selectionType, ConditionList* condList)
-    : WorldObjectSpellTargetCheck(caster, caster, spellInfo, selectionType, condList), _range(range), _position(caster)
+    SpellTargetCheckTypes selectionType, ConditionList* condList, SpellEffIndex effIndex)
+    : WorldObjectSpellTargetCheck(caster, caster, spellInfo, selectionType, condList, effIndex), _range(range), _position(caster)
 {
 }
 
@@ -10251,8 +10259,8 @@ bool WorldObjectSpellNearbyTargetCheck::operator()(WorldObject* target)
 }
 
 WorldObjectSpellAreaTargetCheck::WorldObjectSpellAreaTargetCheck(float range, Position const* position, Unit* caster,
-    Unit* referer, SpellInfo const* spellInfo, SpellTargetCheckTypes selectionType, ConditionList* condList)
-    : WorldObjectSpellTargetCheck(caster, referer, spellInfo, selectionType, condList), _range(range), _position(position)
+    Unit* referer, SpellInfo const* spellInfo, SpellTargetCheckTypes selectionType, ConditionList* condList, SpellEffIndex effIndex)
+    : WorldObjectSpellTargetCheck(caster, referer, spellInfo, selectionType, condList, effIndex), _range(range), _position(position)
 {
 }
 
@@ -10264,8 +10272,8 @@ bool WorldObjectSpellAreaTargetCheck::operator()(WorldObject* target)
 }
 
 WorldObjectSpellBetweenTargetCheck::WorldObjectSpellBetweenTargetCheck(float width, float range, Unit* caster, Position const* position, Unit* referer,
-    SpellInfo const* spellInfo, SpellTargetCheckTypes selectionType, ConditionList* condList)
-    : WorldObjectSpellAreaTargetCheck(range, caster, caster, referer, spellInfo, selectionType, condList), _width(width), _range(range), _position(position)
+    SpellInfo const* spellInfo, SpellTargetCheckTypes selectionType, ConditionList* condList, SpellEffIndex effIndex)
+    : WorldObjectSpellAreaTargetCheck(range, caster, caster, referer, spellInfo, selectionType, condList, effIndex), _width(width), _range(range), _position(position)
 {
 }
 
@@ -10278,8 +10286,8 @@ bool WorldObjectSpellBetweenTargetCheck::operator()(WorldObject* target)
 }
 
 WorldObjectSpellConeTargetCheck::WorldObjectSpellConeTargetCheck(float coneAngle, float range, Unit* caster,
-    SpellInfo const* spellInfo, SpellTargetCheckTypes selectionType, ConditionList* condList)
-    : WorldObjectSpellAreaTargetCheck(range, caster, caster, caster, spellInfo, selectionType, condList), _coneAngle(coneAngle)
+    SpellInfo const* spellInfo, SpellTargetCheckTypes selectionType, ConditionList* condList, SpellEffIndex effIndex)
+    : WorldObjectSpellAreaTargetCheck(range, caster, caster, caster, spellInfo, selectionType, condList, effIndex), _coneAngle(coneAngle)
 {
 }
 
@@ -10304,7 +10312,7 @@ bool WorldObjectSpellConeTargetCheck::operator()(WorldObject* target)
 }
 
 WorldObjectSpellTrajTargetCheck::WorldObjectSpellTrajTargetCheck(float range, Position const* position, Unit* caster, SpellInfo const* spellInfo)
-    : WorldObjectSpellAreaTargetCheck(range, position, caster, caster, spellInfo, TARGET_CHECK_DEFAULT, NULL)
+    : WorldObjectSpellAreaTargetCheck(range, position, caster, caster, spellInfo, TARGET_CHECK_DEFAULT, NULL, MAX_SPELL_EFFECTS)
 {
 }
 
