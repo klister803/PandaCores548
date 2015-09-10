@@ -369,6 +369,7 @@ public:
                 if (Player* pl = i->getSource())
                     if (pl->isAlive())
                         pl->SendUpdateWorldState(8431, 0);
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_UNSTABLE_DEFENSE_SYSTEMS);
         }
 
         void SendWipe()
@@ -731,10 +732,6 @@ public:
         InstanceScript* instance;
 
         void Reset(){}
-
-        void EnterCombat(Unit* who){}
-
-        void EnterEvadeMode(){}
 
         void UpdateAI(uint32 diff){}
     };

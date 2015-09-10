@@ -1221,6 +1221,7 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 144115: //Flame Coating
     //Paragons of the Klaxxi
     case 146982: //Enrage
+    case 143319: //Bloodletting
     //debuffs from klaxxi
     case 142931:
     case 142929:

@@ -5112,6 +5112,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[4].TargetA = 1;
                     spellInfo->Effects[4].TargetB = 0;
                     break;
+                case 143319: //Bloodletting
+                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+                    spellInfo->Effects[0].TriggerSpell = 143320; //143322 = heal
+                    break;
                 //debuffs from klaxxi
                 case 142929:
                 case 142931:

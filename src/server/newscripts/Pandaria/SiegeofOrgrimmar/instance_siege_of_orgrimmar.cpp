@@ -110,6 +110,7 @@ public:
         uint64 gnazgrimGuid;
         uint64 amGuid;
         uint64 npcssopsGuid;
+        std::vector<uint64> npcleverlistGuids;
         std::vector<uint64> klaxxilist; //all klaxxi
         uint64 amberpieceGuid;
         uint64 klaxxicontrollerGuid;
@@ -185,6 +186,7 @@ public:
             gnazgrimGuid            = 0;
             amGuid                  = 0;
             npcssopsGuid            = 0;
+            npcleverlistGuids.clear();
             klaxxilist.clear();
             amberpieceGuid          = 0;
             klaxxicontrollerGuid    = 0;
@@ -456,6 +458,9 @@ public:
                         spoilsGuids.push_back(creature->GetGUID());
                     else
                         spoils2Guids.push_back(creature->GetGUID());
+                    break;
+                case NPC_LEVER:
+                    npcleverlistGuids.push_back(creature->GetGUID());
                     break;
                 //Paragons of the Klaxxi
                 case NPC_KILRUK:
@@ -853,6 +858,10 @@ public:
                 switch (state)
                 {
                 case NOT_STARTED:
+                    //Remove Combat
+                    for (std::vector<uint64>::const_iterator itr = npcleverlistGuids.begin(); itr != npcleverlistGuids.end(); itr++)
+                        if (Creature* npclever = instance->GetCreature(*itr))
+                            npclever->AI()->EnterEvadeMode();
                     //Clear Frames
                     for (std::vector<uint64>::const_iterator itr = spoilsGuids.begin(); itr != spoilsGuids.end(); itr++)
                         if (Creature* spoil = instance->GetCreature(*itr))
@@ -897,6 +906,9 @@ public:
                 case IN_PROGRESS:
                     if (Creature* ssops = instance->GetCreature(npcssopsGuid))
                         ssops->AI()->DoAction(ACTION_SSOPS_IN_PROGRESS);
+                    for (std::vector<uint64>::const_iterator itr = npcleverlistGuids.begin(); itr != npcleverlistGuids.end(); itr++)
+                        if (Creature* npclever = instance->GetCreature(*itr))
+                            npclever->AI()->DoZoneInCombat(npclever, 100.0f);
                     HandleGameObject(spentdoorGuid, false);
                     break;
                 case DONE:
@@ -908,6 +920,10 @@ public:
                     for (std::vector<uint64>::const_iterator itr = spoils2Guids.begin(); itr != spoils2Guids.end(); itr++)
                         if (Creature* spoil = instance->GetCreature(*itr))
                             spoil->AI()->DoAction(ACTION_RESET);
+                    //Remove Combat
+                    for (std::vector<uint64>::const_iterator itr = npcleverlistGuids.begin(); itr != npcleverlistGuids.end(); itr++)
+                        if (Creature* npclever = instance->GetCreature(*itr))
+                            npclever->AI()->EnterEvadeMode();
                     //Open Room's Doors
                     for (std::vector<uint64>::const_iterator itr = roomdoorGuids.begin(); itr != roomdoorGuids.end(); itr++)
                         HandleGameObject(*itr, true);

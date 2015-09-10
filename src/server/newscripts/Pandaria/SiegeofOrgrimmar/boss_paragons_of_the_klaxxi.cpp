@@ -29,15 +29,19 @@ enum eSpells
     SPELL_BLODDLETTING_BUFF     = 143320,
 
     //Rikkal
-    SPELL_MAID_SCIENTIST        = 143277,
+    SPELL_MAD_SCIENTIST_AURA    = 143277,
     SPELL_INJECTION             = 143339,
 
 
     //Kilruk
+    SPELL_RAZOR_SHARP_BLADES    = 142918,
     SPELL_GOUGE                 = 143939,
     SPELL_MUTILATE              = 143941,
     SPELL_REAVE_PRE             = 148677,
     SPELL_REAVE                 = 148681,
+
+    //Xaril
+    SPELL_TENDERIZING_STRIKES   = 142927,
 
     //Special
     SPELL_AURA_VISUAL_FS        = 143548, 
@@ -50,9 +54,9 @@ enum eSpells
     //Rikkal
     SPELL_GENE_SPLICE           = 143372,
     SPELL_MAD_SCIENTIST         = 141857,
-    //
     //Hisek
     SPELL_COMPOUND_EYE          = 141852,
+    //
 };
 
 enum sEvents
@@ -205,12 +209,13 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
             }
 
             InstanceScript* instance;
+            EventMap events;
 
             void Reset()
             {
+                events.Reset();
                 for (uint8 n = 0; n < 4; n++)
                     me->RemoveAurasDueToSpell(removeaurasentry[n]);
-
                 me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
                 me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                 me->SetReactState(REACT_PASSIVE);
@@ -229,6 +234,27 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
 
             void EnterCombat(Unit* who)
             {
+                switch (me->GetEntry())
+                {
+                case NPC_KILRUK:
+                    DoCast(me, SPELL_RAZOR_SHARP_BLADES, true);
+                    break;
+                case NPC_XARIL:
+                    DoCast(me, SPELL_TENDERIZING_STRIKES, true);
+                    break;
+                case NPC_SKEER:
+                    DoCast(me, SPELL_HEVER_OF_FOES, true);
+                    break;
+                case NPC_RIKKAL:
+                    DoCast(me, SPELL_MAD_SCIENTIST_AURA, true);
+                    break;
+                case NPC_KAZTIK:
+                case NPC_KORVEN:
+                case NPC_IYYOKYK:
+                case NPC_KAROZ:
+                case NPC_HISEK:
+                    break;
+                }
             }
 
             void DoAction(int32 const action)
@@ -277,23 +303,28 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
 
             void OnSpellClick(Unit* clicker)
             {
-                switch (me->GetEntry())
+                if (Player* pl = clicker->ToPlayer())
                 {
-                case NPC_RIKKAL:
-                    clicker->CastSpell(clicker, SPELL_MAD_SCIENTIST, true);
-                    break;
-                case NPC_HISEK:
-                    //check dd role
-                    clicker->CastSpell(clicker, SPELL_COMPOUND_EYE, true);
-                    break;
-                default:
-                    break;
+                    switch (me->GetEntry())
+                    {
+                    case NPC_RIKKAL:
+                        pl->CastSpell(pl, SPELL_MAD_SCIENTIST, true);
+                        break;
+                    case NPC_HISEK:
+                        if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_DPS)
+                            pl->CastSpell(pl, SPELL_COMPOUND_EYE, true);
+                        break;
+                    default:
+                        break;
+                    }
+                    me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
                 }
-                me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
             }
 
             void UpdateAI(uint32 diff)
             {
+                events.Update(diff);
+
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
