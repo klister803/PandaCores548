@@ -3200,11 +3200,28 @@ class spell_monk_chi_wave : public SpellScriptLoader
                 {
                     if (Unit* target = GetExplTargetUnit())
                     {
+                        uint32 spellId = 0;
                         int32 bp = 1;
+
                         if (target->IsFriendlyTo(caster))
-                            caster->CastCustomSpell(target, 132464, NULL, &bp, NULL, true, NULL, NULL, caster->GetGUID());
+                        {
+                            spellId = 132464;
+
+                            if (!caster->_IsValidAssistTarget(target, GetSpellInfo()))
+                                target = caster;
+                        }
                         else
-                            caster->CastCustomSpell(target, 132467, NULL, &bp, NULL, true, NULL, NULL, caster->GetGUID());
+                        {
+                            if (!caster->IsValidAttackTarget(target))
+                            {
+                                spellId = 132464;
+                                target = caster;
+                            }
+                            else
+                                spellId = 132467;
+                        }
+
+                        caster->CastCustomSpell(target, spellId, NULL, &bp, NULL, true, NULL, NULL, caster->GetGUID());
                     }
                 }
             }
