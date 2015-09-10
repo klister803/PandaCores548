@@ -17885,16 +17885,19 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                             }
                             int32 damageLeft = triggeredByAura->GetAmount();
                             // No damage left
-                            if (damageLeft < int32(dmgInfoProc->GetDamage() + dmgInfoProc->GetAbsorb()))
+                            if (!(procFlag & PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS))
                             {
-                                std::list<uint32> auras;
-                                auras.push_back(i->aura->GetId());
-                                SendDispelLog(target ? target->GetGUID() : 0, procSpell ? procSpell->Id : 0, auras, true, false);
+                                if (damageLeft < int32(dmgInfoProc->GetDamage() + dmgInfoProc->GetAbsorb()))
+                                {
+                                    std::list<uint32> auras;
+                                    auras.push_back(i->aura->GetId());
+                                    SendDispelLog(target ? target->GetGUID() : 0, procSpell ? procSpell->Id : 0, auras, true, false);
 
-                                i->aura->Remove();
+                                    i->aura->Remove();
+                                }
+                                else
+                                    triggeredByAura->SetAmount(damageLeft - dmgInfoProc->GetDamage() - dmgInfoProc->GetAbsorb());
                             }
-                            else
-                                triggeredByAura->SetAmount(damageLeft - dmgInfoProc->GetDamage() - dmgInfoProc->GetAbsorb());
                         }
 
                         switch (triggeredByAura->GetId())
