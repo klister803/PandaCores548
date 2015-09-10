@@ -3026,7 +3026,7 @@ class spell_monk_chi_wave_filter : public SpellScriptLoader
                 targets.remove_if(OptionCheck(GetCaster()));
                 if (!GetCaster()->IsFriendlyTo(GetOriginalCaster()))
                 {
-                    targets.remove_if(FriendlyToOriginalCaster(GetOriginalCaster()));
+                    targets.remove_if(FriendlyToOriginalCaster(GetOriginalCaster(), GetSpellInfo()));
                     targets.sort(CheckHealthState());
                     if (targets.size() > 1)
                         targets.resize(1);
@@ -3085,16 +3085,17 @@ class spell_monk_chi_wave_filter : public SpellScriptLoader
             class FriendlyToOriginalCaster
             {
             public:
-                FriendlyToOriginalCaster(Unit* caster) : _caster(caster){}
+                FriendlyToOriginalCaster(Unit* caster, SpellInfo const* spellInfo) : _caster(caster), _spellInfo(spellInfo){}
 
                 Unit* _caster;
+                SpellInfo const* _spellInfo;
 
                 bool operator()(WorldObject* unit)
                 {
                     Unit* victim = unit->ToUnit();
                     if (!victim)
                         return true;
-                    if (!_caster->IsFriendlyTo(victim))
+                    if (!_caster->IsFriendlyTo(victim) || !_caster->_IsValidAssistTarget(victim, _spellInfo))
                         return true;
                     return false;
                 }
