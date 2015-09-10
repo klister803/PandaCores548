@@ -3214,6 +3214,10 @@ class Player : public Unit, public GridObject<Player>
         AreaTriggerEntry const* GetLastAreaTrigger() { return LastAreaTrigger; }
         void SetLastAreaTrigger(AreaTriggerEntry const* at) { LastAreaTrigger = at; }
 
+        //Message
+        void AddListner(WorldObject* o);
+        void RemoveListner(WorldObject* o);
+
     protected:
         // Gamemaster whisper whitelist
         WhisperListContainer WhisperList;

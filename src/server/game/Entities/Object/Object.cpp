@@ -2335,18 +2335,27 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
     if (this == obj)
         return true;
 
-    if (obj->MustBeVisibleOnlyForSomePlayers() && IS_PLAYER_GUID(GetGUID()))
+    if (IS_PLAYER_GUID(GetGUID()))
     {
-        Player const* thisPlayer = ToPlayer();
+        if (obj->MustBeVisibleOnlyForSomePlayers())
+        {
+            Player const* thisPlayer = ToPlayer();
 
-        if (!thisPlayer)
-            return false;
+            if (!thisPlayer)
+                return false;
 
-        Group const* group = thisPlayer->GetGroup();
+            Group const* group = thisPlayer->GetGroup();
 
-        if (!obj->IsPlayerInPersonnalVisibilityList(thisPlayer->GetGUID()) &&
-            (!group || !obj->IsGroupInPersonnalVisibilityList(group->GetGUID())))
-            return false;
+            if (!obj->IsInPersonnalVisibilityList(thisPlayer->GetGUID()) &&
+                (!group || !obj->IsInPersonnalVisibilityList(group->GetGUID())))
+                return false;
+        }
+
+        if (!obj->HideForSomePlayers())
+        {
+            if (obj->ShouldHideFor(GetGUID()))
+                return false;
+        }
     }
 
     if (IS_PLAYER_GUID(GetGUID()) && IS_GAMEOBJECT_GUID(obj->GetGUID()))
@@ -2556,38 +2565,38 @@ bool WorldObject::CanDetectStealthOf(WorldObject const* obj) const
     return true;
 }
 
-bool WorldObject::IsPlayerInPersonnalVisibilityList(uint64 guid) const
+bool WorldObject::IsInPersonnalVisibilityList(uint64 guid) const
 {
-    if (!IS_PLAYER_GUID(guid))
-        return false;
-
-    for (std::list<uint64>::const_iterator itr = _visibilityPlayerList.begin(); itr != _visibilityPlayerList.end(); ++itr)
-        if ((*itr) == guid)
-            return true;
-
-    return false;
+    return _visibilityPlayerList.find(guid) != _visibilityPlayerList.end();
 }
 
-bool WorldObject::IsGroupInPersonnalVisibilityList(uint64 guid) const
+void WorldObject::AddVisitor(Object* o)
 {
-    if (!IS_GROUP(guid))
-        return false;
+    for (std::list<C_PTR>::iterator itr = visitors.begin(); itr != visitors.end(); ++itr)
+        if ((*itr).get() == o)
+            return;
 
-    for (std::list<uint64>::const_iterator itr = _visibilityPlayerList.begin(); itr != _visibilityPlayerList.end(); ++itr)
-        if ((*itr) == guid)
-            return true;
-
-    return false;
+    visitors.push_back(o->get_ptr());
 }
 
-void WorldObject::AddPlayersInPersonnalVisibilityList(std::list<uint64> viewerList)
+void WorldObject::RemoveVisitor(Object* o)
 {
-    for (std::list<uint64>::const_iterator guid = viewerList.begin(); guid != viewerList.end(); ++guid)
+    for (std::list<C_PTR>::iterator itr = visitors.begin(); itr != visitors.end(); ++itr)
+        if ((*itr).get() == o)
+        {
+            visitors.erase(itr);
+            break;
+        }
+}
+
+void WorldObject::AddPlayersInPersonnalVisibilityList(GuidUnorderedSet const& viewerList)
+{
+    for (auto guid : viewerList)
     {
-        if (!IS_PLAYER_GUID(*guid))
+        if (!IS_PLAYER_GUID(guid))
             continue;
 
-        _visibilityPlayerList.push_back(*guid);
+        _visibilityPlayerList.insert(guid);
     }
 }
 
@@ -2795,7 +2804,36 @@ void WorldObject::BuildMonsterChat(WorldPacket* data, uint8 msgtype, char const*
 void WorldObject::SendMessageToSet(WorldPacket* data, bool self)
 {
     if (IsInWorld())
-        SendMessageToSetInRange(data, GetVisibilityRange(), self);
+    {
+        for (auto target : visitors)
+        {
+            Player* player = (Player*)target.get();
+            if (!player)
+                continue;
+            // Send packet to all who are sharing the player's vision
+            /*if (!target->GetSharedVisionList().empty())
+            {
+                SharedVisionList::const_iterator i = target->GetSharedVisionList().begin();
+                for (; i != target->GetSharedVisionList().end(); ++i)
+                    if ((*i)->m_seer == target)
+                        SendPacket(*i);
+            }*/
+
+            if (player->m_seer == player || player->GetVehicle())
+            {
+                // never send packet to self
+                if (player == this /*|| (team && player->GetTeam() != team)*/)
+                    continue;
+
+                if (!player->HaveAtClient(this))
+                    continue;
+
+                if (WorldSession* session = player->GetSession())
+                    session->SendPacket(data);
+            }
+        }
+        //SendMessageToSetInRange(data, GetVisibilityRange(), self);
+    }
 }
 
 void WorldObject::SendMessageToSetInRange(WorldPacket* data, float dist, bool /*self*/)
@@ -2868,7 +2906,7 @@ void WorldObject::AddObjectToRemoveList()
     map->AddObjectToRemoveList(this);
 }
 
-TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropertiesEntry const* properties /*= NULL*/, uint32 duration /*= 0*/, Unit* summoner /*= NULL*/, uint64 targetGuid /*= 0*/, uint32 spellId /*= 0*/, int32 vehId /*= 0*/, uint64 viewerGuid /*= 0*/, std::list<uint64>* viewersList /*= NULL*/)
+TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropertiesEntry const* properties /*= NULL*/, uint32 duration /*= 0*/, Unit* summoner /*= NULL*/, uint64 targetGuid /*= 0*/, uint32 spellId /*= 0*/, int32 vehId /*= 0*/, uint64 viewerGuid /*= 0*/, GuidUnorderedSet* viewersList /*= NULL*/)
 {
     if(summoner)
     {
@@ -3043,7 +3081,7 @@ TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, uint6
     return NULL;
 }
 
-TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, TempSummonType spwtype, uint32 duration, int32 vehId, uint64 viewerGuid, std::list<uint64>* viewersList) const
+TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, TempSummonType spwtype, uint32 duration, int32 vehId, uint64 viewerGuid, GuidUnorderedSet* viewersList) const
 {
     if (Map* map = FindMap())
     {
@@ -3154,7 +3192,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     return pet;
 }
 
-GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime, uint64 viewerGuid, std::list<uint64>* viewersList)
+GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime, uint64 viewerGuid, GuidUnorderedSet* viewersList)
 {
     if (!IsInWorld())
         return NULL;
@@ -3840,6 +3878,7 @@ void WorldObject::DestroyForNearbyPlayers()
         DestroyForPlayer(player);
         player->m_clientGUIDs.erase(GetGUID());
     }
+    visitors.clear();
 }
 
 void WorldObject::UpdateObjectVisibility(bool /*forced*/)

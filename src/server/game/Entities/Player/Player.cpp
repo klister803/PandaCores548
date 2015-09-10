@@ -7915,10 +7915,39 @@ void Player::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
     if (skipped_rcvr != this)
         GetSession()->SendPacket(data);
 
+    for (auto target : visitors)
+    {
+        Player *player = (Player*)target.get();
+        if (!player)
+            continue;
+
+        // Send packet to all who are sharing the player's vision
+        /*if (!target->GetSharedVisionList().empty())
+        {
+            SharedVisionList::const_iterator i = target->GetSharedVisionList().begin();
+            for (; i != target->GetSharedVisionList().end(); ++i)
+                if ((*i)->m_seer == target)
+                    SendPacket(*i);
+        }*/
+
+        if (player->m_seer == player || player->GetVehicle())
+        {
+            // never send packet to self
+            if (player == this || skipped_rcvr == player)
+                continue;
+
+            if (!player->HaveAtClient(this))
+                continue;
+
+            if (WorldSession* session = player->GetSession())
+                session->SendPacket(data);
+        }
+    }
+
     // we use World::GetMaxVisibleDistance() because i cannot see why not use a distance
     // update: replaced by GetMap()->GetVisibilityDistance()
-    Trinity::MessageDistDeliverer notifier(this, data, GetVisibilityRange(), false, skipped_rcvr);
-    VisitNearbyWorldObject(GetVisibilityRange(), notifier);
+    //Trinity::MessageDistDeliverer notifier(this, data, GetVisibilityRange(), false, skipped_rcvr);
+    //VisitNearbyWorldObject(GetVisibilityRange(), notifier);
 }
 
 void Player::SendDirectMessage(WorldPacket* data)
@@ -25578,6 +25607,7 @@ void Player::UpdateVisibilityOf(WorldObject* target)
             if (target->GetTypeId() == TYPEID_UNIT)
                 BeforeVisibilityDestroy<Creature>(target->ToCreature(), this);
 
+            RemoveListner(target);
             target->DestroyForPlayer(this);
             m_clientGUIDs.erase(target->GetGUID());
 
@@ -25593,6 +25623,7 @@ void Player::UpdateVisibilityOf(WorldObject* target)
             //if (target->isType(TYPEMASK_UNIT) && ((Unit*)target)->m_Vehicle)
             //    UpdateVisibilityOf(((Unit*)target)->m_Vehicle);
 
+            AddListner(target);
             target->SendUpdateToPlayer(this);
             m_clientGUIDs.insert(target->GetGUID());
 
@@ -25656,6 +25687,7 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
 
             target->BuildOutOfRangeUpdateBlock(&data);
             m_clientGUIDs.erase(target->GetGUID());
+            RemoveListner(target);
 
             #ifdef TRINITY_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "Object %u (Type: %u, Entry: %u) is out of range for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), target->GetEntry(), GetGUIDLow(), GetDistance(target));
@@ -25669,6 +25701,7 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
             //if (target->isType(TYPEMASK_UNIT) && ((Unit*)target)->m_Vehicle)
             //    UpdateVisibilityOf(((Unit*)target)->m_Vehicle, data, visibleNow);
 
+            AddListner(target);
             target->BuildCreateUpdateBlockForPlayer(&data, this);
             UpdateVisibilityOf_helper(m_clientGUIDs, target, visibleNow);
 
@@ -30809,4 +30842,14 @@ bool Player::HasInstantCastModForSpell(SpellInfo const* spellInfo)
                 return true;
 
     return false;
+}
+
+void Player::AddListner(WorldObject* o)
+{
+    o->AddVisitor(this);
+}
+
+void Player::RemoveListner(WorldObject* o)
+{
+    o->RemoveVisitor(this);
 }
