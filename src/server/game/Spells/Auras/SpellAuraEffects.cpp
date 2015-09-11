@@ -2171,7 +2171,7 @@ void AuraEffect::ApplySpellMod(Unit* target, bool apply)
         case SPELLMOD_CASTING_TIME:
         {
             if (apply)
-                if (GetAmount() == -100)
+                if (m_baseAmount == -100)
                     if (Player* plr = target->ToPlayer())
                     {
                         for (PlayerSpellMap::const_iterator itr = plr->GetSpellMap().begin(); itr != plr->GetSpellMap().end(); ++itr)
