@@ -417,7 +417,7 @@ class spell_rog_nightstalker : public SpellScriptLoader
                 if (Unit* caster = GetCaster())
                 {
                     if (Aura* aura = caster->GetAura(ROGUE_SPELL_NIGHTSTALKER_DAMAGE_DONE))
-                        aura->SetAuraTimer(200);
+                        aura->Remove();
                 }
             }
 

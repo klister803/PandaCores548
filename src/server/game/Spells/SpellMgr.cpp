@@ -3832,6 +3832,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 73683:  // Unleash Flame
+                case 130493: // Nightstalker
+                    spellInfo->AttributesEx12 |= SPELL_ATTR12_REMOVE_AFTER_DELAY;
+                    break;
                 case 144964: // Flow of the Elements
                 case 144966: // Item - Shaman T16 Enhancement 4P Bonus
                     spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;

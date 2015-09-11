@@ -696,7 +696,7 @@ m_castItemGuid(castItem ? castItem->GetGUID() : 0), m_applyTime(time(NULL)),
 m_owner(owner), m_timeCla(0), m_updateTargetMapInterval(0),
 m_casterLevel(caster ? caster->getLevel() : m_spellInfo->SpellLevel), m_procCharges(0), m_stackAmount(stackAmount ? stackAmount: 1),
 m_isRemoved(false), m_isSingleTarget(false), m_isUsingCharges(false), m_fromAreatrigger(false), m_inArenaNerf(false), m_aura_amount(0),
-m_diffMode(caster ? caster->GetSpawnMode() : 0), m_spellDynObjGuid(0), m_spellAreaTrGuid(0), m_customData(0), m_damage_amount(0)
+m_diffMode(caster ? caster->GetSpawnMode() : 0), m_spellDynObjGuid(0), m_spellAreaTrGuid(0), m_customData(0), m_damage_amount(0), m_removeDelay(0)
 {
     SpellPowerEntry power;
     if (!GetSpellInfo()->GetSpellPowerByCasterPower(GetCaster(), power))
@@ -1049,6 +1049,13 @@ void Aura::UpdateOwner(uint32 diff, WorldObject* owner)
 
 void Aura::Update(uint32 diff, Unit* caster)
 {
+    if (m_removeDelay > 0)
+    {
+        m_removeDelay += diff;
+        if (m_removeDelay >= 300)
+            GetUnitOwner()->RemoveOwnedAura(this, AURA_REMOVE_BY_DEFAULT);
+    }
+
     if (m_duration > 0 || (!IsPassive() && m_duration == -1))
     {
         if (m_duration > 0)
@@ -3259,8 +3266,15 @@ void UnitAura::_UnapplyForTarget(Unit* target, Unit* caster, AuraApplication * a
 
 void UnitAura::Remove(AuraRemoveMode removeMode)
 {
-    if (IsRemoved())
+    if (IsRemoved() || m_removeDelay > 0)
         return;
+
+    if (GetSpellInfo()->AttributesEx12 & SPELL_ATTR12_REMOVE_AFTER_DELAY)
+    {
+        m_removeDelay = 1;
+        return;
+    }
+
     GetUnitOwner()->RemoveOwnedAura(this, removeMode);
 }
 

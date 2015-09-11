@@ -288,6 +288,7 @@ class Aura
         int32 m_allDuration;                                // Duration from apply aura
         int32 m_timeCla;                                    // Timer for power per sec calcultion
         int32 m_updateTargetMapInterval;                    // Timer for UpdateTargetMapOfEffect
+        uint32 m_removeDelay;
 
         uint16 m_casterLevel;                                // Aura level (store caster level for correct show level dep amount)
         uint8 m_procCharges;                                // Aura charges (0 for infinite)

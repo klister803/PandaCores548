@@ -839,7 +839,7 @@ enum SpellAttr12
     SPELL_ATTR12_UNK22                            = 0x00400000, // 22
     SPELL_ATTR12_UNK23                            = 0x00800000, // 23
     SPELL_ATTR12_UNK24                            = 0x01000000, // 24
-    SPELL_ATTR12_UNK25                            = 0x02000000, // 25
+    SPELL_ATTR12_REMOVE_AFTER_DELAY               = 0x02000000, // 25
     SPELL_ATTR12_HAVE_STABLE_FLYTIME              = 0x04000000, // 26
     SPELL_ATTR12_CAN_BE_SAVED                     = 0x08000000, // 27
     SPELL_ATTR12_UNK28                            = 0x10000000, // 28
