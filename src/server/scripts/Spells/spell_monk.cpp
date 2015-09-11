@@ -1366,16 +1366,35 @@ class spell_monk_flying_serpent_kick : public SpellScriptLoader
                 {
                     if (caster->HasAura(SPELL_MONK_FLYING_SERPENT_KICK))
                         caster->RemoveAura(SPELL_MONK_FLYING_SERPENT_KICK);
-
-                    caster->CastSpell(caster, SPELL_MONK_FLYING_SERPENT_KICK_AOE, true);
                 }
             }
 
             void Register()
             {
-                OnCast += SpellCastFn(spell_monk_flying_serpent_kick_SpellScript::HandleOnCast);
+                BeforeCast += SpellCastFn(spell_monk_flying_serpent_kick_SpellScript::HandleOnCast);
             }
         };
+
+        class spell_monk_flying_serpent_kick_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_flying_serpent_kick_AuraScript);
+
+            void HandleUpdatePeriodic(AuraEffect* aurEff)
+            {
+                if (Unit* caster = GetCaster())
+                    caster->CastSpell(caster, SPELL_MONK_FLYING_SERPENT_KICK_AOE, true);
+            }
+
+            void Register()
+            {
+                OnEffectUpdatePeriodic += AuraEffectUpdatePeriodicFn(spell_monk_flying_serpent_kick_AuraScript::HandleUpdatePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_flying_serpent_kick_AuraScript();
+        }
 
         SpellScript* GetSpellScript() const
         {
