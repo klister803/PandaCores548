@@ -989,6 +989,31 @@ public:
             }
         }
 
+        void DoRoomInCombat()
+        {
+            if (!me->ToTempSummon())
+                return;
+
+            if (Unit* spoil = me->ToTempSummon()->GetSummoner())
+            {
+                std::list<Player*> pllist;
+                pllist.clear();
+                GetPlayerListInGrid(pllist, spoil, 55.0f);
+                if (!pllist.empty())
+                {
+                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                    {
+                        (*itr)->SetInCombatWith(me);
+                        me->SetInCombatWith(*itr);
+                        me->AddThreat(*itr, 0.0f);
+                    }
+                }
+            }
+            else
+                if (me->GetEntry() == NPC_QUILEN_GUARDIANS)
+                    DoZoneInCombat(me, 10.0f);
+        }
+
         void UpdateAI(uint32 diff)
         {
             if (spawn)
@@ -999,7 +1024,7 @@ public:
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     if (me->GetEntry() != NPC_AMBER_ENCASED_KUNCHONG)
                         me->SetReactState(REACT_AGGRESSIVE);
-                    DoZoneInCombat(me, 60.0f);
+                    DoRoomInCombat();
                 }
                 else 
                     spawn -= diff;
