@@ -518,6 +518,7 @@ void BossAI::_Reset()
     if (instance && me->isAlive())
     {
         instance->SetBossState(_bossId, NOT_STARTED);
+        instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         instance->SendEncounterUnit(ENCOUNTER_FRAME_RESET_COMBAT_RES_LIMIT, me);
     }
 }
@@ -530,6 +531,7 @@ void BossAI::_JustDied()
     {
         instance->SetBossState(_bossId, DONE);
         instance->SaveToDB();
+        instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         instance->SendEncounterUnit(ENCOUNTER_FRAME_RESET_COMBAT_RES_LIMIT, me);
 
         Map* map = me->GetMap();
@@ -593,6 +595,7 @@ void BossAI::_EnterCombat()
             return;
         }
         instance->SetBossState(_bossId, IN_PROGRESS);
+        instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
         instance->SendEncounterUnit(ENCOUNTER_FRAME_SET_COMBAT_RES_LIMIT, me);
     }
 }
