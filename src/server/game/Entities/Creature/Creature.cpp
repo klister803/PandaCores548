@@ -301,6 +301,8 @@ bool Creature::InitEntry(uint32 Entry, uint32 /*team*/, const CreatureData* data
     m_spawnMode = GetMap()->GetSpawnMode();
 
     SetEntry(Entry);                                        // normal entry always
+    if(!m_creatureInfo)
+        m_creatureInfo = cinfo;                                 // map mode related always
     m_creatureDiffData = sObjectMgr->GetCreatureDifficultyStat(cinfo->Entry, m_difficulty);                                 // map mode related always
 
     // equal to player Race field, but creature does not have race
