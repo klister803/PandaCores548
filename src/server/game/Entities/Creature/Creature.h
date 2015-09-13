@@ -889,7 +889,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         bool IsDespawn() const { return m_despan; }
 
-        uint32 GetVignetteId() const { return m_creatureInfo->VignetteId; }
+        uint32 GetVignetteId() const { return m_creatureInfo ? m_creatureInfo->VignetteId : 0; }
 
     protected:
         bool m_onVehicleAccessory;

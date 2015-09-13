@@ -1056,7 +1056,7 @@ class GameObject : public WorldObject, public GridObject<GameObject>
 
         void EnableOrDisableGo(bool activate, bool alternative = false);
 
-        uint32 GetVignetteId() const { return m_goInfo->GetVignetteId(); }
+        uint32 GetVignetteId() const { return m_goInfo ? m_goInfo->GetVignetteId() : 0; }
     protected:
         bool AIM_Initialize();
         uint32      m_spellId;
