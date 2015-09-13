@@ -30968,11 +30968,13 @@ void Player::AddVignette(WorldObject *o)
     m_vignettes.insert(PlayerVignettesMap::value_type(o->GetGUID(), vignette));
 }
 
-void Player::RemoveVignette(WorldObject *o)
+void Player::RemoveVignette(WorldObject *o, bool update)
 {
     PlayerVignettesMap::iterator itr = m_vignettes.find(o->GetGUID());
     if (itr == m_vignettes.end())
         return;
 
     itr->second.remove = true;
+    if(update)
+        SendVignette();
 }

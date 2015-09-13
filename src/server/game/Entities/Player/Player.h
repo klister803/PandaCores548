@@ -2945,7 +2945,7 @@ class Player : public Unit, public GridObject<Player>
 
         void AddVignette(WorldObject *u);
         bool CanSeeVignette(WorldObject *u);
-        void RemoveVignette(WorldObject *u);
+        void RemoveVignette(WorldObject *u, bool update = false);
         void SendVignette(bool force = false);
 
         ///! Extra look method not alow remove some creatures from player visibility by grid VisibleNotifier
