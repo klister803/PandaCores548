@@ -2940,7 +2940,7 @@ class Player : public Unit, public GridObject<Player>
         GuidUnorderedSet m_clientGUIDs;
         GuidUnorderedSet m_extraLookList;
 
-        bool HaveAtClient(WorldObject const* u) const { return u == this || m_clientGUIDs.find(u->GetGUID()) != m_clientGUIDs.end(); }
+        bool HaveAtClient(WorldObject const* u) const { return u == this || (!m_clientGUID.empty() && m_clientGUIDs.find(u->GetGUID()) != m_clientGUIDs.end()); }
         void AddClient(WorldObject *u) { m_clientGUIDs.insert(u->GetGUID()); }
 
         void AddVignette(WorldObject *u);
