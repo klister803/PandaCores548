@@ -30943,7 +30943,7 @@ void Player::RemoveListner(WorldObject* o, bool update)
 
 bool Player::CanSeeVignette(WorldObject *o)
 {
-    if(!o->GetVignetteId())
+    if(!o->GetVignetteId() || !o->isAlive() || o->isPet())
         return false;
 
     /*if (Creature const* creature = o->ToCreature())
