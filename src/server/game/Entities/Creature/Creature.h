@@ -164,6 +164,7 @@ struct CreatureTemplate
     uint32  ScriptID;
     uint32  GetRandomValidModelId() const;
     uint32  GetFirstValidModelId() const;
+    uint32  VignetteId;
 
     // helpers
     SkillType GetRequiredLootSkill() const
@@ -887,6 +888,8 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         uint32 getCurrentUpdateZoneID() const { return m_zoneUpdateId; }
 
         bool IsDespawn() const { return m_despan; }
+
+        uint32 GetVignetteId() const { return m_creatureInfo->VignetteId; }
 
     protected:
         bool m_onVehicleAccessory;

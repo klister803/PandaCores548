@@ -301,7 +301,6 @@ bool Creature::InitEntry(uint32 Entry, uint32 /*team*/, const CreatureData* data
     m_spawnMode = GetMap()->GetSpawnMode();
 
     SetEntry(Entry);                                        // normal entry always
-    m_creatureInfo = cinfo;                                 // map mode related always
     m_creatureDiffData = sObjectMgr->GetCreatureDifficultyStat(cinfo->Entry, m_difficulty);                                 // map mode related always
 
     // equal to player Race field, but creature does not have race
@@ -1452,6 +1451,8 @@ bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, int32 vehId, uint32
     if (vehId <= 0)
         vehId = cinfo->VehicleId;
 
+    m_creatureInfo = cinfo;
+
     Object::_Create(guidlow, Entry, vehId ? HIGHGUID_VEHICLE : HIGHGUID_UNIT);
 
     if (!UpdateEntry(Entry, team, data))
@@ -1795,6 +1796,7 @@ void Creature::setDeathState(DeathState s)
             i_motionMaster.MoveFall();
 
         Unit::setDeathState(CORPSE);
+        DestroyVignetteForNearbyPlayers();
     }
     else if (s == JUST_RESPAWNED)
     {

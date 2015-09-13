@@ -643,6 +643,16 @@ struct GameObjectTemplate
         }
     }
 
+    uint32 GetVignetteId() const
+    {
+        switch (type)
+        {
+            case GAMEOBJECT_TYPE_CHEST:         return chest.SpawnVignette;
+            case GAMEOBJECT_TYPE_GOOBER:        return goober.SpawnVignette;
+            default: return 0;
+        }
+    }
+
     bool GetDespawnPossibility() const                      // despawn at targeting of cast?
     {
         switch (type)
@@ -1045,6 +1055,8 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         GameObjectModel * m_model;
 
         void EnableOrDisableGo(bool activate, bool alternative = false);
+
+        uint32 GetVignetteId() const { return m_goInfo->GetVignetteId(); }
     protected:
         bool AIM_Initialize();
         uint32      m_spellId;
