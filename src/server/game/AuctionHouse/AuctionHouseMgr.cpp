@@ -598,18 +598,10 @@ void AuctionHouseObject::BuildListAuctionItems(WorldPacket& data, Player* player
         }
 
         // Add the item if no search term or if entered search term was found
-        if (count < 50)
+        if (count < 50 && totalcount >= page)
         {
-            if (totalcount >= page)
-            {
-                ++count;
-                Aentry->BuildAuctionInfo(data);
-            }
-            else
-            {
-                totalcount = AuctionsMap.size();
-                break;
-            }
+            ++count;
+            Aentry->BuildAuctionInfo(data);
         }
 
         ++totalcount;
