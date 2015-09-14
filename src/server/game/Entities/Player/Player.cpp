@@ -30978,3 +30978,19 @@ void Player::RemoveVignette(WorldObject *o, bool update)
     if(update)
         SendVignette();
 }
+
+bool Player::HaveAtClient(WorldObject const* u)
+{
+    if (u == this)
+        return true;
+
+    TRINITY_READ_GUARD(ACE_RW_Thread_Mutex, _m_clientGUIDsRWLock);
+    GuidUnorderedSet::const_iterator itr = m_clientGUIDs.find(u->GetGUID());
+    return  itr != m_clientGUIDs.end();
+}
+
+void Player::AddClient(WorldObject *u)
+{
+    TRINITY_WRITE_GUARD(ACE_RW_Thread_Mutex, _m_clientGUIDsRWLock);
+    m_clientGUIDs.insert(u->GetGUID());
+}

@@ -2940,8 +2940,8 @@ class Player : public Unit, public GridObject<Player>
         GuidUnorderedSet m_clientGUIDs;
         GuidUnorderedSet m_extraLookList;
 
-        bool HaveAtClient(WorldObject const* u) const { return u == this || m_clientGUIDs.find(u->GetGUID()) != m_clientGUIDs.end(); }
-        void AddClient(WorldObject *u) { m_clientGUIDs.insert(u->GetGUID()); }
+        bool HaveAtClient(WorldObject const* u);
+        void AddClient(WorldObject *u);
 
         void AddVignette(WorldObject *u);
         bool CanSeeVignette(WorldObject *u);
@@ -3659,6 +3659,8 @@ class Player : public Unit, public GridObject<Player>
         AreaTriggerEntry const *LastAreaTrigger;
 
         uint32 upd_achieve_criteria_counter = 0;
+
+        ACE_RW_Thread_Mutex _m_clientGUIDsRWLock;
 };
 
 void AddItemsSetItem(Player*player, Item* item);
