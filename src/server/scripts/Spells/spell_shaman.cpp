@@ -510,11 +510,18 @@ class spell_sha_fire_nova : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_fire_nova_SpellScript);
 
-            bool Validate(SpellInfo const* SpellInfo)
+            SpellCastResult CheckCast()
             {
-                if (!sSpellMgr->GetSpellInfo(SPELL_SHA_FIRE_NOVA))
-                    return false;
-                return true;
+                if (Unit* caster = GetCaster())
+                {
+                    for (std::set<uint64>::iterator iter = caster->m_unitsHasCasterAura.begin(); iter != caster->m_unitsHasCasterAura.end(); ++iter)
+                        if (Unit* target = ObjectAccessor::GetUnit(*caster, *iter))
+                            if (target->HasAura(SPELL_SHA_FLAME_SHOCK, caster->GetGUID()))
+                                return SPELL_CAST_OK;
+                }
+
+                SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_FLAME_SHOCK_NOT_ACTIVE);
+                return SPELL_FAILED_CUSTOM_ERROR;
             }
 
             void HandleOnHit()
@@ -529,6 +536,7 @@ class spell_sha_fire_nova : public SpellScriptLoader
             void Register()
             {
                 OnHit += SpellHitFn(spell_sha_fire_nova_SpellScript::HandleOnHit);
+                OnCheckCast += SpellCheckCastFn(spell_sha_fire_nova_SpellScript::CheckCast);
             }
         };
 
