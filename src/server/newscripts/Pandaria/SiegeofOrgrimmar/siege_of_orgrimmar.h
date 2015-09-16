@@ -408,6 +408,7 @@ enum eGameObjects
 
     //Spoils of Pandaria
     GO_SSOP_SPOILS                  = 220823, 
+    GO_NSOP_SPOILS                  = 222749,
     GO_ENT_GATE                     = 223056,
     GO_ENT_DOOR_LEFT                = 221800,
     GO_ENT_DOOR_RIGHT               = 221801,

@@ -85,6 +85,7 @@ public:
         std::vector<uint64> spoilsGuids;  //for send frames
         std::vector<uint64> spoils2Guids; //find players and send aura bar in radius
         uint64 gossopsGuid;
+        uint64 gonsopsGuid;
         uint64 spentdoorGuid;
         uint64 spexdoorGuid;
         uint64 thokentdoorGuid;
@@ -163,6 +164,7 @@ public:
             spoilsGuids.clear();
             spoils2Guids.clear();
             gossopsGuid             = 0;
+            gonsopsGuid             = 0;
             spentdoorGuid           = 0;
             spexdoorGuid            = 0;
             thokentdoorGuid         = 0;
@@ -618,6 +620,11 @@ public:
                     else if ((GetBossState(DATA_SPOILS_OF_PANDARIA) == DONE))
                         go->Delete();
                     break;
+                case GO_NSOP_SPOILS:
+                    gonsopsGuid = go->GetGUID();
+                    if (GetBossState(DATA_SPOILS_OF_PANDARIA) == DONE)
+                        go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+                    break;
                 case GO_SMALL_MOGU_BOX:
                 case GO_MEDIUM_MOGU_BOX:
                 case GO_BIG_MOGU_BOX:
@@ -927,12 +934,16 @@ public:
                     //Open Room's Doors
                     for (std::vector<uint64>::const_iterator itr = roomdoorGuids.begin(); itr != roomdoorGuids.end(); itr++)
                         HandleGameObject(*itr, true);
-
+                    
                     if (Creature* ssops = instance->GetCreature(npcssopsGuid))
                         ssops->AI()->DoAction(ACTION_SSOPS_DONE);
 
+                    if (GameObject* chest = instance->GetGameObject(gonsopsGuid))
+                        chest->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+
                     if (GameObject* _ssops = instance->GetGameObject(gossopsGuid))
                         _ssops->Delete();
+
                     //Open All Gates (for safe)
                     for (std::vector<uint64>::const_iterator itr = roomgateGuids.begin(); itr != roomgateGuids.end(); itr++)
                         HandleGameObject(*itr, true);
