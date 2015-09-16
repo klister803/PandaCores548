@@ -2281,6 +2281,7 @@ class Player : public Unit, public GridObject<Player>
         void HandleSpellUncategoryCharges(uint32 spellId = 0);
         void AddSpellUncategoryCharges(SpellInfo const* spellInfo);
         void SwapSpellUncategoryCharges(uint32 mainSpellId = 0, uint32 newSpellId = 0);
+        void RestoreSpellUncategoryCharges();
 
         void SetLastPotionId(uint32 item_id) { m_lastPotionId = item_id; }
         void UpdatePotionCooldown(Spell* spell = NULL);

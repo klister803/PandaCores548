@@ -5196,6 +5196,8 @@ void Player::RemoveArenaSpellCooldowns(bool removeActivePetCooldowns)
             RestoreSpellCategoryCharges(entry->ChargeRecoveryCategory);
     }
 
+    RestoreSpellUncategoryCharges();
+
     // pet cooldowns
     if (removeActivePetCooldowns)
         if (Pet* pet = GetPet())
@@ -5219,14 +5221,8 @@ void Player::RemoveAllSpellCooldown()
         m_spellCooldowns.clear();
     }
 
-    for (UCSpellChargeDataMap::iterator itr = m_uncategorySpellChargeData.begin(); itr != m_uncategorySpellChargeData.end(); ++itr)
-        if (UncategorySpellChargeData* data = itr->second)
-        {
-            data->charges = data->maxCharges;
-            data->timer = 0;
-        }
-
     RestoreSpellCategoryCharges();
+    RestoreSpellUncategoryCharges();
 }
 
 void Player::_LoadSpellCooldowns(PreparedQueryResult result)
@@ -5476,6 +5472,16 @@ void Player::RestoreSpellCategoryCharges(uint32 categoryId)
     }
 
     SendSpellChargeData();
+}
+
+void Player::RestoreSpellUncategoryCharges()
+{
+    for (UCSpellChargeDataMap::iterator itr = m_uncategorySpellChargeData.begin(); itr != m_uncategorySpellChargeData.end(); ++itr)
+        if (UncategorySpellChargeData* data = itr->second)
+        {
+            data->charges = data->maxCharges;
+            data->timer = 0;
+        }
 }
 
 uint32 Player::GetNextResetSpecializationCost() const
