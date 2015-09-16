@@ -72,6 +72,9 @@ void TotemAI::UpdateAI(uint32 /*diff*/)
     if (!me->isAlive())
         return;
 
+    if (me->HasUnitState(UNIT_STATE_CASTING))
+        return;
+
     // Search spell
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(me->ToTotem()->GetSpell());
     if (!spellInfo)
@@ -82,8 +85,28 @@ void TotemAI::UpdateAI(uint32 /*diff*/)
     if (!owner)
         return;
 
-    Unit* targetOwner = owner->getAttackerForHelper();
-    if(targetOwner != NULL && targetOwner != victim && me->IsWithinDistInMap(targetOwner, spellInfo->GetMaxRange(false)))
+    Unit* targetOwner = NULL;
+    bool checkingLOS = false;
+
+    if (uint32 auraId = me->ToTotem()->GetSpell(7))
+    {
+        int32 auraDuration = 0;
+        for (std::set<uint64>::iterator iter = owner->m_unitsHasCasterAura.begin(); iter != owner->m_unitsHasCasterAura.end(); ++iter)
+            if (Unit* _target = ObjectAccessor::GetUnit(*owner, *iter))
+                if (Aura* reqAura = _target->GetAura(auraId, owner->GetGUID()))
+                    if (me->IsWithinLOSInMap(_target) && me->IsWithinDistInMap(_target, spellInfo->GetMaxRange(false)))
+                        if (reqAura->GetDuration() > auraDuration)
+                        {
+                            targetOwner = _target;
+                            auraDuration = reqAura->GetDuration();
+                            checkingLOS = true;
+                        }
+    }
+
+    if (!targetOwner)
+        targetOwner = owner->getAttackerForHelper();
+
+    if (targetOwner != NULL && targetOwner != victim && (checkingLOS || me->IsWithinDistInMap(targetOwner, spellInfo->GetMaxRange(false))))
     {
         victim = targetOwner;
         i_victimGuid = victim->GetGUID();
