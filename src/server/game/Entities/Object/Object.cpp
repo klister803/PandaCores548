@@ -2807,7 +2807,7 @@ void WorldObject::SendMessageToSet(WorldPacket* data, bool self)
 {
     if (IsInWorld())
     {
-        /*for (auto target : visitors)
+        for (auto target : visitors)
         {
             Player* player = (Player*)target.get();
             if (!player)
@@ -2821,10 +2821,10 @@ void WorldObject::SendMessageToSet(WorldPacket* data, bool self)
                         SendPacket(*i);
             }*/
 
-            /*if (player->m_seer == player || player->GetVehicle())
+            if (player->m_seer == player || player->GetVehicle())
             {
                 // never send packet to self
-                if (player == this /*|| (team && player->GetTeam() != team)*//*)
+                if (player == this /*|| (team && player->GetTeam() != team)*/)
                     continue;
 
                 if (!player->HaveAtClient(this))
@@ -2833,8 +2833,8 @@ void WorldObject::SendMessageToSet(WorldPacket* data, bool self)
                 if (WorldSession* session = player->GetSession())
                     session->SendPacket(data);
             }
-        }*/
-        SendMessageToSetInRange(data, GetVisibilityRange(), self);
+        }
+        //SendMessageToSetInRange(data, GetVisibilityRange(), self);
     }
 }
 

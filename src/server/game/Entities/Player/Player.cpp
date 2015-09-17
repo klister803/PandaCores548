@@ -7915,7 +7915,7 @@ void Player::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
     if (skipped_rcvr != this)
         GetSession()->SendPacket(data);
 
-    /*for (auto target : visitors)
+    for (auto target : visitors)
     {
         Player *player = (Player*)target.get();
         if (!player)
@@ -7930,7 +7930,7 @@ void Player::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
                     SendPacket(*i);
         }*/
 
-        /*if (player->m_seer == player || player->GetVehicle())
+        if (player->m_seer == player || player->GetVehicle())
         {
             // never send packet to self
             if (player == this || skipped_rcvr == player)
@@ -7942,12 +7942,12 @@ void Player::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
             if (WorldSession* session = player->GetSession())
                 session->SendPacket(data);
         }
-    }*/
+    }
 
     // we use World::GetMaxVisibleDistance() because i cannot see why not use a distance
     // update: replaced by GetMap()->GetVisibilityDistance()
-    Trinity::MessageDistDeliverer notifier(this, data, GetVisibilityRange(), false, skipped_rcvr);
-    VisitNearbyWorldObject(GetVisibilityRange(), notifier);
+    //Trinity::MessageDistDeliverer notifier(this, data, GetVisibilityRange(), false, skipped_rcvr);
+    //VisitNearbyWorldObject(GetVisibilityRange(), notifier);
 }
 
 void Player::SendDirectMessage(WorldPacket* data)
