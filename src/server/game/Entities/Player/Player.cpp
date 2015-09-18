@@ -7915,35 +7915,6 @@ void Player::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
     if (skipped_rcvr != this)
         GetSession()->SendPacket(data);
 
-    /*for (auto target : visitors)
-    {
-        Player *player = (Player*)target.get();
-        if (!player)
-            continue;
-
-        // Send packet to all who are sharing the player's vision
-        /*if (!target->GetSharedVisionList().empty())
-        {
-            SharedVisionList::const_iterator i = target->GetSharedVisionList().begin();
-            for (; i != target->GetSharedVisionList().end(); ++i)
-                if ((*i)->m_seer == target)
-                    SendPacket(*i);
-        }*/
-
-        /*if (player->m_seer == player || player->GetVehicle())
-        {
-            // never send packet to self
-            if (player == this || skipped_rcvr == player)
-                continue;
-
-            if (!player->HaveAtClient(this))
-                continue;
-
-            if (WorldSession* session = player->GetSession())
-                session->SendPacket(data);
-        }
-    }*/
-
     // we use World::GetMaxVisibleDistance() because i cannot see why not use a distance
     // update: replaced by GetMap()->GetVisibilityDistance()
     Trinity::MessageDistDeliverer notifier(this, data, GetVisibilityRange(), false, skipped_rcvr);
@@ -25559,13 +25530,13 @@ bool Player::IsVisibleGloballyFor(Player* u) const
 }
 
 template<class T>
-inline void UpdateVisibilityOf_helper(GuidUnorderedSet& s64, T* target, std::set<Unit*>& /*v*/)
+inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, T* target, std::set<Unit*>& /*v*/)
 {
     s64.insert(target->GetGUID());
 }
 
 template<>
-inline void UpdateVisibilityOf_helper(GuidUnorderedSet& s64, GameObject* target, std::set<Unit*>& /*v*/)
+inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, GameObject* target, std::set<Unit*>& /*v*/)
 {
     // Don't update only GAMEOBJECT_TYPE_TRANSPORT (or all transports and destructible buildings?)
     if ((target->GetGOInfo()->type != GAMEOBJECT_TYPE_TRANSPORT))
@@ -25573,14 +25544,14 @@ inline void UpdateVisibilityOf_helper(GuidUnorderedSet& s64, GameObject* target,
 }
 
 template<>
-inline void UpdateVisibilityOf_helper(GuidUnorderedSet& s64, Creature* target, std::set<Unit*>& v)
+inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, Creature* target, std::set<Unit*>& v)
 {
     s64.insert(target->GetGUID());
     v.insert(target);
 }
 
 template<>
-inline void UpdateVisibilityOf_helper(GuidUnorderedSet& s64, Player* target, std::set<Unit*>& v)
+inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, Player* target, std::set<Unit*>& v)
 {
     s64.insert(target->GetGUID());
     v.insert(target);
@@ -25649,7 +25620,7 @@ void Player::UpdateTriggerVisibility()
 
     UpdateData udata(GetMapId());
     WorldPacket packet;
-    for (GuidUnorderedSet::iterator itr = m_clientGUIDs.begin(); itr != m_clientGUIDs.end(); ++itr)
+    for (ClientGUIDs::iterator itr = m_clientGUIDs.begin(); itr != m_clientGUIDs.end(); ++itr)
     {
         if (IS_CREATURE_GUID(*itr))
         {
@@ -26709,7 +26680,7 @@ void Player::UpdateForQuestWorldObjects()
 
     UpdateData udata(GetMapId());
     WorldPacket packet;
-    for (GuidUnorderedSet::iterator itr=m_clientGUIDs.begin(); itr != m_clientGUIDs.end(); ++itr)
+    for (ClientGUIDs::iterator itr=m_clientGUIDs.begin(); itr != m_clientGUIDs.end(); ++itr)
     {
         if (IS_GAMEOBJECT_GUID(*itr))
         {
@@ -30927,7 +30898,6 @@ void Player::AddListner(WorldObject* o, bool /*update*/)
 {
     if(CanSeeVignette(o))
         AddVignette(o);
-    o->AddVisitor(this);
 }
 
 void Player::RemoveListner(WorldObject* o, bool update)
@@ -30938,7 +30908,6 @@ void Player::RemoveListner(WorldObject* o, bool update)
         if(update)
             SendVignette();
     }
-    o->RemoveVisitor(this);
 }
 
 bool Player::CanSeeVignette(WorldObject *o)

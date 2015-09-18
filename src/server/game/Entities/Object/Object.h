@@ -965,9 +965,9 @@ class WorldObject : public Object, public WorldLocation
         void SetZoneScript();
         ZoneScript* GetZoneScript() const { return m_zoneScript; }
 
-        TempSummon* SummonCreature(uint32 id, const Position &pos, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, int32 vehId = 0, uint64 viewerGuid = 0, GuidUnorderedSet* viewersList = NULL) const;
+        TempSummon* SummonCreature(uint32 id, const Position &pos, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, int32 vehId = 0, uint64 viewerGuid = 0, std::list<uint64>* viewersList = NULL) const;
         TempSummon* SummonCreature(uint32 id, const Position &pos, uint64 targetGuid, TempSummonType spwtype, uint32 despwtime, uint32 spellId = 0, SummonPropertiesEntry const* properties = NULL) const;
-        TempSummon* SummonCreature(uint32 id, float x, float y, float z, float ang = 0, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, uint64 viewerGuid = 0, GuidUnorderedSet* viewersList = NULL)
+        TempSummon* SummonCreature(uint32 id, float x, float y, float z, float ang = 0, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, uint64 viewerGuid = 0, std::list<uint64>* viewersList = NULL)
         {
             if (!x && !y && !z)
             {
@@ -978,7 +978,7 @@ class WorldObject : public Object, public WorldLocation
             pos.Relocate(x, y, z, ang);
             return SummonCreature(id, pos, spwtype, despwtime, 0, viewerGuid, viewersList);
         }
-        GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime, uint64 viewerGuid = 0, GuidUnorderedSet* viewersList = NULL);
+        GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime, uint64 viewerGuid = 0, std::list<uint64>* viewersList = NULL);
         Creature*   SummonTrigger(float x, float y, float z, float ang, uint32 dur, CreatureAI* (*GetAI)(Creature*) = NULL);
 
         void GetAttackableUnitListInRange(std::list<Unit*> &list, float fMaxSearchRange) const;
@@ -1012,6 +1012,13 @@ class WorldObject : public Object, public WorldLocation
         template<class NOTIFIER> void VisitNearbyObject(const float &radius, NOTIFIER &notifier, bool loadGrids = false) const { if (IsInWorld()) GetMap()->VisitAll(GetPositionX(), GetPositionY(), radius, notifier, loadGrids); }
         template<class NOTIFIER> void VisitNearbyGridObject(const float &radius, NOTIFIER &notifier, bool loadGrids = false) const { if (IsInWorld()) GetMap()->VisitGrid(GetPositionX(), GetPositionY(), radius, notifier, loadGrids); }
         template<class NOTIFIER> void VisitNearbyWorldObject(const float &radius, NOTIFIER &notifier, bool loadGrids = false) const { if (IsInWorld()) GetMap()->VisitWorld(GetPositionX(), GetPositionY(), radius, notifier, loadGrids); }
+#ifdef MAP_BASED_RAND_GEN
+        int32 irand(int32 min, int32 max) const     { return int32 (GetMap()->mtRand.randInt(max - min)) + min; }
+        uint32 urand(uint32 min, uint32 max) const  { return GetMap()->mtRand.randInt(max - min) + min;}
+        int32 rand32() const                        { return GetMap()->mtRand.randInt();}
+        double rand_norm() const                    { return GetMap()->mtRand.randExc();}
+        double rand_chance() const                  { return GetMap()->mtRand.randExc(100.0);}
+#endif
 
         uint32  LastUsedScriptID;
 
@@ -1030,20 +1037,14 @@ class WorldObject : public Object, public WorldLocation
 
         // Personal visibility system
         bool MustBeVisibleOnlyForSomePlayers() const { return !_visibilityPlayerList.empty(); }
-        void GetMustBeVisibleForPlayersList(GuidUnorderedSet& playerList) { playerList = _visibilityPlayerList; }
+        void GetMustBeVisibleForPlayersList(std::list<uint64/* guid*/>& playerList) { playerList = _visibilityPlayerList; }
         void ClearVisibleOnlyForSomePlayers()  { _visibilityPlayerList.clear(); }
 
-        bool IsInPersonnalVisibilityList(uint64 guid) const;
-        void AddPlayerInPersonnalVisibilityList(uint64 guid) { _visibilityPlayerList.insert(guid); }
-        void AddPlayersInPersonnalVisibilityList(GuidUnorderedSet const& viewerList);
-        void RemovePlayerFromPersonnalVisibilityList(uint64 guid) { _visibilityPlayerList.erase(guid); }
-
-        bool HideForSomePlayers() const { return !_hideForGuid.empty(); }
-        void AddToHideList(uint64 guid) { _hideForGuid.insert(guid); }
-        bool ShouldHideFor(uint64 guid) const { return _hideForGuid.find(guid) != _hideForGuid.end();  };
-
-        void AddVisitor(Object* o);
-        void RemoveVisitor(Object* o);
+        bool IsPlayerInPersonnalVisibilityList(uint64 guid) const;
+        bool IsGroupInPersonnalVisibilityList(uint64 guid) const;
+        void AddPlayerInPersonnalVisibilityList(uint64 guid) { _visibilityPlayerList.push_back(guid); }
+        void AddPlayersInPersonnalVisibilityList(std::list<uint64> viewerList);
+        void RemovePlayerFromPersonnalVisibilityList(uint64 guid) { _visibilityPlayerList.remove(guid); }
 
     protected:
         std::string m_name;
@@ -1066,7 +1067,6 @@ class WorldObject : public Object, public WorldLocation
         //difference from IsAlwaysVisibleFor: 1. after distance check; 2. use owner or charmer as seer
         virtual bool IsAlwaysDetectableFor(WorldObject const* /*seer*/) const { return false; }
 
-        std::list<C_PTR> visitors;             // Playrs who see us.
     private:
         Map* m_currMap;                                    //current object's Map location
 
@@ -1076,8 +1076,7 @@ class WorldObject : public Object, public WorldLocation
         uint32 m_phaseId;                                   // special phase. It's new generation phase, when we should check id.
         bool m_ignorePhaseIdCheck;                          // like gm mode.
 
-        GuidUnorderedSet _visibilityPlayerList;
-        GuidUnorderedSet _hideForGuid;
+        std::list<uint64/* guid*/> _visibilityPlayerList;
 
         virtual bool _IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D) const;
 
