@@ -160,7 +160,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
         if (atInfo.speed)
             _moveSpeed = atInfo.speed;
         else
-            _moveSpeed = GetSpellInfo()->GetMaxRange() / duration;
+            _moveSpeed = (GetSpellInfo()->GetMaxRange() / duration) * 1000.0f;
 
         switch (atInfo.moveType)
         {
