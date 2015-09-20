@@ -102,7 +102,7 @@ int GetMatchmakerRatingMod(int ownRating, int opponentRating, bool won )
     */
 
     // Real rating modification
-    mod *= 24.0f;
+    mod *= 48.0f;
 
     return (int)ceil(mod);
 }
