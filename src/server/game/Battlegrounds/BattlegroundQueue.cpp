@@ -144,6 +144,8 @@ GroupQueueInfo* BattlegroundQueue::AddGroup(Player* leader, Group* grp, Battlegr
     ginfo->MatchmakerRating          = mmr;
     ginfo->OpponentsMatchmakerRating = 0;
     ginfo->ignore                    = ignore;
+    ginfo->RegTimer                  = 0;
+    ginfo->QueueLvl                  = 0;
     ginfo->Players.clear();
 
     //compute index (if group is premade or joined a rated match) to queues
@@ -985,13 +987,13 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
         }
 
         //set rating range
-        uint32 MinRating = (mmr <= sBattlegroundMgr->GetMaxRatingDifference()) ? 0 : mmr - sBattlegroundMgr->GetMaxRatingDifference();
-        uint32 MaxRating = mmr + sBattlegroundMgr->GetMaxRatingDifference();
+        uint32 maxRatingDifference = sBattlegroundMgr->GetMaxRatingDifference();
+        uint32 MinRating = (mmr <= maxRatingDifference) ? 0 : mmr - maxRatingDifference;
+        uint32 MaxRating = mmr + maxRatingDifference;
         // if max rating difference is set and the time past since server startup is greater than the rating discard time
         // (after what time the ratings aren't taken into account when making teams) then
         // the discard time is current_time - time_to_discard, teams that joined after that, will have their ratings taken into account
         // else leave the discard time on 0, this way all ratings will be discarded
-        uint32 discardTime = getMSTime() - sBattlegroundMgr->GetRatingDiscardTimer();
 
         // we need to find 2 teams which will play next game
         GroupsQueueType::iterator itr_teams[BG_TEAMS_COUNT];
@@ -1001,13 +1003,11 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
         for (uint8 i = BG_QUEUE_PREMADE_ALLIANCE; i < BG_QUEUE_NORMAL_ALLIANCE; i++)
         {
             // take the group that joined first
-            GroupsQueueType::iterator itr2 = m_QueuedGroups[bracket_id][i].begin();
-            for (; itr2 != m_QueuedGroups[bracket_id][i].end(); ++itr2)
+            
+            for (GroupsQueueType::iterator itr2 = m_QueuedGroups[bracket_id][i].begin(); itr2 != m_QueuedGroups[bracket_id][i].end(); ++itr2)
             {
                 // if group match conditions, then add it to pool
-                if (!(*itr2)->IsInvitedToBGInstanceGUID
-                    && (((*itr2)->MatchmakerRating >= MinRating && (*itr2)->MatchmakerRating <= MaxRating)
-                        || (*itr2)->JoinTime < discardTime))
+                if (!(*itr2)->IsInvitedToBGInstanceGUID && ((*itr2)->MatchmakerRating == mmr))
                 {
                     itr_teams[found++] = itr2;
                     team = i;
@@ -1019,111 +1019,26 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
         if (!found)
             return;
 
+        int32 differenceOppMMR = maxRatingDifference;
+
         if (found == 1)
         {
-            for (GroupsQueueType::iterator itr3 = itr_teams[0]; itr3 != m_QueuedGroups[bracket_id][team].end(); ++itr3)
+            for (GroupsQueueType::iterator itr3 = m_QueuedGroups[bracket_id][team].begin(); itr3 != m_QueuedGroups[bracket_id][team].end(); ++itr3)
             {
                 if (!(*itr3)->IsInvitedToBGInstanceGUID
-                    && (((*itr3)->MatchmakerRating >= MinRating && (*itr3)->MatchmakerRating <= MaxRating)
-                        || (*itr3)->JoinTime < discardTime)
-                    && (*itr_teams[0])->GroupId != (*itr3)->GroupId)
+                    && (((*itr3)->MatchmakerRating >= MinRating && (*itr3)->MatchmakerRating <= MaxRating))
+                    && (*itr_teams[0])->GroupId != (*itr3)->GroupId && abs(int32((*itr3)->MatchmakerRating - mmr)) < differenceOppMMR)
                 {
-                    itr_teams[found++] = itr3;
-                    break;
+                    itr_teams[1] = itr3;
+                    differenceOppMMR = abs(int32((*itr3)->MatchmakerRating - mmr));
+                    found = 2;
                 }
             }
         }
 
         //if we have 2 teams, then start new arena and invite players!
         if (found == 2)
-        {
-            GroupQueueInfo* aTeam = *itr_teams[BG_TEAM_ALLIANCE];
-            GroupQueueInfo* hTeam = *itr_teams[BG_TEAM_HORDE];
-            Battleground* arena = sBattlegroundMgr->CreateNewBattleground(bgTypeId, bracketEntry, JoinType, true, GenerateRandomMap(bgTypeId, bracket_id));
-            if (!arena)
-            {
-                sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundQueue::Update couldn't create arena instance for rated arena match!");
-                return;
-            }
-
-            aTeam->OpponentsMatchmakerRating = hTeam->MatchmakerRating;
-            hTeam->OpponentsMatchmakerRating = aTeam->MatchmakerRating;
-
-            // now we must move team if we changed its faction to another faction queue, because then we will spam log by errors in Queue::RemovePlayer
-            if (aTeam->Team != ALLIANCE)
-            {
-                m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].push_front(aTeam);
-                m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_HORDE].erase(itr_teams[BG_TEAM_ALLIANCE]);
-            }
-            if (hTeam->Team != HORDE)
-            {
-                m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_HORDE].push_front(hTeam);
-                m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].erase(itr_teams[BG_TEAM_HORDE]);
-            }
-
-            arena->SetMatchmakerRating(ALLIANCE, aTeam->MatchmakerRating);
-            arena->SetMatchmakerRating(   HORDE, hTeam->MatchmakerRating);
-            InviteGroupToBG(aTeam, arena, ALLIANCE);
-            InviteGroupToBG(hTeam, arena, HORDE);
-
-            sLog->outDebug(LOG_FILTER_BATTLEGROUND, "Starting rated arena match!");
-            arena->StartBattleground();
-
-            if (arena->isRated())
-            {
-                const char* team1[5];
-                const char* team2[5];
-                for (uint8 i=0; i < 5; ++i)
-                {
-                    team1[i] = "";
-                    team2[i] = "";
-                }
-                uint8 i = 0;
-                for (std::map<uint64, PlayerQueueInfo*>::iterator itr = aTeam->Players.begin(); itr != aTeam->Players.end(); ++itr)
-                {
-                    if (Player* player = ObjectAccessor::FindPlayer(itr->first))
-                    {
-                        arena->AddNameInNameList(aTeam->Team, player->GetName());
-                        team1[i] = player->GetName();
-                        i++;
-                    }
-                }
-
-                i = 0;
-
-                for (std::map<uint64, PlayerQueueInfo*>::iterator itr = hTeam->Players.begin(); itr != hTeam->Players.end(); ++itr)
-                {
-                    if (Player* player = ObjectAccessor::FindPlayer(itr->first))
-                    {
-                        arena->AddNameInNameList(hTeam->Team, player->GetName());
-                        team2[i] = player->GetName();
-                        i++;
-                    }
-                }
-
-                switch (arena->GetJoinType())
-                {
-                    case 2:
-                    {
-                        sLog->outArena("START:  Arena match type: 2v2 for (%s, %s) vs (%s, %s).", team1[0], team1[1], team2[0], team2[1]);
-                        break;
-                    }
-                    case 3:
-                    {
-                        sLog->outArena("START:  Arena match type: 3v3 for (%s, %s, %s) vs (%s, %s, %s).", team1[0], team1[1], team1[2], team2[0], team2[1], team2[2]);
-                        break;
-                    }
-                    case 5:
-                    {
-                        sLog->outArena("START:  Arena match type: 5v5 for (%s, %s, %s, %s, %s) vs (%s, %s, %s, %s, %s).", team1[0], team1[1], team1[2], team1[3], team1[4], team2[0], team2[1], team2[2], team2[3], team2[4]);
-                        break;
-                    }
-                    default:
-                        sLog->outArena("Arena match type: %u for Team1Id: %u - Team2Id: %u started.", arena->GetJoinType(), arena->GetGroupIdByIndex(BG_TEAM_ALLIANCE), arena->GetGroupIdByIndex(BG_TEAM_HORDE));
-                        break;
-                }
-            }
-        }
+            StartArena(itr_teams, bracketEntry, bgTypeId, bracket_id, JoinType);
     }
 }
 
@@ -1216,4 +1131,151 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 void BGQueueRemoveEvent::Abort(uint64 /*e_time*/)
 {
     //do nothing
+}
+
+void BattlegroundQueue::HandleArenaQueueUpdate(uint32 diff, uint8 JoinType)
+{
+    if (uint32 rUpdateTimer = sWorld->getIntConfig(CONFIG_ARENA_RATED_UPDATE_TIMER))
+        for (uint8 j = BG_QUEUE_PREMADE_ALLIANCE; j < BG_QUEUE_NORMAL_ALLIANCE; j++)
+        {
+            for (GroupsQueueType::iterator itr = m_QueuedGroups[BG_BRACKET_ID_LAST][j].begin(); itr != m_QueuedGroups[BG_BRACKET_ID_LAST][j].end(); ++itr)
+            {
+                if ((*itr)->IsInvitedToBGInstanceGUID)
+                    continue;
+
+                (*itr)->RegTimer += diff;
+
+                if ((*itr)->RegTimer >= rUpdateTimer)
+                {
+                    (*itr)->RegTimer = 0;
+                    (*itr)->QueueLvl += 10;
+
+                    Battleground* bg_template = sBattlegroundMgr->GetBattlegroundTemplate(BATTLEGROUND_AA);
+                    if (!bg_template)
+                    {
+                        sLog->outError(LOG_FILTER_BATTLEGROUND, "Battleground: Update: bg template not found for %u", BATTLEGROUND_AA);
+                        return;
+                    }
+
+                    PvPDifficultyEntry const* bracketEntry = GetBattlegroundBracketById(bg_template->GetMapId(), BG_BRACKET_ID_LAST);
+                    if (!bracketEntry)
+                    {
+                        sLog->outError(LOG_FILTER_BATTLEGROUND, "Battleground: Update: bg bracket entry not found for map %u bracket id %u", bg_template->GetMapId(), BG_BRACKET_ID_LAST);
+                        return;
+                    }
+
+                    GroupsQueueType::iterator itr_teams[BG_TEAMS_COUNT];
+                    itr_teams[BG_TEAM_ALLIANCE] = itr;
+                    uint32 maxRatingDifference = sBattlegroundMgr->GetMaxRatingDifference();
+                    uint32 MinRating = ((*itr)->MatchmakerRating <= maxRatingDifference) ? 0 : (*itr)->MatchmakerRating - maxRatingDifference - (*itr)->QueueLvl;
+                    uint32 MaxRating = (*itr)->MatchmakerRating + maxRatingDifference + (*itr)->QueueLvl;
+                    int32 differenceOppMMR = maxRatingDifference + (*itr)->QueueLvl;
+                    bool findOpp = false;
+
+                    for (GroupsQueueType::iterator itr2 = m_QueuedGroups[BG_BRACKET_ID_LAST][j].begin(); itr2 != m_QueuedGroups[BG_BRACKET_ID_LAST][j].end(); ++itr2)
+                        if ((*itr2)->GroupId != (*itr)->GroupId && !(*itr2)->IsInvitedToBGInstanceGUID)
+                            if ((*itr2)->MatchmakerRating >= MinRating && (*itr2)->MatchmakerRating <= MaxRating)
+                                if (abs(int32((*itr2)->MatchmakerRating - (*itr)->MatchmakerRating)) < differenceOppMMR)
+                                {
+                                    differenceOppMMR = abs(int32((*itr2)->MatchmakerRating - (*itr)->MatchmakerRating));
+                                    itr_teams[BG_TEAM_HORDE] = itr2;
+                                    findOpp = true;
+                                }
+
+                    if (findOpp)
+                        StartArena(itr_teams, bracketEntry, BATTLEGROUND_AA, BG_BRACKET_ID_LAST, JoinType);
+                }
+            }
+        }
+}
+
+void BattlegroundQueue::StartArena(std::list<GroupQueueInfo*>::iterator itr_teams[BG_TEAMS_COUNT], PvPDifficultyEntry const* bracketEntry, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id, uint8 JoinType)
+{
+    GroupQueueInfo* aTeam = *itr_teams[BG_TEAM_ALLIANCE];
+    GroupQueueInfo* hTeam = *itr_teams[BG_TEAM_HORDE];
+
+    Battleground* arena = sBattlegroundMgr->CreateNewBattleground(bgTypeId, bracketEntry, JoinType, true, GenerateRandomMap(bgTypeId, bracket_id));
+    if (!arena)
+    {
+        sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundQueue::Update couldn't create arena instance for rated arena match!");
+        return;
+    }
+
+    aTeam->OpponentsMatchmakerRating = hTeam->MatchmakerRating;
+    hTeam->OpponentsMatchmakerRating = aTeam->MatchmakerRating;
+
+    // now we must move team if we changed its faction to another faction queue, because then we will spam log by errors in Queue::RemovePlayer
+    if (aTeam->Team != ALLIANCE)
+    {
+        m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].push_front(aTeam);
+        m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_HORDE].erase(itr_teams[BG_TEAM_ALLIANCE]);
+    }
+    if (hTeam->Team != HORDE)
+    {
+        m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_HORDE].push_front(hTeam);
+        m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].erase(itr_teams[BG_TEAM_HORDE]);
+    }
+
+    arena->SetMatchmakerRating(ALLIANCE, aTeam->MatchmakerRating);
+    arena->SetMatchmakerRating(HORDE, hTeam->MatchmakerRating);
+    InviteGroupToBG(aTeam, arena, ALLIANCE);
+    InviteGroupToBG(hTeam, arena, HORDE);
+
+    sLog->outDebug(LOG_FILTER_BATTLEGROUND, "Starting rated arena match!");
+    arena->StartBattleground();
+
+    if (arena->isRated())
+    {
+        const char* team1[5];
+        const char* team2[5];
+        for (uint8 i = 0; i < 5; ++i)
+        {
+            team1[i] = "";
+            team2[i] = "";
+        }
+        uint8 i = 0;
+        for (std::map<uint64, PlayerQueueInfo*>::iterator itr = aTeam->Players.begin(); itr != aTeam->Players.end(); ++itr)
+        {
+            if (Player* player = ObjectAccessor::FindPlayer(itr->first))
+            {
+                arena->AddNameInNameList(aTeam->Team, player->GetName());
+                team1[i] = player->GetName();
+                i++;
+            }
+        }
+
+        i = 0;
+
+        for (std::map<uint64, PlayerQueueInfo*>::iterator itr = hTeam->Players.begin(); itr != hTeam->Players.end(); ++itr)
+        {
+            if (Player* player = ObjectAccessor::FindPlayer(itr->first))
+            {
+                arena->AddNameInNameList(hTeam->Team, player->GetName());
+                team2[i] = player->GetName();
+                i++;
+            }
+        }
+
+        switch (arena->GetJoinType())
+        {
+            case 2:
+            {
+                sLog->outArena("START:  Arena match type: 2v2 for (%s, %s) vs (%s, %s).", team1[0], team1[1], team2[0], team2[1]);
+                break;
+            }
+            case 3:
+            {
+                sLog->outArena("START:  Arena match type: 3v3 for (%s, %s, %s) vs (%s, %s, %s).", team1[0], team1[1], team1[2], team2[0], team2[1], team2[2]);
+                break;
+            }
+            case 5:
+            {
+                sLog->outArena("START:  Arena match type: 5v5 for (%s, %s, %s, %s, %s) vs (%s, %s, %s, %s, %s).", team1[0], team1[1], team1[2], team1[3], team1[4], team2[0], team2[1], team2[2], team2[3], team2[4]);
+                break;
+            }
+            default:
+                sLog->outArena("Arena match type: %u for Team1Id: %u - Team2Id: %u started.", arena->GetJoinType(), arena->GetGroupIdByIndex(BG_TEAM_ALLIANCE), arena->GetGroupIdByIndex(BG_TEAM_HORDE));
+                break;
+        }
+    }
 }
