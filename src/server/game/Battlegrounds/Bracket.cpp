@@ -65,12 +65,12 @@ int GetRatingMod(int ownRating, int opponentRating, bool won /*, float confidenc
     if (won && ownRating < 1300)
     {
         if (ownRating < 1000)
-            mod = 96.0f * (won_mod - chance);
+            mod = 48.0f * (won_mod - chance);
         else
-            mod = (48.0f + (48.0f * (1300.0f - float(ownRating)) / 300.0f)) * (won_mod - chance);
+            mod = (24.0f + (24.0f * (1300.0f - float(ownRating)) / 300.0f)) * (won_mod - chance);
     }
     else
-        mod = 48.0f * (won_mod - chance);
+        mod = 24.0f * (won_mod - chance);
 
 	// in any way should be decrase
 	if (!won && mod == 0.0f && ownRating > 0)
@@ -102,7 +102,7 @@ int GetMatchmakerRatingMod(int ownRating, int opponentRating, bool won )
     */
 
     // Real rating modification
-    mod *= 48.0f;
+    mod *= 24.0f;
 
     return (int)ceil(mod);
 }
