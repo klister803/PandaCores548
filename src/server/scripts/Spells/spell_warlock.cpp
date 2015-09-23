@@ -2311,7 +2311,7 @@ class spell_warl_demonic_gateway_duration : public SpellScriptLoader
                     if(Position const* pos = GetExplTargetDest())
                     {
                         float dist = caster->GetExactDist2d(pos->GetPositionX(), pos->GetPositionY());
-                        int32 duration = int32((dist / 20.0f) * 1000.0f);
+                        int32 duration = 1000.0f + ((dist - 20.0f) * 10.0f);
                         SetDuration(duration);
                     }
                 }
