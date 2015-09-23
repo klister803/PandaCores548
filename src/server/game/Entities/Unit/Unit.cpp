@@ -2169,34 +2169,28 @@ void Unit::CalcAbsorbResist(Unit* victim, SpellSchoolMask schoolMask, DamageEffe
             SendSpellNonMeleeDamageLog(&damageInfo);
 
             uint32 m_procVictim = PROC_FLAG_DONE_MELEE_AUTO_ATTACK | PROC_FLAG_DONE_MAINHAND_ATTACK;
-            uint32 m_procAttacker = PROC_FLAG_TAKEN_MELEE_AUTO_ATTACK;
+            uint32 m_procAttacker = PROC_FLAG_NONE;
             if(spellInfo)
             {
                 switch (spellInfo->DmgClass)
                 {
                     case SPELL_DAMAGE_CLASS_MELEE:
                         m_procVictim   = PROC_FLAG_TAKEN_SPELL_MELEE_DMG_CLASS;
-                        m_procAttacker = PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS;
-                        m_procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG;
-                        m_procAttacker |= PROC_FLAG_DONE_MAINHAND_ATTACK;
                         break;
                     case SPELL_DAMAGE_CLASS_MAGIC:
-                        m_procAttacker = PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG;
-                        m_procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG;
                         m_procVictim   = PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG;
                         break;
                     case SPELL_DAMAGE_CLASS_NONE:
-                        m_procVictim   = PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG;
-                    break;
+                        m_procVictim |= PROC_FLAG_TAKEN_SPELL_MELEE_DMG_CLASS;
+                        break;
                     case SPELL_DAMAGE_CLASS_RANGED:
-                        m_procAttacker = PROC_FLAG_DONE_SPELL_RANGED_DMG_CLASS;
                         m_procVictim   = PROC_FLAG_TAKEN_SPELL_RANGED_DMG_CLASS;
                         break;
                 }
             }
 
-            DamageInfo dmgInfoProc = DamageInfo(damageInfo, (*itr)->GetSpellInfo());
-            ProcDamageAndSpell(caster, m_procAttacker, m_procVictim, PROC_EX_NORMAL_HIT, &dmgInfoProc, BASE_ATTACK, (*itr)->GetSpellInfo());
+            DamageInfo dmgInfoProc = DamageInfo(damageInfo, spellInfo);
+            ProcDamageAndSpell(caster, m_procAttacker, m_procVictim, PROC_EX_NORMAL_HIT, &dmgInfoProc, BASE_ATTACK, spellInfo);
 
             CleanDamage cleanDamage = CleanDamage(splitted, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
             DealDamage(caster, splitted, &cleanDamage, DIRECT_DAMAGE, schoolMask, (*itr)->GetSpellInfo(), false);
