@@ -3616,6 +3616,7 @@ class npc_frozen_orb : public CreatureScript
         {
             uint32 frozenOrbTimer;
             float x,y,z;
+            bool findTarget;
 
             npc_frozen_orbAI(Creature* creature) : ScriptedAI(creature)
             {
@@ -3624,11 +3625,7 @@ class npc_frozen_orb : public CreatureScript
                 if (owner)
                 {
                     owner->CastSpell(creature, 84721, true);
-                    if (owner->HasAura(44544))
-                        owner->CastSpell(owner, 126084, true);
-                    owner->CastSpell(owner, 44544, true);
 
-                    
                     float distance = 0.0f;
                     owner->GetNearPoint2D(x, y, distance, owner->GetOrientation());
                     z = me->GetMap()->GetHeight(x, y, me->GetPositionZ(), true, MAX_FALL_DISTANCE);
@@ -3659,6 +3656,7 @@ class npc_frozen_orb : public CreatureScript
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 frozenOrbTimer = 1000;
+                findTarget = false;
             }
 
             void Reset()
@@ -3681,7 +3679,7 @@ class npc_frozen_orb : public CreatureScript
 
                     owner->CastSpell(me, 84721, true);
 
-                    if (me->GetSpeed(MOVE_RUN) != 0.2f)
+                    if (!findTarget)
                     {
                         UnitList targets;
                         Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(me, me, 10.0f);
@@ -3691,6 +3689,12 @@ class npc_frozen_orb : public CreatureScript
                         {
                             me->SetSpeed(MOVE_WALK, 0.2f);
                             me->SetSpeed(MOVE_RUN, 0.2f);
+
+                            if (owner->HasAura(44544))
+                                owner->CastSpell(owner, 126084, true);
+
+                            owner->CastSpell(owner, 44544, true);
+                            findTarget = true;
                             break;
                         }
                     }
