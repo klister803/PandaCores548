@@ -7430,7 +7430,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     {
                         case 116:   // Frostbolt
                         case 44614: // Frostfire Bolt
-                        case 84714: // Frozen Orb
+                        case 84721: // Frozen Orb
                         {
                             if (effIdx != EFFECT_0)
                                 return false;
