@@ -125,8 +125,16 @@ inline int32 RoundingFloatValue(float val)
     int32 intVal = val;
     float difference = val - intVal;
 
-    if (difference >= 0.44444445f)
-        intVal++;
+    if (difference > 0)
+    {
+        if (difference >= 0.44444445f)
+            intVal++;
+    }
+    else if (difference < 0)
+    {
+        if (difference <= -0.44444445f)
+            intVal--;
+    }
 
     return intVal;
 }
