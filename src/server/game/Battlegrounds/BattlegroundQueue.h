@@ -61,6 +61,8 @@ struct GroupQueueInfo                                       // stores informatio
     uint32  OpponentsMatchmakerRating;                      // for rated arena matches
     uint16  RbgMMV;
     uint16  OponentsRbgMMV;
+    uint32  RegTimer;
+    uint32  QueueLvl;
     IgnorMapInfo ignore;
 };
 
@@ -82,6 +84,8 @@ class BattlegroundQueue
         ~BattlegroundQueue();
 
         void BattlegroundQueueUpdate(uint32 diff, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id, uint8 arenaType = 0, bool isRated = false, uint32 minRating = 0);
+        void HandleArenaQueueUpdate(uint32 diff, uint8 JoinType);
+        void StartArena(std::list<GroupQueueInfo*>::iterator itr_teams[BG_TEAMS_COUNT], PvPDifficultyEntry const* bracketEntry, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id, uint8 JoinType);
         void UpdateEvents(uint32 diff);
 
         void FillPlayersToBG(Battleground* bg, BattlegroundBracketId bracket_id);
