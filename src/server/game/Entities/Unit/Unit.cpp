@@ -9697,6 +9697,19 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
                         break;
                     }
                 }
+            case 142598: //Apothecary: Volatile Poultice
+                if (victim && victim->isAlive() && this->IsFriendlyTo(victim))
+                    this->CastCustomSpell(142877, SPELLVALUE_BASE_POINT0, damage, victim, true); //Volatile Poultice
+                break;
+            case 142877: //Volatile Poultice
+                if (this->HasAura(142877))
+                {
+                    if (AuraEffect* aurEff = this->GetAura(142877)->GetEffect(0))
+                    {
+                        int32 mod = aurEff->GetAmount();
+                        this->CastCustomSpell(142897, SPELLVALUE_BASE_POINT0, mod, this, true); //Volatile Poultice Heal
+                    }
+                }
                 break;
             case SPELLFAMILY_PRIEST:
             {

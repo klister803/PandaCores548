@@ -5127,6 +5127,18 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
                     spellInfo->Effects[0].TriggerSpell = 143320; //143322 = heal
                     break;
+                case 142598: //Apothecary: Volatile Poultice
+                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+                    break;
+                case 142877: //Volatile Poultice
+                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+                    break;
+                case 142228: //Reave
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(8); //5yards
+                    break;
+                case 143337: //Mutate
+                    spellInfo->Effects[4].Effect = 0;
+                    break;
                 //debuffs from klaxxi
                 case 142929:
                 case 142931:

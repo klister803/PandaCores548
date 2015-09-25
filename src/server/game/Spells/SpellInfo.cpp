@@ -1222,6 +1222,10 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     //Paragons of the Klaxxi
     case 146982: //Enrage
     case 143319: //Bloodletting
+    case 142598: //Apothecary: Volatile Poultice
+    case 142877: //Volatile Poultice
+    case 142228: //Reave
+    case 143337: //Mutate
     //debuffs from klaxxi
     case 142931:
     case 142929:

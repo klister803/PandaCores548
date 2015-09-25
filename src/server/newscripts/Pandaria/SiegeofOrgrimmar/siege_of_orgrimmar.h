@@ -310,15 +310,16 @@ enum eCreatures
     NPC_KORVEN                      = 71155, //porch, 2
     NPC_IYYOKYK                     = 71160, //       3
     NPC_KAROZ                       = 71154, //porch, 1 
-
     NPC_SKEER                       = 71152, //porch, pull, moddmg
     NPC_RIKKAL                      = 71158, //porch, pull, moddmg
     NPC_HISEK                       = 71153, //porch, pull
 
+    NPC_BLOOD                       = 71542,
     NPC_AMBER_PIECE                 = 71628,
     NPC_KLAXXI_CONTROLLER           = 71592,
-
+    NPC_AMBER_PARASITE              = 71578,
     //
+
     NPC_GARROSH                     = 71865,
 };
 
