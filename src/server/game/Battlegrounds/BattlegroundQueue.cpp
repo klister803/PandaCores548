@@ -1160,17 +1160,14 @@ void BattlegroundQueue::HandleArenaQueueUpdate(uint32 diff, uint8 JoinType)
 
                     _info->RegTimer += diff;
 
-                    if (_info->RegTimer >= rUpdateTimer)
+                    if (!found && _info->RegTimer >= rUpdateTimer)
                     {
                         _info->QueueLvl += float(_info->RegTimer) / 500.0f;
                         _info->RegTimer = 0;
 
-                        if (!found)
-                        {
-                            itr_teams[found++] = itr;
-                            MinRating = (_info->MatchmakerRating <= maxRatingDifference) ? 0 : _info->MatchmakerRating - maxRatingDifference - _info->QueueLvl;
-                            MaxRating = _info->MatchmakerRating + maxRatingDifference + _info->QueueLvl;
-                        }
+                        itr_teams[found++] = itr;
+                        MinRating = (_info->MatchmakerRating <= maxRatingDifference) ? 0 : _info->MatchmakerRating - maxRatingDifference - _info->QueueLvl;
+                        MaxRating = _info->MatchmakerRating + maxRatingDifference + _info->QueueLvl;
                     }
                 }
 
