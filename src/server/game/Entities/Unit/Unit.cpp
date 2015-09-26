@@ -3453,7 +3453,10 @@ void Unit::SetCurrentCastedSpell(Spell* pSpell)
             if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL] &&
                 m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Id != 75)
                 InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
+
             AddUnitState(UNIT_STATE_CASTING);
+            if (!(pSpell->m_spellInfo->AuraInterruptFlags & AURA_INTERRUPT_FLAG_MOVE) && pSpell->GetCaster()->ToCreature())
+                AddUnitState(UNIT_STATE_MOVE_IN_CASTING);
 
             break;
         }
