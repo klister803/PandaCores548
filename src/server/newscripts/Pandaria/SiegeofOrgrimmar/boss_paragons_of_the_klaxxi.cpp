@@ -21,6 +21,7 @@
 
 enum eSpells
 {
+    //Special spells
     //Palladin
     SPELL_SHIELD_OF_THE_RIGHTEOUS      = 132403,
     //Warrior
@@ -31,8 +32,8 @@ enum eSpells
     SPELL_ELUSIVE_BREW                 = 115308,
     //Death Knight
     SPELL_BLOOD_SHIELD                 = 77535,
-
     SPELL_READY_TO_FIGHT               = 143542,
+    //
 
     //Hisek
     SPELL_MULTI_SHOT                   = 144839,
@@ -61,6 +62,28 @@ enum eSpells
 
     //Xaril
     SPELL_TENDERIZING_STRIKES          = 142927,
+    SPELL_TENDERIZING_STRIKES_DMG      = 142929,
+    SPELL_CAUSTIC_BLOOD                = 142315,
+    SPELL_BLOODY_EXPLOSION             = 142317,
+    SPELL_TOXIC_INJECTION              = 142528,
+    //Toxins
+    SPELL_TOXIN_RED                    = 142533,
+    SPELL_DELAYED_CATALYST_RED         = 142936,
+    SPELL_TOXIN_BLUE                   = 142532,
+    SPELL_DELAYED_CATALYST_BLUE        = 142935,
+    SPELL_TOXIN_YELLOW                 = 142534,
+    SPELL_DELAYED_CATALYST_YELLOW      = 142937,
+    //Heroic Toxins
+    SPELL_TOXIN_ORANGE                 = 142547,
+    SPELL_DELAYED_CATALYST_ORANGE      = 142938,
+    SPELL_TOXIN_PURPLE                 = 142548,
+    SPELL_DELAYED_CATALYST_PURPLE      = 142939,
+    SPELL_TOXIN_GREEN                  = 142549,
+    SPELL_DELAYED_CATALYST_GREEN       = 142940,
+
+    //Korven
+    SPELL_SHIELD_BASH                  = 143974,
+    SPELL_VICIOUS_ASSAULT              = 143980,
 
     //Special
     SPELL_AURA_VISUAL_FS               = 143548, 
@@ -108,13 +131,16 @@ enum sEvents
     EVENT_MUTATE                       = 7,
     EVENT_INJECTION                    = 8,
 
+    //Xaril
+    EVENT_CATALYST                     = 9,
+
     //Amber Parasite
-    EVENT_FEED                         = 9,
-    EVENT_REGENERATE                   = 10,
+    EVENT_FEED                         = 10,
+    EVENT_REGENERATE                   = 11,
 
     //Blood
-    EVENT_FIND_LOW_HP_KLAXXI           = 11,
-    EVENT_CHECK_DIST_TO_KLAXXI         = 12,
+    EVENT_FIND_LOW_HP_KLAXXI           = 12,
+    EVENT_CHECK_DIST_TO_KLAXXI         = 13,
 };
 
 enum sActions
@@ -157,6 +183,26 @@ uint32 klaxxientry[9] =
     NPC_SKEER,
     NPC_RIKKAL,
     NPC_HISEK,
+};
+
+uint32 toxinlist[6] =
+{
+    SPELL_TOXIN_RED,
+    SPELL_TOXIN_BLUE,
+    SPELL_TOXIN_YELLOW,
+    SPELL_TOXIN_ORANGE,
+    SPELL_TOXIN_PURPLE,
+    SPELL_TOXIN_GREEN,
+};
+
+uint32 catalystlist[6] =
+{
+    SPELL_DELAYED_CATALYST_RED,
+    SPELL_DELAYED_CATALYST_BLUE,
+    SPELL_DELAYED_CATALYST_YELLOW,
+    SPELL_DELAYED_CATALYST_ORANGE,
+    SPELL_DELAYED_CATALYST_PURPLE,
+    SPELL_DELAYED_CATALYST_GREEN,
 };
 
 //71628
@@ -345,6 +391,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     break;
                 case NPC_XARIL:
                     DoCast(me, SPELL_TENDERIZING_STRIKES, true);
+                    DoCast(me, SPELL_TOXIC_INJECTION, true);
                     break;
                 case NPC_SKEER:
                     DoCast(me, SPELL_HEVER_OF_FOES, true);
@@ -360,6 +407,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 case NPC_IYYOKYK:
                 case NPC_KAROZ:
                 case NPC_HISEK:
+                    events.ScheduleEvent(EVENT_MULTI_SHOT, 2000);
                     break;
                 }
             }
@@ -445,6 +493,12 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 {
                     switch (eventId)
                     {
+                    //Hisek
+                    case EVENT_MULTI_SHOT:
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
+                            DoCast(target, SPELL_MULTI_SHOT);
+                        events.ScheduleEvent(EVENT_MULTI_SHOT, 4000);
+                        break;
                     //Skeer
                     case EVENT_BLODDLETTING:
                         if (me->getVictim())
@@ -505,6 +559,11 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                             DoCast(me->getVictim(), SPELL_INJECTION);
                         }  
                         events.ScheduleEvent(EVENT_INJECTION, 10000); //test
+                        break;
+                    //Xaril
+                    case EVENT_CATALYST:
+                        uint32 n = me->GetMap()->IsHeroic() ? urand(0, 2) : urand(3, 5);
+                        DoCast(me, catalystlist[n], true);
                         break;
                     }
                 }
@@ -1025,6 +1084,103 @@ public:
     }
 };
 
+//142929
+class spell_tenderizing_strikes_dmg : public SpellScriptLoader
+{
+public:
+    spell_tenderizing_strikes_dmg() : SpellScriptLoader("spell_tenderizing_strikes_dmg") { }
+
+    class spell_tenderizing_strikes_dmg_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_tenderizing_strikes_dmg_SpellScript);
+
+        void HandleHit()
+        {
+            if (GetCaster() && GetHitUnit())
+            {
+                for (uint8 n = 0; n < 5; n++)
+                    if (GetHitUnit()->HasAura(EvadeSpells[n]))
+                        return;
+                GetCaster()->CastSpell(GetHitUnit(), SPELL_CAUSTIC_BLOOD);
+            }
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_tenderizing_strikes_dmg_SpellScript::HandleHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_tenderizing_strikes_dmg_SpellScript();
+    }
+};
+
+//142315
+class spell_caustic_blood : public SpellScriptLoader
+{
+public:
+    spell_caustic_blood() : SpellScriptLoader("spell_caustic_blood") { }
+
+    class spell_caustic_blood_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_caustic_blood_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (GetTarget() && GetTarget()->HasAura(SPELL_CAUSTIC_BLOOD))
+            {
+                if (GetTarget()->GetAura(SPELL_CAUSTIC_BLOOD)->GetStackAmount() >= 10)
+                {
+                    GetTarget()->RemoveAurasDueToSpell(SPELL_CAUSTIC_BLOOD);
+                    GetTarget()->CastSpell(GetTarget(), SPELL_BLOODY_EXPLOSION, true);
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_caustic_blood_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_caustic_blood_AuraScript();
+    }
+};
+
+//142528
+class spell_toxic_injection : public SpellScriptLoader
+{
+public:
+    spell_toxic_injection() : SpellScriptLoader("spell_toxic_injection") { }
+
+    class spell_toxic_injection_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_toxic_injection_SpellScript);
+
+        void HandleHit()
+        {
+            if (GetHitUnit())
+            {
+                uint32 n = GetHitUnit()->GetMap()->IsHeroic() ? urand(0, 2) : urand(3, 5);
+                GetHitUnit()->CastSpell(GetHitUnit(), toxinlist[n], true);
+            }
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_toxic_injection_SpellScript::HandleHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_toxic_injection_SpellScript();
+    }
+};
 
 void AddSC_boss_paragons_of_the_klaxxi()
 {
@@ -1041,4 +1197,7 @@ void AddSC_boss_paragons_of_the_klaxxi()
     new spell_klaxxi_mutate();
     new spell_faulty_mutation();
     new spell_klaxxi_bloodletting();
+    new spell_tenderizing_strikes_dmg();
+    new spell_caustic_blood();
+    new spell_toxic_injection();
 }
