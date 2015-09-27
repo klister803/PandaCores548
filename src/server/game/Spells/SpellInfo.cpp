@@ -2207,7 +2207,7 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
     // not allow passengers to be implicitly hit by spells, however this target type should be an exception,
     // if this is left it kills spells that award kill credit from vehicle to master and some or all* spells,
     // the use of these 2 covers passenger target check
-    if (!(GeneralTargets & TARGET_UNIT_MASTER) && !caster->IsVehicle())
+    if (!(GeneralTargets & TARGET_UNIT_MASTER) && !caster->IsVehicle() && !unitTarget->IsMagnetSpellTarget())
     {
         if (TargetAuraState && !unitTarget->HasAuraState(AuraStateType(TargetAuraState), this, caster))
             return SPELL_FAILED_TARGET_AURASTATE;

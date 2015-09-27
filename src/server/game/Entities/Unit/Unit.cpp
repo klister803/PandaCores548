@@ -296,6 +296,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_VisibilityUpdateTask = false;
     m_diffMode = GetMap() ? GetMap()->GetSpawnMode() : 0;
     m_SpecialTarget = 0;
+    isMagnetSpellTarget = false;
 
     m_damage_counter_timer = 1 * IN_MILLISECONDS;
     for (int i = 0; i < MAX_DAMAGE_COUNTERS; ++i)
@@ -11868,6 +11869,9 @@ Unit* Unit::GetMagicHitRedirectTarget(Unit* victim, SpellInfo const* spellInfo)
     for (Unit::AuraEffectList::const_iterator itr = magnetAuras.begin(); itr != magnetAuras.end(); ++itr)
     {
         if (Unit* magnet = (*itr)->GetBase()->GetCaster())
+        {
+            magnet->SetMagnetSpell(true);
+
             if (spellInfo->CheckExplicitTarget(this, magnet) == SPELL_CAST_OK
                 && spellInfo->CheckTarget(this, magnet, false) == SPELL_CAST_OK
                 && _IsValidAttackTarget(magnet, spellInfo))
@@ -11876,6 +11880,9 @@ Unit* Unit::GetMagicHitRedirectTarget(Unit* victim, SpellInfo const* spellInfo)
                 //(*itr)->GetBase()->DropCharge(AURA_REMOVE_BY_DROP_CHARGERS);
                 return magnet;
             }
+            else
+                magnet->SetMagnetSpell(false);
+        }
     }
     return victim;
 }

@@ -3295,6 +3295,9 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
         if (effectMask & (1 << effectNumber))
             HandleEffects(unit, NULL, NULL, effectNumber, SPELL_EFFECT_HANDLE_HIT_TARGET);
 
+    if (unit->IsMagnetSpellTarget())
+        unit->SetMagnetSpell(false);
+
     return SPELL_MISS_NONE;
 }
 

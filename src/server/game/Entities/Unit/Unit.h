@@ -2487,6 +2487,10 @@ class Unit : public WorldObject
 
         uint64 m_SpecialTarget;
 
+        bool isMagnetSpellTarget;
+        bool IsMagnetSpellTarget() const { return isMagnetSpellTarget; }
+        void SetMagnetSpell(bool isTrue) { isMagnetSpellTarget = isTrue; }
+
         float  m_baseRHastRatingPct;
         float  m_baseMHastRatingPct;
         float  m_baseHastRatingPct;
