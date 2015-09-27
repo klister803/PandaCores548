@@ -3719,34 +3719,6 @@ class spell_dru_mangle : public SpellScriptLoader
         }
 };
 
-// 34299 - Leader of the Pack
-class spell_dru_leader_of_the_pack : public SpellScriptLoader
-{
-    public:
-        spell_dru_leader_of_the_pack() : SpellScriptLoader("spell_dru_leader_of_the_pack") { }
-
-        class spell_dru_leader_of_the_pack_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dru_leader_of_the_pack_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Unit* caster = GetCaster())
-                    SetHitHeal(int32(CalculatePct(caster->GetMaxHealth(), GetSpellInfo()->Effects[EFFECT_0].BasePoints)));
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_dru_leader_of_the_pack_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dru_leader_of_the_pack_SpellScript();
-        }
-};
-
 void AddSC_druid_spell_scripts()
 {
     new spell_dru_play_death();
@@ -3818,5 +3790,4 @@ void AddSC_druid_spell_scripts()
     new spell_dru_anti_magic_shell();
     new spell_dru_fortifying_brew();
     new spell_dru_mangle();
-    new spell_dru_leader_of_the_pack();
 }
