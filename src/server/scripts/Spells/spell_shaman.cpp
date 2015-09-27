@@ -1838,7 +1838,8 @@ class spell_sha_grounding_totem : public SpellScriptLoader
 
             void Register()
             {
-                OnEffectRemove += AuraEffectRemoveFn(spell_sha_grounding_totem_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_REFLECT_SPELLS, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_sha_grounding_totem_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_REFLECT_SPELLS, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_sha_grounding_totem_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_SPELL_MAGNET, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
