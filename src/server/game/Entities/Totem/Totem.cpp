@@ -205,21 +205,49 @@ void Totem::UnSummon(uint32 msTime)
 
 bool Totem::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) const
 {
-    // TODO: possibly all negative auras immune?
-    if (GetEntry() == 5925)
+    return Creature::IsImmunedToSpellEffect(spellInfo, index);
+}
+
+bool Totem::IsImmunedToSpell(SpellInfo const* spellInfo)
+{
+    if (!spellInfo)
         return false;
 
-    switch (spellInfo->Effects[index].ApplyAuraName)
-    {
-        case SPELL_AURA_PERIODIC_DAMAGE:
-        case SPELL_AURA_PERIODIC_LEECH:
-        case SPELL_AURA_MOD_FEAR:
-        case SPELL_AURA_MOD_FEAR_2:
-        case SPELL_AURA_TRANSFORM:
-            return true;
-        default:
-            break;
-    }
+    if (spellInfo->AttributesEx5 & SPELL_ATTR5_CANT_IMMUNITY_SPELL)
+        return false;
 
-    return Creature::IsImmunedToSpellEffect(spellInfo, index);
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        switch (spellInfo->Effects[i].Effect)
+        {
+            case SPELL_EFFECT_HEALTH_LEECH:
+            case SPELL_EFFECT_HEAL:
+            case SPELL_EFFECT_HEAL_MAX_HEALTH:
+            case SPELL_EFFECT_HEAL_PCT:
+            case SPELL_EFFECT_SPIRIT_HEAL:
+                return true;
+            case SPELL_EFFECT_APPLY_AURA:
+            {
+                switch (spellInfo->Effects[i].ApplyAuraName)
+                {
+                    case SPELL_AURA_MOD_FEAR:
+                    case SPELL_AURA_MOD_FEAR_2:
+                    case SPELL_AURA_TRANSFORM:
+                    case SPELL_AURA_MOD_CONFUSE:
+                    case SPELL_AURA_MOD_CHARM:
+                    case SPELL_AURA_MOD_STUN:
+                    case SPELL_AURA_MOD_SILENCE:
+                    case SPELL_AURA_SCHOOL_ABSORB:
+                    case SPELL_AURA_PERIODIC_HEAL:
+                        return true;
+                    default:
+                        break;
+                }
+                break;
+            }
+            default:
+                break;
+        }
+    }
+    return false;
 }
