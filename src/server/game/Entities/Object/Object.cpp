@@ -2907,7 +2907,10 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
                     case SUMMON_TYPE_GUARDIAN:
                     case SUMMON_TYPE_GUARDIAN2:
                     case SUMMON_TYPE_OBJECT:
-                        mask = UNIT_MASK_GUARDIAN;
+                        if (properties->Id == 1141)
+                            mask = UNIT_MASK_TOTEM;
+                        else
+                            mask = UNIT_MASK_GUARDIAN;
                         break;
                     case SUMMON_TYPE_TOTEM:
                     case SUMMON_TYPE_BANNER:
