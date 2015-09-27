@@ -3201,48 +3201,6 @@ class spell_dru_spell_dru_tooth_and_claw_absorb : public SpellScriptLoader
         }
 };
 
-// Healing Touch - 5185 from Dream of Cenarius
-class spell_dru_healing_ouch : public SpellScriptLoader
-{
-    public:
-        spell_dru_healing_ouch() : SpellScriptLoader("spell_dru_healing_ouch") { }
-
-        class spell_dru_healing_ouch_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dru_healing_ouch_SpellScript);
-
-            void HandleOnHit()
-            {
-                Unit* caster = GetCaster();
-                if (!caster)
-                    return;
-
-                Player* player = caster->ToPlayer();
-                if (!player)
-                    return;
-
-                if(caster->HasAura(145162))
-                {
-                    if (player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DRUID_BEAR)
-                    {
-                        int32 _heal = irand(18460, 21800) + int32(player->GetTotalAttackPowerValue(BASE_ATTACK) * 1.86);
-                        SetHitHeal(_heal);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_dru_healing_ouch_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dru_healing_ouch_SpellScript();
-        }
-};
-
 // Wild Mushroom - 145205,147349
 class spell_dru_wild_mushroom_heal : public SpellScriptLoader
 {
@@ -3848,7 +3806,6 @@ void AddSC_druid_spell_scripts()
     new spell_dru_swipe_two();
     new spell_dru_tooth_and_claw();
     new spell_dru_spell_dru_tooth_and_claw_absorb();
-    new spell_dru_healing_ouch();
     new spell_dru_wild_mushroom_heal();
     new spell_dru_genesis();
     new spell_dru_glyph_of_hurricane();

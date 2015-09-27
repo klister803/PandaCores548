@@ -1,0 +1,1 @@
+DELETE FROM `spell_script_names` WHERE (`spell_id`='5185') AND (`ScriptName`='spell_dru_healing_ouch');

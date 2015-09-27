@@ -13151,6 +13151,14 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     float ApCoeffMod = spellProto->SpellAPBonusMultiplier;
     float coeff = 0;
     float factorMod = 1.0f;
+
+    if (getClass() == CLASS_DRUID && spellProto->Id == 5185)
+        if (HasAura(145162))
+        {
+            ApCoeffMod = dbccoeff;
+            dbccoeff = 0;
+        }
+
     if (bonus)
     {
         if (damagetype == DOT)
