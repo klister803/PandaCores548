@@ -3832,6 +3832,7 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 8178:   // Grounding Totem
                 case 73683:  // Unleash Flame
                 case 130493: // Nightstalker
                     spellInfo->AttributesEx12 |= SPELL_ATTR12_REMOVE_AFTER_DELAY;
