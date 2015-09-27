@@ -358,6 +358,7 @@ public:
                                 case 69680: visualAuraId = 138080; break;
                                 case 69791: visualAuraId = 138081; break;
                             }
+                            me->AddAura(103985, me);
                             owner->CastSpell(me, 149716, true);
                             me->CastSpell(me, visualAuraId, true);
                             owner->AddAura(120272, me);
@@ -365,7 +366,6 @@ public:
                             owner->AddAura(142689, me);
                             owner->AddAura(128595, me);
                             me->AddAura(138130, me);
-                            me->AddAura(103985, me);
                             me->setPowerType(POWER_MANA);
                             me->SetMaxPower(POWER_MANA, 21262);
                             me->SetPower(POWER_MANA, 21262);
