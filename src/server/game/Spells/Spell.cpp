@@ -4455,7 +4455,7 @@ void Spell::finish(bool ok)
         m_caster->UpdateInterruptMask();
 
     if (m_caster->HasUnitState(UNIT_STATE_CASTING) && !m_caster->IsNonMeleeSpellCasted(false, false, true))
-        m_caster->ClearUnitState(UNIT_STATE_CASTING);
+        m_caster->ClearUnitState(UNIT_STATE_CASTING | UNIT_STATE_MOVE_IN_CASTING);
 
     // Unsummon summon as possessed creatures on spell cancel
     if (m_spellInfo->IsChanneled() && m_caster->GetTypeId() == TYPEID_PLAYER)

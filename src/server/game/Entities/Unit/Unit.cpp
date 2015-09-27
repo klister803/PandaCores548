@@ -3455,8 +3455,9 @@ void Unit::SetCurrentCastedSpell(Spell* pSpell)
                 InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
 
             AddUnitState(UNIT_STATE_CASTING);
-            if (!(pSpell->m_spellInfo->AuraInterruptFlags & AURA_INTERRUPT_FLAG_MOVE) && pSpell->GetCaster()->ToCreature())
-                AddUnitState(UNIT_STATE_MOVE_IN_CASTING);
+            if (pSpell->GetCaster()->ToCreature())
+                if (!(pSpell->m_spellInfo->ChannelInterruptFlags & CHANNEL_INTERRUPT_FLAG_INTERRUPT))
+                    AddUnitState(UNIT_STATE_MOVE_IN_CASTING);
 
             break;
         }
