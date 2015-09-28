@@ -187,8 +187,8 @@ uint32 klaxxientry[9] =
 
 uint32 toxinlist[6] =
 {
-    SPELL_TOXIN_RED,
     SPELL_TOXIN_BLUE,
+    SPELL_TOXIN_RED,
     SPELL_TOXIN_YELLOW,
     SPELL_TOXIN_ORANGE,
     SPELL_TOXIN_PURPLE,
@@ -1161,18 +1161,127 @@ public:
     {
         PrepareSpellScript(spell_toxic_injection_SpellScript);
 
-        void HandleHit()
+        void TargetsSelect(std::list<WorldObject*>& unitlist)
         {
-            if (GetHitUnit())
+            if (!unitlist.empty() && GetCaster())
             {
-                uint32 n = GetHitUnit()->GetMap()->IsHeroic() ? urand(0, 2) : urand(3, 5);
-                GetHitUnit()->CastSpell(GetHitUnit(), toxinlist[n], true);
+                uint8 bluecount = GetCaster()->GetMap()->Is25ManRaid() ? 3 : 2;
+                uint8 size = unitlist.size();
+                std::vector<Player*>pllist;
+                for (std::list<WorldObject*>::const_iterator itr = unitlist.begin(); itr != unitlist.end(); ++itr)
+                    if (Player* pl = (*itr)->ToPlayer())
+                        pllist.push_back(pl);
+
+                if (GetCaster()->GetMap()->IsHeroic())
+                {
+                    for (uint8 n = 0; n < 3; ++n)
+                    {
+                        for (std::vector<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                        {
+                            if (!(*itr)->HasAura(toxinlist[n + 3]))
+                            {
+                                GetCaster()->CastSpell(*itr, toxinlist[n + 3], true);
+                                break;
+                            }
+                        }
+                    }
+                    uint8 listcount = GetCaster()->GetMap()->Is25ManRaid() ? 22 : 7;
+                    uint8 maxbuffcount = listcount == 22 ? urand(7, 8) : urand(2, 3);
+                    uint8 buffcount = 0;
+                    for (uint8 b = 0; b < 3; ++b)
+                    {
+                        for (std::vector<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                        {
+                            if (!(*itr)->HasAura(toxinlist[3]) && !(*itr)->HasAura(toxinlist[4]) && !(*itr)->HasAura(toxinlist[5]))
+                            {
+                                GetCaster()->CastSpell(*itr, toxinlist[b + 3], true);
+                                buffcount++;
+                                if (buffcount == maxbuffcount)
+                                {
+                                    switch (maxbuffcount)
+                                    {
+                                    case 2:
+                                        maxbuffcount = 3;
+                                        break;
+                                    case 3:
+                                        maxbuffcount = 2;
+                                        break;
+                                    case 7:
+                                        maxbuffcount = 8;
+                                        break;
+                                    case 8:
+                                        maxbuffcount = 7;
+                                        break;
+                                    }
+                                    maxbuffcount = urand(2, 3);
+                                    buffcount = 0;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (size <= 3)
+                    {
+                        for (uint8 b = 0; b < size; ++b)
+                            GetCaster()->CastSpell(pllist[b], toxinlist[b], true);
+                    }
+                    else
+                    {
+                        //Blue toxin
+                        for (uint8 b = 0; b < bluecount; ++b)
+                            GetCaster()->CastSpell(pllist[b], toxinlist[0], true);
+
+                        uint8 listcount = GetCaster()->GetMap()->Is25ManRaid() ? 22 : 8;
+                        uint8 maxbuffcount = listcount == 22 ? urand(10, 12) : urand(3, 5);
+                        uint8 buffcount = 0;
+                        for (uint8 b = 1; b < 3; ++b)
+                        {
+                            for (std::vector<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                            {
+                                if (!(*itr)->HasAura(toxinlist[0]) && !(*itr)->HasAura(toxinlist[1]) && !(*itr)->HasAura(toxinlist[2]))
+                                {
+                                    GetCaster()->CastSpell(*itr, toxinlist[b], true);
+                                    buffcount++;
+                                    if (buffcount == maxbuffcount)
+                                    {
+                                        switch (maxbuffcount)
+                                        {
+                                        case 3:
+                                            maxbuffcount = 5;
+                                            break;
+                                        case 4:
+                                            maxbuffcount = 4;
+                                            break;
+                                        case 5:
+                                            maxbuffcount = 3;
+                                            break;
+                                        case 10:
+                                            maxbuffcount = 12;
+                                            break;
+                                        case 11:
+                                            maxbuffcount = 11;
+                                            break;
+                                        case 12:
+                                            maxbuffcount = 10;
+                                            break;
+                                        }
+                                        buffcount = 0;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
         void Register()
         {
-            OnHit += SpellHitFn(spell_toxic_injection_SpellScript::HandleHit);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_toxic_injection_SpellScript::TargetsSelect, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
         }
     };
 

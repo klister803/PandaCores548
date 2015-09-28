@@ -5139,10 +5139,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 143337: //Mutate
                     spellInfo->Effects[4].Effect = 0;
                     break;
-                case 143977: //Vicious Assault Dummy Periodic
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_TRIGGER_SPELL;
-                    spellInfo->Effects[0].TriggerSpell = 143980;
-                    break;
                 //debuffs from klaxxi
                 case 142929:
                 case 142931:
