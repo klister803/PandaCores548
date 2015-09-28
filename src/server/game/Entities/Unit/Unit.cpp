@@ -5295,12 +5295,21 @@ int32 Unit::GetTotalAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask) 
     int32 modifier = 0;
 
     AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auratype);
+    uint32 _sizeList = mTotalAuraList.size();
 
     for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+    {
+        if (_sizeList != mTotalAuraList.size())
+            break;
+
+        if (i == mTotalAuraList.end())
+            continue;
+
         if (AuraEffect* eff = (*i))
             if (eff->GetMiscValue() & misc_mask)
                 if (!sSpellMgr->AddSameEffectStackRuleSpellGroups(eff->GetSpellInfo(), eff->GetAmount(), SameEffectSpellGroup))
                     modifier += eff->GetAmount();
+    }
 
     for (std::map<SpellGroup, int32>::const_iterator itr = SameEffectSpellGroup.begin(); itr != SameEffectSpellGroup.end(); ++itr)
         modifier += itr->second;
