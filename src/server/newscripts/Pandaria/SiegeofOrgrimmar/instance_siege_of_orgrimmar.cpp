@@ -622,8 +622,6 @@ public:
                     break;
                 case GO_NSOP_SPOILS:
                     gonsopsGuid = go->GetGUID();
-                    if (GetBossState(DATA_SPOILS_OF_PANDARIA) == DONE)
-                        go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
                     break;
                 case GO_SMALL_MOGU_BOX:
                 case GO_MEDIUM_MOGU_BOX:
@@ -937,9 +935,6 @@ public:
                     
                     if (Creature* ssops = instance->GetCreature(npcssopsGuid))
                         ssops->AI()->DoAction(ACTION_SSOPS_DONE);
-
-                    if (GameObject* chest = instance->GetGameObject(gonsopsGuid))
-                        chest->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
 
                     if (GameObject* _ssops = instance->GetGameObject(gossopsGuid))
                         _ssops->Delete();

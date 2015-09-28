@@ -1223,54 +1223,46 @@ public:
                 }
                 else
                 {
-                    if (size <= 3)
+                    //Blue toxin
+                    for (uint8 b = 0; b < bluecount; ++b)
+                        GetCaster()->CastSpell(pllist[b], toxinlist[0], true);
+                    
+                    uint8 listcount = GetCaster()->GetMap()->Is25ManRaid() ? 22 : 8;
+                    uint8 maxbuffcount = listcount == 22 ? urand(10, 12) : urand(3, 5);
+                    uint8 buffcount = 0;
+                    for (uint8 b = 1; b < 3; ++b)
                     {
-                        for (uint8 b = 0; b < size; ++b)
-                            GetCaster()->CastSpell(pllist[b], toxinlist[b], true);
-                    }
-                    else
-                    {
-                        //Blue toxin
-                        for (uint8 b = 0; b < bluecount; ++b)
-                            GetCaster()->CastSpell(pllist[b], toxinlist[0], true);
-
-                        uint8 listcount = GetCaster()->GetMap()->Is25ManRaid() ? 22 : 8;
-                        uint8 maxbuffcount = listcount == 22 ? urand(10, 12) : urand(3, 5);
-                        uint8 buffcount = 0;
-                        for (uint8 b = 1; b < 3; ++b)
+                        for (std::vector<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                         {
-                            for (std::vector<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                            if (!(*itr)->HasAura(toxinlist[0]) && !(*itr)->HasAura(toxinlist[1]) && !(*itr)->HasAura(toxinlist[2]))
                             {
-                                if (!(*itr)->HasAura(toxinlist[0]) && !(*itr)->HasAura(toxinlist[1]) && !(*itr)->HasAura(toxinlist[2]))
+                                GetCaster()->CastSpell(*itr, toxinlist[b], true);
+                                buffcount++;
+                                if (buffcount == maxbuffcount)
                                 {
-                                    GetCaster()->CastSpell(*itr, toxinlist[b], true);
-                                    buffcount++;
-                                    if (buffcount == maxbuffcount)
+                                    switch (maxbuffcount)
                                     {
-                                        switch (maxbuffcount)
-                                        {
-                                        case 3:
-                                            maxbuffcount = 5;
-                                            break;
-                                        case 4:
-                                            maxbuffcount = 4;
-                                            break;
-                                        case 5:
-                                            maxbuffcount = 3;
-                                            break;
-                                        case 10:
-                                            maxbuffcount = 12;
-                                            break;
-                                        case 11:
-                                            maxbuffcount = 11;
-                                            break;
-                                        case 12:
-                                            maxbuffcount = 10;
-                                            break;
-                                        }
-                                        buffcount = 0;
+                                    case 3:
+                                        maxbuffcount = 5;
+                                        break;
+                                    case 4:
+                                        maxbuffcount = 4;
+                                        break;
+                                    case 5:
+                                        maxbuffcount = 3;
+                                        break;
+                                    case 10:
+                                        maxbuffcount = 12;
+                                        break;
+                                    case 11:
+                                        maxbuffcount = 11;
+                                        break;
+                                    case 12:
+                                        maxbuffcount = 10;
                                         break;
                                     }
+                                    buffcount = 0;
+                                    break;
                                 }
                             }
                         }

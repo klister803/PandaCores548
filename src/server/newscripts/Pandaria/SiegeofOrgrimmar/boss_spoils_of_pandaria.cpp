@@ -339,11 +339,14 @@ public:
                     if (!done)
                     {
                         done = true;
+                        me->setFaction(35);
                         ZoneTalk(SAY_SECOND_MODUL_DONE, 0);
                         events.Reset();
                         _summons.DespawnAll();
                         DespawnAllAT();
                         OfflineWorldState();
+                        if (GameObject* chest = me->SummonGameObject(GO_NSOP_SPOILS, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 604800))
+                            chest->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
                         events.ScheduleEvent(EVENT_OUTRO, 4000);
                     }
                     break;
