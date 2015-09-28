@@ -592,6 +592,7 @@ public:
 
     // unloading helpers
     void _UnloadImplicitTargetConditionLists();
+    bool CanSpellProc(Unit* target, uint32 mask = 7, Item* m_CastItem = NULL) const;
     bool IsSealSpell() const;
 
     bool AddPowerData(SpellPowerEntry const * power);

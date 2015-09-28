@@ -2717,7 +2717,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     m_spellAura = NULL; // Set aura to null for every target-make sure that pointer is not used for unit without aura applied
 
     //Check can or not triggered
-    bool canEffectTrigger = CanSpellProc(unitTarget, mask);
+    bool canEffectTrigger = m_spellInfo->CanSpellProc(unitTarget, mask, m_CastItem);
     Unit* spellHitTarget = NULL;
 
     if (missInfo == SPELL_MISS_NONE)                          // In case spell hit target, do all effect on that target
@@ -3911,7 +3911,7 @@ void Spell::cast(bool skipCheck)
     {
         Unit* caster = m_originalCaster ? m_originalCaster : m_caster;
         uint32 mask = 7;
-        bool canEffectTrigger = CanSpellProc(procTarget, mask);
+        bool canEffectTrigger = m_spellInfo->CanSpellProc(procTarget, mask, m_CastItem);
         //sLog->outDebug(LOG_FILTER_PROC, "Spell::cast Id %i, mask %i, canEffectTrigger %i", m_spellInfo->Id, mask, canEffectTrigger);
 
         if(canEffectTrigger)
@@ -10117,32 +10117,6 @@ void Spell::WriteProjectile(uint8 &ammoInventoryType, uint32 &ammoDisplayID)
             }
         }
     }
-}
-
-bool Spell::CanSpellProc(Unit* target, uint32 mask) const
-{
-    if (m_CastItem)
-        return false;
-    if (AttributesCustom & SPELL_ATTR0_HIDDEN_CLIENTSIDE)
-        return false;
-    if (AttributesCustomEx3 & SPELL_ATTR3_CANT_TRIGGER_PROC)
-        return false;
-    if (AttributesCustomEx6 & SPELL_ATTR6_CANT_PROC)
-        return false;
-    if (m_spellInfo->AttributesEx7 & SPELL_ATTR7_CONSOLIDATED_RAID_BUFF)
-        return false;
-    if (AttributesCustomEx2 & SPELL_ATTR2_FOOD_BUFF)
-        return false;
-    if (target && !target->CanProc())
-        return false;
-    if (!CanExecuteTriggersOnHit(mask))
-        return false;
-    if (m_spellInfo->IsPassive())
-        return false;
-    if (m_spellInfo->IsNotProcSpell())
-        return false;
-
-    return true;
 }
 
 namespace Trinity

@@ -3641,3 +3641,27 @@ bool SpellInfo::CanNonFacing(Unit const * caster) const
 
     return false;
 }
+
+bool SpellInfo::CanSpellProc(Unit* target, uint32 mask, Item* m_CastItem) const
+{
+    if (m_CastItem && !m_CastItem->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
+         return false;
+    if (Attributes & SPELL_ATTR0_HIDDEN_CLIENTSIDE)
+         return false;
+    if (AttributesEx3 & SPELL_ATTR3_CANT_TRIGGER_PROC)
+         return false;
+    if (AttributesEx6 & SPELL_ATTR6_CANT_PROC)
+         return false;
+    if (AttributesEx7 & SPELL_ATTR7_CONSOLIDATED_RAID_BUFF)
+         return false;
+    if (AttributesEx2 & SPELL_ATTR2_FOOD_BUFF)
+         return false;
+    if (target && !target->CanProc())
+         return false;
+    if (IsPassive())
+         return false;
+    if (IsNotProcSpell())
+         return false;
+    
+    return true;
+}
