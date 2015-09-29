@@ -5146,6 +5146,16 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 143275: 
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
+                //Heroic catalyst
+                case 142938: //Orange
+                    spellInfo->TargetAuraSpell = 142547;
+                    break;
+                case 142939: //Purple
+                    spellInfo->TargetAuraSpell = 142548;
+                    break;
+                case 142940: //Green
+                    spellInfo->TargetAuraSpell = 142549;
+                    break;
  
                     
                 //World Bosses
