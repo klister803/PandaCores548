@@ -8870,7 +8870,7 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
         if (target->HasAura(19263))
             return false;
     }
-    if ((IsTriggered() || canHitTargetInLOS) && m_spellInfo->Id != 117418 && m_spellInfo->Id != 120086) // Fists of Fury can't target not in LOS
+    if (canHitTargetInLOS) // Fists of Fury can't target not in LOS
         return true;
 
     // todo: shit below shouldn't be here, but it's temporary
