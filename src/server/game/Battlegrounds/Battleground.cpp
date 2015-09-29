@@ -979,19 +979,19 @@ void Battleground::EndBattleground(uint32 winner)
         {
             case 2:
             {
-                sLog->outArena("FINISH: Arena match Type: 2v2 --- Winner[%s, %s]: old rating: %u --- Loser[%s, %s]: old rating: %u --- Duration: %u min. %u sec. %s",
+                sLog->outArena("FINISH: Arena match Type: 2v2 --- --- Winner[%s, %s]: old rating: %u --- Loser[%s, %s]: old rating: %u --- Duration: %u min. %u sec. %s",
                     winnerTeam[0], winnerTeam[1], GetMatchmakerRating(winner), loserTeam[0], loserTeam[1], GetMatchmakerRating(GetOtherTeam(winner)), _min, _sec, att);
                 break;
             }
             case 3:
             {
-                sLog->outArena("FINISH: Arena match Type: 3v3 --- Winner[%s, %s, %s]: old rating: %u --- Loser[%s, %s, %s]: old rating: %u --- Duration: %u min. %u sec. %s",
+                sLog->outArena("FINISH: Arena match Type: --- 3v3 --- Winner[%s, %s, %s]: old rating: %u --- Loser[%s, %s, %s]: old rating: %u --- Duration: %u min. %u sec. %s",
                     winnerTeam[0], winnerTeam[1], winnerTeam[2], GetMatchmakerRating(winner), loserTeam[0], loserTeam[1], loserTeam[2], GetMatchmakerRating(GetOtherTeam(winner)), _min, _sec, att);
                 break;
             }
             case 5:
             {
-                sLog->outArena("FINISH: Arena match Type: 5v5 --- Winner[%s, %s, %s, %s, %s]: old rating: %u --- Loser[%s, %s, %s, %s, %s]: old rating: %u --- Duration: %u min. %u sec. %s",
+                sLog->outArena("FINISH: Arena match Type: --- --- 5v5 Winner[%s, %s, %s, %s, %s]: old rating: %u --- Loser[%s, %s, %s, %s, %s]: old rating: %u --- Duration: %u min. %u sec. %s",
                     winnerTeam[0], winnerTeam[1], winnerTeam[2], winnerTeam[3], winnerTeam[4], GetMatchmakerRating(winner), loserTeam[0], loserTeam[1], loserTeam[2], loserTeam[3], loserTeam[4], GetMatchmakerRating(GetOtherTeam(winner)), _min, _sec, att);
                 break;
             }

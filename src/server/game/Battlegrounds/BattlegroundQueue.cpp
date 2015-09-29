@@ -1284,17 +1284,17 @@ void BattlegroundQueue::StartArena(std::list<GroupQueueInfo*>::iterator itr_team
         {
             case 2:
             {
-                sLog->outArena("START:  Arena match type: 2v2 for (%s, %s) vs (%s, %s).", team1[0], team1[1], team2[0], team2[1]);
+                sLog->outArena("START:  Arena match type: 2v2 --- --- (%s, %s) vs (%s, %s).", team1[0], team1[1], team2[0], team2[1]);
                 break;
             }
             case 3:
             {
-                sLog->outArena("START:  Arena match type: 3v3 for (%s, %s, %s) vs (%s, %s, %s).", team1[0], team1[1], team1[2], team2[0], team2[1], team2[2]);
+                sLog->outArena("START:  Arena match type: --- 3v3 --- (%s, %s, %s) vs (%s, %s, %s).", team1[0], team1[1], team1[2], team2[0], team2[1], team2[2]);
                 break;
             }
             case 5:
             {
-                sLog->outArena("START:  Arena match type: 5v5 for (%s, %s, %s, %s, %s) vs (%s, %s, %s, %s, %s).", team1[0], team1[1], team1[2], team1[3], team1[4], team2[0], team2[1], team2[2], team2[3], team2[4]);
+                sLog->outArena("START:  Arena match type: --- --- 5v5 (%s, %s, %s, %s, %s) vs (%s, %s, %s, %s, %s).", team1[0], team1[1], team1[2], team1[3], team1[4], team2[0], team2[1], team2[2], team2[3], team2[4]);
                 break;
             }
             default:
