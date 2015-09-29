@@ -4086,7 +4086,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].SpellClassMask[2] |= 64;
                     break;
                 case 379: // Earth Shield
-                    spellInfo->AttributesEx12 |= SPELL_ATTR12_HAVE_STABLE_FLYTIME;
                     spellInfo->ScalingClass = 11;
                     spellInfo->Effects[EFFECT_0].ScalingMultiplier = 1.862f;
                     break;
