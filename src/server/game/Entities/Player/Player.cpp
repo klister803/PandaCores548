@@ -5196,6 +5196,12 @@ void Player::RemoveArenaSpellCooldowns(bool removeActivePetCooldowns)
             RestoreSpellCategoryCharges(entry->ChargeRecoveryCategory);
     }
 
+    if (getClass() == CLASS_MONK)
+        if (Aura* aura = GetAura(123980))
+            if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
+                eff->SetAmount(eff->GetBaseAmount());
+
+
     RestoreSpellUncategoryCharges();
 
     // pet cooldowns
