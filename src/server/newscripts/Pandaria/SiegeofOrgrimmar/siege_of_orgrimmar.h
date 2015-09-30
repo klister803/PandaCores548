@@ -318,6 +318,7 @@ enum eCreatures
     NPC_AMBER_PIECE                 = 71628,
     NPC_KLAXXI_CONTROLLER           = 71592,
     NPC_AMBER_PARASITE              = 71578,
+    NPC_AMBER_BOMB                  = 71691,
     //
 
     NPC_GARROSH                     = 71865,
