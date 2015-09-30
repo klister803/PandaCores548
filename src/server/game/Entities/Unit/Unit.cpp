@@ -2388,13 +2388,13 @@ void Unit::AttackerStateUpdate(Unit* victim, WeaponAttackType attType, bool extr
             DealDamageMods(redirectVictim, damageInfo.damage, &damageInfo.absorb);
             SendAttackStateUpdate(&damageInfo);
 
+            DealMeleeDamage(&damageInfo, true);
+
             //TriggerAurasProcOnEvent(damageInfo);
             DamageInfo dmgInfoProc = DamageInfo(damageInfo);
             ProcDamageAndSpell(redirectVictim, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, &dmgInfoProc, damageInfo.attackType);
-            if(redirectVictim != victim)
+            if (redirectVictim != victim)
                 ProcDamageAndSpell(victim, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, &dmgInfoProc, damageInfo.attackType);
-
-            DealMeleeDamage(&damageInfo, true);
 
             if (GetTypeId() == TYPEID_PLAYER)
                 sLog->outDebug(LOG_FILTER_UNITS, "AttackerStateUpdate: (Player) %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",

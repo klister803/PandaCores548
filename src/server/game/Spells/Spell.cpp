@@ -2920,6 +2920,10 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         procEx |= createProcExtendMask(&damageInfo, missInfo);
         procVictim |= PROC_FLAG_TAKEN_DAMAGE;
 
+        m_damage = damageInfo.damage;
+
+        caster->DealSpellDamage(&damageInfo, true);
+
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
         {
@@ -2931,9 +2935,6 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
                 caster->ToPlayer()->CastItemCombatSpell(unitTarget, m_attackType, procVictim, procEx);
         }
 
-         m_damage = damageInfo.damage;
-
-        caster->DealSpellDamage(&damageInfo, true);
         m_final_damage = damageInfo.damage;
         m_absorb = damageInfo.absorb;
         m_resist = damageInfo.resist;
