@@ -8905,7 +8905,20 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
                 caster = m_caster->GetMap()->GetGameObject(m_originalCasterGUID);
             if (!caster)
                 caster = m_caster;
-            if (target != m_caster && !target->IsWithinLOSInMap(caster))
+
+            if (m_targets.HasDst())
+            {
+                if (SpellDestination const* dest = m_targets.GetDst())
+                {
+                    float x = dest->_position.GetPositionX();
+                    float y = dest->_position.GetPositionY();
+                    float z = dest->_position.GetPositionZ();
+
+                    if (!target->IsWithinLOS(x, y, z))
+                        return false;
+                }
+            }
+            else if (target != m_caster && !target->IsWithinLOSInMap(caster))
                 return false;
             break;
     }
