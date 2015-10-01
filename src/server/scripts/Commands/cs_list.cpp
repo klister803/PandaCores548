@@ -43,6 +43,7 @@ public:
             { "object",         SEC_ADMINISTRATOR,  true,  &HandleListObjectCommand,            "", NULL },
             { "auras",          SEC_ADMINISTRATOR,  false, &HandleListAurasCommand,             "", NULL },
             { "mail",           SEC_ADMINISTRATOR,  true,  &HandleListMailCommand,              "", NULL },
+            { "neauras",        SEC_ADMINISTRATOR,  true,  &HandleListNonEffectAurasCommand,     "", NULL},
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
         static ChatCommand commandTable[] =
@@ -459,6 +460,34 @@ public:
 
             for (Unit::AuraEffectList::const_iterator itr = auraList.begin(); itr != auraList.end(); ++itr)
                 handler->PSendSysMessage(LANG_COMMAND_TARGET_AURASIMPLE, (*itr)->GetId(), (*itr)->GetEffIndex(), (*itr)->GetAmount());
+        }
+
+        return true;
+    }
+
+    static bool HandleListNonEffectAurasCommand(ChatHandler* handler, char const* /*args*/)
+    {
+        Unit* unit = handler->getSelectedUnit();
+        if (!unit)
+        {
+            handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        Unit::AuraApplicationMap const& auras = unit->GetAppliedAuras();
+        handler->PSendSysMessage(LANG_COMMAND_TARGET_LISTAURAS, auras.size());
+        for (Unit::AuraApplicationMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
+        {
+            AuraApplication const* aurApp = itr->second;
+            Aura const* aura = aurApp->GetBase();
+            char const* name = aura->GetSpellInfo()->SpellName;
+
+            std::ostringstream ss_name;
+            ss_name << "|cffffffff|Hspell:" << aura->GetId() << "|h[" << name << "]|h|r";
+
+            handler->PSendSysMessage(LANG_COMMAND_TARGET_NON_EFFECT_AURADETAIL, aura->GetId(), (handler->GetSession() ? ss_name.str().c_str() : name),
+            aura->GetDuration(), IS_PLAYER_GUID(aura->GetCasterGUID()) ? "player" : "creature", GUID_LOPART(aura->GetCasterGUID()));
         }
 
         return true;
