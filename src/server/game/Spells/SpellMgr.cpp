@@ -4002,10 +4002,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].ScalingMultiplier = 0.00177f;
                     spellInfo->Effects[2].ScalingMultiplier = 0.00177f;
                     break;
-                case 13165:  // Aspect of the Hawk
-                case 109260: // Aspect of the Iron Hawk
-                    spellInfo->Effects[0].BasePoints = 35;
-                    break;
                 case 146202: // Wrath
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_HIDE_DURATION;
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(39);
