@@ -1640,7 +1640,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
         {
             if(m_spellInfo->AttributesEx10 & SPELL_ATTR10_STACK_DAMAGE_OR_HEAL && GetBase()->GetMaxDuration() != -1 && caster && GetTotalTicks())
             {
-                uint32 oldBp = target->GetRemainingPeriodicAmount(caster->GetGUID(), m_spellInfo->Id, GetAuraType());
+                uint32 oldBp = target->GetRemainingPeriodicAmount(caster->GetGUID(), m_spellInfo->Id, GetAuraType(), m_effIndex);
                 uint32 getTicks = GetTotalTicks();
 
                 amount *= getTicks;
