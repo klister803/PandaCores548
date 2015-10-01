@@ -482,12 +482,24 @@ public:
             AuraApplication const* aurApp = itr->second;
             Aura const* aura = aurApp->GetBase();
             char const* name = aura->GetSpellInfo()->SpellName;
+            int32 _duration = aura->GetDuration();
 
-            std::ostringstream ss_name;
-            ss_name << "|cffffffff|Hspell:" << aura->GetId() << "|h[" << name << "]|h|r";
+            if (_duration == -1)
+            {
+                std::ostringstream ss_name;
+                ss_name << "|cff4682B4|Hspell:" << aura->GetId() << "|h[" << name << "]|h|r";
 
-            handler->PSendSysMessage(LANG_COMMAND_TARGET_NON_EFFECT_AURADETAIL, aura->GetId(), (handler->GetSession() ? ss_name.str().c_str() : name),
-            aura->GetDuration(), IS_PLAYER_GUID(aura->GetCasterGUID()) ? "player" : "creature", GUID_LOPART(aura->GetCasterGUID()));
+                handler->PSendSysMessage("id: %d %s caster : %s guid : %d", aura->GetId(), (handler->GetSession() ? ss_name.str().c_str() : name),
+                    IS_PLAYER_GUID(aura->GetCasterGUID()) ? "player" : "creature", GUID_LOPART(aura->GetCasterGUID()));
+            }
+            else
+            {
+                std::ostringstream ss_name;
+                ss_name << "|cffffffff|Hspell:" << aura->GetId() << "|h[" << name << "]|h|r";
+
+                handler->PSendSysMessage(LANG_COMMAND_TARGET_NON_EFFECT_AURADETAIL, aura->GetId(), (handler->GetSession() ? ss_name.str().c_str() : name),
+                    _duration, IS_PLAYER_GUID(aura->GetCasterGUID()) ? "player" : "creature", GUID_LOPART(aura->GetCasterGUID()));
+            }
         }
 
         return true;
