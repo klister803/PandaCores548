@@ -2238,7 +2238,7 @@ class Player : public Unit, public GridObject<Player>
         {
             SpellCooldowns::const_iterator itr = m_spellCooldowns.find(spell_id);
             double t = getPreciseTime();
-            return uint32(itr != m_spellCooldowns.end() && itr->second.end > t ? itr->second.end - t : 0.0);
+            return double(itr != m_spellCooldowns.end() && itr->second.end > t ? itr->second.end - t : 0.0);
         }
         double GetPPPMSpellCooldownDelay(uint32 spell_id) const
         {
