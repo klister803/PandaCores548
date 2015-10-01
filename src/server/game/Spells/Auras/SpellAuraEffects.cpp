@@ -1083,11 +1083,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
             switch (m_spellInfo->Id)
             {
-                case 53301: // Explosive Shot
-                {
-                    amount = GetBase()->m_damage_amount;
-                    break;
-                }
                 case 32409:  // Shadow Word: Death (DoT)
                 {
                     if (Aura* aura = caster->GetAura(105843))

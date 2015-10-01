@@ -16,3 +16,5 @@ INSERT INTO `spell_proc_event` VALUES (109306, 0, 0, 2048+4096+131072, 214748364
 
 
 INSERT INTO `trinity_string` (`entry`, `content_default`) VALUES ('13004', 'id: %d %s duration: %d caster: %s guid: %d');
+
+UPDATE `spell_bonus_data` SET `ap_dot_bonus`='0.391' WHERE (`entry`='53301');

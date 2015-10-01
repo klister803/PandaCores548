@@ -2128,71 +2128,6 @@ class spell_hun_widow_venom : public SpellScriptLoader
         }
 };
 
-// Explosive Shot - 53301
-class spell_hun_explosive_shot : public SpellScriptLoader
-{
-    public:
-        spell_hun_explosive_shot() : SpellScriptLoader("spell_hun_explosive_shot") { }
-
-        class spell_hun_explosive_shot_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_hun_explosive_shot_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Unit* target = GetHitUnit())
-                if (Unit* caster = GetCaster())
-                {
-                    float apmod = float(GetSpellInfo()->Effects[EFFECT_2].BasePoints) / 1000.0f;
-                    int32 damage = int32(caster->GetTotalAttackPowerValue(RANGED_ATTACK) * apmod) + 487;
-                    damage = caster->SpellDamageBonusDone(target, GetSpellInfo(), damage, SPELL_DIRECT_DAMAGE, EFFECT_0);
-                    SetHitDamage(damage);
-                }
-            }
-
-            void Register()
-            {
-               OnHit += SpellHitFn(spell_hun_explosive_shot_SpellScript::HandleOnHit);
-            }
-        };
-
-        class spell_hun_explosive_shot_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_hun_explosive_shot_AuraScript);
-
-            void CalculateAmount(AuraEffect const* /*AuraEffect**/, int32& amount, bool& /*canBeRecalculated*/)
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    if(!GetOwner())
-                        return;
-
-                    if (Unit* target = GetOwner()->ToUnit())
-                    {
-                        float apmod = float(GetSpellInfo()->Effects[EFFECT_2].BasePoints) / 1000.0f;
-                        amount += int32(caster->GetTotalAttackPowerValue(RANGED_ATTACK) * apmod);
-                        amount = caster->SpellDamageBonusDone(target, GetSpellInfo(), amount, DOT, EFFECT_1);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_hun_explosive_shot_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_hun_explosive_shot_AuraScript();
-        }
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_hun_explosive_shot_SpellScript();
-        }
-};
-
 // Hunter's Mark - 1130
 class spell_hun_of_marked_for_die : public SpellScriptLoader
 {
@@ -2264,5 +2199,4 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_bestial_wrath();
     new spell_hun_toss_damage();
     new spell_hun_widow_venom();
-    new spell_hun_explosive_shot();
 }
