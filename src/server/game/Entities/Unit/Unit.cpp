@@ -1508,7 +1508,7 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
 
     // Add melee damage bonus
     damage = MeleeDamageBonusDone(damageInfo->target, damage, damageInfo->attackType);
-    damageInfo->damageBeforeHit = MeleeDamageBonusForDamageBeforeHit(this, damage, damageInfo->attackType);
+    damageInfo->damageBeforeHit = damageInfo->target->MeleeDamageBonusForDamageBeforeHit(this, damage, damageInfo->attackType);
     damage = damageInfo->target->MeleeDamageBonusTaken(this, damage, damageInfo->attackType);
 
     // Calculate armor reduction
