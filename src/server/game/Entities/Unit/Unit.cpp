@@ -6439,6 +6439,52 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         {
             switch (dummySpell->Id)
             {
+                case 139116: // Item - Attacks Proc Highest Rating
+                {
+                    if (Player* plr = ToPlayer())
+                    {
+                        int32 crit = plr->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_CRIT_MELEE);
+                        int32 mastery = plr->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_MASTERY);
+                        int32 haste = plr->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_MELEE);
+
+                        triggered_spell_id = 139117;
+
+                        if (crit > mastery && crit > haste)
+                            triggered_spell_id = 139117;
+                        else if (haste > mastery && haste > crit)
+                            triggered_spell_id = 139121;
+                        else if (mastery > haste && mastery > crit)
+                            triggered_spell_id = 139120;
+
+                        switch (triggered_spell_id)
+                        {
+                            case 139117:
+                            {
+                                basepoints0 = (mastery + haste) * 2;
+                                basepoints1 = -mastery;
+                                basepoints2 = -haste;
+                                break;
+                            }
+                            case 139120:
+                            {
+                                basepoints0 = (crit + haste) * 2;
+                                basepoints1 = -crit;
+                                basepoints2 = -haste;
+                                break;
+                            }
+                            case 139121:
+                            {
+                                basepoints0 = (mastery + crit) * 2;
+                                basepoints1 = -mastery;
+                                basepoints2 = -crit;
+                                break;
+                            }
+                        }
+                        if (!basepoints0 && !basepoints1 && !basepoints2)
+                            return false;
+                    }
+                    break;
+                }
                 case 146200: // Spirit of Chi-Ji
                 {
                     if(!target)
