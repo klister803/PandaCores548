@@ -1823,16 +1823,20 @@ class spell_mage_ring_of_frost : public SpellScriptLoader
                 {
                     if (Unit* target = (*itr)->ToUnit())
                     {
-                        if(target->IsImmunedToSpell(GetSpellInfo()))
+                        DiminishingLevels m_diminishLevel = target->GetDiminishing(DIMINISHING_DISORIENT);
+                        Position const* pos = GetExplTargetDest();
+
+                        if (target->GetDistance2d(pos->GetPositionX(), pos->GetPositionY()) < 3.5f)
                         {
                             targets.erase(itr++);
                             continue;
                         }
-                        DiminishingLevels m_diminishLevel = target->GetDiminishing(DIMINISHING_DISORIENT);
-                        Position const* pos = GetExplTargetDest();
-                        if(m_diminishLevel == DIMINISHING_LEVEL_IMMUNE)
-                            target->AddAura(91264, target);
-                        else if (target->GetDistance2d(pos->GetPositionX(), pos->GetPositionY()) < 3.5f)
+                        else if (m_diminishLevel == DIMINISHING_LEVEL_IMMUNE)
+                        {
+                            targets.erase(itr++);
+                            continue;
+                        }
+                        else if (target->IsImmunedToSpell(GetSpellInfo()))
                         {
                             targets.erase(itr++);
                             continue;

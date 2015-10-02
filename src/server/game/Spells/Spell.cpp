@@ -2453,7 +2453,7 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
     else if((m_caster->GetTypeId() == TYPEID_PLAYER || (m_caster->ToCreature() && m_caster->ToCreature()->isPet())) && m_caster != target)
     {
         // TimeDelay for crowd control effects
-        if (IsCCSpell(m_spellInfo, 0, false))
+        if (IsCCSpell(m_spellInfo, 0, false) && m_spellInfo->ExplicitTargetMask != TARGET_FLAG_DEST_LOCATION)
         {
             targetInfo.timeDelay = 200LL;
             m_delayMoment = 200LL;
@@ -3129,21 +3129,7 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
     if (m_diminishGroup)
     {
         m_diminishLevel = DIMINISHING_LEVEL_1;
-        // Special handling for Deep Freeze & Ring of Frost diminishing
-        // Ring of Frost
-        if (m_spellInfo->Id == 82691)
-        {
-            m_diminishLevel = unit->GetDiminishing(DIMINISHING_DEEP_FREEZE);
-            if (unit->GetCharmerOrOwnerPlayerOrPlayerItself())
-                unit->IncrDiminishing(DIMINISHING_RING_OF_FROST);
-        }
-        // Deep Freze
-        else if (m_spellInfo->Id == 44572)
-        {
-            m_diminishLevel = unit->GetDiminishing(DIMINISHING_RING_OF_FROST);
-            if (unit->GetCharmerOrOwnerPlayerOrPlayerItself())
-                unit->IncrDiminishing(DIMINISHING_DEEP_FREEZE);
-        }
+
         m_diminishLevel = unit->GetDiminishing(m_diminishGroup);
         DiminishingReturnsType type = GetDiminishingReturnsGroupType(m_diminishGroup);
         // Increase Diminishing on unit, current informations for actually casts will use values above
