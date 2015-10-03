@@ -2006,7 +2006,7 @@ class Unit : public WorldObject
         int32 GetMaxNegativeAuraModifier(AuraType auratype) const;
 
         int32 GetTotalAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask) const;
-        float GetTotalAuraMultiplierByMiscMask(AuraType auratype, uint32 misc_mask) const;
+        float GetTotalAuraMultiplierByMiscMask(AuraType auratype, uint32 misc_mask, bool raid = false, bool miscB = false) const;
         float GetTotalPositiveAuraMultiplierByMiscMask(AuraType auratype, uint32 misc_mask) const;
         int32 GetMaxPositiveAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask, AuraEffect const* except = NULL) const;
         int32 GetMaxNegativeAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask) const;

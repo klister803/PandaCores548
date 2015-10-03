@@ -5317,26 +5317,33 @@ int32 Unit::GetTotalAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask) 
     return modifier;
 }
 
-float Unit::GetTotalAuraMultiplierByMiscMask(AuraType auratype, uint32 misc_mask) const
+float Unit::GetTotalAuraMultiplierByMiscMask(AuraType auratype, uint32 misc_mask, bool raid, bool miscB) const
 {
     std::map<SpellGroup, int32> SameEffectSpellGroup;
     float multiplier = 1.0f;
+    int32 raidModifier = 0;
 
     AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auratype);
     for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
     {
         if (AuraEffect* eff = (*i))
-            if ((eff->GetMiscValue() & misc_mask))
+            if (((miscB ? eff->GetMiscValueB() : eff->GetMiscValue()) & misc_mask))
             {
-                // Check if the Aura Effect has a the Same Effect Stack Rule and if so, use the highest amount of that SpellGroup
-                // If the Aura Effect does not have this Stack Rule, it returns false so we can add to the multiplier as usual
-                if (!sSpellMgr->AddSameEffectStackRuleSpellGroups(eff->GetSpellInfo(), eff->GetAmount(), SameEffectSpellGroup))
+                if (raid && (eff->GetSpellInfo()->AttributesEx7 & SPELL_ATTR7_CONSOLIDATED_RAID_BUFF))
+                {
+                    if (eff->GetAmount() > raidModifier)
+                        raidModifier = eff->GetAmount();
+                }
+                else if (!sSpellMgr->AddSameEffectStackRuleSpellGroups(eff->GetSpellInfo(), eff->GetAmount(), SameEffectSpellGroup))
                     AddPct(multiplier, eff->GetAmount());
             }
     }
     // Add the highest of the Same Effect Stack Rule SpellGroups to the multiplier
     for (std::map<SpellGroup, int32>::const_iterator itr = SameEffectSpellGroup.begin(); itr != SameEffectSpellGroup.end(); ++itr)
         AddPct(multiplier, itr->second);
+
+    if (raidModifier)
+        AddPct(multiplier, raidModifier);
 
     return multiplier;
 }
@@ -16418,7 +16425,7 @@ float Unit::GetTotalStatValue(Stats stat) const
     float value  = m_auraModifiersGroup[unitMod][BASE_VALUE] + GetCreateStat(stat);
     value *= m_auraModifiersGroup[unitMod][BASE_PCT];
     value += m_auraModifiersGroup[unitMod][TOTAL_VALUE];
-    value *= m_auraModifiersGroup[unitMod][TOTAL_PCT];
+    value *= GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE, (1 << stat), true, true);
 
     return value;
 }

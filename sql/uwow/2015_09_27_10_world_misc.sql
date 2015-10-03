@@ -18,3 +18,8 @@ INSERT INTO `spell_proc_event` VALUES (109306, 0, 0, 2048+4096+131072, 214748364
 INSERT INTO `trinity_string` (`entry`, `content_default`) VALUES ('13004', 'id: %d %s duration: %d caster: %s guid: %d');
 
 UPDATE `spell_bonus_data` SET `ap_dot_bonus`='0.391' WHERE (`entry`='53301');
+
+UPDATE `spell_group_stack_rules` SET `stack_rule`='3' WHERE (`group_id`='1118');
+INSERT INTO `spell_group` (`id`, `spell_id`) VALUES ('1118', '117666');
+UPDATE `spell_group_stack_rules` SET `stack_rule`='3' WHERE (`group_id`='1250');
+UPDATE `spell_group` SET `id`='1250' WHERE (`id`='1024') AND (`spell_id`='109773');
