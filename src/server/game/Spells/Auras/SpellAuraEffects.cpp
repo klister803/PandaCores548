@@ -2166,24 +2166,29 @@ void AuraEffect::ApplySpellMod(Unit* target, bool apply)
         case SPELLMOD_CASTING_TIME:
         {
             if (apply)
-                if (m_baseAmount == -100)
-                    if (Player* plr = target->ToPlayer())
+                if (Player* plr = target->ToPlayer())
+                {
+                    uint32 spellId = 0;
+                    switch (GetId())
                     {
-                        for (PlayerSpellMap::const_iterator itr = plr->GetSpellMap().begin(); itr != plr->GetSpellMap().end(); ++itr)
-                        {
-                            if (itr->second->state == PLAYERSPELL_REMOVED)
-                                continue;
-
-                            uint32 spellId = itr->first;
-                            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-
-                            if (!spellInfo)
-                                continue;
-
-                            if (spellInfo->IsAffectedBySpellMod(m_spellmod))
-                                plr->RemoveSpellCooldown(spellInfo->Id, true);
-                        }
+                        case 114050: // Ascendance
+                        case 77762:  // Lava Surge
+                            spellId = 51505;
+                            break;
+                        case 56453:
+                            spellId = 53301;
+                            break;
+                        case 93400:  // Shooting Stars
+                            spellId = 78674;
+                            break;
+                        default:
+                            break;
                     }
+
+                    if (spellId)
+                        plr->RemoveSpellCooldown(spellId, true);
+
+                }
             break;
         }
         default:
