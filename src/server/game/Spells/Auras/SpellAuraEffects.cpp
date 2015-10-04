@@ -2171,6 +2171,9 @@ void AuraEffect::ApplySpellMod(Unit* target, bool apply)
                     uint32 spellId = 0;
                     switch (GetId())
                     {
+                        case 124430: // Shadowy Insight
+                            spellId = 8092;
+                            break;
                         case 114050: // Ascendance
                         case 77762:  // Lava Surge
                             spellId = 51505;
