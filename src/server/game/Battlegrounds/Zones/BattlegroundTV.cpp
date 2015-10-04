@@ -48,12 +48,18 @@ void BattlegroundTV::StartingEventCloseDoors()
 {
     for (uint32 i = BG_TV_OBJECT_DOOR_1; i <= BG_TV_OBJECT_DOOR_2; ++i)
         SpawnBGObject(i, RESPAWN_IMMEDIATELY);
+
+    for (uint32 i = BG_TV_OBJECT_BUFF_1; i <= BG_TV_OBJECT_BUFF_2; ++i)
+        SpawnBGObject(i, RESPAWN_ONE_DAY);
 }
 
 void BattlegroundTV::StartingEventOpenDoors()
 {
     for (uint32 i = BG_TV_OBJECT_DOOR_1; i <= BG_TV_OBJECT_DOOR_2; ++i)
         DoorOpen(i);
+
+    for (uint32 i = BG_TV_OBJECT_BUFF_1; i <= BG_TV_OBJECT_BUFF_2; ++i)
+        SpawnBGObject(i, 60);
 }
 
 void BattlegroundTV::AddPlayer(Player* player)
@@ -134,7 +140,10 @@ void BattlegroundTV::Reset()
 bool BattlegroundTV::SetupBattleground()
 {
     if (!AddObject(BG_TV_OBJECT_DOOR_1, BG_TV_OBJECT_TYPE_DOOR_1, -10654.3f, 428.3047f, 23.54276f, 3.141593f, 0, 0, -1.f, 0, RESPAWN_IMMEDIATELY)
-        || !AddObject(BG_TV_OBJECT_DOOR_2, BG_TV_OBJECT_TYPE_DOOR_2, -10774.61f, 431.2383f, 23.54276f, 0, 0, 0, 0, 1.f, RESPAWN_IMMEDIATELY))
+        || !AddObject(BG_TV_OBJECT_DOOR_2, BG_TV_OBJECT_TYPE_DOOR_2, -10774.61f, 431.2383f, 23.54276f, 0, 0, 0, 0, 1.f, RESPAWN_IMMEDIATELY)
+        // buffs
+        || !AddObject(BG_TV_OBJECT_BUFF_1, BG_TV_OBJECT_TYPE_BUFF_1, -10715.7128f, 378.1027f, 24.4120f, 0, 0, 0, 0, 1.f, 120)
+        || !AddObject(BG_TV_OBJECT_BUFF_2, BG_TV_OBJECT_TYPE_BUFF_2, -10714.3017f, 482.7957f, 24.4526f, 0, 0, 0, 0, 1.f, 120))
     {
         sLog->outError(LOG_FILTER_SQL, "BattlegroundTV: Failed to spawn some object!");
         return false;
