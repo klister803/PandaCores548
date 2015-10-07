@@ -845,12 +845,18 @@ class spell_warl_burning_rush : public SpellScriptLoader
 
             void OnTick(AuraEffect const* aurEff)
             {
-                if (GetCaster())
+                if (Unit* caster = GetCaster())
                 {
                     // Drain 4% of health every second
-                    int32 basepoints = GetCaster()->CountPctFromMaxHealth(4);
+                    uint32 basepoints = caster->CountPctFromMaxHealth(4);
 
-                    GetCaster()->DealDamage(GetCaster(), basepoints, NULL, NODAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    if (caster->GetHealth() <= basepoints)
+                        caster->RemoveAurasDueToSpell(111400);
+                    else
+                    {
+                        caster->SendSpellNonMeleeDamageLog(caster, 111400, basepoints, SPELL_SCHOOL_MASK_NORMAL, 0, 0, true, false);
+                        caster->DealDamage(caster, basepoints, NULL, NODAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    }
                 }
             }
 
