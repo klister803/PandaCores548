@@ -5422,10 +5422,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 83116:
                     spellInfo->Effects[EFFECT_0].MiscValueB = 3302;  //SUMMON_TYPE_MINIPET
                     break;
-                case 103964: // Touch of Chaos
-                case 129347: // Chaos Wave
-                    spellInfo->SchoolMask &= ~SPELL_SCHOOL_MASK_NORMAL;
-                    break;
                 case 53257: // Cobra Strikes
                     spellInfo->Attributes |= SPELL_ATTR0_CANT_CANCEL;
                     break;
