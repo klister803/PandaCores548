@@ -839,6 +839,33 @@ class spell_warl_burning_rush : public SpellScriptLoader
     public:
         spell_warl_burning_rush() : SpellScriptLoader("spell_warl_burning_rush") { }
 
+        class spell_warl_burning_rush_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_burning_rush_SpellScript);
+
+            SpellCastResult HandleCheckCast()
+            {
+                if (Unit* caster = GetCaster())
+                    if (caster->GetHealth() <= caster->CountPctFromMaxHealth(4))
+                    {
+                        SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_NOT_ENOUGH_HEALTH);
+                        return SPELL_FAILED_CUSTOM_ERROR;
+                    }
+
+                return SPELL_CAST_OK;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_warl_burning_rush_SpellScript::HandleCheckCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_burning_rush_SpellScript();
+        }
+
         class spell_warl_burning_rush_AuraScript : public AuraScript
         {
             PrepareAuraScript(spell_warl_burning_rush_AuraScript);
