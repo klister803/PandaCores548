@@ -597,7 +597,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
         //case SPELL_AURA_MOD_CONFUSE:
         case SPELL_AURA_MOD_FEAR:
         case SPELL_AURA_MOD_FEAR_2:
-        //case SPELL_AURA_MOD_STUN:
         case SPELL_AURA_MOD_ROOT:
         case SPELL_AURA_TRANSFORM:
             m_canBeRecalculated = false;
@@ -622,6 +621,12 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 }
             }
             break;
+        case SPELL_AURA_MOD_STUN:
+        {
+            if (m_spellInfo->Id == 82691)
+                amount = int32(target->CountPctFromMaxHealth(10));
+            break;
+        }
         case SPELL_AURA_MOD_SPEED_ALWAYS:
         {
             switch (m_spellInfo->Id)
