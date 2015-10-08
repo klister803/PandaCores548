@@ -1,0 +1,1 @@
+INSERT INTO `command` (`name`, `security`, `help`) VALUES ('list neauras', '3', 'Syntax: .list neauras');
