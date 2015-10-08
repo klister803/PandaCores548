@@ -37,7 +37,11 @@ enum eSpells
 
     //Hisek
     SPELL_MULTI_SHOT                   = 144839,
+    SPELL_AIM_DUMMY                    = 142948,
+    SPELL_AIM_STUN                     = 144759,
     SPELL_FIRE                         = 142950,
+    SPELL_RAPID_FIRE_DUMMY             = 143243,
+    SPELL_RAPID_FIRE_DMG               = 135815,
 
     //Skeer
     SPELL_HEVER_OF_FOES                = 143273,
@@ -125,37 +129,31 @@ enum sEvents
 {
     EVENT_START_KLAXXI                 = 1,
     EVENT_CHECK                        = 2,
-
     //Skeer
     EVENT_BLODDLETTING                 = 3,
-
     //Kilruk
     EVENT_GOUGE                        = 4,
     EVENT_REAVE                        = 5,
-
     //Hisek
     EVENT_MULTI_SHOT                   = 6,
-
+    EVENT_AIM                          = 7,
+    EVENT_RAPID_FIRE                   = 8,
     //Rikkal
-    EVENT_MUTATE                       = 7,
-    EVENT_INJECTION                    = 8,
-
+    EVENT_MUTATE                       = 9,
+    EVENT_INJECTION                    = 10,
     //Xaril
-    EVENT_TOXIC_INJECTION              = 9,
-    EVENT_CATALYST                     = 10,
-
+    EVENT_TOXIC_INJECTION              = 11,
+    EVENT_CATALYST                     = 12,
     //Karoz
-    EVENT_HURL_AMBER                   = 11,
-
+    EVENT_HURL_AMBER                   = 13,
     //Amber Parasite
-    EVENT_FEED                         = 12,
-    EVENT_REGENERATE                   = 13,
-
+    EVENT_FEED                         = 14,
+    EVENT_REGENERATE                   = 15,
     //Blood
-    EVENT_FIND_LOW_HP_KLAXXI           = 14,
-    EVENT_CHECK_DIST_TO_KLAXXI         = 15,
-    EVENT_CHECK_PLAYER                 = 16,
-    EVENT_RE_ATTACK                    = 17,
+    EVENT_FIND_LOW_HP_KLAXXI           = 16,
+    EVENT_CHECK_DIST_TO_KLAXXI         = 17,
+    EVENT_CHECK_PLAYER                 = 18,
+    EVENT_RE_ATTACK                    = 19,
 };
 
 enum sActions
@@ -172,7 +170,7 @@ enum CreatureText
     SAY_SKEER_BLOOD                    = 1,
     SAY_SKEER_DIE                      = 2,
     SAY_RIKKAL_DIE                     = 3,
-    SAY_HISEK_SPECIAL                  = 4,
+    SAY_HISEK_AIM                      = 4,
     SAY_HISEK_DIE                      = 5,
     SAY_KAROZ_PULL                     = 6,
     SAY_KAROZ_FLASH                    = 7,
@@ -472,6 +470,8 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     break;
                 case NPC_HISEK:
                     events.ScheduleEvent(EVENT_MULTI_SHOT, 2000);
+                    events.ScheduleEvent(EVENT_AIM, 39500);
+                    events.ScheduleEvent(EVENT_RAPID_FIRE, 47000);
                     break;
                 }
             }
@@ -602,6 +602,30 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 }
             }
 
+            uint64 GetTargetGuid(uint32 filteraura = 0)
+            {
+                std::list<Player*> pllist;
+                pllist.clear();
+                GetPlayerListInGrid(pllist, me, 150.0f);
+                if (!pllist.empty())
+                {
+                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                    {
+                        if (filteraura)
+                        {
+                            if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && !(*itr)->HasAura(filteraura))
+                                return (*itr)->GetGUID();
+                        }
+                        else
+                        {
+                            if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
+                                return (*itr)->GetGUID();
+                        }
+                    }
+                }
+                return 0;
+            }
+
             void UpdateAI(uint32 diff)
             {
                 if (healcooldown)
@@ -659,6 +683,18 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                             DoCast(target, SPELL_MULTI_SHOT);
                         events.ScheduleEvent(EVENT_MULTI_SHOT, 4000);
                         break;
+                    case EVENT_AIM:
+                        if (Player* pl = me->GetPlayer(*me, GetTargetGuid()))
+                        {
+                            Talk(SAY_HISEK_AIM, 0);
+                            DoCast(pl, SPELL_AIM_DUMMY);
+                        }
+                        events.ScheduleEvent(EVENT_AIM, 39500);
+                        break;
+                    case EVENT_RAPID_FIRE:
+                        DoCast(me, SPELL_RAPID_FIRE_DUMMY);
+                        events.ScheduleEvent(EVENT_RAPID_FIRE, 47000);
+                        break;
                     //Skeer
                     case EVENT_BLODDLETTING:
                         Talk(SAY_SKEER_BLOOD, 0);
@@ -673,26 +709,14 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         events.ScheduleEvent(EVENT_GOUGE, 10000);
                         break;
                     case EVENT_REAVE:
-                    {
-                        std::list<Player*> pllist;
-                        pllist.clear();
-                        GetPlayerListInGrid(pllist, me, 100.0f);
-                        if (!pllist.empty())
+                        if (Player* pl = me->GetPlayer(*me, GetTargetGuid()))
                         {
-                            for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
-                            {
-                                if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
-                                {
-                                    me->AttackStop();
-                                    me->SetReactState(REACT_PASSIVE);
-                                    DoCast(*itr, SPELL_REAVE);
-                                    break;
-                                }
-                            }
+                            me->AttackStop();
+                            me->SetReactState(REACT_PASSIVE);
+                            DoCast(pl, SPELL_REAVE);
                         }
                         events.ScheduleEvent(EVENT_REAVE, 33000);
                         break;
-                    }
                     //Rikkal
                     case EVENT_MUTATE:
                     {
@@ -1698,6 +1722,85 @@ public:
     }
 };
 
+//142948
+class spell_klaxxi_aim : public SpellScriptLoader
+{
+public:
+    spell_klaxxi_aim() : SpellScriptLoader("spell_klaxxi_aim") { }
+
+    class spell_klaxxi_aim_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_klaxxi_aim_AuraScript);
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetCaster() && GetTarget())
+            {
+                GetTarget()->AddAura(SPELL_AIM_STUN, GetTarget());
+                if (GetCaster()->GetDistance(GetTarget()) < 45.0f)
+                {
+                    float x, y, ang;
+                    ang = GetCaster()->GetAngle(GetTarget());
+                    GetCaster()->SetFacingTo(GetTarget());
+                    GetPositionWithDistInOrientation(GetCaster(), 45.0f, ang, x, y);
+                    GetTarget()->GetMotionMaster()->MoveJump(x, y, GetTarget()->GetPositionZ(), 15.0f, 15.0f);
+                }
+            }
+        }
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+        {
+            if (GetCaster() && GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
+            {
+                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+                    GetCaster()->CastSpell(GetTarget(), SPELL_FIRE);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_klaxxi_aim_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            OnEffectRemove += AuraEffectRemoveFn(spell_klaxxi_aim_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_klaxxi_aim_AuraScript();
+    }
+};
+
+//143243
+class spell_klaxxi_rapid_fire : public SpellScriptLoader
+{
+public:
+    spell_klaxxi_rapid_fire() : SpellScriptLoader("spell_klaxxi_rapid_fire") { }
+
+    class spell_klaxxi_rapid_fire_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_klaxxi_rapid_fire_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (GetCaster() && GetCaster()->ToCreature())
+            {
+                if (Unit* target = GetCaster()->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
+                    GetCaster()->CastSpell(target, SPELL_RAPID_FIRE_DMG);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_klaxxi_rapid_fire_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_klaxxi_rapid_fire_AuraScript();
+    }
+};
+
 void AddSC_boss_paragons_of_the_klaxxi()
 {
     new npc_amber_piece();
@@ -1720,4 +1823,6 @@ void AddSC_boss_paragons_of_the_klaxxi()
     new spell_diminish();
     new spell_hurl_amber();
     new spell_sonic_projection();
+    new spell_klaxxi_aim();
+    new spell_klaxxi_rapid_fire();
 }

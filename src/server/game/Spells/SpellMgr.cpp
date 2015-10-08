@@ -5107,6 +5107,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].TargetB = 0;
                     break;
                 //Paragons of the Klaxxi
+                case 142948: //Aim Dummy
+                    spellInfo->Effects[0].TargetA = 25;
+                    spellInfo->Effects[0].TargetB = 0;
+                    break;
                 case 146982: //Enrage
                     spellInfo->Effects[0].TargetA = 1;
                     spellInfo->Effects[0].TargetB = 0;
