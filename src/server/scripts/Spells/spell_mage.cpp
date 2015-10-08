@@ -96,6 +96,42 @@ enum MageSpells
     SPELL_MAGE_ICY_VEINS                         = 131078,
 };
 
+class spell_mage_pet_freeze : public SpellScriptLoader
+{
+public:
+    spell_mage_pet_freeze() : SpellScriptLoader("spell_mage_pet_freeze") { }
+
+    class spell_mage_pet_freeze_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_mage_pet_freeze_AuraScript);
+
+        void AfterApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (Unit* caster = GetCaster())
+                if (Unit* _mage = caster->GetOwner())
+                {
+                    if (_mage->HasAura(126084))
+                        return;
+
+                    if (_mage->HasAura(44544))
+                        _mage->CastSpell(_mage, 126084, true);
+
+                    _mage->CastSpell(_mage, 44544, true);
+                }
+        }
+
+        void Register()
+        {
+            AfterEffectApply += AuraEffectApplyFn(spell_mage_pet_freeze_AuraScript::AfterApply, EFFECT_0, SPELL_AURA_MOD_ROOT, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_mage_pet_freeze_AuraScript();
+    }
+};
+
 // Incanter's Ward (Cooldown marker) - 118859
 class spell_mage_incanters_ward_cooldown : public SpellScriptLoader
 {
@@ -2333,6 +2369,7 @@ class spell_mage_glyph_of_icy_veins_damage : public SpellScriptLoader
 
 void AddSC_mage_spell_scripts()
 {
+    new spell_mage_pet_freeze();
     new spell_mage_incanters_ward_cooldown();
     new spell_mage_incanters_ward();
     new spell_mage_arcane_missile();
