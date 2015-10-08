@@ -3735,7 +3735,10 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
                 continue;
             }
 
-            totalmul += CalculatePct(1.0f, mod->value);
+            if (mod->op == SPELLMOD_DAMAGE || mod->op == SPELLMOD_DOT)
+                AddPct(totalmul, mod->value);
+            else
+                totalmul += CalculatePct(1.0f, mod->value);
         }
 
         DropModCharge(mod, spell);
