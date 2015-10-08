@@ -4359,7 +4359,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].BasePoints = -50;
                     spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
                     break;
-                case 137573: // Burst of Speed (IMMUNITY)
                 case 1160:   // Demoralizing Shout
                 case 1966:   // Feint
                 case 50256:  // Demoralizing Roar
@@ -5597,10 +5596,18 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 109659: // Dig Rat Stew
                     spellInfo->Effects[EFFECT_0].TriggerSpell = 6417;
                     break;
+                case 137573: // Burst of Speed (IMMUNITY)
+                    spellInfo->AttributesEx |= SPELL_ATTR1_NOT_BREAK_STEALTH;
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(407); // 0.1s
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MECHANIC_IMMUNITY;
+                    spellInfo->Effects[EFFECT_0].MiscValue = 11;
+                    break;
                 case 108212: // Burst of Speed
                     spellInfo->AttributesEx |= SPELL_ATTR1_NOT_BREAK_STEALTH;
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(35); // 4s
-                    spellInfo->Effects[0].BasePoints = 70;
+                    spellInfo->Effects[EFFECT_0].BasePoints = 70;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_SPEED;
+                    spellInfo->Effects[EFFECT_0].MiscValue = 0;
                     break;
                 case 122016:  // Incite
                     spellInfo->ProcCharges = 3;
