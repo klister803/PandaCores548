@@ -465,6 +465,7 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
     if (addTotalPct)
     {
         total_pct *= GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, SPELL_SCHOOL_MASK_NORMAL);
+        SetModifierValue(unitMod, TOTAL_PCT, total_pct);
 
         if (attType == OFF_ATTACK)
         {
@@ -1418,6 +1419,7 @@ void Creature::UpdateDamagePhysical(WeaponAttackType attType)
     float base_pct    = GetModifierValue(unitMod, BASE_PCT);
     float total_value = GetModifierValue(unitMod, TOTAL_VALUE);
     float total_pct   = GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, SPELL_SCHOOL_MASK_NORMAL);
+    SetModifierValue(unitMod, TOTAL_PCT, total_pct);
     float dmg_multiplier = GetCreatureTemplate()->dmg_multiplier;
     if(CreatureDifficultyStat const* _stats = GetCreatureDiffStat())
         if(GetMobDifficulty() == 1 || GetMobDifficulty() == 3)
@@ -1797,6 +1799,8 @@ void Guardian::UpdateDamagePhysical(WeaponAttackType attType)
     float base_pct    = GetModifierValue(unitMod, BASE_PCT);
     float total_value = GetModifierValue(unitMod, TOTAL_VALUE);
     float total_pct   = GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, SPELL_SCHOOL_MASK_NORMAL);
+
+    SetModifierValue(unitMod, TOTAL_PCT, total_pct);
 
     float weapon_mindamage = GetWeaponDamageRange(BASE_ATTACK, MINDAMAGE);
     float weapon_maxdamage = GetWeaponDamageRange(BASE_ATTACK, MAXDAMAGE);
