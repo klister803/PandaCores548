@@ -58,6 +58,12 @@ enum eSpells
     SPELL_FAULTY_MUTATION              = 148589,
     SPELL_FAULTY_MUTATION_KILL         = 148587,
 
+    //Iyyokyk
+    SPELL_DIMINISH                     = 143666,
+
+    //Kaztik
+    SPELL_SONIC_PROJECTION_AT          = 143765,
+
     //Kilruk
     SPELL_RAZOR_SHARP_BLADES           = 142918,
     SPELL_GOUGE                        = 143939,
@@ -144,16 +150,21 @@ enum sEvents
     //Xaril
     EVENT_TOXIC_INJECTION              = 11,
     EVENT_CATALYST                     = 12,
+    //Iyyokyk
+    EVENT_DIMINISH                     = 13,
+    //Kaztik
+    EVENT_SONIC_PROJECTION             = 14,
     //Karoz
-    EVENT_HURL_AMBER                   = 13,
+    EVENT_HURL_AMBER                   = 15,
+    EVENT_FLASH                        = 16,
     //Amber Parasite
-    EVENT_FEED                         = 14,
-    EVENT_REGENERATE                   = 15,
+    EVENT_FEED                         = 17,
+    EVENT_REGENERATE                   = 18,
     //Blood
-    EVENT_FIND_LOW_HP_KLAXXI           = 16,
-    EVENT_CHECK_DIST_TO_KLAXXI         = 17,
-    EVENT_CHECK_PLAYER                 = 18,
-    EVENT_RE_ATTACK                    = 19,
+    EVENT_FIND_LOW_HP_KLAXXI           = 19,
+    EVENT_CHECK_DIST_TO_KLAXXI         = 20,
+    EVENT_CHECK_PLAYER                 = 21,
+    EVENT_RE_ATTACK                    = 22,
 };
 
 enum sActions
@@ -399,6 +410,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
             SummonList summons;
             EventMap events;
             uint32 checkklaxxi, healcooldown;
+            uint8 flashcount;
             bool healready;
 
             void Reset()
@@ -413,6 +425,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 checkklaxxi = 0;
                 healcooldown = 0;
+                flashcount = 0;
                 healready = true;
                 switch (me->GetEntry())
                 {
@@ -456,6 +469,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     events.ScheduleEvent(EVENT_INJECTION, 9500); 
                     break;
                 case NPC_KAZTIK:
+                    events.ScheduleEvent(EVENT_SONIC_PROJECTION, 10000);
                     break;
                 case NPC_KORVEN:
                     Talk(SAY_KORVEN_PULL, 0);
@@ -463,10 +477,11 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     break;
                 case NPC_IYYOKYK:
                     Talk(SAY_IYYOKYK_PULL, 0);
+                    events.ScheduleEvent(EVENT_DIMINISH, 15000);
                     break;
                 case NPC_KAROZ:
                     Talk(SAY_KAROZ_PULL, 0);
-                    events.ScheduleEvent(EVENT_HURL_AMBER, 5000);
+                    events.ScheduleEvent(EVENT_FLASH, 20000);
                     break;
                 case NPC_HISEK:
                     events.ScheduleEvent(EVENT_MULTI_SHOT, 2000);
@@ -503,7 +518,9 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
 
             void MovementInform(uint32 type, uint32 pointId)
             {
-                if (type == EFFECT_MOTION_TYPE)
+                switch (type)
+                {
+                case EFFECT_MOTION_TYPE:
                 {
                     switch (pointId)
                     {
@@ -511,9 +528,9 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                         me->RemoveAurasDueToSpell(SPELL_READY_TO_FIGHT);
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                        if (me->GetEntry() != NPC_HISEK) //Test
+                        if (me->GetEntry() != NPC_HISEK)
                             me->SetReactState(REACT_AGGRESSIVE);
-                        DoZoneInCombat(me, 150.0f); 
+                        DoZoneInCombat(me, 150.0f);
                         instance->SetData(DATA_BUFF_NEXT_KLAXXI, 0);
                         break;
                     case 2:
@@ -527,6 +544,25 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         DoZoneInCombat(me, 150.0f);
                         break;
                     }
+                }
+                break;
+                case POINT_MOTION_TYPE:
+                {
+                    if (pointId == 1003)
+                    {
+                        flashcount--;
+                        if (flashcount)
+                            events.ScheduleEvent(EVENT_FLASH, 3000);
+                        else
+                        {
+                            me->SetReactState(REACT_AGGRESSIVE);
+                            DoZoneInCombat(me, 150.0f);
+                            events.ScheduleEvent(EVENT_HURL_AMBER, 20000);
+                            events.ScheduleEvent(EVENT_FLASH, 40000);
+                        }
+                    }
+                }
+                break;
                 }
             }
 
@@ -626,6 +662,28 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 return 0;
             }
 
+            uint64 GetFlashTargetGuid()
+            {
+                std::list<Player*> pllist;
+                pllist.clear();
+                GetPlayerListInGrid(pllist, me, 150.0f);
+                if (!pllist.empty())
+                {
+                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                    {
+                        if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && me->GetDistance(*itr) >= 30.0f)
+                            return (*itr)->GetGUID();
+                    }
+
+                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                    {
+                        if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
+                            return (*itr)->GetGUID();
+                    }
+                }
+                return 0;
+            }
+
             void UpdateAI(uint32 diff)
             {
                 if (healcooldown)
@@ -677,6 +735,18 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 {
                     switch (eventId)
                     {
+                    //Kaztik
+                    case EVENT_SONIC_PROJECTION:
+                        if (Player* pl = me->GetPlayer(*me, GetTargetGuid()))
+                            DoCast(pl, SPELL_SONIC_PROJECTION_AT);
+                        events.ScheduleEvent(EVENT_SONIC_PROJECTION, 10000);
+                        break;
+                    //Iyyokyk
+                    case EVENT_DIMINISH:
+                        if (Player* pl = me->GetPlayer(*me, GetTargetGuid()))
+                            DoCast(pl, SPELL_DIMINISH);
+                        events.ScheduleEvent(EVENT_DIMINISH, 30000);
+                        break;
                     //Hisek
                     case EVENT_MULTI_SHOT:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
@@ -758,126 +828,16 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         break;
                     //Xaril
                     case EVENT_TOXIC_INJECTION:
-                    {
-                        uint8 listcount = 0;
-                        uint8 maxbuffcount = 0;
-                        uint8 buffcount = 0;
-                        std::list<Player*>_pllist;
-                        std::vector<Player*>pllist;
-                        _pllist.clear();
-                        pllist.clear();
-                        me->GetPlayerListInGrid(_pllist, 150.0f);
-                        if (!_pllist.empty())
-                        {
-                            for (std::list<Player*>::const_iterator itr = _pllist.begin(); itr != _pllist.end(); ++itr)
-                                pllist.push_back(*itr);
-
-                            uint8 bluecount = me->GetMap()->Is25ManRaid() ? 3 : 2;
-
-                            if (me->GetMap()->IsHeroic())
-                            {
-                                for (uint8 n = 0; n < 3; ++n)
-                                {
-                                    for (std::vector<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
-                                    {
-                                        if (!(*itr)->HasAura(toxinlist[n + 3]))
-                                        {
-                                            me->CastSpell(*itr, toxinlist[n + 3], true);
-                                            break;
-                                        }
-                                    }
-                                }
-                                listcount = me->GetMap()->Is25ManRaid() ? 22 : 7;
-                                maxbuffcount = listcount == 22 ? urand(7, 8) : urand(2, 3);
-                                for (uint8 b = 0; b < 3; ++b)
-                                {
-                                    for (std::vector<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
-                                    {
-                                        if (!(*itr)->HasAura(toxinlist[3]) && !(*itr)->HasAura(toxinlist[4]) && !(*itr)->HasAura(toxinlist[5]))
-                                        {
-                                            me->CastSpell(*itr, toxinlist[b + 3], true);
-                                            buffcount++;
-                                            if (buffcount == maxbuffcount)
-                                            {
-                                                switch (maxbuffcount)
-                                                {
-                                                case 2:
-                                                    maxbuffcount = 3;
-                                                    break;
-                                                case 3:
-                                                    maxbuffcount = 2;
-                                                    break;
-                                                case 7:
-                                                    maxbuffcount = 8;
-                                                    break;
-                                                case 8:
-                                                    maxbuffcount = 7;
-                                                    break;
-                                                }
-                                                maxbuffcount = urand(2, 3);
-                                                buffcount = 0;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                //Blue toxin
-                                for (uint8 b = 0; b < bluecount; ++b)
-                                    me->CastSpell(pllist[b], toxinlist[0], true);
-
-                                listcount = me->GetMap()->Is25ManRaid() ? 22 : 8;
-                                maxbuffcount = listcount == 22 ? urand(10, 12) : urand(3, 5);
-                                for (uint8 b = 1; b < 3; ++b)
-                                {
-                                    for (std::vector<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
-                                    {
-                                        if (!(*itr)->HasAura(toxinlist[0]) && !(*itr)->HasAura(toxinlist[1]) && !(*itr)->HasAura(toxinlist[2]))
-                                        {
-                                            me->CastSpell(*itr, toxinlist[b], true);
-                                            buffcount++;
-                                            if (buffcount == maxbuffcount)
-                                            {
-                                                switch (maxbuffcount)
-                                                {
-                                                case 3:
-                                                    maxbuffcount = 5;
-                                                    break;
-                                                case 4:
-                                                    maxbuffcount = 4;
-                                                    break;
-                                                case 5:
-                                                    maxbuffcount = 3;
-                                                    break;
-                                                case 10:
-                                                    maxbuffcount = 12;
-                                                    break;
-                                                case 11:
-                                                    maxbuffcount = 11;
-                                                    break;
-                                                case 12:
-                                                    maxbuffcount = 10;
-                                                    break;
-                                                }
-                                                buffcount = 0;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        ToxicInjection();
                         events.ScheduleEvent(EVENT_CATALYST, 33000);
                         break;
-                    }
                     case EVENT_CATALYST:
                     {
                         uint32 n = me->GetMap()->IsHeroic() ? urand(0, 2) : urand(3, 5);
                         DoCast(me, catalystlist[n], true);
                         break;
                     }
+                    //Karoz
                     case EVENT_HURL_AMBER:
                         me->AttackStop();
                         me->SetReactState(REACT_PASSIVE);
@@ -887,6 +847,17 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         if (Creature* ab = me->FindNearestCreature(NPC_AMBER_BOMB, 110.0f, true))
                             me->GetMotionMaster()->MoveJump(ab->GetPositionX(), ab->GetPositionY(), ab->GetPositionZ() + 5.0f, 15.0f, 15.0f, 2);
                         break;
+                    case EVENT_FLASH:
+                        me->StopMoving();
+                        me->GetMotionMaster()->Clear(false);
+                        me->AttackStop();
+                        me->SetReactState(REACT_PASSIVE);
+                        if (!flashcount)
+                            flashcount = urand(2, 3);
+                        if (Player* pl = me->GetPlayer(*me, GetFlashTargetGuid()))
+                            DoCast(pl, SPELL_FLASH);
+                        break;
+                    //Special
                     case EVENT_RE_ATTACK:
                         me->GetMotionMaster()->MoveJump(1582.4f, -5684.9f, -313.635f, 15.0f, 15.0f, 3);
                         break;
@@ -894,6 +865,120 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 }
                 if (me->GetEntry() != NPC_HISEK)
                     DoMeleeAttackIfReady();
+            }
+
+            void ToxicInjection()
+            {
+                uint8 listcount = 0;
+                uint8 maxbuffcount = 0;
+                uint8 buffcount = 0;
+                std::list<Player*>_pllist;
+                std::vector<Player*>pllist;
+                _pllist.clear();
+                pllist.clear();
+                me->GetPlayerListInGrid(_pllist, 150.0f);
+                if (!_pllist.empty())
+                {
+                    for (std::list<Player*>::const_iterator itr = _pllist.begin(); itr != _pllist.end(); ++itr)
+                        pllist.push_back(*itr);
+
+                    uint8 bluecount = me->GetMap()->Is25ManRaid() ? 3 : 2;
+
+                    if (me->GetMap()->IsHeroic())
+                    {
+                        for (uint8 n = 0; n < 3; ++n)
+                        {
+                            for (std::vector<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                            {
+                                if (!(*itr)->HasAura(toxinlist[n + 3]))
+                                {
+                                    me->CastSpell(*itr, toxinlist[n + 3], true);
+                                    break;
+                                }
+                            }
+                        }
+                        listcount = me->GetMap()->Is25ManRaid() ? 22 : 7;
+                        maxbuffcount = listcount == 22 ? urand(7, 8) : urand(2, 3);
+                        for (uint8 b = 0; b < 3; ++b)
+                        {
+                            for (std::vector<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                            {
+                                if (!(*itr)->HasAura(toxinlist[3]) && !(*itr)->HasAura(toxinlist[4]) && !(*itr)->HasAura(toxinlist[5]))
+                                {
+                                    me->CastSpell(*itr, toxinlist[b + 3], true);
+                                    buffcount++;
+                                    if (buffcount == maxbuffcount)
+                                    {
+                                        switch (maxbuffcount)
+                                        {
+                                        case 2:
+                                            maxbuffcount = 3;
+                                            break;
+                                        case 3:
+                                            maxbuffcount = 2;
+                                            break;
+                                        case 7:
+                                            maxbuffcount = 8;
+                                            break;
+                                        case 8:
+                                            maxbuffcount = 7;
+                                            break;
+                                        }
+                                        maxbuffcount = urand(2, 3);
+                                        buffcount = 0;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //Blue toxin
+                        for (uint8 b = 0; b < bluecount; ++b)
+                            me->CastSpell(pllist[b], toxinlist[0], true);
+
+                        listcount = me->GetMap()->Is25ManRaid() ? 22 : 8;
+                        maxbuffcount = listcount == 22 ? urand(10, 12) : urand(3, 5);
+                        for (uint8 b = 1; b < 3; ++b)
+                        {
+                            for (std::vector<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                            {
+                                if (!(*itr)->HasAura(toxinlist[0]) && !(*itr)->HasAura(toxinlist[1]) && !(*itr)->HasAura(toxinlist[2]))
+                                {
+                                    me->CastSpell(*itr, toxinlist[b], true);
+                                    buffcount++;
+                                    if (buffcount == maxbuffcount)
+                                    {
+                                        switch (maxbuffcount)
+                                        {
+                                        case 3:
+                                            maxbuffcount = 5;
+                                            break;
+                                        case 4:
+                                            maxbuffcount = 4;
+                                            break;
+                                        case 5:
+                                            maxbuffcount = 3;
+                                            break;
+                                        case 10:
+                                            maxbuffcount = 12;
+                                            break;
+                                        case 11:
+                                            maxbuffcount = 11;
+                                            break;
+                                        case 12:
+                                            maxbuffcount = 10;
+                                            break;
+                                        }
+                                        buffcount = 0;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         };
 

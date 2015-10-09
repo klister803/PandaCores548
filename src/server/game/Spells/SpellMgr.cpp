@@ -5139,6 +5139,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 143337: //Mutate
                     spellInfo->Effects[4].Effect = 0;
                     break;
+                case 143666: //Diminish
+                    spellInfo->Effects[0].TargetA = 25;
+                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[1].TargetA = 25;
+                    spellInfo->Effects[1].TargetB = 0;
+                    break;
                 //debuffs from klaxxi
                 case 142929:
                 case 142931:
