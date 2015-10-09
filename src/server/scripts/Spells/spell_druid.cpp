@@ -658,12 +658,12 @@ class spell_dru_symbiosis : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dru_symbiosis_AuraScript);
 
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void AfterRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
                 {
                     if (Player* _player = caster->ToPlayer())
-                        _player->SendClearCooldown(110309, caster);
+                        _player->SendCooldownEvent(GetSpellInfo());
                 }
             }
 
@@ -892,7 +892,7 @@ class spell_dru_symbiosis : public SpellScriptLoader
             void Register()
             {
                 DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dru_symbiosis_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS);
-                OnEffectRemove += AuraEffectRemoveFn(spell_dru_symbiosis_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_dru_symbiosis_AuraScript::AfterRemove, EFFECT_0, SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
