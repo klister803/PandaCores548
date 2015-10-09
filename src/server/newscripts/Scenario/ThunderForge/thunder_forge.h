@@ -154,30 +154,7 @@ enum eGameObects
     GO_SMELTING_POT_01              = 218908,
     GO_SMELTING_POT_02              = 218917,
 
-
     GO_PORTAL_TO_THUNDER_ISLAND     = 218462,
-    //GameObjectEntry: 218538 Low: 18551
-    //GameObjectEntry: 218628 Low: 18621
-    //GameObjectEntry: 218696 Low: 18619
-    //GameObjectEntry: 218697 Low: 18618
-    //GameObjectEntry: 218698 Low: 18617
-    //GameObjectEntry: 218707 Low: 18603
-    //GameObjectEntry: 218708 Low: 18604
-    //GameObjectEntry: 218709 Low: 18605
-    //GameObjectEntry: 218710 Low: 18606
-    //GameObjectEntry: 218717 Low: 18622
-    //GameObjectEntry: 218726 Low: 18614
-    //GameObjectEntry: 218728 Low: 18596
-    //GameObjectEntry: 218729 Low: 18616
-    //GameObjectEntry: 218730 Low: 18620
-    //GameObjectEntry: 218744 Low: 18609
-    //GameObjectEntry: 218751 Low: 18610
-    //GameObjectEntry: 218752 Low: 18611
-    //GameObjectEntry: 218753 Low: 18612
-    //GameObjectEntry: 218754 Low: 18613
-
-
-    // seems like just cosmetic
     GO_IOTTK_PROGRESSION_S_D_TOWER  = 218976,
     GO_IOTTK_PROGRESSION_SUNWELL    = 218975,
     GO_DOODAD_ITK_FORGE_FX_WRAPPP1  = 218740,
