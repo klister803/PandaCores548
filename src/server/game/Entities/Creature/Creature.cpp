@@ -772,8 +772,10 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
     i_AI = ai ? ai : FactorySelector::selectAI(this);
     delete oldAI;
     IsAIEnabled = true;
-    if(i_AI)
+
+    if (i_AI && isAlive())
         i_AI->InitializeAI();
+
     // Initialize vehicle
     if (GetVehicleKit() && !m_onVehicleAccessory)
         GetVehicleKit()->Reset();

@@ -87,28 +87,37 @@ public:
                     wrathionGUID = creature->GetGUID();
                     break;
                 case NPC_SHADO_PAN_WARRIOR:
-                    creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 60.f);
-                    if(!warriorGUIDs[0])
+                    if (!warriorGUIDs[0])
                         warriorGUIDs[0] = creature->GetGUID();
-                    else if(!warriorGUIDs[1])
+                    else if (!warriorGUIDs[1])
                         warriorGUIDs[1] = creature->GetGUID();
                     break;
                 case NPC_SHADO_PAN_DEFENDER:
-                    creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 60.f);
                     defenderGUID = creature->GetGUID();
                     break;
                 case NPC_FORGEMASTER_VULKON:
-                    creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 60.f);
                     forgemasterGUID = creature->GetGUID();
                     break;
                 case NPC_CELESTIAL_BLACKSMITH:
                     celectialBlacksmithGUID = creature->GetGUID();
                     break;
                 case NPC_CELESTIAL_DEFENDER:
-                    creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 60.f);
                     celectialDefenderGUID = creature->GetGUID();
                     break;
                 default:
+                    break;
+            }
+        }
+
+        void OnCreatureRemove(Creature* creature)
+        {
+            switch (creature->GetEntry())
+            {
+                case NPC_SHADO_PAN_WARRIOR:
+                    if (warriorGUIDs[0])
+                        warriorGUIDs[0] = 0;
+                    else if (warriorGUIDs[1])
+                        warriorGUIDs[1] = 0;
                     break;
             }
         }
@@ -181,7 +190,7 @@ public:
                     {
                         case FAIL:
                             if (Creature* cre = instance->GetCreature(wrathionGUID))
-                                cre->AI()->DoAction(ACTION_1);
+                                cre->AI()->DoAction(ACTION_11);
                             break;
                         default:
                             break;
@@ -200,10 +209,7 @@ public:
                         }
 
                         if (Creature* cre = instance->GetCreature(wrathionGUID))
-                        {
-                            cre->AI()->DoAction(ACTION_9);
                             cre->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
-                        }
 
                         if (GameObject* obj = instance->GetGameObject(portal))
                             obj->SetVisible(true);
@@ -226,6 +232,10 @@ public:
                     return waveCounter;
                 case DATA_STAGE1_P2:
                     return s1p2;
+                case DATA_SECOND_STAGE_FIRST_STEP:
+                    return s2p1; 
+                case DATA_COMPLETE_SECOND_STAGE_SECOND_STEP:
+                    return s2p2;
                 default:
                     break;
             }
@@ -256,6 +266,26 @@ public:
                     break;
             }
             return 0;
+        }
+        
+        bool IsWipe()
+        {
+            Map::PlayerList const& PlayerList = instance->GetPlayers();
+
+            if (PlayerList.isEmpty())
+                return true;
+
+            for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+            {
+                Player* player = Itr->getSource();
+
+                if (!player)
+                    continue;
+
+                if (player->isAlive() && !player->isGameMaster())
+                    return false;
+            }
+            return true;
         }
 
     private:
@@ -296,6 +326,13 @@ bool Helper::IsNextStageAllowed(InstanceScript* instance, uint8 stage)
             if (instance->GetData(DATA_ALLOWED_STAGE) == STAGE_2)
             {
                 instance->SetData(DATA_ALLOWED_STAGE, STAGE_3);
+                return true;
+            }
+            return false;
+        case STAGE_4:
+            if (instance->GetData(DATA_ALLOWED_STAGE) == STAGE_3)
+            {
+                instance->SetData(DATA_ALLOWED_STAGE, STAGE_4);
                 return true;
             }
             return false;
