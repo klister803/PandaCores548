@@ -1269,9 +1269,10 @@ class spell_mage_alter_time_overrided : public SpellScriptLoader
 
 struct auraData
 {
-    auraData(uint32 id, int32 duration) : m_id(id), m_duration(duration) {}
+    auraData(uint32 id, int32 duration, uint8 stuck) : m_id(id), m_duration(duration), m_stuck(stuck) {}
     uint32 m_id;
     int32 m_duration;
+    uint8 m_stuck;
 };
 
 // Alter Time - 110909
@@ -1315,7 +1316,7 @@ class spell_mage_alter_time : public SpellScriptLoader
                         {
                             SpellInfo const* auraInfo = aura->GetSpellInfo();
 
-                            if (auraInfo->Attributes & SPELL_ATTR0_HIDDEN_CLIENTSIDE)
+                            if ((auraInfo->Attributes & SPELL_ATTR0_HIDDEN_CLIENTSIDE) && auraInfo->Id != 126084)
                                 continue;
 
                             if (auraInfo->Attributes & SPELL_ATTR0_PASSIVE)
@@ -1327,7 +1328,7 @@ class spell_mage_alter_time : public SpellScriptLoader
                             if (auraInfo->Id == SPELL_MAGE_ALTER_TIME)
                                 continue;
 
-                            auras.insert(new auraData(auraInfo->Id, aura->GetDuration()));
+                            auras.insert(new auraData(auraInfo->Id, aura->GetDuration(), aura->GetStackAmount()));
                         }
                     }
                     mana = _player->GetPower(POWER_MANA);
@@ -1345,16 +1346,17 @@ class spell_mage_alter_time : public SpellScriptLoader
                     if (_player->GetMapId() != map)
                         return;
 
-                    for (std::set<auraData*>::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
+                    for (auto itr : auras)
                     {
-                        Aura* aura = !_player->HasAura((*itr)->m_id) ? _player->AddAura((*itr)->m_id, _player) : _player->GetAura((*itr)->m_id);
+                        Aura* aura = !_player->HasAura((itr)->m_id) ? _player->AddAura((itr)->m_id, _player) : _player->GetAura((itr)->m_id);
                         if (aura)
                         {
-                            aura->SetDuration((*itr)->m_duration);
+                            aura->SetDuration((itr)->m_duration);
+                            aura->SetStackAmount((itr)->m_stuck);
                             aura->SetNeedClientUpdateForTargets();
                         }
 
-                        delete *itr;
+                        delete itr;
                     }
 
                     auras.clear();
