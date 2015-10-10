@@ -1306,10 +1306,6 @@ class spell_dru_rip : public SpellScriptLoader
                 if (!player)
                     return;
 
-                //Hack
-                if (Aura* cenarius = caster->GetAura(145152))
-                    cenarius->DropCharge();
-
                 // Soul of the Forest
                 if (player->HasAura(114107) && player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DRUID_CAT)
                 {
