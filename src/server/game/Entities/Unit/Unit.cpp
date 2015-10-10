@@ -24858,7 +24858,7 @@ data << uint32(i->SceneInstanceID);
 SendPacket(&data);
 */
 
-void Unit::SendSpellScene(uint32 miscValue, Position* /*pos*/)
+void Unit::SendSpellScene(uint32 miscValue, Position* pos)
 {
     if (GetTypeId() != TYPEID_PLAYER)
         return;
@@ -24880,21 +24880,21 @@ void Unit::SendSpellScene(uint32 miscValue, Position* /*pos*/)
             data.WriteGuidMask<0, 5, 1, 7, 4, 2, 6, 3>(casterGuid);
             data.WriteGuidBytes<1, 2, 5, 6, 0, 7, 3, 4>(casterGuid);
 
-            data << float(i->y);            // Y
+            data << float(pos->GetPositionY());            // Y
 
             if(i->SceneInstanceID)
                 data << uint32(i->SceneInstanceID);                              // SceneInstanceID
             if(miscValue)
                 data << uint32(miscValue);// SceneID
             if(i->hasO)
-                data << float(i->o);      // Facing
+                data << float(pos->GetOrientation());      // Facing
             if(i->ScenePackageId)
                 data << uint32(i->ScenePackageId);                   // SceneScriptPackageID
             if(i->PlaybackFlags)
                 data << uint32(i->PlaybackFlags);                              // PlaybackFlags
 
-            data << float(i->x);            // X
-            data << float(i->z);            // Z
+            data << float(pos->GetPositionX());            // X
+            data << float(pos->GetPositionZ());            // Z
             ToPlayer()->GetSession()->SendPacket(&data);
         }
     }
