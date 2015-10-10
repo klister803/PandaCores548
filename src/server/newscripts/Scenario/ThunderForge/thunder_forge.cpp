@@ -2645,7 +2645,7 @@ public:
                     case EVENT_2:
                         events.ScheduleEvent(EVENT_2, 60 * IN_MILLISECONDS /*/ (timerModifier2 ? timerModifier2 : timerModifier)*/);
                         Talk(0);
-                        me->CastSpell(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), SPELL_POWER_SURGE);
+                        me->CastSpell(me, SPELL_POWER_SURGE, true);
                         break;
                     case EVENT_3:
                         events.ScheduleEvent(EVENT_3, urand(10, 20) * IN_MILLISECONDS /*/ (timerModifier2 ? timerModifier2 : timerModifier)*/);
