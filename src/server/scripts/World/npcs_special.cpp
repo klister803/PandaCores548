@@ -3655,7 +3655,7 @@ class npc_frozen_orb : public CreatureScript
                 me->SetReactState(REACT_PASSIVE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                frozenOrbTimer = 1000;
+                frozenOrbTimer = 0;
                 findTarget = false;
             }
 
