@@ -23839,8 +23839,6 @@ void Player::DropModCharge(SpellModifier* mod, Spell* spell)
 
     if(spellInfo->ProcFlags != 0)
     {
-        if(spell)
-            spell->AddSpellModId(mod->spellId);
         return;
     }
 
@@ -30907,6 +30905,19 @@ bool Player::HasInstantCastModForSpell(SpellInfo const* spellInfo)
     return false;
 }
 
+SpellModifier* Player::TryFindMod(SpellModType type, SpellModOp Op, uint32 spellId, int32 val)
+{
+    for (auto itr : m_spellMods[Op])
+    {
+        SpellModifier* mod = itr;
+
+        if (mod->type == type && mod->spellId == spellId && mod->value == val)
+            return mod;
+    }
+
+    return NULL;
+}
+
 void Player::AddListner(WorldObject* o, bool /*update*/)
 {
     if(CanSeeVignette(o))
@@ -30959,4 +30970,37 @@ void Player::RemoveVignette(WorldObject *o, bool update)
     itr->second.remove = true;
     if(update)
         SendVignette();
+}
+
+SpellModList Player::GetModAndSpellMod(SpellModOp op, uint32 spellId)
+{
+    SpellModList tempModList = m_spellMods[op];
+
+    if (Spell* _spell = FindCurrentSpellBySpellId(spellId))
+        if (!_spell->m_spellModList.empty())
+        {
+            for (auto itr : _spell->m_spellModList)
+                if (SpellModifier* mod = itr)
+                {
+                    if (mod->op != op)
+                        continue;
+
+                    bool findSimilar = false;
+
+                    for (auto itr2 : m_spellMods[op])
+                        if (SpellModifier* mod2 = itr2)
+                        {
+                            if (mod->spellId == mod2->spellId && mod->type == mod2->type && mod->value == mod2->value)
+                            {
+                                findSimilar = true;
+                                break;
+                            }
+                        }
+
+                    if (!findSimilar)
+                        tempModList.push_back(mod);
+                }
+        }
+
+    return tempModList;
 }
