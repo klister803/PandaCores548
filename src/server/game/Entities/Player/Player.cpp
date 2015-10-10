@@ -2633,7 +2633,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             //remove auras before removing from map...
             RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CHANGE_MAP | AURA_INTERRUPT_FLAG_MOVE | AURA_INTERRUPT_FLAG_TURNING);
             RemoveAurasByType(SPELL_AURA_OVERRIDE_SPELLS);
-
+            RemoveAurasByType(SPELL_AURA_MOD_NEXT_SPELL);
 
             if (!GetSession()->PlayerLogout())
             {
