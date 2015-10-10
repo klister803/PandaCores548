@@ -18136,12 +18136,16 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                         //take charges only if spell moded by this spell
                         if(procExtra & PROC_EX_ON_CAST)
                         {
-                            bool moded = false;
-                            for (std::list<uint32>::iterator imods = mSpellModsList->begin(); imods != mSpellModsList->end(); ++imods)
-                                if((*imods) == triggeredByAura->GetId())
-                                    moded = true;
-                            if(!moded)
-                                break;
+                            if (Player* plr = ToPlayer())
+                                if (Spell* _spell = FindCurrentSpellBySpellId(procSpell->Id))
+                                    _spell->ApplySpellMod(plr->TryFindMod(SpellModType(triggeredByAura->GetAuraType()), SpellModOp(triggeredByAura->GetMiscValue()), triggeredByAura->GetId(), triggeredByAura->GetAmount()));
+
+//                             bool moded = false;
+//                             for (std::list<uint32>::iterator imods = mSpellModsList->begin(); imods != mSpellModsList->end(); ++imods)
+//                                 if((*imods) == triggeredByAura->GetId())
+//                                     moded = true;
+//                             if(!moded)
+//                                 break;
 
                             if(procSpell && procSpell->Id == 116858 && triggeredByAura->GetId() == 117828 && i->aura->GetCharges() > 2) // Chaos Bolt
                                 i->aura->ModCharges(-2);

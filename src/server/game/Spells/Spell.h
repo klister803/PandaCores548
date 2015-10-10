@@ -524,6 +524,9 @@ class Spell
         void HandleThreatSpells();
         bool CheckEffFromDummy(Unit* target, uint32 eff);
 
+        void ApplySpellMod(SpellModifier* mod) { m_spellModList.push_back(mod); }
+        
+
         SpellInfo const* const m_spellInfo;
         Item* m_CastItem;
         uint64 m_castItemGUID;
@@ -543,6 +546,7 @@ class Spell
         WorldLocation* destTarget;
         Position visualPos;
         std::vector<Position> _positions;
+        SpellModList m_spellModList;
 
         UsedSpellMods m_appliedMods;
 

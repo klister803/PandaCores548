@@ -2226,6 +2226,8 @@ class Player : public Unit, public GridObject<Player>
         void DropModCharge(SpellModifier* mod, Spell* spell);
         void SetSpellModTakingSpell(Spell* spell, bool apply);
         bool HasInstantCastModForSpell(SpellInfo const* spellInfo);
+        SpellModifier* TryFindMod(SpellModType type, SpellModOp Op, uint32 spellId, int32 val);
+        SpellModList GetModAndSpellMod(SpellModOp op, uint32 spellId);
 
         static uint32 const infinityCooldownDelay = MONTH;  // used for set "infinity cooldowns" for spells and check
         static uint32 const infinityCooldownDelayCheck = MONTH/2;
@@ -3677,14 +3679,15 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
     T savevalue = basevalue;
     SpellModifier* modCost = NULL;
     SpellModifier* modCast = NULL;
+    SpellModList tempModList = GetModAndSpellMod(op, spellId);
 
     // Drop charges for triggering spells instead of triggered ones
     if (m_spellModTakingSpell)
         spell = m_spellModTakingSpell;
 
-    for (SpellModList::iterator itr = m_spellMods[op].begin(); itr != m_spellMods[op].end(); ++itr)
+    for (auto itr : tempModList)
     {
-        SpellModifier* mod = *itr;
+        SpellModifier* mod = itr;
 
         // Charges can be set only for mods with auras
         if (!mod->ownerAura)
@@ -3693,13 +3696,13 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
         if (!IsAffectedBySpellmod(spellInfo, mod, spell))
             continue;
         SpellInfo const* affectSpell = sSpellMgr->GetSpellInfo(mod->spellId);
-        if(!affectSpell)
+        if (!affectSpell)
             continue;
-        if((affectSpell->Attributes & SPELL_ATTR0_ONLY_STEALTHED) && !HasStealthAura())
+        if ((affectSpell->Attributes & SPELL_ATTR0_ONLY_STEALTHED) && !HasStealthAura())
             continue;
 
         //Don`t moded value if allready max moded
-        if(mod->value == 0 || (totalmul <= 0.0f && mod->value < 0) || (totalflat < 0 && ((basevalue + totalflat) <= 0) && mod->value < 0))
+        if (mod->value == 0 || (totalmul <= 0.0f && mod->value < 0) || (totalflat < 0 && ((basevalue + totalflat) <= 0) && mod->value < 0))
             continue;
 
         if (mod->type == SPELLMOD_FLAT)
@@ -3714,22 +3717,22 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
             if (mod->op == SPELLMOD_CASTING_TIME && basevalue >= T(10000) && mod->value <= -100)
                 continue;
 
-            if(spellId == 116858 && mod->spellId == 117828) // Chaos Bolt
+            if (spellId == 116858 && mod->spellId == 117828) // Chaos Bolt
             {
-                if(mod->ownerAura->GetCharges() < 3)
+                if (mod->ownerAura->GetCharges() < 3)
                     continue;
             }
 
             if (mod->op == SPELLMOD_CASTING_TIME && mod->value < 0)
             {
-                if(!modCast || mod->value <= modCast->value)
+                if (!modCast || mod->value <= modCast->value)
                     modCast = mod;
                 //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::ApplySpellMod SPELLMOD_CASTING_TIME totalflat %i totalmul %f basevalue %i spellId %i mod->spellId %i", totalflat, (totalmul - 1.0f), basevalue, spellId, mod->spellId);
                 continue;
             }
             if (mod->op == SPELLMOD_COST && mod->value < 0)
             {
-                if(!modCost || mod->value <= modCost->value)
+                if (!modCost || mod->value <= modCost->value)
                     modCost = mod;
                 //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::ApplySpellMod SPELLMOD_COST totalflat %i totalmul %f basevalue %i spellId %i mod->spellId %i", totalflat, (totalmul - 1.0f), basevalue, spellId, mod->spellId);
                 continue;
@@ -3744,13 +3747,13 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
         DropModCharge(mod, spell);
     }
 
-    if(modCast)
+    if (modCast)
     {
         totalmul += CalculatePct(1.0f, modCast->value);
         DropModCharge(modCast, spell);
         //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::ApplySpellMod totalflat %i totalmul %f basevalue %i, modCast->spellId %i", totalflat, (totalmul - 1.0f), basevalue, modCast->spellId);
     }
-    if(modCost)
+    if (modCost)
     {
         totalmul += CalculatePct(1.0f, modCost->value);
         DropModCharge(modCost, spell);
