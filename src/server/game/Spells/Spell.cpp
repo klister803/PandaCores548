@@ -7889,8 +7889,17 @@ SpellCastResult Spell::CheckCasterAuras() const
         prevented_reason = SPELL_FAILED_FLEEING;
     else if (unitflag & UNIT_FLAG_SILENCED && m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE && !(AttributesCustomEx8 & SPELL_ATTR8_USABLE_WHILE_SILENCED))
         prevented_reason = SPELL_FAILED_SILENCED;
-    else if (unitflag & UNIT_FLAG_PACIFIED && m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_PACIFY)
-        prevented_reason = SPELL_FAILED_PACIFIED;
+    else if (unitflag & UNIT_FLAG_PACIFIED)
+    {
+        if (m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_PACIFY)
+            prevented_reason = SPELL_FAILED_PACIFIED;
+
+        Unit::AuraEffectList const& pacifAuras = m_caster->GetAuraEffectsByType(SPELL_AURA_MOD_PACIFY_SILENCE);
+        for (auto i : pacifAuras)
+            if ((i)->GetSpellInfo()->GetAllEffectsMechanicMask() & ((1 << MECHANIC_POLYMORPH) | (1 << MECHANIC_SILENCE) | (1 << MECHANIC_BANISH)))
+                prevented_reason = SPELL_FAILED_PACIFIED;
+    }
+        
 
     // Attr must make flag drop spell totally immune from all effects
     if (prevented_reason != SPELL_CAST_OK)
