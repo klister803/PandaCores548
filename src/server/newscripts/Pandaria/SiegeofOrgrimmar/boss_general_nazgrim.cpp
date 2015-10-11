@@ -411,7 +411,7 @@ class boss_general_nazgrim : public CreatureScript
                     DoCast(me, SPELL_KORKRON_BANNER_SUM);
                 else if (power >= 30 && power < 50)
                 {
-                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 70.0f, true))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 80.0f, true))
                     {
                         if (me->getVictim())
                             victimGuid = me->getVictim()->GetGUID();
