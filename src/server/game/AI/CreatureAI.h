@@ -69,6 +69,8 @@ class CreatureAI : public UnitAI
         Creature* const me;
 
         bool UpdateVictim();
+        bool IsInDisable();
+        bool IsInControl();
         bool UpdateVictimWithGaze();
 
         void SetGazeOn(Unit* target);

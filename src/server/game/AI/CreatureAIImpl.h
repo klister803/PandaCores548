@@ -708,6 +708,25 @@ inline bool CreatureAI::UpdateVictim()
     return true;
 }
 
+inline bool CreatureAI::IsInDisable()
+{
+    if (me->HasAuraType(SPELL_AURA_MOD_STUN) || me->HasAuraType(SPELL_AURA_MOD_FEAR) ||
+        me->HasAuraType(SPELL_AURA_MOD_CHARM) || me->HasAuraType(SPELL_AURA_MOD_CONFUSE) ||
+        me->HasAuraType(SPELL_AURA_MOD_ROOT))
+        return true;
+
+    return false;
+}
+
+inline bool CreatureAI::IsInControl()
+{
+    if (me->HasAuraType(SPELL_AURA_MOD_STUN) || me->HasAuraType(SPELL_AURA_MOD_FEAR) ||
+        me->HasAuraType(SPELL_AURA_MOD_CHARM) || me->HasAuraType(SPELL_AURA_MOD_CONFUSE))
+        return true;
+
+    return false;
+}
+
 inline bool CreatureAI::_EnterEvadeMode()
 {
     if (!me->isAlive())

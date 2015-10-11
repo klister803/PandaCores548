@@ -123,6 +123,7 @@ class boss_general_nazgrim : public CreatureScript
 
             InstanceScript* instance;
             uint8 laststance;
+            uint64 victimGuid;
             uint32 checkpower, checkvictim;
             uint8 wavenum;
             bool lowhp;
@@ -139,6 +140,7 @@ class boss_general_nazgrim : public CreatureScript
                 laststance = 4; //default
                 checkpower = 1000;
                 checkvictim = 0;
+                victimGuid = 0;
                 lowhp = false;
             }
 
@@ -411,6 +413,8 @@ class boss_general_nazgrim : public CreatureScript
                 {
                     if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 70.0f, true))
                     {
+                        if (me->getVictim())
+                            victimGuid = me->getVictim()->GetGUID();
                         me->SetReactState(REACT_PASSIVE);
                         me->AttackStop();
                         DoCast(target, SPELL_HEROIC_SHOCKWAVE);
@@ -484,8 +488,13 @@ class boss_general_nazgrim : public CreatureScript
                         break;             
                     //Other events
                     case EVENT_RE_ATTACK:
-                        me->SetReactState(REACT_AGGRESSIVE);
-                        DoZoneInCombat(me, 150.0f);
+                        if (Player* pl = me->GetPlayer(*me, victimGuid))
+                        {
+                            me->SetReactState(REACT_AGGRESSIVE);
+                            me->SetInCombatWithZone();
+                            me->AddThreat(pl, 500000.0f);
+                            me->TauntApply(pl);
+                        }
                         break;
                     case EVENT_SUMMON:
                         SummonWave(wavenum);
@@ -540,8 +549,8 @@ public:
 
         void EnterCombat(Unit* who)
         {
-            me->AddAura(SPELL_IRONSTORM, me);
             DoZoneInCombat(me, 150.0f);
+            DoCast(me, SPELL_IRONSTORM);
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -560,7 +569,7 @@ public:
 
         void UpdateAI(uint32 diff)
         {
-            if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+            if (!UpdateVictim())
                 return;
 
             DoMeleeAttackIfReady();
@@ -609,7 +618,10 @@ public:
 
         void UpdateAI(uint32 diff)
         {
-            if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+            if (!UpdateVictim())
+                return;
+
+            if (IsInControl() || me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
             events.Update(diff);
@@ -820,7 +832,10 @@ public:
 
         void UpdateAI(uint32 diff)
         {
-            if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+            if (!UpdateVictim())
+                return;
+
+            if (IsInControl() || me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
             events.Update(diff);
@@ -1253,6 +1268,48 @@ public:
     }
 };
 
+//143494
+class spell_sundering_blow : public SpellScriptLoader
+{
+public:
+    spell_sundering_blow() : SpellScriptLoader("spell_sundering_blow") { }
+
+    class spell_sundering_blow_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_sundering_blow_SpellScript);
+
+        void _HandleHit()
+        {
+            if (GetCaster() &&  GetHitUnit())
+            {
+                if (!GetHitUnit()->HasAura(SPELL_SUNDERING_BLOW))
+                {
+                    if (GetCaster()->GetPower(POWER_ENERGY) <= 95)
+                        GetCaster()->SetPower(POWER_ENERGY, GetCaster()->GetPower(POWER_ENERGY) + 5);
+                }
+                else
+                {
+                    uint8 mod = (GetHitUnit()->GetAura(SPELL_SUNDERING_BLOW)->GetStackAmount()) * 5;
+                    if ((GetCaster()->GetPower(POWER_ENERGY) + mod) <= 100)
+                        GetCaster()->SetPower(POWER_ENERGY, GetCaster()->GetPower(POWER_ENERGY) + mod);
+                    else
+                        GetCaster()->SetPower(POWER_ENERGY, 100);
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_sundering_blow_SpellScript::_HandleHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_sundering_blow_SpellScript();
+    }
+};
+
 void AddSC_boss_general_nazgrim()
 {
     new boss_general_nazgrim();
@@ -1267,4 +1324,5 @@ void AddSC_boss_general_nazgrim()
     new spell_heroic_shockwave();
     new spell_generic_stance();
     new spell_after_extra_spell_effect();
+    new spell_sundering_blow();
 }
