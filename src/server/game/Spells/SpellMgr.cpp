@@ -5047,6 +5047,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx6 |= SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
                     break;
                 //General Nazgrim
+                case 143494: //Sundering Blow
+                    spellInfo->Effects[2].Effect = 0;
+                    break;
                 case 143872: //Ravager Summon
                     spellInfo->Effects[1].TargetA = TARGET_DEST_TARGET_ENEMY;
                     break;

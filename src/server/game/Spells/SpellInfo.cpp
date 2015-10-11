@@ -1196,6 +1196,7 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 144334: //Iron Tomb dmg
     case 144331: //Iron Prison
     //General Nazgrim
+    case 143494: //Sundering Blow
     case 143872: //Ravager SUmmon
     case 144278: //Generate rage
     case 143597: //Generate rage energize
