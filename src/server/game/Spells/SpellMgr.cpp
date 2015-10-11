@@ -4386,7 +4386,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_1].TargetA = TARGET_UNIT_TARGET_ANY;
                     spellInfo->Effects[EFFECT_1].TargetB = 0;
                     break;
-                case 324:    // Lightning Shield
                 case 50227:  // Sword and Board
                 case 113901: // Demonic Gateway
                 case 131116: // Raging Blow!
