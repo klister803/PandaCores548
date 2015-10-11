@@ -1355,15 +1355,15 @@ class spell_sha_of_pride_gift_of_titans : public SpellScriptLoader
                 if (GetCaster())
                 { 
                     std::list<Player*> pllist;
-                    std::list<Player*> gpllist;
+                    std::list<Player*> gpllist; 
                     pllist.clear();
                     gpllist.clear();
                     GetPlayerListInGrid(pllist, GetCaster(), 8.0f);
-                    if (!pllist.empty())
+                    if (pllist.size() >= 4)
                     {
                         uint8 maxcount = GetCaster()->GetMap()->Is25ManRaid() ? 9 : 4;
                         uint8 count = 0;
-                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                         {
                             if ((*itr)->HasAura(SPELL_GIFT_OF_THE_TITANS))
                             {
@@ -1374,9 +1374,9 @@ class spell_sha_of_pride_gift_of_titans : public SpellScriptLoader
                             }
                         }
 
-                        if (!gpllist.empty() && gpllist.size() >= maxcount)
+                        if (gpllist.size() >= maxcount)
                         {
-                            for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                            for (std::list<Player*>::const_iterator itr = gpllist.begin(); itr != gpllist.end(); ++itr)
                             {
                                 (*itr)->RemoveAurasDueToSpell(SPELL_GIFT_OF_THE_TITANS);
                                 (*itr)->CastSpell(*itr, SPELL_POWER_OF_THE_TITANS, true);

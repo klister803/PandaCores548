@@ -56,7 +56,7 @@ enum eSpells
     SPELL_FOUL_STREAM           = 144090,
     //50pct
     SPELL_ASH_ELEMENTAL_SPAWN   = 144222,
-    SPELL_ASHEN_WALL            = 144071,
+    SPELL_ASHEN_WALL            = 144070,
 
     //Mount
     SPELL_SWIPE                 = 144303,
@@ -531,7 +531,7 @@ public:
                 //Haromm
                 case EVENT_ASHEN_WALL:
                     if (me->getVictim())
-                        me->getVictim()->SummonCreature(NPC_ASH_ELEMENTAL, me->getVictim()->GetPositionX(), me->getVictim()->GetPositionY(), me->getVictim()->GetPositionZ(), me->getVictim()->GetOrientation());
+                        DoCast(me->getVictim(), SPELL_ASHEN_WALL);
                     events.ScheduleEvent(EVENT_ASHEN_WALL, 30000);
                     break;
                 case EVENT_BERSERK:
@@ -924,6 +924,34 @@ public:
     }
 };
 
+//144070
+class spell_asher_wall : public SpellScriptLoader
+{
+public:
+    spell_asher_wall() : SpellScriptLoader("spell_asher_wall") { }
+
+    class spell_asher_wall_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_asher_wall_SpellScript);
+
+        void HandleScript(SpellEffIndex /*effIndex*/)
+        {
+            if (GetHitUnit())
+                GetHitUnit()->SummonCreature(NPC_ASH_ELEMENTAL, GetHitUnit()->GetPositionX(), GetHitUnit()->GetPositionY(), GetHitUnit()->GetPositionZ(), GetHitUnit()->GetOrientation());
+        }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_asher_wall_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_asher_wall_SpellScript();
+    }
+};
+
 
 void AddSC_boss_korkron_dark_shaman()
 {
@@ -934,4 +962,5 @@ void AddSC_boss_korkron_dark_shaman()
     new npc_foul_slime();
     new npc_ash_elemental();
     new npc_iron_tomb();
+    new spell_asher_wall();
 }
