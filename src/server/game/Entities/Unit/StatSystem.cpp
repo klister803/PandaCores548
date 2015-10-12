@@ -1680,7 +1680,7 @@ void Guardian::UpdateMaxPower(Powers power)
 
 void Guardian::UpdateAttackPowerAndDamage(bool ranged)
 {
-    if (ranged || GetEntry() == 69792 || GetEntry() == 69680 || GetEntry() == 69791)
+    if (ranged || isMonkClones())
         return;
 
     float val = 0.0f;
@@ -1786,7 +1786,7 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
 
 void Guardian::UpdateDamagePhysical(WeaponAttackType attType)
 {
-    if (attType > OFF_ATTACK || GetEntry() == 69792 || GetEntry() == 69680 || GetEntry() == 69791)
+    if (attType > OFF_ATTACK || isMonkClones())
         return;
 
     float APCoefficient = 11.f;

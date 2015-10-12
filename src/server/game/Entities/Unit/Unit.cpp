@@ -395,7 +395,7 @@ void Unit::Update(uint32 p_time)
         SendThreatListUpdate();
 
     // update combat timer only for players and pets (only pets with PetAI)
-    if (isInCombat() && (GetTypeId() == TYPEID_PLAYER || (ToCreature()->isPet() && IsControlledByPlayer())))
+    if (isInCombat() && (GetTypeId() == TYPEID_PLAYER || (ToCreature()->isPet() && IsControlledByPlayer()) || isMonkClones()))
     {
         //Don`t claer combat state if instance in progress
         Map* map = GetMap();
@@ -11586,7 +11586,7 @@ void Unit::SetMinion(Minion *minion, bool apply, bool stampeded)
         if (minion->HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN))
             minion->SetOwnerGUID(GetGUID());
 
-        if (minion->GetEntry() != 69792 && minion->GetEntry() != 69680 && minion->GetEntry() != 69791)
+        if (!isMonkClones())
             m_Controlled.insert(minion);
 
         if (GetTypeId() == TYPEID_PLAYER)
@@ -14590,6 +14590,9 @@ void Unit::ClearInCombat()
         ClearUnitState(UNIT_STATE_ATTACK_PLAYER);
         if (HasFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_TAPPED))
             SetUInt32Value(OBJECT_FIELD_DYNAMIC_FLAGS, creature->GetCreatureTemplate()->dynamicflags);
+
+        if (CreatureAI* ai = creature->AI())
+            ai->OutOfCombat();
 
         if (creature->isPet())
         {

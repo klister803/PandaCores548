@@ -536,8 +536,15 @@ Guardian::Guardian(SummonPropertiesEntry const* properties, Unit* owner, bool is
         {
             case 3459:
             case 3097:
+            {
                 controlable = false;
                 break;
+            }
+            case 3390:
+            {
+                m_unitTypeMask |= UNIT_MASK_MONK_CLONES;
+                break;
+            }
         }
 
         if ((properties->Type == SUMMON_TYPE_PET || properties->Category == SUMMON_CATEGORY_PET) && controlable)

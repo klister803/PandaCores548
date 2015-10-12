@@ -165,6 +165,12 @@ public:
                 me->AddAura(120275, me);
         }
 
+        void OutOfCombat()
+        {
+            if (me->HasUnitState(UNIT_STATE_CONTROLLED | UNIT_STATE_ROOT))
+                ComonOnHome();
+        }
+
         void RecalcDamage()
         {
             if (Player* plr = owner->ToPlayer())
@@ -321,8 +327,16 @@ public:
 
             if (me->isAlive())
             {
-                me->CastSpell(owner, 124002, true);
-                me->DespawnOrUnsummon(500);
+                if (me->HasUnitState(UNIT_STATE_CONTROLLED | UNIT_STATE_ROOT))
+                {
+                    owner->m_SummonSlot[num] = 0;
+                    me->DespawnOrUnsummon();
+                }
+                else
+                {
+                    me->CastSpell(owner, 124002, true);
+                    me->DespawnOrUnsummon(500);
+                }
             }
             else
             {
