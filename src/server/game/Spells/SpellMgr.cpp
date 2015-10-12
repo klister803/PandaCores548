@@ -207,11 +207,10 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
         }
         case SPELLFAMILY_DEATHKNIGHT:
         {
-            // Hungering Cold (no flags)
             if (spellproto->SpellIconID == 2797)
                 return DIMINISHING_DISORIENT;
             // Mark of Blood
-            else if ((spellproto->SpellFamilyFlags[0] & 0x10000000) && spellproto->SpellIconID == 2285)
+            else if (((spellproto->SpellFamilyFlags[0] & 0x10000000) && spellproto->SpellIconID == 2285) || spellproto->Id == 50435)
                 return DIMINISHING_LIMITONLY;
             break;
         }
