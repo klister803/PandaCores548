@@ -2001,7 +2001,7 @@ class Unit : public WorldObject
         int32 GetTotalAuraModifier(AuraType auratype, bool raid = false) const;
         int32 GetTotalForAurasModifier(std::list<AuraType> *auratypelist) const;
         float GetTotalForAurasMultiplier(std::list<AuraType> *auratypelist) const;
-        float GetTotalAuraMultiplier(AuraType auratype) const;
+        float GetTotalAuraMultiplier(AuraType auratype, bool raid = false) const;
         int32 GetMaxPositiveAuraModifier(AuraType auratype);
         int32 GetMaxNegativeAuraModifier(AuraType auratype) const;
 
