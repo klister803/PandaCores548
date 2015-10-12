@@ -819,6 +819,7 @@ enum UnitTypeMask
     UNIT_MASK_UNK2                  = 0x00000800,
     UNIT_MASK_UNK3                  = 0x00001000,
     UNIT_MASK_TRAINING_DUMMY        = 0x00002000,
+    UNIT_MASK_MONK_CLONES           = 0x00004000,
 };
 
 namespace Movement{
@@ -1458,6 +1459,7 @@ class Unit : public WorldObject
         bool IsVehicle() const  { return m_unitTypeMask & UNIT_MASK_VEHICLE; }
         bool isMinion() const   { return m_unitTypeMask & UNIT_MASK_MINION; }
         bool isTrainingDummy() const { return m_unitTypeMask & UNIT_MASK_TRAINING_DUMMY; }
+        bool isMonkClones() const { return m_unitTypeMask & UNIT_MASK_MONK_CLONES; }
         bool isAnySummons() const   { return m_unitTypeMask & (UNIT_MASK_SUMMON | UNIT_MASK_GUARDIAN | UNIT_MASK_PET | UNIT_MASK_HUNTER_PET | UNIT_MASK_TOTEM | UNIT_MASK_VEHICLE); }
 
         uint8 getLevel() const { return uint8(GetUInt32Value(UNIT_FIELD_LEVEL)); }

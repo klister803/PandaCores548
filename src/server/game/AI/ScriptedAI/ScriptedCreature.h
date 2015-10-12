@@ -104,6 +104,8 @@ struct ScriptedAI : public CreatureAI
 
     void ComonOnHome() {}
 
+    void OutOfCombat() {}
+
     //Called at creature killing another unit
     void KilledUnit(Unit* /*victim*/) {}
 
