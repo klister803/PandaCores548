@@ -60,6 +60,10 @@ enum eSpells
 
     //Iyyokyk
     SPELL_DIMINISH                     = 143666,
+    SPELL_INSANE_CALC_FIERY_EDGE       = 142416,
+    SPELL_FIERY_EDGE_PRE_DUMMY         = 142811,
+    SPELL_FIERY_EDGE_DUMMY             = 142808,
+    SPELL_FIERY_EDGE_DMG               = 142809,
 
     //Kaztik
     SPELL_SONIC_PROJECTION_AT          = 143765,
@@ -82,6 +86,7 @@ enum eSpells
     SPELL_DELAYED_CATALYST_RED         = 142936,
     SPELL_TOXIN_BLUE                   = 142532,
     SPELL_DELAYED_CATALYST_BLUE        = 142935,
+    SPELL_REACTION_BLUE                = 142735,
     SPELL_TOXIN_YELLOW                 = 142534,
     SPELL_DELAYED_CATALYST_YELLOW      = 142937,
     SPELL_CATALYST_YELLOW_AT           = 142737,
@@ -1886,6 +1891,229 @@ public:
     }
 };
 
+//142935
+class spell_reaction_blue : public SpellScriptLoader
+{
+public:
+    spell_reaction_blue() : SpellScriptLoader("spell_reaction_blue") { }
+
+    class spell_reaction_blue_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_reaction_blue_SpellScript);
+
+        void HandleHit()
+        {
+            if (GetHitUnit())
+            {
+                std::list<Player*> pllist;
+                pllist.clear();
+                GetPlayerListInGrid(pllist, GetHitUnit(), 8.0f);
+                uint8 maxcount = GetHitUnit()->GetMap()->Is25ManRaid() ? 5 : 2;
+                uint8 count = 0;
+                if (pllist.size() >= maxcount)
+                {
+                    int32 dmg = GetHitDamage() / maxcount;
+                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                    {
+                        count++;
+                        if ((*itr)->GetGUID() != GetHitUnit()->GetGUID())
+                            (*itr)->CastCustomSpell(SPELL_REACTION_BLUE, SPELLVALUE_BASE_POINT0, dmg, *itr);
+                        if (count == maxcount)
+                            break;
+                    }
+                    SetHitDamage(dmg);
+                }
+                else
+                    SetHitDamage(GetHitDamage());
+            }
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_reaction_blue_SpellScript::HandleHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_reaction_blue_SpellScript();
+    }
+};
+
+//142416
+class spell_insane_calc_fiery_edge : public SpellScriptLoader
+{
+public:
+    spell_insane_calc_fiery_edge() : SpellScriptLoader("spell_insane_calc_fiery_edge") { }
+
+    class spell_insane_calc_fiery_edge_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_insane_calc_fiery_edge_SpellScript);
+
+        void HandleAfterCast()
+        {
+            if (GetCaster())
+            {
+                std::list<Player*> pllist;
+                pllist.clear();
+                uint8 maxcount = urand(2, 3); //test count
+                uint8 count = 0;
+                GetPlayerListInGrid(pllist, GetCaster(), 150.0f);
+                if (pllist.size() >= 3)
+                {
+                    std::vector<Player*>targetlist;
+                    targetlist.clear();
+                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                    {
+                        if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
+                        {
+                            count++;
+                            targetlist.push_back(*itr);
+                            if (count == maxcount)
+                                break;
+                        }
+                    }
+
+                    if (targetlist.size() >= maxcount)
+                    {
+                        for (uint8 n = 0; n < (maxcount - 1); ++n)
+                            targetlist[n]->CastSpell(targetlist[n + 1], SPELL_FIERY_EDGE_PRE_DUMMY, true);
+                    }
+                }
+            }
+        }
+
+        void Register()
+        {
+            AfterCast += SpellCastFn(spell_insane_calc_fiery_edge_SpellScript::HandleAfterCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_insane_calc_fiery_edge_SpellScript();
+    }
+};
+
+//142811
+class spell_fiery_edge_pre_dummy : public SpellScriptLoader
+{
+public:
+    spell_fiery_edge_pre_dummy() : SpellScriptLoader("spell_fiery_edge_pre_dummy") { }
+
+    class spell_fiery_edge_pre_dummy_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_fiery_edge_pre_dummy_AuraScript);
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+        {
+            if (GetCaster() && GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
+            {
+                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+                    GetCaster()->CastSpell(GetTarget(), SPELL_FIERY_EDGE_DUMMY, true);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_fiery_edge_pre_dummy_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_fiery_edge_pre_dummy_AuraScript();
+    }
+};
+
+//142808
+class spell_fiery_edge_dummy : public SpellScriptLoader
+{
+public:
+    spell_fiery_edge_dummy() : SpellScriptLoader("spell_fiery_edge_dummy") { }
+
+    class spell_fiery_edge_dummy_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_fiery_edge_dummy_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (GetCaster() && GetTarget())
+                GetCaster()->CastCustomSpell(SPELL_FIERY_EDGE_DMG, SPELLVALUE_BASE_POINT0, GetSpellInfo()->Effects[EFFECT_0].BasePoints, GetTarget());
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_fiery_edge_dummy_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_fiery_edge_dummy_AuraScript();
+    }
+};
+
+class IsInBetweenCheck
+{
+public:
+    IsInBetweenCheck(std::vector<Player*>&dummytargets) : list(dummytargets){}
+
+    bool operator()(WorldObject* unit)
+    {
+        for (uint8 n = 0; n < (list.size() -1); ++n)
+            if (unit->IsInBetween(list[n], list[n + 1]))
+                return false;
+        return true;
+    }
+private:
+    std::vector<Player*>list;
+};
+
+//142809
+class spell_fiery_edge_dmg : public SpellScriptLoader
+{
+public:
+    spell_fiery_edge_dmg() : SpellScriptLoader("spell_fiery_edge_dmg") { }
+
+    class spell_fiery_edge_dmg_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_fiery_edge_dmg_SpellScript);
+
+        void _FilterTarget(std::list<WorldObject*>&targets)
+        {
+            if (GetCaster())
+            {
+                std::list<Player*>targets;
+                targets.clear();
+                std::vector<Player*>dummylist;
+                dummylist.clear();
+                GetPlayerListInGrid(targets, GetCaster(), 100.0f);
+                if (!targets.empty())
+                {
+                    for (std::list<Player*>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
+                        if ((*itr)->HasAura(SPELL_FIERY_EDGE_DUMMY))
+                            dummylist.push_back(*itr);
+                }
+                if (dummylist.size() >= 2)
+                    targets.remove_if(IsInBetweenCheck(dummylist));
+                else
+                    targets.clear();
+            }
+        }
+            
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_fiery_edge_dmg_SpellScript::_FilterTarget, EFFECT_1, TARGET_UNIT_SRC_AREA_ALLY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_fiery_edge_dmg_SpellScript();
+    }
+};
+
 void AddSC_boss_paragons_of_the_klaxxi()
 {
     new npc_amber_piece();
@@ -1910,4 +2138,9 @@ void AddSC_boss_paragons_of_the_klaxxi()
     new spell_sonic_projection();
     new spell_klaxxi_aim();
     new spell_klaxxi_rapid_fire();
+    new spell_reaction_blue();
+    new spell_insane_calc_fiery_edge();
+    new spell_fiery_edge_pre_dummy();
+    new spell_fiery_edge_dummy();
+    new spell_fiery_edge_dmg();
 }
