@@ -618,6 +618,8 @@ class spell_dk_blood_tap : public SpellScriptLoader
         {
             PrepareSpellScript(spell_dk_blood_tap_SpellScript);
 
+            std::vector<uint8> CDrunesList;
+
             SpellCastResult CheckBloodCharges()
             {
                 if (GetCaster())
@@ -638,12 +640,11 @@ class spell_dk_blood_tap : public SpellScriptLoader
                     }
 
 
-                    int32 cooldown = 0;
                     for (uint8 i = 0; i < MAX_RUNES; ++i)
-                        if (_player->GetCurrentRune(i) != RUNE_DEATH && _player->GetRuneCooldown(i) == RUNE_BASE_COOLDOWN)
-                            cooldown++;
+                        if (_player->GetRuneCooldown(i) == RUNE_BASE_COOLDOWN)
+                            CDrunesList.push_back(i);
 
-                    if (!cooldown)
+                    if (CDrunesList.empty())
                     {
                         Spell::SendCastResult(_player, GetSpellInfo(), 1, SPELL_FAILED_CUSTOM_ERROR, SPELL_CUSTOM_ERROR_NO_DEPLETED_RUNES);
                         return SPELL_FAILED_DONT_REPORT;
@@ -669,30 +670,16 @@ class spell_dk_blood_tap : public SpellScriptLoader
                                 bloodCharges->SetStackAmount(newAmount - 5);
                         }
 
-                        int32 runesRestor = 0;
-                        for (int i = 0; i < MAX_RUNES ; i++)
+
+                        std::random_shuffle(CDrunesList.begin(), CDrunesList.end());
+                        for (auto itr : CDrunesList)
                         {
-                            if (_player->GetRuneCooldown(i) == RUNE_BASE_COOLDOWN && runesRestor < 1 && _player->GetCurrentRune(i) != RUNE_DEATH)
-                            {
-                                runesRestor++;
-                                _player->SetRuneCooldown(i, 0);
-                                _player->SetConvertIn(i, RUNE_DEATH);
-                                _player->ConvertRune(i, RUNE_DEATH);
-                                _player->AddRunePower(i);
-                            }
+                            _player->SetRuneCooldown(itr, 0);
+                            _player->SetConvertIn(itr, RUNE_DEATH);
+                            _player->ConvertRune(itr, RUNE_DEATH);
+                            _player->AddRunePower(itr);
+                            break;
                         }
-                        /*if(runesRestor < 1)
-                        {
-                            for (int i = 0; i < MAX_RUNES ; i++)
-                            {
-                                if (_player->GetRuneCooldown(i) == RUNE_BASE_COOLDOWN && runesRestor < 1)
-                                {
-                                    runesRestor++;
-                                    _player->SetRuneCooldown(i, 0);
-                                    _player->AddRunePower(i);
-                                }
-                            }
-                        }*/
                     }
                 }
             }
