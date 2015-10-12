@@ -5238,19 +5238,28 @@ float Unit::GetTotalForAurasMultiplier(std::list<AuraType> *auratypelist) const
     return multiplier;
 }
 
-float Unit::GetTotalAuraMultiplier(AuraType auratype) const
+float Unit::GetTotalAuraMultiplier(AuraType auratype, bool raid) const
 {
     std::map<SpellGroup, int32> SameEffectSpellGroup;
     float multiplier = 1.0f;
+    int32 raidModifier = 0;
 
     AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auratype);
-    for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
-        if (AuraEffect* eff = (*i))
-            if (!sSpellMgr->AddSameEffectStackRuleSpellGroups(eff->GetSpellInfo(), eff->GetAmount(), SameEffectSpellGroup))
+    for (auto i : mTotalAuraList)
+        if (AuraEffect* eff = i)
+            if (raid && (eff->GetSpellInfo()->AttributesEx7 & SPELL_ATTR7_CONSOLIDATED_RAID_BUFF))
+            {
+                if (eff->GetAmount() > raidModifier)
+                    raidModifier = eff->GetAmount();
+            }
+            else if (!sSpellMgr->AddSameEffectStackRuleSpellGroups(eff->GetSpellInfo(), eff->GetAmount(), SameEffectSpellGroup))
                 AddPct(multiplier, eff->GetAmount());
 
-    for (std::map<SpellGroup, int32>::const_iterator itr = SameEffectSpellGroup.begin(); itr != SameEffectSpellGroup.end(); ++itr)
-        AddPct(multiplier, itr->second);
+    for (auto itr : SameEffectSpellGroup)
+        AddPct(multiplier, itr.second);
+
+    if (raidModifier)
+        AddPct(multiplier, raidModifier);
 
     return multiplier;
 }
@@ -12785,7 +12794,7 @@ int32 Unit::SpellBaseDamageBonusDone(SpellSchoolMask schoolMask, int32 baseBonus
         DoneAdvertisedBenefit += baseBonus;
 
         // Spell power from SPELL_AURA_MOD_SPELL_POWER_PCT
-        DoneAdvertisedBenefit *= GetTotalAuraMultiplier(SPELL_AURA_MOD_SPELL_POWER_PCT);
+        DoneAdvertisedBenefit *= GetTotalAuraMultiplier(SPELL_AURA_MOD_SPELL_POWER_PCT, true);
 
         // Damage bonus from stats
         AuraEffectList const& mDamageDoneOfStatPercent = GetAuraEffectsByType(SPELL_AURA_MOD_SPELL_DAMAGE_OF_STAT_PERCENT);
@@ -13559,7 +13568,7 @@ int32 Unit::SpellBaseHealingBonusDone(SpellSchoolMask schoolMask, int32 baseBonu
             if (!(*i)->GetMiscValue() || ((*i)->GetMiscValue() & schoolMask) != 0)
                 AdvertisedBenefit += (*i)->GetAmount();
 
-        AdvertisedBenefit *= GetTotalAuraMultiplier(SPELL_AURA_MOD_SPELL_POWER_PCT);
+        AdvertisedBenefit *= GetTotalAuraMultiplier(SPELL_AURA_MOD_SPELL_POWER_PCT, true);
 
         // Healing bonus from stats
         AuraEffectList const& mHealingDoneOfStatPercent = GetAuraEffectsByType(SPELL_AURA_MOD_SPELL_HEALING_OF_STAT_PERCENT);
