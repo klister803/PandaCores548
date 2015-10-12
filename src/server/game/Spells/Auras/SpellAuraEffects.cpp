@@ -3675,17 +3675,28 @@ void AuraEffect::HandleAuraModSilence(AuraApplication const* aurApp, uint8 mode,
     {
         target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SILENCED);
 
-        // call functions which may have additional effects after chainging state of unit
-        // Stop cast only spells vs PreventionType == SPELL_PREVENTION_TYPE_SILENCE
-        for (uint32 i = CURRENT_MELEE_SPELL; i < CURRENT_MAX_SPELL; ++i)
-            if (Spell* spell = target->GetCurrentSpell(CurrentSpellTypes(i)))
-                if (spell->m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE)
-                {
-                    // Stop spells on prepare or casting state
-                    target->InterruptSpell(CurrentSpellTypes(i), false);
-                    if(GetBase() && GetCaster() && GetCaster()->HasAura(58618)) // Glyph of Strangulate
-                        GetBase()->SetDuration(GetBase()->GetDuration() + 2000);
-                }
+        if (Unit* caster = GetCaster())
+        {
+            bool interruptCast = true;
+
+            if (Spell* casterCurSpell = caster->GetCurrentSpell(CURRENT_GENERIC_SPELL))
+                if (SpellInfo const* _inf = casterCurSpell->GetSpellInfo())
+                    if (_inf->HasEffect(SPELL_EFFECT_INTERRUPT_CAST))
+                        interruptCast = false;
+
+            // call functions which may have additional effects after chainging state of unit
+            // Stop cast only spells vs PreventionType == SPELL_PREVENTION_TYPE_SILENCE
+            for (uint32 i = CURRENT_MELEE_SPELL; i < CURRENT_MAX_SPELL; ++i)
+                if (Spell* spell = target->GetCurrentSpell(CurrentSpellTypes(i)))
+                    if (spell->m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE)
+                    {
+                        if (interruptCast)
+                            target->InterruptSpell(CurrentSpellTypes(i), false); // Stop spells on prepare or casting state
+
+                        if (GetBase() && caster->HasAura(58618)) // Glyph of Strangulate
+                            GetBase()->SetDuration(GetBase()->GetDuration() + 2000);
+                    }
+        }
     }
     else
     {
