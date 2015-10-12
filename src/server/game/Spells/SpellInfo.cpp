@@ -1229,6 +1229,7 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 142228: //Reave
     case 143337: //Mutate
     case 143666: //Diminish
+    case 142735: //Reaction Blue
     //debuffs from klaxxi
     case 142931:
     case 142929:

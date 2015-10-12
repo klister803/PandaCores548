@@ -7229,9 +7229,11 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
         case SPELLFAMILY_GENERIC:
             switch (GetId())
             {
+                //Paragons of Klaxxi
                 case 143977: //Vicious Assault Dummy Periodic
                     trigger_spell_id = 143980;
                     break;
+                //
                 case 145715: // Gusting Bomb
                     if(caster && target)
                         caster->CastSpell(target, 145716, true);
