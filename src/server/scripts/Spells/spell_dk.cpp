@@ -1115,10 +1115,11 @@ class spell_dk_anti_magic_shell_self : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dk_anti_magic_shell_self_AuraScript);
 
-            uint32 absorbPct, hpPct;
+            uint32 absorbPct, container;
             bool Load()
             {
                 absorbPct = GetSpellInfo()->Effects[EFFECT_0].CalcValue(GetCaster());
+                container = 0;
                 return true;
             }
 
@@ -1136,12 +1137,16 @@ class spell_dk_anti_magic_shell_self : public SpellScriptLoader
 
             void Trigger(AuraEffect* aurEff, DamageInfo & /*dmgInfo*/, uint32 & absorbAmount)
             {
-                Unit* target = GetTarget();
-                // damage absorbed by Anti-Magic Shell energizes the DK with additional runic power.
-                // This, if I'm not mistaken, shows that we get back ~20% of the absorbed damage as runic power.
-                int32 bp = int32(absorbAmount / 1400) * 80;
-                if(bp > 0)
-                    target->CastCustomSpell(target, DK_SPELL_RUNIC_POWER_ENERGIZE, &bp, NULL, NULL, true, NULL, aurEff);
+                if (Unit* target = GetTarget()) // AMS generates 2 Runic Power for every percent of maximum health absorbed
+                {
+                    uint32 RPCap = target->CountPctFromMaxHealth(1) / 2;
+                    int32 bp = int32((container + absorbAmount) / RPCap);
+                    container = (container + absorbAmount) - (bp * RPCap);
+                    bp *= 10;
+
+                    if (bp >= 10)
+                        target->CastCustomSpell(target, DK_SPELL_RUNIC_POWER_ENERGIZE, &bp, NULL, NULL, true, NULL, aurEff);
+                }
             }
 
             void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
