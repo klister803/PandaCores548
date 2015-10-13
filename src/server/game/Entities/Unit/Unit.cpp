@@ -6473,6 +6473,24 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 {
                     if (Player* plr = ToPlayer())
                     {
+                        switch (plr->GetSpecializationId(plr->GetActiveSpec()))
+                        {
+                            case SPEC_ROGUE_ASSASSINATION:
+                            case SPEC_ROGUE_COMBAT:
+                            case SPEC_ROGUE_SUBTLETY:
+                            case SPEC_MONK_BREWMASTER:
+                            case SPEC_MONK_WINDWALKER:
+                            case SPEC_HUNTER_BEASTMASTER:
+                            case SPEC_HUNTER_MARKSMAN:
+                            case SPEC_HUNTER_SURVIVAL:
+                            case SPEC_DRUID_CAT:
+                            case SPEC_DRUID_BEAR:
+                            case SPEC_SHAMAN_ENHANCEMENT:
+                                break;
+                            default:
+                                return false;
+                        }
+
                         int32 crit = plr->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_CRIT_MELEE);
                         int32 mastery = plr->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_MASTERY);
                         int32 haste = plr->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_MELEE);
