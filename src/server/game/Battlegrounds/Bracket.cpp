@@ -48,7 +48,7 @@ float GetChanceAgainst(int ownRating, int opponentRating)
 {
     // Returns the chance to win against a team with the given rating, used in the rating adjustment calculation
     // ELO system
-    return 1.0f / (1.0f + exp(log(10.0f) * (float)((float)opponentRating - (float)ownRating) / 400.0f));
+    return 1.0f / (1.0f + exp(log(10.0f) * (float)((float)opponentRating - (float)ownRating) / 300.0f));
 }
 
 int GetRatingMod(int ownRating, int opponentRating, bool won /*, float confidence_factor*/)
@@ -70,7 +70,16 @@ int GetRatingMod(int ownRating, int opponentRating, bool won /*, float confidenc
             mod = (48.0f + (48.0f * (1300.0f - float(ownRating)) / 300.0f)) * (won_mod - chance);
     }
     else
-        mod = 48.0f * (won_mod - chance);
+    {
+        float winbonus = 0.0f;
+
+        if (won && chance < 0.4f)
+        {
+            winbonus = (1.0f - (chance / 0.4f)) * 24.0f;
+        }
+
+        mod = (24.0f + winbonus) * (won_mod - chance);
+    }
 
 	// in any way should be decrase
 	if (!won && mod == 0.0f && ownRating > 0)
