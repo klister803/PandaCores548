@@ -546,6 +546,28 @@ void Spell::InitExplicitTargets(SpellCastTargets const& targets)
             || (target->ToGameObject() && !(neededTargets & TARGET_FLAG_GAMEOBJECT_MASK))
             || (target->ToCorpse() && !(neededTargets & TARGET_FLAG_CORPSE_MASK)))
             m_targets.RemoveObjectTarget();
+
+        if (Unit* _target = m_targets.GetUnitTarget())
+            if (target->GetGUID() != m_caster->GetGUID())
+            {
+                bool canChangeTarget = false;
+                for (uint8 i = 0; i < 5; ++i)
+                {
+                    if (!m_spellInfo->Effects[i].Effect)
+                        break;
+
+                    if ((m_spellInfo->Effects[i].TargetA.GetTarget() == TARGET_UNIT_TARGET_ANY ||
+                        m_spellInfo->Effects[i].TargetA.GetTarget() == TARGET_DEST_TARGET_ANY) &&
+                        m_spellInfo->IsPositiveEffect(i))
+                    {
+                        canChangeTarget = true;
+                        break;
+                    } 
+                }
+
+                if (canChangeTarget && !(AttributesCustomEx2 & SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS) && !m_caster->IsWithinLOSInMap(_target) && !_target->IsFriendlyTo(m_caster))
+                    m_targets.SetUnitTarget(m_caster);
+            }
     }
     else
     {
