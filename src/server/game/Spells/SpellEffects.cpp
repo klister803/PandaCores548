@@ -1514,7 +1514,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 case 20473: // Holy Shock
                 {
                     uint32 spellid = unitTarget->IsFriendlyTo(m_caster) ? 25914: 25912;
-                    m_caster->CastSpell(unitTarget, spellid, false);
+                    m_caster->CastSpell(unitTarget, spellid, true);
                     break;
                 }
                 case 31789:                                 // Righteous Defense (step 1)
