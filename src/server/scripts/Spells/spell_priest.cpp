@@ -2605,9 +2605,12 @@ class spell_pri_shadowy_apparition : public SpellScriptLoader
                         if (caster->HasAura(138156) && roll_chance_i(65))
                         {
                             if (Aura* aura = target->GetAura(34914, caster->GetGUID()))
-                                aura->SetDuration(aura->GetDuration() + 3000);
+                                if (AuraEffect* eff = aura->GetEffect(EFFECT_1))
+                                    aura->SetDuration(aura->GetDuration() + eff->GetAmplitude());
+
                             if (Aura* aura = target->GetAura(589, caster->GetGUID()))
-                                aura->SetDuration(aura->GetDuration() + 3000);
+                                if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
+                                    aura->SetDuration(aura->GetDuration() + eff->GetAmplitude());
                         }
                     }
                 }
