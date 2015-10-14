@@ -3855,7 +3855,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 81751: // Atonement
                     spellInfo->AttributesEx2 &= ~SPELL_ATTR2_CANT_CRIT;
                     break;
-                case 16246:
                 case 90289: // Removing Death Grip cooldown
                 case 36563: // Shadowstep
                     spellInfo->AttributesEx12 |= SPELL_ATTR12_HAVE_STABLE_FLYTIME;

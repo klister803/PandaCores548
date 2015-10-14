@@ -18205,7 +18205,8 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         } // if (!handled)
 
         // Remove charge (aura can be removed by triggers)
-        if (useCharges && takeCharges && i->aura->GetId() != 324)
+        if (useCharges && takeCharges && i->aura->GetId() != 324 // Custom MoP Script - Hack Fix for Lightning Shield and Hack Fix for Arcane Charges
+           && !(i->aura->GetId() == 16246 && procSpell && procSpell->Id == 8004))
         {
             // Hack Fix for Tiger Strikes
             if (i->aura->GetId() == 120273)
