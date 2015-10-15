@@ -1167,10 +1167,10 @@ const std::vector<SpellTriggered>* SpellMgr::GetSpellTriggered(int32 spell_id) c
     return itr != mSpellTriggeredMap.end() ? &(itr->second) : NULL;
 }
 
-const std::vector<SpellTriggered>* SpellMgr::GetSpellTriggeredDummy(int32 spell_id) const
+const std::vector<SpellDummyTrigger>* SpellMgr::GetSpellDummyTrigger(int32 spell_id) const
 {
-    SpellTriggeredMap::const_iterator itr = mSpellTriggeredDummyMap.find(spell_id);
-    return itr != mSpellTriggeredDummyMap.end() ? &(itr->second) : NULL;
+    SpellDummyTriggerMap::const_iterator itr = mSpellDummyTriggerMap.find(spell_id);
+    return itr != mSpellDummyTriggerMap.end() ? &(itr->second) : NULL;
 }
 
 const std::vector<SpellAuraDummy>* SpellMgr::GetSpellAuraDummy(int32 spell_id) const
@@ -2801,7 +2801,7 @@ void SpellMgr::LoadSpellTriggered()
     uint32 oldMSTime = getMSTime();
 
     mSpellTriggeredMap.clear();    // need for reload case
-    mSpellTriggeredDummyMap.clear();    // need for reload case
+    mSpellDummyTriggerMap.clear();    // need for reload case
     mSpellAuraDummyMap.clear();    // need for reload case
     mSpellTargetFilterMap.clear();    // need for reload case
 
@@ -2888,8 +2888,8 @@ void SpellMgr::LoadSpellTriggered()
     } while (result->NextRow());
 
 
-    //                                        0             1             2         3         4          5          6      7      8         9          10       11        12
-    result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group` FROM `spell_trigger_dummy`");
+    //                                        0             1             2         3         4          5          6      7      8         9          10       11
+    result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance` FROM `spell_dummy_trigger`");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 triggered spells. DB table `spell_trigger` is empty.");
@@ -2912,7 +2912,6 @@ void SpellMgr::LoadSpellTriggered()
         int32 effectmask = fields[9].GetInt32();
         int32 aura = fields[10].GetInt32();
         int32 chance = fields[11].GetInt32();
-        int32 group = fields[12].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(spell_id));
         if (!spellInfo)
@@ -2922,24 +2921,20 @@ void SpellMgr::LoadSpellTriggered()
             continue;
         }
 
-        SpellTriggered temptrigger;
-        temptrigger.spell_id = spell_id;
-        temptrigger.spell_trigger = spell_trigger;
-        temptrigger.spell_cooldown = 0;
-        temptrigger.option = option;
-        temptrigger.target = target;
-        temptrigger.caster = caster;
-        temptrigger.targetaura = targetaura;
-        temptrigger.bp0 = bp0;
-        temptrigger.bp1 = bp1;
-        temptrigger.bp2 = bp2;
-        temptrigger.effectmask = effectmask;
-        temptrigger.aura = aura;
-        temptrigger.chance = chance;
-        temptrigger.group = group;
-        temptrigger.procFlags = 0;
-        temptrigger.check_spell_id = 0;
-        mSpellTriggeredDummyMap[spell_id].push_back(temptrigger);
+        SpellDummyTrigger tempDummy;
+        tempDummy.spell_id = spell_id;
+        tempDummy.spell_trigger = spell_trigger;
+        tempDummy.option = option;
+        tempDummy.target = target;
+        tempDummy.caster = caster;
+        tempDummy.targetaura = targetaura;
+        tempDummy.bp0 = bp0;
+        tempDummy.bp1 = bp1;
+        tempDummy.bp2 = bp2;
+        tempDummy.effectmask = effectmask;
+        tempDummy.aura = aura;
+        tempDummy.chance = chance;
+        mSpellDummyTriggerMap[spell_id].push_back(tempDummy);
 
         ++count;
     } while (result->NextRow());

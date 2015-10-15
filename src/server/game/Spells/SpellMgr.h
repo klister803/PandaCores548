@@ -146,6 +146,18 @@ enum SpellTriggeredType
     SPELL_TRIGGER_DAM_MAXHEALTH                 = 38,           // set basepoint to spell damage or max heal percent
 };
 
+enum DummyTriggerType
+{
+    DUMMY_TRIGGER_BP                            = 0,            // set basepoint to spell from amount
+    DUMMY_TRIGGER_BP_CUSTOM                     = 1,            // set basepoint to spell custom from BD
+    DUMMY_TRIGGER_COOLDOWN                      = 2,            // Set cooldown for trigger spell
+    DUMMY_TRIGGER_CHECK_PROCK                   = 3,            // Check proc from spell to trigger
+    DUMMY_TRIGGER_DUMMY                         = 4,            // spell to trigger without option for bp
+    DUMMY_TRIGGER_CAST_DEST                     = 5,            // spell to trigger without option for bp
+    DUMMY_TRIGGER_CAST_OR_REMOVE                = 6,            // cast spell without option
+    DUMMY_TRIGGER_DAM_MAXHEALTH                 = 7,            // set basepoint to spell damage or max heal percent
+};
+
 enum SpellAuraDummyType
 {
     SPELL_DUMMY_ENABLE                          = 0,            // enable or disable aura(set amount to 0)
@@ -717,6 +729,22 @@ struct SpellTriggered
     int32 dummyEffect;
 };
 
+struct SpellDummyTrigger
+{
+    int32 spell_id;
+    int32 spell_trigger;
+    int32 target;
+    int32 caster;
+    int32 targetaura;
+    int32 option;
+    float bp0;
+    float bp1;
+    float bp2;
+    int32 effectmask;
+    int32 aura;
+    int32 chance;
+};
+
 struct SpellMountList
 {
     int32 spellId;
@@ -802,7 +830,7 @@ struct SpellScene
 };
 
 typedef std::unordered_map<int32, std::vector<SpellTriggered> > SpellTriggeredMap;
-typedef std::unordered_map<int32, std::vector<SpellTriggered> > SpellTriggeredDummyMap;
+typedef std::unordered_map<int32, std::vector<SpellDummyTrigger> > SpellDummyTriggerMap;
 typedef std::unordered_map<int32, std::vector<SpellAuraDummy> > SpellAuraDummyMap;
 typedef std::unordered_map<int32, std::vector<SpellTargetFilter> > SpellTargetFilterMap;
 typedef std::unordered_map<int32, std::vector<SpellLinked> > SpellLinkedMap;
@@ -927,7 +955,7 @@ class SpellMgr
         const uint32 GetMountListId(uint32 spell_id, uint32 teamid) const;
         const std::vector<SpellPrcoCheck> *GetSpellPrcoCheck(int32 spell_id) const;
         const std::vector<SpellTriggered> *GetSpellTriggered(int32 spell_id) const;
-        const std::vector<SpellTriggered> *GetSpellTriggeredDummy(int32 spell_id) const;
+        const std::vector<SpellDummyTrigger> *GetSpellDummyTrigger(int32 spell_id) const;
         const std::vector<SpellAuraDummy> *GetSpellAuraDummy(int32 spell_id) const;
         const std::vector<SpellTargetFilter> *GetSpellTargetFilter(int32 spell_id) const;
         const std::vector<SpellVisual> *GetSpellVisual(int32 spell_id) const;
@@ -1015,7 +1043,7 @@ class SpellMgr
         SpellTalentLinkedMap       mSpellTalentLinkedMap;
         SpellPrcoCheckMap          mSpellPrcoCheckMap;
         SpellTriggeredMap          mSpellTriggeredMap;
-        SpellTriggeredDummyMap     mSpellTriggeredDummyMap;
+        SpellDummyTriggerMap       mSpellDummyTriggerMap;
         SpellAuraDummyMap          mSpellAuraDummyMap;
         SpellTargetFilterMap       mSpellTargetFilterMap;
         SpellEnchantProcEventMap   mSpellEnchantProcEventMap;
