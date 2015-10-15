@@ -103,6 +103,35 @@ enum SpellLinkedType
     SPELL_LINK_REMOVE       = 0,
 };
 
+enum SpellLinkedUnitType
+{
+    LINK_UNIT_TYPE_DEFAULT      = 0,
+    LINK_UNIT_TYPE_PET          = 1,
+    LINK_UNIT_TYPE_OWNER        = 2,
+    LINK_UNIT_TYPE_CASTER       = 3,
+    LINK_UNIT_TYPE_SELECTED     = 4,
+    LINK_UNIT_TYPE_TARGET       = 5,
+};
+
+enum SpellLinkedHasType
+{
+    LINK_HAS_AURA_ON_CASTER       = 0,
+    LINK_HAS_AURA_ON_TARGET       = 1,
+    LINK_HAS_SPELL_ON_CASTER      = 2,
+    LINK_HAS_AURA_ON_OWNER        = 3,
+    LINK_HAS_AURATYPE             = 4,
+};
+
+enum SpellLinkedActionType
+{
+    LINK_ACTION_DEFAULT       = 0,
+    LINK_ACTION_LEARN         = 1,
+    LINK_ACTION_AURATYPE      = 2,
+    LINK_ACTION_SPELLCOOLDOWN = 3,
+    LINK_ACTION_CASTNOTRIGGER = 4,
+    LINK_ACTION_ADDAURA       = 5,
+};
+
 enum SpellTriggeredType
 {
     SPELL_TRIGGER_BP                            = 0,            // set basepoint to spell from amount
@@ -663,15 +692,16 @@ struct SpellLinked
 {
     int32 effect;
     int32 hastalent;
+    uint8 hastype;
     int32 hastalent2;
+    uint8 hastype2;
     int32 chance;
     int32 caster;
     int32 target;
     int32 cooldown;
-    int32 type2;
     uint32 hitmask;
-    int32 learnspell;
     int32 removeMask;
+    uint8 actiontype;
 };
 
 struct SpellTalentLinked

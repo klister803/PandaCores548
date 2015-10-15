@@ -1657,98 +1657,62 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 for (std::vector<SpellLinked>::const_iterator itr = spellTriggered->begin(); itr != spellTriggered->end(); ++itr)
                 {
                     Unit* _target = target;
-                    if(itr->target == 1 && target->ToPlayer()) //get target pet
-                    {
-                        if (Pet* pet = target->ToPlayer()->GetPet())
-                            _target = (Unit*)pet;
-                        else
-                            continue;
-                    }
-                    if(itr->target == 2) //get target owner
-                    {
-                        if (Unit* owner = target->GetOwner())
-                            _target = owner;
-                        else
-                            continue;
-                    }
-                    if(itr->target == 3) //get target as caster
-                        _target = caster;
-
                     Unit* _caster = caster;
-                    if(itr->caster == 1 && caster && caster->ToPlayer()) //get caster pet
-                    {
-                        if (Pet* pet = caster->ToPlayer()->GetPet())
-                            _caster = (Unit*)pet;
-                        else
+
+                    if (itr->target)
+                        _target = target->GetUnitForLinkedSpell(caster, target, itr->target);
+
+                    if (itr->caster && caster)
+                        _caster = caster->GetUnitForLinkedSpell(caster, target, itr->caster);
+
+                    if(itr->hastalent)
+                        if(target->HasAuraLinkedSpell(_caster, _target, itr->hastype, itr->hastalent))
                             continue;
-                    }
-                    if(itr->caster == 2 && caster) //get caster owner
-                    {
-                        if (Unit* owner = caster->GetOwner())
-                            _caster = owner;
-                        else
+
+                    if(itr->hastalent2)
+                        if(target->HasAuraLinkedSpell(_caster, _target, itr->hastype2, itr->hastalent2))
                             continue;
-                    }
-                    if(itr->caster == 3) //get caster as target
-                        _caster = target;
+
+                    if(!_target)
+                        continue;
 
                     if (itr->effect < 0)
                     {
-                        if(itr->learnspell)
+                        switch (itr->actiontype)
                         {
-                            if(Player* _lplayer = _target->ToPlayer())
-                                _lplayer->removeSpell(-(itr->effect));
+                            case LINK_ACTION_DEFAULT:
+                                _target->ApplySpellImmune(GetId(), IMMUNITY_ID, -(itr->effect), true);
+                                break;
+                            case LINK_ACTION_LEARN:
+                            {
+                                if(Player* _lplayer = _target->ToPlayer())
+                                    _lplayer->removeSpell(abs(itr->effect));
+                                break;
+                            }
+                            case LINK_ACTION_AURATYPE:
+                                _target->RemoveAurasByType(AuraType(itr->hastalent2));
+                                break;
                         }
-                        else
-                            _target->ApplySpellImmune(GetId(), IMMUNITY_ID, -(itr->effect), true);
                     }
                     else if (_caster)
                     {
-                        if(itr->type2 == 2 && _caster)
-                        {
-                            if(itr->hastalent > 0 && !_caster->HasSpell(itr->hastalent))
-                                continue;
-                            else if(itr->hastalent < 0 && _caster->HasSpell(abs(itr->hastalent)))
-                                continue;
-                            if(itr->hastalent2 > 0 && !_caster->HasSpell(itr->hastalent2))
-                                continue;
-                            else if(itr->hastalent2 < 0 && _caster->HasSpell(abs(itr->hastalent2)))
-                                continue;
-                        }
-                        else if(itr->type2)
-                        {
-                            if(itr->hastalent > 0 && !_caster->HasAura(itr->hastalent))
-                                continue;
-                            else if(itr->hastalent < 0 && _caster->HasAura(abs(itr->hastalent)))
-                                continue;
-                            if(itr->hastalent2 < 0 && !_caster->HasAura(itr->hastalent2))
-                                continue;
-                            else if(itr->hastalent2 < 0 && _caster->HasAura(abs(itr->hastalent2)))
-                                continue;
-                        }
-                        else
-                        {
-                            if(itr->hastalent > 0 && !_target->HasAura(itr->hastalent))
-                                continue;
-                            else if(itr->hastalent < 0 && _target->HasAura(abs(itr->hastalent)))
-                                continue;
-                            if(itr->hastalent2 > 0 && !_target->HasAura(itr->hastalent2))
-                                continue;
-                            else if(itr->hastalent2 < 0 && _target->HasAura(abs(itr->hastalent2)))
-                                continue;
-                        }
                         if(itr->chance != 0 && !roll_chance_i(itr->chance))
                             continue;
                         if(itr->cooldown != 0 && _target->GetTypeId() == TYPEID_PLAYER && _target->ToPlayer()->HasSpellCooldown(itr->effect))
                             continue;
 
-                        if(itr->learnspell)
+                        switch (itr->actiontype)
                         {
-                            if(Player* _lplayer = _caster->ToPlayer())
-                                _lplayer->learnSpell(itr->effect, false);
+                            case LINK_ACTION_DEFAULT:
+                                _caster->AddAura(itr->effect, _target);
+                                break;
+                            case LINK_ACTION_LEARN:
+                            {
+                                if(Player* _lplayer = _caster->ToPlayer())
+                                    _lplayer->learnSpell(itr->effect, false);
+                                break;
+                            }
                         }
-                        else
-                            _caster->AddAura(itr->effect, _target);
 
                         if(itr->cooldown != 0 && _target->GetTypeId() == TYPEID_PLAYER)
                             _target->ToPlayer()->AddSpellCooldown(itr->effect, 0, getPreciseTime() + (double)itr->cooldown);
@@ -1760,98 +1724,61 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 for (std::vector<SpellLinked>::const_iterator itr = spellTriggered->begin(); itr != spellTriggered->end(); ++itr)
                 {
                     Unit* _target = target;
-                    if(itr->target == 1 && target->ToPlayer()) //get target pet
-                    {
-                        if (Pet* pet = target->ToPlayer()->GetPet())
-                            _target = (Unit*)pet;
-                        else
-                            continue;
-                    }
-                    if(itr->target == 2) //get target owner
-                    {
-                        if (Unit* owner = target->GetOwner())
-                            _target = owner;
-                        else
-                            continue;
-                    }
-                    if(itr->target == 3) //get target as caster
-                        _target = caster;
-
                     Unit* _caster = caster;
-                    if(itr->caster == 1 && caster && caster->ToPlayer()) //get caster pet
-                    {
-                        if (Pet* pet = caster->ToPlayer()->GetPet())
-                            _caster = (Unit*)pet;
-                        else
+
+                    if (itr->target)
+                        _target = target->GetUnitForLinkedSpell(caster, target, itr->target);
+
+                    if (itr->caster && caster)
+                        _caster = caster->GetUnitForLinkedSpell(caster, target, itr->caster);
+
+                    if(itr->hastalent)
+                        if(target->HasAuraLinkedSpell(_caster, _target, itr->hastype, itr->hastalent))
                             continue;
-                    }
-                    if(itr->caster == 2 && caster) //get caster owner
-                    {
-                        if (Unit* owner = caster->GetOwner())
-                            _caster = owner;
-                        else
+
+                    if(itr->hastalent2)
+                        if(target->HasAuraLinkedSpell(_caster, _target, itr->hastype2, itr->hastalent2))
                             continue;
-                    }
-                    if(itr->caster == 3) //get caster as target
-                        _caster = target;
+                    if(!_target)
+                        continue;
 
                     if (itr->effect < 0)
                     {
-                        if(itr->learnspell)
+                        switch (itr->actiontype)
                         {
-                            if(Player* _lplayer = _target->ToPlayer())
-                                _lplayer->removeSpell(-(itr->effect));
+                            case LINK_ACTION_DEFAULT:
+                                _target->RemoveAurasDueToSpell(-(itr->effect));
+                                break;
+                            case LINK_ACTION_LEARN:
+                            {
+                                if(Player* _lplayer = _target->ToPlayer())
+                                    _lplayer->removeSpell(abs(itr->effect));
+                                break;
+                            }
+                            case LINK_ACTION_AURATYPE:
+                                _target->RemoveAurasByType(AuraType(itr->hastalent2));
+                                break;
                         }
-                        else
-                            _target->RemoveAurasDueToSpell(-(itr->effect));
                     }
                     else if (_caster)
                     {
-                        if(itr->type2 == 2 && _caster)
-                        {
-                            if(itr->hastalent > 0 && !_caster->HasSpell(itr->hastalent))
-                                continue;
-                            else if(itr->hastalent < 0 && _caster->HasSpell(abs(itr->hastalent)))
-                                continue;
-                            if(itr->hastalent2 > 0 && !_caster->HasSpell(itr->hastalent2))
-                                continue;
-                            else if(itr->hastalent2 < 0 && _caster->HasSpell(abs(itr->hastalent2)))
-                                continue;
-                        }
-                        else if(itr->type2)
-                        {
-                            if(itr->hastalent > 0 && !_caster->HasAura(itr->hastalent))
-                                continue;
-                            else if(itr->hastalent < 0 && _caster->HasAura(abs(itr->hastalent)))
-                                continue;
-                            if(itr->hastalent2 < 0 && !_caster->HasAura(itr->hastalent2))
-                                continue;
-                            else if(itr->hastalent2 < 0 && _caster->HasAura(abs(itr->hastalent2)))
-                                continue;
-                        }
-                        else
-                        {
-                            if(itr->hastalent > 0 && !_target->HasAura(itr->hastalent))
-                                continue;
-                            else if(itr->hastalent < 0 && _target->HasAura(abs(itr->hastalent)))
-                                continue;
-                            if(itr->hastalent2 > 0 && !_target->HasAura(itr->hastalent2))
-                                continue;
-                            else if(itr->hastalent2 < 0 && _target->HasAura(abs(itr->hastalent2)))
-                                continue;
-                        }
                         if(itr->chance != 0 && !roll_chance_i(itr->chance))
                             continue;
                         if(itr->cooldown != 0 && _target->GetTypeId() == TYPEID_PLAYER && _target->ToPlayer()->HasSpellCooldown(itr->effect))
                             continue;
 
-                        if(itr->learnspell)
+                        switch (itr->actiontype)
                         {
-                            if(Player* _lplayer = _caster->ToPlayer())
-                                _lplayer->learnSpell(itr->effect, false);
+                            case LINK_ACTION_DEFAULT:
+                                _caster->AddAura(itr->effect, _target);
+                                break;
+                            case LINK_ACTION_LEARN:
+                            {
+                                if(Player* _lplayer = _caster->ToPlayer())
+                                    _lplayer->learnSpell(itr->effect, false);
+                                break;
+                            }
                         }
-                        else
-                            _caster->AddAura(itr->effect, _target);
 
                         if(itr->cooldown != 0 && _target->GetTypeId() == TYPEID_PLAYER)
                             _target->ToPlayer()->AddSpellCooldown(itr->effect, 0, getPreciseTime() + (double)itr->cooldown);
@@ -1874,105 +1801,66 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     for (std::vector<SpellLinked>::const_iterator itr = spellTriggered->begin(); itr != spellTriggered->end(); ++itr)
                     {
                         Unit* _target = target;
-                        if(itr->target == 1 && target->ToPlayer()) //get target pet
-                        {
-                            if (Pet* pet = target->ToPlayer()->GetPet())
-                                _target = (Unit*)pet;
-                            else
-                                continue;
-                        }
-                        if(itr->target == 2) //get target owner
-                        {
-                            if (Unit* owner = target->GetOwner())
-                                _target = owner;
-                            else
-                                continue;
-                        }
-                        if(itr->target == 3 && caster) //get target as caster
-                            _target = caster;
-                        if(itr->target == 4 && caster) //get target select
-                            if (Player* _player = caster->ToPlayer())
-                                if (Unit* _select = _player->GetSelectedUnit())
-                                    _target = _select;
-
                         Unit* _caster = target;
-                        if(itr->caster == 1 && caster && caster->ToPlayer()) //get caster pet
-                        {
-                            if (Pet* pet = caster->ToPlayer()->GetPet())
-                                _caster = (Unit*)pet;
-                            else
+
+                        if (itr->target)
+                            _target = target->GetUnitForLinkedSpell(caster, target, itr->target);
+
+                        if (itr->caster && caster)
+                            _caster = caster->GetUnitForLinkedSpell(caster, target, itr->caster);
+
+                        if(itr->hastalent)
+                            if(target->HasAuraLinkedSpell(_caster, _target, itr->hastype, itr->hastalent))
                                 continue;
-                        }
-                        if(itr->caster == 2 && caster) //get caster owner
-                        {
-                            if (Unit* owner = caster->GetOwner())
-                                _caster = owner;
-                            else
+
+                        if(itr->hastalent2)
+                            if(target->HasAuraLinkedSpell(_caster, _target, itr->hastype2, itr->hastalent2))
                                 continue;
-                        }
-                        if(itr->caster == 3 && caster) //get caster as target
-                            _caster = caster;
-                        if(itr->caster == 4 && caster) //get caster select
-                            if (Player* _player = caster->ToPlayer())
-                                if (Unit* _select = _player->GetSelectedUnit())
-                                    _caster = _select;
+
+                        if(!_target)
+                            continue;
 
                         if (itr->effect < 0)
                         {
-                            if(itr->learnspell)
+                            switch (itr->actiontype)
                             {
-                                if(Player* _lplayer = _target->ToPlayer())
-                                    _lplayer->removeSpell(-(itr->effect));
+                                case LINK_ACTION_DEFAULT:
+                                    _target->RemoveAurasDueToSpell(-(itr->effect));
+                                    break;
+                                case LINK_ACTION_LEARN:
+                                {
+                                    if(Player* _lplayer = _target->ToPlayer())
+                                        _lplayer->removeSpell(abs(itr->effect));
+                                    break;
+                                }
+                                case LINK_ACTION_AURATYPE:
+                                    _target->RemoveAurasByType(AuraType(itr->hastalent2));
+                                    break;
                             }
-                            else
-                                _target->RemoveAurasDueToSpell(-(itr->effect));
                         }
                         else if (removeMode != AURA_REMOVE_BY_DEATH)
                         {
                             if(itr->removeMask && !(itr->removeMask & (1 << removeMode)))
                                 continue;
 
-                            if(itr->type2 == 2 && caster)
-                            {
-                                if(itr->hastalent > 0 && !caster->HasSpell(itr->hastalent))
-                                    continue;
-                                else if(itr->hastalent < 0 && caster->HasSpell(abs(itr->hastalent)))
-                                    continue;
-                                if(itr->hastalent2 > 0 && !caster->HasSpell(itr->hastalent2))
-                                    continue;
-                                else if(itr->hastalent2 < 0 && caster->HasSpell(abs(itr->hastalent2)))
-                                    continue;
-                            }
-                            else if(itr->type2 && caster)
-                            {
-                                if(itr->hastalent != 0 && !caster->HasAura(itr->hastalent))
-                                    continue;
-                                if(itr->hastalent2 != 0 && !caster->HasAura(itr->hastalent2))
-                                    continue;
-                            }
-                            else
-                            {
-                                if(itr->hastalent > 0 && !_target->HasAura(itr->hastalent))
-                                    continue;
-                                else if(itr->hastalent < 0 && _target->HasAura(abs(itr->hastalent)))
-                                    continue;
-                                if(itr->hastalent2 > 0 && !_target->HasAura(itr->hastalent2))
-                                    continue;
-                                else if(itr->hastalent2 < 0 && _target->HasAura(abs(itr->hastalent2)))
-                                    continue;
-                            }
                             if(itr->chance != 0 && !roll_chance_i(itr->chance))
                                 continue;
                             if(itr->cooldown != 0 && _target->GetTypeId() == TYPEID_PLAYER && _target->ToPlayer()->HasSpellCooldown(itr->effect))
                                 continue;
 
-                            if(itr->learnspell)
+                            switch (itr->actiontype)
                             {
-                                if(Player* _lplayer = _target->ToPlayer())
-                                    _lplayer->learnSpell(itr->effect, false);
+                                case LINK_ACTION_DEFAULT:
+                                    if(_caster)
+                                        _caster->CastSpell(_target, itr->effect, true, NULL, NULL, GetCasterGUID());
+                                    break;
+                                case LINK_ACTION_LEARN:
+                                {
+                                    if(Player* _lplayer = _target->ToPlayer())
+                                        _lplayer->learnSpell(itr->effect, false);
+                                    break;
+                                }
                             }
-                            else
-                                _caster->CastSpell(_target, itr->effect, true, NULL, NULL, GetCasterGUID());
 
                             if(itr->cooldown != 0 && _target->GetTypeId() == TYPEID_PLAYER)
                                 _target->ToPlayer()->AddSpellCooldown(itr->effect, 0, getPreciseTime() + (double)itr->cooldown);
@@ -1984,30 +1872,27 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     for (std::vector<SpellLinked>::const_iterator itr = spellTriggered->begin(); itr != spellTriggered->end(); ++itr)
                     {
                         Unit* _target = target;
-                        if(itr->target == 1 && target->ToPlayer()) //get target pet
-                        {
-                            if (Pet* pet = target->ToPlayer()->GetPet())
-                                _target = (Unit*)pet;
-                            else
-                                continue;
-                        }
-                        if(itr->target == 2) //get target owner
-                        {
-                            if (Unit* owner = target->GetOwner())
-                                _target = owner;
-                            else
-                                continue;
-                        }
+
+                        if (itr->target)
+                            _target = target->GetUnitForLinkedSpell(caster, target, itr->target);
 
                         if (itr->effect < 0)
                         {
-                            if(itr->learnspell)
+                            switch (itr->actiontype)
                             {
-                                if(Player* _lplayer = _target->ToPlayer())
-                                    _lplayer->removeSpell(-(itr->effect));
+                                case LINK_ACTION_DEFAULT:
+                                    _target->ApplySpellImmune(GetId(), IMMUNITY_ID, -(itr->effect), false);
+                                    break;
+                                case LINK_ACTION_LEARN:
+                                {
+                                    if(Player* _lplayer = _target->ToPlayer())
+                                        _lplayer->removeSpell(abs(itr->effect));
+                                    break;
+                                }
+                                case LINK_ACTION_AURATYPE:
+                                    _target->RemoveAurasByType(AuraType(itr->hastalent2));
+                                    break;
                             }
-                            else
-                                _target->ApplySpellImmune(GetId(), IMMUNITY_ID, -(itr->effect), false);
                         }
                         else
                             _target->RemoveAura(itr->effect, GetCasterGUID(), 0, removeMode);
@@ -2024,52 +1909,34 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
             for (std::vector<SpellLinked>::const_iterator itr = spellTriggered->begin(); itr != spellTriggered->end(); ++itr)
                 if (itr->effect > 0)
                 {
-                    if(itr->type2 == 2 && caster)
-                    {
-                        if(itr->hastalent != 0 && !caster->HasSpell(itr->hastalent))
+                    if(itr->hastalent)
+                        if(target->HasAuraLinkedSpell(caster, target, itr->hastype, itr->hastalent))
                             continue;
-                        else if(itr->hastalent < 0 && caster->HasSpell(abs(itr->hastalent)))
+
+                    if(itr->hastalent2)
+                        if(target->HasAuraLinkedSpell(caster, target, itr->hastype2, itr->hastalent2))
                             continue;
-                        if(itr->hastalent2 != 0 && !caster->HasSpell(itr->hastalent2))
-                            continue;
-                        else if(itr->hastalent2 < 0 && caster->HasSpell(abs(itr->hastalent2)))
-                            continue;
-                    }
-                    else if(itr->type2 && caster)
-                    {
-                        if(itr->hastalent != 0 && !caster->HasAura(itr->hastalent))
-                            continue;
-                        else if(itr->hastalent < 0 && caster->HasAura(abs(itr->hastalent)))
-                            continue;
-                        if(itr->hastalent2 != 0 && !caster->HasAura(itr->hastalent2))
-                            continue;
-                        else if(itr->hastalent2 < 0 && caster->HasAura(abs(itr->hastalent2)))
-                            continue;
-                    }
-                    else
-                    {
-                        if(itr->hastalent != 0 && !target->HasAura(itr->hastalent))
-                            continue;
-                        else if(itr->hastalent < 0 && target->HasAura(abs(itr->hastalent)))
-                            continue;
-                        if(itr->hastalent2 != 0 && !target->HasAura(itr->hastalent2))
-                            continue;
-                        else if(itr->hastalent2 < 0 && target->HasAura(abs(itr->hastalent2)))
-                            continue;
-                    }
+
                     if(itr->chance != 0 && !roll_chance_i(itr->chance))
                         continue;
                     if(itr->cooldown != 0 && target->GetTypeId() == TYPEID_PLAYER && target->ToPlayer()->HasSpellCooldown(itr->effect))
                         continue;
 
-                    if(itr->learnspell)
+                    switch (itr->actiontype)
                     {
-                        if(Player* _lplayer = target->ToPlayer())
-                            _lplayer->learnSpell(itr->effect, false);
+                        case LINK_ACTION_DEFAULT:
+                        {
+                            if (Aura* triggeredAura = target->GetAura(itr->effect, GetCasterGUID()))
+                                triggeredAura->ModStackAmount(GetStackAmount() - triggeredAura->GetStackAmount());
+                            break;
+                        }
+                        case LINK_ACTION_LEARN:
+                        {
+                            if(Player* _lplayer = target->ToPlayer())
+                                _lplayer->learnSpell(itr->effect, false);
+                            break;
+                        }
                     }
-                    else
-                        if (Aura* triggeredAura = target->GetAura(itr->effect, GetCasterGUID()))
-                            triggeredAura->ModStackAmount(GetStackAmount() - triggeredAura->GetStackAmount());
 
                     if(itr->cooldown != 0 && target->GetTypeId() == TYPEID_PLAYER)
                         target->ToPlayer()->AddSpellCooldown(itr->effect, 0, getPreciseTime() + (double)itr->cooldown);

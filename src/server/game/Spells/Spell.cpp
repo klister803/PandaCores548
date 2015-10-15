@@ -6284,129 +6284,43 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
 
             if(!_target)
                 _target = m_targets.GetUnitTarget();
-
-            if(i->target == 1 && m_caster->ToPlayer()) //get target pet
-            {
-                if (Pet* pet = m_caster->ToPlayer()->GetPet())
-                    _target = (Unit*)pet;
-                else
-                    continue;
-            }
-            if(i->target == 2) //get target owner
-            {
-                if (Unit* owner = m_caster->GetOwner())
-                    _target = owner;
-                else
-                    continue;
-            }
-            if(i->target == 3) //get target as caster
-                _target = m_caster;
-            if(i->target == 4) //get target selected
-            {
-                if (m_caster->ToPlayer())
-                    _target = m_caster->ToPlayer()->GetSelectedUnit();
-                else
-                    continue;
-            }
-
             _caster = m_caster;
-            if(i->caster == 1 && m_caster->ToPlayer()) //get caster pet
-            {
-                if (Pet* pet = m_caster->ToPlayer()->GetPet())
-                    _caster = (Unit*)pet;
-                else
-                    continue;
-            }
-            if(i->caster == 2) //get caster owner
-            {
-                if (Unit* owner = m_caster->GetOwner())
-                    _caster = owner;
-                else
-                    continue;
-            }
-            if(i->caster == 3) //get caster as target
-                _caster = _target;
-            if(i->caster == 4) //get caster selected
-            {
-                if (m_caster->ToPlayer())
-                    _caster = m_caster->ToPlayer()->GetSelectedUnit();
-                else
-                    continue;
-            }
+
+            if (i->target)
+                _target = m_caster->GetUnitForLinkedSpell(_caster, _target, i->target);
+
+            if (i->caster)
+                _caster = m_caster->GetUnitForLinkedSpell(_caster, _target, i->caster);
 
             if(!_caster)
                 continue;
 
-            if (i->type2 == 4 && _target)
-            {
-                if (i->hastalent != 0 && !_target->HasAuraTypeWithCaster(AuraType(i->hastalent),  _caster->GetGUID()))
+            if(i->hastalent)
+                if(m_caster->HasAuraLinkedSpell(_caster, _target, i->hastype, i->hastalent))
                     continue;
-                if (i->hastalent2 != 0 && !_target->HasAuraTypeWithCaster(AuraType(i->hastalent2), _caster->GetGUID()))
+
+            if(i->hastalent2)
+                if(m_caster->HasAuraLinkedSpell(_caster, _target, i->hastype2, i->hastalent2))
                     continue;
-            }
-            else if (i->type2 == 3)
-            {
-                if (Unit* owner = _caster->GetOwner())
-                {
-                    if(i->hastalent > 0 && !owner->HasAura(i->hastalent))
-                        continue;
-                    else if(i->hastalent < 0 && owner->HasAura(abs(i->hastalent)))
-                        continue;
-                    if(i->hastalent2 > 0 && !owner->HasAura(i->hastalent2))
-                        continue;
-                    else if(i->hastalent2 < 0 && owner->HasAura(abs(i->hastalent2)))
-                        continue;
-                }
-                else continue;
-            }
-            else if(i->type2 == 2)
-            {
-                if(i->hastalent > 0 && !_caster->HasSpell(i->hastalent))
-                    continue;
-                else if(i->hastalent < 0 && _caster->HasSpell(abs(i->hastalent)))
-                    continue;
-                if(i->hastalent2 > 0 && !_caster->HasSpell(i->hastalent2))
-                    continue;
-                else if(i->hastalent2 < 0 && _caster->HasSpell(abs(i->hastalent2)))
-                    continue;
-            }
-            else if(i->type2 == 1 && _target)
-            {
-                if (i->hastalent > 0 && !_target->HasAura(i->hastalent))
-                    continue;
-                else if(i->hastalent < 0 && _target->HasAura(abs(i->hastalent)))
-                    continue;
-                if (i->hastalent2 > 0 && !_target->HasAura(i->hastalent2))
-                    continue;
-                else if(i->hastalent2 < 0 && _target->HasAura(abs(i->hastalent2)))
-                    continue;
-            }
-            else
-            {
-                if(i->hastalent > 0 && !_caster->HasAura(i->hastalent))
-                    continue;
-                else if(i->hastalent < 0 && _caster->HasAura(abs(i->hastalent)))
-                    continue;
-                if (i->type2 != 5)
-                {
-                    if(i->hastalent2 > 0 && !_caster->HasAura(i->hastalent2))
-                        continue;
-                    else if(i->hastalent2 < 0 && _caster->HasAura(abs(i->hastalent2)))
-                        continue;
-                }
-            }
 
             if (i->effect < 0)
             {
-                if(i->learnspell)
+                switch (i->actiontype)
                 {
-                    if(Player* _lplayer = _caster->ToPlayer())
-                        _lplayer->removeSpell(-(i->effect));
+                    case LINK_ACTION_DEFAULT:
+                        _caster->RemoveAurasDueToSpell(abs(i->effect));
+                        break;
+                    case LINK_ACTION_LEARN:
+                    {
+                        if(Player* _lplayer = _caster->ToPlayer())
+                            _lplayer->removeSpell(abs(i->effect));
+                        break;
+                    }
+                    case LINK_ACTION_AURATYPE:
+                        if(_target)
+                            _target->RemoveAurasByType(AuraType(i->hastalent2));
+                        break;
                 }
-                else if (i->type2 == 5 && _target)
-                    _target->RemoveAurasByType(AuraType(i->hastalent2));
-                else
-                    _caster->RemoveAurasDueToSpell(-(i->effect));
             }
             else
             {
@@ -6415,21 +6329,29 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
                 if(i->cooldown != 0 && _caster->GetTypeId() == TYPEID_PLAYER && _caster->ToPlayer()->HasSpellCooldown(i->effect))
                     continue;
 
-                if (i->learnspell)
+                switch (i->actiontype)
                 {
-                    if (Player* _lplayer = _caster->ToPlayer())
-                        _lplayer->learnSpell(i->effect, false);
-                }
-                else if (i->type2 == 8)
-                    _caster->AddAura(i->effect, _target ? _target : _caster);
-                else if (i->type2 == 7)
-                    _caster->CastSpell(_target ? _target : _caster, i->effect, false);
-                else if (i->type2 == 6)
-                    _caster->SendSpellCooldown(i->effect, m_spellInfo->Id);
-                else
-                {
-                    _caster->CastSpell(_target ? _target : _caster, i->effect, true);
-                    spellBanList.insert(i->effect); // Triggered once for a cycle
+                    case LINK_ACTION_DEFAULT:
+                    {
+                        _caster->CastSpell(_target ? _target : _caster, i->effect, true);
+                        spellBanList.insert(i->effect); // Triggered once for a cycle
+                        break;
+                    }
+                    case LINK_ACTION_LEARN:
+                    {
+                        if (Player* _lplayer = _caster->ToPlayer())
+                            _lplayer->learnSpell(i->effect, false);
+                        break;
+                    }
+                    case LINK_ACTION_SPELLCOOLDOWN:
+                        _caster->SendSpellCooldown(i->effect, m_spellInfo->Id);
+                        break;
+                    case LINK_ACTION_CASTNOTRIGGER:
+                        _caster->CastSpell(_target ? _target : _caster, i->effect, false);
+                        break;
+                    case LINK_ACTION_ADDAURA:
+                        _caster->AddAura(i->effect, _target ? _target : _caster);
+                        break;
                 }
 
                 if(i->cooldown != 0 && _caster->GetTypeId() == TYPEID_PLAYER)

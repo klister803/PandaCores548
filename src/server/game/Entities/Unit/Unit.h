@@ -2523,6 +2523,9 @@ class Unit : public WorldObject
         bool HasSomeCasterAura(uint64 guid);
         bool HasMyAura(uint32 spellId);
 
+        Unit* GetUnitForLinkedSpell(Unit* caster, Unit* target, uint8 type);
+        bool HasAuraLinkedSpell(Unit* caster, Unit* target, uint8 type, int32 hastalent);
+
         void SendDispelFailed(uint64 targetGuid, uint32 spellId, std::list<uint32>& spellList);
         void SendDispelLog(uint64 targetGuid, uint32 spellId, std::list<uint32>& spellList, bool broke, bool stolen);
 

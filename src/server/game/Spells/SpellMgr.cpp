@@ -2388,8 +2388,8 @@ void SpellMgr::LoadSpellLinked()
 
     mSpellLinkedMap.clear();    // need for reload case
 
-    //                                                0              1             2      3       4         5          6         7        8       9        10        11           12
-    QueryResult result = WorldDatabase.Query("SELECT spell_trigger, spell_effect, type, caster, target, hastalent, hastalent2, chance, cooldown, type2, hitmask, learnspell, removeMask FROM spell_linked_spell");
+    //                                                0              1             2      3       4         5          6         7        8       9         10        11          12         13
+    QueryResult result = WorldDatabase.Query("SELECT spell_trigger, spell_effect, type, caster, target, hastalent, hastalent2, chance, cooldown, hastype, hitmask, removeMask, hastype2, actiontype FROM spell_linked_spell");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 linked spells. DB table `spell_linked_spell` is empty.");
@@ -2410,10 +2410,11 @@ void SpellMgr::LoadSpellLinked()
         int32 hastalent2 = fields[6].GetInt32();
         int32 chance = fields[7].GetInt32();
         int32 cooldown = fields[8].GetUInt8();
-        int32 type2 = fields[9].GetUInt8();
+        int32 hastype = fields[9].GetUInt8();
         uint32 hitmask = fields[10].GetUInt32();
-        int32 learnspell = fields[11].GetInt32();
-        int32 removeMask = fields[12].GetInt32();
+        int32 removeMask = fields[11].GetInt32();
+        int32 hastype2 = fields[12].GetInt32();
+        int32 actiontype = fields[13].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(trigger));
         if (!spellInfo)
@@ -2443,12 +2444,13 @@ void SpellMgr::LoadSpellLinked()
         templink.hastalent2 = hastalent2;
         templink.chance = chance;
         templink.cooldown = cooldown;
-        templink.type2 = type2;
+        templink.hastype = hastype;
         templink.caster = caster;
         templink.target = target;
         templink.hitmask = hitmask;
-        templink.learnspell = learnspell;
         templink.removeMask = removeMask;
+        templink.hastype2 = hastype2;
+        templink.actiontype = actiontype;
         mSpellLinkedMap[trigger].push_back(templink);
 
         ++count;
