@@ -885,50 +885,31 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
     }
 }
 
-void Spell::EffectDummy(SpellEffIndex effIndex)
+bool Spell::SpellDummyTriggered(SpellEffIndex effIndex)
 {
-    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET
-        && effectHandleMode != SPELL_EFFECT_HANDLE_LAUNCH)
-        return;
-
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "EffectDummy end %i, m_diffMode %i, effIndex %i, spellId %u, damage %i, effectHandleMode %u, GetExplicitTargetMask %u", m_damage, m_diffMode, effIndex, m_spellInfo->Id, damage, effectHandleMode, m_spellInfo->GetExplicitTargetMask());
-
-    uint32 spell_id = 0;
-    int32 bp = 0;
-    bool triggered = true;
-    SpellCastTargets targets;
-
-    if (std::vector<SpellTriggered> const* spellTrigger = sSpellMgr->GetSpellTriggeredDummy(m_spellInfo->Id))
+    if (std::vector<SpellDummyTrigger> const* spellTrigger = sSpellMgr->GetSpellDummyTrigger(m_spellInfo->Id))
     {
         bool check = false;
         Unit* triggerTarget = unitTarget;
         Unit* triggerCaster = m_caster;
         int32 basepoints0 = damage;
-        int32 triggered_spell_id = damage;
-        std::list<int32> groupList;
         uint32 cooldown_spell_id = 0;
 
-        for (std::vector<SpellTriggered>::const_iterator itr = spellTrigger->begin(); itr != spellTrigger->end(); ++itr)
+        for (std::vector<SpellDummyTrigger>::const_iterator itr = spellTrigger->begin(); itr != spellTrigger->end(); ++itr)
         {
-            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectDummy %u, 1<<effIndex %u, itr->effectmask %u, option %u, spell_trigger %i, target %u (%u ==> %u)", m_spellInfo->Id, 1<<effIndex, itr->effectmask, itr->option, itr->spell_trigger, itr->target, triggerTarget ? triggerTarget->GetGUIDLow() : 0, triggerCaster ? triggerCaster->GetGUIDLow() : 0);
+            #ifdef WIN32
+            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectDummy %u, 1<<effIndex %u, itr->effectmask %u, option %u, spell_trigger %i, target %u (%u ==> %u)", m_spellInfo->Id, 1<<effIndex, itr->effectmask, itr->option, itr->spell_trigger, itr->target, triggerTarget ? triggerTarget->GetGUID().GetCounter() : 0, triggerCaster ? triggerCaster->GetGUID().GetCounter() : 0);
+            #endif
 
-            if (effectHandleMode == SPELL_EFFECT_HANDLE_LAUNCH && itr->option != 15 && itr->option != 20)
+            if (effectHandleMode == SPELL_EFFECT_HANDLE_LAUNCH && itr->option != DUMMY_TRIGGER_CAST_DEST && itr->option != DUMMY_TRIGGER_CAST_OR_REMOVE)
                 continue;
 
             if (!(itr->effectmask & (1<<effIndex)))
                 continue;
 
-            if(itr->group != 0 && !groupList.empty())
-            {
-                bool groupFind = false;
-                for (std::list<int32>::const_iterator group_itr = groupList.begin(); group_itr != groupList.end(); ++group_itr)
-                    if((*group_itr) == itr->group)
-                        groupFind = true;
-                if(groupFind)
-                    continue;
-            }
-
-            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectDummy2: %u, 1<<effIndex %u, itr->effectmask %u, option %u, spell_trigger %i, target %u (%u ==> %u)", m_spellInfo->Id, 1<<effIndex, itr->effectmask, itr->option, itr->spell_trigger, itr->target, triggerTarget ? triggerTarget->GetGUIDLow(): 0, triggerCaster ? triggerCaster->GetGUIDLow(): 0);
+            #ifdef WIN32
+            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectDummy2: %u, 1<<effIndex %u, itr->effectmask %u, option %u, spell_trigger %i, target %u (%u ==> %u)", m_spellInfo->Id, 1<<effIndex, itr->effectmask, itr->option, itr->spell_trigger, itr->target, triggerTarget ? triggerTarget->GetGUID().GetCounter(): 0, triggerCaster ? triggerCaster->GetGUID().GetCounter(): 0);
+            #endif
 
             if(itr->target == 1) //get target caster
                 triggerTarget = triggerCaster;
@@ -958,109 +939,48 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
 
             cooldown_spell_id = abs(itr->spell_trigger);
             if(triggerCaster->ToPlayer())
-                if (triggerCaster->ToPlayer()->HasSpellCooldown(cooldown_spell_id) && itr->option != SPELL_TRIGGER_COOLDOWN)
-                    return;
+                if (triggerCaster->ToPlayer()->HasSpellCooldown(cooldown_spell_id) && itr->option != DUMMY_TRIGGER_COOLDOWN)
+                    return true;
             if(triggerCaster->ToCreature())
-                if (triggerCaster->ToCreature()->HasSpellCooldown(cooldown_spell_id) && itr->option != SPELL_TRIGGER_COOLDOWN)
-                    return;
+                if (triggerCaster->ToCreature()->HasSpellCooldown(cooldown_spell_id) && itr->option != DUMMY_TRIGGER_COOLDOWN)
+                    return true;
 
             int32 bp0 = int32(itr->bp0);
             int32 bp1 = int32(itr->bp1);
             int32 bp2 = int32(itr->bp2);
-            int32 spell_trigger = itr->spell_trigger;
+            int32 spell_trigger = damage;
 
-            if(itr->spell_trigger == 0)
-                spell_trigger = damage;
+            if(itr->spell_trigger != 0)
+                spell_trigger = abs(itr->spell_trigger);
 
             switch (itr->option)
             {
-                case SPELL_TRIGGER_BP: //0
+                case DUMMY_TRIGGER_BP: //0
                 {
-                    if(spell_trigger < 0)
+                    if(itr->spell_trigger < 0)
                         basepoints0 *= -1;
 
-                    triggered_spell_id = abs(spell_trigger);
-                    triggerCaster->CastCustomSpell(triggerTarget, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true, m_CastItem, NULL, m_originalCasterGUID);
+                    triggerCaster->CastCustomSpell(triggerTarget, spell_trigger, &basepoints0, &basepoints0, &basepoints0, true, m_CastItem, NULL, m_originalCasterGUID);
                     if(itr->target == 6)
                     {
                         if (Guardian* pet = triggerCaster->GetGuardianPet())
-                            triggerCaster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                            triggerCaster->CastCustomSpell(pet, spell_trigger, &basepoints0, &bp1, &bp2, true);
                     }
                     check = true;
                 }
                 break;
-                case SPELL_TRIGGER_BP_CUSTOM: //1
+                case DUMMY_TRIGGER_BP_CUSTOM: //1
                 {
-                    triggered_spell_id = abs(spell_trigger);
-                    triggerCaster->CastCustomSpell(triggerTarget, triggered_spell_id, &bp0, &bp1, &bp2, true, m_CastItem, NULL, m_originalCasterGUID);
+                    triggerCaster->CastCustomSpell(triggerTarget, spell_trigger, &bp0, &bp1, &bp2, true, m_CastItem, NULL, m_originalCasterGUID);
                     if(itr->target == 6)
                     {
                         if (Guardian* pet = triggerCaster->GetGuardianPet())
-                            triggerCaster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                            triggerCaster->CastCustomSpell(pet, spell_trigger, &basepoints0, &bp1, &bp2, true);
                     }
                     check = true;
                 }
                 break;
-                case SPELL_TRIGGER_MANA_COST: //2
-                {
-                    int32 cost = int32(m_spellInfo->PowerCost + CalculatePct(triggerCaster->GetCreateMana(), m_spellInfo->PowerCostPercentage));
-                    basepoints0 = CalculatePct(cost, bp0);
-
-                    triggered_spell_id = abs(spell_trigger);
-                    triggerCaster->CastCustomSpell(triggerTarget, triggered_spell_id, &basepoints0, &bp1, &bp2, true, m_CastItem, NULL, m_originalCasterGUID);
-                    if(itr->target == 6)
-                    {
-                        if (Guardian* pet = triggerCaster->GetGuardianPet())
-                            triggerCaster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
-                    }
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_DAM_HEALTH: //3
-                {
-                    int32 percent = basepoints0;
-                    if(bp0)
-                        percent += bp0;
-                    if(bp1)
-                        percent /= bp1;
-                    if(bp2)
-                        percent *= bp2;
-
-                    basepoints0 = CalculatePct(triggerTarget->GetHealth(), percent);
-
-                    triggered_spell_id = abs(spell_trigger);
-                    triggerCaster->CastCustomSpell(triggerTarget, triggered_spell_id, &basepoints0, &bp1, &bp2, true, m_CastItem, NULL, m_originalCasterGUID);
-                    if(itr->target == 6)
-                    {
-                        if (Guardian* pet = triggerCaster->GetGuardianPet())
-                            triggerCaster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
-                    }
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_DAM_MAXHEALTH: //38
-                {
-                    int32 percent = basepoints0;
-                    if(bp0)
-                        percent += bp0;
-                    if(bp1)
-                        percent /= bp1;
-                    if(bp2)
-                        percent *= bp2;
-
-                    basepoints0 = CalculatePct(triggerTarget->GetMaxHealth(), percent);
-
-                    triggered_spell_id = abs(spell_trigger);
-                    triggerCaster->CastCustomSpell(triggerTarget, triggered_spell_id, &basepoints0, &bp1, &bp2, true, m_CastItem, NULL, m_originalCasterGUID);
-                    if(itr->target == 6)
-                    {
-                        if (Guardian* pet = triggerCaster->GetGuardianPet())
-                            triggerCaster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
-                    }
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_COOLDOWN: //4
+                case DUMMY_TRIGGER_COOLDOWN: //2
                 {
                     if(Player* player = triggerTarget->ToPlayer())
                     {
@@ -1082,110 +1002,20 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     check = true;
                 }
                 break;
-                case SPELL_TRIGGER_UPDATE_DUR: //5
+                case DUMMY_TRIGGER_CHECK_PROCK: //3
                 {
-                    if(Aura* aura = triggerTarget->GetAura(abs(spell_trigger), triggerCaster->GetGUID()))
-                        aura->RefreshDuration();
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_GET_DUR_AURA: //6
-                {
-                    if(Aura* aura = triggerTarget->GetAura(itr->aura, triggerCaster->GetGUID()))
-                        basepoints0 = int32(aura->GetDuration() / 1000);
-                    if(basepoints0)
-                    {
-                        triggered_spell_id = abs(spell_trigger);
-                        triggerCaster->CastCustomSpell(triggerTarget, triggered_spell_id, &basepoints0, &bp1, &bp2, true, m_CastItem, NULL, m_originalCasterGUID);
-                        if(itr->target == 6)
-                        {
-                            if (Guardian* pet = triggerCaster->GetGuardianPet())
-                                triggerCaster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
-                        }
-                    }
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_NEED_COMBOPOINTS: //7
-                {
-                    int32 chance = 20 * triggerCaster->ToPlayer()->GetComboPoints();
-                    if (roll_chance_i(chance))
-                    {
-                        triggered_spell_id = abs(spell_trigger);
-                        triggerCaster->CastCustomSpell(triggerTarget, triggered_spell_id, &bp0, &bp1, &bp2, true, m_CastItem, NULL, m_originalCasterGUID);
-                        if(itr->target == 6)
-                        {
-                            if (Guardian* pet = triggerCaster->GetGuardianPet())
-                                triggerCaster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
-                        }
-                    }
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_UPDATE_DUR_TO_MAX: //8
-                {
-                    if(Aura* aura = triggerTarget->GetAura(abs(spell_trigger), triggerCaster->GetGUID()))
-                        aura->SetDuration(aura->GetSpellInfo()->GetMaxDuration(), true);
-                    check = true;
-                    continue;
-                }
-                break;
-                case SPELL_TRIGGER_PERC_FROM_DAMGE: //9
-                {
-                    basepoints0 = CalculatePct(basepoints0, itr->bp0);
-
-                    triggered_spell_id = abs(spell_trigger);
-                    triggerCaster->CastCustomSpell(triggerTarget, triggered_spell_id, &basepoints0, &bp1, &bp2, true, m_CastItem, NULL, m_originalCasterGUID);
-                    if(itr->target == 6)
-                    {
-                        if (Guardian* pet = triggerCaster->GetGuardianPet())
-                            triggerCaster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
-                    }
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_PERC_MAX_MANA: //10
-                {
-                    basepoints0 = int32((itr->bp0 / 100.0f) * triggerTarget->GetMaxPower(POWER_MANA));
-
-                    triggered_spell_id = abs(spell_trigger);
-                    triggerCaster->EnergizeBySpell(triggerTarget, triggered_spell_id, basepoints0, POWER_MANA);
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_PERC_BASE_MANA: //11
-                {
-                    basepoints0 = int32((itr->bp0 / 100.0f) * triggerTarget->GetCreateMana());
-
-                    triggered_spell_id = abs(spell_trigger);
-                    triggerCaster->EnergizeBySpell(triggerTarget, triggered_spell_id, basepoints0, POWER_MANA);
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_PERC_CUR_MANA: //12
-                {
-                    basepoints0 = int32((itr->bp0 / 100.0f) * triggerTarget->GetPower(POWER_MANA));
-
-                    triggered_spell_id = abs(spell_trigger);
-                    triggerCaster->EnergizeBySpell(triggerTarget, triggered_spell_id, basepoints0, POWER_MANA);
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_CHECK_PROCK: //13
-                {
-                    triggered_spell_id = abs(spell_trigger);
                     if(triggerCaster->HasAura(itr->aura))
                     {
                         if(spell_trigger > 0)
-                            triggerCaster->CastSpell(triggerTarget, triggered_spell_id, true);
+                            triggerCaster->CastSpell(triggerTarget, spell_trigger, true);
                         else
-                            triggerCaster->RemoveAura(triggered_spell_id);
+                            triggerCaster->RemoveAura(spell_trigger);
                     }
 
                     check = true;
                 }
                 break;
-                case SPELL_TRIGGER_DUMMY: //14
+                case DUMMY_TRIGGER_DUMMY: //4
                 {
                     if(itr->aura > 0)
                     {
@@ -1204,13 +1034,11 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                         }
                     }
 
-                    triggered_spell_id = abs(spell_trigger);
-                    //triggerCaster->SendSpellCooldown(m_spellInfo->Id, triggered_spell_id);
-                    triggerCaster->CastSpell(triggerTarget, triggered_spell_id, false);
+                    triggerCaster->CastSpell(triggerTarget, spell_trigger, false);
                     check = true;
                 }
                 break;
-                case SPELL_TRIGGER_CAST_DEST: //15
+                case DUMMY_TRIGGER_CAST_DEST: //5
                 {
                     if(itr->aura > 0)
                     {
@@ -1229,11 +1057,9 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                         }
                     }
 
-                    triggered_spell_id = abs(spell_trigger);
-                    if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(triggered_spell_id))
+                    if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell_trigger))
                     {
-                        //triggerCaster->SendSpellCooldown(m_spellInfo->Id, triggered_spell_id);
-
+                        SpellCastTargets targets;
                         targets.SetDst(m_targets);
                         CustomSpellValues values;
                         triggerCaster->CastSpell(targets, spellInfo, &values, TRIGGERED_FULL_MASK, NULL, NULL, m_originalCasterGUID);
@@ -1241,28 +1067,64 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     check = true;
                 }
                 break;
-                case SPELL_TRIGGER_CAST_OR_REMOVE: // 20
+                case DUMMY_TRIGGER_CAST_OR_REMOVE: // 6
+                {
+                    if (itr->aura)
                     {
-                        triggered_spell_id = abs(itr->spell_trigger);
-
-                        if (itr->aura)
-                        {
-                            if (m_caster->HasAura(itr->aura))
-                                m_caster->CastSpell(unitTarget, triggered_spell_id, true);
-                        }
-                        else
-                            m_caster->CastSpell(unitTarget, triggered_spell_id, true);
-
-                        check = true;
-                        break;
+                        if (m_caster->HasAura(itr->aura))
+                            m_caster->CastSpell(unitTarget, spell_trigger, true);
                     }
+                    else
+                        m_caster->CastSpell(unitTarget, spell_trigger, true);
+
+                    check = true;
+                    break;
+                }
+                case DUMMY_TRIGGER_DAM_MAXHEALTH: //7
+                {
+                    int32 percent = basepoints0;
+                    if(bp0)
+                        percent += bp0;
+                    if(bp1)
+                        percent /= bp1;
+                    if(bp2)
+                        percent *= bp2;
+
+                    basepoints0 = CalculatePct(triggerTarget->GetMaxHealth(), percent);
+
+                    triggerCaster->CastCustomSpell(triggerTarget, spell_trigger, &basepoints0, &bp1, &bp2, true, m_CastItem, NULL, m_originalCasterGUID);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = triggerCaster->GetGuardianPet())
+                            triggerCaster->CastCustomSpell(pet, spell_trigger, &basepoints0, &bp1, &bp2, true);
+                    }
+                    check = true;
+                }
+                break;
             }
-            if(itr->group != 0 && check)
-                groupList.push_back(itr->group);
         }
         if(check)
-            return;
+            return true;
     }
+    return false;
+}
+
+void Spell::EffectDummy(SpellEffIndex effIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET
+        && effectHandleMode != SPELL_EFFECT_HANDLE_LAUNCH)
+        return;
+
+    #ifdef WIN32
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "EffectDummy end %i, m_diffMode %i, effIndex %i, spellId %u, damage %i, effectHandleMode %u, GetExplicitTargetMask %u", m_damage, m_diffMode, effIndex, m_spellInfo->Id, damage, effectHandleMode, m_spellInfo->GetExplicitTargetMask());
+    #endif
+
+    uint32 spell_id = 0;
+    int32 bp = 0;
+    bool triggered = true;
+
+    if(SpellDummyTriggered(effIndex))
+        return;
 
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
@@ -1736,6 +1598,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             return;
         }
 
+        SpellCastTargets targets;
         targets.SetUnitTarget(unitTarget);
         Spell* spell = new Spell(m_caster, spellInfo, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE, m_originalCasterGUID, true);
         if (bp) spell->SetSpellValue(SPELLVALUE_BASE_POINT0, bp);
@@ -5240,6 +5103,9 @@ void Spell::EffectSummonObjectWild(SpellEffIndex effIndex)
 
 void Spell::EffectScriptEffect(SpellEffIndex effIndex)
 {
+    if(SpellDummyTriggered(effIndex))
+        return;
+
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
