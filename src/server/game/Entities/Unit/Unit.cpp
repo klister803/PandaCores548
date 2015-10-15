@@ -25332,3 +25332,70 @@ bool Unit::HasMyAura(uint32 spellId)
     }
     return false;
 }
+
+Unit* Unit::GetUnitForLinkedSpell(Unit* caster, Unit* target, uint8 type)
+{
+    switch (type)
+    {
+        case LINK_UNIT_TYPE_PET:
+            return (Unit*)(ToPlayer() ? ToPlayer()->GetPet() : NULL);
+            break;
+        case LINK_UNIT_TYPE_OWNER:
+            return GetOwner();
+            break;
+        case LINK_UNIT_TYPE_CASTER:
+            return caster;
+            break;
+        case LINK_UNIT_TYPE_SELECTED:
+            return ToPlayer() ? ToPlayer()->GetSelectedUnit() : NULL;
+            break;
+        case LINK_UNIT_TYPE_TARGET:
+            return target;
+            break;
+    }
+    return NULL;
+}
+
+bool Unit::HasAuraLinkedSpell(Unit* caster, Unit* target, uint8 type, int32 hastalent)
+{
+    switch (type)
+    {
+        case LINK_HAS_AURA_ON_CASTER:
+        {
+            if(!caster)
+                return true;
+            if(hastalent > 0)
+                return !caster->HasAura(hastalent);
+            else if(hastalent < 0)
+                return caster->HasAura(abs(hastalent));
+        }
+        case LINK_HAS_AURA_ON_TARGET:
+        {
+            if(hastalent > 0)
+                return target ? !target->HasAura(hastalent) : true ;
+            else if(hastalent < 0)
+                return target ? target->HasAura(abs(hastalent)) : true ;
+        }
+        case LINK_HAS_SPELL_ON_CASTER:
+        {
+            if(!caster)
+                return true;
+            if(hastalent > 0)
+                return !caster->HasSpell(hastalent);
+            else if(hastalent < 0)
+                return caster->HasSpell(abs(hastalent));
+        }
+        case LINK_HAS_AURA_ON_OWNER:
+        {
+            if(!caster)
+                return true;
+            if(hastalent > 0)
+                return caster->GetOwner() ? !caster->GetOwner()->HasAura(hastalent) : true;
+            else if(hastalent < 0)
+                return caster->GetOwner() ? caster->GetOwner()->HasAura(abs(hastalent)) : true;
+        }
+        case LINK_HAS_AURATYPE:
+            return target ? !target->HasAuraTypeWithCaster(AuraType(hastalent), caster ? caster->GetGUID() : 0) : true;
+    }
+    return true;
+}

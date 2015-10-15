@@ -3612,12 +3612,12 @@ void World::ProcessMailboxQueue()
                     // Add to DB
                     CharacterDatabase.EscapeString(subject);
                     CharacterDatabase.EscapeString(body);
-                    trans->PAppend("INSERT INTO mail (id,messageType,stationery,mailTemplateId,sender,receiver,subject,body,has_items,expire_time,deliver_time,money,cod,checked) VALUES ('%u', '%u', '%u', '%u', '%u', '%u', '%s', '%s', '%u', '" UI64FMTD "','" UI64FMTD "', '%u', '%u', '%d')",
+                    trans->PAppend("REPLACE INTO mail (id,messageType,stationery,mailTemplateId,sender,receiver,subject,body,has_items,expire_time,deliver_time,money,cod,checked) VALUES ('%u', '%u', '%u', '%u', '%u', '%u', '%s', '%s', '%u', '" UI64FMTD "','" UI64FMTD "', '%u', '%u', '%d')",
                         mailId, messageType, stationery, 0, sender_guid, receiver_guid, subject.c_str(), body.c_str(), (attachment != NULL ? 1 : 0), (uint64)expire_time, (uint64)deliver_time, money, 0, 0);
          
                     if(attachment != NULL)
                     {
-                        trans->PAppend("INSERT INTO mail_items (mail_id,item_guid,receiver) VALUES ('%u', '%u', '%u')", mailId, attachment->GetGUIDLow(), receiver_guid);
+                        trans->PAppend("REPLACE INTO mail_items (mail_id,item_guid,receiver) VALUES ('%u', '%u', '%u')", mailId, attachment->GetGUIDLow(), receiver_guid);
                         if(forefir)
                             trans->PAppend("REPLACE INTO character_donate (`owner_guid`, `itemguid`, `itemEntry`, `efircount`, `count`) VALUES ('%u', '%u', '%u', '%u', '%u')", receiver_guid, attachment->GetGUIDLow(), itemid, forefir, itemcount);
                     }
