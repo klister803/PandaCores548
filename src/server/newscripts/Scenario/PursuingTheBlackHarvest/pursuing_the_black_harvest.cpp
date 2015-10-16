@@ -346,8 +346,8 @@ public:
                 {
                     case EVENT_1:
                         events.ScheduleEvent(EVENT_4, 5 * IN_MILLISECONDS);
-                        if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0, 0, true))
-                            me->CastSpell(target, SPELL_NETTED);
+                        //if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0, 0, true))
+                        //    me->CastSpell(target, SPELL_NETTED);
                         break;
                     case EVENT_4:
                         if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0, 0, true, SPELL_NETTED))

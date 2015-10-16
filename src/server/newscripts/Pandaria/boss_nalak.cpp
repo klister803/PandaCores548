@@ -16,7 +16,7 @@ enum eSpells
     SPELL_SIPHON_ESSENCE            = 137889,
     SPELL_FIXATE_DEMON_CREATOR      = 130357,
     SPELL_FIXATE_DEMON_CREATOR_2    = 101199,
-    SPELL_COMPLETE_QUEST            = 137887,
+    SPELL_COMPLETE_QUEST            = 139959,
 };
 
 enum eEvents
@@ -57,7 +57,6 @@ public:
             switch (action)
             {
                 case ACTION_1:
-                    me->SetVisible(true);
                     Talk(1);
                     break;
                 default:
@@ -70,17 +69,8 @@ public:
             if (spell->Id == SPELL_THROW_SPEAR)
             {
                 events.ScheduleEvent(EVENT_5, 1 * IN_MILLISECONDS);
-                me->SetReactState(REACT_PASSIVE);
-                me->SetTarget(caster->GetGUID());
+                caster->CastSpell(me, SPELL_SUMMON_ESSENCE_OF_STORM, true);
             }
-        }
-
-        void JustSummoned(Creature* summoned)
-        {
-            summoned->AI()->AttackStart(me->GetTargetUnit());
-            summoned->GetMotionMaster()->MoveChase(me->GetTargetUnit());
-            summoned->AddAura(SPELL_SIPHON_ESSENCE, summoned);
-
         }
 
         void EnterCombat(Unit* unit)
@@ -94,14 +84,13 @@ public:
 
         void UpdateAI(uint32 diff)
         {
-            if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+            if (!UpdateVictim())
                 return;
 
-            /*if (me->getVictim() && attack_ready)
-                if (!me->IsWithinMeleeRange(me->getVictim()))
-                    me->GetMotionMaster()->MoveCharge(me->getVictim()->GetPositionX(), me->getVictim()->GetPositionY(), me->getVictim()->GetPositionZ() + 18.0f, 15.0f);*/
-
             events.Update(diff);
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
 
             while (uint32 eventId = events.ExecuteEvent())
             {
@@ -136,19 +125,12 @@ public:
                     Talk(2);
                     break;
                 case EVENT_6:
-                    events.ScheduleEvent(EVENT_7, 2 * IN_MILLISECONDS);
                     Talk(0);
-                    //DoCast(SPELL_SUMMON_ESSENCE_OF_STORM);
-                    me->SummonCreature(69739, 7112.963f, 5168.82f, 120.6497f, me->GetOrientation());
-                    break;
-                case EVENT_7:
-                    me->SetVisible(false);
                     break;
                 default:
                     break;
                 }
             }
-
             DoMeleeAttackIfReady();
         }
     };
@@ -174,25 +156,43 @@ public:
             me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_HOVER);
         }
 
+        uint64 pSummonerGUID;
+
         void Reset()
-        {
-            if (Player* player = me->GetTargetUnit()->ToPlayer())
-            {
-                me->AddAura(SPELL_SIPHON_ESSENCE, me);
-                me->AddAura(SPELL_FIXATE_DEMON_CREATOR_2, player);
-            }
-        }
+        {}
 
         void EnterCombat(Unit* /*unit*/)
-        { }
+        {}
 
         void JustDied(Unit* /*killer*/)
         {
-            if (Creature* nalak = me->FindNearestCreature(69099, 150.0f))
-                nalak->AI()->DoAction(ACTION_1);
+            //if (Creature* nalak = Unit::GetCreature(*me, nalakGUID))
+            //    nalak->AI()->DoAction(ACTION_1);
 
-            if (Player* player = me->GetTargetUnit()->ToPlayer())
-                me->CastSpell(player, SPELL_COMPLETE_QUEST);
+            if (Unit* pTarget = Unit::GetUnit(*me, pSummonerGUID))
+            {
+                pTarget->RemoveAurasDueToSpell(SPELL_FIXATE_DEMON_CREATOR);
+                pTarget->CastSpell(pTarget, SPELL_COMPLETE_QUEST, true);
+            }
+        }
+
+        void IsSummonedBy(Unit* summoner)
+        {
+            pSummonerGUID = summoner->GetGUID();
+
+            AttackStart(summoner);
+            DoCast(me, SPELL_SIPHON_ESSENCE, true);
+            DoCast(summoner, SPELL_FIXATE_DEMON_CREATOR);
+        }
+
+        void EnterEvadeMode()
+        {
+            ScriptedAI::EnterEvadeMode();
+
+            //if (Creature* nalak = Unit::GetCreature(*me, nalakGUID))
+            //    nalak->AI()->DoAction(ACTION_1);
+
+            me->DespawnOrUnsummon();
         }
 
         void UpdateAI(uint32 diff)
@@ -200,12 +200,12 @@ public:
             if (!UpdateVictim())
                 return;
 
-            if (!me->isInCombat() && !me->GetTargetUnit())
+            /* if (!me->isInCombat() && !me->GetTargetUnit())
             {
                 me->DespawnOrUnsummon(1 * IN_MILLISECONDS);
                 if (Creature* nalak = me->FindNearestCreature(69099, 150.0f))
                     nalak->AI()->DoAction(ACTION_1);
-            }
+            } */
 
             DoMeleeAttackIfReady();
         }
