@@ -67,6 +67,7 @@ enum eSpells
 
     //Kaztik
     SPELL_SONIC_PROJECTION_AT          = 143765,
+    SPELL_SUM_HUNGRY_KUNCHONG          = 146891,
 
     //Kilruk
     SPELL_RAZOR_SHARP_BLADES           = 142918,
@@ -116,24 +117,39 @@ enum eSpells
     SPELL_PARAGONS_PURPOSE_HEAL        = 143483,
     SPELL_PARAGONS_PURPOSE_DMG         = 143482,
 
+    //Amber Parasite
+    SPELL_FEED                         = 143362,
+    SPELL_HUNGER                       = 143358,
+    SPELL_REGENERATE                   = 143356,
+    SPELL_GENETIC_MOD                  = 143355,
+    //Hungry Kunchong
+    SPELL_THICK_SHELL                  = 142667,
+    SPELL_HUNGRY                       = 142630,
+
     //Buffs
+    //Kaztik
+    SPELL_MASTER_PUPPETS               = 127351,
+    //Karoz
+    SPELL_STRONG_LEGS                  = 141853,
+    SPELL_STRONG_LEGS2                 = 143963,
+    //Korven
+    SPELL_MASTER_OF_AMBER              = 141854,
+    //Kilruk
+    SPELL_ANGEL_OF_DEATH               = 141859,
+    SPELL_PLAYER_REAVE                 = 142272,
     //Rikkal
-    SPELL_GENE_SPLICE                  = 143372,
     SPELL_MAD_SCIENTIST                = 141857,
+    SPELL_GENE_SPLICE                  = 143372,
+    SPELL_GENE_SPLICE_PLAYER           = 143373,
     //Hisek
     SPELL_COMPOUND_EYE                 = 141852,
+    SPELL_SNIPE                        = 143217,
     //Xaril
     SPELL_VAST_APOTHECARIAL_KNOWLEDGE  = 141856,
     SPELL_APOTHECARY_VOLATILE_POULTICE = 142598, //caster 
     SPELL_VOLATILE_POULTICE            = 142877, //target
     SPELL_VOLATILE_POULTICE_HEAL       = 142897,
     //
-
-    //Amber Parasite
-    SPELL_FEED                         = 143362,
-    SPELL_HUNGER                       = 143358,
-    SPELL_REGENERATE                   = 143356,
-    SPELL_GENETIC_MOD                  = 143355,
 };
 
 enum sEvents
@@ -157,19 +173,21 @@ enum sEvents
     EVENT_CATALYST                     = 12,
     //Iyyokyk
     EVENT_DIMINISH                     = 13,
+    EVENT_INSANE_CALCULATION           = 14,
     //Kaztik
-    EVENT_SONIC_PROJECTION             = 14,
+    EVENT_SONIC_PROJECTION             = 15,
+    EVENT_SUM_HUNGRY_KUNCHONG          = 16,
     //Karoz
-    EVENT_HURL_AMBER                   = 15,
-    EVENT_FLASH                        = 16,
+    EVENT_HURL_AMBER                   = 17,
+    EVENT_FLASH                        = 18,
     //Amber Parasite
-    EVENT_FEED                         = 17,
-    EVENT_REGENERATE                   = 18,
+    EVENT_FEED                         = 19,
+    EVENT_REGENERATE                   = 20,
     //Blood
-    EVENT_FIND_LOW_HP_KLAXXI           = 19,
-    EVENT_CHECK_DIST_TO_KLAXXI         = 20,
-    EVENT_CHECK_PLAYER                 = 21,
-    EVENT_RE_ATTACK                    = 22,
+    EVENT_FIND_LOW_HP_KLAXXI           = 21,
+    EVENT_CHECK_DIST_TO_KLAXXI         = 22,
+    EVENT_CHECK_PLAYER                 = 23,
+    EVENT_RE_ATTACK                    = 24,
 };
 
 enum sActions
@@ -265,6 +283,29 @@ uint32 catalystlist[6] =
     SPELL_DELAYED_CATALYST_ORANGE,
     SPELL_DELAYED_CATALYST_PURPLE,
     SPELL_DELAYED_CATALYST_GREEN,
+};
+
+uint32 removelist[13] =
+{
+    //buffs
+    //Kilruk
+    SPELL_ANGEL_OF_DEATH,
+    SPELL_PLAYER_REAVE,
+    //Hisek
+    SPELL_COMPOUND_EYE,
+    SPELL_SNIPE,
+    //Rikkal
+    SPELL_MAD_SCIENTIST,
+    SPELL_GENE_SPLICE,
+    SPELL_GENE_SPLICE_PLAYER,
+    //debuffs
+    SPELL_TOXIN_RED,
+    SPELL_TOXIN_BLUE,
+    SPELL_TOXIN_YELLOW,
+    //Heroic Toxins
+    SPELL_TOXIN_ORANGE,
+    SPELL_TOXIN_PURPLE,
+    SPELL_TOXIN_GREEN,
 };
 
 //71628
@@ -420,6 +461,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
 
             void Reset()
             {
+                RemoveDebuffFromPlayers();
                 events.Reset();
                 summons.DespawnAll();
                 for (uint8 n = 0; n < 4; n++)
@@ -442,6 +484,15 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 default:
                     break;
                 }
+            }
+
+            void RemoveDebuffFromPlayers()
+            {
+                if (instance)
+                    return;
+                
+                for (uint8 n = 0; n < 13; ++n)
+                    instance->DoRemoveAurasDueToSpellOnPlayers(removelist[n]);
             }
 
             void JustSummoned(Creature* sum)
@@ -475,6 +526,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     break;
                 case NPC_KAZTIK:
                     events.ScheduleEvent(EVENT_SONIC_PROJECTION, 10000);
+                    events.ScheduleEvent(EVENT_SUM_HUNGRY_KUNCHONG, 15000);
                     break;
                 case NPC_KORVEN:
                     Talk(SAY_KORVEN_PULL, 0);
@@ -482,7 +534,8 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     break;
                 case NPC_IYYOKYK:
                     Talk(SAY_IYYOKYK_PULL, 0);
-                    events.ScheduleEvent(EVENT_DIMINISH, 15000);
+                    events.ScheduleEvent(EVENT_DIMINISH, 25000);
+                    events.ScheduleEvent(EVENT_INSANE_CALCULATION, 15000);
                     break;
                 case NPC_KAROZ:
                     Talk(SAY_KAROZ_PULL, 0);
@@ -583,7 +636,10 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         instance->SetData(DATA_INTRO_NEXT_KLAXXI, 0);
                     }
                     else
+                    {
                         instance->SetBossState(DATA_KLAXXI, DONE);
+                        RemoveDebuffFromPlayers();
+                    }
                 }
                 switch (me->GetEntry())
                 {
@@ -626,15 +682,28 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     switch (me->GetEntry())
                     {
                     case NPC_RIKKAL:
+                        //Any
                         pl->CastSpell(pl, SPELL_MAD_SCIENTIST, true);
+                        break;
+                    case NPC_KAROZ:
+                        /*if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_DPS)
+                            pl->CastSpell(pl, SPELL_STRONG_LEGS, true);*/
+                        break;
+                    case NPC_KORVEN:
+                        if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_TANK)
+                            pl->CastSpell(pl, SPELL_MASTER_OF_AMBER, true);
+                        break;
+                    case NPC_KILRUK:
+                        if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_DPS)
+                            pl->CastSpell(pl, SPELL_ANGEL_OF_DEATH, true);
                         break;
                     case NPC_HISEK:
                         if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_DPS)
                             pl->CastSpell(pl, SPELL_COMPOUND_EYE, true);
                         break;
                     case NPC_XARIL:
-                        if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_HEALER)
-                            pl->CastSpell(pl, SPELL_VAST_APOTHECARIAL_KNOWLEDGE, true);
+                        /*if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_HEALER)
+                            pl->CastSpell(pl, SPELL_VAST_APOTHECARIAL_KNOWLEDGE, true);*/
                         break;
                     default:
                         break;
@@ -745,12 +814,19 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         if (Player* pl = me->GetPlayer(*me, GetTargetGuid()))
                             DoCast(pl, SPELL_SONIC_PROJECTION_AT);
                         events.ScheduleEvent(EVENT_SONIC_PROJECTION, 10000);
+                    case EVENT_SUM_HUNGRY_KUNCHONG:
+                        DoCast(me, SPELL_SUM_HUNGRY_KUNCHONG);
+                        events.ScheduleEvent(EVENT_SUM_HUNGRY_KUNCHONG, 55000);
                         break;
                     //Iyyokyk
                     case EVENT_DIMINISH:
                         if (Player* pl = me->GetPlayer(*me, GetTargetGuid()))
                             DoCast(pl, SPELL_DIMINISH);
                         events.ScheduleEvent(EVENT_DIMINISH, 30000);
+                        break;
+                    case EVENT_INSANE_CALCULATION:
+                        DoCast(me, SPELL_INSANE_CALC_FIERY_EDGE);
+                        events.ScheduleEvent(EVENT_INSANE_CALCULATION, 30000);
                         break;
                     //Hisek
                     case EVENT_MULTI_SHOT:
@@ -1147,6 +1223,11 @@ public:
 
         void Reset()
         {
+            if (instance && instance->GetBossState(DATA_KLAXXI) != IN_PROGRESS)
+            {
+                me->DespawnOrUnsummon();
+                return;
+            }
             DoCast(me, SPELL_GENETIC_MOD, true);
             targetGuid  = 0;
             checktarget = 0;
@@ -1336,6 +1417,49 @@ public:
     CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_amber_playerAI(creature);
+    }
+};
+
+//71420
+class npc_kunchong : public CreatureScript
+{
+public:
+    npc_kunchong() : CreatureScript("npc_kunchong") {}
+
+    struct npc_kunchongAI : public ScriptedAI
+    {
+        npc_kunchongAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            DoCast(me, SPELL_HUNGRY, true);
+            DoCast(me, SPELL_THICK_SHELL, true);
+        }
+
+        InstanceScript* instance;
+
+        void Reset()
+        {
+            me->SetSpeed(MOVE_RUN, 0.5f);
+            me->GetMotionMaster()->MoveRandom(10.0f);
+        }
+
+        void SpellHit(Unit* caster, SpellInfo const *spell)
+        {
+            if (spell->Id == SPELL_PLAYER_REAVE && me->HasAura(SPELL_THICK_SHELL))
+                me->RemoveAurasDueToSpell(SPELL_THICK_SHELL);
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_kunchongAI(creature);
     }
 };
 
@@ -1956,7 +2080,7 @@ public:
             {
                 std::list<Player*> pllist;
                 pllist.clear();
-                uint8 maxcount = urand(2, 3); //test count
+                uint8 maxcount = GetCaster()->GetMap()->Is25ManRaid() ? urand(8, 9) : urand(3, 4);
                 uint8 count = 0;
                 GetPlayerListInGrid(pllist, GetCaster(), 150.0f);
                 if (pllist.size() >= 3)
@@ -2114,6 +2238,33 @@ public:
     }
 };
 
+//142272
+class spell_reave : public SpellScriptLoader
+{
+public:
+    spell_reave() : SpellScriptLoader("spell_reave") { }
+
+    class spell_reave_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_reave_SpellScript);
+
+        void HandleHit()
+        {
+            SetHitDamage(300000);
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_reave_SpellScript::HandleHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_reave_SpellScript();
+    }
+};
+
 void AddSC_boss_paragons_of_the_klaxxi()
 {
     new npc_amber_piece();
@@ -2122,6 +2273,8 @@ void AddSC_boss_paragons_of_the_klaxxi()
     new npc_klaxxi_blood();
     new npc_amber_parasite();
     new npc_amber();
+    new npc_amber_player();
+    new npc_kunchong();
     new spell_klaxxi_gouge();
     new spell_gene_splice();
     new spell_snipe();
@@ -2143,4 +2296,5 @@ void AddSC_boss_paragons_of_the_klaxxi()
     new spell_fiery_edge_pre_dummy();
     new spell_fiery_edge_dummy();
     new spell_fiery_edge_dmg();
+    new spell_reave();
 }
