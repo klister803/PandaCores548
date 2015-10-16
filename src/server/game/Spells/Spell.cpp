@@ -10137,7 +10137,7 @@ bool WorldObjectSpellTargetCheck::operator()(WorldObject* target)
                     return false;
                 if (!_caster->_IsValidAssistTarget(unitTarget, _spellInfo))
                     return false;
-                if (_caster->GetGUID() != unitTarget->GetDemonCreatorGUID() && _caster->GetGUID() != unitTarget->GetGUID())
+                if (!unitTarget->IsOwnerOrSelf(_caster))
                     return false;
                 break;
             case TARGET_CHECK_ALLY:
