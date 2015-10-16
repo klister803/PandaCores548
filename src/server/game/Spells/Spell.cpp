@@ -3889,6 +3889,8 @@ void Spell::cast(bool skipCheck)
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
         m_caster->ToPlayer()->RemoveSpellMods(this, true);
 
+    bool hasDeley = true;
+
     // Okay, everything is prepared. Now we need to distinguish between immediate and evented delayed spells
     if (((m_spellInfo->Speed > 0.0f || m_delayMoment) && !m_spellInfo->IsChanneled() && !m_spellInfo->IsNonNeedDelay() && m_spellInfo->Id != 114157)  || m_spellInfo->AttributesEx4 & SPELL_ATTR4_UNK4 || m_spellInfo->Id == 54957)
     {
@@ -3905,10 +3907,7 @@ void Spell::cast(bool skipCheck)
             m_caster->ClearUnitState(UNIT_STATE_CASTING);
     }
     else
-    {
-        // Immediate spell, no big deal
-        handle_immediate();
-    }
+        hasDeley = false;
 
     Unit* procTarget = m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : m_caster;
     uint32 procAttacker = PROC_EX_NONE;
@@ -4040,6 +4039,8 @@ void Spell::cast(bool skipCheck)
             }
         }
     }
+    if (!hasDeley) // Immediate spell, no big deal
+        handle_immediate();
 
     CallScriptAfterCastHandlers();
 
