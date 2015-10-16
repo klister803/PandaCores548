@@ -11502,6 +11502,21 @@ void Unit::SetOwnerGUID(uint64 owner)
     RemoveFieldNotifyFlag(UF_FLAG_OWNER);
 }
 
+bool Unit::IsOwnerOrSelf(Unit* owner) const
+{
+    if(this == owner)
+        return true;
+    if(GetDemonCreatorGUID() == owner->GetGUID())
+        return true;
+    if(GetSummonedByGUID() == owner->GetGUID())
+        return true;
+    if(GetOwnerGUID() == owner->GetGUID())
+        return true;
+    if(GetCharmerGUID() == owner->GetGUID())
+        return true;
+    return false;
+}
+
 Unit* Unit::GetOwner() const
 {
     if (uint64 ownerid = GetOwnerGUID())
