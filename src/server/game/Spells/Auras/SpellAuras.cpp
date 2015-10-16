@@ -1882,6 +1882,9 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         if (itr->target)
                             _target = target->GetUnitForLinkedSpell(caster, target, itr->target);
 
+                        if(!_target)
+                            continue;
+
                         if (itr->effect < 0)
                         {
                             switch (itr->actiontype)
