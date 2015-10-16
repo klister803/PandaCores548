@@ -2357,6 +2357,9 @@ bool Creature::canCreatureAttack(Unit const* victim, bool /*force*/) const
         case 71954:
         //Alani
         case 64403:
+        //Nalak
+        case 69099:
+        case 69739:
             dist = 130.0f;
             break;
     }
