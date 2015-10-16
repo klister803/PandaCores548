@@ -25354,7 +25354,7 @@ void Unit::RemoveMyAura(uint32 spellId)
     for (AuraList::const_iterator itr = m_my_Auras.begin(); itr != m_my_Auras.end();)
     {
         if (Aura* aura = (*itr))
-            if (aura->GetId() == spellId)
+            if (aura->GetId() == spellId && !aura->IsRemoved())
             {
                 m_my_Auras.remove(*itr++);
                 aura->Remove();
