@@ -25357,7 +25357,7 @@ void Unit::RemoveMyAura(uint32 spellId)
             if (aura->GetId() == spellId && !aura->IsRemoved())
             {
                 m_my_Auras.remove(*itr++);
-                aura->Remove();
+                aura->SetDuration(50);
                 continue;
             }
         ++itr;
