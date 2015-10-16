@@ -589,6 +589,10 @@ class spell_dk_blood_charges : public SpellScriptLoader
                     {
                         if (_player->HasSpell(45529))
                         {
+                            if (_player->HasAura(58677))
+                                if (target->isPet() && target->GetOwnerGUID() == _player->GetGUID())
+                                    return;
+
                             _player->CastSpell(_player, DK_SPELL_BLOOD_CHARGE, true);
                             _player->CastSpell(_player, DK_SPELL_BLOOD_CHARGE, true);
                         }
