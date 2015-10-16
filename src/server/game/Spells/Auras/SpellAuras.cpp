@@ -1509,6 +1509,12 @@ void Aura::UnregisterCasterAuras()
     if(!caster)
         return;
     caster->GetMyCastAuras().remove(this);
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        if (GetSpellInfo()->Effects[i].TargetA.GetTarget() == TARGET_UNIT_CASTER_AREA_SUMMON)
+        {
+            caster->RemoveMyAura(GetId());
+            return;
+        }
 }
 
 void Aura::UnregisterSingleTarget()

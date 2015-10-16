@@ -930,6 +930,7 @@ void Spell::SelectImplicitNearbyTargets(SpellEffIndex effIndex, SpellImplicitTar
         case TARGET_CHECK_PARTY:
         case TARGET_CHECK_RAID:
         case TARGET_CHECK_RAID_CLASS:
+        case TARGET_CHECK_SUMMON:
             range = m_spellInfo->GetMaxRange(true, m_caster, this);
             break;
         case TARGET_CHECK_ENTRY:
@@ -10128,6 +10129,14 @@ bool WorldObjectSpellTargetCheck::operator()(WorldObject* target)
                 if (unitTarget->isTotem())
                     return false;
                 if (!_caster->_IsValidAttackTarget(unitTarget, _spellInfo))
+                    return false;
+                break;
+            case TARGET_CHECK_SUMMON:
+                if (unitTarget->isTotem())
+                    return false;
+                if (!_caster->_IsValidAssistTarget(unitTarget, _spellInfo))
+                    return false;
+                if (_caster->GetGUID() != unitTarget->GetDemonCreatorGUID() && _caster->GetGUID() != unitTarget->GetGUID())
                     return false;
                 break;
             case TARGET_CHECK_ALLY:

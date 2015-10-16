@@ -122,6 +122,7 @@ enum SpellTargetCheckTypes
     TARGET_CHECK_RAID,
     TARGET_CHECK_RAID_CLASS,
     TARGET_CHECK_PASSENGER,
+    TARGET_CHECK_SUMMON,
 };
 
 enum SpellTargetDirectionTypes

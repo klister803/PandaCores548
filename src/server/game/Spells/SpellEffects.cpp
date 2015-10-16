@@ -898,7 +898,7 @@ bool Spell::SpellDummyTriggered(SpellEffIndex effIndex)
         for (std::vector<SpellDummyTrigger>::const_iterator itr = spellTrigger->begin(); itr != spellTrigger->end(); ++itr)
         {
             #ifdef WIN32
-            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectDummy %u, 1<<effIndex %u, itr->effectmask %u, option %u, spell_trigger %i, target %u (%u ==> %u)", m_spellInfo->Id, 1<<effIndex, itr->effectmask, itr->option, itr->spell_trigger, itr->target, triggerTarget ? triggerTarget->GetGUID().GetCounter() : 0, triggerCaster ? triggerCaster->GetGUID().GetCounter() : 0);
+            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectDummy %u, 1<<effIndex %u, itr->effectmask %u, option %u, spell_trigger %i, target %u (%u ==> %u)", m_spellInfo->Id, 1<<effIndex, itr->effectmask, itr->option, itr->spell_trigger, itr->target, triggerTarget ? triggerTarget->GetGUID() : 0, triggerCaster ? triggerCaster->GetGUID() : 0);
             #endif
 
             if (effectHandleMode == SPELL_EFFECT_HANDLE_LAUNCH && itr->option != DUMMY_TRIGGER_CAST_DEST && itr->option != DUMMY_TRIGGER_CAST_OR_REMOVE)
@@ -908,7 +908,7 @@ bool Spell::SpellDummyTriggered(SpellEffIndex effIndex)
                 continue;
 
             #ifdef WIN32
-            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectDummy2: %u, 1<<effIndex %u, itr->effectmask %u, option %u, spell_trigger %i, target %u (%u ==> %u)", m_spellInfo->Id, 1<<effIndex, itr->effectmask, itr->option, itr->spell_trigger, itr->target, triggerTarget ? triggerTarget->GetGUID().GetCounter(): 0, triggerCaster ? triggerCaster->GetGUID().GetCounter(): 0);
+            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectDummy2: %u, 1<<effIndex %u, itr->effectmask %u, option %u, spell_trigger %i, target %u (%u ==> %u)", m_spellInfo->Id, 1<<effIndex, itr->effectmask, itr->option, itr->spell_trigger, itr->target, triggerTarget ? triggerTarget->GetGUID(): 0, triggerCaster ? triggerCaster->GetGUID(): 0);
             #endif
 
             if(itr->target == 1) //get target caster
@@ -1938,7 +1938,7 @@ void Spell::EffectJump(SpellEffIndex effIndex)
     if (m_caster->isInFlight())
         return;
 
-    if (!unitTarget)
+    if (!unitTarget || m_caster == unitTarget)
         return;
 
     DelayCastEvent *delayCast = NULL;
@@ -1949,9 +1949,11 @@ void Spell::EffectJump(SpellEffIndex effIndex)
     float x, y, z;
     unitTarget->GetContactPoint(m_caster, x, y, z, CONTACT_DISTANCE);
 
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "EffectJump start xyz %f %f %f caster %u target %u damage %i", x, y, z, m_caster->GetGUIDLow(), unitTarget->GetGUIDLow(), damage);
+
     float speedXY, speedZ;
-    CalculateJumpSpeeds(effIndex, m_caster->GetExactDist2d(x, y), speedXY, speedZ);
-    m_caster->GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ, 0, 0.0f, delayCast);
+    CalculateJumpSpeeds(effIndex, m_caster->GetExactDist(x, y, x), speedXY, speedZ);
+    m_caster->GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ, 0, 0.0f, delayCast, unitTarget);
 }
 
 void Spell::EffectJumpDest(SpellEffIndex effIndex)
@@ -1974,8 +1976,8 @@ void Spell::EffectJumpDest(SpellEffIndex effIndex)
     }
 
     // Init dest coordinates
-    float x, y, z, o;
-    destTarget->GetPosition(x, y, z, o);
+    float x, y, z, o = 0.0f;
+    destTarget->GetPosition(x, y, z);
 
     if (m_spellInfo->Effects[effIndex].TargetA.GetTarget() == TARGET_DEST_TARGET_BACK)
     {
@@ -1993,8 +1995,10 @@ void Spell::EffectJumpDest(SpellEffIndex effIndex)
     if (Player* plr = m_caster->ToPlayer())
         plr->SetFallInformation(0, z);
 
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "EffectJumpDest start xyz %f %f %f o %f", x, y, z, o);
+
     float speedXY, speedZ;
-    CalculateJumpSpeeds(effIndex, m_caster->GetExactDist2d(x, y), speedXY, speedZ);
+    CalculateJumpSpeeds(effIndex, m_caster->GetExactDist(x, y, z), speedXY, speedZ);
     // Death Grip and Wild Charge (no form)
     m_caster->GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ, m_spellInfo->Id, o, delayCast);
 }
