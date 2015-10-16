@@ -23839,6 +23839,8 @@ void Player::DropModCharge(SpellModifier* mod, Spell* spell)
 
     if(spellInfo->ProcFlags != 0)
     {
+        if (spell)
+            spell->AddSpellModId(mod->spellId);
         return;
     }
 
