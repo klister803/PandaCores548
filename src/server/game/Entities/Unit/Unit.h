@@ -1808,6 +1808,7 @@ class Unit : public WorldObject
         virtual void setDeathState(DeathState s);           // overwrited in Creature/Player/Pet
 
         uint64 GetSummonedByGUID() const { return GetUInt64Value(UNIT_FIELD_SUMMONEDBY); }
+        uint64 GetDemonCreatorGUID() const { return GetUInt64Value(UNIT_FIELD_DEMON_CREATOR); }
         void SetOwnerGUID(uint64 owner);
         uint64 GetOwnerGUID() const { return GetUInt64Value(UNIT_FIELD_CREATEDBY); }
         void SetCreatorGUID(uint64 creator) { SetUInt64Value(UNIT_FIELD_CREATEDBY, creator); }
@@ -2522,6 +2523,8 @@ class Unit : public WorldObject
 
         bool HasSomeCasterAura(uint64 guid);
         bool HasMyAura(uint32 spellId);
+        bool HasMyAura(Aura const* hasAura, bool check = false);
+        void RemoveMyAura(uint32 spellId);
 
         Unit* GetUnitForLinkedSpell(Unit* caster, Unit* target, uint8 type);
         bool HasAuraLinkedSpell(Unit* caster, Unit* target, uint8 type, int32 hastalent);

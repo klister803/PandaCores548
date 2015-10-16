@@ -418,7 +418,7 @@ void MotionMaster::MoveJumpTo(float angle, float speedXY, float speedZ)
     MoveJump(x, y, z, speedXY, speedZ);
 }
 
-void MotionMaster::MoveJump(float x, float y, float z, float speedXY, float speedZ, uint32 id, float o, DelayCastEvent *e)
+void MotionMaster::MoveJump(float x, float y, float z, float speedXY, float speedZ, uint32 id, float o, DelayCastEvent *e, Unit* target)
 {
     float moveTimeHalf = speedZ / Movement::gravity;
     float max_height = -Movement::computeFallElevation(moveTimeHalf,false,-speedZ);
@@ -430,18 +430,21 @@ void MotionMaster::MoveJump(float x, float y, float z, float speedXY, float spee
         max_height /= 2000.0f;
     }
 
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit (GUID: %u) jump to point (X: %f Y: %f Z: %f, max_height: %f)", _owner->GetGUIDLow(), x, y, z, max_height);
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit (GUID: %u) jump to point (X: %f Y: %f Z: %f, max_height: %f)", _owner->GetGUIDLow(), x, y, z, max_height);
 
     if (_owner->GetTypeId() == TYPEID_PLAYER)
         _owner->m_anti_JupmTime = time + sWorld->GetUpdateTime() * 3;
-    if (!o)
-        o = _owner->GetOrientation();
+    //if (!o)
+        //o = _owner->GetOrientation();
 
     Movement::MoveSplineInit init(*_owner);
     init.MoveTo(x,y,z);
     init.SetParabolic(max_height,0);
     init.SetVelocity(speedXY);
-    init.SetFacing(o);
+    if(target)
+        init.SetFacing(target);
+    else if(o)
+        init.SetFacing(o);
     init.Launch();
     Mutate(new EffectMovementGenerator(id, x, y, z, e), MOTION_SLOT_CONTROLLED);
 

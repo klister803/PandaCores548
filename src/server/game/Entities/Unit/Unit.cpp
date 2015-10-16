@@ -25333,6 +25333,37 @@ bool Unit::HasMyAura(uint32 spellId)
     return false;
 }
 
+bool Unit::HasMyAura(Aura const* hasAura, bool check)
+{
+    for (AuraList::const_iterator itr = m_my_Auras.begin(); itr != m_my_Auras.end(); ++itr)
+    {
+        if (Aura const* aura = (*itr))
+            if (aura->GetId() == hasAura->GetId())
+            {
+                if(aura == hasAura && check)
+                    return true;
+                else if(aura != hasAura && !check)
+                        return true;
+            }
+    }
+    return false;
+}
+
+void Unit::RemoveMyAura(uint32 spellId)
+{
+    for (AuraList::const_iterator itr = m_my_Auras.begin(); itr != m_my_Auras.end();)
+    {
+        if (Aura* aura = (*itr))
+            if (aura->GetId() == spellId)
+            {
+                m_my_Auras.remove(*itr++);
+                aura->Remove();
+                continue;
+            }
+        ++itr;
+    }
+}
+
 Unit* Unit::GetUnitForLinkedSpell(Unit* caster, Unit* target, uint8 type)
 {
     switch (type)
@@ -25351,6 +25382,9 @@ Unit* Unit::GetUnitForLinkedSpell(Unit* caster, Unit* target, uint8 type)
             break;
         case LINK_UNIT_TYPE_TARGET:
             return target;
+            break;
+        case LINK_UNIT_TYPE_VICTIM:
+            return getVictim();
             break;
     }
     return NULL;

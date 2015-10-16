@@ -111,6 +111,7 @@ enum SpellLinkedUnitType
     LINK_UNIT_TYPE_CASTER       = 3,
     LINK_UNIT_TYPE_SELECTED     = 4,
     LINK_UNIT_TYPE_TARGET       = 5,
+    LINK_UNIT_TYPE_VICTIM       = 6,
 };
 
 enum SpellLinkedHasType

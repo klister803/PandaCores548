@@ -1900,7 +1900,7 @@ enum Targets
     TARGET_UNK_117                     = 117, //not use
     TARGET_UNIT_FRIEND_OR_RAID         = 118,
     TARGET_MASS_RESSURECTION           = 119,
-    TARGET_UNIT_CASTER_AREA_ALLY       = 120,
+    TARGET_UNIT_CASTER_AREA_SUMMON     = 120,
     TARGET_UNIT_RESURRECT              = 121,
     TARGET_UNIT_TARGET_SELECT2         = 122,
     TARGET_UNIT_THREAD_PLAYER          = 123,
