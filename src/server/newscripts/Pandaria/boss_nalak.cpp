@@ -44,12 +44,14 @@ public:
 
         EventMap events;
         bool attack_ready;
+        bool questSummon;
 
         void Reset()
         {
             events.Reset();
             me->SetReactState(REACT_DEFENSIVE);
             attack_ready = true;
+            questSummon = false;
         }
 
         void DoAction(int32 const action)
@@ -66,9 +68,11 @@ public:
 
         void SpellHit(Unit* caster, SpellInfo const* spell)
         {
-            if (spell->Id == SPELL_THROW_SPEAR)
+            if (spell->Id == SPELL_THROW_SPEAR && me->isInCombat() && !questSummon)
             {
+                questSummon = true;
                 events.ScheduleEvent(EVENT_5, 1 * IN_MILLISECONDS);
+                events.ScheduleEvent(EVENT_7, 35 * IN_MILLISECONDS);
                 caster->CastSpell(me, SPELL_SUMMON_ESSENCE_OF_STORM, true);
             }
         }
@@ -126,6 +130,9 @@ public:
                     break;
                 case EVENT_6:
                     Talk(0);
+                    break;
+                case EVENT_7:
+                    questSummon = false;
                     break;
                 default:
                     break;
