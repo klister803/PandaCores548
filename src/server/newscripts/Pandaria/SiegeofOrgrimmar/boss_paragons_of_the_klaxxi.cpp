@@ -641,6 +641,13 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     }
                     else
                     {
+                        Map::PlayerList const& PlayerList = me->GetMap()->GetPlayers();
+                        if (!PlayerList.isEmpty())
+                        {
+                            for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+                                if (Player* player = Itr->getSource())
+                                    player->ModifyCurrency(CURRENCY_TYPE_VALOR_POINTS, 70);
+                        }
                         instance->SetBossState(DATA_KLAXXI, DONE);
                         RemoveDebuffFromPlayers();
                     }
