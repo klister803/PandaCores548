@@ -285,7 +285,7 @@ uint32 catalystlist[6] =
     SPELL_DELAYED_CATALYST_GREEN,
 };
 
-uint32 removelist[13] =
+uint32 removelist[16] =
 {
     //buffs
     //Kilruk
@@ -306,6 +306,10 @@ uint32 removelist[13] =
     SPELL_TOXIN_ORANGE,
     SPELL_TOXIN_PURPLE,
     SPELL_TOXIN_GREEN,
+    //Xaril
+    SPELL_VAST_APOTHECARIAL_KNOWLEDGE,
+    SPELL_APOTHECARY_VOLATILE_POULTICE,
+    SPELL_VOLATILE_POULTICE,
 };
 
 //71628
@@ -491,7 +495,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 if (instance)
                     return;
                 
-                for (uint8 n = 0; n < 13; ++n)
+                for (uint8 n = 0; n < 16; ++n)
                     instance->DoRemoveAurasDueToSpellOnPlayers(removelist[n]);
             }
 
@@ -702,8 +706,8 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                             pl->CastSpell(pl, SPELL_COMPOUND_EYE, true);
                         break;
                     case NPC_XARIL:
-                        /*if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_HEALER)
-                            pl->CastSpell(pl, SPELL_VAST_APOTHECARIAL_KNOWLEDGE, true);*/
+                        if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_HEALER)
+                            pl->CastSpell(pl, SPELL_VAST_APOTHECARIAL_KNOWLEDGE, true);
                         break;
                     default:
                         break;
