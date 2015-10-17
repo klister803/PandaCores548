@@ -25372,10 +25372,11 @@ void Unit::RemoveMyAura(uint32 spellId)
     for (AuraList::const_iterator itr = m_my_Auras.begin(); itr != m_my_Auras.end();)
     {
         if (Aura* aura = (*itr))
-            if (aura->GetId() == spellId && !aura->IsRemoved())
+            if (aura->GetId() == spellId && !aura->IsRemoved() && aura->GetOwner() && aura->GetOwner()->IsInWorld())
             {
                 m_my_Auras.remove(*itr++);
-                aura->SetDuration(50);
+                if(aura->GetDuration() > 500 || aura->GetDuration() < 0)
+                    aura->SetDuration(500);
                 continue;
             }
         ++itr;
