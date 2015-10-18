@@ -1340,62 +1340,61 @@ class spell_sha_of_pride_projection : public SpellScriptLoader
         }
 };
 
-//144359
-class spell_sha_of_pride_gift_of_titans : public SpellScriptLoader
+class ValidTargetCheck
 {
-    public:
-        spell_sha_of_pride_gift_of_titans() : SpellScriptLoader("spell_sha_of_pride_gift_of_titans") { }
+public:
+    bool operator()(WorldObject* unit)
+    {
+        if (Unit* target = unit->ToUnit())
+            if (target->HasAura(SPELL_GIFT_OF_THE_TITANS))
+                return false;
+        return true;
+    }
+};
 
-        class spell_sha_of_pride_gift_of_titans_AuraScript : public AuraScript
+//144363
+class spell_sha_of_pride_gift_of_titans_dummy : public SpellScriptLoader
+{
+public:
+    spell_sha_of_pride_gift_of_titans_dummy() : SpellScriptLoader("spell_sha_of_pride_gift_of_titans_dummy") { }
+
+    class spell_sha_of_pride_gift_of_titans_dummy_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_sha_of_pride_gift_of_titans_dummy_SpellScript);
+
+        void _FilterTarget(std::list<WorldObject*>&targets)
         {
-            PrepareAuraScript(spell_sha_of_pride_gift_of_titans_AuraScript);
-
-            void OnTick(AuraEffect const* aurEff)
+            if (GetCaster())
             {
-                if (GetCaster())
-                { 
-                    std::list<Player*> pllist;
-                    std::list<Player*> gpllist; 
-                    pllist.clear();
-                    gpllist.clear();
-                    GetPlayerListInGrid(pllist, GetCaster(), 8.0f);
-                    if (pllist.size() >= 4)
+                targets.remove_if(ValidTargetCheck());
+                uint8 maxcount = GetCaster()->GetMap()->Is25ManRaid() ? 7 : 2;
+                if (targets.size() >= maxcount)
+                {
+                    targets.resize(maxcount);
+                    for (std::list<WorldObject*>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
                     {
-                        uint8 maxcount = GetCaster()->GetMap()->Is25ManRaid() ? 9 : 4;
-                        uint8 count = 0;
-                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                        if (Player* pl = (*itr)->ToPlayer())
                         {
-                            if ((*itr)->HasAura(SPELL_GIFT_OF_THE_TITANS))
-                            {
-                                gpllist.push_back(*itr);
-                                count++;
-                                if (count >= maxcount)
-                                    break;
-                            }
-                        }
-
-                        if (gpllist.size() >= maxcount)
-                        {
-                            for (std::list<Player*>::const_iterator itr = gpllist.begin(); itr != gpllist.end(); ++itr)
-                            {
-                                (*itr)->RemoveAurasDueToSpell(SPELL_GIFT_OF_THE_TITANS);
-                                (*itr)->CastSpell(*itr, SPELL_POWER_OF_THE_TITANS, true);
-                            }
+                            pl->RemoveAurasDueToSpell(SPELL_GIFT_OF_THE_TITANS);
+                            pl->CastSpell(pl, SPELL_POWER_OF_THE_TITANS, true);
                         }
                     }
+                    GetCaster()->RemoveAurasDueToSpell(SPELL_GIFT_OF_THE_TITANS);
+                    GetCaster()->CastSpell(GetCaster(), SPELL_POWER_OF_THE_TITANS, true);
                 }
             }
-
-            void Register()
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_sha_of_pride_gift_of_titans_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_sha_of_pride_gift_of_titans_AuraScript();
         }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_of_pride_gift_of_titans_dummy_SpellScript::_FilterTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ALLY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_sha_of_pride_gift_of_titans_dummy_SpellScript();
+    }
 };
 
 //Mark of Arrogance
@@ -1508,7 +1507,7 @@ void AddSC_boss_sha_of_pride()
     new spell_sha_of_pride_imprison();
     new spell_sha_of_pride_self_reflection();
     new spell_sha_of_pride_projection();
-    new spell_sha_of_pride_gift_of_titans();
+    new spell_sha_of_pride_gift_of_titans_dummy();
     new spell_sha_of_pride_mark_of_arrogance();
     new spell_sha_of_pride_overcome();
     new spell_swelling_pride();
