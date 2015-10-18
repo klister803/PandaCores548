@@ -5011,6 +5011,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENEMY_24;
                     spellInfo->Effects[2].TargetA = TARGET_UNIT_CONE_ENEMY_24;
                     break;
+                //Sha of Pride
+                case 144363: //Gift of Titans Dummy(checker)
+                    spellInfo->Effects[0].TargetB = 30;
+                    break;
                 //Iron Juggernaut
                 case 144218: //Borer Drill Dmg
                     spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
