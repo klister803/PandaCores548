@@ -460,6 +460,7 @@ enum eGameObjects
     GO_YAUNGOLIAN_JAIL2            = 223006,
 
     //Paragons of the Klaxxi
+    GO_PRE_ENT_KLAXXI_DOOR        = 221912,
     GO_ARENA_WALL                 = 221264,
 };
 

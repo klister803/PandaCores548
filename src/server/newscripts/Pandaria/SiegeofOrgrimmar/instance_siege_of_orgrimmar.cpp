@@ -35,9 +35,9 @@ DoorData const doorData[] =
     {GO_ORGRIMMAR_GATE,                      DATA_IRON_JUGGERNAUT,        DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {GO_RUSTY_BARS,                          DATA_KORKRON_D_SHAMAN,       DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {GO_NAZGRIM_EX_DOOR,                     DATA_GENERAL_NAZGRIM,        DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
-    {GO_SP_EX_DOOR,                          DATA_MALKOROK,               DOOR_TYPE_PASSAGE,    BOUNDARY_NONE },
-    //{GO_SP_EX_DOOR,                          DATA_SPOILS_OF_PANDARIA,     DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
-    {0,                                      0,                           DOOR_TYPE_ROOM,       BOUNDARY_NONE}, // END
+    {GO_PRE_ENT_KLAXXI_DOOR,                 DATA_MALKOROK,               DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
+    {GO_SP_EX_DOOR,                          DATA_SPOILS_OF_PANDARIA,     DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
+    {0,                                      0,                           DOOR_TYPE_ROOM,       BOUNDARY_NONE},
 };
 
 class instance_siege_of_orgrimmar : public InstanceMapScript
@@ -87,6 +87,7 @@ public:
         uint64 gossopsGuid;
         uint64 gonsopsGuid;
         uint64 spentdoorGuid;
+        uint64 klaxxientdoorGuid;
         uint64 spexdoorGuid;
         uint64 thokentdoorGuid;
         std::vector<uint64> jaillistGuids;
@@ -165,6 +166,7 @@ public:
             spoils2Guids.clear();
             gossopsGuid             = 0;
             gonsopsGuid             = 0;
+            klaxxientdoorGuid       = 0;
             spentdoorGuid           = 0;
             spexdoorGuid            = 0;
             thokentdoorGuid         = 0;
@@ -652,6 +654,11 @@ public:
                 case GO_LEVER_L:
                     leverGuids.push_back(go->GetGUID());
                     break;
+                //Paragons of Klaxxi
+                case GO_PRE_ENT_KLAXXI_DOOR:
+                    AddDoor(go, true);
+                    klaxxientdoorGuid = go->GetGUID();
+                    break;
                 case GO_ARENA_WALL:
                     klaxxiarenagateGuid.push_back(go->GetGUID());
                     break;
@@ -853,7 +860,7 @@ public:
                 case DONE:
                     for (std::vector<uint64>::const_iterator itr = malkorokfenchGuids.begin(); itr != malkorokfenchGuids.end(); itr++)
                         HandleGameObject(*itr, true);
-                    HandleGameObject(spexdoorGuid, true);
+                    HandleGameObject(klaxxientdoorGuid, true);
                     break;
                 }
                 break;
