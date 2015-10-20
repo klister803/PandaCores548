@@ -559,8 +559,12 @@ public:
                 instance->SetData(DATA_HORSEMAN_EVENT, DONE);
 
             Map::PlayerList const& players = me->GetMap()->GetPlayers();
-            if (!players.isEmpty() && players.begin()->getSource() && players.begin()->getSource()->GetGroup())
-                sLFGMgr->FinishDungeon(players.begin()->getSource()->GetGroup()->GetGUID(), 285);
+			if (!players.isEmpty())
+			{
+				Player* pPlayer = players.begin()->getSource();
+				if (pPlayer && pPlayer->GetGroup())
+					sLFGMgr->FinishDungeon(pPlayer->GetGroup()->GetGUID(), 285);
+			}
         }
 
         void SpellHit(Unit* caster, const SpellInfo* spell)

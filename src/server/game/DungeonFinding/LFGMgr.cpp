@@ -1636,7 +1636,7 @@ void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId)
         }*/
 
         // there can be more that 1 non-random dungeon selected, so fall back to current dungeon id
-        rDungeonId = dungeonDone->random_id;
+        //rDungeonId = dungeonDone->random_id;
         rDungeon = dungeonDone;
 
         uint32 mapId = dungeonDone ? uint32(dungeonDone->map) : 0;
