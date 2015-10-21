@@ -304,15 +304,15 @@ enum eCreatures
     NPC_BLACKFUSE                   = 71504,
 
     //Paragons of the Klaxxi                 
-    NPC_KILRUK                      = 71161, //       6,    moddmg
-    NPC_XARIL                       = 71157, //porch, 4,    moddmg
-    NPC_KAZTIK                      = 71156, //porch  5
-    NPC_KORVEN                      = 71155, //porch, 2
-    NPC_IYYOKYK                     = 71160, //       3
-    NPC_KAROZ                       = 71154, //porch, 1 
-    NPC_SKEER                       = 71152, //porch, pull, moddmg
-    NPC_RIKKAL                      = 71158, //porch, pull, moddmg
-    NPC_HISEK                       = 71153, //porch, pull
+    NPC_KILRUK                      = 71161, //6
+    NPC_XARIL                       = 71157, //4
+    NPC_KAZTIK                      = 71156, //5
+    NPC_KORVEN                      = 71155, //2
+    NPC_IYYOKYK                     = 71160, //3
+    NPC_KAROZ                       = 71154, //1 
+    NPC_SKEER                       = 71152,
+    NPC_RIKKAL                      = 71158,
+    NPC_HISEK                       = 71153,
 
     NPC_BLOOD                       = 71542,
     NPC_AMBER_PIECE                 = 71628,

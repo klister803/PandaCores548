@@ -1223,6 +1223,7 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 143445: //Fixate
     case 144115: //Flame Coating
     //Paragons of the Klaxxi
+    case 143339: //Injection
     case 142948: //Aim Dummy
     case 146982: //Enrage
     case 143319: //Bloodletting
