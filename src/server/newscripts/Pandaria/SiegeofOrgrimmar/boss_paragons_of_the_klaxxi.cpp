@@ -45,6 +45,7 @@ enum eSpells
 
     //Skeer
     SPELL_HEVER_OF_FOES                = 143273,
+    SPELL_HEWN                         = 143275,
     SPELL_BLODDLETTING                 = 143280,
     SPELL_BLOODLETTING_SUM             = 143280,
     SPELL_BLODDLETTING_BUFF            = 143320,
@@ -52,6 +53,7 @@ enum eSpells
     //Rikkal
     SPELL_PREY                         = 144286,
     SPELL_MAD_SCIENTIST_AURA           = 143277,
+    SPELL_GENETIC_ALTERATION           = 143279,
     SPELL_INJECTION                    = 143339,
     SPELL_INJECTION_SUM                = 143340,
     SPELL_MUTATE                       = 143337,
@@ -71,6 +73,7 @@ enum eSpells
 
     //Kilruk
     SPELL_RAZOR_SHARP_BLADES           = 142918,
+    SPELL_EXPOSED_VEINS                = 142931,
     SPELL_GOUGE                        = 143939,
     SPELL_MUTILATE                     = 143941,
     SPELL_REAVE_PRE                    = 148677,
@@ -285,7 +288,7 @@ uint32 catalystlist[6] =
     SPELL_DELAYED_CATALYST_GREEN,
 };
 
-uint32 removelist[16] =
+uint32 removelist[20] =
 {
     //buffs
     //Kilruk
@@ -310,6 +313,11 @@ uint32 removelist[16] =
     SPELL_VAST_APOTHECARIAL_KNOWLEDGE,
     SPELL_APOTHECARY_VOLATILE_POULTICE,
     SPELL_VOLATILE_POULTICE,
+    //Defuffs
+    SPELL_EXPOSED_VEINS,
+    SPELL_TENDERIZING_STRIKES_DMG,
+    SPELL_GENETIC_ALTERATION,
+    SPELL_HEWN,
 };
 
 //71628
@@ -495,7 +503,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 if (instance)
                     return;
                 
-                for (uint8 n = 0; n < 16; ++n)
+                for (uint8 n = 0; n < 20; ++n)
                     instance->DoRemoveAurasDueToSpellOnPlayers(removelist[n]);
             }
 
@@ -2276,6 +2284,33 @@ public:
     }
 };
 
+//144839
+class spell_klaxxi_multi_shot : public SpellScriptLoader
+{
+public:
+    spell_klaxxi_multi_shot() : SpellScriptLoader("spell_klaxxi_multi_shot") { }
+
+    class spell_klaxxi_multi_shot_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_klaxxi_multi_shot_SpellScript);
+
+        void HandleHit()
+        {
+            SetHitDamage(urand(100000, 120000));
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_klaxxi_multi_shot_SpellScript::HandleHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_klaxxi_multi_shot_SpellScript();
+    }
+};
+
 void AddSC_boss_paragons_of_the_klaxxi()
 {
     new npc_amber_piece();
@@ -2308,4 +2343,5 @@ void AddSC_boss_paragons_of_the_klaxxi()
     new spell_fiery_edge_dummy();
     new spell_fiery_edge_dmg();
     new spell_reave();
+    new spell_klaxxi_multi_shot();
 }
