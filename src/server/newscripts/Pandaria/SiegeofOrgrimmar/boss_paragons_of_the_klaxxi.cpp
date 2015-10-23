@@ -45,7 +45,6 @@ enum eSpells
 
     //Skeer
     SPELL_HEVER_OF_FOES                = 143273,
-    SPELL_HEWN                         = 143275,
     SPELL_BLODDLETTING                 = 143280,
     SPELL_BLOODLETTING_SUM             = 143280,
     SPELL_BLODDLETTING_BUFF            = 143320,
@@ -53,7 +52,6 @@ enum eSpells
     //Rikkal
     SPELL_PREY                         = 144286,
     SPELL_MAD_SCIENTIST_AURA           = 143277,
-    SPELL_GENETIC_ALTERATION           = 143279,
     SPELL_INJECTION                    = 143339,
     SPELL_INJECTION_SUM                = 143340,
     SPELL_MUTATE                       = 143337,
@@ -73,7 +71,6 @@ enum eSpells
 
     //Kilruk
     SPELL_RAZOR_SHARP_BLADES           = 142918,
-    SPELL_EXPOSED_VEINS                = 142931,
     SPELL_GOUGE                        = 143939,
     SPELL_MUTILATE                     = 143941,
     SPELL_REAVE_PRE                    = 148677,
@@ -81,25 +78,18 @@ enum eSpells
 
     //Xaril
     SPELL_TENDERIZING_STRIKES          = 142927,
-    SPELL_TENDERIZING_STRIKES_DMG      = 142929,
     SPELL_CAUSTIC_BLOOD                = 142315,
     SPELL_BLOODY_EXPLOSION             = 142317,
     SPELL_TOXIC_INJECTION              = 142528,
     //Toxins
-    SPELL_TOXIN_RED                    = 142533,
     SPELL_DELAYED_CATALYST_RED         = 142936,
-    SPELL_TOXIN_BLUE                   = 142532,
     SPELL_DELAYED_CATALYST_BLUE        = 142935,
     SPELL_REACTION_BLUE                = 142735,
-    SPELL_TOXIN_YELLOW                 = 142534,
     SPELL_DELAYED_CATALYST_YELLOW      = 142937,
     SPELL_CATALYST_YELLOW_AT           = 142737,
     //Heroic Toxins
-    SPELL_TOXIN_ORANGE                 = 142547,
     SPELL_DELAYED_CATALYST_ORANGE      = 142938,
-    SPELL_TOXIN_PURPLE                 = 142548,
     SPELL_DELAYED_CATALYST_PURPLE      = 142939,
-    SPELL_TOXIN_GREEN                  = 142549,
     SPELL_DELAYED_CATALYST_GREEN       = 142940,
 
     //Korven
@@ -122,7 +112,6 @@ enum eSpells
 
     //Amber Parasite
     SPELL_FEED                         = 143362,
-    SPELL_HUNGER                       = 143358,
     SPELL_REGENERATE                   = 143356,
     SPELL_GENETIC_MOD                  = 143355,
     //Hungry Kunchong
@@ -137,20 +126,7 @@ enum eSpells
     SPELL_STRONG_LEGS2                 = 143963,
     //Korven
     SPELL_MASTER_OF_AMBER              = 141854,
-    //Kilruk
-    SPELL_ANGEL_OF_DEATH               = 141859,
-    SPELL_PLAYER_REAVE                 = 142272,
-    //Rikkal
-    SPELL_MAD_SCIENTIST                = 141857,
-    SPELL_GENE_SPLICE                  = 143372,
-    SPELL_GENE_SPLICE_PLAYER           = 143373,
-    //Hisek
-    SPELL_COMPOUND_EYE                 = 141852,
-    SPELL_SNIPE                        = 143217,
     //Xaril
-    SPELL_VAST_APOTHECARIAL_KNOWLEDGE  = 141856,
-    SPELL_APOTHECARY_VOLATILE_POULTICE = 142598, //caster 
-    SPELL_VOLATILE_POULTICE            = 142877, //target
     SPELL_VOLATILE_POULTICE_HEAL       = 142897,
     //
 };
@@ -228,7 +204,6 @@ enum CreatureText
     SAY_KILRUK_SP                      = 22,
     SAY_KILRUK_SP2                     = 23,
     SAY_KILRUK_DIE                     = 24,
-    //SP - special (ability)
 };
 
 uint32 removeaurasentry[4] =
@@ -286,38 +261,6 @@ uint32 catalystlist[6] =
     SPELL_DELAYED_CATALYST_ORANGE,
     SPELL_DELAYED_CATALYST_PURPLE,
     SPELL_DELAYED_CATALYST_GREEN,
-};
-
-uint32 removelist[20] =
-{
-    //buffs
-    //Kilruk
-    SPELL_ANGEL_OF_DEATH,
-    SPELL_PLAYER_REAVE,
-    //Hisek
-    SPELL_COMPOUND_EYE,
-    SPELL_SNIPE,
-    //Rikkal
-    SPELL_MAD_SCIENTIST,
-    SPELL_GENE_SPLICE,
-    SPELL_GENE_SPLICE_PLAYER,
-    //debuffs
-    SPELL_TOXIN_RED,
-    SPELL_TOXIN_BLUE,
-    SPELL_TOXIN_YELLOW,
-    //Heroic Toxins
-    SPELL_TOXIN_ORANGE,
-    SPELL_TOXIN_PURPLE,
-    SPELL_TOXIN_GREEN,
-    //Xaril
-    SPELL_VAST_APOTHECARIAL_KNOWLEDGE,
-    SPELL_APOTHECARY_VOLATILE_POULTICE,
-    SPELL_VOLATILE_POULTICE,
-    //Defuffs
-    SPELL_EXPOSED_VEINS,
-    SPELL_TENDERIZING_STRIKES_DMG,
-    SPELL_GENETIC_ALTERATION,
-    SPELL_HEWN,
 };
 
 //71628
@@ -473,7 +416,6 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
 
             void Reset()
             {
-                RemoveDebuffFromPlayers();
                 events.Reset();
                 summons.DespawnAll();
                 for (uint8 n = 0; n < 4; n++)
@@ -496,15 +438,6 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 default:
                     break;
                 }
-            }
-
-            void RemoveDebuffFromPlayers()
-            {
-                if (instance)
-                    return;
-                
-                for (uint8 n = 0; n < 20; ++n)
-                    instance->DoRemoveAurasDueToSpellOnPlayers(removelist[n]);
             }
 
             void JustSummoned(Creature* sum)
@@ -657,7 +590,6 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                                     player->ModifyCurrency(CURRENCY_TYPE_VALOR_POINTS, 70);
                         }
                         instance->SetBossState(DATA_KLAXXI, DONE);
-                        RemoveDebuffFromPlayers();
                     }
                 }
                 switch (me->GetEntry())
@@ -835,7 +767,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         events.ScheduleEvent(EVENT_SONIC_PROJECTION, 10000);
                     case EVENT_SUM_HUNGRY_KUNCHONG:
                         DoCast(me, SPELL_SUM_HUNGRY_KUNCHONG);
-                        events.ScheduleEvent(EVENT_SUM_HUNGRY_KUNCHONG, 55000);
+                        events.ScheduleEvent(EVENT_SUM_HUNGRY_KUNCHONG, 60000);
                         break;
                     //Iyyokyk
                     case EVENT_DIMINISH:
@@ -913,17 +845,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     }
                     case EVENT_INJECTION:
                         if (me->getVictim())
-                        {
-                            for (uint8 n = 0; n < 5; n++)
-                            {
-                                if (me->getVictim()->HasAura(EvadeSpells[n]))
-                                {
-                                    events.ScheduleEvent(EVENT_INJECTION, 9500);
-                                    return;
-                                }
-                            }
                             DoCast(me->getVictim(), SPELL_INJECTION);
-                        }  
                         events.ScheduleEvent(EVENT_INJECTION, 9500); 
                         break;
                     //Xaril
@@ -969,113 +891,130 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
 
             void ToxicInjection()
             {
-                uint8 listcount = 0;
-                uint8 maxbuffcount = 0;
-                uint8 buffcount = 0;
-                std::list<Player*>_pllist;
-                std::vector<Player*>pllist;
-                _pllist.clear();
-                pllist.clear();
-                me->GetPlayerListInGrid(_pllist, 150.0f);
-                if (!_pllist.empty())
+                uint8 firsttoxin = 0;   //blue or orange
+                uint8 secondtoxin = 0;  //red or purple
+                uint8 lasttoxin = 0;    //yellow or green
+                uint8 mod = me->GetMap()->IsHeroic() ? 3 : 0;
+                if (me->GetMap()->IsHeroic())
                 {
-                    for (std::list<Player*>::const_iterator itr = _pllist.begin(); itr != _pllist.end(); ++itr)
-                        pllist.push_back(*itr);
-
-                    uint8 bluecount = me->GetMap()->Is25ManRaid() ? 3 : 2;
-
-                    if (me->GetMap()->IsHeroic())
+                    uint8 random = urand(0, 2);
+                    if (me->GetMap()->Is25ManRaid())
                     {
-                        for (uint8 n = 0; n < 3; ++n)
+                        switch (random)
                         {
-                            for (std::vector<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
-                            {
-                                if (!(*itr)->HasAura(toxinlist[n + 3]))
-                                {
-                                    me->CastSpell(*itr, toxinlist[n + 3], true);
-                                    break;
-                                }
-                            }
-                        }
-                        listcount = me->GetMap()->Is25ManRaid() ? 22 : 7;
-                        maxbuffcount = listcount == 22 ? urand(7, 8) : urand(2, 3);
-                        for (uint8 b = 0; b < 3; ++b)
-                        {
-                            for (std::vector<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
-                            {
-                                if (!(*itr)->HasAura(toxinlist[3]) && !(*itr)->HasAura(toxinlist[4]) && !(*itr)->HasAura(toxinlist[5]))
-                                {
-                                    me->CastSpell(*itr, toxinlist[b + 3], true);
-                                    buffcount++;
-                                    if (buffcount == maxbuffcount)
-                                    {
-                                        switch (maxbuffcount)
-                                        {
-                                        case 2:
-                                            maxbuffcount = 3;
-                                            break;
-                                        case 3:
-                                            maxbuffcount = 2;
-                                            break;
-                                        case 7:
-                                            maxbuffcount = 8;
-                                            break;
-                                        case 8:
-                                            maxbuffcount = 7;
-                                            break;
-                                        }
-                                        maxbuffcount = urand(2, 3);
-                                        buffcount = 0;
-                                        break;
-                                    }
-                                }
-                            }
+                        case 0:
+                            firsttoxin = 8;
+                            secondtoxin = 9;
+                            lasttoxin = 8;
+                            break;
+                        case 1:
+                            firsttoxin = 9;
+                            secondtoxin = 8;
+                            lasttoxin = 8;
+                            break;
+                        case 2:
+                            firsttoxin = 8;
+                            secondtoxin = 8;
+                            lasttoxin = 9;
+                            break;
                         }
                     }
                     else
                     {
-                        //Blue toxin
-                        for (uint8 b = 0; b < bluecount; ++b)
-                            me->CastSpell(pllist[b], toxinlist[0], true);
-
-                        listcount = me->GetMap()->Is25ManRaid() ? 22 : 8;
-                        maxbuffcount = listcount == 22 ? urand(10, 12) : urand(3, 5);
-                        for (uint8 b = 1; b < 3; ++b)
+                        switch (random)
                         {
-                            for (std::vector<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
-                            {
-                                if (!(*itr)->HasAura(toxinlist[0]) && !(*itr)->HasAura(toxinlist[1]) && !(*itr)->HasAura(toxinlist[2]))
-                                {
-                                    me->CastSpell(*itr, toxinlist[b], true);
-                                    buffcount++;
-                                    if (buffcount == maxbuffcount)
-                                    {
-                                        switch (maxbuffcount)
-                                        {
-                                        case 3:
-                                            maxbuffcount = 5;
-                                            break;
-                                        case 4:
-                                            maxbuffcount = 4;
-                                            break;
-                                        case 5:
-                                            maxbuffcount = 3;
-                                            break;
-                                        case 10:
-                                            maxbuffcount = 12;
-                                            break;
-                                        case 11:
-                                            maxbuffcount = 11;
-                                            break;
-                                        case 12:
-                                            maxbuffcount = 10;
-                                            break;
-                                        }
-                                        buffcount = 0;
-                                        break;
-                                    }
-                                }
-                            }
+                        case 0:
+                            firsttoxin = 3;
+                            secondtoxin = 3;
+                            lasttoxin = 4;
+                            break;
+                        case 1:
+                            firsttoxin = 4;
+                            secondtoxin = 3;
+                            lasttoxin = 3;
+                            break;
+                        case 2:
+                            firsttoxin = 3;
+                            secondtoxin = 4;
+                            lasttoxin = 3;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    if (me->GetMap()->Is25ManRaid())
+                    {
+                        uint8 random = urand(0, 2);
+                        switch (random)
+                        {
+                        case 0:
+                            firsttoxin = 3;
+                            secondtoxin = 11;
+                            lasttoxin = 11;
+                            break;
+                        case 1:
+                            firsttoxin = 3;
+                            secondtoxin = 10;
+                            lasttoxin = 12;
+                            break;
+                        case 2:
+                            firsttoxin = 3;
+                            secondtoxin = 12;
+                            lasttoxin = 10;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        uint8 random = urand(0, 2);
+                        switch (random)
+                        {
+                        case 0:
+                            firsttoxin = 2;
+                            secondtoxin = 4;
+                            lasttoxin = 4;
+                            break;
+                        case 1:
+                            firsttoxin = 2;
+                            secondtoxin = 5;
+                            lasttoxin = 3;
+                            break;
+                        case 2:
+                            firsttoxin = 2;
+                            secondtoxin = 3;
+                            lasttoxin = 5;
+                            break;
+                        }
+                    }
+                }
+                std::list<Player*>pllist;
+                pllist.clear();
+                me->GetPlayerListInGrid(pllist, 150.0f);
+                if (pllist.size())
+                {
+                    std::vector<Player*>_pllist;
+                    _pllist.clear();
+                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                        _pllist.push_back(*itr);
+
+                    uint8 _size = _pllist.size();
+                    for (uint8 n = 0; n < _size; ++n)
+                    {
+                        if (firsttoxin)
+                        {
+                            firsttoxin--;
+                            DoCast(_pllist[n], toxinlist[0 + mod]);
+                        }
+                        else if (secondtoxin)
+                        {
+                            secondtoxin--;
+                            DoCast(_pllist[n], toxinlist[1 + mod]);
+                        }
+                        else if (lasttoxin)
+                        {
+                            lasttoxin--;
+                            DoCast(_pllist[n], toxinlist[2 + mod]);
                         }
                     }
                 }
@@ -1632,6 +1571,36 @@ public:
     AuraScript* GetAuraScript() const
     {
         return new spell_klaxxi_injection_AuraScript();
+    }
+
+    class spell_klaxxi_injection_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_klaxxi_injection_SpellScript);
+
+        void HandleTargetSelect(WorldObject*& target)
+        {
+            if (Unit* _target = target->ToUnit())
+            {
+                for (uint8 n = 0; n < 5; n++)
+                {
+                    if (_target->HasAura(EvadeSpells[n]))
+                    {
+                        target = NULL;
+                        break;
+                    }
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnObjectTargetSelect += SpellObjectTargetSelectFn(spell_klaxxi_injection_SpellScript::HandleTargetSelect, EFFECT_0, TARGET_UNIT_TARGET_ANY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_klaxxi_injection_SpellScript();
     }
 };
 

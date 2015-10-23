@@ -25,6 +25,32 @@ uint32 bonusklaxxientry[6] =
     NPC_KILRUK,
 };
 
+uint32 removelist[22] =
+{
+    SPELL_HEWN,
+    SPELL_ANGEL_OF_DEATH,
+    SPELL_PLAYER_REAVE,
+    SPELL_COMPOUND_EYE,
+    SPELL_SNIPE,
+    SPELL_MAD_SCIENTIST,
+    SPELL_GENETIC_ALTERATION,
+    SPELL_GENE_SPLICE,
+    SPELL_GENE_SPLICE_PLAYER,
+    SPELL_TOXIN_RED,
+    SPELL_TOXIN_BLUE,
+    SPELL_TOXIN_YELLOW,
+    SPELL_TOXIN_ORANGE,
+    SPELL_TOXIN_PURPLE,
+    SPELL_TOXIN_GREEN,
+    SPELL_VAST_APOTHECARIAL_KNOWLEDGE,
+    SPELL_APOTHECARY_VOLATILE_POULTICE,
+    SPELL_VOLATILE_POULTICE,
+    SPELL_EXPOSED_VEINS,
+    SPELL_TENDERIZING_STRIKES_DMG,
+    SPELL_GENETIC_ALTERATION,
+    SPELL_HUNGER,
+};
+
 Position const Sha_of_pride_Norushe  = {797.357f, 880.5637f, 371.1606f, 1.786108f };
 
 DoorData const doorData[] =
@@ -665,6 +691,12 @@ public:
             }
         }
 
+        void RemoveDebuffFromPlayers()
+        {
+            for (uint8 n = 0; n < 22; ++n)
+                DoRemoveAurasDueToSpellOnPlayers(removelist[n]);
+        }
+
         bool SetBossState(uint32 id, EncounterState state)
         {
             //Privent overwrite state.
@@ -987,6 +1019,7 @@ public:
                 switch (state)
                 {
                 case NOT_STARTED:
+                    RemoveDebuffFromPlayers();
                     klaxxidiecount = 0;
                     for (std::vector<uint64>::const_iterator itr = klaxxilist.begin(); itr != klaxxilist.end(); itr++)
                     {
@@ -1021,6 +1054,7 @@ public:
                         }
                     break;
                 case DONE:
+                    RemoveDebuffFromPlayers();
                     if (Creature* kc = instance->GetCreature(klaxxicontrollerGuid))
                         kc->AI()->DoAction(ACTION_KLAXXI_DONE);
 
