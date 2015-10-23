@@ -3325,8 +3325,10 @@ public:
                 return;
 
             caster->CastSpell(caster, SPELL_STRIKE_ANVIL_COSMETIC);
-            if (Player* plr = caster->GetMap()->GetPlayers().begin()->getSource())
-                caster->CastSpell(plr, SPELL_THUNDER_FORGE_CHARGE_TRIGGER);
+            if(caster->GetMap())
+                if(!caster->GetMap()->GetPlayers().isEmpty())
+                    if (Player* plr = caster->GetMap()->GetPlayers().begin()->getSource())
+                        caster->CastSpell(plr, SPELL_THUNDER_FORGE_CHARGE_TRIGGER);
         }
 
         void Register()

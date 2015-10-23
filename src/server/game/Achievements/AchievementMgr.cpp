@@ -3376,6 +3376,8 @@ void AchievementMgr<Player>::SendAchievementInfo(Player* receiver, uint32 /*achi
         {
             counter = itr->second.counter;
             CriteriaTreeEntry const* criteriaTree = itr->second.criteriaTree;
+            if(!criteriaTree)
+                continue;
 
             data.WriteGuidBytes<1, 3, 0>(guid);
             data.WriteGuidBytes<5, 7>(counter);
