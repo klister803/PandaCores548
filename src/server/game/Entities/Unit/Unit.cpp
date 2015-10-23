@@ -11272,7 +11272,8 @@ void Unit::CombatStopWithPets(bool includingCast)
     CombatStop(includingCast);
 
     for (ControlList::const_iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
-        (*itr)->CombatStop(includingCast);
+        if(*itr)
+            (*itr)->CombatStop(includingCast);
 }
 
 bool Unit::isAttackingPlayer() const
@@ -25362,7 +25363,8 @@ void Unit::RemoveMyAura(uint32 spellId)
     for (AuraList::const_iterator itr = m_my_Auras.begin(); itr != m_my_Auras.end();)
     {
         if (Aura* aura = (*itr))
-            if (aura->GetId() == spellId && !aura->IsRemoved() && aura->GetOwner() && aura->GetOwner()->IsInWorld())
+            if(Unit* target = aura->GetUnitOwner())
+            if (aura->GetId() == spellId && !aura->IsRemoved() && target->IsInWorld() && target->isAlive())
             {
                 m_my_Auras.remove(*itr++);
                 if(aura->GetDuration() > 500 || aura->GetDuration() < 0)
