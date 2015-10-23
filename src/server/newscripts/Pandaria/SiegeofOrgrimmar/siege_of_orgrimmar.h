@@ -466,7 +466,28 @@ enum eGameObjects
 
 enum esSpells
 {
-    SPELL_SWIRL_SEARCHER           = 113762, //Cone Searcher
+    SPELL_SWIRL_SEARCHER               = 113762, //Cone Searcher
+    SPELL_HEWN                         = 143275,
+    SPELL_ANGEL_OF_DEATH               = 141859,
+    SPELL_PLAYER_REAVE                 = 142272,
+    SPELL_COMPOUND_EYE                 = 141852,
+    SPELL_SNIPE                        = 143217,
+    SPELL_GENETIC_ALTERATION           = 143279,
+    SPELL_MAD_SCIENTIST                = 141857,
+    SPELL_GENE_SPLICE                  = 143372,
+    SPELL_GENE_SPLICE_PLAYER           = 143373,
+    SPELL_VAST_APOTHECARIAL_KNOWLEDGE  = 141856,
+    SPELL_APOTHECARY_VOLATILE_POULTICE = 142598,
+    SPELL_VOLATILE_POULTICE            = 142877,
+    SPELL_EXPOSED_VEINS                = 142931,
+    SPELL_TENDERIZING_STRIKES_DMG      = 142929,
+    SPELL_HUNGER                       = 143358,
+    SPELL_TOXIN_RED                    = 142533,
+    SPELL_TOXIN_BLUE                   = 142532,
+    SPELL_TOXIN_YELLOW                 = 142534,
+    SPELL_TOXIN_ORANGE                 = 142547,
+    SPELL_TOXIN_PURPLE                 = 142548,
+    SPELL_TOXIN_GREEN                  = 142549,
 };
 
 enum GalakrasEvent
