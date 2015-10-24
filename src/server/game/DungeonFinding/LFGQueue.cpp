@@ -301,6 +301,7 @@ LfgCompatibility LFGQueue::FindNewGroups(LfgGuidList& check, LfgGuidList& all)
         LfgCompatibility subcompatibility = FindNewGroups(check, all);
         if (subcompatibility == LFG_COMPATIBLES_MATCH)
             return LFG_COMPATIBLES_MATCH;
+
         check.pop_back();
     }
     return compatibles;

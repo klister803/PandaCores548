@@ -788,20 +788,6 @@ void LFGMgr::UpdateRoleCheck(uint64 gguid, uint64 guid /* = 0 */, uint8 roles /*
     LfgRoleCheck& roleCheck = itRoleCheck->second;
     bool sendRoleChosen = roleCheck.state != LFG_ROLECHECK_DEFAULT && guid;
 
-    LfgDungeonSet dungeons;
-    if (roleCheck.rDungeonId)
-        dungeons.insert(roleCheck.rDungeonId);
-    else
-        dungeons = roleCheck.dungeons;
-
-    // only damagers in scenarios
-    if (roles)
-    {
-        if (LFGDungeonData const* dungeonData = GetLFGDungeon(*dungeons.begin()))
-            if (dungeonData->dbc->IsScenario() && !dungeonData->dbc->IsChallenge())
-                roles = roles & PLAYER_ROLE_LEADER | PLAYER_ROLE_DAMAGE;
-    }
-
     if (!guid)
         roleCheck.state = LFG_ROLECHECK_ABORTED;
     else if (roles < PLAYER_ROLE_TANK)                            // Player selected no role.
@@ -824,10 +810,33 @@ void LFGMgr::UpdateRoleCheck(uint64 gguid, uint64 guid /* = 0 */, uint8 roles /*
         }
     }
 
+    LfgDungeonSet dungeons;
+    if (roleCheck.rDungeonId)
+        dungeons.insert(roleCheck.rDungeonId);
+    else
+        dungeons = roleCheck.dungeons;
+
+    // only damagers in scenarios
+    if (roles)
+    {
+        if (LFGDungeonData const* dungeonData = GetLFGDungeon(*dungeons.begin()))
+            if (dungeonData->dbc->IsScenario() && !dungeonData->dbc->IsChallenge())
+                roles = roles & PLAYER_ROLE_LEADER | PLAYER_ROLE_DAMAGE;
+    }
+
     LfgJoinResultData joinData = LfgJoinResultData(LFG_JOIN_FAILED, roleCheck.state);
     for (LfgRolesMap::const_iterator it = roleCheck.roles.begin(); it != roleCheck.roles.end(); ++it)
     {
         uint64 pguid = it->first;
+        auto player = ObjectAccessor::FindPlayer(pguid);
+        if (!player)
+        {
+            if (roleCheck.state == LFG_ROLECHECK_FINISHED)
+                SetState(pguid, LFG_STATE_QUEUED);
+            else if (roleCheck.state != LFG_ROLECHECK_INITIALITING)
+                ClearState(pguid);
+            continue;
+        }
 
         if (sendRoleChosen)
             SendLfgRoleChosen(pguid, guid, roles);
@@ -921,6 +930,21 @@ bool LFGMgr::CheckGroupRoles(LfgRolesMap& groles, LfgRoleData const& roleData, b
         if (it->second == PLAYER_ROLE_NONE)
             return false;
 
+        if (it->second & PLAYER_ROLE_TANK)
+        {
+            if (it->second != PLAYER_ROLE_TANK)
+            {
+                it->second -= PLAYER_ROLE_TANK;
+                if (CheckGroupRoles(groles, roleData, false))
+                    return true;
+                it->second += PLAYER_ROLE_TANK;
+            }
+            else if (tank >= roleData.tanksNeeded)
+                return false;
+            else
+                ++tank;
+        }
+
         if (it->second & PLAYER_ROLE_DAMAGE)
         {
             if (it->second != PLAYER_ROLE_DAMAGE)
@@ -949,21 +973,6 @@ bool LFGMgr::CheckGroupRoles(LfgRolesMap& groles, LfgRoleData const& roleData, b
                 return false;
             else
                 ++healer;
-        }
-
-        if (it->second & PLAYER_ROLE_TANK)
-        {
-            if (it->second != PLAYER_ROLE_TANK)
-            {
-                it->second -= PLAYER_ROLE_TANK;
-                if (CheckGroupRoles(groles, roleData, false))
-                    return true;
-                it->second += PLAYER_ROLE_TANK;
-            }
-            else if (tank >= roleData.tanksNeeded)
-                return false;
-            else
-                ++tank;
         }
     }
     return tank + healer + damage == uint8(groles.size());
@@ -1924,6 +1933,12 @@ void LFGMgr::SetDungeon(uint64 guid, uint32 dungeon)
 {
     sLog->outTrace(LOG_FILTER_LFG, "LFGMgr::SetDungeon: [" UI64FMTD "] dungeon %u", guid, dungeon);
     GroupsStore[guid].SetDungeon(dungeon);
+}
+
+void LFGMgr::ClearState(uint64 guid)
+{
+    sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::ClearState: [" UI64FMTD "]", guid);
+    PlayersStore[guid].ClearState();
 }
 
 void LFGMgr::SetRoles(uint64 guid, uint8 roles)
