@@ -420,8 +420,8 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 summons.DespawnAll();
                 for (uint8 n = 0; n < 4; n++)
                     me->RemoveAurasDueToSpell(removeaurasentry[n]);
-                me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
                 me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
+                me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
                 me->SetReactState(REACT_PASSIVE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 checkklaxxi = 0;
@@ -596,9 +596,11 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 {
                 case NPC_SKEER:
                     Talk(SAY_SKEER_DIE, 0);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_HEWN);
                     break;
                 case NPC_RIKKAL:
                     Talk(SAY_RIKKAL_DIE, 0);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GENETIC_ALTERATION);
                     break;
                 case NPC_HISEK:
                     Talk(SAY_HISEK_DIE, 0);
@@ -614,12 +616,14 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     break;
                 case NPC_XARIL:
                     Talk(SAY_XARIL_DIE, 0);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TENDERIZING_STRIKES_DMG);
                     break;
                 case NPC_KAZTIK:
                     Talk(SAY_KAZTIK_DIE, 0);
                     break;
                 case NPC_KILRUK:
                     Talk(SAY_KILRUK_DIE, 0);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EXPOSED_VEINS);
                     break;
                 default:
                     break;
