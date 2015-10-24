@@ -44,6 +44,14 @@ void LfgPlayerData::SetState(LfgState state)
     }
 }
 
+void LfgPlayerData::ClearState()
+{
+    m_SelectedDungeons.clear();
+    m_Roles = 0;
+    m_State = m_OldState;
+    m_Comment = "";
+}
+
 void LfgPlayerData::RestoreState()
 {
     if (m_OldState == LFG_STATE_NONE)

@@ -37,6 +37,7 @@ class LfgPlayerData
         void RestoreState();
         void SetTeam(uint8 team);
         void SetGroup(uint64 group);
+        void ClearState();
 
         // Queue
         void SetRoles(uint8 roles);

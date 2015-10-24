@@ -433,7 +433,7 @@ class LFGMgr
     private:
         uint8 GetTeam(uint64 guid);
         void RestoreState(uint64 guid, char const* debugMsg);
-        void ClearState(uint64 guid, char const* debugMsg);
+        void ClearState(uint64 guid);
         void SetDungeon(uint64 guid, uint32 dungeon);
         void SetSelectedDungeons(uint64 guid, LfgDungeonSet const& dungeons);
         void DecreaseKicksLeft(uint64 guid);
