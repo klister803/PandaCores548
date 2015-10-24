@@ -1367,7 +1367,7 @@ public:
             if (GetCaster())
             {
                 targets.remove_if(ValidTargetCheck());
-                uint8 maxcount = GetCaster()->GetMap()->Is25ManRaid() ? 7 : 2;
+                uint8 maxcount = GetCaster()->GetMap()->Is25ManRaid() ? 8 : 3;
                 if (targets.size() >= maxcount)
                 {
                     targets.resize(maxcount);
