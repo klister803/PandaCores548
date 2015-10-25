@@ -1576,36 +1576,6 @@ public:
     {
         return new spell_klaxxi_injection_AuraScript();
     }
-
-    class spell_klaxxi_injection_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_klaxxi_injection_SpellScript);
-
-        void HandleTargetSelect(WorldObject*& target)
-        {
-            if (Unit* _target = target->ToUnit())
-            {
-                for (uint8 n = 0; n < 5; n++)
-                {
-                    if (_target->HasAura(EvadeSpells[n]))
-                    {
-                        target = NULL;
-                        break;
-                    }
-                }
-            }
-        }
-
-        void Register()
-        {
-            OnObjectTargetSelect += SpellObjectTargetSelectFn(spell_klaxxi_injection_SpellScript::HandleTargetSelect, EFFECT_0, TARGET_UNIT_TARGET_ANY);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_klaxxi_injection_SpellScript();
-    }
 };
 
 //143337
