@@ -171,7 +171,7 @@ void CreatureAI::DoAttackerGroupInCombat(Player* attacker)
 // MoveInLineOfSight can be called inside another MoveInLineOfSight and cause stack overflow
 void CreatureAI::MoveInLineOfSight_Safe(Unit* who)
 {
-    if (m_MoveInLineOfSight_locked == true)
+    if (!me || !who || m_MoveInLineOfSight_locked == true)
         return;
     m_MoveInLineOfSight_locked = true;
     MoveInLineOfSight(who);
