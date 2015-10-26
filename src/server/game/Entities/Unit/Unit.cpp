@@ -11272,8 +11272,13 @@ void Unit::CombatStopWithPets(bool includingCast)
     CombatStop(includingCast);
 
     for (ControlList::const_iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
-        if(*itr)
-            (*itr)->CombatStop(includingCast);
+    {
+        auto controlled = (*itr);
+        if (!controlled || !controlled->IsInWorld())
+            continue;
+
+        controlled->CombatStop(includingCast);
+    }
 }
 
 bool Unit::isAttackingPlayer() const
