@@ -52,7 +52,6 @@ enum eSpells
     //Rikkal
     SPELL_PREY                         = 144286,
     SPELL_MAD_SCIENTIST_AURA           = 143277,
-    SPELL_INJECTION                    = 143339,
     SPELL_INJECTION_SUM                = 143340,
     SPELL_MUTATE                       = 143337,
     SPELL_FAULTY_MUTATION              = 148589,
@@ -101,7 +100,7 @@ enum eSpells
     //Karoz
     SPELL_FLASH                        = 143704,
     SPELL_HURL_AMBER                   = 143759,
-    SPELL_HURL_AMBER_DMG               = 143966,
+    SPELL_HURL_AMBER_DMG               = 143733,
 
     //Special
     SPELL_AURA_VISUAL_FS               = 143548, 
@@ -859,8 +858,14 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         break;
                     case EVENT_CATALYST:
                     {
+                        if (!instance)
+                            return;
+
                         uint32 n = me->GetMap()->IsHeroic() ? urand(0, 2) : urand(3, 5);
                         DoCast(me, catalystlist[n], true);
+                        for (uint8 b = 0; b < 6; n++)
+                            if (catalystlist[b] != catalystlist[n])
+                                instance->DoRemoveAurasDueToSpellOnPlayers(catalystlist[b]);
                         break;
                     }
                     //Karoz
@@ -1560,14 +1565,19 @@ public:
     {
         PrepareAuraScript(spell_klaxxi_injection_AuraScript);
 
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+        }
+
         void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
         {
-            if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH && GetCaster() && GetCaster()->isAlive())
+            if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
                 GetTarget()->CastSpell(GetTarget(), SPELL_INJECTION_SUM, true);
         }
 
         void Register()
         {
+            OnEffectApply += AuraEffectApplyFn(spell_klaxxi_injection_AuraScript::OnApply, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
             OnEffectRemove += AuraEffectRemoveFn(spell_klaxxi_injection_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
         }
     };
