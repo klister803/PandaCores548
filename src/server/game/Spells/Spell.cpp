@@ -2701,8 +2701,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         return;
 
     //if (m_spellInfo)
-        //if (getState() == SPELL_STATE_DELAYED && !m_spellInfo->IsPositive() && (getMSTime() - target->timeDelay) <= unit->m_lastSanctuaryTime)
-            //return;                                             // No missinfo in that case
+    //if (getState() == SPELL_STATE_DELAYED && !m_spellInfo->IsPositive() && (getMSTime() - target->timeDelay) <= unit->m_lastSanctuaryTime)
+    //return;                                             // No missinfo in that case
 
     // Some spells should remove Camouflage after hit (traps, some spells that have casting time)
     if (target->targetGUID != m_caster->GetGUID() && m_spellInfo && m_spellInfo->IsBreakingCamouflageAfterHit())
@@ -2734,7 +2734,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
 
     // Fill base trigger info
     uint32 procAttacker = m_procAttacker;
-    uint32 procVictim   = m_procVictim;
+    uint32 procVictim = m_procVictim;
     uint32 procEx = m_procEx;
 
     m_spellAura = NULL; // Set aura to null for every target-make sure that pointer is not used for unit without aura applied
@@ -2752,6 +2752,16 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
             spellHitTarget = m_caster;
             if (m_caster->GetTypeId() == TYPEID_UNIT)
                 m_caster->ToCreature()->LowerPlayerDamageReq(target->damage);
+        }
+    }
+
+    if (m_spellInfo->Id == 143339 && spellHitTarget) //Injection (Paragons of Klaxxi)
+    {
+        if (spellHitTarget->HasAura(132403) || spellHitTarget->HasAura(132404) //Evade Auras
+            || spellHitTarget->HasAura(132402) || spellHitTarget->HasAura(115308) || spellHitTarget->HasAura(77535))
+        {
+            m_damage = 0;
+            spellHitTarget = NULL;
         }
     }
 

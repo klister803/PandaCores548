@@ -488,6 +488,8 @@ enum esSpells
     SPELL_TOXIN_ORANGE                 = 142547,
     SPELL_TOXIN_PURPLE                 = 142548,
     SPELL_TOXIN_GREEN                  = 142549,
+    SPELL_INJECTION                    = 143339,
+    SPELL_CAUSTIC_AMBER_AURA_DMG       = 143735,
 };
 
 enum GalakrasEvent
