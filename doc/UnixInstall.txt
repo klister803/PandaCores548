@@ -57,6 +57,7 @@ flags like
     WITH_WARNINGS       Show all warnings during compile
     WITH_COREDEBUG      Include additional debug-code in core
     PREFIX              Set installation directory
+    NOJEM               Do not build with jemalloc (advanced users only)
     CONF_DIR            Set path as default configuration directory
     LIBSDIR             Set path as default library directory
     CMAKE_C_FLAGS       Set C_FLAGS for compile (advanced users only)
