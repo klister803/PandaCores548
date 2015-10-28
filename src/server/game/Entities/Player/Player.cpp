@@ -28483,45 +28483,50 @@ void Player::HandleFall(MovementInfo const& movementInfo)
     RemoveAllAurasByType(SPELL_AURA_GLIDE);
 }
 
-void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /* = 0 */, uint32 miscValue2 /* = 0 */, uint32 miscValue3 /* = 0 */, 
-                                       Unit* unit /* = nullptr */, bool ignoreGroup /* = false */, bool loginCheck /* = false */)
+UpdateAchievementCriteriaEvent::UpdateAchievementCriteriaEvent(Player* owner, AchievementCriteriaTypes _t, uint32 m1 /*= 0*/, uint32 m2 /*= 0*/, uint32 m3 /*= 0*/, Unit* u /*= NULL*/, bool iGroup /*= false*/) :
+m_owner(owner), type(_t), miscValue1(m1), miscValue2(m2), miscValue3(m3), ignoreGroup(iGroup)
 {
-    AchievementCriteriaUpdateTask task;
-    task.PlayerGUID = GetGUID();
-    task.UnitGUID = unit ? unit->GetGUID() : 0;
-    task.Task = [type, miscValue1, miscValue2, miscValue3, ignoreGroup, loginCheck](uint64 const &playerGUID, uint64 const &unitGUID) -> void
-    {
-        /// Task will be executed async
-        /// We need to ensure the player still exist
-        Player *player = HashMapHolder<Player>::Find(playerGUID);
-        if (!player)
-            return;
+    if (u)
+        unit = u->get_ptr();
+};
 
-        /// Same for the unit
-        Unit *unit = unitGUID ? Unit::GetUnit(*player, unitGUID) : nullptr;
+bool UpdateAchievementCriteriaEvent::Execute(uint64 e_time, uint32 p_time)
+{
+    m_owner->_UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit.get() ? unit.get()->ToUnit() : NULL, ignoreGroup);
+    return true;
+}
 
-        player->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, player, false, loginCheck);
+void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, uint32 miscValue3 /*= 0*/, Unit* unit /*= NULL*/, bool ignoreGroup /*=false*/)
+{
+    UpdateAchievementCriteriaEvent* e = new UpdateAchievementCriteriaEvent(this, type, miscValue1, miscValue2, miscValue3, unit, ignoreGroup);
+    m_Events.AddEvent(e, m_Events.CalculateTime(upd_achieve_criteria_counter * 10));
 
-        /// Update scenario/challenge criterias
-        Map *map = player->GetMap();
-        if (uint32 instanceId = map ? map->GetInstanceId() : 0)
-            if (ScenarioProgress *progress = sScenarioMgr->GetScenarioProgress(instanceId))
-                progress->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, player, false, loginCheck);
+    ++upd_achieve_criteria_counter;
+}
 
-        /// Update only individual achievement criteria here, otherwise we may get multiple updates
-        /// from a single boss kill
-        if (!ignoreGroup && sAchievementMgr->IsGroupCriteriaType(type))
-            return;
+void Player::_UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, uint32 miscValue3 /*= 0*/, Unit* unit /*= NULL*/, bool ignoreGroup /*=false*/)
+{
+    --upd_achieve_criteria_counter;
 
-        if (Guild *guild = sGuildMgr->GetGuildById(player->GetGuildId()))
-            guild->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, player, loginCheck);
+    GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, this);
 
-        /// Quest "A Test of Valor"
-        if (player->HasAchieved(8030) || player->HasAchieved(8031))
-            player->KilledMonsterCredit(69145, 0);
-    };
+    Map* map = GetMap();
+    // Update scenario/challenge criterias
+    if (uint32 instanceId =  map ? map->GetInstanceId() : 0)
+        if (ScenarioProgress* progress = sScenarioMgr->GetScenarioProgress(instanceId))
+            progress->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, this);
 
-    sAchievementMgr->AddCriteriaUpdateTask(task);
+    // Update only individual achievement criteria here, otherwise we may get multiple updates
+    // from a single boss kill
+    if (!ignoreGroup && sAchievementMgr->IsGroupCriteriaType(type))
+        return;
+
+    if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
+        guild->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, this);
+
+    // Quest "A Test of Valor"
+    if (HasAchieved(8030) || HasAchieved(8031))
+        KilledMonsterCredit(69145, 0);
 }
 
 void Player::CompletedAchievement(AchievementEntry const* entry)
