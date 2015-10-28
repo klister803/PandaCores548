@@ -861,10 +861,10 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         if (!instance)
                             return;
 
-                        uint32 n = me->GetMap()->IsHeroic() ? urand(0, 2) : urand(3, 5);
-                        DoCast(me, catalystlist[n], true);
-                        for (uint8 b = 0; b < 6; n++)
-                            if (catalystlist[b] != catalystlist[n])
+                        uint32 mod = me->GetMap()->IsHeroic() ? urand(0, 2) : urand(3, 5);
+                        DoCast(me, catalystlist[mod], true);
+                        for (uint8 b = 0; b < 6; ++b)
+                            if (catalystlist[b] != catalystlist[mod])
                                 instance->DoRemoveAurasDueToSpellOnPlayers(catalystlist[b]);
                         break;
                     }

@@ -350,13 +350,13 @@ public:
         
         void JustDied(Unit* killer)
         {
+            if (!instance)
+                return;
+
             summon.DespawnAll();
             DespawnAllSummons();
-            if (killer == me && instance)
-            {
-                me->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+            if (killer != me)
                 instance->SetBossState(DATA_KORKRON_D_SHAMAN, DONE);
-            }
         }
         
         void UpdateAI(uint32 diff)
