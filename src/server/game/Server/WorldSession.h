@@ -53,6 +53,8 @@ struct DeclinedName;
 struct ItemTemplate;
 struct MovementInfo;
 
+#define PACKETS_COUNT 10000
+
 namespace lfg
 {
 struct LfgJoinResultData;
@@ -315,7 +317,7 @@ class WorldSession
         void LogoutPlayer(bool Save);
         void KickPlayer();
 
-        void QueuePacket(WorldPacket* new_packet);
+        void QueuePacket(WorldPacket* new_packet, bool& deletePacket);
         bool Update(uint32 diff, PacketFilter& updater);
 
         /// Handle the authentication waiting queue (to be completed)
@@ -1151,9 +1153,7 @@ class WorldSession
         time_t timeLastHandleSpellClick;
         uint8 playerLoginCounter;
 
-        uint32 _pakagepersecond;
-        uint32 _second;
-        uint32 _counttokick;
+        uint32 antispamm[PACKETS_COUNT][2];//0 count, 1 savetime
 
         z_stream_s* _compressionStream;
 };

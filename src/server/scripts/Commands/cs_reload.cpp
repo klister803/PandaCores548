@@ -163,6 +163,7 @@ public:
             { "vehicle_accessory",            SEC_ADMINISTRATOR, true,  &HandleReloadVehicleAccessoryCommand,           "", NULL },
             { "vehicle_template_accessory",   SEC_ADMINISTRATOR, true,  &HandleReloadVehicleTemplateAccessoryCommand,   "", NULL },
             { "world_visible_distance",       SEC_ADMINISTRATOR, true,  &HandleReloadWorldVisibleDistanceCommand,       "", NULL },
+            { "antispamm",                    SEC_ADMINISTRATOR, true,  &HandleReloadAntispammCommand,                  "", NULL },
             { NULL,                           0,                 false, NULL,                                           "", NULL }
         };
         static ChatCommand commandTable[] =
@@ -1375,6 +1376,14 @@ public:
     {
         sObjectMgr->LoadWorldVisibleDistance();
         handler->SendGlobalGMSysMessage("DB tables `world_visible_distance` reloaded.");
+        return true;
+    }
+
+    static bool HandleReloadAntispammCommand(ChatHandler* handler, const char* /*args*/)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Reloading Anti spamm table...");
+        sWorld->LoadWorldAntispamm();
+        handler->SendGlobalGMSysMessage("Anti spamm data reloaded.");
         return true;
     }
 };
