@@ -11269,6 +11269,9 @@ void Unit::CombatStop(bool includingCast)
 
 void Unit::CombatStopWithPets(bool includingCast)
 {
+    if(!IsInWorld())
+        return;
+
     CombatStop(includingCast);
 
     for (ControlList::const_iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
