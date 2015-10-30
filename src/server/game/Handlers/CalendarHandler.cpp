@@ -445,15 +445,6 @@ void WorldSession::HandleCalendarCopyEvent(WorldPacket& recvData)
 
 void WorldSession::HandleCalendarEventInvite(WorldPacket& recvData)
 {
-    time_t now = time(NULL);
-    if (now - timeAddIgnoreOpcode < 3)
-    {
-        recvData.rfinish();
-        return;
-    }
-    else
-       timeAddIgnoreOpcode = now;
-
     uint64 guid = _player->GetGUID();
     uint64 eventId;
     uint64 inviteId;

@@ -46,7 +46,7 @@ class SystemMgr;
 extern uint64 SendSize[0x7FFF+1];
 extern uint64 SendCount[0x7FFF+1];
 
-#define PACKETS_COUNT 1312
+#define PACKETS_COUNT 10000
 
 // ServerMessages.dbc
 enum ServerMessageType

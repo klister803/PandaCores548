@@ -53,8 +53,6 @@ struct DeclinedName;
 struct ItemTemplate;
 struct MovementInfo;
 
-#define PACKETS_COUNT 10000
-
 namespace lfg
 {
 struct LfgJoinResultData;
@@ -1129,28 +1127,7 @@ class WorldSession
         uint32 recruiterId;
         bool isRecruiter;
         ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvQueue;
-        time_t timeLastWhoCommand;
         time_t timeCharEnumOpcode;
-        time_t timeLastChannelInviteCommand;
-        time_t timeLastChannelPassCommand;
-        time_t timeLastChannelMuteCommand;
-        time_t timeLastChannelBanCommand;
-        time_t timeLastChannelUnbanCommand;
-        time_t timeLastChannelAnnounceCommand;
-        time_t timeLastGroupInviteCommand;
-        time_t timeLastGuildInviteCommand;
-        time_t timeLastChannelModerCommand;
-        time_t timeLastChannelOwnerCommand;
-        time_t timeLastChannelSetownerCommand;
-        time_t timeLastChannelUnmoderCommand;
-        time_t timeLastChannelUnmuteCommand;
-        time_t timeLastChannelKickCommand;
-        time_t timeLastHandleSendMail;
-        time_t timeLastHandleSellItem;
-        time_t timeLastHandlePlayerLogin;
-        time_t timeAddIgnoreOpcode;
-        time_t timeMoveTeleportAck;
-        time_t timeLastHandleSpellClick;
         uint8 playerLoginCounter;
 
         uint32 antispamm[PACKETS_COUNT][2];//0 count, 1 savetime

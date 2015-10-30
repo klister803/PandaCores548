@@ -540,16 +540,6 @@ void WorldSession::SendBindPoint(Creature* npc)
 
 void WorldSession::HandleListStabledPetsOpcode(WorldPacket & recvData)
 {
-    time_t now = time(NULL);
-    if (now - timeAddIgnoreOpcode < 1)
-    {
-        SendStableResult(STABLE_ERR_STABLE);
-        recvData.rfinish();
-        return;
-    }
-    else
-       timeAddIgnoreOpcode = now;
-
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recv CMSG_LIST_STABLED_PETS");
 
     ObjectGuid npcGUID;
@@ -675,16 +665,6 @@ void WorldSession::SendStableResult(uint8 res)
 //! 5.4.1
 void WorldSession::HandleStableChangeSlot(WorldPacket & recv_data)
 {
-    time_t now = time(NULL);
-    if (now - timeAddIgnoreOpcode < 1)
-    {
-        SendStableResult(STABLE_ERR_STABLE);
-        recv_data.rfinish();
-        return;
-    }
-    else
-       timeAddIgnoreOpcode = now;
-
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recv CMSG_SET_PET_SLOT.");
     uint32 pet_number;
     ObjectGuid npcGUID;
@@ -775,7 +755,6 @@ void WorldSession::HandleStableChangeSlotCallback(PreparedQueryResult result, ui
     {
         // We need to remove and add the new pet to there diffrent slots
         GetPlayer()->SwapPetSlot(slot, (PetSlot)new_slot);
-        timeAddIgnoreOpcode = 0;
     }
 
     SendStableResult(STABLE_SUCCESS_STABLE);

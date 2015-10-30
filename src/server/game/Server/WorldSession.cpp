@@ -99,16 +99,7 @@ m_playerRecentlyLogout(false), m_playerSave(false),
 m_sessionDbcLocale(sWorld->GetAvailableDbcLocale(locale)),
 m_sessionDbLocaleIndex(locale),
 m_latency(0), m_TutorialsChanged(false), recruiterId(recruiter),
-isRecruiter(isARecruiter), timeLastWhoCommand(0),
-timeLastChannelInviteCommand(0), timeLastGroupInviteCommand(0), timeLastGuildInviteCommand(0), timeLastChannelPassCommand(0),
-timeLastChannelMuteCommand(0), timeLastChannelBanCommand(0), timeLastChannelUnbanCommand(0), timeLastChannelAnnounceCommand(0),
-timeLastChannelModerCommand(0), timeLastChannelOwnerCommand(0),
-timeLastChannelSetownerCommand(0),
-timeLastChannelUnmoderCommand(0),
-timeLastChannelUnmuteCommand(0),
-timeLastChannelKickCommand(0), timeLastHandleSendMail(0), timeLastHandleSellItem(0), timeLastHandlePlayerLogin(0), timeLastHandleSpellClick(0),
-timeCharEnumOpcode(0), timeAddIgnoreOpcode(0), timeMoveTeleportAck(0),
-playerLoginCounter(0)
+isRecruiter(isARecruiter), timeCharEnumOpcode(0), playerLoginCounter(0)
 {
     _warden = NULL;
     _filterAddonMessages = false;
