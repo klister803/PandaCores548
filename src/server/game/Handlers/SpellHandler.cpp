@@ -1339,15 +1339,6 @@ void WorldSession::HandleSelfResOpcode(WorldPacket& /*recvData*/)
 
 void WorldSession::HandleSpellClick(WorldPacket& recvData)
 {
-    time_t now = time(NULL);
-    if (now - timeLastHandleSpellClick < 2)
-    {
-        recvData.rfinish();
-        return;
-    }
-    else
-       timeLastHandleSpellClick = now;
-
     ObjectGuid guid;
     recvData.ReadGuidMask<1, 7, 2, 5, 0, 6>(guid);
     recvData.ReadBit();

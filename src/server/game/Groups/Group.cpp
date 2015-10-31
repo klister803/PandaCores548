@@ -786,6 +786,9 @@ void Group::ChangeLeader(uint64 guid)
 
 void Group::Disband(bool hideDestroy /* = false */)
 {
+    if(!this)
+        return;
+
     sScriptMgr->OnGroupDisband(this);
 
     Player* player;

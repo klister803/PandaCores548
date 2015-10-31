@@ -330,16 +330,6 @@ void WorldSession::HandleCharEnumOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleCharCreateOpcode(WorldPacket & recvData)
 {
-    time_t now = time(NULL);
-    timeCharEnumOpcode = now - 5;
-    if (now - timeAddIgnoreOpcode < 3)
-    {
-        recvData.rfinish();
-        return;
-    }
-    else
-       timeAddIgnoreOpcode = now;
-
     std::string name;
     uint32 name_length = 0;
     uint8 race_, class_;
@@ -822,15 +812,6 @@ void WorldSession::HandleCharDeleteOpcode(WorldPacket & recvData)
 
 void WorldSession::HandlePlayerLoginOpcode(WorldPacket& recvData)
 {
-    time_t now = time(NULL);
-    if (now - timeLastHandlePlayerLogin < 5)
-    {
-        recvData.rfinish();
-        return;
-    }
-    else
-       timeLastHandlePlayerLogin = now;
-
     // Prevent flood of CMSG_PLAYER_LOGIN
     if (++playerLoginCounter > 10)
     {
@@ -1266,15 +1247,6 @@ void WorldSession::HandleShowingCloakOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleCharRenameOpcode(WorldPacket& recvData)
 {
-    time_t now = time(NULL);
-    if (now - timeAddIgnoreOpcode < 3)
-    {
-        recvData.rfinish();
-        return;
-    }
-    else
-       timeAddIgnoreOpcode = now;
-
     ObjectGuid guid;
     std::string newName;
 

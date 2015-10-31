@@ -35,17 +35,6 @@
 
 void WorldSession::HandleSendMail(WorldPacket& recvData)
 {
-    time_t now = time(NULL);
-    if (now - timeLastHandleSendMail < 15)
-    {
-        recvData.rfinish();
-        _player->SendMailResult(0, MAIL_SEND, MAIL_ERR_INTERNAL_ERROR);
-        SendNotification("You can't send mail more than once every few seconds");
-        return;
-    }
-    else
-       timeLastHandleSendMail = now;
-
     ObjectGuid mailbox;
     uint64 money, COD;
     std::string receiver, subject, body;

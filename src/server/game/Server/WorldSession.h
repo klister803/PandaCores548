@@ -315,7 +315,7 @@ class WorldSession
         void LogoutPlayer(bool Save);
         void KickPlayer();
 
-        void QueuePacket(WorldPacket* new_packet);
+        void QueuePacket(WorldPacket* new_packet, bool& deletePacket);
         bool Update(uint32 diff, PacketFilter& updater);
 
         /// Handle the authentication waiting queue (to be completed)
@@ -1127,33 +1127,10 @@ class WorldSession
         uint32 recruiterId;
         bool isRecruiter;
         ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvQueue;
-        time_t timeLastWhoCommand;
         time_t timeCharEnumOpcode;
-        time_t timeLastChannelInviteCommand;
-        time_t timeLastChannelPassCommand;
-        time_t timeLastChannelMuteCommand;
-        time_t timeLastChannelBanCommand;
-        time_t timeLastChannelUnbanCommand;
-        time_t timeLastChannelAnnounceCommand;
-        time_t timeLastGroupInviteCommand;
-        time_t timeLastGuildInviteCommand;
-        time_t timeLastChannelModerCommand;
-        time_t timeLastChannelOwnerCommand;
-        time_t timeLastChannelSetownerCommand;
-        time_t timeLastChannelUnmoderCommand;
-        time_t timeLastChannelUnmuteCommand;
-        time_t timeLastChannelKickCommand;
-        time_t timeLastHandleSendMail;
-        time_t timeLastHandleSellItem;
-        time_t timeLastHandlePlayerLogin;
-        time_t timeAddIgnoreOpcode;
-        time_t timeMoveTeleportAck;
-        time_t timeLastHandleSpellClick;
         uint8 playerLoginCounter;
 
-        uint32 _pakagepersecond;
-        uint32 _second;
-        uint32 _counttokick;
+        uint32 antispamm[PACKETS_COUNT][2];//0 count, 1 savetime
 
         z_stream_s* _compressionStream;
 };

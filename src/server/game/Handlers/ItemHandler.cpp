@@ -635,16 +635,6 @@ void WorldSession::HandleReadItem(WorldPacket& recvData)
 
 void WorldSession::HandleSellItemOpcode(WorldPacket & recvData)
 {
-    //time_t now = time(NULL);
-    //if (now - timeLastHandleSellItem < 1)
-    //{
-    //    _player->SendSellError(SELL_ERR_CANT_FIND_ITEM, NULL, 0);
-    //    recvData.rfinish();
-    //    return;
-    //}
-    //else
-    //   timeLastHandleSellItem = now;
-
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_SELL_ITEM");
     ObjectGuid vendorguid, itemguid;
     uint32 count;

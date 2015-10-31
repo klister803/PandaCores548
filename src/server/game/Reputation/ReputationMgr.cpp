@@ -590,8 +590,10 @@ void ReputationMgr::LoadFromDB(PreparedQueryResult result)
 
 void ReputationMgr::SaveToDB(SQLTransaction& trans)
 {
-    for (FactionStateList::iterator itr = _factions.begin(); itr != _factions.end(); ++itr)
+    for (FactionStateList::iterator itr = _factions.begin(), next; itr != _factions.end(); itr = next)
     {
+        next = itr;
+        ++next;
         if (itr->second.needSave)
         {
             PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_REPUTATION_BY_FACTION);

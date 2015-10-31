@@ -773,15 +773,6 @@ void WorldSession::HandlePetRename(WorldPacket & recvData)
 //! 5.4.1
 void WorldSession::HandlePetAbandon(WorldPacket& recvData)
 {
-    time_t now = time(NULL);
-    if (now - timeAddIgnoreOpcode < 3)
-    {
-        recvData.rfinish();
-        return;
-    }
-    else
-       timeAddIgnoreOpcode = now;
-
     ObjectGuid guid;
 
     recvData.ReadGuidMask<6, 5, 2, 0, 3, 4, 7, 1>(guid);

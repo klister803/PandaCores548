@@ -86,12 +86,6 @@ void WorldSession::HandleGuildQueryOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
 {
-    time_t now = time(NULL);
-    if (now - timeLastGuildInviteCommand < 5)
-        return;
-    else
-       timeLastGuildInviteCommand = now;
-
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_INVITE");
     uint32 nameLength = recvPacket.ReadBits(9);
 

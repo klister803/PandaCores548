@@ -1860,6 +1860,9 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading World States...");              // must be loaded before battleground, outdoor PvP and conditions
     LoadWorldStates();
 
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Anti Spamm...");
+    LoadWorldAntispamm();
+
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Phase definitions...");
     sObjectMgr->LoadPhaseDefinitions();
 
@@ -3422,6 +3425,38 @@ void World::LoadWorldStates()
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u world states in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 
+}
+
+void World::LoadWorldAntispamm()
+{
+    uint32 oldMSTime = getMSTime();
+
+    QueryResult result = WorldDatabase.Query("SELECT id, maxcount, second FROM package_antispamm");
+
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 package count. DB table `package_antispamm` is empty!");
+        return;
+    }
+
+    for (uint32 i = 0; i < PACKETS_COUNT; ++i)
+    {
+       loadantispamm[i][0] = 0;
+       loadantispamm[i][1] = 0;
+    }
+
+    uint32 count = 0;
+
+    do
+    {
+        Field* fields = result->Fetch();
+        loadantispamm[fields[0].GetUInt32()][0] = fields[1].GetUInt32();
+        loadantispamm[fields[0].GetUInt32()][1] = fields[2].GetUInt32();
+        ++count;
+    }
+    while (result->NextRow());
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u package count in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 // Setting a worldstate will save it to DB

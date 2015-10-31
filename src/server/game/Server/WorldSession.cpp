@@ -99,21 +99,9 @@ m_playerRecentlyLogout(false), m_playerSave(false),
 m_sessionDbcLocale(sWorld->GetAvailableDbcLocale(locale)),
 m_sessionDbLocaleIndex(locale),
 m_latency(0), m_TutorialsChanged(false), recruiterId(recruiter),
-isRecruiter(isARecruiter), timeLastWhoCommand(0),
-timeLastChannelInviteCommand(0), timeLastGroupInviteCommand(0), timeLastGuildInviteCommand(0), timeLastChannelPassCommand(0),
-timeLastChannelMuteCommand(0), timeLastChannelBanCommand(0), timeLastChannelUnbanCommand(0), timeLastChannelAnnounceCommand(0),
-timeLastChannelModerCommand(0), timeLastChannelOwnerCommand(0),
-timeLastChannelSetownerCommand(0),
-timeLastChannelUnmoderCommand(0),
-timeLastChannelUnmuteCommand(0),
-timeLastChannelKickCommand(0), timeLastHandleSendMail(0), timeLastHandleSellItem(0), timeLastHandlePlayerLogin(0), timeLastHandleSpellClick(0),
-timeCharEnumOpcode(0), timeAddIgnoreOpcode(0), timeMoveTeleportAck(0),
-playerLoginCounter(0)
+isRecruiter(isARecruiter), timeCharEnumOpcode(0), playerLoginCounter(0)
 {
     _warden = NULL;
-    _pakagepersecond = 0;
-    _counttokick = 0;
-    _second = 1000;
     _filterAddonMessages = false;
 
     if (sock)
@@ -125,6 +113,12 @@ playerLoginCounter(0)
     }
 
     InitializeQueryCallbackParameters();
+
+    for (uint32 i = 0; i < PACKETS_COUNT; ++i)
+    {
+        antispamm[i][0] = 0;
+        antispamm[i][1] = 0;
+    }
 
     _compressionStream = new z_stream();
     _compressionStream->zalloc = (alloc_func)NULL;
@@ -305,12 +299,34 @@ uint32 WorldSession::CompressPacket(uint8* buffer, WorldPacket const& packet)
 }
 
 /// Add an incoming packet to the queue
-void WorldSession::QueuePacket(WorldPacket* new_packet)
+void WorldSession::QueuePacket(WorldPacket* new_packet, bool& deletePacket)
 {
-    if(_counttokick < 4 && _pakagepersecond < 2000)
-    {
-        _pakagepersecond++;
+    if(sWorld->GetAntiSpamm(new_packet->GetOpcode(), 0) == 0 || sWorld->GetAntiSpamm(new_packet->GetOpcode(), 1) == 0)
         _recvQueue.add(new_packet);
+    else if(sWorld->GetAntiSpamm(new_packet->GetOpcode(), 0) > antispamm[new_packet->GetOpcode()][0])
+    {
+        if(antispamm[new_packet->GetOpcode()][1] == 0 || ((time(NULL) - antispamm[new_packet->GetOpcode()][1]) > sWorld->GetAntiSpamm(new_packet->GetOpcode(), 1)))
+        {
+            antispamm[new_packet->GetOpcode()][0] = 0;
+            antispamm[new_packet->GetOpcode()][1] = time(NULL);
+        }
+
+        antispamm[new_packet->GetOpcode()][0]++;
+        _recvQueue.add(new_packet);
+    }
+    else
+    {
+        if((time(NULL) - antispamm[new_packet->GetOpcode()][1]) > sWorld->GetAntiSpamm(new_packet->GetOpcode(), 1))
+        {
+            antispamm[new_packet->GetOpcode()][0] = 1;
+            antispamm[new_packet->GetOpcode()][1] = time(NULL);
+            _recvQueue.add(new_packet);
+        }
+        else
+        {
+            deletePacket = true;
+            new_packet->rfinish();
+        }
     }
 }
 
@@ -343,26 +359,6 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     /// If necessary, kick the player from the character select screen
     if (IsConnectionIdle())
         m_Socket->CloseSocket();
-
-    //count pakage
-    if(_second <= diff)
-    {
-        if(_pakagepersecond > 1200)
-        {
-            sLog->outSpamm("_pakagepersecond: %u, Account: %u: Player: %s.", _pakagepersecond, GetAccountId(), (_player) ? _player->GetName() : "None");
-            _counttokick++;
-        }
-        else _counttokick = 0;
-
-        if(_counttokick > 3)
-        {
-            sLog->outSpamm("Kick Player: %s. Reason: packets spam.", (_player) ? _player->GetName() : "None");
-            KickPlayer();
-        }
-
-        _pakagepersecond = 0;
-        _second = 1000;
-    } else _second -= diff;
 
     ///- Retrieve packets from the receive queue and call the appropriate handlers
     /// not process packets if socket already closed
@@ -400,7 +396,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                                 firstDelayedPacket = packet;
                             //! Because checking a bool is faster than reallocating memory
                             deletePacket = false;
-                            QueuePacket(packet);
+                            QueuePacket(packet, deletePacket);
                             //! Log
                             #ifdef WIN32
                                 sLog->outDebug(LOG_FILTER_NETWORKIO, "Re-enqueueing packet with opcode %s with with status STATUS_LOGGEDIN. "
