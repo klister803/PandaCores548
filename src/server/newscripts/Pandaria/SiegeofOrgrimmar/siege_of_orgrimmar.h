@@ -469,6 +469,7 @@ enum esSpells
     SPELL_SWIRL_SEARCHER               = 113762, //Cone Searcher
     SPELL_HEWN                         = 143275,
     SPELL_ANGEL_OF_DEATH               = 141859,
+    SPELL_REAVE_PL                     = 142269,
     SPELL_PLAYER_REAVE                 = 142272,
     SPELL_COMPOUND_EYE                 = 141852,
     SPELL_SNIPE                        = 143217,
@@ -476,6 +477,7 @@ enum esSpells
     SPELL_MAD_SCIENTIST                = 141857,
     SPELL_GENE_SPLICE                  = 143372,
     SPELL_GENE_SPLICE_PLAYER           = 143373,
+    SPELL_APOTHECARIAL_KNOWLEDGE       = 142546,
     SPELL_VAST_APOTHECARIAL_KNOWLEDGE  = 141856,
     SPELL_APOTHECARY_VOLATILE_POULTICE = 142598,
     SPELL_VOLATILE_POULTICE            = 142877,
@@ -490,6 +492,9 @@ enum esSpells
     SPELL_TOXIN_GREEN                  = 142549,
     SPELL_INJECTION                    = 143339,
     SPELL_CAUSTIC_AMBER_AURA_DMG       = 143735,
+    SPELL_AIM_PLAYER                   = 143216,
+    SPELL_MASTER_OF_AMBER              = 141854,
+    SPELL_MASTER_OF_AMBER2             = 142616,
 };
 
 enum GalakrasEvent
