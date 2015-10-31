@@ -27710,12 +27710,11 @@ bool Player::isTotalImmune()
     for (AuraEffectList::const_iterator iter = immune.begin(), next; iter != immune.end();iter = next)
     {
         next = iter;
+        ++next;
         if(AuraEffect* const eff = *iter)
             immuneMask |= eff->GetMiscValue();
         if (immuneMask & SPELL_SCHOOL_MASK_ALL)            // total immunity
             return true;
-
-        ++next;
     }
     return false;
 }
