@@ -781,6 +781,7 @@ public:
                     case EVENT_9:
                     {
                         Map::PlayerList const& players = me->GetMap()->GetPlayers();
+                        if (!players.isEmpty())
                         if (Player* player = players.begin()->getSource())
                         {
                             player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 35408, 1);
@@ -950,7 +951,7 @@ public:
                         events.CancelEvent(EVENT_39);
 
                         Map::PlayerList const& players = me->GetMap()->GetPlayers();
-                        if(!players.empty())
+                        if (!players.isEmpty())
                             if (Player* player = players.begin()->getSource())
                                 player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 35409, 1);
 
@@ -1823,8 +1824,9 @@ public:
             instance->SetData(DATA_STAGE1_P2, DONE);
 
             Map::PlayerList const& players = me->GetMap()->GetPlayers();
-            if (Player* player = players.begin()->getSource())
-                player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 35744, 1);
+            if (!players.isEmpty())
+                if (Player* player = players.begin()->getSource())
+                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 35744, 1);
         }
 
     private:
@@ -2262,8 +2264,9 @@ public:
                     {
                         events.ScheduleEvent(EVENT_2, 2 * IN_MILLISECONDS);
                         Map::PlayerList const& players = me->GetMap()->GetPlayers();
-                        if (Player* plr = players.begin()->getSource())
-                            me->AddAura(SPELL_THUNDER_FORGE_CHARGING, plr);
+                        if (!players.isEmpty())
+                            if (Player* plr = players.begin()->getSource())
+                                me->AddAura(SPELL_THUNDER_FORGE_CHARGING, plr);
                         break;
                     }
                     //< Forge: 1 07:19:03.000
