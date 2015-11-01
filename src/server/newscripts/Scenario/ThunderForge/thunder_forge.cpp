@@ -950,8 +950,9 @@ public:
                         events.CancelEvent(EVENT_39);
 
                         Map::PlayerList const& players = me->GetMap()->GetPlayers();
-                        if (Player* player = players.begin()->getSource())
-                            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 35409, 1);
+                        if(!players.empty())
+                            if (Player* player = players.begin()->getSource())
+                                player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 35409, 1);
 
                         if (Creature* stalker = me->FindNearestCreature(NPC_PHASE3_ROOM_CENTER_STALKER, 100.f))
                             stalker->AI()->DoAction(ACTION_1);
