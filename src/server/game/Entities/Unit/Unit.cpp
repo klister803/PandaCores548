@@ -4538,7 +4538,7 @@ void Unit::RemoveAreaAurasDueToLeaveWorld()
             AuraApplication * aurApp = itr->second;
             ++itr;
             Unit* target = aurApp->GetTarget();
-            if (target == this)
+            if (!target || target == this)
                 continue;
             target->RemoveAura(aurApp);
             // things linked on aura remove may apply new area aura - so start from the beginning
