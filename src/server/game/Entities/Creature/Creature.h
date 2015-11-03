@@ -787,6 +787,10 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         void SendZoneUnderAttackMessage(Player* attacker);
 
+        void SetAttackStop(bool clearmove);
+
+        void ReAttackWithZone(uint64 Guid);
+
         void SetInCombatWithZone();
 
         bool hasQuest(uint32 quest_id) const;
