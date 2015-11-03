@@ -2472,6 +2472,28 @@ void Creature::SendZoneUnderAttackMessage(Player* attacker)
     sWorld->SendGlobalMessage(&data, NULL, (enemy_team == ALLIANCE ? HORDE : ALLIANCE));
 }
 
+void Creature::SetAttackStop(bool clearmove)
+{
+    AttackStop();
+    SetReactState(REACT_PASSIVE);
+    if (clearmove)
+    {
+        StopMoving();
+        GetMotionMaster()->Clear(false);
+    }
+}
+
+void Creature::ReAttackWithZone(uint64 Guid)
+{
+    SetReactState(REACT_AGGRESSIVE);
+    SetInCombatWithZone();
+    if (Unit* target = GetUnit(*this, Guid))
+    {
+        AddThreat(target, 500000.0f);
+        TauntApply(target);
+    }
+}
+
 void Creature::SetInCombatWithZone()
 {
     if (!CanHaveThreatList())

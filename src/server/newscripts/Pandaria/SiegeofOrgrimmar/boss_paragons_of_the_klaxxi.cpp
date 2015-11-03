@@ -410,6 +410,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
             InstanceScript* instance;
             SummonList summons;
             EventMap events;
+            uint64 vGuid;
             uint32 checkklaxxi, healcooldown;
             uint8 flashcount;
             bool healready;
@@ -423,6 +424,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                 me->SetReactState(REACT_PASSIVE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                vGuid = 0;
                 checkklaxxi = 0;
                 healcooldown = 0;
                 flashcount = 0;
@@ -450,7 +452,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 {
                 case NPC_KILRUK:
                     DoCast(me, SPELL_RAZOR_SHARP_BLADES, true);
-                    events.ScheduleEvent(EVENT_GOUGE, 10000);
+                    events.ScheduleEvent(EVENT_GOUGE, 20000);
                     events.ScheduleEvent(EVENT_REAVE, 16000);
                     break;
                 case NPC_XARIL:
@@ -465,7 +467,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     break;
                 case NPC_RIKKAL:
                     DoCast(me, SPELL_MAD_SCIENTIST_AURA, true);
-                    events.ScheduleEvent(EVENT_MUTATE, 20000); 
+                    events.ScheduleEvent(EVENT_MUTATE, 34000);
                     events.ScheduleEvent(EVENT_INJECTION, 14000); 
                     break;
                 case NPC_KAZTIK:
@@ -474,7 +476,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     break;
                 case NPC_KORVEN:
                     Talk(SAY_KORVEN_PULL, 0);
-                    events.ScheduleEvent(EVENT_SHIELD_BASH, 4000);
+                    events.ScheduleEvent(EVENT_SHIELD_BASH, 17000);
                     checkklaxxi = 2000;
                     break;
                 case NPC_IYYOKYK:
@@ -485,12 +487,12 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 case NPC_KAROZ:
                     Talk(SAY_KAROZ_PULL, 0);
                     events.ScheduleEvent(EVENT_HURL_AMBER, 43000);
-                    events.ScheduleEvent(EVENT_FLASH, 50000);
                     break;
                 case NPC_HISEK:
                     events.ScheduleEvent(EVENT_MULTI_SHOT, 2000);
                     events.ScheduleEvent(EVENT_AIM, 39500);
-                    events.ScheduleEvent(EVENT_RAPID_FIRE, 47000);
+                    if (me->GetMap()->IsHeroic())
+                        events.ScheduleEvent(EVENT_RAPID_FIRE, 47000);
                     break;
                 }
             }
@@ -544,8 +546,8 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         break;
                     case 3:
                         me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
-                        me->SetReactState(REACT_AGGRESSIVE);
-                        DoZoneInCombat(me, 150.0f);
+                        me->ReAttackWithZone(vGuid);
+                        events.ScheduleEvent(EVENT_FLASH, 10000);
                         break;
                     }
                 }
@@ -559,9 +561,8 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                             events.ScheduleEvent(EVENT_FLASH, 3000);
                         else
                         {
-                            me->SetReactState(REACT_AGGRESSIVE);
-                            DoZoneInCombat(me, 150.0f);
-                            events.ScheduleEvent(EVENT_FLASH, 50000);
+                            me->ReAttackWithZone(vGuid);
+                            events.ScheduleEvent(EVENT_HURL_AMBER, 50000);
                         }
                     }
                 }
@@ -663,7 +664,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     default:
                         break;
                     }
-                    //me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+                    me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
                 }
             }
 
@@ -766,8 +767,8 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     {
                     //Kaztik
                     case EVENT_SONIC_PROJECTION:
-                        if (Player* pl = me->GetPlayer(*me, GetTargetGuid()))
-                            DoCast(pl, SPELL_SONIC_PROJECTION_AT);
+                        if (me->getVictim())
+                            DoCastVictim(SPELL_SONIC_PROJECTION_AT);
                         events.ScheduleEvent(EVENT_SONIC_PROJECTION, 4000);
                     case EVENT_SUM_HUNGRY_KUNCHONG:
                         DoCast(me, SPELL_SUM_HUNGRY_KUNCHONG);
@@ -775,13 +776,13 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         break;
                     //Iyyokyk
                     case EVENT_DIMINISH:
-                        if (Player* pl = me->GetPlayer(*me, GetTargetGuid()))
-                            DoCast(pl, SPELL_DIMINISH);
+                        if (me->getVictim())
+                            DoCastVictim(SPELL_DIMINISH);
                         events.ScheduleEvent(EVENT_DIMINISH, 5000);
                         break;
                     case EVENT_INSANE_CALCULATION:
                         DoCast(me, SPELL_INSANE_CALC_FIERY_EDGE);
-                        events.ScheduleEvent(EVENT_INSANE_CALCULATION, 35000);
+                        events.ScheduleEvent(EVENT_INSANE_CALCULATION, 36000);
                         break;
                     //Hisek
                     case EVENT_MULTI_SHOT:
@@ -812,7 +813,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     case EVENT_GOUGE:
                         if (me->getVictim())
                             DoCastVictim(SPELL_GOUGE);
-                        events.ScheduleEvent(EVENT_GOUGE, 10000);
+                        events.ScheduleEvent(EVENT_GOUGE, 20000);
                         break;
                     case EVENT_REAVE:
                         if (Player* pl = me->GetPlayer(*me, GetTargetGuid()))
@@ -844,7 +845,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                                     break;
                             }
                         }
-                        events.ScheduleEvent(EVENT_MUTATE, 31500); 
+                        events.ScheduleEvent(EVENT_MUTATE, 34000);
                         break;
                     }
                     case EVENT_INJECTION:
@@ -874,24 +875,21 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     case EVENT_SHIELD_BASH:
                         if (me->getVictim())
                             DoCastVictim(SPELL_SHIELD_BASH);
-                        events.ScheduleEvent(EVENT_SHIELD_BASH, 4000);
+                        events.ScheduleEvent(EVENT_SHIELD_BASH, 15000);
                         break;
                     //Karoz
                     case EVENT_HURL_AMBER:
-                        me->AttackStop();
-                        me->SetReactState(REACT_PASSIVE);
-                        me->StopMoving();
-                        me->GetMotionMaster()->Clear(false);
+                        if (me->getVictim())
+                            vGuid = me->getVictim()->GetGUID();
+                        me->SetAttackStop(true);
                         me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                         if (Creature* ab = me->FindNearestCreature(NPC_AMBER_BOMB, 110.0f, true))
                             me->GetMotionMaster()->MoveJump(ab->GetPositionX(), ab->GetPositionY(), ab->GetPositionZ() + 5.0f, 15.0f, 15.0f, 2);
-                        events.ScheduleEvent(EVENT_HURL_AMBER, 60000);
                         break;
                     case EVENT_FLASH:
-                        me->StopMoving();
-                        me->GetMotionMaster()->Clear(false);
-                        me->AttackStop();
-                        me->SetReactState(REACT_PASSIVE);
+                        if (me->getVictim())
+                            vGuid = me->getVictim()->GetGUID();
+                        me->SetAttackStop(true);
                         if (!flashcount)
                             flashcount = urand(2, 3);
                         if (Player* pl = me->GetPlayer(*me, GetFlashTargetGuid()))

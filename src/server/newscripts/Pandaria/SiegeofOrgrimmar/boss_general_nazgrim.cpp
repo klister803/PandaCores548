@@ -488,13 +488,7 @@ class boss_general_nazgrim : public CreatureScript
                         break;             
                     //Other events
                     case EVENT_RE_ATTACK:
-                        if (Player* pl = me->GetPlayer(*me, victimGuid))
-                        {
-                            me->SetReactState(REACT_AGGRESSIVE);
-                            me->SetInCombatWithZone();
-                            me->AddThreat(pl, 500000.0f);
-                            me->TauntApply(pl);
-                        }
+                        me->ReAttackWithZone(victimGuid);
                         break;
                     case EVENT_SUMMON:
                         SummonWave(wavenum);
