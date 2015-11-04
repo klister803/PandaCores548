@@ -29294,6 +29294,8 @@ void Player::ActivateSpec(uint8 spec)
     if (Battleground* bg = GetBattleground())
         if (bg->isArena())
             bg->SendOpponentSpecialization(GetTeam());
+
+    UpdatePvPPower();
 }
 
 void Player::ResetTimeSync()
