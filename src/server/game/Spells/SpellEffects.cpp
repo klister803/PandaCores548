@@ -6862,8 +6862,15 @@ void Spell::EffectLeapBack(SpellEffIndex effIndex)
         speedz = float(75 / 10);
     }
 
+    bool forward = (m_spellInfo->SpellIconID != 1891 && m_spellInfo->Id != 102383);
+
+    if (m_spellInfo->Id == 109150)
+        forward = false;
+
+    float angle = m_spellInfo->Effects[effIndex].TargetB.CalcDirectionAngle();
+
     //1891: Disengage and Wild Charge (moonkin form)
-    m_caster->JumpTo(speedxy, speedz, m_spellInfo->SpellIconID != 1891 && m_spellInfo->Id != 102383);
+    m_caster->JumpTo(speedxy, speedz, forward, angle);
 }
 
 void Spell::EffectQuestClear(SpellEffIndex effIndex)

@@ -3828,6 +3828,12 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 109161:
+                case 109162:
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_LEAP_BACK;
+                    spellInfo->Effects[EFFECT_0].MiscValue = 280;
+                    spellInfo->Effects[EFFECT_0].BasePoints = 75;
+                    break;
                 case 8178:   // Grounding Totem
                 case 130493: // Nightstalker
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_REMOVE_AFTER_DELAY;
