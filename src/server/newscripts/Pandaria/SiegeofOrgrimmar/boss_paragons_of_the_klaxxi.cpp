@@ -1816,9 +1816,38 @@ public:
             }
         }
 
+        void _FilterTarget(std::list<WorldObject*>&targets)
+        {
+            uint8 maxcount = 0;
+            if (GetCaster())
+            {
+                switch (GetCaster()->GetMap()->GetDifficulty())
+                {
+                case MAN10_DIFFICULTY:
+                    maxcount = 1;
+                    break;
+                case MAN25_DIFFICULTY:
+                    maxcount = 3;
+                    break;
+                case MAN10_HEROIC_DIFFICULTY:
+                    maxcount = 2;
+                    break;
+                case MAN25_HEROIC_DIFFICULTY:
+                    maxcount = 5;
+                    break;
+                default:
+                    break;
+                }
+            }
+            if (targets.size() > maxcount)
+                targets.resize(maxcount);
+        }
+
         void Register()
         {
             OnHit += SpellHitFn(spell_diminish_SpellScript::HandleHit);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_diminish_SpellScript::_FilterTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_diminish_SpellScript::_FilterTarget, EFFECT_1, TARGET_UNIT_SRC_AREA_ENEMY);
         }
     };
 
@@ -2260,9 +2289,37 @@ public:
             SetHitDamage(urand(100000, 120000));
         }
 
+        void _FilterTarget(std::list<WorldObject*>&targets)
+        {
+            uint8 maxcount = 0;
+            if (GetCaster())
+            {
+                switch (GetCaster()->GetMap()->GetDifficulty())
+                {
+                case MAN10_DIFFICULTY:
+                    maxcount = 3;
+                    break;
+                case MAN25_DIFFICULTY:
+                    maxcount = 5;
+                    break;
+                case MAN10_HEROIC_DIFFICULTY:
+                    maxcount = 4;
+                    break;
+                case MAN25_HEROIC_DIFFICULTY:
+                    maxcount = 7;
+                    break;
+                default:
+                    break;
+                }
+            }
+            if (targets.size() > maxcount)
+                targets.resize(maxcount);
+        }
+
         void Register()
         {
             OnHit += SpellHitFn(spell_klaxxi_multi_shot_SpellScript::HandleHit);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_klaxxi_multi_shot_SpellScript::_FilterTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
         }
     };
 
