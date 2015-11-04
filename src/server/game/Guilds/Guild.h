@@ -57,7 +57,6 @@ enum GuildDefaultRanks
 
 enum GuildRankRights
 {
-    GR_RIGHT_NONE               = 0x00000000,
     GR_RIGHT_EMPTY              = 0x00000040,
     GR_RIGHT_GCHATLISTEN        = GR_RIGHT_EMPTY | 0x00000001,
     GR_RIGHT_GCHATSPEAK         = GR_RIGHT_EMPTY | 0x00000002,
@@ -625,7 +624,7 @@ private:
     class RankInfo
     {
     public:
-        RankInfo(uint32 guildId) : m_guildId(guildId), m_rankId(GUILD_RANK_NONE), m_rights(GR_RIGHT_NONE), m_bankMoneyPerDay(0) { }
+        RankInfo(uint32 guildId) : m_guildId(guildId), m_rankId(GUILD_RANK_NONE), m_rights(GR_RIGHT_EMPTY), m_bankMoneyPerDay(0) { }
         RankInfo(uint32 guildId, uint32 rankId, const std::string& name, uint32 rights, uint64 money) :
             m_guildId(guildId), m_rankId(rankId), m_name(name), m_rights(rights), m_bankMoneyPerDay(money) { }
 
@@ -964,7 +963,7 @@ private:
     inline uint32 _GetRanksSize() const { return uint32(m_ranks.size()); }
     inline const RankInfo* GetRankInfo(uint32 rankId) const { return rankId < _GetRanksSize() ? &m_ranks[rankId] : NULL; }
     inline RankInfo* GetRankInfo(uint32 rankId) { return rankId < _GetRanksSize() ? &m_ranks[rankId] : NULL; }
-    inline bool _HasRankRight(Player* player, uint32 right) const { return (_GetRankRights(player->GetRank()) & right) != GR_RIGHT_NONE; }
+    inline bool _HasRankRight(Player* player, uint32 right) const { return (_GetRankRights(player->GetRank()) & right) != GR_RIGHT_EMPTY; }
     inline uint32 _GetLowestRankId() const { return uint32(m_ranks.size() - 1); }
 
     inline BankTab* GetBankTab(uint8 tabId) { return tabId < m_bankTabs.size() ? m_bankTabs[tabId] : NULL; }
