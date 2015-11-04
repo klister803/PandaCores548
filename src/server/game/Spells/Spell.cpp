@@ -466,7 +466,7 @@ m_absorb(0), m_resist(0), m_blocked(0), m_interupted(false), m_effect_targets(NU
         _triggeredCastFlags |= TRIGGERED_FULL_MASK;
     if(m_replaced || AttributesCustomEx2 & SPELL_ATTR2_AUTOREPEAT_FLAG) //If spell casted as replaced, enable proc from him
         _triggeredCastFlags &= ~TRIGGERED_DISALLOW_PROC_EVENTS;
-    if (info->AttributesEx12 & SPELL_ATTR12_DOESENT_INTERRUPT_CHANNELING)
+    if (info->AttributesCu & SPELL_ATTR0_CU_DOESENT_INTERRUPT_CHANNELING)
         _triggeredCastFlags |= TRIGGERED_CAST_DIRECTLY;
 
     //Auto Shot & Shoot (wand)
@@ -2507,7 +2507,7 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
     else
         targetInfo.timeDelay = 0LL;
 
-    if (m_spellInfo->AttributesEx12 & SPELL_ATTR12_HAVE_STABLE_FLYTIME)
+    if (m_spellInfo->AttributesCu & SPELL_ATTR0_CU_HAVE_STABLE_FLYTIME)
     {
         targetInfo.timeDelay = 200LL;
         m_delayMoment = 200LL;
@@ -3619,7 +3619,7 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
     //Containers for channeled spells have to be set
     //TODO:Apply this to all casted spells if needed
     // Why check duration? 29350: channeled triggers channeled
-    if ((_triggeredCastFlags & TRIGGERED_CAST_DIRECTLY) && !(m_spellInfo->AttributesEx12 & SPELL_ATTR12_HAVE_STABLE_FLYTIME) && (!m_spellInfo->IsChanneled() || !m_spellInfo->GetMaxDuration()))
+    if ((_triggeredCastFlags & TRIGGERED_CAST_DIRECTLY) && !(m_spellInfo->AttributesCu & SPELL_ATTR0_CU_HAVE_STABLE_FLYTIME) && (!m_spellInfo->IsChanneled() || !m_spellInfo->GetMaxDuration()))
         cast(true);
     else
     {
@@ -3651,7 +3651,7 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
             TriggerGlobalCooldown();
 
         //item: first cast may destroy item and second cast causes crash
-        if (!m_casttime && !m_spellInfo->StartRecoveryTime && !m_castItemGUID && GetCurrentContainer() == CURRENT_GENERIC_SPELL && !(m_spellInfo->AttributesEx12 & SPELL_ATTR12_HAVE_STABLE_FLYTIME))
+        if (!m_casttime && !m_spellInfo->StartRecoveryTime && !m_castItemGUID && GetCurrentContainer() == CURRENT_GENERIC_SPELL && !(m_spellInfo->AttributesCu & SPELL_ATTR0_CU_HAVE_STABLE_FLYTIME))
             cast(true);
     }
 }
@@ -4833,7 +4833,7 @@ void Spell::SendSpellStart()
 
     uint32 castFlags = CAST_FLAG_HAS_TRAJECTORY;
 
-    if ((IsTriggered() && !m_spellInfo->IsAutoRepeatRangedSpell() && !(AttributesCustomEx4 & SPELL_ATTR4_TRIGGERED) && !(AttributesCustomEx12 & SPELL_ATTR12_DOESENT_INTERRUPT_CHANNELING)) || m_triggeredByAuraSpell)
+    if ((IsTriggered() && !m_spellInfo->IsAutoRepeatRangedSpell() && !(AttributesCustomEx4 & SPELL_ATTR4_TRIGGERED) && !(AttributesCustomCu & SPELL_ATTR0_CU_DOESENT_INTERRUPT_CHANNELING)) || m_triggeredByAuraSpell)
         castFlags |= CAST_FLAG_PENDING;
 
     if ((m_caster->GetTypeId() == TYPEID_PLAYER ||
@@ -5170,7 +5170,7 @@ void Spell::SendSpellGo()
 
     uint32 castFlags = CAST_FLAG_UNKNOWN_9;
     // triggered spells with spell visual != 0
-    if ((IsTriggered() && !m_spellInfo->IsAutoRepeatRangedSpell() && !(AttributesCustomEx4 & SPELL_ATTR4_TRIGGERED) && !(AttributesCustomEx12 & SPELL_ATTR12_DOESENT_INTERRUPT_CHANNELING)) || m_triggeredByAuraSpell)
+    if ((IsTriggered() && !m_spellInfo->IsAutoRepeatRangedSpell() && !(AttributesCustomEx4 & SPELL_ATTR4_TRIGGERED) && !(AttributesCustomCu & SPELL_ATTR0_CU_DOESENT_INTERRUPT_CHANNELING)) || m_triggeredByAuraSpell)
         castFlags |= CAST_FLAG_PENDING;
 
     if ((m_caster->GetTypeId() == TYPEID_PLAYER ||
@@ -6642,7 +6642,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         return SPELL_FAILED_CUSTOM_ERROR;
     }
 
-    if (AttributesCustomEx12 & SPELL_ATTR12_CANT_CAST_ROOTED && m_caster->HasUnitState(UNIT_STATE_ROOT))
+    if (AttributesCustomCu & SPELL_ATTR0_CU_CANT_CAST_ROOTED && m_caster->HasUnitState(UNIT_STATE_ROOT))
     {
         if (m_caster->GetTypeId() == TYPEID_PLAYER)
             return SPELL_FAILED_ROOTED;

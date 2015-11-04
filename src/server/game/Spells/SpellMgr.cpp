@@ -3830,7 +3830,7 @@ void SpellMgr::LoadSpellCustomAttr()
             {
                 case 8178:   // Grounding Totem
                 case 130493: // Nightstalker
-                    spellInfo->AttributesEx12 |= SPELL_ATTR12_REMOVE_AFTER_DELAY;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_REMOVE_AFTER_DELAY;
                     break;
                 case 144964: // Flow of the Elements
                 case 144966: // Item - Shaman T16 Enhancement 4P Bonus
@@ -3854,13 +3854,13 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 90289: // Removing Death Grip cooldown
                 case 36563: // Shadowstep
-                    spellInfo->AttributesEx12 |= SPELL_ATTR12_HAVE_STABLE_FLYTIME;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_HAVE_STABLE_FLYTIME;
                     break;
                 case 147303: // Arena Deserter DR (Test Spell)
                     spellInfo->AttributesEx |= SPELL_ATTR1_DONT_DISPLAY_IN_AURA_BAR;
                     spellInfo->Attributes |= SPELL_ATTR0_PASSIVE;
                     spellInfo->Attributes |= SPELL_ATTR0_HIDE_IN_COMBAT_LOG;
-                    spellInfo->AttributesEx12 |= SPELL_ATTR12_CAN_BE_SAVED;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_CAN_BE_SAVED_IN_DB;
                     spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ANY;
                     spellInfo->Effects[EFFECT_0].TargetB = 0;
@@ -3896,13 +3896,13 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 34487: // Master Marksman
                 case 76659: // Mastery: Wild Quiver
                 case 137639: // Storm, Earth, and Fire
-                    spellInfo->AttributesEx12 |= SPELL_ATTR12_PROC_ONLY_ON_CAST;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_PROC_ONLY_ON_CAST;
                     break;
                 case 101545: // Flying Serpent Kick
                 case 109132: // Roll
                 case 115008: // Chi Torpedo
                 case 130393: // Blink Strikes - Hunter pet
-                    spellInfo->AttributesEx12 |= SPELL_ATTR12_CANT_CAST_ROOTED;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_CANT_CAST_ROOTED;
                     break;
                 case 137049: // Hotfix Passive 
                     spellInfo->Effects[EFFECT_5].Effect = SPELL_EFFECT_APPLY_AURA;
@@ -3917,7 +3917,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 116680: // Thunder Focus Tea
                 case 115399: // Chi Brew
-                    spellInfo->AttributesEx12 |= SPELL_ATTR12_DOESENT_INTERRUPT_CHANNELING;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_DOESENT_INTERRUPT_CHANNELING;
                     break;
                 case 119032: // Spectral Guise
                     spellInfo->AttributesEx4 |= SPELL_ATTR4_UNK19;
@@ -3981,8 +3981,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 137619: // Marked for Death
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
-                    spellInfo->AttributesEx12 |= SPELL_ATTR12_DOESENT_INTERRUPT_CHANNELING;
-                    spellInfo->AttributesEx12 |= SPELL_ATTR12_HAVE_STABLE_FLYTIME;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_DOESENT_INTERRUPT_CHANNELING;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_HAVE_STABLE_FLYTIME;
                     break;
                 case 5487:  // Bear Form
                     spellInfo->Effects[2].BasePoints = 120;

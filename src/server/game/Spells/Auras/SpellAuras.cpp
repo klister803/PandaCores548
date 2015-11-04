@@ -1377,7 +1377,7 @@ bool Aura::IsDeathPersistent() const
 
 bool Aura::CanBeSaved() const
 {
-    if (IsPassive() && !(GetSpellInfo()->AttributesEx12 & SPELL_ATTR12_CAN_BE_SAVED))
+    if (IsPassive() && !(GetSpellInfo()->AttributesCu & SPELL_ATTR0_CU_CAN_BE_SAVED_IN_DB))
         return false;
 
     if (GetCasterGUID() != GetOwner()->GetGUID())
@@ -3157,7 +3157,7 @@ void UnitAura::Remove(AuraRemoveMode removeMode)
     if (IsRemoved() || m_removeDelay > 0)
         return;
 
-    if (GetSpellInfo()->AttributesEx12 & SPELL_ATTR12_REMOVE_AFTER_DELAY)
+    if (GetSpellInfo()->AttributesCu & SPELL_ATTR0_CU_REMOVE_AFTER_DELAY)
     {
         m_removeDelay = 1;
         return;

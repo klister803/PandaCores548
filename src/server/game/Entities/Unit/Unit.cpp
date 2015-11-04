@@ -3434,7 +3434,7 @@ void Unit::SetCurrentCastedSpell(Spell* pSpell)
 
     // break same type spell if it is not delayed
     if (SpellInfo const* _spellInfo = pSpell->GetSpellInfo())
-        if (!(_spellInfo->AttributesEx12 & SPELL_ATTR12_DOESENT_INTERRUPT_CHANNELING))
+        if (!(_spellInfo->AttributesCu & SPELL_ATTR0_CU_DOESENT_INTERRUPT_CHANNELING))
             InterruptSpell(CSpellType, false);
 
     // special breakage effects:
@@ -17791,9 +17791,9 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             if((procFlag & SPELL_PROC_FROM_CAST_MASK) && !(procExtra & PROC_EX_ON_CAST))
                 continue;
         }
-        else if ((procFlag & SPELL_PROC_FROM_CAST_MASK) && (procExtra & PROC_EX_ON_CAST) && !(triggerData.aura->GetSpellInfo()->AttributesEx12 & SPELL_ATTR12_PROC_ONLY_ON_CAST))
+        else if ((procFlag & SPELL_PROC_FROM_CAST_MASK) && (procExtra & PROC_EX_ON_CAST) && !(triggerData.aura->GetSpellInfo()->AttributesCu & SPELL_ATTR0_CU_PROC_ONLY_ON_CAST))
             continue;
-        else if ((procFlag & SPELL_PROC_FROM_CAST_MASK) && !(procExtra & PROC_EX_ON_CAST) && (triggerData.aura->GetSpellInfo()->AttributesEx12 & SPELL_ATTR12_PROC_ONLY_ON_CAST))
+        else if ((procFlag & SPELL_PROC_FROM_CAST_MASK) && !(procExtra & PROC_EX_ON_CAST) && (triggerData.aura->GetSpellInfo()->AttributesCu & SPELL_ATTR0_CU_PROC_ONLY_ON_CAST))
             continue;
 
         // only auras that has triggered spell should proc from fully absorbed damage
