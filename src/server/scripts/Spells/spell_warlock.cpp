@@ -765,13 +765,55 @@ class spell_warl_demonic_leap : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                 {
-                    if (!caster->HasAura(56247) || !caster->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING_FAR))
-                        caster->CastSpell(caster, WARLOCK_DEMONIC_LEAP_JUMP, true);
-                    else
+                    if (caster->HasAura(56247) && caster->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING_FAR))
                     {
-                        caster->CastSpell(caster, 124315, true);
                         caster->CastSpell(caster, 124342, true);
+                        caster->CastSpell(caster, 124315, true);
+                        return;
                     }
+
+                    uint32 spellId = 109163;
+                    
+                    if (caster->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_LEFT))
+                    {
+                        if (caster->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FORWARD))
+                        {
+                            spellId = 109161;
+                        }
+                        else if (caster->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_BACKWARD))
+                        {
+                            spellId = 111738;
+                        }
+                        else
+                            spellId = 109164;
+                    }
+                    else if (caster->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_RIGHT))
+                    {
+                        if (caster->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FORWARD))
+                        {
+                            spellId = 109162;
+                        }
+                        else if (caster->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_BACKWARD))
+                        {
+                            spellId = 111739;
+                        }
+                        else
+                            spellId = 109165;
+                    }
+                    else if (caster->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_BACKWARD))
+                    {
+                        spellId = 109150;
+                    }
+                    else if (caster->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FORWARD))
+                    {
+                        spellId = 109163;
+                    }
+                    else if (caster->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING) && !caster->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING_FAR))
+                    {
+                        spellId = 109152;
+                    }
+
+                    caster->CastSpell(caster, spellId, true);
                 }
             }
 

@@ -23280,15 +23280,16 @@ uint32 Unit::GetModelForTotem(PlayerTotemType totemType)
     return 0;
 }
 
-void Unit::JumpTo(float speedXY, float speedZ, bool forward)
+void Unit::JumpTo(float speedXY, float speedZ, bool forward, float angle)
 {
-    float angle = forward ? 0 : M_PI;
+    float m_angle = angle ? angle : (forward ? 0 : M_PI);
+
     if (GetTypeId() == TYPEID_UNIT)
-        GetMotionMaster()->MoveJumpTo(angle, speedXY, speedZ);
+        GetMotionMaster()->MoveJumpTo(m_angle, speedXY, speedZ);
     else
     {
-        float vcos = std::cos(angle+GetOrientation());
-        float vsin = std::sin(angle+GetOrientation());
+        float vcos = std::cos(m_angle + GetOrientation());
+        float vsin = std::sin(m_angle + GetOrientation());
         SendMoveKnockBack(ToPlayer(), speedXY, -speedZ, vcos, vsin);
     }
 }
