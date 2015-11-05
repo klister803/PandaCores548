@@ -2755,13 +2755,16 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         }
     }
 
-    if (m_spellInfo->Id == 143339 && spellHitTarget) //Injection (Paragons of Klaxxi)
+    if (m_spellInfo->Id == 143339 || m_spellInfo->Id == 142315) //Injection & Caustic Blood(Paragons of Klaxxi)
     {
-        if (spellHitTarget->HasAura(132403) || spellHitTarget->HasAura(132404) //Evade Auras
-            || spellHitTarget->HasAura(132402) || spellHitTarget->HasAura(115308) || spellHitTarget->HasAura(77535))
+        if (spellHitTarget)
         {
-            m_damage = 0;
-            spellHitTarget = NULL;
+            if (spellHitTarget->HasAura(132403) || spellHitTarget->HasAura(132404) //Evade Auras
+                || spellHitTarget->HasAura(132402) || spellHitTarget->HasAura(115308) || spellHitTarget->HasAura(77535))
+            {
+                m_damage = 0;
+                spellHitTarget = NULL;
+            }
         }
     }
 
