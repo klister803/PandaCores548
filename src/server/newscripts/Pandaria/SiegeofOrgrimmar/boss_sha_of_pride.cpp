@@ -379,32 +379,9 @@ class boss_sha_of_pride : public CreatureScript
                             break;
                         }
                         case EVENT_SPELL_GIFT_OF_THE_TITANS:
-                        {
-                            std::list<HostileReference*> tlist = me->getThreatManager().getThreatList();
-                            if (!tlist.empty())
-                            {
-                                uint8 num = 0;
-                                uint8 maxnum = me->GetMap()->Is25ManRaid() ? 8 : 3;
-                                for (std::list<HostileReference*>::const_iterator itr = tlist.begin(); itr != tlist.end(); itr++)
-                                {
-                                    if (itr != tlist.begin())
-                                    {
-                                        if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
-                                        {
-                                            if (!pl->HasAura(SPELL_GIFT_OF_THE_TITANS))
-                                            {
-                                                pl->AddAura(SPELL_GIFT_OF_THE_TITANS, pl);
-                                                num++;
-                                                if (num == maxnum)
-                                                    break;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                            DoCast(me, SPELL_GIFT_OF_THE_TITANS);
                             events.RescheduleEvent(EVENT_SPELL_GIFT_OF_THE_TITANS, 25000, 0, PHASE_BATTLE);
                             break;
-                        }
                         case EVENT_RIFT_OF_CORRUPTION:
                         {
                             float x, y, z;
@@ -1340,6 +1317,53 @@ class spell_sha_of_pride_projection : public SpellScriptLoader
         }
 };
 
+class _ValidTargetCheck
+{
+public:
+    bool operator()(WorldObject* unit)
+    {
+        if (Player* pl = unit->ToPlayer())
+            if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) != ROLES_TANK)
+                if (!pl->HasAura(SPELL_GIFT_OF_THE_TITANS))
+                    return false;
+        return true;
+    }
+};
+
+//144359
+class spell_sha_of_pride_gift_of_titans : public SpellScriptLoader
+{
+public:
+    spell_sha_of_pride_gift_of_titans() : SpellScriptLoader("spell_sha_of_pride_gift_of_titans") { }
+
+    class spell_sha_of_pride_gift_of_titans_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_sha_of_pride_gift_of_titans_SpellScript);
+
+        void _FilterTarget(std::list<WorldObject*>&targets)
+        {
+            if (GetCaster())
+            {
+                uint8 maxcount = GetCaster()->GetMap()->Is25ManRaid() ? 8 : 3;
+                targets.remove_if(_ValidTargetCheck());
+                if (targets.size() > maxcount)
+                    targets.resize(maxcount);
+            }
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_of_pride_gift_of_titans_SpellScript::_FilterTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_of_pride_gift_of_titans_SpellScript::_FilterTarget, EFFECT_1, TARGET_UNIT_SRC_AREA_ENEMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_sha_of_pride_gift_of_titans_SpellScript();
+    }
+};
+
 class ValidTargetCheck
 {
 public:
@@ -1507,6 +1531,7 @@ void AddSC_boss_sha_of_pride()
     new spell_sha_of_pride_imprison();
     new spell_sha_of_pride_self_reflection();
     new spell_sha_of_pride_projection();
+    new spell_sha_of_pride_gift_of_titans();
     new spell_sha_of_pride_gift_of_titans_dummy();
     new spell_sha_of_pride_mark_of_arrogance();
     new spell_sha_of_pride_overcome();
