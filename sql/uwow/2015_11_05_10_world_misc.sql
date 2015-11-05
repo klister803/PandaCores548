@@ -1,0 +1,1 @@
+UPDATE `spell_proc_event` SET `ppmRate`='20', `CustomChance`='0' WHERE (`entry`='20165') AND (`effectmask`='7');
