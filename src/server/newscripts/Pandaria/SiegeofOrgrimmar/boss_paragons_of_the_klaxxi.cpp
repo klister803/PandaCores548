@@ -422,6 +422,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 for (uint8 n = 0; n < 4; n++)
                     me->RemoveAurasDueToSpell(removeaurasentry[n]);
                 me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
+                me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
                 me->SetReactState(REACT_PASSIVE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 vGuid = 0;
@@ -453,7 +454,8 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 case NPC_KILRUK:
                     DoCast(me, SPELL_RAZOR_SHARP_BLADES, true);
                     events.ScheduleEvent(EVENT_GOUGE, 20000);
-                    events.ScheduleEvent(EVENT_REAVE, 16000);
+                    if (me->GetMap()->IsHeroic())
+                        events.ScheduleEvent(EVENT_REAVE, 16000);
                     break;
                 case NPC_XARIL:
                     Talk(SAY_XARIL_PULL, 0);

@@ -5166,7 +5166,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 142929:
                 case 142931:
                 case 143279:
-                case 143275: 
+                case 143275:
+                case 142315:
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
                 //Heroic catalyst

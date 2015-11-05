@@ -1235,10 +1235,11 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 143666: //Diminish
     case 142735: //Reaction Blue
     //debuffs from klaxxi
-    case 142931:
     case 142929:
+    case 142931:
     case 143279:
     case 143275:
+    case 142315:
     //Heroic catalyst
     case 142938: //Orange
     case 142939: //Purple
