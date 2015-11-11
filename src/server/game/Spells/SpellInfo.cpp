@@ -1241,10 +1241,13 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 143279:
     case 143275:
     case 142315:
+    case 143974:
+    case 143768:
     //Heroic catalyst
     case 142938: //Orange
     case 142939: //Purple
     case 142940: //Green
+    case 142950: //Fire
         return Effects[effect];
     }
 

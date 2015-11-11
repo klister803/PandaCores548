@@ -292,11 +292,14 @@ public:
 
         void OnSpellClick(Unit* clicker)
         {
-            if (me->HasAura(SPELL_AURA_VISUAL_FS))
+            if (instance && instance->GetBossState(DATA_THOK) == DONE)
             {
-                me->RemoveAurasDueToSpell(SPELL_AURA_VISUAL_FS);
-                if (Creature* ck = me->GetCreature(*me, instance->GetData64(NPC_KLAXXI_CONTROLLER)))
-                    ck->AI()->DoAction(ACTION_KLAXXI_START);
+                if (me->HasAura(SPELL_AURA_VISUAL_FS))
+                {
+                    me->RemoveAurasDueToSpell(SPELL_AURA_VISUAL_FS);
+                    if (Creature* ck = me->GetCreature(*me, instance->GetData64(NPC_KLAXXI_CONTROLLER)))
+                        ck->AI()->DoAction(ACTION_KLAXXI_START);
+                }
             }
         }
     };
@@ -590,7 +593,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         {
                             for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
                                 if (Player* player = Itr->getSource())
-                                    player->ModifyCurrency(CURRENCY_TYPE_VALOR_POINTS, 70);
+                                    player->ModifyCurrency(CURRENCY_TYPE_VALOR_POINTS, 7000);
                         }
                         instance->SetBossState(DATA_KLAXXI, DONE);
                     }
@@ -642,10 +645,6 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     case NPC_RIKKAL:
                         //Any
                         pl->CastSpell(pl, SPELL_MAD_SCIENTIST, true);
-                        break;
-                    case NPC_KAROZ:
-                        /*if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_DPS)
-                            pl->CastSpell(pl, SPELL_STRONG_LEGS, true);*/
                         break;
                     case NPC_KORVEN:
                         if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_TANK)
@@ -716,8 +715,17 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 return 0;
             }
 
+            void EnterEvadeMode()
+            {
+                if (instance->GetBossState(DATA_KLAXXI) == IN_PROGRESS)
+                    instance->SetBossState(DATA_KLAXXI, NOT_STARTED);
+            }
+
             void UpdateAI(uint32 diff)
             {
+                if (!UpdateVictim())
+                    return;
+
                 if (healcooldown)
                 {
                     if (healcooldown <= diff)
@@ -2331,6 +2339,51 @@ public:
     }
 };
 
+class WhirlingTargetFilter
+{
+public:
+    WhirlingTargetFilter(WorldObject* caster) : _caster(caster){}
+
+    bool operator()(WorldObject* unit)
+    {
+        if (_caster->isInFront(unit, 1.5f))
+            return false;
+        return true;
+    }
+private:
+    WorldObject* _caster;
+};
+
+//143701
+class spell_whirling : public SpellScriptLoader
+{
+public:
+    spell_whirling() : SpellScriptLoader("spell_whirling") { }
+
+    class spell_whirling_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_whirling_SpellScript);
+
+        void _FilterTarget(std::list<WorldObject*>&targets)
+        {
+            if (GetCaster())
+                targets.remove_if(WhirlingTargetFilter(GetCaster()));
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_whirling_SpellScript::_FilterTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_whirling_SpellScript::_FilterTarget, EFFECT_1, TARGET_UNIT_SRC_AREA_ENEMY);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_whirling_SpellScript::_FilterTarget, EFFECT_2, TARGET_UNIT_SRC_AREA_ENEMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_whirling_SpellScript();
+    }
+};
+
 void AddSC_boss_paragons_of_the_klaxxi()
 {
     new npc_amber_piece();
@@ -2364,4 +2417,5 @@ void AddSC_boss_paragons_of_the_klaxxi()
     new spell_fiery_edge_dmg();
     new spell_reave();
     new spell_klaxxi_multi_shot();
+    new spell_whirling();
 }

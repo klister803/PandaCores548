@@ -5172,6 +5172,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 143279:
                 case 143275:
                 case 142315:
+                case 143974:
+                case 143768:
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
                 //Heroic catalyst
@@ -5184,7 +5186,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 142940: //Green
                     spellInfo->TargetAuraSpell = 142549;
                     break;
- 
+                case 142950: //Fire
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
+                    break;
                     
                 //World Bosses
                 //Sha of Anger

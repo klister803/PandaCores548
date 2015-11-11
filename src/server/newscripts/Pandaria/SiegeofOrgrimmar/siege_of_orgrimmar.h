@@ -300,8 +300,12 @@ enum eCreatures
     NPC_AKOLIK                      = 71742, //GO_SAUROK_JAIL
     NPC_MONTAK                      = 71763, //GO_YAUNGOLIAN_JAIL
     NPC_WATERSPEAKER_GORAI          = 71749, //GO_JINUI_JAIL
-    
-    NPC_BLACKFUSE                   = 71504,
+
+                                             //Seat Id
+    NPC_BLACKFUSE                   = 72694, //1
+    NPC_BLACKFUSE_MAUNT             = 71504,
+    NPC_BLACKFUSE_SAWBLADE          = 71532, //0
+    NPC_AUTOMATED_SHREDDER          = 71591,
 
     //Paragons of the Klaxxi                 
     NPC_KILRUK                      = 71161, //6
@@ -462,6 +466,8 @@ enum eGameObjects
     //Paragons of the Klaxxi
     GO_PRE_ENT_KLAXXI_DOOR        = 221912,
     GO_ARENA_WALL                 = 221264,
+
+    GO_BLACKFUSE_ENT_DOOR         = 223057,
 };
 
 enum esSpells
