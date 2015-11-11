@@ -602,16 +602,6 @@ struct boss_faction_championsAI : public BossAI
             me->ModifyPower(POWER_MANA, me->GetMaxPower(POWER_MANA) / 3);
     }
 
-    void RemoveCC()
-    {
-        me->RemoveAurasByType(SPELL_AURA_MOD_STUN);
-        me->RemoveAurasByType(SPELL_AURA_MOD_FEAR);
-        me->RemoveAurasByType(SPELL_AURA_MOD_ROOT);
-        me->RemoveAurasByType(SPELL_AURA_MOD_PACIFY);
-        me->RemoveAurasByType(SPELL_AURA_MOD_CONFUSE);
-        //DoCast(me, SPELL_PVP_TRINKET);
-    }
-
     void JustDied(Unit* /*killer*/)
     {
         if (_aiType != AI_PET)
@@ -712,6 +702,9 @@ struct boss_faction_championsAI : public BossAI
 
     void UpdateAI(uint32 diff)
     {
+        if (!me->IsInWorld())
+            return;
+
         _events.Update(diff);
 
         while (uint32 eventId = _events.ExecuteEvent())
@@ -726,7 +719,7 @@ struct boss_faction_championsAI : public BossAI
                 case EVENT_REMOVE_CC:
                     if (me->HasAuraWithMechanic(IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK))
                     {
-                        RemoveCC();
+                        me->RemoveAurasWithMechanic(IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK);
                         _events.RescheduleEvent(EVENT_REMOVE_CC, 2*MINUTE*IN_MILLISECONDS);
                     }
                     else

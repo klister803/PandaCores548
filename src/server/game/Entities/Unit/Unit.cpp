@@ -13802,8 +13802,10 @@ bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo)
     {
         uint8 mask = spellInfo->GetSchoolMask();
         SpellImmuneList const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
-        for (SpellImmuneList::const_iterator itr = schoolList.begin(); itr != schoolList.end(); ++itr)
+        for (SpellImmuneList::const_iterator itr = schoolList.begin(), next; itr != schoolList.end(); itr = next)
         {
+            next = itr;
+            ++next;
             mask &= ~itr->type;
             SpellInfo const* immuneSpellInfo = sSpellMgr->GetSpellInfo(itr->spellId);
             if ((itr->type & spellInfo->GetSchoolMask())
