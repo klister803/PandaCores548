@@ -1324,8 +1324,7 @@ public:
     {
         if (Player* pl = unit->ToPlayer())
             if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) != ROLES_TANK)
-                if (!pl->HasAura(SPELL_GIFT_OF_THE_TITANS))
-                    return false;
+                return false;
         return true;
     }
 };

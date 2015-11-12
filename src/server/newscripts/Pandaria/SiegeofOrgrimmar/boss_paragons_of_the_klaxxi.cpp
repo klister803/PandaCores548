@@ -292,15 +292,15 @@ public:
 
         void OnSpellClick(Unit* clicker)
         {
-            if (instance && instance->GetBossState(DATA_THOK) == DONE)
-            {
+            //if (instance && instance->GetBossState(DATA_THOK) == DONE)
+            //{
                 if (me->HasAura(SPELL_AURA_VISUAL_FS))
                 {
                     me->RemoveAurasDueToSpell(SPELL_AURA_VISUAL_FS);
                     if (Creature* ck = me->GetCreature(*me, instance->GetData64(NPC_KLAXXI_CONTROLLER)))
                         ck->AI()->DoAction(ACTION_KLAXXI_START);
                 }
-            }
+           //}
         }
     };
 
@@ -324,18 +324,20 @@ public:
             me->SetDisplayId(11686);
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
-            if (instance && instance->GetBossState(DATA_KLAXXI) != DONE)
-                instance->SetBossState(DATA_KLAXXI, NOT_STARTED);
         }
 
         InstanceScript* instance;
         EventMap events;
 
-        void Reset(){}
+        void Reset()
+        {
+            DespawnSummons();
+            events.Reset();
+            if (instance->GetBossState(DATA_KLAXXI) != DONE)
+                instance->SetBossState(DATA_KLAXXI, NOT_STARTED);
+        }
 
         void EnterCombat(Unit* who){}
-
-        void EnterEvadeMode(){}
 
         void DespawnSummons()
         {
@@ -352,7 +354,8 @@ public:
             switch (action)
             {
             case ACTION_KLAXXI_START:
-                events.ScheduleEvent(EVENT_CHECK, 1000);
+                instance->SetBossState(DATA_KLAXXI, IN_PROGRESS);
+                DoZoneInCombat(me, 150.0f);
                 events.ScheduleEvent(EVENT_START_KLAXXI, 5000);
                 break;
             case ACTION_KLAXXI_DONE:
@@ -366,26 +369,15 @@ public:
 
         void UpdateAI(uint32 diff)
         {
+            if (!UpdateVictim())
+                return;
+
             events.Update(diff);
 
             while (uint32 eventId = events.ExecuteEvent())
             {
-                switch (eventId)
-                {
-                case EVENT_START_KLAXXI:
-                    instance->SetBossState(DATA_KLAXXI, IN_PROGRESS);
-                    break;
-                case EVENT_CHECK:
-                    if (instance->IsWipe())
-                    {
-                        events.Reset();
-                        DespawnSummons();
-                        instance->SetBossState(DATA_KLAXXI, NOT_STARTED);
-                    }
-                    else
-                        events.ScheduleEvent(EVENT_CHECK, 1000);
-                    break;
-                }
+                if (eventId == EVENT_START_KLAXXI)
+                    instance->SetData(DATA_KLAXXI_START, 0);
             }
         }
     };
@@ -605,6 +597,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         break;
                     case NPC_RIKKAL:
                         Talk(SAY_RIKKAL_DIE, 0);
+                        instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_INJECTION);
                         instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GENETIC_ALTERATION);
                         break;
                     case NPC_HISEK:
@@ -715,16 +708,16 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 return 0;
             }
 
-            void EnterEvadeMode()
+            /*void EnterEvadeMode()
             {
                 if (instance->GetBossState(DATA_KLAXXI) == IN_PROGRESS)
                     instance->SetBossState(DATA_KLAXXI, NOT_STARTED);
-            }
+            }*/
 
             void UpdateAI(uint32 diff)
             {
-                if (!UpdateVictim())
-                    return;
+                /*if (!UpdateVictim())
+                    return;*/
 
                 if (healcooldown)
                 {
@@ -1582,10 +1575,6 @@ public:
     {
         PrepareAuraScript(spell_klaxxi_injection_AuraScript);
 
-        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-        {
-        }
-
         void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
         {
             if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
@@ -1594,7 +1583,6 @@ public:
 
         void Register()
         {
-            OnEffectApply += AuraEffectApplyFn(spell_klaxxi_injection_AuraScript::OnApply, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
             OnEffectRemove += AuraEffectRemoveFn(spell_klaxxi_injection_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
         }
     };
