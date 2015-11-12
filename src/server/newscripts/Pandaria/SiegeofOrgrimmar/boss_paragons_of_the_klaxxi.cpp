@@ -533,10 +533,12 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                         if (me->GetEntry() != NPC_HISEK)
                             me->SetReactState(REACT_AGGRESSIVE);
-                        if (Creature* kc = me->GetCreature(*me, instance->GetData64(NPC_KLAXXI_CONTROLLER)))
-                            if (kc->getVictim())
-                                me->SetInCombatWith(kc->getVictim());
-                        //DoZoneInCombat(me, 150.0f);
+                        if (Creature* ap = me->GetCreature(*me, instance->GetData64(NPC_AMBER_PIECE)))
+                            if (Unit* target = ap->FindNearestPlayer(150.0f, true))
+                                if (me->GetEntry() != NPC_HISEK)
+                                    me->Attack(target, true);
+                                else
+                                    me->Attack(target, false);
                         instance->SetData(DATA_BUFF_NEXT_KLAXXI, 0);
                         break;
                     case 2:
