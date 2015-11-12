@@ -533,7 +533,10 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                         if (me->GetEntry() != NPC_HISEK)
                             me->SetReactState(REACT_AGGRESSIVE);
-                        DoZoneInCombat(me, 150.0f);
+                        if (Creature* kc = me->GetCreature(*me, instance->GetData64(NPC_KLAXXI_CONTROLLER)))
+                            if (kc->getVictim())
+                                me->SetInCombatWith(kc->getVictim());
+                        //DoZoneInCombat(me, 150.0f);
                         instance->SetData(DATA_BUFF_NEXT_KLAXXI, 0);
                         break;
                     case 2:
@@ -1221,12 +1224,6 @@ public:
         {
             if (attacker->GetGUID() != targetGuid)
                 me->getThreatManager().addThreat(attacker, 0.0f);
-
-            if (fullhealth && HealthBelowPct(50))
-            {
-                fullhealth = false;
-                events.ScheduleEvent(EVENT_REGENERATE, 1000);
-            }
         }
 
         void SpellHit(Unit* caster, SpellInfo const *spell)
@@ -1290,17 +1287,11 @@ public:
 
             while (uint32 eventId = events.ExecuteEvent())
             {
-                switch (eventId)
+                if (eventId == EVENT_FEED)
                 {
-                case EVENT_FEED:
                     if (me->getVictim())
                         DoCastVictim(SPELL_FEED);
                     events.ScheduleEvent(EVENT_FEED, 15000);
-                    break;
-                case EVENT_REGENERATE:
-                    DoCast(me, SPELL_REGENERATE);
-                    events.ScheduleEvent(EVENT_REGENERATE, 10000);
-                    break;
                 }
             }
             DoMeleeAttackIfReady();
@@ -2170,7 +2161,10 @@ public:
         void OnTick(AuraEffect const* aurEff)
         {
             if (GetCaster() && GetTarget())
-                GetCaster()->CastCustomSpell(SPELL_FIERY_EDGE_DMG, SPELLVALUE_BASE_POINT0, GetSpellInfo()->Effects[EFFECT_0].BasePoints, GetTarget());
+            {
+                int32 dmg = GetSpellInfo()->Effects[EFFECT_0].BasePoints;
+                GetCaster()->CastCustomSpell(SPELL_FIERY_EDGE_DMG, SPELLVALUE_BASE_POINT0, dmg, GetTarget());
+            }
         }
 
         void Register()
@@ -2372,6 +2366,37 @@ public:
     }
 };
 
+//143355
+class spell_genetic_modifications : public SpellScriptLoader
+{
+public:
+    spell_genetic_modifications() : SpellScriptLoader("spell_genetic_modifications") { }
+
+    class spell_genetic_modifications_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_genetic_modifications_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (GetCaster())
+            {
+                int32 dmg = GetSpellInfo()->Effects[EFFECT_0].BasePoints;
+                GetCaster()->CastCustomSpell(SPELL_REGENERATE, SPELLVALUE_BASE_POINT0, dmg, GetCaster());
+            }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_genetic_modifications_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_ENERGIZE);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_genetic_modifications_AuraScript();
+    }
+};
+
 void AddSC_boss_paragons_of_the_klaxxi()
 {
     new npc_amber_piece();
@@ -2406,4 +2431,5 @@ void AddSC_boss_paragons_of_the_klaxxi()
     new spell_reave();
     new spell_klaxxi_multi_shot();
     new spell_whirling();
+    new spell_genetic_modifications();
 }
