@@ -1050,14 +1050,6 @@ public:
                 case IN_PROGRESS:
                     for (std::vector<uint64>::const_iterator itr = klaxxiarenagateGuid.begin(); itr != klaxxiarenagateGuid.end(); itr++)
                         HandleGameObject(*itr, false);
-
-                    for (std::vector<uint64>::const_iterator itr = klaxxilist.begin(); itr != klaxxilist.end(); itr++)
-                        if (Creature* klaxxi = instance->GetCreature(*itr))
-                        {
-                            klaxxi->CastSpell(klaxxi, 146983, true); //Aura Enrage
-                            if (klaxxi->HasAura(143542))
-                                klaxxi->AI()->DoAction(ACTION_KLAXXI_IN_PROGRESS);
-                        }
                     break;
                 case DONE:
                     RemoveDebuffFromPlayers();
@@ -1065,8 +1057,13 @@ public:
                         kc->AI()->DoAction(ACTION_KLAXXI_DONE);
 
                     for (std::vector<uint64>::const_iterator itr = klaxxilist.begin(); itr != klaxxilist.end(); itr++)
+                    {
                         if (Creature* klaxxi = instance->GetCreature(*itr))
+                        {
                             SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, klaxxi);
+                            klaxxi->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+                        }
+                    }
 
                     for (std::vector<uint64>::const_iterator itr = klaxxiarenagateGuid.begin(); itr != klaxxiarenagateGuid.end(); itr++)
                         HandleGameObject(*itr, true);
@@ -1316,6 +1313,17 @@ public:
                     if (Creature* spoil = instance->GetCreature(*itr))
                         if (spoil->GetEntry() == NPC_MOGU_SPOILS2 || spoil->GetEntry() == NPC_MANTIS_SPOILS2)
                             spoil->AI()->DoAction(ACTION_IN_PROGRESS);
+                break;
+            case DATA_KLAXXI_START:
+                for (std::vector<uint64>::const_iterator itr = klaxxilist.begin(); itr != klaxxilist.end(); itr++)
+                {
+                    if (Creature* klaxxi = instance->GetCreature(*itr))
+                    {
+                        klaxxi->CastSpell(klaxxi, 146983, true); //Aura Enrage
+                        if (klaxxi->HasAura(143542))
+                            klaxxi->AI()->DoAction(ACTION_KLAXXI_IN_PROGRESS);
+                    }
+                }
                 break;
             case DATA_BUFF_NEXT_KLAXXI:
                 if (klaxxidiecount < 6)

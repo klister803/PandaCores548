@@ -1235,6 +1235,8 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 143337: //Mutate
     case 143666: //Diminish
     case 142735: //Reaction Blue
+    case 142950: //Fire
+    case 143362: //Feed
     //debuffs from klaxxi
     case 142929:
     case 142931:
@@ -1247,7 +1249,6 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 142938: //Orange
     case 142939: //Purple
     case 142940: //Green
-    case 142950: //Fire
         return Effects[effect];
     }
 

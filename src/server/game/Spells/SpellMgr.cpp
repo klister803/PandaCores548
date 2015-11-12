@@ -5166,6 +5166,15 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = 25;
                     spellInfo->Effects[0].TargetB = 0;
                     break;
+                case 142950: //Fire
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
+                    break;
+                case 143362: //Feed
+                    spellInfo->Effects[0].TargetA = 25;
+                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[1].TargetA = 25;
+                    spellInfo->Effects[1].TargetB = 0;
+                    break;
                 //debuffs from klaxxi
                 case 142929:
                 case 142931:
@@ -5186,9 +5195,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 142940: //Green
                     spellInfo->TargetAuraSpell = 142549;
                     break;
-                case 142950: //Fire
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
-                    break;
+
                     
                 //World Bosses
                 //Sha of Anger
