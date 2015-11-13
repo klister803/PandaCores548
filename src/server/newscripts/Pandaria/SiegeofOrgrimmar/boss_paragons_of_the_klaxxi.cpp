@@ -98,6 +98,7 @@ enum eSpells
     SPELL_AMBER_VISUAL                 = 144120,
 
     //Karoz
+    SPELL_STORE_KINETIC_ENERGY         = 143709,
     SPELL_FLASH                        = 143704,
     SPELL_HURL_AMBER                   = 143759,
     SPELL_HURL_AMBER_DMG               = 143733,
@@ -292,15 +293,15 @@ public:
 
         void OnSpellClick(Unit* clicker)
         {
-            //if (instance && instance->GetBossState(DATA_THOK) == DONE)
-            //{
+            if (instance->GetBossState(DATA_THOK) == DONE)
+            {
                 if (me->HasAura(SPELL_AURA_VISUAL_FS))
                 {
                     me->RemoveAurasDueToSpell(SPELL_AURA_VISUAL_FS);
                     if (Creature* ck = me->GetCreature(*me, instance->GetData64(NPC_KLAXXI_CONTROLLER)))
                         ck->AI()->DoAction(ACTION_KLAXXI_START);
                 }
-           //}
+            }
         }
     };
 
@@ -450,8 +451,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 case NPC_KILRUK:
                     DoCast(me, SPELL_RAZOR_SHARP_BLADES, true);
                     events.ScheduleEvent(EVENT_GOUGE, 20000);
-                    if (me->GetMap()->IsHeroic())
-                        events.ScheduleEvent(EVENT_REAVE, 16000);
+                    events.ScheduleEvent(EVENT_REAVE, 16000);
                     break;
                 case NPC_XARIL:
                     Talk(SAY_XARIL_PULL, 0);
@@ -709,17 +709,8 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 return 0;
             }
 
-            /*void EnterEvadeMode()
-            {
-                if (instance->GetBossState(DATA_KLAXXI) == IN_PROGRESS)
-                    instance->SetBossState(DATA_KLAXXI, NOT_STARTED);
-            }*/
-
             void UpdateAI(uint32 diff)
             {
-                /*if (!UpdateVictim())
-                    return;*/
-
                 if (healcooldown)
                 {
                     if (healcooldown <= diff)
@@ -897,7 +888,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         if (!flashcount)
                             flashcount = urand(2, 3);
                         if (Player* pl = me->GetPlayer(*me, GetFlashTargetGuid()))
-                            DoCast(pl, SPELL_FLASH);
+                            DoCast(pl, SPELL_STORE_KINETIC_ENERGY);
                         break;
                     //Special
                     case EVENT_RE_ATTACK:
@@ -2395,6 +2386,34 @@ public:
     }
 };
 
+//143709
+class spell_store_kinetic_energy : public SpellScriptLoader
+{
+public:
+    spell_store_kinetic_energy() : SpellScriptLoader("spell_store_kinetic_energy") { }
+
+    class spell_store_kinetic_energy_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_store_kinetic_energy_SpellScript);
+
+        void HandleHit()
+        {
+            if (GetCaster() && GetHitUnit())
+                GetCaster()->CastSpell(GetHitUnit(), SPELL_FLASH);
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_store_kinetic_energy_SpellScript::HandleHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_store_kinetic_energy_SpellScript();
+    }
+};
+
 void AddSC_boss_paragons_of_the_klaxxi()
 {
     new npc_amber_piece();
@@ -2430,4 +2449,5 @@ void AddSC_boss_paragons_of_the_klaxxi()
     new spell_klaxxi_multi_shot();
     new spell_whirling();
     new spell_genetic_modifications();
+    new spell_store_kinetic_energy();
 }

@@ -1237,6 +1237,7 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 142735: //Reaction Blue
     case 142950: //Fire
     case 143362: //Feed
+    case 143709: //Store Kinetic Energy
     //debuffs from klaxxi
     case 142929:
     case 142931:
