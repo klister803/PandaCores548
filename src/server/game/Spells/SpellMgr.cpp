@@ -5179,6 +5179,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = 25;
                     spellInfo->Effects[0].TargetB = 0;
                     break;
+                case 142232: //Death From Above
+                    spellInfo->Effects[0].TargetB = 15;
+                    break;
                 //debuffs from klaxxi
                 case 142929:
                 case 142931:
