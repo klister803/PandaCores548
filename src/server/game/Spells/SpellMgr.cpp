@@ -5175,6 +5175,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].TargetA = 25;
                     spellInfo->Effects[1].TargetB = 0;
                     break;
+                case 143709: //Store Kinetic Energy
+                    spellInfo->Effects[0].TargetA = 25;
+                    spellInfo->Effects[0].TargetB = 0;
+                    break;
                 //debuffs from klaxxi
                 case 142929:
                 case 142931:
