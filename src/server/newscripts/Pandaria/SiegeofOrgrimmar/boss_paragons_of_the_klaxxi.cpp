@@ -69,6 +69,9 @@ enum eSpells
     SPELL_SUM_HUNGRY_KUNCHONG          = 146891,
 
     //Kilruk
+    SPELL_DEATH_FROM_ABOVE             = 142264,
+    SPELL_DEATH_FROM_ABOVE_SUM         = 142263,
+    SPELL_DEATH_FROM_ABOVE_VISUAL      = 144126,
     SPELL_RAZOR_SHARP_BLADES           = 142918,
     SPELL_GOUGE                        = 143939,
     SPELL_MUTILATE                     = 143941,
@@ -138,35 +141,37 @@ enum sEvents
     //Kilruk
     EVENT_GOUGE                        = 4,
     EVENT_REAVE                        = 5,
+    EVENT_DEATH_FROM_ABOVE             = 6,
+    EVENT_DEATH_FROM_ABOVE_START       = 7,
     //Hisek
-    EVENT_MULTI_SHOT                   = 6,
-    EVENT_AIM                          = 7,
-    EVENT_RAPID_FIRE                   = 8,
+    EVENT_MULTI_SHOT                   = 8,
+    EVENT_AIM                          = 9,
+    EVENT_RAPID_FIRE                   = 10,
     //Rikkal
-    EVENT_MUTATE                       = 9,
-    EVENT_INJECTION                    = 10,
+    EVENT_MUTATE                       = 11,
+    EVENT_INJECTION                    = 12,
     //Xaril
-    EVENT_TOXIC_INJECTION              = 11,
-    EVENT_CATALYST                     = 12,
+    EVENT_TOXIC_INJECTION              = 13,
+    EVENT_CATALYST                     = 14,
     //Korven
-    EVENT_SHIELD_BASH                  = 13,
+    EVENT_SHIELD_BASH                  = 15,
     //Iyyokyk
-    EVENT_DIMINISH                     = 14,
-    EVENT_INSANE_CALCULATION           = 15,
+    EVENT_DIMINISH                     = 16,
+    EVENT_INSANE_CALCULATION           = 17,
     //Kaztik
-    EVENT_SONIC_PROJECTION             = 16,
-    EVENT_SUM_HUNGRY_KUNCHONG          = 17,
+    EVENT_SONIC_PROJECTION             = 18,
+    EVENT_SUM_HUNGRY_KUNCHONG          = 19,
     //Karoz
-    EVENT_HURL_AMBER                   = 18,
-    EVENT_FLASH                        = 19,
+    EVENT_HURL_AMBER                   = 20,
+    EVENT_FLASH                        = 21,
     //Amber Parasite
-    EVENT_FEED                         = 20,
-    EVENT_REGENERATE                   = 21,
+    EVENT_FEED                         = 22,
+    EVENT_REGENERATE                   = 23,
     //Blood
-    EVENT_FIND_LOW_HP_KLAXXI           = 22,
-    EVENT_CHECK_DIST_TO_KLAXXI         = 23,
-    EVENT_CHECK_PLAYER                 = 24,
-    EVENT_RE_ATTACK                    = 25,
+    EVENT_FIND_LOW_HP_KLAXXI           = 24,
+    EVENT_CHECK_DIST_TO_KLAXXI         = 25,
+    EVENT_CHECK_PLAYER                 = 26,
+    EVENT_RE_ATTACK                    = 27,
 };
 
 enum sActions
@@ -175,6 +180,7 @@ enum sActions
     ACTION_ENCASE_IN_AMBER             = 2,
     ACTION_RE_ATTACK                   = 3,
     ACTION_MOVE_TO_CENTER              = 4,
+    ACTION_RE_ATTACK_KILRUK            = 5,
 };
 
 enum CreatureText
@@ -408,6 +414,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
             SummonList summons;
             EventMap events;
             uint64 vGuid;
+            uint64 jtGuid;
             uint32 checkklaxxi, healcooldown;
             uint8 flashcount;
             bool healready;
@@ -423,6 +430,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 me->SetReactState(REACT_PASSIVE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 vGuid = 0;
+                jtGuid = 0;
                 checkklaxxi = 0;
                 healcooldown = 0;
                 flashcount = 0;
@@ -441,6 +449,14 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
 
             void JustSummoned(Creature* sum)
             {
+                if (sum->GetEntry() == 71309)
+                {
+                    sum->SetDisplayId(11686);
+                    sum->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                    jtGuid = sum->GetGUID();
+                    DoCast(sum, SPELL_DEATH_FROM_ABOVE_VISUAL);
+                    events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE_START, 2000);
+                }
                 summons.Summon(sum);
             }
 
@@ -451,7 +467,9 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 case NPC_KILRUK:
                     DoCast(me, SPELL_RAZOR_SHARP_BLADES, true);
                     events.ScheduleEvent(EVENT_GOUGE, 20000);
-                    events.ScheduleEvent(EVENT_REAVE, 16000);
+                    events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 34000);
+                    if (me->GetMap()->IsHeroic())
+                        events.ScheduleEvent(EVENT_REAVE, 16000);
                     break;
                 case NPC_XARIL:
                     Talk(SAY_XARIL_PULL, 0);
@@ -514,6 +532,12 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         me->SetReactState(REACT_AGGRESSIVE);
                     DoZoneInCombat(me, 150.0f);
                     break;
+                case ACTION_RE_ATTACK_KILRUK:
+                    me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    DoZoneInCombat(me, 150.0f);
+                    events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 34000);
+                    break;
                 case ACTION_MOVE_TO_CENTER:
                     events.ScheduleEvent(EVENT_RE_ATTACK, 2000);
                     break;
@@ -546,6 +570,10 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                         me->ReAttackWithZone(vGuid);
                         events.ScheduleEvent(EVENT_FLASH, 10000);
+                        break;
+                    case 4:
+                        if (Player* pl = me->GetPlayer(*me, GetTargetGuid()))
+                            DoCast(pl, SPELL_DEATH_FROM_ABOVE_SUM);
                         break;
                     }
                 }
@@ -805,6 +833,16 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         events.ScheduleEvent(EVENT_BLODDLETTING, 35000);
                         break;
                     //Kilruk
+                    case EVENT_DEATH_FROM_ABOVE:
+                        events.DelayEvents(6000);
+                        me->SetAttackStop(true);
+                        me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
+                        me->GetMotionMaster()->MoveJump(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 10.0f, 15.0f, 15.0f, 4);
+                        break;
+                    case EVENT_DEATH_FROM_ABOVE_START:
+                        if (Creature* jt = me->GetCreature(*me, jtGuid))
+                            DoCast(jt, SPELL_DEATH_FROM_ABOVE);
+                        break;
                     case EVENT_GOUGE:
                         if (me->getVictim())
                             DoCastVictim(SPELL_GOUGE);
@@ -2414,6 +2452,40 @@ public:
     }
 };
 
+//144157
+class spell_landing_pose : public SpellScriptLoader
+{
+public:
+    spell_landing_pose() : SpellScriptLoader("spell_landing_pose") { }
+
+    class spell_landing_pose_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_landing_pose_AuraScript);
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+        {
+            if (GetCaster() && GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
+            {
+                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+                {
+                    if (GetCaster()->ToCreature())
+                        GetCaster()->ToCreature()->AI()->DoAction(ACTION_RE_ATTACK_KILRUK);
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_landing_pose_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_MOD_ROOT, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_landing_pose_AuraScript();
+    }
+};
+
 void AddSC_boss_paragons_of_the_klaxxi()
 {
     new npc_amber_piece();
@@ -2450,4 +2522,5 @@ void AddSC_boss_paragons_of_the_klaxxi()
     new spell_whirling();
     new spell_genetic_modifications();
     new spell_store_kinetic_energy();
+    new spell_landing_pose();
 }
