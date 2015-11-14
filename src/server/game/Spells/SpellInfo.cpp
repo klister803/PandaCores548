@@ -1242,13 +1242,13 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 142564: //Encase in Amber
     case 143939: //Gouge
     case 143941: //Mutilate
+    case 143974: //Shield Bash
     //debuffs from klaxxi
     case 142929:
     case 142931:
     case 143279:
     case 143275:
     case 142315:
-    case 143974:
     case 143768:
     //Heroic catalyst
     case 142938: //Orange
