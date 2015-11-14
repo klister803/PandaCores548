@@ -320,6 +320,7 @@ enum eCreatures
     NPC_HISEK                       = 71153,
 
     NPC_BLOOD                       = 71542,
+    NPC_AMBER                       = 71407,
     NPC_AMBER_PIECE                 = 71628,
     NPC_KLAXXI_CONTROLLER           = 71592,
     NPC_AMBER_PARASITE              = 71578,

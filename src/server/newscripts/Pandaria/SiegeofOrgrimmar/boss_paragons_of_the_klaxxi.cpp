@@ -177,7 +177,6 @@ enum sEvents
 enum sActions
 {
     ACTION_KLAXXI_START                = 1,
-    ACTION_ENCASE_IN_AMBER             = 2,
     ACTION_RE_ATTACK                   = 3,
     ACTION_MOVE_TO_CENTER              = 4,
     ACTION_RE_ATTACK_KILRUK            = 5,
@@ -522,10 +521,6 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     me->GetMotionMaster()->MoveJump(1582.4f, -5684.9f, -313.635f, 15.0f, 15.0f, 1);
                     me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                     break;
-                case ACTION_ENCASE_IN_AMBER:
-                    me->AttackStop();
-                    me->SetReactState(REACT_PASSIVE);
-                    break;
                 case ACTION_RE_ATTACK:
                     me->SetFullHealth();
                     if (me->GetEntry() != NPC_HISEK)
@@ -770,7 +765,8 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                                         if (klaxxi->HealthBelowPct(50))
                                         {
                                             healready = false;
-                                            DoCast(klaxxi, SPELL_ENCASE_IN_AMBER, true);
+                                            klaxxi->CastSpell(klaxxi, SPELL_ENCASE_IN_AMBER, true);
+                                            klaxxi->SummonCreature(NPC_AMBER, klaxxi->GetPositionX(), klaxxi->GetPositionY(), klaxxi->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 10000);
                                             healcooldown = 90000;
                                             break;
                                         }
@@ -1345,18 +1341,11 @@ public:
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
             DoCast(me, SPELL_AMBER_VISUAL, true);
-            targetGuid = 0;
         }
 
         InstanceScript* instance;
-        uint64 targetGuid;
 
         void Reset(){}
-
-        void IsSummonedBy(Unit* summoner)
-        {
-            targetGuid = summoner->GetGUID();
-        }
 
         void EnterCombat(Unit* who){}
 
@@ -1364,12 +1353,15 @@ public:
 
         void JustDied(Unit* killer)
         {
-            if (Creature* klaxxi = me->GetCreature(*me, targetGuid))
+            if (me->ToTempSummon())
             {
-                if (GameObject* it = me->FindNearestGameObject(GO_ICE_TOMB, 3.0f))
-                    it->Delete();
-                klaxxi->RemoveAurasDueToSpell(SPELL_ENCASE_IN_AMBER, 0, 0, AURA_REMOVE_BY_EXPIRE);
-                me->DespawnOrUnsummon();
+                if (Unit* klaxxi = me->ToTempSummon()->GetSummoner())
+                {
+                    if (GameObject* it = me->FindNearestGameObject(GO_ICE_TOMB, 3.0f))
+                        it->Delete();
+                    klaxxi->RemoveAurasDueToSpell(SPELL_ENCASE_IN_AMBER);
+                    me->DespawnOrUnsummon();
+                }
             }
         }
 
@@ -1766,45 +1758,6 @@ public:
     AuraScript* GetAuraScript() const
     {
         return new spell_caustic_blood_AuraScript();
-    }
-};
-
-//142564
-class spell_encase_in_amber : public SpellScriptLoader
-{
-public:
-    spell_encase_in_amber() : SpellScriptLoader("spell_encase_in_amber") { }
-
-    class spell_encase_in_amber_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_encase_in_amber_AuraScript);
-
-        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-        {
-            if (GetTarget() && GetTarget()->ToCreature())
-                GetTarget()->ToCreature()->AI()->DoAction(ACTION_ENCASE_IN_AMBER);
-        }
-
-        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
-        {
-            if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
-            {
-                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
-                    if (GetTarget()->ToCreature())
-                        GetTarget()->ToCreature()->AI()->DoAction(ACTION_RE_ATTACK);
-            }
-        }
-
-        void Register()
-        {
-            OnEffectApply += AuraEffectApplyFn(spell_encase_in_amber_AuraScript::OnApply, EFFECT_4, SPELL_AURA_DAMAGE_IMMUNITY, AURA_EFFECT_HANDLE_REAL);
-            OnEffectRemove += AuraEffectRemoveFn(spell_encase_in_amber_AuraScript::HandleEffectRemove, EFFECT_4, SPELL_AURA_DAMAGE_IMMUNITY, AURA_EFFECT_HANDLE_REAL);
-        }
-    };
-
-    AuraScript* GetAuraScript() const
-    {
-        return new spell_encase_in_amber_AuraScript();
     }
 };
 
@@ -2506,7 +2459,6 @@ void AddSC_boss_paragons_of_the_klaxxi()
     new spell_klaxxi_bloodletting();
     new spell_tenderizing_strikes_dmg();
     new spell_caustic_blood();
-    new spell_encase_in_amber();
     new spell_diminish();
     new spell_hurl_amber();
     new spell_sonic_projection();
