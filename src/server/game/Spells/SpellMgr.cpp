@@ -5189,13 +5189,16 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 143941: //Mutilate
                     spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(13); //200yards
                     break;
+                case 143974: //Shield Bash
+                    spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(13); //200yards
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
+                    break;
                 //debuffs from klaxxi
                 case 142929:
                 case 142931:
                 case 143279:
                 case 143275:
                 case 142315:
-                case 143974:
                 case 143768:
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
