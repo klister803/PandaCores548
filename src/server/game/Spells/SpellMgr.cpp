@@ -5182,6 +5182,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 142232: //Death From Above
                     spellInfo->Effects[0].TargetB = 15;
                     break;
+                case 142564: //Encase in Amber
+                    spellInfo->Effects[3].Effect = 0;
+                    break;
                 //debuffs from klaxxi
                 case 142929:
                 case 142931:
