@@ -1775,7 +1775,7 @@ public:
         void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
         {
             if (GetTarget() && GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
-                GetTarget()->CastSpell(GetTarget(), SPELL_AMBER_REGENERATION);
+                GetTarget()->CastSpell(GetTarget(), SPELL_AMBER_REGENERATION, true);
         }
 
         void Register()
