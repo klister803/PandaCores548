@@ -5185,6 +5185,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 142564: //Encase in Amber
                     spellInfo->Effects[3].Effect = 0;
                     break;
+                case 143939: //Gouge
+                case 143941: //Mutilate
+                    spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(13); //200yards
+                    break;
                 //debuffs from klaxxi
                 case 142929:
                 case 142931:

@@ -99,6 +99,7 @@ enum eSpells
     SPELL_VICIOUS_ASSAULT              = 143980,
     SPELL_ENCASE_IN_AMBER              = 142564,
     SPELL_AMBER_VISUAL                 = 144120,
+    SPELL_AMBER_REGENERATION           = 142576,
 
     //Karoz
     SPELL_STORE_KINETIC_ENERGY         = 143709,
@@ -1761,6 +1762,34 @@ public:
     }
 };
 
+//142564
+class spell_encase_in_amber : public SpellScriptLoader
+{
+public:
+    spell_encase_in_amber() : SpellScriptLoader("spell_encase_in_amber") { }
+
+    class spell_encase_in_amber_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_encase_in_amber_AuraScript);
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+        {
+            if (GetTarget() && GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+                GetTarget()->CastSpell(GetTarget(), SPELL_AMBER_REGENERATION);
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_encase_in_amber_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
+        }
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_encase_in_amber_AuraScript();
+        }
+    };
+};
+
 //143666
 class spell_diminish : public SpellScriptLoader
 {
@@ -2459,6 +2488,7 @@ void AddSC_boss_paragons_of_the_klaxxi()
     new spell_klaxxi_bloodletting();
     new spell_tenderizing_strikes_dmg();
     new spell_caustic_blood();
+    new spell_encase_in_amber();
     new spell_diminish();
     new spell_hurl_amber();
     new spell_sonic_projection();
