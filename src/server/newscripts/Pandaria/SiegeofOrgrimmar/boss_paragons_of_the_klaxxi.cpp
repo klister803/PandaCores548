@@ -1360,7 +1360,7 @@ public:
                 {
                     if (GameObject* it = me->FindNearestGameObject(GO_ICE_TOMB, 3.0f))
                         it->Delete();
-                    klaxxi->RemoveAurasDueToSpell(SPELL_ENCASE_IN_AMBER);
+                    klaxxi->RemoveAurasDueToSpell(SPELL_ENCASE_IN_AMBER, 0, 0, AURA_REMOVE_BY_EXPIRE);
                     me->DespawnOrUnsummon();
                 }
             }
@@ -1774,7 +1774,7 @@ public:
 
         void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
         {
-            if (GetTarget() && GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+            if (GetTarget() && GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_DEFAULT)
                 GetTarget()->CastSpell(GetTarget(), SPELL_AMBER_REGENERATION, true);
         }
 
