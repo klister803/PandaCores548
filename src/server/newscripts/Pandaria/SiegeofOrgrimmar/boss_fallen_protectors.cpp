@@ -334,13 +334,13 @@ class boss_rook_stonetoe : public CreatureScript
                 measureVeh = NPC_GOLD_LOTOS_ROOK;
             }
 
-            void Reset()
+            void EnterEvadeMode() override
             {
-                boss_fallen_protectors::Reset();
                 me->CastSpell(me, SPELL_DESPAWN_AT, true);
 
                 if (Creature* sun = instance->instance->GetCreature(instance->GetData64(NPC_SUN_TENDERHEART)))
                     sun->AI()->EnterEvadeMode();
+                boss_fallen_protectors::EnterEvadeMode();
             }
 
             enum local
@@ -441,15 +441,15 @@ class boss_he_softfoot : public CreatureScript
                 measureVeh = NPC_GOLD_LOTOS_HE;
             }
 
-            void Reset()
+            void EnterEvadeMode() override
             {
-                boss_fallen_protectors::Reset();
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROTE);
 
                 me->CastSpell(me, SPELL_DESPAWN_AT, true);
 
                 if (Creature* sun = instance->instance->GetCreature(instance->GetData64(NPC_SUN_TENDERHEART)))
                     sun->AI()->EnterEvadeMode();
+                boss_fallen_protectors::EnterEvadeMode();
             }
 
             enum local
