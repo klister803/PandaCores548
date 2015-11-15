@@ -1780,14 +1780,14 @@ public:
 
         void Register()
         {
-            OnEffectRemove += AuraEffectRemoveFn(spell_encase_in_amber_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
-        }
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_encase_in_amber_AuraScript();
+            AfterEffectRemove += AuraEffectRemoveFn(spell_encase_in_amber_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
         }
     };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_encase_in_amber_AuraScript();
+    }
 };
 
 //143666
