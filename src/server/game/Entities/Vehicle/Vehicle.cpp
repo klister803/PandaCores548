@@ -249,6 +249,7 @@ void Vehicle::RemoveAllPassengers()
         /// Update vehicle pointer in every pending join event - Abort may be called after vehicle is deleted
         Vehicle* eventVehicle = _status != STATUS_UNINSTALLING ? this : NULL;
 
+        _lock.lock();
         while (!_pendingJoinEvents.empty())
         {
             VehicleJoinEvent* e = _pendingJoinEvents.front();
@@ -256,6 +257,7 @@ void Vehicle::RemoveAllPassengers()
             e->Target = eventVehicle;
             _pendingJoinEvents.pop_front();
         }
+        _lock.unlock();
     }
 
     // Passengers always cast an aura with SPELL_AURA_CONTROL_VEHICLE on the vehicle
@@ -736,14 +738,16 @@ void Vehicle::CalculatePassengerOffset(float& x, float& y, float& z, float& o)
 
 void Vehicle::RemovePendingEvent(VehicleJoinEvent* e)
 {
-    TRINITY_GUARD(ACE_Thread_Mutex, _lock);
-    _pendingJoinEvents.remove(e);
+    _lock.lock();
+    _pendingJoinEvents.clear();
+    _lock.unlock();
 }
 
 void Vehicle::AddPendingEvent(VehicleJoinEvent* e)
 {
-    TRINITY_GUARD(ACE_Thread_Mutex, _lock);
+    _lock.lock();
     _pendingJoinEvents.push_back(e);
+    _lock.unlock();
 }
 
 /**
@@ -759,6 +763,7 @@ void Vehicle::AddPendingEvent(VehicleJoinEvent* e)
 
 void Vehicle::RemovePendingEventsForSeat(int8 seatId)
 {
+    _lock.lock();
     for (PendingJoinEventContainer::iterator itr = _pendingJoinEvents.begin(); itr != _pendingJoinEvents.end();)
     {
         if ((*itr)->Seat->first == seatId)
@@ -769,6 +774,7 @@ void Vehicle::RemovePendingEventsForSeat(int8 seatId)
         else
             ++itr;
     }
+    _lock.unlock();
 }
 
 /**
@@ -784,6 +790,7 @@ void Vehicle::RemovePendingEventsForSeat(int8 seatId)
 
 void Vehicle::RemovePendingEventsForPassenger(Unit* passenger)
 {
+    _lock.lock();
     for (PendingJoinEventContainer::iterator itr = _pendingJoinEvents.begin(); itr != _pendingJoinEvents.end();)
     {
         if ((*itr)->Passenger == passenger)
@@ -794,12 +801,22 @@ void Vehicle::RemovePendingEventsForPassenger(Unit* passenger)
         else
             ++itr;
     }
+    _lock.unlock();
 }
 
 VehicleJoinEvent::~VehicleJoinEvent()
 {
-    if (Target)
-        Target->RemovePendingEvent(this);
+    Object *obj = ptr.get();
+    if (!obj)
+        return;
+    Unit *unit = obj->ToUnit();
+    if (!unit)
+        return;
+    Vehicle *Target = unit->GetVehicleKit();
+    if (!Target)
+        return;
+
+    Target->RemovePendingEvent(this);
 }
 
 /**
@@ -957,11 +974,13 @@ bool VehicleJoinEvent::Execute(uint64, uint32)
 
 void VehicleJoinEvent::Abort(uint64)
 {
-    if(!Passenger)
-        return;
+    Object *obj = ptr.get();
+    Unit *targetBase = obj ? obj->ToUnit() : NULL; // Faster then ObjectAccessor::GetUnit
+
     /// Check if the Vehicle was already uninstalled, in which case all auras were removed already
     //if (Target)
-    if (Unit* targetBase = ObjectAccessor::GetUnit(*Passenger, targetGuid))
+    //if (Unit* targetBase = ObjectAccessor::GetUnit(*Passenger, targetGuid))
+    if (targetBase)
     {
         //sLog->outDebug(LOG_FILTER_VEHICLES, "Passenger GuidLow: %u, Entry: %u, board on vehicle GuidLow: %u, Entry: %u SeatId: %d cancelled",
             //Passenger->GetGUIDLow(), Passenger->GetEntry(), Target->GetBase()->GetGUIDLow(), Target->GetBase()->GetEntry(), (int32)Seat->first);
@@ -973,10 +992,12 @@ void VehicleJoinEvent::Abort(uint64)
             //if (targetBase->IsInWorld())
                 targetBase->RemoveAurasByType(SPELL_AURA_CONTROL_VEHICLE, Passenger->GetGUID());
     }
-    else
+    else if (Passenger)
         sLog->outDebug(LOG_FILTER_VEHICLES, "Passenger GuidLow: %u, Entry: %u, board on uninstalled vehicle SeatId: %d cancelled",
-            Passenger->GetGUIDLow(), Passenger->GetEntry(), (int32)Seat->first);
+        Passenger->GetGUIDLow(), Passenger->GetEntry(), (int32) Seat->first);
+    else
+        sLog->outError(LOG_FILTER_VEHICLES, " WARNING!!! VehicleJoinEvent Abort with non existen Passanger");
 
-    if (Passenger->IsInWorld() && Passenger->HasUnitTypeMask(UNIT_MASK_ACCESSORY))
+    if (Passenger && Passenger->IsInWorld() && Passenger->HasUnitTypeMask(UNIT_MASK_ACCESSORY))
         Passenger->ToCreature()->DespawnOrUnsummon();
 }

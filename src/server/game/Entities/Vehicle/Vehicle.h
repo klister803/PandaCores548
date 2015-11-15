@@ -23,6 +23,7 @@
 #include "VehicleDefines.h"
 #include "Unit.h"
 #include <list>
+#include <mutex>
 
 struct VehicleEntry;
 class Unit;
@@ -120,18 +121,23 @@ class Vehicle : public TransportBase
         typedef std::list<VehicleJoinEvent*> PendingJoinEventContainer;
         PendingJoinEventContainer _pendingJoinEvents;       ///< Collection of delayed join events for prospective passengers
 
-        ACE_Thread_Mutex _lock;
+        std::mutex _lock;
 };
 
 class VehicleJoinEvent : public BasicEvent
 {
     friend class Vehicle;
     protected:
-        VehicleJoinEvent(Vehicle* v, Unit* u) : Target(v), Passenger(u), Seat(Target->Seats.end()), targetGuid(Target->GetBase() ? Target->GetBase()->GetGUID() : NULL) {}
+        VehicleJoinEvent(Vehicle* v, Unit* u) : Target(v), Passenger(u), Seat(Target->Seats.end()), targetGuid(Target->GetBase() ? Target->GetBase()->GetGUID() : NULL)
+        {
+            if (Target->GetBase())
+                ptr = Target->GetBase()->get_ptr();
+        }
         ~VehicleJoinEvent();
         bool Execute(uint64, uint32);
         void Abort(uint64);
 
+        C_PTR  ptr;
         Vehicle* Target;
         Unit* Passenger;
         SeatMap::iterator Seat;
