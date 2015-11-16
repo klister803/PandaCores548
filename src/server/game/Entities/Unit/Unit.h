@@ -38,6 +38,7 @@
 #include "WorldSession.h"
 #include "Timer.h"
 #include <list>
+#include <mutex>
 #include "../DynamicObject/DynamicObject.h"
 
 #define WORLD_TRIGGER   12999
