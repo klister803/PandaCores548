@@ -23,7 +23,6 @@
 #include "VehicleDefines.h"
 #include "Unit.h"
 #include <list>
-#include <mutex>
 
 struct VehicleEntry;
 class Unit;

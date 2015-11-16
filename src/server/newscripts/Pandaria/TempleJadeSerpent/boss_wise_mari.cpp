@@ -125,7 +125,7 @@ class boss_wase_mari : public CreatureScript
                 for (uint8 i = 0; i < 4; i++)
                     foutainTrigger[i] = 0;
 
-                std::list<Creature*> searcher;
+                /*std::list<Creature*> searcher;
                 GetCreatureListWithEntryInGrid(searcher, me, CREATURE_FOUTAIN_TRIGGER, 50.0f);
                 for (std::list<Creature*>::const_iterator itr = searcher.begin(); itr != searcher.end(); ++itr)
                 {
@@ -133,7 +133,7 @@ class boss_wase_mari : public CreatureScript
                         continue;
 
                     (*itr)->RemoveAllAuras();
-                }
+                }*/
 
                 hydrolancePhase = 0;
                 foutainCount = 0;
