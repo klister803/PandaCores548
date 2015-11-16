@@ -78,7 +78,17 @@ void Vehicle::Install()
     if (Creature* creature = _me->ToCreature())
     {
         if(PowerDisplayEntry const* powerDisplay = sPowerDisplayStore.LookupEntry(_vehicleInfo->m_powerDisplay))
+        {
             _me->setPowerType(Powers(powerDisplay->PowerType));
+            _me->SetMaxPower(Powers(powerDisplay->PowerType), _me->GetCreatePowers(Powers(powerDisplay->PowerType)));
+            _me->SetPower(Powers(powerDisplay->PowerType), _me->GetCreatePowers(Powers(powerDisplay->PowerType)));
+        }
+        else
+        {
+            _me->setPowerType(POWER_ENERGY);
+            _me->SetMaxPower(POWER_ENERGY, _me->GetCreatePowers(POWER_ENERGY));
+            _me->SetPower(POWER_ENERGY, _me->GetCreatePowers(POWER_ENERGY));
+        }
     }
 
     _status = STATUS_INSTALLED;
