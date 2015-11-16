@@ -3163,7 +3163,7 @@ SpellMissInfo Unit::SpellHitResult(Unit* victim, SpellInfo const* spell, bool Ca
 
 float Unit::GetUnitDodgeChance() const
 {
-    if (!HasAuraWithAttribute(10, SPELL_ATTR10_CAN_PARRY_DODGE_BLOCK) && (IsNonMeleeSpellCasted(false) || HasUnitState(UNIT_STATE_CONTROLLED)))
+    if (!HasAuraWithAttribute(10, SPELL_ATTR10_CAN_DODGE_ON_CAST) && (IsNonMeleeSpellCasted(false) || HasUnitState(UNIT_STATE_CONTROLLED)))
         return 0.0f;
 
     if (GetTypeId() == TYPEID_PLAYER)
@@ -3183,7 +3183,7 @@ float Unit::GetUnitDodgeChance() const
 
 float Unit::GetUnitParryChance() const
 {
-    if (!HasAuraWithAttribute(10, SPELL_ATTR10_CAN_PARRY_DODGE_BLOCK) && (IsNonMeleeSpellCasted(false) || HasUnitState(UNIT_STATE_CONTROLLED)))
+    if (!HasAuraWithAttribute(10, SPELL_ATTR10_CAN_PARRY_ON_CAST) && (IsNonMeleeSpellCasted(false) || HasUnitState(UNIT_STATE_CONTROLLED)))
         return 0.0f;
 
     float chance = 0.0f;
@@ -3227,7 +3227,7 @@ float Unit::GetUnitMissChance(WeaponAttackType attType) const
 
 float Unit::GetUnitBlockChance() const
 {
-    if (!HasAuraWithAttribute(10, SPELL_ATTR10_CAN_PARRY_DODGE_BLOCK) && (IsNonMeleeSpellCasted(false) || HasUnitState(UNIT_STATE_CONTROLLED)))
+    if (!HasAuraWithAttribute(10, SPELL_ATTR10_CAN_PARRY_ON_CAST) && (IsNonMeleeSpellCasted(false) || HasUnitState(UNIT_STATE_CONTROLLED)))
         return 0.0f;
 
     if (Player const* player = ToPlayer())

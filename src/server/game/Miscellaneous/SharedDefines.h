@@ -759,8 +759,8 @@ enum SpellAttr10
     SPELL_ATTR10_STACK_DAMAGE_OR_HEAL             = 0x00004000, // 14 Stack damage(heal) from last damage(heal) by damage(heal) - (damage * tick left(may be time))
     SPELL_ATTR10_UNK15                            = 0x00008000, // 15
     SPELL_ATTR10_UNK16                            = 0x00010000, // 16
-    SPELL_ATTR10_UNK17                            = 0x00020000, // 17
-    SPELL_ATTR10_CAN_PARRY_DODGE_BLOCK            = 0x00040000, // 18 When player casted spell 46924, 101546, 113656 he can parry
+    SPELL_ATTR10_CAN_DODGE_ON_CAST                = 0x00020000, // 17 When player casted spell can dodge
+    SPELL_ATTR10_CAN_PARRY_ON_CAST                = 0x00040000, // 18 When player casted spell 46924, 101546, 113656 he can parry
     SPELL_ATTR10_UNK19                            = 0x00080000, // 19
     SPELL_ATTR10_UNK20                            = 0x00100000, // 20
     SPELL_ATTR10_UNK21                            = 0x00200000, // 21
