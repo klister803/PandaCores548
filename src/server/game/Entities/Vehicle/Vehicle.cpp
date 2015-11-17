@@ -85,9 +85,23 @@ void Vehicle::Install()
         }
         else
         {
-            _me->setPowerType(POWER_ENERGY);
-            _me->SetMaxPower(POWER_ENERGY, _me->GetCreatePowers(POWER_ENERGY));
-            _me->SetPower(POWER_ENERGY, _me->GetCreatePowers(POWER_ENERGY));
+            Powers powerType = POWER_ENERGY;
+            for (uint32 i = 0; i < MAX_SPELL_CONTROL_BAR; ++i)
+            {
+                uint32 spellId = i < CREATURE_MAX_SPELLS ? creature->m_temlate_spells[i] : 0;
+                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+                if (!spellInfo)
+                    continue;
+
+                if (!spellInfo->IsPowerActive(0))
+                    continue;
+
+                SpellPowerEntry power = spellInfo->GetPowerInfo(0);
+                powerType = (Powers)power.powerType;
+            }
+            _me->setPowerType(powerType);
+            _me->SetMaxPower(powerType, _me->GetCreatePowers(powerType));
+            _me->SetPower(powerType, _me->GetCreatePowers(powerType));
         }
     }
 
@@ -550,7 +564,9 @@ void Vehicle::RemovePassenger(Unit* unit)
         return;
 
     SeatMap::iterator seat = GetSeatIteratorForPassenger(unit);
-    ASSERT(seat != Seats.end());
+    //ASSERT(seat != Seats.end());
+    if (seat == Seats.end())
+        return;
 
     sLog->outDebug(LOG_FILTER_VEHICLES, "Unit %s exit vehicle entry %u id %u dbguid %u seat %d", 
         unit->GetName(), _me->GetEntry(), _vehicleInfo->m_ID, _me->GetGUIDLow(), (int32)seat->first);
@@ -846,8 +862,12 @@ VehicleJoinEvent::~VehicleJoinEvent()
 
 bool VehicleJoinEvent::Execute(uint64, uint32)
 {
-    ASSERT(Passenger->IsInWorld());
-    ASSERT(Target && Target->GetBase()->IsInWorld());
+    //ASSERT(Passenger->IsInWorld());
+    if (!Passenger->IsInWorld())
+        return false;
+    //ASSERT(Target && Target->GetBase()->IsInWorld());
+    if (!Target || !Target->GetBase()->IsInWorld())
+        return false;
     ASSERT(Target->GetRecAura() || Target->GetBase()->HasAuraTypeWithCaster(SPELL_AURA_CONTROL_VEHICLE, Passenger->GetGUID()));
 
     Target->RemovePendingEventsForSeat(Seat->first);
