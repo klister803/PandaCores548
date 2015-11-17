@@ -78,31 +78,7 @@ void Vehicle::Install()
     if (Creature* creature = _me->ToCreature())
     {
         if(PowerDisplayEntry const* powerDisplay = sPowerDisplayStore.LookupEntry(_vehicleInfo->m_powerDisplay))
-        {
             _me->setPowerType(Powers(powerDisplay->PowerType));
-            _me->SetMaxPower(Powers(powerDisplay->PowerType), _me->GetCreatePowers(Powers(powerDisplay->PowerType)));
-            _me->SetPower(Powers(powerDisplay->PowerType), _me->GetCreatePowers(Powers(powerDisplay->PowerType)));
-        }
-        else
-        {
-            Powers powerType = POWER_ENERGY;
-            for (uint32 i = 0; i < MAX_SPELL_CONTROL_BAR; ++i)
-            {
-                uint32 spellId = i < CREATURE_MAX_SPELLS ? creature->m_temlate_spells[i] : 0;
-                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-                if (!spellInfo)
-                    continue;
-
-                if (!spellInfo->IsPowerActive(0))
-                    continue;
-
-                SpellPowerEntry power = spellInfo->GetPowerInfo(0);
-                powerType = (Powers)power.powerType;
-            }
-            _me->setPowerType(powerType);
-            _me->SetMaxPower(powerType, _me->GetCreatePowers(powerType));
-            _me->SetPower(powerType, _me->GetCreatePowers(powerType));
-        }
     }
 
     _status = STATUS_INSTALLED;
