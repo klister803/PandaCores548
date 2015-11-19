@@ -379,9 +379,29 @@ class boss_sha_of_pride : public CreatureScript
                             break;
                         }
                         case EVENT_SPELL_GIFT_OF_THE_TITANS:
-                            DoCast(me, SPELL_GIFT_OF_THE_TITANS);
+                        {
+                            std::list<Player*> pllist;
+                            pllist.clear();
+                            GetPlayerListInGrid(pllist, me, 150.0f);
+                            uint8 count = 0;
+                            uint8 maxcount = 0;
+                            maxcount = me->GetMap()->Is25ManRaid() ? 8 : 3;
+                            if (!pllist.empty())
+                            {
+                                for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                                {
+                                    if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && !(*itr)->HasAura(SPELL_GIFT_OF_THE_TITANS))
+                                    {
+                                        count++;
+                                        (*itr)->AddAura(SPELL_GIFT_OF_THE_TITANS, *itr);
+                                    }
+                                    if (count >= maxcount)
+                                        break;
+                                }
+                            }
                             events.RescheduleEvent(EVENT_SPELL_GIFT_OF_THE_TITANS, 25000, 0, PHASE_BATTLE);
                             break;
+                        }
                         case EVENT_RIFT_OF_CORRUPTION:
                         {
                             float x, y, z;
@@ -1317,7 +1337,7 @@ class spell_sha_of_pride_projection : public SpellScriptLoader
         }
 };
 
-class _ValidTargetCheck
+/*class _ValidTargetCheck
 {
 public:
     bool operator()(WorldObject* unit)
@@ -1361,7 +1381,7 @@ public:
     {
         return new spell_sha_of_pride_gift_of_titans_SpellScript();
     }
-};
+};*/
 
 class ValidTargetCheck
 {
@@ -1530,7 +1550,7 @@ void AddSC_boss_sha_of_pride()
     new spell_sha_of_pride_imprison();
     new spell_sha_of_pride_self_reflection();
     new spell_sha_of_pride_projection();
-    new spell_sha_of_pride_gift_of_titans();
+    //new spell_sha_of_pride_gift_of_titans();
     new spell_sha_of_pride_gift_of_titans_dummy();
     new spell_sha_of_pride_mark_of_arrogance();
     new spell_sha_of_pride_overcome();
