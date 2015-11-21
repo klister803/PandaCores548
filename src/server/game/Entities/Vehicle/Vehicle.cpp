@@ -844,7 +844,9 @@ bool VehicleJoinEvent::Execute(uint64, uint32)
     //ASSERT(Target && Target->GetBase()->IsInWorld());
     if (!Target || !Target->GetBase()->IsInWorld())
         return false;
-    ASSERT(Target->GetRecAura() || Target->GetBase()->HasAuraTypeWithCaster(SPELL_AURA_CONTROL_VEHICLE, Passenger->GetGUID()));
+    //ASSERT(Target->GetRecAura() || Target->GetBase()->HasAuraTypeWithCaster(SPELL_AURA_CONTROL_VEHICLE, Passenger->GetGUID()));
+    if(!Target->GetRecAura() && !Target->GetBase()->HasAuraTypeWithCaster(SPELL_AURA_CONTROL_VEHICLE, Passenger->GetGUID()))
+        return false;
 
     Target->RemovePendingEventsForSeat(Seat->first);
     Target->RemovePendingEventsForPassenger(Passenger);
