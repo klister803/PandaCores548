@@ -36,7 +36,9 @@ enum LfgRoles
     PLAYER_ROLE_LEADER                           = 0x01,
     PLAYER_ROLE_TANK                             = 0x02,
     PLAYER_ROLE_HEALER                           = 0x04,
-    PLAYER_ROLE_DAMAGE                           = 0x08
+    PLAYER_ROLE_DAMAGE                           = 0x08,
+
+    ROLE_FULL_MASK = PLAYER_ROLE_LEADER | PLAYER_ROLE_TANK | PLAYER_ROLE_HEALER | PLAYER_ROLE_DAMAGE,
 };
 
 enum LfgUpdateType

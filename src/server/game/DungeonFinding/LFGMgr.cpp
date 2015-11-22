@@ -927,22 +927,24 @@ bool LFGMgr::CheckGroupRoles(LfgRolesMap& groles, LfgRoleData const& roleData, b
 
     for (LfgRolesMap::iterator it = groles.begin(); it != groles.end(); ++it)
     {
-        if (it->second == PLAYER_ROLE_NONE)
+        if (it->second == PLAYER_ROLE_NONE || (it->second & ROLE_FULL_MASK) == 0)
             return false;
 
         if (it->second & PLAYER_ROLE_TANK)
         {
-            if (it->second != PLAYER_ROLE_TANK)
+            if (it->second != PLAYER_ROLE_TANK)                 // if not one role taken - check enother
             {
-                it->second -= PLAYER_ROLE_TANK;
-                if (CheckGroupRoles(groles, roleData, false))
-                    return true;
-                it->second += PLAYER_ROLE_TANK;
+                it->second -= PLAYER_ROLE_TANK;                 // exclude role for recurse check
+                if (CheckGroupRoles(groles, roleData, false))   // check role with it
+                    return true;                                // if plr not tank group can be completed
+                it->second += PLAYER_ROLE_TANK;                 // return back excluded role.
             }
-            else if (tank >= roleData.tanksNeeded)
+            else if (tank >= roleData.tanksNeeded)              // if set one role check needed count for tank
                 return false;
-            else
-                ++tank;
+            //else                                              // no. should alway incrase counter. not only when plr set one role
+                                                                //- but when he set 2-3 roles but only one of them mach.
+                                                                //- when no need increase - where is return :)
+                ++tank;                                         // set role.
         }
 
         if (it->second & PLAYER_ROLE_DAMAGE)
@@ -956,7 +958,7 @@ bool LFGMgr::CheckGroupRoles(LfgRolesMap& groles, LfgRoleData const& roleData, b
             }
             else if (damage >= roleData.dpsNeeded)
                 return false;
-            else
+            //else
                 ++damage;
         }
 
@@ -971,7 +973,7 @@ bool LFGMgr::CheckGroupRoles(LfgRolesMap& groles, LfgRoleData const& roleData, b
             }
             else if (healer >= roleData.healerNeeded)
                 return false;
-            else
+            //else
                 ++healer;
         }
     }
