@@ -351,6 +351,7 @@ public:
             std::list<Creature*> sumlist;
             sumlist.clear();
             GetCreatureListWithEntryInGrid(sumlist, me, NPC_AMBER_PARASITE, 150.0f);
+            GetCreatureListWithEntryInGrid(sumlist, me, NPC_HUNGRY_KUNCHONG, 150.0f);
             if (!sumlist.empty())
                 for (std::list<Creature*>::const_iterator itr = sumlist.begin(); itr != sumlist.end(); itr++)
                     (*itr)->DespawnOrUnsummon();
@@ -413,8 +414,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
             InstanceScript* instance;
             SummonList summons;
             EventMap events;
-            uint64 vGuid;
-            uint64 jtGuid;
+            uint64 vGuid, jtGuid, dfatargetGuid;
             uint32 checkklaxxi, healcooldown;
             uint8 flashcount;
             bool healready;
@@ -431,6 +431,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 vGuid = 0;
                 jtGuid = 0;
+                dfatargetGuid = 0;
                 checkklaxxi = 0;
                 healcooldown = 0;
                 flashcount = 0;
@@ -530,8 +531,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     break;
                 case ACTION_RE_ATTACK_KILRUK:
                     me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    DoZoneInCombat(me, 150.0f);
+                    me->ReAttackWithZone(vGuid);
                     events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 34000);
                     break;
                 case ACTION_MOVE_TO_CENTER:
@@ -568,7 +568,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         events.ScheduleEvent(EVENT_FLASH, 10000);
                         break;
                     case 4:
-                        if (Player* pl = me->GetPlayer(*me, GetTargetGuid()))
+                        if (Player* pl = me->GetPlayer(*me, dfatargetGuid))
                             DoCast(pl, SPELL_DEATH_FROM_ABOVE_SUM);
                         break;
                     }
@@ -594,7 +594,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
 
             void JustDied(Unit* killer)
             {
-                if (killer->ToPlayer() && instance)
+                if (killer != me && instance)
                 {
                     if (instance->GetData(DATA_SEND_KLAXXI_DIE_COUNT) < 8)
                     {
@@ -831,10 +831,18 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         break;
                     //Kilruk
                     case EVENT_DEATH_FROM_ABOVE:
-                        events.DelayEvents(6000);
-                        me->SetAttackStop(true);
-                        me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
-                        me->GetMotionMaster()->MoveJump(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 10.0f, 15.0f, 15.0f, 4);
+                        if (Player* pl = me->GetPlayer(*me, GetTargetGuid()))
+                        {
+                            if (me->getVictim())
+                                vGuid = me->getVictim()->GetGUID();
+                            dfatargetGuid = pl->GetGUID();
+                            events.DelayEvents(6000);
+                            me->SetAttackStop(true);
+                            me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
+                            me->GetMotionMaster()->MoveJump(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 10.0f, 15.0f, 15.0f, 4);
+                        }
+                        else
+                            events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 34000);
                         break;
                     case EVENT_DEATH_FROM_ABOVE_START:
                         if (Creature* jt = me->GetCreature(*me, jtGuid))

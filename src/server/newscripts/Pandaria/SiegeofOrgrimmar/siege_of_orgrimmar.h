@@ -302,11 +302,27 @@ enum eCreatures
     NPC_MONTAK                      = 71763, //GO_YAUNGOLIAN_JAIL
     NPC_WATERSPEAKER_GORAI          = 71749, //GO_JINUI_JAIL
 
-                                             //Seat Id
+    //Siegecrafter Blackfuse                 //Seat Id
     NPC_BLACKFUSE                   = 72694, //1
     NPC_BLACKFUSE_MAUNT             = 71504,
     NPC_BLACKFUSE_SAWBLADE          = 71532, //0
+    //Triggers
+    NPC_LASER_ARRAY                 = 71910,
+    NPC_LASER_TARGET                = 71740,
+    NPC_SHOCKWAVE_MISSILE           = 72710,
+    //Summons
     NPC_AUTOMATED_SHREDDER          = 71591,
+    //Left Counveyer(offline)
+    NPC_DISASSEMBLED_CRAWLER_MINE   = 71790,
+    NPC_DEACTIVATED_LASER_TURRET    = 71751,
+    NPC_DEACTIVATED_ELECTROMAGNET   = 71694,
+    NPC_DEACTIVATED_MISSILE_TURRET  = 71606,
+    //Right Counveyer(online)
+    NPC_BLACKFUSE_CRAWLER_MINE      = 71788,
+    NPC_ACTIVATED_LASER_TURRET      = 71752,
+    NPC_ACTIVATED_ELECTROMAGNET     = 71696,
+    NPC_ACTIVATED_MISSILE_TURRET    = 71638,
+    //
 
     //Paragons of the Klaxxi                 
     NPC_KILRUK                      = 71161, //6
@@ -325,6 +341,7 @@ enum eCreatures
     NPC_KLAXXI_CONTROLLER           = 71592,
     NPC_AMBER_PARASITE              = 71578,
     NPC_AMBER_BOMB                  = 71691,
+    NPC_HUNGRY_KUNCHONG             = 71420,
     //
 
     NPC_GARROSH                     = 71865,
