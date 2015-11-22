@@ -44,9 +44,9 @@ AccountOpResult CreateAccount(std::string username, std::string password)
 
     LoginDatabase.Execute(stmt);
 
-    stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_REALM_CHARACTERS_INIT);
+    //stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_REALM_CHARACTERS_INIT);
 
-    LoginDatabase.Execute(stmt);
+    //LoginDatabase.Execute(stmt);
 
     return AOR_OK;                                          // everything's fine
 }

@@ -11468,7 +11468,7 @@ void Unit::ModifyExcludeCasterAuraSpell(uint32 auraId, bool apply)
             {
                 SpellInfo const* spellProto = sSpellMgr->GetSpellInfo(*itr);
 
-                if (spellProto->Id == auraId)
+                if (!spellProto || spellProto->Id == auraId)
                     continue;
 
                 if (spellProto->ExcludeCasterAuraSpell == auraId && spellProto->IsPassive())
