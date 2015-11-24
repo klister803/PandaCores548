@@ -2025,7 +2025,11 @@ void Unit::CalcAbsorbResist(Unit* victim, SpellSchoolMask schoolMask, DamageEffe
         AuraApplication const* aurApp = absorbAurEff->GetBase()->GetApplicationOfTarget(victim->GetGUID());
         if (!aurApp)
             continue;
-        if (!(absorbAurEff->GetMiscValue() & schoolMask))
+
+        uint8 _mask = schoolMask;
+        _mask &= ~absorbAurEff->GetMiscValue();
+
+        if (_mask != 0)
             continue;
 
         // get amount which can be still absorbed by the aura
