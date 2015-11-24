@@ -3,7 +3,7 @@ UPDATE `gameobject_template` SET `data1` = `entry` WHERE `entry` IN (204282, 207
 
 DELETE FROM `gameobject_loot_template` WHERE `entry` IN
 (202655, 203071, 203078, 204282, 206836, 207187, 207188, 207189, 207190, 211163, 211174, 218950);
-INSERT INTO `gameobject_loot_template` VALUES
+INSERT INTO `gameobject_loot_template` (`entry`, `item`, `chanceorquestchance`, `lootmode`, `groupid`, `mincountOrRef`, `maxcount`) VALUES
 -- troll
 (202655, 63128, 5, 1, 0, 1, 1),
 (202655, -385, 100, 1, 0, 5, 9),
