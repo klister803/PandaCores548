@@ -1100,7 +1100,7 @@ class spell_pal_stay_of_execution : public SpellScriptLoader
                     amount = int32((caster->GetSpellPowerDamage(SPELL_SCHOOL_MASK_HOLY) * GetSpellInfo()->Effects[EFFECT_1].BasePoints / 1000 + 26.72716306 * amount) / 20);
             }
 
-            void HandleTick(AuraEffect const* aurEff, int32& amount, Unit* /*target*/)
+            void HandleTick(AuraEffect const* aurEff, int32& amount, Unit* /*target*/, bool /*crit*/)
             {
                 if(aurEff->GetTotalTicks() == aurEff->GetTickNumber())
                     amount *= 9;
@@ -1165,7 +1165,7 @@ class spell_pal_execution_sentence_damage : public SpellScriptLoader
                     amount = int32((caster->GetSpellPowerDamage(SPELL_SCHOOL_MASK_HOLY) * GetSpellInfo()->Effects[EFFECT_1].BasePoints / 1000 + 26.72716306 * amount) / 20);
             }
 
-            void HandleTick(AuraEffect const* aurEff, int32& amount, Unit* /*target*/)
+            void HandleTick(AuraEffect const* aurEff, int32& amount, Unit* /*target*/, bool /*crit*/)
             {
                 if(aurEff->GetTotalTicks() == aurEff->GetTickNumber())
                     amount *= 9;

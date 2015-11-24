@@ -17777,10 +17777,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         if (Aura* aura = GetAura(53257))
             aura->ModStackAmount(-1);
 
-    // Hack Fix Immolate - Critical strikes generate burning embers
-    if (GetTypeId() == TYPEID_PLAYER && procSpell && (procSpell->Id == 348 || procSpell->Id == 108686) && procExtra & PROC_EX_CRITICAL_HIT)
-        ModifyPower(POWER_BURNING_EMBERS, 1);
-
     // Hack Rain of Fire - Has a chance to generate burning embers
     if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 42223)
         if (roll_chance_i(30))

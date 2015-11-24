@@ -1197,6 +1197,7 @@ class spell_warl_shadowburn : public SpellScriptLoader
 // Called By : Incinerate - 29722
 // Conflagrate - 17962
 // Burning Embers generate
+// 114654, 108685
 class spell_warl_burning_embers : public SpellScriptLoader
 {
     public:
@@ -1206,10 +1207,9 @@ class spell_warl_burning_embers : public SpellScriptLoader
         {
             PrepareSpellScript(spell_warl_burning_embers_SpellScript);
 
-            void HandleAfterHit()
+            void HandleOnEffectHitTarget(SpellEffIndex /*effIndex*/)
             {
                 if (Player* _player = GetCaster()->ToPlayer())
-                {
                     if (Unit* target = GetHitUnit())
                     {
                         if (GetSpell()->IsCritForTarget(target))
@@ -1217,12 +1217,11 @@ class spell_warl_burning_embers : public SpellScriptLoader
                         else
                             _player->ModifyPower(POWER_BURNING_EMBERS, 1);
                     }
-                }
             }
 
             void Register()
             {
-                AfterHit += SpellHitFn(spell_warl_burning_embers_SpellScript::HandleAfterHit);
+                OnEffectHitTarget += SpellEffectFn(spell_warl_burning_embers_SpellScript::HandleOnEffectHitTarget, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
             }
         };
 
@@ -1230,6 +1229,60 @@ class spell_warl_burning_embers : public SpellScriptLoader
         {
             return new spell_warl_burning_embers_SpellScript();
         }
+};
+
+class spell_warl_burning_embers2 : public SpellScriptLoader
+{
+public:
+    spell_warl_burning_embers2() : SpellScriptLoader("spell_warl_burning_embers2") { }
+
+    class spell_warl_burning_embers2_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_warl_burning_embers2_AuraScript);
+
+        void HandleTick(AuraEffect const* aurEff, int32& amount, Unit* target, bool crit)
+        {
+            if (Unit* caster = GetCaster())
+                if (Player* plr = caster->ToPlayer())
+                    if (target)
+                        if (crit)
+                            plr->ModifyPower(POWER_BURNING_EMBERS, 1);
+        }
+
+        void Register()
+        {
+            DoEffectChangeTickDamage += AuraEffectChangeTickDamageFn(spell_warl_burning_embers2_AuraScript::HandleTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+        }
+    };
+
+    class spell_warl_burning_embers2_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_warl_burning_embers2_SpellScript);
+
+        void HandleAfterHit()
+        {
+            if (Unit* caster = GetCaster())
+                if (Player* _player = caster->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (GetSpell()->IsCritForTarget(target))
+                            _player->ModifyPower(POWER_BURNING_EMBERS, 1);
+        }
+
+        void Register()
+        {
+            AfterHit += SpellHitFn(spell_warl_burning_embers2_SpellScript::HandleAfterHit);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_warl_burning_embers2_AuraScript();
+    }
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_warl_burning_embers2_SpellScript();
+    }
 };
 
 // Fel Flame - 77799
@@ -2074,7 +2127,7 @@ class spell_warl_corruption : public SpellScriptLoader
         {
             PrepareAuraScript(spell_warl_corruption_AuraScript);
 
-            void HandleTick(AuraEffect const* aurEff, int32& /*amount*/, Unit* /*target*/)
+            void HandleTick(AuraEffect const* aurEff, int32& /*amount*/, Unit* /*target*/, bool /*crit*/)
             {
                 if (GetCaster())
                     GetCaster()->EnergizeBySpell(GetCaster(), aurEff->GetSpellInfo()->Id, 4, POWER_DEMONIC_FURY);
@@ -2657,44 +2710,6 @@ class spell_warl_incinerate : public SpellScriptLoader
         }
 };
 
-// Conflagrate (Fire and Brimstone) - 108685 and Incinerate (Fire and Brimstone) - 114654
-class spell_warl_burning_embers_aoe : public SpellScriptLoader
-{
-    public:
-        spell_warl_burning_embers_aoe() : SpellScriptLoader("spell_warl_burning_embers_aoe") { }
-
-        class spell_warl_burning_embers_aoe_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warl_burning_embers_aoe_SpellScript);
-
-            void Damage(SpellEffIndex /*effIndex*/)
-            {
-                if (Unit* unitTarget = GetHitUnit())
-                    GetSpell()->AddEffectTarget(unitTarget->GetGUID());
-            }
-
-            void HandleAfterCast()
-            {
-                if(GetSpell()->GetEffectTargets().empty())
-                    return;
-
-                if (Unit* caster = GetCaster())
-                    caster->ModifyPower(POWER_BURNING_EMBERS, 1);
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_warl_burning_embers_aoe_SpellScript::Damage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-                AfterCast += SpellCastFn(spell_warl_burning_embers_aoe_SpellScript::HandleAfterCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warl_burning_embers_aoe_SpellScript();
-        }
-};
-
 // 115236 - Void Shield (Special Ability)
 class spell_warl_void_shield : public SpellScriptLoader
 {
@@ -2843,7 +2858,7 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_seduction();
     new spell_warl_immolate();
     new spell_warl_incinerate();
-    new spell_warl_burning_embers_aoe();
     new spell_warl_void_shield();
     new spell_warl_void_shield_damage();
+    new spell_warl_burning_embers2();
 }

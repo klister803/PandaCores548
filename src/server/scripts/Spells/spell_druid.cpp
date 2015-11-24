@@ -2673,7 +2673,7 @@ class spell_druid_rejuvenation : public SpellScriptLoader
                 }
             }
 
-            void HandleTick(AuraEffect const* /*aurEff*/, int32& amount, Unit* target)
+            void HandleTick(AuraEffect const* /*aurEff*/, int32& amount, Unit* target, bool /*crit*/)
             {
                 Unit* caster = GetCaster();
                 if(!caster || !target)

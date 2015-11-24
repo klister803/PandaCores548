@@ -936,9 +936,9 @@ AuraScript::EffectChangeTickDamageHandler::EffectChangeTickDamageHandler(AuraEff
     pEffectHandlerScript = _pEffectHandlerScript;
 }
 
-void AuraScript::EffectChangeTickDamageHandler::Call(AuraScript* auraScript, AuraEffect const* aurEff, int32& amount, Unit* target)
+void AuraScript::EffectChangeTickDamageHandler::Call(AuraScript* auraScript, AuraEffect const* aurEff, int32& amount, Unit* target, bool crit)
 {
-    (auraScript->*pEffectHandlerScript)(aurEff, amount, target);
+    (auraScript->*pEffectHandlerScript)(aurEff, amount, target, crit);
 }
 
 AuraScript::EffectCalcPeriodicHandler::EffectCalcPeriodicHandler(AuraEffectCalcPeriodicFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName)

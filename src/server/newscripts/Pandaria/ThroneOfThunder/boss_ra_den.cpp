@@ -647,7 +647,7 @@ class spell_murderous_strike : public SpellScriptLoader
         {
             PrepareAuraScript(spell_murderous_strike_AuraScript);
             
-            void HandleTick(AuraEffect const* aurEff, int32 &amount, Unit* target)
+            void HandleTick(AuraEffect const* aurEff, int32 &amount, Unit* target, bool /*crit*/)
             {
                 if (GetCaster() && GetCaster()->ToCreature())
                     amount = GetCaster()->ToCreature()->AI()->GetData(DATA_SEND_DMG);

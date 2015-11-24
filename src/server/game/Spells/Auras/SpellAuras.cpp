@@ -2992,7 +2992,7 @@ void Aura::CallScriptCalcMaxDurationHandlers(int32& maxDuration)
     CalculateDurationFromDummy(maxDuration);
 }
 
-void Aura::CallScriptEffectChangeTickDamageHandlers(AuraEffect const* aurEff, int32 & amount, Unit* target)
+void Aura::CallScriptEffectChangeTickDamageHandlers(AuraEffect const* aurEff, int32 & amount, Unit* target, bool crit)
 {
     for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
@@ -3001,7 +3001,7 @@ void Aura::CallScriptEffectChangeTickDamageHandlers(AuraEffect const* aurEff, in
         for (; effItr != effEndItr; ++effItr)
         {
             if ((*effItr).IsEffectAffected(m_spellInfo, aurEff->GetEffIndex()))
-                (*effItr).Call(*scritr, aurEff, amount, target);
+                (*effItr).Call(*scritr, aurEff, amount, target, crit);
         }
         (*scritr)->_FinishScriptCall();
     }
