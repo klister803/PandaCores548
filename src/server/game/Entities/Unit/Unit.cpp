@@ -12121,7 +12121,7 @@ void Unit::RemoveAllControlled()
             else if (target->GetOwnerGUID() == GetGUID() && target->isSummon())
                 target->ToTempSummon()->UnSummon();
         }
-        else if (target->isSummon())
+        else if (target->ToTempSummon())
             target->ToTempSummon()->UnSummon();
         else
             sLog->outError(LOG_FILTER_UNITS, "Unit %u is trying to release unit %u which is neither charmed nor owned by it", GetEntry(), target->GetEntry());
