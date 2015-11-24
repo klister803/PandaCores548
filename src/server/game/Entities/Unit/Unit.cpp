@@ -12112,11 +12112,16 @@ void Unit::RemoveAllControlled()
 
     while (!m_Controlled.empty())
     {
-        Unit* target = *m_Controlled.begin();
+        Unit *target = *m_Controlled.begin();
         m_Controlled.erase(m_Controlled.begin());
-        if (target->GetCharmerGUID() == GetGUID())
-            target->RemoveCharmAuras();
-        else if (target->GetOwnerGUID() == GetGUID() && target->isSummon())
+        if (target->m_objectTypeId != TYPEID_OBJECT)
+        {
+            if (target->GetCharmerGUID() == GetGUID())
+                target->RemoveCharmAuras();
+            else if (target->GetOwnerGUID() == GetGUID() && target->isSummon())
+                target->ToTempSummon()->UnSummon();
+        }
+        else if (target->isSummon())
             target->ToTempSummon()->UnSummon();
         else
             sLog->outError(LOG_FILTER_UNITS, "Unit %u is trying to release unit %u which is neither charmed nor owned by it", GetEntry(), target->GetEntry());

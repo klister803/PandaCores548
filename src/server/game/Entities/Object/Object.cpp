@@ -247,8 +247,12 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) c
             updateType = UPDATETYPE_CREATE_OBJECT2;
             break;
         case HIGHGUID_UNIT:
-            if (ToUnit()->ToTempSummon() && IS_PLAYER_GUID(ToUnit()->ToTempSummon()->GetSummonerGUID()))
-                updateType = UPDATETYPE_CREATE_OBJECT2;
+            if (auto unit = ToUnit())
+            {
+                if (auto summon = unit->ToTempSummon())
+                    if (IS_PLAYER_GUID(summon->GetSummonerGUID()))
+                        updateType = UPDATETYPE_CREATE_OBJECT2;
+            }
             break;
         case HIGHGUID_GAMEOBJECT:
             if (IS_PLAYER_GUID(ToGameObject()->GetOwnerGUID()))
