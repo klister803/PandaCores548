@@ -1,131 +1,112 @@
+#include <mutex>
+#include <condition_variable>
+
 #include "MapUpdater.h"
-#include "DelayExecutor.h"
 #include "Map.h"
-#include "DatabaseEnv.h"
 
-#include <ace/Guard_T.h>
-#include <ace/Method_Request.h>
-
-class WDBThreadStartReq1 : public ACE_Method_Request
+/// Constructor
+MapUpdaterTask::MapUpdaterTask(MapUpdater *updater) : _updater(updater)
 {
-    public:
 
-        WDBThreadStartReq1()
-        {
-        }
+}
 
-        virtual int call()
-        {
-            return 0;
-        }
-};
-
-class WDBThreadEndReq1 : public ACE_Method_Request
+/// Notify that the task is done
+void MapUpdaterTask::UpdateFinished()
 {
-    public:
+    if (_updater != nullptr)
+        _updater->update_finished();
+}
 
-        WDBThreadEndReq1()
-        {
-        }
 
-        virtual int call()
-        {
-            return 0;
-        }
-};
-
-class MapUpdateRequest : public ACE_Method_Request
+class MapUpdateRequest : MapUpdaterTask
 {
     private:
-
-        Map& m_map;
-        MapUpdater& m_updater;
-        ACE_UINT32 m_diff;
+        Map &_map;
+        uint32 _diff;
 
     public:
-
-        MapUpdateRequest(Map& m, MapUpdater& u, ACE_UINT32 d)
-            : m_map(m), m_updater(u), m_diff(d)
+        MapUpdateRequest(Map &map, MapUpdater &updater, uint32 diff) :
+            MapUpdaterTask(&updater), _map(map), _diff(diff)
         {
         }
 
-        virtual int call()
+        void call() override
         {
-            uint32 diff = getMSTime();
-            m_map.Update (m_diff);
-            diff = getMSTime() - diff;
-            if (diff > 150)
-                sLog->outDiff("Map diff: %u. ID %i Players online: %u.", diff, m_map.GetId(), sWorld->GetActiveSessionCount());
-            m_updater.update_finished();
-            return 0;
+            _map.Update(_diff);
+            UpdateFinished();
         }
 };
 
-MapUpdater::MapUpdater():
-m_executor(), m_mutex(), m_condition(m_mutex), pending_requests(0)
+void MapUpdater::activate(size_t num_threads)
 {
+    for (size_t i = 0; i < num_threads; ++i)
+    {
+        _workerThreads.push_back(std::thread(&MapUpdater::WorkerThread, this));
+    }
 }
 
-MapUpdater::~MapUpdater()
+void MapUpdater::deactivate()
 {
-    deactivate();
-}
+    _cancelationToken = true;
 
-int MapUpdater::activate(size_t num_threads)
-{
-    return m_executor.start((int)num_threads, new WDBThreadStartReq1, new WDBThreadEndReq1);
-}
-
-int MapUpdater::deactivate()
-{
     wait();
 
-    return m_executor.deactivate();
-}
+    _queue.Cancel();
 
-int MapUpdater::wait()
-{
-    TRINITY_GUARD(ACE_Thread_Mutex, m_mutex);
-
-    while (pending_requests > 0)
-        m_condition.wait();
-
-    return 0;
-}
-
-int MapUpdater::schedule_update(Map& map, ACE_UINT32 diff)
-{
-    TRINITY_GUARD(ACE_Thread_Mutex, m_mutex);
-
-    ++pending_requests;
-
-    if (m_executor.execute(new MapUpdateRequest(map, *this, diff)) == -1)
+    for (auto &thread : _workerThreads)
     {
-        ACE_DEBUG((LM_ERROR, ACE_TEXT("(%t) \n"), ACE_TEXT("Failed to schedule Map Update")));
-
-        --pending_requests;
-        return -1;
+        thread.join();
     }
+}
 
-    return 0;
+void MapUpdater::wait()
+{
+    std::unique_lock<std::mutex> lock(_lock);
+
+    while (_pending_requests > 0)
+        _condition.wait(lock);
+
+    lock.unlock();
+}
+
+void MapUpdater::schedule_update(Map &map, uint32 diff)
+{
+    std::lock_guard<std::mutex> lock(_lock);
+    ++_pending_requests;
+    _queue.Push((MapUpdaterTask*)new MapUpdateRequest(map, *this, diff));
+}
+
+void MapUpdater::schedule_specific(MapUpdaterTask *request)
+{
+    std::lock_guard<std::mutex> lock(_lock);
+    ++_pending_requests;
+    _queue.Push(request);
 }
 
 bool MapUpdater::activated()
 {
-    return m_executor.activated();
+    return _workerThreads.size() > 0;
 }
 
 void MapUpdater::update_finished()
 {
-    TRINITY_GUARD(ACE_Thread_Mutex, m_mutex);
+    std::lock_guard<std::mutex> lock(_lock);
+    --_pending_requests;
+    _condition.notify_all();
+}
 
-    if (pending_requests == 0)
+void MapUpdater::WorkerThread()
+{
+    while (true)
     {
-        ACE_ERROR((LM_ERROR, ACE_TEXT("(%t)\n"), ACE_TEXT("MapUpdater::update_finished BUG, report to devs")));
-        return;
+        MapUpdaterTask *request = nullptr;
+
+        _queue.WaitAndPop(request);
+
+        if (_cancelationToken)
+            return;
+
+        request->call();
+        delete request;
     }
-
-    --pending_requests;
-
-    m_condition.broadcast();
 }
