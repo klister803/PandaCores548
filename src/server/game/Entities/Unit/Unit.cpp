@@ -17176,7 +17176,9 @@ void Unit::RemoveFromWorld()
 
         ExitVehicle();  // Remove applied auras with SPELL_AURA_CONTROL_VEHICLE
         UnsummonAllTotems();
-        RemoveAllControlled();
+
+        if (!IsVehicle()) // should be remove in deathstate
+            RemoveAllControlled();
 
         if (!ToCreature())
             RemoveAreaAurasDueToLeaveWorld();
