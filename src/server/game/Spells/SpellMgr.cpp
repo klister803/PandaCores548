@@ -5212,6 +5212,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 142940: //Green
                     spellInfo->TargetAuraSpell = 142549;
                     break;
+                case 143265: //Launch
+                    spellInfo->Effects[1].Effect = 0;
+                    break;
 
                     
                 //World Bosses

@@ -60,6 +60,19 @@ uint32 removelist[29] =
 
 Position const Sha_of_pride_Norushe  = {797.357f, 880.5637f, 371.1606f, 1.786108f };
 
+//Active Weapon Point Positions(Blackfuse)
+Position spawnaweaponpos[2] =
+{
+    { 1922.07f, -5720.32f, -302.8854f },
+    { 1934.05f, -5740.43f, -302.8854f },
+};
+Position destapos[2] =
+{
+    { 1871.79f, -5645.60f, -302.8854f },
+    { 1887.84f, -5667.26f, -302.8854f },
+};
+
+
 DoorData const doorData[] =
 {
     {GO_IMMERSEUS_EX_DOOR,                   DATA_IMMERSEUS,              DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
@@ -85,6 +98,8 @@ public:
         std::map<uint32, uint64> easyGUIDconteiner;
         //count killed klaxxi
         uint8 klaxxidiecount;
+        //count weapons finish move
+        uint8 weaponsdone;
         //Misc
         uint32 TeamInInstance;
         uint32 _teamInInstance;
@@ -151,7 +166,10 @@ public:
         uint64 klaxxicontrollerGuid;
         uint64 thokGuid;
         std::vector<uint64> prisonerGuids;
+        std::vector<uint64> dweaponGuids;
+        std::vector<uint32> aweaponentry;
         uint64 bsGuid;
+        uint64 blackfuseGuid;
 
         EventMap Events;
 
@@ -175,6 +193,7 @@ public:
             LoadDoorData(doorData);
 
             klaxxidiecount = 0;
+            weaponsdone = 0;
             TeamInInstance = 0;
             _teamInInstance = 0;
             lingering_corruption_count = 0;
@@ -230,6 +249,9 @@ public:
             thokGuid                = 0;
             prisonerGuids.clear();
             bsGuid                  = 0;
+            dweaponGuids.clear();
+            aweaponentry.clear();
+            blackfuseGuid           = 0;
 
             onInitEnterState = false;
             STowerFull = false;
@@ -529,6 +551,16 @@ public:
                 case NPC_MONTAK:
                 case NPC_WATERSPEAKER_GORAI:
                     prisonerGuids.push_back(creature->GetGUID());
+                    break;
+                //BlackFuse
+                case NPC_BLACKFUSE_MAUNT:
+                    blackfuseGuid = creature->GetGUID();
+                    break;
+                case NPC_DISASSEMBLED_CRAWLER_MINE:
+                case NPC_DEACTIVATED_LASER_TURRET:
+                case NPC_DEACTIVATED_ELECTROMAGNET:
+                case NPC_DEACTIVATED_MISSILE_TURRET:
+                    dweaponGuids.push_back(creature->GetGUID());
                     break;
             }
         }
@@ -1111,6 +1143,20 @@ public:
                     HandleGameObject(klaxxientdoorGuid, true);
                     break;
                 }
+                break;
+            }
+            case DATA_BLACKFUSE:
+            {
+                switch (state)
+                {
+                case NOT_STARTED:
+                    weaponsdone = 0;
+                    break;
+                case IN_PROGRESS:
+                    break;
+                case DONE:
+                    break;
+                }
             }
             break;
             }
@@ -1339,6 +1385,66 @@ public:
                     if (Creature* klaxxi = instance->GetCreature(*itr))
                         if (klaxxi->isAlive())
                             klaxxi->CastSpell(klaxxi, 143483, true); //Paragons Purpose Heal
+                break;
+            case DATA_SAFE_WEAPONS:
+                if (!dweaponGuids.empty())
+                {
+                    uint32 entry = 0;
+                    for (std::vector<uint64>::const_iterator itr = dweaponGuids.begin(); itr != dweaponGuids.end(); ++itr)
+                    {
+                        if (Creature* dw = instance->GetCreature(*itr))
+                        {
+                            if (dw->isAlive())
+                            {
+                                dw->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                                switch (dw->GetEntry())
+                                {
+                                case NPC_DISASSEMBLED_CRAWLER_MINE:
+                                    entry = NPC_BLACKFUSE_CRAWLER_MINE;
+                                    break;
+                                case NPC_DEACTIVATED_LASER_TURRET:
+                                    entry = NPC_ACTIVATED_LASER_TURRET;
+                                    break;
+                                case NPC_DEACTIVATED_ELECTROMAGNET:
+                                    entry = NPC_ACTIVATED_ELECTROMAGNET;
+                                    break;
+                                case NPC_DEACTIVATED_MISSILE_TURRET:
+                                    entry = NPC_ACTIVATED_MISSILE_TURRET;
+                                    break;
+                                }
+                                aweaponentry.push_back(entry);
+                                entry = 0;
+                            }
+                        }
+                    }
+
+                    if (Creature* blackfuse = instance->GetCreature(blackfuseGuid))
+                        blackfuse->CastSpell(blackfuse, SPELL_PROTECTIVE_FRENZY, true);
+                }
+                break;
+            case DATA_D_WEAPON_IN_DEST_POINT:
+                weaponsdone++;
+                if (weaponsdone == 2) //done
+                {
+                    if (Creature* blackfuse = instance->GetCreature(blackfuseGuid))
+                    {
+                        for (uint8 n = 0; n < 2; ++n)
+                        {
+                            if (Creature* aw = blackfuse->SummonCreature(aweaponentry[n], spawnaweaponpos[n]))
+                            {
+                                aw->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                                aw->GetMotionMaster()->MoveCharge(destapos[n].GetPositionX(), destapos[n].GetPositionY(), destapos[n].GetPositionZ(), 5.0f, 1, false);
+                            }
+                        }
+                    }
+                    weaponsdone = 0;
+                }
+                else if (weaponsdone == 3) //enrage done
+                {
+                    weaponsdone = 0;
+                    if (Creature* blackfuse = instance->GetCreature(blackfuseGuid))
+                        blackfuse->CastSpell(blackfuse, SPELL_ENERGIZED_DEFENSIVE_MATRIX, true);
+                }
                 break;
             }
         }

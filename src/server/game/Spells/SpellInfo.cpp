@@ -1254,6 +1254,7 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 142938: //Orange
     case 142939: //Purple
     case 142940: //Green
+    case 143265: //Launch
         return Effects[effect];
     }
 
