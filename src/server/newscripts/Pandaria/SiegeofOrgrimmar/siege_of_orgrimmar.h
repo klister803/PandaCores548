@@ -54,6 +54,8 @@ enum eData
     DATA_BUFF_NEXT_KLAXXI,
     DATA_SEND_KLAXXI_DIE_COUNT,
     DATA_INTRO_NEXT_KLAXXI,
+    DATA_SAFE_WEAPONS,
+    DATA_D_WEAPON_IN_DEST_POINT,
 
     //Galakras
     DATA_GALAKRAS_PRE_EVENT,
@@ -520,6 +522,10 @@ enum esSpells
     SPELL_AIM_PLAYER                   = 143216,
     SPELL_MASTER_OF_AMBER              = 141854,
     SPELL_MASTER_OF_AMBER2             = 142616,
+
+    //Blackfuse
+    SPELL_PROTECTIVE_FRENZY            = 145365,
+    SPELL_ENERGIZED_DEFENSIVE_MATRIX   = 148990,
 };
 
 enum GalakrasEvent
