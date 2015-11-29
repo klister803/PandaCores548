@@ -499,6 +499,7 @@ m_absorb(0), m_resist(0), m_blocked(0), m_interupted(false), m_effect_targets(NU
     m_addpower = 0;
     m_addptype = -1;
 
+    m_itemEntry = 0;
     m_caster->GetPosition(&visualPos);
 }
 
@@ -3502,6 +3503,9 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
     else
         m_castItemGUID = 0;
 
+    if (m_CastItem && !m_itemEntry)
+        m_itemEntry = m_CastItem->GetEntry();
+
     if (triggeredByAura)
     {
         m_triggeredByAuraSpell  = triggeredByAura->GetSpellInfo();
@@ -5929,15 +5933,26 @@ void Spell::SendResurrectRequest(Player* target)
 
 void Spell::TakeCastItem()
 {
-    if (!m_CastItem || m_caster->GetTypeId() != TYPEID_PLAYER)
-        return;
-
     // not remove cast item at triggered spell (equipping, weapon damage, etc)
     if (_triggeredCastFlags & TRIGGERED_IGNORE_CAST_ITEM)
         return;
 
-    ItemTemplate const* proto = m_CastItem->GetTemplate();
+    // need find better way to handle this
+    // after item swap m_castItem will be null so it cause exploits
+    if (!m_CastItem && m_castItemGUID && m_itemEntry)
+    {
+        if (auto player = m_caster->ToPlayer())
+        {
+            auto count = 1;
+            player->DestroyItemCount(m_itemEntry, count, true);
+            return;
+        }
+    }
 
+    if (!m_CastItem || m_caster->GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    auto proto = m_CastItem->GetTemplate();
     if (!proto)
     {
         // This code is to avoid a crash
@@ -5986,6 +6001,7 @@ void Spell::TakeCastItem()
             m_targets.SetItemTarget(NULL);
 
         m_CastItem = NULL;
+        m_itemEntry = 0;
     }
 }
 
@@ -6414,6 +6430,7 @@ void Spell::TakeReagents()
             }
 
             m_CastItem = NULL;
+            m_itemEntry = 0;
         }
 
         // if GetItemTarget is also spell reagent

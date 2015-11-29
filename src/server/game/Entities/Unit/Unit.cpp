@@ -350,7 +350,7 @@ Unit::~Unit()
     ASSERT(!m_attacking);
     ASSERT(m_attackers.empty());
     ASSERT(m_sharedVision.empty());
-    ASSERT(m_Controlled.empty());
+    //ASSERT(m_Controlled.empty()); // @todo reimplement this
     ASSERT(m_appliedAuras.empty());
     ASSERT(m_ownedAuras.empty());
     ASSERT(m_removedAuras.empty());
@@ -4182,6 +4182,7 @@ void Unit::RemoveAura(AuraApplication * aurApp, AuraRemoveMode mode)
     // no need to remove
     if (aurApp->GetBase()->GetApplicationOfTarget(GetGUID()) != aurApp || aurApp->GetBase()->IsRemoved())
         return;
+
     uint32 spellId = aurApp->GetBase()->GetId();
 
     if (spellId == 51713 && mode != AURA_REMOVE_BY_EXPIRE)
@@ -4540,6 +4541,7 @@ void Unit::RemoveAreaAurasDueToLeaveWorld()
             Unit* target = aurApp->GetTarget();
             if (!target || target == this)
                 continue;
+
             target->RemoveAura(aurApp);
             // things linked on aura remove may apply new area aura - so start from the beginning
             iter = m_ownedAuras.begin();
@@ -12112,11 +12114,16 @@ void Unit::RemoveAllControlled()
 
     while (!m_Controlled.empty())
     {
-        Unit* target = *m_Controlled.begin();
+        Unit *target = *m_Controlled.begin();
         m_Controlled.erase(m_Controlled.begin());
-        if (target->GetCharmerGUID() == GetGUID())
-            target->RemoveCharmAuras();
-        else if (target->GetOwnerGUID() == GetGUID() && target->isSummon())
+        if (target->m_objectTypeId != TYPEID_OBJECT)
+        {
+            if (target->GetCharmerGUID() == GetGUID())
+                target->RemoveCharmAuras();
+            else if (target->GetOwnerGUID() == GetGUID() && target->isSummon())
+                target->ToTempSummon()->UnSummon();
+        }
+        else if (target->ToTempSummon() && target->IsInWorld())
             target->ToTempSummon()->UnSummon();
         else
             sLog->outError(LOG_FILTER_UNITS, "Unit %u is trying to release unit %u which is neither charmed nor owned by it", GetEntry(), target->GetEntry());
@@ -17169,9 +17176,11 @@ void Unit::RemoveFromWorld()
 
         ExitVehicle();  // Remove applied auras with SPELL_AURA_CONTROL_VEHICLE
         UnsummonAllTotems();
-        RemoveAllControlled();
 
-        if(!ToCreature())
+        if (!IsVehicle()) // should be remove in deathstate
+            RemoveAllControlled();
+
+        if (!ToCreature())
             RemoveAreaAurasDueToLeaveWorld();
 
         if (GetCharmerGUID())
