@@ -1076,6 +1076,9 @@ public:
                     for (std::vector<uint64>::const_iterator itr = klaxxiarenagateGuid.begin(); itr != klaxxiarenagateGuid.end(); itr++)
                         HandleGameObject(*itr, true);
 
+                    if (Creature* kc = instance->GetCreature(klaxxicontrollerGuid))
+                        kc->AI()->Reset();
+
                     if (Creature* ap = instance->GetCreature(amberpieceGuid))
                         ap->AI()->Reset();
                     break;
@@ -1424,7 +1427,7 @@ public:
                 break;
             case DATA_D_WEAPON_IN_DEST_POINT:
                 weaponsdone++;
-                if (weaponsdone == 2) //done
+                if (weaponsdone == 2 && !aweaponentry.empty()) //done
                 {
                     if (Creature* blackfuse = instance->GetCreature(blackfuseGuid))
                     {

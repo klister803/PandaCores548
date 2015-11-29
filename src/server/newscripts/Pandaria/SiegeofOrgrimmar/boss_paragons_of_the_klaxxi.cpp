@@ -340,11 +340,11 @@ public:
         {
             DespawnSummons();
             events.Reset();
-            if (instance->GetBossState(DATA_KLAXXI) != DONE)
-                instance->SetBossState(DATA_KLAXXI, NOT_STARTED);
         }
 
         void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
 
         void DespawnSummons()
         {
@@ -363,7 +363,6 @@ public:
             {
             case ACTION_KLAXXI_START:
                 instance->SetBossState(DATA_KLAXXI, IN_PROGRESS);
-                DoZoneInCombat(me, 150.0f);
                 events.ScheduleEvent(EVENT_START_KLAXXI, 5000);
                 break;
             case ACTION_KLAXXI_DONE:
@@ -378,9 +377,6 @@ public:
 
         void UpdateAI(uint32 diff)
         {
-            if (!UpdateVictim())
-                return;
-
             events.Update(diff);
 
             while (uint32 eventId = events.ExecuteEvent())
@@ -463,6 +459,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
 
             void EnterCombat(Unit* who)
             {
+                DoZoneInCombat(me, 300.0f);
                 switch (me->GetEntry())
                 {
                 case NPC_KILRUK:
@@ -540,6 +537,12 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 }
             }
 
+            void EnterEvadeMode()
+            {
+                if (instance->GetBossState(DATA_KLAXXI) != NOT_STARTED)
+                    instance->SetBossState(DATA_KLAXXI, NOT_STARTED);
+            }
+
             void MovementInform(uint32 type, uint32 pointId)
             {
                 switch (type)
@@ -549,13 +552,23 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     switch (pointId)
                     {
                     case 1:
-                        me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
-                        me->RemoveAurasDueToSpell(SPELL_READY_TO_FIGHT);
-                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                        if (me->GetEntry() != NPC_HISEK)
-                            me->SetReactState(REACT_AGGRESSIVE);
-                        DoZoneInCombat(me, 300.0f);
-                        instance->SetData(DATA_BUFF_NEXT_KLAXXI, 0);
+                        if (Player* pl = me->FindNearestPlayer(250.0f, true))
+                        {
+                            me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
+                            me->RemoveAurasDueToSpell(SPELL_READY_TO_FIGHT);
+                            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                            if (me->GetEntry() != NPC_HISEK)
+                                me->SetReactState(REACT_AGGRESSIVE);
+                            me->SetInCombatWith(pl);
+                            pl->SetInCombatWith(me);
+                            me->AddThreat(pl, 0.0f);
+                            instance->SetData(DATA_BUFF_NEXT_KLAXXI, 0);
+                        }
+                        else
+                        {
+                            if (instance->GetBossState(DATA_KLAXXI) != NOT_STARTED)
+                                instance->SetBossState(DATA_KLAXXI, NOT_STARTED);
+                        }
                         break;
                     case 2:
                         if (Creature* kc = me->GetCreature(*me, instance->GetData64(NPC_KLAXXI_CONTROLLER)))
@@ -735,6 +748,9 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
 
             void UpdateAI(uint32 diff)
             {
+                if (!UpdateVictim())
+                    return;
+
                 if (healcooldown)
                 {
                     if (healcooldown <= diff)
