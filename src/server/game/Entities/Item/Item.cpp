@@ -255,6 +255,7 @@ Item::Item() : ItemLevelBeforeCap(0)
     //m_battlePetData = NULL;
     m_lootGenerated = false;
     mb_in_trade = false;
+    m_in_use = false;
     m_lastPlayedTimeUpdate = time(NULL);
 
     m_refundRecipient = 0;

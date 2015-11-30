@@ -530,7 +530,6 @@ class Spell
 
         SpellInfo const* const m_spellInfo;
         Item* m_CastItem;
-        uint32 m_itemEntry;
         uint64 m_castItemGUID;
         uint8 m_cast_count;
         uint32 m_glyphIndex;
