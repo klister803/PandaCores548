@@ -539,6 +539,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
 
             void EnterEvadeMode()
             {
+                me->MonsterTextEmote("Evade, call from EnterEvadeMode", 0, true);
                 if (instance->GetBossState(DATA_KLAXXI) != NOT_STARTED)
                     instance->SetBossState(DATA_KLAXXI, NOT_STARTED);
             }
@@ -554,6 +555,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     case 1:
                         if (Player* pl = me->FindNearestPlayer(250.0f, true))
                         {
+                            me->MonsterTextEmote("Start attack", 0, true);
                             me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                             me->RemoveAurasDueToSpell(SPELL_READY_TO_FIGHT);
                             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -566,6 +568,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         }
                         else
                         {
+                            me->MonsterTextEmote("Evade, not found target", 0, true);
                             if (instance->GetBossState(DATA_KLAXXI) != NOT_STARTED)
                                 instance->SetBossState(DATA_KLAXXI, NOT_STARTED);
                         }
