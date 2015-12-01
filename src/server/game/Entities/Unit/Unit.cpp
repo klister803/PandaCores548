@@ -17777,11 +17777,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         if (Aura* aura = GetAura(53257))
             aura->ModStackAmount(-1);
 
-    // Hack Rain of Fire - Has a chance to generate burning embers
-    if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 42223)
-        if (roll_chance_i(30))
-            ModifyPower(POWER_BURNING_EMBERS, 1);
-
     Unit* actor = isVictim ? target : this;
     Unit* actionTarget = !isVictim ? target : this;
 
