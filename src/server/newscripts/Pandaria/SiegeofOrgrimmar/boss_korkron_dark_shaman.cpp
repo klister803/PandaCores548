@@ -354,8 +354,6 @@ public:
             DespawnAllSummons();
             if (killer != me)
                 instance->SetBossState(DATA_KORKRON_D_SHAMAN, DONE);
-            else
-                me->SetLootRecipient(NULL);
         }
         
         void UpdateAI(uint32 diff)

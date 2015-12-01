@@ -5193,6 +5193,12 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(13); //200yards
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
+                case 144094: //Sonic Resonations Hisek
+                    spellInfo->CastTimeMin = 0.7f;
+                    spellInfo->CastTimeMax = 0.7f;
+                    spellInfo->Effects[0].TargetA = 22;
+                    spellInfo->Effects[0].TargetB = 30;
+                    break;
                 //debuffs from klaxxi
                 case 142929:
                 case 142931:
@@ -5212,6 +5218,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 142940: //Green
                     spellInfo->TargetAuraSpell = 142549;
                     break;
+                //Siegecrafter Blackfuse
                 case 143265: //Launch
                     spellInfo->Effects[1].Effect = 0;
                     break;

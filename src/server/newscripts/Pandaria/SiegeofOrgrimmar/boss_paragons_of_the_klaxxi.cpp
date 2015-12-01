@@ -42,6 +42,7 @@ enum eSpells
     SPELL_FIRE                         = 142950,
     SPELL_RAPID_FIRE_DUMMY             = 143243,
     SPELL_RAPID_FIRE_DMG               = 135815,
+    SPELL_SONIC_RESONANCE_HISEK        = 144094,
 
     //Skeer
     SPELL_HEVER_OF_FOES                = 143273,
@@ -97,6 +98,7 @@ enum eSpells
     //Korven
     SPELL_SHIELD_BASH                  = 143974,
     SPELL_VICIOUS_ASSAULT              = 143980,
+    SPELL_VICIOUS_ASSAULT_DOT          = 143979,
     SPELL_ENCASE_IN_AMBER              = 142564,
     SPELL_AMBER_VISUAL                 = 144120,
     SPELL_AMBER_REGENERATION           = 142576,
@@ -2492,6 +2494,62 @@ public:
     }
 };
 
+//143980
+class spell_vicious_assaullt : public SpellScriptLoader
+{
+public:
+    spell_vicious_assaullt() : SpellScriptLoader("spell_vicious_assaullt") { }
+
+    class spell_vicious_assaullt_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_vicious_assaullt_SpellScript);
+
+        void HandleHit()
+        {
+            if (GetHitUnit() && !GetHitUnit()->HasAura(SPELL_VICIOUS_ASSAULT_DOT))
+                GetHitUnit()->AddAura(SPELL_VICIOUS_ASSAULT_DOT, GetHitUnit());
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_vicious_assaullt_SpellScript::HandleHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_vicious_assaullt_SpellScript();
+    }
+};
+
+//142950
+class spell_hisek_fire : public SpellScriptLoader
+{
+public:
+    spell_hisek_fire() : SpellScriptLoader("spell_hisek_fire") { }
+
+    class spell_hisek_fire_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_hisek_fire_SpellScript);
+
+        void HandleHit()
+        {
+            if (GetHitUnit())
+                GetHitUnit()->CastSpell(GetHitUnit(), SPELL_SONIC_RESONANCE_HISEK, true);
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_hisek_fire_SpellScript::HandleHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_hisek_fire_SpellScript();
+    }
+};
+
 void AddSC_boss_paragons_of_the_klaxxi()
 {
     new npc_amber_piece();
@@ -2529,4 +2587,6 @@ void AddSC_boss_paragons_of_the_klaxxi()
     new spell_genetic_modifications();
     new spell_store_kinetic_energy();
     new spell_landing_pose();
+    new spell_vicious_assaullt();
+    new spell_hisek_fire();
 }

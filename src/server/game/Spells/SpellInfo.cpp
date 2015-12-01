@@ -1243,6 +1243,7 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 143939: //Gouge
     case 143941: //Mutilate
     case 143974: //Shield Bash
+    case 144094: //Sonic Resonations Hisek
     //debuffs from klaxxi
     case 142929:
     case 142931:
@@ -1254,6 +1255,7 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 142938: //Orange
     case 142939: //Purple
     case 142940: //Green
+    //Siegecrafter Blackfuse
     case 143265: //Launch
         return Effects[effect];
     }
