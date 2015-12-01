@@ -14555,6 +14555,7 @@ void Player::DestroyItemCount(Item* pItem, uint32 &count, bool update)
     if (pItem->GetCount() <= count)
     {
         count -= pItem->GetCount();
+
         DestroyItem(pItem->GetBagSlot(), pItem->GetSlot(), update);
     }
     else
@@ -14754,13 +14755,9 @@ void Player::SwapItem(uint16 src, uint16 dst)
         return;
     }
 
-    // don't allow swap items used in spell cast
-    if (pSrcItem->IsInUse())
-        return;
-
-    if (pSrcItem->GetEntry() == 38186)
+    if(pSrcItem->GetEntry() == 38186)
         sLog->outDebug(LOG_FILTER_EFIR, "Player::SwapItem pSrcItem %u; count = %u playerGUID %u IsNotEmptyBag %u",
-        pSrcItem->GetEntry(), pSrcItem->GetCount(), GetGUID(), pSrcItem->IsNotEmptyBag());
+            pSrcItem->GetEntry(), pSrcItem->GetCount(), GetGUID(), pSrcItem->IsNotEmptyBag());
 
     if (sObjectMgr->IsPlayerInLogList(this))
     {
@@ -14799,10 +14796,6 @@ void Player::SwapItem(uint16 src, uint16 dst)
                 return;
             }
         }
-
-        // don't allow swap items used in spell cast
-        if (pDstItem->IsInUse())
-            return;
     }
 
     // NOW this is or item move (swap with empty), or swap with another item (including bags in bag possitions)

@@ -255,7 +255,6 @@ Item::Item() : ItemLevelBeforeCap(0)
     //m_battlePetData = NULL;
     m_lootGenerated = false;
     mb_in_trade = false;
-    m_in_use = false;
     m_lastPlayedTimeUpdate = time(NULL);
 
     m_refundRecipient = 0;
@@ -914,7 +913,7 @@ bool Item::IsBoundByEnchant() const
 InventoryResult Item::CanBeMergedPartlyWith(ItemTemplate const* proto) const
 {
     // not allow merge looting currently items
-    if (m_lootGenerated)
+    if (!this || m_lootGenerated)
         return EQUIP_ERR_LOOT_GONE;
 
     // check item type
