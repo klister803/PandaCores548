@@ -1309,10 +1309,11 @@ class spell_mage_alter_time : public SpellScriptLoader
                     posZ = _player->GetPositionZ();
                     orientation = _player->GetOrientation();
                     map = _player->GetMapId();
-                    Unit::AuraApplicationMap const& appliedAuras = _player->GetAppliedAuras();
-                    for (Unit::AuraApplicationMap::const_iterator itr = appliedAuras.begin(); itr != appliedAuras.end(); ++itr)
+
+                    auto appliedAuras = _player->GetAppliedAuras();
+                    for (auto itr : appliedAuras)
                     {
-                        if (Aura* aura = itr->second->GetBase())
+                        if (Aura* aura = itr.second->GetBase())
                         {
                             SpellInfo const* auraInfo = aura->GetSpellInfo();
 
@@ -1320,6 +1321,9 @@ class spell_mage_alter_time : public SpellScriptLoader
                                 continue;
 
                             if (auraInfo->Attributes & SPELL_ATTR0_PASSIVE)
+                                continue;
+
+                            if (aura->GetMaxDuration() == -1)
                                 continue;
 
                             if (aura->IsArea() && aura->GetCasterGUID() != _player->GetGUID())
