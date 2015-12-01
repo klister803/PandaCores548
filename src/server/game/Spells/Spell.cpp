@@ -7801,6 +7801,9 @@ SpellCastResult Spell::CheckPetCast(Unit* target)
             if(!m_caster->HasAuraTypeWithAffectMask(SPELL_AURA_IGNORE_CD, m_spellInfo))
                 return SPELL_FAILED_NOT_READY;
 
+    if (m_caster->HasAuraType(SPELL_AURA_371))
+        return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+
     return CheckCast(true);
 }
 
