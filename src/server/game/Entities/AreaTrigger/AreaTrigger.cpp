@@ -574,7 +574,10 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
     {
         case AT_ACTION_TYPE_CAST_SPELL:
         {
-            if(_on_remove)
+            if (_on_remove)
+                return;
+
+            if (!unit->isAlive() || !unit->IsInWorld())
                 return;
 
             if (caster)
