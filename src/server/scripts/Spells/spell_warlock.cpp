@@ -2059,10 +2059,24 @@ class spell_warl_rain_of_fire_damage : public SpellScriptLoader
                         caster->ModifyPower(POWER_BURNING_EMBERS, 1);
             }
 
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    targets.clear();
+
+                    for (auto iter : caster->m_unitsHasCasterAura)
+                        if (Unit* _target = ObjectAccessor::GetUnit(*caster, iter))
+                            if (_target->HasAura(104232, caster->GetGUID()))
+                                targets.push_back(_target);
+                }
+            }
+
             void Register()
             {
                 OnEffectHitTarget += SpellEffectFn(spell_warl_rain_of_fire_damage_SpellScript::Damage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
                 AfterCast += SpellCastFn(spell_warl_rain_of_fire_damage_SpellScript::HandleAfterCast);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_warl_rain_of_fire_damage_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
             }
         };
 

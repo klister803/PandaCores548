@@ -7502,6 +7502,15 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
             }
             break;
         }
+        case SPELLFAMILY_WARLOCK:
+        {
+            if (GetId() == 104232)
+            {
+                caster->CastSpell(caster, trigger_spell_id, true, NULL, this);
+                return;
+            }
+            break;
+        }
         default:
             break;
     }
