@@ -1904,13 +1904,16 @@ void Guild::HandleSetMemberRank(WorldSession* session, uint64 targetGuid, uint64
 {
     Player* player = session->GetPlayer();
 
+    GuildRankRights rights = GR_RIGHT_PROMOTE;
+    GuildCommandType type = GUILD_PROMOTE_PLAYER;
+
     // Promoted player must be a member of guild
     if (Member* member = GetMember(targetGuid))
     {
-        if (rank >= member->GetRankId())
+        if (rank > member->GetRankId())
         {
-            SendCommandResult(session, GUILD_INVITE_S, ERR_GUILD_PERMISSIONS);
-            return;
+            rights = GR_RIGHT_DEMOTE;
+            type = GUILD_DEMOTE_PLAYER;
         }
 
         if (!_HasRankRight(player, rank > member->GetRankId() ? GR_RIGHT_DEMOTE : GR_RIGHT_PROMOTE))

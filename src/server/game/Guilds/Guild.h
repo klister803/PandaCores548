@@ -80,12 +80,14 @@ enum GuildRankRights
 
 enum GuildCommandType
 {
-    GUILD_CREATE_S  = 0x00,
-    GUILD_INVITE_S  = 0x01,
-    GUILD_QUIT_S    = 0x03,
-    GUILD_FOUNDER_S = 0x0E,
-    GUILD_UNK1      = 0x13,
-    GUILD_UNK2      = 0x14
+    GUILD_CREATE_S          = 0x00,
+    GUILD_INVITE_S          = 0x01,
+    GUILD_QUIT_S            = 0x03,
+    GUILD_PROMOTE_PLAYER    = 0x06,
+    GUILD_DEMOTE_PLAYER     = 0x07,
+    GUILD_FOUNDER_S         = 0x0E,
+    GUILD_UNK1              = 0x13,
+    GUILD_UNK2              = 0x14
 };
 
 enum GuildCommandError
