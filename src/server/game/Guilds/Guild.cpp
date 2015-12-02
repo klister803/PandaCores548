@@ -1916,17 +1916,45 @@ void Guild::HandleSetMemberRank(WorldSession* session, uint64 targetGuid, uint64
             type = GUILD_DEMOTE_PLAYER;
         }
 
-        if (!_HasRankRight(player, rank > member->GetRankId() ? GR_RIGHT_DEMOTE : GR_RIGHT_PROMOTE))
+        bool demote = (type == GUILD_DEMOTE_PLAYER) ? true : false;
+
+        if (!_HasRankRight(player, rights))
         {
-            SendCommandResult(session, GUILD_INVITE_S, ERR_GUILD_PERMISSIONS);
+            SendCommandResult(session, type, ERR_GUILD_PERMISSIONS);
             return;
         }
 
         // Player cannot promote himself
         if (member->IsSamePlayer(player->GetGUID()))
         {
-            SendCommandResult(session, GUILD_INVITE_S, ERR_GUILD_NAME_INVALID);
+            SendCommandResult(session, type, ERR_GUILD_NAME_INVALID);
             return;
+        }
+
+        if (demote)
+        {
+            // Player can demote only lower rank members
+            if (member->IsRankNotLower(player->GetRank()))
+            {
+                SendCommandResult(session, type, ERR_GUILD_RANK_TOO_HIGH_S, member->GetName());
+                return;
+            }
+            // Lowest rank cannot be demoted
+            if (member->GetRankId() >= _GetLowestRankId())
+            {
+                SendCommandResult(session, type, ERR_GUILD_RANK_TOO_LOW_S, member->GetName());
+                return;
+            }
+        }
+        else
+        {
+            // Allow to promote only to lower rank than member's rank
+            // member->GetRank() + 1 is the highest rank that current player can promote to
+            if (member->IsRankNotLower(player->GetRank() + 1))
+            {
+                SendCommandResult(session, type, ERR_GUILD_RANK_TOO_HIGH_S, member->GetName());
+                return;
+            }
         }
 
         SendGuildRanksUpdate(setterGuid, targetGuid, rank);
