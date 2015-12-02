@@ -410,7 +410,7 @@ public:
             {
                 Player *pTarget = Player::GetPlayer(*me, (*itr)->getUnitGuid());
                 if (!pTarget)
-                    return;
+                    continue;
 
                 pTarget->KilledMonsterCredit(me->GetEntry());
             }
@@ -604,7 +604,7 @@ public:
             {
                 Player *pTarget = Player::GetPlayer(*me, (*itr)->getUnitGuid());
                 if (!pTarget)
-                    return;
+                    continue;
 
                 pTarget->KilledMonsterCredit(me->GetEntry());
             }
@@ -782,7 +782,7 @@ public:
             {
                 Player *pTarget = Player::GetPlayer(*me, (*itr)->getUnitGuid());
                 if (!pTarget)
-                    return;
+                    continue;
 
                 pTarget->KilledMonsterCredit(me->GetEntry());
             }
@@ -998,7 +998,7 @@ public:
             {
                 Player *pTarget = Player::GetPlayer(*me, (*itr)->getUnitGuid());
                 if (!pTarget)
-                    return;
+                    continue;
 
                 pTarget->KilledMonsterCredit(me->GetEntry());
             }
