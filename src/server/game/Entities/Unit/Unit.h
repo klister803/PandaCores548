@@ -1489,18 +1489,18 @@ class Unit : public WorldObject
         uint32 GetMaxHealth() const { return GetUInt32Value(UNIT_FIELD_MAXHEALTH); }
 
         bool IsFullHealth() const { return GetHealth() == GetMaxHealth(); }
-        bool HealthBelowPct(int32 pct) const { return GetHealth() < CountPctFromMaxHealth(pct); }
-        bool HealthBelowPctDamaged(int32 pct, uint32 damage) const { return int64(GetHealth()) - int64(damage) < int64(CountPctFromMaxHealth(pct)); }
-        bool HealthAbovePct(int32 pct) const { return GetHealth() > CountPctFromMaxHealth(pct); }
-        bool HealthAbovePctHealed(int32 pct, uint32 heal) const { return uint64(GetHealth()) + uint64(heal) > CountPctFromMaxHealth(pct); }
+        bool HealthBelowPct(float pct) const { return GetHealth() < CountPctFromMaxHealth(pct); }
+        bool HealthBelowPctDamaged(float pct, uint32 damage) const { return int64(GetHealth()) - int64(damage) < int64(CountPctFromMaxHealth(pct)); }
+        bool HealthAbovePct(float pct) const { return GetHealth() > CountPctFromMaxHealth(pct); }
+        bool HealthAbovePctHealed(float pct, uint32 heal) const { return uint64(GetHealth()) + uint64(heal) > CountPctFromMaxHealth(pct); }
         float GetHealthPct() const { return GetMaxHealth() ? 100.f * GetHealth() / GetMaxHealth() : 0.0f; }
         float GetManaPct() const { return GetMaxPower(POWER_MANA) ? 100.f * GetPower(POWER_MANA) / GetMaxPower(POWER_MANA) : 0.0f; }
-        uint32 CountPctFromMaxHealth(int32 pct) const { return CalculatePct(GetMaxHealth(), pct); }
-        uint32 CountPctFromCurHealth(int32 pct) const { return CalculatePct(GetHealth(), pct); }
-        uint32 CountPctFromMaxMana(int32 pct) const { return CalculatePct(GetMaxPower(POWER_MANA), pct); }
-        uint32 CountPctFromCurMana(int32 pct) const { return CalculatePct(GetPower(POWER_MANA), pct); }
-        uint32 CountPctFromMaxPower(int32 pct, Powers power) const { return CalculatePct(GetMaxPower(power), pct); }
-        uint32 CountPctFromCurPower(int32 pct, Powers power) const { return CalculatePct(GetPower(power), pct); }
+        uint32 CountPctFromMaxHealth(float pct) const { return CalculatePct(GetMaxHealth(), pct); }
+        uint32 CountPctFromCurHealth(float pct) const { return CalculatePct(GetHealth(), pct); }
+        uint32 CountPctFromMaxMana(float pct) const { return CalculatePct(GetMaxPower(POWER_MANA), pct); }
+        uint32 CountPctFromCurMana(float pct) const { return CalculatePct(GetPower(POWER_MANA), pct); }
+        uint32 CountPctFromMaxPower(float pct, Powers power) const { return CalculatePct(GetMaxPower(power), pct); }
+        uint32 CountPctFromCurPower(float pct, Powers power) const { return CalculatePct(GetPower(power), pct); }
 
         void SetHealth(uint32 val);
         void SetMaxHealth(uint32 val);
