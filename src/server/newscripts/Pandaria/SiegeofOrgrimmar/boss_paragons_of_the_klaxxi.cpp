@@ -97,7 +97,11 @@ enum eSpells
 
     //Korven
     SPELL_SHIELD_BASH                  = 143974,
-    SPELL_VICIOUS_ASSAULT              = 143980,
+    SPELL_VICIOUS_ASSAULT_DMG          = 143980,
+    SPELL_VICIOUS_ASSAULT_DMG_2        = 143981,
+    SPELL_VICIOUS_ASSAULT_DMG_3        = 143982,
+    SPELL_VICIOUS_ASSAULT_DMG_4        = 143984,
+    SPELL_VICIOUS_ASSAULT_DMG_5        = 143985,
     SPELL_VICIOUS_ASSAULT_DOT          = 143979,
     SPELL_ENCASE_IN_AMBER              = 142564,
     SPELL_AMBER_VISUAL                 = 144120,
@@ -2494,7 +2498,59 @@ public:
     }
 };
 
-//143980
+//143977
+class spell_vicious_assaullt_periodic : public SpellScriptLoader
+{
+public:
+    spell_vicious_assaullt_periodic() : SpellScriptLoader("spell_vicious_assaullt_periodic") { }
+
+    class spell_vicious_assaullt_periodic_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_vicious_assaullt_periodic_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (GetCaster())
+            {
+                switch (aurEff->GetTickNumber())
+                {
+                case 2:
+                    GetCaster()->CastSpell(GetCaster(), SPELL_VICIOUS_ASSAULT_DMG, true);
+                    break;
+                case 4:
+                    GetCaster()->CastSpell(GetCaster(), SPELL_VICIOUS_ASSAULT_DMG, true);
+                    break;
+                case 6:
+                    GetCaster()->CastSpell(GetCaster(), SPELL_VICIOUS_ASSAULT_DMG_2, true);
+                    break;
+                case 8:
+                    GetCaster()->CastSpell(GetCaster(), SPELL_VICIOUS_ASSAULT_DMG_3, true);
+                    break;
+                case 10:
+                    GetCaster()->CastSpell(GetCaster(), SPELL_VICIOUS_ASSAULT_DMG_4, true);
+                    break;
+                case 12:
+                    GetCaster()->CastSpell(GetCaster(), SPELL_VICIOUS_ASSAULT_DMG_5, true);
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_vicious_assaullt_periodic_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_vicious_assaullt_periodic_AuraScript();
+    }
+};
+
+//143980, 143981, 143982, 143984, 143985
 class spell_vicious_assaullt : public SpellScriptLoader
 {
 public:
@@ -2587,6 +2643,7 @@ void AddSC_boss_paragons_of_the_klaxxi()
     new spell_genetic_modifications();
     new spell_store_kinetic_energy();
     new spell_landing_pose();
+    new spell_vicious_assaullt_periodic();
     new spell_vicious_assaullt();
     new spell_hisek_fire();
 }
