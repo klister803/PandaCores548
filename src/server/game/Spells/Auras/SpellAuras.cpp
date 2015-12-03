@@ -1069,6 +1069,15 @@ void Aura::Update(uint32 diff, Unit* caster)
         // handle powerPerSecond/PowerPerSecondPercentage
         if (m_timeCla)
         {
+            for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                if (GetSpellInfo()->Effects[i].Amplitude)
+                {
+                    if (m_effects[i])
+                        break;
+
+                    return;
+                }
+
             if (m_timeCla > int32(diff))
                 m_timeCla -= diff;
             else if (caster)
