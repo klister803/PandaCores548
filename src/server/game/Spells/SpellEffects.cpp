@@ -1034,7 +1034,7 @@ bool Spell::SpellDummyTriggered(SpellEffIndex effIndex)
                         }
                     }
 
-                    triggerCaster->CastSpell(triggerTarget, spell_trigger, false);
+                    triggerCaster->CastSpell(triggerTarget, spell_trigger, true);
                     check = true;
                 }
                 break;
