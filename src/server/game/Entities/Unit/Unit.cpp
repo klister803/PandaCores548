@@ -19133,6 +19133,21 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
             else if(itr->addptype == -1 && addpowertype != -1)
                 continue;
 
+            if (itr->check_spell_id > 0)
+            {
+                if (!procSpell)
+                    continue;
+                if (procSpell->Id != itr->check_spell_id)
+                    continue;
+            }
+            else if (itr->check_spell_id < 0)
+            {
+                if (!procSpell)
+                    continue;
+                if (procSpell->Id == abs(itr->check_spell_id))
+                    continue;
+            }
+
             if(itr->chance != 0)
             {
                 if(itr->chance > 100) // chance get from amount
@@ -19153,20 +19168,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                         continue;
                 }
                 else if(!roll_chance_i(itr->chance))
-                    continue;
-            }
-            if(itr->check_spell_id > 0)
-            {
-                if(!procSpell)
-                    continue;
-                if(procSpell->Id != itr->check_spell_id)
-                    continue;
-            }
-            else if(itr->check_spell_id < 0)
-            {
-                if(!procSpell)
-                    continue;
-                if(procSpell->Id == abs(itr->check_spell_id))
                     continue;
             }
 
