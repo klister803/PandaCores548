@@ -2844,7 +2844,11 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
             case SPELL_DAMAGE_CLASS_MELEE:
             {
                 procAttacker |= dmgSpell ? PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
-                procVictim   |= dmgSpell ? PROC_FLAG_TAKEN_SPELL_MELEE_DMG_CLASS : PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG;
+
+                if (dmgSpell)
+                    procVictim |= m_caster->IsWithinMeleeRange(spellHitTarget) ? PROC_FLAG_TAKEN_SPELL_MELEE_DMG_CLASS : PROC_FLAG_TAKEN_SPELL_RANGED_DMG_CLASS;
+                else
+                    procVictim |= PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG;
 
                 if (m_attackType == BASE_ATTACK)
                     procAttacker |= PROC_FLAG_DONE_MAINHAND_ATTACK;
