@@ -2779,8 +2779,9 @@ void AuraEffect::HandleModCamouflage(AuraApplication const *aurApp, uint8 mode, 
     }
     else if (!(target->isCamouflaged()))
     {
-        if (Unit* pet = GetCaster()->GetGuardianPet())
-            pet->RemoveAurasByType(SPELL_AURA_MOD_CAMOUFLAGE);
+        if (Unit* caster = GetCaster())
+            if (Unit* pet = caster->GetGuardianPet())
+                pet->RemoveAurasByType(SPELL_AURA_MOD_CAMOUFLAGE);
     }
 }
 

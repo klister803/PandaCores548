@@ -1524,7 +1524,7 @@ void Aura::UnregisterCasterAuras()
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
             if (GetSpellInfo()->Effects[i].TargetA.GetTarget() == TARGET_UNIT_CASTER_AREA_SUMMON)
             {
-                caster->RemoveMyAura(GetId());
+                caster->RemoveMyAura(GetId(), GetUnitOwner());
                 return;
             }
     }

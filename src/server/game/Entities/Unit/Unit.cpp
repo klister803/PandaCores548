@@ -25457,13 +25457,13 @@ bool Unit::HasMyAura(Aura const* hasAura, bool check)
     return false;
 }
 
-void Unit::RemoveMyAura(uint32 spellId)
+void Unit::RemoveMyAura(uint32 spellId, Unit* owner)
 {
     for (AuraList::const_iterator itr = m_my_Auras.begin(); itr != m_my_Auras.end();)
     {
         if (Aura* aura = (*itr))
             if(Unit* target = aura->GetUnitOwner())
-            if (aura->GetId() == spellId && !aura->IsRemoved() && target->IsInWorld() && target->isAlive())
+            if (target != owner && aura->GetId() == spellId && !aura->IsRemoved() && target->IsInWorld() && target->isAlive())
             {
                 m_my_Auras.remove(*itr++);
                 if(aura->GetDuration() > 500 || aura->GetDuration() < 0)
