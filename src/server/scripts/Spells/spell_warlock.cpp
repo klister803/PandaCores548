@@ -452,8 +452,31 @@ class spell_warl_void_ray : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (Aura* corruption = target->GetAura(146739))
-                            corruption->SetDuration(corruption->GetSpellInfo()->GetMaxDuration(), true);
+                        if (Aura* aura = target->GetAura(146739, _caster->GetGUID()))
+                        {
+                            int32 dur = aura->GetDuration() + 6000;
+                            uint32 perTimer = 0;
+                            int32 maxDur = aura->GetSpellInfo()->GetMaxDuration() * (_caster->HasAura(131973) ? 1.5f : 1.0f);
+
+                            if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
+                            {
+                                perTimer = eff->GetPeriodicTimer();
+                                eff->SetCanBeRecalculated(true);
+                                eff->RecalculateAmount();
+                            }
+                            if (AuraEffect* eff = aura->GetEffect(EFFECT_1))
+                            {
+                                eff->SetCanBeRecalculated(true);
+                                eff->RecalculateAmount();
+                            }
+
+                            if (dur > maxDur)
+                            {
+                                dur = maxDur + perTimer;
+                            }
+                            aura->SetMaxDuration(dur);
+                            aura->SetDuration(dur, true);
+                        }
                     }
                 }
             }
