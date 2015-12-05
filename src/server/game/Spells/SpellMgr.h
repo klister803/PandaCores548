@@ -187,6 +187,7 @@ enum DummyTriggerType
     DUMMY_TRIGGER_CAST_DEST                     = 5,            // spell to trigger without option for bp
     DUMMY_TRIGGER_CAST_OR_REMOVE                = 6,            // cast spell without option
     DUMMY_TRIGGER_DAM_MAXHEALTH                 = 7,            // set basepoint to spell damage or max heal percent
+    DUMMY_TRIGGER_CAST_AFTER_HIT                = 8,            // cast spell after hit on target
 };
 
 enum SpellAuraDummyType

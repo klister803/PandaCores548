@@ -1101,6 +1101,29 @@ bool Spell::SpellDummyTriggered(SpellEffIndex effIndex)
                     check = true;
                 }
                 break;
+                case DUMMY_TRIGGER_CAST_AFTER_HIT: // 8
+                {
+                    if (itr->aura > 0)
+                    {
+                        if (!triggerCaster->HasAura(abs(itr->aura)))
+                        {
+                            check = true;
+                            continue;
+                        }
+                    }
+                    else if (itr->aura < 0)
+                    {
+                        if (triggerCaster->HasAura(abs(itr->aura)))
+                        {
+                            check = true;
+                            continue;
+                        }
+                    }
+
+                    triggerCaster->CastSpell(triggerTarget, spell_trigger, true);
+                    check = true;
+                    break;
+                }
             }
         }
         if(check)
