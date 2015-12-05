@@ -12994,7 +12994,20 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
         case SPELL_DAMAGE_CLASS_NONE:
         case SPELL_DAMAGE_CLASS_MAGIC:
         {
-            if (schoolMask & SPELL_SCHOOL_MASK_NORMAL)
+            if (schoolMask == SPELL_SCHOOL_MASK_ALL)
+            {
+                float maxCrit = 0.0f;
+
+                for (int8 i = 0; i < MAX_SPELL_SCHOOL; ++i)
+                {
+                    float _crit = GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + i);
+                    if (_crit > maxCrit)
+                        maxCrit = _crit;
+                }
+                    
+                crit_chance = maxCrit;
+            }
+            else if (schoolMask & SPELL_SCHOOL_MASK_NORMAL)
                 crit_chance = 0.0f;
             // For other schools
             else if (GetTypeId() == TYPEID_PLAYER)
