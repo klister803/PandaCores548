@@ -1,0 +1,1 @@
+INSERT INTO `spell_proc_check` (`entry`, `checkspell`, `comment`) VALUES ('145091', '112092', 'Item - Warlock T16 4P Bonus');
