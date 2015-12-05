@@ -3144,11 +3144,12 @@ bool SpellInfo::_IsPositiveEffect(uint8 effIndex, bool deep) const
                 case SPELL_AURA_MOD_STALKED:
                 case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
                 case SPELL_AURA_PREVENT_RESURRECTION:
+                case SPELL_AURA_PERIODIC_DAMAGE:
                     return false;
-                case SPELL_AURA_PERIODIC_DAMAGE:            // used in positive spells also.
-                    // part of negative spell if casted at self (prevent cancel)
-                    if (Effects[effIndex].TargetA.GetTarget() == TARGET_UNIT_CASTER)
-                        return false;
+//                 case SPELL_AURA_PERIODIC_DAMAGE:            // used in positive spells also.
+//                     // part of negative spell if casted at self (prevent cancel)
+//                     if (Effects[effIndex].TargetA.GetTarget() == TARGET_UNIT_CASTER)
+//                         return false;
                     break;
                 case SPELL_AURA_MOD_DECREASE_SPEED:         // used in positive spells also
                     // part of positive spell if casted at self
