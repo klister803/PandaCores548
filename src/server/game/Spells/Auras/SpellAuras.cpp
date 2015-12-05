@@ -3173,7 +3173,7 @@ void UnitAura::Remove(AuraRemoveMode removeMode)
         return;
     }
 
-    if (GetSpellInfo()->IsChanneled())
+    /*if (GetSpellInfo()->IsChanneled())
     {
         if (Unit* caster = GetCaster())
             if (Spell* _spell = caster->FindCurrentSpellBySpellId(GetId()))
@@ -3186,7 +3186,7 @@ void UnitAura::Remove(AuraRemoveMode removeMode)
             }
     }
     else
-        GetUnitOwner()->RemoveOwnedAura(this, removeMode);
+        */GetUnitOwner()->RemoveOwnedAura(this, removeMode);
 }
 
 void UnitAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* caster)
