@@ -312,6 +312,7 @@ enum eCreatures
     NPC_LASER_ARRAY                 = 71910,
     NPC_LASER_TARGET                = 71740,
     NPC_SHOCKWAVE_MISSILE           = 72710,
+    NPC_SHOCKWAVE_MISSILE2          = 72052,
     NPC_SIEGE_ENGINEER_HELPER       = 71520,
     //Summons
     NPC_AUTOMATED_SHREDDER          = 71591,

@@ -5221,6 +5221,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 //Siegecrafter Blackfuse
                 case 143265: //Launch
                     spellInfo->Effects[1].Effect = 0;
+                    spellInfo->Effects[2].Effect = 0;
                     break;
 
                     
