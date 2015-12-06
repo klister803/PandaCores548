@@ -2538,7 +2538,7 @@ bool AchievementMgr<T>::IsCompletedScenarioTree(CriteriaTreeEntry const* criteri
             CriteriaEntry const* criteria = sAchievementMgr->GetAchievementCriteria(cTree->criteria);
             CriteriaTreeProgress const* progress = GetCriteriaProgress(cTree->ID, 0);
             if(!progress || !criteria)
-                return false;
+                continue;
 
             switch (criteria->type)
             {

@@ -46,6 +46,9 @@ public:
             allowedStage = STAGE_1;
 
             akamaGUID = 0;
+            essenceGUID = 0;
+            soulwellGUID = 0;
+            gatewayGUID = 0;
             jubekaGUID = 0;
             doorGUID = 0;
             secondDoorGUID = 0;
@@ -65,9 +68,27 @@ public:
             phaseIds.insert(1982);
             player->GetSession()->SendSetPhaseShift(phaseIds, terrainswaps, WorldMapAreaIds, 16);
 
-            player->CastSpell(player, SPELL_ENTER_THE_BLACK_TEMPLE);
+            player->CastSpell(player, SPELL_ENTER_THE_BLACK_TEMPLE, true);
             player->CastSpell(player, SPELL_CSA_AT_DUMMY_TIMED_AURA);
-            player->CastSpell(player, SPELL_WHAT_THE_DRAENEI_FOUND_INTRO);
+
+            if (player->GetQuestStatus(32340) == QUEST_STATUS_REWARDED)
+            {
+                if (GetData(DATA_ALLOWED_STAGE) == STAGE_1)
+                {
+                    SetData(DATA_ALLOWED_STAGE, STAGE_8);
+                    Events.ScheduleEvent(EVENT_3, 3 * IN_MILLISECONDS);
+                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34539, 1); //< set stage 2
+                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34543, 1); //< set stage 3
+                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34545, 1); //< set stage 4
+                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34552, 1); //< set stage 5
+                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_ITEM, 92556, 1);      //< set stage 6
+                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34554, 1); //< set stage 7
+                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34558, 1); //< set stage 8-1
+                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34579, 1); //< set stage 8-2
+                }
+                if (GetData(DATA_ALLOWED_STAGE) > STAGE_8)
+                    Events.ScheduleEvent(EVENT_3, 3 * IN_MILLISECONDS);
+            }
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -75,18 +96,22 @@ public:
             switch (creature->GetEntry())
             {
                 case NPC_ESSENCE_OF_ORDER:
-                    creature->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
-                    creature->SetVisible(false);
+                    essenceGUID = creature->GetGUID();
                     break;
                 case NPC_AKAMA:
-                    creature->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
                     creature->SetVisible(false);
                     akamaGUID = creature->GetGUID();
                     break;
                 case NPC_JUBEKA_SHADOWBREAKER:
-                    creature->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
                     creature->SetVisible(false);
                     jubekaGUID = creature->GetGUID();
+                    break;
+                case NPC_DEMONIC_SOULWELL:
+                    soulwellGUID = creature->GetGUID();
+                    creature->SetVisible(false);
+                    break;
+                case NPC_DEMONIC_GATEWAY:
+                    gatewayGUID = creature->GetGUID();;
                     break;
                 case NPC_UNBOUND_NIGHTLORD:
                 case NPC_UNBOUND_CENTURION:
@@ -94,17 +119,16 @@ public:
                 case NPC_PORTALS_VISUAL:
                 case NPC_FREED_IMP:
                 case NPC_UNBOUND_SUCCUB:
-                    creature->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
                     creature->SetVisible(false);
                     creature->SetReactState(REACT_PASSIVE);
                     trashP2GUIDs.push_back(creature->GetGUID());
                     break;
                 case NPC_SUFFERING_SOUL_FRAGMENT:
-                    creature->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
                     soulGUIDs.push_back(creature->GetGUID());
                     break;
+                case NPC_ASTHONGUE_PRIMALIST:
                 case NPC_ASHTONGUE_SHAMAN:
-                    creature->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
+                    trashGUIDconteiner.push_back(creature->GetGUID());
                     break;
                 default:
                     break;
@@ -123,6 +147,8 @@ public:
                     break;
                 case GO_TRAP:
                     trapGUIDs.push_back(go->GetGUID());
+                    go->m_invisibility.AddFlag(INVISIBILITY_GENERAL);
+                    go->m_invisibility.AddValue(INVISIBILITY_GENERAL, 100);
                     break;
                 case GO_TREASURE_CHEST:
                 case GO_GOLDEN_HIGH_ELF_STATUETTE:
@@ -160,7 +186,10 @@ public:
             switch (type)
             {
                 case DATA_ALLOWED_STAGE:
-                    allowedStage  = data;
+                    allowedStage = data;
+                    if (data == STAGE_LAST)
+                        if (Creature* soulwell = instance->GetCreature(soulwellGUID))
+                            soulwell->SetVisible(true);
                     break;
                 case DATA_ESSENCE_OF_ORDER_EVENT:
                     essenceData = data;
@@ -187,12 +216,19 @@ public:
                     break;
                 case DATA_KANRETHAD:
                     kanrethadData = data;
+                    if (data == NOT_STARTED)
+                        if (Creature* soulwell = instance->GetCreature(soulwellGUID))
+                            soulwell->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+                        if (Creature* gateway = instance->GetCreature(gatewayGUID))
+                            gateway->DespawnOrUnsummon();
                     if (data == DONE)
-                        if (Creature* jubeka = instance->GetCreature(jubekaGUID))
+                        if (Creature* jubeka = instance->SummonCreature(NPC_JUBEKA_SHADOWBREAKER, JubekaPos))
                             jubeka->AI()->DoAction(ACTION_1);
                     break;
                 case DATA_SCENE_EVENT:
                     sceneEventData = data;
+                    if (data == DONE)
+                        Events.ScheduleEvent(EVENT_1, 2 * MINUTE * IN_MILLISECONDS + 40 * IN_MILLISECONDS);
                     break;
                 case DATA_NOBEL_EVENT:
                     nodelData = data;
@@ -200,12 +236,28 @@ public:
                 case DATA_PLUNDER_EVENT:
                     plunderData = data;
                     if (data == DONE)
-                        for (std::vector<uint64>::const_iterator itr = treasuresGUIDs.begin(); itr != treasuresGUIDs.end(); itr++)
+                    {
+                        for (std::list<uint64>::iterator itr = treasuresGUIDs.begin(); itr != treasuresGUIDs.end(); ++itr)
                             if (GameObject* trap = instance->GetGameObject(*itr))
                                 trap->SetVisible(true);
+                    }
                     break;
                 case DATA_STAGE_2:
                     stage2Data = data;
+                    break;
+                case DATA_EVADE:
+                    if (data == IN_PROGRESS)
+                    {
+                        for (std::list<ObjectGuid>::iterator itr = trashGUIDconteiner.begin(); itr != trashGUIDconteiner.end(); ++itr)
+                            if (Creature* trash = instance->GetCreature(*itr))
+                            {
+                                if (!trash->isInCombat())
+                                    continue;
+
+                                trash->DespawnOrUnsummon();
+                                trash->SetRespawnTime(1);
+                            }
+                    }
                     break;
                 default:
                     break;
@@ -222,6 +274,12 @@ public:
                     return doorGUID;
                 case DATA_SECOND_DOOR:
                     return secondDoorGUID;
+                case NPC_ESSENCE_OF_ORDER:
+                    return essenceGUID;
+                case NPC_DEMONIC_SOULWELL:
+                    return soulwellGUID;
+                case NPC_DEMONIC_GATEWAY:
+                    return gatewayGUID;
                 default:
                     return 0;
             }
@@ -248,6 +306,39 @@ public:
             }
         }
 
+        void Update(uint32 diff)
+            {
+                Events.Update(diff);
+
+                while (uint32 eventId = Events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_1:
+                            if (Creature* essence = instance->GetCreature(GetData64(NPC_ESSENCE_OF_ORDER)))
+                            {
+                                essence->AI()->DoAction(ACTION_1);
+                                essence->AI()->Talk(0);
+                            }
+                            Events.ScheduleEvent(EVENT_2, 5 * IN_MILLISECONDS);
+                            break;
+                        case EVENT_2:
+                            if (Creature* essence = instance->GetCreature(GetData64(NPC_ESSENCE_OF_ORDER)))
+                            {
+                                essence->AI()->Talk(1);
+                                essence->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
+                            }
+                            break;
+                        case EVENT_3:
+                            Map::PlayerList const &players = instance->GetPlayers();
+                            if (!players.isEmpty())
+                                if (Player* player = players.begin()->getSource())
+                                    player->TeleportTo(1112, 786.0955f, 304.3524f, 319.7598f, 0.0f);
+                            break;
+                    }
+                }
+            }
+
     private:
         uint32 essenceData;
         uint32 nodelData;
@@ -258,13 +349,19 @@ public:
         uint32 allowedStage;
 
         uint64 akamaGUID;
+        uint64 essenceGUID;
         uint64 jubekaGUID;
+        uint64 soulwellGUID;
+        uint64 gatewayGUID;
         uint64 doorGUID;
         uint64 secondDoorGUID;
         std::vector<uint64> trashP2GUIDs;
         std::vector<uint64> trapGUIDs;
         std::vector<uint64> soulGUIDs;
-        std::vector<uint64> treasuresGUIDs;
+        std::list<uint64> treasuresGUIDs;
+        std::list<ObjectGuid> trashGUIDconteiner;
+
+        EventMap Events;
     };
 };
 

@@ -2638,7 +2638,7 @@ bool InstanceMap::Reset(uint8 method)
 
 void InstanceMap::PermBindAllPlayers(Player* source)
 {
-    if (!IsDungeon() || IsLfr())
+    if (!IsDungeon() || IsLfr() || IsScenario())
         return;
 
     InstanceSave* save = sInstanceSaveMgr->GetInstanceSave(GetInstanceId());

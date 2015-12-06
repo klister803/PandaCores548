@@ -4379,8 +4379,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->CustomMaxAffectedTargets = 3; //used if empty on dbc SpellTargetRestrictionsEntry
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
                     break;
-                case 114205:// Demoralizing Banner
+                case 114205: // Demoralizing Banner
                 case 140130: // Summon Intro Scene (hack scene)
+                case 134111: // Netted
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(8); // 15s
                     break;
                 case 127630:// Cascade - damage trigger

@@ -38,8 +38,8 @@ enum Spells
     SPELL_WHAT_THE_DRAENEI_FOUND_INTRO  = 151967,
     SPELL_CSA_AT_DUMMY_TIMED_AURA       = 100340,
     SPELL_ENTER_THE_BLACK_TEMPLE        = 134608,
-    SPELL_SEARCHING_FOR_INTRUDERS       = 134110, //< AT
     SPELL_DETECTED_PULSE                = 134109,
+    SPELL_SEARCHING_FOR_INTRUDERS       = 134110, //< AT
 
     //< S1
     SPELL_NETTED                        = 134111,
@@ -218,6 +218,8 @@ enum Data
     DATA_KANRETHAD,
     DATA_MAIN_DOORS,
     DATA_SECOND_DOOR,
+
+    DATA_EVADE,
 };
 
 enum eCreatures
@@ -283,4 +285,5 @@ enum eGameObects
 
 bool IsNextStageAllowed(InstanceScript* instance, uint8 stage);
 
+Position const JubekaPos = {700.06f, 280.71f, 355.54f};
 #endif

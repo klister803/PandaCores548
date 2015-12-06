@@ -16348,6 +16348,7 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
             switch (itr->second.OptionType)
             {
                 case GOSSIP_OPTION_GOSSIP:
+                case GOSSIP_OPTION_SCENARIO:
                     if (go->GetGoType() != GAMEOBJECT_TYPE_QUESTGIVER && go->GetGoType() != GAMEOBJECT_TYPE_GOOBER)
                         canTalk = false;
                     break;
@@ -16431,7 +16432,7 @@ void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 men
 
     if (source->GetTypeId() == TYPEID_GAMEOBJECT)
     {
-        if (gossipOptionId > GOSSIP_OPTION_QUESTGIVER)
+        if (gossipOptionId > GOSSIP_OPTION_QUESTGIVER && gossipOptionId != GOSSIP_OPTION_SCENARIO)
         {
             sLog->outError(LOG_FILTER_PLAYER, "Player guid %u request invalid gossip option for GameObject entry %u", GetGUIDLow(), source->GetEntry());
             return;

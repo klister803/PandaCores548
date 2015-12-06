@@ -1547,7 +1547,7 @@ class ObjectMgr
                 case MAN10_DIFFICULTY:
                 case MAN40_DIFFICULTY:
                 case NORMAL_SCENARIO_DIFFICULTY:
-                    return  0;
+                    return 0;
                 case CHALLENGE_MODE_DIFFICULTY:
                 case HEROIC_DIFFICULTY:
                 case MAN25_DIFFICULTY:
