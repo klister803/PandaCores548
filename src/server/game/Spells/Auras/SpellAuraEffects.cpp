@@ -2516,8 +2516,14 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             }
 
             PlayerSpellMap const& sp_list = plrTarget->GetSpellMap();
-            for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
+            for (PlayerSpellMap::const_iterator itr = sp_list.begin(), next; itr != sp_list.end(); itr = next)
             {
+                next = itr;
+                ++next;
+
+                if(!itr->second)
+                    continue;
+
                 if (itr->second->state == PLAYERSPELL_REMOVED || itr->second->disabled)
                     continue;
 
