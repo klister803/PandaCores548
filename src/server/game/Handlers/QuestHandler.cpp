@@ -413,7 +413,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket& recvData)
                                 _player->AddQuest(sObjectMgr->GetQuestTemplate(nextQuestCh), object);
                                 if (_player->CanCompleteQuest(sObjectMgr->GetQuestTemplate(nextQuestCh)->GetQuestId()))
                                     _player->CompleteQuest(sObjectMgr->GetQuestTemplate(nextQuestCh)->GetQuestId());
-                                _player->PlayerTalkClass->SendQuestGiverQuestDetails(nextQuestCh, guid, false);
+                                _player->PlayerTalkClass->SendQuestGiverQuestDetails(sObjectMgr->GetQuestTemplate(nextQuestCh), guid, false);
                             }
                         }
                     }

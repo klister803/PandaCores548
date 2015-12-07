@@ -272,11 +272,13 @@ public:
                     case EVENT_25:
                         events.ScheduleEvent(EVENT_26, 3 * IN_MILLISECONDS);
                         if (Creature* imp = me->FindNearestCreature(NPC_FEL_IMP, 150.0f))
-                            imp->AI()->Talk(0);
+                            if (Player* plr = me->FindNearestPlayer(100.0f))
+                                imp->AI()->Talk(0, plr->GetGUID());
                         break;
                     case EVENT_26:
                         if (Creature* imp = me->FindNearestCreature(NPC_FEL_IMP, 150.0f))
-                            imp->AI()->Talk(1);
+                            if (Player* plr = me->FindNearestPlayer(100.0f))
+                                imp->AI()->Talk(1, plr->GetGUID());
                         me->DespawnOrUnsummon(3 * IN_MILLISECONDS);
                         break;
                     default:
