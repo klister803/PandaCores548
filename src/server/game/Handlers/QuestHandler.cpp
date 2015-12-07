@@ -403,6 +403,20 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket& recvData)
                         }else
                             _player->PlayerTalkClass->SendQuestGiverQuestDetails(nextQuest, guid, false);
                     }
+                    else
+                    {
+                        if (quest->HasFlag(QUEST_FLAGS_AUTO_SUBMIT))
+                        {
+                            uint32 nextQuestCh = quest->GetNextQuestInChain();
+                            if (nextQuestCh)
+                            {
+                                _player->AddQuest(sObjectMgr->GetQuestTemplate(nextQuestCh), object);
+                                if (_player->CanCompleteQuest(sObjectMgr->GetQuestTemplate(nextQuestCh)->GetQuestId()))
+                                    _player->CompleteQuest(sObjectMgr->GetQuestTemplate(nextQuestCh)->GetQuestId());
+                                _player->PlayerTalkClass->SendQuestGiverQuestDetails(nextQuestCh, guid, false);
+                            }
+                        }
+                    }
                 }
                 break;
             }
@@ -431,7 +445,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket& recvData)
         // As quest complete send available quests. Need when questgiver from next quest chain staying near questtaker
         HandleQuestgiverStatusMultipleQuery(recvData);
         // AutoTake system
-         _player->PrepareAreaQuest( _player->GetAreaId());
+        _player->PrepareAreaQuest( _player->GetAreaId());
     }
     else 
         _player->PlayerTalkClass->SendQuestGiverOfferReward(quest, guid, true);
