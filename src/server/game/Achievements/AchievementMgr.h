@@ -467,6 +467,8 @@ class AchievementGlobalMgr
             _playersAchievementCriteriaTask.clear();
         }
 
+        LockedPlayersAchievementCriteriaTask _lockedPlayersAchievementCriteriaTask;  /// All criteria update task are first storing
+        PlayersAchievementCriteriaTask       _playersAchievementCriteriaTask;        /// Before thread process, all task stored 
     private:
         AchievementCriteriaDataMap m_criteriaDataMap;
 
@@ -486,9 +488,6 @@ class AchievementGlobalMgr
 
         AchievementRewards m_achievementRewards;
         AchievementRewardLocales m_achievementRewardLocales;
-
-        LockedPlayersAchievementCriteriaTask _lockedPlayersAchievementCriteriaTask;  /// All criteria update task are first storing
-        PlayersAchievementCriteriaTask       _playersAchievementCriteriaTask;        /// Before thread process, all task stored 
 };
 
 #define sAchievementMgr ACE_Singleton<AchievementGlobalMgr, ACE_Null_Mutex>::instance()
