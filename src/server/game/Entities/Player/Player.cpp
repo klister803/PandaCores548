@@ -20644,15 +20644,14 @@ void Player::_LoadAccountSpells(PreparedQueryResult result)
 void Player::_LoadSpellRewards()
 {
     // check on achievement reward spell
-    CompletedAchievementMap const* achievs = GetAchievementMgr().GetCompletedAchievementsList();
+    auto completedAchievements = GetAchievementMgr().GetCompletedAchievementsList();
 
-    if (!achievs || achievs->empty())
+    if (completedAchievements.empty())
         return;
 
-    for (CompletedAchievementMap::const_iterator iter = achievs->begin(); iter != achievs->end(); ++iter)
+    for (CompletedAchievementMap::const_iterator iter = completedAchievements.begin(); iter != completedAchievements.end(); ++iter)
     {
         AchievementEntry const* achievement = sAchievementMgr->GetAchievement(iter->first);
-
         if (!achievement)
             continue;
 
@@ -28483,27 +28482,44 @@ void Player::HandleFall(MovementInfo const& movementInfo)
     RemoveAllAurasByType(SPELL_AURA_GLIDE);
 }
 
-void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, uint32 miscValue3 /*= 0*/, Unit* unit /*= NULL*/, bool ignoreGroup /*=false*/)
+void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /* = 0 */, uint32 miscValue2 /* = 0 */, uint32 miscValue3 /* = 0 */,
+                                       Unit* unit /* = nullptr */, bool ignoreGroup /* = false */, bool loginCheck /* = false */)
 {
-    GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, this);
+    AchievementCriteriaUpdateTask task;
+    task.PlayerGUID = GetGUID();
+    task.UnitGUID = unit ? unit->GetGUID() : 0;
+    task.Task = [type, miscValue1, miscValue2, miscValue3, ignoreGroup, loginCheck](uint64 const &playerGUID, uint64 const &unitGUID) -> void
+    {
+        /// Task will be executed async
+        /// We need to ensure the player still exist
+        auto player = HashMapHolder<Player>::Find(playerGUID);
+        if (!player)
+            return;
 
-    Map* map = GetMap();
-    // Update scenario/challenge criterias
-    if (uint32 instanceId =  map ? map->GetInstanceId() : 0)
-        if (ScenarioProgress* progress = sScenarioMgr->GetScenarioProgress(instanceId))
-            progress->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, this);
+        /// Same for the unit
+        auto unit = unitGUID ? Unit::GetUnit(*player, unitGUID) : nullptr;
+        player->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, player, false, loginCheck);
 
-    // Update only individual achievement criteria here, otherwise we may get multiple updates
-    // from a single boss kill
-    if (!ignoreGroup && sAchievementMgr->IsGroupCriteriaType(type))
-        return;
+        /// Update scenario/challenge criterias
+        auto map = player->GetMap();
+        if (uint32 instanceId = map ? map->GetInstanceId() : 0)
+            if (auto progress = sScenarioMgr->GetScenarioProgress(instanceId))
+                progress->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, player, false, loginCheck);
 
-    if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
-        guild->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, this);
+        /// Update only individual achievement criteria here, otherwise we may get multiple updates
+        /// from a single boss kill
+        if (!ignoreGroup && sAchievementMgr->IsGroupCriteriaType(type))
+            return;
 
-    // Quest "A Test of Valor"
-    if (HasAchieved(8030) || HasAchieved(8031))
-        KilledMonsterCredit(69145, 0);
+        if (auto guild = sGuildMgr->GetGuildById(player->GetGuildId()))
+            guild->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, player, loginCheck);
+
+        /// Quest "A Test of Valor"
+        if (player->HasAchieved(8030) || player->HasAchieved(8031))
+            player->KilledMonsterCredit(69145, 0);
+    };
+
+    sAchievementMgr->AddCriteriaUpdateTask(task);
 }
 
 void Player::CompletedAchievement(AchievementEntry const* entry)
