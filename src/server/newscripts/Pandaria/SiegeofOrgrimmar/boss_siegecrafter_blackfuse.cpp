@@ -71,10 +71,10 @@ enum eEvents
 
 enum _ATentry
 {
-    ENTER                           = 9250,
+    ENTER_1                         = 9250,
     ENTER_2                         = 9251,
     ENTER_3                         = 9252,
-    LEAVE                           = 9253,
+    LEAVE_1                         = 9253,
     LEAVE_2                         = 9371,
     LEAVE_3                         = 9240,
     ENTER_CONVEYOR                  = 9189,
@@ -753,13 +753,13 @@ public:
             {
                 switch (areaTrigger->id)
                 {
-                case ENTER:
+                case ENTER_1:
                 case ENTER_2:
                 case ENTER_3:
                     if (instance->GetBossState(DATA_BLACKFUSE) != IN_PROGRESS)
                         player->NearTeleportTo(atdestpos[0].GetPositionX(), atdestpos[0].GetPositionY(), atdestpos[0].GetPositionZ(), atdestpos[0].GetOrientation());
                     break;
-                case LEAVE:
+                case LEAVE_1:
                 case LEAVE_2:
                 case LEAVE_3:
                     if (instance->GetBossState(DATA_BLACKFUSE) != IN_PROGRESS)
