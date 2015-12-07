@@ -10159,6 +10159,14 @@ void Spell::LoadAttrDummy()
     }
 }
 
+void Spell::RemoveAuraForAllTargets()
+{
+    for (auto ihit : m_UniqueTargetInfo)
+        if (ihit.missCondition == SPELL_MISS_NONE)
+            if (Unit* unit = m_caster->GetGUID() == ihit.targetGUID ? m_caster : ObjectAccessor::GetUnit(*m_caster, ihit.targetGUID))
+                unit->RemoveOwnedAura(m_spellInfo->Id, m_originalCasterGUID, 0, AURA_REMOVE_BY_DEFAULT);
+}
+
 // was WriteAmmoToPacket. Not used only for creature range casts.
 // ToDo: create new field on creature_equip_template and get data from it, as arrows are different.
 void Spell::WriteProjectile(uint8 &ammoInventoryType, uint32 &ammoDisplayID)

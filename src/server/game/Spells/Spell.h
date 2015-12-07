@@ -617,6 +617,8 @@ class Spell
         AuraEffect const* GetTriggeredAuraEff() const { return m_triggeredByAura; }
         void AddDestTarget(SpellDestination const& dest, uint32 effIndex);
 
+        void RemoveAuraForAllTargets();
+
         // Spell mod
         void AddSpellModId (uint32 spellId) { m_spell_mods.push_back(spellId); }
         std::list<uint32>* GetSpellMods() { return &m_spell_mods; }

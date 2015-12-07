@@ -1101,7 +1101,15 @@ void Aura::Update(uint32 diff, Unit* caster)
                             caster->ModifyHealth(-1 * reqHealth);
                         else
                         {
-                            Remove();
+                            if (GetSpellInfo()->IsChanneled())
+                            {
+                                if (Unit* caster = GetCaster())
+                                    if (Spell* _spell = caster->FindCurrentSpellBySpellId(GetId()))
+                                        _spell->RemoveAuraForAllTargets();
+                            }
+                            else
+                                Remove();
+
                             return;
                         }
                     }
@@ -1115,7 +1123,15 @@ void Aura::Update(uint32 diff, Unit* caster)
                             caster->ModifyPower(powertype, -1 * reqPower, true);
                         else
                         {
-                            Remove();
+                            if (GetSpellInfo()->IsChanneled())
+                            {
+                                if (Unit* caster = GetCaster())
+                                    if (Spell* _spell = caster->FindCurrentSpellBySpellId(GetId()))
+                                        _spell->RemoveAuraForAllTargets();
+                            }
+                            else
+                                Remove();
+                            
                             return;
                         }
                     }
@@ -3179,20 +3195,7 @@ void UnitAura::Remove(AuraRemoveMode removeMode)
         return;
     }
 
-    /*if (GetSpellInfo()->IsChanneled())
-    {
-        if (Unit* caster = GetCaster())
-            if (Spell* _spell = caster->FindCurrentSpellBySpellId(GetId()))
-            {
-                std::list<TargetInfo>* memberList = _spell->GetUniqueTargetInfo();
-                for (std::list<TargetInfo>::iterator ihit = memberList->begin(); ihit != memberList->end(); ++ihit)
-                    if ((*ihit).missCondition == SPELL_MISS_NONE)
-                        if (Unit* unit = caster->GetGUID() == ihit->targetGUID ? caster : ObjectAccessor::GetUnit(*caster, ihit->targetGUID))
-                            unit->RemoveOwnedAura(m_spellInfo->Id, GetCasterGUID(), 0, removeMode);
-            }
-    }
-    else
-        */GetUnitOwner()->RemoveOwnedAura(this, removeMode);
+    GetUnitOwner()->RemoveOwnedAura(this, removeMode);
 }
 
 void UnitAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* caster)
