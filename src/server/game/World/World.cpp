@@ -1409,6 +1409,10 @@ void World::LoadConfigSettings(bool reload)
     // Battle Pets
     m_bool_configs[CONFIG_PET_BATTLES_ENABLED] = ConfigMgr::GetBoolDefault("PetBattles.Enabled", true);
 
+    // Custom content
+    m_bool_configs[CONFIG_CUSTOM_CONTENT_ENABLED] = ConfigMgr::GetBoolDefault("Custom.Content.Enabled", false);
+    m_int_configs[CONFIG_CUSTOM_CONTENT_VERSION] = ConfigMgr::GetIntDefault("Custom.Content.Version", 548);
+
     if (reload)
         sScriptMgr->OnConfigLoad(reload);
 }

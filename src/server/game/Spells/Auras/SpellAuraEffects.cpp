@@ -1668,6 +1668,88 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
             break;
     }
 
+    //For same custom data
+    if (sWorld->getBoolConfig(CONFIG_CUSTOM_CONTENT_ENABLED))
+    {
+        switch (sWorld->getIntConfig(CONFIG_CUSTOM_CONTENT_VERSION))
+        {
+            case 505: // PVP.ItemLevelCap = 483
+            {
+                switch (GetId())
+                {
+                    case 142689: // Player Damage Reduction Level 90
+                        amount = 0;
+                        break;
+                    case 134735: // Battle Fatigue
+                        amount = 0;
+                        break;
+                }
+                break;
+            }
+            case 510: // PVP.ItemLevelCap = 483
+            {
+                switch (GetId())
+                {
+                    case 142689: // Player Damage Reduction Level 90
+                        amount = 0;
+                        break;
+                    case 134735: // Battle Fatigue
+                        amount = -15;
+                        break;
+                }
+                break;
+            }
+            case 520: // PVP.ItemLevelCap = 498
+            {
+                switch (GetId())
+                {
+                    case 142689: // Player Damage Reduction Level 90
+                        amount = 2500;
+                        break;
+                    case 134735: // Battle Fatigue
+                        amount = -50;
+                        break;
+                }
+                break;
+            }
+            case 530: // PVP.ItemLevelCap = 498
+            {
+                switch (GetId())
+                {
+                    case 142689: // Player Damage Reduction Level 90
+                        amount = 2500;
+                        break;
+                    case 134735: // Battle Fatigue
+                        amount = -50;
+                        break;
+                }
+                break;
+            }
+            case 540:
+            case 541:
+            case 542: // PVP.ItemLevelCap = 522
+            {
+                switch (GetId())
+                {
+                    case 142689: // Player Damage Reduction Level 90
+                        amount = 3200;
+                        break;
+                    case 134735: // Battle Fatigue
+                        amount = -55;
+                        break;
+                }
+                break;
+            }
+            case 547: // PVP.ItemLevelCap = 540
+            case 548: // PVP.ItemLevelCap = 550
+            {
+                /*switch (GetId())
+                {
+                }
+                break*/
+            }
+        }
+    }
     return amount;
 }
 
