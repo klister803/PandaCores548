@@ -345,8 +345,11 @@ public:
                         _summons.DespawnAll();
                         DespawnAllAT();
                         OfflineWorldState();
-                        if (GameObject* chest = me->SummonGameObject(GO_NSOP_SPOILS, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 604800))
-                            chest->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+                        if (!me->GetMap()->IsLfr())
+                            if (GameObject* chest = me->SummonGameObject(GO_NSOP_SPOILS, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 604800))
+                                chest->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+
+                        me->GeneratePersonalLoot(me, NULL); // bonus loot
                         events.ScheduleEvent(EVENT_OUTRO, 4000);
                     }
                     break;
