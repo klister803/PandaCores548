@@ -1323,7 +1323,7 @@ class spell_mage_alter_time : public SpellScriptLoader
                             if (auraInfo->Attributes & SPELL_ATTR0_PASSIVE)
                                 continue;
 
-                            if (aura->GetMaxDuration() == -1)
+                            if (aura->GetMaxDuration() == -1 && !auraInfo->RecoveryTime)
                                 continue;
 
                             if (aura->IsArea() && aura->GetCasterGUID() != _player->GetGUID())
