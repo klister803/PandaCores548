@@ -4186,7 +4186,6 @@ void Unit::RemoveAura(AuraApplication * aurApp, AuraRemoveMode mode)
     // no need to remove
     if (aurApp->GetBase()->GetApplicationOfTarget(GetGUID()) != aurApp || aurApp->GetBase()->IsRemoved())
         return;
-
     uint32 spellId = aurApp->GetBase()->GetId();
 
     if (spellId == 51713 && mode != AURA_REMOVE_BY_EXPIRE)
@@ -4545,7 +4544,6 @@ void Unit::RemoveAreaAurasDueToLeaveWorld()
             Unit* target = aurApp->GetTarget();
             if (!target || target == this)
                 continue;
-
             target->RemoveAura(aurApp);
             // things linked on aura remove may apply new area aura - so start from the beginning
             iter = m_ownedAuras.begin();
@@ -12127,7 +12125,7 @@ void Unit::RemoveAllControlled()
             else if (target->GetOwnerGUID() == GetGUID() && target->isSummon())
                 target->ToTempSummon()->UnSummon();
         }
-        else if (target->ToTempSummon() && target->IsInWorld())
+        else if (target->ToTempSummon())
             target->ToTempSummon()->UnSummon();
         else
             sLog->outError(LOG_FILTER_UNITS, "Unit %u is trying to release unit %u which is neither charmed nor owned by it", GetEntry(), target->GetEntry());
@@ -17197,7 +17195,7 @@ void Unit::RemoveFromWorld()
         if (!IsVehicle()) // should be remove in deathstate
             RemoveAllControlled();
 
-        if (!ToCreature())
+        if(!ToCreature())
             RemoveAreaAurasDueToLeaveWorld();
 
         if (GetCharmerGUID())
