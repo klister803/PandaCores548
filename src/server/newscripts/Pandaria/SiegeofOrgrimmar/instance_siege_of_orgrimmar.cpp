@@ -61,17 +61,19 @@ uint32 removelist[29] =
 Position const Sha_of_pride_Norushe  = {797.357f, 880.5637f, 371.1606f, 1.786108f };
 
 //Active Weapon Point Positions(Blackfuse)
-Position spawnaweaponpos[2] =
+Position spawnaweaponpos[3] =
 {
-    { 1922.07f, -5720.32f, -302.8854f },
-    { 1934.05f, -5740.43f, -302.8854f },
-};
-Position destapos[2] =
-{
-    { 1871.79f, -5645.60f, -302.8854f },
-    { 1887.84f, -5667.26f, -302.8854f },
+    {1915.95f, -5711.31f, -302.8854f},
+    {1924.21f, -5723.62f, -302.8854f},
+    {1933.46f, -5736.51f, -302.8854f},
 };
 
+Position destapos[3] =
+{
+    {1866.87f, -5637.11f, -302.8854f},
+    {1874.14f, -5649.20f, -302.8854f},
+    {1882.69f, -5661.84f, -302.8854f},
+};
 
 DoorData const doorData[] =
 {
@@ -84,6 +86,16 @@ DoorData const doorData[] =
     {GO_PRE_ENT_KLAXXI_DOOR,                 DATA_THOK,                   DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {GO_SP_EX_DOOR,                          DATA_SPOILS_OF_PANDARIA,     DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {0,                                      0,                           DOOR_TYPE_ROOM,       BOUNDARY_NONE},
+};
+
+static uint32 _wavearray[6][4] =
+{
+    { 0, NPC_ACTIVATED_MISSILE_TURRET, NPC_BLACKFUSE_CRAWLER_MINE, NPC_ACTIVATED_LASER_TURRET },
+    { 1, NPC_BLACKFUSE_CRAWLER_MINE, NPC_ACTIVATED_LASER_TURRET, NPC_ACTIVATED_MISSILE_TURRET },
+    { 2, NPC_ACTIVATED_LASER_TURRET, NPC_ACTIVATED_ELECTROMAGNET, NPC_ACTIVATED_MISSILE_TURRET },
+    { 3, NPC_ACTIVATED_LASER_TURRET, NPC_ACTIVATED_MISSILE_TURRET, NPC_BLACKFUSE_CRAWLER_MINE },
+    { 4, NPC_ACTIVATED_MISSILE_TURRET, NPC_ACTIVATED_ELECTROMAGNET, NPC_BLACKFUSE_CRAWLER_MINE },
+    { 5, NPC_BLACKFUSE_CRAWLER_MINE, NPC_ACTIVATED_LASER_TURRET, NPC_BLACKFUSE_CRAWLER_MINE },
 };
 
 class instance_siege_of_orgrimmar : public InstanceMapScript
@@ -100,6 +112,7 @@ public:
         uint8 klaxxidiecount;
         //count weapons finish move
         uint8 weaponsdone;
+        uint8 crawlerminenum;
         //Misc
         uint32 TeamInInstance;
         uint32 _teamInInstance;
@@ -170,6 +183,7 @@ public:
         std::vector<uint32> aweaponentry;
         uint64 bsGuid;
         uint64 blackfuseGuid;
+        std::vector<uint64> crawlermineGuids;
 
         EventMap Events;
 
@@ -197,6 +211,7 @@ public:
             TeamInInstance = 0;
             _teamInInstance = 0;
             lingering_corruption_count = 0;
+            crawlerminenum = 0;
 
             //GameObject
             immerseusexdoorGUID     = 0;
@@ -252,6 +267,7 @@ public:
             dweaponGuids.clear();
             aweaponentry.clear();
             blackfuseGuid           = 0;
+            crawlermineGuids.clear();
 
             onInitEnterState = false;
             STowerFull = false;
@@ -561,6 +577,9 @@ public:
                 case NPC_DEACTIVATED_ELECTROMAGNET:
                 case NPC_DEACTIVATED_MISSILE_TURRET:
                     dweaponGuids.push_back(creature->GetGUID());
+                    break;
+                case NPC_BLACKFUSE_CRAWLER_MINE:
+                    crawlermineGuids.push_back(creature->GetGUID());
                     break;
             }
         }
@@ -1156,6 +1175,7 @@ public:
                     weaponsdone = 0;
                     break;
                 case IN_PROGRESS:
+                    crawlerminenum = instance->Is25ManRaid() ? 7 : 3;
                     break;
                 case DONE:
                     break;
@@ -1188,7 +1208,7 @@ public:
             case DATA_SHA_PRE_EVENT:
                 for (std::set<uint64>::iterator itr = shaSlgGUID.begin(); itr != shaSlgGUID.end(); ++itr)
                     if (Creature* slg = instance->GetCreature(*itr))
-                        if (data == IN_PROGRESS) 
+                        if (data == IN_PROGRESS)
                             slg->AddAura(SPELL_SHA_VORTEX, slg);
                         else
                             slg->RemoveAura(SPELL_SHA_VORTEX);
@@ -1393,7 +1413,7 @@ public:
                 if (!dweaponGuids.empty())
                 {
                     uint32 entry = 0;
-                    for (std::vector<uint64>::const_iterator itr = dweaponGuids.begin(); itr != dweaponGuids.end(); ++itr)
+                    for (std::vector<uint64>::const_iterator itr = dweaponGuids.begin(); itr != dweaponGuids.end(); itr++)
                     {
                         if (Creature* dw = instance->GetCreature(*itr))
                         {
@@ -1420,33 +1440,79 @@ public:
                             }
                         }
                     }
-
                     if (Creature* blackfuse = instance->GetCreature(blackfuseGuid))
                         blackfuse->CastSpell(blackfuse, SPELL_PROTECTIVE_FRENZY, true);
                 }
                 break;
             case DATA_D_WEAPON_IN_DEST_POINT:
                 weaponsdone++;
-                if (weaponsdone == 2 && !aweaponentry.empty()) //done
+                if (Creature* blackfuse = instance->GetCreature(blackfuseGuid))
                 {
-                    if (Creature* blackfuse = instance->GetCreature(blackfuseGuid))
+                    if (weaponsdone == 2 && !aweaponentry.empty())
                     {
-                        for (uint8 n = 0; n < 2; ++n)
+                        for (uint8 n = 0; n < 2; n++)
                         {
-                            if (Creature* aw = blackfuse->SummonCreature(aweaponentry[n], spawnaweaponpos[n]))
+                            if (aweaponentry[n] == NPC_BLACKFUSE_CRAWLER_MINE)
                             {
-                                aw->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                                aw->GetMotionMaster()->MoveCharge(destapos[n].GetPositionX(), destapos[n].GetPositionY(), destapos[n].GetPositionZ(), 5.0f, 1, false);
+                                for (uint8 b = crawlerminenum; b > 0; b--)
+                                {
+                                    if (Creature* aw = blackfuse->SummonCreature(aweaponentry[n], spawnaweaponpos[n].GetPositionX() + float(b + 2), spawnaweaponpos[n].GetPositionY() + float(b + 2), spawnaweaponpos[n].GetPositionZ(), 0.0f))
+                                    {
+                                        aw->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                                        aw->GetMotionMaster()->MoveCharge(destapos[n].GetPositionX() + float(b + 2), destapos[n].GetPositionY() + float(b + 2), destapos[n].GetPositionZ(), 5.0f, 1, false);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (Creature* aw = blackfuse->SummonCreature(aweaponentry[n], spawnaweaponpos[n]))
+                                {
+                                    aw->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                                    aw->GetMotionMaster()->MoveCharge(destapos[n].GetPositionX(), destapos[n].GetPositionY(), destapos[n].GetPositionZ(), 5.0f, 1, false);
+                                }
                             }
                         }
+                        weaponsdone = 0;
                     }
-                    weaponsdone = 0;
-                }
-                else if (weaponsdone == 3) //enrage done
-                {
-                    weaponsdone = 0;
-                    if (Creature* blackfuse = instance->GetCreature(blackfuseGuid))
+                    else if (weaponsdone == 3 && aweaponentry.empty())
+                    {
                         blackfuse->CastSpell(blackfuse, SPELL_ENERGIZED_DEFENSIVE_MATRIX, true);
+                        uint8 num = blackfuse->AI()->GetData(DATA_GET_WEAPON_WAVE_INDEX);
+                        for (uint8 n = 1; n < 4; n++)
+                        {
+                            if (_wavearray[num][n] == NPC_BLACKFUSE_CRAWLER_MINE)
+                            {
+                                for (uint8 b = crawlerminenum; b > 0; b--)
+                                {
+                                    if (Creature* weapon = blackfuse->SummonCreature(_wavearray[num][n], spawnaweaponpos[n - 1].GetPositionX() + float(b + 2), spawnaweaponpos[n - 1].GetPositionY() + float(b + 2), spawnaweaponpos[n - 1].GetPositionZ(), 0.0f))
+                                    {
+                                        weapon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                                        weapon->GetMotionMaster()->MoveCharge(destapos[n - 1].GetPositionX() + float(b + 2), destapos[n - 1].GetPositionY() + float(b + 2), destapos[n - 1].GetPositionZ(), 5.0f, 1, false);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (Creature* weapon = blackfuse->SummonCreature(_wavearray[num][n], spawnaweaponpos[n - 1]))
+                                {
+                                    weapon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                                    weapon->GetMotionMaster()->MoveCharge(destapos[n - 1].GetPositionX(), destapos[n - 1].GetPositionY(), destapos[n - 1].GetPositionZ(), 5.0f, 1, false);
+                                }
+                            }
+                        }
+                        weaponsdone = 0;
+                    }
+                }
+                break;
+            case DATA_CRAWLER_MINE_READY:
+                crawlerminenum--;
+                if (!crawlerminenum)
+                {
+                    for (uint8 m = 0; m < crawlermineGuids.size(); m++)
+                        if (Creature* cm = instance->GetCreature(crawlermineGuids[m]))
+                            cm->AI()->SetData(DATA_CRAWLER_MINE_ENTERCOMBAT, uint32(m));
+                    crawlermineGuids.clear();
+                    crawlerminenum = instance->Is25ManRaid() ? 7 : 3;
                 }
                 break;
             }

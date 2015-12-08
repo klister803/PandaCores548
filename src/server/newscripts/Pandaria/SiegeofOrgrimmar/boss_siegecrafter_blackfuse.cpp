@@ -26,7 +26,7 @@ enum eSpells
     SPELL_AUTOMATIC_REPAIR_BEAM_AT  = 144212,
     SPELL_AUTOMATIC_REPAIR_BEAM     = 144213,
     SPELL_LAUNCH_SAWBLADE           = 143265,
-    SPELL_LAUNCH_SAWBLADE_AT        = 143329, //1021
+    SPELL_LAUNCH_SAWBLADE_AT        = 143329, 
     SPELL_SERRATED_SLASH_DMG        = 143327,
     //Automated shredder
     SPELL_REACTIVE_ARMOR            = 143387,
@@ -38,6 +38,19 @@ enum eSpells
     SPELL_BREAK_IN_PERIOD           = 145269,
     SPELL_CRAWLER_MINE_FIXATE       = 144010,
     SPELL_CRAWLER_MINE_FIXATE_D     = 144009,
+    SPELL_CRAWLER_MINE_FIXATE_PL    = 149147,
+    //Electromagnet
+    SPELL_MAGNETIC_CRASH_AT         = 143487,
+    SPELL_MAGNETIC_CRASH_DMG        = 144466,
+    //Shock Wave
+    SPELL_SHOCKWAVE_VISUAL_SPAWN    = 144647,
+    SPELL_SHOCKWAVE_VISUAL_TURRET   = 143640, 
+    SPELL_SHOCKWAVE_MISSILE         = 144658,
+    SPELL_SHOCKWAVE_MISSILE2        = 144660,
+    SPELL_SHOCKWAVE_MISSILE3        = 144661,
+    SPELL_SHOCKWAVE_MISSILE4        = 144662,
+    SPELL_SHOCKWAVE_MISSILE5        = 144663,
+    SPELL_SHOCKWAVE_MISSILE6        = 144664,
     //Special
     SPELL_ON_CONVEYOR               = 144287, 
     SPELL_PATTERN_RECOGNITION       = 144236,
@@ -63,6 +76,8 @@ enum eEvents
     //Crawler Mine
     EVENT_PURSUE                    = 4,
     EVENT_CHECK_DISTANCE            = 5,
+    //Rocket Turret
+    EVENT_SHOCKWAVE_MISSILE         = 6,
     //Automated Shredder
     EVENT_DEATH_FROM_ABOVE          = 10,
     //Special
@@ -96,7 +111,7 @@ Position atdestpos[4] =
 Position lapos[5] =
 {
     { 1999.54f, -5537.81f, -302.9150f, 0.0f },
-    { 2005.43f, -5534.02f, -302.9150f, 0.0f }, //1
+    { 2005.43f, -5534.02f, -302.9150f, 0.0f }, 
     { 2011.31f, -5530.24f, -302.9150f, 0.0f },
     { 2017.20f, -5526.45f, -302.9150f, 0.0f },
     { 2023.09f, -5522.66f, -302.9150f, 0.0f },
@@ -107,7 +122,7 @@ Position lapos2[5] =
     { 2017.53f, -5563.97f, -303.5679f, 0.0f },
     { 2023.42f, -5560.20f, -303.5679f, 0.0f },
     { 2029.31f, -5556.41f, -303.5679f, 0.0f },
-    { 2035.19f, -5552.62f, -303.5679f, 0.0f },//1
+    { 2035.19f, -5552.62f, -303.5679f, 0.0f },
     { 2041.08f, -5548.85f, -303.5679f, 0.0f },
 };
 
@@ -115,27 +130,19 @@ Position lapos3[5] =
 {
     { 2033.35f, -5587.66f, -303.2579f, 0.0f },
     { 2039.25f, -5583.87f, -303.2579f, 0.0f },
-    { 2045.14f, -5580.10f, -303.2579f, 0.0f },//1
+    { 2045.14f, -5580.10f, -303.2579f, 0.0f },
     { 2051.03f, -5576.31f, -303.2579f, 0.0f },
     { 2056.91f, -5572.51f, -303.2579f, 0.0f },
 };
 
-struct WeaponWaveArray
-{
-    uint8  wavecount;
-    uint32 firstentry;
-    uint32 secondentry;
-    uint32 thirdentry;
-};
-
-static WeaponWaveArray wavearray[6] =
+uint32 wavearray[6][4] =
 {
     {0, NPC_DEACTIVATED_MISSILE_TURRET, NPC_DISASSEMBLED_CRAWLER_MINE, NPC_DEACTIVATED_LASER_TURRET},
     {1, NPC_DISASSEMBLED_CRAWLER_MINE, NPC_DEACTIVATED_LASER_TURRET, NPC_DEACTIVATED_MISSILE_TURRET},
     {2, NPC_DEACTIVATED_LASER_TURRET, NPC_DEACTIVATED_ELECTROMAGNET, NPC_DEACTIVATED_MISSILE_TURRET},
     {3, NPC_DEACTIVATED_LASER_TURRET, NPC_DEACTIVATED_MISSILE_TURRET, NPC_DISASSEMBLED_CRAWLER_MINE},
     {4, NPC_DEACTIVATED_MISSILE_TURRET, NPC_DEACTIVATED_ELECTROMAGNET, NPC_DISASSEMBLED_CRAWLER_MINE},
-    {5, NPC_DISASSEMBLED_CRAWLER_MINE, NPC_DEACTIVATED_LASER_TURRET, NPC_DISASSEMBLED_CRAWLER_MINE}
+    {5, NPC_DISASSEMBLED_CRAWLER_MINE, NPC_DEACTIVATED_LASER_TURRET, NPC_DISASSEMBLED_CRAWLER_MINE},
 };
 
 Position spawnweaponpos[3] =
@@ -168,11 +175,19 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          {
              _Reset();
              weaponwavecount = 0;
+             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CRAWLER_MINE_FIXATE_PL);
              me->RemoveAurasDueToSpell(SPELL_PROTECTIVE_FRENZY);
              me->RemoveAurasDueToSpell(SPELL_AUTOMATIC_REPAIR_BEAM_AT);
              //me->SetReactState(REACT_DEFENSIVE);
              me->SetReactState(REACT_PASSIVE);    //test only
              me->RemoveAurasDueToSpell(SPELL_AUTOMATIC_REPAIR_BEAM_AT);
+         }
+
+         uint32 GetData(uint32 type)
+         {
+             if (type == DATA_GET_WEAPON_WAVE_INDEX)
+                 return weaponwavecount;
+             return 0;
          }
 
          void EnterCombat(Unit* who)
@@ -195,12 +210,9 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          void CreateWeaponWave(uint8 wavecount)
          {
              wavecount = wavecount >= 5 ? 0 : wavecount;
-             if (Creature* firstdweapon = me->SummonCreature(wavearray[wavecount].firstentry, spawnweaponpos[0]))
-                 firstdweapon->GetMotionMaster()->MoveCharge(destpos.GetPositionX(), destpos.GetPositionY(), destpos.GetPositionZ(), 7.0f, false);
-             if (Creature* seconddweapon = me->SummonCreature(wavearray[wavecount].secondentry, spawnweaponpos[1]))
-                 seconddweapon->GetMotionMaster()->MoveCharge(destpos.GetPositionX(), destpos.GetPositionY(), destpos.GetPositionZ(), 7.0f, false);
-             if (Creature* thirddweapon = me->SummonCreature(wavearray[wavecount].thirdentry, spawnweaponpos[2]))
-                 thirddweapon->GetMotionMaster()->MoveCharge(destpos.GetPositionX(), destpos.GetPositionY(), destpos.GetPositionZ(), 7.0f, false);
+             for (uint8 n = 1; n < 4; n++)
+                 if (Creature* weapon = me->SummonCreature(wavearray[wavecount][n], spawnweaponpos[n-1]))
+                     weapon->GetMotionMaster()->MoveCharge(destpos.GetPositionX(), destpos.GetPositionY(), destpos.GetPositionZ(), 7.0f, false);
              weaponwavecount++;
          }
 
@@ -438,11 +450,82 @@ public:
 
         void EnterCombat(Unit* who){}
 
+        void EnterEvadeMode(){}
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            switch (me->GetEntry())
+            {
+            case NPC_BLACKFUSE_CRAWLER_MINE:
+                me->getThreatManager().addThreat(attacker, 0.0f);
+                break;
+            case NPC_ACTIVATED_LASER_TURRET:
+            case NPC_ACTIVATED_ELECTROMAGNET:
+            case NPC_ACTIVATED_MISSILE_TURRET:
+                damage = 0;
+                break;
+            default:
+                break;
+            }
+        }
+
         void JustDied(Unit* killer)
         {
-            if (instance)
+            switch (me->GetEntry())
+            {
+            case NPC_DISASSEMBLED_CRAWLER_MINE:
+            case NPC_DEACTIVATED_LASER_TURRET:
+            case NPC_DEACTIVATED_ELECTROMAGNET:
+            case NPC_DEACTIVATED_MISSILE_TURRET:
                 instance->SetData(DATA_SAFE_WEAPONS, me->GetEntry());
-            me->DespawnOrUnsummon(1000);
+                me->DespawnOrUnsummon(1000);
+                break;
+            case NPC_BLACKFUSE_CRAWLER_MINE:
+                if (Player* pl = me->GetPlayer(*me, targetGuid))
+                {
+                    if (pl->isAlive())
+                    {
+                        pl->RemoveAurasDueToSpell(SPELL_CRAWLER_MINE_FIXATE_PL);
+                        me->DespawnOrUnsummon(1000);
+                    }
+                }
+                break;
+            default:
+                break;
+            }
+        }
+
+        void SetData(uint32 type, uint32 data)
+        {
+            if (type == DATA_CRAWLER_MINE_ENTERCOMBAT)
+            {
+                uint32 mod = 0;
+                switch (data)
+                {
+                case 0:
+                    mod = 0;
+                    break;
+                case 1:
+                    mod = 2000;
+                    break;
+                case 2:
+                    mod = 4000;
+                    break;
+                case 3:
+                    mod = 6000;
+                    break;
+                case 4:
+                    mod = 8000;
+                    break;
+                case 5:
+                    mod = 10000;
+                    break;
+                case 6:
+                    mod = 12000;
+                    break;
+                }
+                events.ScheduleEvent(EVENT_ACTIVE, 500 + mod);
+            }
         }
 
         void MovementInform(uint32 type, uint32 pointId)
@@ -464,7 +547,7 @@ public:
                     switch (me->GetEntry())
                     {
                     case NPC_BLACKFUSE_CRAWLER_MINE:
-                        events.ScheduleEvent(EVENT_ACTIVE, 4000);
+                        instance->SetData(DATA_CRAWLER_MINE_READY, 0);
                         break;
                     case NPC_ACTIVATED_LASER_TURRET:
                         events.ScheduleEvent(EVENT_ACTIVE, 3000);
@@ -519,13 +602,6 @@ public:
             }
         }
 
-        void DamageTaken(Unit* attacker, uint32 &dmg)
-        {
-            me->getThreatManager().addThreat(attacker, 0.0f);
-        }
-
-        void EnterEvadeMode(){}
-
         void UpdateAI(uint32 diff)
         {
             events.Update(diff);
@@ -539,10 +615,14 @@ public:
                     switch (me->GetEntry())
                     {
                     case NPC_BLACKFUSE_CRAWLER_MINE:
-                        me->GetMotionMaster()->MoveJump(cmdestpos.GetPositionX(), cmdestpos.GetPositionY(), cmdestpos.GetPositionZ(), 15.0f, 15.0f, 3);
+                        me->GetMotionMaster()->MoveJump(cmdestpos.GetPositionX(), cmdestpos.GetPositionY(), cmdestpos.GetPositionZ(), 20.0f, 20.0f, 3);
                         break;
                     case NPC_ACTIVATED_LASER_TURRET:
                         StartDisentegrationLaser();
+                        break;
+                    case NPC_ACTIVATED_ELECTROMAGNET:
+                        break;
+                    case NPC_ACTIVATED_MISSILE_TURRET:
                         break;
                     }
                 }
@@ -555,15 +635,19 @@ public:
                     {
                         for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                         {
-                            if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && !(*itr)->HasAura(SPELL_PATTERN_RECOGNITION) && !(*itr)->HasAura(SPELL_PURSUIT_LASER))
+                            if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
                             {
-                                DoCast(*itr, SPELL_CRAWLER_MINE_FIXATE, true);
-                                targetGuid = (*itr)->GetGUID();
-                                DoCast(me, SPELL_BREAK_IN_PERIOD, true);
-                                me->AddThreat(*itr, 50000000.0f);
-                                me->SetReactState(REACT_AGGRESSIVE);
-                                me->TauntApply(*itr);
-                                break;
+                                if (!(*itr)->HasAura(SPELL_PATTERN_RECOGNITION) && !(*itr)->HasAura(SPELL_PURSUIT_LASER) && !(*itr)->HasAura(SPELL_CRAWLER_MINE_FIXATE_PL))
+                                {
+                                    (*itr)->AddAura(SPELL_CRAWLER_MINE_FIXATE_PL, *itr);
+                                    DoCast(*itr, SPELL_CRAWLER_MINE_FIXATE, true);
+                                    targetGuid = (*itr)->GetGUID();
+                                    DoCast(me, SPELL_BREAK_IN_PERIOD, true);
+                                    me->AddThreat(*itr, 50000000.0f);
+                                    me->SetReactState(REACT_AGGRESSIVE);
+                                    me->TauntApply(*itr);
+                                    break;
+                                }
                             }
                         }
                     }
@@ -579,7 +663,7 @@ public:
                             if (me->GetDistance(pl) <= 6.0f && !done)
                             {
                                 done = true;
-                                pl->RemoveAurasDueToSpell(SPELL_CRAWLER_MINE_FIXATE);
+                                pl->RemoveAurasDueToSpell(SPELL_CRAWLER_MINE_FIXATE_PL);
                                 me->GetMotionMaster()->Clear(false);
                                 DoCast(pl, SPELL_DETONATE, true);
                                 me->DespawnOrUnsummon(1000);
@@ -622,14 +706,38 @@ public:
             }
         }
         InstanceScript* instance;
+        EventMap events;
+        uint8 shockwavenum;
 
-        void Reset(){}
+        void Reset()
+        {
+            events.Reset();
+            if (me->GetEntry() == NPC_SHOCKWAVE_MISSILE)
+            {
+                shockwavenum = 0;
+                events.ScheduleEvent(EVENT_SHOCKWAVE_MISSILE, 1000);
+            }
+        }
 
         void EnterCombat(Unit* who){}
 
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            damage = 0;
+        }
+
         void EnterEvadeMode(){}
 
-        void UpdateAI(uint32 diff){}
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_SHOCKWAVE_MISSILE)
+                    DoCast(me, SPELL_SHOCKWAVE_MISSILE);
+            }
+        }
     };
 
     CreatureAI* GetAI(Creature* creature) const
@@ -652,12 +760,15 @@ public:
         {
             if (GetCaster() && GetHitUnit())
             { 
-                Position pos;
-                GetCaster()->GetNearPosition(pos, 7.0f, 5.5f);
-                if (Creature* sawblade = GetCaster()->SummonCreature(NPC_BLACKFUSE_SAWBLADE, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ() + 2.0f, 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
+                if (GetHitUnit()->ToPlayer())
                 {
-                    sawblade->AddAura(SPELL_LAUNCH_SAWBLADE_AT, sawblade);
-                    sawblade->GetMotionMaster()->MoveCharge(GetHitUnit()->GetPositionX(), GetHitUnit()->GetPositionY(), GetHitUnit()->GetPositionZ() + 2.0f, 15.0f);
+                    Position pos;
+                    GetCaster()->GetNearPosition(pos, 7.0f, 5.5f);
+                    if (Creature* sawblade = GetCaster()->SummonCreature(NPC_BLACKFUSE_SAWBLADE, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ() + 2.0f, 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
+                    {
+                        sawblade->AddAura(SPELL_LAUNCH_SAWBLADE_AT, sawblade);
+                        sawblade->GetMotionMaster()->MoveCharge(GetHitUnit()->GetPositionX(), GetHitUnit()->GetPositionY(), GetHitUnit()->GetPositionZ() + 2.0f, 15.0f);
+                    }
                 }
             }
         }
