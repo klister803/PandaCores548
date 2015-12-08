@@ -363,7 +363,7 @@ class boss_halfus_wyrmbreaker : public CreatureScript
                         for (uint8 i = 0; i < 8; ++i)
                         {
                             Creature* whelpsN = whelps[i];
-                            if (!whelpsN)
+                            if (!whelpsN || !whelpsN->IsInWorld())
                                 continue;
 
                             whelpsN->SetReactState(REACT_AGGRESSIVE);
