@@ -2068,5 +2068,22 @@ namespace Trinity
             int32 _entry2;
             int32 _entry3;
     };
+
+    class UnitAttackableCheck
+    {
+        public:
+            UnitAttackableCheck(bool present, Unit* caster) : _present(present), _caster(caster) {}
+            bool operator() (Unit* unit)
+            {
+                return _caster->IsValidAttackTarget(unit) == _present;
+            }
+            bool operator() (WorldObject* object)
+            {
+                return object->ToUnit() && _caster->IsValidAttackTarget(object->ToUnit()) == _present;
+            }
+        private:
+            bool _present;
+            Unit* _caster;
+    };
 }
 #endif

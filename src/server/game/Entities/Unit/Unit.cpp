@@ -25493,23 +25493,40 @@ Unit* Unit::GetUnitForLinkedSpell(Unit* caster, Unit* target, uint8 type)
 {
     switch (type)
     {
-        case LINK_UNIT_TYPE_PET:
+        case LINK_UNIT_TYPE_PET: //1
             return (Unit*)(ToPlayer() ? ToPlayer()->GetPet() : NULL);
             break;
-        case LINK_UNIT_TYPE_OWNER:
-            return GetOwner();
+        case LINK_UNIT_TYPE_OWNER: //2
+            return GetAnyOwner();
             break;
-        case LINK_UNIT_TYPE_CASTER:
+        case LINK_UNIT_TYPE_CASTER: //3
             return caster;
             break;
-        case LINK_UNIT_TYPE_SELECTED:
+        case LINK_UNIT_TYPE_SELECTED: //4
             return ToPlayer() ? ToPlayer()->GetSelectedUnit() : NULL;
             break;
-        case LINK_UNIT_TYPE_TARGET:
+        case LINK_UNIT_TYPE_TARGET: //5
             return target;
             break;
-        case LINK_UNIT_TYPE_VICTIM:
+        case LINK_UNIT_TYPE_VICTIM: //6
             return getVictim();
+            break;
+        case LINK_UNIT_TYPE_ATTACKER: //7
+        {
+            if (Unit* owner = caster->GetAnyOwner())
+                return owner->getAttackerForHelper();
+            else
+                return caster->getAttackerForHelper();
+            break;
+        }
+        case LINK_UNIT_TYPE_NEARBY: //8
+            return SelectNearbyTarget(target);
+            break;
+        case LINK_UNIT_TYPE_NEARBY_ALLY: //9
+            return SelectNearbyAlly(target);
+            break;
+        case LINK_UNIT_TYPE_ORIGINALCASTER: //10
+            return this;
             break;
     }
     return NULL;
@@ -25519,7 +25536,7 @@ bool Unit::HasAuraLinkedSpell(Unit* caster, Unit* target, uint8 type, int32 hast
 {
     switch (type)
     {
-        case LINK_HAS_AURA_ON_CASTER:
+        case LINK_HAS_AURA_ON_CASTER: // 0
         {
             if(!caster)
                 return true;
@@ -25528,14 +25545,14 @@ bool Unit::HasAuraLinkedSpell(Unit* caster, Unit* target, uint8 type, int32 hast
             else if(hastalent < 0)
                 return caster->HasAura(abs(hastalent));
         }
-        case LINK_HAS_AURA_ON_TARGET:
+        case LINK_HAS_AURA_ON_TARGET: // 1
         {
             if(hastalent > 0)
                 return target ? !target->HasAura(hastalent) : true ;
             else if(hastalent < 0)
                 return target ? target->HasAura(abs(hastalent)) : true ;
         }
-        case LINK_HAS_SPELL_ON_CASTER:
+        case LINK_HAS_SPELL_ON_CASTER: // 2
         {
             if(!caster)
                 return true;
@@ -25544,7 +25561,7 @@ bool Unit::HasAuraLinkedSpell(Unit* caster, Unit* target, uint8 type, int32 hast
             else if(hastalent < 0)
                 return caster->HasSpell(abs(hastalent));
         }
-        case LINK_HAS_AURA_ON_OWNER:
+        case LINK_HAS_AURA_ON_OWNER: // 3
         {
             if(!caster)
                 return true;
@@ -25553,8 +25570,43 @@ bool Unit::HasAuraLinkedSpell(Unit* caster, Unit* target, uint8 type, int32 hast
             else if(hastalent < 0)
                 return caster->GetOwner() ? caster->GetOwner()->HasAura(abs(hastalent)) : true;
         }
-        case LINK_HAS_AURATYPE:
-            return target ? !target->HasAuraTypeWithCaster(AuraType(hastalent), caster ? caster->GetGUID() : 0) : true;
+        case LINK_HAS_AURATYPE: // 4
+            return target ? !target->HasAuraTypeWithCaster(AuraType(hastalent), caster ? caster->GetGUID() : NULL) : true;
+        case LINK_HAS_MY_AURA_ON_CASTER: // 5
+        {
+            if(!caster)
+                return false;
+            if(hastalent > 0)
+                return !caster->HasAura(hastalent, caster->GetGUID());
+            else if(hastalent < 0)
+                return caster->HasAura(abs(hastalent), caster->GetGUID());
+        }
+        case LINK_HAS_MY_AURA_ON_TARGET: // 6
+        {
+            if(hastalent > 0)
+                return target ? !target->HasAura(hastalent, caster ? caster->GetGUID() : NULL) : true;
+            else if(hastalent < 0)
+                return target ? target->HasAura(abs(hastalent), caster ? caster->GetGUID() : NULL) : true;
+        }
+        case LINK_HAS_AURA_STATE: // 7
+        {
+            if(hastalent > 0)
+                return target ? !target->HasAuraState(AuraStateType(hastalent)) : true;
+            else if(hastalent < 0)
+                return target ? target->HasAuraState(AuraStateType(abs(hastalent))) : true;
+        }
+        case LINK_HAS_SPECID: // 8
+        {
+            if(!caster)
+                return true;
+            Player* _player = caster->ToPlayer();
+            if (!_player)
+                return true;
+            if(hastalent > 0)
+                return _player->GetSpecializationId(_player->GetActiveSpec()) != hastalent;
+            else if(hastalent < 0)
+                return _player->GetSpecializationId(_player->GetActiveSpec()) == hastalent;
+        }
     }
     return true;
 }

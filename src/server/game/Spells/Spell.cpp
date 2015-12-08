@@ -462,7 +462,7 @@ m_absorb(0), m_resist(0), m_blocked(0), m_interupted(false), m_effect_targets(NU
             m_originalCaster = NULL;
     }
 
-    if (info->AttributesEx4 & SPELL_ATTR4_TRIGGERED)
+    if (!m_replaced && info->AttributesEx4 & SPELL_ATTR4_TRIGGERED)
         _triggeredCastFlags |= TRIGGERED_FULL_MASK;
     if(m_replaced || AttributesCustomEx2 & SPELL_ATTR2_AUTOREPEAT_FLAG) //If spell casted as replaced, enable proc from him
         _triggeredCastFlags &= ~TRIGGERED_DISALLOW_PROC_EVENTS;
@@ -3572,6 +3572,8 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
     if ((_triggeredCastFlags & TRIGGERED_IGNORE_COMBO_POINTS) || m_CastItem || !m_caster->m_movedPlayer)
         m_needComboPoints = false;
 
+    LinkedSpell(m_caster, m_targets.GetUnitTarget(), SPELL_LINK_BEFORE_CHECK);
+
     SpellCastResult result = CheckCast(true);
     if (result != SPELL_CAST_OK && !IsAutoRepeat())          //always cast autorepeat dummy for triggering
     {
@@ -3626,6 +3628,8 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
     ReSetTimer();
 
     sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::prepare: spell id %u source %u caster %d customCastFlags %u mask %u target %s", m_spellInfo->Id, m_caster->GetEntry(), m_originalCaster ? m_originalCaster->GetEntry() : -1, _triggeredCastFlags, m_targets.GetTargetMask(), m_targets.GetUnitTarget() ? m_targets.GetUnitTarget()->GetString().c_str() : "-");
+
+    LinkedSpell(m_caster, m_targets.GetUnitTarget(), SPELL_LINK_PREPARE_CAST);
 
     //Containers for channeled spells have to be set
     //TODO:Apply this to all casted spells if needed
@@ -4654,6 +4658,8 @@ void Spell::finish(bool ok)
                 }
             }
         }
+
+    LinkedSpell(m_caster, unitTarget, SPELL_LINK_FINISH_CAST);
 }
 
 void Spell::SendCastResult(SpellCastResult result)
@@ -6303,7 +6309,8 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
 {
     if (const std::vector<SpellLinked> *spell_triggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id + type))
     {
-        std::set<uint32>  spellBanList;
+        std::set<uint32> spellBanList;
+        std::set<uint32> groupLock;
         for (std::vector<SpellLinked>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
         {
             if (i->hitmask)
@@ -6317,18 +6324,44 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
                     continue;
             }
 
+            if(i->group != 0 && !groupLock.empty())
+            {
+                std::set<uint32>::iterator itr = groupLock.find(i->group);
+                if (itr != groupLock.end())
+                    continue;
+            }
+
             if(!_target)
                 _target = m_targets.GetUnitTarget();
             _caster = m_caster;
 
             if (i->target)
-                _target = m_caster->GetUnitForLinkedSpell(_caster, _target, i->target);
+                _target = (m_originalCaster ? m_originalCaster : m_caster)->GetUnitForLinkedSpell(_caster, _target, i->target);
 
             if (i->caster)
-                _caster = m_caster->GetUnitForLinkedSpell(_caster, _target, i->caster);
+                _caster = (m_originalCaster ? m_originalCaster : m_caster)->GetUnitForLinkedSpell(_caster, _target, i->caster);
 
             if(!_caster)
                 continue;
+
+            if(i->targetCount != -1)
+            {
+                switch (i->targetCountType)
+                {
+                    case LINK_TARGET_DEFAULT:
+                    {
+                        if(GetTargetCount() < i->targetCount)
+                            continue;
+                        break;
+                    }
+                    case LINK_TARGET_FROM_EFFECT:
+                    {
+                        if(GetEffectTargets().size() < i->targetCount)
+                            continue;
+                        break;
+                    }
+                }
+            }
 
             if(i->hastalent)
                 if(m_caster->HasAuraLinkedSpell(_caster, _target, i->hastype, i->hastalent))
@@ -6355,6 +6388,10 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
                         if(_target)
                             _target->RemoveAurasByType(AuraType(i->hastalent2));
                         break;
+                    case LINK_ACTION_CHANGE_STACK:
+                        if (Aura* aura = (_target ? _target : _caster)->GetAura(abs(i->effect)))
+                            aura->ModStackAmount(-1);
+                        break;
                 }
             }
             else
@@ -6366,28 +6403,70 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
 
                 switch (i->actiontype)
                 {
-                    case LINK_ACTION_DEFAULT:
+                    case LINK_ACTION_DEFAULT: //0
                     {
                         _caster->CastSpell(_target ? _target : _caster, i->effect, true);
                         spellBanList.insert(i->effect); // Triggered once for a cycle
                         break;
                     }
-                    case LINK_ACTION_LEARN:
+                    case LINK_ACTION_LEARN: //1
                     {
                         if (Player* _lplayer = _caster->ToPlayer())
                             _lplayer->learnSpell(i->effect, false);
                         break;
                     }
-                    case LINK_ACTION_SPELLCOOLDOWN:
+                    case LINK_ACTION_SEND_COOLDOWN: // 3
                         _caster->SendSpellCooldown(i->effect, m_spellInfo->Id);
                         break;
-                    case LINK_ACTION_CASTNOTRIGGER:
+                    case LINK_ACTION_CAST_NO_TRIGGER: //4
                         _caster->CastSpell(_target ? _target : _caster, i->effect, false);
                         break;
-                    case LINK_ACTION_ADDAURA:
+                    case LINK_ACTION_ADD_AURA: //5
                         _caster->AddAura(i->effect, _target ? _target : _caster);
                         break;
+                    case LINK_ACTION_CHANGE_STACK: //7
+                        if (Aura* aura = (_target ? _target : _caster)->GetAura(i->effect))
+                            aura->ModStackAmount(1);
+                        else
+                            _caster->CastSpell(_target ? _target : _caster, i->effect, true);
+                        break;
+                    case LINK_ACTION_REMOVE_COOLDOWN: //8
+                        if (Player* _lplayer = _caster->ToPlayer())
+                            _lplayer->RemoveSpellCooldown(i->effect, true);
+                        break;
+                    case LINK_ACTION_REMOVE_MOVEMENT: //9
+                        (_target ? _target : _caster)->RemoveMovementImpairingAuras();
+                        break;
+                    case LINK_ACTION_CHANGE_DURATION: //10
+                    {
+                        if(Aura* aura = (_target ? _target : _caster)->GetAura(i->effect, _caster->GetGUID()))
+                        {
+                            if (!i->duration)
+                                aura->RefreshTimers();
+                            else
+                            {
+                                int32 _duration = int32(aura->GetDuration() + i->duration);
+                                if (_duration < aura->GetMaxDuration())
+                                    aura->SetDuration(_duration, true);
+                            }
+                        }
+                        else
+                            _caster->CastSpell(_target ? _target : _caster, i->effect, true);
+                        break;
+                    }
+                    case LINK_UNIT_TYPE_CAST_DEST: //11
+                    {
+                        if (m_targets.HasDst())
+                        {
+                            Position pos = *m_targets.GetDstPos();
+                            _caster->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), i->effect, true);
+                        }
+                        break;
+                    }
                 }
+
+                if(i->group != 0)
+                    groupLock.insert(i->group);
 
                 if(i->cooldown != 0 && _caster->GetTypeId() == TYPEID_PLAYER)
                     _caster->ToPlayer()->AddSpellCooldown(i->effect, 0, getPreciseTime() + (double)i->cooldown);
@@ -9732,6 +9811,14 @@ void Spell::CustomTargetSelector(std::list<WorldObject*>& targets, SpellEffIndex
                 case SPELL_FILTER_BY_ENTRY: //14
                 {
                     targets.remove_if(Trinity::UnitEntryCheck(itr->param1, itr->param2, itr->param3));
+                    break;
+                }
+                case SPELL_FILTER_TARGET_ATTACKABLE: // 15
+                {
+                    if(itr->param1 < 0.0f)
+                        targets.remove_if(Trinity::UnitAttackableCheck(true, _caster));
+                    else
+                        targets.remove_if(Trinity::UnitAttackableCheck(false, _caster));
                     break;
                 }
             }

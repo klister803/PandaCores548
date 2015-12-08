@@ -892,56 +892,40 @@ bool Spell::SpellDummyTriggered(SpellEffIndex effIndex)
         bool check = false;
         Unit* triggerTarget = unitTarget;
         Unit* triggerCaster = m_caster;
+        Unit* targetAura = m_caster;
         int32 basepoints0 = damage;
         uint32 cooldown_spell_id = 0;
 
         for (std::vector<SpellDummyTrigger>::const_iterator itr = spellTrigger->begin(); itr != spellTrigger->end(); ++itr)
         {
             #ifdef WIN32
-            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectDummy %u, 1<<effIndex %u, itr->effectmask %u, option %u, spell_trigger %i, target %u (%u ==> %u)", m_spellInfo->Id, 1<<effIndex, itr->effectmask, itr->option, itr->spell_trigger, itr->target, triggerTarget ? triggerTarget->GetGUID() : 0, triggerCaster ? triggerCaster->GetGUID() : 0);
+            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectDummy %u, 1<<effIndex %u, itr->effectmask %u, option %u, spell_trigger %i, target %u (%u ==> %u)", m_spellInfo->Id, 1<<effIndex, itr->effectmask, itr->option, itr->spell_trigger, itr->target, triggerTarget ? triggerTarget->GetGUIDLow() : 0, triggerCaster ? triggerCaster->GetGUIDLow() : 0);
             #endif
 
             if (effectHandleMode == SPELL_EFFECT_HANDLE_LAUNCH && itr->option != DUMMY_TRIGGER_CAST_DEST && itr->option != DUMMY_TRIGGER_CAST_OR_REMOVE)
                 continue;
 
-            if (!(itr->effectmask & (1<<effIndex)))
+            if (!(itr->effectmask & (1 << effIndex)))
                 continue;
 
+            if (itr->target)
+                triggerTarget = (m_originalCaster ? m_originalCaster : m_caster)->GetUnitForLinkedSpell(m_caster, unitTarget, itr->target);
+
+            if (itr->caster)
+                triggerCaster = (m_originalCaster ? m_originalCaster : m_caster)->GetUnitForLinkedSpell(m_caster, unitTarget, itr->caster);
+
+            if (itr->targetaura)
+                targetAura = (m_originalCaster ? m_originalCaster : m_caster)->GetUnitForLinkedSpell(m_caster, unitTarget, itr->targetaura);
+
             #ifdef WIN32
-            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectDummy2: %u, 1<<effIndex %u, itr->effectmask %u, option %u, spell_trigger %i, target %u (%u ==> %u)", m_spellInfo->Id, 1<<effIndex, itr->effectmask, itr->option, itr->spell_trigger, itr->target, triggerTarget ? triggerTarget->GetGUID(): 0, triggerCaster ? triggerCaster->GetGUID(): 0);
+            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectDummy2: %u, 1<<effIndex %u, itr->effectmask %u, option %u, spell_trigger %i, target %u (%u ==> %u)", m_spellInfo->Id, 1<<effIndex, itr->effectmask, itr->option, itr->spell_trigger, itr->target, triggerTarget ? triggerTarget->GetGUIDLow(): 0, triggerCaster ? triggerCaster->GetGUIDLow(): 0);
             #endif
 
-            if(itr->target == 1) //get target caster
-                triggerTarget = triggerCaster;
-
-            if(itr->caster == 1) //get target caster
-            {
-                 if(!unitTarget || unitTarget == triggerCaster)
-                    continue;
-                triggerCaster = unitTarget;
-            }
-
-            if(itr->target == 2 && triggerCaster->ToPlayer()) //set caster to pet from owner caster
-                if (Pet* pet = triggerCaster->ToPlayer()->GetPet())
-                    triggerCaster = (Unit*)pet;
-
-            if(itr->target == 3 && triggerCaster->ToPlayer()) //get target pet from caster
-                if (Pet* pet = triggerCaster->ToPlayer()->GetPet())
-                    triggerTarget = (Unit*)pet;
-
-            if(itr->target == 4 && triggerTarget->ToPlayer()) //get target pet from target
-                if (Pet* pet = triggerTarget->ToPlayer()->GetPet())
-                    triggerTarget = (Unit*)pet;
-
-            if(itr->target == 5) //get target owner
-                if (Unit* owner = triggerCaster->GetOwner())
-                    triggerTarget = owner;
-
             cooldown_spell_id = abs(itr->spell_trigger);
-            if(triggerCaster->ToPlayer())
+            if (triggerCaster && triggerCaster->ToPlayer())
                 if (triggerCaster->ToPlayer()->HasSpellCooldown(cooldown_spell_id) && itr->option != DUMMY_TRIGGER_COOLDOWN)
                     return true;
-            if(triggerCaster->ToCreature())
+            if (triggerCaster && triggerCaster->ToCreature())
                 if (triggerCaster->ToCreature()->HasSpellCooldown(cooldown_spell_id) && itr->option != DUMMY_TRIGGER_COOLDOWN)
                     return true;
 
@@ -950,42 +934,63 @@ bool Spell::SpellDummyTriggered(SpellEffIndex effIndex)
             int32 bp2 = int32(itr->bp2);
             int32 spell_trigger = damage;
 
-            if(itr->spell_trigger != 0)
+            if (itr->spell_trigger != 0)
                 spell_trigger = abs(itr->spell_trigger);
+
+            if(triggerCaster && !triggerCaster->IsInWorld())
+                return false;
+            if(triggerTarget && !triggerTarget->IsInWorld())
+                return false;
+
+            if(targetAura)
+            {
+                if (itr->aura > 0)
+                {
+                    if (!targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+                }
+                else if (itr->aura < 0)
+                {
+                    if (targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+                }
+            }
 
             switch (itr->option)
             {
                 case DUMMY_TRIGGER_BP: //0
                 {
-                    if(itr->spell_trigger < 0)
+                    if(!triggerCaster || !triggerTarget)
+                        break;
+                    if (itr->spell_trigger < 0)
                         basepoints0 *= -1;
 
                     triggerCaster->CastCustomSpell(triggerTarget, spell_trigger, &basepoints0, &basepoints0, &basepoints0, true, m_CastItem, NULL, m_originalCasterGUID);
-                    if(itr->target == 6)
-                    {
-                        if (Guardian* pet = triggerCaster->GetGuardianPet())
-                            triggerCaster->CastCustomSpell(pet, spell_trigger, &basepoints0, &bp1, &bp2, true);
-                    }
                     check = true;
                 }
                 break;
                 case DUMMY_TRIGGER_BP_CUSTOM: //1
                 {
+                    if(!triggerCaster || !triggerTarget)
+                        break;
                     triggerCaster->CastCustomSpell(triggerTarget, spell_trigger, &bp0, &bp1, &bp2, true, m_CastItem, NULL, m_originalCasterGUID);
-                    if(itr->target == 6)
-                    {
-                        if (Guardian* pet = triggerCaster->GetGuardianPet())
-                            triggerCaster->CastCustomSpell(pet, spell_trigger, &basepoints0, &bp1, &bp2, true);
-                    }
                     check = true;
                 }
                 break;
                 case DUMMY_TRIGGER_COOLDOWN: //2
                 {
-                    if(Player* player = triggerTarget->ToPlayer())
+                    if(!triggerTarget)
+                        break;
+                    if (Player* player = triggerTarget->ToPlayer())
                     {
                         uint32 spellid = abs(spell_trigger);
-                        if(itr->bp0 == 0.0f)
+                        if (itr->bp0 == 0.0f)
                             player->RemoveSpellCooldown(spellid, true);
                         else
                         {
@@ -1004,9 +1009,11 @@ bool Spell::SpellDummyTriggered(SpellEffIndex effIndex)
                 break;
                 case DUMMY_TRIGGER_CHECK_PROCK: //3
                 {
-                    if(triggerCaster->HasAura(itr->aura))
+                    if(!triggerCaster || !triggerTarget)
+                        break;
+                    if (triggerCaster->HasAura(itr->aura))
                     {
-                        if(spell_trigger > 0)
+                        if (spell_trigger > 0)
                             triggerCaster->CastSpell(triggerTarget, spell_trigger, true);
                         else
                             triggerCaster->RemoveAura(spell_trigger);
@@ -1017,50 +1024,23 @@ bool Spell::SpellDummyTriggered(SpellEffIndex effIndex)
                 break;
                 case DUMMY_TRIGGER_DUMMY: //4
                 {
-                    if(itr->aura > 0)
-                    {
-                        if(!triggerCaster->HasAura(abs(itr->aura)))
-                        {
-                            check = true;
-                            continue;
-                        }
-                    }
-                    else if(itr->aura < 0)
-                    {
-                        if(triggerCaster->HasAura(abs(itr->aura)))
-                        {
-                            check = true;
-                            continue;
-                        }
-                    }
-
+                    if(!triggerCaster || !triggerTarget)
+                        break;
                     triggerCaster->CastSpell(triggerTarget, spell_trigger, false);
                     check = true;
                 }
                 break;
                 case DUMMY_TRIGGER_CAST_DEST: //5
                 {
-                    if(itr->aura > 0)
-                    {
-                        if(!triggerCaster->HasAura(abs(itr->aura)))
-                        {
-                            check = true;
-                            continue;
-                        }
-                    }
-                    else if(itr->aura < 0)
-                    {
-                        if(triggerCaster->HasAura(abs(itr->aura)))
-                        {
-                            check = true;
-                            continue;
-                        }
-                    }
-
-                    if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell_trigger))
+                    if(!triggerCaster)
+                        break;
+                    if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell_trigger))
                     {
                         SpellCastTargets targets;
-                        targets.SetDst(m_targets);
+                        if (effectHandleMode == SPELL_EFFECT_HANDLE_HIT_TARGET)
+                            targets.SetUnitTarget(unitTarget);
+                        else
+                            targets.SetDst(m_targets);
                         CustomSpellValues values;
                         triggerCaster->CastSpell(targets, spellInfo, &values, TRIGGERED_FULL_MASK, NULL, NULL, m_originalCasterGUID);
                     }
@@ -1069,64 +1049,57 @@ bool Spell::SpellDummyTriggered(SpellEffIndex effIndex)
                 break;
                 case DUMMY_TRIGGER_CAST_OR_REMOVE: // 6
                 {
-                    if (itr->aura)
-                    {
-                        if (m_caster->HasAura(itr->aura))
-                            m_caster->CastSpell(unitTarget, spell_trigger, true);
-                    }
-                    else
-                        m_caster->CastSpell(unitTarget, spell_trigger, true);
-
+                    m_caster->CastSpell(unitTarget, spell_trigger, true);
                     check = true;
                     break;
                 }
                 case DUMMY_TRIGGER_DAM_MAXHEALTH: //7
                 {
+                    if(!triggerCaster)
+                        break;
+
                     int32 percent = basepoints0;
-                    if(bp0)
+                    if (bp0)
                         percent += bp0;
-                    if(bp1)
+                    if (bp1)
                         percent /= bp1;
-                    if(bp2)
+                    if (bp2)
                         percent *= bp2;
 
                     basepoints0 = CalculatePct(triggerTarget->GetMaxHealth(), percent);
 
                     triggerCaster->CastCustomSpell(triggerTarget, spell_trigger, &basepoints0, &bp1, &bp2, true, m_CastItem, NULL, m_originalCasterGUID);
-                    if(itr->target == 6)
+                    check = true;
+                }
+                break;
+                case DUMMY_TRIGGER_COPY_AURA: // 8
+                {
+                    if (itr->aura && triggerTarget && triggerCaster)
                     {
-                        if (Guardian* pet = triggerCaster->GetGuardianPet())
-                            triggerCaster->CastCustomSpell(pet, spell_trigger, &basepoints0, &bp1, &bp2, true);
+                        if (Aura* aura = triggerCaster->GetAura(itr->aura))
+                        {
+                            Aura* copyAura = m_caster->AddAura(itr->aura, triggerTarget);
+                            if(!copyAura)
+                                break;
+                            for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                            {
+                                AuraEffect* aurEff = aura->GetEffect(i);
+                                AuraEffect* copyAurEff = copyAura->GetEffect(i);
+                                if (aurEff && copyAurEff)
+                                    copyAurEff->SetAmount(aurEff->GetAmount());
+                            }
+                            copyAura->SetStackAmount(aura->GetStackAmount());
+                            copyAura->SetMaxDuration(aura->GetMaxDuration());
+                            copyAura->SetDuration(aura->GetDuration());
+                            copyAura->SetCharges(aura->GetCharges());
+                        }
                     }
                     check = true;
                 }
                 break;
-                case DUMMY_TRIGGER_CAST_AFTER_HIT: // 8
-                {
-                    if (itr->aura > 0)
-                    {
-                        if (!triggerCaster->HasAura(abs(itr->aura)))
-                        {
-                            check = true;
-                            continue;
-                        }
-                    }
-                    else if (itr->aura < 0)
-                    {
-                        if (triggerCaster->HasAura(abs(itr->aura)))
-                        {
-                            check = true;
-                            continue;
-                        }
-                    }
-
-                    triggerCaster->CastSpell(triggerTarget, spell_trigger, true);
-                    check = true;
-                    break;
-                }
             }
         }
-        if(check)
+        if (check)
             return true;
     }
     return false;

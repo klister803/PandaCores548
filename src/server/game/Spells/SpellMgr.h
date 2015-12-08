@@ -94,24 +94,32 @@ enum SpellFamilyFlag
 
 enum SpellLinkedType
 {
-    SPELL_LINK_CAST         = 0,            // +: cast; -: remove
-    SPELL_LINK_ON_HIT       = 1 * 200000,
-    SPELL_LINK_AURA         = 2 * 200000,   // +: aura; -: immune
-    SPELL_LINK_BEFORE_HIT   = 3 * 200000,
-    SPELL_LINK_AURA_HIT     = 4 * 200000,
-    SPELL_LINK_BEFORE_CAST  = 5 * 200000,
-    SPELL_LINK_REMOVE       = 0,
+    SPELL_LINK_CAST             = 0,            // +: cast; -: remove
+    SPELL_LINK_ON_HIT           = 1 * 200000,
+    SPELL_LINK_AURA             = 2 * 200000,   // +: aura; -: immune
+    SPELL_LINK_BEFORE_HIT       = 3 * 200000,
+    SPELL_LINK_AURA_HIT         = 4 * 200000,
+    SPELL_LINK_BEFORE_CAST      = 5 * 200000,
+    SPELL_LINK_PREPARE_CAST     = 6 * 200000,
+    SPELL_LINK_BEFORE_CHECK     = 7 * 200000,
+    SPELL_LINK_FINISH_CAST      = 8 * 200000,
+    SPELL_LINK_REMOVE           = 0,
 };
 
 enum SpellLinkedUnitType
 {
-    LINK_UNIT_TYPE_DEFAULT      = 0,
-    LINK_UNIT_TYPE_PET          = 1,
-    LINK_UNIT_TYPE_OWNER        = 2,
-    LINK_UNIT_TYPE_CASTER       = 3,
-    LINK_UNIT_TYPE_SELECTED     = 4,
-    LINK_UNIT_TYPE_TARGET       = 5,
-    LINK_UNIT_TYPE_VICTIM       = 6,
+    LINK_UNIT_TYPE_DEFAULT         = 0,
+    LINK_UNIT_TYPE_PET             = 1,
+    LINK_UNIT_TYPE_OWNER           = 2,
+    LINK_UNIT_TYPE_CASTER          = 3,
+    LINK_UNIT_TYPE_SELECTED        = 4,
+    LINK_UNIT_TYPE_TARGET          = 5,
+    LINK_UNIT_TYPE_VICTIM          = 6,
+    LINK_UNIT_TYPE_ATTACKER        = 7,
+    LINK_UNIT_TYPE_NEARBY          = 8,
+    LINK_UNIT_TYPE_NEARBY_ALLY     = 9,
+    LINK_UNIT_TYPE_ORIGINALCASTER  = 10,
+    LINK_UNIT_TYPE_CAST_DEST       = 11,
 };
 
 enum SpellLinkedHasType
@@ -121,17 +129,31 @@ enum SpellLinkedHasType
     LINK_HAS_SPELL_ON_CASTER      = 2,
     LINK_HAS_AURA_ON_OWNER        = 3,
     LINK_HAS_AURATYPE             = 4,
+    LINK_HAS_MY_AURA_ON_CASTER    = 5,
+    LINK_HAS_MY_AURA_ON_TARGET    = 6,
+    LINK_HAS_AURA_STATE           = 7,
+    LINK_HAS_SPECID               = 8,
 };
 
 enum SpellLinkedActionType
 {
-    LINK_ACTION_DEFAULT       = 0,
-    LINK_ACTION_LEARN         = 1,
-    LINK_ACTION_AURATYPE      = 2,
-    LINK_ACTION_SPELLCOOLDOWN = 3,
-    LINK_ACTION_CASTNOTRIGGER = 4,
-    LINK_ACTION_ADDAURA       = 5,
-    LINK_ACTION_CASTINAURA    = 6,
+    LINK_ACTION_DEFAULT          = 0,
+    LINK_ACTION_LEARN            = 1,
+    LINK_ACTION_AURATYPE         = 2,
+    LINK_ACTION_SEND_COOLDOWN    = 3,
+    LINK_ACTION_CAST_NO_TRIGGER  = 4,
+    LINK_ACTION_ADD_AURA         = 5,
+    LINK_ACTION_CASTINAURA       = 6,
+    LINK_ACTION_CHANGE_STACK     = 7,
+    LINK_ACTION_REMOVE_COOLDOWN  = 8,
+    LINK_ACTION_REMOVE_MOVEMENT  = 9, // RemoveMovementImpairingAuras
+    LINK_ACTION_CHANGE_DURATION  = 10, // Mod Duration
+};
+
+enum SpellLinkedTargetType
+{
+    LINK_TARGET_DEFAULT          = 0,
+    LINK_TARGET_FROM_EFFECT      = 1,
 };
 
 enum SpellTriggeredType
@@ -187,7 +209,7 @@ enum DummyTriggerType
     DUMMY_TRIGGER_CAST_DEST                     = 5,            // spell to trigger without option for bp
     DUMMY_TRIGGER_CAST_OR_REMOVE                = 6,            // cast spell without option
     DUMMY_TRIGGER_DAM_MAXHEALTH                 = 7,            // set basepoint to spell damage or max heal percent
-    DUMMY_TRIGGER_CAST_AFTER_HIT                = 8,            // cast spell after hit on target
+    DUMMY_TRIGGER_COPY_AURA                     = 8,            // Copy aura
 };
 
 enum SpellAuraDummyType
@@ -226,6 +248,7 @@ enum SpellTargetFilterType
     SPELL_FILTER_TARGET_IS_IN_BETWEEN_SHIFT     = 12,           // Select target is in between and shift
     SPELL_FILTER_BY_AURA_OR                     = 13,           // Remove target by any aura
     SPELL_FILTER_BY_ENTRY                       = 14,           // Remove target by any entry
+    SPELL_FILTER_TARGET_ATTACKABLE              = 15,           // Check Attackable
 };
 
 // Spell proc event related declarations (accessed using SpellMgr functions)
@@ -705,6 +728,10 @@ struct SpellLinked
     uint32 hitmask;
     int32 removeMask;
     uint8 actiontype;
+    int8 targetCount;
+    int8 targetCountType;
+    int8 group;
+    int32 duration;
 };
 
 struct SpellTalentLinked
