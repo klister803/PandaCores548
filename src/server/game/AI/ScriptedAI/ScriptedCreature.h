@@ -403,6 +403,7 @@ void GetGameObjectListWithEntryInGrid(std::list<GameObject*>& list, WorldObject*
 void GetPlayerListInGrid(std::list<Player*>& list, WorldObject* source, float maxSearchRange);
 
 void GetPositionWithDistInOrientation(Unit* pUnit, float dist, float orientation, float& x, float& y);
+void GetPosInRadiusWithRandomOrientation(Unit* unit, float dist, float &x, float &y);
 void GetRandPosFromCenterInDist(float centerX, float centerY, float dist, float& x, float& y);
 
 #endif // SCRIPTEDCREATURE_H_

@@ -5232,6 +5232,22 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].Effect = 0;
                     spellInfo->Effects[2].Effect = 0;
                     break;
+                case 143640: //Shockwave missile(trigger missile)
+                    spellInfo->Effects[0].TargetA = 25;
+                    break;
+                case 143641: //Shockwave missile
+                    spellInfo->Effects[0].Effect = 0;
+                    spellInfo->Effects[1].TargetA = 25;
+                    break;
+                //Shockwave missile dmg
+                case 144658:
+                case 144660:
+                case 144661:
+                case 144662:
+                case 144663:
+                case 144664:
+                    spellInfo->Effects[2].Effect = 0;
+                    break;
 
                     
                 //World Bosses

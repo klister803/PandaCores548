@@ -45,6 +45,7 @@ enum eSpells
     //Shock Wave
     SPELL_SHOCKWAVE_VISUAL_SPAWN    = 144647,
     SPELL_SHOCKWAVE_VISUAL_TURRET   = 143640, 
+    SPELL_SHOCKWAVE_MISSILE_T_M     = 143641,
     SPELL_SHOCKWAVE_MISSILE         = 144658,
     SPELL_SHOCKWAVE_MISSILE2        = 144660,
     SPELL_SHOCKWAVE_MISSILE3        = 144661,
@@ -65,6 +66,16 @@ enum eSpells
     SPELL_PURSUIT_LASER             = 143828,
     SPELL_LASER_GROUND_PERIODIC_AT  = 143829,
     SPELL_SUPERHEATER               = 144040,
+};
+
+uint32 shockwavemissilelist[6] =
+{
+    SPELL_SHOCKWAVE_MISSILE,
+    SPELL_SHOCKWAVE_MISSILE2,
+    SPELL_SHOCKWAVE_MISSILE3,
+    SPELL_SHOCKWAVE_MISSILE4,
+    SPELL_SHOCKWAVE_MISSILE5,
+    SPELL_SHOCKWAVE_MISSILE6,
 };
 
 enum eEvents
@@ -555,6 +566,7 @@ public:
                     case NPC_ACTIVATED_ELECTROMAGNET:
                         break;
                     case NPC_ACTIVATED_MISSILE_TURRET:
+                        events.ScheduleEvent(EVENT_ACTIVE, 3000);
                         break;
                     }
                     break;
@@ -623,6 +635,19 @@ public:
                     case NPC_ACTIVATED_ELECTROMAGNET:
                         break;
                     case NPC_ACTIVATED_MISSILE_TURRET:
+                        if (me->ToTempSummon())
+                        {
+                            if (Unit* blackfuse = me->ToTempSummon()->GetSummoner())
+                            {
+                                if (Creature* stalker = me->GetCreature(*me, instance->GetData64(NPC_SHOCKWAVE_MISSILE_STALKER)))
+                                {
+                                    float x, y;
+                                    GetPosInRadiusWithRandomOrientation(stalker, 48.0f, x, y);
+                                    if (Creature* mt = blackfuse->SummonCreature(NPC_SHOCKWAVE_MISSILE, x, y, stalker->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
+                                        DoCast(mt, SPELL_SHOCKWAVE_VISUAL_TURRET);
+                                }
+                            }
+                        }
                         break;
                     }
                 }
@@ -707,19 +732,34 @@ public:
         }
         InstanceScript* instance;
         EventMap events;
-        uint8 shockwavenum;
+        uint8 num;
 
         void Reset()
         {
             events.Reset();
-            if (me->GetEntry() == NPC_SHOCKWAVE_MISSILE)
-            {
-                shockwavenum = 0;
-                events.ScheduleEvent(EVENT_SHOCKWAVE_MISSILE, 1000);
-            }
+            num = 0;
         }
 
         void EnterCombat(Unit* who){}
+
+        void SpellHit(Unit* caster, SpellInfo const *spell)
+        {
+            if (me->GetEntry() == NPC_SHOCKWAVE_MISSILE && spell->Id == SPELL_SHOCKWAVE_MISSILE_T_M)
+                CreateShockWaveMissileEvent();
+        }
+
+        void CreateShockWaveMissileEvent()
+        {
+            if (me->ToTempSummon())
+            {
+                if (Unit* blackfuse = me->ToTempSummon()->GetSummoner())
+                {
+                    DoCast(me, SPELL_SHOCKWAVE_VISUAL_SPAWN, true);
+                    DoCast(me, shockwavemissilelist[num++]);
+                    events.ScheduleEvent(EVENT_SHOCKWAVE_MISSILE, 3500);
+                }
+            }
+        }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
@@ -735,7 +775,11 @@ public:
             while (uint32 eventId = events.ExecuteEvent())
             {
                 if (eventId == EVENT_SHOCKWAVE_MISSILE)
-                    DoCast(me, SPELL_SHOCKWAVE_MISSILE);
+                {
+                    DoCast(me, shockwavemissilelist[num++]);
+                    if (num < 6)
+                        events.ScheduleEvent(EVENT_SHOCKWAVE_MISSILE, 3500);
+                }
             }
         }
     };

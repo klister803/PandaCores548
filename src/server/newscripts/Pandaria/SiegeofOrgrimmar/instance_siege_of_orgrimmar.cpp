@@ -184,6 +184,7 @@ public:
         uint64 bsGuid;
         uint64 blackfuseGuid;
         std::vector<uint64> crawlermineGuids;
+        uint64 swmstalkerGuid;
 
         EventMap Events;
 
@@ -268,6 +269,7 @@ public:
             aweaponentry.clear();
             blackfuseGuid           = 0;
             crawlermineGuids.clear();
+            swmstalkerGuid = 0;
 
             onInitEnterState = false;
             STowerFull = false;
@@ -580,6 +582,9 @@ public:
                     break;
                 case NPC_BLACKFUSE_CRAWLER_MINE:
                     crawlermineGuids.push_back(creature->GetGUID());
+                    break;
+                case NPC_SHOCKWAVE_MISSILE_STALKER:
+                    swmstalkerGuid = creature->GetGUID();
                     break;
             }
         }
@@ -1698,6 +1703,8 @@ public:
                     return thokGuid;
                 case NPC_BODY_STALKER:
                     return bsGuid;
+                case NPC_SHOCKWAVE_MISSILE_STALKER:
+                    return swmstalkerGuid;
             }
 
             std::map<uint32, uint64>::iterator itr = easyGUIDconteiner.find(type);

@@ -1257,6 +1257,15 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 142940: //Green
     //Siegecrafter Blackfuse
     case 143265: //Launch
+    case 143640: //Shockwave missile(trigger missile)
+    case 143641: //Shockwave missile
+    //Shockwave missile dmg
+    case 144658:
+    case 144660:
+    case 144661:
+    case 144662:
+    case 144663:
+    case 144664:
         return Effects[effect];
     }
 

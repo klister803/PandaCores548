@@ -807,6 +807,14 @@ void GetPositionWithDistInOrientation(Unit* pUnit, float dist, float orientation
     y = pUnit->GetPositionY() + (dist * sin(orientation));
 }
 
+void GetPosInRadiusWithRandomOrientation(Unit* unit, float dist, float &x, float &y)
+{
+    float mod = urand(0, 6);
+    float orientation = mod <= 5 ? mod + float(urand(1, 9)) / 10 : mod;
+    x = unit->GetPositionX() + (dist * cos(orientation));
+    y = unit->GetPositionY() + (dist * sin(orientation));
+}
+
 void GetRandPosFromCenterInDist(float centerX, float centerY, float dist, float& x, float& y)
 {
     float randOrientation = frand(0, 2*M_PI);
