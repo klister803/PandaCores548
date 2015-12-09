@@ -821,7 +821,7 @@ void LFGMgr::UpdateRoleCheck(uint64 gguid, uint64 guid /* = 0 */, uint8 roles /*
     {
         if (LFGDungeonData const* dungeonData = GetLFGDungeon(*dungeons.begin()))
             if (dungeonData->dbc->IsScenario() && !dungeonData->dbc->IsChallenge())
-                roles = roles & PLAYER_ROLE_LEADER | PLAYER_ROLE_DAMAGE;
+                roles = roles & (PLAYER_ROLE_LEADER | PLAYER_ROLE_DAMAGE);
     }
 
     LfgJoinResultData joinData = LfgJoinResultData(LFG_JOIN_FAILED, roleCheck.state);
@@ -912,7 +912,7 @@ void LFGMgr::GetCompatibleDungeons(LfgDungeonSet& dungeons, LfgGuidSet const& pl
    @param[in]     removeLeaderFlag Determines if we have to remove leader flag (only used first call, Default = true)
    @return True if roles are compatible
 */
-bool LFGMgr::CheckGroupRoles(LfgRolesMap& groles, LfgRoleData const& roleData, bool removeLeaderFlag /*= true*/)
+bool LFGMgr::CheckGroupRoles(LfgRolesMap& groles, LfgRoleData& roleData, bool removeLeaderFlag /*= true*/)
 {
     if (groles.empty())
         return false;
@@ -925,8 +925,11 @@ bool LFGMgr::CheckGroupRoles(LfgRolesMap& groles, LfgRoleData const& roleData, b
         for (LfgRolesMap::iterator it = groles.begin(); it != groles.end(); ++it)
             it->second &= ~PLAYER_ROLE_LEADER;
 
-    for (LfgRolesMap::iterator it = groles.begin(); it != groles.end(); ++it)
+    for (LfgRolesMap::iterator it = groles.begin(); it != groles.end(); ++it, roleData.hardlookerherpoimichego++)
     {
+        if (roleData.hardlookerherpoimichego > 1000)
+            return false;
+
         if (it->second == PLAYER_ROLE_NONE || (it->second & ROLE_FULL_MASK) == 0)
             return false;
 
