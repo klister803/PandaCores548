@@ -2312,7 +2312,7 @@ class npc_dragonmaw_tidal_shaman : public CreatureScript
             void EnterCombat(Unit* who)
             {
                 events.ScheduleEvent(EVENT_CHAIN_HEAL, 20000);
-                events.ScheduleEvent(EVENT_TIDAL_WAVE, 5000);
+                //events.ScheduleEvent(EVENT_TIDAL_WAVE, 5000);
                 events.ScheduleEvent(EVENT_TIDE_TOTEM, 18000);
                 DoZoneInCombat(me, 30.0f);
             }
@@ -2325,19 +2325,20 @@ class npc_dragonmaw_tidal_shaman : public CreatureScript
 
             void UpdateAI(uint32 diff)
             {
-                UpdateVictim();
+                if (!UpdateVictim())
+                    return;
 
                 events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
                 while (uint32 eventId = events.ExecuteEvent())
                 {
                     switch (eventId)
                     {
                         case EVENT_TIDAL_WAVE:
-                            if (!me->HasUnitState(UNIT_STATE_CASTING))
-                            {
-                                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
-                                    DoCast(pTarget, SPELL_TIDAL_WAVE);
-                            }
+                            DoCast(SPELL_TIDAL_WAVE);
                             events.ScheduleEvent(EVENT_TIDAL_WAVE, 2000);
                             break;
                         case EVENT_CHAIN_HEAL:
@@ -2350,8 +2351,7 @@ class npc_dragonmaw_tidal_shaman : public CreatureScript
                             break;
                     }
                 }
-                if (!me->HasUnitState(UNIT_STATE_CASTING))
-                    DoMeleeAttackIfReady();
+                DoMeleeAttackIfReady();
             }
         };
 
