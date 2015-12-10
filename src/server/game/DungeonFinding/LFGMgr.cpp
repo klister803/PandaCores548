@@ -797,7 +797,7 @@ void LFGMgr::UpdateRoleCheck(uint64 gguid, uint64 guid /* = 0 */, uint8 roles /*
         roleCheck.roles[guid] = roles;
 
         // Check if all players have selected a role
-        LfgRolesMap::const_iterator itRoles = roleCheck.roles.begin();
+        LfgRolesMap::iterator itRoles = roleCheck.roles.begin();
         while (itRoles != roleCheck.roles.end() && itRoles->second != PLAYER_ROLE_NONE)
             ++itRoles;
 
