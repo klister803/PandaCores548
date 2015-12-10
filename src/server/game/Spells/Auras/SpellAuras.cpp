@@ -1519,14 +1519,20 @@ void Aura::UnregisterCasterAuras()
     if(!caster)
         return;
     caster->GetMyCastAuras().remove(this);
-    if(caster->GetTypeId() == TYPEID_PLAYER)
+
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
-        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-            if (GetSpellInfo()->Effects[i].TargetA.GetTarget() == TARGET_UNIT_CASTER_AREA_SUMMON)
-            {
-                caster->RemoveMyAura(GetId(), GetUnitOwner());
+        if (GetSpellInfo()->Effects[i].TargetA.GetTarget() == TARGET_UNIT_CASTER_AREA_SUMMON)
+        {
+            if (Player* player = caster->ToPlayer())
+                if (player->GetSession() && player->GetSession()->PlayerLogout())
+                    return;
+
+            if(!caster->IsInWorld() || !GetUnitOwner() || !GetUnitOwner()->IsInWorld())
                 return;
-            }
+
+            caster->RemovePetAndOwnerAura(GetId(), GetUnitOwner());
+        }
     }
 }
 

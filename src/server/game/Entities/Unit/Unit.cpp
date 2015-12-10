@@ -4074,9 +4074,9 @@ void Unit::RemoveOwnedAura(AuraMap::iterator &i, AuraRemoveMode removeMode)
     if (aura->IsSingleTarget())
         aura->UnregisterSingleTarget();
 
-    aura->UnregisterCasterAuras();
-
     aura->_Remove(removeMode);
+
+    aura->UnregisterCasterAuras();
 
     i = m_ownedAuras.begin();
 }
@@ -25470,21 +25470,17 @@ bool Unit::HasMyAura(Aura const* hasAura, bool check)
     return false;
 }
 
-void Unit::RemoveMyAura(uint32 spellId, Unit* owner)
+void Unit::RemovePetAndOwnerAura(uint32 spellId, Unit* owner)
 {
-    for (AuraList::const_iterator itr = m_my_Auras.begin(); itr != m_my_Auras.end();)
+    for (Unit::ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end();)
     {
-        if (Aura* aura = (*itr))
-            if(Unit* target = aura->GetUnitOwner())
-            if (target != owner && aura->GetId() == spellId && !aura->IsRemoved() && target->IsInWorld() && target->isAlive())
-            {
-                m_my_Auras.remove(*itr++);
-                if(aura->GetDuration() > 500 || aura->GetDuration() < 0)
-                    aura->SetDuration(500);
-                continue;
-            }
+        Unit* unit = *itr;
         ++itr;
+        if (unit != owner && unit->IsInWorld())
+            unit->RemoveAurasDueToSpell(spellId);
     }
+    if (this != owner)
+        RemoveAurasDueToSpell(spellId);
 }
 
 Unit* Unit::GetUnitForLinkedSpell(Unit* caster, Unit* target, uint8 type)

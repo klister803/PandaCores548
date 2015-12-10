@@ -2526,7 +2526,7 @@ class Unit : public WorldObject
         bool HasSomeCasterAura(uint64 guid);
         bool HasMyAura(uint32 spellId);
         bool HasMyAura(Aura const* hasAura, bool check = false);
-        void RemoveMyAura(uint32 spellId, Unit* owner = NULL);
+        void RemovePetAndOwnerAura(uint32 spellId, Unit* owner = NULL);
 
         Unit* GetUnitForLinkedSpell(Unit* caster, Unit* target, uint8 type);
         bool HasAuraLinkedSpell(Unit* caster, Unit* target, uint8 type, int32 hastalent);
