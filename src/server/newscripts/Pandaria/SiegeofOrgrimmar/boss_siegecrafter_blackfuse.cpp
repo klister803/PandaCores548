@@ -89,6 +89,8 @@ enum eEvents
     EVENT_CHECK_DISTANCE            = 5,
     //Rocket Turret
     EVENT_SHOCKWAVE_MISSILE         = 6,
+    //Electromagnet
+    EVENT_MAGNETIC_CRASH            = 7,
     //Automated Shredder
     EVENT_DEATH_FROM_ABOVE          = 10,
     //Special
@@ -369,6 +371,18 @@ public:
         void EnterCombat(Unit* who){}
 
         void EnterEvadeMode(){}
+        
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (type == POINT_MOTION_TYPE && me->GetEntry() == NPC_BLACKFUSE_SAWBLADE)
+                if (pointId == 4)
+                    me->DespawnOrUnsummon();
+        }
+        
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            damage = 0;
+        }
 
         void UpdateAI(uint32 diff){}
     };
@@ -564,6 +578,7 @@ public:
                         events.ScheduleEvent(EVENT_ACTIVE, 3000);
                         break;
                     case NPC_ACTIVATED_ELECTROMAGNET:
+                        events.ScheduleEvent(EVENT_MAGNETIC_CRASH, 5000);
                         break;
                     case NPC_ACTIVATED_MISSILE_TURRET:
                         events.ScheduleEvent(EVENT_ACTIVE, 3000);
@@ -644,7 +659,10 @@ public:
                                     float x, y;
                                     GetPosInRadiusWithRandomOrientation(stalker, 48.0f, x, y);
                                     if (Creature* mt = blackfuse->SummonCreature(NPC_SHOCKWAVE_MISSILE, x, y, stalker->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
+                                    {
+                                        mt->SetFacingToObject(me);
                                         DoCast(mt, SPELL_SHOCKWAVE_VISUAL_TURRET);
+                                    }
                                 }
                             }
                         }
@@ -699,6 +717,19 @@ public:
                     events.ScheduleEvent(EVENT_CHECK_DISTANCE, 1000);
                 }
                 break;
+                case EVENT_MAGNETIC_CRASH:
+                    DoCast(me, SPELL_MAGNETIC_CRASH_AT);
+                    std::list<Creature*> sawbladelist;
+                    GetCreatureListWithEntryInGrid(sawbladelist, me, NPC_BLACKFUSE_SAWBLADE, 200.0f);
+                    if (!sawbladelist.empty())
+                    {
+                        for (std::list<Creature*>::const_iterator itr = sawbladelist.begin(); itr != sawbladelist.end(); itr++)
+                        { 
+                            (*itr)->GetMotionMaster()->Clear(false);
+                            (*itr)->GetMotionMaster()->MoveCharge(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 25.0f, 4);
+                        }
+                    }
+                    break;
                 }
             }
         }
@@ -724,23 +755,29 @@ public:
             me->SetDisplayId(11686);
             me->SetReactState(REACT_PASSIVE);
             me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
             if (me->GetEntry() == NPC_LASER_ARRAY)
             {
                 me->AddAura(SPELL_CONVEYOR_DEATH_BEAM_V, me);
                 DoCast(me, SPELL_CONVEYOR_DEATH_BEAM_AT, true);
             }
+            events.Reset();
+            num = 0;
         }
         InstanceScript* instance;
         EventMap events;
         uint8 num;
 
-        void Reset()
-        {
-            events.Reset();
-            num = 0;
-        }
+        void Reset(){}
 
         void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            damage = 0;
+        }
 
         void SpellHit(Unit* caster, SpellInfo const *spell)
         {
@@ -760,13 +797,6 @@ public:
                 }
             }
         }
-
-        void DamageTaken(Unit* attacker, uint32 &damage)
-        {
-            damage = 0;
-        }
-
-        void EnterEvadeMode(){}
 
         void UpdateAI(uint32 diff)
         {
@@ -811,7 +841,7 @@ public:
                     if (Creature* sawblade = GetCaster()->SummonCreature(NPC_BLACKFUSE_SAWBLADE, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ() + 2.0f, 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
                     {
                         sawblade->AddAura(SPELL_LAUNCH_SAWBLADE_AT, sawblade);
-                        sawblade->GetMotionMaster()->MoveCharge(GetHitUnit()->GetPositionX(), GetHitUnit()->GetPositionY(), GetHitUnit()->GetPositionZ() + 2.0f, 15.0f);
+                        sawblade->GetMotionMaster()->MoveCharge(GetHitUnit()->GetPositionX(), GetHitUnit()->GetPositionY(), GetCaster()->GetPositionZ(), 25.0f);
                     }
                 }
             }
@@ -878,7 +908,10 @@ public:
             if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
             {
                 if (GetTarget()->ToCreature())
-                    GetTarget()->ToCreature()->DespawnOrUnsummon();
+                {
+                    GetTarget()->ToCreature()->SetAttackStop(true);
+                    GetTarget()->RemoveAurasDueToSpell(SPELL_LASER_GROUND_PERIODIC_AT);
+                }
             }
         }
 
@@ -891,6 +924,71 @@ public:
     AuraScript* GetAuraScript() const
     {
         return new spell_disintegration_laser_AuraScript();
+    }
+};
+
+
+class ShockWaveMissiletFilterTarget
+{
+public:
+    ShockWaveMissiletFilterTarget(WorldObject* caster, float mindist, float maxdist) : _caster(caster),  _mindist(mindist), _maxdist(maxdist){}
+
+    bool operator()(WorldObject* unit)
+    {
+        if (_caster->GetExactDist2d(unit) > _mindist && _caster->GetExactDist2d(unit) < _maxdist)
+            return false;
+        return true;
+    }
+private:
+    WorldObject* _caster;
+    float _mindist, _maxdist;
+};
+
+//144660, 144661, 144662, 144663, 144664
+class spell_shockwave_missile : public SpellScriptLoader
+{
+public:
+    spell_shockwave_missile() : SpellScriptLoader("spell_shockwave_missile") { }
+
+    class spell_shockwave_missile_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_shockwave_missile_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*>& targets)
+        {
+            if (GetCaster() && !targets.empty())
+            {
+                switch (GetSpellInfo()->Id)
+                {
+                case SPELL_SHOCKWAVE_MISSILE2:
+                    targets.remove_if(ShockWaveMissiletFilterTarget(GetCaster(), 10.0f, 25.0f));
+                    break;
+                case SPELL_SHOCKWAVE_MISSILE3:
+                    targets.remove_if(ShockWaveMissiletFilterTarget(GetCaster(), 25.0f, 45.0f));
+                    break;
+                case SPELL_SHOCKWAVE_MISSILE4:
+                    targets.remove_if(ShockWaveMissiletFilterTarget(GetCaster(), 45.0f, 65.0f));
+                    break;
+                case SPELL_SHOCKWAVE_MISSILE5:
+                    targets.remove_if(ShockWaveMissiletFilterTarget(GetCaster(), 65.0f, 85.0f));
+                    break;
+                case SPELL_SHOCKWAVE_MISSILE6:
+                    targets.remove_if(ShockWaveMissiletFilterTarget(GetCaster(), 85.0f, 105.0f));
+                    break;
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_shockwave_missile_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_DEST_AREA_ENEMY);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_shockwave_missile_SpellScript::FilterTargets, EFFECT_3, TARGET_UNIT_DEST_AREA_ENEMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_shockwave_missile_SpellScript();
     }
 };
 
@@ -954,5 +1052,6 @@ void AddSC_boss_siegecrafter_blackfuse()
     new spell_blackfuse_launch_sawblade();
     new spell_break_in_period();
     new spell_disintegration_laser();
+    new spell_shockwave_missile();
     new at_blackfuse_pipe();
 }
