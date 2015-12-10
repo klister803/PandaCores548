@@ -402,7 +402,8 @@ LfgCompatibility LFGQueue::CheckCompatibility(LfgGuidList check)
 
         LfgCompatibilityData data(LFG_COMPATIBLES_WITH_LESS_PLAYERS);
         data.roles = itQueue->second.roles;
-        LFGMgr::CheckGroupRoles(data.roles, LfgRoleData(*itQueue->second.dungeons.begin() & 0xFFFFF));
+        uint32 n = 0;
+        LFGMgr::CheckGroupRoles(data.roles, LfgRoleData(*itQueue->second.dungeons.begin() & 0xFFFFF), n);
 
         UpdateBestCompatibleInQueue(itQueue, strGuids, data.roles);
         SetCompatibilityData(strGuids, data);
@@ -460,7 +461,8 @@ LfgCompatibility LFGQueue::CheckCompatibility(LfgGuidList check)
 
         proposalDungeons = QueueDataStore[*itguid].dungeons;
         LfgRolesMap debugRoles = proposalRoles;
-        if (!LFGMgr::CheckGroupRoles(proposalRoles, LfgRoleData(*proposalDungeons.begin() & 0xFFFFF)))
+        uint32 n = 0;
+        if (!LFGMgr::CheckGroupRoles(proposalRoles, LfgRoleData(*proposalDungeons.begin() & 0xFFFFF), n))
         {
             std::ostringstream o;
             for (LfgRolesMap::const_iterator it = debugRoles.begin(); it != debugRoles.end(); ++it)
@@ -495,7 +497,8 @@ LfgCompatibility LFGQueue::CheckCompatibility(LfgGuidList check)
         const LfgQueueData &queue = QueueDataStore[gguid];
         proposalDungeons = queue.dungeons;
         proposalRoles = queue.roles;
-        LFGMgr::CheckGroupRoles(proposalRoles, LfgRoleData(*proposalDungeons.begin() & 0xFFFFF));       // assing new roles
+        uint32 n = 0;
+        LFGMgr::CheckGroupRoles(proposalRoles, LfgRoleData(*proposalDungeons.begin() & 0xFFFFF), n);       // assing new roles
     }
 
     // Enough players?

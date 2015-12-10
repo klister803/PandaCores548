@@ -806,8 +806,8 @@ void LFGMgr::UpdateRoleCheck(uint64 gguid, uint64 guid /* = 0 */, uint8 roles /*
             // use temporal var to check roles, CheckGroupRoles modifies the roles
             check_roles = roleCheck.roles;
 
-            LfgRoleData data = LfgRoleData(*roleCheck.dungeons.begin() & 0xFFFFF);
-            roleCheck.state = CheckGroupRoles(check_roles, data)
+            uint32 n = 0;
+            roleCheck.state = CheckGroupRoles(check_roles, LfgRoleData(*roleCheck.dungeons.begin() & 0xFFFFF), n)
                 ? LFG_ROLECHECK_FINISHED : LFG_ROLECHECK_WRONG_ROLES;
         }
     }
@@ -914,7 +914,7 @@ void LFGMgr::GetCompatibleDungeons(LfgDungeonSet& dungeons, LfgGuidSet const& pl
    @param[in]     removeLeaderFlag Determines if we have to remove leader flag (only used first call, Default = true)
    @return True if roles are compatible
 */
-bool LFGMgr::CheckGroupRoles(LfgRolesMap& groles, LfgRoleData& roleData, bool removeLeaderFlag /*= true*/)
+bool LFGMgr::CheckGroupRoles(LfgRolesMap& groles, LfgRoleData const& roleData, uint32 &n, bool removeLeaderFlag /*= true*/)
 {
     if (groles.empty())
         return false;
@@ -927,9 +927,9 @@ bool LFGMgr::CheckGroupRoles(LfgRolesMap& groles, LfgRoleData& roleData, bool re
         for (LfgRolesMap::iterator it = groles.begin(); it != groles.end(); ++it)
             it->second &= ~PLAYER_ROLE_LEADER;
 
-    for (LfgRolesMap::iterator it = groles.begin(); it != groles.end(); ++it, roleData.hardlookerherpoimichego++)
+    for (LfgRolesMap::iterator it = groles.begin(); it != groles.end(); ++it, ++n)
     {
-        if (roleData.hardlookerherpoimichego > 1000)
+        if (n > 1000)
             return false;
 
         if (it->second == PLAYER_ROLE_NONE || (it->second & ROLE_FULL_MASK) == 0)
@@ -940,7 +940,7 @@ bool LFGMgr::CheckGroupRoles(LfgRolesMap& groles, LfgRoleData& roleData, bool re
             if (it->second != PLAYER_ROLE_TANK)                 // if not one role taken - check enother
             {
                 it->second -= PLAYER_ROLE_TANK;                 // exclude role for recurse check
-                if (CheckGroupRoles(groles, roleData, false))   // check role with it
+                if (CheckGroupRoles(groles, roleData, n, false))   // check role with it
                     return true;                                // if plr not tank group can be completed
                 it->second += PLAYER_ROLE_TANK;                 // return back excluded role.
             }
@@ -957,7 +957,7 @@ bool LFGMgr::CheckGroupRoles(LfgRolesMap& groles, LfgRoleData& roleData, bool re
             if (it->second != PLAYER_ROLE_DAMAGE)
             {
                 it->second -= PLAYER_ROLE_DAMAGE;
-                if (CheckGroupRoles(groles, roleData, false))
+                if (CheckGroupRoles(groles, roleData, n, false))
                     return true;
                 it->second += PLAYER_ROLE_DAMAGE;
             }
@@ -972,7 +972,7 @@ bool LFGMgr::CheckGroupRoles(LfgRolesMap& groles, LfgRoleData& roleData, bool re
             if (it->second != PLAYER_ROLE_HEALER)
             {
                 it->second -= PLAYER_ROLE_HEALER;
-                if (CheckGroupRoles(groles, roleData, false))
+                if (CheckGroupRoles(groles, roleData, n, false))
                     return true;
                 it->second += PLAYER_ROLE_HEALER;
             }

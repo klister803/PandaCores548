@@ -264,8 +264,6 @@ struct LfgRoleData
     uint8 minTanksNeeded;
     uint8 minHealerNeeded;
     uint8 minDpsNeeded;
-
-    uint32 hardlookerherpoimichego = 0;
 };
 
 struct LFGDungeonData
@@ -423,7 +421,7 @@ class LFGMgr
         /// Checks if all players are queued
         bool AllQueued(LfgGuidList const& check);
         /// Checks if given roles match, modifies given roles map with new roles
-        static bool CheckGroupRoles(LfgRolesMap& groles, LfgRoleData& roleData, bool removeLeaderFlag = true);
+        static bool CheckGroupRoles(LfgRolesMap& groles, LfgRoleData const& roleData, uint32 &n, bool removeLeaderFlag = true);
         /// Checks if given players are ignoring each other
         static bool HasIgnore(uint64 guid1, uint64 guid2);
         /// Sends queue status to player
