@@ -6913,25 +6913,6 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
             if (!(mode & AURA_EFFECT_HANDLE_REAL))
                 break;
 
-            switch (GetId())
-            {
-                // Smoke Bomb
-                case 76577:
-                {
-                    if (apply)
-                    {
-                        if (Aura* aur = caster->AddAura(88611, target))
-                        {
-                            aur->SetMaxDuration(GetBase()->GetDuration());
-                            aur->SetDuration(GetBase()->GetDuration());
-                        }
-                    }
-                    else
-                        target->RemoveAura(88611);
-                    break;
-                }
-            }
-
             break;
         }
 		case SPELLFAMILY_WARLOCK:

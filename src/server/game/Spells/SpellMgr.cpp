@@ -4253,7 +4253,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx5 &= ~SPELL_ATTR5_SINGLE_TARGET_SPELL;
                     break;
                 case 76577: // Smoke Bomb
-                    spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_DUMMY;
+                    spellInfo->Effects[EFFECT_1].TriggerSpell = 88611;
                     break;
                 case 130616:// Glyph of Fear
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_IGNORE_HIT_RESULT;
