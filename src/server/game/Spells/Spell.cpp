@@ -395,7 +395,7 @@ SpellValue::SpellValue(SpellInfo const* proto, uint8 diff)
 {
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
-        EffectBasePoints[i] = proto->GetEffect(i, diff).BasePoints;
+        EffectBasePoints[i] = proto->GetEffect(i, diff)->BasePoints;
         LockBasePoints[i] = false;
     }
     MaxAffectedTargets = proto->GetMaxAffectedTargets(diff);
@@ -665,22 +665,22 @@ void Spell::SelectSpellTargets()
     {
         // not call for empty effect.
         // Also some spells use not used effect targets for store targets for dummy effect in triggered spells
-        if (!m_spellInfo->GetEffect(i, m_diffMode).IsEffect())
+        if (!m_spellInfo->GetEffect(i, m_diffMode)->IsEffect())
             continue;
 
         if (m_spellMissMask & ((1 << SPELL_MISS_MISS) | (1 << SPELL_MISS_IMMUNE)))
-            if (m_spellInfo->GetEffect(i, m_diffMode).TargetA.GetTarget() == TARGET_UNIT_CASTER)
+            if (m_spellInfo->GetEffect(i, m_diffMode)->TargetA.GetTarget() == TARGET_UNIT_CASTER)
                 continue;
 
         // set expected type of implicit targets to be sent to client
-        uint32 implicitTargetMask = GetTargetFlagMask(m_spellInfo->GetEffect(i, m_diffMode).TargetA.GetObjectType()) | GetTargetFlagMask(m_spellInfo->GetEffect(i, m_diffMode).TargetB.GetObjectType());
+        uint32 implicitTargetMask = GetTargetFlagMask(m_spellInfo->GetEffect(i, m_diffMode)->TargetA.GetObjectType()) | GetTargetFlagMask(m_spellInfo->GetEffect(i, m_diffMode)->TargetB.GetObjectType());
         if (implicitTargetMask & TARGET_FLAG_UNIT)
             m_targets.SetTargetFlag(TARGET_FLAG_UNIT);
         if (implicitTargetMask & (TARGET_FLAG_GAMEOBJECT | TARGET_FLAG_GAMEOBJECT_ITEM))
             m_targets.SetTargetFlag(TARGET_FLAG_GAMEOBJECT);
 
-        SelectEffectImplicitTargets(SpellEffIndex(i), m_spellInfo->GetEffect(i, m_diffMode).TargetA, processedAreaEffectsMask);
-        SelectEffectImplicitTargets(SpellEffIndex(i), m_spellInfo->GetEffect(i, m_diffMode).TargetB, processedAreaEffectsMask);
+        SelectEffectImplicitTargets(SpellEffIndex(i), m_spellInfo->GetEffect(i, m_diffMode)->TargetA, processedAreaEffectsMask);
+        SelectEffectImplicitTargets(SpellEffIndex(i), m_spellInfo->GetEffect(i, m_diffMode)->TargetB, processedAreaEffectsMask);
 
         // Select targets of effect based on effect type
         // those are used when no valid target could be added for spell effect based on spell target type
@@ -771,10 +771,10 @@ void Spell::SelectEffectImplicitTargets(SpellEffIndex effIndex, SpellImplicitTar
             // choose which targets we can select at once
             for (uint32 j = effIndex + 1; j < MAX_SPELL_EFFECTS; ++j)
             {
-                if (GetSpellInfo()->GetEffect(effIndex, m_diffMode).TargetA.GetTarget() == GetSpellInfo()->Effects[j].TargetA.GetTarget() &&
-                    GetSpellInfo()->GetEffect(effIndex, m_diffMode).TargetB.GetTarget() == GetSpellInfo()->Effects[j].TargetB.GetTarget() &&
+                if (GetSpellInfo()->GetEffect(effIndex, m_diffMode)->TargetA.GetTarget() == GetSpellInfo()->Effects[j].TargetA.GetTarget() &&
+                    GetSpellInfo()->GetEffect(effIndex, m_diffMode)->TargetB.GetTarget() == GetSpellInfo()->Effects[j].TargetB.GetTarget() &&
                     GetSpellInfo()->Effects[effIndex].ImplicitTargetConditions == GetSpellInfo()->Effects[j].ImplicitTargetConditions &&
-                    GetSpellInfo()->GetEffect(effIndex, m_diffMode).CalcRadius(m_caster) == GetSpellInfo()->Effects[j].CalcRadius(m_caster) &&
+                    GetSpellInfo()->GetEffect(effIndex, m_diffMode)->CalcRadius(m_caster) == GetSpellInfo()->Effects[j].CalcRadius(m_caster) &&
                     GetSpellInfo()->Id != 119072)
                     effectMask |= 1 << j;
             }
@@ -1052,7 +1052,7 @@ void Spell::SelectImplicitBetweenTargets(SpellEffIndex effIndex, SpellImplicitTa
     ConditionList* condList = m_spellInfo->Effects[effIndex].ImplicitTargetConditions;
     float width = 5.0f;
     float coneAngle = targetType.CalcDirectionAngle();
-    float radius = m_spellInfo->GetEffect(effIndex, m_diffMode).CalcRadius(m_caster) * m_spellValue->RadiusMod;
+    float radius = m_spellInfo->GetEffect(effIndex, m_diffMode)->CalcRadius(m_caster) * m_spellValue->RadiusMod;
 
     if (uint32 containerTypeMask = GetSearcherTypeMask(objectType, condList))
     {
@@ -1150,7 +1150,7 @@ void Spell::SelectImplicitConeTargets(SpellEffIndex effIndex, SpellImplicitTarge
     ConditionList* condList = m_spellInfo->Effects[effIndex].ImplicitTargetConditions;
     float coneAngle = M_PI/2;
 
-    if (m_spellInfo->GetEffect(effIndex, m_diffMode).TargetA.GetTarget() == TARGET_UNIT_CONE_ENEMY_110)
+    if (m_spellInfo->GetEffect(effIndex, m_diffMode)->TargetA.GetTarget() == TARGET_UNIT_CONE_ENEMY_110)
         coneAngle = M_PI/6;
 
     switch (m_spellInfo->Id)
@@ -1166,7 +1166,7 @@ void Spell::SelectImplicitConeTargets(SpellEffIndex effIndex, SpellImplicitTarge
             break;
     }
 
-    float radius = m_spellInfo->GetEffect(effIndex, m_diffMode).CalcRadius(m_caster) * m_spellValue->RadiusMod;
+    float radius = m_spellInfo->GetEffect(effIndex, m_diffMode)->CalcRadius(m_caster) * m_spellValue->RadiusMod;
 
     // Fists of Fury
     // it`s bugged, dont know how, temp fix
@@ -1261,7 +1261,7 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
              return;
     }
     std::list<WorldObject*> targets;
-    float radius = m_spellInfo->GetEffect(effIndex, m_diffMode).CalcRadius(m_caster) * m_spellValue->RadiusMod;
+    float radius = m_spellInfo->GetEffect(effIndex, m_diffMode)->CalcRadius(m_caster) * m_spellValue->RadiusMod;
     if(radius <= 0)
         radius = 5000.0f;
 
@@ -1586,7 +1586,7 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
     else if (targetType.GetTarget() == TARGET_UNK_125)
         dist = m_spellInfo->GetMaxRange();
     else
-        dist = m_spellInfo->GetEffect(effIndex, m_diffMode).CalcRadius(m_caster);
+        dist = m_spellInfo->GetEffect(effIndex, m_diffMode)->CalcRadius(m_caster);
 
     if (dist < objSize)
         dist = objSize;
@@ -1617,7 +1617,7 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
 
 void Spell::SelectImplicitGotoMoveTargets(SpellEffIndex effIndex, SpellImplicitTargetInfo const& /*targetType*/, uint32 /*effMask*/)
 {
-    float dist = m_spellInfo->GetEffect(effIndex, m_diffMode).CalcRadius(m_caster);
+    float dist = m_spellInfo->GetEffect(effIndex, m_diffMode)->CalcRadius(m_caster);
     float angle = 0.0f;
 
     if(m_caster->HasUnitMovementFlag(MOVEMENTFLAG_FORWARD) && m_caster->HasUnitMovementFlag(MOVEMENTFLAG_STRAFE_LEFT))
@@ -1664,7 +1664,7 @@ void Spell::SelectImplicitTargetDestTargets(SpellEffIndex effIndex, SpellImplici
 
     float angle = targetType.CalcDirectionAngle();
     float objSize = target->GetObjectSize();
-    float dist = m_spellInfo->GetEffect(effIndex, m_diffMode).CalcRadius(m_caster);
+    float dist = m_spellInfo->GetEffect(effIndex, m_diffMode)->CalcRadius(m_caster);
     if (dist < objSize)
         dist = objSize;
     else if (targetType.GetTarget() == TARGET_DEST_TARGET_RANDOM)
@@ -1739,7 +1739,7 @@ void Spell::SelectImplicitDestDestTargets(SpellEffIndex effIndex, SpellImplicitT
         return;
 
     float angle = targetType.CalcDirectionAngle();
-    float dist = m_spellInfo->GetEffect(effIndex, m_diffMode).CalcRadius(m_caster);
+    float dist = m_spellInfo->GetEffect(effIndex, m_diffMode)->CalcRadius(m_caster);
     if (targetType.GetTarget() == TARGET_DEST_DEST_RANDOM)
         dist *= (float)rand_norm();
 
@@ -1825,11 +1825,11 @@ void Spell::SelectImplicitTargetObjectTargets(SpellEffIndex effIndex, SpellImpli
 
 void Spell::SelectImplicitChainTargets(SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType, WorldObject* target, uint32 effMask)
 {
-    int32 maxTargets = m_spellInfo->GetEffect(effIndex, m_diffMode).ChainTarget;
+    int32 maxTargets = m_spellInfo->GetEffect(effIndex, m_diffMode)->ChainTarget;
     if (Player* modOwner = m_caster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_JUMP_TARGETS, maxTargets, this);
     if(maxTargets < 0)
-        maxTargets = m_spellInfo->GetEffect(effIndex, m_diffMode).ChainTarget;
+        maxTargets = m_spellInfo->GetEffect(effIndex, m_diffMode)->ChainTarget;
 
     // Havoc
     if (Aura* _aura = m_caster->GetAura(80240))
@@ -2039,7 +2039,7 @@ void Spell::SelectEffectTypeImplicitTargets(uint8 effIndex)
 {
     // special case for SPELL_EFFECT_SUMMON_RAF_FRIEND and SPELL_EFFECT_SUMMON_PLAYER
     // TODO: this is a workaround - target shouldn't be stored in target map for those spells
-    switch (m_spellInfo->GetEffect(effIndex, m_diffMode).Effect)
+    switch (m_spellInfo->GetEffect(effIndex, m_diffMode)->Effect)
     {
         case SPELL_EFFECT_SUMMON_RAF_FRIEND:
         case SPELL_EFFECT_SUMMON_PLAYER:
@@ -2058,17 +2058,17 @@ void Spell::SelectEffectTypeImplicitTargets(uint8 effIndex)
     }
 
     // select spell implicit targets based on effect type
-    if (!m_spellInfo->GetEffect(effIndex, m_diffMode).GetImplicitTargetType())
+    if (!m_spellInfo->GetEffect(effIndex, m_diffMode)->GetImplicitTargetType())
         return;
 
-    uint32 targetMask = m_spellInfo->GetEffect(effIndex, m_diffMode).GetMissingTargetMask();
+    uint32 targetMask = m_spellInfo->GetEffect(effIndex, m_diffMode)->GetMissingTargetMask();
 
     if (!targetMask)
         return;
 
     WorldObject* target = NULL;
 
-    switch (m_spellInfo->GetEffect(effIndex, m_diffMode).GetImplicitTargetType())
+    switch (m_spellInfo->GetEffect(effIndex, m_diffMode)->GetImplicitTargetType())
     {
         // add explicit object target or self to the target map
         case EFFECT_IMPLICIT_TARGET_EXPLICIT:
@@ -2373,7 +2373,7 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
     volatile uint32 spellid = m_spellInfo->Id;
 
     for (uint32 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
-        if (!m_spellInfo->GetEffect(effIndex, m_diffMode).IsEffect() || !CheckEffectTarget(target, effIndex) || CheckEffFromDummy(target, effIndex))
+        if (!m_spellInfo->GetEffect(effIndex, m_diffMode)->IsEffect() || !CheckEffectTarget(target, effIndex) || CheckEffFromDummy(target, effIndex))
             effectMask &= ~(1 << effIndex);
 
     // no effects left
@@ -2563,11 +2563,11 @@ void Spell::AddGOTarget(GameObject* go, uint32 effectMask)
 {
     for (uint32 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
     {
-        if (!m_spellInfo->GetEffect(effIndex, m_diffMode).IsEffect())
+        if (!m_spellInfo->GetEffect(effIndex, m_diffMode)->IsEffect())
             effectMask &= ~(1 << effIndex);
         else
         {
-            switch (m_spellInfo->GetEffect(effIndex, m_diffMode).Effect)
+            switch (m_spellInfo->GetEffect(effIndex, m_diffMode)->Effect)
             {
             case SPELL_EFFECT_GAMEOBJECT_DAMAGE:
             case SPELL_EFFECT_GAMEOBJECT_REPAIR:
@@ -2628,7 +2628,7 @@ void Spell::AddGOTarget(GameObject* go, uint32 effectMask)
 void Spell::AddItemTarget(Item* item, uint32 effectMask)
 {
     for (uint32 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
-        if (!m_spellInfo->GetEffect(effIndex, m_diffMode).IsEffect())
+        if (!m_spellInfo->GetEffect(effIndex, m_diffMode)->IsEffect())
             effectMask &= ~(1 << effIndex);
 
     // no effects left
@@ -2679,7 +2679,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         uint32 farMask = 0;
         // create far target mask
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-            if (m_spellInfo->GetEffect(i, m_diffMode).IsFarUnitTargetEffect())
+            if (m_spellInfo->GetEffect(i, m_diffMode)->IsFarUnitTargetEffect())
                 if ((1 << i) & mask)
                     farMask |= (1 << i);
 
@@ -3180,7 +3180,7 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
 
     uint32 aura_effmask = 0;
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        if (effectMask & (1 << i) && m_spellInfo->GetEffect(i, m_diffMode).IsUnitOwnedAuraEffect())
+        if (effectMask & (1 << i) && m_spellInfo->GetEffect(i, m_diffMode)->IsUnitOwnedAuraEffect())
             aura_effmask |= 1 << i;
 
     if (aura_effmask)
@@ -3195,8 +3195,8 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
             ASSERT(aurSpellInfo);
             for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
             {
-                basePoints[i] = aurSpellInfo->GetEffect(i, m_diffMode).BasePoints;
-                if (m_spellInfo->GetEffect(i, m_diffMode).Effect != aurSpellInfo->GetEffect(i, m_diffMode).Effect)
+                basePoints[i] = aurSpellInfo->GetEffect(i, m_diffMode)->BasePoints;
+                if (m_spellInfo->GetEffect(i, m_diffMode)->Effect != aurSpellInfo->GetEffect(i, m_diffMode)->Effect)
                 {
                     aurSpellInfo = m_spellInfo;
                     break;
@@ -3231,7 +3231,7 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
                     m_spellAura->Remove();
                     bool found = false;
                     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-                        if (effectMask & (1 << i) && m_spellInfo->GetEffect(i, m_diffMode).Effect != SPELL_EFFECT_APPLY_AURA)
+                        if (effectMask & (1 << i) && m_spellInfo->GetEffect(i, m_diffMode)->Effect != SPELL_EFFECT_APPLY_AURA)
                             found = true;
                     if (!found)
                         return SPELL_MISS_IMMUNE;
@@ -3449,9 +3449,9 @@ bool Spell::UpdateChanneledTargetList()
     uint32 channelAuraMask = 0;
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
-        if (m_spellInfo->GetEffect(i, m_diffMode).Effect == SPELL_EFFECT_APPLY_AURA)
+        if (m_spellInfo->GetEffect(i, m_diffMode)->Effect == SPELL_EFFECT_APPLY_AURA)
             channelAuraMask |= 1<<i;
-        if (m_spellInfo->GetEffect(i, m_diffMode).Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA)
+        if (m_spellInfo->GetEffect(i, m_diffMode)->Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA)
             return true;
     }
 
@@ -3523,13 +3523,13 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
     {
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
-            if (m_spellInfo->GetEffect(i, m_diffMode).Effect == SPELL_EFFECT_APPLY_AURA)
+            if (m_spellInfo->GetEffect(i, m_diffMode)->Effect == SPELL_EFFECT_APPLY_AURA)
             {
                 // Change aura with ranks only if basepoints are taken from spellInfo and aura is positive
                 if (m_spellInfo->IsPositiveEffect(i))
                 {
                     m_auraScaleMask |= (1 << i);
-                    if (m_spellValue->EffectBasePoints[i] != m_spellInfo->GetEffect(i, m_diffMode).BasePoints)
+                    if (m_spellValue->EffectBasePoints[i] != m_spellInfo->GetEffect(i, m_diffMode)->BasePoints)
                     {
                         m_auraScaleMask = 0;
                         break;
@@ -3644,7 +3644,7 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
         {
             m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CAST);
             for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-                if (m_spellInfo->GetEffect(i, m_diffMode).GetUsedTargetObjectType() == TARGET_OBJECT_TYPE_UNIT)
+                if (m_spellInfo->GetEffect(i, m_diffMode)->GetUsedTargetObjectType() == TARGET_OBJECT_TYPE_UNIT)
                 {
                     m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_SPELL_ATTACK);
                     break;
@@ -5604,7 +5604,7 @@ void Spell::SendLogExecute()
         if (!m_effectExecuteData[i])
             continue;
 
-        uint32 effect = m_spellInfo->GetEffect(i, m_diffMode).Effect;
+        uint32 effect = m_spellInfo->GetEffect(i, m_diffMode)->Effect;
 
         switch (effect)
         {
@@ -6585,7 +6585,7 @@ void Spell::HandleEffects(Unit* pUnitTarget, Item* pItemTarget, GameObject* pGOT
     gameObjTarget = pGOTarget;
     destTarget = &m_destTargets[i]._position;
 
-    uint16 eff = m_spellInfo->GetEffect(i, m_diffMode).Effect;
+    uint16 eff = m_spellInfo->GetEffect(i, m_diffMode)->Effect;
 
     if(!damageCalculate[i])
     {
@@ -6867,7 +6867,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         uint16 checkMask = 0;
         for (uint8 effIndex = EFFECT_0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
         {
-            SpellEffectInfo const* effInfo = &m_spellInfo->GetEffect(effIndex, m_diffMode);
+            SpellEffectInfo const* effInfo = m_spellInfo->GetEffect(effIndex, m_diffMode);
             if (effInfo->ApplyAuraName == SPELL_AURA_MOD_SHAPESHIFT)
             {
                 SpellShapeshiftFormEntry const* shapeShiftEntry = sSpellShapeshiftFormStore.LookupEntry(effInfo->MiscValue);
@@ -7080,17 +7080,17 @@ SpellCastResult Spell::CheckCast(bool strict)
     uint32 dispelMask = 0;
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
-        if (m_spellInfo->GetEffect(i, m_diffMode).Effect == SPELL_EFFECT_DISPEL)
+        if (m_spellInfo->GetEffect(i, m_diffMode)->Effect == SPELL_EFFECT_DISPEL)
         {
-            if (m_spellInfo->GetEffect(i, m_diffMode).IsTargetingArea() || AttributesCustomEx & SPELL_ATTR1_MELEE_COMBAT_START)
+            if (m_spellInfo->GetEffect(i, m_diffMode)->IsTargetingArea() || AttributesCustomEx & SPELL_ATTR1_MELEE_COMBAT_START)
             {
                 hasDispellableAura = true;
                 break;
             }
 
-            dispelMask |= SpellInfo::GetDispelMask(DispelType(m_spellInfo->GetEffect(i, m_diffMode).MiscValue));
+            dispelMask |= SpellInfo::GetDispelMask(DispelType(m_spellInfo->GetEffect(i, m_diffMode)->MiscValue));
         }
-        else if (m_spellInfo->GetEffect(i, m_diffMode).IsEffect())
+        else if (m_spellInfo->GetEffect(i, m_diffMode)->IsEffect())
         {
             hasNonDispelEffect = true;
             break;
@@ -7111,7 +7111,7 @@ SpellCastResult Spell::CheckCast(bool strict)
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         // for effects of spells that have only one target
-        switch (m_spellInfo->GetEffect(i, m_diffMode).Effect)
+        switch (m_spellInfo->GetEffect(i, m_diffMode)->Effect)
         {
             case SPELL_EFFECT_TRIGGER_SPELL:
             {
@@ -7255,7 +7255,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (m_caster->GetTypeId() != TYPEID_PLAYER)
                     return SPELL_FAILED_BAD_TARGETS;
 
-                if (m_spellInfo->GetEffect(i, m_diffMode).TargetA.GetTarget() != TARGET_UNIT_PET)
+                if (m_spellInfo->GetEffect(i, m_diffMode)->TargetA.GetTarget() != TARGET_UNIT_PET)
                     break;
 
                 Pet* pet = m_caster->ToPlayer()->GetPet();
@@ -7263,7 +7263,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (!pet)
                     return SPELL_FAILED_NO_PET;
 
-                SpellInfo const* learn_spellproto = sSpellMgr->GetSpellInfo(m_spellInfo->GetEffect(i, m_diffMode).TriggerSpell);
+                SpellInfo const* learn_spellproto = sSpellMgr->GetSpellInfo(m_spellInfo->GetEffect(i, m_diffMode)->TriggerSpell);
 
                 if (!learn_spellproto)
                     return SPELL_FAILED_NOT_KNOWN;
@@ -7285,7 +7285,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     if (!pet || pet->GetOwner() != m_caster)
                         return SPELL_FAILED_BAD_TARGETS;
 
-                    SpellInfo const* learn_spellproto = sSpellMgr->GetSpellInfo(m_spellInfo->GetEffect(i, m_diffMode).TriggerSpell);
+                    SpellInfo const* learn_spellproto = sSpellMgr->GetSpellInfo(m_spellInfo->GetEffect(i, m_diffMode)->TriggerSpell);
 
                     if (!learn_spellproto)
                         return SPELL_FAILED_NOT_KNOWN;
@@ -7297,7 +7297,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             }
             case SPELL_EFFECT_APPLY_GLYPH:
             {
-                uint32 glyphId = m_spellInfo->GetEffect(i, m_diffMode).MiscValue;
+                uint32 glyphId = m_spellInfo->GetEffect(i, m_diffMode)->MiscValue;
                 if (GlyphPropertiesEntry const* gp = sGlyphPropertiesStore.LookupEntry(glyphId))
                     if (m_caster->HasAura(gp->SpellId))
                         return SPELL_FAILED_UNIQUE_GLYPH;
@@ -7347,7 +7347,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 // Can be area effect, Check only for players and not check if target - caster (spell can have multiply drain/burn effects)
                 if (m_caster->GetTypeId() == TYPEID_PLAYER)
                     if (Unit* target = m_targets.GetUnitTarget())
-                        if (target != m_caster && target->getPowerType() != Powers(m_spellInfo->GetEffect(i, m_diffMode).MiscValue))
+                        if (target != m_caster && target->getPowerType() != Powers(m_spellInfo->GetEffect(i, m_diffMode)->MiscValue))
                             return SPELL_FAILED_BAD_TARGETS;
                 break;
             }
@@ -7407,13 +7407,13 @@ SpellCastResult Spell::CheckCast(bool strict)
             }
             case SPELL_EFFECT_OPEN_LOCK:
             {
-                if (m_spellInfo->GetEffect(i, m_diffMode).TargetA.GetTarget() != TARGET_GAMEOBJECT_TARGET &&
-                    m_spellInfo->GetEffect(i, m_diffMode).TargetA.GetTarget() != TARGET_GAMEOBJECT_ITEM_TARGET)
+                if (m_spellInfo->GetEffect(i, m_diffMode)->TargetA.GetTarget() != TARGET_GAMEOBJECT_TARGET &&
+                    m_spellInfo->GetEffect(i, m_diffMode)->TargetA.GetTarget() != TARGET_GAMEOBJECT_ITEM_TARGET)
                     break;
 
                 if (m_caster->GetTypeId() != TYPEID_PLAYER  // only players can open locks, gather etc.
                     // we need a go target in case of TARGET_GAMEOBJECT_TARGET
-                    || (m_spellInfo->GetEffect(i, m_diffMode).TargetA.GetTarget() == TARGET_GAMEOBJECT_TARGET && !m_targets.GetGOTarget()))
+                    || (m_spellInfo->GetEffect(i, m_diffMode)->TargetA.GetTarget() == TARGET_GAMEOBJECT_TARGET && !m_targets.GetGOTarget()))
                     return SPELL_FAILED_BAD_TARGETS;
 
                 Item* pTempItem = NULL;
@@ -7426,7 +7426,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     pTempItem = m_caster->ToPlayer()->GetItemByGuid(m_targets.GetItemTargetGUID());
 
                 // we need a go target, or an openable item target in case of TARGET_GAMEOBJECT_ITEM_TARGET
-                if (m_spellInfo->GetEffect(i, m_diffMode).TargetA.GetTarget() == TARGET_GAMEOBJECT_ITEM_TARGET &&
+                if (m_spellInfo->GetEffect(i, m_diffMode)->TargetA.GetTarget() == TARGET_GAMEOBJECT_ITEM_TARGET &&
                     !m_targets.GetGOTarget() &&
                     (!pTempItem || !pTempItem->GetTemplate()->LockID || !pTempItem->IsLocked()))
                     return SPELL_FAILED_BAD_TARGETS;
@@ -7481,7 +7481,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             // This is generic summon effect
             case SPELL_EFFECT_SUMMON:
             {
-                SummonPropertiesEntry const* SummonProperties = sSummonPropertiesStore.LookupEntry(m_spellInfo->GetEffect(i, m_diffMode).MiscValueB);
+                SummonPropertiesEntry const* SummonProperties = sSummonPropertiesStore.LookupEntry(m_spellInfo->GetEffect(i, m_diffMode)->MiscValueB);
                 if (!SummonProperties)
                     break;
                 switch (SummonProperties->Category)
@@ -7703,7 +7703,7 @@ SpellCastResult Spell::CheckCast(bool strict)
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
-        switch (m_spellInfo->GetEffect(i, m_diffMode).ApplyAuraName)
+        switch (m_spellInfo->GetEffect(i, m_diffMode)->ApplyAuraName)
         {
             case SPELL_AURA_MOD_POSSESS_PET:
             {
@@ -7725,8 +7725,8 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (m_caster->GetCharmerGUID())
                     return SPELL_FAILED_CHARMED;
 
-                if (m_spellInfo->GetEffect(i, m_diffMode).ApplyAuraName == SPELL_AURA_MOD_CHARM
-                    || m_spellInfo->GetEffect(i, m_diffMode).ApplyAuraName == SPELL_AURA_MOD_POSSESS)
+                if (m_spellInfo->GetEffect(i, m_diffMode)->ApplyAuraName == SPELL_AURA_MOD_CHARM
+                    || m_spellInfo->GetEffect(i, m_diffMode)->ApplyAuraName == SPELL_AURA_MOD_POSSESS)
                 {
                     if (m_caster->GetPetGUID())
                         return SPELL_FAILED_ALREADY_HAVE_SUMMON;
@@ -7798,7 +7798,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             }
             case SPELL_AURA_PERIODIC_MANA_LEECH:
             {
-                if (m_spellInfo->GetEffect(i, m_diffMode).IsTargetingArea())
+                if (m_spellInfo->GetEffect(i, m_diffMode)->IsTargetingArea())
                     break;
 
                 if (!m_targets.GetUnitTarget())
@@ -7906,12 +7906,12 @@ SpellCastResult Spell::CheckCasterAuras() const
     {
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
-            if (m_spellInfo->GetEffect(i, m_diffMode).ApplyAuraName == SPELL_AURA_SCHOOL_IMMUNITY)
-                school_immune |= uint32(m_spellInfo->GetEffect(i, m_diffMode).MiscValue);
-            else if (m_spellInfo->GetEffect(i, m_diffMode).ApplyAuraName == SPELL_AURA_MECHANIC_IMMUNITY)
-                mechanic_immune |= 1 << uint32(m_spellInfo->GetEffect(i, m_diffMode).MiscValue);
-            else if (m_spellInfo->GetEffect(i, m_diffMode).ApplyAuraName == SPELL_AURA_DISPEL_IMMUNITY)
-                dispel_immune |= SpellInfo::GetDispelMask(DispelType(m_spellInfo->GetEffect(i, m_diffMode).MiscValue));
+            if (m_spellInfo->GetEffect(i, m_diffMode)->ApplyAuraName == SPELL_AURA_SCHOOL_IMMUNITY)
+                school_immune |= uint32(m_spellInfo->GetEffect(i, m_diffMode)->MiscValue);
+            else if (m_spellInfo->GetEffect(i, m_diffMode)->ApplyAuraName == SPELL_AURA_MECHANIC_IMMUNITY)
+                mechanic_immune |= 1 << uint32(m_spellInfo->GetEffect(i, m_diffMode)->MiscValue);
+            else if (m_spellInfo->GetEffect(i, m_diffMode)->ApplyAuraName == SPELL_AURA_DISPEL_IMMUNITY)
+                dispel_immune |= SpellInfo::GetDispelMask(DispelType(m_spellInfo->GetEffect(i, m_diffMode)->MiscValue));
         }
         // immune movement impairment and loss of control
         if (m_spellInfo->Id == 42292 || m_spellInfo->Id == 59752)
@@ -8102,7 +8102,7 @@ bool Spell::CanAutoCast(Unit* target)
             case SPELL_EFFECT_STEAL_BENEFICIAL_BUFF:
             {
                 DispelChargesList dispelList;
-                uint32 dispelMask = SpellInfo::GetDispelMask(DispelType(m_spellInfo->GetEffect(j, m_diffMode).MiscValue));
+                uint32 dispelMask = SpellInfo::GetDispelMask(DispelType(m_spellInfo->GetEffect(j, m_diffMode)->MiscValue));
                 target->GetDispellableAuraList(m_caster, dispelMask, dispelList);
 
                 if (dispelList.empty())
@@ -8314,10 +8314,10 @@ SpellCastResult Spell::CheckItems()
             for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
             {
                     // skip check, pet not required like checks, and for TARGET_UNIT_PET m_targets.GetUnitTarget() is not the real target but the caster
-                    if (m_spellInfo->GetEffect(i, m_diffMode).TargetA.GetTarget() == TARGET_UNIT_PET)
+                    if (m_spellInfo->GetEffect(i, m_diffMode)->TargetA.GetTarget() == TARGET_UNIT_PET)
                     continue;
 
-                if (m_spellInfo->GetEffect(i, m_diffMode).Effect == SPELL_EFFECT_HEAL)
+                if (m_spellInfo->GetEffect(i, m_diffMode)->Effect == SPELL_EFFECT_HEAL)
                 {
                     if (m_targets.GetUnitTarget()->IsFullHealth())
                     {
@@ -8332,15 +8332,15 @@ SpellCastResult Spell::CheckItems()
                 }
 
                 // Mana Potion, Rage Potion, Thistle Tea(Rogue), ...
-                if (m_spellInfo->GetEffect(i, m_diffMode).Effect == SPELL_EFFECT_ENERGIZE)
+                if (m_spellInfo->GetEffect(i, m_diffMode)->Effect == SPELL_EFFECT_ENERGIZE)
                 {
-                    if (m_spellInfo->GetEffect(i, m_diffMode).MiscValue < 0 || m_spellInfo->GetEffect(i, m_diffMode).MiscValue >= int8(MAX_POWERS))
+                    if (m_spellInfo->GetEffect(i, m_diffMode)->MiscValue < 0 || m_spellInfo->GetEffect(i, m_diffMode)->MiscValue >= int8(MAX_POWERS))
                     {
                         failReason = SPELL_FAILED_ALREADY_AT_FULL_POWER;
                         continue;
                     }
 
-                    Powers power = Powers(m_spellInfo->GetEffect(i, m_diffMode).MiscValue);
+                    Powers power = Powers(m_spellInfo->GetEffect(i, m_diffMode)->MiscValue);
                     if (m_targets.GetUnitTarget()->GetPower(power) == m_targets.GetUnitTarget()->GetMaxPower(power))
                     {
                         failReason = SPELL_FAILED_ALREADY_AT_FULL_POWER;
@@ -8469,29 +8469,29 @@ SpellCastResult Spell::CheckItems()
     // special checks for spell effects
     for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
     {
-        switch (m_spellInfo->GetEffect(i, m_diffMode).Effect)
+        switch (m_spellInfo->GetEffect(i, m_diffMode)->Effect)
         {
             case SPELL_EFFECT_CREATE_ITEM:
             case SPELL_EFFECT_CREATE_ITEM_2:
             {
-                if (!IsTriggered() && m_spellInfo->GetEffect(i, m_diffMode).ItemType)
+                if (!IsTriggered() && m_spellInfo->GetEffect(i, m_diffMode)->ItemType)
                 {
                     ItemPosCountVec dest;
-                    InventoryResult msg = p_caster->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, m_spellInfo->GetEffect(i, m_diffMode).ItemType, 1);
+                    InventoryResult msg = p_caster->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, m_spellInfo->GetEffect(i, m_diffMode)->ItemType, 1);
                     if (msg != EQUIP_ERR_OK)
                     {
-                        ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(m_spellInfo->GetEffect(i, m_diffMode).ItemType);
+                        ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(m_spellInfo->GetEffect(i, m_diffMode)->ItemType);
                         // TODO: Needs review
                         if (pProto && !(pProto->ItemLimitCategory))
                         {
-                            p_caster->SendEquipError(msg, NULL, NULL, m_spellInfo->GetEffect(i, m_diffMode).ItemType);
+                            p_caster->SendEquipError(msg, NULL, NULL, m_spellInfo->GetEffect(i, m_diffMode)->ItemType);
                             return SPELL_FAILED_DONT_REPORT;
                         }
                         else
                         {
                             if (!(m_spellInfo->SpellFamilyName == SPELLFAMILY_MAGE && (m_spellInfo->SpellFamilyFlags[0] & 0x40000000)))
                                 return SPELL_FAILED_TOO_MANY_OF_ITEM;
-                            else if (!(p_caster->HasItemCount(m_spellInfo->GetEffect(i, m_diffMode).ItemType)))
+                            else if (!(p_caster->HasItemCount(m_spellInfo->GetEffect(i, m_diffMode)->ItemType)))
                                 return SPELL_FAILED_TOO_MANY_OF_ITEM;
                             // Conjure Mana Gem
                             else if (m_spellInfo->Id == 759)
@@ -8522,7 +8522,7 @@ SpellCastResult Spell::CheckItems()
                 break;
             }
             case SPELL_EFFECT_ENCHANT_ITEM:
-                if (m_spellInfo->GetEffect(i, m_diffMode).ItemType && m_targets.GetItemTarget()
+                if (m_spellInfo->GetEffect(i, m_diffMode)->ItemType && m_targets.GetItemTarget()
                     && (m_targets.GetItemTarget()->IsVellum()))
                 {
                     // cannot enchant vellum for other player
@@ -8532,10 +8532,10 @@ SpellCastResult Spell::CheckItems()
                     if (m_CastItem && m_CastItem->GetTemplate()->Flags & ITEM_PROTO_FLAG_TRIGGERED_CAST)
                         return SPELL_FAILED_TOTEM_CATEGORY;
                     ItemPosCountVec dest;
-                    InventoryResult msg = p_caster->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, m_spellInfo->GetEffect(i, m_diffMode).ItemType, 1);
+                    InventoryResult msg = p_caster->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, m_spellInfo->GetEffect(i, m_diffMode)->ItemType, 1);
                     if (msg != EQUIP_ERR_OK)
                     {
-                        p_caster->SendEquipError(msg, NULL, NULL, m_spellInfo->GetEffect(i, m_diffMode).ItemType);
+                        p_caster->SendEquipError(msg, NULL, NULL, m_spellInfo->GetEffect(i, m_diffMode)->ItemType);
                         return SPELL_FAILED_DONT_REPORT;
                     }
                 }
@@ -8561,7 +8561,7 @@ SpellCastResult Spell::CheckItems()
                     }
                 }
 
-                SpellItemEnchantmentEntry const* pEnchant = sSpellItemEnchantmentStore.LookupEntry(m_spellInfo->GetEffect(i, m_diffMode).MiscValue);
+                SpellItemEnchantmentEntry const* pEnchant = sSpellItemEnchantmentStore.LookupEntry(m_spellInfo->GetEffect(i, m_diffMode)->MiscValue);
                 // do not allow adding usable enchantments to items that have use effect already
                 if (pEnchant && isItemUsable)
                     for (uint8 s = 0; s < MAX_ITEM_ENCHANTMENT_EFFECTS; ++s)
@@ -8586,7 +8586,7 @@ SpellCastResult Spell::CheckItems()
                 // Not allow enchant in trade slot for some enchant type
                 if (item->GetOwner() != m_caster)
                 {
-                    uint32 enchant_id = m_spellInfo->GetEffect(i, m_diffMode).MiscValue;
+                    uint32 enchant_id = m_spellInfo->GetEffect(i, m_diffMode)->MiscValue;
                     SpellItemEnchantmentEntry const* pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
                     if (!pEnchant)
                         return SPELL_FAILED_ERROR;
@@ -8706,7 +8706,7 @@ SpellCastResult Spell::CheckItems()
             }
             case SPELL_EFFECT_CREATE_MANA_GEM:
             {
-                 uint32 item_id = m_spellInfo->GetEffect(i, m_diffMode).ItemType;
+                 uint32 item_id = m_spellInfo->GetEffect(i, m_diffMode)->ItemType;
                  ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(item_id);
 
                  if (!pProto)
@@ -9155,11 +9155,11 @@ void Spell::HandleLaunchPhase()
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         // don't do anything for empty effect
-        if (!m_spellInfo->GetEffect(i, m_diffMode).IsEffect())
+        if (!m_spellInfo->GetEffect(i, m_diffMode)->IsEffect())
             continue;
 
         if (m_spellMissMask & ((1 << SPELL_MISS_MISS) | (1 << SPELL_MISS_IMMUNE)))
-            if (m_spellInfo->GetEffect(i, m_diffMode).TargetA.GetTarget() == TARGET_UNIT_CASTER)
+            if (m_spellInfo->GetEffect(i, m_diffMode)->TargetA.GetTarget() == TARGET_UNIT_CASTER)
                 continue;
 
         HandleEffects(NULL, NULL, NULL, i, SPELL_EFFECT_HANDLE_LAUNCH);
@@ -9168,7 +9168,7 @@ void Spell::HandleLaunchPhase()
     float multiplier[MAX_SPELL_EFFECTS];
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         if (m_applyMultiplierMask & (1 << i))
-            multiplier[i] = m_spellInfo->GetEffect(i, m_diffMode).CalcDamageMultiplier(m_originalCaster, this);
+            multiplier[i] = m_spellInfo->GetEffect(i, m_diffMode)->CalcDamageMultiplier(m_originalCaster, this);
 
     bool usesAmmo = AttributesCustomCu & SPELL_ATTR0_CU_DIRECT_DAMAGE;
 
@@ -9191,7 +9191,7 @@ void Spell::HandleLaunchPhase()
             {
                 if (!(mask & 1<<i))
                     continue;
-                switch (m_spellInfo->GetEffect(i, m_diffMode).Effect)
+                switch (m_spellInfo->GetEffect(i, m_diffMode)->Effect)
                 {
                     case SPELL_EFFECT_SCHOOL_DAMAGE:
                     case SPELL_EFFECT_WEAPON_DAMAGE:
@@ -9233,7 +9233,7 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier)
 
             if (m_damage > 0)
             {
-                if (m_spellInfo->GetEffect(i, m_diffMode).IsTargetingArea())
+                if (m_spellInfo->GetEffect(i, m_diffMode)->IsTargetingArea())
                 {
                     m_damage = int32(float(m_damage) * unit->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_AOE_DAMAGE_AVOIDANCE, m_spellInfo->SchoolMask));
                     if (m_caster->GetTypeId() == TYPEID_UNIT)
@@ -9341,7 +9341,7 @@ SpellCastResult Spell::CanOpenLock(uint32 effIndex, uint32 lockId, SkillType& sk
                 reqKey = true;
 
                 // wrong locktype, skip
-                if (uint32(m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue) != lockInfo->Index[j])
+                if (uint32(m_spellInfo->GetEffect(effIndex, m_diffMode)->MiscValue) != lockInfo->Index[j])
                     continue;
 
                 skillId = SkillByLockType(LockType(lockInfo->Index[j]));
@@ -9356,8 +9356,8 @@ SpellCastResult Spell::CanOpenLock(uint32 effIndex, uint32 lockId, SkillType& sk
 
                     // skill bonus provided by casting spell (mostly item spells)
                     // add the effect base points modifier from the spell casted (cheat lock / skeleton key etc.)
-                    if (m_spellInfo->GetEffect(effIndex, m_diffMode).TargetA.GetTarget() == TARGET_GAMEOBJECT_ITEM_TARGET || m_spellInfo->GetEffect(effIndex, m_diffMode).TargetB.GetTarget() == TARGET_GAMEOBJECT_ITEM_TARGET)
-                        skillValue += m_spellInfo->GetEffect(effIndex, m_diffMode).CalcValue(m_caster, 0);
+                    if (m_spellInfo->GetEffect(effIndex, m_diffMode)->TargetA.GetTarget() == TARGET_GAMEOBJECT_ITEM_TARGET || m_spellInfo->GetEffect(effIndex, m_diffMode)->TargetB.GetTarget() == TARGET_GAMEOBJECT_ITEM_TARGET)
+                        skillValue += m_spellInfo->GetEffect(effIndex, m_diffMode)->CalcValue(m_caster, 0);
 
                     if (skillValue < reqSkillValue)
                         return SPELL_FAILED_LOW_CASTLEVEL;
@@ -9383,27 +9383,27 @@ void Spell::SetSpellValue(SpellValueMod mod, int32 value, bool lockValue)
     switch (mod)
     {
         case SPELLVALUE_BASE_POINT0:
-            m_spellValue->EffectBasePoints[0] = m_spellInfo->GetEffect(EFFECT_0, m_diffMode).CalcBaseValue(value);
+            m_spellValue->EffectBasePoints[0] = m_spellInfo->GetEffect(EFFECT_0, m_diffMode)->CalcBaseValue(value);
             m_spellValue->LockBasePoints[0] = lockValue;
             break;
         case SPELLVALUE_BASE_POINT1:
-            m_spellValue->EffectBasePoints[1] = m_spellInfo->GetEffect(EFFECT_1, m_diffMode).CalcBaseValue(value);
+            m_spellValue->EffectBasePoints[1] = m_spellInfo->GetEffect(EFFECT_1, m_diffMode)->CalcBaseValue(value);
             m_spellValue->LockBasePoints[1] = lockValue;
             break;
         case SPELLVALUE_BASE_POINT2:
-            m_spellValue->EffectBasePoints[2] = m_spellInfo->GetEffect(EFFECT_2, m_diffMode).CalcBaseValue(value);
+            m_spellValue->EffectBasePoints[2] = m_spellInfo->GetEffect(EFFECT_2, m_diffMode)->CalcBaseValue(value);
             m_spellValue->LockBasePoints[2] = lockValue;
             break;
         case SPELLVALUE_BASE_POINT3:
-            m_spellValue->EffectBasePoints[3] = m_spellInfo->GetEffect(EFFECT_3, m_diffMode).CalcBaseValue(value);
+            m_spellValue->EffectBasePoints[3] = m_spellInfo->GetEffect(EFFECT_3, m_diffMode)->CalcBaseValue(value);
             m_spellValue->LockBasePoints[3] = lockValue;
             break;
         case SPELLVALUE_BASE_POINT4:
-            m_spellValue->EffectBasePoints[4] = m_spellInfo->GetEffect(EFFECT_4, m_diffMode).CalcBaseValue(value);
+            m_spellValue->EffectBasePoints[4] = m_spellInfo->GetEffect(EFFECT_4, m_diffMode)->CalcBaseValue(value);
             m_spellValue->LockBasePoints[4] = lockValue;
             break;
         case SPELLVALUE_BASE_POINT5:
-            m_spellValue->EffectBasePoints[5] = m_spellInfo->GetEffect(EFFECT_5, m_diffMode).CalcBaseValue(value);
+            m_spellValue->EffectBasePoints[5] = m_spellInfo->GetEffect(EFFECT_5, m_diffMode)->CalcBaseValue(value);
             m_spellValue->LockBasePoints[5] = lockValue;
             break;
         case SPELLVALUE_RADIUS_MOD:
@@ -9869,7 +9869,7 @@ bool Spell::CanExecuteTriggersOnHit(uint32 effMask, SpellInfo const* triggeredBy
     // If triggeredByAura has SPELL_ATTR4_PROC_ONLY_ON_CASTER then it can only proc on a casted spell with TARGET_UNIT_CASTER
     for (uint8 i = 0;i < MAX_SPELL_EFFECTS; ++i)
     {
-        if ((effMask & (1 << i)) && (!only_on_caster || (m_spellInfo->GetEffect(i, m_diffMode).TargetA.GetTarget() == TARGET_UNIT_CASTER)))
+        if ((effMask & (1 << i)) && (!only_on_caster || (m_spellInfo->GetEffect(i, m_diffMode)->TargetA.GetTarget() == TARGET_UNIT_CASTER)))
             return true;
     }
     return false;

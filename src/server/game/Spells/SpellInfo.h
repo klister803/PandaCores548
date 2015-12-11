@@ -475,7 +475,7 @@ public:
     SpellInfo(SpellEntry const* spellEntry);
     ~SpellInfo();
 
-    SpellEffectInfo const& GetEffect(uint8 effect, uint8 difficulty = 0) const;
+    SpellEffectInfo const* GetEffect(uint8 effect, uint8 difficulty = 0) const;
     bool HasEffect(SpellEffects effect) const;
     bool HasAura(AuraType aura) const;
     bool HasAreaAuraEffect() const;
@@ -498,7 +498,7 @@ public:
     bool IsTargetingArea() const;
     bool IsTargetingAreaCast(uint8 effect = 0) const;
     bool NeedsExplicitUnitTarget() const;
-    bool NeedsToBeTriggeredByCaster() const;
+    bool NeedsToBeTriggeredByCaster(SpellInfo const* triggeringSpell, uint32 difficulty) const;
 
     bool IsPassive() const;
     bool IsAutocastable() const;

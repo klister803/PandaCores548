@@ -870,7 +870,7 @@ class npc_contaminated_puddle : public CreatureScript
             {
                 for (uint8 n = 0; n < MAX_SPELL_EFFECTS; n++)
                 {
-                    if (spell->GetEffect(n).Effect == SPELL_EFFECT_HEAL || spell->GetEffect(n).Effect == SPELL_EFFECT_HEAL_PCT)
+                    if (spell->GetEffect(n)->Effect == SPELL_EFFECT_HEAL || spell->GetEffect(n)->Effect == SPELL_EFFECT_HEAL_PCT)
                     {
                         uint8 mod = (uint8)floor(me->GetHealthPct()/10);
 

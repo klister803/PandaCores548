@@ -1113,7 +1113,7 @@ SpellInfo::~SpellInfo()
     _UnloadImplicitTargetConditionLists();
 }
 
-SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) const
+SpellEffectInfo const* SpellInfo::GetEffect(uint8 effect, uint8 difficulty) const
 {
     // custom spell effects (needed for rewrite targets, etc..)
     switch (Id)
@@ -1266,17 +1266,17 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 144662:
     case 144663:
     case 144664:
-        return Effects[effect];
+        return &Effects[effect];
     }
 
     if (difficulty)
     {
         SpellEffectInfoMap::const_iterator itr = EffectsMap.find(MAKE_PAIR16(effect, difficulty));
         if(itr != EffectsMap.end())
-            return itr->second;
+            return &itr->second;
     }
 
-    return Effects[effect];
+    return &Effects[effect];
 }
 
 bool SpellInfo::HasEffect(SpellEffects effect) const
@@ -1522,20 +1522,48 @@ bool SpellInfo::NeedsExplicitUnitTarget() const
     return GetExplicitTargetMask() & TARGET_FLAG_UNIT_MASK;
 }
 
-bool SpellInfo::NeedsToBeTriggeredByCaster() const
+bool SpellInfo::NeedsToBeTriggeredByCaster(SpellInfo const* triggeringSpell, uint32 difficulty) const
 {
+    if(GetExplicitTargetMask() & TARGET_FLAG_DEST_LOCATION)
+        return false;
+
     if (NeedsExplicitUnitTarget())
         return true;
+
+    /*
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         if (Effects[i].IsEffect())
         {
             if (Effects[i].TargetA.GetSelectionCategory() == TARGET_SELECT_CATEGORY_CHANNEL
                 || Effects[i].TargetB.GetSelectionCategory() == TARGET_SELECT_CATEGORY_CHANNEL
-                || Effects[i].TargetA.GetSelectionCategory() == TARGET_UNIT_CASTER)
+                || Effects[i].TargetA.GetSelectionCategory() == TARGET_SELECT_CATEGORY_CONE
+                || Effects[i].TargetB.GetSelectionCategory() == TARGET_SELECT_CATEGORY_CONE)
                 return true;
         }
+    }    
+    */
+
+    if (triggeringSpell->IsChanneled())
+    {
+        uint32 mask = 0;
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        {
+            SpellEffectInfo const* effect = GetEffect(i, difficulty);
+            if (!effect)
+                continue;
+
+            if (effect->TargetA.GetTarget() != TARGET_UNIT_CASTER && effect->TargetA.GetTarget() != TARGET_DEST_CASTER
+                && effect->TargetB.GetTarget() != TARGET_UNIT_CASTER && effect->TargetB.GetTarget() != TARGET_DEST_CASTER)
+            {
+                mask |= effect->GetProvidedTargetMask();
+            }
+        }
+
+        if (mask & TARGET_FLAG_UNIT_MASK)
+            return true;
     }
+
     return false;
 }
 

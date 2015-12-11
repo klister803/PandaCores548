@@ -674,12 +674,9 @@ void Creature::Regenerate(Powers power)
     }
 
     if ((saveCur != maxValue && curValue == maxValue) || m_regenTimerCount >= uint32(isAnySummons() ? PET_FOCUS_REGEN_INTERVAL : CREATURE_REGEN_INTERVAL))
-    {
-        SetInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
         m_regenTimerCount -= (isAnySummons() ? PET_FOCUS_REGEN_INTERVAL : CREATURE_REGEN_INTERVAL);
-    }
-    else
-        UpdateInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
+
+    SetInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
 
     m_petregenTimer = 0;
 }

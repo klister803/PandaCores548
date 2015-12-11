@@ -1714,7 +1714,7 @@ class spell_rage_of_the_empress : public SpellScriptLoader
                     return;
 
                 SpellInfo const* Spell = sSpellMgr->GetSpellInfo(SPELL_RAGE_OF_THE_EMPRESS_AURA);
-                bp0 = Spell->GetEffect(EFFECT_0, caster->GetSpawnMode()).BasePoints / targets.size();
+                bp0 = Spell->GetEffect(EFFECT_0, caster->GetSpawnMode())->BasePoints / targets.size();
             }
 
             void HandleOnHit()
@@ -2078,7 +2078,7 @@ public:
             if (GetTarget())
             {
                 SpellInfo const* spell = sSpellMgr->GetSpellInfo(SPELL_UNSTABLE_DEFENSE_SYSTEMS_D);
-                int32 amount = spell->GetEffect(0).BasePoints + int32(spell->GetEffect(0).BasePoints * 0.4f * aurEff->GetTickNumber());
+                int32 amount = spell->GetEffect(0)->BasePoints + int32(spell->GetEffect(0)->BasePoints * 0.4f * aurEff->GetTickNumber());
                 GetTarget()->CastCustomSpell(SPELL_UNSTABLE_DEFENSE_SYSTEMS_D, SPELLVALUE_BASE_POINT0, amount, GetTarget(), true);
                 if (!GetTarget()->GetMap()->IsDungeon())
                     GetTarget()->RemoveAurasDueToSpell(SPELL_UNSTABLE_DEFENSE_SYSTEMS);

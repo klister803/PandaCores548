@@ -616,9 +616,9 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
         {
             if (caster)
             {
-                int32 bp0 = spellInfo->GetEffect(EFFECT_0, caster->GetSpawnMode()).BasePoints / _hitCount;
-                int32 bp1 = spellInfo->GetEffect(EFFECT_1, caster->GetSpawnMode()).BasePoints / _hitCount;
-                int32 bp2 = spellInfo->GetEffect(EFFECT_2, caster->GetSpawnMode()).BasePoints / _hitCount;
+                int32 bp0 = spellInfo->GetEffect(EFFECT_0, caster->GetSpawnMode())->BasePoints / _hitCount;
+                int32 bp1 = spellInfo->GetEffect(EFFECT_1, caster->GetSpawnMode())->BasePoints / _hitCount;
+                int32 bp2 = spellInfo->GetEffect(EFFECT_2, caster->GetSpawnMode())->BasePoints / _hitCount;
 
                 if (action.action->targetFlags & AT_TARGET_FLAG_CAST_AT_SRC)
                 {

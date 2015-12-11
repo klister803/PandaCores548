@@ -24,7 +24,7 @@ enum eSpells
     SPELL_JASPER_OVERLOAD               = 115843,
     SPELL_JASPER_PETRIFICATION          = 116036,
     SPELL_JASPER_PETRIFICATION_BAR      = 131270,
-    SEPLL_JASPER_TRUE_FORM              = 115828,
+    SPELL_JASPER_TRUE_FORM              = 115828,
     SPELL_JASPER_CHAINS                 = 130395,
     SPELL_JASPER_CHAINS_VISUAL          = 130403,
     SPELL_JASPER_CHAINS_DAMAGE          = 130404,
@@ -33,7 +33,7 @@ enum eSpells
     SPELL_JADE_OVERLOAD                 = 115842,
     SPELL_JADE_PETRIFICATION            = 116006,
     SPELL_JADE_PETRIFICATION_BAR        = 131269,
-    SEPLL_JADE_TRUE_FORM                = 115827,
+    SPELL_JADE_TRUE_FORM                = 115827,
     SPELL_JADE_SHARDS                   = 116223,
 
     // Amethyst
@@ -47,7 +47,7 @@ enum eSpells
     SPELL_COBALT_OVERLOAD               = 115840,
     SPELL_COBALT_PETRIFICATION          = 115852,
     SPELL_COBALT_PETRIFICATION_BAR      = 131268,
-    SEPLL_COBALT_TRUE_FORM              = 115771,
+    SPELL_COBALT_TRUE_FORM              = 115771,
     SPELL_COBALT_MINE                   = 129460,
 
     // Shared
@@ -363,11 +363,10 @@ class boss_generic_guardian : public CreatureScript
                 me->LowerPlayerDamageReq(me->GetMaxHealth());
                 isInTrueForm = false;
                 me->SetReactState(REACT_DEFENSIVE);
-                me->setPowerType(POWER_ENERGY);
                 me->SetPower(POWER_ENERGY, 0);
-                me->CastSpell(me, SPELL_SOLID_STONE, true);
-                me->CastSpell(me, SPELL_ANIM_SIT,    true);
-                me->CastSpell(me, SPELL_ZERO_ENERGY, true);
+                DoCast(me, SPELL_ZERO_ENERGY, true);
+                DoCast(me, SPELL_SOLID_STONE, true);
+                DoCast(me, SPELL_ANIM_SIT,    true);
                 summons.DespawnAll();
 
                 switch (me->GetEntry())
@@ -376,14 +375,14 @@ class boss_generic_guardian : public CreatureScript
                         spellOverloadId             = SPELL_JASPER_OVERLOAD;
                         spellPetrificationId        = SPELL_JASPER_PETRIFICATION;
                         spellPetrificationBarId     = SPELL_JASPER_PETRIFICATION_BAR;
-                        spellTrueFormId             = SEPLL_JASPER_TRUE_FORM;
+                        spellTrueFormId             = SPELL_JASPER_TRUE_FORM;
                         spellMainAttack             = SPELL_JASPER_CHAINS;
                         break;
                     case NPC_JADE:
                         spellOverloadId             = SPELL_JADE_OVERLOAD;
                         spellPetrificationId        = SPELL_JADE_PETRIFICATION;
                         spellPetrificationBarId     = SPELL_JADE_PETRIFICATION_BAR;
-                        spellTrueFormId             = SEPLL_JADE_TRUE_FORM;
+                        spellTrueFormId             = SPELL_JADE_TRUE_FORM;
                         spellMainAttack             = SPELL_JADE_SHARDS;
                         break;
                     case NPC_AMETHYST:
@@ -397,7 +396,7 @@ class boss_generic_guardian : public CreatureScript
                         spellOverloadId             = SPELL_COBALT_OVERLOAD;
                         spellPetrificationId        = SPELL_COBALT_PETRIFICATION;
                         spellPetrificationBarId     = SPELL_COBALT_PETRIFICATION_BAR;
-                        spellTrueFormId             = SEPLL_COBALT_TRUE_FORM;
+                        spellTrueFormId             = SPELL_COBALT_TRUE_FORM;
                         spellMainAttack             = SPELL_COBALT_MINE;
                         break;
                     default:
@@ -409,6 +408,7 @@ class boss_generic_guardian : public CreatureScript
                         break;
                 }
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(spellPetrificationBarId);
+                me->RemoveAurasDueToSpell(spellTrueFormId);
                 events.Reset();
                 events.ScheduleEvent(EVENT_CHECK_NEAR_GUARDIANS, 2500);
                 events.ScheduleEvent(EVENT_CHECK_ENERGY, 1000);
@@ -422,7 +422,6 @@ class boss_generic_guardian : public CreatureScript
                     controller->AI()->DoAction(ACTION_ENTER_COMBAT);
                 me->RemoveAurasDueToSpell(SPELL_SOLID_STONE);
                 me->RemoveAurasDueToSpell(SPELL_ANIM_SIT);
-                me->RemoveAurasDueToSpell(SPELL_ZERO_ENERGY);
             }
 
             void JustSummoned(Creature* summon)
@@ -470,8 +469,8 @@ class boss_generic_guardian : public CreatureScript
                     return;
                 }
                 
-               if (CheckNearGuardians())
-                   value = 4; // Creature regen every 2 seconds, and guardians must regen at 2/sec
+                if (CheckNearGuardians())
+                   value = 1; // Creature regen every 2 seconds, and guardians must regen at 2/sec
                 else
                    value = 0;
             }
@@ -511,7 +510,7 @@ class boss_generic_guardian : public CreatureScript
                             me->RemoveAurasDueToSpell(spellTrueFormId);
                             isInTrueForm = false;
                         }
-                        events.ScheduleEvent(EVENT_CHECK_NEAR_GUARDIANS, 2000);
+                        events.ScheduleEvent(EVENT_CHECK_NEAR_GUARDIANS, 1000);
                         break;
                     }
                     case EVENT_CHECK_ENERGY:                           
@@ -525,8 +524,13 @@ class boss_generic_guardian : public CreatureScript
                         break;
                     case EVENT_REND_FLESH:
                         if (Unit* victim = SelectTarget(SELECT_TARGET_TOPAGGRO))
-                            me->CastSpell(victim, SPELL_REND_FLESH, false);
-                        events.ScheduleEvent(EVENT_REND_FLESH, urand(20000, 25000));
+                        {
+                            if (Aura* aura = victim->GetAura(SPELL_REND_FLESH))
+                                aura->RefreshTimers();
+                            else
+                                me->CastSpell(victim, SPELL_REND_FLESH, false);
+                        }
+                        events.ScheduleEvent(EVENT_REND_FLESH, urand(4000, 6000));
                         break;
                     case EVENT_MAIN_ATTACK:
                         if (isInTrueForm)

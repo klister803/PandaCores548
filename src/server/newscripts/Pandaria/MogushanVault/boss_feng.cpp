@@ -97,6 +97,8 @@ enum eEvents
     EVENT_ARCANE_VELOCITY       = 7,
     EVENT_ARCANE_VELOCITY_END   = 8,
     EVENT_ARCANE_RESONANCE      = 9,
+
+    EVENT_SPIRIT_BOLT           = 10,
 };
 
 enum eFengPhases
@@ -161,6 +163,7 @@ class boss_feng : public CreatureScript
             void Reset()
             {
                 _Reset();
+                events.Reset();
                 phaseone = false;
                 phasetwo = false;
                 phasethree = false;
@@ -252,6 +255,8 @@ class boss_feng : public CreatureScript
                 events.Reset();
                 events.ScheduleEvent(EVENT_DOT_ATTACK, 15000);
                 events.ScheduleEvent(EVENT_RE_ATTACK,  1000);
+                events.ScheduleEvent(EVENT_SPIRIT_BOLT, 8000);
+
                 me->GetMotionMaster()->Clear();
 
                 if (Creature* controler = me->FindNearestCreature(NPC_PHASE_CONTROLER, 60.0f, true))
@@ -276,7 +281,7 @@ class boss_feng : public CreatureScript
                 for (uint8 i = 0; i < 4; ++i)
                     me->RemoveAurasDueToSpell(fengVisualId[i]);
 
-                //me->AddAura(fengVisualId[newPhase - 1], me);
+                me->CastSpell(me, fengVisualId[newPhase - 1], true);
                 me->CastSpell(me, SPELL_DRAW_ESSENCE, true);
 
                 switch (newPhase)
@@ -315,6 +320,16 @@ class boss_feng : public CreatureScript
                 actualPhase = newPhase;
             }
 
+            void SpellHit(Unit* attacker, const SpellInfo* spell) 
+            {
+                if (spell->Id == 116583)
+                    for (uint8 i = 0; i < 3; ++i)
+                    {
+                        float position_x = me->GetPositionX() + frand(-3.0f, 3.0f);
+                        float position_y = me->GetPositionY() + frand(-3.0f, 3.0f);
+                        me->CastSpell(position_x, position_y, me->GetPositionZ(), 116586, true);
+                    }
+            }
             void DamageTaken(Unit* attacker, uint32 &damage)
             {
                 if (!pInstance)
@@ -391,10 +406,10 @@ class boss_feng : public CreatureScript
                         checkvictim -= diff;
                 }
 
+                events.Update(diff);
+
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
-                
-                events.Update(diff);
 
                 switch(events.ExecuteEvent())
                 {
@@ -404,14 +419,18 @@ class boss_feng : public CreatureScript
                             DoCast(target, dotSpellId);
                         events.ScheduleEvent(EVENT_DOT_ATTACK, 12500);
                         break;
-                     case EVENT_RE_ATTACK:
-                         if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
-                             me->GetMotionMaster()->MoveChase(target);
-                         me->SetReactState(REACT_AGGRESSIVE);
-                         break;
+                    case EVENT_RE_ATTACK:
+                        if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                            me->GetMotionMaster()->MoveChase(target);
+                        me->SetReactState(REACT_AGGRESSIVE);
+                        break;
+                    case EVENT_SPIRIT_BOLT:
+                        DoCast(SPELL_SPIRIT_BOLT);
+                        events.ScheduleEvent(EVENT_SPIRIT_BOLT, 8000);
+                        break;
                      // Fist Phase
                     case EVENT_LIGHTNING_FISTS:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 30.0f, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
                         {
                             if (targetGuid)
                                 targetGuid = 0;
@@ -504,7 +523,7 @@ class mob_lightning_fist : public CreatureScript
                             me->AddAura(SPELL_FIST_VISUAL, me);
                             float x = 0, y = 0;
                             GetPositionWithDistInOrientation(me, 100.0f, me->GetOrientation(), x, y);
-                            me->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), 24.0f, 1);
+                            me->GetMotionMaster()->MovePoint(1, x, y, me->GetPositionZ());
                             return;
                         }
                     }
@@ -624,7 +643,7 @@ class spell_mogu_epicenter : public SpellScriptLoader
 };
 
 // Wildfire Spark - 116583
-/*class spell_mogu_wildfire_spark : public SpellScriptLoader
+class spell_mogu_wildfire_spark : public SpellScriptLoader
 {
     public:
         spell_mogu_wildfire_spark() : SpellScriptLoader("spell_mogu_wildfire_spark") { }
@@ -635,10 +654,9 @@ class spell_mogu_epicenter : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex effIndex)
             {
-                const uint8 maxSpark = 3;
+                uint8 maxSpark = 3;
 
                 Unit* caster = GetCaster();
-
                 if (!caster)
                     return;
 
@@ -660,7 +678,7 @@ class spell_mogu_epicenter : public SpellScriptLoader
         {
             return new spell_mogu_wildfire_spark_SpellScript();
         }
-};*/
+};
 
 // Wildfire Infusion - 116816
 class spell_mogu_wildfire_infusion : public SpellScriptLoader
