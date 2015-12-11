@@ -600,11 +600,13 @@ void Creature::Regenerate(Powers power)
 
     int32 saveCur = GetPower(power);
     int32 curValue = saveCur;
+    uint32 sendInterval = (isAnySummons() ? PET_FOCUS_REGEN_INTERVAL : (GetCreatureTemplate()->rank == CREATURE_ELITE_WORLDBOSS ? BOSS_REGEN_INTERVAL : CREATURE_REGEN_INTERVAL));
 
     if (!maxValue || curValue == maxValue)
         return;
 
     float addvalue = 0.0f;
+    float regenTypeAndMod = 1.0f; // start type regen + or - for power
 
     switch (power)
     {
@@ -619,6 +621,18 @@ void Creature::Regenerate(Powers power)
             }
             else
                 addvalue = maxValue / 3;
+            break;
+        }
+        // Regenerate Rage
+        case POWER_RAGE:
+        {
+            /*if (!HasAuraType(SPELL_AURA_INTERRUPT_REGEN))
+            {
+                float RageDecreaseRate = sWorld->getRate(RATE_POWER_RAGE_LOSS);
+                addvalue -= 25.0f * RageDecreaseRate / GetFloatValue(UNIT_MOD_HASTE);                // 2.5 rage by tick (= 2 seconds => 1.25 rage/sec)
+                if (!isInCombat()) // Defensive Stance add rage only in combat
+                    regenTypeAndMod = 0.0f;
+            }*/
             break;
         }
         case POWER_FOCUS:
@@ -638,8 +652,10 @@ void Creature::Regenerate(Powers power)
     }
 
     // Apply modifiers (if any).
-    addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + powerIndex) * (0.001f * m_petregenTimer);
-    addvalue += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, power) * ((power != POWER_ENERGY) ? m_regenTimerCount : m_petregenTimer) / (5 * IN_MILLISECONDS);
+    if (isInCombat())
+        addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER + powerIndex) * (0.001f * m_petregenTimer) * regenTypeAndMod;
+    else
+        addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + powerIndex) * (0.001f * m_petregenTimer) * regenTypeAndMod;
 
     if (addvalue <= 0.0f)
     {
@@ -673,10 +689,15 @@ void Creature::Regenerate(Powers power)
             curValue = maxValue;
     }
 
-    if ((saveCur != maxValue && curValue == maxValue) || m_regenTimerCount >= uint32(isAnySummons() ? PET_FOCUS_REGEN_INTERVAL : CREATURE_REGEN_INTERVAL))
-        m_regenTimerCount -= (isAnySummons() ? PET_FOCUS_REGEN_INTERVAL : CREATURE_REGEN_INTERVAL);
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Creature::Regenerate addvalue %f, modify %f, powerIndex %i, power %i, saveCur %i", addvalue, GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + powerIndex), powerIndex, power, saveCur);
 
-    SetInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
+    if ((saveCur != maxValue && curValue == maxValue) || m_regenTimerCount >= sendInterval)
+    {
+        SetInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
+        m_regenTimerCount -= sendInterval;
+    }
+    else
+        UpdateInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
 
     m_petregenTimer = 0;
 }

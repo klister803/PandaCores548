@@ -1208,52 +1208,72 @@ void Unit::UpdatePowerRegen(uint32 power)
 
     float meleeHaste = GetFloatValue(UNIT_MOD_HASTE);
     float addvalue = 0.0f;
+    bool regenInCombat = false;
+    bool regenNotCombat = false;
 
     //add value in 1s
     switch (power)
     {
         case POWER_RAGE: // Regenerate Rage
         {
-            addvalue -= 25 / meleeHaste / 2;
+            addvalue -= 25.0f / meleeHaste / 2.0f;
+            regenInCombat = true;
+            regenNotCombat = true;
             break;
         }
         case POWER_FOCUS: // Regenerate Focus
         {
-            addvalue += 1.0f * 5;
+            addvalue += 1.0f * 5.0f;
+            regenInCombat = true;
+            regenNotCombat = true;
             break;
         }
         case POWER_ENERGY: // Regenerate Energy
         {
-            addvalue += 0.01f * 1000;
+            addvalue += 0.01f * 1000.0f;
+            regenInCombat = true;
+            regenNotCombat = true;
             break;
         }
         case POWER_RUNIC_POWER: // Regenerate Runic Power
         {
-            addvalue -= 30 / 2;
+            addvalue -= 30.0f / 2.0f;
+            regenNotCombat = true;
             break;
         }
         case POWER_HOLY_POWER:
         case POWER_CHI:
         {
-            addvalue -= 1.0f / 10;
+            addvalue -= 1.0f / 10.0f;
+            regenNotCombat = true;
             break;
         }
         // Regenerate Demonic Fury
         case POWER_DEMONIC_FURY:
         {
             addvalue -= 1.0f * 12.5f;
+            regenNotCombat = true;
             break;
         }
         // Regenerate Burning Embers
         case POWER_BURNING_EMBERS:
         {
             addvalue -= 1.0f / 2.5f;
+            regenNotCombat = true;
             break;
         }
         // Regenerate Soul Shards
         case POWER_SOUL_SHARDS:
         {
-            addvalue += 100.0f / 20;
+            addvalue += 100.0f / 20.0f;
+            regenNotCombat = true;
+            break;
+        }
+        // Regenerate Soul Shards
+        case POWER_ECLIPSE:
+        {
+            addvalue += 1.0f;
+            regenInCombat = true;
             break;
         }
         default:
@@ -1261,12 +1281,14 @@ void Unit::UpdatePowerRegen(uint32 power)
     }
 
     float val = (addvalue * GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, power) - addvalue);
+    val += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, power) / 5.0f;
 
-    SetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + powerIndex, val);
-    if(power < POWER_UNUSED)
+    if(regenNotCombat)
+        SetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + powerIndex, val);
+    if(regenInCombat)
         SetFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER + powerIndex, val);
 
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit::UpdatePowerRegen val %f, perc %i, powerIndex %i, power %i, addvalue %f", val, perc, powerIndex, power, addvalue);
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit::UpdatePowerRegen val %f, powerIndex %i, power %i, addvalue %f", val, powerIndex, power, addvalue);
 }
 
 /*#######################################

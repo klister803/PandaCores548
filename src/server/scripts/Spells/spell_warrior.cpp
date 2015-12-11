@@ -1235,52 +1235,6 @@ class spell_warr_dragon_roar : public SpellScriptLoader
         }
 };
 
-// Defensive Stance - 7376
-class spell_warr_defensive_stance : public SpellScriptLoader
-{
-public:
-    spell_warr_defensive_stance() : SpellScriptLoader("spell_warr_defensive_stance") { }
-
-    class spell_warr_defensive_stance_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_warr_defensive_stance_AuraScript);
-
-        uint32 timer;
-
-        bool Load()
-        {
-            if (!GetCaster())
-                return false;
-
-            timer = 0;
-            return true;
-        }
-
-        void OnUpdate(uint32 diff, AuraEffect* aurEff)
-        {
-            timer += diff;
-            if (timer >= 3000)
-            {
-                timer = 0;
-                if (Unit* caster = GetCaster())
-                    if (caster->isInCombat())
-                        caster->ModifyPower(POWER_RAGE, 10);
-            }
-        }
-
-        void Register()
-        {
-            OnEffectUpdate += AuraEffectUpdateFn(spell_warr_defensive_stance_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN);
-        }
-    };
-
-    AuraScript* GetAuraScript() const
-    {
-        return new spell_warr_defensive_stance_AuraScript();
-    }
-};
-
-
 void AddSC_warrior_spell_scripts()
 {
     new spell_warr_stampeding_shout();
@@ -1313,5 +1267,4 @@ void AddSC_warrior_spell_scripts()
     new spell_war_intervene();
     new spell_warr_charge_drop_fire();
     new spell_warr_dragon_roar();
-    new spell_warr_defensive_stance();
 }

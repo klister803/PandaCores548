@@ -5426,7 +5426,12 @@ void AuraEffect::HandleModPowerRegen(AuraApplication const* aurApp, uint8 mode, 
         case POWER_MANA:
             target->UpdateManaRegen();
             break;
+        case POWER_RUNES:
+            if (target->GetTypeId() == TYPEID_PLAYER)
+                target->ToPlayer()->SetNeedToUpdateRunesRegen();
+            break;
         default:
+            target->UpdatePowerRegen(GetMiscValue());
             break;
     }
 }

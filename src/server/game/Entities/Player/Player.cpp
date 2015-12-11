@@ -2929,8 +2929,7 @@ void Player::RegenerateAll()
             RegenerateHealth();
         }
 
-        if (!isInCombat())
-            Regenerate(POWER_RAGE, m_regenTimerCount);
+        Regenerate(POWER_RAGE, m_regenTimerCount);
 
         if (getClass() == CLASS_DEATH_KNIGHT)
             Regenerate(POWER_RUNIC_POWER, m_regenTimerCount);
@@ -3020,7 +3019,7 @@ void Player::Regenerate(Powers power, uint32 saveTimer)
 
 
     float addvalue = 0.0f;
-    int32 regenType = 1; // start type regen + or - for power
+    float regenTypeAndMod = 1.0f; // start type regen + or - for power
 
     // Powers now benefit from haste.
     float meleeHaste = GetFloatValue(UNIT_MOD_HASTE);
@@ -3045,7 +3044,11 @@ void Player::Regenerate(Powers power, uint32 saveTimer)
             if (!HasAuraType(SPELL_AURA_INTERRUPT_REGEN))
             {
                 float RageDecreaseRate = sWorld->getRate(RATE_POWER_RAGE_LOSS);
-                addvalue -= 25 * RageDecreaseRate / meleeHaste;                // 2.5 rage by tick (= 2 seconds => 1.25 rage/sec)
+                if (!isInCombat()) // Defensive Stance add rage only in combat
+                {
+                    addvalue -= 25.0f * RageDecreaseRate / meleeHaste;                // 2.5 rage by tick (= 2 seconds => 1.25 rage/sec)
+                    regenTypeAndMod = 0.0f;
+                }
             }
             break;
         }
@@ -3066,7 +3069,7 @@ void Player::Regenerate(Powers power, uint32 saveTimer)
             if (!isInCombat() && !HasAuraType(SPELL_AURA_INTERRUPT_REGEN))
             {
                 float RunicPowerDecreaseRate = sWorld->getRate(RATE_POWER_RUNICPOWER_LOSS);
-                addvalue -= 30 * RunicPowerDecreaseRate;         // 3 RunicPower by tick
+                addvalue -= 30.0f * RunicPowerDecreaseRate;         // 3 RunicPower by tick
             }
             break;
         }
@@ -3087,7 +3090,7 @@ void Player::Regenerate(Powers power, uint32 saveTimer)
             else
                 return;
 
-            regenType = -1;
+            regenTypeAndMod = -1.0f;
             break;
         }
         // Regenerate Burning Embers
@@ -3117,8 +3120,10 @@ void Player::Regenerate(Powers power, uint32 saveTimer)
     // Mana regen calculated in UpdateManaRegen()
     if (power > POWER_MANA)
     {
-        addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + powerIndex) * (0.001f * (saveTimer / hastRegen)) * regenType;
-        addvalue += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, power) * saveTimer / (5 * IN_MILLISECONDS);
+        if (isInCombat())
+            addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER + powerIndex) * (0.001f * (saveTimer / hastRegen)) * regenTypeAndMod;
+        else
+            addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + powerIndex) * (0.001f * (saveTimer / hastRegen)) * regenTypeAndMod;
 
         //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::Regenerate addvalue %f, modify %f, powerIndex %i, power %i, saveCur %i", addvalue, GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + powerIndex), powerIndex, power, saveCur);
     }
