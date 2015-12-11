@@ -197,6 +197,7 @@ m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_o
 
 Creature::~Creature()
 {
+    _lock.lock();
     m_vendorItemCounts.clear();
 
     delete i_AI;
@@ -204,6 +205,7 @@ Creature::~Creature()
 
     //if (m_uint32Values)
     //    sLog->outError(LOG_FILTER_UNITS, "Deconstruct Creature Entry = %u", GetEntry());
+    _lock.unlock();
 }
 
 void Creature::AddToWorld()

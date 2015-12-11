@@ -969,6 +969,8 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         //Formation var
         CreatureGroup* m_formation;
         bool TriggerJustRespawned;
+
+        std::mutex _lock;
 };
 
 class AssistDelayEvent : public BasicEvent
