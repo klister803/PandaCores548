@@ -600,13 +600,13 @@ void Creature::Regenerate(Powers power)
 
     int32 saveCur = GetPower(power);
     int32 curValue = saveCur;
-    uint32 sendInterval = (isAnySummons() ? PET_FOCUS_REGEN_INTERVAL : (GetCreatureTemplate()->rank == CREATURE_ELITE_WORLDBOSS ? BOSS_REGEN_INTERVAL : CREATURE_REGEN_INTERVAL));
 
     if (!maxValue || curValue == maxValue)
         return;
 
     float addvalue = 0.0f;
     float regenTypeAndMod = 1.0f; // start type regen + or - for power
+    uint32 sendInterval = (isAnySummons() ? PET_FOCUS_REGEN_INTERVAL : (GetCreatureTemplate()->rank == CREATURE_ELITE_WORLDBOSS ? BOSS_REGEN_INTERVAL : CREATURE_REGEN_INTERVAL));
 
     switch (power)
     {
@@ -620,7 +620,7 @@ void Creature::Regenerate(Powers power)
                 addvalue = uint32((Spirit / 5.0f + 17.0f) * ManaIncreaseRate);
             }
             else
-                addvalue = maxValue / 3;
+                addvalue = maxValue / 3.0f;
             break;
         }
         // Regenerate Rage

@@ -83,5 +83,7 @@ class ObjectGridUnloader
 {
     public:
         template<class T> void Visit(GridRefManager<T> &m);
+
+        std::mutex _lock;
 };
 #endif
