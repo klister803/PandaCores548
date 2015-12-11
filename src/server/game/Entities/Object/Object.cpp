@@ -1244,6 +1244,9 @@ bool Object::IsUpdateFieldVisible(uint32 flags, bool isSelf, bool isOwner, bool 
     if (flags & UF_FLAG_PARTY_MEMBER && isPartyMember)
         return true;
 
+    if (flags & UF_FLAG_UNIT_ALL)
+        return true;
+
     return false;
 }
 

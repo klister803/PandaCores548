@@ -30,7 +30,7 @@ enum UpdatefieldFlags
     UF_FLAG_UNUSED1      = 0x008,
     UF_FLAG_SPECIAL_INFO = 0x010,
     UF_FLAG_PARTY_MEMBER = 0x020,
-    UF_FLAG_UNUSED2      = 0x040,
+    UF_FLAG_UNIT_ALL     = 0x040,
     UF_FLAG_DYNAMIC      = 0x080,
     UF_FLAG_UNK_100      = 0x100,
     UF_FLAG_UNK_200      = 0x200,
