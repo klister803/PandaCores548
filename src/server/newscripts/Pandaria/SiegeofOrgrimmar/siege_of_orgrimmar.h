@@ -534,6 +534,7 @@ enum esSpells
     SPELL_ENERGIZED_DEFENSIVE_MATRIX   = 148990,
 };
 
+
 enum GalakrasEvent
 {
     TRANSPORT_PERIOD                = 98995,

@@ -98,6 +98,16 @@ static uint32 _wavearray[6][4] =
     { 5, NPC_BLACKFUSE_CRAWLER_MINE, NPC_ACTIVATED_LASER_TURRET, NPC_BLACKFUSE_CRAWLER_MINE },
 };
 
+uint32 _toxinlist[6] =
+{
+    SPELL_TOXIN_BLUE,
+    SPELL_TOXIN_RED,
+    SPELL_TOXIN_YELLOW,
+    SPELL_TOXIN_ORANGE,
+    SPELL_TOXIN_PURPLE,
+    SPELL_TOXIN_GREEN,
+};
+
 class instance_siege_of_orgrimmar : public InstanceMapScript
 {
 public:
@@ -327,6 +337,22 @@ public:
                 transport = CreateTransport(TeamInInstance == HORDE ? GO_SHIP_HORDE : GO_SHIP_ALLIANCE, TRANSPORT_PERIOD);
 
             SendTransportInit(player);
+
+            //Crash or disconnect when Klaxxi in progress
+            for (uint8 n = 0; n < 6; n++)
+                player->RemoveAurasDueToSpell(_toxinlist[n]);
+        }
+
+        void OnPlayerLeave(Player* player)
+        {
+            for (uint8 n = 0; n < 6; n++)
+                player->RemoveAurasDueToSpell(_toxinlist[n]);
+        }
+
+        void RemoveDebuffFromPlayers()
+        {
+            for (uint8 n = 0; n < 29; ++n)
+                DoRemoveAurasDueToSpellOnPlayers(removelist[n]);
         }
 
         //Some auras should not stay after relog. If player out of dung whey remove automatically
@@ -754,12 +780,6 @@ public:
             }
         }
 
-        void RemoveDebuffFromPlayers()
-        {
-            for (uint8 n = 0; n < 29; ++n)
-                DoRemoveAurasDueToSpellOnPlayers(removelist[n]);
-        }
-
         bool SetBossState(uint32 id, EncounterState state)
         {
             //Privent overwrite state.
@@ -1088,11 +1108,12 @@ public:
                         if (Creature* klaxxi = instance->GetCreature(*itr))
                         {
                             SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, klaxxi);
+                            klaxxi->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                             klaxxi->StopMoving();
                             klaxxi->GetMotionMaster()->Clear(false);
                             klaxxi->Kill(klaxxi, true);
-                            klaxxi->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                             klaxxi->Respawn();
+                            klaxxi->GetMotionMaster()->Clear(false);
                             klaxxi->NearTeleportTo(klaxxi->GetHomePosition().GetPositionX(), klaxxi->GetHomePosition().GetPositionY(), klaxxi->GetHomePosition().GetPositionZ(), klaxxi->GetHomePosition().GetOrientation());
                         }
                     }

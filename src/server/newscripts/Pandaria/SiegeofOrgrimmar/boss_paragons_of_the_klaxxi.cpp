@@ -659,6 +659,8 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     case NPC_XARIL:
                         Talk(SAY_XARIL_DIE, 0);
                         instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TENDERIZING_STRIKES_DMG);
+                        for (uint8 n = 0; n < 6; n++)
+                            instance->DoRemoveAurasDueToSpellOnPlayers(toxinlist[n]);
                         break;
                     case NPC_KAZTIK:
                         Talk(SAY_KAZTIK_DIE, 0);
