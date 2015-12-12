@@ -30883,9 +30883,9 @@ bool Player::HasInstantCastModForSpell(SpellInfo const* spellInfo)
     if (!spellInfo)
         return false;
 
-    for (SpellModList::iterator itr = m_spellMods[SPELLMOD_CASTING_TIME].begin(); itr != m_spellMods[SPELLMOD_CASTING_TIME].end(); ++itr)
-        if ((*itr)->value == -100)
-            if (spellInfo->IsAffectedBySpellMod(*itr))
+    for (auto itr : m_spellMods[SPELLMOD_CASTING_TIME])
+        if (itr->value == -100)
+            if (spellInfo->IsAffectedBySpellMod(itr))
                 return true;
 
     return false;
