@@ -928,6 +928,8 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         MovementGeneratorType m_defaultMovementType;
         uint32 m_DBTableGuid;                               ///< For new or temporary creatures is 0 for saved it is lowguid
         uint32 m_equipmentId;
+        uint32 m_powerRegenTimer[MAX_POWERS];
+        float m_powerFraction[MAX_POWERS_PER_CLASS];
 
         bool m_AlreadyCallAssistance;
         bool m_AlreadySearchedAssistance;

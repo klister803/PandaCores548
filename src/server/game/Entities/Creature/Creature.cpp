@@ -179,6 +179,12 @@ m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_o
     m_CombatDistance = 0;//MELEE_RANGE;
     m_regenTimerCount = 0;
 
+    for (uint8 i = 0; i < MAX_POWERS_PER_CLASS; ++i)
+        m_powerFraction[i] = 0;
+
+    for (uint8 i = 0; i < MAX_POWERS; ++i)
+        m_powerRegenTimer[i] = 0;
+
     m_LOSCheckTimer = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
     m_LOSCheck_player = false;
     m_LOSCheck_creature = false;

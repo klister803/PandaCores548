@@ -657,6 +657,8 @@ void Creature::Regenerate(Powers power)
     else
         addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + powerIndex) * (0.001f * m_petregenTimer) * regenTypeAndMod;
 
+    addvalue += m_powerFraction[powerIndex];
+
     if (addvalue <= 0.0f)
     {
         if (curValue == 0)
@@ -673,20 +675,38 @@ void Creature::Regenerate(Powers power)
     if (this->IsAIEnabled)
         this->AI()->RegeneratePower(power, addvalue);
 
-    int32 integerValue = uint32(fabs(addvalue));
+    uint32 integerValue = uint32(fabs(addvalue));
 
     if (addvalue < 0.0f)
     {
         if (curValue > integerValue)
+        {
             curValue -= integerValue;
+            m_powerFraction[powerIndex] = addvalue + integerValue;
+        }
         else
+        {
             curValue = 0;
+            m_powerFraction[powerIndex] = 0;
+        }
+
+        //Visualization for power
+        //VisualForPower(power, curValue, int32(integerValue)*-1, true);
     }
     else
     {
         curValue += integerValue;
+
         if (curValue > maxValue)
+        {
             curValue = maxValue;
+            m_powerFraction[powerIndex] = 0;
+        }
+        else
+            m_powerFraction[powerIndex] = addvalue - integerValue;
+
+        //Visualization for power
+        //VisualForPower(power, curValue, integerValue, true);
     }
 
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Creature::Regenerate addvalue %f, modify %f, powerIndex %i, power %i, saveCur %i", addvalue, GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + powerIndex), powerIndex, power, saveCur);
