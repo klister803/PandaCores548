@@ -1085,8 +1085,17 @@ void Aura::Update(uint32 diff, Unit* caster)
                 m_timeCla += 1000 - diff;
 
                 SpellPowerEntry power;
+
+                bool channeled = GetSpellInfo()->IsChanneled();
+
                 if (!GetSpellInfo()->GetSpellPowerByCasterPower(caster, power))
                     power = GetSpellInfo()->GetPowerInfo(0);
+
+                if (channeled)
+                    if (Unit* owner = GetUnitOwner())
+                        if (owner->GetGUID() != caster->GetGUID())
+                            if (!caster->canSeeOrDetect(owner))
+                                caster->CastStop();
 
                 if (power.powerPerSecond || power.powerPerSecondPercentage)
                 {
@@ -1101,11 +1110,10 @@ void Aura::Update(uint32 diff, Unit* caster)
                             caster->ModifyHealth(-1 * reqHealth);
                         else
                         {
-                            if (GetSpellInfo()->IsChanneled())
+                            if (channeled)
                             {
-                                if (Unit* caster = GetCaster())
-                                    if (Spell* _spell = caster->FindCurrentSpellBySpellId(GetId()))
-                                        _spell->RemoveAuraForAllTargets();
+                                if (Spell* _spell = caster->FindCurrentSpellBySpellId(GetId()))
+                                    _spell->RemoveAuraForAllTargets();
                             }
                             else
                                 Remove();
@@ -1123,11 +1131,10 @@ void Aura::Update(uint32 diff, Unit* caster)
                             caster->ModifyPower(powertype, -1 * reqPower, true);
                         else
                         {
-                            if (GetSpellInfo()->IsChanneled())
+                            if (channeled)
                             {
-                                if (Unit* caster = GetCaster())
-                                    if (Spell* _spell = caster->FindCurrentSpellBySpellId(GetId()))
-                                        _spell->RemoveAuraForAllTargets();
+                                if (Spell* _spell = caster->FindCurrentSpellBySpellId(GetId()))
+                                    _spell->RemoveAuraForAllTargets();
                             }
                             else
                                 Remove();
