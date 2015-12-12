@@ -267,7 +267,7 @@ struct AchievementCriteriaUpdateTask
     std::function<void(uint64, uint64)> Task;
 };
 
-using LockedAchievementCriteriaTaskQueue = ACE_Based::LockedQueue<AchievementCriteriaUpdateTask, ACE_Thread_Mutex>;
+using LockedAchievementCriteriaTaskQueue = ACE_Based::LockedQueue<AchievementCriteriaUpdateTask, ACE_Thread_Mutex, std::deque<AchievementCriteriaUpdateTask>>;
 using LockedPlayersAchievementCriteriaTask = ACE_Based::LockedMap<uint32, LockedAchievementCriteriaTaskQueue>;
 
 using AchievementCriteriaTaskQueue = std::queue<AchievementCriteriaUpdateTask>;

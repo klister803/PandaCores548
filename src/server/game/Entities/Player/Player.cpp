@@ -28493,16 +28493,16 @@ void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 mis
     AchievementCriteriaUpdateTask task;
     task.PlayerGUID = GetGUID();
     task.UnitGUID = unit ? unit->GetGUID() : 0;
-    task.Task = [type, miscValue1, miscValue2, miscValue3, ignoreGroup, loginCheck](uint64 const &playerGUID, uint64 const &unitGUID) -> void
+    task.Task = [&, type, miscValue1, miscValue2, miscValue3, ignoreGroup, loginCheck](uint64 const &playerGUID, uint64 const &unitGUID) -> void
     {
         /// Task will be executed async
         /// We need to ensure the player still exist
-        auto player = HashMapHolder<Player>::Find(playerGUID);
+        Player *player = HashMapHolder<Player>::Find(playerGUID);
         if (!player)
             return;
 
         /// Same for the unit
-        auto unit = unitGUID ? Unit::GetUnit(*player, unitGUID) : nullptr;
+        Unit *unit = unitGUID ? Unit::GetUnit(*player, unitGUID) : nullptr;
         player->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, player, false, loginCheck);
 
         /// Update scenario/challenge criterias
