@@ -41,7 +41,7 @@ enum eSpells
     SPELL_AMETHYST_PETRIFICATION        = 116057,
     SPELL_AMETHYST_PETRIFICATION_BAR    = 131255,
     SPELL_AMETHYST_TRUE_FORM            = 115829,
-    SPELL_AMETHYST_POOL                 = 116235,
+    SPELL_AMETHYST_POOL                 = 132301,
 
     // Cobalt
     SPELL_COBALT_OVERLOAD               = 115840,
@@ -390,7 +390,7 @@ class boss_generic_guardian : public CreatureScript
                         spellPetrificationId        = SPELL_AMETHYST_PETRIFICATION;
                         spellPetrificationBarId     = SPELL_AMETHYST_PETRIFICATION_BAR;
                         spellTrueFormId             = SPELL_AMETHYST_TRUE_FORM;
-                        spellMainAttack             = 0;//SPELL_AMETHYST_POOL; Not working actually, +/- 1000% bigger than it should be
+                        spellMainAttack             = SPELL_AMETHYST_POOL;
                         break;
                     case NPC_COBALT:
                         spellOverloadId             = SPELL_COBALT_OVERLOAD;
@@ -461,7 +461,7 @@ class boss_generic_guardian : public CreatureScript
                 }
             }
             
-            void RegeneratePower(Powers power, float &value)
+            /* void RegeneratePower(Powers power, float &value)
             {
                 if (!me->isInCombat())
                 {
@@ -473,7 +473,7 @@ class boss_generic_guardian : public CreatureScript
                    value = 1; // Creature regen every 2 seconds, and guardians must regen at 2/sec
                 else
                    value = 0;
-            }
+            } */
 
             bool CheckNearGuardians()
             {

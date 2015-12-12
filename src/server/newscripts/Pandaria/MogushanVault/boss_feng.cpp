@@ -49,9 +49,14 @@ enum eSpells
     SPELL_ARCANE_RESONANCE              = 116417,
 
     // Spirit of the Shield ( Heroic )
-    SPELL_SHADOWBURN                    = 17877,
-    SPELL_SIPHONING_SHIELD              = 118071,
+    SPELL_SHADOWBURN                    = 131792,
     SPELL_CHAINS_OF_SHADOW              = 118783,
+    SPELL_SIPHONING_SHIELD              = 117203,
+    SPELL_S_SHIELD_HEAL                 = 118071,
+    SPELL_S_SHIELD_VISUAL_SHIELD        = 117763,
+    SPELL_S_SHIELD_VISUAL_ZONE          = 117240,
+    SPELL_S_SHIELD_SUM_FRAGMENT         = 117716, //> 117717
+    SPELL_S_SHIELD_FRAGMENT_LINE        = 117736,
 
     // Stolen Essences of Stone
     SPELL_NULLIFICATION_BARRIER         = 115817,
@@ -75,12 +80,18 @@ enum eSpells
     // Inversion bouclier siphon        = 118471,
     SPELL_SHADOWBURN_INVERSION          = 132296,
     SPELL_LIGHTNING_LASH_INVERSION      = 132297,
-    SPELL_ARCANE_SHOCK_INVERSION        = 132298
+    SPELL_ARCANE_SHOCK_INVERSION        = 132298,
+
+    SPELL_UNARMED                       = 124252,
+    SPELL_CLONE_ME                      = 126240,
 };
 
 enum eSummon
 {
     NPC_LIGHTNING_FISTS         = 60241,
+    NPC_WILDFIRE_SPARK          = 60438,
+    NPC_SIPHONING_SHIELD        = 60627,
+    NPC_SOUL_FRAGMENT           = 60781,
 };
 
 enum eEvents
@@ -98,7 +109,10 @@ enum eEvents
     EVENT_ARCANE_VELOCITY_END   = 8,
     EVENT_ARCANE_RESONANCE      = 9,
 
-    EVENT_SPIRIT_BOLT           = 10,
+    EVENT_SIPHONING_SHIELD      = 10,
+    EVENT_CHAINS_OF_SHADOW      = 11,
+
+    EVENT_SPIRIT_BOLT           = 12,
 };
 
 enum eFengPhases
@@ -148,15 +162,17 @@ class boss_feng : public CreatureScript
 
         struct boss_fengAI : public BossAI
         {
-            boss_fengAI(Creature* creature) : BossAI(creature, DATA_FENG)
+            boss_fengAI(Creature* creature) : BossAI(creature, DATA_FENG), summons(me)
             {
                 pInstance = creature->GetInstanceScript();
             }
 
             InstanceScript* pInstance;
-            bool phaseone, phasetwo, phasethree;
+            SummonList summons;
+            bool phaseone, phasetwo, phasethree, phasefour;
             uint8 newphase;
             uint8 actualPhase;
+            uint8 fragmentCount;
             uint32 dotSpellId, checkvictim;
             uint64 targetGuid;
 
@@ -164,31 +180,38 @@ class boss_feng : public CreatureScript
             {
                 _Reset();
                 events.Reset();
+                summons.DespawnAll();
+                TrashDespawn();
                 phaseone = false;
                 phasetwo = false;
                 phasethree = false;
+                phasefour = false;
                 checkvictim = 0; 
                 newphase = 0;
                 actualPhase = PHASE_NONE;
                 dotSpellId = 0;
                 targetGuid = 0;
+                fragmentCount = 0;
+                me->RemoveAllAuras();
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(115811);
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(115972);
 
                 for (uint8 i = 0; i < 4; ++i)
+                {
                     me->RemoveAurasDueToSpell(fengVisualId[i]);
 
-                if (GameObject* oldStatue = pInstance->instance->GetGameObject(pInstance->GetData64(statueEntryInOrder[actualPhase - 1])))
-                {
-                    oldStatue->SetLootState(GO_READY);
-                    oldStatue->UseDoorOrButton();
+                    if (GameObject* oldStatue = pInstance->instance->GetGameObject(pInstance->GetData64(statueEntryInOrder[i])))
+                    {
+                        oldStatue->SetLootState(GO_READY);
+                        oldStatue->SetGoState(GO_STATE_READY);
+                    }
                 }
 
                 if (GameObject* inversionGob = pInstance->instance->GetGameObject(pInstance->GetData64(GOB_INVERSION)))
-                    inversionGob->Respawn();
+                    inversionGob->Delete();
 
                 if (GameObject* cancelGob = pInstance->instance->GetGameObject(pInstance->GetData64(GOB_CANCEL)))
-                    cancelGob->Respawn();
+                    cancelGob->Delete();
             }
 
             void JustReachedHome()
@@ -215,13 +238,18 @@ class boss_feng : public CreatureScript
                         return;
                     }
                 }
-              _EnterCombat();
-              checkvictim = 1500;
+                _EnterCombat();
+                checkvictim = 1500;
+
+                me->SummonGameObject(GOB_INVERSION, 4027.3f, 1331.39f, 468.80f, 0, 0, 0, 0, 0, 604800);
+                me->SummonGameObject(GOB_CANCEL, 4028.32f, 1352.85f, 466.30f, 0, 0, 0, 0, 0, 604800);
             }
 
             void JustDied(Unit* attacker)
             {
                 _JustDied();
+                summons.DespawnAll();
+                TrashDespawn();
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(115811);
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(115972);
 
@@ -267,22 +295,16 @@ class boss_feng : public CreatureScript
 
                 // Desactivate old statue and enable the new one
                 if (GameObject* oldStatue = pInstance->instance->GetGameObject(pInstance->GetData64(statueEntryInOrder[actualPhase - 1])))
-                {
-                    oldStatue->SetLootState(GO_READY);
-                    oldStatue->UseDoorOrButton();
-                }
+                    oldStatue->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
 
                 if (GameObject* newStatue = pInstance->instance->GetGameObject(pInstance->GetData64(statueEntryInOrder[newPhase - 1])))
-                {
-                    newStatue->SetLootState(GO_READY);
                     newStatue->UseDoorOrButton();
-                }
-
-                for (uint8 i = 0; i < 4; ++i)
-                    me->RemoveAurasDueToSpell(fengVisualId[i]);
 
                 me->CastSpell(me, fengVisualId[newPhase - 1], true);
                 me->CastSpell(me, SPELL_DRAW_ESSENCE, true);
+
+                if (IsHeroic())
+                    me->CastSpell(me, SPELL_STRENGHT_OF_SPIRIT, true);
 
                 switch (newPhase)
                 {
@@ -296,8 +318,8 @@ class boss_feng : public CreatureScript
                     case PHASE_SPEAR:
                     {
                         dotSpellId = SPELL_FLAMING_SPEAR;
-                        events.ScheduleEvent(EVENT_WILDFIRE_SPARK,   35000, PHASE_SPEAR);
-                        events.ScheduleEvent(EVENT_DRAW_FLAME,       40000, PHASE_SPEAR);
+                        events.ScheduleEvent(EVENT_WILDFIRE_SPARK,   12000, PHASE_SPEAR);
+                        events.ScheduleEvent(EVENT_DRAW_FLAME,       36000, PHASE_SPEAR);
                         break;
                     }
                     case PHASE_STAFF:
@@ -310,7 +332,8 @@ class boss_feng : public CreatureScript
                     case PHASE_SHIELD:
                     {
                         dotSpellId = SPELL_SHADOWBURN;
-                        // Todo
+                        events.ScheduleEvent(EVENT_SIPHONING_SHIELD, 6000, PHASE_SHIELD);
+                        events.ScheduleEvent(EVENT_CHAINS_OF_SHADOW, 8000, PHASE_SHIELD);
                         break;
                     }
                     default:
@@ -320,62 +343,96 @@ class boss_feng : public CreatureScript
                 actualPhase = newPhase;
             }
 
-            void SpellHit(Unit* attacker, const SpellInfo* spell) 
-            {
-                if (spell->Id == 116583)
-                    for (uint8 i = 0; i < 3; ++i)
-                    {
-                        float position_x = me->GetPositionX() + frand(-3.0f, 3.0f);
-                        float position_y = me->GetPositionY() + frand(-3.0f, 3.0f);
-                        me->CastSpell(position_x, position_y, me->GetPositionZ(), 116586, true);
-                    }
-            }
             void DamageTaken(Unit* attacker, uint32 &damage)
             {
-                if (!pInstance)
+                if (!pInstance || !me->isInCombat())
                     return;
 
-                if (HealthBelowPct(95) && !phaseone)
+                if (HealthBelowPct(IsHeroic() ? 100 : 95) && !phaseone)
                 {
                     phaseone = true;
                     newphase = 1;
-                    me->AttackStop();
-                    me->SetReactState(REACT_PASSIVE);
+                    DoStopAttack();
                     if (Creature* controler = me->SummonCreature(NPC_PHASE_CONTROLER, modPhasePositions[newphase - 1].GetPositionX(), modPhasePositions[newphase - 1].GetPositionY(), modPhasePositions[newphase - 1].GetPositionZ()))
                         controler->AddAura(controlerVisualId[newphase - 1], controler);
                     me->GetMotionMaster()->MovePoint(newphase, modPhasePositions[newphase - 1].GetPositionX(), modPhasePositions[newphase - 1].GetPositionY(), modPhasePositions[newphase - 1].GetPositionZ());
                 }
-                else if (HealthBelowPct(63) && !phasetwo)
+                else if (HealthBelowPct(IsHeroic() ? 75 : 66) && !phasetwo)
                 {
                     phasetwo = true;
                     newphase = 2;
-                    me->AttackStop();
-                    me->SetReactState(REACT_PASSIVE);
+                    DoStopAttack();
                     if (Creature* controler = me->SummonCreature(NPC_PHASE_CONTROLER, modPhasePositions[newphase - 1].GetPositionX(), modPhasePositions[newphase - 1].GetPositionY(), modPhasePositions[newphase - 1].GetPositionZ()))
                         controler->AddAura(controlerVisualId[newphase - 1], controler);
                     me->GetMotionMaster()->MovePoint(newphase, modPhasePositions[newphase - 1].GetPositionX(), modPhasePositions[newphase - 1].GetPositionY(), modPhasePositions[newphase - 1].GetPositionZ());
                 }
-                else if (HealthBelowPct(31) && !phasethree)
+                else if (HealthBelowPct(IsHeroic() ? 50 : 33) && !phasethree)
                 {
                     phasethree = true;
                     newphase = 3;
-                    me->AttackStop();
-                    me->SetReactState(REACT_PASSIVE);
+                    DoStopAttack();
                     if (Creature* controler = me->SummonCreature(NPC_PHASE_CONTROLER, modPhasePositions[newphase - 1].GetPositionX(), modPhasePositions[newphase - 1].GetPositionY(), modPhasePositions[newphase - 1].GetPositionZ()))
                         controler->AddAura(controlerVisualId[newphase - 1], controler);
                     me->GetMotionMaster()->MovePoint(newphase, modPhasePositions[newphase - 1].GetPositionX(), modPhasePositions[newphase - 1].GetPositionY(), modPhasePositions[newphase - 1].GetPositionZ());
                 }
+                else if (HealthBelowPct(25) && !phasefour && IsHeroic())
+                {
+                    phasefour = true;
+                    newphase = 4;
+                    DoStopAttack();
+                    if (Creature* controler = me->SummonCreature(NPC_PHASE_CONTROLER, modPhasePositions[newphase - 1].GetPositionX(), modPhasePositions[newphase - 1].GetPositionY(), modPhasePositions[newphase - 1].GetPositionZ()))
+                        controler->AddAura(controlerVisualId[newphase - 1], controler);
+                    me->GetMotionMaster()->MovePoint(newphase, modPhasePositions[newphase - 1].GetPositionX(), modPhasePositions[newphase - 1].GetPositionY(), modPhasePositions[newphase - 1].GetPositionZ());
+                }
+            }
+
+            void TrashDespawn()
+            {
+                std::list<Creature*> trashList;
+                me->GetCreatureListWithEntryInGrid(trashList, NPC_WILDFIRE_SPARK, 100.0f);
+                me->GetCreatureListWithEntryInGrid(trashList, NPC_SOUL_FRAGMENT, 100.0f);
+                for (std::list<Creature*>::const_iterator itr = trashList.begin(); itr != trashList.end(); ++itr)
+                    (*itr)->DespawnOrUnsummon();
+            }
+
+            void SpellHitTarget(Unit* target, const SpellInfo* spell)
+            {
+                if (spell->Id == SPELL_S_SHIELD_SUM_FRAGMENT)
+                    target->CastSpell(target, 117717, true, 0, NULL, me->GetGUID()); //Sum Fragment
             }
 
             void JustSummoned(Creature* sum)
             {
-                if (sum->GetEntry() == NPC_LIGHTNING_FISTS)
+                summons.Summon(sum);
+
+                switch (sum->GetEntry())
                 {
-                    if (Unit* pl = me->GetPlayer(*me, targetGuid))
-                    {
-                        sum->AI()->SetGUID(targetGuid); 
-                        targetGuid = 0;
-                    }
+                    case NPC_LIGHTNING_FISTS:
+                        if (Unit* pl = me->GetPlayer(*me, targetGuid))
+                        {
+                            sum->AI()->SetGUID(targetGuid); 
+                            targetGuid = 0;
+                            break;
+                        }
+                    case NPC_SIPHONING_SHIELD:
+                        sum->SetReactState(REACT_PASSIVE);
+                        sum->CastSpell(sum, SPELL_S_SHIELD_VISUAL_SHIELD, true);
+                        sum->CastSpell(sum, SPELL_S_SHIELD_VISUAL_ZONE, true);
+                        me->CastSpell(me, SPELL_S_SHIELD_SUM_FRAGMENT, true);
+                        break;
+                    case NPC_SOUL_FRAGMENT:
+                        fragmentCount++;
+                        break;
+                }
+            }
+
+            void SummonedCreatureDies(Creature* summon, Unit* /*killer*/)
+            {
+                if (summon->GetEntry() == NPC_SOUL_FRAGMENT)
+                {
+                    fragmentCount--;
+                    if (fragmentCount <= 0)
+                        summons.DespawnEntry(NPC_SIPHONING_SHIELD);
                 }
             }
 
@@ -447,11 +504,11 @@ class boss_feng : public CreatureScript
                     case EVENT_WILDFIRE_SPARK:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
                             DoCast(target, SPELL_WILDFIRE_SPARK);
-                        events.ScheduleEvent(EVENT_WILDFIRE_SPARK, urand(25000, 35000));
+                        events.ScheduleEvent(EVENT_WILDFIRE_SPARK, 14000);
                         break;
                     case EVENT_DRAW_FLAME: 
                         DoCast(me, SPELL_DRAW_FLAME);
-                        events.ScheduleEvent(EVENT_DRAW_FLAME, 60000);
+                        events.ScheduleEvent(EVENT_DRAW_FLAME, 36000);
                         break;
                     // Staff Phase
                     case EVENT_ARCANE_VELOCITY:
@@ -459,16 +516,23 @@ class boss_feng : public CreatureScript
                         events.ScheduleEvent(EVENT_ARCANE_VELOCITY, 15000);
                         break;
                     case EVENT_ARCANE_RESONANCE:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 30.0f, true ))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
                             DoCast(target, SPELL_ARCANE_RESONANCE);
                         events.ScheduleEvent(EVENT_ARCANE_RESONANCE, 20000);
                         break;
-                    
-                    // Shield Phase : TODO
+                    // Shield Phase
+                    case EVENT_SIPHONING_SHIELD:
+                        DoCast(SPELL_SIPHONING_SHIELD);
+                        events.ScheduleEvent(EVENT_SIPHONING_SHIELD, 34000);
+                        break;
+                    case EVENT_CHAINS_OF_SHADOW:
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
+                            DoCast(target, SPELL_CHAINS_OF_SHADOW);
+                        events.ScheduleEvent(EVENT_CHAINS_OF_SHADOW, 6000, PHASE_SHIELD);
+                        break;
                     default:
                         break;
                 }
-
                 DoMeleeAttackIfReady();
             }
         };
@@ -559,6 +623,7 @@ class mob_lightning_fist : public CreatureScript
         }
 };
 
+//60438
 class mob_wild_spark : public CreatureScript
 {
     public:
@@ -573,6 +638,8 @@ class mob_wild_spark : public CreatureScript
             {
                 me->SetReactState(REACT_PASSIVE);
                 me->CastSpell(me, 116717, true); // Fire aura
+                me->CastSpell(me, 116787, true); //Fire Visual
+                me->GetMotionMaster()->MoveRandom(5.0f);
             }
     
             void SpellHit(Unit* caster, SpellInfo const* spell)
@@ -604,6 +671,85 @@ class mob_wild_spark : public CreatureScript
         {
             return new mob_wild_sparkAI(creature);
         }
+};
+
+//60781
+class npc_feng_soul_fragment : public CreatureScript
+{
+    public:
+        npc_feng_soul_fragment() : CreatureScript("npc_feng_soul_fragment") {}
+
+        struct npc_feng_soul_fragmentAI : public ScriptedAI
+        {
+            npc_feng_soul_fragmentAI(Creature* creature) : ScriptedAI(creature)
+            {
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+            }
+
+            void Reset()
+            {
+                me->SetReactState(REACT_PASSIVE);
+            }
+    
+            void IsSummonedBy(Unit* summoner)
+            {
+                if (Player* plr = me->FindNearestPlayer(5.0f))
+                    plr->CastSpell(me, SPELL_CLONE_ME, true);
+
+                if (Creature* shield = me->FindNearestCreature(NPC_SIPHONING_SHIELD, 100.0f))
+                {
+                    me->CastSpell(shield, SPELL_S_SHIELD_FRAGMENT_LINE, true);
+                    me->GetMotionMaster()->MovePoint(1, shield->GetPositionX(), shield->GetPositionY(), shield->GetPositionZ());
+                }
+            }
+
+            void MovementInform(uint32 type, uint32 id)
+            {
+                if (type != POINT_MOTION_TYPE)
+                    return;
+
+                if (id == 1)
+                    if (InstanceScript* pInstance = me->GetInstanceScript())
+                    {
+                        int32 bp = pInstance->instance->GetDifficulty() == MAN10_HEROIC_DIFFICULTY ? 10 : 5;
+                        me->CastCustomSpell(me, SPELL_S_SHIELD_HEAL, &bp, NULL, NULL, true);
+                        me->Kill(me);
+                    }
+            }
+
+            void UpdateAI(uint32 diff) {}
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_feng_soul_fragmentAI(creature);
+        }
+};
+
+//211626, 211628
+class go_stolen_essences_of_stone : public GameObjectScript
+{
+public:
+    go_stolen_essences_of_stone() : GameObjectScript("go_stolen_essences_of_stone") {}
+
+    bool OnGossipHello(Player* pPlayer, GameObject* pGo)
+    {
+        if (pPlayer->isInTankSpec())
+            return false;
+
+        return true;
+    }
 };
 
 // Mogu Epicenter - 116040
@@ -746,7 +892,7 @@ class spell_mogu_arcane_velocity : public SpellScriptLoader
 };
 
 // Arcane Resonance - 116434
-/*class spell_mogu_arcane_resonance : public SpellScriptLoader
+class spell_mogu_arcane_resonance : public SpellScriptLoader
 {
     public:
         spell_mogu_arcane_resonance() : SpellScriptLoader("spell_mogu_arcane_resonance") { }
@@ -765,7 +911,7 @@ class spell_mogu_arcane_velocity : public SpellScriptLoader
             void DealDamage()
             {
                 if (targetCount > 25)
-                    targetCount = 0;
+                    targetCount = 1;
 
                 SetHitDamage(GetHitDamage() * targetCount);
             }
@@ -781,7 +927,7 @@ class spell_mogu_arcane_velocity : public SpellScriptLoader
         {
             return new spell_mogu_arcane_resonance_SpellScript();
         }
-};*/
+};
 
 // Mogu Inversion - 118300 / 118302 / 118304 / 118305 / 118307 / 118308 / 132296 / 132297 / 132298
 class spell_mogu_inversion : public SpellScriptLoader
@@ -823,10 +969,12 @@ void AddSC_boss_feng()
     new boss_feng();
     new mob_lightning_fist();
     new mob_wild_spark();
+    new npc_feng_soul_fragment();
+    new go_stolen_essences_of_stone();
     new spell_mogu_epicenter();
-    //new spell_mogu_wildfire_spark();
+    new spell_mogu_wildfire_spark();
     new spell_mogu_wildfire_infusion();
     new spell_mogu_arcane_velocity();
-    //new spell_mogu_arcane_resonance();
+    new spell_mogu_arcane_resonance();
     new spell_mogu_inversion();
 }
