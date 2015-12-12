@@ -4663,10 +4663,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 116365: //Arcane Velocrity (trigger dmg)
                     spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(48);//60 yards
                     break;
-                case 116434: //Arcane Resonance(trigger dmg)
-                    spellInfo->Effects[EFFECT_0].TargetB = 30;
-                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
-                    break;
                 //Elegon
                 case 129724: //Energy tendrols (trigger spell - grip)
                     spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_JUMP;
