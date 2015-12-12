@@ -902,7 +902,7 @@ bool Spell::SpellDummyTriggered(SpellEffIndex effIndex)
             sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectDummy %u, 1<<effIndex %u, itr->effectmask %u, option %u, spell_trigger %i, target %u (%u ==> %u)", m_spellInfo->Id, 1<<effIndex, itr->effectmask, itr->option, itr->spell_trigger, itr->target, triggerTarget ? triggerTarget->GetGUIDLow() : 0, triggerCaster ? triggerCaster->GetGUIDLow() : 0);
             #endif
 
-            if (effectHandleMode == SPELL_EFFECT_HANDLE_LAUNCH && itr->option != DUMMY_TRIGGER_CAST_DEST && itr->option != DUMMY_TRIGGER_CAST_OR_REMOVE)
+            if (effectHandleMode == SPELL_EFFECT_HANDLE_LAUNCH && itr->option != DUMMY_TRIGGER_CAST_DEST)
                 continue;
 
             if (!(itr->effectmask & (1 << effIndex)))
