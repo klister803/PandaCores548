@@ -26,6 +26,9 @@
 #include "DatabaseEnv.h"
 #include "DBCEnums.h"
 #include "DBCStores.h"
+#include "MapUpdater.h"
+#include "LockedMap.h"
+#include "LockedQueue.h"
 
 struct CriteriaTreeInfo
 {
@@ -257,10 +260,23 @@ struct CompletedAchievementData
     bool isAccountAchievement;
 };
 
+struct AchievementCriteriaUpdateTask
+{
+    uint64 PlayerGUID;
+    uint64 UnitGUID;
+    std::function<void(uint64, uint64)> Task;
+};
+
+using LockedAchievementCriteriaTaskQueue = ACE_Based::LockedQueue<AchievementCriteriaUpdateTask, ACE_Thread_Mutex>;
+using LockedPlayersAchievementCriteriaTask = ACE_Based::LockedMap<uint32, LockedAchievementCriteriaTaskQueue>;
+
+using AchievementCriteriaTaskQueue = std::queue<AchievementCriteriaUpdateTask>;
+using PlayersAchievementCriteriaTask = std::map<uint32, AchievementCriteriaTaskQueue>;
+
 typedef std::unordered_map<uint32, CriteriaTreeProgress> CriteriaProgressMap;
 typedef std::unordered_map<uint32, CompletedAchievementData> CompletedAchievementMap;
-typedef std::unordered_map<uint32, CriteriaProgressMap > AchievementProgressMap;
-typedef std::unordered_map<uint32, CriteriaProgressTree > AchievementTreeProgressMap;
+typedef std::unordered_map<uint32, CriteriaProgressMap> AchievementProgressMap;
+typedef std::unordered_map<uint32, CriteriaProgressTree> AchievementTreeProgressMap;
 
 enum CriteriaSort
 {
@@ -278,12 +294,13 @@ class AchievementMgr
 
         void Reset();
         static void DeleteFromDB(uint32 lowguid, uint32 accountId = 0);
-        void LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult achievementAccountResult = NULL, PreparedQueryResult criteriaAccountResult = NULL);
+        void LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult achievementAccountResult = nullptr, PreparedQueryResult criteriaAccountResult = nullptr);
         void SaveToDB(SQLTransaction& trans);
         void ResetAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, bool evenIfCriteriaComplete = false);
-        void UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, uint32 miscValue3 = 0,Unit const* unit = NULL, Player* referencePlayer = NULL, bool init = false);
-        void CompletedAchievement(AchievementEntry const* achievement, Player* referencePlayer, CriteriaProgressMap* progressMap = NULL);
-        bool IsCompletedAchievement(AchievementEntry const* achievement, Player* referencePlayer, CriteriaProgressMap* progressMap = NULL);
+        void UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, uint32 miscValue3 = 0, Unit const* unit = nullptr,
+                                       Player* referencePlayer = nullptr, bool init = false, bool loginCheck = false);
+        void CompletedAchievement(AchievementEntry const* achievement, Player* referencePlayer, CriteriaProgressMap* progressMap = nullptr, bool loginCheck = false);
+        bool IsCompletedAchievement(AchievementEntry const* achievement, Player* referencePlayer, CriteriaProgressMap* progressMap = nullptr);
         void CheckAllAchievementCriteria(Player* referencePlayer);
         void SendAllAchievementData(Player* receiver);
         void SendAllAccountCriteriaData(Player* receiver);
@@ -306,10 +323,8 @@ class AchievementMgr
         CriteriaProgressTree* GetCriteriaTreeProgressMap(uint32 criteriaTreeId);
         void ClearProgressMap(CriteriaProgressMap* progressMap);
 
-        CompletedAchievementMap const* GetCompletedAchievementsList()
-        {
-            return &m_completedAchievements;
-        }
+        const CompletedAchievementMap &GetCompletedAchievementsList() const { return m_completedAchievements; }
+        ACE_Thread_Mutex &GetCompletedAchievementLock() { return m_CompletedAchievementsLock; }
 
     private:
         enum ProgressType { PROGRESS_SET, PROGRESS_ACCUMULATE, PROGRESS_HIGHEST };
@@ -335,7 +350,8 @@ class AchievementMgr
         AchievementProgressMap m_achievementProgress;
         AchievementTreeProgressMap m_achievementTreeProgress;
         CompletedAchievementMap m_completedAchievements;
-        typedef std::unordered_map<uint32, uint32> TimedAchievementMap;
+        mutable ACE_Thread_Mutex m_CompletedAchievementsLock;
+        typedef ACE_Based::LockedMap<uint32, uint32> TimedAchievementMap;
         TimedAchievementMap m_timedAchievements;      // Criteria id/time left in MS
         uint32 _achievementPoints;
 };
@@ -434,6 +450,22 @@ class AchievementGlobalMgr
         CriteriaTreeEntry const* GetAchievementCriteriaTree(uint32 criteriaId) const;
         uint32 GetParantTreeId(uint32 parent);
 
+        void PrepareCriteriaUpdateTaskThread();
+
+        void AddCriteriaUpdateTask(AchievementCriteriaUpdateTask const& p_Task)
+        {
+            _lockedPlayersAchievementCriteriaTask[p_Task.PlayerGUID].add(p_Task);
+        }
+
+        PlayersAchievementCriteriaTask const& GetPlayersCriteriaTask() const
+        {
+            return _playersAchievementCriteriaTask;
+        }
+
+        void ClearPlayersCriteriaTask()
+        {
+            _playersAchievementCriteriaTask.clear();
+        }
     private:
         AchievementCriteriaDataMap m_criteriaDataMap;
 
@@ -453,8 +485,22 @@ class AchievementGlobalMgr
 
         AchievementRewards m_achievementRewards;
         AchievementRewardLocales m_achievementRewardLocales;
+
+        LockedPlayersAchievementCriteriaTask _lockedPlayersAchievementCriteriaTask;  /// All criteria update task are first storing
+        PlayersAchievementCriteriaTask       _playersAchievementCriteriaTask;        /// Before thread process, all task stored 
 };
 
 #define sAchievementMgr ACE_Singleton<AchievementGlobalMgr, ACE_Null_Mutex>::instance()
+
+class MapUpdater;
+class AchievementCriteriaUpdateRequest : public MapUpdaterTask
+{
+    public:
+        AchievementCriteriaUpdateRequest(MapUpdater *updater, AchievementCriteriaTaskQueue taskQueue);
+        virtual void call() override;
+
+    private:
+        AchievementCriteriaTaskQueue _criteriaUpdateTasks;
+};
 
 #endif
