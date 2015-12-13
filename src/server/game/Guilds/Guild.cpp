@@ -1320,7 +1320,7 @@ void Guild::SaveToDB(bool withMembers)
         {
             if (Player* player = sObjectAccessor->FindPlayer(itr->second->GetGUID()))
             {
-                if (!player->IsInWorld() || !GetSession() || GetSession()->PlayerLogout() || GetSession()->PlayerLoading()) //Prevent crash when player change skills
+                if (!player->IsInWorld() || !player->GetSession() || player->GetSession()->PlayerLogout() || player->GetSession()->PlayerLoading()) //Prevent crash when player change skills
                     continue;
 
                 itr->second->SetStats(player);

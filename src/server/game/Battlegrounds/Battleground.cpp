@@ -369,7 +369,6 @@ inline void Battleground::_ProcessRessurect(uint32 diff)
     // *********************************************************
     // this should be handled by spell system
     m_LastResurrectTime += diff;
-    _lock.lock();
     if (m_LastResurrectTime >= RESURRECTION_INTERVAL)
     {
         if (GetReviveQueueSize())
@@ -420,7 +419,6 @@ inline void Battleground::_ProcessRessurect(uint32 diff)
         }
         m_ResurrectQueue.clear();
     }
-    _lock.unlock();
 }
 
 inline void Battleground::_ProcessProgress(uint32 diff)
