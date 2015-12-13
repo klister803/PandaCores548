@@ -1168,6 +1168,8 @@ Guild::Guild() : m_id(0), m_leaderGuid(0), m_createdDate(0), m_accountsNumber(0)
     m_achievementMgr(this), _level(1), _experience(0), _todayExperience(0), _newsLog(this)
 {
     memset(&m_bankEventLog, 0, (GUILD_BANK_MAX_TABS + 1) * sizeof(LogHolder*));
+    m_members_online = 0;
+    m_lastSave = 0;
 }
 
 Guild::~Guild()
@@ -1303,6 +1305,9 @@ void Guild::Disband()
 
 void Guild::SaveToDB(bool withMembers)
 {
+    if (m_lastSave > time(NULL)) // Prevent save if guild already saved
+        return;
+
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GUILD_EXPERIENCE);
@@ -1332,6 +1337,8 @@ void Guild::SaveToDB(bool withMembers)
     }
 
     CharacterDatabase.CommitTransaction(trans);
+
+    m_lastSave = time(NULL) + (sWorld->getIntConfig(CONFIG_GUILD_SAVE_INTERVAL) * MINUTE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2116,6 +2123,8 @@ bool Guild::HandleMemberWithdrawMoney(WorldSession* session, uint64 amount, bool
 
 void Guild::HandleMemberLogout(WorldSession* session)
 {
+    RemoveMemberOnline();
+
     Player* player = session->GetPlayer();
     if (Member* member = GetMember(player->GetGUID()))
     {
@@ -2360,6 +2369,8 @@ void Guild::SendLoginInfo(WorldSession* session)
     SendGuildReputationWeeklyCap(session);
 
     GetAchievementMgr().SendAllAchievementData(session->GetPlayer());
+
+    AddMemberOnline();
 }
 
 void Guild::SendGuildReputationWeeklyCap(WorldSession* session) const
