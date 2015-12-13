@@ -28,6 +28,7 @@ enum eSpells
     SPELL_LAUNCH_SAWBLADE           = 143265,
     SPELL_LAUNCH_SAWBLADE_AT        = 143329, 
     SPELL_SERRATED_SLASH_DMG        = 143327,
+    //overcharge 145774
     //Automated shredder
     SPELL_REACTIVE_ARMOR            = 143387,
     SPELL_DEATH_FROM_ABOVE          = 144208,
@@ -82,19 +83,19 @@ enum eEvents
 {
     EVENT_SAWBLADE                  = 1,
     EVENT_ELECTROSTATIC_CHARGE      = 2,
+    EVENT_ACTIVE_CONVEYER           = 3,
+    EVENT_START_CONVEYER            = 4,
     //Weapon
-    EVENT_ACTIVE                    = 3,
+    EVENT_ACTIVE                    = 5,
     //Crawler Mine
-    EVENT_PURSUE                    = 4,
-    EVENT_CHECK_DISTANCE            = 5,
+    EVENT_PURSUE                    = 6,
+    EVENT_CHECK_DISTANCE            = 7,
     //Rocket Turret
-    EVENT_SHOCKWAVE_MISSILE         = 6,
-    //Electromagnet
-    EVENT_MAGNETIC_CRASH            = 7,
+    EVENT_SHOCKWAVE_MISSILE         = 8,
     //Automated Shredder
-    EVENT_DEATH_FROM_ABOVE          = 10,
+    EVENT_DEATH_FROM_ABOVE          = 9,
     //Special
-    EVENT_LAUNCH_BACK               = 11,
+    EVENT_LAUNCH_BACK               = 10,
 };
 
 enum _ATentry
@@ -165,6 +166,15 @@ Position spawnweaponpos[3] =
     { 1941.65f, -5425.50f, -299.0f, 5.294743f },
 };
 
+uint32 aweaponentry[4] =
+{
+    NPC_BLACKFUSE_CRAWLER_MINE,
+    NPC_ACTIVATED_LASER_TURRET,
+    NPC_ACTIVATED_ELECTROMAGNET,
+    NPC_ACTIVATED_MISSILE_TURRET,
+};
+
+Position droppos = { 1966.44f, -5562.38f, -309.3269f};
 Position destpos = { 2073.01f, -5620.12f, -302.2553f};
 Position cmdestpos = { 1905.39f, -5631.86f, -309.3265f };
 
@@ -206,11 +216,10 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          void EnterCombat(Unit* who)
          {
              _EnterCombat();
-             CreateLaserWalls();
-             CreateWeaponWave(weaponwavecount);
              DoCast(me, SPELL_AUTOMATIC_REPAIR_BEAM_AT, true);
-             events.ScheduleEvent(EVENT_ELECTROSTATIC_CHARGE, 2000);
+             events.ScheduleEvent(EVENT_ELECTROSTATIC_CHARGE, 1000);
              events.ScheduleEvent(EVENT_SAWBLADE, 7000);
+             events.ScheduleEvent(EVENT_ACTIVE_CONVEYER, 2000);
          }
 
          void EnterEvadeMode()
@@ -336,7 +345,20 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                  case EVENT_ELECTROSTATIC_CHARGE:
                      if (me->getVictim())
                          DoCastVictim(SPELL_ELECTROSTATIC_CHARGE);
-                     events.ScheduleEvent(EVENT_ELECTROSTATIC_CHARGE, 2000);
+                     events.ScheduleEvent(EVENT_ELECTROSTATIC_CHARGE, 17000);
+                     break;
+                 case EVENT_ACTIVE_CONVEYER:
+                     if (!summons.empty())
+                         summons.DespawnEntry(NPC_LASER_ARRAY);
+                     CreateLaserWalls();
+                     events.ScheduleEvent(EVENT_START_CONVEYER, 10000);
+                     break;
+                 case EVENT_START_CONVEYER:
+                     if (!summons.empty())
+                         for (uint8 n = 0; n < 4; n++)
+                             summons.DespawnEntry(aweaponentry[n]);
+                     CreateWeaponWave(weaponwavecount);
+                     events.ScheduleEvent(EVENT_ACTIVE_CONVEYER, 40000);
                      break;
                  }
              }
@@ -428,12 +450,10 @@ public:
 
             while (uint32 eventId = events.ExecuteEvent())
             {
-                switch (eventId)
+                if (eventId == EVENT_DEATH_FROM_ABOVE)
                 {
-                case EVENT_DEATH_FROM_ABOVE:
                     DoCast(me, SPELL_DEATH_FROM_ABOVE);
                     events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 40000);
-                    break;
                 }
             }
         }
@@ -578,10 +598,10 @@ public:
                         events.ScheduleEvent(EVENT_ACTIVE, 3000);
                         break;
                     case NPC_ACTIVATED_ELECTROMAGNET:
-                        events.ScheduleEvent(EVENT_MAGNETIC_CRASH, 5000);
+                        events.ScheduleEvent(EVENT_ACTIVE, 5000);
                         break;
                     case NPC_ACTIVATED_MISSILE_TURRET:
-                        events.ScheduleEvent(EVENT_ACTIVE, 3000);
+                        events.ScheduleEvent(EVENT_ACTIVE, 4000);
                         break;
                     }
                     break;
@@ -629,6 +649,41 @@ public:
             }
         }
 
+        void ActivateElectromagnet()
+        {
+            DoCast(me, SPELL_MAGNETIC_CRASH_AT);
+            std::list<Creature*> sawbladelist;
+            GetCreatureListWithEntryInGrid(sawbladelist, me, NPC_BLACKFUSE_SAWBLADE, 200.0f);
+            if (!sawbladelist.empty())
+            {
+                for (std::list<Creature*>::const_iterator itr = sawbladelist.begin(); itr != sawbladelist.end(); itr++)
+                {
+                    (*itr)->GetMotionMaster()->Clear(false);
+                    (*itr)->GetMotionMaster()->MoveCharge(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 15.0f, 4);
+                }
+            }
+        }
+
+        void ActivateMissileTurret()
+        {
+            if (me->ToTempSummon())
+            {
+                if (Unit* blackfuse = me->ToTempSummon()->GetSummoner())
+                {
+                    if (Creature* stalker = me->GetCreature(*me, instance->GetData64(NPC_SHOCKWAVE_MISSILE_STALKER)))
+                    {
+                        float x, y;
+                        GetPosInRadiusWithRandomOrientation(stalker, 48.0f, x, y);
+                        if (Creature* mt = blackfuse->SummonCreature(NPC_SHOCKWAVE_MISSILE, x, y, stalker->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
+                        {
+                            mt->SetFacingToObject(me);
+                            DoCast(mt, SPELL_SHOCKWAVE_VISUAL_TURRET);
+                        }
+                    }
+                }
+            }
+        }
+
         void UpdateAI(uint32 diff)
         {
             events.Update(diff);
@@ -648,24 +703,10 @@ public:
                         StartDisentegrationLaser();
                         break;
                     case NPC_ACTIVATED_ELECTROMAGNET:
+                        ActivateElectromagnet();
                         break;
                     case NPC_ACTIVATED_MISSILE_TURRET:
-                        if (me->ToTempSummon())
-                        {
-                            if (Unit* blackfuse = me->ToTempSummon()->GetSummoner())
-                            {
-                                if (Creature* stalker = me->GetCreature(*me, instance->GetData64(NPC_SHOCKWAVE_MISSILE_STALKER)))
-                                {
-                                    float x, y;
-                                    GetPosInRadiusWithRandomOrientation(stalker, 48.0f, x, y);
-                                    if (Creature* mt = blackfuse->SummonCreature(NPC_SHOCKWAVE_MISSILE, x, y, stalker->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
-                                    {
-                                        mt->SetFacingToObject(me);
-                                        DoCast(mt, SPELL_SHOCKWAVE_VISUAL_TURRET);
-                                    }
-                                }
-                            }
-                        }
+                        ActivateMissileTurret();
                         break;
                     }
                 }
@@ -694,41 +735,33 @@ public:
                             }
                         }
                     }
-                    events.ScheduleEvent(EVENT_CHECK_DISTANCE, 1000);
+                    if (!targetGuid)
+                        events.ScheduleEvent(EVENT_PURSUE, 1000);
+                    else
+                        events.ScheduleEvent(EVENT_CHECK_DISTANCE, 1000);
                 }
                 break;
                 case EVENT_CHECK_DISTANCE:
-                {
-                    if (Player* pl = me->GetPlayer(*me, targetGuid))
+                    Player* pl = me->GetPlayer(*me, targetGuid);
+                    if (pl && pl->isAlive())
                     {
-                        if (pl->isAlive())
+                        if (me->GetDistance(pl) <= 6.0f && !done)
                         {
-                            if (me->GetDistance(pl) <= 6.0f && !done)
-                            {
-                                done = true;
-                                pl->RemoveAurasDueToSpell(SPELL_CRAWLER_MINE_FIXATE_PL);
-                                me->GetMotionMaster()->Clear(false);
-                                DoCast(pl, SPELL_DETONATE, true);
-                                me->DespawnOrUnsummon(1000);
-                                return;
-                            }
+                            done = true;
+                            pl->RemoveAurasDueToSpell(SPELL_CRAWLER_MINE_FIXATE_PL);
+                            me->GetMotionMaster()->Clear(false);
+                            DoCast(pl, SPELL_DETONATE, true);
+                            me->DespawnOrUnsummon(1000);
+                            return;
                         }
+                    }
+                    else
+                    {
+                        me->SetAttackStop(true);
+                        events.ScheduleEvent(EVENT_PURSUE, 1000);
+                        return;
                     }
                     events.ScheduleEvent(EVENT_CHECK_DISTANCE, 1000);
-                }
-                break;
-                case EVENT_MAGNETIC_CRASH:
-                    DoCast(me, SPELL_MAGNETIC_CRASH_AT);
-                    std::list<Creature*> sawbladelist;
-                    GetCreatureListWithEntryInGrid(sawbladelist, me, NPC_BLACKFUSE_SAWBLADE, 200.0f);
-                    if (!sawbladelist.empty())
-                    {
-                        for (std::list<Creature*>::const_iterator itr = sawbladelist.begin(); itr != sawbladelist.end(); itr++)
-                        { 
-                            (*itr)->GetMotionMaster()->Clear(false);
-                            (*itr)->GetMotionMaster()->MoveCharge(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 25.0f, 4);
-                        }
-                    }
                     break;
                 }
             }
@@ -927,6 +960,34 @@ public:
     }
 };
 
+//144210
+class spell_death_from_above : public SpellScriptLoader
+{
+public:
+    spell_death_from_above() : SpellScriptLoader("spell_death_from_above") { }
+
+    class spell_death_from_above_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_death_from_above_AuraScript);
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+        {
+            if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
+                if (GetCaster()->ToCreature())
+                    GetCaster()->CastSpell(GetCaster(), SPELL_OVERLOAD);
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_death_from_above_AuraScript::HandleEffectRemove, EFFECT_2, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_death_from_above_AuraScript();
+    }
+};
 
 class ShockWaveMissiletFilterTarget
 {
@@ -1011,23 +1072,26 @@ public:
                 case ENTER_3:
                     if (instance->GetBossState(DATA_BLACKFUSE) != IN_PROGRESS)
                         player->NearTeleportTo(atdestpos[0].GetPositionX(), atdestpos[0].GetPositionY(), atdestpos[0].GetPositionZ(), atdestpos[0].GetOrientation());
+                    else
+                        player->GetMotionMaster()->MoveJump(atdestpos[1].GetPositionX(), atdestpos[1].GetPositionY(), atdestpos[1].GetPositionZ(), 15.0f, 15.0f);
                     break;
                 case LEAVE_1:
                 case LEAVE_2:
                 case LEAVE_3:
                     if (instance->GetBossState(DATA_BLACKFUSE) != IN_PROGRESS)
                         player->NearTeleportTo(atdestpos[1].GetPositionX(), atdestpos[1].GetPositionY(), atdestpos[1].GetPositionZ(), atdestpos[1].GetOrientation());
+                    else
+                        player->GetMotionMaster()->MoveJump(atdestpos[0].GetPositionX(), atdestpos[0].GetPositionY(), atdestpos[0].GetPositionZ(), 15.0f, 15.0f);
                     break;
                 case ENTER_CONVEYOR:
                 case ENTER_CONVEYOR_2:
-                    if (instance->GetBossState(DATA_BLACKFUSE) == IN_PROGRESS)
+                    if (!player->HasAura(SPELL_PATTERN_RECOGNITION))
                     {
-                        if (!player->HasAura(SPELL_PATTERN_RECOGNITION))
-                        {
-                            player->CastSpell(player, SPELL_PATTERN_RECOGNITION, true);
-                            player->NearTeleportTo(atdestpos[2].GetPositionX(), atdestpos[2].GetPositionY(), atdestpos[2].GetPositionZ(), atdestpos[2].GetOrientation());
-                        }
+                        player->CastSpell(player, SPELL_PATTERN_RECOGNITION, true);
+                        player->NearTeleportTo(atdestpos[2].GetPositionX(), atdestpos[2].GetPositionY(), atdestpos[2].GetPositionZ(), atdestpos[2].GetOrientation());
                     }
+                    else
+                        player->GetMotionMaster()->MoveJump(droppos.GetPositionX(), droppos.GetPositionY(), droppos.GetPositionZ(), 15.0f, 15.0f);
                     break;
                 case LEAVE_CONVEYOR:
                 case LEAVE_CONVEYOR_2:
@@ -1052,6 +1116,7 @@ void AddSC_boss_siegecrafter_blackfuse()
     new spell_blackfuse_launch_sawblade();
     new spell_break_in_period();
     new spell_disintegration_laser();
+    new spell_death_from_above();
     new spell_shockwave_missile();
     new at_blackfuse_pipe();
 }
