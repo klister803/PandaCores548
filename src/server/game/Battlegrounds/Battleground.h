@@ -786,6 +786,8 @@ class Battleground
         uint32 ScriptId;
 
         bool m_IsRBG;
+
+        std::mutex _lock;
 };
 
 // helper functions for world state list fill
