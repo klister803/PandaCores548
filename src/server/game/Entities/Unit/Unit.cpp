@@ -3922,7 +3922,9 @@ void Unit::_UnapplyAura(AuraApplicationMap::iterator &i, AuraRemoveMode removeMo
     Unit* caster = aura->GetCaster();
 
     // Remove all pointers from lists here to prevent possible pointer invalidation on spellcast/auraapply/auraremove
+    _lock.lock(); //Prevent crash when aura remove in thread
     m_appliedAuras.erase(i);
+    _lock.unlock();
 
     if (aura->GetSpellInfo()->AuraInterruptFlags)
     {
@@ -4051,10 +4053,12 @@ void Unit::_RemoveNoStackAurasDueToAura(Aura* aura)
 
 void Unit::_RegisterAuraEffect(AuraEffect* aurEff, bool apply)
 {
+    _lock.lock(); //Prevent crash when player logout and aura remove in thread
     if (apply)
         m_modAuras[aurEff->GetAuraType()].emplace_back(aurEff);
     else if(!m_modAuras[aurEff->GetAuraType()].empty())
         m_modAuras[aurEff->GetAuraType()].remove(aurEff);
+    _lock.unlock();
 }
 
 // All aura base removes should go threw this function!
@@ -13780,7 +13784,7 @@ bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo)
         return false;
 
     // Single spell immunity.
-    SpellImmuneList const& idList = m_spellImmune[IMMUNITY_ID];
+    SpellImmuneList idList = m_spellImmune[IMMUNITY_ID];
     for (SpellImmuneList::const_iterator itr = idList.begin(); itr != idList.end(); ++itr)
         if (itr->type == spellInfo->Id)
             return true;
@@ -13790,7 +13794,7 @@ bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo)
 
     if (spellInfo->Dispel)
     {
-        SpellImmuneList const& dispelList = m_spellImmune[IMMUNITY_DISPEL];
+        SpellImmuneList dispelList = m_spellImmune[IMMUNITY_DISPEL];
         for (SpellImmuneList::const_iterator itr = dispelList.begin(); itr != dispelList.end(); ++itr)
             if (itr->type == spellInfo->Dispel)
                 return true;
@@ -13799,7 +13803,7 @@ bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo)
     // Spells that don't have effectMechanics.
     if (spellInfo->Mechanic)
     {
-        SpellImmuneList const& mechanicList = m_spellImmune[IMMUNITY_MECHANIC];
+        SpellImmuneList mechanicList = m_spellImmune[IMMUNITY_MECHANIC];
         for (SpellImmuneList::const_iterator itr = mechanicList.begin(); itr != mechanicList.end(); ++itr)
             if (itr->type == spellInfo->Mechanic)
                 return true;
@@ -13825,7 +13829,7 @@ bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo)
     if (spellInfo->Id != 42292 && spellInfo->Id != 59752)
     {
         uint8 mask = spellInfo->GetSchoolMask();
-        SpellImmuneList const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
+        SpellImmuneList schoolList = m_spellImmune[IMMUNITY_SCHOOL];
         for (SpellImmuneList::const_iterator itr = schoolList.begin(), next; itr != schoolList.end(); itr = next)
         {
             next = itr;
@@ -13852,7 +13856,7 @@ bool Unit::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) cons
 
     // If m_immuneToEffect type contain this effect type, IMMUNE effect.
     uint32 effect = spellInfo->GetEffect(index, GetSpawnMode())->Effect;
-    SpellImmuneList const& effectList = m_spellImmune[IMMUNITY_EFFECT];
+    SpellImmuneList effectList = m_spellImmune[IMMUNITY_EFFECT];
     for (SpellImmuneList::const_iterator itr = effectList.begin(), next; itr != effectList.end(); itr = next)
     {
         next = itr;
@@ -13863,7 +13867,7 @@ bool Unit::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) cons
 
     if (uint32 mechanic = spellInfo->GetEffect(index, GetSpawnMode())->Mechanic)
     {
-        SpellImmuneList const& mechanicList = m_spellImmune[IMMUNITY_MECHANIC];
+        SpellImmuneList mechanicList = m_spellImmune[IMMUNITY_MECHANIC];
         for (SpellImmuneList::const_iterator itr = mechanicList.begin(), next; itr != mechanicList.end(); itr = next)
         {
             next = itr;
@@ -13875,7 +13879,7 @@ bool Unit::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) cons
 
     if (uint32 aura = spellInfo->GetEffect(index, GetSpawnMode())->ApplyAuraName)
     {
-        SpellImmuneList const& list = m_spellImmune[IMMUNITY_STATE];
+        SpellImmuneList list = m_spellImmune[IMMUNITY_STATE];
         for (SpellImmuneList::const_iterator itr = list.begin(), next; itr != list.end(); itr = next)
         {
             next = itr;
