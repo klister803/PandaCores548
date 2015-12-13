@@ -2228,7 +2228,6 @@ class Player : public Unit, public GridObject<Player>
         void RestoreAllSpellMods(uint32 ownerAuraId = 0, Aura* aura = NULL);
         void DropModCharge(SpellModifier* mod, Spell* spell);
         void SetSpellModTakingSpell(Spell* spell, bool apply);
-        bool HasInstantCastModForSpell(SpellInfo const* spellInfo);
         SpellModifier* TryFindMod(SpellModType type, SpellModOp Op, uint32 spellId, int32 val);
         SpellModList GetModAndSpellMod(SpellModOp op, uint32 spellId);
 

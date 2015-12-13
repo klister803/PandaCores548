@@ -30911,19 +30911,6 @@ void Player::HandleArenaDeserter()
     }
 }
 
-bool Player::HasInstantCastModForSpell(SpellInfo const* spellInfo)
-{
-    if (!spellInfo)
-        return false;
-
-    for (auto itr : m_spellMods[SPELLMOD_CASTING_TIME])
-        if (itr->value == -100)
-            if (spellInfo->IsAffectedBySpellMod(itr))
-                return true;
-
-    return false;
-}
-
 SpellModifier* Player::TryFindMod(SpellModType type, SpellModOp Op, uint32 spellId, int32 val)
 {
     for (auto itr : m_spellMods[Op])

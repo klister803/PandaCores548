@@ -4075,11 +4075,6 @@ void Spell::cast(bool skipCheck)
 
     CallScriptAfterCastHandlers();
 
-    if (m_spellInfo->RecoveryTime)
-        if (Player* plr = m_caster->ToPlayer())
-            if (plr->HasInstantCastModForSpell(m_spellInfo))
-                plr->RemoveSpellCooldown(spellid, true);
-
     if (!(_triggeredCastFlags & TRIGGERED_IGNORE_POWER_AND_REAGENT_COST))
         TakeReagents();
     else if (Item* targetItem = m_targets.GetItemTarget())
