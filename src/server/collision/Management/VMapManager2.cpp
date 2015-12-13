@@ -254,6 +254,9 @@ namespace VMAP
         //! Critical section, thread safe access to iLoadedModelFiles
         //TRINITY_GUARD(ACE_Thread_Mutex, LoadedModelFilesLock);
 
+        if (_lock.try_lock() == true) // Check lock, but don`t loack, wait erase
+            _lock.unlock();
+
         ModelFileMap::iterator model = iLoadedModelFiles.find(filename);
         if (model == iLoadedModelFiles.end())
         {
@@ -267,11 +270,10 @@ namespace VMAP
             #ifdef TRINITY_DEBUG
             sLog->outDebug(LOG_FILTER_MAPS, "VMapManager2: loading file '%s%s'", basepath.c_str(), filename.c_str());
             #endif
-            _lock.lock();
             model = iLoadedModelFiles.insert(std::pair<std::string, ManagedModel>(filename, ManagedModel())).first;
-            _lock.unlock();
             model->second.setModel(worldmodel);
         }
+        _lock.unlock();
         model->second.incRefCount();
         return model->second.getModel();
     }
@@ -280,6 +282,9 @@ namespace VMAP
     {
         //! Critical section, thread safe access to iLoadedModelFiles
         //TRINITY_GUARD(ACE_Thread_Mutex, LoadedModelFilesLock);
+
+        if (_lock.try_lock() == true) // Check lock, but don`t loack, wait erase
+            _lock.unlock();
 
         ModelFileMap::iterator model = iLoadedModelFiles.find(filename);
         if (model == iLoadedModelFiles.end())
