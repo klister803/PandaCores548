@@ -252,8 +252,7 @@ namespace VMAP
     WorldModel* VMapManager2::acquireModelInstance(const std::string& basepath, const std::string& filename)
     {
         //! Critical section, thread safe access to iLoadedModelFiles
-        if (_lock.try_lock() == true) // Check lock, but don`t loack, wait erase
-            _lock.unlock();
+        std::lock_guard<std::mutex> lock(LoadedModelFilesLock);
 
         ModelFileMap::iterator model = iLoadedModelFiles.find(filename);
         if (model == iLoadedModelFiles.end())
@@ -271,7 +270,6 @@ namespace VMAP
             model = iLoadedModelFiles.insert(std::pair<std::string, ManagedModel>(filename, ManagedModel())).first;
             model->second.setModel(worldmodel);
         }
-        _lock.unlock();
         model->second.incRefCount();
         return model->second.getModel();
     }
@@ -279,8 +277,7 @@ namespace VMAP
     void VMapManager2::releaseModelInstance(const std::string &filename)
     {
         //! Critical section, thread safe access to iLoadedModelFiles
-        if (_lock.try_lock() == true) // Check lock, but don`t loack, wait erase
-            _lock.unlock();
+        std::lock_guard<std::mutex> lock(LoadedModelFilesLock);
 
         ModelFileMap::iterator model = iLoadedModelFiles.find(filename);
         if (model == iLoadedModelFiles.end())
@@ -296,9 +293,7 @@ namespace VMAP
             sLog->outDebug(LOG_FILTER_MAPS, "VMapManager2: unloading file '%s'", filename.c_str());
             #endif
             delete model->second.getModel();
-            _lock.lock();
             iLoadedModelFiles.erase(model);
-            _lock.unlock();
         }
     }
 
