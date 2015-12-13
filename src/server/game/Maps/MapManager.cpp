@@ -102,11 +102,10 @@ Map* MapManager::CreateBaseMap(uint32 id)
 
     if (map == NULL)
     {
-        TRINITY_GUARD(ACE_Thread_Mutex, Lock);
-
         MapEntry const* entry = sMapStore.LookupEntry(id);
         ASSERT(entry);
 
+        Lock.lock();
         if (entry->Instanceable())
             map = new MapInstanced(id, i_gridCleanUpDelay);
         else
@@ -116,6 +115,7 @@ Map* MapManager::CreateBaseMap(uint32 id)
         }
 
         i_maps[id] = map;
+        Lock.unlock();
     }
 
     ASSERT(map);
@@ -363,7 +363,8 @@ void MapManager::UnloadAll()
 
 uint32 MapManager::GetNumInstances()
 {
-    TRINITY_GUARD(ACE_Thread_Mutex, Lock);
+    if (Lock.try_lock() == true) // Lock only if map create in progress
+        Lock.unlock();
 
     uint32 ret = 0;
     for (MapMapType::iterator itr = i_maps.begin(); itr != i_maps.end(); ++itr)
@@ -380,7 +381,8 @@ uint32 MapManager::GetNumInstances()
 
 uint32 MapManager::GetNumPlayersInInstances()
 {
-    TRINITY_GUARD(ACE_Thread_Mutex, Lock);
+    if (Lock.try_lock() == true) // Lock only if map create in progress
+        Lock.unlock();
 
     uint32 ret = 0;
     for (MapMapType::iterator itr = i_maps.begin(); itr != i_maps.end(); ++itr)

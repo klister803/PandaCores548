@@ -252,8 +252,6 @@ namespace VMAP
     WorldModel* VMapManager2::acquireModelInstance(const std::string& basepath, const std::string& filename)
     {
         //! Critical section, thread safe access to iLoadedModelFiles
-        //TRINITY_GUARD(ACE_Thread_Mutex, LoadedModelFilesLock);
-
         if (_lock.try_lock() == true) // Check lock, but don`t loack, wait erase
             _lock.unlock();
 
@@ -281,8 +279,6 @@ namespace VMAP
     void VMapManager2::releaseModelInstance(const std::string &filename)
     {
         //! Critical section, thread safe access to iLoadedModelFiles
-        //TRINITY_GUARD(ACE_Thread_Mutex, LoadedModelFilesLock);
-
         if (_lock.try_lock() == true) // Check lock, but don`t loack, wait erase
             _lock.unlock();
 

@@ -73,8 +73,6 @@ namespace VMAP
             // Tree to check collision
             ModelFileMap iLoadedModelFiles;
             InstanceTreeMap iInstanceMapTrees;
-            // Mutex for iLoadedModelFiles
-            ACE_Thread_Mutex LoadedModelFilesLock;
 
             std::mutex _lock;
 
