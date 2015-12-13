@@ -1091,11 +1091,11 @@ void Aura::Update(uint32 diff, Unit* caster)
                 if (!GetSpellInfo()->GetSpellPowerByCasterPower(caster, power))
                     power = GetSpellInfo()->GetPowerInfo(0);
 
-                if (channeled)
+                /*if (channeled)
                     if (Unit* owner = GetUnitOwner())
                         if (owner->GetGUID() != caster->GetGUID())
                             if (!caster->canSeeOrDetect(owner))
-                                caster->CastStop();
+                                caster->CastStop();*/
 
                 if (power.powerPerSecond || power.powerPerSecondPercentage)
                 {
@@ -1110,12 +1110,12 @@ void Aura::Update(uint32 diff, Unit* caster)
                             caster->ModifyHealth(-1 * reqHealth);
                         else
                         {
-                            if (channeled)
+                            /*if (channeled)
                             {
                                 if (Spell* _spell = caster->FindCurrentSpellBySpellId(GetId()))
                                     _spell->RemoveAuraForAllTargets();
                             }
-                            else
+                            else*/
                                 Remove();
 
                             return;
@@ -1131,12 +1131,12 @@ void Aura::Update(uint32 diff, Unit* caster)
                             caster->ModifyPower(powertype, -1 * reqPower, true);
                         else
                         {
-                            if (channeled)
+                            /*if (channeled)
                             {
                                 if (Spell* _spell = caster->FindCurrentSpellBySpellId(GetId()))
                                     _spell->RemoveAuraForAllTargets();
                             }
-                            else
+                            else*/
                                 Remove();
                             
                             return;

@@ -4053,12 +4053,14 @@ void Unit::_RemoveNoStackAurasDueToAura(Aura* aura)
 
 void Unit::_RegisterAuraEffect(AuraEffect* aurEff, bool apply)
 {
-    _lock.lock(); //Prevent crash when player logout and aura remove in thread
     if (apply)
         m_modAuras[aurEff->GetAuraType()].emplace_back(aurEff);
     else if(!m_modAuras[aurEff->GetAuraType()].empty())
+    {
+        _lock.lock(); //Prevent crash when player logout and aura remove in thread
         m_modAuras[aurEff->GetAuraType()].remove(aurEff);
-    _lock.unlock();
+        _lock.unlock();
+    }
 }
 
 // All aura base removes should go threw this function!

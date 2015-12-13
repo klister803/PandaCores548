@@ -886,11 +886,11 @@ void Spell::SelectImplicitChannelTargets(SpellEffIndex effIndex, SpellImplicitTa
             WorldObject* target = ObjectAccessor::GetUnit(*m_caster, m_originalCaster->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT));
             CallScriptObjectTargetSelectHandlers(target, effIndex);
 
-            if (target && m_caster && !m_caster->canSeeOrDetect(target))
+            /*if (target && m_caster && !m_caster->canSeeOrDetect(target))
             {
                 m_caster->InterruptSpell(CURRENT_CHANNELED_SPELL, false);
                 return;
-            }
+            }*/
             // unit target may be no longer avalible - teleported out of map for example
             if (target && target->ToUnit())
                 AddUnitTarget(target->ToUnit(), 1 << effIndex);
