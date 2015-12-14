@@ -192,7 +192,8 @@ void ObjectGridLoader::LoadN(void)
 template<class T>
 void ObjectGridUnloader::Visit(GridRefManager<T> &m)
 {
-    std::lock_guard<std::mutex> lock(_lock);
+    //std::lock_guard<std::mutex> lock(_lock);
+    _lock.lock();
     while (!m.isEmpty())
     {
         T *obj = m.getFirst()->getSource();
@@ -208,6 +209,7 @@ void ObjectGridUnloader::Visit(GridRefManager<T> &m)
         ///- object will get delinked from the manager when deleted
         delete obj;
     }
+    _lock.unlock();
 }
 
 void ObjectGridStoper::Visit(CreatureMapType &m)
