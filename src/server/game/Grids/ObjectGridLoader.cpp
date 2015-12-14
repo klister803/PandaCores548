@@ -192,7 +192,6 @@ void ObjectGridLoader::LoadN(void)
 template<class T>
 void ObjectGridUnloader::Visit(GridRefManager<T> &m)
 {
-    //std::lock_guard<std::mutex> lock(_lock);
     _lock.lock();
     while (!m.isEmpty())
     {
@@ -206,6 +205,8 @@ void ObjectGridUnloader::Visit(GridRefManager<T> &m)
         //TODO: Check if that script has the correct logic. Do we really need to summons something before deleting?
         obj->CleanupsBeforeDelete();
         volatile uint32 entryorguid = obj->GetTypeId() == TYPEID_PLAYER ? obj->GetGUIDLow() : obj->GetEntry();
+        volatile uint32 appliedAurasCount = obj->ToUnit() ? obj->ToUnit()->GetAppliedAuras().size() : 0;
+        volatile uint32 ownedAurasCount = obj->ToUnit() ? obj->ToUnit()->GetOwnedAuras().size() : 0;
         ///- object will get delinked from the manager when deleted
         delete obj;
     }

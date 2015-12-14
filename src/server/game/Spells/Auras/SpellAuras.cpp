@@ -1541,9 +1541,7 @@ void Aura::UnregisterCasterAuras()
         caster = ObjectAccessor::GetObjectInOrOutOfWorld(GetCasterGUID(), (Unit*)NULL);
     if(!caster)
         return;
-    //lockOwnerAura.lock();
     caster->GetMyCastAuras().remove(this);
-    //lockOwnerAura.unlock();
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {

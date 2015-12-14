@@ -35,7 +35,6 @@
 
 #include <bitset>
 #include <list>
-#include <mutex>
 
 class Unit;
 class WorldPacket;
@@ -556,7 +555,6 @@ class Map : public GridRefManager<NGridType>
         void SetUnloadReferenceLock(const GridCoord &p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadReferenceLock(on); }
 
         ACE_Thread_Mutex Lock;
-        std::mutex lockUnload;
 
         MapEntry const* i_mapEntry;
         uint8 i_spawnMode;

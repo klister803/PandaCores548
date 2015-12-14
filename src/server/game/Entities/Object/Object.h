@@ -30,7 +30,6 @@
 #include <set>
 #include <string>
 #include <sstream>
-#include <map>
 
 #define CONTACT_DISTANCE            0.5f
 #define INTERACTION_DISTANCE        5.0f
@@ -124,7 +123,7 @@ class ZoneScript;
 class Unit;
 class Transport;
 
-typedef std::map<Player *, UpdateData> UpdateDataMapType;
+typedef UNORDERED_MAP<Player*, UpdateData> UpdateDataMapType;
 typedef cyber_ptr<Object> C_PTR;
 class Object
 {

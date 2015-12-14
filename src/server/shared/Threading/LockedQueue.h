@@ -28,7 +28,7 @@
 namespace ACE_Based
 {
     template <class T, class LockType, typename StorageType=std::deque<T> >
-    class LockedQueue
+        class LockedQueue
     {
         //! Lock access to the queue.
         LockType _lock;
@@ -42,13 +42,9 @@ namespace ACE_Based
         public:
 
             //! Create a LockedQueue.
-            LockedQueue() : _canceled(false)
+            LockedQueue()
+                : _canceled(false)
             {
-            }
-
-            LockedQueue(const LockedQueue &lockedQueue) : _canceled(lockedQueue._canceled)
-            {
-
             }
 
             //! Destroy a LockedQueue.

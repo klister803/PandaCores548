@@ -34,8 +34,6 @@
 #include "WorldPacket.h"
 #include "Group.h"
 
-#include <thread>
-
 extern GridState* si_GridStates[];                          // debugging code, should be deleted some day
 
 MapManager::MapManager()
@@ -61,8 +59,8 @@ void MapManager::Initialize()
     }
     int num_threads(sWorld->getIntConfig(CONFIG_NUMTHREADS));
     // Start mtmaps if needed.
-    if (num_threads > 0)
-        m_updater.activate(num_threads);
+    if (num_threads > 0 && m_updater.activate(num_threads) == -1)
+        abort();
 }
 
 void MapManager::InitializeVisibilityDistanceInfo()
@@ -275,22 +273,6 @@ void MapManager::Update(uint32 diff)
     if (!i_timer.Passed())
         return;
 
-    /// - Start Achievement criteria update processing thread
-    sAchievementMgr->PrepareCriteriaUpdateTaskThread();
-    for (auto playerTask : sAchievementMgr->GetPlayersCriteriaTask())
-    {
-        if (m_updater.activated())
-        {
-            m_updater.schedule_specific(new AchievementCriteriaUpdateRequest(&m_updater, playerTask.second));
-        }
-        else
-        {
-            auto task = new AchievementCriteriaUpdateRequest(nullptr, playerTask.second);
-            task->call();
-            delete task;
-        }
-    }
-
     MapMapType::iterator iter = i_maps.begin();
     for (; iter != i_maps.end(); ++iter)
     {
@@ -301,8 +283,6 @@ void MapManager::Update(uint32 diff)
     }
     if (m_updater.activated())
         m_updater.wait();
-
-    sAchievementMgr->ClearPlayersCriteriaTask();
 
     for (iter = i_maps.begin(); iter != i_maps.end(); ++iter)
         iter->second->DelayedUpdate(uint32(i_timer.GetCurrent()));

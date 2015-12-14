@@ -31,7 +31,6 @@
 #include "WorldPacket.h"
 #include "Cryptography/BigNumber.h"
 #include "Opcodes.h"
-#include <mutex>
 
 class CalendarEvent;
 class CalendarInvite;
@@ -260,7 +259,7 @@ class WorldSession
 
         void ReadAddonsInfo(WorldPacket& data);
         void SendAddonsInfo();
-        bool IsAddonRegistered(const std::string& prefix);
+        bool IsAddonRegistered(const std::string& prefix) const;
 
         void ReadMovementInfo(WorldPacket& data, MovementInfo* mi);
         static void WriteMovementInfo(WorldPacket& data, MovementInfo* mi, Unit* unit = NULL);
@@ -1124,7 +1123,6 @@ class WorldSession
         bool   m_TutorialsChanged;
         AddonsList m_addonsList;
         std::vector<std::string> _registeredAddonPrefixes;
-        std::mutex _registeredAddonLock;
         bool _filterAddonMessages;
         uint32 recruiterId;
         bool isRecruiter;

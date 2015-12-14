@@ -2713,8 +2713,6 @@ class Unit : public WorldObject
 
         // ccd system
         uint32 _delayInterruptFlag;
-
-        std::mutex _lock;
 };
 
 class DelayCastEvent : public BasicEvent

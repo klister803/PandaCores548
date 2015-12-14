@@ -1372,7 +1372,7 @@ void WorldSession::SendAddonsInfo()
     SendPacket(&data);
 }
 
-bool WorldSession::IsAddonRegistered(const std::string& prefix)
+bool WorldSession::IsAddonRegistered(const std::string& prefix) const
 {
     if (!_filterAddonMessages) // if we have hit the softcap (64) nothing should be filtered
         return true;
@@ -1380,7 +1380,6 @@ bool WorldSession::IsAddonRegistered(const std::string& prefix)
     if (_registeredAddonPrefixes.empty())
         return false;
 
-    std::lock_guard<std::mutex> lock(_registeredAddonLock);
     std::vector<std::string>::const_iterator itr = std::find(_registeredAddonPrefixes.begin(), _registeredAddonPrefixes.end(), prefix);
     return itr != _registeredAddonPrefixes.end();
 }
@@ -1389,7 +1388,6 @@ void WorldSession::HandleUnregisterAddonPrefixesOpcode(WorldPacket& /*recvPacket
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_UNREGISTER_ALL_ADDON_PREFIXES");
 
-    std::lock_guard<std::mutex> lock(_registeredAddonLock);
     _registeredAddonPrefixes.clear();
 }
 
@@ -1413,7 +1411,6 @@ void WorldSession::HandleAddonRegisteredPrefixesOpcode(WorldPacket& recvPacket)
     for (uint32 i = 0; i < count; ++i)
         lengths[i] = recvPacket.ReadBits(5);
 
-    std::lock_guard<std::mutex> lock(_registeredAddonLock);
     for (uint32 i = 0; i < count; ++i)
         _registeredAddonPrefixes.push_back(recvPacket.ReadString(lengths[i]));
 
