@@ -57,18 +57,18 @@ public:
         {
             switch (creature->GetEntry())
             {
-            case BOSS_ANSHAL:
-                uiAnshal = creature->GetGUID();
-                break;
-            case BOSS_NEZIR:
-                uiNezir = creature->GetGUID();
-                break;
-            case BOSS_ROHASH:
-                uiRohash = creature->GetGUID();
-                break;
-            case BOSS_ALAKIR:
-                uiAlakir = creature->GetGUID();
-                break;
+                case BOSS_ANSHAL:
+                    uiAnshal = creature->GetGUID();
+                    break;
+                case BOSS_NEZIR:
+                    uiNezir = creature->GetGUID();
+                    break;
+                case BOSS_ROHASH:
+                    uiRohash = creature->GetGUID();
+                    break;
+                case BOSS_ALAKIR:
+                    uiAlakir = creature->GetGUID();
+                    break;
             }
         }
 
@@ -76,14 +76,14 @@ public:
         {
             switch (identifier)
             {
-            case DATA_ANSHAL:
-                return uiAnshal;
-            case DATA_NEZIR:
-                return uiNezir;
-            case DATA_ROHASH:
-                return uiRohash;
-            case DATA_ALAKIR:
-                return uiAlakir;
+                case DATA_ANSHAL:
+                    return uiAnshal;
+                case DATA_NEZIR:
+                    return uiNezir;
+                case DATA_ROHASH:
+                    return uiRohash;
+                case DATA_ALAKIR:
+                    return uiAlakir;
             }
             return 0;
         }
@@ -92,79 +92,79 @@ public:
         {
             switch (type)
             {
-            case DATA_CONCLAVE_OF_WIND_EVENT:
-
+                case DATA_CONCLAVE_OF_WIND_EVENT:
+                    if (data == DONE)
+                    {
+                        if (Creature* Anshal = instance->GetCreature(uiAnshal))
+                            if (Creature* Nezir = instance->GetCreature(uiNezir))
+                                if (Creature* Rohash = instance->GetCreature(uiRohash))
+                                    if (!Anshal->isInCombat() && !Nezir->isInCombat() && !Rohash->isInCombat())
+                                        Encounter[0] = data;
+                                    else
+                                        return;
+                    }
+                    Encounter[0] = data;
+                    break;
+                case DATA_ALAKIR_EVENT:
+                    Encounter[1] = data;
+                    break;
+                }
                 if (data == DONE)
+                    SaveToDB();
+
+                if (data == IN_PROGRESS)
                 {
                     if (Creature* Anshal = instance->GetCreature(uiAnshal))
+                        Anshal->RemoveAura(SPELL_PRE_COMBAT_EFFECT_ANSHAL);
+
                     if (Creature* Nezir = instance->GetCreature(uiNezir))
+                        Nezir->RemoveAura(SPELL_PRE_COMBAT_EFFECT_NEZIR);
+
                     if (Creature* Rohash = instance->GetCreature(uiRohash))
-                        if (!Anshal->isInCombat() && !Nezir->isInCombat() && !Rohash->isInCombat())
-                                    Encounter[0] = data;
-                                else
-                                    return;
+                        Rohash->RemoveAura(SPELL_PRE_COMBAT_EFFECT_ROHASH);
+
                 }
-                Encounter[0] = data;
-                break;
+                else if (data == FAIL || data == NOT_STARTED)
+                {
+                    if (Creature* Anshal = instance->GetCreature(uiAnshal))
+                        if (!Anshal->HasAura(SPELL_PRE_COMBAT_EFFECT_ANSHAL))
+                            Anshal->CastSpell(Anshal, SPELL_PRE_COMBAT_EFFECT_ANSHAL,true);
 
-            case DATA_ALAKIR_EVENT:
-                Encounter[1] = data;
-                break;
-            }
+                    if (Creature* Nezir = instance->GetCreature(uiNezir))
+                        if (!Nezir->HasAura(SPELL_PRE_COMBAT_EFFECT_NEZIR))
+                            Nezir->CastSpell(Nezir, SPELL_PRE_COMBAT_EFFECT_NEZIR,true);
 
-            if (data == DONE)
-                SaveToDB();
-
-            if (data == IN_PROGRESS)
-            {
-                if (Creature* Anshal = instance->GetCreature(uiAnshal))
-                    Anshal->RemoveAura(SPELL_PRE_COMBAT_EFFECT_ANSHAL);
-
-                if (Creature* Nezir = instance->GetCreature(uiNezir))
-                    Nezir->RemoveAura(SPELL_PRE_COMBAT_EFFECT_NEZIR);
-
-                if (Creature* Rohash = instance->GetCreature(uiRohash))
-                    Rohash->RemoveAura(SPELL_PRE_COMBAT_EFFECT_ROHASH);
-
-            }
-            else if (data == FAIL || data == NOT_STARTED)
-            {
-                if (Creature* Anshal = instance->GetCreature(uiAnshal))
-                    if (!Anshal->HasAura(SPELL_PRE_COMBAT_EFFECT_ANSHAL))
-                        Anshal->CastSpell(Anshal, SPELL_PRE_COMBAT_EFFECT_ANSHAL,true);
-
-                if (Creature* Nezir = instance->GetCreature(uiNezir))
-                    if (!Nezir->HasAura(SPELL_PRE_COMBAT_EFFECT_NEZIR))
-                        Nezir->CastSpell(Nezir, SPELL_PRE_COMBAT_EFFECT_NEZIR,true);
-
-                if (Creature* Rohash = instance->GetCreature(uiRohash))
-                    if (!Rohash->HasAura(SPELL_PRE_COMBAT_EFFECT_ROHASH))
-                        Rohash->CastSpell(Rohash, SPELL_PRE_COMBAT_EFFECT_ROHASH,true);
-            }
+                    if (Creature* Rohash = instance->GetCreature(uiRohash))
+                        if (!Rohash->HasAura(SPELL_PRE_COMBAT_EFFECT_ROHASH))
+                            Rohash->CastSpell(Rohash, SPELL_PRE_COMBAT_EFFECT_ROHASH,true);
+                }
         }
 
         uint32 GetData(uint32 type)
         {
             switch (type)
             {
-            case DATA_CONCLAVE_OF_WIND_EVENT:
-                return Encounter[0];
-            case DATA_ALAKIR_EVENT:
-                return Encounter[1];
+                case DATA_CONCLAVE_OF_WIND_EVENT:
+                    return Encounter[0];
+                case DATA_ALAKIR_EVENT:
+                    return Encounter[1];
             }
             return 0;
         }
 
         std::string GetSaveData()
         {
-            OUT_SAVE_INST_DATA;
+            if (instance)
+                OUT_SAVE_INST_DATA;
 
             std::string str_data;
             std::ostringstream saveStream;
             saveStream << "T W" << Encounter[0] << " " << Encounter[1] << " " << Encounter[2] << " " << Encounter[3];
             str_data = saveStream.str();
 
-            OUT_SAVE_INST_DATA_COMPLETE;
+            if (instance)
+                OUT_SAVE_INST_DATA_COMPLETE;
+
             return str_data;
         }
 

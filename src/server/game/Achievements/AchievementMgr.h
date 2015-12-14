@@ -20,9 +20,9 @@
 
 #include <map>
 #include <string>
+#include <ace/Singleton.h>
 
 #include "Common.h"
-#include <ace/Singleton.h>
 #include "DatabaseEnv.h"
 #include "DBCEnums.h"
 #include "DBCStores.h"
@@ -40,9 +40,9 @@ struct CriteriaTreeInfo
 };
 
 typedef std::vector<CriteriaTreeInfo> CriteriaTreeList;
-typedef std::unordered_map<uint32, CriteriaTreeInfo> CriteriaTreeInfoMap;
 typedef std::vector<AchievementEntry const*> AchievementEntryList;
-typedef std::unordered_map<uint32, AchievementEntryList> AchievementListByReferencedId;
+typedef std::map<uint32, CriteriaTreeInfo> CriteriaTreeInfoMap;
+typedef std::map<uint32, AchievementEntryList> AchievementListByReferencedId;
 
 struct CriteriaTreeProgress
 {
@@ -273,10 +273,10 @@ using LockedPlayersAchievementCriteriaTask = ACE_Based::LockedMap<uint32, Locked
 using AchievementCriteriaTaskQueue = std::queue<AchievementCriteriaUpdateTask>;
 using PlayersAchievementCriteriaTask = std::map<uint32, AchievementCriteriaTaskQueue>;
 
-typedef std::unordered_map<uint32, CriteriaTreeProgress> CriteriaProgressMap;
-typedef std::unordered_map<uint32, CompletedAchievementData> CompletedAchievementMap;
-typedef std::unordered_map<uint32, CriteriaProgressMap> AchievementProgressMap;
-typedef std::unordered_map<uint32, CriteriaProgressTree> AchievementTreeProgressMap;
+typedef std::map<uint32, CriteriaTreeProgress> CriteriaProgressMap;
+typedef std::map<uint32, CompletedAchievementData> CompletedAchievementMap;
+typedef std::map<uint32, CriteriaProgressMap> AchievementProgressMap;
+typedef std::map<uint32, CriteriaProgressTree> AchievementTreeProgressMap;
 
 enum CriteriaSort
 {
