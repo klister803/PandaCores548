@@ -306,6 +306,8 @@ class Aura
         bool m_fromAreatrigger:1;
         bool m_inArenaNerf;
 
+        std::mutex lockOwnerAura;
+
     private:
         Unit::AuraApplicationList m_removedApplications;
 };
