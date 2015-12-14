@@ -1541,7 +1541,9 @@ void Aura::UnregisterCasterAuras()
         caster = ObjectAccessor::GetObjectInOrOutOfWorld(GetCasterGUID(), (Unit*)NULL);
     if(!caster)
         return;
+    //lockOwnerAura.lock();
     caster->GetMyCastAuras().remove(this);
+    //lockOwnerAura.unlock();
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
@@ -1551,7 +1553,7 @@ void Aura::UnregisterCasterAuras()
                 if (player->GetSession() && player->GetSession()->PlayerLogout())
                     return;
 
-            if(!caster->IsInWorld() || !GetUnitOwner() || !GetUnitOwner()->IsInWorld())
+            if(!caster->IsInWorld() || !GetUnitOwner() || !GetUnitOwner()->IsInWorld() || caster != GetUnitOwner())
                 return;
 
             caster->RemovePetAndOwnerAura(GetId(), GetUnitOwner());

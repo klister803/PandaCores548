@@ -4080,9 +4080,9 @@ void Unit::RemoveOwnedAura(AuraMap::iterator &i, AuraRemoveMode removeMode)
     if (aura->IsSingleTarget())
         aura->UnregisterSingleTarget();
 
-    aura->UnregisterCasterAuras();
-
     aura->_Remove(removeMode);
+
+    aura->UnregisterCasterAuras();
 
     i = m_ownedAuras.begin();
 }
@@ -4113,7 +4113,7 @@ void Unit::RemoveOwnedAura(Aura* aura, AuraRemoveMode removeMode)
             RemoveOwnedAura(itr, removeMode);
             return;
         }
-    ASSERT(false);
+    //ASSERT(false);
 }
 
 Aura* Unit::GetOwnedAura(uint32 spellId, uint64 casterGUID, uint64 itemCasterGUID, uint32 reqEffMask, Aura* except) const
