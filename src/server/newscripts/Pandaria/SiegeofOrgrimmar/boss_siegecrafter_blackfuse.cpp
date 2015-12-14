@@ -85,17 +85,18 @@ enum eEvents
     EVENT_ELECTROSTATIC_CHARGE      = 2,
     EVENT_ACTIVE_CONVEYER           = 3,
     EVENT_START_CONVEYER            = 4,
+    EVENT_SUMMON_SHREDDER           = 5,
     //Weapon
-    EVENT_ACTIVE                    = 5,
+    EVENT_ACTIVE                    = 6,
     //Crawler Mine
-    EVENT_PURSUE                    = 6,
-    EVENT_CHECK_DISTANCE            = 7,
+    EVENT_PURSUE                    = 7,
+    EVENT_CHECK_DISTANCE            = 8,
     //Rocket Turret
-    EVENT_SHOCKWAVE_MISSILE         = 8,
+    EVENT_SHOCKWAVE_MISSILE         = 9,
     //Automated Shredder
-    EVENT_DEATH_FROM_ABOVE          = 9,
+    EVENT_DEATH_FROM_ABOVE          = 10,
     //Special
-    EVENT_LAUNCH_BACK               = 10,
+    EVENT_LAUNCH_BACK               = 11,
 };
 
 enum _ATentry
@@ -177,6 +178,7 @@ uint32 aweaponentry[4] =
 Position droppos = {1966.44f, -5562.38f, -309.3269f};
 Position destpos = {2073.01f, -5620.12f, -302.2553f};
 Position cmdestpos = {1905.39f, -5631.86f, -309.3265f};
+Position sumpos = {1902.65f, -5625.15f, -309.3269f};
 
 //71504
 class boss_siegecrafter_blackfuse : public CreatureScript
@@ -220,6 +222,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              events.ScheduleEvent(EVENT_ELECTROSTATIC_CHARGE, 1000);
              events.ScheduleEvent(EVENT_SAWBLADE, 7000);
              events.ScheduleEvent(EVENT_ACTIVE_CONVEYER, 2000);
+             events.ScheduleEvent(EVENT_SUMMON_SHREDDER, 36000);
          }
 
          void EnterEvadeMode()
@@ -359,6 +362,11 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                              summons.DespawnEntry(aweaponentry[n]);
                      CreateWeaponWave(weaponwavecount);
                      events.ScheduleEvent(EVENT_ACTIVE_CONVEYER, 40000);
+                     break;
+                 case EVENT_SUMMON_SHREDDER:
+                     if (Creature* shredder = me->SummonCreature(NPC_AUTOMATED_SHREDDER, sumpos.GetPositionX(), sumpos.GetPositionY(), sumpos.GetPositionZ()))
+                         shredder->AI()->DoZoneInCombat(shredder, 150.0f);
+                     events.ScheduleEvent(EVENT_SUMMON_SHREDDER, 60000);
                      break;
                  }
              }
@@ -785,10 +793,10 @@ public:
         npc_blackfuse_triggerAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
-            me->SetDisplayId(11686);
+            me->SetDisplayId(1162);
             me->SetReactState(REACT_PASSIVE);
             me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+            //me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
             if (me->GetEntry() == NPC_LASER_ARRAY)
             {
                 me->AddAura(SPELL_CONVEYOR_DEATH_BEAM_V, me);
