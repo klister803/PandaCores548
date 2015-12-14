@@ -1553,7 +1553,7 @@ void Aura::UnregisterCasterAuras()
                 if (player->GetSession() && player->GetSession()->PlayerLogout())
                     return;
 
-            if(!caster->IsInWorld() || !GetUnitOwner() || !GetUnitOwner()->IsInWorld())
+            if(!caster->IsInWorld() || !GetUnitOwner() || !GetUnitOwner()->IsInWorld() || caster != GetUnitOwner())
                 return;
 
             caster->RemovePetAndOwnerAura(GetId(), GetUnitOwner());
