@@ -78,7 +78,8 @@ public:
                     SetData(DATA_ALLOWED_STAGE, STAGE_8);
                     Events.ScheduleEvent(EVENT_3, 3 * IN_MILLISECONDS);
                     player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34539, 1); //< set stage 2
-                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34543, 1); //< set stage 3
+                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34543, 1); //< set stage 3-1
+                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34540, 1); //< set stage 3-2
                     player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34545, 1); //< set stage 4
                     player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34552, 1); //< set stage 5
                     player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_ITEM, 92556, 1);      //< set stage 6

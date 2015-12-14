@@ -3661,6 +3661,8 @@ class Player : public Unit, public GridObject<Player>
         bool plrUpdate;
 
         AreaTriggerEntry const *LastAreaTrigger;
+
+        std::mutex lockChennal;
 };
 
 void AddItemsSetItem(Player*player, Item* item);

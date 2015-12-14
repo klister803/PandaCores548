@@ -80,7 +80,10 @@ public:
                 break;
             case 2:
                 if (IsNextStageAllowed(creature->GetInstanceScript(), STAGE_3))
-                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34543, 1); //< set stage 3
+                {
+                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34543, 1); //< set stage 3-1
+                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34540, 1); //< set stage 3-2
+                }
                 player->CLOSE_GOSSIP_MENU();
                 creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 creature->AI()->DoAction(ACTION_2);

@@ -332,6 +332,10 @@ void ScenarioProgress::BroadCastPacket(WorldPacket& data)
 bool ScenarioProgress::CanUpdateCriteria(uint32 criteriaId, uint32 recursTree /*=0*/) const
 {
     std::vector<CriteriaTreeEntry const*> const* cTreeList = GetCriteriaTreeList(recursTree ? recursTree : currentTree);
+    if (!cTreeList)
+        return false;
+
+    bool check = false;
     for (std::vector<CriteriaTreeEntry const*>::const_iterator itr = cTreeList->begin(); itr != cTreeList->end(); ++itr)
     {
         if(CriteriaTreeEntry const* criteriaTree = *itr)
@@ -339,14 +343,21 @@ bool ScenarioProgress::CanUpdateCriteria(uint32 criteriaId, uint32 recursTree /*
             if(criteriaTree->criteria == 0)
             {
                 if(CanUpdateCriteria(criteriaId, criteriaTree->ID))
-                    return true;
+                {
+                    check = true;
+                    break;
+                }
             }
             else if(criteriaTree->ID == criteriaId)
-                return true;
+            {
+                check = true;
+                break;
+            }
         }
     }
 
-    return false;
+    //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "cenarioProgress::CanUpdateCriteria criteriaId %u recursTree %u cTreeList %i check %i", criteriaId, recursTree, cTreeList ? cTreeList->size() : -1, check);
+    return check;
 }
 
 ScenarioMgr::ScenarioMgr() : updateDiff(0)

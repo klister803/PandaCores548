@@ -942,6 +942,7 @@ bool Map::UnloadGrid(NGridType& ngrid, bool unloadAll)
         }
 
         {
+            std::lock_guard<std::mutex> lock(lockUnload);
             ObjectGridCleaner worker;
             TypeContainerVisitor<ObjectGridCleaner, GridTypeMapContainer> visitor(worker);
             ngrid.VisitAllGrids(visitor);
@@ -950,6 +951,7 @@ bool Map::UnloadGrid(NGridType& ngrid, bool unloadAll)
         RemoveAllObjectsInRemoveList();
 
         {
+            std::lock_guard<std::mutex> lock(lockUnload);
             ObjectGridUnloader worker;
             TypeContainerVisitor<ObjectGridUnloader, GridTypeMapContainer> visitor(worker);
             ngrid.VisitAllGrids(visitor);

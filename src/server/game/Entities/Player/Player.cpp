@@ -6820,6 +6820,7 @@ void Player::JoinedChannel(Channel* c)
 
 void Player::LeftChannel(Channel* c)
 {
+    std::lock_guard<std::mutex> lock(lockChennal);
     m_channels.remove(c);
 }
 
