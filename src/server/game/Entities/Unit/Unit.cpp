@@ -3908,7 +3908,7 @@ void Unit::_UnapplyAura(AuraApplicationMap::iterator &i, AuraRemoveMode removeMo
     AuraApplication * aurApp = i->second;
     ASSERT(aurApp);
     ASSERT(!aurApp->GetRemoveMode());
-    //ASSERT(aurApp->GetTarget() == this);
+    ASSERT(aurApp->GetTarget() == this);
 
     aurApp->SetRemoveMode(removeMode);
     Aura* aura = aurApp->GetBase();
@@ -4113,7 +4113,7 @@ void Unit::RemoveOwnedAura(Aura* aura, AuraRemoveMode removeMode)
             RemoveOwnedAura(itr, removeMode);
             return;
         }
-    //ASSERT(false);
+    ASSERT(false);
 }
 
 Aura* Unit::GetOwnedAura(uint32 spellId, uint64 casterGUID, uint64 itemCasterGUID, uint32 reqEffMask, Aura* except) const
