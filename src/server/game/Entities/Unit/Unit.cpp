@@ -4082,9 +4082,9 @@ void Unit::RemoveOwnedAura(AuraMap::iterator &i, AuraRemoveMode removeMode)
 
     aura->_Remove(removeMode);
 
-    i = m_ownedAuras.begin();
-
     aura->UnregisterCasterAuras();
+
+    i = m_ownedAuras.begin();
 }
 
 void Unit::RemoveOwnedAura(uint32 spellId, uint64 casterGUID, uint32 reqEffMask, AuraRemoveMode removeMode)
