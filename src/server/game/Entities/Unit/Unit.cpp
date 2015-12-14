@@ -3922,9 +3922,9 @@ void Unit::_UnapplyAura(AuraApplicationMap::iterator &i, AuraRemoveMode removeMo
     Unit* caster = aura->GetCaster();
 
     // Remove all pointers from lists here to prevent possible pointer invalidation on spellcast/auraapply/auraremove
-    _lock.lock(); //Prevent crash when aura remove in thread
+    //_lock.lock(); //Prevent crash when aura remove in thread
     m_appliedAuras.erase(i);
-    _lock.unlock();
+    //_lock.unlock();
 
     if (aura->GetSpellInfo()->AuraInterruptFlags)
     {
@@ -4057,9 +4057,9 @@ void Unit::_RegisterAuraEffect(AuraEffect* aurEff, bool apply)
         m_modAuras[aurEff->GetAuraType()].emplace_back(aurEff);
     else if(!m_modAuras[aurEff->GetAuraType()].empty())
     {
-        _lock.lock(); //Prevent crash when player logout and aura remove in thread
+        //_lock.lock(); //Prevent crash when player logout and aura remove in thread
         m_modAuras[aurEff->GetAuraType()].remove(aurEff);
-        _lock.unlock();
+        //_lock.unlock();
     }
 }
 
