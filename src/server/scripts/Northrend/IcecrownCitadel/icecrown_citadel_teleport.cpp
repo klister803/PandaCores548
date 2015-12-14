@@ -93,7 +93,7 @@ class icecrown_citadel_teleport : public GameObjectScript
                     player->TeleportTo(631, 4199.407f, 2769.478f, 351.064f, 6.258f);
                     break;
                 case FROZEN_THRONE_TELEPORT:
-                    player->TeleportTo(631, 4356.580f, 2565.750f, 220.40f, 4.886f);
+                    player->TeleportTo(631, 529.39f, -2124.66f, 850.0f, 3.14f);
                     break;
                 case SINDRAGOSA_S_LAIR_TELEPORT:
                     player->TeleportTo(631, 4356.380f, 2565.555f, 220.462f, 4.704f);
@@ -134,7 +134,8 @@ class at_frozen_throne_teleport : public AreaTriggerScript
                     instance->GetBossState(DATA_THE_LICH_KING) != IN_PROGRESS)
                     {*/
                         player->CastSpell(player, 12438, true);
-                        player->CastSpell(player, FROZEN_THRONE_TELEPORT, true);
+                        player->TeleportTo(631, 529.39f, -2124.66f, 850.0f, 3.14f);
+                        //player->CastSpell(player, FROZEN_THRONE_TELEPORT, true);
                     //}
 
             return true;
