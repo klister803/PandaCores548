@@ -178,7 +178,7 @@ uint32 aweaponentry[4] =
 Position droppos = {1966.44f, -5562.38f, -309.3269f};
 Position destpos = {2073.01f, -5620.12f, -302.2553f};
 Position cmdestpos = {1905.39f, -5631.86f, -309.3265f};
-Position sumpos = {1902.65f, -5625.15f, -309.3269f};
+Position sumshrederpos = {1902.65f, -5625.15f, -309.3269f};
 
 //71504
 class boss_siegecrafter_blackfuse : public CreatureScript
@@ -364,7 +364,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                      events.ScheduleEvent(EVENT_ACTIVE_CONVEYER, 40000);
                      break;
                  case EVENT_SUMMON_SHREDDER:
-                     if (Creature* shredder = me->SummonCreature(NPC_AUTOMATED_SHREDDER, sumpos.GetPositionX(), sumpos.GetPositionY(), sumpos.GetPositionZ()))
+                     if (Creature* shredder = me->SummonCreature(NPC_AUTOMATED_SHREDDER, sumshrederpos.GetPositionX(), sumshrederpos.GetPositionY(), sumshrederpos.GetPositionZ()))
                          shredder->AI()->DoZoneInCombat(shredder, 150.0f);
                      events.ScheduleEvent(EVENT_SUMMON_SHREDDER, 60000);
                      break;
