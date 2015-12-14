@@ -1485,7 +1485,7 @@ public:
                                     if (Creature* aw = blackfuse->SummonCreature(aweaponentry[n], spawnaweaponpos[n].GetPositionX() + float(b + 2), spawnaweaponpos[n].GetPositionY() + float(b + 2), spawnaweaponpos[n].GetPositionZ(), 0.0f))
                                     {
                                         aw->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                                        aw->GetMotionMaster()->MoveCharge(destapos[n].GetPositionX() + float(b + 2), destapos[n].GetPositionY() + float(b + 2), destapos[n].GetPositionZ(), 5.0f, 1, false);
+                                        aw->GetMotionMaster()->MoveCharge(destapos[n].GetPositionX() + float(b + 2), destapos[n].GetPositionY() + float(b + 2), destapos[n].GetPositionZ(), 10.0f, 1, false);
                                     }
                                 }
                             }
@@ -1494,7 +1494,7 @@ public:
                                 if (Creature* aw = blackfuse->SummonCreature(aweaponentry[n], spawnaweaponpos[n]))
                                 {
                                     aw->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                                    aw->GetMotionMaster()->MoveCharge(destapos[n].GetPositionX(), destapos[n].GetPositionY(), destapos[n].GetPositionZ(), 5.0f, 1, false);
+                                    aw->GetMotionMaster()->MoveCharge(destapos[n].GetPositionX(), destapos[n].GetPositionY(), destapos[n].GetPositionZ(), 10.0f, 1, false);
                                 }
                             }
                         }
@@ -1513,7 +1513,7 @@ public:
                                     if (Creature* weapon = blackfuse->SummonCreature(_wavearray[num][n], spawnaweaponpos[n - 1].GetPositionX() + float(b + 2), spawnaweaponpos[n - 1].GetPositionY() + float(b + 2), spawnaweaponpos[n - 1].GetPositionZ(), 0.0f))
                                     {
                                         weapon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                                        weapon->GetMotionMaster()->MoveCharge(destapos[n - 1].GetPositionX() + float(b + 2), destapos[n - 1].GetPositionY() + float(b + 2), destapos[n - 1].GetPositionZ(), 5.0f, 1, false);
+                                        weapon->GetMotionMaster()->MoveCharge(destapos[n - 1].GetPositionX() + float(b + 2), destapos[n - 1].GetPositionY() + float(b + 2), destapos[n - 1].GetPositionZ(), 10.0f, 1, false);
                                     }
                                 }
                             }
@@ -1522,7 +1522,7 @@ public:
                                 if (Creature* weapon = blackfuse->SummonCreature(_wavearray[num][n], spawnaweaponpos[n - 1]))
                                 {
                                     weapon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                                    weapon->GetMotionMaster()->MoveCharge(destapos[n - 1].GetPositionX(), destapos[n - 1].GetPositionY(), destapos[n - 1].GetPositionZ(), 5.0f, 1, false);
+                                    weapon->GetMotionMaster()->MoveCharge(destapos[n - 1].GetPositionX(), destapos[n - 1].GetPositionY(), destapos[n - 1].GetPositionZ(), 10.0f, 1, false);
                                 }
                             }
                         }

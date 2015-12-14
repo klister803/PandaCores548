@@ -174,9 +174,9 @@ uint32 aweaponentry[4] =
     NPC_ACTIVATED_MISSILE_TURRET,
 };
 
-Position droppos = { 1966.44f, -5562.38f, -309.3269f};
-Position destpos = { 2073.01f, -5620.12f, -302.2553f};
-Position cmdestpos = { 1905.39f, -5631.86f, -309.3265f };
+Position droppos = {1966.44f, -5562.38f, -309.3269f};
+Position destpos = {2073.01f, -5620.12f, -302.2553f};
+Position cmdestpos = {1905.39f, -5631.86f, -309.3265f};
 
 //71504
 class boss_siegecrafter_blackfuse : public CreatureScript
@@ -201,8 +201,8 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CRAWLER_MINE_FIXATE_PL);
              me->RemoveAurasDueToSpell(SPELL_PROTECTIVE_FRENZY);
              me->RemoveAurasDueToSpell(SPELL_AUTOMATIC_REPAIR_BEAM_AT);
-             //me->SetReactState(REACT_DEFENSIVE);
-             me->SetReactState(REACT_PASSIVE);    //test only
+             me->SetReactState(REACT_DEFENSIVE);
+             //me->SetReactState(REACT_PASSIVE);    //test only
              me->RemoveAurasDueToSpell(SPELL_AUTOMATIC_REPAIR_BEAM_AT);
          }
 
@@ -234,7 +234,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              wavecount = wavecount >= 5 ? 0 : wavecount;
              for (uint8 n = 1; n < 4; n++)
                  if (Creature* weapon = me->SummonCreature(wavearray[wavecount][n], spawnweaponpos[n-1]))
-                     weapon->GetMotionMaster()->MoveCharge(destpos.GetPositionX(), destpos.GetPositionY(), destpos.GetPositionZ(), 7.0f, false);
+                     weapon->GetMotionMaster()->MoveCharge(destpos.GetPositionX(), destpos.GetPositionY(), destpos.GetPositionZ(), 10.0f, false);
              weaponwavecount++;
          }
 
