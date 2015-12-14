@@ -2288,7 +2288,7 @@ void AuraEffect::ApplySpellMod(Unit* target, bool apply)
 
 void AuraEffect::Update(uint32 diff, Unit* caster)
 {
-    if(!GetBase())
+    if(!GetBase() || !this)
         return;
 
     GetBase()->CallScriptEffectUpdateHandlers(diff, this);
