@@ -431,6 +431,7 @@ typedef UNORDERED_MAP<int32, TrinityStringLocale> TrinityStringLocaleContainer;
 typedef UNORDERED_MAP<uint32, GossipMenuItemsLocale> GossipMenuItemsLocaleContainer;
 typedef UNORDERED_MAP<uint32, PointOfInterestLocale> PointOfInterestLocaleContainer;
 typedef UNORDERED_MAP<uint32, PersonalLootData> PersonalLootContainer;
+typedef std::unordered_map<uint32, std::vector<WorldLocation> > InstanceGraveYardContainer;
 
 typedef std::multiset<uint32> QuestObject;
 typedef std::map<uint32, QuestObject> QuestStarter;
@@ -879,7 +880,7 @@ class ObjectMgr
 
         typedef UNORDERED_MAP<uint32, uint32> AreaTriggerScriptContainer;
 
-        typedef UNORDERED_MAP<uint32, AccessRequirement> AccessRequirementContainer;
+        typedef std::map<AccessRequirementKey, AccessRequirement> AccessRequirementContainer;
 
         typedef UNORDERED_MAP<uint32, RepRewardRate > RepRewardRateContainer;
         typedef UNORDERED_MAP<uint32, ReputationOnKillEntry> RepOnKillContainer;
@@ -999,9 +1000,18 @@ class ObjectMgr
             return NULL;
         }
 
-        AccessRequirement const* GetAccessRequirement(uint32 mapid, Difficulty difficulty) const
+        std::vector<WorldLocation> const* GetInstanceGraveYard(uint32 mapId) const
         {
-            AccessRequirementContainer::const_iterator itr = _accessRequirementStore.find(MAKE_PAIR32(mapid, difficulty));
+            InstanceGraveYardContainer::const_iterator itr = _instanceGraveYardStore.find(mapId);
+            if (itr != _instanceGraveYardStore.end())
+                return &itr->second;
+            return NULL;
+        }
+
+        AccessRequirement const* GetAccessRequirement(int32 mapid, Difficulty difficulty, uint16 dungeonId = 0) const
+        {
+            AccessRequirementKey key(mapid, uint8(difficulty), dungeonId);
+            AccessRequirementContainer::const_iterator itr = _accessRequirementStore.find(key);
             if (itr != _accessRequirementStore.end())
                 return &itr->second;
             return NULL;
@@ -1666,6 +1676,7 @@ class ObjectMgr
         AreaTriggerScriptContainer _areaTriggerScriptStore;
         AccessRequirementContainer _accessRequirementStore;
         DungeonEncounterContainer _dungeonEncounterStore;
+        InstanceGraveYardContainer _instanceGraveYardStore;
 
         RepRewardRateContainer _repRewardRateStore;
         RepOnKillContainer _repOnKillStore;

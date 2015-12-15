@@ -6744,7 +6744,6 @@ void Player::RepopAtGraveyard()
     // for example from WorldSession::HandleMovementOpcodes
 
     AreaTableEntry const* zone = GetAreaEntryByAreaID(GetAreaId());
-    
     if (!zone)
     {
         sLog->outInfo(LOG_FILTER_PLAYER, "Joueur %u dans une zone nulle; area id : %u", GetGUIDLow(), GetAreaId());
@@ -6758,6 +6757,16 @@ void Player::RepopAtGraveyard()
         ClosestGrave = bg->GetClosestGraveYard(this);
     else
     {
+        if (InstanceMap* inst = GetMap()->ToInstanceMap())
+        {
+            if(WorldLocation const* _grave = inst->GetClosestGraveYard())
+            {
+                ResurrectPlayer(0.5f);
+                SpawnCorpseBones();
+                TeleportTo(_grave->GetMapId(), _grave->GetPositionX(), _grave->GetPositionY(), _grave->GetPositionZ(), _grave->GetOrientation());
+                return;
+            }
+        }
         if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(GetZoneId()))
             ClosestGrave = bf->GetClosestGraveYard(this);
         else
@@ -21227,6 +21236,12 @@ bool Player::Satisfy(AccessRequirement const* ar, uint32 target_map, bool report
         else if (ar->item2 && !HasItemCount(ar->item2))
             missingItem = ar->item2;
 
+        if (ar->item_level)
+        {
+            if (GetAverageItemLevel() < ar->item_level)
+                return false;
+        }
+
         if (DisableMgr::IsDisabledFor(DISABLE_TYPE_MAP, target_map, this))
         {
             GetSession()->SendNotification("%s", GetSession()->GetTrinityString(LANG_INSTANCE_CLOSED));
@@ -29650,7 +29665,8 @@ float Player::GetAverageItemLevel()
             continue;
 
         if (m_items[i] && m_items[i]->GetTemplate())
-            sum += m_items[i]->GetTemplate()->GetItemLevelIncludingQuality(m_items[i]->GetLevel());
+            //sum += m_items[i]->GetTemplate()->GetItemLevelIncludingQuality(m_items[i]->GetLevel());
+            sum += m_items[i]->GetLevel();
 
         ++count;
     }

@@ -124,6 +124,26 @@ class ZoneScript;
 class Unit;
 class Transport;
 
+/// Key for AccessRequirement
+struct AccessRequirementKey
+{
+    AccessRequirementKey(int32 mapId, uint8 difficulty, uint16 dungeonId)
+        : _mapId(mapId), _difficulty(difficulty), _dungeonId(dungeonId)
+    {
+    }
+
+    bool operator<(AccessRequirementKey const& rhs) const
+    {
+        return std::tie(_mapId, _difficulty, _dungeonId) <
+            std::tie(rhs._mapId, rhs._difficulty, rhs._dungeonId);
+    }
+
+private:
+    int32 _mapId;
+    uint8 _difficulty;
+    uint16 _dungeonId;
+};
+
 typedef std::map<Player *, UpdateData> UpdateDataMapType;
 typedef cyber_ptr<Object> C_PTR;
 class Object

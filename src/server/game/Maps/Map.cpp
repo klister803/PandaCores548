@@ -2733,6 +2733,16 @@ uint32 InstanceMap::GetMaxResetDelay() const
     return mapDiff ? mapDiff->resetTime : 0;
 }
 
+const WorldLocation* InstanceMap::GetClosestGraveYard() const
+{
+    if(std::vector<WorldLocation> const* graveYard = sObjectMgr->GetInstanceGraveYard(GetId()))
+    {
+        for (std::vector<WorldLocation>::const_iterator itr = graveYard->begin(); itr != graveYard->end(); ++itr)
+            return &(*itr);
+    }
+    return NULL;
+}
+
 /* ******* Battleground Instance Maps ******* */
 
 BattlegroundMap::BattlegroundMap(uint32 id, time_t expiry, uint32 InstanceId, Map* _parent, uint8 spawnMode)

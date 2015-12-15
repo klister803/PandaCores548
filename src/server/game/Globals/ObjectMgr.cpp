@@ -5998,6 +5998,7 @@ void ObjectMgr::LoadAreaTriggerTeleports()
     uint32 oldMSTime = getMSTime();
 
     _areaTriggerStore.clear();                                  // need for reload case
+    _instanceGraveYardStore.clear();                            // need for reload case
 
     //                                                        0            1                  2                  3                  4                   5
     QueryResult result = WorldDatabase.Query("SELECT id,  target_map, target_position_x, target_position_y, target_position_z, target_orientation FROM areatrigger_teleport");
@@ -6024,6 +6025,9 @@ void ObjectMgr::LoadAreaTriggerTeleports()
         at.target_Y                 = fields[3].GetFloat();
         at.target_Z                 = fields[4].GetFloat();
         at.target_Orientation       = fields[5].GetFloat();
+
+        WorldLocation loc = WorldLocation(at.target_mapId, at.target_X, at.target_Y, at.target_Z, at.target_Orientation);
+        _instanceGraveYardStore[at.target_mapId].push_back(loc);
 
         AreaTriggerEntry const* atEntry = sAreaTriggerStore.LookupEntry(Trigger_ID);
         if (!atEntry)
@@ -6058,8 +6062,8 @@ void ObjectMgr::LoadAccessRequirements()
 
     _accessRequirementStore.clear();                                  // need for reload case
 
-    //                                               0      1           2          3          4           5     6      7             8             9                      10                        11
-    QueryResult result = WorldDatabase.Query("SELECT mapid, difficulty, level_min, level_max, item_level, item, item2, quest_done_A, quest_done_H, completed_achievement, quest_failed_text, completed_achievement_A FROM access_requirement");
+    //                                               0      1           2          3          4           5     6      7             8             9                      10                        11                   12
+    QueryResult result = WorldDatabase.Query("SELECT mapid, difficulty, level_min, level_max, item_level, item, item2, quest_done_A, quest_done_H, completed_achievement, quest_failed_text, completed_achievement_A, dungeonId FROM access_requirement");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 access requirement definitions. DB table `access_requirement` is empty.");
@@ -6074,12 +6078,16 @@ void ObjectMgr::LoadAccessRequirements()
 
         ++count;
 
-        uint32 mapid = fields[0].GetUInt32();
+        int32 mapid = fields[0].GetInt32();
         uint8 difficulty = fields[1].GetUInt8();
-        uint32 requirement_ID = MAKE_PAIR32(mapid, difficulty);
+        uint16 dungeonId = fields[12].GetUInt32();
+        AccessRequirementKey requirement_ID (mapid, difficulty, dungeonId);
 
         AccessRequirement ar;
 
+        ar.mapid                    = mapid;
+        ar.difficulty               = difficulty;
+        ar.dungeonId                = dungeonId;
         ar.levelMin                 = fields[2].GetUInt8();
         ar.levelMax                 = fields[3].GetUInt8();
         ar.item_level               = fields[4].GetUInt16();

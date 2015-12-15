@@ -92,8 +92,10 @@ enum LfgLockStatusType
     LFG_LOCKSTATUS_TARGET_LEVEL_TOO_LOW          = 8,      // not used in lockedReason
     LFG_LOCKSTATUS_AREA_NOT_EXPLORED             = 9,
     LFG_LOCKSTATUS_WRONG_FACTION                 = 10,     // LFG_INSTANCE_INVALID_WRONG_FACTION - not used in lockedReason
+    LFG_LOCKSTATUS_NOT_COMLETE_CHALANGE          = 11,     // Not cpmplete chalange(scenario)
     LFG_LOCKSTATUS_ATTUNEMENT_TOO_LOW_LEVEL      = 1001,
     LFG_LOCKSTATUS_ATTUNEMENT_TOO_HIGH_LEVEL     = 1002,
+    LFG_LOCKSTATUS_DONT_USE_HERE                 = 1004,   // only quest dungeon, activeted in custom script
     LFG_LOCKSTATUS_QUEST_NOT_COMPLETED           = 1022,
     LFG_LOCKSTATUS_MISSING_ITEM                  = 1025,
     LFG_LOCKSTATUS_WRONG_TIME_RANGE              = 1029,    // not used in lockedReason

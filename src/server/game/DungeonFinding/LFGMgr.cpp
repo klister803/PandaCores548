@@ -1833,29 +1833,39 @@ LfgLockMap const LFGMgr::GetLockedDungeons(uint64 guid)
             || (dungeon->type != LFG_TYPE_RANDOM && dungeon->x == 0.0f && dungeon->y == 0.0f && dungeon->z == 0.0f) || !dungeon->dbc->IsValid())
             // TODO: for non-faction check find correct reason
             lockData.status = LFG_LOCKSTATUS_WRONG_FACTION;
-        else if (AccessRequirement const* ar = sObjectMgr->GetAccessRequirement(dungeon->map, Difficulty(dungeon->difficulty)))
+        else
         {
-            uint32 avgItemLevel = player->GetAverageItemLevel();
-            if (ar->item_level && avgItemLevel < ar->item_level)
+            AccessRequirement const* ar = sObjectMgr->GetAccessRequirement(dungeon->map, Difficulty(dungeon->difficulty), dungeon->id);
+            if (!ar)
+                ar = sObjectMgr->GetAccessRequirement(dungeon->map, Difficulty(dungeon->difficulty));
+            if (ar)
             {
-                lockData.currItemLevel = avgItemLevel;
-                lockData.reqItemLevel = ar->item_level;
-                lockData.status = LFG_LOCKSTATUS_TOO_LOW_GEAR_SCORE;
-            }
-            else if (ar->achievement && !player->HasAchieved(ar->achievement))
-                lockData.status = LFG_LOCKSTATUS_MISSING_ACHIEVEMENT;
-            else if (player->GetTeam() == ALLIANCE && ar->quest_A && !player->GetQuestRewardStatus(ar->quest_A))
-                lockData.status = LFG_LOCKSTATUS_QUEST_NOT_COMPLETED;
-            else if (player->GetTeam() == HORDE && ar->quest_H && !player->GetQuestRewardStatus(ar->quest_H))
-                lockData.status = LFG_LOCKSTATUS_QUEST_NOT_COMPLETED;
-            else
-                if (ar->item)
+                uint32 avgItemLevel = player->GetAverageItemLevel();
+
+                sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "LFGMgr::GetLockedDungeons map %i, difficulty %i, Entry %i avgItemLevel %i item_level %i dungeonId %i", dungeon->map, dungeon->difficulty, dungeon->id, avgItemLevel, ar->item_level, ar->dungeonId);
+                if (ar->item_level && avgItemLevel < ar->item_level)
                 {
-                    if (!player->HasItemCount(ar->item) && (!ar->item2 || !player->HasItemCount(ar->item2)))
+                    lockData.currItemLevel = avgItemLevel;
+                    lockData.reqItemLevel = ar->item_level;
+                    lockData.status = LFG_LOCKSTATUS_TOO_LOW_GEAR_SCORE;
+                }
+                else if (ar->achievement && !player->HasAchieved(ar->achievement))
+                    lockData.status = LFG_LOCKSTATUS_MISSING_ACHIEVEMENT;
+                else if (player->GetTeam() == ALLIANCE && ar->quest_A && !player->GetQuestRewardStatus(ar->quest_A))
+                    lockData.status = LFG_LOCKSTATUS_QUEST_NOT_COMPLETED;
+                else if (player->GetTeam() == HORDE && ar->quest_H && !player->GetQuestRewardStatus(ar->quest_H))
+                    lockData.status = LFG_LOCKSTATUS_QUEST_NOT_COMPLETED;
+                else
+                {
+                    if (ar->item)
+                    {
+                        if (!player->HasItemCount(ar->item) && (!ar->item2 || !player->HasItemCount(ar->item2)))
+                            lockData.status = LFG_LOCKSTATUS_MISSING_ITEM;
+                    }
+                    else if (ar->item2 && !player->HasItemCount(ar->item2))
                         lockData.status = LFG_LOCKSTATUS_MISSING_ITEM;
                 }
-                else if (ar->item2 && !player->HasItemCount(ar->item2))
-                    lockData.status = LFG_LOCKSTATUS_MISSING_ITEM;
+            }
         }
 
         /* @todo VoA closed if WG is not under team control (LFG_LOCKSTATUS_RAID_LOCKED)

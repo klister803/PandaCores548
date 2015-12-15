@@ -280,7 +280,7 @@ struct LFGDungeonData
 
     uint32 id;
     std::string name;
-    uint16 map;
+    int16 map;
     uint8 type;
     uint8 expansion;
     uint32 random_id;

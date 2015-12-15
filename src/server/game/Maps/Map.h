@@ -49,6 +49,7 @@ class CreatureGroup;
 struct ScriptInfo;
 struct ScriptAction;
 struct Position;
+class WorldLocation;
 class Battleground;
 class MapInstanced;
 class InstanceMap;
@@ -665,6 +666,7 @@ class InstanceMap : public Map
 
         uint32 GetMaxPlayers() const;
         uint32 GetMaxResetDelay() const;
+        const WorldLocation* GetClosestGraveYard() const;
 
         virtual void InitVisibilityDistance();
     private:

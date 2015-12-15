@@ -945,6 +945,9 @@ enum DungeonStatusFlag
 
 struct AccessRequirement
 {
+    int32  mapid;
+    uint8  difficulty;
+    uint16 dungeonId;
     uint8  levelMin;
     uint8  levelMax;
     uint16 item_level;
