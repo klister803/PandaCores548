@@ -42,6 +42,7 @@ enum eSpells
     SPELL_WILDFIRE_SPARK                = 116784,
     SPELL_DRAW_FLAME                    = 116711,
     SPELL_WILDFIRE_INFUSION             = 116817,
+    SPELL_WILDFIRE_INFUSION_VISUAL      = 116821,
 
     // Spirit of the Staff 
     SPELL_ARCANE_SHOCK                  = 131790,
@@ -269,14 +270,14 @@ class boss_feng : public CreatureScript
                     PrepareNewPhase(id);
             }
 
-            void DoAction(const int32 action)
+            /* void DoAction(const int32 action)
             {
                 if (action == ACTION_SPARK)
                     if (Aura* aura = me->GetAura(SPELL_WILDFIRE_INFUSION))
                         aura->ModCharges(1);
                     else
                         me->AddAura(SPELL_WILDFIRE_INFUSION, me);
-            }
+            } */
 
             void PrepareNewPhase(uint8 newPhase)
             {
@@ -502,11 +503,11 @@ class boss_feng : public CreatureScript
                         break;
                     // Spear Phase
                     case EVENT_WILDFIRE_SPARK:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
-                            DoCast(target, SPELL_WILDFIRE_SPARK);
+                        DoCast(SPELL_WILDFIRE_SPARK);
                         events.ScheduleEvent(EVENT_WILDFIRE_SPARK, 14000);
                         break;
                     case EVENT_DRAW_FLAME: 
+                        DoCast(me, SPELL_WILDFIRE_INFUSION, true);
                         DoCast(me, SPELL_DRAW_FLAME);
                         events.ScheduleEvent(EVENT_DRAW_FLAME, 36000);
                         break;
@@ -517,7 +518,7 @@ class boss_feng : public CreatureScript
                         break;
                     case EVENT_ARCANE_RESONANCE:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
-                            me->AddAura(SPELL_ARCANE_RESONANCE, target);
+                            target->AddAura(SPELL_ARCANE_RESONANCE, target);
                         events.ScheduleEvent(EVENT_ARCANE_RESONANCE, 20000);
                         break;
                     // Shield Phase
@@ -657,7 +658,7 @@ class mob_wild_spark : public CreatureScript
                     if (InstanceScript* pInstance = me->GetInstanceScript())
                         if (Creature* feng = pInstance->instance->GetCreature(pInstance->GetData64(NPC_FENG)))
                         {
-                            feng->AI()->DoAction(ACTION_SPARK);
+                            feng->CastSpell(feng, SPELL_WILDFIRE_INFUSION_VISUAL, true);
                             me->DespawnOrUnsummon();
                         }
             }
@@ -810,7 +811,9 @@ class spell_mogu_wildfire_spark : public SpellScriptLoader
                 {
                     float position_x = caster->GetPositionX() + frand(-3.0f, 3.0f);
                     float position_y = caster->GetPositionY() + frand(-3.0f, 3.0f);
-                    caster->CastSpell(position_x, position_y, caster->GetPositionZ(), 116586, true);
+                    if (InstanceScript* pInstance = caster->GetInstanceScript())
+                        if (Creature* feng = pInstance->instance->GetCreature(pInstance->GetData64(NPC_FENG)))
+                            feng->CastSpell(position_x, position_y, caster->GetPositionZ(), 116586, true);
                 }
             }
 
@@ -839,8 +842,17 @@ class spell_mogu_wildfire_infusion : public SpellScriptLoader
             void HandleAfterCast()
             {
                 if (Unit* caster = GetCaster())
-                    if (Aura* aura = caster->GetAura(SPELL_WILDFIRE_INFUSION))
-                        aura->ModCharges(-1);
+                    if (Aura* aura = caster->GetAura(SPELL_WILDFIRE_INFUSION_VISUAL))
+                    {
+                        int8 stack = aura->GetStackAmount();
+                        aura->SetStackAmount(stack - 1);
+
+                        if (stack < 1)
+                        {
+                            caster->RemoveAura(SPELL_WILDFIRE_INFUSION);
+                            caster->RemoveAura(SPELL_WILDFIRE_INFUSION_VISUAL);
+                        }
+                    }
             }
 
             void Register()

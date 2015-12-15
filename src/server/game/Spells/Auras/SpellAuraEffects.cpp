@@ -8004,6 +8004,9 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
             }
             case 106768:
                 return;
+            case 116784: // Wildfire Spark
+                target->CastSpell(target, triggerSpellId, true);
+                return;
         }
     }
 

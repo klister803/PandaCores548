@@ -2563,27 +2563,35 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
         // Mogu'Shan Vault
         if (caster->HasAura(116161) || unitTarget->HasAura(116161)) // SPELL_CROSSED_OVER
         {
-            // http://fr.wowhead.com/spell=117549#english-comments
-            // uint32 targetSpec = unitTarget->ToPlayer()->GetSpecializationId(unitTarget->ToPlayer()->GetActiveSpec());
-            uint32 innervationId = 0;
+            Player* pCaster = caster->ToPlayer();
+            Player* pTarget = unitTarget->ToPlayer();
+            if (!pCaster || !pTarget)
+                return;
 
-            if (unitTarget == caster)
+            uint8 casterSpec = pCaster->GetRoleForGroup(pCaster->GetSpecializationId(pCaster->GetActiveSpec()));
+            uint8 targetSpec = pTarget->GetRoleForGroup(pTarget->GetSpecializationId(pTarget->GetActiveSpec()));
+
+            if (unitTarget != caster)
             {
-                int32 bp1 = addhealth/2;
-                int32 bp2 = 15;
+                if (casterSpec == ROLES_HEALER)
+                {
+                    int32 bp1 = addhealth/2;
+                    int32 bp2 = 10;
+    
+                    caster->CastCustomSpell(caster, 117543, &bp1, &bp2, NULL, NULL, NULL, NULL, true); // Mana regen bonus
 
-                caster->CastCustomSpell(unitTarget, 117543, &bp1, &bp2, NULL, NULL, NULL, NULL, true); // Mana regen bonus
-            }
-            else
-            {
-                int32 bp1 = 10;
-                int32 bp2 = 15;
-                int32 bp3 = 20;
-                int32 bp4 = 25;
-                int32 bp5 = 30;
-                int32 bp6 = 35;
-
-                caster->CastCustomSpell(unitTarget, 117549, &bp1, &bp2, &bp3, &bp4, &bp5, &bp6, true);
+                    if (targetSpec == ROLES_DPS)
+                    {
+                        int32 bbp1 = 10;
+                        int32 bbp2 = 15;
+                        int32 bbp3 = 20;
+                        int32 bbp4 = 25;
+                        int32 bbp5 = 30;
+                        int32 bbp6 = 35;
+        
+                        caster->CastCustomSpell(unitTarget, 117549, &bbp1, &bbp2, &bbp3, &bbp4, &bbp5, &bbp6, true);
+                    }
+                }
             }
 
             if (unitTarget->GetHealth() + addhealth >= unitTarget->GetMaxHealth())

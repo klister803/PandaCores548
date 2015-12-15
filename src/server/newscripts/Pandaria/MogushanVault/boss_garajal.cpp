@@ -122,10 +122,10 @@ class boss_garajal : public CreatureScript
                 _EnterCombat();
                 checkvictim = 1500;
                 events.ScheduleEvent(EVENT_SECONDARY_ATTACK,      urand(5000, 10000));
-                events.ScheduleEvent(EVENT_SUMMON_TOTEM,          urand(27500, 32500));
+                events.ScheduleEvent(EVENT_SUMMON_TOTEM,          35000);
                 events.ScheduleEvent(EVENT_SUMMON_SHADOWY_MINION, urand(10000, 15000));
                 events.ScheduleEvent(EVENT_BANISHMENT,            90000);
-                events.ScheduleEvent(EVENT_VOODOO_DOLL,           2500);
+                events.ScheduleEvent(EVENT_VOODOO_DOLL,           3000);
             }
 
             void JustDied(Unit* attacker)
@@ -138,7 +138,10 @@ class boss_garajal : public CreatureScript
             void DamageTaken(Unit* attacker, uint32 &damage)
             {
                 if (me->HealthBelowPctDamaged(20, damage) && !me->HasAura(SPELL_FRENESIE))
+                {
+                    events.CancelEvent(EVENT_SUMMON_TOTEM);
                     DoCast(me, SPELL_FRENESIE, true);
+                }
             }
 
             void UpdateAI(uint32 diff)
@@ -189,10 +192,11 @@ class boss_garajal : public CreatureScript
                         }
                         case EVENT_SUMMON_TOTEM:
                         {
-                            float x = 0.0f, y = 0.0f;
+                            /* float x = 0.0f, y = 0.0f;
                             GetRandPosFromCenterInDist(4277.08f, 1341.35f, frand(0.0f, 30.0f), x, y);
-                            me->SummonCreature(NPC_SPIRIT_TOTEM, x, y, 454.55f, 0.0f, TEMPSUMMON_CORPSE_DESPAWN);
-                            events.ScheduleEvent(EVENT_SUMMON_TOTEM,     urand(47500, 52500));
+                            me->SummonCreature(NPC_SPIRIT_TOTEM, x, y, 454.55f, 0.0f, TEMPSUMMON_CORPSE_DESPAWN); */
+                            DoCast(me, SPELL_SUMMON_SPIRIT_TOTEM);
+                            events.ScheduleEvent(EVENT_SUMMON_TOTEM, 35000);
                             break;
                         }
                         case EVENT_SUMMON_SHADOWY_MINION:
@@ -211,7 +215,7 @@ class boss_garajal : public CreatureScript
                             uint8 mobCount = Is25ManRaid() ? 4: 3;
                             for (uint8 i = 0; i < mobCount; ++i)
                             {
-                                if (Unit* target = SelectTarget(i == 0 ? SELECT_TARGET_TOPAGGRO : SELECT_TARGET_RANDOM, 1, 5.0f, true))
+                                if (Unit* target = SelectTarget(i == 0 ? SELECT_TARGET_TOPAGGRO : SELECT_TARGET_RANDOM, 0, 100.0f, true))
                                 {
                                     if (!target->HasAura(SPELL_VOODOO_DOLL_VISUAL))
                                     {
@@ -315,7 +319,14 @@ class mob_spirit_totem : public CreatureScript
 				for (std::list<Player*>::iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
                 {
 					Player* player = *itr;
-                    if (player->HasAura(SPELL_VOODOO_DOLL_VISUAL) || player->HasAura(SPELL_FRAIL_SOUL))
+                    
+                    if (player->HasAura(SPELL_FRAIL_SOUL))
+                    {
+                        me->Kill(player);
+                        continue;
+                    }
+
+                    if (player->HasAura(SPELL_VOODOO_DOLL_VISUAL))
                         continue;
 
                     if (++count > 3)
@@ -323,8 +334,8 @@ class mob_spirit_totem : public CreatureScript
 
                     if (Creature* clone = me->SummonCreature(56405, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation()))
                     {
-                        if (player->GetHealthPct() >= 10.0f)
-                            player->SetHealth(player->GetMaxHealth() / 10);
+                        if (player->isAlive())
+                            player->SetHealth(player->GetHealth() * 0.3);
 
                         player->CastSpell(player, SPELL_CLONE_VISUAL, true);
                         player->CastSpell(player, SPELL_CROSSED_OVER, true);
@@ -539,8 +550,9 @@ class spell_soul_back : public SpellScriptLoader
                     // SPELL_LIFE_FRAGILE_THREAD removed by default effect
                     target->RemoveAurasDueToSpell(SPELL_CLONE_VISUAL);
                     target->RemoveAurasDueToSpell(SPELL_CROSSED_OVER);
-                    target->AddAura(SPELL_FRAIL_SOUL, target);
-                    target->SetHealth(target->GetMaxHealth() * 0.3);
+                    if (target->GetMap()->IsHeroic())
+                        target->AddAura(SPELL_FRAIL_SOUL, target);
+                    target->SetHealth(target->GetHealth() * 0.3);
                 }
             }
 
