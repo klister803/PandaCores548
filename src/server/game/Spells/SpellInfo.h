@@ -498,7 +498,7 @@ public:
     bool IsTargetingArea() const;
     bool IsTargetingAreaCast(uint8 effect = 0) const;
     bool NeedsExplicitUnitTarget() const;
-    bool NeedsToBeTriggeredByCaster(SpellInfo const* triggeringSpell, uint32 difficulty) const;
+    bool NeedsToBeTriggeredByCaster() const;
 
     bool IsPassive() const;
     bool IsAutocastable() const;

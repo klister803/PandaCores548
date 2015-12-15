@@ -1522,48 +1522,21 @@ bool SpellInfo::NeedsExplicitUnitTarget() const
     return GetExplicitTargetMask() & TARGET_FLAG_UNIT_MASK;
 }
 
-bool SpellInfo::NeedsToBeTriggeredByCaster(SpellInfo const* triggeringSpell, uint32 difficulty) const
+bool SpellInfo::NeedsToBeTriggeredByCaster() const
 {
-    if(GetExplicitTargetMask() & TARGET_FLAG_DEST_LOCATION)
-        return false;
-
     if (NeedsExplicitUnitTarget())
         return true;
 
-    /*
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         if (Effects[i].IsEffect())
         {
             if (Effects[i].TargetA.GetSelectionCategory() == TARGET_SELECT_CATEGORY_CHANNEL
                 || Effects[i].TargetB.GetSelectionCategory() == TARGET_SELECT_CATEGORY_CHANNEL
-                || Effects[i].TargetA.GetSelectionCategory() == TARGET_SELECT_CATEGORY_CONE
-                || Effects[i].TargetB.GetSelectionCategory() == TARGET_SELECT_CATEGORY_CONE)
+                || Effects[i].TargetA.GetSelectionCategory() == TARGET_UNIT_CASTER)
                 return true;
         }
-    }    
-    */
-
-    if (triggeringSpell->IsChanneled())
-    {
-        uint32 mask = 0;
-        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        {
-            SpellEffectInfo const* effect = GetEffect(i, difficulty);
-            if (!effect)
-                continue;
-
-            if (effect->TargetA.GetTarget() != TARGET_UNIT_CASTER && effect->TargetA.GetTarget() != TARGET_DEST_CASTER
-                && effect->TargetB.GetTarget() != TARGET_UNIT_CASTER && effect->TargetB.GetTarget() != TARGET_DEST_CASTER)
-            {
-                mask |= effect->GetProvidedTargetMask();
-            }
-        }
-
-        if (mask & TARGET_FLAG_UNIT_MASK)
-            return true;
     }
-
     return false;
 }
 
