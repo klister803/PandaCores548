@@ -7,3 +7,6 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `hastalent`, 
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `actiontype`, `comment`) VALUES ('77762', '51505', '8', 'Lava Surge');
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `actiontype`, `comment`) VALUES ('93400', '78674', '8', 'Shooting Stars');
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `actiontype`, `comment`) VALUES ('124430', '8092', '8', 'Shadowy Insight');
+
+DELETE FROM `spell_proc` WHERE (`spellId`='144595');
+INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `type`, `comment`) VALUES ('53385', '-144595', '5', 'remove Divine Crusader');
