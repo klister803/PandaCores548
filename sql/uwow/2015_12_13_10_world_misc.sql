@@ -10,3 +10,5 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `actiontype`,
 
 DELETE FROM `spell_proc` WHERE (`spellId`='144595');
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `type`, `comment`) VALUES ('53385', '-144595', '5', 'remove Divine Crusader');
+
+DELETE FROM `spell_proc` WHERE (`spellId`='90174');
