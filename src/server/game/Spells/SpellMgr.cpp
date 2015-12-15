@@ -4649,12 +4649,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 136324: //Rising Anger
                     spellInfo->CasterAuraSpell = 0;
                     break;
-                case 116417: //Arcane Resonance
-                    spellInfo->Effects[EFFECT_0].TargetA = 6;
-                    spellInfo->Effects[EFFECT_0].TargetB = 0;
-                    spellInfo->Effects[EFFECT_1].TargetA = 6;
-                    spellInfo->Effects[EFFECT_1].TargetB = 0;
-                    break;
                 case 116040: //Epicenter(trigger dmg)
                     spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(48);//60 yards
                     spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(48);

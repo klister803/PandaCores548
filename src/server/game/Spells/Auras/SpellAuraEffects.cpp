@@ -8014,13 +8014,13 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
     {
         if (Unit* triggerCaster = triggeredSpellInfo->NeedsToBeTriggeredByCaster() ? caster : target)
         {
-            std::list<DynamicObject*> list;
             Position pos;
             target->GetPosition(&pos);
+            std::list<DynamicObject*> list;
             triggerCaster->GetDynObjectList(list, GetId());
             if (!list.empty())
             {
-                Unit* owner = caster->GetAnyOwner();
+                Unit* owner = triggerCaster->GetAnyOwner();
                 for (std::list<DynamicObject*>::iterator itr = list.begin(); itr != list.end(); ++itr)
                 {
                     if (DynamicObject* dynObj = (*itr))

@@ -517,7 +517,7 @@ class boss_feng : public CreatureScript
                         break;
                     case EVENT_ARCANE_RESONANCE:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
-                            DoCast(target, SPELL_ARCANE_RESONANCE);
+                            me->AddAura(SPELL_ARCANE_RESONANCE, target);
                         events.ScheduleEvent(EVENT_ARCANE_RESONANCE, 20000);
                         break;
                     // Shield Phase
