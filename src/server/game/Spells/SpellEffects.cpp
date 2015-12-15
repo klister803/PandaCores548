@@ -1042,7 +1042,10 @@ bool Spell::SpellDummyTriggered(SpellEffIndex effIndex)
                         else
                             targets.SetDst(m_targets);
                         CustomSpellValues values;
-                        triggerCaster->CastSpell(targets, spellInfo, &values, TRIGGERED_FULL_MASK, NULL, NULL, m_originalCasterGUID);
+
+                        uint64 _casterGUID = triggerCaster->isPet() ? triggerCaster->GetGUID() : m_originalCasterGUID;
+
+                        triggerCaster->CastSpell(targets, spellInfo, &values, TRIGGERED_FULL_MASK, NULL, NULL, _casterGUID);
                     }
                     check = true;
                 }
