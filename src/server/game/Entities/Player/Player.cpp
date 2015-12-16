@@ -9338,21 +9338,19 @@ void Player::DuelComplete(DuelCompleteType type)
     AuraApplicationMap itsAuras = duel->opponent->GetAppliedAuras();
     for (AuraApplicationMap::iterator i = itsAuras.begin(); i != itsAuras.end();)
     {
-        Aura const* aura = i->second->GetBase();
+        Aura* aura = i->second->GetBase();
         if (aura && !aura->IsRemoved() && !i->second->IsPositive() && aura->GetCasterGUID() == GetGUID() && aura->GetApplyTime() >= duel->startTime)
-            duel->opponent->RemoveAura(i);
-        else
-            ++i;
+            aura->Remove();
+        ++i;
     }
 
     AuraApplicationMap myAuras = GetAppliedAuras();
     for (AuraApplicationMap::iterator i = myAuras.begin(); i != myAuras.end();)
     {
-        Aura const* aura = i->second->GetBase();
+        Aura* aura = i->second->GetBase();
         if (aura && !aura->IsRemoved() && !i->second->IsPositive() && aura->GetCasterGUID() == duel->opponent->GetGUID() && aura->GetApplyTime() >= duel->startTime)
-            RemoveAura(i);
-        else
-            ++i;
+            aura->Remove();
+        ++i;
     }
 
     // cleanup combo points
