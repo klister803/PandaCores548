@@ -1535,7 +1535,8 @@ void Aura::UnregisterCasterAuras()
         caster = ObjectAccessor::GetObjectInOrOutOfWorld(GetCasterGUID(), (Unit*)NULL);
     if(!caster)
         return;
-    caster->GetMyCastAuras().remove(this);
+    if (!caster->GetMyCastAuras().empty())
+        caster->GetMyCastAuras().remove(this);
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
