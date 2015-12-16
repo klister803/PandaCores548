@@ -9335,21 +9335,21 @@ void Player::DuelComplete(DuelCompleteType type)
         duel->opponent->GetSession()->SendPacket(&data);
 
     /* remove auras */
-    AuraApplicationMap &itsAuras = duel->opponent->GetAppliedAuras();
+    AuraApplicationMap itsAuras = duel->opponent->GetAppliedAuras();
     for (AuraApplicationMap::iterator i = itsAuras.begin(); i != itsAuras.end();)
     {
         Aura const* aura = i->second->GetBase();
-        if (!i->second->IsPositive() && aura->GetCasterGUID() == GetGUID() && aura->GetApplyTime() >= duel->startTime)
+        if (aura && !aura->IsRemoved() && !i->second->IsPositive() && aura->GetCasterGUID() == GetGUID() && aura->GetApplyTime() >= duel->startTime)
             duel->opponent->RemoveAura(i);
         else
             ++i;
     }
 
-    AuraApplicationMap &myAuras = GetAppliedAuras();
+    AuraApplicationMap myAuras = GetAppliedAuras();
     for (AuraApplicationMap::iterator i = myAuras.begin(); i != myAuras.end();)
     {
         Aura const* aura = i->second->GetBase();
-        if (aura && !i->second->IsPositive() && aura->GetCasterGUID() == duel->opponent->GetGUID() && aura->GetApplyTime() >= duel->startTime)
+        if (aura && !aura->IsRemoved() && !i->second->IsPositive() && aura->GetCasterGUID() == duel->opponent->GetGUID() && aura->GetApplyTime() >= duel->startTime)
             RemoveAura(i);
         else
             ++i;

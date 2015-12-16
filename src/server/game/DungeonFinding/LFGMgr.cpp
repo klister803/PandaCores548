@@ -1841,8 +1841,6 @@ LfgLockMap const LFGMgr::GetLockedDungeons(uint64 guid)
             if (ar)
             {
                 uint32 avgItemLevel = player->GetAverageItemLevel();
-
-                sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "LFGMgr::GetLockedDungeons map %i, difficulty %i, Entry %i avgItemLevel %i item_level %i dungeonId %i", dungeon->map, dungeon->difficulty, dungeon->id, avgItemLevel, ar->item_level, ar->dungeonId);
                 if (ar->item_level && avgItemLevel < ar->item_level)
                 {
                     lockData.currItemLevel = avgItemLevel;
