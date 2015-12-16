@@ -2084,15 +2084,16 @@ class spell_warl_rain_of_fire_damage : public SpellScriptLoader
 
             void FilterTargets(std::list<WorldObject*>& targets)
             {
-                if (Unit* caster = GetCaster())
-                {
-                    targets.clear();
+                if (GetSpellInfo()->Id == 104233)
+                    if (Unit* caster = GetCaster())
+                    {
+                        targets.clear();
 
-                    for (auto iter : caster->m_unitsHasCasterAura)
-                        if (Unit* _target = ObjectAccessor::GetUnit(*caster, iter))
-                            if (_target->HasAura(104232, caster->GetGUID()))
-                                targets.push_back(_target);
-                }
+                        for (auto iter : caster->m_unitsHasCasterAura)
+                            if (Unit* _target = ObjectAccessor::GetUnit(*caster, iter))
+                                if (_target->HasAura(104232, caster->GetGUID()))
+                                    targets.push_back(_target);
+                    }
             }
 
             void Register()
