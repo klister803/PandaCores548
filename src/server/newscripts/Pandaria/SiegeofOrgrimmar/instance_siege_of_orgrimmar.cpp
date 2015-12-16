@@ -1498,12 +1498,13 @@ public:
                                 }
                             }
                         }
+                        EjectPlayersFromConveyor();
                         weaponsdone = 0;
                     }
                     else if (weaponsdone == 3 && aweaponentry.empty())
                     {
                         blackfuse->CastSpell(blackfuse, SPELL_ENERGIZED_DEFENSIVE_MATRIX, true);
-                        uint8 num = blackfuse->AI()->GetData(DATA_GET_WEAPON_WAVE_INDEX);
+                        uint8 num = (blackfuse->AI()->GetData(DATA_GET_WEAPON_WAVE_INDEX) - 1);
                         for (uint8 n = 1; n < 4; n++)
                         {
                             if (_wavearray[num][n] == NPC_BLACKFUSE_CRAWLER_MINE)
@@ -1526,6 +1527,7 @@ public:
                                 }
                             }
                         }
+                        EjectPlayersFromConveyor();
                         weaponsdone = 0;
                     }
                 }
@@ -1724,6 +1726,9 @@ public:
                     return thokGuid;
                 case NPC_BODY_STALKER:
                     return bsGuid;
+                //Blackfuse
+                case NPC_BLACKFUSE_MAUNT:
+                    return blackfuseGuid;
                 case NPC_SHOCKWAVE_MISSILE_STALKER:
                     return swmstalkerGuid;
             }
@@ -1752,6 +1757,25 @@ public:
                             Norushen->AI()->SetData(NPC_LINGERING_CORRUPTION, DONE);
                     }
                     break;
+            }
+        }
+
+        void EjectPlayersFromConveyor()
+        {
+            Map::PlayerList const& PlayerList = instance->GetPlayers();
+            if (!PlayerList.isEmpty())
+            {
+                for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+                {
+                    if (Player* player = Itr->getSource())
+                    {
+                        if (player->isAlive() && player->HasAura(SPELL_ON_CONVEYOR))
+                        {
+                            player->RemoveAurasDueToSpell(SPELL_ON_CONVEYOR);
+                            player->GetMotionMaster()->MoveJump(2008.93f, -5600.63f, -309.3268f, 15.0f, 15.0f);
+                        }
+                    }
+                }
             }
         }
 

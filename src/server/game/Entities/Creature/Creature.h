@@ -790,7 +790,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         void SetAttackStop(bool clearmove);
 
-        void ReAttackWithZone(uint64 Guid);
+        void ReAttackWithZone();
 
         void SetInCombatWithZone();
 
@@ -908,6 +908,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         static float _GetHealthMod(int32 Rank);
         float _GetHealthModPersonal(uint32 &count);
 
+        uint64 lastvictimGuid;
         uint64 m_lootRecipient;
         uint64 m_LootOtherRecipient;                        // Pet lotter for example
         uint32 m_lootRecipientGroup;

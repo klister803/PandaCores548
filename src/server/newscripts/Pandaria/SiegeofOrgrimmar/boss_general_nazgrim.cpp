@@ -123,7 +123,6 @@ class boss_general_nazgrim : public CreatureScript
 
             InstanceScript* instance;
             uint8 laststance;
-            uint64 victimGuid;
             uint32 checkpower, checkvictim;
             uint8 wavenum;
             bool lowhp;
@@ -140,7 +139,6 @@ class boss_general_nazgrim : public CreatureScript
                 laststance = 4; //default
                 checkpower = 1000;
                 checkvictim = 0;
-                victimGuid = 0;
                 lowhp = false;
             }
 
@@ -413,10 +411,7 @@ class boss_general_nazgrim : public CreatureScript
                 {
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 80.0f, true))
                     {
-                        if (me->getVictim())
-                            victimGuid = me->getVictim()->GetGUID();
-                        me->SetReactState(REACT_PASSIVE);
-                        me->AttackStop();
+                        me->SetAttackStop(false);
                         DoCast(target, SPELL_HEROIC_SHOCKWAVE);
                     }
                 }
@@ -488,7 +483,7 @@ class boss_general_nazgrim : public CreatureScript
                         break;             
                     //Other events
                     case EVENT_RE_ATTACK:
-                        me->ReAttackWithZone(victimGuid);
+                        me->ReAttackWithZone();
                         break;
                     case EVENT_SUMMON:
                         SummonWave(wavenum);

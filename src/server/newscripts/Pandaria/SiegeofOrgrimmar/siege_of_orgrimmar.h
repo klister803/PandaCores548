@@ -532,6 +532,7 @@ enum esSpells
     //Blackfuse
     SPELL_PROTECTIVE_FRENZY            = 145365,
     SPELL_ENERGIZED_DEFENSIVE_MATRIX   = 148990,
+    SPELL_ON_CONVEYOR                  = 144287,
 };
 
 

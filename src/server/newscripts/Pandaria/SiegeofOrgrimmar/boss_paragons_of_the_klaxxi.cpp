@@ -416,7 +416,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
             InstanceScript* instance;
             SummonList summons;
             EventMap events;
-            uint64 vGuid, jtGuid, dfatargetGuid;
+            uint64 jtGuid, dfatargetGuid;
             uint32 checkklaxxi, healcooldown;
             uint8 flashcount;
             bool healready;
@@ -431,7 +431,6 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
                 me->SetReactState(REACT_PASSIVE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                vGuid = 0;
                 jtGuid = 0;
                 dfatargetGuid = 0;
                 checkklaxxi = 0;
@@ -534,7 +533,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     break;
                 case ACTION_RE_ATTACK_KILRUK:
                     me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
-                    me->ReAttackWithZone(vGuid);
+                    me->ReAttackWithZone();
                     events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 34000);
                     break;
                 case ACTION_MOVE_TO_CENTER:
@@ -583,7 +582,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         break;
                     case 3:
                         me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
-                        me->ReAttackWithZone(vGuid);
+                        me->ReAttackWithZone();
                         events.ScheduleEvent(EVENT_FLASH, 10000);
                         break;
                     case 4:
@@ -602,7 +601,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                             events.ScheduleEvent(EVENT_FLASH, 3000);
                         else
                         {
-                            me->ReAttackWithZone(vGuid);
+                            me->ReAttackWithZone();
                             events.ScheduleEvent(EVENT_HURL_AMBER, 50000);
                         }
                     }
@@ -857,8 +856,6 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     case EVENT_DEATH_FROM_ABOVE:
                         if (Player* pl = me->GetPlayer(*me, GetTargetGuid()))
                         {
-                            if (me->getVictim())
-                                vGuid = me->getVictim()->GetGUID();
                             dfatargetGuid = pl->GetGUID();
                             events.DelayEvents(6000);
                             me->SetAttackStop(true);
@@ -941,16 +938,12 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         break;
                     //Karoz
                     case EVENT_HURL_AMBER:
-                        if (me->getVictim())
-                            vGuid = me->getVictim()->GetGUID();
                         me->SetAttackStop(true);
                         me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                         if (Creature* ab = me->FindNearestCreature(NPC_AMBER_BOMB, 110.0f, true))
                             me->GetMotionMaster()->MoveJump(ab->GetPositionX(), ab->GetPositionY(), ab->GetPositionZ() + 5.0f, 15.0f, 15.0f, 2);
                         break;
                     case EVENT_FLASH:
-                        if (me->getVictim())
-                            vGuid = me->getVictim()->GetGUID();
                         me->SetAttackStop(true);
                         if (!flashcount)
                             flashcount = urand(2, 3);
