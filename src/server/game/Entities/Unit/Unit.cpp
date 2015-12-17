@@ -8500,8 +8500,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     if (!RequiresCurrentSpellsToHolyPower(dummySpell))
                         return false;
 
-                    RemoveAura(triggered_spell_id);
-
                     if (!roll_chance_i(triggerAmount))
                         return false;
 

@@ -3836,6 +3836,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 90174:
+                    spellInfo->ProcCharges = 1;
+                    break;
                 case 109161:
                 case 109162:
                     spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_LEAP_BACK;
