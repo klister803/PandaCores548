@@ -1784,6 +1784,7 @@ m_phaseMask(PHASEMASK_NORMAL), m_phaseId(0), m_ignorePhaseIdCheck(false)
 {
     m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE | GHOST_VISIBILITY_GHOST);
     m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE);
+    m_deleted = false;
 }
 
 void WorldObject::SetWorldObject(bool on)

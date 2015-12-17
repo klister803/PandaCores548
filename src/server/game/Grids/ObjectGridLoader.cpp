@@ -192,7 +192,7 @@ void ObjectGridLoader::LoadN(void)
 template<class T>
 void ObjectGridUnloader::Visit(GridRefManager<T> &m)
 {
-    _lock.lock();
+    //_lock.lock();
     while (!m.isEmpty())
     {
         T *obj = m.getFirst()->getSource();
@@ -205,12 +205,19 @@ void ObjectGridUnloader::Visit(GridRefManager<T> &m)
         //TODO: Check if that script has the correct logic. Do we really need to summons something before deleting?
         obj->CleanupsBeforeDelete();
         volatile uint32 entryorguid = obj->GetTypeId() == TYPEID_PLAYER ? obj->GetGUIDLow() : obj->GetEntry();
-        volatile uint32 appliedAurasCount = obj->ToUnit() ? obj->ToUnit()->GetAppliedAuras().size() : 0;
-        volatile uint32 ownedAurasCount = obj->ToUnit() ? obj->ToUnit()->GetOwnedAuras().size() : 0;
+
+        if (obj->m_deleted) // prevent delete already delete obj
+        {
+            if (obj->GetMap())
+                obj->GetMap()->RemoveFromMap(obj, true);
+            continue;
+        }
+
+        obj->m_deleted = true;
         ///- object will get delinked from the manager when deleted
         delete obj;
     }
-    _lock.unlock();
+    //_lock.unlock();
 }
 
 void ObjectGridStoper::Visit(CreatureMapType &m)

@@ -1055,6 +1055,7 @@ class WorldObject : public Object, public WorldLocation
         void SetTransport(Transport* t) { m_transport = t; }
 
         MovementInfo m_movementInfo;
+        bool m_deleted;
 
         // Personal visibility system
         bool MustBeVisibleOnlyForSomePlayers() const { return !_visibilityPlayerList.empty(); }
