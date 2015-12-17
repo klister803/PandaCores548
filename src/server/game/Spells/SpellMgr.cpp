@@ -5235,7 +5235,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 144662:
                 case 144663:
                 case 144664:
-                    spellInfo->Effects[2].Effect = 0;
+                    spellInfo->Effects[2].TargetB = 7;
+                    break;
+                case 149146: //Explose crawler mine
+                    spellInfo->Effects[0].TargetB = 7;
                     break;
 
                     

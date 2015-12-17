@@ -1266,6 +1266,7 @@ SpellEffectInfo const* SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 144662:
     case 144663:
     case 144664:
+    case 149146: //Explose crawler mine
         return &Effects[effect];
     }
 

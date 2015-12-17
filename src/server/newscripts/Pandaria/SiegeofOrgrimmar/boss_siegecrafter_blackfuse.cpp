@@ -101,6 +101,7 @@ enum eEvents
     EVENT_OVERLOAD                  = 12,
     //Special
     EVENT_LAUNCH_BACK               = 13,
+    EVENT_CHECK_PLAYERS             = 14,
 };
 
 enum _ATentry
@@ -171,7 +172,7 @@ Position spawnweaponpos[3] =
     { 1941.65f, -5425.50f, -299.0f, 5.294743f },
 };
 
-uint32 aweaponentry[4] =
+uint32 aweaponentry[5] =
 {
     NPC_BLACKFUSE_CRAWLER_MINE,
     NPC_ACTIVATED_LASER_TURRET,
@@ -183,6 +184,7 @@ Position droppos = {1966.44f, -5562.38f, -309.3269f};
 Position destpos = {2073.01f, -5620.12f, -302.2553f};
 Position cmdestpos = {1905.39f, -5631.86f, -309.3265f};
 Position sumshrederpos = {1902.65f, -5625.15f, -309.3269f};
+Position sehsumpos = {2006.04f, -5570.15f, -308.3213f};
 
 //71504
 class boss_siegecrafter_blackfuse : public CreatureScript
@@ -198,18 +200,26 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          }
          
          InstanceScript* instance;
+         uint32 checkvictim;
          uint8 weaponwavecount;
          
          void Reset()
          {
              _Reset();
+             checkvictim = 0;
              weaponwavecount = 0;
              instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CRAWLER_MINE_FIXATE_PL);
              me->RemoveAurasDueToSpell(SPELL_PROTECTIVE_FRENZY);
              me->RemoveAurasDueToSpell(SPELL_AUTOMATIC_REPAIR_BEAM_AT);
-             //me->SetReactState(REACT_DEFENSIVE);
-             me->SetReactState(REACT_PASSIVE);    //test only
+             me->SetReactState(REACT_DEFENSIVE);
+             //me->SetReactState(REACT_PASSIVE);    //test only
              me->RemoveAurasDueToSpell(SPELL_AUTOMATIC_REPAIR_BEAM_AT);
+         }
+
+         void JustReachedHome()
+         {
+             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+             me->SetReactState(REACT_DEFENSIVE);
          }
 
          uint32 GetData(uint32 type)
@@ -222,11 +232,13 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          void EnterCombat(Unit* who)
          {
              _EnterCombat();
+             checkvictim = 1000;
              DoCast(me, SPELL_AUTOMATIC_REPAIR_BEAM_AT, true);
              events.ScheduleEvent(EVENT_ELECTROSTATIC_CHARGE, 1000);
              events.ScheduleEvent(EVENT_SAWBLADE, 7000);
              events.ScheduleEvent(EVENT_ACTIVE_CONVEYER, 2000);
              events.ScheduleEvent(EVENT_SUMMON_SHREDDER, 36000);
+             me->SummonCreature(NPC_SIEGE_ENGINEER_HELPER, sehsumpos);
          }
 
          void EnterEvadeMode()
@@ -306,8 +318,6 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                  break;
              }
          }
-
-         void DoAction(int32 const action){}
          
          void JustDied(Unit* killer)
          {
@@ -319,6 +329,24 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          {
              if (!UpdateVictim())
                  return;
+
+             if (checkvictim)
+             {
+                 if (checkvictim <= diff)
+                 {
+                     if (me->getVictim() && me->getVictim()->HasAura(SPELL_ON_CONVEYOR))
+                     {
+                         me->SetAttackStop(false);
+                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                         EnterEvadeMode();
+                         checkvictim = 0;   
+                     }
+                     else
+                         checkvictim = 1000;
+                 }
+                 else
+                     checkvictim -= diff;
+             }
 
              events.Update(diff);
 
@@ -338,7 +366,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                      {
                          for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                          {
-                             if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && !(*itr)->HasAura(SPELL_PATTERN_RECOGNITION))
+                             if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && me->GetExactDist(*itr) >= 15.0f && !(*itr)->HasAura(SPELL_ON_CONVEYOR))
                              {
                                  DoCast(*itr, SPELL_LAUNCH_SAWBLADE);
                                  break;
@@ -361,10 +389,13 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                      break;
                  case EVENT_START_CONVEYER:
                      if (!summons.empty())
+                     {
+                         summons.DespawnEntry(NPC_SHOCKWAVE_MISSILE);
                          for (uint8 n = 0; n < 4; n++)
                              summons.DespawnEntry(aweaponentry[n]);
+                     }
                      CreateWeaponWave(weaponwavecount);
-                     events.ScheduleEvent(EVENT_ACTIVE_CONVEYER, 40000);
+                     events.ScheduleEvent(EVENT_ACTIVE_CONVEYER, 50000);
                      break;
                  case EVENT_SUMMON_SHREDDER:
                      if (Creature* shredder = me->SummonCreature(NPC_AUTOMATED_SHREDDER, sumshrederpos.GetPositionX(), sumshrederpos.GetPositionY(), sumshrederpos.GetPositionZ()))
@@ -447,18 +478,22 @@ public:
 
         void EnterCombat(Unit* who)
         {
-            events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 5000);
-            //events.ScheduleEvent(EVENT_OVERLOAD, 10000);
+            DoCast(me, SPELL_OVERLOAD);
+            events.ScheduleEvent(EVENT_OVERLOAD, 10000);
+            events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 18000);
         }
 
         void JustDied(Unit* killer){}
 
         void UpdateAI(uint32 diff)
         {
-            if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+            if (!UpdateVictim())
                 return;
 
             events.Update(diff);
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
 
             while (uint32 eventId = events.ExecuteEvent())
             {
@@ -467,12 +502,14 @@ public:
                 case EVENT_DEATH_FROM_ABOVE:
                     me->SetAttackStop(false);
                     DoCast(me, SPELL_DEATH_FROM_ABOVE_K_B);
-                    events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE2, 5000);
+                    events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE2, 35000);
                     break;
                 case EVENT_DEATH_FROM_ABOVE2:
                     me->ReAttackWithZone();
                     break;
                 case EVENT_OVERLOAD:
+                    DoCast(me, SPELL_OVERLOAD);
+                    events.ScheduleEvent(EVENT_OVERLOAD, 10000);
                     break;
                 }
             }
@@ -656,7 +693,7 @@ public:
                     {
                         for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                         {
-                            if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && !(*itr)->HasAura(SPELL_PATTERN_RECOGNITION) && !(*itr)->HasAura(SPELL_CRAWLER_MINE_FIXATE_PL))
+                            if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && !(*itr)->HasAura(SPELL_ON_CONVEYOR) && !(*itr)->HasAura(SPELL_CRAWLER_MINE_FIXATE_PL))
                             {
                                 if (Creature* laser = blackfuse->SummonCreature(NPC_LASER_TARGET, (*itr)->GetPositionX() + 10.0f, (*itr)->GetPositionY(), blackfuse->GetPositionZ()))
                                 {
@@ -747,7 +784,7 @@ public:
                         {
                             if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
                             {
-                                if (!(*itr)->HasAura(SPELL_PATTERN_RECOGNITION) && !(*itr)->HasAura(SPELL_PURSUIT_LASER) && !(*itr)->HasAura(SPELL_CRAWLER_MINE_FIXATE_PL))
+                                if (!(*itr)->HasAura(SPELL_ON_CONVEYOR) && !(*itr)->HasAura(SPELL_PURSUIT_LASER) && !(*itr)->HasAura(SPELL_CRAWLER_MINE_FIXATE_PL))
                                 {
                                     (*itr)->AddAura(SPELL_CRAWLER_MINE_FIXATE_PL, *itr);
                                     DoCast(*itr, SPELL_CRAWLER_MINE_FIXATE, true);
@@ -800,7 +837,7 @@ public:
     }
 };
 
-//71910, 71740, 72710, 72052
+//71910, 71740, 72710, 72052, 71520
 class npc_blackfuse_trigger : public CreatureScript
 {
 public:
@@ -814,20 +851,24 @@ public:
             me->SetDisplayId(11686);
             me->SetReactState(REACT_PASSIVE);
             me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
-            //me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
             if (me->GetEntry() == NPC_LASER_ARRAY)
             {
                 me->AddAura(SPELL_CONVEYOR_DEATH_BEAM_V, me);
                 DoCast(me, SPELL_CONVEYOR_DEATH_BEAM_AT, true);
             }
-            events.Reset();
-            num = 0;
+            
         }
         InstanceScript* instance;
         EventMap events;
         uint8 num;
 
-        void Reset(){}
+        void Reset()
+        {
+            events.Reset();
+            if (me->GetEntry() == NPC_SIEGE_ENGINEER_HELPER)
+                events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1000);
+            num = 0;
+        }
 
         void EnterCombat(Unit* who){}
 
@@ -863,11 +904,33 @@ public:
 
             while (uint32 eventId = events.ExecuteEvent())
             {
-                if (eventId == EVENT_SHOCKWAVE_MISSILE)
+                switch (eventId)
                 {
+                case EVENT_SHOCKWAVE_MISSILE:
                     DoCast(me, shockwavemissilelist[num++]);
                     if (num < 6)
                         events.ScheduleEvent(EVENT_SHOCKWAVE_MISSILE, 3500);
+                    break;
+                case EVENT_CHECK_PLAYERS:
+                {
+                    std::list<Player*> pllist;
+                    GetPlayerListInGrid(pllist, me, 70.0f);
+                    if (!pllist.empty())
+                    {
+                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                        {
+                            if ((*itr)->isAlive())
+                            {
+                                if (int32((*itr)->GetPositionZ()) < -306 && (*itr)->HasAura(SPELL_ON_CONVEYOR))
+                                    (*itr)->RemoveAurasDueToSpell(SPELL_ON_CONVEYOR);
+                                else if (int32((*itr)->GetPositionZ()) >= -303 && !(*itr)->HasAura(SPELL_ON_CONVEYOR))
+                                    (*itr)->CastSpell(*itr, SPELL_ON_CONVEYOR, true);
+                            }
+                        }
+                    }
+                }
+                events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1000);
+                break;
                 }
             }
         }
@@ -897,10 +960,10 @@ public:
                 {
                     Position pos;
                     GetCaster()->GetNearPosition(pos, 7.0f, 5.5f);
-                    if (Creature* sawblade = GetCaster()->SummonCreature(NPC_BLACKFUSE_SAWBLADE, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ() + 2.0f, 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
+                    if (Creature* sawblade = GetCaster()->SummonCreature(NPC_BLACKFUSE_SAWBLADE, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ() + 1.0f, 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
                     {
                         sawblade->AddAura(SPELL_LAUNCH_SAWBLADE_AT, sawblade);
-                        sawblade->GetMotionMaster()->MoveCharge(GetHitUnit()->GetPositionX(), GetHitUnit()->GetPositionY(), GetCaster()->GetPositionZ() + 2.0f, 25.0f);
+                        sawblade->GetMotionMaster()->MoveCharge(GetHitUnit()->GetPositionX(), GetHitUnit()->GetPositionY(), GetCaster()->GetPositionZ() + 1.0f, 25.0f);
                     }
                 }
             }
@@ -999,11 +1062,13 @@ public:
         void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
         {
             if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
+            {
                 if (GetCaster()->ToCreature())
                 {
                     GetCaster()->CastSpell(GetCaster(), SPELL_OVERLOAD);
                     GetCaster()->ToCreature()->ReAttackWithZone();
                 }
+            }
         }
 
         void Register()
@@ -1018,34 +1083,6 @@ public:
     }
 };
 
-//144208
-class spell_death_from_above_k_b : public SpellScriptLoader
-{
-public:
-    spell_death_from_above_k_b() : SpellScriptLoader("spell_death_from_above_k_b") { }
-
-    class spell_death_from_above_k_b_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_death_from_above_k_b_SpellScript);
-
-        void HandleAfterCast()
-        {
-            if (GetCaster())
-                GetCaster()->CastSpell(GetCaster(), SPELL_DEATH_FROM_ABOVE, true);
-        }
-
-        void Register()
-        {
-            AfterCast += SpellCastFn(spell_death_from_above_k_b_SpellScript::HandleAfterCast);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_death_from_above_k_b_SpellScript();
-    }
-};
-
 class ShockWaveMissiletFilterTarget
 {
 public:
@@ -1055,6 +1092,23 @@ public:
     {
         if (_caster->GetExactDist2d(unit) > _mindist && _caster->GetExactDist2d(unit) < _maxdist)
             return false;
+        return true;
+    }
+private:
+    WorldObject* _caster;
+    float _mindist, _maxdist;
+};
+
+class ShockWaveMissiletFilterTarget2
+{
+public:
+    ShockWaveMissiletFilterTarget2(WorldObject* caster, float mindist, float maxdist) : _caster(caster), _mindist(mindist), _maxdist(maxdist){}
+
+    bool operator()(WorldObject* unit)
+    {
+        if (unit->ToCreature() && unit->GetEntry() == NPC_AUTOMATED_SHREDDER)
+            if (_caster->GetExactDist2d(unit) > _mindist && _caster->GetExactDist2d(unit) < _maxdist)
+                return false;
         return true;
     }
 private:
@@ -1097,9 +1151,35 @@ public:
             }
         }
 
+        void FilterTargets2(std::list<WorldObject*>& targets)
+        {
+            if (GetCaster() && !targets.empty())
+            {
+                switch (GetSpellInfo()->Id)
+                {
+                case SPELL_SHOCKWAVE_MISSILE2:
+                    targets.remove_if(ShockWaveMissiletFilterTarget2(GetCaster(), 10.0f, 25.0f));
+                    break;
+                case SPELL_SHOCKWAVE_MISSILE3:
+                    targets.remove_if(ShockWaveMissiletFilterTarget2(GetCaster(), 25.0f, 45.0f));
+                    break;
+                case SPELL_SHOCKWAVE_MISSILE4:
+                    targets.remove_if(ShockWaveMissiletFilterTarget2(GetCaster(), 45.0f, 65.0f));
+                    break;
+                case SPELL_SHOCKWAVE_MISSILE5:
+                    targets.remove_if(ShockWaveMissiletFilterTarget2(GetCaster(), 65.0f, 85.0f));
+                    break;
+                case SPELL_SHOCKWAVE_MISSILE6:
+                    targets.remove_if(ShockWaveMissiletFilterTarget2(GetCaster(), 85.0f, 105.0f));
+                    break;
+                }
+            }
+        }
+
         void Register()
         {
             OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_shockwave_missile_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_DEST_AREA_ENEMY);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_shockwave_missile_SpellScript::FilterTargets2, EFFECT_2, TARGET_UNIT_SRC_AREA_ENTRY);
             OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_shockwave_missile_SpellScript::FilterTargets, EFFECT_3, TARGET_UNIT_DEST_AREA_ENEMY);
         }
     };
@@ -1107,6 +1187,75 @@ public:
     SpellScript* GetSpellScript() const
     {
         return new spell_shockwave_missile_SpellScript();
+    }
+};
+
+//144287
+class spell_on_conveyor : public SpellScriptLoader
+{
+public:
+    spell_on_conveyor() : SpellScriptLoader("spell_on_conveyor") { }
+
+    class spell_on_conveyor_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_on_conveyor_AuraScript);
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetTarget() && !GetTarget()->HasAura(SPELL_PATTERN_RECOGNITION))
+                GetTarget()->CastSpell(GetTarget(), SPELL_PATTERN_RECOGNITION, true);
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_on_conveyor_AuraScript::OnApply, EFFECT_0, SPELL_AURA_INTERFERE_TARGETTING, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_on_conveyor_AuraScript();
+    }
+};
+
+class CMExploseFilterTarget
+{
+public:
+    bool operator()(WorldObject* unit) const
+    {
+        if (unit->ToPlayer())
+            return false;
+        else if (unit->ToCreature() && unit->GetEntry() == NPC_AUTOMATED_SHREDDER)
+            return false;
+        
+        return true;
+    }
+};
+
+//149146
+class spell_blacksue_cm_explose : public SpellScriptLoader
+{
+public:
+    spell_blacksue_cm_explose() : SpellScriptLoader("spell_blacksue_cm_explose") { }
+
+    class spell_blacksue_cm_explose_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_blacksue_cm_explose_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*>& targets)
+        {
+            targets.remove_if(CMExploseFilterTarget());
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_blacksue_cm_explose_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_blacksue_cm_explose_SpellScript();
     }
 };
 
@@ -1151,7 +1300,6 @@ public:
                         if (!player->HasAura(SPELL_PATTERN_RECOGNITION))
                         {
                             player->CastSpell(player, SPELL_ON_CONVEYOR, true);
-                            player->CastSpell(player, SPELL_PATTERN_RECOGNITION, true);
                             player->NearTeleportTo(atdestpos[2].GetPositionX(), atdestpos[2].GetPositionY(), atdestpos[2].GetPositionZ(), atdestpos[2].GetOrientation());
                         }
                         else
@@ -1187,7 +1335,8 @@ void AddSC_boss_siegecrafter_blackfuse()
     new spell_break_in_period();
     new spell_disintegration_laser();
     new spell_death_from_above();
-    new spell_death_from_above_k_b();
     new spell_shockwave_missile();
+    new spell_on_conveyor();
+    new spell_blacksue_cm_explose();
     new at_blackfuse_pipe();
 }
