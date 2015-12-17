@@ -1533,8 +1533,13 @@ void Aura::UnregisterCasterAuras()
     // TODO: find a better way to do this.
     if (!caster)
         caster = ObjectAccessor::GetObjectInOrOutOfWorld(GetCasterGUID(), (Unit*)NULL);
-    if(!caster)
+    if(!caster || !caster->IsInWorld() || !GetUnitOwner() || !GetUnitOwner()->IsInWorld())
         return;
+
+    if (Player* player = caster->ToPlayer())
+        if (player->GetSession() && (player->GetSession()->PlayerLogout() || player->GetSession()->PlayerLoading()))
+            return;
+
     if (!caster->GetMyCastAuras().empty())
         caster->GetMyCastAuras().remove(this);
 
@@ -1542,11 +1547,7 @@ void Aura::UnregisterCasterAuras()
     {
         if (GetSpellInfo()->Effects[i].TargetA.GetTarget() == TARGET_UNIT_CASTER_AREA_SUMMON)
         {
-            if (Player* player = caster->ToPlayer())
-                if (player->GetSession() && player->GetSession()->PlayerLogout())
-                    return;
-
-            if(!caster->IsInWorld() || !GetUnitOwner() || !GetUnitOwner()->IsInWorld() || caster != GetUnitOwner())
+            if (caster != GetUnitOwner())
                 return;
 
             caster->RemovePetAndOwnerAura(GetId(), GetUnitOwner());
