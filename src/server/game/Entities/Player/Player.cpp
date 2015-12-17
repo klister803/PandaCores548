@@ -6761,9 +6761,10 @@ void Player::RepopAtGraveyard()
         {
             if(WorldLocation const* _grave = inst->GetClosestGraveYard())
             {
-                ResurrectPlayer(0.5f);
-                SpawnCorpseBones();
+                //ResurrectPlayer(0.5f);
+                //SpawnCorpseBones();
                 TeleportTo(_grave->GetMapId(), _grave->GetPositionX(), _grave->GetPositionY(), _grave->GetPositionZ(), _grave->GetOrientation());
+                UpdateObjectVisibility();
                 return;
             }
         }
