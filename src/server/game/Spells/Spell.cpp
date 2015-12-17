@@ -3983,7 +3983,7 @@ void Spell::cast(bool skipCheck)
                     {
                         if (!m_spellInfo->IsPositiveEffect(i))
                         {
-                            if(m_spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE)
+                            if (m_spellInfo->CanHaveDamageNegOnEff(i))
                                 dmgSpell = true;
                             positive = false;
                         }

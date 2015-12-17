@@ -1647,6 +1647,30 @@ bool SpellInfo::IsPositiveEffect(uint8 effIndex, bool caster) const
     }
 }
 
+bool SpellInfo::CanHaveDamageNegOnEff(uint8 effIndex) const
+{
+    switch (Effects[effIndex].Effect)
+    {
+        case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
+        case SPELL_EFFECT_SCHOOL_DAMAGE:
+        case SPELL_EFFECT_WEAPON_DAMAGE:
+        case SPELL_EFFECT_NORMALIZED_WEAPON_DMG:
+        case SPELL_EFFECT_DAMAGE_FROM_MAX_HEALTH_PCT:
+            return true;
+        case SPELL_EFFECT_APPLY_AURA:
+        {
+            switch (Effects[effIndex].ApplyAuraName)
+            {
+                case SPELL_AURA_PERIODIC_DAMAGE:
+                case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
+                    return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 bool SpellInfo::IsChanneled() const
 {
     return (AttributesEx & (SPELL_ATTR1_CHANNELED_1 | SPELL_ATTR1_CHANNELED_2));

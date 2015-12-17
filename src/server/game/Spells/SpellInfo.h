@@ -518,6 +518,7 @@ public:
     bool IsRangedSpell() const;
     bool IsAutoRepeatRangedSpell() const;
     bool IsNonNeedDelay() const;
+    bool CanHaveDamageNegOnEff(uint8 effIndex) const;
 
     bool IsAffectedBySpellMods() const;
     bool IsAffectedBySpellMod(SpellModifier* mod) const;
