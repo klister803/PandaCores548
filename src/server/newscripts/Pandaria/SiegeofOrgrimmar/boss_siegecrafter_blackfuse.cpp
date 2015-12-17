@@ -63,7 +63,7 @@ enum eSpells
     SPELL_CONVEYOR_DEATH_BEAM_V2    = 149016,
     SPELL_CONVEYOR_DEATH_BEAM_AT    = 144282,
     SPELL_PURIFICATION_BEAM         = 144335,
-    //Create conveyer trigger 145272
+    SPELL_CREATE_CONVEYOR_TRIGGER   = 145272,
     //Laser turret
     SPELL_DISINTEGRATION_LASER_V    = 143867,
     SPELL_PURSUIT_LASER             = 143828,
@@ -209,17 +209,13 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              checkvictim = 0;
              weaponwavecount = 0;
              instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CRAWLER_MINE_FIXATE_PL);
+             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_ON_CONVEYOR);
+             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PATTERN_RECOGNITION);
              me->RemoveAurasDueToSpell(SPELL_PROTECTIVE_FRENZY);
              me->RemoveAurasDueToSpell(SPELL_AUTOMATIC_REPAIR_BEAM_AT);
              me->SetReactState(REACT_DEFENSIVE);
              //me->SetReactState(REACT_PASSIVE);    //test only
              me->RemoveAurasDueToSpell(SPELL_AUTOMATIC_REPAIR_BEAM_AT);
-         }
-
-         void JustReachedHome()
-         {
-             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-             me->SetReactState(REACT_DEFENSIVE);
          }
 
          uint32 GetData(uint32 type)
@@ -233,19 +229,21 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          {
              _EnterCombat();
              checkvictim = 1000;
+             DoCast(me, SPELL_CREATE_CONVEYOR_TRIGGER);
              DoCast(me, SPELL_AUTOMATIC_REPAIR_BEAM_AT, true);
              events.ScheduleEvent(EVENT_ELECTROSTATIC_CHARGE, 1000);
              events.ScheduleEvent(EVENT_SAWBLADE, 7000);
              events.ScheduleEvent(EVENT_ACTIVE_CONVEYER, 2000);
              events.ScheduleEvent(EVENT_SUMMON_SHREDDER, 36000);
-             me->SummonCreature(NPC_SIEGE_ENGINEER_HELPER, sehsumpos);
+             if (Creature* seh = me->SummonCreature(NPC_SIEGE_ENGINEER_HELPER, sehsumpos))
+                 seh->CastSpell(seh, SPELL_CREATE_CONVEYOR_TRIGGER);
          }
 
          void EnterEvadeMode()
          {
+             me->NearTeleportTo(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY(), me->GetHomePosition().GetPositionZ(), me->GetHomePosition().GetOrientation());
              me->Kill(me, true);
              me->Respawn(true);
-             me->GetMotionMaster()->MoveTargetedHome();
          }
 
          void CreateWeaponWave(uint8 wavecount)
@@ -330,23 +328,18 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              if (!UpdateVictim())
                  return;
 
-             if (checkvictim)
+             /*if (checkvictim)
              {
                  if (checkvictim <= diff)
                  {
                      if (me->getVictim() && me->getVictim()->HasAura(SPELL_ON_CONVEYOR))
-                     {
-                         me->SetAttackStop(false);
-                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                          EnterEvadeMode();
-                         checkvictim = 0;   
-                     }
                      else
                          checkvictim = 1000;
                  }
                  else
                      checkvictim -= diff;
-             }
+             }*/
 
              events.Update(diff);
 
