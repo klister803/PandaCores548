@@ -229,7 +229,6 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          {
              _EnterCombat();
              checkvictim = 1000;
-             DoCast(me, SPELL_CREATE_CONVEYOR_TRIGGER);
              DoCast(me, SPELL_AUTOMATIC_REPAIR_BEAM_AT, true);
              events.ScheduleEvent(EVENT_ELECTROSTATIC_CHARGE, 1000);
              events.ScheduleEvent(EVENT_SAWBLADE, 7000);
