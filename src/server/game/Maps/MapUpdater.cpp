@@ -32,7 +32,11 @@ class MapUpdateRequest : MapUpdaterTask
 
         void call() override
         {
+            uint32 diff = getMSTime();
             _map.Update(_diff);
+            diff = getMSTime() - diff;
+            if (diff > 750)
+                sLog->outDiff("Map diff: %u. ID %i Players online: %u.", diff, m_map.GetId(), sWorld->GetActiveSessionCount());
             UpdateFinished();
         }
 };
