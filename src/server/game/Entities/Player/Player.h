@@ -3116,6 +3116,7 @@ class Player : public Unit, public GridObject<Player>
         AchievementMgr<Player> const& GetAchievementMgr() const { return m_achievementMgr; }
         void UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, uint32 miscValue3 = 0,
                                        Unit* unit = nullptr, bool ignoreGroup = false, bool loginCheck = false);
+
         bool HasAchieved(uint32 achievementId) const;
         void CompletedAchievement(AchievementEntry const* entry);
         uint32 GetAchievementPoints() const;
@@ -3239,6 +3240,8 @@ class Player : public Unit, public GridObject<Player>
         //Message
         void AddListner(WorldObject* o, bool update = false);
         void RemoveListner(WorldObject* o, bool update = false);
+
+        ACE_Thread_Mutex _deleteLock;
 
     protected:
         // Gamemaster whisper whitelist

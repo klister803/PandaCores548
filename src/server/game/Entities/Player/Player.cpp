@@ -984,6 +984,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
 Player::~Player()
 {
+    _deleteLock.acquire();
+
     // it must be unloaded already in PlayerLogout and accessed only for loggined player
     //m_social = NULL;
 
@@ -1022,6 +1024,8 @@ Player::~Player()
         delete m_vis;
 
     sWorld->DecreasePlayerCount();
+
+    _deleteLock.release();
 }
 
 void Player::CleanupsBeforeDelete(bool finalCleanup)
@@ -28516,6 +28520,8 @@ void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 mis
         if (!player)
             return;
 
+        player->_deleteLock.acquire();
+
         /// Same for the unit
         Unit *unit = unitGUID ? Unit::GetUnit(*player, unitGUID) : nullptr;
         player->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, player, false, loginCheck);
@@ -28529,7 +28535,10 @@ void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 mis
         /// Update only individual achievement criteria here, otherwise we may get multiple updates
         /// from a single boss kill
         if (!ignoreGroup && sAchievementMgr->IsGroupCriteriaType(type))
+        {
+            player->_deleteLock.release();
             return;
+        }
 
         if (auto guild = sGuildMgr->GetGuildById(player->GetGuildId()))
             guild->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, player, loginCheck);
@@ -28537,6 +28546,8 @@ void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 mis
         /// Quest "A Test of Valor"
         if (player->HasAchieved(8030) || player->HasAchieved(8031))
             player->KilledMonsterCredit(69145, 0);
+
+        player->_deleteLock.release();
     };
 
     sAchievementMgr->AddCriteriaUpdateTask(task);
@@ -28544,7 +28555,19 @@ void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 mis
 
 void Player::CompletedAchievement(AchievementEntry const* entry)
 {
-    GetAchievementMgr().CompletedAchievement(entry, this);
+    AchievementCriteriaUpdateTask task;
+    task.PlayerGUID = GetGUID();
+    task.UnitGUID = 0;
+    task.Task = [&, entry](uint64 const &playerGUID, uint64 const &unitGUID) -> void
+    {
+        Player *player = HashMapHolder<Player>::Find(playerGUID);
+        if (!player)
+            return;
+
+        player->GetAchievementMgr().CompletedAchievement(entry, player);
+    };
+
+    sAchievementMgr->AddCriteriaUpdateTask(task);
 }
 
 bool Player::HasAchieved(uint32 achievementId) const

@@ -1864,6 +1864,7 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
             void HandleDispel(DispelInfo* dispelInfo)
             {
                 if (Unit* caster = GetCaster())
+                {
                     if (AuraEffect const* aurEff = GetEffect(EFFECT_0))
                     {
                         int32 damage = aurEff->GetAmount() * 16;
@@ -1871,9 +1872,11 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
 
                         if (dispeller->GetTypeId() == TYPEID_PLAYER)
                             caster->ApplyResilience(dispeller, &damage, true);
+
                         // backfire damage and silence
                         caster->CastCustomSpell(dispeller, WARLOCK_UNSTABLE_AFFLICTION_DISPEL, &damage, NULL, NULL, true, NULL, aurEff);
                     }
+                }
             }
 
             void Register()

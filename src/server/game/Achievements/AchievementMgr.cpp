@@ -1059,6 +1059,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
         }
         while (criteriaAccountResult->NextRow());
     }
+
     for (AchievementProgressMap::iterator iter = m_achievementProgress.begin(); iter != m_achievementProgress.end(); ++iter)
     {
         AchievementEntry const* achievement = sAchievementMgr->GetAchievement(iter->first);
@@ -2034,15 +2035,17 @@ bool AchievementMgr<T>::IsCompletedCriteria(CriteriaTreeEntry const* criteriaTre
 
     if (!progressMap)
         progressMap = GetCriteriaProgressMap(achievement ? achievement->ID : 0);
+
     if (progressMap->empty())
         return false;
 
     if (!progress)
         progress = GetCriteriaProgress(criteriaTree->ID, achievement ? achievement->ID : 0, progressMap);
+
     if (!progress || progress->deactiveted)
         return false;
 
-    if(progress->completed)
+    if (progress->completed)
         return true;
 
     switch (criteria->type)
@@ -2791,7 +2794,7 @@ bool AchievementMgr<T>::SetCriteriaProgress(AchievementEntry const* achievement,
     if (!progressMap)
         progressMap = GetCriteriaProgressMap(achievement ? achievement->ID : 0);
 
-    if(!progress)
+    if (!progress)
     {
         CriteriaProgressMap::iterator iter = progressMap->find(treeEntry->ID);
         if (iter != progressMap->end())
@@ -2816,7 +2819,7 @@ bool AchievementMgr<T>::SetCriteriaProgress(AchievementEntry const* achievement,
         progress->criteriaTree = treeEntry;
         progress->criteria = criteria;
         progress->parent = sCriteriaTreeStore.LookupEntry(treeEntry->parent);
-        if(achievement)
+        if (achievement)
         {
             CriteriaProgressTree& parentTreeProgress = m_achievementTreeProgress[achievement->criteriaTree];
             CriteriaTreeEntry const* parentTree = sCriteriaTreeStore.LookupEntry(achievement->criteriaTree);
