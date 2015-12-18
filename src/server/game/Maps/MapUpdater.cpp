@@ -36,7 +36,7 @@ class MapUpdateRequest : MapUpdaterTask
             _map.Update(_diff);
             diff = getMSTime() - diff;
             if (diff > 750)
-                sLog->outDiff("Map diff: %u. ID %i Players online: %u.", diff, m_map.GetId(), sWorld->GetActiveSessionCount());
+                sLog->outDiff("Map diff: %u. ID %i Players online: %u.", diff, _map.GetId(), sWorld->GetActiveSessionCount());
             UpdateFinished();
         }
 };
