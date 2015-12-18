@@ -293,7 +293,7 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PrepareStatement(CHAR_INS_AURA, "INSERT INTO character_aura (guid, slot, caster_guid, item_guid, spell, effect_mask, recalculate_mask, stackcount, maxduration, remaintime, remaincharges) "
     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
 
-    PrepareStatement(CHAR_INS_AURA_EFFECT, "INSERT INTO character_aura_effect (guid, slot, effect, baseamount, amount) "
+    PrepareStatement(CHAR_INS_AURA_EFFECT, "INSERT IGNORE INTO character_aura_effect (guid, slot, effect, baseamount, amount) "
     "VALUES (?, ?, ?, ?, ?)",  CONNECTION_ASYNC);
 
     // Currency
