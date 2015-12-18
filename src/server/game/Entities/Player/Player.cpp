@@ -6761,7 +6761,7 @@ void Player::RepopAtGraveyard()
         ClosestGrave = bg->GetClosestGraveYard(this);
     else
     {
-        if (InstanceMap* inst = GetMap()->ToInstanceMap())
+        /*if (InstanceMap* inst = GetMap()->ToInstanceMap())
         {
             if(WorldLocation const* _grave = inst->GetClosestGraveYard())
             {
@@ -6771,7 +6771,7 @@ void Player::RepopAtGraveyard()
                 UpdateObjectVisibility();
                 return;
             }
-        }
+        }*/
         if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(GetZoneId()))
             ClosestGrave = bf->GetClosestGraveYard(this);
         else
