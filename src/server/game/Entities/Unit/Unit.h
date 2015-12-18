@@ -1360,7 +1360,7 @@ class Unit : public WorldObject
         typedef std::set<uint32> ComboPointHolderSet;
         typedef std::vector<SoulSwapDOT> AuraIdList;
 
-        typedef std::unordered_map<uint8, AuraApplication*> VisibleAuraMap;
+        typedef std::map<uint8, AuraApplication*> VisibleAuraMap;
 
         virtual ~Unit();
 

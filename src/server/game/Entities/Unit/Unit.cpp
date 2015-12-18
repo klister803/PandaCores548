@@ -3791,8 +3791,8 @@ void Unit::_AddAura(UnitAura* aura, Unit* caster)
                 ++itr;
         }
     }
-    if(caster)
-        caster->GetMyCastAuras().push_back(aura);
+    //if(caster)
+        //caster->GetMyCastAuras().push_back(aura);
 }
 
 // creates aura application instance and registers it in lists

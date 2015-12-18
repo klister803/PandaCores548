@@ -8546,14 +8546,14 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster, SpellEf
             if (crit)
                 damage = caster->SpellCriticalHealingBonus(GetSpellInfo(), damage, target);;
         }
-        if (GetSpellInfo()->GetEffectMechanicMask(effIndex) & (1 << MECHANIC_BANDAGE))
+        /*if (GetSpellInfo()->GetEffectMechanicMask(effIndex) & (1 << MECHANIC_BANDAGE))
         {
             if (AuraEffect* dummy = caster->GetAuraEffect(58369, 0)) // Glyph of Bloody Healing
             {
                 if(caster->HasMyAura(115767)) // Deep Wounds
                     damage += CalculatePct(damage, dummy->GetAmount());
             }
-        }
+        }*/
         damage = target->SpellHealingBonusTaken(caster, GetSpellInfo(), damage, DOT, effIndex, GetBase()->GetStackAmount());
     }
 

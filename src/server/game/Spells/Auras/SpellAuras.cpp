@@ -1540,8 +1540,8 @@ void Aura::UnregisterCasterAuras()
         if (player->GetSession() && (player->GetSession()->PlayerLogout() || player->GetSession()->PlayerLoading()))
             return;
 
-    if (!caster->GetMyCastAuras().empty())
-        caster->GetMyCastAuras().remove(this);
+    //if (!caster->GetMyCastAuras().empty())
+        //caster->GetMyCastAuras().remove(this);
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
