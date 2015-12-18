@@ -12129,8 +12129,8 @@ void Unit::RemoveAllControlled()
         }
         else if (target->ToTempSummon() && target->IsInWorld())
             target->ToTempSummon()->UnSummon();
-        else
-            sLog->outError(LOG_FILTER_UNITS, "Unit %u is trying to release unit %u which is neither charmed nor owned by it", GetEntry(), target->GetEntry());
+        //else
+            //sLog->outError(LOG_FILTER_UNITS, "Unit %u is trying to release unit %u which is neither charmed nor owned by it", GetEntry(), target->GetEntry());
     }
 
     if (getClass() == CLASS_MONK && (m_SummonSlot[13] || m_SummonSlot[14] || m_SummonSlot[15]))
@@ -12146,12 +12146,12 @@ void Unit::RemoveAllControlled()
                 tempsum->UnSummon();
     }
 
-    if (GetPetGUID())
+    /*if (GetPetGUID())
         sLog->outFatal(LOG_FILTER_UNITS, "Unit %u is not able to release its pet " UI64FMTD, GetEntry(), GetPetGUID());
     if (GetMinionGUID())
         sLog->outFatal(LOG_FILTER_UNITS, "Unit %u is not able to release its minion " UI64FMTD, GetEntry(), GetMinionGUID());
     if (GetCharmGUID())
-        sLog->outFatal(LOG_FILTER_UNITS, "Unit %u is not able to release its charm " UI64FMTD, GetEntry(), GetCharmGUID());
+        sLog->outFatal(LOG_FILTER_UNITS, "Unit %u is not able to release its charm " UI64FMTD, GetEntry(), GetCharmGUID());*/
 }
 
 Unit* Unit::GetNextRandomRaidMemberOrPet(float radius)
@@ -25447,7 +25447,9 @@ bool Unit::HasSomeCasterAura(uint64 guid)
 
 bool Unit::HasMyAura(uint32 spellId)
 {
-    for (AuraList::const_iterator itr = m_my_Auras.begin(); itr != m_my_Auras.end(); ++itr)
+    AuraList my_Auras = m_my_Auras;
+
+    for (AuraList::const_iterator itr = my_Auras.begin(); itr != my_Auras.end(); ++itr)
     {
         if (Aura const* aura = (*itr))
             if (aura->GetId() == spellId)
@@ -25458,7 +25460,9 @@ bool Unit::HasMyAura(uint32 spellId)
 
 bool Unit::HasMyAura(Aura const* hasAura, bool check)
 {
-    for (AuraList::const_iterator itr = m_my_Auras.begin(); itr != m_my_Auras.end(); ++itr)
+    AuraList my_Auras = m_my_Auras;
+
+    for (AuraList::const_iterator itr = my_Auras.begin(); itr != my_Auras.end(); ++itr)
     {
         if (Aura const* aura = (*itr))
             if (aura->GetId() == hasAura->GetId())
