@@ -1245,7 +1245,7 @@ void AchievementMgr<ScenarioProgress>::Reset()
 template<>
 void AchievementMgr<Player>::Reset()
 {
-    m_CompletedAchievementsLock.acquire();
+    //m_CompletedAchievementsLock.acquire();
     for (CompletedAchievementMap::const_iterator iter = m_completedAchievements.begin(); iter != m_completedAchievements.end(); ++iter)
     {
         WorldPacket data(SMSG_ACHIEVEMENT_DELETED, 4 + 4);
@@ -1255,7 +1255,7 @@ void AchievementMgr<Player>::Reset()
     }
 
     m_completedAchievements.clear();
-    m_CompletedAchievementsLock.release();
+    //m_CompletedAchievementsLock.release();
 
     _achievementPoints = 0;
     DeleteFromDB(GetOwner()->GetGUIDLow());
@@ -3181,7 +3181,7 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
         }
     }
 
-    m_CompletedAchievementsLock.acquire();
+    //m_CompletedAchievementsLock.acquire();
     for (CompletedAchievementMap::const_iterator itr = m_completedAchievements.begin(); itr != m_completedAchievements.end(); ++itr)
     {
         if (!isVisible(*itr))
@@ -3208,7 +3208,7 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
         data << uint32(realmID);
         data.WriteGuidBytes<7, 1>(firstAccountGuid);
     }
-    m_CompletedAchievementsLock.release();
+    //m_CompletedAchievementsLock.release();
 
     for (AchievementProgressMap::const_iterator iter = m_achievementProgress.begin(); iter != m_achievementProgress.end(); ++iter)
     {
