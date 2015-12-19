@@ -1252,7 +1252,7 @@ class spell_mage_alter_time_overrided : public SpellScriptLoader
             void HandleAfterCast()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
-                    _player->RemoveAurasDueToSpell(SPELL_MAGE_ALTER_TIME);
+                    _player->RemoveAurasDueToSpell(SPELL_MAGE_ALTER_TIME, _player->GetGUID(), 0, AURA_REMOVE_BY_EXPIRE);
             }
 
             void Register()
@@ -1342,33 +1342,37 @@ class spell_mage_alter_time : public SpellScriptLoader
 
             void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (map == uint32(-1))
-                    return;
-
-                if (Player* _player = GetTarget()->ToPlayer())
-                {
-                    if (_player->GetMapId() != map)
-                        return;
-
-                    for (auto itr : auras)
+                if (AuraApplication const* appl = GetTargetApplication())
+                    if (appl->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
                     {
-                        Aura* aura = !_player->HasAura((itr)->m_id) ? _player->AddAura((itr)->m_id, _player) : _player->GetAura((itr)->m_id);
-                        if (aura)
+                        if (map == uint32(-1))
+                            return;
+
+                        if (Player* _player = GetTarget()->ToPlayer())
                         {
-                            aura->SetDuration((itr)->m_duration);
-                            aura->SetStackAmount((itr)->m_stuck);
-                            aura->SetNeedClientUpdateForTargets();
+                            if (_player->GetMapId() != map)
+                                return;
+
+                            for (auto itr : auras)
+                            {
+                                Aura* aura = !_player->HasAura((itr)->m_id) ? _player->AddAura((itr)->m_id, _player) : _player->GetAura((itr)->m_id);
+                                if (aura)
+                                {
+                                    aura->SetDuration((itr)->m_duration);
+                                    aura->SetStackAmount((itr)->m_stuck);
+                                    aura->SetNeedClientUpdateForTargets();
+                                }
+
+                                delete itr;
+                            }
+
+                            auras.clear();
+
+                            _player->SetPower(POWER_MANA, mana);
+                            _player->SetHealth(health);
+                            _player->TeleportTo(map, posX, posY, posZ, orientation);
                         }
-
-                        delete itr;
                     }
-
-                    auras.clear();
-
-                    _player->SetPower(POWER_MANA, mana);
-                    _player->SetHealth(health);
-                    _player->TeleportTo(map, posX, posY, posZ, orientation);
-                }
             }
 
             void Register()
