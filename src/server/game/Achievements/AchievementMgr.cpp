@@ -754,6 +754,8 @@ void AchievementMgr<Guild>::SaveToDB(SQLTransaction& trans)
 {
     PreparedStatement* stmt;
     std::ostringstream guidstr;
+    
+    m_CompletedAchievementsLock.acquire();
     for (CompletedAchievementMap::iterator itr = m_completedAchievements.begin(); itr != m_completedAchievements.end(); ++itr)
     {
         if (!itr->second.changed)
@@ -772,6 +774,7 @@ void AchievementMgr<Guild>::SaveToDB(SQLTransaction& trans)
 
         guidstr.str("");
     }
+    m_CompletedAchievementsLock.release();
 
     for (AchievementProgressMap::iterator itr = m_achievementProgress.begin(); itr != m_achievementProgress.end(); ++itr)
     {
