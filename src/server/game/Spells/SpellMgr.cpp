@@ -3836,9 +3836,6 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
-                case 90174:
-                    spellInfo->ProcCharges = 1;
-                    break;
                 case 109161:
                 case 109162:
                     spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_LEAP_BACK;
@@ -4420,6 +4417,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].MiscValue = 0;
                     spellInfo->Effects[EFFECT_0].MiscValueB = 0;
                     break;
+                case 90174: // Divine Purpose
                 case 6770:   // Sap
                 case 6346:   // Fear Ward
                 case 81292:  // Glyph of Mind Spike
