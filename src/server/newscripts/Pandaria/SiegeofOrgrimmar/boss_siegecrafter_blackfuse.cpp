@@ -172,9 +172,8 @@ Position spawnweaponpos[3] =
     { 1941.65f, -5425.50f, -299.0f, 5.294743f },
 };
 
-uint32 aweaponentry[5] =
+uint32 aweaponentry[3] =
 {
-    NPC_BLACKFUSE_CRAWLER_MINE,
     NPC_ACTIVATED_LASER_TURRET,
     NPC_ACTIVATED_ELECTROMAGNET,
     NPC_ACTIVATED_MISSILE_TURRET,
@@ -214,8 +213,12 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              me->RemoveAurasDueToSpell(SPELL_PROTECTIVE_FRENZY);
              me->RemoveAurasDueToSpell(SPELL_AUTOMATIC_REPAIR_BEAM_AT);
              me->SetReactState(REACT_DEFENSIVE);
-             //me->SetReactState(REACT_PASSIVE);    //test only
-             me->RemoveAurasDueToSpell(SPELL_AUTOMATIC_REPAIR_BEAM_AT);
+         }
+
+         void JustReachedHome()
+         {
+             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+             me->SetReactState(REACT_DEFENSIVE);
          }
 
          uint32 GetData(uint32 type)
@@ -240,9 +243,9 @@ class boss_siegecrafter_blackfuse : public CreatureScript
 
          void EnterEvadeMode()
          {
-             me->NearTeleportTo(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY(), me->GetHomePosition().GetPositionZ(), me->GetHomePosition().GetOrientation());
              me->Kill(me, true);
              me->Respawn(true);
+             me->GetMotionMaster()->MoveTargetedHome();
          }
 
          void CreateWeaponWave(uint8 wavecount)
@@ -250,7 +253,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              for (uint8 n = 1; n < 4; n++)
                  if (Creature* weapon = me->SummonCreature(wavearray[wavecount][n], spawnweaponpos[n-1]))
                      weapon->GetMotionMaster()->MoveCharge(destpos.GetPositionX(), destpos.GetPositionY(), destpos.GetPositionZ(), 10.0f, false);
-             weaponwavecount = weaponwavecount > 5 ? 0 : ++weaponwavecount;
+             weaponwavecount = weaponwavecount >= 5 ? 0 : ++weaponwavecount;
          }
 
          void CreateLaserWalls()
@@ -327,18 +330,21 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              if (!UpdateVictim())
                  return;
 
-             /*if (checkvictim)
+             if (checkvictim)
              {
                  if (checkvictim <= diff)
                  {
                      if (me->getVictim() && me->getVictim()->HasAura(SPELL_ON_CONVEYOR))
+                     {
+                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                          EnterEvadeMode();
+                     }
                      else
                          checkvictim = 1000;
                  }
                  else
                      checkvictim -= diff;
-             }*/
+             }
 
              events.Update(diff);
 
@@ -382,8 +388,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                  case EVENT_START_CONVEYER:
                      if (!summons.empty())
                      {
-                         summons.DespawnEntry(NPC_SHOCKWAVE_MISSILE);
-                         for (uint8 n = 0; n < 4; n++)
+                         for (uint8 n = 0; n < 3; n++)
                              summons.DespawnEntry(aweaponentry[n]);
                      }
                      CreateWeaponWave(weaponwavecount);
@@ -391,7 +396,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                      break;
                  case EVENT_SUMMON_SHREDDER:
                      if (Creature* shredder = me->SummonCreature(NPC_AUTOMATED_SHREDDER, sumshrederpos.GetPositionX(), sumshrederpos.GetPositionY(), sumshrederpos.GetPositionZ()))
-                         shredder->AI()->DoZoneInCombat(shredder, 150.0f);
+                         shredder->AI()->DoZoneInCombat(shredder, 100.0f);
                      events.ScheduleEvent(EVENT_SUMMON_SHREDDER, 60000);
                      break;
                  }
@@ -460,6 +465,7 @@ public:
         npc_automated_shredderAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
             me->ModifyAuraState(AURA_STATE_CONFLAGRATE, true);
             DoCast(me, SPELL_REACTIVE_ARMOR, true);
         }
@@ -472,7 +478,7 @@ public:
         {
             DoCast(me, SPELL_OVERLOAD);
             events.ScheduleEvent(EVENT_OVERLOAD, 10000);
-            events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 18000);
+            //events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 18000);
         }
 
         void JustDied(Unit* killer){}
@@ -798,7 +804,7 @@ public:
                 break;
                 case EVENT_CHECK_DISTANCE:
                     Player* pl = me->GetPlayer(*me, targetGuid);
-                    if (pl && pl->isAlive())
+                    if (pl && pl->isAlive() && !pl->HasAura(SPELL_ON_CONVEYOR))
                     {
                         if (me->GetDistance(pl) <= 6.0f && !done)
                         {
@@ -915,7 +921,7 @@ public:
                             {
                                 if (int32((*itr)->GetPositionZ()) < -306 && (*itr)->HasAura(SPELL_ON_CONVEYOR))
                                     (*itr)->RemoveAurasDueToSpell(SPELL_ON_CONVEYOR);
-                                else if (int32((*itr)->GetPositionZ()) >= -303 && !(*itr)->HasAura(SPELL_ON_CONVEYOR))
+                                else if (int32((*itr)->GetPositionZ()) >= -303 && int32((*itr)->GetPositionX()) > 2010 && !(*itr)->HasAura(SPELL_ON_CONVEYOR))
                                     (*itr)->CastSpell(*itr, SPELL_ON_CONVEYOR, true);
                             }
                         }

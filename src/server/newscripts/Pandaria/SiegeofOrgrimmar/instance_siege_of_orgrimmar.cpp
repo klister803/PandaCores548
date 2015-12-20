@@ -1504,7 +1504,8 @@ public:
                     else if (weaponsdone == 3 && aweaponentry.empty())
                     {
                         blackfuse->CastSpell(blackfuse, SPELL_ENERGIZED_DEFENSIVE_MATRIX, true);
-                        uint8 num = (blackfuse->AI()->GetData(DATA_GET_WEAPON_WAVE_INDEX) - 1);
+                        uint8 num = blackfuse->AI()->GetData(DATA_GET_WEAPON_WAVE_INDEX);
+                        num = !num ? 5 : --num;
                         for (uint8 n = 1; n < 4; n++)
                         {
                             if (_wavearray[num][n] == NPC_BLACKFUSE_CRAWLER_MINE)
