@@ -2221,6 +2221,7 @@ class Player : public Unit, public GridObject<Player>
         void SetSpellModTakingSpell(Spell* spell, bool apply);
         SpellModifier* TryFindMod(SpellModType type, SpellModOp Op, uint32 spellId, int32 val);
         SpellModList GetModAndSpellMod(SpellModOp op, uint32 spellId);
+        SpellModifier* ChangePriorityMods(SpellModifier* currentMod, SpellModifier* newMod, SpellInfo const* spellInfo);
 
         static uint32 const infinityCooldownDelay = MONTH;  // used for set "infinity cooldowns" for spells and check
         static uint32 const infinityCooldownDelayCheck = MONTH/2;
@@ -3715,15 +3716,19 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
 
             if (mod->op == SPELLMOD_CASTING_TIME && mod->value < 0)
             {
-                if (!modCast || mod->value <= modCast->value)
+                if (!modCast || mod->value < modCast->value)
                     modCast = mod;
+                else if (mod->value == modCast->value)
+                    modCast = ChangePriorityMods(modCast, mod, spellInfo);
                 //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::ApplySpellMod SPELLMOD_CASTING_TIME totalflat %i totalmul %f basevalue %i spellId %i mod->spellId %i", totalflat, (totalmul - 1.0f), basevalue, spellId, mod->spellId);
                 continue;
             }
             if (mod->op == SPELLMOD_COST && mod->value < 0)
             {
-                if (!modCost || mod->value <= modCost->value)
+                if (!modCost || mod->value < modCost->value)
                     modCost = mod;
+                else if (mod->value == modCost->value)
+                    modCost = ChangePriorityMods(modCost, mod, spellInfo);
                 //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::ApplySpellMod SPELLMOD_COST totalflat %i totalmul %f basevalue %i spellId %i mod->spellId %i", totalflat, (totalmul - 1.0f), basevalue, spellId, mod->spellId);
                 continue;
             }

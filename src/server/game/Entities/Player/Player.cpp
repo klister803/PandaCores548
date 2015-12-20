@@ -30957,3 +30957,46 @@ SpellModList Player::GetModAndSpellMod(SpellModOp op, uint32 spellId)
 
     return tempModList;
 }
+
+SpellModifier* Player::ChangePriorityMods(SpellModifier* currentMod, SpellModifier* newMod, SpellInfo const* spellInfo)
+{
+    uint8 currentModVal = 0;
+    uint8 newModVal = 0;
+
+    if (SpellInfo const* curInf = sSpellMgr->GetSpellInfo(currentMod->spellId))
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; i++)
+            if (curInf->Effects[i].Effect == SPELL_EFFECT_APPLY_AURA)
+                switch (curInf->Effects[i].ApplyAuraName)
+                {
+                    case SPELL_AURA_ADD_PCT_MODIFIER:
+                    case SPELL_AURA_ADD_FLAT_MODIFIER:
+                    {
+                        if (IsAffectedBySpellmod(spellInfo, currentMod))
+                            currentModVal++;
+                        continue;
+                    }
+                    default:
+                        continue;
+                }
+
+    if (SpellInfo const* newInf = sSpellMgr->GetSpellInfo(newMod->spellId))
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; i++)
+            if (newInf->Effects[i].Effect == SPELL_EFFECT_APPLY_AURA)
+                switch (newInf->Effects[i].ApplyAuraName)
+                {
+                    case SPELL_AURA_ADD_PCT_MODIFIER:
+                    case SPELL_AURA_ADD_FLAT_MODIFIER:
+                    {
+                        if (IsAffectedBySpellmod(spellInfo, newMod))
+                            newModVal++;
+                        continue;
+                    }
+                    default:
+                        continue;
+                }
+
+    if (newModVal > currentModVal)
+        return newMod;
+
+    return currentMod;
+}
