@@ -788,7 +788,6 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         break;
                     case 107428: // Rising Sun Kick
                         damage = CalculateMonkSpellDamage(_caster, 11.52f, 0.915f, 13);
-                        m_caster->CastSpell(unitTarget, 130320, true);
                         break;
                     case 100784: // Blackout Kick
                         damage = CalculateMonkSpellDamage(_caster, 6.4f, 0.509f, 7);

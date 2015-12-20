@@ -3350,6 +3350,67 @@ class spell_monk_purified_healing : public SpellScriptLoader
         }
 };
 
+// Grapple Weapon - 117368
+class spell_monk_grapple_weapon : public SpellScriptLoader
+{
+    public:
+        spell_monk_grapple_weapon() : SpellScriptLoader("spell_monk_grapple_weapon") { }
+
+        class spell_monk_grapple_weapon_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_grapple_weapon_SpellScript);
+
+            void HandleOnCast()
+            {
+                Unit* caster = GetCaster();
+                Unit* target = GetHitUnit();
+                if (!caster || !target)
+                    return;
+                Player* pCaster = caster->ToPlayer();
+                Player* pTarget = target->ToPlayer();
+                if (!pCaster || !pTarget)
+                    return;
+                Item* mainItemC = pCaster->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+                Item* mainItemT = pTarget->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+                if (!mainItemC || !mainItemT)
+                    return;
+                float weaponSpeedC = mainItemC->GetTemplate()->Delay / 1000.0f;
+                float weaponSpeedT = mainItemT->GetTemplate()->Delay / 1000.0f;
+                uint32 speedC = caster->GetAttackTime(BASE_ATTACK);
+                uint32 speedT = target->GetAttackTime(BASE_ATTACK);
+
+                float weapon_maxdamageC = caster->GetWeaponDamageRange(BASE_ATTACK, MAXDAMAGE) / weaponSpeedC * speedC;
+                float weapon_maxdamageT = target->GetWeaponDamageRange(BASE_ATTACK, MAXDAMAGE) / weaponSpeedT * speedT;
+                if (weapon_maxdamageT > weapon_maxdamageC)
+                {
+                    switch (pCaster->GetSpecializationId(pCaster->GetActiveSpec()))
+                    {
+                        case SPEC_MONK_BREWMASTER:
+                            caster->CastSpell(caster, 123232, true);
+                            break;
+                        case SPEC_MONK_WINDWALKER:
+                            caster->CastSpell(caster, 123231, true);
+                            break;
+                        case SPEC_MONK_MISTWEAVER:
+                            caster->CastSpell(caster, 123234, true);
+                            break;
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnCast += SpellCastFn(spell_monk_grapple_weapon_SpellScript::HandleOnCast);
+                //OnHit += SpellHitFn(spell_monk_grapple_weapon_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_grapple_weapon_SpellScript();
+        }
+};
+
 void AddSC_monk_spell_scripts()
 {
     new spell_monk_clone_cast();
@@ -3416,4 +3477,5 @@ void AddSC_monk_spell_scripts()
     new spell_monk_chi_wave_dummy();
     new spell_monk_disable();
     new spell_monk_purified_healing();
+    new spell_monk_grapple_weapon();
 }

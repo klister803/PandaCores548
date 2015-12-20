@@ -334,7 +334,7 @@ class boss_lord_rhyolith : public CreatureScript
                                     return;
                                 }
                             }
-                            if (pController && pLeftFoot && pRightFoot)
+                            if (pController && pLeftFoot && pRightFoot && pLeftFoot->AI() && pRightFoot->AI())
                             {
                                 int32 l_dmg = pLeftFoot->AI()->GetData(DATA_HITS);
                                 int32 r_dmg = pRightFoot->AI()->GetData(DATA_HITS);

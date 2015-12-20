@@ -872,7 +872,6 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             {
                 if (SpellInfo const* newInfo = sSpellMgr->GetSpellInfo((*itr)->GetAmount()))
                 {
-                    _player->SwapSpellUncategoryCharges(spellId, newInfo->Id);
                     spellInfo = newInfo;
                     spellId = newInfo->Id;
                     replaced = true;

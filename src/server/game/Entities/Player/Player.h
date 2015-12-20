@@ -193,15 +193,6 @@ struct SpellCooldown
     uint32 itemid;
 };
 
-struct UncategorySpellChargeData
-{
-    uint8 charges;
-    uint8 maxCharges;
-    uint32 timer;
-    uint32 chargeRegenTime;
-    uint32 swapSpellId;
-};
-
 struct SpellChargeData
 {
     uint8 charges;
@@ -209,6 +200,7 @@ struct SpellChargeData
 
     SpellCategoryEntry const* categoryEntry;
     uint32 timer;
+    uint32 chargeRegenTime;
 };
 
 typedef std::map<uint32, double> RPPMLastSuccessfulProc;
@@ -216,7 +208,6 @@ typedef std::map<uint32, double> RPPMLastChanceToProc;
 typedef std::map<uint32, SpellCooldown> RPPMSpellCooldowns;
 typedef std::map<uint32, SpellCooldown> SpellCooldowns;
 typedef std::map<uint32 /*categoryId*/, SpellChargeData> SpellChargeDataMap;
-typedef std::map<uint32, UncategorySpellChargeData*> UCSpellChargeDataMap;
 typedef UNORDERED_MAP<uint32 /*instanceId*/, time_t/*releaseTime*/> InstanceTimeMap;
 
 enum TrainerSpellState
@@ -2275,17 +2266,12 @@ class Player : public Unit, public GridObject<Player>
 
         bool HasChargesForSpell(SpellInfo const* spellInfo) const;
         uint8 GetMaxSpellCategoryCharges(SpellCategoryEntry const* categoryEntry) const;
+        uint32 GetSpellCategoryChargesTimer(SpellCategoryEntry const* categoryEntry) const;
         uint8 GetMaxSpellCategoryCharges(uint32 category) const;
         void TakeSpellCharge(SpellInfo const* spellInfo);
         void UpdateSpellCharges(uint32 diff);
         void RecalculateSpellCategoryCharges(uint32 category);
         void RestoreSpellCategoryCharges(uint32 categoryId = 0);
-
-        bool HasChargesForUCSpell(uint32 spellId = 0);
-        void HandleSpellUncategoryCharges(uint32 spellId = 0);
-        void AddSpellUncategoryCharges(SpellInfo const* spellInfo);
-        void SwapSpellUncategoryCharges(uint32 mainSpellId = 0, uint32 newSpellId = 0);
-        void RestoreSpellUncategoryCharges();
 
         void SetLastPotionId(uint32 item_id) { m_lastPotionId = item_id; }
         void UpdatePotionCooldown(Spell* spell = NULL);
@@ -3633,7 +3619,6 @@ class Player : public Unit, public GridObject<Player>
         RPPMSpellCooldowns m_rppmspellCooldowns;
         SpellCooldowns m_spellCooldowns;
         SpellChargeDataMap m_spellChargeData;
-        UCSpellChargeDataMap m_uncategorySpellChargeData;
 
         uint32 m_ChampioningFaction;
         uint32 m_ChampioningFactionDungeonLevel;
