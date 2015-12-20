@@ -13725,13 +13725,13 @@ int32 Unit::SpellBaseHealingBonusTaken(SpellSchoolMask schoolMask)
 bool Unit::IsImmunedToDamage(SpellSchoolMask shoolMask)
 {
     // If m_immuneToSchool type contain this school type, IMMUNE damage.
-    SpellImmuneList const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
+    SpellImmuneList schoolList = m_spellImmune[IMMUNITY_SCHOOL];
     for (auto itr : schoolList)
         if (itr.type & shoolMask)
             return true;
 
     // If m_immuneToDamage type contain magic, IMMUNE damage.
-    SpellImmuneList const& damageList = m_spellImmune[IMMUNITY_DAMAGE];
+    SpellImmuneList damageList = m_spellImmune[IMMUNITY_DAMAGE];
     for (auto itr : damageList)
         if (itr.type & shoolMask)
             return true;
@@ -13750,7 +13750,7 @@ bool Unit::IsImmunedToDamage(SpellInfo const* spellInfo)
     if (spellInfo->Id != 42292 && spellInfo->Id != 59752)
     {
         // If m_immuneToSchool type contain this school type, IMMUNE damage.
-        SpellImmuneList const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
+        SpellImmuneList schoolList = m_spellImmune[IMMUNITY_SCHOOL];
         for (SpellImmuneList::const_iterator itr = schoolList.begin(); itr != schoolList.end(); ++itr)
         {
             tempMask &= ~itr->type;
@@ -13763,7 +13763,7 @@ bool Unit::IsImmunedToDamage(SpellInfo const* spellInfo)
     }
 
     // If m_immuneToDamage type contain magic, IMMUNE damage.
-    SpellImmuneList const& damageList = m_spellImmune[IMMUNITY_DAMAGE];
+    SpellImmuneList damageList = m_spellImmune[IMMUNITY_DAMAGE];
     for (SpellImmuneList::const_iterator itr = damageList.begin(); itr != damageList.end(); ++itr)
     {
         tempMask &= ~itr->type;
