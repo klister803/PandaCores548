@@ -7857,6 +7857,10 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 }
                 case 111397: // Blood Horror
                 {
+                    if (Unit* owner = target->GetOwner())
+                        if (owner->GetTypeId() == TYPEID_PLAYER)
+                            return false;
+
                     triggered_spell_id = 137143;
                     break;
                 }
