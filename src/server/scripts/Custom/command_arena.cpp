@@ -335,7 +335,7 @@ public:
 
                     if(!debugOnly)
                     {
-                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", guid, 38313); //Tabard summer 2015
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", guid, 38311); //Tabard winter 2015
                         CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','150')", guid, 38186);
                     }
 
@@ -390,13 +390,13 @@ public:
                     {
                         if(!debugOnly)
                         {
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", guid, 85785); //item
+                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", guid, 104327); //item
                             CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','200')", guid, 38186); //item
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 8643); // achivement
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 378); //Title
+                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 8666); // achivement
+                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 379); //Title
                         }
 
-                        sLog->outArena("За %u место в топе 3на3(0.1) получил %s(%u) efir=200, item=85785, achiv=8643, title=378, побед %u, игр %u, рейтинг %u", count, name.c_str(), guid, wins, games, rating);
+                        sLog->outArena("За %u место в топе 3на3(0.1) получил %s(%u) efir=200, item=104327, achiv=8666, title=379, побед %u, игр %u, рейтинг %u", count, name.c_str(), guid, wins, games, rating);
                     }
 
                     //Гладиатор / Gladiator
@@ -441,7 +441,7 @@ public:
                     {
                         if(!debugOnly)
                         {
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", guid, 38313); //Tabard summer 2015
+                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", guid, 38311); //Tabard winter 2015
                             CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 2090);
                             CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 45);
                         }
@@ -461,7 +461,7 @@ public:
         // 4 - top offlokie 10%
         // 5 - top offlokie 35%
         // 5c5
-        {
+        /*{
             if(QueryResult arenaWinner = CharacterDatabase.PQuery("SELECT ch.guid, ch.name, wins, games, rating FROM `character_brackets_info` cbi LEFT JOIN characters ch ON ch.guid = cbi.guid WHERE `bracket` = 2 and rating > 1000 AND wins > 49 ORDER BY rating DESC"))
             {
                 uint32 count = 1;
@@ -558,7 +558,7 @@ public:
                 }
                 while (arenaWinner->NextRow());
             }
-        }
+        }*/
 
         // by default:
         // 1 - top offlokie 0.5%
@@ -588,7 +588,7 @@ public:
                     {
                         if(!debugOnly)
                         {
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", guid, 38313); //Tabard summer 2015
+                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", guid, 38311); //Tabard winter 2015
                             CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','250')", guid, 38186);
                             CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, achivement);
                         }

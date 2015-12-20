@@ -1181,6 +1181,28 @@ class spell_monk_zen_sphere : public SpellScriptLoader
             }
         };
 
+        class spell_monk_zen_sphere_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_zen_sphere_SpellScript);
+
+            void HandleOnCast()
+            {
+                if (Unit* target = GetHitUnit())
+                    if (Aura* aura = target->GetAura(124081))
+                        aura->Remove(AURA_REMOVE_BY_CANCEL);
+            }
+
+            void Register()
+            {
+                OnCast += SpellCastFn(spell_monk_zen_sphere_SpellScript::HandleOnCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_zen_sphere_SpellScript();
+        }
+
         AuraScript* GetAuraScript() const
         {
             return new spell_monk_zen_sphere_AuraScript();
