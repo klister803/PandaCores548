@@ -345,8 +345,8 @@ public:
 
         void OnPlayerLeave(Player* player)
         {
-            for (uint8 n = 0; n < 6; n++)
-                player->RemoveAurasDueToSpell(_toxinlist[n]);
+            for (uint8 n = 0; n < 29; ++n)
+                DoRemoveAurasDueToSpellOnPlayers(removelist[n]);
         }
 
         void RemoveDebuffFromPlayers()

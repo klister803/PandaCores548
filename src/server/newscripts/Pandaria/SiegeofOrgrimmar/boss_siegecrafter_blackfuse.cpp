@@ -251,7 +251,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          {
              for (uint8 n = 1; n < 4; n++)
                  if (Creature* weapon = me->SummonCreature(wavearray[wavecount][n], spawnweaponpos[n-1]))
-                     weapon->GetMotionMaster()->MoveCharge(destpos.GetPositionX(), destpos.GetPositionY(), destpos.GetPositionZ(), 10.0f, false);
+                     weapon->GetMotionMaster()->MoveCharge(destpos.GetPositionX(), destpos.GetPositionY(), destpos.GetPositionZ(), 8.0f, false);
              weaponwavecount = weaponwavecount >= 5 ? 0 : ++weaponwavecount;
          }
 
@@ -686,7 +686,7 @@ public:
                     {
                         for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                         {
-                            if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && !(*itr)->HasAura(SPELL_ON_CONVEYOR) && !(*itr)->HasAura(SPELL_CRAWLER_MINE_FIXATE_PL))
+                            if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && !(*itr)->HasAura(SPELL_PATTERN_RECOGNITION) && !(*itr)->HasAura(SPELL_ON_CONVEYOR) && !(*itr)->HasAura(SPELL_CRAWLER_MINE_FIXATE_PL))
                             {
                                 if (Creature* laser = blackfuse->SummonCreature(NPC_LASER_TARGET, (*itr)->GetPositionX() + 10.0f, (*itr)->GetPositionY(), blackfuse->GetPositionZ()))
                                 {
@@ -769,6 +769,10 @@ public:
                 break;
                 case EVENT_PURSUE:
                 {
+                    if (Player* pl = me->GetPlayer(*me, targetGuid))
+                        if (pl->isAlive())
+                            pl->RemoveAurasDueToSpell(SPELL_CRAWLER_MINE_FIXATE_PL);
+
                     std::list<Player*>pllist;
                     GetPlayerListInGrid(pllist, me, 150.0f);
                     if (!pllist.empty())
@@ -777,7 +781,7 @@ public:
                         {
                             if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
                             {
-                                if (!(*itr)->HasAura(SPELL_ON_CONVEYOR) && !(*itr)->HasAura(SPELL_PURSUIT_LASER) && !(*itr)->HasAura(SPELL_CRAWLER_MINE_FIXATE_PL))
+                                if (!(*itr)->HasAura(SPELL_ON_CONVEYOR) && !(*itr)->HasAura(SPELL_PATTERN_RECOGNITION) && !(*itr)->HasAura(SPELL_PURSUIT_LASER) && !(*itr)->HasAura(SPELL_CRAWLER_MINE_FIXATE_PL))
                                 {
                                     (*itr)->AddAura(SPELL_CRAWLER_MINE_FIXATE_PL, *itr);
                                     DoCast(*itr, SPELL_CRAWLER_MINE_FIXATE, true);
@@ -1298,7 +1302,7 @@ public:
                 case ENTER_CONVEYOR_2:
                     if (instance->GetBossState(DATA_BLACKFUSE) == IN_PROGRESS)
                     {
-                        if (!player->HasAura(SPELL_PATTERN_RECOGNITION))
+                        if (!player->HasAura(SPELL_PURSUIT_LASER) && !player->HasAura(SPELL_ON_CONVEYOR) && !player->HasAura(SPELL_CRAWLER_MINE_FIXATE_PL) && !player->HasAura(SPELL_PATTERN_RECOGNITION))
                         {
                             player->CastSpell(player, SPELL_ON_CONVEYOR, true);
                             player->NearTeleportTo(atdestpos[2].GetPositionX(), atdestpos[2].GetPositionY(), atdestpos[2].GetPositionZ(), atdestpos[2].GetOrientation());
