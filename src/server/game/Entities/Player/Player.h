@@ -2035,6 +2035,7 @@ class Player : public Unit, public GridObject<Player>
         void SetSelection(uint64 guid) { if(m_curSelection) m_lastSelection = m_curSelection; m_curSelection = guid; SetUInt64Value(UNIT_FIELD_TARGET, guid); }
 
         uint8 GetComboPoints() const { if(HasAura(138148)) return m_comboPoints + 1; else return m_comboPoints; }
+        uint8 GetComboPointsForDuration() const { if(HasAura(138148)) return m_comboPoints + 1; else return m_comboPoints; }
         uint64 GetComboTarget() const { return m_comboTarget; }
         void SaveAddComboPoints(int8 count) { m_comboSavePoints += count; }
         uint8 GetSaveComboPoints() const { return m_comboSavePoints; }

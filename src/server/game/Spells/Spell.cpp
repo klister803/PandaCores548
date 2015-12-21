@@ -7145,7 +7145,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                         
                             if (Player * player = m_caster->ToPlayer())
                             {
-                                if (aura->GetDuration() > player->GetComboPoints() * 6000 + bonusDuration)
+                                if (aura->GetDuration() > player->GetComboPointsForDuration() * 6000 + bonusDuration)
                                     return SPELL_FAILED_TRY_AGAIN;
                             }
                         }

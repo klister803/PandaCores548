@@ -184,7 +184,7 @@ class spell_rog_blade_flurry : public SpellScriptLoader
                     damage = int32((damage * percent) / 100);
 
                     if (Unit* target = _player->SelectNearbyTarget(eventInfo.GetActionTarget()))
-                        _player->CastCustomSpell(target, ROGUE_SPELL_BLADE_FLURRY_DAMAGE, &damage, NULL, NULL, false);
+                        _player->CastCustomSpell(target, ROGUE_SPELL_BLADE_FLURRY_DAMAGE, &damage, NULL, NULL, true);
                 }
             }
 

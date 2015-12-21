@@ -26,3 +26,8 @@ insert into `spell_proc_check` (`entry`, `entry2`, `entry3`, `checkspell`, `hast
 insert into `spell_bonus_data` (`entry`, `direct_bonus`, `dot_bonus`, `ap_bonus`, `ap_dot_bonus`, `damage_bonus`, `heal_bonus`, `comments`) values
 ('149112','0','0','0.45','0','0','0','Mist Wave');
 
+DELETE FROM spell_proc_check WHERE entry IN (13877);
+insert into `spell_proc_check` (`entry`, `entry2`, `entry3`, `checkspell`, `hastalent`, `chance`, `target`, `effectmask`, `powertype`, `dmgclass`, `specId`, `spellAttr0`, `targetTypeMask`, `mechanicMask`, `fromlevel`, `perchp`, `spelltypeMask`, `combopoints`, `deathstateMask`, `hasDuration`, `comment`) values
+('13877','0','0','-22482','0','0','0','7','-1','-1','0','0','0','0','0','0','0','0','0','0','квал клинков'),
+('13877','0','0','-86392','0','0','0','7','-1','-1','0','0','0','0','0','0','0','0','0','0','квал клинков');
+

@@ -16222,7 +16222,7 @@ int32 Unit::CalculateSpellDamage(Unit const* target, SpellInfo const* spellProto
 
 int32 Unit::CalcSpellDuration(SpellInfo const* spellProto)
 {
-    uint8 comboPoints = m_movedPlayer ? m_movedPlayer->GetComboPoints() : 0;
+    uint8 comboPoints = m_movedPlayer ? m_movedPlayer->GetComboPointsForDuration() : 0;
     uint8 holyPower   = 0;
 
     int32 minduration = spellProto->GetDuration();
