@@ -1302,7 +1302,7 @@ class spell_sha_lava_lash : public SpellScriptLoader
                             // Effect desactivated if has Glyph of Lava Lash
                             if (!_player->HasAura(55444))
                             {
-                                if (target->HasAura(SPELL_SHA_FLAME_SHOCK))
+                                if (Aura* aura = target->GetAura(SPELL_SHA_FLAME_SHOCK, _player->GetGUID()))
                                 {
                                     std::list<Unit*> targetList;
 
