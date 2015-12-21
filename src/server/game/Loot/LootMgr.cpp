@@ -414,6 +414,10 @@ bool LootItem::AllowedForPlayer(Player const* player) const
     if (!sConditionMgr->IsObjectMeetToConditions(const_cast<Player*>(player), conditions))
         return false;
 
+    ConditionList conditionsList = sConditionMgr->GetConditionsForItemLoot(1, itemid);
+    if (!sConditionMgr->IsObjectMeetToConditions(const_cast<Player*>(player), conditionsList))
+        return false;
+
     if (type == LOOT_ITEM_TYPE_ITEM)
     {
         ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(itemid);

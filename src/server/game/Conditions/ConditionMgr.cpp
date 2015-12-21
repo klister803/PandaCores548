@@ -676,7 +676,8 @@ bool ConditionMgr::CanHaveSourceGroupSet(ConditionSourceType sourceType) const
             sourceType == CONDITION_SOURCE_TYPE_SMART_EVENT ||
             sourceType == CONDITION_SOURCE_TYPE_NPC_VENDOR ||
             sourceType == CONDITION_SOURCE_TYPE_PHASE_DEFINITION ||
-            sourceType == CONDITION_SOURCE_TYPE_AREATRIGGER_ACTION);
+            sourceType == CONDITION_SOURCE_TYPE_AREATRIGGER_ACTION ||
+            sourceType == CONDITION_SOURCE_TYPE_LOOT_ITEM);
 }
 
 bool ConditionMgr::CanHaveSourceIdSet(ConditionSourceType sourceType) const
@@ -798,6 +799,25 @@ ConditionList ConditionMgr::GetConditionsForAreaTriggerAction(uint32 areaTrigger
             sLog->outDebug(LOG_FILTER_CONDITIONSYS, "GetConditionsForAreaTriggerAction: found conditions for areatrigger id %u entry %u spell %u", areaTriggerId, actionId);
         }
     }
+
+    return cond;
+}
+
+ConditionList ConditionMgr::GetConditionsForItemLoot(uint32 creatureId, uint32 itemId)
+{
+    ConditionList cond;
+    ItemLootConditionContainer::const_iterator itr = ItemLootConditionStore.find(creatureId);
+    if (itr != ItemLootConditionStore.end())
+    {
+        ConditionTypeContainer::const_iterator i = itr->second.find(itemId);
+        if (i != itr->second.end())
+        {
+            cond = i->second;
+            sLog->outDebug(LOG_FILTER_CONDITIONSYS, "GetConditionsForItemLoot: found conditions for creatureId %u itemId %u", creatureId, itemId);
+        }
+    }
+
+    sLog->outDebug(LOG_FILTER_CONDITIONSYS, "GetConditionsForItemLoot: conditions for creatureId %u itemId %u", creatureId, itemId);
 
     return cond;
 }
@@ -1034,6 +1054,13 @@ void ConditionMgr::LoadConditions(bool isReload)
                 case CONDITION_SOURCE_TYPE_AREATRIGGER_ACTION:
                 {
                     AreaTriggerConditionStore[cond->SourceGroup][cond->SourceEntry].push_back(cond);
+                    valid = true;
+                    ++count;
+                    continue;
+                }
+                case CONDITION_SOURCE_TYPE_LOOT_ITEM:
+                {
+                    ItemLootConditionStore[cond->SourceGroup][cond->SourceEntry].push_back(cond);
                     valid = true;
                     ++count;
                     continue;
@@ -1597,6 +1624,16 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             }
             break;
         }
+        case CONDITION_SOURCE_TYPE_LOOT_ITEM:
+        {
+            ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(cond->SourceEntry);
+            if (!itemTemplate)
+            {
+                sLog->outError(LOG_FILTER_SQL, "SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->SourceEntry);
+                return false;
+            }
+        }
+        break;
         case CONDITION_SOURCE_TYPE_GOSSIP_MENU:
         case CONDITION_SOURCE_TYPE_GOSSIP_MENU_OPTION:
         case CONDITION_SOURCE_TYPE_SMART_EVENT:
@@ -2197,6 +2234,19 @@ void ConditionMgr::Clean()
     }
 
     AreaTriggerConditionStore.clear();
+
+    for (ItemLootConditionContainer::iterator itr = ItemLootConditionStore.begin(); itr != ItemLootConditionStore.end(); ++itr)
+    {
+        for (ConditionTypeContainer::iterator it = itr->second.begin(); it != itr->second.end(); ++it)
+        {
+            for (ConditionList::const_iterator i = it->second.begin(); i != it->second.end(); ++i)
+                delete *i;
+            it->second.clear();
+        }
+        itr->second.clear();
+    }
+
+    ItemLootConditionStore.clear();
 
     // this is a BIG hack, feel free to fix it if you can figure out the ConditionMgr ;)
     for (std::list<Condition*>::const_iterator itr = AllocatedMemoryStore.begin(); itr != AllocatedMemoryStore.end(); ++itr)

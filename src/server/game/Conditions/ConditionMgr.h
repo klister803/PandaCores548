@@ -129,7 +129,8 @@ enum ConditionSourceType
     CONDITION_SOURCE_TYPE_NPC_VENDOR                     = 25,
     CONDITION_SOURCE_TYPE_AREATRIGGER_ACTION             = 26,
     CONDITION_SOURCE_TYPE_BONUS_LOOT_TEMPLATE            = 27,
-    CONDITION_SOURCE_TYPE_MAX                            = 28  //MAX
+    CONDITION_SOURCE_TYPE_LOOT_ITEM                      = 28,
+    CONDITION_SOURCE_TYPE_MAX                            = 29  //MAX
 };
 
 enum ComparisionType
@@ -226,6 +227,7 @@ typedef std::map<uint32, ConditionTypeContainer> NpcVendorConditionContainer;
 typedef std::map<std::pair<int32, uint32 /*SAI source_type*/>, ConditionTypeContainer> SmartEventConditionContainer;
 typedef std::map<int32 /*zoneId*/, ConditionTypeContainer> PhaseDefinitionConditionContainer;
 typedef std::map<uint32 /*areatrigger id*/, ConditionTypeContainer> AreaTriggerConditionContainer;
+typedef std::map<uint32 /*itemId*/, ConditionTypeContainer> ItemLootConditionContainer;
 
 typedef std::map<uint32, ConditionList> ConditionReferenceContainer;//only used for references
 
@@ -255,6 +257,7 @@ class ConditionMgr
         ConditionList GetConditionsForNpcVendorEvent(uint32 creatureId, uint32 itemId);
         ConditionList GetConditionsForPhaseDefinition(uint32 zone, uint32 entry);
         ConditionList GetConditionsForAreaTriggerAction(uint32 areaTriggerId, uint32 actionId);
+        ConditionList GetConditionsForItemLoot(uint32 creatureId, uint32 itemId);
 
     private:
         bool isSourceTypeValid(Condition* cond);
@@ -275,6 +278,7 @@ class ConditionMgr
         SmartEventConditionContainer      SmartEventConditionStore;
         PhaseDefinitionConditionContainer PhaseDefinitionsConditionStore;
         AreaTriggerConditionContainer     AreaTriggerConditionStore;
+        ItemLootConditionContainer        ItemLootConditionStore;
 };
 
 template <class T> bool CompareValues(ComparisionType type,  T val1, T val2)

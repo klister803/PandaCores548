@@ -1684,13 +1684,16 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
     // handle spell_linked_spell table
     if (!onReapply)
     {
-        //Phase
-        if (Player* player = target->ToPlayer())
+        if (target)
         {
-            if (apply)	
-                player->GetPhaseMgr().RegisterPhasingAura(GetId(), target);
-            else	
-                player->GetPhaseMgr().UnRegisterPhasingAura(GetId(), target);
+            //Phase
+            if (Player* player = target->ToPlayer())
+            {
+                if (apply)	
+                    player->GetPhaseMgr().RegisterPhasingAura(GetId(), target);
+                else	
+                    player->GetPhaseMgr().UnRegisterPhasingAura(GetId(), target);
+            }
         }
 
         // apply linked auras
