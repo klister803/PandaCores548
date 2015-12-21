@@ -1187,7 +1187,7 @@ class spell_monk_zen_sphere : public SpellScriptLoader
 
             void HandleOnCast()
             {
-                if (Unit* target = GetHitUnit())
+                if (Unit* target = GetExplTargetUnit())
                     if (Aura* aura = target->GetAura(124081))
                         aura->Remove(AURA_REMOVE_BY_CANCEL);
             }

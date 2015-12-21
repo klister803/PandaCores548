@@ -1293,35 +1293,6 @@ class spell_rog_blade_flurry_aoe : public SpellScriptLoader
         }
 };
 
-// Mutilate - 1329
-class spell_rog_mutilate_t16 : public SpellScriptLoader
-{
-    public:
-        spell_rog_mutilate_t16() : SpellScriptLoader("spell_rog_mutilate_t16") { }
-
-        class spell_rog_mutilate_t16_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_rog_mutilate_t16_SpellScript);
-
-            void HandleOnCast()
-            {
-                if (Unit* caster = GetCaster())
-                    if(Aura* aura = caster->GetAura(145193)) // Item - Rogue T16 2P Bonus
-                            aura->ModStackAmount(-1);
-            }
-
-            void Register()
-            {
-                BeforeCast += SpellCastFn(spell_rog_mutilate_t16_SpellScript::HandleOnCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_rog_mutilate_t16_SpellScript();
-        }
-};
-
 void AddSC_rogue_spell_scripts()
 {
     new spell_rog_shuriken_toss();
@@ -1350,5 +1321,4 @@ void AddSC_rogue_spell_scripts()
     new spell_rog_pick_pocket();
     new spell_rog_killing_spree();
     new spell_rog_blade_flurry_aoe();
-    new spell_rog_mutilate_t16();
 }

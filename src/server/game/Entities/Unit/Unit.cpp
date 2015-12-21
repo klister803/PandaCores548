@@ -19255,6 +19255,22 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     if (Unit* _select = _player->GetSelectedUnit())
                         _targetAura = _select;
 
+            uint64 casterGuid = _targetAura != triggeredByAura->GetCaster() ? triggeredByAura->GetCaster()->GetGUID() : 0;
+
+            if (itr->option != SPELL_TRIGGER_CHECK_PROCK && itr->option != SPELL_TRIGGER_COOLDOWN && itr->option != SPELL_TRIGGER_MODIFY_COOLDOWN)
+            {
+                if(itr->aura > 0 && !_targetAura->HasAura(itr->aura, casterGuid))
+                {
+                    check = true;
+                    continue;
+                }
+                if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura), casterGuid))
+                {
+                    check = true;
+                    continue;
+                }
+            }
+
             int32 bp0 = int32(itr->bp0);
             int32 bp1 = int32(itr->bp1);
             int32 bp2 = int32(itr->bp2);
@@ -19262,16 +19278,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
             {
                 case SPELL_TRIGGER_BP: //0
                 {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
                     if(itr->spell_trigger > 0)
                         basepoints0 = triggerAmount;
                     else
@@ -19297,16 +19303,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 break;
                 case SPELL_TRIGGER_BP_CUSTOM: //1
                 {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
                     triggered_spell_id = abs(itr->spell_trigger);
                     _caster->CastCustomSpell(target, triggered_spell_id, &bp0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
                     if(itr->target == 6)
@@ -19321,16 +19317,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 {
                     if(!procSpell)
                         continue;
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
                     int32 cost = int32(procSpell->PowerCost + CalculatePct(GetCreateMana(), procSpell->PowerCostPercentage));
                     basepoints0 = CalculatePct(cost, bp0);
 
@@ -19346,16 +19332,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 break;
                 case SPELL_TRIGGER_DAM_HEALTH: //3
                 {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
                     float percent = 0.0f;
                     if (Player* plr = ToPlayer())
                     {
@@ -19408,17 +19384,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 break;
                 case SPELL_TRIGGER_UPDATE_DUR: //5
                 {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
-
                     if (itr->spell_trigger > 0)
                     {
                         if (Aura* aura = target->GetAura(abs(itr->spell_trigger), GetGUID()))
@@ -19458,16 +19423,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                         check = true;
                         continue;
                     }
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
+
                     int32 chance = 20 * ToPlayer()->GetComboPoints();
                     if (roll_chance_i(chance))
                     {
@@ -19491,16 +19447,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 break;
                 case SPELL_TRIGGER_PERC_FROM_DAMGE: //9
                 {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
                     float amount = bp0;
 
                     if (!bp0)
@@ -19520,16 +19466,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 break;
                 case SPELL_TRIGGER_PERC_MAX_MANA: //10
                 {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
                     int32 percent = triggerAmount;
                     if(bp0)
                         percent += bp0;
@@ -19547,16 +19483,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 break;
                 case SPELL_TRIGGER_PERC_BASE_MANA: //11
                 {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
                     int32 percent = triggerAmount;
                     if(bp0)
                         percent += bp0;
@@ -19574,16 +19500,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 break;
                 case SPELL_TRIGGER_PERC_CUR_MANA: //12
                 {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
                     basepoints0 = int32((itr->bp0 / 100.0f) * target->GetPower(POWER_MANA));
 
                     triggered_spell_id = abs(itr->spell_trigger);
@@ -19608,16 +19524,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 break;
                 case SPELL_TRIGGER_CHECK_DAMAGE: //16
                 {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
                     triggered_spell_id = abs(itr->spell_trigger);
 
                     if(int32(damage) >= triggerAmount)
@@ -19636,17 +19542,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 case SPELL_TRIGGER_CAST_OR_REMOVE: // 20
                 {
                     triggered_spell_id = abs(itr->spell_trigger);
-
-                    if (itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if (itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
 
                     if (itr->spell_trigger > 0)
                         _caster->CastSpell(target, triggered_spell_id, true);
@@ -19705,10 +19600,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 {
                     if (!target || target->GetCharmerOrOwnerPlayerOrPlayerItself() || (procSpell && procSpell->IsAffectingArea()))
                         return false;
-
-                    if (itr->aura)
-                        if (!HasAura(itr->aura))
-                            return false;
 
                     if (!dmgInfoProc->GetDamageBeforeHit())
                         return false;
@@ -19828,16 +19719,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                         check = true;
                         continue;
                     }
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
 
                     triggered_spell_id = abs(itr->spell_trigger);
                     if(itr->bp0)
@@ -19862,16 +19743,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                         check = true;
                         continue;
                     }
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
+
                     WeaponAttackType attType = BASE_ATTACK;
                     if (procSpell->DmgClass == SPELL_DAMAGE_CLASS_RANGED)
                         attType = RANGED_ATTACK;
@@ -19934,16 +19806,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                         check = true;
                         continue;
                     }
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
+
                     int32 basepoints0 = triggerAmount * ToPlayer()->GetComboPoints();
                     triggered_spell_id = abs(itr->spell_trigger);
 
@@ -19958,16 +19821,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 break;
                 case SPELL_TRIGGER_DAM_PERC_FROM_MAX_HP: //30
                 {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
                     basepoints0 = int32(float(dmgInfoProc->GetDamage() * 100.0f) / target->GetMaxHealth());
                     if(bp0)
                         basepoints0 *= bp0;
@@ -19984,17 +19837,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 break;
                 case SPELL_TRIGGER_SUMM_DAMAGE_PROC: //31
                 {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
-
                     int32 limited = 0;
                     int32 summ_damage = triggerAmount + dmgInfoProc->GetDamage();
                     triggered_spell_id = abs(itr->spell_trigger);
@@ -20030,16 +19872,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 break;
                 case SPELL_TRIGGER_ADDPOWER_PCT: //32
                 {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
                     int32 percent = triggerAmount;
                     if(bp0)
                         percent += bp0;
@@ -20068,16 +19900,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 break;
                 case SPELL_TRIGGER_ADD_ABSORB_PCT: //33
                 {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
                     int32 percent = triggerAmount;
                     if(bp0)
                         percent += bp0;
@@ -20106,16 +19928,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 break;
                 case SPELL_TRIGGER_ADD_BLOCK_PCT: //34
                 {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
                     int32 percent = triggerAmount;
                     if(bp0)
                         percent += bp0;
@@ -20149,16 +19961,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                         check = true;
                         continue;
                     }
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
 
                     triggered_spell_id = abs(itr->spell_trigger);
                     _caster->CastSpell(target, triggered_spell_id, true);
@@ -20167,17 +19969,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 break;
                 case SPELL_TRIGGER_ADD_STACK: //17
                 {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
-
                     triggered_spell_id = abs(itr->spell_trigger);
 
                     if(Aura* aura = _caster->GetAura(triggered_spell_id))
@@ -20189,17 +19980,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 break;
                 case SPELL_TRIGGER_ADD_CHARGES: //18
                 {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
-
                     triggered_spell_id = abs(itr->spell_trigger);
 
                     if(Aura* aura = _caster->GetAura(triggered_spell_id))
@@ -20211,17 +19991,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 break;
                 case SPELL_TRIGGER_ADD_CHARGES_STACK: //19
                 {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
-
                     triggered_spell_id = abs(itr->spell_trigger);
 
                     if(Aura* aura = _caster->GetAura(triggered_spell_id))
@@ -20236,16 +20005,6 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 break;
                 case SPELL_TRIGGER_HOLYPOWER_BONUS: //36
                 {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
                     int32 percent = triggerAmount;
                     if(bp0)
                         percent += bp0;

@@ -636,9 +636,10 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 case 115191: // Stealth
                 case 5215:   // Prowl
                 {
-                    if (Aura* aura = caster->GetAura(21009)) // Elusiveness
-                        if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
-                            amount = eff->GetAmount();
+                    if (!amount)
+                        if (Aura* aura = caster->GetAura(21009)) // Elusiveness
+                            if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
+                                amount = eff->GetAmount();
                     break;
                 }
                 default:

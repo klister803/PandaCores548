@@ -2189,7 +2189,7 @@ class Player : public Unit, public GridObject<Player>
         PlayerSpellMap const& GetSpellMap() const { return m_spells; }
         PlayerSpellMap      & GetSpellMap()       { return m_spells; }
 
-        const ItemSpellList & GetItemSpellList() { return m_itemSpellList; }
+        ItemSpellList GetItemSpellList() { return m_itemSpellList; }
         void HandleItemSpellList(uint32 spellId, bool apply)
         {
             if (apply)
@@ -3248,6 +3248,7 @@ class Player : public Unit, public GridObject<Player>
         bool m_needUpdateMeleeHastMod = false;
         bool m_needUpdateRangeHastMod = false;
         bool m_needUpdateHastMod = false;
+        bool m_duelLock = false;
 
 
         /*********************************************************/

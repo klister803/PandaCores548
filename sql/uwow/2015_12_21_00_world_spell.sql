@@ -11,3 +11,18 @@ insert into `spell_linked_spell` (`spell_trigger`, `spell_effect`, `type`, `cast
 ('107428','130320','1','0','0','0','0','0','0','0','0','0','0','0','0','-1','0','0','Удар восходящего солнца');
 
 INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('117368', 'spell_monk_grapple_weapon');
+
+DELETE FROM spell_script_names WHERE spell_id IN (1329);
+
+insert into `spell_trigger` (`spell_id`, `spell_trigger`, `spell_cooldown`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group`, `procFlags`, `procEx`, `check_spell_id`, `addptype`, `schoolMask`, `dummyId`, `dummyEffect`, `comment`) values
+('145193','-145193','0','20','0','0','0','0','0','0','7','0','0','0','0','0','0','-1','0','0','0','Item - Rogue T16 2P Bonus');
+
+insert into `spell_proc_check` (`entry`, `entry2`, `entry3`, `checkspell`, `hastalent`, `chance`, `target`, `effectmask`, `powertype`, `dmgclass`, `specId`, `spellAttr0`, `targetTypeMask`, `mechanicMask`, `fromlevel`, `perchp`, `spelltypeMask`, `combopoints`, `deathstateMask`, `hasDuration`, `comment`) values
+('114015','0','0','-57841','0','0','0','7','-1','-1','0','0','0','0','0','0','0','0','0','0','Предчувствие'),
+('114015','0','0','-57842','0','0','0','7','-1','-1','0','0','0','0','0','0','0','0','0','0','Предчувствие'),
+('114015','0','0','-121473','0','0','0','7','-1','-1','0','0','0','0','0','0','0','0','0','0','Предчувствие'),
+('114015','0','0','-2098','0','0','0','7','-1','-1','0','0','0','0','0','0','0','0','0','0','Предчувствие');
+
+insert into `spell_bonus_data` (`entry`, `direct_bonus`, `dot_bonus`, `ap_bonus`, `ap_dot_bonus`, `damage_bonus`, `heal_bonus`, `comments`) values
+('149112','0','0','0.45','0','0','0','Mist Wave');
+

@@ -764,6 +764,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_needUpdateMeleeHastMod = false;
     m_needUpdateRangeHastMod = false;
     m_needUpdateHastMod = false;
+    m_duelLock = false;
 
     m_zoneUpdateId = 0;
     m_zoneUpdateTimer = 0;
@@ -9192,8 +9193,10 @@ bool Player::IsOutdoorPvPActive()
 void Player::DuelComplete(DuelCompleteType type)
 {
     // duel not requested
-    if (!duel)
+    if (!duel || m_duelLock)
         return;
+
+    m_duelLock = true;
 
     sLog->outDebug(LOG_FILTER_UNITS, "Duel Complete %s %s", GetName(), duel->opponent->GetName());
 
@@ -9262,31 +9265,41 @@ void Player::DuelComplete(DuelCompleteType type)
         duel->opponent->GetSession()->SendPacket(&data);
 
     /* remove auras */
+    uint64 myGuid = GetGUID();
     AuraApplicationMap itsAuras = duel->opponent->GetAppliedAuras();
     for (AuraApplicationMap::iterator i = itsAuras.begin(); i != itsAuras.end();)
     {
         Aura* aura = i->second->GetBase();
-        if (aura && !aura->IsRemoved() && !i->second->IsPositive() && aura->GetCasterGUID() == GetGUID() && aura->GetApplyTime() >= duel->startTime)
+        if (aura &&
+        !aura->IsRemoved() && 
+        !i->second->IsPositive() && 
+        aura->GetCasterGUID() == myGuid && 
+        aura->GetApplyTime() >= duel->startTime)
             aura->Remove();
         ++i;
     }
 
+    uint64 opponentGuid = duel->opponent->GetGUID();
     AuraApplicationMap myAuras = GetAppliedAuras();
     for (AuraApplicationMap::iterator i = myAuras.begin(); i != myAuras.end();)
     {
         Aura* aura = i->second->GetBase();
-        if (aura && !aura->IsRemoved() && !i->second->IsPositive() && aura->GetCasterGUID() == duel->opponent->GetGUID() && aura->GetApplyTime() >= duel->startTime)
+        if (aura &&
+        !aura->IsRemoved() &&
+        !i->second->IsPositive() &&
+        aura->GetCasterGUID() == opponentGuid &&
+        aura->GetApplyTime() >= duel->startTime)
             aura->Remove();
         ++i;
     }
 
     // cleanup combo points
-    if (GetComboTarget() == duel->opponent->GetGUID())
+    if (GetComboTarget() == opponentGuid)
         ClearComboPoints();
     else if (GetComboTarget() == duel->opponent->GetPetGUID())
         ClearComboPoints();
 
-    if (duel->opponent->GetComboTarget() == GetGUID())
+    if (duel->opponent->GetComboTarget() == myGuid)
         duel->opponent->ClearComboPoints();
     else if (duel->opponent->GetComboTarget() == GetPetGUID())
         duel->opponent->ClearComboPoints();
@@ -9305,6 +9318,8 @@ void Player::DuelComplete(DuelCompleteType type)
     duel->opponent->duel = NULL;
     delete duel;
     duel = NULL;
+
+    m_duelLock = false;
 }
 
 //---------------------------------------------------------//
