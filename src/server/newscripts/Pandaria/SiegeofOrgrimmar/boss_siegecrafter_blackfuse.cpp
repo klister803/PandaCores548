@@ -97,11 +97,10 @@ enum eEvents
     EVENT_SHOCKWAVE_MISSILE         = 9,
     //Automated Shredder
     EVENT_DEATH_FROM_ABOVE          = 10,
-    EVENT_DEATH_FROM_ABOVE2         = 11,
-    EVENT_OVERLOAD                  = 12,
+    EVENT_OVERLOAD                  = 11,
     //Special
-    EVENT_LAUNCH_BACK               = 13,
-    EVENT_CHECK_PLAYERS             = 14,
+    EVENT_LAUNCH_BACK               = 12,
+    EVENT_CHECK_PLAYERS             = 13,
 };
 
 enum _ATentry
@@ -465,7 +464,6 @@ public:
         npc_automated_shredderAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
             me->ModifyAuraState(AURA_STATE_CONFLAGRATE, true);
             DoCast(me, SPELL_REACTIVE_ARMOR, true);
         }
@@ -478,7 +476,7 @@ public:
         {
             DoCast(me, SPELL_OVERLOAD);
             events.ScheduleEvent(EVENT_OVERLOAD, 10000);
-            //events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 18000);
+            events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 18000);
         }
 
         void JustDied(Unit* killer){}
@@ -500,10 +498,7 @@ public:
                 case EVENT_DEATH_FROM_ABOVE:
                     me->SetAttackStop(false);
                     DoCast(me, SPELL_DEATH_FROM_ABOVE_K_B);
-                    events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE2, 35000);
-                    break;
-                case EVENT_DEATH_FROM_ABOVE2:
-                    me->ReAttackWithZone();
+                    events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 35000);
                     break;
                 case EVENT_OVERLOAD:
                     DoCast(me, SPELL_OVERLOAD);
@@ -734,7 +729,7 @@ public:
                     if (Creature* stalker = me->GetCreature(*me, instance->GetData64(NPC_SHOCKWAVE_MISSILE_STALKER)))
                     {
                         float x, y;
-                        GetPosInRadiusWithRandomOrientation(stalker, 48.0f, x, y);
+                        GetPosInRadiusWithRandomOrientation(stalker, 55.0f, x, y);
                         if (Creature* mt = blackfuse->SummonCreature(NPC_SHOCKWAVE_MISSILE, x, y, stalker->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
                         {
                             mt->SetFacingToObject(me);
@@ -1174,11 +1169,19 @@ public:
             }
         }
 
+        void HandleAfterCast()
+        {
+            if (GetSpellInfo()->Id == SPELL_SHOCKWAVE_MISSILE6)
+                if (GetCaster() && GetCaster()->ToCreature())
+                    GetCaster()->ToCreature()->DespawnOrUnsummon(1000);
+        }
+
         void Register()
         {
             OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_shockwave_missile_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_DEST_AREA_ENEMY);
             OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_shockwave_missile_SpellScript::FilterTargets2, EFFECT_2, TARGET_UNIT_SRC_AREA_ENTRY);
             OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_shockwave_missile_SpellScript::FilterTargets, EFFECT_3, TARGET_UNIT_DEST_AREA_ENEMY);
+            AfterCast += SpellCastFn(spell_shockwave_missile_SpellScript::HandleAfterCast);
         }
     };
 
@@ -1307,6 +1310,8 @@ public:
                             player->GetMotionMaster()->MoveJump(droppos.GetPositionX(), droppos.GetPositionY(), droppos.GetPositionZ(), 15.0f, 15.0f);
                         }
                     }
+                    else
+                        player->GetMotionMaster()->MoveJump(droppos.GetPositionX(), droppos.GetPositionY(), droppos.GetPositionZ(), 15.0f, 15.0f);
                     break;
                 case LEAVE_CONVEYOR:
                 case LEAVE_CONVEYOR_2:

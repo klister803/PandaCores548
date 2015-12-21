@@ -1445,7 +1445,8 @@ public:
                         {
                             if (dw->isAlive())
                             {
-                                dw->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                                dw->AddAura(SPELL_ELECTROMAGNETIC_BARRIER, dw);
+                                dw->AddAura(SPELL_ELECTROMAGNETIC_BARRIER_V, dw);
                                 switch (dw->GetEntry())
                                 {
                                 case NPC_DISASSEMBLED_CRAWLER_MINE:
