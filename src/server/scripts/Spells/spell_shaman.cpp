@@ -1305,6 +1305,7 @@ class spell_sha_lava_lash : public SpellScriptLoader
                                 if (Aura* aura = target->GetAura(SPELL_SHA_FLAME_SHOCK, _player->GetGUID()))
                                 {
                                     std::list<Unit*> targetList;
+                                    uint32 dur = aura->GetDuration();
 
                                     _player->GetAttackableUnitListInRange(targetList, 12.0f);
 
@@ -1325,12 +1326,11 @@ class spell_sha_lava_lash : public SpellScriptLoader
                                         if (hitTargets >= 4)
                                             continue;
 
-                                        double cooldownDelay = _player->GetSpellCooldownDelay(SPELL_SHA_FLAME_SHOCK);
-                                        if (_player->HasSpellCooldown(SPELL_SHA_FLAME_SHOCK))
-                                            _player->RemoveSpellCooldown(SPELL_SHA_FLAME_SHOCK, true);
-
-                                        _player->CastSpell(unit, SPELL_SHA_FLAME_SHOCK, true);
-                                        _player->AddSpellCooldown(SPELL_SHA_FLAME_SHOCK, 0, getPreciseTime() + (double)cooldownDelay);
+                                        if (Aura* newAura = _player->AddAura(SPELL_SHA_FLAME_SHOCK, unit))
+                                        {
+                                            newAura->SetMaxDuration(dur);
+                                            newAura->SetDuration(dur);
+                                        }
                                         hitTargets++;
                                     }
                                 }
