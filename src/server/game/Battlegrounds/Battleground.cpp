@@ -944,9 +944,9 @@ void Battleground::EndBattleground(uint32 winner)
 
     if (isArena() && isRated() && winner != WINNER_NONE)
     {
-        const char* winnerTeam[5];
-        const char*  loserTeam[5];
-        for (uint8 i=0; i < 5; ++i)
+        const char* winnerTeam[10];
+        const char*  loserTeam[10];
+        for (uint8 i=0; i < 10; ++i)
         {
             winnerTeam[i] = "";
             loserTeam[i] = "";
@@ -996,8 +996,9 @@ void Battleground::EndBattleground(uint32 winner)
                 break;
             }
             default:
-                sLog->outArena("match Type: %u --- Winner: old rating: %u  --- Loser: old rating: %u| DETAIL: %s",
-                    m_JoinType, GetMatchmakerRating(winner), GetMatchmakerRating(GetOtherTeam(winner)), info.str().c_str());
+                sLog->outArena("FINISH: RBG --- Winner[%s, %s, %s, %s, %s, %s, %s, %s, %s, %s]: old rating: %u --- Loser[%s, %s, %s, %s, %s, %s, %s, %s, %s, %s]: old rating: %u --- Duration: %u min. %u sec. %s",
+                    winnerTeam[0], winnerTeam[1], winnerTeam[2], winnerTeam[3], winnerTeam[4], winnerTeam[5], winnerTeam[6], winnerTeam[7], winnerTeam[8], winnerTeam[9], GetMatchmakerRating(winner), 
+                    loserTeam[0], loserTeam[1], loserTeam[2], loserTeam[3], loserTeam[4], loserTeam[5], loserTeam[6], loserTeam[7], loserTeam[8], loserTeam[9], GetMatchmakerRating(GetOtherTeam(winner)), _min, _sec, att);
                 break;
         }
         

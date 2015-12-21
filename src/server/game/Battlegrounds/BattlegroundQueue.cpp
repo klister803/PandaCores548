@@ -1250,9 +1250,9 @@ void BattlegroundQueue::StartArena(std::list<GroupQueueInfo*>::iterator itr_team
 
     if (arena->isRated())
     {
-        const char* team1[5];
-        const char* team2[5];
-        for (uint8 i = 0; i < 5; ++i)
+        const char* team1[10];
+        const char* team2[10];
+        for (uint8 i = 0; i < 10; ++i)
         {
             team1[i] = "";
             team2[i] = "";
@@ -1298,7 +1298,9 @@ void BattlegroundQueue::StartArena(std::list<GroupQueueInfo*>::iterator itr_team
                 break;
             }
             default:
-                sLog->outArena("Arena match type: %u for Team1Id: %u - Team2Id: %u started.", arena->GetJoinType(), arena->GetGroupIdByIndex(BG_TEAM_ALLIANCE), arena->GetGroupIdByIndex(BG_TEAM_HORDE));
+                sLog->outArena("START: RBG for (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) vs (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", 
+                    team1[0], team1[1], team1[2], team1[3], team1[4], team1[5], team1[6], team1[7], team1[8], team1[9], 
+                    team2[0], team2[1], team2[2], team2[3], team2[4], team2[5], team2[6], team2[7], team2[8], team2[9]);
                 break;
         }
     }
