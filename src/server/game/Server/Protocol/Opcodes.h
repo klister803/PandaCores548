@@ -892,7 +892,8 @@ enum Opcodes
     SMSG_PETITION_SIGN_RESULTS                        = 0x148F, // 5.4.1 17538
     SMSG_PLAY_MUSIC                                   = 0x0DAD, // 5.4.1 17538
     SMSG_PLAY_OBJECT_SOUND                            = 0x14A4, // 5.4.1 17538
-    SMSG_PLAY_ONE_SHOT_ANIM_KIT                       = 0x0486, // 5.4.1 17538
+    SMSG_SET_AI_ANIM_KIT                              = 0x0486, // 5.4.1 17538
+    SMSG_PLAY_ONE_SHOT_ANIM_KIT                       = 0x083D, // 5.4.1 17538
     SMSG_PLAY_SCENE_DATA                              = 0x018E, // 5.4.1 17538
     SMSG_PLAY_SOUND                                   = 0x0505, // 5.4.1 17538
     SMSG_PLAY_SPELL_VISUAL_KIT                        = 0x103F, // 5.4.1 17538
@@ -1151,7 +1152,6 @@ enum Opcodes
     SMSG_MONSTER_MOVE_TRANSPORT                       = 0,      // 5.4.1 17538 obsolete
     SMSG_RAID_READY_CHECK_THROTTLED_ERROR             = 0,      // 0x2607 in 4.3.4 @todo : Find me and BACON !
     SMSG_SETUP_RESEARCH_HISTORY                       = 0,      // Not found in TC
-    SMSG_SET_AI_ANIM_KIT                              = 0,      // Not found in 4.3.4
     SMSG_SET_MELEE_ANIM_KIT                           = 0,      // Not found in 4.3.4
     SMSG_SET_MOVEMENT_ANIM_KIT                        = 0,      // Not found in 4.3.4
     SMSG_SPELLBREAKLOG                                = 0,      // 5.4.1 17538 obsolete - use SMSG_SPELLDISPELLOG

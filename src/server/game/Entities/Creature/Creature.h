@@ -896,6 +896,10 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         uint32 GetVignetteId() const { return m_creatureInfo ? m_creatureInfo->VignetteId : 0; }
 
+        void AddMechanicImmuneMask(uint32 mask) { m_mechanicImmuneMask |= mask; }
+        void RemoveMechanicImmuneMask(uint32 mask) { m_mechanicImmuneMask &= ~mask; }
+        bool HasMechanicImmuneMask(uint32 mask) const { return (m_mechanicImmuneMask & mask) == mask; }
+
     protected:
         bool m_onVehicleAccessory;
 
@@ -973,6 +977,8 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         //Formation var
         CreatureGroup* m_formation;
         bool TriggerJustRespawned;
+
+        uint32  m_mechanicImmuneMask;
 };
 
 class AssistDelayEvent : public BasicEvent

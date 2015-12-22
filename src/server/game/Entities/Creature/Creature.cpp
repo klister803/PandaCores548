@@ -310,6 +310,8 @@ bool Creature::InitEntry(uint32 Entry, uint32 /*team*/, const CreatureData* data
     m_creatureInfo = cinfo;                                 // map mode related always
     m_creatureDiffData = sObjectMgr->GetCreatureDifficultyStat(cinfo->Entry, m_difficulty);                                 // map mode related always
 
+    m_mechanicImmuneMask = m_creatureInfo->MechanicImmuneMask;
+
     // equal to player Race field, but creature does not have race
     SetByteValue(UNIT_FIELD_BYTES_0, 0, 0);
 
@@ -1470,6 +1472,8 @@ bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, int32 vehId, uint32
     if (vehId)
         CreateVehicleKit(vehId, Entry);
 
+    m_mechanicImmuneMask = m_creatureInfo->MechanicImmuneMask;
+
     return true;
 }
 
@@ -1937,7 +1941,7 @@ bool Creature::IsImmunedToSpell(SpellInfo const* spellInfo)
 
     // Creature is immune to main mechanic of the spell
     if (!isHunterPet())
-        if (GetCreatureTemplate()->MechanicImmuneMask & (1 << (spellInfo->Mechanic - 1)))
+        if (m_mechanicImmuneMask & (1 << (spellInfo->Mechanic - 1)))
             return true;
 
     // This check must be done instead of 'if (GetCreatureTemplate()->MechanicImmuneMask & (1 << (spellInfo->Mechanic - 1)))' for not break
@@ -1964,7 +1968,7 @@ bool Creature::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) 
     if (spellInfo->AttributesEx5 & SPELL_ATTR5_CANT_IMMUNITY_SPELL)
         return false;
 
-    if (GetCreatureTemplate()->MechanicImmuneMask & (1 << (spellInfo->Effects[index].Mechanic - 1)))
+    if (m_mechanicImmuneMask & (1 << (spellInfo->Effects[index].Mechanic - 1)))
         return true;
 
     if (GetCreatureTemplate()->type == CREATURE_TYPE_MECHANICAL && spellInfo->Effects[index].Effect == SPELL_EFFECT_HEAL)

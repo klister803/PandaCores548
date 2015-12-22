@@ -193,7 +193,7 @@ class boss_malkorok : public CreatureScript
                         if (Creature* as = me->SummonCreature(NPC_ARCING_SMASH, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), ang))
                         {
                             Talk(urand(SAY_ARCING_SMASH, SAY_ARSING_SMASH2));
-                            me->PlayOneShotAnimKit(4308);
+                            me->SetAiAnimKit(4308);
                             as->CastSpell(as, SPELL_ARCING_SMASH);
                             asGuids.push_back(as->GetGUID());
                         }
@@ -400,7 +400,7 @@ class boss_malkorok : public CreatureScript
                     switch (eventId)
                     {
                     case EVENT_PREPARE:
-                        me->PlayOneShotAnimKit(0);
+                        me->SetAiAnimKit(0);
                         me->SetReactState(REACT_PASSIVE);
                         me->AttackStop();
                         me->StopMoving();

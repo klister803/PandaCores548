@@ -203,26 +203,31 @@ bool Player::UpdateAllStats()
             RemoveAura(115694); // D/W Maces
             RemoveAura(115696); // D/W Swords
 
+            uint32 spellId = 0;
             switch (mainItem->GetTemplate()->SubClass)
             {
                 case ITEM_SUBCLASS_WEAPON_STAFF:
-                    CastSpell(this, 108561, true);
+                    spellId = 108561;
                     break;
                 case ITEM_SUBCLASS_WEAPON_POLEARM:
-                    CastSpell(this, 115697, true);
+                    spellId = 115697;
                     break;
                 case ITEM_SUBCLASS_WEAPON_AXE:
-                    CastSpell(this, 115689, true);
+                    spellId = 115689;
                     break;
                 case ITEM_SUBCLASS_WEAPON_MACE:
-                    CastSpell(this, 115694, true);
+                    spellId = 115694;
                     break;
                 case ITEM_SUBCLASS_WEAPON_SWORD:
-                    CastSpell(this, 115696, true);
+                    spellId = 115696;
                     break;
                 default:
                     break;
             }
+            if (HasAura(125660)) // Glyph of Jab
+                spellId = 108561;
+            if (spellId)
+                CastSpell(this, spellId, true);
         }
     }
 

@@ -1137,7 +1137,7 @@ class npc_blazing_monstrosity : public CreatureScript
             {
                 DoZoneInCombat();
                 me->RemoveAurasDueToSpell(SPELL_SLEEP_ULTRA_HIGH_PRIORITY);
-                me->PlayOneShotAnimKit(ANIM_KIT_BIRD_WAKE);
+                me->SetAiAnimKit(ANIM_KIT_BIRD_WAKE);
                 _events.Reset();
                 _events.ScheduleEvent(EVENT_START_SPITTING, 6000);
                 _events.ScheduleEvent(EVENT_CONTINUE_SPITTING, 9000);
@@ -1607,7 +1607,7 @@ class spell_alysrazor_turn_monstrosity : public SpellScriptLoader
             void TurnBird(SpellEffIndex effIndex)
             {
                 PreventHitDefaultEffect(effIndex);
-                GetHitUnit()->PlayOneShotAnimKit(ANIM_KIT_BIRD_TURN);
+                GetHitUnit()->SetAiAnimKit(ANIM_KIT_BIRD_TURN);
             }
 
             void Register()

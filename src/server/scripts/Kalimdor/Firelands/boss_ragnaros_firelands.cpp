@@ -779,7 +779,7 @@ class boss_ragnaros_firelands : public CreatureScript
                             phase = 2;
                             Talk(SAY_PICKUP);
                             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                            me->PlayOneShotAnimKit(1465);
+                            me->SetAiAnimKit(1465);
                             summons.DespawnEntry(NPC_SULFURAS_HAND_OF_RAGNAROS_1);
                             summons.DespawnEntry(NPC_SULFURAS_HAND_OF_RAGNAROS_2);
                             DespawnCreatures(NPC_SULFURAS_HAND_OF_RAGNAROS_1);
@@ -834,7 +834,7 @@ class boss_ragnaros_firelands : public CreatureScript
                             phase = 4;
                             Talk(SAY_PICKUP);
                             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                            me->PlayOneShotAnimKit(1465);
+                            me->SetAiAnimKit(1465);
                             summons.DespawnEntry(NPC_SULFURAS_HAND_OF_RAGNAROS_1);
                             summons.DespawnEntry(NPC_SULFURAS_HAND_OF_RAGNAROS_2);
                             DespawnCreatures(NPC_SULFURAS_HAND_OF_RAGNAROS_1);

@@ -19229,6 +19229,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 target = triggeredByAura->GetCaster();
 
             Unit* _caster = this;
+            Unit* _casterAura = triggeredByAura->GetCaster();
             Unit* _targetAura = this;
 
             if(itr->caster == 1) //get caster aura
@@ -19256,7 +19257,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     if (Unit* _select = _player->GetSelectedUnit())
                         _targetAura = _select;
 
-            uint64 casterGuid = _targetAura != triggeredByAura->GetCaster() ? triggeredByAura->GetCaster()->GetGUID() : 0;
+            uint64 casterGuid = _targetAura != _casterAura ? (_casterAura ? _casterAura->GetGUID() : 0) : 0;
 
             if (itr->option != SPELL_TRIGGER_CHECK_PROCK && itr->option != SPELL_TRIGGER_COOLDOWN && itr->option != SPELL_TRIGGER_MODIFY_COOLDOWN)
             {
@@ -21045,17 +21046,30 @@ void Unit::SendDurabilityLoss(Player* receiver, uint32 percent)
 }
 
 //Check for 5.4.1
-void Unit::PlayOneShotAnimKit(uint32 id)
+void Unit::SetAiAnimKit(uint32 id)
 {
     ObjectGuid guidd(GetGUID());
 
-    WorldPacket data(SMSG_PLAY_ONE_SHOT_ANIM_KIT, 7 + 2);
+    WorldPacket data(SMSG_SET_AI_ANIM_KIT, 7 + 2);
     data.WriteGuidMask<2, 5, 7, 4, 0, 1, 6, 3>(guidd);
     data.WriteGuidBytes<3, 0, 7, 6, 5, 1, 4>(guidd);
     data << uint16(id);
     data.WriteGuidBytes<2>(guidd);
     SendMessageToSet(&data, true);
 }
+
+void Unit::PlayOneShotAnimKit(uint32 id)
+{
+    ObjectGuid guidd(GetGUID());
+
+    WorldPacket data(SMSG_PLAY_ONE_SHOT_ANIM_KIT, 7 + 2);
+    data.WriteGuidMask<4, 3, 0, 7, 1, 6, 5, 2>(guidd);
+    data.WriteGuidBytes<4, 6, 5, 1>(guidd);
+    data << uint16(id);
+    data.WriteGuidBytes<0, 7, 3, 2>(guidd);
+    SendMessageToSet(&data, true);
+}
+
 
 void Unit::Kill(Unit* victim, bool durabilityLoss, SpellInfo const* spellProto)
 {

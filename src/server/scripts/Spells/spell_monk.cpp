@@ -3385,7 +3385,7 @@ class spell_monk_grapple_weapon : public SpellScriptLoader
             void HandleOnCast()
             {
                 Unit* caster = GetCaster();
-                Unit* target = GetHitUnit();
+                Unit* target = GetExplTargetUnit();
                 if (!caster || !target)
                     return;
                 Player* pCaster = caster->ToPlayer();
@@ -3403,6 +3403,7 @@ class spell_monk_grapple_weapon : public SpellScriptLoader
 
                 float weapon_maxdamageC = caster->GetWeaponDamageRange(BASE_ATTACK, MAXDAMAGE) / weaponSpeedC * speedC;
                 float weapon_maxdamageT = target->GetWeaponDamageRange(BASE_ATTACK, MAXDAMAGE) / weaponSpeedT * speedT;
+
                 if (weapon_maxdamageT > weapon_maxdamageC)
                 {
                     switch (pCaster->GetSpecializationId(pCaster->GetActiveSpec()))
@@ -3430,6 +3431,48 @@ class spell_monk_grapple_weapon : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_monk_grapple_weapon_SpellScript();
+        }
+};
+
+// Transcendence Clone Visual - 119053
+class spell_monk_transcendence_clone_visual : public SpellScriptLoader
+{
+    public:
+        spell_monk_transcendence_clone_visual() : SpellScriptLoader("spell_monk_transcendence_clone_visual") { }
+
+        class spell_monk_transcendence_clone_visual_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_transcendence_clone_visual_AuraScript);
+
+            void ApplyDummy(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* owner = caster->GetAnyOwner())
+                    {
+                        if (owner->HasAura(125872)) // Glyph of Fighting Pose
+                        {
+                            caster->PlayOneShotAnimKit(2645);
+                            caster->SetAiAnimKit(2645);
+                        }
+                        else
+                        {
+                            caster->PlayOneShotAnimKit(2223);
+                            caster->SetAiAnimKit(2223);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_monk_transcendence_clone_visual_AuraScript::ApplyDummy, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_transcendence_clone_visual_AuraScript();
         }
 };
 
@@ -3500,4 +3543,5 @@ void AddSC_monk_spell_scripts()
     new spell_monk_disable();
     new spell_monk_purified_healing();
     new spell_monk_grapple_weapon();
+    new spell_monk_transcendence_clone_visual();
 }

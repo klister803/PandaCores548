@@ -2702,13 +2702,13 @@ public:
                     case EVENT_3:
                         me->CastSpell(me, SUPER_DUPER_KULAK, true);
                         sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2);
-                        me->PlayOneShotAnimKit(1078);
+                        me->SetAiAnimKit(1078);
                         events.ScheduleEvent(EVENT_4, 6000);
                         break;
                     case EVENT_4:
                         sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3);
                         me->SetByteValue(UNIT_FIELD_BYTES_1, 0, UNIT_STAND_STATE_SLEEP);
-                        me->PlayOneShotAnimKit(0);
+                        me->SetAiAnimKit(0);
                         events.ScheduleEvent(EVENT_5, 15000);
                         break;
                     case EVENT_5:
