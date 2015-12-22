@@ -184,6 +184,17 @@ Position cmdestpos = {1905.39f, -5631.86f, -309.3265f};
 Position sumshrederpos = {1902.65f, -5625.15f, -309.3269f};
 Position sehsumpos = {2006.04f, -5570.15f, -308.3213f};
 
+enum CretureText
+{
+    SAY_PULL,
+    SAY_SAWBLADE,
+    SAY_SPAWN_SHREDDER,
+    SAY_WEAPON_DEATH,
+    SAY_KILL_UNIT,
+    SAY_DEATH,
+    SAY_DEATH2,
+};
+
 //71504
 class boss_siegecrafter_blackfuse : public CreatureScript
 {
@@ -206,9 +217,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              _Reset();
              checkvictim = 0;
              weaponwavecount = 0;
-             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CRAWLER_MINE_FIXATE_PL);
-             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_ON_CONVEYOR);
-             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PATTERN_RECOGNITION);
+             RemoveDebuffs();
              me->RemoveAurasDueToSpell(SPELL_PROTECTIVE_FRENZY);
              me->RemoveAurasDueToSpell(SPELL_AUTOMATIC_REPAIR_BEAM_AT);
              me->SetReactState(REACT_DEFENSIVE);
@@ -218,6 +227,14 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          {
              me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
              me->SetReactState(REACT_DEFENSIVE);
+         }
+
+         void RemoveDebuffs()
+         {
+             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CRAWLER_MINE_FIXATE_PL);
+             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SUPERHEATER);
+             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_ON_CONVEYOR);
+             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PATTERN_RECOGNITION);
          }
 
          uint32 GetData(uint32 type)
@@ -230,6 +247,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          void EnterCombat(Unit* who)
          {
              _EnterCombat();
+             Talk(SAY_PULL);
              checkvictim = 1000;
              DoCast(me, SPELL_AUTOMATIC_REPAIR_BEAM_AT, true);
              events.ScheduleEvent(EVENT_ELECTROSTATIC_CHARGE, 1000);
@@ -238,6 +256,12 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              events.ScheduleEvent(EVENT_SUMMON_SHREDDER, 36000);
              if (Creature* seh = me->SummonCreature(NPC_SIEGE_ENGINEER_HELPER, sehsumpos))
                  seh->CastSpell(seh, SPELL_CREATE_CONVEYOR_TRIGGER);
+         }
+
+         void OnUnitDeath(Unit* unit)
+         {
+             if (unit->ToPlayer())
+                 Talk(SAY_KILL_UNIT);
          }
 
          void EnterEvadeMode()
@@ -321,7 +345,11 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          void JustDied(Unit* killer)
          {
              if (killer != me)
+             {
+                 RemoveDebuffs();
+                 Talk(urand(SAY_DEATH, SAY_DEATH2));
                  _JustDied();
+             }
          }
 
          void UpdateAI(uint32 diff)
@@ -365,6 +393,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                          {
                              if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && me->GetExactDist(*itr) >= 15.0f && !(*itr)->HasAura(SPELL_ON_CONVEYOR))
                              {
+                                 Talk(SAY_SAWBLADE);
                                  DoCast(*itr, SPELL_LAUNCH_SAWBLADE);
                                  break;
                              }
@@ -394,6 +423,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                      events.ScheduleEvent(EVENT_ACTIVE_CONVEYER, 50000);
                      break;
                  case EVENT_SUMMON_SHREDDER:
+                     Talk(SAY_SPAWN_SHREDDER);
                      if (Creature* shredder = me->SummonCreature(NPC_AUTOMATED_SHREDDER, sumshrederpos.GetPositionX(), sumshrederpos.GetPositionY(), sumshrederpos.GetPositionZ()))
                          shredder->AI()->DoZoneInCombat(shredder, 100.0f);
                      events.ScheduleEvent(EVENT_SUMMON_SHREDDER, 60000);
@@ -579,6 +609,9 @@ public:
             case NPC_DEACTIVATED_LASER_TURRET:
             case NPC_DEACTIVATED_ELECTROMAGNET:
             case NPC_DEACTIVATED_MISSILE_TURRET:
+                if (me->ToTempSummon())
+                    if (Unit* blackfuse = me->ToTempSummon()->GetSummoner())
+                        blackfuse->ToCreature()->AI()->Talk(SAY_WEAPON_DEATH);
                 instance->SetData(DATA_SAFE_WEAPONS, me->GetEntry());
                 me->DespawnOrUnsummon(1000);
                 break;
