@@ -24,33 +24,36 @@ enum eSpells
 
     // Quiang
     SPELL_FLANKING_ORDERS       = 117910, // Also when vanquished
-    SPELL_MASSIVE_ATTACKS       = 117921,
+    SPELL_MASSIVE_ATTACKS       = 117920,
     SPELL_ANNIHILATE            = 117948,
     SPELL_IMPERVIOUS_SHIELD     = 117961, // Heroic
 
     // Subetai
-    SPELL_PILLAGE               = 118049, 
+    SPELL_PILLAGE               = 118049,
+    SPELL_VOLLEY_SUM_TARGET     = 118088,
     SPELL_VOLLEY_VISUAL         = 118100,
     SPELL_VOLLEY_1              = 118094,
     SPELL_VOLLEY_2              = 118105,
     SPELL_VOLLEY_3              = 118106,
-    SPELL_RAIN_OF_ARROWS        = 118122,
+    SPELL_RAIN_OF_ARROWS        = 118121,
     SPELL_SLEIGHT_OF_HAND       = 118162, // Heroic
 
     // Zian
-    SPELL_UNDYING_SHADOWS       = 117506, // Also when vanquished
+    SPELL_UNDYING_SHADOWS       = 117504, // Also when vanquished
     SPELL_FIXATE                = 118303,
     SPELL_UNDYING_SHADOW_DOT    = 117514,
     SPELL_COALESCING_SHADOW_DOT = 117539,
 
     SPELL_SHADOW_BLAST          = 117628,
-    SPELL_CHARGED_SHADOWS       = 117685,
+    SPELL_CHARGED_SHADOWS       = 117684,
     SPELL_SHIELD_OF_DARKNESS    = 117697, // Heroic
 
     // Meng
+    SPELL_ENERGY_DRAIN          = 117707, // Disable regenerate energy
     SPELL_MADDENING_SHOUT       = 117708, // Also when vanquished
     SPELL_CRAZED                = 117737,
     SPELL_COWARDICE             = 117756,
+    SPELL_COWARDICE_DMG         = 117829,
     SPELL_CRAZY_TOUGHT          = 117833,
     SPELL_DELIRIOUS             = 117837, // Heroic
 
@@ -74,23 +77,24 @@ enum eEvents
     EVENT_FLANKING_MOGU         = 2,
     EVENT_MASSIVE_ATTACK        = 3,
     EVENT_ANNIHILATE            = 4,
+    EVENT_IMPERVIOUS_SHIELD     = 5,
 
     // Subetai
-    EVENT_PILLAGE               = 5,
-    EVENT_VOLLEY_1              = 6,
-    EVENT_VOLLEY_2              = 7,
-    EVENT_VOLLEY_3              = 8,
+    EVENT_PILLAGE               = 6,
+    EVENT_VOLLEY                = 7,
+    EVENT_SLEIGHT_OF_HAND       = 8,
     EVENT_RAIN_OF_ARROWS        = 9,
 
     // Zian
     EVENT_UNDYING_SHADOWS       = 10,
     EVENT_SHADOW_BLAST          = 11,
     EVENT_CHARGED_SHADOWS       = 12,
+    EVENT_SHIELD_OF_DARKNESS    = 13,
 
     // Meng
-    EVENT_MADDENING_SHOUT       = 13,
-    EVENT_CRAZED                = 14,
-    EVENT_CRAZY_TOUGHT          = 15
+    EVENT_MADDENING_SHOUT       = 14,
+    EVENT_CRAZY_TOUGHT          = 15,
+    EVENT_DELIRIOUS             = 16
 };
 
 // This array need for remove some auras
@@ -102,6 +106,13 @@ uint32 spiritKingsEntry[4] =
     NPC_MENG
 };
 
+uint32 vSpells[3] = 
+{
+    SPELL_VOLLEY_1,
+    SPELL_VOLLEY_2,
+    SPELL_VOLLEY_3,
+};
+
 class boss_spirit_kings_controler : public CreatureScript
 {
     public:
@@ -109,15 +120,16 @@ class boss_spirit_kings_controler : public CreatureScript
 
         struct boss_spirit_kings_controlerAI : public BossAI
         {
-            boss_spirit_kings_controlerAI(Creature* creature) : BossAI(creature, DATA_SPIRIT_KINGS)
+            boss_spirit_kings_controlerAI(Creature* creature) : BossAI(creature, DATA_SPIRIT_KINGS), summons(me)
             {
                 pInstance = creature->GetInstanceScript();
                 me->SetReactState(REACT_AGGRESSIVE);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_STUNNED);
                 me->SetDisplayId(11686);
             }
 
             InstanceScript* pInstance;
+            SummonList summons;
             bool fightInProgress;
             uint32 spiritkings[3]; //Need for Event
             uint32 spiritkingsvirtual[3]; //Need for finish Event
@@ -126,6 +138,7 @@ class boss_spirit_kings_controler : public CreatureScript
             {
                 if (pInstance)
                 {
+                    summons.DespawnAll();
                     pInstance->SetBossState(DATA_SPIRIT_KINGS, NOT_STARTED);
                     fightInProgress = false;
                     
@@ -147,7 +160,12 @@ class boss_spirit_kings_controler : public CreatureScript
                     events.ScheduleEvent(EVENT_CHECK_WIPE, 1500);
                 }
             }
-            
+
+            void JustSummoned(Creature* summon)
+            {
+                summons.Summon(summon);
+            }
+
             void PushArrayBoss()
             {
                 uint8 pos = urand(0, 5);
@@ -220,51 +238,85 @@ class boss_spirit_kings_controler : public CreatureScript
 
                 switch (action)
                 {
-                case ACTION_SPIRIT_KILLED:
-                    {
-                        uint32 nextspirit = 0;
-                        for (uint8 n = 0; n < 3; n++)
+                    case ACTION_SPIRIT_KILLED:
                         {
-                            if (spiritkings[n] != 0)
+                            uint32 nextspirit = 0;
+                            for (uint8 n = 0; n < 3; n++)
                             {
-                                nextspirit = spiritkings[n];
-                                if (nextspirit == spiritkings[2])
+                                if (spiritkings[n] != 0)
                                 {
-                                    if (Creature* sp = me->GetCreature(*me, pInstance->GetData64(nextspirit)))
-                                        sp->AI()->DoAction(ACTION_SPIRIT_LOW_HEALTH);
+                                    nextspirit = spiritkings[n];
+                                    if (nextspirit == spiritkings[2])
+                                    {
+                                        if (Creature* sp = me->GetCreature(*me, pInstance->GetData64(nextspirit)))
+                                            sp->AI()->DoAction(ACTION_SPIRIT_LOW_HEALTH);
+                                    }
+                                    else
+                                    {
+                                        if (Creature* nspirit = me->GetCreature(*me, pInstance->GetData64(spiritkings[n+1])))
+                                            nspirit->AddAura(SPELL_NEXT_SPIRIT_VISUAL, nspirit);
+                                    }
+                                    spiritkings[n] = 0;
+                                    break;
                                 }
-                                else
-                                {
-                                    if (Creature* nspirit = me->GetCreature(*me, pInstance->GetData64(spiritkings[n+1])))
-                                        nspirit->AddAura(SPELL_NEXT_SPIRIT_VISUAL, nspirit);
-                                }
-                                spiritkings[n] = 0;
-                                break;
+                            }
+                            if (nextspirit)
+                            {
+                                if (Creature* king = me->GetCreature(*me, pInstance->GetData64(nextspirit)))
+                                    king->AI()->DoAction(ACTION_START_FIGHT);
+                            }                   
+                        }
+                        break;
+                    case ACTION_SPIRIT_DONE:
+                        for (uint8 i = 0; i < 3; i++)
+                        {
+                            if (Creature* king = me->GetCreature(*me, pInstance->GetData64(spiritkingsvirtual[i])))
+                            {
+                                if (king->isAlive())
+                                    me->Kill(king, true);
                             }
                         }
-                    
-                        if (nextspirit)
-                        {
-                            if (Creature* king = me->GetCreature(*me, pInstance->GetData64(nextspirit)))
-                                king->AI()->DoAction(ACTION_START_FIGHT);
-                        }                   
-                    }
-                    break;
-                case ACTION_SPIRIT_DONE:
-                    for (uint8 i = 0; i < 3; i++)
+                        pInstance->SetBossState(DATA_SPIRIT_KINGS, DONE);
+                        me->Kill(me, true);
+                        break;
+                    case ACTION_FLANKING_MOGU:
                     {
-                        if (Creature* king = me->GetCreature(*me, pInstance->GetData64(spiritkingsvirtual[i])))
+                        float angle = frand(0.0f, 6.0f);
+                        float angleMinus = angle;
+                        float angleAlt = angle + 3.14f;
+                        float angleAltMinus = angle + 3.14f;
+
+                        Position posRand, posRandMinus, posRandAlt, posRandAltMinus;
+                        me->GetNearPosition(posRand, 30.0f, angle);
+                        me->GetNearPosition(posRandAlt, 30.0f, angleAlt);
+                        float orient = posRand.GetAngle(me);
+                        float orientAlt = posRandAlt.GetAngle(me);
+
+                        me->SummonCreature(NPC_FLANKING_MOGU, posRand.GetPositionX(), posRand.GetPositionY(), posRand.GetPositionZ(), orient);
+                        if (IsHeroic())
+                            me->SummonCreature(NPC_FLANKING_MOGU, posRandAlt.GetPositionX(), posRandAlt.GetPositionY(), posRandAlt.GetPositionZ(), orientAlt);
+                        for (int8 i = 0; i < 2; i++)
                         {
-                            if (king->isAlive())
-                                me->Kill(king, true);
+                            angle += 0.15f;
+                            angleMinus -= 0.15f;
+                            me->GetNearPosition(posRand, 30.0f, angle);
+                            me->GetNearPosition(posRandMinus, 30.0f, angleMinus);
+                            me->SummonCreature(NPC_FLANKING_MOGU, posRand.GetPositionX(), posRand.GetPositionY(), posRand.GetPositionZ(), orient);
+                            me->SummonCreature(NPC_FLANKING_MOGU, posRandMinus.GetPositionX(), posRandMinus.GetPositionY(), posRandMinus.GetPositionZ(), orient);
+                            if (IsHeroic())
+                            {
+                                angleAlt += 0.15f;
+                                angleAltMinus -= 0.15f;
+                                me->GetNearPosition(posRandAlt, 30.0f, angleAlt);
+                                me->GetNearPosition(posRandAltMinus, 30.0f, angleAltMinus);
+                                me->SummonCreature(NPC_FLANKING_MOGU, posRandAlt.GetPositionX(), posRandAlt.GetPositionY(), posRandAlt.GetPositionZ(), orientAlt);
+                                me->SummonCreature(NPC_FLANKING_MOGU, posRandAltMinus.GetPositionX(), posRandAltMinus.GetPositionY(), posRandAltMinus.GetPositionZ(), orientAlt);
+                            }
                         }
+                        break;
                     }
-                    pInstance->SetBossState(DATA_SPIRIT_KINGS, DONE);
-                    me->Kill(me, true);
-                    break;
                 }
             }
-            
             void UpdateAI(uint32 diff)
             {
                 if (!fightInProgress)
@@ -323,14 +375,18 @@ class boss_spirit_kings : public CreatureScript
             bool vanquished, lastboss;
             uint8 shadowCount;
             uint8 maxShadowCount;
+            uint8 volleyCount;
 
             void Reset()
             {
+                summons.DespawnAll();
+                events.Reset();
                 if (me->HasAura(SPELL_NEXT_SPIRIT_VISUAL))
                     me->RemoveAurasDueToSpell(SPELL_NEXT_SPIRIT_VISUAL);
                 me->SetReactState(REACT_PASSIVE);
                 shadowCount = 0;
                 maxShadowCount = 3;
+                volleyCount = 0;
                 vanquished = false;
                 lastboss = false;
                 DoCast(me, SPELL_INACTIVE, true);
@@ -338,6 +394,11 @@ class boss_spirit_kings : public CreatureScript
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->RemoveAurasDueToSpell(SPELL_CRAZED);
                 me->RemoveAurasDueToSpell(SPELL_COWARDICE);
+                if (me->GetEntry() == NPC_MENG)
+                {
+                    DoCast(me, SPELL_ENERGY_DRAIN, true);
+                    me->SetPower(POWER_ENERGY, 0);
+                }
             }
 
             Creature* GetControler()
@@ -350,29 +411,34 @@ class boss_spirit_kings : public CreatureScript
                 switch (me->GetEntry())
                 {
                     case NPC_QIANG:
-                        //events.ScheduleEvent(EVENT_FLANKING_MOGU,       30000);
-                        events.ScheduleEvent(EVENT_MASSIVE_ATTACK,      urand(3500, 5000));
+                        DoCast(SPELL_MASSIVE_ATTACKS);
+                        events.ScheduleEvent(EVENT_FLANKING_MOGU,       30000);
                         events.ScheduleEvent(EVENT_ANNIHILATE,          urand(15000, 20000));
+                        if (IsHeroic())
+                            events.ScheduleEvent(EVENT_IMPERVIOUS_SHIELD, 40000);
                         break;
                     case NPC_SUBETAI:
                         events.ScheduleEvent(EVENT_PILLAGE,             30000);
-                        events.ScheduleEvent(EVENT_VOLLEY_1,            urand(15000, 20000));
-                        //events.ScheduleEvent(EVENT_RAIN_OF_ARROWS,      45000);
+                        events.ScheduleEvent(EVENT_VOLLEY,              5000);
+                        events.ScheduleEvent(EVENT_RAIN_OF_ARROWS,      45000);
+                        if (IsHeroic())
+                            events.ScheduleEvent(EVENT_SLEIGHT_OF_HAND, 16000);
                         break;
                     case NPC_ZIAN:
                         events.ScheduleEvent(EVENT_UNDYING_SHADOWS,     30000);
                         events.ScheduleEvent(EVENT_SHADOW_BLAST,        15000);
                         events.ScheduleEvent(EVENT_CHARGED_SHADOWS,     10000);
+                        if (IsHeroic())
+                            events.ScheduleEvent(EVENT_SHIELD_OF_DARKNESS, 40000);
                         break;
                     case NPC_MENG:
+                        DoCast(me, SPELL_CRAZED, true);
                         events.ScheduleEvent(EVENT_MADDENING_SHOUT,     30000);
-                        events.ScheduleEvent(EVENT_CRAZED,              5000);
                         events.ScheduleEvent(EVENT_CRAZY_TOUGHT,        10000);
+                        if (IsHeroic())
+                            events.ScheduleEvent(EVENT_DELIRIOUS,       15000); // Нужны тайминги с офа
                         break;
                 }
-
-                if (me->GetEntry() == NPC_MENG)
-                    me->AddAura(SPELL_CRAZED, me);
             }
 
             void DoAction(const int32 action)
@@ -400,22 +466,28 @@ class boss_spirit_kings : public CreatureScript
                     con->AI()->DoAction(ACTION_SPIRIT_DONE);
             }
 
+            void JustSummoned(Creature* summon)
+            {
+                summons.Summon(summon);
+            }
+
             void DamageTaken(Unit* attacker, uint32 &damage)
             {
-                if (me->HealthBelowPctDamaged(5, damage) && !lastboss)
+                if (damage >= me->GetHealth() && !lastboss)
+                    damage = 0;
+
+                if (me->HealthBelowPctDamaged(5, damage) && !vanquished && !lastboss)
                 {
                     vanquished = true;
-                    damage = 0;
 
                     if (Creature* controler = GetControler())
                         controler->AI()->DoAction(ACTION_SPIRIT_KILLED);
 
-                    me->AttackStop();
-                    me->SetReactState(REACT_PASSIVE);
+                    DoStopAttack();
                     me->AddAura(SPELL_INACTIVE, me);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                     // We reschedule only the vanquished spell
-                  /*events.Reset();
+                    events.Reset();
                     switch (me->GetEntry())
                     {
                         case NPC_QIANG:
@@ -428,18 +500,29 @@ class boss_spirit_kings : public CreatureScript
                             events.ScheduleEvent(EVENT_UNDYING_SHADOWS, 30000);
                             break;
                         case NPC_MENG:
+                            events.ScheduleEvent(EVENT_MADDENING_SHOUT, 30000);
                             break;
                         default:
                             break;
-                    }*/
+                    }
                 }
 
                 if (me->HasAura(SPELL_COWARDICE))
-                    if (Aura* aura = me->GetAura(SPELL_COWARDICE))
+                    if (AuraEffect* effect = me->GetAuraEffect(SPELL_COWARDICE, EFFECT_1))
                     {
-                        float charges = aura->GetCharges();
-                        me->DealDamage(attacker, damage * (charges / 100));
-                    } 
+                        uint8 amount = effect->GetAmount();
+                        int32 bp1 = damage * amount / 100;
+                        me->CastCustomSpell(attacker, SPELL_COWARDICE_DMG, &bp1, NULL, NULL, true);
+                    }
+            }
+
+            void SpellHit(Unit* caster, SpellInfo const* spell)
+            {
+                if (spell->Id == SPELL_COWARDICE)
+                    DoStopAttack();
+
+                if (spell->Id == SPELL_CRAZED && !vanquished)
+                    me->SetReactState(REACT_AGGRESSIVE);
             }
 
             void UpdateAI(uint32 diff)
@@ -447,52 +530,77 @@ class boss_spirit_kings : public CreatureScript
                 if (!UpdateVictim())
                     return;
 
+                events.Update(diff);
+
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
-
-                events.Update(diff);
 
                 while (uint32 eventId = events.ExecuteEvent())
                 {
                     switch(eventId)
                     {
                         // Qiang
-                        case EVENT_FLANKING_MOGU: //Not work
+                        case EVENT_FLANKING_MOGU:
                             if (Creature* controler = GetControler())
+                            {
                                 DoCast(me, SPELL_FLANKING_ORDERS);
-                                //controler->AI()->DoAction(ACTION_FLANKING_MOGU);
-                            //events.ScheduleEvent(EVENT_FLANKING_MOGU, 30000);
-                            break;
-                        case EVENT_MASSIVE_ATTACK:
-                            if (me->getVictim())
-                                DoCast(me->getVictim(), SPELL_MASSIVE_ATTACKS);
-                            events.ScheduleEvent(EVENT_MASSIVE_ATTACK, urand(3500, 5000));
+                                controler->AI()->DoAction(ACTION_FLANKING_MOGU);
+                            }
+                            events.ScheduleEvent(EVENT_FLANKING_MOGU, 30000);
                             break;
                         case EVENT_ANNIHILATE:
                             if (me->getVictim())
                                 DoCast(me->getVictim(), SPELL_ANNIHILATE);
                             events.ScheduleEvent(EVENT_ANNIHILATE, urand(15000, 20000));
                             break;
+                        case EVENT_IMPERVIOUS_SHIELD:
+                            DoCast(SPELL_IMPERVIOUS_SHIELD);
+                            events.ScheduleEvent(EVENT_IMPERVIOUS_SHIELD, 60000);
+                            break;
                         // Subetai
                         case EVENT_PILLAGE:
-                            if (me->getVictim())
-                                DoCast(me->getVictim(), SPELL_PILLAGE);
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
+                                DoCast(target, SPELL_PILLAGE);
                             events.ScheduleEvent(EVENT_PILLAGE, 30000);
                             break;
-                        case EVENT_VOLLEY_1:
-                            DoCast(me, SPELL_VOLLEY_3);
-                            events.ScheduleEvent(EVENT_VOLLEY_1, urand(15000, 20000));
+                        case EVENT_VOLLEY:
+                        {
+                            if (!volleyCount)
+                            {
+                                DoStopAttack();
+                                DoCast(SPELL_VOLLEY_SUM_TARGET);
+                            }
+                            if (volleyCount < 3)
+                            {
+                                volleyCount++;
+                                if (Creature* target = me->FindNearestCreature(NPC_VOLLEY, 100.0f, true))
+                                {
+                                    me->SetFacingToObject(target);
+                                    DoCast(target, SPELL_VOLLEY_VISUAL, true);
+                                    DoCast(target, vSpells[volleyCount - 1]);
+                                }
+                                events.ScheduleEvent(EVENT_VOLLEY, 1000);
+                            }
+                            else
+                            {
+                                volleyCount = 0;
+                                me->SetReactState(REACT_AGGRESSIVE);
+                                events.ScheduleEvent(EVENT_VOLLEY, 38000);
+                            }
+                            break;
+                        }
+                        case EVENT_SLEIGHT_OF_HAND:
+                            DoCast(SPELL_SLEIGHT_OF_HAND);
+                            events.ScheduleEvent(EVENT_SLEIGHT_OF_HAND, 42000);
                             break;
                         case EVENT_RAIN_OF_ARROWS:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 30.0f , true))
-                                DoCast(target, SPELL_RAIN_OF_ARROWS);
+                            DoCast(SPELL_RAIN_OF_ARROWS);
                             events.ScheduleEvent(EVENT_RAIN_OF_ARROWS, 45000);
                             break;
                         // Zian
                         case EVENT_UNDYING_SHADOWS:
                             if (shadowCount < maxShadowCount) // Max 3 undying shadow during the fight
-                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 30.0f, true))
-                                    DoCast(target, SPELL_UNDYING_SHADOWS);
+                                DoCast(SPELL_UNDYING_SHADOWS);
                             events.ScheduleEvent(EVENT_UNDYING_SHADOWS, 45000);
                             break;
                         case EVENT_SHADOW_BLAST:
@@ -501,21 +609,25 @@ class boss_spirit_kings : public CreatureScript
                             events.ScheduleEvent(EVENT_SHADOW_BLAST, 15000);
                             break;
                         case EVENT_CHARGED_SHADOWS:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 30.0f, true))
-                                DoCast(target, SPELL_CHARGED_SHADOWS);
+                            DoCast(SPELL_CHARGED_SHADOWS);
                             events.ScheduleEvent(EVENT_CHARGED_SHADOWS, 15000);
+                            break;
+                        case EVENT_SHIELD_OF_DARKNESS:
+                            DoCast(SPELL_SHIELD_OF_DARKNESS);
+                            events.ScheduleEvent(EVENT_SHIELD_OF_DARKNESS, 40000);
                             break;
                         // Meng
                         case EVENT_MADDENING_SHOUT:
                             DoCast(me, SPELL_MADDENING_SHOUT);
                             events.ScheduleEvent(EVENT_MADDENING_SHOUT, 30000);
                             break;
-                        case EVENT_CRAZED:
-                            DoCast(me, SPELL_CRAZED);
-                            break;
                         case EVENT_CRAZY_TOUGHT:
                             DoCast(me, SPELL_CRAZY_TOUGHT);
                             events.ScheduleEvent(EVENT_CRAZY_TOUGHT, 10000);
+                            break;
+                        case EVENT_DELIRIOUS:
+                            DoCast(SPELL_DELIRIOUS);
+                            events.ScheduleEvent(EVENT_DELIRIOUS, 10000);
                             break;
                         default:
                             break;
@@ -617,8 +729,9 @@ class mob_undying_shadow : public CreatureScript
                 {
                     if (damage >= me->GetHealth())
                     {
+                        me->InterruptNonMeleeSpells(true, SPELL_FIXATE);
                         me->RemoveAurasDueToSpell(SPELL_UNDYING_SHADOW_DOT);
-                        me->AddAura(SPELL_COALESCING_SHADOW_DOT, me);
+                        DoCast(me, SPELL_COALESCING_SHADOW_DOT, true);
                         me->AddUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED);
                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
                         phase = PHASE_COALESCING_SHADOW;
@@ -637,9 +750,10 @@ class mob_undying_shadow : public CreatureScript
                     if (switchPhaseTimer <= diff)
                     {
                         me->RemoveAurasDueToSpell(SPELL_COALESCING_SHADOW_DOT);
-                        me->AddAura(SPELL_UNDYING_SHADOW_DOT, me);
+                        DoCast(me, SPELL_UNDYING_SHADOW_DOT, true);
                         me->ClearUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED);
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
+                        me->SetHealth(me->GetMaxHealth());
                         phase = PHASE_UNDYING_SHADOW;
                         switchPhaseTimer = 0;
                         DoZoneInCombat();
@@ -658,6 +772,56 @@ class mob_undying_shadow : public CreatureScript
         CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_undying_shadowAI(creature);
+        }
+};
+
+class npc_flanking_mogu : public CreatureScript
+{
+    public:
+        npc_flanking_mogu() : CreatureScript("npc_flanking_mogu") {}
+
+        struct npc_flanking_moguAI : public ScriptedAI
+        {
+            npc_flanking_moguAI(Creature* creature) : ScriptedAI(creature)
+            {
+                pInstance = creature->GetInstanceScript();
+            }
+
+            InstanceScript* pInstance;
+
+            void Reset()
+            {
+                me->SetReactState(REACT_PASSIVE);
+            }
+
+            void IsSummonedBy(Unit* summoner)
+            {
+                me->RemoveAurasDueToSpell(SPELL_GHOST_VISUAL);
+                DoCast(SPELL_TRIGGER_ATTACK);
+            }
+
+            void SpellHit(Unit* caster, SpellInfo const* spell)
+            {
+                if (spell->Id == SPELL_TRIGGER_ATTACK)
+                {
+                    Position pos;
+                    me->GetNearPosition(pos, 60.0f, me->GetAngle(me));
+                    me->GetMotionMaster()->MovePoint(1, pos);
+                }
+            }
+
+            void MovementInform(uint32 type, uint32 id)
+            {
+                if (id == 1)
+                    me->DespawnOrUnsummon();
+            }
+
+            void UpdateAI(uint32 diff) {}
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_flanking_moguAI(creature);
         }
 };
 
@@ -691,11 +855,78 @@ class spell_pinned_down : public SpellScriptLoader
         }
 };
 
+//117737, 117756
+class spell_meng_crazed : public SpellScriptLoader
+{
+    public:
+        spell_meng_crazed() : SpellScriptLoader("spell_meng_crazed") { }
+ 
+        class spell_meng_crazed_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_meng_crazed_AuraScript)
+
+            void OnPeriodic(AuraEffect const* /*aurEff*/)
+            {
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                uint32 power = caster->GetPower(POWER_ENERGY);
+                if (power < 100)
+                {
+                    if (caster->HasAura(SPELL_DELIRIOUS))
+                        caster->SetPower(POWER_ENERGY, power + 2);
+                    else
+                        caster->SetPower(POWER_ENERGY, power + 1);
+
+                    switch (GetId())
+                    {
+                        case SPELL_CRAZED:
+                            if (Aura* aura = caster->GetAura(SPELL_CRAZED))
+                                aura->SetStackAmount(aura->GetStackAmount() + 1);
+                            break;
+                        case SPELL_COWARDICE:
+                            if (AuraEffect* effect = GetCaster()->GetAuraEffect(SPELL_COWARDICE, EFFECT_1))
+                                effect->SetAmount(power / 2);
+                            break;
+                    }
+                }
+                else
+                {
+                    if (caster->HasAura(SPELL_CRAZED))
+                    {
+                        caster->RemoveAura(SPELL_CRAZED);
+                        caster->CastSpell(caster, SPELL_COWARDICE, true);
+                    }
+                    else if (caster->HasAura(SPELL_COWARDICE))
+                    {
+                        caster->RemoveAura(SPELL_COWARDICE);
+                        caster->CastSpell(caster, SPELL_CRAZED, true);
+                    }
+
+                    caster->SetPower(POWER_ENERGY, 0);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_meng_crazed_AuraScript::OnPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_meng_crazed_AuraScript();
+        }
+};
+
 void AddSC_boss_spirit_kings()
 {
     new boss_spirit_kings_controler();
     new boss_spirit_kings();
     new mob_pinning_arrow();
     new mob_undying_shadow();
+    new npc_flanking_mogu();
     new spell_pinned_down();
+    new spell_meng_crazed();
 }

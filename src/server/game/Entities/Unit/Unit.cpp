@@ -16092,7 +16092,8 @@ Unit* Creature::SelectVictim()
         //If target in agrolist check onli friend
         if (target && !IsFriendlyTo(target) && canCreatureAttack(target))
         {
-            SetInFront(target);
+            if (!HasUnitState(UNIT_STATE_CASTING))
+                SetInFront(target);
             return target;
         }
     }
