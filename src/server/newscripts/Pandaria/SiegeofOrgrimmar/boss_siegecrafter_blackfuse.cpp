@@ -465,6 +465,7 @@ public:
         {
             instance = creature->GetInstanceScript();
             me->ModifyAuraState(AURA_STATE_CONFLAGRATE, true);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
             DoCast(me, SPELL_REACTIVE_ARMOR, true);
         }
         InstanceScript* instance;

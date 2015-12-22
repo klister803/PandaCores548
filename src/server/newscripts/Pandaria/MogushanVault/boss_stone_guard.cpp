@@ -157,7 +157,7 @@ class boss_stone_guard_controler : public CreatureScript
                 {
                     case ACTION_ENTER_COMBAT:
                     {
-                        for (uint8 i = 0; i < 4; ++i)\
+                        for (uint8 i = 0; i < 4; ++i)
                         {
                             if (Creature* gardian = me->GetMap()->GetCreature(pInstance->GetData64(guardiansEntry[i])))
                             {

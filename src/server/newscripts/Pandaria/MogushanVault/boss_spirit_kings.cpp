@@ -436,7 +436,7 @@ class boss_spirit_kings : public CreatureScript
                         events.ScheduleEvent(EVENT_MADDENING_SHOUT,     30000);
                         events.ScheduleEvent(EVENT_CRAZY_TOUGHT,        10000);
                         if (IsHeroic())
-                            events.ScheduleEvent(EVENT_DELIRIOUS,       15000); // Нужны тайминги с офа
+                            events.ScheduleEvent(EVENT_DELIRIOUS,       20000);
                         break;
                 }
             }
@@ -462,6 +462,8 @@ class boss_spirit_kings : public CreatureScript
 
             void JustDied(Unit* killer)
             {
+                summons.DespawnAll();
+
                 if (Creature* con = GetControler())
                     con->AI()->DoAction(ACTION_SPIRIT_DONE);
             }
@@ -627,7 +629,7 @@ class boss_spirit_kings : public CreatureScript
                             break;
                         case EVENT_DELIRIOUS:
                             DoCast(SPELL_DELIRIOUS);
-                            events.ScheduleEvent(EVENT_DELIRIOUS, 10000);
+                            events.ScheduleEvent(EVENT_DELIRIOUS, 20000);
                             break;
                         default:
                             break;
