@@ -1584,15 +1584,16 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
     if(targetType.GetDirectionType() == TARGET_DIR_NONE)
         return;
 
-    float dist;
+    float dist = 0.0f;
     float angle = targetType.CalcDirectionAngle();
     float objSize = m_caster->GetObjectSize();
     if (targetType.GetTarget() == TARGET_DEST_CASTER_SUMMON)
         dist = PET_FOLLOW_DIST;
-    else if (targetType.GetTarget() == TARGET_UNK_125)
-        dist = m_spellInfo->GetMaxRange();
     else
         dist = m_spellInfo->GetEffect(effIndex, m_diffMode)->CalcRadius(m_caster);
+
+    if (targetType.GetTarget() == TARGET_DEST_MAX_DIST && !dist)
+        dist = m_spellInfo->GetMaxRange();
 
     if (dist < objSize)
         dist = objSize;
@@ -1611,7 +1612,7 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
         case TARGET_DEST_CASTER_BACK:
         case TARGET_DEST_CASTER_RIGHT:
         case TARGET_DEST_CASTER_LEFT:
-        case TARGET_UNK_125:
+        case TARGET_DEST_MAX_DIST:
             m_caster->GetFirstCollisionPosition(pos, dist, angle);
             break;
         default:
