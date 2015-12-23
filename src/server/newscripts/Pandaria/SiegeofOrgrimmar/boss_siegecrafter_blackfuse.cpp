@@ -251,7 +251,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              checkvictim = 1000;
              DoCast(me, SPELL_AUTOMATIC_REPAIR_BEAM_AT, true);
              events.ScheduleEvent(EVENT_ELECTROSTATIC_CHARGE, 1000);
-             events.ScheduleEvent(EVENT_SAWBLADE, 7000);
+             events.ScheduleEvent(EVENT_SAWBLADE, 10000);
              events.ScheduleEvent(EVENT_ACTIVE_CONVEYER, 2000);
              events.ScheduleEvent(EVENT_SUMMON_SHREDDER, 36000);
              if (Creature* seh = me->SummonCreature(NPC_SIEGE_ENGINEER_HELPER, sehsumpos))
@@ -399,7 +399,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                              }
                          }
                      }
-                     events.ScheduleEvent(EVENT_SAWBLADE, 12000);
+                     events.ScheduleEvent(EVENT_SAWBLADE, 13000);
                      break;
                  }
                  case EVENT_ELECTROSTATIC_CHARGE:

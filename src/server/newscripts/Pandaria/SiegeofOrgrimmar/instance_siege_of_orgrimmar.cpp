@@ -83,7 +83,8 @@ DoorData const doorData[] =
     {GO_ORGRIMMAR_GATE,                      DATA_IRON_JUGGERNAUT,        DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {GO_RUSTY_BARS,                          DATA_KORKRON_D_SHAMAN,       DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {GO_NAZGRIM_EX_DOOR,                     DATA_GENERAL_NAZGRIM,        DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
-    {GO_PRE_ENT_KLAXXI_DOOR,                 DATA_THOK,                   DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
+    {GO_BLACKFUSE_ENT_DOOR,                  DATA_MALKOROK,               DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
+    {GO_ENT_GATE,                            DATA_MALKOROK,               DOOR_TYPE_PASSAGE,    BOUNDARY_NONE },
     {GO_SP_EX_DOOR,                          DATA_SPOILS_OF_PANDARIA,     DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {0,                                      0,                           DOOR_TYPE_ROOM,       BOUNDARY_NONE},
 };
@@ -163,6 +164,7 @@ public:
         uint64 thokentdoorGuid;
         std::vector<uint64> jaillistGuids;
         std::vector<uint64> klaxxiarenagateGuid;
+        uint64 blackfuseentdoorGuid;
         
         //Creature
         std::set<uint64> shaSlgGUID;
@@ -250,6 +252,7 @@ public:
             thokentdoorGuid         = 0;
             jaillistGuids.clear();
             klaxxiarenagateGuid.clear();
+            blackfuseentdoorGuid    = 0;
            
             //Creature
             LorewalkerChoGUIDtmp    = 0;
@@ -708,7 +711,12 @@ public:
                 case GO_MALKOROK_FENCH_2:
                     malkorokfenchGuids.push_back(go->GetGUID());
                     break;
+                case GO_BLACKFUSE_ENT_DOOR:
+                    AddDoor(go, true);
+                    blackfuseentdoorGuid = go->GetGUID();
+                    break;
                 case GO_ENT_GATE:
+                    AddDoor(go, true);
                     spentdoorGuid = go->GetGUID();
                     break;
                 case GO_SP_EX_DOOR:
@@ -771,13 +779,22 @@ public:
                     break;
                 //Paragons of Klaxxi
                 case GO_PRE_ENT_KLAXXI_DOOR:
-                    AddDoor(go, true);
                     klaxxientdoorGuid = go->GetGUID();
+                    CheckProgressForKlaxxi();
                     break;
                 case GO_ARENA_WALL:
                     klaxxiarenagateGuid.push_back(go->GetGUID());
                     break;
             }
+        }
+
+        void CheckProgressForKlaxxi()
+        {
+            for (uint32 n = DATA_SPOILS_OF_PANDARIA; n < DATA_KLAXXI; n++)
+                if (GetBossState(n) != DONE)
+                    return;
+
+            HandleGameObject(klaxxientdoorGuid, true);
         }
 
         bool SetBossState(uint32 id, EncounterState state)
@@ -1066,6 +1083,7 @@ public:
 
                     HandleGameObject(spentdoorGuid, true);
                     HandleGameObject(spexdoorGuid, true);
+                    CheckProgressForKlaxxi();
                     //Remove all buffs
                     DoRemoveAurasDueToSpellOnPlayers(146068);
                     DoRemoveAurasDueToSpellOnPlayers(146099);
@@ -1188,7 +1206,7 @@ public:
                     if (Creature* thok = instance->GetCreature(thokGuid))
                         SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, thok);
                     HandleGameObject(thokentdoorGuid, true);
-                    HandleGameObject(klaxxientdoorGuid, true);
+                    CheckProgressForKlaxxi();
                     break;
                 }
                 break;
@@ -1204,6 +1222,7 @@ public:
                     crawlerminenum = instance->Is25ManRaid() ? 7 : 3;
                     break;
                 case DONE:
+                    CheckProgressForKlaxxi();
                     break;
                 }
             }

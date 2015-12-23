@@ -433,6 +433,9 @@ enum eGameObjects
     GO_ORGRIMMAR_GATE               = 223739,
     GO_ORGRIMMAR_GATE2              = 223814,
 
+    //Blackfuse
+    GO_BLACKFUSE_ENT_DOOR           = 223057,
+
     GO_RUSTY_BARS                   = 223231,
     GO_NAZGRIM_DOOR                 = 223276,
     GO_NAZGRIM_EX_DOOR              = 221793,
@@ -493,8 +496,6 @@ enum eGameObjects
     //Paragons of the Klaxxi
     GO_PRE_ENT_KLAXXI_DOOR        = 221912,
     GO_ARENA_WALL                 = 221264,
-
-    GO_BLACKFUSE_ENT_DOOR         = 223057,
 };
 
 enum esSpells
