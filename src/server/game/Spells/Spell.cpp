@@ -2810,7 +2810,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
             m_spellInfo->SpellFamilyFlags[2] & 0x00024000)) // Explosive and Immolation Trap
             procAttacker |= PROC_FLAG_DONE_TRAP_ACTIVATION;
 
-        bool dmgSpell = m_damage || m_healing;
+        bool dmgSpell = bool(target->damage || target->damageBeforeHit);
 
         if (m_damage > 0)
             positive = false;
@@ -2911,6 +2911,9 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     }
     CallScriptOnHitHandlers();
 
+    //sLog->outDebug(LOG_FILTER_PROC, "DoAllEffectOnTarget: m_spellInfo->Id %i, mask %i, m_healing %i, canEffectTrigger %i, m_damage %i, m_addpower %i, procEx %i procAttacker %u procVictim %u damage %i damageBeforeHit %i",
+    //m_spellInfo->Id, mask, m_healing, canEffectTrigger, m_damage, m_addpower, procEx, procAttacker, procVictim, target->damage, target->damageBeforeHit);
+
     // All calculated do it!
     // Do healing and triggers
     if (m_healing > 0)
@@ -2927,9 +2930,6 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         int32 gain = caster->HealBySpell(unitTarget, m_spellInfo, addhealth, target->crit);
         unitTarget->getHostileRefManager().threatAssist(caster, float(gain) * 0.5f, m_spellInfo);
         m_healing = gain;
-
-        //sLog->outDebug(LOG_FILTER_PROC, "DoAllEffectOnTarget: m_spellInfo->Id %i, mask %i, addhealth %i, m_healing %i, canEffectTrigger %i, m_damage %i, m_addpower %i, procEx %i",
-        //m_spellInfo->Id, mask, addhealth, m_healing, canEffectTrigger, m_damage, m_addpower, procEx);
 
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)

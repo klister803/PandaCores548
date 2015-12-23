@@ -918,43 +918,6 @@ public:
     }
 };
 
-// Warrior T16 DPS 2P Bonus - 144436
-class spell_warr_t16_dps_2p : public SpellScriptLoader
-{
-    public:
-        spell_warr_t16_dps_2p() : SpellScriptLoader("spell_warr_t16_dps_2p") { }
-
-        class spell_warr_t16_dps_2p_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warr_t16_dps_2p_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        if (target->HasAura(WARRIOR_SPELL_COLOSSUS_SMASH))
-                        {
-                            if (_player->HasAura(WARRIOR_SPELL_T16_DPS_2P_BONUS))
-                                _player->EnergizeBySpell(_player, GetSpellInfo()->Id, 50, POWER_RAGE);
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_warr_t16_dps_2p_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warr_t16_dps_2p_SpellScript();
-        }
-};
-
 // Raging Blow! - 131116, use spell - 96103 on remove aura
 class spell_warr_raging_blow_remove : public SpellScriptLoader
 {
@@ -1260,7 +1223,6 @@ void AddSC_warrior_spell_scripts()
     new spell_war_avatar();
     new spell_war_glyph_of_die_by_the_sword();
     new spell_glyph_of_gag_order();
-    new spell_warr_t16_dps_2p();
     new spell_warr_raging_blow_remove();
     new spell_warr_shield_visual();
     new spell_war_slam_aoe();

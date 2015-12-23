@@ -17929,7 +17929,8 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         }
     }
 
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "ProcDamageAndSpell: procSpell %u procTriggered %u procFlag %u procExtra %u isVictim %u guid %u target %u", procSpell ? procSpell->Id : 0, procTriggered.size(), procFlag, procExtra, isVictim, GetGUIDLow(), target ? target->GetGUIDLow() : 0);
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "ProcDamageAndSpell: procSpell %u procTriggered %u procFlag %u procExtra %u isVictim %u guid %u target %u GetDamage %i",
+    //procSpell ? procSpell->Id : 0, procTriggered.size(), procFlag, procExtra, isVictim, GetGUIDLow(), target ? target->GetGUIDLow() : 0, dmgInfoProc->GetDamage());
 
     // Nothing found
     if (procTriggered.empty())

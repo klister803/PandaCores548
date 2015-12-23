@@ -8,3 +8,22 @@ insert into `spell_target_filter` (`spellId`, `targetId`, `option`, `param1`, `p
 insert into `spell_proc_check` (`entry`, `entry2`, `entry3`, `checkspell`, `hastalent`, `chance`, `target`, `effectmask`, `powertype`, `dmgclass`, `specId`, `spellAttr0`, `targetTypeMask`, `mechanicMask`, `fromlevel`, `perchp`, `spelltypeMask`, `combopoints`, `deathstateMask`, `hasDuration`, `comment`) values
 ('114015','0','0','-121471','0','0','0','7','-1','-1','0','0','0','0','0','0','0','0','0','0','Предчувствие');
 
+insert into `spell_proc_event` (`entry`, `procFlags`) values
+('2823','4194580'),
+('3408','8388884'),
+('5761','8388884'),
+('8679','4194580'),
+('108211','8388884'),
+('108215','8388884'),
+('129410','4194580'),
+('129412','4194580'),
+('129413','8388884'),
+('145421','4194580');
+
+DELETE FROM spell_proc_event WHERE entry IN (56636);
+insert into `spell_proc_event` (`entry`, `procEx`) values('56636','19');
+
+DELETE FROM spell_script_names WHERE ScriptName IN ('spell_warr_t16_dps_2p');
+
+insert into `spell_trigger` (`spell_id`, `spell_trigger`, `option`, `targetaura`, `aura`, `comment`) values(
+'144436','144438','20','2','86346','Item - Warrior T16 DPS 2P Bonus');
