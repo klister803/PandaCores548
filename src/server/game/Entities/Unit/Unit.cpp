@@ -3007,9 +3007,6 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
 // TODO need use unit spell resistances in calculations
 SpellMissInfo Unit::MagicSpellHitResult(Unit* victim, SpellInfo const* spell)
 {
-    if (spell->AttributesEx3 & SPELL_ATTR3_IGNORE_HIT_RESULT)
-        return SPELL_MISS_NONE;
-
     // Can`t miss on dead target (on skinning for example)
     if (!victim->isAlive() && victim->GetTypeId() != TYPEID_PLAYER)
         return SPELL_MISS_NONE;
@@ -3039,6 +3036,7 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit* victim, SpellInfo const* spell)
     bool firstCheck = false;
         
     for (uint8 i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; ++i)
+    {
         if (schoolMask & (1 << i))
         {
             int32 amount = victim->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_ATTACKER_SPELL_HIT_CHANCE, (1 << i)); // Chance hit from victim SPELL_AURA_MOD_ATTACKER_SPELL_HIT_CHANCE auras
@@ -3048,8 +3046,14 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit* victim, SpellInfo const* spell)
                 firstCheck = true;
             }
         }
+    }
 
     modHitChance += bestVal;
+
+    // Spells with SPELL_ATTR3_IGNORE_HIT_RESULT will additionally fully ignore
+    // resist and deflect chances
+    if ((spell->AttributesEx3 & SPELL_ATTR3_IGNORE_HIT_RESULT) && modHitChance > 0)
+        return SPELL_MISS_NONE;
 
     int32 HitChance = modHitChance * 100;
     // Increase hit chance from attacker SPELL_AURA_MOD_SPELL_HIT_CHANCE and attacker ratings
@@ -3066,11 +3070,6 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit* victim, SpellInfo const* spell)
 
     if (rand < tmp)
         return SPELL_MISS_MISS;
-
-    // Spells with SPELL_ATTR3_IGNORE_HIT_RESULT will additionally fully ignore
-    // resist and deflect chances
-    if (spell->AttributesEx3 & SPELL_ATTR3_IGNORE_HIT_RESULT)
-        return SPELL_MISS_NONE;
 
     // Chance resist mechanic (select max value from every mechanic spell effect)
     int32 resist_chance = victim->GetMechanicResistChance(spell) * 100;
@@ -20163,7 +20162,12 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                             procCheck = true;
                             break;
                         }
-                        if(itr->spelltypeMask != 0 && !(SpellTypeMask & itr->spelltypeMask))
+                        if(itr->spelltypeMask > 0 && !(SpellTypeMask & itr->spelltypeMask))
+                        {
+                            procCheck = true;
+                            break;
+                        }
+                        else if(itr->spelltypeMask < 0 && (SpellTypeMask & abs(itr->spelltypeMask)))
                         {
                             procCheck = true;
                             break;
@@ -20270,7 +20274,12 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                     procCheck = true;
                     continue;
                 }
-                if(itr->spelltypeMask != 0 && !(SpellTypeMask & itr->spelltypeMask))
+                if(itr->spelltypeMask > 0 && !(SpellTypeMask & itr->spelltypeMask))
+                {
+                    procCheck = true;
+                    continue;
+                }
+                else if(itr->spelltypeMask < 0 && (SpellTypeMask & abs(itr->spelltypeMask)))
                 {
                     procCheck = true;
                     continue;
@@ -20366,7 +20375,12 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                     procCheckSecond = true;
                     continue;
                 }
-                if(itr->spelltypeMask != 0 && !(SpellTypeMask & itr->spelltypeMask))
+                if(itr->spelltypeMask > 0 && !(SpellTypeMask & itr->spelltypeMask))
+                {
+                    procCheckSecond = true;
+                    continue;
+                }
+                else if(itr->spelltypeMask < 0 && (SpellTypeMask & abs(itr->spelltypeMask)))
                 {
                     procCheckSecond = true;
                     continue;
