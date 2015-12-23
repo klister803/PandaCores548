@@ -580,7 +580,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
         }
 
     float DoneActualBenefit = 0.0f;
-    bool CalcStack = bool(m_spellInfo->StackAmount) && !(m_spellInfo->ProcFlags & (PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG)) && m_spellInfo->Id != 122355;
+    bool CalcStack = bool(m_spellInfo->StackAmount) && !(m_spellInfo->ProcFlags & (PROC_FLAG_DONE_SPELL_DMG_POS_NEG)) && m_spellInfo->Id != 122355;
 
     if (caster && caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->AttributesEx8 & SPELL_ATTR8_MASTERY_SPECIALIZATION))
     {

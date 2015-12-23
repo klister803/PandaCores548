@@ -1230,7 +1230,7 @@ uint8 Aura::CalcMaxCharges(Unit* caster, bool add) const
 
 bool Aura::ModCharges(int32 num, AuraRemoveMode removeMode)
 {
-    if (IsUsingCharges() || (m_spellInfo->ProcFlags & (PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG)))
+    if (IsUsingCharges() || (m_spellInfo->ProcFlags & (PROC_FLAG_DONE_SPELL_DMG_POS_NEG)))
     {
         //if aura not modify and have stack and have charges aura use stack for drop stack visual
         if(m_spellInfo->StackAmount > 1 && GetId() != 114637 && GetId() != 128863 && GetId() != 88819)
@@ -1241,7 +1241,7 @@ bool Aura::ModCharges(int32 num, AuraRemoveMode removeMode)
                     if (aurEff->GetAuraType() == SPELL_AURA_ADD_FLAT_MODIFIER || aurEff->GetAuraType() == SPELL_AURA_ADD_PCT_MODIFIER)
                         _useStack = false;
 
-            if(_useStack || (m_spellInfo->ProcFlags & (PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG)) || GetId() == 122355)
+            if(_useStack || (m_spellInfo->ProcFlags & (PROC_FLAG_DONE_SPELL_DMG_POS_NEG)) || GetId() == 122355)
             {
                 ModStackAmount(num);
                 return false;

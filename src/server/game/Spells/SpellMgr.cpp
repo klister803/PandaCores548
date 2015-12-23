@@ -5689,9 +5689,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 145718:  // Gusting Bomb
                     spellInfo->Speed = 25.f;
                     break;
-                case 125403: // Harsh Winds
-                    spellInfo->Effects[EFFECT_0].BasePoints = 55;
-                    break;
                 default:
                     break;
             }

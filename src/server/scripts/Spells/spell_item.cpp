@@ -2375,6 +2375,7 @@ public:
     }
 };
 
+// Potion of Illusion - 80265
 class spell_item_potion_of_illusion : public SpellScriptLoader
 {
 public:
@@ -2384,11 +2385,6 @@ public:
     {
         PrepareSpellScript(spell_item_potion_of_illusion_SpellScript);
 
-        void FilterTargets(std::list<WorldObject*>& targets)
-        {
-            Trinity::Containers::RandomResizeList(targets, 1);
-        }
-
         void HandleOnHit()
         {
             Unit* caster = GetCaster();
@@ -2397,11 +2393,13 @@ public:
 
             if (Unit* target = GetHitUnit())
             {
-                if (target == caster)
-                    return; // need info - morph random model
-                else
+                if (target != caster)
+                {
                     target->CastSpell(caster, GetSpellInfo()->Effects[0].BasePoints, false);
+                    return;
+                }
             }
+            caster->CastSpell(caster, 94632, false);
         }
 
         void Register()

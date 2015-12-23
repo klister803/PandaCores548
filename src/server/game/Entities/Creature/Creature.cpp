@@ -632,7 +632,7 @@ void Creature::Update(uint32 diff)
                 LastCharmerGUID = 0;
             }
 
-            if (!IsInEvadeMode() && IsAIEnabled)
+            if (!IsInEvadeMode() && IsAIEnabled && i_AI)
             {
                 // do not allow the AI to be changed during update
                 m_AI_locked = true;

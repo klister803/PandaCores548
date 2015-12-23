@@ -5201,10 +5201,6 @@ void Player::RemoveArenaSpellCooldowns(bool removeActivePetCooldowns)
             // remove & notify
             RemoveSpellCooldown(itr->first, true);
         }
-
-        // restore spell charges
-        if (entry && entry->ChargeRecoveryCategory)
-            RestoreSpellCategoryCharges(entry->ChargeRecoveryCategory);
     }
 
     if (getClass() == CLASS_MONK)
@@ -5223,6 +5219,8 @@ void Player::RemoveArenaSpellCooldowns(bool removeActivePetCooldowns)
             // actually clear cooldowns
             pet->m_CreatureSpellCooldowns.clear();
         }
+
+    RestoreSpellCategoryCharges();
 }
 
 void Player::RemoveAllSpellCooldown()

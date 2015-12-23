@@ -657,6 +657,8 @@ void Creature::Regenerate(Powers power)
     else
         addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + powerIndex) * (0.001f * m_petregenTimer) * regenTypeAndMod;
 
+    m_petregenTimer = 0;
+
     addvalue += m_powerFraction[powerIndex];
 
     if (addvalue <= 0.0f)
@@ -718,8 +720,6 @@ void Creature::Regenerate(Powers power)
     }
     else
         UpdateInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
-
-    m_petregenTimer = 0;
 }
 
 void Pet::Remove()

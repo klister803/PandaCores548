@@ -17929,7 +17929,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         }
     }
 
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "ProcDamageAndSpell: procSpell %u procTriggered %u procFlag %u procExtra %u isVictim %u", procSpell ? procSpell->Id : 0, procTriggered.size(), procFlag, procExtra, isVictim);
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "ProcDamageAndSpell: procSpell %u procTriggered %u procFlag %u procExtra %u isVictim %u guid %u target %u", procSpell ? procSpell->Id : 0, procTriggered.size(), procFlag, procExtra, isVictim, GetGUIDLow(), target ? target->GetGUIDLow() : 0);
 
     // Nothing found
     if (procTriggered.empty())
@@ -17958,7 +17958,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         SpellInfo const* spellInfo = i->aura->GetSpellInfo();
         uint32 Id = i->aura->GetId();
 
-        if(spellInfo->ProcFlags & (PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG))
+        if(spellInfo->ProcFlags & (PROC_FLAG_DONE_SPELL_DMG_POS_NEG))
             useCharges = true;
 
         AuraApplication const* aurApp = i->aura->GetApplicationOfTarget(GetGUID());

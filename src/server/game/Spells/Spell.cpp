@@ -2834,21 +2834,23 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         switch (m_spellInfo->DmgClass)
         {
             case SPELL_DAMAGE_CLASS_MAGIC:
+            {
+                procAttacker |= PROC_FLAG_DONE_SPELL_DMG_POS_NEG;
                 if (positive)
                 {
-                    procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG;
                     procAttacker |= dmgSpell ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS;
                     procVictim   |= dmgSpell ? PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS : PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_POS;
                 }
                 else
                 {
-                    procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG;
                     procAttacker |= dmgSpell ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
                     procVictim   |= dmgSpell ? PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG;
                 }
+            }
             break;
             case SPELL_DAMAGE_CLASS_MELEE:
             {
+                procAttacker |= PROC_FLAG_DONE_SPELL_DMG_POS_NEG;
                 procAttacker |= dmgSpell ? PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
 
                 if (dmgSpell)
@@ -4004,6 +4006,7 @@ void Spell::cast(bool skipCheck)
             {
                 case SPELL_DAMAGE_CLASS_MELEE:
                 {
+                    procAttacker |= PROC_FLAG_DONE_SPELL_DMG_POS_NEG;
                     procAttacker |= dmgSpell ? PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
 
                     if (m_attackType == BASE_ATTACK)
@@ -4014,6 +4017,7 @@ void Spell::cast(bool skipCheck)
                 }
                 case SPELL_DAMAGE_CLASS_MAGIC:
                 {
+                    procAttacker |= PROC_FLAG_DONE_SPELL_DMG_POS_NEG;
                     if (!positive)
                         procAttacker |= dmgSpell ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
                     else
@@ -4273,7 +4277,7 @@ void Spell::_handle_immediate_phase()
             procAttacker |= PROC_FLAG_DONE_TRAP_ACTIVATION;
 
         //procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS;
-        procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG;
+        procAttacker |= PROC_FLAG_DONE_SPELL_DMG_POS_NEG;
     }
 
     if (m_UniqueTargetInfo.empty())
@@ -7128,6 +7132,10 @@ SpellCastResult Spell::CheckCast(bool strict)
             }
             case SPELL_EFFECT_APPLY_AURA:
             {
+                if (m_spellInfo->HasAura(SPELL_AURA_CLONE_CASTER))
+                    if (m_caster->HasAuraType(SPELL_AURA_CLONE_CASTER))
+                        return SPELL_FAILED_BAD_TARGETS;
+
                 switch (m_spellInfo->Id)
                 {
                     case 5217:   // Tiger's Fury
