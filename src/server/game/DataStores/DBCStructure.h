@@ -1253,6 +1253,12 @@ struct GtBattlePetTypeDamageModEntry
     float value;
 };
 
+struct GtNpcDamageByClassEntry
+{
+    //uint32 level;
+    float    ratio;
+};
+
 struct GuildPerkSpellsEntry
 {
     //uint32 Id;

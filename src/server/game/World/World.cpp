@@ -1413,6 +1413,9 @@ void World::LoadConfigSettings(bool reload)
     m_bool_configs[CONFIG_CUSTOM_CONTENT_ENABLED] = ConfigMgr::GetBoolDefault("Custom.Content.Enabled", false);
     m_int_configs[CONFIG_CUSTOM_CONTENT_VERSION] = ConfigMgr::GetIntDefault("Custom.Content.Version", 548);
 
+    // Test new damage from dbc
+    m_bool_configs[CONFIG_DAMAGE_ENABLE_FROM_DBC] = ConfigMgr::GetBoolDefault("Damage.Dbc.Enabled", false);
+
     if (reload)
         sScriptMgr->OnConfigLoad(reload);
 }

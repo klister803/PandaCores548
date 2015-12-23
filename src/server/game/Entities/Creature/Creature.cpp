@@ -1345,15 +1345,62 @@ void Creature::SelectLevel(const CreatureTemplate* cinfo)
     SetModifierValue(UNIT_MOD_MANA, BASE_VALUE, (float)mana);
 
     //damage
-    float damagemod = 1.0f;//_GetDamageMod(rank);
+    float damagemod = _GetDamageMod(rank);
+    float mindmg = cinfo->mindmg;
+    float maxdmg = cinfo->maxdmg;
+    float minrangedmg = cinfo->minrangedmg;
+    float maxrangedmg = cinfo->maxrangedmg;
 
-    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, cinfo->mindmg * damagemod);
-    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, cinfo->maxdmg * damagemod);
+    if (sWorld->getBoolConfig(CONFIG_DAMAGE_ENABLE_FROM_DBC))
+    {
+        uint32 index = (getClass()-1) * 123 + level-1;
+        GtNpcDamageByClassEntry const* NpcDam = NULL;
+        switch (cinfo->expansion)
+        {
+            case 0:
+                NpcDam = sGtNpcDamageByClassStore.LookupEntry(index);
+                break;
+            case 1:
+                NpcDam = sGtNpcDamageByClassExp1Store.LookupEntry(index);
+                break;
+            case 2:
+                NpcDam = sGtNpcDamageByClassExp2Store.LookupEntry(index);
+                break;
+            case 3:
+                NpcDam = sGtNpcDamageByClassExp3Store.LookupEntry(index);
+                break;
+            case 4:
+                NpcDam = sGtNpcDamageByClassExp4Store.LookupEntry(index);
+                break;
+        }
+        if (NpcDam)
+        {
+            //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Creature::SelectLevel Entry %u expansion %u mindmg %f ratio %f level %u Class %u", cinfo->Entry, cinfo->expansion, mindmg, NpcDam->ratio, level, getClass());
+            mindmg = NpcDam->ratio * damagemod;
+            maxdmg = NpcDam->ratio * 1.5f * damagemod;
+        }
+        SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, mindmg);
+        SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, maxdmg);
 
-    SetFloatValue(UNIT_FIELD_MINRANGEDDAMAGE, cinfo->minrangedmg * damagemod);
-    SetFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE, cinfo->maxrangedmg * damagemod);
+        SetBaseWeaponDamage(OFF_ATTACK, MINDAMAGE, mindmg);
+        SetBaseWeaponDamage(OFF_ATTACK, MAXDAMAGE, maxdmg);
 
-    SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, cinfo->attackpower * damagemod);
+        SetBaseWeaponDamage(RANGED_ATTACK, MINDAMAGE, mindmg);
+        SetBaseWeaponDamage(RANGED_ATTACK, MAXDAMAGE, maxdmg);
+
+        SetFloatValue(UNIT_FIELD_MINRANGEDDAMAGE, mindmg);
+        SetFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE, maxdmg);
+    }
+    else
+    {
+        SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, mindmg);
+        SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, maxdmg);
+
+        SetFloatValue(UNIT_FIELD_MINRANGEDDAMAGE, minrangedmg);
+        SetFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE, maxrangedmg);
+    }
+
+    SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, cinfo->attackpower);
 }
 
 float Creature::_GetHealthMod(int32 Rank)
@@ -1401,6 +1448,25 @@ float Creature::_GetHealthModPersonal(uint32 &count)
 }
 
 float Creature::_GetDamageMod(int32 Rank)
+{
+    switch (Rank)                                           // define rates for each elite rank
+    {
+        case CREATURE_ELITE_NORMAL:
+            return 1.0f;
+        case CREATURE_ELITE_ELITE:
+            return 1.5f;
+        case CREATURE_ELITE_RAREELITE:
+            return 3.0f;
+        case CREATURE_ELITE_WORLDBOSS:
+            return 10.0f;
+        case CREATURE_ELITE_RARE:
+            return 2.0f;
+        default:
+            return 1.0f;
+    }
+}
+
+float Creature::_GetDamageModMulti(int32 Rank)
 {
     switch (Rank)                                           // define rates for each elite rank
     {

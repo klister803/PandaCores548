@@ -859,6 +859,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         void SetOriginalEntry(uint32 entry) { m_originalEntry = entry; }
 
         static float _GetDamageMod(int32 Rank);
+        static float _GetDamageModMulti(int32 Rank);
 
         float m_SightDistance, m_CombatDistance;
 

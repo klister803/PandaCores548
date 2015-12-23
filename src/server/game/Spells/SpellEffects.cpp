@@ -4815,14 +4815,6 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                 weaponDamagePercentMod += 60.0f / 100.0f;
             break;
         }
-        case 46968: // Shockwave
-        case 52174: // Heroic Leap
-        case 118000: // Dragon Roar
-        {
-            if (m_caster->HasAura(12712))
-                weaponDamage = int32(weaponDamage * 1.2f);
-            break;
-        }
         default:
             break;
     }
