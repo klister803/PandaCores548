@@ -20046,18 +20046,8 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                         check = true;
                         continue;
                     }
-                    if (itr->bp0 > 0 && !_targetAura->HasAura(itr->bp0))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if (itr->bp0 < 0 && _targetAura->HasAura(abs(itr->bp0)))
-                    {
-                        check = true;
-                        continue;
-                    }
 
-                    triggered_spell_id = itr->aura;
+                    triggered_spell_id = itr->bp0;
 
                     if (Aura* aura = _targetAura->GetAura(triggered_spell_id))
                     {
