@@ -24,6 +24,7 @@
 #include "DBCEnums.h"
 #include "ObjectDefines.h"
 #include "ByteBuffer.h"
+#include "Object.h"
 
 class Creature;
 class GameObject;
@@ -586,7 +587,9 @@ class Battleground
         BGObjects BgObjects;
         BGCreatures BgCreatures;
         void SpawnBGObject(uint32 type, uint32 respawntime);
+        bool AddObject(uint32 type, uint32 entry, Position pos, Position rotation = Position(), uint32 respawnTime = 0);
         bool AddObject(uint32 type, uint32 entry, float x, float y, float z, float o, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime = 0);
+        Creature* AddCreature(uint32 entry, uint32 type, uint32 teamval, Position pos, uint32 respawntime = 0);
         Creature* AddCreature(uint32 entry, uint32 type, uint32 teamval, float x, float y, float z, float o, uint32 respawntime = 0);
         bool DelCreature(uint32 type);
         bool DelObject(uint32 type);
@@ -619,6 +622,7 @@ class Battleground
         bool IsRBG() const { return m_rbgFlag; }
         void SetRBG(bool enable) { m_rbgFlag = enable; }
 
+        static Team GetTeamByTeamId(TeamId teamID) { return teamID == TEAM_ALLIANCE ? ALLIANCE : HORDE; }
     protected:
         // this method is called, when BG cannot spawn its own spirit guide, or something is wrong, It correctly ends Battleground
         void EndNow();

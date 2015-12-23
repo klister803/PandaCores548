@@ -413,6 +413,12 @@ class Object
 
 struct Position
 {
+    struct PositionXYStreamer
+    {
+        explicit PositionXYStreamer(Position& pos) : Pos(&pos) { }
+        Position* Pos;
+    };
+
     struct PositionXYZStreamer
     {
         explicit PositionXYZStreamer(Position& pos) : m_pos(&pos) {}
@@ -433,16 +439,14 @@ struct Position
     float m_orientation;
 //public:
 
-    void Relocate(float x, float y)
-        { m_positionX = x; m_positionY = y;}
-    void Relocate(float x, float y, float z)
-        { m_positionX = x; m_positionY = y; m_positionZ = z; }
-    void Relocate(float x, float y, float z, float orientation)
-        { m_positionX = x; m_positionY = y; m_positionZ = z; SetOrientation(orientation); }
-    void Relocate(const Position &pos)
-        { m_positionX = pos.m_positionX; m_positionY = pos.m_positionY; m_positionZ = pos.m_positionZ; SetOrientation(pos.m_orientation); }
-    void Relocate(const Position* pos)
-        { m_positionX = pos->m_positionX; m_positionY = pos->m_positionY; m_positionZ = pos->m_positionZ; SetOrientation(pos->m_orientation); }
+    void Relocate(float x, float y) { m_positionX = x; m_positionY = y;}
+    void Relocate(float x, float y, float z) { m_positionX = x; m_positionY = y; m_positionZ = z; }
+    void Relocate(float x, float y, float z, float orientation) { m_positionX = x; m_positionY = y; m_positionZ = z; SetOrientation(orientation); }
+
+    void Relocate(Position const& pos) { m_positionX = pos.m_positionX; m_positionY = pos.m_positionY; m_positionZ = pos.m_positionZ; SetOrientation(pos.m_orientation); }
+    void Relocate(Position const* pos) { m_positionX = pos->m_positionX; m_positionY = pos->m_positionY; m_positionZ = pos->m_positionZ; SetOrientation(pos->m_orientation); }
+
+
     void RelocateOffset(const Position &offset);
     void SetOrientation(float orientation)
     { m_orientation = NormalizeOrientation(orientation); }
@@ -463,15 +467,14 @@ struct Position
         if (pos)
             pos->Relocate(m_positionX, m_positionY, m_positionZ, m_orientation);
     }
+    void PositionToVector(G3D::Vector3& pos) const
+        { pos.x = m_positionX; pos.y = m_positionY; pos.z = m_positionZ; }
+    void VectorToPosition(G3D::Vector3 pos)
+        { m_positionX = pos.x; m_positionY = pos.y; m_positionZ = pos.z; }
 
-    Position::PositionXYZStreamer PositionXYZStream()
-    {
-        return PositionXYZStreamer(*this);
-    }
-    Position::PositionXYZOStreamer PositionXYZOStream()
-    {
-        return PositionXYZOStreamer(*this);
-    }
+    Position::PositionXYStreamer PositionXYStream() { return PositionXYStreamer(*this); }
+    Position::PositionXYZStreamer PositionXYZStream() { return PositionXYZStreamer(*this); }
+    Position::PositionXYZOStreamer PositionXYZOStream() { return PositionXYZOStreamer(*this); }
 
     bool IsPositionValid() const;
 
@@ -493,6 +496,11 @@ struct Position
         { return sqrt(GetExactDistSq(pos)); }
 
     void GetPositionOffsetTo(const Position & endPos, Position & retOffset) const;
+
+    Position GetPosition() const
+    {
+        return *this;
+    }
 
     float GetAngle(const Position* pos) const;
     float GetAngle(float x, float y) const;
@@ -528,10 +536,13 @@ struct Position
         return fmod(o, 2.0f * static_cast<float>(M_PI));
     }
 };
-ByteBuffer& operator>>(ByteBuffer& buf, Position::PositionXYZOStreamer const& streamer);
+
+ByteBuffer& operator<<(ByteBuffer& buf, Position::PositionXYStreamer const& streamer);
+ByteBuffer& operator>>(ByteBuffer& buf, Position::PositionXYStreamer const& streamer);
 ByteBuffer& operator<<(ByteBuffer& buf, Position::PositionXYZStreamer const& streamer);
 ByteBuffer& operator>>(ByteBuffer& buf, Position::PositionXYZStreamer const& streamer);
 ByteBuffer& operator<<(ByteBuffer& buf, Position::PositionXYZOStreamer const& streamer);
+ByteBuffer& operator>>(ByteBuffer& buf, Position::PositionXYZOStreamer const& streamer);
 
 struct MovementInfo
 {
