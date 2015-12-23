@@ -195,7 +195,7 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         void SetDuration(int32 newDuration) { _duration = newDuration; }
         void Delay(int32 delaytime) { SetDuration(GetDuration() - delaytime); }
         float GetVisualScale(bool max = false) const;
-        float GetRadius() const { return _radius; }
+        float GetRadius() const { return _radius * GetFloatValue(AREATRIGGER_EXPLICIT_SCALE); }
         float GetCustomVisualId() const { return atInfo.visualId; }
         uint32 GetCustomEntry() const { return atInfo.customEntry; }
         uint32 GetRealEntry() const { return _realEntry; }
