@@ -296,13 +296,13 @@ class BattlegroundAB : public Battleground
         uint8               m_prevNodes[BG_AB_DYNAMIC_NODES_COUNT];
         BG_AB_BannerTimer   m_BannerTimers[BG_AB_DYNAMIC_NODES_COUNT];
         uint32              m_NodeTimers[BG_AB_DYNAMIC_NODES_COUNT];
-        uint32              m_lastTick[BG_TEAMS_COUNT];
-        uint32              m_HonorScoreTics[BG_TEAMS_COUNT];
-        uint32              m_ReputationScoreTics[BG_TEAMS_COUNT];
+        uint32              m_lastTick[MAX_TEAMS];
+        uint32              m_HonorScoreTics[MAX_TEAMS];
+        uint32              m_ReputationScoreTics[MAX_TEAMS];
         bool                m_IsInformedNearVictory;
         uint32              m_HonorTics;
         uint32              m_ReputationTics;
         // need for achievements
-        bool                m_TeamScores500Disadvantage[BG_TEAMS_COUNT];
+        bool                m_TeamScores500Disadvantage[MAX_TEAMS];
 };
 #endif

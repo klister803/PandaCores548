@@ -282,12 +282,12 @@ private:
         virtual void PostUpdateImpl(uint32 diff);
 
         Point* m_points[MAX_POINTS];
-        Cart*  m_carts[BG_TEAMS_COUNT];
+        Cart*  m_carts[MAX_TEAMS];
 
         int32 m_flagsUpdTimer;
         int32 m_goldUpdate;
 
-        uint32 m_gold[BG_TEAMS_COUNT];
+        uint32 m_gold[MAX_TEAMS];
 };
 
 #endif

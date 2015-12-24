@@ -101,9 +101,9 @@ enum BG_SSM_ObjectEntry
     OBJECT_BG_SSM_DOOR4                     = 212942,
 };
 
-static const uint32 BroadcastTextCartTaken[BG_TEAMS_COUNT] = {59689, 59690};
-static const uint32 BroadcastTextCartControlTaken[BG_TEAMS_COUNT] = {60441, 60442};
-static const uint32 BroadcastTextArrow[BG_TEAMS_COUNT] = {60031, 60032};
+static const uint32 BroadcastTextCartTaken[MAX_TEAMS] = {59689, 59690};
+static const uint32 BroadcastTextCartControlTaken[MAX_TEAMS] = {60441, 60442};
+static const uint32 BroadcastTextArrow[MAX_TEAMS] = {60031, 60032};
 static const uint32 BroadcastCartSpawn = 60444;
 static const uint32 SoundKitCartSpawn = 9431;
 static const uint32 BG_SSM_MAX_CARTS = 3;
