@@ -235,6 +235,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SUPERHEATER);
              instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_ON_CONVEYOR);
              instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PATTERN_RECOGNITION);
+             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MAGNETIC_CRASH_DMG);
          }
 
          uint32 GetData(uint32 type)
