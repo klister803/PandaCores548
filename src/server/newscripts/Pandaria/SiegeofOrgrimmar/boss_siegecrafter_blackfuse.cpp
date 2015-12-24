@@ -182,7 +182,7 @@ Position droppos = {1966.44f, -5562.38f, -309.3269f};
 Position destpos = {2073.01f, -5620.12f, -302.2553f};
 Position cmdestpos = {1905.39f, -5631.86f, -309.3265f};
 Position sumshrederpos = {1902.65f, -5625.15f, -309.3269f};
-Position sehsumpos = {2006.04f, -5570.15f, -308.3213f};
+Position sehsumpos = {2006.04f, -5570.15f, -301.9805f};
 
 enum CretureText
 {
@@ -392,7 +392,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                      {
                          for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                          {
-                             if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && me->GetExactDist(*itr) >= 15.0f && !(*itr)->HasAura(SPELL_ON_CONVEYOR))
+                             if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && me->GetExactDist(*itr) >= 15.0f && !(*itr)->HasAura(SPELL_ON_CONVEYOR) && !(*itr)->HasAura(SPELL_PATTERN_RECOGNITION))
                              {
                                  Talk(SAY_SAWBLADE);
                                  DoCast(*itr, SPELL_LAUNCH_SAWBLADE);
@@ -419,6 +419,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                      {
                          for (uint8 n = 0; n < 3; n++)
                              summons.DespawnEntry(aweaponentry[n]);
+                         instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MAGNETIC_CRASH_DMG);
                      }
                      CreateWeaponWave(weaponwavecount);
                      events.ScheduleEvent(EVENT_ACTIVE_CONVEYER, 50000);
@@ -946,7 +947,7 @@ public:
                 case EVENT_CHECK_PLAYERS:
                 {
                     std::list<Player*> pllist;
-                    GetPlayerListInGrid(pllist, me, 70.0f);
+                    GetPlayerListInGrid(pllist, me, 100.0f);
                     if (!pllist.empty())
                     {
                         for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
