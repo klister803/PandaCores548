@@ -182,7 +182,7 @@ Position droppos = {1966.44f, -5562.38f, -309.3269f};
 Position destpos = {2073.01f, -5620.12f, -302.2553f};
 Position cmdestpos = {1905.39f, -5631.86f, -309.3265f};
 Position sumshrederpos = {1902.65f, -5625.15f, -309.3269f};
-Position sehsumpos = {2006.04f, -5570.15f, -301.9805f};
+Position sehsumpos = {2009.70f, -5549.21f, -302.8851f};
 
 enum CretureText
 {
