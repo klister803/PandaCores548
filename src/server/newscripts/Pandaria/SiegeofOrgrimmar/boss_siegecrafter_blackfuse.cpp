@@ -946,18 +946,19 @@ public:
                     break;
                 case EVENT_CHECK_PLAYERS:
                 {
-                    std::list<Player*> pllist;
-                    GetPlayerListInGrid(pllist, me, 100.0f);
-                    if (!pllist.empty())
+                    Map::PlayerList const& players = me->GetMap()->GetPlayers();
+                    if (!players.isEmpty())
                     {
-                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                        if (Player* pl = players.begin()->getSource())
                         {
-                            if ((*itr)->isAlive())
+                            if (pl->isAlive())
                             {
-                                if (int32((*itr)->GetPositionZ()) < -306 && (*itr)->HasAura(SPELL_ON_CONVEYOR))
-                                    (*itr)->RemoveAurasDueToSpell(SPELL_ON_CONVEYOR);
-                                else if (int32((*itr)->GetPositionZ()) >= -303 && int32((*itr)->GetPositionX()) > 2010 && !(*itr)->HasAura(SPELL_ON_CONVEYOR))
-                                    (*itr)->CastSpell(*itr, SPELL_ON_CONVEYOR, true);
+                                if (int32(pl->GetPositionZ()) < -306 && pl->HasAura(SPELL_ON_CONVEYOR))
+                                    pl->RemoveAurasDueToSpell(SPELL_ON_CONVEYOR);
+                                else if (int32(pl->GetPositionZ()) >= -303 && int32(pl->GetPositionX()) > 2010 && !pl->HasAura(SPELL_ON_CONVEYOR))
+                                    pl->CastSpell(pl, SPELL_ON_CONVEYOR, true);
+                                else if (int32(pl->GetPositionZ()) >= -303 && int32(pl->GetPositionX()) > 2010 && pl->HasAura(SPELL_ON_CONVEYOR) && !pl->HasAura(SPELL_PATTERN_RECOGNITION))
+                                    pl->CastSpell(pl, SPELL_PATTERN_RECOGNITION, true);
                             }
                         }
                     }
