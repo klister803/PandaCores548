@@ -63,3 +63,17 @@ insert ignore into `disables` (`sourceType`, `entry`, `flags`, `params_0`, `para
 ('2','1144','7','','','Темное сердце Пандарии - scenario'),
 ('2','1095','7','','','Dagger in the Dark - scenario'),
 ('2','1131','7','','','Секреты Огненной Пропасти - scenario');
+
+replace into `access_requirement` (`mapId`, `difficulty`, `dungeonId`, `level_min`, `level_max`, `item_level`, `item`, `item2`, `quest_done_A`, `quest_done_H`, `completed_achievement`, `completed_achievement_A`, `quest_failed_text`, `comment`) values
+('960','1','0','85','0','358','0','0','0','0','0','0',NULL,'Temple of the Jade Serpent'),
+('960','2','0','90','0','440','0','0','0','0','0','0',NULL,'Temple of the Jade Serpent'),
+('961','1','0','85','0','358','0','0','0','0','0','0',NULL,'Stormstout Brewery'),
+('961','2','0','90','0','440','0','0','0','0','0','0',NULL,'Stormstout Brewery'),
+('962','1','0','88','0','393','0','0','0','0','0','0',NULL,'Gate of the Setting Sun'),
+('962','2','0','90','0','440','0','0','0','0','0','0',NULL,'Gate of the Setting Sun'),
+('994','1','0','87','0','393','0','0','0','0','0','0',NULL,'Mogu\'shan Palace'),
+('994','2','0','90','0','440','0','0','0','0','0','0',NULL,'Mogu\'shan Palace'),
+('959','1','0','87','0','393','0','0','0','0','0','0',NULL,'Shado-Pan Monastery'),
+('959','2','0','90','0','440','0','0','0','0','0','0',NULL,'Shado-Pan Monastery'),
+('1011','1','0','87','0','393','0','0','0','0','0','0',NULL,'Siege of Niuzao Temple'),
+('1011','2','0','90','0','440','0','0','0','0','0','0',NULL,'Siege of Niuzao Temple');
