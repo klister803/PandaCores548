@@ -63,6 +63,8 @@ void MapManager::Initialize()
     // Start mtmaps if needed.
     if (num_threads > 0)
         m_updater.activate(num_threads);
+
+    _achievementUpdater.activate(1);
 }
 
 void MapManager::InitializeVisibilityDistanceInfo()
@@ -282,9 +284,9 @@ void MapManager::Update(uint32 diff)
     sAchievementMgr->PrepareCriteriaUpdateTaskThread();
     for (auto playerTask : sAchievementMgr->GetPlayersCriteriaTask())
     {
-        if (m_updater.activated())
+        if (_achievementUpdater.activated())
         {
-            m_updater.schedule_specific(new AchievementCriteriaUpdateRequest(&m_updater, playerTask.second));
+            _achievementUpdater.schedule_specific(new AchievementCriteriaUpdateRequest(&_achievementUpdater, playerTask.second));
         }
         else
         {
@@ -304,6 +306,9 @@ void MapManager::Update(uint32 diff)
     }
     if (m_updater.activated())
         m_updater.wait();
+
+    if (_achievementUpdater.activated())
+        _achievementUpdater.wait();
 
     sAchievementMgr->ClearPlayersCriteriaTask();
 
@@ -360,6 +365,9 @@ void MapManager::UnloadAll()
 
     if (m_updater.activated())
         m_updater.deactivate();
+
+    if (_achievementUpdater.activated())
+        _achievementUpdater.deactivate();
 
     Map::DeleteStateMachine();
 }
