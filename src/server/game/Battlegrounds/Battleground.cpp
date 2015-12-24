@@ -1568,6 +1568,11 @@ void Battleground::RemovePlayerFromResurrectQueue(uint64 player_guid)
     }
 }
 
+bool Battleground::AddObject(uint32 type, uint32 entry, Position pos, Position rotation /*= { }*/, uint32 respawnTime /*= 0*/)
+{
+    return AddObject(type, entry, pos.m_positionX, pos.m_positionY, pos.m_positionZ, pos.m_orientation, rotation.m_positionX, rotation.m_positionY, rotation.m_positionZ, rotation.m_orientation, respawnTime);
+}
+
 bool Battleground::AddObject(uint32 type, uint32 entry, float x, float y, float z, float o, float rotation0, float rotation1, float rotation2, float rotation3, uint32 /*respawnTime*/)
 {
     // If the assert is called, means that BgObjects must be resized!
@@ -1690,6 +1695,11 @@ void Battleground::SpawnBGObject(uint32 type, uint32 respawntime)
             obj->SetRespawnTime(respawntime);
             map->AddToMap(obj);
         }
+}
+
+Creature* Battleground::AddCreature(uint32 entry, uint32 type, uint32 teamval, Position pos, uint32 respawntime /*= 0*/)
+{
+    return AddCreature(entry, type, teamval, pos.m_positionX, pos.m_positionY, pos.m_positionZ, pos.m_orientation, respawntime);
 }
 
 Creature* Battleground::AddCreature(uint32 entry, uint32 type, uint32 teamval, float x, float y, float z, float o, uint32 respawntime)
