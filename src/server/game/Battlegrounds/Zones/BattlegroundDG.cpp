@@ -145,9 +145,6 @@ void BattlegroundDG::RemovePlayer(Player* player, uint64 /*guid*/, uint32 /*team
 
 void BattlegroundDG::HandleKillPlayer(Player* player, Player* killer)
 {
-    if (GetStatus() != STATUS_IN_PROGRESS)
-        return;
-
     for (uint8 i = 0; i < 2; ++i)
         if (m_carts[i]->TakePlayerWhoDroppedFlag() == player->GetGUID())
         {

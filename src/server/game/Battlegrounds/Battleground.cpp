@@ -1929,11 +1929,10 @@ void Battleground::HandleTriggerBuff(uint64 go_guid)
 
 void Battleground::HandleKillPlayer(Player* victim, Player* killer)
 {
-    // Keep in mind that for arena this will have to be changed a bit
+    if (GetStatus() != STATUS_IN_PROGRESS)
+        return;
 
-    // Add +1 deaths
     UpdatePlayerScore(victim, SCORE_DEATHS, 1);
-    // Add +1 kills to group and +1 killing_blows to killer
     if (killer)
     {
         // Don't reward credit for killing ourselves, like fall damage of hellfire (warlock)

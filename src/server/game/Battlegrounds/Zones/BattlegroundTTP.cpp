@@ -78,15 +78,6 @@ void BattlegroundTTP::RemovePlayer(Player* /*player*/, uint64 /*guid*/, uint32 /
 
 void BattlegroundTTP::HandleKillPlayer(Player* player, Player* killer)
 {
-    if (GetStatus() != STATUS_IN_PROGRESS)
-        return;
-
-    if (!killer)
-    {
-        sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundTTP: Killer player not found");
-        return;
-    }
-
     Battleground::HandleKillPlayer(player, killer);
 
     UpdateArenaWorldState();

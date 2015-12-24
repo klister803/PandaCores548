@@ -471,9 +471,6 @@ void BattlegroundIC::HandleKillPlayer(Player* player, Player* killer)
     if (!player || player->GetTeamId() >= 2)
         return;
 
-    if (GetStatus() != STATUS_IN_PROGRESS)
-        return;
-
     Battleground::HandleKillPlayer(player, killer);
 
     factionReinforcements[player->GetTeamId()] -= 1;

@@ -329,14 +329,10 @@ void BattlegroundKT::EndBattleground(uint32 winner)
 
 void BattlegroundKT::HandleKillPlayer(Player *player, Player *killer)
 {
-    if (GetStatus() != STATUS_IN_PROGRESS)
-        return;
-
     EventPlayerDroppedFlag(player);
 
     Battleground::HandleKillPlayer(player, killer);
 }
-
 
 void BattlegroundKT::UpdatePlayerScore(Player* Source, uint32 type, uint32 value, bool doAddHonor)
 {

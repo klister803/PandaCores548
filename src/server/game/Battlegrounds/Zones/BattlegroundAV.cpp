@@ -49,9 +49,6 @@ uint16 BattlegroundAV::GetBonusHonor(uint8 kills) //TODO: move this function to 
 
 void BattlegroundAV::HandleKillPlayer(Player* player, Player* killer)
 {
-    if (GetStatus() != STATUS_IN_PROGRESS)
-        return;
-
     Battleground::HandleKillPlayer(player, killer);
     UpdateScore(player->GetTeam(), -1);
 }
