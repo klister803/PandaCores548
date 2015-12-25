@@ -329,10 +329,14 @@ void BattlegroundKT::EndBattleground(uint32 winner)
 
 void BattlegroundKT::HandleKillPlayer(Player *player, Player *killer)
 {
+    if (GetStatus() != STATUS_IN_PROGRESS)
+        return;
+
     EventPlayerDroppedFlag(player);
 
     Battleground::HandleKillPlayer(player, killer);
 }
+
 
 void BattlegroundKT::UpdatePlayerScore(Player* Source, uint32 type, uint32 value, bool doAddHonor)
 {
@@ -390,15 +394,15 @@ void BattlegroundKT::AccumulateScore(uint32 team, BG_KT_ZONE zone)
     if (m_TeamScores[team] > BG_KT_MAX_TEAM_SCORE)
         m_TeamScores[team] = BG_KT_MAX_TEAM_SCORE;
 
-    if (team == TEAM_ALLIANCE)
+    if (team == BG_TEAM_ALLIANCE)
         UpdateWorldState(BG_KT_ORB_POINTS_A, m_TeamScores[team]);
-    if (team == TEAM_HORDE)
+    if (team == BG_TEAM_HORDE)
         UpdateWorldState(BG_KT_ORB_POINTS_H, m_TeamScores[team]);
 
     // Test win condition
-    if (m_TeamScores[TEAM_ALLIANCE] >= BG_KT_MAX_TEAM_SCORE)
+    if (m_TeamScores[BG_TEAM_ALLIANCE] >= BG_KT_MAX_TEAM_SCORE)
         EndBattleground(ALLIANCE);
-    if (m_TeamScores[TEAM_HORDE] >= BG_KT_MAX_TEAM_SCORE)
+    if (m_TeamScores[BG_TEAM_HORDE] >= BG_KT_MAX_TEAM_SCORE)
         EndBattleground(HORDE);
 }
 
@@ -407,16 +411,16 @@ void BattlegroundKT::FillInitialWorldStates(WorldPacket& data)
     FillInitialWorldState(data, BG_KT_ORB_POINTS_A, GetTeamScore(ALLIANCE));
     FillInitialWorldState(data, BG_KT_ORB_POINTS_H, GetTeamScore(HORDE));
 
-    /*if (m_OrbState[TEAM_ALLIANCE] == BG_KT_ORB_STATE_ON_GROUND)
+    /*if (m_OrbState[BG_TEAM_ALLIANCE] == BG_KT_ORB_STATE_ON_GROUND)
         FillInitialWorldState(data, count, BG_KT_ICON_A, -1);
-    else if (m_OrbState[TEAM_ALLIANCE] == BG_KT_ORB_STATE_ON_PLAYER)
+    else if (m_OrbState[BG_TEAM_ALLIANCE] == BG_KT_ORB_STATE_ON_PLAYER)
         FillInitialWorldState(data, count, BG_KT_ICON_A, 1);
     else
         FillInitialWorldState(data, count, BG_KT_ICON_A, 0);
 
-    if (m_OrbState[TEAM_HORDE] == BG_KT_ORB_STATE_ON_GROUND)
+    if (m_OrbState[BG_TEAM_HORDE] == BG_KT_ORB_STATE_ON_GROUND)
         FillInitialWorldState(data, count, BG_KT_ICON_H, -1);
-    else if (m_OrbState[TEAM_HORDE] == BG_KT_ORB_STATE_ON_PLAYER)
+    else if (m_OrbState[BG_TEAM_HORDE] == BG_KT_ORB_STATE_ON_PLAYER)
         FillInitialWorldState(data, count, BG_KT_ICON_H, 1);
     else
         FillInitialWorldState(data, count, BG_KT_ICON_H, 0);*/
@@ -424,12 +428,12 @@ void BattlegroundKT::FillInitialWorldStates(WorldPacket& data)
     //WTF???
     //FillInitialWorldState(data, BG_KT_ORB_POINTS_MAX, BG_KT_MAX_TEAM_SCORE);
 
-    /*if (m_OrbState[TEAM_HORDE] == BG_KT_ORB_STATE_ON_PLAYER)
+    /*if (m_OrbState[BG_TEAM_HORDE] == BG_KT_ORB_STATE_ON_PLAYER)
         FillInitialWorldState(data, count, BG_KT_ORB_STATE, 2);
     else
         FillInitialWorldState(data, count, BG_KT_ORB_STATE, 1);
 
-    if (m_OrbState[TEAM_ALLIANCE] == BG_KT_ORB_STATE_ON_PLAYER)
+    if (m_OrbState[BG_TEAM_ALLIANCE] == BG_KT_ORB_STATE_ON_PLAYER)
         FillInitialWorldState(data, count, BG_KT_ORB_STATE, 2);
     else
         FillInitialWorldState(data, count, BG_KT_ORB_STATE, 1);*/

@@ -124,6 +124,15 @@ void BattlegroundRV::RemovePlayer(Player* /*player*/, uint64 /*guid*/, uint32 /*
 
 void BattlegroundRV::HandleKillPlayer(Player* player, Player* killer)
 {
+    if (GetStatus() != STATUS_IN_PROGRESS)
+        return;
+
+    if (!killer)
+    {
+        sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundRV: Killer player not found");
+        return;
+    }
+
     Battleground::HandleKillPlayer(player, killer);
 
     UpdateWorldState(BG_RV_WORLD_STATE_A, GetAlivePlayersCountByTeam(ALLIANCE));

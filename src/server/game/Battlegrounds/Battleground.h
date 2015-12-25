@@ -24,7 +24,6 @@
 #include "DBCEnums.h"
 #include "ObjectDefines.h"
 #include "ByteBuffer.h"
-#include "Object.h"
 
 class Creature;
 class GameObject;
@@ -266,6 +265,13 @@ enum BattlegroundWinner
     WINNER_NONE             = 2
 };
 
+enum BattlegroundTeamId
+{
+    BG_TEAM_ALLIANCE        = 0,
+    BG_TEAM_HORDE           = 1
+};
+#define BG_TEAMS_COUNT  2
+
 enum BattlegroundStartingEvents
 {
     BG_STARTING_EVENT_NONE  = 0x00,
@@ -496,7 +502,7 @@ class Battleground
         void SetTeamStartLoc(uint32 TeamID, float X, float Y, float Z, float O);
         virtual void GetTeamStartLoc(uint32 TeamID, float &X, float &Y, float &Z, float &O) const
         {
-            TeamId idx = GetTeamIndexByTeamId(TeamID);
+            BattlegroundTeamId idx = GetTeamIndexByTeamId(TeamID);
             X = m_TeamStartLocX[idx];
             Y = m_TeamStartLocY[idx];
             Z = m_TeamStartLocZ[idx];
@@ -534,12 +540,12 @@ class Battleground
         void SendMessage2ToAll(int32 entry, ChatMsg type, Player const* source, int32 strId1 = 0, int32 strId2 = 0);
 
         // Raid Group
-        Group* GetBgRaid(uint32 TeamID) const { return TeamID == ALLIANCE ? m_BgRaids[TEAM_ALLIANCE] : m_BgRaids[TEAM_HORDE]; }
+        Group* GetBgRaid(uint32 TeamID) const { return TeamID == ALLIANCE ? m_BgRaids[BG_TEAM_ALLIANCE] : m_BgRaids[BG_TEAM_HORDE]; }
         void SetBgRaid(uint32 TeamID, Group* bg_raid);
 
         virtual void UpdatePlayerScore(Player* Source, uint32 type, uint32 value, bool doAddHonor = true);
 
-        static TeamId GetTeamIndexByTeamId(uint32 Team) { return Team == ALLIANCE ? TEAM_ALLIANCE : TEAM_HORDE; }
+        static BattlegroundTeamId GetTeamIndexByTeamId(uint32 Team) { return Team == ALLIANCE ? BG_TEAM_ALLIANCE : BG_TEAM_HORDE; }
         uint32 GetPlayersCountByTeam(uint32 Team) const { return m_PlayersCount[GetTeamIndexByTeamId(Team)]; }
         uint32 GetAlivePlayersCountByTeam(uint32 Team) const;   // used in arenas to correctly handle death in spirit of redemption / last stand etc. (killer = killed) cases
         void UpdatePlayersCountByTeam(uint32 Team, bool remove)
@@ -605,9 +611,7 @@ class Battleground
         BGObjects BgObjects;
         BGCreatures BgCreatures;
         void SpawnBGObject(uint32 type, uint32 respawntime);
-        bool AddObject(uint32 type, uint32 entry, Position pos, Position rotation = Position(), uint32 respawnTime = 0);
         bool AddObject(uint32 type, uint32 entry, float x, float y, float z, float o, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime = 0);
-        Creature* AddCreature(uint32 entry, uint32 type, uint32 teamval, Position pos, uint32 respawntime = 0);
         Creature* AddCreature(uint32 entry, uint32 type, uint32 teamval, float x, float y, float z, float o, uint32 respawntime = 0);
         bool DelCreature(uint32 type);
         bool DelObject(uint32 type);
@@ -630,7 +634,7 @@ class Battleground
         void SetDeleteThis() { m_SetDeleteThis = true; }
 
         // virtual score-array - get's used in bg-subclasses
-        int32 m_TeamScores[MAX_TEAMS];
+        int32 m_TeamScores[BG_TEAMS_COUNT];
 
         void RewardXPAtKill(Player* killer, Player* victim);
         bool CanAwardArenaPoints() const { return m_LevelMin >= BG_AWARD_ARENA_POINTS_MIN_LEVEL; }
@@ -643,7 +647,6 @@ class Battleground
         void SendOpponentSpecialization(uint32 team);
         void UpdateArenaVision();
 
-        static Team GetTeamByTeamId(TeamId teamID) { return teamID == TEAM_ALLIANCE ? ALLIANCE : HORDE; }
     protected:
         // this method is called, when BG cannot spawn its own spirit guide, or something is wrong, It correctly ends Battleground
         void EndNow();
@@ -751,17 +754,17 @@ class Battleground
         uint32 m_InvitedHorde;
 
         // Raid Group
-        Group* m_BgRaids[MAX_TEAMS];                   // 0 - alliance, 1 - horde
+        Group* m_BgRaids[BG_TEAMS_COUNT];                   // 0 - alliance, 1 - horde
 
         // Players count by team
-        uint32 m_PlayersCount[MAX_TEAMS];
+        uint32 m_PlayersCount[BG_TEAMS_COUNT];
 
         std::map<uint32, std::list<const char*>> m_nameList;
 
         // Arena team ids by team
-        uint32 m_GroupIds[MAX_TEAMS];
+        uint32 m_GroupIds[BG_TEAMS_COUNT];
 
-        uint32 m_ArenaTeamMMR[MAX_TEAMS];
+        uint32 m_ArenaTeamMMR[BG_TEAMS_COUNT];
 
         // Limits
         uint32 m_LevelMin;
@@ -774,10 +777,10 @@ class Battleground
         // Start location
         uint32 m_MapId;
         BattlegroundMap* m_Map;
-        float m_TeamStartLocX[MAX_TEAMS];
-        float m_TeamStartLocY[MAX_TEAMS];
-        float m_TeamStartLocZ[MAX_TEAMS];
-        float m_TeamStartLocO[MAX_TEAMS];
+        float m_TeamStartLocX[BG_TEAMS_COUNT];
+        float m_TeamStartLocY[BG_TEAMS_COUNT];
+        float m_TeamStartLocZ[BG_TEAMS_COUNT];
+        float m_TeamStartLocO[BG_TEAMS_COUNT];
         float m_StartMaxDist;
         uint32 m_holiday;
         uint32 ScriptId;

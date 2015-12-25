@@ -30,7 +30,7 @@
 
 BattlegroundQueue::BattlegroundQueue()
 {
-    for (uint32 i = 0; i < MAX_TEAMS; ++i)
+    for (uint32 i = 0; i < BG_TEAMS_COUNT; ++i)
     {
         for (uint32 j = 0; j < MAX_BATTLEGROUND_BRACKETS; ++j)
         {
@@ -151,7 +151,7 @@ GroupQueueInfo* BattlegroundQueue::AddGroup(Player* leader, Group* grp, Battlegr
     //compute index (if group is premade or joined a rated match) to queues
     uint32 index = 0;
     if (!isRated && !isPremade)
-        index += MAX_TEAMS;
+        index += BG_TEAMS_COUNT;
     if (ginfo->Team == HORDE)
         index++;
 
@@ -235,16 +235,16 @@ GroupQueueInfo* BattlegroundQueue::AddGroup(Player* leader, Group* grp, Battlegr
 void BattlegroundQueue::PlayerInvitedToBGUpdateAverageWaitTime(GroupQueueInfo* ginfo, BattlegroundBracketId bracket_id)
 {
     uint32 timeInQueue = getMSTimeDiff(ginfo->JoinTime, getMSTime());
-    uint8 team_index = TEAM_ALLIANCE;                    //default set to TEAM_ALLIANCE - or non rated arenas!
+    uint8 team_index = BG_TEAM_ALLIANCE;                    //default set to BG_TEAM_ALLIANCE - or non rated arenas!
     if (!ginfo->JoinType)
     {
         if (ginfo->Team == HORDE)
-            team_index = TEAM_HORDE;
+            team_index = BG_TEAM_HORDE;
     }
     else
     {
         if (ginfo->IsRated)
-            team_index = TEAM_HORDE;                     //for rated arenas use TEAM_HORDE
+            team_index = BG_TEAM_HORDE;                     //for rated arenas use BG_TEAM_HORDE
     }
 
     //store pointer to arrayindex of player that was added first
@@ -262,16 +262,16 @@ void BattlegroundQueue::PlayerInvitedToBGUpdateAverageWaitTime(GroupQueueInfo* g
 
 uint32 BattlegroundQueue::GetAverageQueueWaitTime(GroupQueueInfo* ginfo, BattlegroundBracketId bracket_id) const
 {
-    uint8 team_index = TEAM_ALLIANCE;                    //default set to TEAM_ALLIANCE - or non rated arenas!
+    uint8 team_index = BG_TEAM_ALLIANCE;                    //default set to BG_TEAM_ALLIANCE - or non rated arenas!
     if (!ginfo->JoinType)
     {
         if (ginfo->Team == HORDE)
-            team_index = TEAM_HORDE;
+            team_index = BG_TEAM_HORDE;
     }
     else
     {
         if (ginfo->IsRated)
-            team_index = TEAM_HORDE;                     //for rated arenas use TEAM_HORDE
+            team_index = BG_TEAM_HORDE;                     //for rated arenas use BG_TEAM_HORDE
     }
     //check if there is enought values(we always add values > 0)
     if (m_WaitTimes[team_index][bracket_id][COUNT_OF_PLAYERS_TO_AVERAGE_WAIT_TIME - 1])
@@ -302,13 +302,13 @@ void BattlegroundQueue::RemovePlayer(uint64 guid, bool decreaseInvitedCount)
     // mostly people with the highest levels are in battlegrounds, thats why
     // we count from MAX_BATTLEGROUND_QUEUES - 1 to 0
     // variable index removes useless searching in other team's queue
-    uint32 index = (group->Team == HORDE) ? TEAM_HORDE : TEAM_ALLIANCE;
+    uint32 index = (group->Team == HORDE) ? BG_TEAM_HORDE : BG_TEAM_ALLIANCE;
 
     for (int32 bracket_id_tmp = MAX_BATTLEGROUND_BRACKETS - 1; bracket_id_tmp >= 0 && bracket_id == -1; --bracket_id_tmp)
     {
         //we must check premade and normal team's queue - because when players from premade are joining bg,
         //they leave groupinfo so we can't use its players size to find out index
-        for (uint32 j = index; j < BG_QUEUE_GROUP_TYPES_COUNT; j += MAX_TEAMS)
+        for (uint32 j = index; j < BG_QUEUE_GROUP_TYPES_COUNT; j += BG_TEAMS_COUNT)
         {
             for (group_itr_tmp = m_QueuedGroups[bracket_id_tmp][j].begin(); group_itr_tmp != m_QueuedGroups[bracket_id_tmp][j].end(); ++group_itr_tmp)
             {
@@ -491,13 +491,13 @@ void BattlegroundQueue::FillPlayersToBG(Battleground* bg, BattlegroundBracketId 
     uint32 aliCount = m_QueuedGroups[bracket_id][BG_QUEUE_NORMAL_ALLIANCE].size();
     //index to queue which group is current
     uint32 aliIndex = 0;
-    for (; aliIndex < aliCount && m_SelectionPools[TEAM_ALLIANCE].AddGroup((*Ali_itr), aliFree); aliIndex++)
+    for (; aliIndex < aliCount && m_SelectionPools[BG_TEAM_ALLIANCE].AddGroup((*Ali_itr), aliFree); aliIndex++)
         ++Ali_itr;
     //the same thing for horde
     GroupsQueueType::const_iterator Horde_itr = m_QueuedGroups[bracket_id][BG_QUEUE_NORMAL_HORDE].begin();
     uint32 hordeCount = m_QueuedGroups[bracket_id][BG_QUEUE_NORMAL_HORDE].size();
     uint32 hordeIndex = 0;
-    for (; hordeIndex < hordeCount && m_SelectionPools[TEAM_HORDE].AddGroup((*Horde_itr), hordeFree); hordeIndex++)
+    for (; hordeIndex < hordeCount && m_SelectionPools[BG_TEAM_HORDE].AddGroup((*Horde_itr), hordeFree); hordeIndex++)
         ++Horde_itr;
 
     //if ofc like BG queue invitation is set in config, then we are happy
@@ -513,45 +513,45 @@ void BattlegroundQueue::FillPlayersToBG(Battleground* bg, BattlegroundBracketId 
     */
 
     // At first we need to compare free space in bg and our selection pool
-    int32 diffAli   = aliFree   - int32(m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount());
-    int32 diffHorde = hordeFree - int32(m_SelectionPools[TEAM_HORDE].GetPlayerCount());
-    while (abs(diffAli - diffHorde) > 1 && (m_SelectionPools[TEAM_HORDE].GetPlayerCount() > 0 || m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() > 0))
+    int32 diffAli   = aliFree   - int32(m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount());
+    int32 diffHorde = hordeFree - int32(m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount());
+    while (abs(diffAli - diffHorde) > 1 && (m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount() > 0 || m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount() > 0))
     {
         //each cycle execution we need to kick at least 1 group
         if (diffAli < diffHorde)
         {
             //kick alliance group, add to pool new group if needed
-            if (m_SelectionPools[TEAM_ALLIANCE].KickGroup(diffHorde - diffAli))
+            if (m_SelectionPools[BG_TEAM_ALLIANCE].KickGroup(diffHorde - diffAli))
             {
-                for (; aliIndex < aliCount && m_SelectionPools[TEAM_ALLIANCE].AddGroup((*Ali_itr), (aliFree >= diffHorde) ? aliFree - diffHorde : 0); aliIndex++)
+                for (; aliIndex < aliCount && m_SelectionPools[BG_TEAM_ALLIANCE].AddGroup((*Ali_itr), (aliFree >= diffHorde) ? aliFree - diffHorde : 0); aliIndex++)
                     ++Ali_itr;
             }
             //if ali selection is already empty, then kick horde group, but if there are less horde than ali in bg - break;
-            if (!m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount())
+            if (!m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount())
             {
                 if (aliFree <= diffHorde + 1)
                     break;
-                m_SelectionPools[TEAM_HORDE].KickGroup(diffHorde - diffAli);
+                m_SelectionPools[BG_TEAM_HORDE].KickGroup(diffHorde - diffAli);
             }
         }
         else
         {
             //kick horde group, add to pool new group if needed
-            if (m_SelectionPools[TEAM_HORDE].KickGroup(diffAli - diffHorde))
+            if (m_SelectionPools[BG_TEAM_HORDE].KickGroup(diffAli - diffHorde))
             {
-                for (; hordeIndex < hordeCount && m_SelectionPools[TEAM_HORDE].AddGroup((*Horde_itr), (hordeFree >= diffAli) ? hordeFree - diffAli : 0); hordeIndex++)
+                for (; hordeIndex < hordeCount && m_SelectionPools[BG_TEAM_HORDE].AddGroup((*Horde_itr), (hordeFree >= diffAli) ? hordeFree - diffAli : 0); hordeIndex++)
                     ++Horde_itr;
             }
-            if (!m_SelectionPools[TEAM_HORDE].GetPlayerCount())
+            if (!m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount())
             {
                 if (hordeFree <= diffAli + 1)
                     break;
-                m_SelectionPools[TEAM_ALLIANCE].KickGroup(diffAli - diffHorde);
+                m_SelectionPools[BG_TEAM_ALLIANCE].KickGroup(diffAli - diffHorde);
             }
         }
         //count diffs after small update
-        diffAli   = aliFree   - int32(m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount());
-        diffHorde = hordeFree - int32(m_SelectionPools[TEAM_HORDE].GetPlayerCount());
+        diffAli   = aliFree   - int32(m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount());
+        diffHorde = hordeFree - int32(m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount());
     }
 }
 
@@ -575,12 +575,12 @@ bool BattlegroundQueue::CheckPremadeMatch(BattlegroundBracketId bracket_id, uint
 
         if (ali_group != m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].end() && horde_group != m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_HORDE].end())
         {
-            m_SelectionPools[TEAM_ALLIANCE].AddGroup((*ali_group), MaxPlayersPerTeam);
-            m_SelectionPools[TEAM_HORDE].AddGroup((*horde_group), MaxPlayersPerTeam);
+            m_SelectionPools[BG_TEAM_ALLIANCE].AddGroup((*ali_group), MaxPlayersPerTeam);
+            m_SelectionPools[BG_TEAM_HORDE].AddGroup((*horde_group), MaxPlayersPerTeam);
             //add groups/players from normal queue to size of bigger group
-            uint32 maxPlayers = std::min(m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount(), m_SelectionPools[TEAM_HORDE].GetPlayerCount());
+            uint32 maxPlayers = std::min(m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount(), m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount());
             GroupsQueueType::const_iterator itr;
-            for (uint32 i = 0; i < MAX_TEAMS; i++)
+            for (uint32 i = 0; i < BG_TEAMS_COUNT; i++)
             {
                 for (itr = m_QueuedGroups[bracket_id][BG_QUEUE_NORMAL_ALLIANCE + i].begin(); itr != m_QueuedGroups[bracket_id][BG_QUEUE_NORMAL_ALLIANCE + i].end(); ++itr)
                 {
@@ -598,7 +598,7 @@ bool BattlegroundQueue::CheckPremadeMatch(BattlegroundBracketId bracket_id, uint
     // if first is invited to BG and seconds timer expired, but we can ignore it, because players have only 80 seconds to click to enter bg
     // and when they click or after 80 seconds the queue info is removed from queue
     uint32 time_before = getMSTime() - sWorld->getIntConfig(CONFIG_BATTLEGROUND_PREMADE_GROUP_WAIT_FOR_MATCH);
-    for (uint32 i = 0; i < MAX_TEAMS; i++)
+    for (uint32 i = 0; i < BG_TEAMS_COUNT; i++)
     {
         if (!m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE + i].empty())
         {
@@ -618,8 +618,8 @@ bool BattlegroundQueue::CheckPremadeMatch(BattlegroundBracketId bracket_id, uint
 // this method tries to create battleground or arena with MinPlayersPerTeam against MinPlayersPerTeam
 bool BattlegroundQueue::CheckNormalMatch(Battleground* bg_template, BattlegroundBracketId bracket_id, uint32 minPlayers, uint32 maxPlayers)
 {
-    GroupsQueueType::const_iterator itr_team[MAX_TEAMS];
-    for (uint32 i = 0; i < MAX_TEAMS; i++)
+    GroupsQueueType::const_iterator itr_team[BG_TEAMS_COUNT];
+    for (uint32 i = 0; i < BG_TEAMS_COUNT; i++)
     {
         itr_team[i] = m_QueuedGroups[bracket_id][BG_QUEUE_NORMAL_ALLIANCE + i].begin();
         for (; itr_team[i] != m_QueuedGroups[bracket_id][BG_QUEUE_NORMAL_ALLIANCE + i].end(); ++(itr_team[i]))
@@ -633,29 +633,29 @@ bool BattlegroundQueue::CheckNormalMatch(Battleground* bg_template, Battleground
         }
     }
     //try to invite same number of players - this cycle may cause longer wait time even if there are enough players in queue, but we want ballanced bg
-    uint32 j = TEAM_ALLIANCE;
-    if (m_SelectionPools[TEAM_HORDE].GetPlayerCount() < m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount())
-        j = TEAM_HORDE;
+    uint32 j = BG_TEAM_ALLIANCE;
+    if (m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount() < m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount())
+        j = BG_TEAM_HORDE;
     if (sWorld->getIntConfig(CONFIG_BATTLEGROUND_INVITATION_TYPE) != 0
-        && m_SelectionPools[TEAM_HORDE].GetPlayerCount() >= minPlayers && m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() >= minPlayers)
+        && m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount() >= minPlayers && m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount() >= minPlayers)
     {
         //we will try to invite more groups to team with less players indexed by j
         ++(itr_team[j]);                                         //this will not cause a crash, because for cycle above reached break;
         for (; itr_team[j] != m_QueuedGroups[bracket_id][BG_QUEUE_NORMAL_ALLIANCE + j].end(); ++(itr_team[j]))
         {
             if (!(*(itr_team[j]))->IsInvitedToBGInstanceGUID)
-                if (!m_SelectionPools[j].AddGroup(*(itr_team[j]), m_SelectionPools[(j + 1) % MAX_TEAMS].GetPlayerCount()))
+                if (!m_SelectionPools[j].AddGroup(*(itr_team[j]), m_SelectionPools[(j + 1) % BG_TEAMS_COUNT].GetPlayerCount()))
                     break;
         }
         // do not allow to start bg with more than 2 players more on 1 faction
-        if (abs((int32)(m_SelectionPools[TEAM_HORDE].GetPlayerCount() - m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount())) > 2)
+        if (abs((int32)(m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount() - m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount())) > 2)
             return false;
     }
     //allow 1v0 if debug bg
-    if (sBattlegroundMgr->isTesting() && bg_template->isBattleground() && (m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() || m_SelectionPools[TEAM_HORDE].GetPlayerCount()))
+    if (sBattlegroundMgr->isTesting() && bg_template->isBattleground() && (m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount() || m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount()))
         return true;
     //return true if there are enough players in selection pools - enable to work .debug bg command correctly
-    return m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() >= minPlayers && m_SelectionPools[TEAM_HORDE].GetPlayerCount() >= minPlayers;
+    return m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount() >= minPlayers && m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount() >= minPlayers;
 }
 
 // used for generate rbg and arena maps.
@@ -684,9 +684,9 @@ BattlegroundTypeId BattlegroundQueue::GenerateRandomMap(BattlegroundTypeId bgTyp
 
         // Prepare ignore map
         std::map<uint32, uint32> plrIgnoreWeights;
-        for (uint32 i = 0; i < MAX_TEAMS; i++)
+        for (uint32 i = 0; i < BG_TEAMS_COUNT; i++)
         {
-            for (GroupsQueueType::const_iterator group = m_SelectionPools[TEAM_ALLIANCE + i].SelectedGroups.begin(); group != m_SelectionPools[TEAM_ALLIANCE + i].SelectedGroups.end(); ++group)
+            for (GroupsQueueType::const_iterator group = m_SelectionPools[BG_TEAM_ALLIANCE + i].SelectedGroups.begin(); group != m_SelectionPools[BG_TEAM_ALLIANCE + i].SelectedGroups.end(); ++group)
             {
                 for(int8 j = 0; j < 2; ++j)
                     if ((*group)->ignore.map[j])
@@ -747,15 +747,15 @@ BattlegroundTypeId BattlegroundQueue::GenerateRandomMap(BattlegroundTypeId bgTyp
 // this method will check if we can invite players to same faction skirmish match
 bool BattlegroundQueue::CheckSkirmishForSameFaction(BattlegroundBracketId bracket_id, uint32 minPlayersPerTeam)
 {
-    if (m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() < minPlayersPerTeam && m_SelectionPools[TEAM_HORDE].GetPlayerCount() < minPlayersPerTeam)
+    if (m_SelectionPools[BG_TEAM_ALLIANCE].GetPlayerCount() < minPlayersPerTeam && m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount() < minPlayersPerTeam)
         return false;
-    uint32 teamIndex = TEAM_ALLIANCE;
-    uint32 otherTeam = TEAM_HORDE;
+    uint32 teamIndex = BG_TEAM_ALLIANCE;
+    uint32 otherTeam = BG_TEAM_HORDE;
     uint32 otherTeamId = HORDE;
-    if (m_SelectionPools[TEAM_HORDE].GetPlayerCount() == minPlayersPerTeam)
+    if (m_SelectionPools[BG_TEAM_HORDE].GetPlayerCount() == minPlayersPerTeam)
     {
-        teamIndex = TEAM_HORDE;
-        otherTeam = TEAM_ALLIANCE;
+        teamIndex = BG_TEAM_HORDE;
+        otherTeam = BG_TEAM_ALLIANCE;
         otherTeamId = ALLIANCE;
     }
     //clear other team's selection
@@ -837,16 +837,16 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
             // and iterator is invalid
 
             // clear selection pools
-            m_SelectionPools[TEAM_ALLIANCE].Init();
-            m_SelectionPools[TEAM_HORDE].Init();
+            m_SelectionPools[BG_TEAM_ALLIANCE].Init();
+            m_SelectionPools[BG_TEAM_HORDE].Init();
 
             // call a function that does the job for us
             FillPlayersToBG(bg, bracket_id);
 
             // now everything is set, invite players
-            for (GroupsQueueType::const_iterator citr = m_SelectionPools[TEAM_ALLIANCE].SelectedGroups.begin(); citr != m_SelectionPools[TEAM_ALLIANCE].SelectedGroups.end(); ++citr)
+            for (GroupsQueueType::const_iterator citr = m_SelectionPools[BG_TEAM_ALLIANCE].SelectedGroups.begin(); citr != m_SelectionPools[BG_TEAM_ALLIANCE].SelectedGroups.end(); ++citr)
                 InviteGroupToBG((*citr), bg, (*citr)->Team);
-            for (GroupsQueueType::const_iterator citr = m_SelectionPools[TEAM_HORDE].SelectedGroups.begin(); citr != m_SelectionPools[TEAM_HORDE].SelectedGroups.end(); ++citr)
+            for (GroupsQueueType::const_iterator citr = m_SelectionPools[BG_TEAM_HORDE].SelectedGroups.begin(); citr != m_SelectionPools[BG_TEAM_HORDE].SelectedGroups.end(); ++citr)
                 InviteGroupToBG((*citr), bg, (*citr)->Team);
 
             if (!bg->HasFreeSlots())
@@ -907,8 +907,8 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
         }
     }
 
-    m_SelectionPools[TEAM_ALLIANCE].Init();
-    m_SelectionPools[TEAM_HORDE].Init();
+    m_SelectionPools[BG_TEAM_ALLIANCE].Init();
+    m_SelectionPools[BG_TEAM_HORDE].Init();
 
     if (bg_template->isBattleground() && !bg_template->IsRBG())
     {
@@ -924,14 +924,14 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
                 return;
             }
             //invite those selection pools
-            for (uint32 i = 0; i < MAX_TEAMS; i++)
-                for (GroupsQueueType::const_iterator citr = m_SelectionPools[TEAM_ALLIANCE + i].SelectedGroups.begin(); citr != m_SelectionPools[TEAM_ALLIANCE + i].SelectedGroups.end(); ++citr)
+            for (uint32 i = 0; i < BG_TEAMS_COUNT; i++)
+                for (GroupsQueueType::const_iterator citr = m_SelectionPools[BG_TEAM_ALLIANCE + i].SelectedGroups.begin(); citr != m_SelectionPools[BG_TEAM_ALLIANCE + i].SelectedGroups.end(); ++citr)
                     InviteGroupToBG((*citr), bg2, (*citr)->Team);
             //start bg
             bg2->StartBattleground();
             //clear structures
-            m_SelectionPools[TEAM_ALLIANCE].Init();
-            m_SelectionPools[TEAM_HORDE].Init();
+            m_SelectionPools[BG_TEAM_ALLIANCE].Init();
+            m_SelectionPools[BG_TEAM_HORDE].Init();
         }
     }
 
@@ -951,8 +951,8 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
             }
 
             // invite those selection pools
-            for (uint32 i = 0; i < MAX_TEAMS; i++)
-                for (GroupsQueueType::const_iterator citr = m_SelectionPools[TEAM_ALLIANCE + i].SelectedGroups.begin(); citr != m_SelectionPools[TEAM_ALLIANCE + i].SelectedGroups.end(); ++citr)
+            for (uint32 i = 0; i < BG_TEAMS_COUNT; i++)
+                for (GroupsQueueType::const_iterator citr = m_SelectionPools[BG_TEAM_ALLIANCE + i].SelectedGroups.begin(); citr != m_SelectionPools[BG_TEAM_ALLIANCE + i].SelectedGroups.end(); ++citr)
                     InviteGroupToBG((*citr), bg2, (*citr)->Team);
             // start bg
             bg2->StartBattleground();
@@ -996,7 +996,7 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
         // else leave the discard time on 0, this way all ratings will be discarded
 
         // we need to find 2 teams which will play next game
-        GroupsQueueType::iterator itr_teams[MAX_TEAMS];
+        GroupsQueueType::iterator itr_teams[BG_TEAMS_COUNT];
         uint8 found = 0;
         int32 differenceOppMMR = maxRatingDifference;
 
@@ -1025,12 +1025,12 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
             {
                 for (GroupsQueueType::iterator itr3 = m_QueuedGroups[bracket_id][i].begin(); itr3 != m_QueuedGroups[bracket_id][i].end(); ++itr3)
                 {
-                    if ((*itr3)->IsInvitedToBGInstanceGUID || (*itr3)->GroupId == (*itr_teams[TEAM_ALLIANCE])->GroupId)
+                    if ((*itr3)->IsInvitedToBGInstanceGUID || (*itr3)->GroupId == (*itr_teams[BG_TEAM_ALLIANCE])->GroupId)
                         continue;
 
                     if (found == 2 && abs(int32((*itr3)->MatchmakerRating - mmr)) < differenceOppMMR)
                     {
-                        itr_teams[TEAM_HORDE] = itr3;
+                        itr_teams[BG_TEAM_HORDE] = itr3;
                         differenceOppMMR = abs(int32((*itr3)->MatchmakerRating - mmr));
                     }
 
@@ -1145,7 +1145,7 @@ void BattlegroundQueue::HandleArenaQueueUpdate(uint32 diff, uint8 JoinType)
     if (uint32 rUpdateTimer = sWorld->getIntConfig(CONFIG_ARENA_RATED_UPDATE_TIMER))
     {
         uint8 found = 0;
-        GroupsQueueType::iterator itr_teams[MAX_TEAMS];
+        GroupsQueueType::iterator itr_teams[BG_TEAMS_COUNT];
         uint32 maxRatingDifference = sBattlegroundMgr->GetMaxRatingDifference();
         int32 differenceOppMMR = 0;
         uint32 MinRating = 0;
@@ -1176,19 +1176,19 @@ void BattlegroundQueue::HandleArenaQueueUpdate(uint32 diff, uint8 JoinType)
                 for (GroupsQueueType::iterator itr = m_QueuedGroups[BG_BRACKET_ID_LAST][j].begin(); itr != m_QueuedGroups[BG_BRACKET_ID_LAST][j].end(); ++itr)
                     if (GroupQueueInfo* _info = (*itr))
                     {
-                        if (_info->IsInvitedToBGInstanceGUID || _info->GroupId == (*itr_teams[TEAM_ALLIANCE])->GroupId)
+                        if (_info->IsInvitedToBGInstanceGUID || _info->GroupId == (*itr_teams[BG_TEAM_ALLIANCE])->GroupId)
                             continue;
 
-                        if (found == 2 && abs(int32(_info->MatchmakerRating - (*itr_teams[TEAM_ALLIANCE])->MatchmakerRating)) < differenceOppMMR)
+                        if (found == 2 && abs(int32(_info->MatchmakerRating - (*itr_teams[BG_TEAM_ALLIANCE])->MatchmakerRating)) < differenceOppMMR)
                         {
-                            itr_teams[TEAM_HORDE] = itr;
-                            differenceOppMMR = abs(int32(_info->MatchmakerRating - (*itr_teams[TEAM_ALLIANCE])->MatchmakerRating));
+                            itr_teams[BG_TEAM_HORDE] = itr;
+                            differenceOppMMR = abs(int32(_info->MatchmakerRating - (*itr_teams[BG_TEAM_ALLIANCE])->MatchmakerRating));
                         }
 
                         if (found == 1 && _info->MatchmakerRating >= MinRating && _info->MatchmakerRating <= MaxRating)
                         {
                             itr_teams[found++] = itr;
-                            differenceOppMMR = abs(int32(_info->MatchmakerRating - (*itr_teams[TEAM_ALLIANCE])->MatchmakerRating));
+                            differenceOppMMR = abs(int32(_info->MatchmakerRating - (*itr_teams[BG_TEAM_ALLIANCE])->MatchmakerRating));
                         }
                     }
 
@@ -1213,10 +1213,10 @@ void BattlegroundQueue::HandleArenaQueueUpdate(uint32 diff, uint8 JoinType)
     }
 }
 
-void BattlegroundQueue::StartArena(std::list<GroupQueueInfo*>::iterator itr_teams[MAX_TEAMS], PvPDifficultyEntry const* bracketEntry, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id, uint8 JoinType)
+void BattlegroundQueue::StartArena(std::list<GroupQueueInfo*>::iterator itr_teams[BG_TEAMS_COUNT], PvPDifficultyEntry const* bracketEntry, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id, uint8 JoinType)
 {
-    GroupQueueInfo* aTeam = *itr_teams[TEAM_ALLIANCE];
-    GroupQueueInfo* hTeam = *itr_teams[TEAM_HORDE];
+    GroupQueueInfo* aTeam = *itr_teams[BG_TEAM_ALLIANCE];
+    GroupQueueInfo* hTeam = *itr_teams[BG_TEAM_HORDE];
 
     Battleground* arena = sBattlegroundMgr->CreateNewBattleground(bgTypeId, bracketEntry, JoinType, true, GenerateRandomMap(bgTypeId, bracket_id));
     if (!arena)
@@ -1232,12 +1232,12 @@ void BattlegroundQueue::StartArena(std::list<GroupQueueInfo*>::iterator itr_team
     if (aTeam->Team != ALLIANCE)
     {
         m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].push_front(aTeam);
-        m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_HORDE].erase(itr_teams[TEAM_ALLIANCE]);
+        m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_HORDE].erase(itr_teams[BG_TEAM_ALLIANCE]);
     }
     if (hTeam->Team != HORDE)
     {
         m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_HORDE].push_front(hTeam);
-        m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].erase(itr_teams[TEAM_HORDE]);
+        m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].erase(itr_teams[BG_TEAM_HORDE]);
     }
 
     arena->SetMatchmakerRating(ALLIANCE, aTeam->MatchmakerRating);

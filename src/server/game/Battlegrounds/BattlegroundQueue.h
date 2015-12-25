@@ -85,7 +85,7 @@ class BattlegroundQueue
 
         void BattlegroundQueueUpdate(uint32 diff, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id, uint8 arenaType = 0, bool isRated = false, uint32 minRating = 0);
         void HandleArenaQueueUpdate(uint32 diff, uint8 JoinType);
-        void StartArena(std::list<GroupQueueInfo*>::iterator itr_teams[MAX_TEAMS], PvPDifficultyEntry const* bracketEntry, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id, uint8 JoinType);
+        void StartArena(std::list<GroupQueueInfo*>::iterator itr_teams[BG_TEAMS_COUNT], PvPDifficultyEntry const* bracketEntry, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id, uint8 JoinType);
         void UpdateEvents(uint32 diff);
 
         void FillPlayersToBG(Battleground* bg, BattlegroundBracketId bracket_id);
@@ -134,14 +134,14 @@ class BattlegroundQueue
         };
 
         //one selection pool for horde, other one for alliance
-        SelectionPool m_SelectionPools[MAX_TEAMS];
+        SelectionPool m_SelectionPools[BG_TEAMS_COUNT];
 
     private:
 
         bool InviteGroupToBG(GroupQueueInfo* ginfo, Battleground* bg, uint32 side);
-        uint32 m_WaitTimes[MAX_TEAMS][MAX_BATTLEGROUND_BRACKETS][COUNT_OF_PLAYERS_TO_AVERAGE_WAIT_TIME];
-        uint32 m_WaitTimeLastPlayer[MAX_TEAMS][MAX_BATTLEGROUND_BRACKETS];
-        uint32 m_SumOfWaitTimes[MAX_TEAMS][MAX_BATTLEGROUND_BRACKETS];
+        uint32 m_WaitTimes[BG_TEAMS_COUNT][MAX_BATTLEGROUND_BRACKETS][COUNT_OF_PLAYERS_TO_AVERAGE_WAIT_TIME];
+        uint32 m_WaitTimeLastPlayer[BG_TEAMS_COUNT][MAX_BATTLEGROUND_BRACKETS];
+        uint32 m_SumOfWaitTimes[BG_TEAMS_COUNT][MAX_BATTLEGROUND_BRACKETS];
 
         // Event handler
         EventProcessor m_events;

@@ -165,32 +165,32 @@ Battleground::Battleground()
     m_MapId             = 0;
     m_Map               = NULL;
 
-    m_TeamStartLocX[TEAM_ALLIANCE]   = 0;
-    m_TeamStartLocX[TEAM_HORDE]      = 0;
+    m_TeamStartLocX[BG_TEAM_ALLIANCE]   = 0;
+    m_TeamStartLocX[BG_TEAM_HORDE]      = 0;
 
-    m_TeamStartLocY[TEAM_ALLIANCE]   = 0;
-    m_TeamStartLocY[TEAM_HORDE]      = 0;
+    m_TeamStartLocY[BG_TEAM_ALLIANCE]   = 0;
+    m_TeamStartLocY[BG_TEAM_HORDE]      = 0;
 
-    m_TeamStartLocZ[TEAM_ALLIANCE]   = 0;
-    m_TeamStartLocZ[TEAM_HORDE]      = 0;
+    m_TeamStartLocZ[BG_TEAM_ALLIANCE]   = 0;
+    m_TeamStartLocZ[BG_TEAM_HORDE]      = 0;
 
-    m_TeamStartLocO[TEAM_ALLIANCE]   = 0;
-    m_TeamStartLocO[TEAM_HORDE]      = 0;
+    m_TeamStartLocO[BG_TEAM_ALLIANCE]   = 0;
+    m_TeamStartLocO[BG_TEAM_HORDE]      = 0;
 
-    m_GroupIds[TEAM_ALLIANCE]   = 0;
-    m_GroupIds[TEAM_HORDE]      = 0;
+    m_GroupIds[BG_TEAM_ALLIANCE]   = 0;
+    m_GroupIds[BG_TEAM_HORDE]      = 0;
 
     m_StartMaxDist = 0.0f;
     m_holiday = 0;
 
-    m_BgRaids[TEAM_ALLIANCE]         = NULL;
-    m_BgRaids[TEAM_HORDE]            = NULL;
+    m_BgRaids[BG_TEAM_ALLIANCE]         = NULL;
+    m_BgRaids[BG_TEAM_HORDE]            = NULL;
 
-    m_PlayersCount[TEAM_ALLIANCE]    = 0;
-    m_PlayersCount[TEAM_HORDE]       = 0;
+    m_PlayersCount[BG_TEAM_ALLIANCE]    = 0;
+    m_PlayersCount[BG_TEAM_HORDE]       = 0;
 
-    m_TeamScores[TEAM_ALLIANCE]      = 0;
-    m_TeamScores[TEAM_HORDE]         = 0;
+    m_TeamScores[BG_TEAM_ALLIANCE]      = 0;
+    m_TeamScores[BG_TEAM_HORDE]         = 0;
 
     m_PrematureCountDown = false;
 
@@ -677,7 +677,7 @@ inline Player* Battleground::_GetPlayerForTeam(uint32 teamId, BattlegroundPlayer
 
 void Battleground::SetTeamStartLoc(uint32 TeamID, float X, float Y, float Z, float O)
 {
-    TeamId idx = GetTeamIndexByTeamId(TeamID);
+    BattlegroundTeamId idx = GetTeamIndexByTeamId(TeamID);
     m_TeamStartLocX[idx] = X;
     m_TeamStartLocY[idx] = Y;
     m_TeamStartLocZ[idx] = Z;
@@ -1568,11 +1568,6 @@ void Battleground::RemovePlayerFromResurrectQueue(uint64 player_guid)
     }
 }
 
-bool Battleground::AddObject(uint32 type, uint32 entry, Position pos, Position rotation /*= { }*/, uint32 respawnTime /*= 0*/)
-{
-    return AddObject(type, entry, pos.m_positionX, pos.m_positionY, pos.m_positionZ, pos.m_orientation, rotation.m_positionX, rotation.m_positionY, rotation.m_positionZ, rotation.m_orientation, respawnTime);
-}
-
 bool Battleground::AddObject(uint32 type, uint32 entry, float x, float y, float z, float o, float rotation0, float rotation1, float rotation2, float rotation3, uint32 /*respawnTime*/)
 {
     // If the assert is called, means that BgObjects must be resized!
@@ -1695,11 +1690,6 @@ void Battleground::SpawnBGObject(uint32 type, uint32 respawntime)
             obj->SetRespawnTime(respawntime);
             map->AddToMap(obj);
         }
-}
-
-Creature* Battleground::AddCreature(uint32 entry, uint32 type, uint32 teamval, Position pos, uint32 respawntime /*= 0*/)
-{
-    return AddCreature(entry, type, teamval, pos.m_positionX, pos.m_positionY, pos.m_positionZ, pos.m_orientation, respawntime);
 }
 
 Creature* Battleground::AddCreature(uint32 entry, uint32 type, uint32 teamval, float x, float y, float z, float o, uint32 respawntime)
@@ -1929,10 +1919,11 @@ void Battleground::HandleTriggerBuff(uint64 go_guid)
 
 void Battleground::HandleKillPlayer(Player* victim, Player* killer)
 {
-    if (GetStatus() != STATUS_IN_PROGRESS)
-        return;
+    // Keep in mind that for arena this will have to be changed a bit
 
+    // Add +1 deaths
     UpdatePlayerScore(victim, SCORE_DEATHS, 1);
+    // Add +1 kills to group and +1 killing_blows to killer
     if (killer)
     {
         // Don't reward credit for killing ourselves, like fall damage of hellfire (warlock)
@@ -2057,7 +2048,7 @@ void Battleground::UpdateArenaWorldState()
 
 void Battleground::SetBgRaid(uint32 TeamID, Group* bg_raid)
 {
-    Group*& old_raid = TeamID == ALLIANCE ? m_BgRaids[TEAM_ALLIANCE] : m_BgRaids[TEAM_HORDE];
+    Group*& old_raid = TeamID == ALLIANCE ? m_BgRaids[BG_TEAM_ALLIANCE] : m_BgRaids[BG_TEAM_HORDE];
     if (old_raid)
         old_raid->SetBattlegroundGroup(NULL);
     if (bg_raid)
@@ -2072,7 +2063,7 @@ WorldSafeLocsEntry const* Battleground::GetClosestGraveYard(Player* player)
 
 bool Battleground::IsTeamScoreInRange(uint32 team, uint32 minScore, uint32 maxScore) const
 {
-    TeamId teamIndex = GetTeamIndexByTeamId(team);
+    BattlegroundTeamId teamIndex = GetTeamIndexByTeamId(team);
     uint32 score = std::max(m_TeamScores[teamIndex], 0);
     return score >= minScore && score <= maxScore;
 }

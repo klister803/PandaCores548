@@ -56,8 +56,8 @@ void BattlegroundSA::Reset()
         GateStatus[i] = BG_SA_GATE_OK;
     ShipsStarted = false;
     gateDestroyed = false;
-    _notEvenAScratch[TEAM_ALLIANCE] = true;
-    _notEvenAScratch[TEAM_HORDE] = true;
+    _notEvenAScratch[BG_TEAM_ALLIANCE] = true;
+    _notEvenAScratch[BG_TEAM_HORDE] = true;
     Status = BG_SA_WARMUP;
 }
 
@@ -68,7 +68,7 @@ bool BattlegroundSA::SetupBattleground()
 
 void BattlegroundSA::GetTeamStartLoc(uint32 TeamID, float &X, float &Y, float &Z, float &O) const
 {
-    TeamId idx = GetTeamIndexByTeamId(TeamID);
+    BattlegroundTeamId idx = GetTeamIndexByTeamId(TeamID);
     if (idx == Attackers)
     {
         if (!ShipsStarted)

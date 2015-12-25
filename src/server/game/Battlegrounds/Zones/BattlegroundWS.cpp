@@ -389,6 +389,9 @@ void BattlegroundWS::EndBattleground(uint32 winner)
 
 void BattlegroundWS::HandleKillPlayer(Player* player, Player* killer)
 {
+    if (GetStatus() != STATUS_IN_PROGRESS)
+        return;
+
     /// Call event player droped flag
     //if(player->HasAura(BG_WS_SPELL_HORDE_FLAG) || player->HasAura(BG_WS_SPELL_ALLIANCE_FLAG))
         EventPlayerDroppedFlag(player);
@@ -427,8 +430,8 @@ void BattlegroundWS::HandleAreaTrigger(Player* player, uint32 trigger)
                     EventPlayerCapturedFlag(player);
             break;
         case 3647:                                          // Horde Flag spawn
-            if (_flagState[TEAM_ALLIANCE] && !_flagState[TEAM_HORDE])
-                if (GetFlagPickerGUID(TEAM_ALLIANCE) == player->GetGUID())
+            if (_flagState[BG_TEAM_ALLIANCE] && !_flagState[BG_TEAM_HORDE])
+                if (GetFlagPickerGUID(BG_TEAM_ALLIANCE) == player->GetGUID())
                     EventPlayerCapturedFlag(player);
             break;
         case 3649:                                          // unk1

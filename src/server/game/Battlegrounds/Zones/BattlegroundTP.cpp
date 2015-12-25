@@ -369,6 +369,9 @@ void BattlegroundTP::EndBattleground(uint32 winner)
 
 void BattlegroundTP::HandleKillPlayer(Player* player, Player* killer)
 {
+    if (GetStatus() != STATUS_IN_PROGRESS)
+        return;
+
     /// Call event player droped flag
     if(player->HasAura(BG_TP_SPELL_HORDE_FLAG) || player->HasAura(BG_TP_SPELL_ALLIANCE_FLAG))
         EventPlayerDroppedFlag(player);

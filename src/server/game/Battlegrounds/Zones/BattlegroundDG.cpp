@@ -40,7 +40,7 @@ BattlegroundDG::BattlegroundDG()
     StartMessageIds[BG_STARTING_EVENT_THIRD]  = LANG_BG_DG_START_HALF_MINUTE;
     StartMessageIds[BG_STARTING_EVENT_FOURTH] = LANG_BG_DG_START_HAS_BEGUN;
 
-    for (uint8 i = 0; i < MAX_TEAMS; ++i)
+    for (uint8 i = 0; i < BG_TEAMS_COUNT; ++i)
         m_gold[i] = 0;
 
     for (uint8 i = 0; i < 3; ++i)
@@ -145,6 +145,9 @@ void BattlegroundDG::RemovePlayer(Player* player, uint64 /*guid*/, uint32 /*team
 
 void BattlegroundDG::HandleKillPlayer(Player* player, Player* killer)
 {
+    if (GetStatus() != STATUS_IN_PROGRESS)
+        return;
+
     for (uint8 i = 0; i < 2; ++i)
         if (m_carts[i]->TakePlayerWhoDroppedFlag() == player->GetGUID())
         {
@@ -256,9 +259,9 @@ void BattlegroundDG::PostUpdateImpl(uint32 diff)
         m_goldUpdate -= diff;
 
     // Test win condition
-    if (GetCurrentGold(TEAM_ALLIANCE) >= BG_DG_MAX_TEAM_SCORE)
+    if (GetCurrentGold(BG_TEAM_ALLIANCE) >= BG_DG_MAX_TEAM_SCORE)
         EndBattleground(ALLIANCE);
-    if (GetCurrentGold(TEAM_HORDE) >= BG_DG_MAX_TEAM_SCORE)
+    if (GetCurrentGold(BG_TEAM_HORDE) >= BG_DG_MAX_TEAM_SCORE)
         EndBattleground(HORDE);
 }
 
@@ -271,14 +274,14 @@ void BattlegroundDG::HandleAreaTrigger(Player* Source, uint32 Trigger)
     {
         case 9013:                                          // near alliance cart
         {
-            if (m_carts[TEAM_ALLIANCE]->ControlledByPlayerWithGuid() == Source->GetGUID())
-                m_carts[TEAM_ALLIANCE]->CartDelivered();
+            if (m_carts[BG_TEAM_ALLIANCE]->ControlledByPlayerWithGuid() == Source->GetGUID())
+                m_carts[BG_TEAM_ALLIANCE]->CartDelivered();
             break;
         }
         case 9012:                                          // near horde cart
         {
-            if (m_carts[TEAM_HORDE]->ControlledByPlayerWithGuid() == Source->GetGUID())
-                m_carts[TEAM_HORDE]->CartDelivered();
+            if (m_carts[BG_TEAM_HORDE]->ControlledByPlayerWithGuid() == Source->GetGUID())
+                m_carts[BG_TEAM_HORDE]->CartDelivered();
             break;
         }
 //        default:
@@ -333,8 +336,8 @@ bool BattlegroundDG::SetupBattleground()
     m_carts[0] = new Cart(this);
     m_carts[1] = new Cart(this);
 
-    m_carts[0]->SetTeamId(TEAM_ALLIANCE);
-    m_carts[1]->SetTeamId(TEAM_HORDE);
+    m_carts[0]->SetTeamId(BG_TEAM_ALLIANCE);
+    m_carts[1]->SetTeamId(BG_TEAM_HORDE);
 
     m_carts[0]->SetGameObject(GetBgMap()->GetGameObject(BgObjects[BG_DG_CART_ALLIANCE]), BG_DG_CART_ALLIANCE);
     m_carts[1]->SetGameObject(GetBgMap()->GetGameObject(BgObjects[BG_DG_CART_HORDE]), BG_DG_CART_HORDE);

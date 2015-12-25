@@ -640,6 +640,6 @@ class BattlegroundSA : public Battleground
         std::map<uint32/*id*/, uint32/*timer*/> DemoliserRespawnList;
 
         // Achievement: Not Even a Scratch
-        bool _notEvenAScratch[MAX_TEAMS];
+        bool _notEvenAScratch[BG_TEAMS_COUNT];
 };
 #endif
