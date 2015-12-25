@@ -100,7 +100,6 @@ enum eEvents
     EVENT_OVERLOAD                  = 11,
     //Special
     EVENT_LAUNCH_BACK               = 12,
-    EVENT_CHECK_PLAYERS             = 13,
 };
 
 enum _ATentry
@@ -898,8 +897,6 @@ public:
         void Reset()
         {
             events.Reset();
-            if (me->GetEntry() == NPC_SIEGE_ENGINEER_HELPER)
-                events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1000);
             num = 0;
         }
 
@@ -937,34 +934,11 @@ public:
 
             while (uint32 eventId = events.ExecuteEvent())
             {
-                switch (eventId)
+                if (eventId == EVENT_SHOCKWAVE_MISSILE)
                 {
-                case EVENT_SHOCKWAVE_MISSILE:
                     DoCast(me, shockwavemissilelist[num++]);
                     if (num < 6)
                         events.ScheduleEvent(EVENT_SHOCKWAVE_MISSILE, 3500);
-                    break;
-                case EVENT_CHECK_PLAYERS:
-                {
-                    Map::PlayerList const& players = me->GetMap()->GetPlayers();
-                    if (!players.isEmpty())
-                    {
-                        if (Player* pl = players.begin()->getSource())
-                        {
-                            if (pl->isAlive())
-                            {
-                                if (int32(pl->GetPositionZ()) < -306 && pl->HasAura(SPELL_ON_CONVEYOR))
-                                    pl->RemoveAurasDueToSpell(SPELL_ON_CONVEYOR);
-                                else if (int32(pl->GetPositionZ()) >= -303 && int32(pl->GetPositionX()) > 2010 && !pl->HasAura(SPELL_ON_CONVEYOR))
-                                    pl->CastSpell(pl, SPELL_ON_CONVEYOR, true);
-                                else if (int32(pl->GetPositionZ()) >= -303 && int32(pl->GetPositionX()) > 2010 && pl->HasAura(SPELL_ON_CONVEYOR) && !pl->HasAura(SPELL_PATTERN_RECOGNITION))
-                                    pl->CastSpell(pl, SPELL_PATTERN_RECOGNITION, true);
-                            }
-                        }
-                    }
-                }
-                events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1000);
-                break;
                 }
             }
         }
