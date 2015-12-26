@@ -349,6 +349,11 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                  RemoveDebuffs();
                  Talk(urand(SAY_DEATH, SAY_DEATH2));
                  _JustDied();
+                 Map::PlayerList const& PlayerList = me->GetMap()->GetPlayers();
+                 if (!PlayerList.isEmpty())
+                     for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+                         if (Player* player = Itr->getSource())
+                             player->ModifyCurrency(CURRENCY_TYPE_VALOR_POINTS, 7000);
              }
          }
 
