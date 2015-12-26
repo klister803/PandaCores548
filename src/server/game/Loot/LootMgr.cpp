@@ -414,10 +414,6 @@ bool LootItem::AllowedForPlayer(Player const* player) const
     if (!sConditionMgr->IsObjectMeetToConditions(const_cast<Player*>(player), conditions))
         return false;
 
-    ConditionList conditionsList = sConditionMgr->GetConditionsForItemLoot(1, itemid);
-    if (!sConditionMgr->IsObjectMeetToConditions(const_cast<Player*>(player), conditionsList))
-        return false;
-
     if (type == LOOT_ITEM_TYPE_ITEM)
     {
         ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(itemid);
@@ -1885,8 +1881,9 @@ void LootTemplate::Process(Loot& loot, bool rate, uint8 groupId) const
         return;
     }
 
+    Player const* lootOwner = loot.GetLootOwner();
     uint16 diffMask = (1 << (sObjectMgr->GetDiffFromSpawn(loot.spawnMode)));
-    uint32 specId = loot.GetLootOwner()->GetLootSpecID();
+    uint32 specId = lootOwner->GetLootSpecID();
 
     // Rolling non-grouped items
     for (LootStoreItemList::const_iterator i = Entries.begin(); i != Entries.end(); ++i)
@@ -1896,6 +1893,9 @@ void LootTemplate::Process(Loot& loot, bool rate, uint8 groupId) const
 
         if (!i->Roll(rate))
             continue;                                         // Bad luck for the entry
+
+        if (!CheckItemForPlayer(lootOwner, i->itemid))
+            continue;
 
         if (i->type == LOOT_ITEM_TYPE_ITEM)
         {
@@ -1963,6 +1963,7 @@ void LootTemplate::ProcessPersonal(Loot& loot) const
     bool chance = roll_chance_i(loot.chance);
     bool canGetInstItem = (chance && loot.isBoss) ? true : false; //Can get item or get gold
 
+    Player const* lootOwner = loot.GetLootOwner();
     uint16 diffMask = (1 << (sObjectMgr->GetDiffFromSpawn(loot.spawnMode)));
 
     //sLog->outDebug(LOG_FILTER_LOOT, "LootTemplate::ProcessPersonal isBoss %i canGetInstItem %i diffMask %i chance %i loot.chance %u bonusLoot %i", loot.isBoss, canGetInstItem, diffMask, chance, loot.chance, loot.bonusLoot);
@@ -1998,11 +1999,14 @@ void LootTemplate::ProcessPersonal(Loot& loot) const
         if (!i->Roll(false))
             continue;                                         // Bad luck for the entry
 
+        if (!CheckItemForPlayer(lootOwner, i->itemid))
+            continue;
+
         if (i->type == LOOT_ITEM_TYPE_ITEM)
         {
             if (ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(i->itemid))
             {
-                if(!(_proto->AllowableClass & loot.GetLootOwner()->getClassMask()) || !(_proto->AllowableRace & loot.GetLootOwner()->getRaceMask()))
+                if(!(_proto->AllowableClass & lootOwner->getClassMask()) || !(_proto->AllowableRace & lootOwner->getRaceMask()))
                     continue;
 
                 uint8 _item_counter = 0;
@@ -2174,6 +2178,16 @@ bool LootTemplate::isReference(uint32 id)
             return true;
     }
     return false;//not found or not reference
+}
+
+bool LootTemplate::CheckItemForPlayer(Player const* player, uint32 itemId) const
+{
+
+    ConditionList conditionsList = sConditionMgr->GetConditionsForItemLoot(1, itemId);
+    if (!sConditionMgr->IsObjectMeetToConditions(const_cast<Player*>(player), conditionsList))
+        return false;
+
+    return true;
 }
 
 void LoadLootTemplates_Creature()
