@@ -25064,14 +25064,14 @@ void Unit::GeneratePersonalLoot(Creature* creature, Player* anyLooter)
         //Loot for LFR and Flex is personal
         if(map->IsLfr())
         {
-            Map::PlayerList const& playerList = map->GetPlayers();
-            if (playerList.isEmpty())
-                return;
-
-            for (Map::PlayerList::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+            std::list<uint64>* savethreatlist = creature->GetSaveThreatList();
+            for (std::list<uint64>::const_iterator itr = savethreatlist->begin(); itr != savethreatlist->end(); ++itr)
             {
-                if (Player* player = itr->getSource())
+                if (Player* player = ObjectAccessor::GetPlayer(*creature, (*itr)))
                 {
+                    if (player->GetInstanceId() != creature->GetInstanceId())
+                        continue;
+
                     if(spellForBonusLoot) //Bonus roll
                         if(!player->IsPlayerLootCooldown(spellForBonusLoot, TYPE_SPELL, creature->GetMap()->GetDifficulty())) //Bonus loot
                             player->CastSpell(player, spellForBonusLoot, false);
@@ -25115,14 +25115,14 @@ void Unit::GeneratePersonalLoot(Creature* creature, Player* anyLooter)
         else //Other difficulty is raid loot
         {
             //sLog->outDebug(LOG_FILTER_LOOT, "Unit::GeneratePersonalLoot Other difficulty is raid loot");
-            Map::PlayerList const& playerList = map->GetPlayers();
-            if (playerList.isEmpty())
-                return;
-
-            for (Map::PlayerList::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+            std::list<uint64>* savethreatlist = creature->GetSaveThreatList();
+            for (std::list<uint64>::const_iterator itr = savethreatlist->begin(); itr != savethreatlist->end(); ++itr)
             {
-                if (Player* player = itr->getSource())
+                if (Player* player = ObjectAccessor::GetPlayer(*creature, (*itr)))
                 {
+                    if (player->GetInstanceId() != creature->GetInstanceId())
+                        continue;
+
                     if(spellForBonusLoot) //Bonus roll
                         if(!player->IsPlayerLootCooldown(spellForBonusLoot, TYPE_SPELL, creature->GetMap()->GetDifficulty())) //Bonus loot
                             player->CastSpell(player, spellForBonusLoot, false);
