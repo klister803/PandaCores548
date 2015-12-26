@@ -266,6 +266,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
 
          void EnterEvadeMode()
          {
+             me->ClearSaveThreatTarget();
              me->Kill(me, true);
              me->Respawn(true);
              me->GetMotionMaster()->MoveTargetedHome();
