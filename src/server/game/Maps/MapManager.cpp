@@ -280,17 +280,42 @@ void MapManager::Update(uint32 diff)
 
     /// - Start Achievement criteria update processing thread
     sAchievementMgr->PrepareCriteriaUpdateTaskThread();
+    auto updaterItr = _achievementUpdaters.begin();
     for (auto playerTask : sAchievementMgr->GetPlayersCriteriaTask())
     {
-        if (m_updater.activated())
+        auto assignItr = _assignedUpdaters.find(playerTask.first);
+        /// > assign one player to one updater because of unsafe criteria updates
+        if (assignItr != _assignedUpdaters.end())
         {
-            m_updater.schedule_specific(new AchievementCriteriaUpdateRequest(&m_updater, playerTask.second));
+            auto updater = assignItr->second;
+            if (updater->activated())
+            {
+                updater->schedule_specific(new AchievementCriteriaUpdateRequest(updater, playerTask.second));
+            }
+            else
+            {
+                auto task = new AchievementCriteriaUpdateRequest(nullptr, playerTask.second);
+                task->call();
+                delete task;
+            }
         }
         else
         {
-            auto task = new AchievementCriteriaUpdateRequest(nullptr, playerTask.second);
-            task->call();
-            delete task;
+            auto updater = (*updaterItr);
+            if (updater->activated())
+            {
+                updater->schedule_specific(new AchievementCriteriaUpdateRequest(updater, playerTask.second));
+                _assignedUpdaters[playerTask.first] = updater;
+            }
+            else
+            {
+                auto task = new AchievementCriteriaUpdateRequest(nullptr, playerTask.second);
+                task->call();
+                delete task;
+            }
+
+            if (++updaterItr == _achievementUpdaters.end())
+                updaterItr = _achievementUpdaters.begin();
         }
     }
 
@@ -305,6 +330,11 @@ void MapManager::Update(uint32 diff)
     if (m_updater.activated())
         m_updater.wait();
 
+    for (auto &achievementUpdater : _achievementUpdaters)
+        if (achievementUpdater->activated())
+            achievementUpdater->wait();
+
+    _assignedUpdaters.clear();
     sAchievementMgr->ClearPlayersCriteriaTask();
 
     for (iter = i_maps.begin(); iter != i_maps.end(); ++iter)
@@ -360,6 +390,16 @@ void MapManager::UnloadAll()
 
     if (m_updater.activated())
         m_updater.deactivate();
+
+    for (auto itr = _achievementUpdaters.begin(); itr != _achievementUpdaters.end();)
+    {
+        auto achievementUpdater = (*itr);
+        if (achievementUpdater->activated())
+            achievementUpdater->deactivate();
+
+        delete achievementUpdater;
+        _achievementUpdaters.erase(itr++);
+    }
 
     Map::DeleteStateMachine();
 }

@@ -162,6 +162,8 @@ class MapManager
         InstanceIds _instanceIds;
         uint32 _nextInstanceId;
         MapUpdater m_updater;
+        std::vector<MapUpdater*> _achievementUpdaters;
+        std::unordered_map<uint64, MapUpdater*> _assignedUpdaters;
 };
 #define sMapMgr ACE_Singleton<MapManager, ACE_Thread_Mutex>::instance()
 #endif
