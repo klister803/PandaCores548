@@ -1275,6 +1275,35 @@ public:
     }
 };
 
+//144236
+class spell_pattern_recognition : public SpellScriptLoader
+{
+public:
+    spell_pattern_recognition() : SpellScriptLoader("spell_pattern_recognition") { }
+
+    class spell_pattern_recognition_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_pattern_recognition_AuraScript);
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+        {
+            if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
+                if (GetTarget()->HasAura(SPELL_ON_CONVEYOR))
+                    GetTarget()->AddAura(SPELL_PATTERN_RECOGNITION, GetTarget());
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_pattern_recognition_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_pattern_recognition_AuraScript();
+    }
+};
+
 //9250, 9251, 9252, 9253, 9371, 9240, 9189, 9190, 9493, 9194, 9238, 9239, 
 class at_blackfuse_pipe : public AreaTriggerScript
 {
@@ -1356,5 +1385,6 @@ void AddSC_boss_siegecrafter_blackfuse()
     new spell_shockwave_missile();
     new spell_on_conveyor();
     new spell_blacksue_cm_explose();
+    new spell_pattern_recognition();
     new at_blackfuse_pipe();
 }

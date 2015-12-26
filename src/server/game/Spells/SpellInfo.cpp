@@ -1247,6 +1247,12 @@ SpellEffectInfo const* SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 143941: //Mutilate
     case 143974: //Shield Bash
     case 144094: //Sonic Resonations Hisek
+    //Vicious Assaullt
+    case 143980:
+    case 143981:
+    case 143982:
+    case 143984:
+    case 143985:
     //debuffs from klaxxi
     case 142929:
     case 142931:

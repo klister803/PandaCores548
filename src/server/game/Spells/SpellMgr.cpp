@@ -5198,6 +5198,14 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = 22;
                     spellInfo->Effects[0].TargetB = 30;
                     break;
+                //Vicious Assaullt
+                case 143980:
+                case 143981:
+                case 143982:
+                case 143984:
+                case 143985:
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENEMY_104;
+                    break;
                 //debuffs from klaxxi
                 case 142929:
                 case 142931:
