@@ -790,11 +790,8 @@ public:
 
         void CheckProgressForKlaxxi()
         {
-            for (uint32 n = DATA_SPOILS_OF_PANDARIA; n < DATA_KLAXXI; n++)
-                if (GetBossState(n) != DONE)
-                    return;
-
-            HandleGameObject(klaxxientdoorGuid, true);
+            if (GetBossState(DATA_SPOILS_OF_PANDARIA) == DONE && GetBossState(DATA_THOK) == DONE && GetBossState(DATA_BLACKFUSE) == DONE)
+                HandleGameObject(klaxxientdoorGuid, true);
         }
 
         bool SetBossState(uint32 id, EncounterState state)
