@@ -411,7 +411,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                  case EVENT_ELECTROSTATIC_CHARGE:
                      if (me->getVictim())
                          DoCastVictim(SPELL_ELECTROSTATIC_CHARGE);
-                     events.ScheduleEvent(EVENT_ELECTROSTATIC_CHARGE, 17000);
+                     events.ScheduleEvent(EVENT_ELECTROSTATIC_CHARGE, 15000);
                      break;
                  case EVENT_ACTIVE_CONVEYER:
                      if (!summons.empty())
@@ -513,7 +513,7 @@ public:
         void EnterCombat(Unit* who)
         {
             DoCast(me, SPELL_OVERLOAD);
-            events.ScheduleEvent(EVENT_OVERLOAD, 10000);
+            events.ScheduleEvent(EVENT_OVERLOAD, 6000);
             events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 18000);
         }
 
@@ -1078,10 +1078,7 @@ public:
             if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
             {
                 if (GetCaster()->ToCreature())
-                {
-                    GetCaster()->CastSpell(GetCaster(), SPELL_OVERLOAD);
                     GetCaster()->ToCreature()->ReAttackWithZone();
-                }
             }
         }
 

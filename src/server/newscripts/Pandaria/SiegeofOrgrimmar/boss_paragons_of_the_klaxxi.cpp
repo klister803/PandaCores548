@@ -676,34 +676,37 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
 
             void OnSpellClick(Unit* clicker)
             {
-                if (Player* pl = clicker->ToPlayer())
-                {
-                    switch (me->GetEntry())
+                if (instance && instance->GetBossState(DATA_KLAXXI) == IN_PROGRESS)
+                { 
+                    if (Player* pl = clicker->ToPlayer())
                     {
-                    case NPC_RIKKAL:
-                        //Any
-                        pl->CastSpell(pl, SPELL_MAD_SCIENTIST, true);
-                        break;
-                    case NPC_KORVEN:
-                        if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_TANK)
-                            pl->CastSpell(pl, SPELL_MASTER_OF_AMBER, true);
-                        break;
-                    case NPC_KILRUK:
-                        if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_DPS)
-                            pl->CastSpell(pl, SPELL_ANGEL_OF_DEATH, true);
-                        break;
-                    case NPC_HISEK:
-                        if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_DPS)
-                            pl->CastSpell(pl, SPELL_COMPOUND_EYE, true);
-                        break;
-                    case NPC_XARIL:
-                        if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_HEALER)
-                            pl->CastSpell(pl, SPELL_VAST_APOTHECARIAL_KNOWLEDGE, true);
-                        break;
-                    default:
-                        break;
+                        switch (me->GetEntry())
+                        {
+                        case NPC_RIKKAL:
+                            //Any
+                            pl->CastSpell(pl, SPELL_MAD_SCIENTIST, true);
+                            break;
+                        case NPC_KORVEN:
+                            if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_TANK)
+                                pl->CastSpell(pl, SPELL_MASTER_OF_AMBER, true);
+                            break;
+                        case NPC_KILRUK:
+                            if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_DPS)
+                                pl->CastSpell(pl, SPELL_ANGEL_OF_DEATH, true);
+                            break;
+                        case NPC_HISEK:
+                            if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_DPS)
+                                pl->CastSpell(pl, SPELL_COMPOUND_EYE, true);
+                            break;
+                        case NPC_XARIL:
+                            if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_HEALER)
+                                pl->CastSpell(pl, SPELL_VAST_APOTHECARIAL_KNOWLEDGE, true);
+                            break;
+                        default:
+                            break;
+                        }
+                        me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
                     }
-                    me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
                 }
             }
 

@@ -5249,6 +5249,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 149146: //Explose crawler mine
                     spellInfo->Effects[0].TargetB = 7;
                     break;
+                case 143385: //Electrostatic charge
+                    spellInfo->AuraInterruptFlags = 0;
+                    spellInfo->ChannelInterruptFlags = 0;
+                    break;
 
                     
                 //World Bosses
