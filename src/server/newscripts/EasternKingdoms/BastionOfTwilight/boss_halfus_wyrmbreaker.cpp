@@ -79,6 +79,15 @@ enum Adds
     NPC_CYCLON_WIND     = 45026,
 };
 
+uint32 summonentry[5] =
+{
+    NPC_PROTO_BEHEMOTH,
+    NPC_STORM_RIDER,
+    NPC_NETHER_SCION,
+    NPC_TIME_WARDEN,
+    NPC_SLATE_DRAKE,
+};
+
 enum Events
 {
     EVENT_SHADOW_NOVA       = 1,
@@ -156,22 +165,18 @@ class boss_halfus_wyrmbreaker : public CreatureScript
 
             EventMap events;
             SummonList summons;
-            Creature* netherscion;
-            Creature* stormrider;
-            Creature* slatedrake;
-            Creature* timewarden;
-            Creature* proto;
             GameObject* whelpcage;
             GameObject* whelpcage2;
             bool bRoar;
             bool bIntro;
             bool bWhelps;
             uint8 whelpcount;
+            std::vector<uint64>summonlist;
 
             void Reset()
             {
                 _Reset();
-
+                summonlist.clear();
                 SetEquipmentSlots(false, EQUIPMENT_ONE, 0, 0);
                 me->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 10);
                 me->SetFloatValue(UNIT_FIELD_COMBATREACH, 10);
@@ -187,11 +192,9 @@ class boss_halfus_wyrmbreaker : public CreatureScript
                 }
                 for (uint8 i = 0; i < 8; i++)
                     whelps[i] = me->SummonCreature(NPC_ORPHANED_WHELP, halfusdrakePos[i]);
-                proto = me->SummonCreature(NPC_PROTO_BEHEMOTH, halfusdrakePos[8]);
-                stormrider = me->SummonCreature(NPC_STORM_RIDER, halfusdrakePos[9]);
-                netherscion = me->SummonCreature(NPC_NETHER_SCION, halfusdrakePos[10]);
-                timewarden = me->SummonCreature(NPC_TIME_WARDEN, halfusdrakePos[11]);
-                slatedrake = me->SummonCreature(NPC_SLATE_DRAKE, halfusdrakePos[12]);
+                for (uint8 n = 0; n < 5; n++)
+                    if (Creature* summon = me->SummonCreature(summonentry[n], halfusdrakePos[n + 8]))
+                        summonlist.push_back(summon->GetGUID());
                 whelpcount = 0;
                 if (IsHeroic())
                 {
@@ -199,8 +202,11 @@ class boss_halfus_wyrmbreaker : public CreatureScript
                     DoCast(me, SPELL_MALEVOLENT_STRIKES);
                     DoCast(me, SPELL_SHADOW_WARPED);
                     DoCast(me, SPELL_FRENZIED_ASSAULT);
-                    proto->CastSpell(proto, SPELL_DANCING_FLAMES, true);
-                    proto->CastSpell(proto, SPELL_SUPERHEATED_BREATH, true);
+                    if (Creature* proto = me->GetCreature(*me, summonlist[0]))
+                    {
+                        proto->CastSpell(proto, SPELL_DANCING_FLAMES, true);
+                        proto->CastSpell(proto, SPELL_SUPERHEATED_BREATH, true);
+                    }
                 }
                 else
                 {
@@ -211,7 +217,8 @@ class boss_halfus_wyrmbreaker : public CreatureScript
                         //Даем халфию + чудищу бафы от активных
                     case 0:
                         //Сланцевый + штормокрыл + потомок пустоты
-                        timewarden->CastSpell(timewarden, SPELL_UNRESPONSIVE_DRAKE, true);
+                        if (Creature* timewarden = me->GetCreature(*me, summonlist[3]))
+                            timewarden->CastSpell(timewarden, SPELL_UNRESPONSIVE_DRAKE, true);
                         for (uint8 i = 0; i < 8; i++)
                             whelps[i]->CastSpell(whelps[i], SPELL_UNRESPONSIVE_WHELP, true); 
                         DoCast(me, SPELL_MALEVOLENT_STRIKES);
@@ -220,84 +227,114 @@ class boss_halfus_wyrmbreaker : public CreatureScript
                         break;
                     case 1:
                         //Страж времени + штормокрыл + потомок пустоты
-                        slatedrake->CastSpell(slatedrake, SPELL_UNRESPONSIVE_DRAKE, true);
+                        if (Creature* slatedrake = me->GetCreature(*me, summonlist[3]))
+                            slatedrake->CastSpell(slatedrake, SPELL_UNRESPONSIVE_DRAKE, true);
                         for (uint8 i = 0; i < 8; i++)
                             whelps[i]->CastSpell(whelps[i], SPELL_UNRESPONSIVE_WHELP, true);
-                        proto->CastSpell(proto, SPELL_DANCING_FLAMES, true);
+                        if (Creature* proto = me->GetCreature(*me, summonlist[0]))
+                            proto->CastSpell(proto, SPELL_DANCING_FLAMES, true);
                         DoCast(me, SPELL_SHADOW_WARPED); 
                         DoCast(me, SPELL_FRENZIED_ASSAULT);
                         break;
                     case 2:
                         //Сланцевый + потомок пустоты + дракончики
                         bWhelps = true;
-                        timewarden->CastSpell(timewarden, SPELL_UNRESPONSIVE_DRAKE, true);
-                        stormrider->CastSpell(stormrider, SPELL_UNRESPONSIVE_DRAKE, true);
+                        if (Creature* timewarden = me->GetCreature(*me, summonlist[3]))
+                            timewarden->CastSpell(timewarden, SPELL_UNRESPONSIVE_DRAKE, true);
+                        if (Creature* stormrider = me->GetCreature(*me, summonlist[1]))
+                            stormrider->CastSpell(stormrider, SPELL_UNRESPONSIVE_DRAKE, true);
                         DoCast(me, SPELL_MALEVOLENT_STRIKES); 
                         DoCast(me, SPELL_FRENZIED_ASSAULT);
-                        proto->CastSpell(proto, SPELL_SUPERHEATED_BREATH, true);
+                        if (Creature* proto = me->GetCreature(*me, summonlist[0]))
+                            proto->CastSpell(proto, SPELL_SUPERHEATED_BREATH, true);
                         break;
                     case 3:
                         //Сланцевый + штормокрыл + страж времени
-                        netherscion->CastSpell(netherscion, SPELL_UNRESPONSIVE_DRAKE, true);
+                        if (Creature* netherscion = me->GetCreature(*me, summonlist[2]))
+                            netherscion->CastSpell(netherscion, SPELL_UNRESPONSIVE_DRAKE, true);
                         for (uint8 i = 0; i < 8; i++)
                             whelps[i]->CastSpell(whelps[i], SPELL_UNRESPONSIVE_WHELP, true);
-                        proto->CastSpell(proto, SPELL_DANCING_FLAMES, true);
+                        if (Creature* proto = me->GetCreature(*me, summonlist[0]))
+                            proto->CastSpell(proto, SPELL_DANCING_FLAMES, true);
                         DoCast(me, SPELL_MALEVOLENT_STRIKES);
                         DoCast(me, SPELL_SHADOW_WARPED);
                         break;
                     case 4:
                         //Потомок пустоты + штормокрыл + дракончики
                         bWhelps = true;
-                        slatedrake->CastSpell(slatedrake, SPELL_UNRESPONSIVE_DRAKE, true);
-                        timewarden->CastSpell(timewarden, SPELL_UNRESPONSIVE_DRAKE, true);
+                        if (Creature* slatedrake = me->GetCreature(*me, summonlist[3]))
+                            slatedrake->CastSpell(slatedrake, SPELL_UNRESPONSIVE_DRAKE, true);
+                        if (Creature* timewarden = me->GetCreature(*me, summonlist[3]))
+                            timewarden->CastSpell(timewarden, SPELL_UNRESPONSIVE_DRAKE, true);
                         DoCast(me, SPELL_FRENZIED_ASSAULT);
                         DoCast(me, SPELL_SHADOW_WARPED);
-                        proto->CastSpell(proto, SPELL_SUPERHEATED_BREATH, true);
+                        if (Creature* proto = me->GetCreature(*me, summonlist[0]))
+                            proto->CastSpell(proto, SPELL_SUPERHEATED_BREATH, true);
                         break;
                     case 5:
                         //Сланцевый + страж времени + потомок пустоты
-                        stormrider->CastSpell(stormrider, SPELL_UNRESPONSIVE_DRAKE, true);
+                        if (Creature* stormrider = me->GetCreature(*me, summonlist[1]))
+                            stormrider->CastSpell(stormrider, SPELL_UNRESPONSIVE_DRAKE, true);
                         for (uint8 i = 0; i < 8; i++)
                             whelps[i]->CastSpell(whelps[i], SPELL_UNRESPONSIVE_WHELP, true);
                         DoCast(me, SPELL_MALEVOLENT_STRIKES);
-                        proto->CastSpell(proto, SPELL_DANCING_FLAMES, true);
+                        if (Creature* proto = me->GetCreature(*me, summonlist[0]))
+                            proto->CastSpell(proto, SPELL_DANCING_FLAMES, true);
                         DoCast(me, SPELL_FRENZIED_ASSAULT);
                         break;
                     case 6:
                         //Штормокрыл + страж времени + дракончики
                         bWhelps = true;
-                        slatedrake->CastSpell(slatedrake, SPELL_UNRESPONSIVE_DRAKE, true);
-                        netherscion->CastSpell(netherscion, SPELL_UNRESPONSIVE_DRAKE, true);
+                        if (Creature* slatedrake = me->GetCreature(*me, summonlist[3]))
+                            slatedrake->CastSpell(slatedrake, SPELL_UNRESPONSIVE_DRAKE, true);
+                        if (Creature* netherscion = me->GetCreature(*me, summonlist[2]))
+                            netherscion->CastSpell(netherscion, SPELL_UNRESPONSIVE_DRAKE, true);
                         DoCast(me, SPELL_SHADOW_WARPED);
-                        proto->CastSpell(proto, SPELL_DANCING_FLAMES, true);
-                        proto->CastSpell(proto, SPELL_SUPERHEATED_BREATH, true);                    
+                        if (Creature* proto = me->GetCreature(*me, summonlist[0]))
+                        {
+                            proto->CastSpell(proto, SPELL_DANCING_FLAMES, true);
+                            proto->CastSpell(proto, SPELL_SUPERHEATED_BREATH, true);
+                        }
                         break;
                     case 7:
                         //Сланцевый + страж времени + дракончики
                         bWhelps = true;
-                        stormrider->CastSpell(stormrider, SPELL_UNRESPONSIVE_DRAKE, true);
-                        netherscion->CastSpell(netherscion, SPELL_UNRESPONSIVE_DRAKE, true);
+                        if (Creature* stormrider = me->GetCreature(*me, summonlist[1]))
+                            stormrider->CastSpell(stormrider, SPELL_UNRESPONSIVE_DRAKE, true);
+                        if (Creature* netherscion = me->GetCreature(*me, summonlist[2]))
+                            netherscion->CastSpell(netherscion, SPELL_UNRESPONSIVE_DRAKE, true);
                         DoCast(me, SPELL_MALEVOLENT_STRIKES);
-                        proto->CastSpell(proto, SPELL_DANCING_FLAMES, true);
-                        proto->CastSpell(proto, SPELL_SUPERHEATED_BREATH, true);                    
+                        if (Creature* proto = me->GetCreature(*me, summonlist[0]))
+                        {
+                            proto->CastSpell(proto, SPELL_DANCING_FLAMES, true);
+                            proto->CastSpell(proto, SPELL_SUPERHEATED_BREATH, true);
+                        }
                         break;
                     case 8:
                         //Потомок пустоты + страж времени + дракончики
                         bWhelps = true;
-                        slatedrake->CastSpell(slatedrake, SPELL_UNRESPONSIVE_DRAKE, true);
-                        stormrider->CastSpell(stormrider, SPELL_UNRESPONSIVE_DRAKE, true);
+                        if (Creature* slatedrake = me->GetCreature(*me, summonlist[3]))
+                            slatedrake->CastSpell(slatedrake, SPELL_UNRESPONSIVE_DRAKE, true);
+                        if (Creature* stormrider = me->GetCreature(*me, summonlist[1]))
+                            stormrider->CastSpell(stormrider, SPELL_UNRESPONSIVE_DRAKE, true);
                         DoCast(me, SPELL_FRENZIED_ASSAULT);
-                        proto->CastSpell(proto, SPELL_DANCING_FLAMES, true);
-                        proto->CastSpell(proto, SPELL_SUPERHEATED_BREATH, true);
+                        if (Creature* proto = me->GetCreature(*me, summonlist[0]))
+                        {
+                            proto->CastSpell(proto, SPELL_DANCING_FLAMES, true);
+                            proto->CastSpell(proto, SPELL_SUPERHEATED_BREATH, true);
+                        }
                         break;
                     case 9:
                         //Сланцевый + штормокрыл + дракончики
                         bWhelps = true;
-                        netherscion->CastSpell(netherscion, SPELL_UNRESPONSIVE_DRAKE, true);
-                        timewarden->CastSpell(timewarden, SPELL_UNRESPONSIVE_DRAKE, true);
+                        if (Creature* netherscion = me->GetCreature(*me, summonlist[2]))
+                            netherscion->CastSpell(netherscion, SPELL_UNRESPONSIVE_DRAKE, true);
+                        if (Creature* timewarden = me->GetCreature(*me, summonlist[3]))
+                            timewarden->CastSpell(timewarden, SPELL_UNRESPONSIVE_DRAKE, true);
                         DoCast(me, SPELL_MALEVOLENT_STRIKES);
                         DoCast(me, SPELL_SHADOW_WARPED);
-                        proto->CastSpell(proto, SPELL_SUPERHEATED_BREATH, true);
+                        if (Creature* proto = me->GetCreature(*me, summonlist[0]))
+                            proto->CastSpell(proto, SPELL_SUPERHEATED_BREATH, true);
                         break;
                     }
                 }
@@ -305,15 +342,11 @@ class boss_halfus_wyrmbreaker : public CreatureScript
 
             void EnterCombat(Unit* who)
             { 
-                if (!slatedrake->HasAura(SPELL_UNRESPONSIVE_DRAKE))
-                    slatedrake->GetAI()->DoAction(ACTION_ACTIVE_GOSSIP);
-                if (!stormrider->HasAura(SPELL_UNRESPONSIVE_DRAKE))
-                    stormrider->GetAI()->DoAction(ACTION_ACTIVE_GOSSIP);
-                if (!netherscion->HasAura(SPELL_UNRESPONSIVE_DRAKE))
-                    netherscion->GetAI()->DoAction(ACTION_ACTIVE_GOSSIP);
-                if (!timewarden->HasAura(SPELL_UNRESPONSIVE_DRAKE))
-                    timewarden->GetAI()->DoAction(ACTION_ACTIVE_GOSSIP);
-
+                if (!summonlist.empty())
+                    for (uint8 n = 1; n < 5; n++)
+                        if (Creature* summon = me->GetCreature(*me, summonlist[n]))
+                            if (summon->isAlive() && !summon->HasAura(SPELL_UNRESPONSIVE_DRAKE))
+                                summon->AI()->DoAction(ACTION_ACTIVE_GOSSIP);
                 if (bWhelps)
                     if (GameObject* pGo = ObjectAccessor::GetGameObject(*me, instance->GetData64(DATA_WHELP_CAGE)))
                         pGo->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND);
@@ -321,8 +354,11 @@ class boss_halfus_wyrmbreaker : public CreatureScript
                 if (me->HasAura(SPELL_SHADOW_WARPED))
                     events.ScheduleEvent(EVENT_SHADOW_NOVA, 7000);
                 events.ScheduleEvent(EVENT_BERSERK, 6 * MINUTE * IN_MILLISECONDS);
-                proto->AddThreat(who, 10.0f);
-                proto->SetInCombatWith(who);
+                if (Creature* proto = me->GetCreature(*me, summonlist[0]))
+                {
+                    proto->AddThreat(who, 10.0f);
+                    proto->SetInCombatWith(who);
+                }
                 Talk(SAY_AGGRO);
                 DoZoneInCombat();
                 instance->SetBossState(DATA_HALFUS,IN_PROGRESS);
