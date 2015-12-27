@@ -63,6 +63,12 @@ void MapManager::Initialize()
     // Start mtmaps if needed.
     if (num_threads > 0)
         m_updater.activate(num_threads);
+
+    for (uint8 i = 0; i < num_threads; ++i)
+        _achievementUpdaters.push_back(new MapUpdater());
+
+    for (auto &achievementUpdater : _achievementUpdaters)
+        achievementUpdater->activate(1);
 }
 
 void MapManager::InitializeVisibilityDistanceInfo()
