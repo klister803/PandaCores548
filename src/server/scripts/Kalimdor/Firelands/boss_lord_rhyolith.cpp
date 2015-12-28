@@ -132,33 +132,36 @@ class boss_lord_rhyolith : public CreatureScript
                 me->setActive(true);
                 me->SetSpeed(MOVE_RUN, 0.3f, true);
                 me->SetSpeed(MOVE_WALK, 0.3f, true);
-                pController = NULL;
-                pRightFoot = NULL;
-                pLeftFoot = NULL;
                 curMove = 0;
                 bAchieve = true;
                 players_count = 0;
             }
+            uint64 ControllerGUID;
+            uint64 RightFootGUID;
+            uint64 LeftFootGUID;
+            int32 curMove;
+            bool bAchieve;
+            uint8 players_count;
+            uint8 phase;
 
             void Reset()
             {
                 _Reset();
-                
+                ControllerGUID = 0;
+                RightFootGUID = 0;
+                LeftFootGUID = 0;
                 me->SetHealth(me->GetMaxHealth());
                 me->SetReactState(REACT_PASSIVE);
                 me->LowerPlayerDamageReq(me->GetMaxHealth());
                 summons.DespawnEntry(NPC_VOLCANO);
-
                 if (instance->GetBossState(DATA_RHYOLITH) != DONE)
                     me->SetVisible(true);
                 else
                     me->DespawnOrUnsummon();
-
                 curMove = 0;
                 bAchieve = true;
                 players_count = 0;
                 phase = 0;
-
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BALANCE_BAR);
                 instance->SetData(DATA_RHYOLITH_HEALTH_SHARED, me->GetMaxHealth() / 2);
             }
@@ -172,6 +175,34 @@ class boss_lord_rhyolith : public CreatureScript
             void DamageTaken(Unit* /*who*/, uint32 &damage)
             {
                 damage = 0;
+                if (me->HealthBelowPct(25) && phase == 0)
+                {
+                    phase = 1;
+                    events.Reset();
+                    me->AttackStop();
+                    me->StopMoving();
+                    me->SetVisible(false);
+                    Talk(SAY_TRANS);
+                    uint32 _health = me->GetHealth();
+                    if (Creature* pRhyolith = me->SummonCreature(NPC_RHYOLITH_2, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()))
+                    {
+                        pRhyolith->RemoveAllAuras();
+                        pRhyolith->SetHealth(_health);
+                        pRhyolith->LowerPlayerDamageReq(pRhyolith->GetMaxHealth());
+                        pRhyolith->CastSpell(pRhyolith, SPELL_IMMOLATION, true);
+                        pRhyolith->AI()->SetData(DATA_ACHIEVE, uint32(bAchieve));
+                    }
+                    summons.DespawnEntry(NPC_VOLCANO);
+                    summons.DespawnEntry(NPC_LIQUID_OBSIDIAN);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_ERUPTION_DMG);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BALANCE_BAR);
+                    if (Creature* controller = me->GetCreature(*me, ControllerGUID))
+                        controller->DespawnOrUnsummon();
+                    if (Creature* leftfoot = me->GetCreature(*me, LeftFootGUID))
+                        leftfoot->DespawnOrUnsummon();
+                    if (Creature* rightfoot = me->GetCreature(*me, RightFootGUID))
+                        rightfoot->DespawnOrUnsummon();
+                }
             }
 
             void JustSummoned(Creature* summon)
@@ -183,33 +214,29 @@ class boss_lord_rhyolith : public CreatureScript
             void EnterCombat(Unit* attacker)
             {
                 Talk(SAY_AGGRO);
-                
                 curMove = 0;
                 bAchieve = true;
                 phase = 0;
                 players_count = instance->instance->GetPlayers().getSize();
-
-                pController = me->SummonCreature(NPC_MOVEMENT_CONTROLLER, movePos[curMove]);
-                pRightFoot = me->FindNearestCreature(NPC_RIGHT_FOOT, 100.0f);
-                pLeftFoot = me->FindNearestCreature(NPC_LEFT_FOOT, 100.0f);
-
-                if (pController)
+                if (Creature* rightfoot = me->FindNearestCreature(NPC_RIGHT_FOOT, 100.0f, true))
+                    RightFootGUID = rightfoot->GetGUID();
+                if (Creature* leftfoot = me->FindNearestCreature(NPC_LEFT_FOOT, 100.0f, true))
+                    LeftFootGUID = leftfoot->GetGUID();
+                if (Creature* controller = me->SummonCreature(NPC_MOVEMENT_CONTROLLER, movePos[curMove]))
                 {
+                    ControllerGUID = controller->GetGUID();
                     me->SetSpeed(MOVE_RUN, 0.3f, true);
                     me->SetSpeed(MOVE_WALK, 0.3f, true);
                     me->SetWalk(true);
-                    me->GetMotionMaster()->MoveFollow(pController, 0.0f, 0.0f);
+                    me->GetMotionMaster()->MoveFollow(controller, 0.0f, 0.0f);
                 }
                 instance->SetData(DATA_RHYOLITH_HEALTH_SHARED, me->GetMaxHealth() / 2);
-
                 events.ScheduleEvent(EVENT_CHECK_MOVE, 1000);
                 events.ScheduleEvent(EVENT_CONCLUSIVE_STOMP, 10000);
                 events.ScheduleEvent(EVENT_ACTIVATE_VOLCANO, urand(25000, 30000));
                 events.ScheduleEvent(EVENT_FRAGMENT, urand(25000, 30000));
                 events.ScheduleEvent(EVENT_SUPERHEATED, (IsHeroic() ? 5 * MINUTE * IN_MILLISECONDS : 6 * MINUTE * IN_MILLISECONDS));
-
                 DoCastAOE(SPELL_BALANCE_BAR, true);
-
                 DoZoneInCombat();
                 instance->SetBossState(DATA_RHYOLITH, IN_PROGRESS);
             }
@@ -226,29 +253,37 @@ class boss_lord_rhyolith : public CreatureScript
                 {
                     case ACTION_ADD_MOLTEN_ARMOR:
                         me->CastSpell(me, SPELL_MOLTEN_ARMOR, true);
-                        if (pLeftFoot)
-                            pLeftFoot->CastSpell(pLeftFoot, SPELL_MOLTEN_ARMOR, true);
-                        if (pRightFoot)
-                            pRightFoot->CastSpell(pRightFoot, SPELL_MOLTEN_ARMOR, true);
+                        if (Creature* leftfoot = me->GetCreature(*me, LeftFootGUID))
+                            if (leftfoot->isAlive())
+                                leftfoot->CastSpell(leftfoot, SPELL_MOLTEN_ARMOR, true);
+                        if (Creature* rightfoot = me->GetCreature(*me, RightFootGUID))
+                            if (rightfoot->isAlive())
+                                rightfoot->CastSpell(rightfoot, SPELL_MOLTEN_ARMOR, true);
                         break;
                     case ACTION_REMOVE_MOLTEN_ARMOR:
                         me->RemoveAuraFromStack(SPELL_MOLTEN_ARMOR);
-                        if (pLeftFoot)
-                            pLeftFoot->RemoveAuraFromStack(SPELL_MOLTEN_ARMOR);
-                        if (pRightFoot)
-                            pRightFoot->RemoveAuraFromStack(SPELL_MOLTEN_ARMOR);
+                        if (Creature* leftfoot = me->GetCreature(*me, LeftFootGUID))
+                            if (leftfoot->isAlive())
+                                leftfoot->RemoveAuraFromStack(SPELL_MOLTEN_ARMOR);
+                        if (Creature* rightfoot = me->GetCreature(*me, RightFootGUID))
+                            if (rightfoot->isAlive())
+                                rightfoot->RemoveAuraFromStack(SPELL_MOLTEN_ARMOR);
                         break;
                     case ACTION_ADD_OBSIDIAN_ARMOR:
-                        if (pLeftFoot)
-                            pLeftFoot->CastSpell(pLeftFoot, SPELL_OBSIDIAN_ARMOR, true);
-                        if (pRightFoot)
-                            pRightFoot->CastSpell(pRightFoot, SPELL_OBSIDIAN_ARMOR, true);
+                        if (Creature* leftfoot = me->GetCreature(*me, LeftFootGUID))
+                            if (leftfoot->isAlive())
+                                leftfoot->CastSpell(leftfoot, SPELL_OBSIDIAN_ARMOR, true);
+                        if (Creature* rightfoot = me->GetCreature(*me, RightFootGUID))
+                            if (rightfoot->isAlive())
+                                rightfoot->CastSpell(rightfoot, SPELL_OBSIDIAN_ARMOR, true);
                         break;
                     case ACTION_REMOVE_OBSIDIAN_ARMOR:
-                        if (pLeftFoot)
-                            pLeftFoot->RemoveAuraFromStack(SPELL_OBSIDIAN_ARMOR, 0, AURA_REMOVE_BY_DEFAULT, 10);
-                        if (pRightFoot)
-                            pRightFoot->RemoveAuraFromStack(SPELL_OBSIDIAN_ARMOR, 0, AURA_REMOVE_BY_DEFAULT, 10);
+                        if (Creature* leftfoot = me->GetCreature(*me, LeftFootGUID))
+                            if (leftfoot->isAlive())
+                                leftfoot->RemoveAuraFromStack(SPELL_OBSIDIAN_ARMOR, 0, AURA_REMOVE_BY_DEFAULT, 10);
+                        if (Creature* rightfoot = me->GetCreature(*me, RightFootGUID))
+                            if (rightfoot->isAlive())
+                                rightfoot->RemoveAuraFromStack(SPELL_OBSIDIAN_ARMOR, 0, AURA_REMOVE_BY_DEFAULT, 10);
                         break;
                 }
             }
@@ -267,51 +302,6 @@ class boss_lord_rhyolith : public CreatureScript
                 if ((instance->GetData(DATA_RHYOLITH_HEALTH_SHARED) != 0))
                     me->SetHealth(instance->GetData(DATA_RHYOLITH_HEALTH_SHARED) * 2);
 
-                if (me->HealthBelowPct(25) && phase == 0)
-                {
-                    phase = 1;
-                    me->StopMoving();
-                    events.Reset();
-
-                    uint32 _health = me->GetHealth();
-                    
-                    if (Creature* pRhyolith = me->SummonCreature(NPC_RHYOLITH_2, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()))
-                    {
-                        pRhyolith->RemoveAllAuras();
-                        pRhyolith->SetHealth(_health);
-                        pRhyolith->LowerPlayerDamageReq(pRhyolith->GetMaxHealth());
-                        pRhyolith->CastSpell(pRhyolith, SPELL_IMMOLATION, true);
-                        pRhyolith->AI()->SetData(DATA_ACHIEVE, uint32(bAchieve));
-                    }
-
-                    summons.DespawnEntry(NPC_VOLCANO);
-                    summons.DespawnEntry(NPC_LIQUID_OBSIDIAN);
-                    me->AttackStop();
-                    me->SetVisible(false);
-                    events.Reset();
-
-                    Talk(SAY_TRANS);
-                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_ERUPTION_DMG);
-                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BALANCE_BAR);
-                    
-                    if (pController)
-                    {
-                        pController->DespawnOrUnsummon();
-                        pController = NULL;
-                    }
-                    if (pLeftFoot)
-                    {
-                        pLeftFoot->DespawnOrUnsummon();
-                        pLeftFoot = NULL;
-                    }
-                    if (pRightFoot)
-                    {
-                        pRightFoot->DespawnOrUnsummon();
-                        pRightFoot = NULL;
-                    }      
-                    return;
-                }
-
                 events.Update(diff);
 
                 if (me->HasUnitState(UNIT_STATE_CASTING))
@@ -322,61 +312,59 @@ class boss_lord_rhyolith : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_CHECK_MOVE:
-                        {
-                            if (pController)
+                            if (Creature* controller = me->GetCreature(*me, ControllerGUID))
                             {
-                                if (me->GetDistance2d(pController) <= 0.5f)
+                                if (controller->isAlive() && me->GetDistance2d(controller) <= 0.5f)
                                 {
+                                    events.Reset();
                                     me->StopMoving();
                                     me->CastSpell(me, SPELL_DRINK_MAGMA);
-                                    events.Reset();
                                     events.ScheduleEvent(EVENT_CHECK_MOVE, 8000);
                                     return;
                                 }
-                            }
-                            if (pController && pLeftFoot && pRightFoot && pLeftFoot->AI() && pRightFoot->AI())
-                            {
-                                int32 l_dmg = pLeftFoot->AI()->GetData(DATA_HITS);
-                                int32 r_dmg = pRightFoot->AI()->GetData(DATA_HITS);
-
-                                if (!l_dmg && !r_dmg)
+                                if (Creature* leftfoot = me->GetCreature(*me, LeftFootGUID))
                                 {
-                                    //me->RemoveAura(SPELL_BURNING_FEET);
-                                    if (pLeftFoot)
-                                        pLeftFoot->RemoveAura(SPELL_BURNING_FEET);
-                                    if (pRightFoot)
-                                        pRightFoot->RemoveAura(SPELL_BURNING_FEET);
-                                    instance->DoSetAlternatePowerOnPlayers(25);
-                                    events.ScheduleEvent(EVENT_CHECK_MOVE, 1000);
-                                    return;
-                                }
-
-                                int32 i = NormalizeMove(curMove, CalculateNextMove(curMove, l_dmg, r_dmg));
-                                if (i < 0)
-                                    bAchieve = false;
-
-                                if (i != curMove)
-                                {
-                                    //me->RemoveAura(SPELL_BURNING_FEET);
-                                    if (pLeftFoot)
-                                        pLeftFoot->RemoveAura(SPELL_BURNING_FEET);
-                                    if (pRightFoot)
-                                        pRightFoot->RemoveAura(SPELL_BURNING_FEET);
-                                    curMove = i;
-                                    pController->NearTeleportTo(movePos[curMove].GetPositionX(), movePos[curMove].GetPositionY(), movePos[curMove].GetPositionZ(), 0.0f);
-                                }
-                                else
-                                {
-                                    //DoCast(me, SPELL_BURNING_FEET, true);
-                                    if (pLeftFoot)
-                                        pLeftFoot->CastSpell(pLeftFoot, SPELL_BURNING_FEET, true);
-                                    if (pRightFoot)
-                                        pRightFoot->CastSpell(pRightFoot, SPELL_BURNING_FEET, true);
+                                    int32 ldmg = leftfoot->AI()->GetData(DATA_HITS);
+                                    if (Creature* rightfoot = me->GetCreature(*me, RightFootGUID))
+                                    {
+                                        int32 rdmg = rightfoot->AI()->GetData(DATA_HITS);
+                                        if (ldmg && !rdmg)
+                                        {
+                                            //me->RemoveAura(SPELL_BURNING_FEET);
+                                            if (leftfoot->isAlive())
+                                                leftfoot->RemoveAura(SPELL_BURNING_FEET);
+                                            if (rightfoot->isAlive())
+                                                rightfoot->RemoveAura(SPELL_BURNING_FEET);
+                                            instance->DoSetAlternatePowerOnPlayers(25);
+                                            events.ScheduleEvent(EVENT_CHECK_MOVE, 1000);
+                                            return;
+                                        }
+                                        int32 i = NormalizeMove(curMove, CalculateNextMove(curMove, ldmg, rdmg));
+                                        if (i < 0)
+                                            bAchieve = false;
+                                        if (i != curMove)
+                                        {
+                                            //me->RemoveAura(SPELL_BURNING_FEET);
+                                            if (leftfoot->isAlive())
+                                                leftfoot->RemoveAura(SPELL_BURNING_FEET);
+                                            if (rightfoot->isAlive())
+                                                rightfoot->RemoveAura(SPELL_BURNING_FEET);
+                                            curMove = i;
+                                            controller->NearTeleportTo(movePos[curMove].GetPositionX(), movePos[curMove].GetPositionY(), movePos[curMove].GetPositionZ(), 0.0f);
+                                        }
+                                        else
+                                        {
+                                            //DoCast(me, SPELL_BURNING_FEET, true);
+                                            if (leftfoot->isAlive())
+                                                leftfoot->CastSpell(leftfoot, SPELL_BURNING_FEET, true);
+                                            if (rightfoot->isAlive())
+                                                rightfoot->CastSpell(rightfoot, SPELL_BURNING_FEET, true);
+                                        }
+                                    }
                                 }
                             }
                             events.ScheduleEvent(EVENT_CHECK_MOVE, 1000);
                             break;
-                        }
                         case EVENT_CONCLUSIVE_STOMP:
                             Talk(SAY_STOMP);
                             DoCastAOE(SPELL_CONCLUSIVE_STOMP);
@@ -450,14 +438,6 @@ class boss_lord_rhyolith : public CreatureScript
 
                 DoMeleeAttackIfReady();
             }
-        private:
-            Creature* pController;
-            Creature* pRightFoot;
-            Creature* pLeftFoot;
-            int32 curMove;
-            bool bAchieve;
-            uint8 players_count;
-            uint8 phase;
 
             int32 CalculateNextMove(int32 cur, int32 left, int32 right)
             {
