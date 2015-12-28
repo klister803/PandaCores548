@@ -318,21 +318,21 @@ struct Loot
     std::vector<LootItem> items;
     std::vector<LootItem> quest_items;
     uint32 gold;
-    uint8 unlootedCount;
+    uint8 unlootedCount = 0;
     uint64 roundRobinPlayer;                                // GUID of the player having the Round-Robin ownership for the loot. If 0, round robin owner has released.
-    LootType loot_type;                                     // required for achievement system
+    LootType loot_type = LOOT_CORPSE;                       // required for achievement system
 
-    uint32 objEntry;
-    uint64 objGuid;
-    uint64 m_guid;
-    uint8 objType;
-    uint8 spawnMode;
-    uint32 itemLevel;
-    uint32 chance;
-    bool personal;
-    bool bonusLoot;
-    bool isBoss;
-    bool isClear;
+    uint32 objEntry = 0;
+    uint64 objGuid = 0;
+    uint64 m_guid = 0;
+    uint8 objType = 0;
+    uint8 spawnMode = 0;
+    uint32 itemLevel = 0;
+    uint32 chance = 10; //Default chance for bonus roll
+    bool personal = false;
+    bool bonusLoot = false;
+    bool isBoss = false;
+    bool isClear = true;
 
     explicit Loot(uint32 _gold = 0);
     ~Loot() { clear(); }
@@ -385,7 +385,7 @@ struct Loot
         // All rolls are registered here. They need to know, when the loot is not valid anymore
         LootValidatorRefManager i_LootValidatorRefManager;
 
-        Player* m_lootOwner;
+        Player* m_lootOwner = NULL;
 };
 
 struct LootView

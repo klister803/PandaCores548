@@ -15960,6 +15960,7 @@ void Unit::DeleteThreatList()
         SendClearThreatListOpcode();
     m_ThreatManager.clearReferences();
     ClearSaveThreatTarget();
+    ClearSaveThreatTargetLoot();
 }
 
 //======================================================================
@@ -16176,7 +16177,16 @@ Unit* Creature::SelectVictim()
 
 bool Unit::GetThreatTarget(uint64 targetGuid)
 {
-    for (std::list<uint64>::const_iterator itr = m_savethreatlist.begin(); itr != m_savethreatlist.end(); ++itr)
+    for (std::list<uint64>::const_iterator itr = m_threatlistpersonal.begin(); itr != m_threatlistpersonal.end(); ++itr)
+        if ((*itr) == targetGuid)
+            return true;
+
+    return false;
+}
+
+bool Unit::GetThreatTargetLoot(uint64 targetGuid)
+{
+    for (std::list<uint64>::const_iterator itr = m_threatlistforloot.begin(); itr != m_threatlistforloot.end(); ++itr)
         if ((*itr) == targetGuid)
             return true;
 

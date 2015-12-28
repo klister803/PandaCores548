@@ -466,20 +466,6 @@ void LootItem::AddAllowedLooter(const Player* player)
 Loot::Loot(uint32 _gold)
 {
     gold = _gold;
-    unlootedCount = 0;
-    loot_type = LOOT_CORPSE;
-    spawnMode = 0;
-    m_lootOwner = NULL;
-    objType = 0;
-    itemLevel = 0;
-    objGuid = 0;
-    objEntry = 0;
-    chance = 10; //Default chance for bonus roll
-    personal = false;
-    isBoss = false;
-    bonusLoot = false;
-    isClear = true;
-    m_guid = 0;
 }
 
 void Loot::GenerateLootGuid()

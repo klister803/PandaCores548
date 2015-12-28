@@ -1601,23 +1601,32 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
         dist = objSize + (dist - objSize) * (float)rand_norm();
 
     Position pos;
-    switch (targetType.GetTarget())
+    if (canHitTargetInLOS)
     {
-        case TARGET_DEST_CASTER_FRONT_LEAP:
-        case TARGET_DEST_CASTER_FRONT_RIGHT:
-        case TARGET_DEST_CASTER_BACK_RIGHT:
-        case TARGET_DEST_CASTER_BACK_LEFT:
-        case TARGET_DEST_CASTER_FRONT_LEFT:
-        case TARGET_DEST_CASTER_FRONT:
-        case TARGET_DEST_CASTER_BACK:
-        case TARGET_DEST_CASTER_RIGHT:
-        case TARGET_DEST_CASTER_LEFT:
-        case TARGET_DEST_MAX_DIST:
-            m_caster->GetFirstCollisionPosition(pos, dist, angle);
-            break;
-        default:
-            m_caster->GetNearPosition(pos, dist, angle);
-            break;
+        float x, y, z;
+        m_caster->GetNearPoint(m_caster, x, y, z, m_caster->GetObjectSize(), dist, angle);
+        pos.Relocate(x, y, z);
+    }
+    else
+    {
+        switch (targetType.GetTarget())
+        {
+            case TARGET_DEST_CASTER_FRONT_LEAP:
+            case TARGET_DEST_CASTER_FRONT_RIGHT:
+            case TARGET_DEST_CASTER_BACK_RIGHT:
+            case TARGET_DEST_CASTER_BACK_LEFT:
+            case TARGET_DEST_CASTER_FRONT_LEFT:
+            case TARGET_DEST_CASTER_FRONT:
+            case TARGET_DEST_CASTER_BACK:
+            case TARGET_DEST_CASTER_RIGHT:
+            case TARGET_DEST_CASTER_LEFT:
+            case TARGET_DEST_MAX_DIST:
+                m_caster->GetFirstCollisionPosition(pos, dist, angle);
+                break;
+            default:
+                m_caster->GetNearPosition(pos, dist, angle);
+                break;
+        }
     }
     m_targets.ModDst(pos);
 }

@@ -2203,12 +2203,21 @@ class Unit : public WorldObject
         void removeHatedBy(HostileReference* /*pHostileReference*/) { /* nothing to do yet */ }
         HostileRefManager& getHostileRefManager() { return m_HostileRefManager; }
 
-        std::list<uint64>* GetSaveThreatList() { return &m_savethreatlist; }
-        void ClearSaveThreatTarget() { m_savethreatlist.clear(); }
-        uint32 GetSizeSaveThreat() { return m_savethreatlist.size(); }
-        void AddThreatTarget(uint64 targetGuid) { m_savethreatlist.push_back(targetGuid); }
-        void RemoveThreatTarget(uint64 targetGuid) { m_savethreatlist.remove(targetGuid); }
+        //For personal loot system
+        std::list<uint64>* GetSaveThreatList() { return &m_threatlistpersonal; }
+        void ClearSaveThreatTarget() { m_threatlistpersonal.clear(); }
+        uint32 GetSizeSaveThreat() { return m_threatlistpersonal.size(); }
+        void AddThreatTarget(uint64 targetGuid) { m_threatlistpersonal.push_back(targetGuid); }
+        void RemoveThreatTarget(uint64 targetGuid) { m_threatlistpersonal.remove(targetGuid); }
         bool GetThreatTarget(uint64 targetGuid);
+
+        // For prevent looting left user
+        std::list<uint64>* GetSaveThreatListLoot() { return &m_threatlistforloot; }
+        void ClearSaveThreatTargetLoot() { m_threatlistforloot.clear(); }
+        uint32 GetSizeSaveThreatLoot() { return m_threatlistforloot.size(); }
+        void AddThreatTargetLoot(uint64 targetGuid) { m_threatlistforloot.push_back(targetGuid); }
+        void RemoveThreatTargetLoot(uint64 targetGuid) { m_threatlistforloot.remove(targetGuid); }
+        bool GetThreatTargetLoot(uint64 targetGuid);
 
         VisibleAuraMap const* GetVisibleAuras() { return &m_visibleAuras; }
         AuraApplication * GetVisibleAura(uint8 slot)
@@ -2625,7 +2634,8 @@ class Unit : public WorldObject
         bool isCasterPet;
         float m_attackDist;
 
-        std::list<uint64> m_savethreatlist;
+        std::list<uint64> m_threatlistpersonal;
+        std::list<uint64> m_threatlistforloot;
         ThreatManager m_ThreatManager;
 
         Vehicle* m_vehicle;

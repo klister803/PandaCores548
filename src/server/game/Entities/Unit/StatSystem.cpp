@@ -1102,7 +1102,13 @@ void Unit::UpdateHastMod()
     if(isAnySummons())
     {
         float haste = GetFloatValue(UNIT_MOD_CAST_HASTE);
-        if(CreatureTemplate const* cinfo = sObjectMgr->GetCreatureTemplate(GetEntry()))
+        if (isHunterPet())
+        {
+            SetAttackTime(BASE_ATTACK, 2000 * haste);
+            SetAttackTime(OFF_ATTACK, 2000 * haste);
+            SetAttackTime(RANGED_ATTACK, 2000 * haste);
+        }
+        else if(CreatureTemplate const* cinfo = sObjectMgr->GetCreatureTemplate(GetEntry()))
         {
             SetAttackTime(BASE_ATTACK, cinfo->baseattacktime * haste);
             SetAttackTime(OFF_ATTACK, cinfo->baseattacktime * haste);

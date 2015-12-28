@@ -19685,18 +19685,12 @@ bool Player::isAllowedToLoot(const Creature* creature)
     else if (thisGroup != creature->GetLootRecipientGroup())
         return false;
 
-    bool find = false;
-    std::list<uint64>* savethreatlist = const_cast<Creature*>(creature)->GetSaveThreatList();
-    for (std::list<uint64>::const_iterator itr = savethreatlist->begin(); itr != savethreatlist->end(); ++itr)
-    {
-        if ((*itr) == GetGUID())
-        {
-            find = true;
-            break;
-        }
-    }
+    /*bool find = const_cast<Creature*>(creature)->GetThreatTargetLoot(GetGUID());
+    std::list<uint64>* savethreatlist = const_cast<Creature*>(creature)->GetSaveThreatListLoot();
+    sLog->outDebug(LOG_FILTER_LOOT, "Player::isAllowedToLoot find %i size %i guid %u", find, savethreatlist->size(), GetGUIDLow());
+
     if (!find)
-        return false;
+        return false;*/
 
     switch (thisGroup->GetLootMethod())
     {

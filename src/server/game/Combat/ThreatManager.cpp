@@ -425,6 +425,8 @@ void ThreatManager::doAddThreat(Unit* victim, float threat)
                 iOwner->AddThreatTarget(victim->GetGUID());
                 iOwner->UpdateMaxHealth();
             }
+            if(victim->GetTypeId() == TYPEID_PLAYER && !iOwner->GetThreatTargetLoot(victim->GetGUID()))
+                iOwner->AddThreatTargetLoot(victim->GetGUID());
         }
     }
 
