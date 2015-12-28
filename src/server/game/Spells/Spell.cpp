@@ -1592,7 +1592,7 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
     else
         dist = m_spellInfo->GetEffect(effIndex, m_diffMode)->CalcRadius(m_caster);
 
-    if (targetType.GetTarget() == TARGET_DEST_MAX_DIST && !dist)
+    if (targetType.GetTarget() == TARGET_DEST_MAX_RANGE)
         dist = m_spellInfo->GetMaxRange();
 
     if (dist < objSize)
@@ -1601,32 +1601,26 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
         dist = objSize + (dist - objSize) * (float)rand_norm();
 
     Position pos;
-    if (canHitTargetInLOS)
+    switch (targetType.GetTarget())
     {
-        float x, y;
-        m_caster->GetNearPoint2D(x, y, dist, angle);
-        pos.Relocate(x, y, m_caster->GetPositionZ());
-    }
-    else
-    {
-        switch (targetType.GetTarget())
-        {
-            case TARGET_DEST_CASTER_FRONT_LEAP:
-            case TARGET_DEST_CASTER_FRONT_RIGHT:
-            case TARGET_DEST_CASTER_BACK_RIGHT:
-            case TARGET_DEST_CASTER_BACK_LEFT:
-            case TARGET_DEST_CASTER_FRONT_LEFT:
-            case TARGET_DEST_CASTER_FRONT:
-            case TARGET_DEST_CASTER_BACK:
-            case TARGET_DEST_CASTER_RIGHT:
-            case TARGET_DEST_CASTER_LEFT:
-            case TARGET_DEST_MAX_DIST:
-                m_caster->GetFirstCollisionPosition(pos, dist, angle);
-                break;
-            default:
+        case TARGET_DEST_CASTER_FRONT_LEAP:
+        case TARGET_DEST_CASTER_FRONT_RIGHT:
+        case TARGET_DEST_CASTER_BACK_RIGHT:
+        case TARGET_DEST_CASTER_BACK_LEFT:
+        case TARGET_DEST_CASTER_FRONT_LEFT:
+        case TARGET_DEST_CASTER_FRONT:
+        case TARGET_DEST_CASTER_BACK:
+        case TARGET_DEST_CASTER_RIGHT:
+        case TARGET_DEST_CASTER_LEFT:
+        case TARGET_DEST_MAX_RANGE:
+            if (canHitTargetInLOS)
                 m_caster->GetNearPosition(pos, dist, angle);
-                break;
-        }
+            else
+                m_caster->GetFirstCollisionPosition(pos, dist, angle);
+            break;
+        default:
+            m_caster->GetNearPosition(pos, dist, angle);
+            break;
     }
     m_targets.ModDst(pos);
 }

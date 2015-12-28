@@ -1905,7 +1905,7 @@ enum Targets
     TARGET_UNIT_TARGET_SELECT2         = 122,
     TARGET_UNIT_THREAD_PLAYER          = 123,
     TARGET_UNK_124                     = 124,
-    TARGET_DEST_MAX_DIST               = 125,
+    TARGET_DEST_MAX_RANGE              = 125,
     TARGET_UNK_126                     = 126,
     TARGET_UNK_127                     = 127,
     TARGET_UNK_128                     = 128, //not use
