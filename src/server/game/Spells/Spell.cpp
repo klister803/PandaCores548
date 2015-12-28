@@ -1603,9 +1603,9 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
     Position pos;
     if (canHitTargetInLOS)
     {
-        float x, y, z;
-        m_caster->GetNearPoint(m_caster, x, y, z, m_caster->GetObjectSize(), dist, angle);
-        pos.Relocate(x, y, z);
+        float x, y;
+        m_caster->GetNearPoint2D(x, y, dist, angle);
+        pos.Relocate(x, y, m_caster->GetPositionZ());
     }
     else
     {
