@@ -1614,12 +1614,12 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
         case TARGET_DEST_CASTER_LEFT:
         case TARGET_DEST_MAX_RANGE:
             if (canHitTargetInLOS)
-                m_caster->GetNearPosition(pos, dist, angle);
+                m_caster->GetNearPoint2D(pos, dist, angle);
             else
                 m_caster->GetFirstCollisionPosition(pos, dist, angle);
             break;
         default:
-            m_caster->GetNearPosition(pos, dist, angle);
+            m_caster->GetNearPoint2D(pos, dist, angle);
             break;
     }
     m_targets.ModDst(pos);
@@ -1681,7 +1681,10 @@ void Spell::SelectImplicitTargetDestTargets(SpellEffIndex effIndex, SpellImplici
         dist = objSize + (dist - objSize) * (float)rand_norm();
 
     Position pos;
-    target->GetNearPosition(pos, dist, angle);
+    if (canHitTargetInLOS)
+        target->GetNearPoint2D(pos, dist, angle);
+    else
+        target->GetNearPosition(pos, dist, angle);
     m_targets.SetDst(*target);
     m_targets.ModDst(pos);
 }
@@ -1754,7 +1757,10 @@ void Spell::SelectImplicitDestDestTargets(SpellEffIndex effIndex, SpellImplicitT
         dist *= (float)rand_norm();
 
     Position pos = *m_targets.GetDstPos();
-    m_caster->MovePosition(pos, dist, angle);
+    if (canHitTargetInLOS)
+        m_caster->GetNearPoint2D(pos, dist, angle);
+    else
+        m_caster->MovePosition(pos, dist, angle);
     m_targets.ModDst(pos);
 }
 

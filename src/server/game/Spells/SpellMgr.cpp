@@ -5701,6 +5701,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 145718:  // Gusting Bomb
                     spellInfo->Speed = 25.f;
                     break;
+                case 117954: // Materialize Protector
+                    spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
+                    break;
                 default:
                     break;
             }
