@@ -1566,6 +1566,10 @@ void Group::DoRollForAllMembers(ObjectGuid guid, uint8 slot, uint32 mapid, Loot*
 
         if (item.AllowedForPlayer(member))
         {
+            if (auto creature = pLootedObject->ToCreature())
+                if (creature->isBoss() && member->GetInstanceId() && !creature->GetThreatTargetLoot(member->GetGUID()))
+                    continue;
+
             if (member->IsWithinDistInMap(pLootedObject, sWorld->getFloatConfig(CONFIG_GROUP_XP_DISTANCE), false))
             {
                 r->totalPlayersRolling++;

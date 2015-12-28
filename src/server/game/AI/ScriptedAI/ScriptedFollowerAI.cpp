@@ -162,6 +162,7 @@ void FollowerAI::EnterEvadeMode()
     me->DeleteThreatList();
     me->CombatStop(true);
     me->SetLootRecipient(NULL);
+    me->ClearSaveThreatTargetLoot();
 
     if (HasFollowState(STATE_FOLLOW_INPROGRESS))
     {

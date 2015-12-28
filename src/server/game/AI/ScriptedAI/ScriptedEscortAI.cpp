@@ -185,6 +185,7 @@ void npc_escortAI::EnterEvadeMode()
     me->DeleteThreatList();
     me->CombatStop(true);
     me->SetLootRecipient(NULL);
+    me->ClearSaveThreatTargetLoot();
 
     if (HasEscortState(STATE_ESCORT_ESCORTING))
     {

@@ -774,6 +774,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             me->SetLootRecipient(NULL);
             me->ResetPlayerDamageReq();
             me->GetMotionMaster()->MoveTargetedHome();
+            me->ClearSaveThreatTargetLoot();
 
             if (InstanceScript* instance = me->GetInstanceScript())
                 if(uint32 _bossId = me->GetBossId())

@@ -430,6 +430,13 @@ void ThreatManager::doAddThreat(Unit* victim, float threat)
         }
     }
 
+    if(Creature* creature = iOwner->ToCreature())
+    {
+        if (creature->isBoss())
+            if(victim->GetTypeId() == TYPEID_PLAYER && !iOwner->GetThreatTargetLoot(victim->GetGUID()))
+                iOwner->AddThreatTargetLoot(victim->GetGUID());
+    }
+
     // must check > 0.0f, otherwise dead loop
     if (threat > 0.0f && reducedThreadPercent)
     {

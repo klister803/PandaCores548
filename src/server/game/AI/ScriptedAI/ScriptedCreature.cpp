@@ -704,6 +704,7 @@ bool BossAI::_EnterEvadeMode()
     me->LoadCreaturesAddon();
     me->SetLootRecipient(NULL);
     me->ResetPlayerDamageReq();
+    me->ClearSaveThreatTargetLoot();
 
     me->m_Events.AddEvent(new SetPhaseDelayEvent(*me, me->GetPhaseMask()), me->m_Events.CalculateTime(30000));
     me->ToUnit()->RemoveAllAuras();

@@ -1458,7 +1458,7 @@ float Creature::_GetDamageMod(int32 Rank)
         case CREATURE_ELITE_RAREELITE:
             return 3.0f;
         case CREATURE_ELITE_WORLDBOSS:
-            return 10.0f;
+            return 1.0f;
         case CREATURE_ELITE_RARE:
             return 2.0f;
         default:

@@ -463,6 +463,7 @@ void SmartAI::EnterEvadeMode()
     me->LoadCreaturesAddon();
     me->SetLootRecipient(NULL);
     me->ResetPlayerDamageReq();
+    me->ClearSaveThreatTargetLoot();
 
     me->m_Events.AddEvent(new SetImuneDelayEvent(*me), me->m_Events.CalculateTime(8000));
     me->SetReactState(REACT_PASSIVE);

@@ -19685,12 +19685,12 @@ bool Player::isAllowedToLoot(const Creature* creature)
     else if (thisGroup != creature->GetLootRecipientGroup())
         return false;
 
-    /*bool find = const_cast<Creature*>(creature)->GetThreatTargetLoot(GetGUID());
-    std::list<uint64>* savethreatlist = const_cast<Creature*>(creature)->GetSaveThreatListLoot();
-    sLog->outDebug(LOG_FILTER_LOOT, "Player::isAllowedToLoot find %i size %i guid %u", find, savethreatlist->size(), GetGUIDLow());
-
-    if (!find)
-        return false;*/
+    if (GetInstanceId()) // Check player for looting on instance
+    {
+        if (creature->isBoss())
+            if (!const_cast<Creature*>(creature)->GetThreatTargetLoot(GetGUID()))
+                return false;
+    }
 
     switch (thisGroup->GetLootMethod())
     {

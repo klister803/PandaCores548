@@ -632,6 +632,14 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
             return GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_BOSS;
         }
 
+        bool isBoss() const
+        {
+            if (isPet())
+                return false;
+
+            return GetCreatureTemplate()->rank == CREATURE_ELITE_WORLDBOSS;
+        }
+
         bool IsDungeonBoss() const;
         bool IsPersonalLoot() const;
         bool IsAutoLoot() const;

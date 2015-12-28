@@ -753,6 +753,7 @@ inline bool CreatureAI::_EnterEvadeMode()
     me->LoadCreaturesAddon();
     me->SetLootRecipient(NULL);
     me->ResetPlayerDamageReq();
+    me->ClearSaveThreatTargetLoot();
 
     if (me->IsInEvadeMode())
         return false;

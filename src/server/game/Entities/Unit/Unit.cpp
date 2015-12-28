@@ -15854,6 +15854,9 @@ void Unit::setDeathState(DeathState s)
         RemoveAllAurasOnDeath();
     }
 
+    if (s == DEAD)
+        ClearSaveThreatTargetLoot();
+
     if (s == JUST_DIED)
     {
         ModifyAuraState(AURA_STATE_HEALTHLESS_20_PERCENT, false);
@@ -15960,7 +15963,6 @@ void Unit::DeleteThreatList()
         SendClearThreatListOpcode();
     m_ThreatManager.clearReferences();
     ClearSaveThreatTarget();
-    ClearSaveThreatTargetLoot();
 }
 
 //======================================================================

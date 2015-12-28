@@ -55,6 +55,7 @@ void GuardAI::EnterEvadeMode()
         me->GetMotionMaster()->MoveIdle();
         me->CombatStop(true);
         me->DeleteThreatList();
+        me->ClearSaveThreatTargetLoot();
         return;
     }
 
@@ -63,6 +64,7 @@ void GuardAI::EnterEvadeMode()
     me->RemoveAllAuras();
     me->DeleteThreatList();
     me->CombatStop(true);
+    me->ClearSaveThreatTargetLoot();
 
     // Remove ChaseMovementGenerator from MotionMaster stack list, and add HomeMovementGenerator instead
     if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
