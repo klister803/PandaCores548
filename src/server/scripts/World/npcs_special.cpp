@@ -3978,21 +3978,30 @@ class npc_wild_imp : public CreatureScript
                         AttackStart(me->GetOwner()->getVictim());
             }
 
+            void HandleCastFireBolt(Unit* me, Unit* victim, Unit* owner)
+            {
+                me->CastSpell(victim, FIREBOLT, false);
+                owner->EnergizeBySpell(owner, FIREBOLT, 5, POWER_DEMONIC_FURY);
+                charges--;
+                me->SetPower(POWER_ENERGY, charges);
+                owner->SetInCombatWith(victim);
+
+                if (owner->HasAura(122351))
+                    if (roll_chance_i(8))
+                        owner->CastSpell(owner, 122355, true);
+            }
+
             void UpdateAI(uint32 diff)
             {
                 if (me->GetReactState() != REACT_AGGRESSIVE)
                     me->SetReactState(REACT_AGGRESSIVE);
 
-                if (!me->GetOwner())
-                    return;
-
-                if (!me->GetOwner()->ToPlayer())
-                    return;
-
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
-                if (me->getVictim() && me->getVictim()->HasCrowdControlAura(me))
+                Unit* victim = me->getVictim();
+
+                if (victim && victim->HasCrowdControlAura(me))
                 {
                     me->InterruptNonMeleeSpells(false);
                     return;
@@ -4001,31 +4010,35 @@ class npc_wild_imp : public CreatureScript
                 if (!charges)
                     me->DespawnOrUnsummon();
 
-                if ((me->getVictim() || me->GetOwner()->getAttackerForHelper()))
-                {
-                    me->CastSpell(me->getVictim() ? me->getVictim() : me->GetOwner()->getAttackerForHelper(), FIREBOLT, false);
-                    me->GetOwner()->EnergizeBySpell(me->GetOwner(), FIREBOLT, 5, POWER_DEMONIC_FURY);
-                    charges--;
-                    me->SetPower(POWER_ENERGY, charges);
-
-                    if (me->GetOwner()->HasAura(122351))
-                        if (roll_chance_i(8))
-                            me->GetOwner()->CastSpell(me->GetOwner(), 122355, true);
-                }
-                else if (Pet* pet = me->GetOwner()->ToPlayer()->GetPet())
-                {
-                    if (pet->getAttackerForHelper())
+                if (Unit* owner = me->GetOwner())
+                    if (Player* plr = owner->ToPlayer())
                     {
-                        me->CastSpell(me->getVictim() ? me->getVictim() : pet->getAttackerForHelper(), FIREBOLT, false);
-                        me->GetOwner()->EnergizeBySpell(me->GetOwner(), FIREBOLT, 5, POWER_DEMONIC_FURY);
-                        charges--;
-                        me->SetPower(POWER_ENERGY, charges);
+                        Unit* attacker = owner->getAttackerForHelper();
+                        uint64 lastCastTargetGUID = owner->GetLastCastTargetGUID();
 
-                        if (me->GetOwner()->HasAura(122351))
-                            if (roll_chance_i(8))
-                                me->GetOwner()->CastSpell(me->GetOwner(), 122355, true);
+                        if (owner->isInCombat() && lastCastTargetGUID)
+                        {
+                            if (victim && victim->GetGUID() == lastCastTargetGUID)
+                                HandleCastFireBolt(me, victim, owner);
+                            else if (Unit* target = ObjectAccessor::GetUnit(*me, lastCastTargetGUID))
+                                HandleCastFireBolt(me, target, owner);
+                        }
+                        else if (victim)
+                        {
+                            HandleCastFireBolt(me, victim, owner);
+                        }
+                        else if (attacker)
+                        {
+                            HandleCastFireBolt(me, attacker, owner);
+                        }
+                        else if (Pet* pet = plr->GetPet())
+                        {
+                            if (pet->getAttackerForHelper())
+                            {
+                                HandleCastFireBolt(me, pet->getAttackerForHelper(), owner);
+                            }
+                        }
                     }
-                }
             }
         };
 
