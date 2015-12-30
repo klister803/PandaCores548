@@ -254,6 +254,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
         m_createStats[i] = 0.0f;
 
     m_attacking = NULL;
+    m_lastCastTargetGUID = 0;
     m_modMeleeHitChance = 0.0f;
     m_modRangedHitChance = 0.0f;
     m_modSpellHitChance = 0.0f;

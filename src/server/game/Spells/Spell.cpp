@@ -4061,6 +4061,9 @@ void Spell::cast(bool skipCheck)
                 }
             }
 
+            if (!positive && procTarget->GetGUID() != m_caster->GetGUID() && m_spellInfo->StartRecoveryCategory)
+                m_caster->SetLastCastTargetGUID(procTarget->GetGUID());
+
             //if (!(_triggeredCastFlags & TRIGGERED_DISALLOW_PROC_EVENTS))
                 procEx |= PROC_EX_ON_CAST;
 

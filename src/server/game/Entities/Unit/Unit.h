@@ -1429,6 +1429,8 @@ class Unit : public WorldObject
         AttackerSet const& getAttackers() const { return m_attackers; }
         bool isAttackingPlayer() const;
         Unit* getVictim() const { return m_attacking; }
+        uint64 GetLastCastTargetGUID() { return m_lastCastTargetGUID; }
+        void SetLastCastTargetGUID(uint64 guid) { m_lastCastTargetGUID = guid; }
 
         void CombatStop(bool includingCast = false);
         void CombatStopWithPets(bool includingCast = false);
@@ -2576,6 +2578,7 @@ class Unit : public WorldObject
 
         AttackerSet m_attackers;
         Unit* m_attacking;
+        uint64 m_lastCastTargetGUID;
 
         bool m_onMount;
 

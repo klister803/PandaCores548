@@ -145,8 +145,16 @@ void PetAI::UpdateAI(uint32 diff)
             return;
         }
 
-        if (owner && !owner->isInCombat())
-            owner->SetInCombatWith(me->getVictim());
+        if (owner)
+        {
+            if (!owner->isInCombat())
+                owner->SetInCombatWith(me->getVictim());
+
+            if (!me->HasUnitState(UNIT_STATE_CASTING))
+                if (me->getVictim()->GetGUID() != owner->GetLastCastTargetGUID())
+                    if (Unit* target = ObjectAccessor::GetUnit(*me, owner->GetLastCastTargetGUID()))
+                        AttackStart(target);
+        }
 
         if(!me->GetCasterPet())
             DoMeleeAttackIfReady();
@@ -165,6 +173,13 @@ void PetAI::UpdateAI(uint32 diff)
 
             if (nextTarget)
                 AttackStart(nextTarget);
+            else
+                HandleReturnMovement();
+        }
+        else if (owner->isInCombat() && me->HasReactState(REACT_HELPER))
+        {
+            if (Unit* target = ObjectAccessor::GetUnit(*me, owner->GetLastCastTargetGUID()))
+                AttackStart(target);
             else
                 HandleReturnMovement();
         }
