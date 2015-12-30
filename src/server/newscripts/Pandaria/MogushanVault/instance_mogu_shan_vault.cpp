@@ -52,6 +52,7 @@ public:
         uint64 subetaiGuid;
         uint64 zianGuid;
         uint64 mengGuid;
+        uint64 elegonGUID;
         uint64 janxiGuid;
         uint64 qinxiGuid;
         uint64 woicontrollerGuid;
@@ -89,6 +90,7 @@ public:
             subetaiGuid                     = 0;
             zianGuid                        = 0;
             mengGuid                        = 0;
+            elegonGUID                      = 0;
             woicontrollerGuid               = 0;
 
             //Arrays
@@ -129,6 +131,9 @@ public:
                     break;
                 case NPC_SUBETAI:
                     subetaiGuid = creature->GetGUID();
+                    break;
+                case NPC_ELEGON:
+                    elegonGUID = creature->GetGUID();
                     break;
                 case NPC_QIN_XI:
                     qinxiGuid = creature->GetGUID();
@@ -384,6 +389,8 @@ public:
                     return mengGuid;
                 case NPC_SUBETAI:
                     return subetaiGuid;
+                case NPC_ELEGON:
+                    return elegonGUID;
                 case GOB_ENERGY_PLATFORM:
                     return elegonplatformGuid;
                 case NPC_QIN_XI:

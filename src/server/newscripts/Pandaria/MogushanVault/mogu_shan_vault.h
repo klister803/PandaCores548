@@ -77,6 +77,9 @@ enum eCreatures
 
     // Elegon
     NPC_ELEGON                      = 60410,
+    NPC_INVISIBLE_STALKER           = 65297,
+    NPC_ENERGY_CHARGE               = 60913,
+    NPC_EMPYREAL_FOCUS              = 60776,
 
     // Woi Controller
     NPC_WOI_CONTROLLER              = 90787, //New trigger

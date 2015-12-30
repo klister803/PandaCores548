@@ -4658,10 +4658,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 116365: //Arcane Velocrity (trigger dmg)
                     spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(48);//60 yards
                     break;
-                //Elegon
-                case 129724: //Energy tendrols (trigger spell - grip)
-                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_JUMP;
-                    break;
                 //Will of the Imperator
                 case 116782:
                 case 116803: //Titan Gase (trigger spell)

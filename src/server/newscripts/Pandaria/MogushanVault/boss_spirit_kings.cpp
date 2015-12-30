@@ -922,6 +922,35 @@ class spell_meng_crazed : public SpellScriptLoader
         }
 };
 
+// 117708
+class spell_boss_maddening_shout : public SpellScriptLoader
+{
+    public:
+        spell_boss_maddening_shout() : SpellScriptLoader("spell_boss_maddening_shout") { }
+
+        class spell_boss_maddening_shout_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_boss_maddening_shout_AuraScript);
+
+            void Absorb(AuraEffect* /*AuraEffect**/, DamageInfo& dmgInfo, uint32& absorbAmount)
+            {
+                if (Unit* target = dmgInfo.GetAttacker())
+                    if (target->GetTypeId() != TYPEID_PLAYER)
+                        absorbAmount = 0;
+            }
+
+            void Register()
+            {
+                OnEffectAbsorb += AuraEffectAbsorbFn(spell_boss_maddening_shout_AuraScript::Absorb, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_boss_maddening_shout_AuraScript();
+        }
+};
+
 void AddSC_boss_spirit_kings()
 {
     new boss_spirit_kings_controler();
@@ -931,4 +960,5 @@ void AddSC_boss_spirit_kings()
     new npc_flanking_mogu();
     new spell_pinned_down();
     new spell_meng_crazed();
+    new spell_boss_maddening_shout();
 }

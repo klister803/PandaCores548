@@ -310,7 +310,7 @@ class mob_stone_quilen : public CreatureScript
 };
 enum eSkullCharger
 {
-    SPELL_TROLL_RUSH    = 116006,
+    SPELL_TROLL_RUSH    = 116606,
     EVENT_TROLL_RUSH    = 1,
 };
 

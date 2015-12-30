@@ -2317,6 +2317,9 @@ void AuraEffect::UpdatePeriodic(Unit* caster)
                 case SPELLFAMILY_GENERIC:
                     switch (GetId())
                     {
+                        case 116994: //Elegon - Unstable Energy
+                            caster->CastSpell(caster, 116997, true);
+                            break;
                         case 58549: // Tenacity
                         case 59911: // Tenacity (vehicle)
                            GetBase()->RefreshDuration();
@@ -6515,6 +6518,17 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                 case SPELLFAMILY_GENERIC:
                     switch (GetId())
                     {
+                        case 119360: //Elegon - Draw Power
+                        case 124967:
+                            if (caster->isInCombat())
+                                if (aurApp->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+                                {
+                                    caster->CastSpell(caster, 119358, false);
+                                    caster->CastSpell(caster, 118018, true);
+                                    caster->CastSpell(caster, 119387, true); //Aura DamageTaken
+                                    caster->CastSpell(caster, 119355, true); //Aura CastSpeed
+                                }
+                            break;
                         case 96733: //Permanent Feign Death (Stun)
                             if (target)
                             {
