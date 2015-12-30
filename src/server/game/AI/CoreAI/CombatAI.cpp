@@ -414,7 +414,15 @@ void AnyPetAI::UpdateAI(uint32 diff)
     if(!me->HasReactState(REACT_PASSIVE))
     {
         if (owner)
+        {
             targetOwner = owner->getAttackerForHelper();
+
+            if (owner->isInCombat())
+                if (owner->GetLastCastTargetGUID())
+                    if (!targetOwner || (targetOwner && targetOwner->GetGUID() != owner->GetLastCastTargetGUID()))
+                        if (Unit* _target = ObjectAccessor::GetUnit(*me, owner->GetLastCastTargetGUID()))
+                            targetOwner = _target;
+        }
 
         if(targetOwner != NULL && targetOwner != target)
         {
