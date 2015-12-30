@@ -9322,7 +9322,7 @@ void Player::DuelComplete(DuelCompleteType type)
 
 //---------------------------------------------------------//
 
-void Player::_ApplyItemMods(Item* item, uint8 slot, bool apply)
+void Player::_ApplyItemMods(Item* item, uint8 slot, bool apply, bool addItemSpellCooldown)
 {
     if (slot >= INVENTORY_SLOT_BAG_END || !item)
         return;
@@ -9348,7 +9348,7 @@ void Player::_ApplyItemMods(Item* item, uint8 slot, bool apply)
     _ApplyOrRemoveItemEquipDependentAuras(item->GetGUID(), apply);
 
     _ApplyItemBonuses(proto, slot, apply);
-    ApplyItemEquipSpell(item, apply);
+    ApplyItemEquipSpell(item, apply, false, addItemSpellCooldown);
     ApplyEnchantment(item, apply);
 
     sLog->outDebug(LOG_FILTER_PLAYER_ITEMS, "_ApplyItemMods complete.");
@@ -9787,7 +9787,7 @@ bool Player::CheckItemEquipDependentSpell(SpellInfo const* spellInfo, uint64 ite
     return false;
 }
 
-void Player::ApplyItemEquipSpell(Item* item, bool apply, bool form_change)
+void Player::ApplyItemEquipSpell(Item* item, bool apply, bool form_change, bool addItemSpellCooldown)
 {
     if (!item)
         return;
@@ -9813,11 +9813,11 @@ void Player::ApplyItemEquipSpell(Item* item, bool apply, bool form_change)
         if (!spellproto)
             continue;
 
-        ApplyEquipSpell(spellproto, item, apply, form_change);
+        ApplyEquipSpell(spellproto, item, apply, form_change, addItemSpellCooldown);
     }
 }
 
-void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply, bool form_change)
+void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply, bool form_change, bool addItemSpellCooldown)
 {
     if (apply)
     {
@@ -9903,6 +9903,10 @@ void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply,
             }
         }
         CastSpell(this, spellInfo, true, item);
+
+        if (addItemSpellCooldown)
+            AddSpellCooldown(spellInfo->Id, item ? item->GetEntry() : 0, getPreciseTime() + 30);
+
         HandleItemSpellList(spellInfo->Id, true);
     }
     else
@@ -13776,7 +13780,7 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
             if (pProto && pProto->ItemSet)
                 AddItemsSetItem(this, pItem);
 
-            _ApplyItemMods(pItem, slot, true);
+            _ApplyItemMods(pItem, slot, true, true);
 
             if (pProto && isInCombat() && (pProto->Class == ITEM_CLASS_WEAPON || pProto->InventoryType == INVTYPE_RELIC) && m_weaponChangeTimer == 0)
             {

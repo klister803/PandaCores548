@@ -2668,7 +2668,7 @@ class Player : public Unit, public GridObject<Player>
         void _ApplyOrRemoveItemEquipDependentAuras(uint64 itemGUID = 0, bool apply = true);
         bool CheckItemEquipDependentSpell(SpellInfo const* spellInfo = NULL, uint64 itemGUID = NULL);
 
-        void _ApplyItemMods(Item* item, uint8 slot, bool apply);
+        void _ApplyItemMods(Item* item, uint8 slot, bool apply, bool addItemSpellCooldown = false);
         void _RemoveAllItemMods();
         void _ApplyAllItemMods();
         void _ApplyAllLevelScaleItemMods(bool apply);
@@ -2679,8 +2679,8 @@ class Player : public Unit, public GridObject<Player>
         void CorrectMetaGemEnchants(uint8 slot, bool apply);
         void InitDataForForm(bool reapplyMods = false);
 
-        void ApplyItemEquipSpell(Item* item, bool apply, bool form_change = false);
-        void ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply, bool form_change = false);
+        void ApplyItemEquipSpell(Item* item, bool apply, bool form_change = false, bool addItemSpellCooldown = false);
+        void ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply, bool form_change = false, bool addItemSpellCooldown = false);
         void UpdateEquipSpellsAtFormChange();
         void CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 procVictim, uint32 procEx);
         void CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8 cast_count, uint32 glyphIndex);
