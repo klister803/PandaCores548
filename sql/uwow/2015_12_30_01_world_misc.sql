@@ -28,9 +28,18 @@ INSERT INTO `spell_dummy_trigger` (`spell_id`, `spell_trigger`, `option`, `targe
 (129711, 117914, 4, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'Elegon - Total Annihilation'),
 (119358, 0, 4, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'Elegon - Focus Power');
 
-delete from creature where id = 60776;
+delete from spell_radius where spell_id = 127005;
+INSERT INTO `spell_radius` (`spell_id`, `effectradius0`, `effectradius1`, `effectradius2`, `effectradius3`, `effectradius4`, `comments`) VALUES 
+(127005, 23, 0, 0, 0, 0, '40 yards');
 
-update creature_template set inhabitType = 7 where entry = 62618;
+delete from smart_scripts where entryorguid = 62618;
+INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_type`, `event_phase_mask`, `event_chance`, `event_flags`, `event_param1`, `event_param2`, `event_param3`, `event_param4`, `action_type`, `action_param1`, `action_param2`, `action_param3`, `action_param4`, `action_param5`, `action_param6`, `target_type`, `target_param1`, `target_param2`, `target_param3`, `target_x`, `target_y`, `target_z`, `target_o`, `comment`) VALUES 
+(62618, 0, 0, 0, 0, 0, 100, 0, 0, 0, 0, 0, 38, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'Summon - Start Attack');
+
+delete from creature where id in (60776,61330);
+
+update creature_template set inhabitType = 7, AIName = 'SmartAI' where entry = 62618;
+update creature_template set inhabitType = 7, flags_extra = 128 where entry = 61330;
 update creature_template set inhabitType = 7, ScriptName = 'npc_celestial_protector' where entry = 60793;
 update creature_template set speed_run = 0.3, ScriptName = 'npc_energy_charge', mechanic_immune_mask = 667893759 where entry = 60913;
 update creature_template set inhabitType = 7, ScriptName = 'npc_empyreal_focus' where entry = 60776;

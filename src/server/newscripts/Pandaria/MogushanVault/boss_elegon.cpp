@@ -30,6 +30,7 @@ enum eSpells
     SPELL_ENERGY_TENDROLS           = 127362,
     SPELL_MATERIALIZE_PROTECTOR     = 117954,
     SPELL_BERSERK                   = 47008,
+    SPELL_VORTEX_VISIBILITY         = 127005,
     //Phase 2
     SPELL_DRAW_POWER                = 124967,
     SPELL_FOCUS_POWER               = 119358,
@@ -71,19 +72,20 @@ enum eSpells
 enum eEvents
 {
     //Elegon
-    EVENT_CHECK_DISTANCE         = 1,
-    EVENT_BREATH                 = 2,
-    EVENT_PROTECTOR              = 3,
-    EVENT_ENERGY_CASCADE         = 4,
-    EVENT_DISABLE_PLATFORM       = 5,
-    EVENT_NEXT_PHASE             = 6,
+    EVENT_VORTEX_VISIBILITY      = 1,
+    EVENT_CHECK_DISTANCE         = 2,
+    EVENT_BREATH                 = 3,
+    EVENT_PROTECTOR              = 4,
+    EVENT_ENERGY_CASCADE         = 5,
+    EVENT_DISABLE_PLATFORM       = 6,
+    EVENT_NEXT_PHASE             = 7,
 
     //Buff controller
-    EVENT_CHECK_DIST             = 7,
+    EVENT_CHECK_DIST             = 8,
 
     //Protector
-    EVENT_ARCING_ENERGY          = 8,
-    EVENT_CATASTROPHIC           = 9,
+    EVENT_ARCING_ENERGY          = 9,
+    EVENT_CATASTROPHIC           = 10,
 };
 
 enum ePhase
@@ -164,6 +166,8 @@ class boss_elegon : public CreatureScript
             {
                 _EnterCombat();
                 me->SummonCreature(NPC_INVISIBLE_STALKER, me->GetPositionX(), me->GetPositionY(), 360.0f); //Buff Controller
+                me->SummonCreature(NPC_ENERGY_VORTEX_STALKER, me->GetPositionX(), me->GetPositionY(), 360.0f);
+
                 ChangePhase(PHASE_ONE);
             }
 
@@ -176,6 +180,9 @@ class boss_elegon : public CreatureScript
                     for (uint8 i = 0; i < ChargeWave; i++)
                         summoned->CastSpell(summoned, SPELL_HIGH_ENERGY, true);
                 }
+
+                if (summoned->GetEntry() == NPC_ENERGY_VORTEX_STALKER)
+                    summoned->SetReactState(REACT_PASSIVE);
             }
             void JustDied(Unit* attacker)
             {
@@ -243,6 +250,8 @@ class boss_elegon : public CreatureScript
                         events.ScheduleEvent(EVENT_CHECK_DISTANCE, 5000);
                         events.ScheduleEvent(EVENT_BREATH, 10000);
                         events.ScheduleEvent(EVENT_PROTECTOR, 20000);
+                        if (IsHeroic())
+                            events.ScheduleEvent(EVENT_VORTEX_VISIBILITY, 500);
                         break;
                     case PHASE_TWO:
                         DoCast(SPELL_DRAW_POWER);
@@ -263,6 +272,8 @@ class boss_elegon : public CreatureScript
                         DoCast(me, SPELL_RADIATING_ENERGIES_VISUAL, true);
                         DoCast(SPELL_RADIATING_ENERGIES);
                         events.ScheduleEvent(EVENT_BREATH, 10000);
+                        if (IsHeroic())
+                            events.ScheduleEvent(EVENT_VORTEX_VISIBILITY, 500);
                         break;
                 }
             }
@@ -286,6 +297,11 @@ class boss_elegon : public CreatureScript
 
                 switch (events.ExecuteEvent())
                 {
+                    case EVENT_VORTEX_VISIBILITY:
+                        if (Creature* vortex = me->FindNearestCreature(NPC_ENERGY_VORTEX_STALKER, 15.0f))
+                            vortex->CastSpell(vortex, SPELL_VORTEX_VISIBILITY);
+                        events.ScheduleEvent(EVENT_VORTEX_VISIBILITY, 500);
+                        break;
                     case EVENT_CHECK_DISTANCE:
                         if (me->getVictim())
                             if (!me->IsWithinMeleeRange(me->getVictim()))
@@ -317,6 +333,7 @@ class boss_elegon : public CreatureScript
 
                         instance->HandleGameObject(instance->GetData64(GOB_ENERGY_PLATFORM), false);
                         me->SetReactState(REACT_AGGRESSIVE);
+                        me->RemoveAurasDueToSpell(117204);
                         break;
                     }
                 }
@@ -380,6 +397,23 @@ class npc_buff_controller : public CreatureScript
                                 }
                             }
                         }
+                        std::list<Creature*> creatures;
+                        GetCreatureListWithEntryInGrid(creatures, me, NPC_COSMIC_SPARK, 100.0f);
+                        for (std::list<Creature*>::iterator itr = creatures.begin(); itr != creatures.end(); ++itr)
+                            if (me->GetDistance((*itr)) <= 38.9f)
+                            {
+                                if (!(*itr)->HasAura(SPELL_TOUCH_OF_THE_TITANS))
+                                    (*itr)->CastSpell((*itr), SPELL_TOUCH_OF_THE_TITANS, true);
+
+                                if (!(*itr)->HasAura(SPELL_OVERCHARGED))
+                                    (*itr)->CastSpell((*itr), SPELL_OVERCHARGED, true);
+                            }
+                            else if (me->GetDistance((*itr)) >= 38.9f)
+                            {
+                                (*itr)->RemoveAurasDueToSpell(SPELL_TOUCH_OF_THE_TITANS);
+                                (*itr)->RemoveAurasDueToSpell(SPELL_OVERCHARGED);
+                                (*itr)->RemoveAurasDueToSpell(117878); //Overcharged (trigger aura)
+                            }
                         events.ScheduleEvent(EVENT_CHECK_DIST, 1000);
                     }
             }
