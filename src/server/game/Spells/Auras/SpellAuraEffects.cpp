@@ -7582,7 +7582,8 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
         {
             if (GetId() == 104232)
             {
-                caster->CastSpell(caster, trigger_spell_id, true, NULL, this);
+                if (caster)
+                    caster->CastSpell(caster, trigger_spell_id, true, NULL, this);
                 return;
             }
             break;
