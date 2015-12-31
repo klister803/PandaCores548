@@ -693,6 +693,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         uint32 GetCurrentEquipmentId() { return m_equipmentId; }
         void SetCurrentEquipmentId(uint32 entry) { m_equipmentId = entry; }
         float GetSpellDamageMod(int32 Rank);
+        void CalculateBaseDamage(const CreatureTemplate* cinfo, uint8 level);
 
         VendorItemData const* GetVendorItems() const;
         uint32 GetVendorItemCurrentCount(VendorItem const* vItem);

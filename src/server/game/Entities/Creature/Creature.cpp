@@ -1345,6 +1345,14 @@ void Creature::SelectLevel(const CreatureTemplate* cinfo)
     SetModifierValue(UNIT_MOD_MANA, BASE_VALUE, (float)mana);
 
     //damage
+    CalculateBaseDamage(cinfo, level);
+
+    SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, cinfo->attackpower);
+}
+
+void Creature::CalculateBaseDamage(const CreatureTemplate* cinfo, uint8 level)
+{
+    uint32 rank = isPet() ? 0 : cinfo->rank;
     float damagemod = _GetDamageMod(rank);
     float mindmg = cinfo->mindmg;
     float maxdmg = cinfo->maxdmg;
@@ -1399,8 +1407,6 @@ void Creature::SelectLevel(const CreatureTemplate* cinfo)
         SetFloatValue(UNIT_FIELD_MINRANGEDDAMAGE, minrangedmg);
         SetFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE, maxrangedmg);
     }
-
-    SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, cinfo->attackpower);
 }
 
 float Creature::_GetHealthMod(int32 Rank)

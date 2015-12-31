@@ -915,10 +915,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
     UpdateAllStats();
 
     if(!damageSet)
-    {
-        SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4) + cinfo->mindmg));
-        SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4) + cinfo->maxdmg));
-    }
+        CalculateBaseDamage(cinfo, petlevel);
 
     if (petType == HUNTER_PET)
     {
