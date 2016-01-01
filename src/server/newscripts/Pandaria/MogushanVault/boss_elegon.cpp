@@ -29,8 +29,9 @@ enum eSpells
     SPELL_CELESTIAL_BREATH          = 117960,
     SPELL_ENERGY_TENDROLS           = 127362,
     SPELL_MATERIALIZE_PROTECTOR     = 117954,
-    SPELL_BERSERK                   = 47008,
     SPELL_VORTEX_VISIBILITY         = 127005,
+    SPELL_CATASTROPHIC_ANOMALY      = 127341,
+    SPELL_CATASTROPHIC_ANOMALY_BERS = 132256,
     //Phase 2
     SPELL_DRAW_POWER                = 124967,
     SPELL_FOCUS_POWER               = 119358,
@@ -66,7 +67,6 @@ enum eSpells
     SPELL_ARCING_ENERGY             = 117945,
     SPELL_STABILITY_FLUX            = 117911,
     SPELL_ECLIPSE                   = 117885,
-    SPELL_CATASTROPHIC_ANOMALY      = 127341,
 };
 
 enum eEvents
@@ -79,13 +79,13 @@ enum eEvents
     EVENT_ENERGY_CASCADE         = 5,
     EVENT_DISABLE_PLATFORM       = 6,
     EVENT_NEXT_PHASE             = 7,
+    EVENT_CATASTROPHIC           = 8,
 
     //Buff controller
-    EVENT_CHECK_DIST             = 8,
+    EVENT_CHECK_DIST             = 9,
 
     //Protector
-    EVENT_ARCING_ENERGY          = 9,
-    EVENT_CATASTROPHIC           = 10,
+    EVENT_ARCING_ENERGY          = 10,
 };
 
 enum ePhase
@@ -219,6 +219,9 @@ class boss_elegon : public CreatureScript
                             events.ScheduleEvent(EVENT_NEXT_PHASE, 6000);
                         }
                         break;
+                    case ACTION_3:
+                        events.ScheduleEvent(EVENT_CATASTROPHIC, 1000);
+                        break;
                 }
             }
 
@@ -285,7 +288,8 @@ class boss_elegon : public CreatureScript
 
                 if (BerserkTimer <= diff)
                 {
-                    DoCast(me, SPELL_BERSERK, true);
+                    me->InterruptNonMeleeSpells(false);
+                    DoCast(me, SPELL_CATASTROPHIC_ANOMALY_BERS);
                     BerserkTimer = 9 * MINUTE * IN_MILLISECONDS + 30 * IN_MILLISECONDS;
                 }
                 else BerserkTimer -= diff;
@@ -336,6 +340,9 @@ class boss_elegon : public CreatureScript
                         me->RemoveAurasDueToSpell(117204);
                         break;
                     }
+                    case EVENT_CATASTROPHIC:
+                        DoCast(SPELL_CATASTROPHIC_ANOMALY);
+                        break;
                 }
 
                 DoMeleeAttackIfReady();
@@ -523,9 +530,6 @@ class npc_celestial_protector : public CreatureScript
                         case EVENT_ARCING_ENERGY:
                             DoCast(SPELL_ARCING_ENERGY);
                             events.ScheduleEvent(EVENT_ARCING_ENERGY, 12000);
-                            break;
-                        case EVENT_CATASTROPHIC:
-                            DoCast(SPELL_CATASTROPHIC_ANOMALY);
                             break;
                         default:
                             break;
@@ -847,6 +851,15 @@ public:
         void FilterTarget(std::list<WorldObject*>& targets)
         {
             targets.remove_if(TargetAurasCheck(GetCaster()));
+
+            if (GetSpellInfo()->Id == SPELL_TOTAL_ANNIHILATION_DMG)
+            {
+                uint8 raidMod = GetCaster()->GetMap()->Is25ManRaid() ? 3 : 1;
+                if (targets.size() < raidMod)
+                    if (InstanceScript* pInstance = GetCaster()->GetInstanceScript())
+                        if (Creature* elegon = pInstance->instance->GetCreature(pInstance->GetData64(NPC_ELEGON)))
+                            elegon->AI()->DoAction(ACTION_3);
+            }
         }
 
         void Register()
