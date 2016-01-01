@@ -576,9 +576,13 @@ class npc_energy_charge : public CreatureScript
                 if (damage >= me->GetHealth())
                 {
                     damage = 0;
-                    active = false;
-                    DoCast(SPELL_DISCHARGE);
-                    DoCast(me, SPELL_DISCHARGE_VISUAL, true);
+                    if (active)
+                    {
+                        active = false;
+                        DoCast(SPELL_DISCHARGE);
+                        DoCast(me, SPELL_DISCHARGE_VISUAL, true);
+                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
+                    }
                 }
             }
 
@@ -638,9 +642,9 @@ class npc_empyreal_focus : public CreatureScript
                     targetfocusGUID = 0;
                     me->SetHealth(me->GetMaxHealth());
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
+                    DoCast(me, SPELL_ENERGY_CONDUIT_AT, true);
                     DoCast(me, SPELL_FOCUS_STATE_ACTIVATE, true);
                     DoCast(me, SPELL_LINKED_FOCUS_ACTIVATE, true);
-                    DoCast(me, SPELL_ENERGY_CONDUIT_AT, true);
 
                     std::list<Creature*> creatures;
                     GetCreatureListWithEntryInGrid(creatures, me, NPC_EMPYREAL_FOCUS, 90.0f);
@@ -808,6 +812,56 @@ public:
     }
 };
 
+class TargetAurasCheck
+{
+public:
+    TargetAurasCheck(Unit* caster) : _caster(caster) {}
+    
+    bool operator()(WorldObject* target)
+    {
+        Player* plr = target->ToPlayer();
+        
+        if (!plr)
+            return false;
+
+        if (plr->HasAura(SPELL_VORTEX_VISIBILITY) && !_caster->HasAura(SPELL_VORTEX_VISIBILITY)
+            || !plr->HasAura(SPELL_VORTEX_VISIBILITY) && _caster->HasAura(SPELL_VORTEX_VISIBILITY))
+            return true;
+        
+        return false;
+    }
+private:
+    Unit* _caster;
+};
+
+//117912, 117914, 132222
+class spell_elegon_vortex_filter : public SpellScriptLoader
+{
+public:
+    spell_elegon_vortex_filter() : SpellScriptLoader("spell_elegon_vortex_filter") { }
+
+    class spell_elegon_vortex_filter_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_elegon_vortex_filter_SpellScript);
+
+        void FilterTarget(std::list<WorldObject*>& targets)
+        {
+            targets.remove_if(TargetAurasCheck(GetCaster()));
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_elegon_vortex_filter_SpellScript::FilterTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_elegon_vortex_filter_SpellScript::FilterTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_elegon_vortex_filter_SpellScript();
+    }
+};
+
 void AddSC_boss_elegon()
 {
     new boss_elegon();
@@ -817,4 +871,5 @@ void AddSC_boss_elegon()
     new npc_empyreal_focus();
     new spell_elegon_draw_power();
     new spell_elegon_destabilizing_energies();
+    new spell_elegon_vortex_filter();
 }
