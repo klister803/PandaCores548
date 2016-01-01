@@ -1277,6 +1277,7 @@ SpellEffectInfo const* SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 144664:
     case 149146: //Explose crawler mine
     case 143385: //Electrostatic charge
+    case 143830: //Disentegration laser AT
         return &Effects[effect];
     }
 

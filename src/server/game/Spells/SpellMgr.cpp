@@ -5249,6 +5249,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AuraInterruptFlags = 0;
                     spellInfo->ChannelInterruptFlags = 0;
                     break;
+                case 143830: //Disentegration laser AT
+                    spellInfo->Effects[0].TargetA = 18;
+                    break;
 
                     
                 //World Bosses

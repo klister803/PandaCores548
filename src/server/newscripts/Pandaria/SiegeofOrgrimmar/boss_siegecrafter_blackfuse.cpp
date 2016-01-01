@@ -512,7 +512,6 @@ public:
 
         void EnterCombat(Unit* who)
         {
-            DoCast(me, SPELL_OVERLOAD);
             events.ScheduleEvent(EVENT_OVERLOAD, 6000);
             events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 18000);
         }
