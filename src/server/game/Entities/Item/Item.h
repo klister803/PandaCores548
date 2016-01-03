@@ -357,7 +357,7 @@ class Item : public Object
         void ClearSoulboundTradeable(Player* currentOwner);
         bool CheckSoulboundTradeExpire();
 
-        void BuildUpdate(UpdateDataMapType&);
+        UpdateDataMapType BuildUpdate(UpdateDataMapType);
 
         uint32 GetScriptId() const { return GetTemplate()->ScriptId; }
 

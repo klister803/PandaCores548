@@ -1155,7 +1155,7 @@ void Object::ClearUpdateMask(bool remove)
     }
 }
 
-void Object::BuildFieldsUpdate(Player* player, UpdateDataMapType& data_map) const
+UpdateDataMapType Object::BuildFieldsUpdate(Player* player, UpdateDataMapType data_map) const
 {
     UpdateDataMapType::iterator iter = data_map.find(player);
 
@@ -1167,6 +1167,8 @@ void Object::BuildFieldsUpdate(Player* player, UpdateDataMapType& data_map) cons
     }
 
     BuildValuesUpdateBlockForPlayer(&iter->second, iter->first);
+
+    return data_map;
 }
 
 void Object::_LoadIntoDataField(char const* data, uint32 startOffset, uint32 count)
@@ -3384,10 +3386,11 @@ void WorldObject::GetNearPoint2D(float &x, float &y, float distance2d, float abs
     Trinity::NormalizeMapCoord(y);
 }
 
-void WorldObject::GetNearPoint2D(Position &pos, float distance2d, float absAngle) const
+void WorldObject::GetNearPoint2D(Position &pos, float distance2d, float angle) const
 {
-    float x = GetPositionX() + (GetObjectSize() + distance2d) * std::cos(absAngle);
-    float y = GetPositionY() + (GetObjectSize() + distance2d) * std::sin(absAngle);
+    angle += GetOrientation();
+    float x = GetPositionX() + (GetObjectSize() + distance2d) * std::cos(angle);
+    float y = GetPositionY() + (GetObjectSize() + distance2d) * std::sin(angle);
 
     Trinity::NormalizeMapCoord(x);
     Trinity::NormalizeMapCoord(y);
@@ -3778,7 +3781,7 @@ struct WorldObjectChangeAccumulator
         // Only send update once to a player
         if (plr_list.find(player->GetGUID()) == plr_list.end() && player->HaveAtClient(&i_object))
         {
-            i_object.BuildFieldsUpdate(player, i_updateDatas);
+            i_updateDatas = i_object.BuildFieldsUpdate(player, i_updateDatas);
             plr_list.insert(player->GetGUID());
         }
     }
@@ -3786,7 +3789,7 @@ struct WorldObjectChangeAccumulator
     template<class SKIP> void Visit(GridRefManager<SKIP> &) {}
 };
 
-void WorldObject::BuildUpdate(UpdateDataMapType& data_map)
+UpdateDataMapType WorldObject::BuildUpdate(UpdateDataMapType data_map)
 {
     CellCoord p = Trinity::ComputeCellCoord(GetPositionX(), GetPositionY());
     Cell cell(p);
@@ -3798,6 +3801,7 @@ void WorldObject::BuildUpdate(UpdateDataMapType& data_map)
     cell.Visit(p, player_notifier, map, *this, GetVisibilityRange());
 
     ClearUpdateMask(false);
+    return data_map;
 }
 
 uint64 WorldObject::GetTransGUID() const
