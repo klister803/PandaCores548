@@ -420,6 +420,10 @@ void ThreatManager::doAddThreat(Unit* victim, float threat)
     {
         if(Creature* creature = iOwner->ToCreature())
         {
+            if (creature->IsAIEnabled)
+                if (!creature->AI()->doAddThreat(victim, threat))
+                    return;
+
             if(creature->IsPersonalLoot() && victim->GetTypeId() == TYPEID_PLAYER && !iOwner->GetThreatTarget(victim->GetGUID()))
             {
                 iOwner->AddThreatTarget(victim->GetGUID());
