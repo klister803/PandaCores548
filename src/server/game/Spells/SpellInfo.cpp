@@ -3084,7 +3084,7 @@ bool SpellInfo::_IsPositiveEffect(uint8 effIndex, bool deep) const
     }
 
     // not found a single positive spell with this attribute
-    if (Attributes & SPELL_ATTR0_DEBUFF)
+    if ((Attributes & SPELL_ATTR0_DEBUFF) || (AttributesEx6 & SPELL_ATTR6_HARMFUL_SPELL_EFFECTS))
         return false;
 
     switch (Mechanic)
