@@ -267,6 +267,7 @@ void SendDied(InstanceScript* pInstance, Creature* caller, uint32 callerentry)
                 {
                     imperator->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     imperator->Kill(imperator, true);
+                    imperator->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
                 }
             }
         }

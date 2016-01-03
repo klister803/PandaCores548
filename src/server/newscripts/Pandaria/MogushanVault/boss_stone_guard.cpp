@@ -308,6 +308,7 @@ void DiedManager(InstanceScript* pInstance, Creature* caller, uint32 callerEntry
                 {
                     guardian->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     guardian->Kill(guardian, true);
+                    guardian->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
                 }
             }
         }

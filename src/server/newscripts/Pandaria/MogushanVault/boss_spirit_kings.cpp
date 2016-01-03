@@ -273,7 +273,10 @@ class boss_spirit_kings_controler : public CreatureScript
                             if (Creature* king = me->GetCreature(*me, pInstance->GetData64(spiritkingsvirtual[i])))
                             {
                                 if (king->isAlive())
+                                {
                                     me->Kill(king, true);
+                                    king->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+                                }
                             }
                         }
                         pInstance->SetBossState(DATA_SPIRIT_KINGS, DONE);
