@@ -418,7 +418,9 @@ class AchievementGlobalMgr
 
         void SetRealmCompleted(AchievementEntry const* achievement)
         {
+            m_allCompletedAchievementsLock.acquire();
             m_allCompletedAchievements.insert(achievement->ID);
+            m_allCompletedAchievementsLock.release();
         }
 
         bool IsGroupCriteriaType(AchievementCriteriaTypes type) const
@@ -482,6 +484,7 @@ class AchievementGlobalMgr
 
         typedef std::set<uint32> AllCompletedAchievements;
         AllCompletedAchievements m_allCompletedAchievements;
+        mutable ACE_Thread_Mutex m_allCompletedAchievementsLock;
 
         AchievementRewards m_achievementRewards;
         AchievementRewardLocales m_achievementRewardLocales;

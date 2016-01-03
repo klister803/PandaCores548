@@ -24,6 +24,7 @@
 #include "Common.h"
 #include "DatabaseEnv.h"
 #include "DBCStructure.h"
+#include "LockedMap.h"
 
 class Item;
 class Player;
@@ -150,7 +151,7 @@ class AuctionHouseMgr
 
     public:
 
-        typedef UNORDERED_MAP<uint32, Item*> ItemMap;
+        typedef ACE_Based::LockedMap<uint32, Item*> ItemMap;
 
         AuctionHouseObject* GetAuctionsMap(uint32 factionTemplateId);
         AuctionHouseObject* GetBidsMap(uint32 factionTemplateId);
