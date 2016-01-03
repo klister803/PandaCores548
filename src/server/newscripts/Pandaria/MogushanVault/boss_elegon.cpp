@@ -551,9 +551,9 @@ class npc_energy_charge : public CreatureScript
     public:
         npc_energy_charge() : CreatureScript("npc_energy_charge") {}
 
-        struct npc_energy_chargeAI : public CreatureAI
+        struct npc_energy_chargeAI : public ScriptedAI
         {
-            npc_energy_chargeAI(Creature* creature) : CreatureAI(creature)
+            npc_energy_chargeAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
                 me->SetReactState(REACT_PASSIVE);
@@ -619,9 +619,9 @@ class npc_empyreal_focus : public CreatureScript
     public:
         npc_empyreal_focus() : CreatureScript("npc_empyreal_focus") {}
 
-        struct npc_empyreal_focusAI : public CreatureAI
+        struct npc_empyreal_focusAI : public Scripted_NoMovementAI
         {
-            npc_empyreal_focusAI(Creature* creature) : CreatureAI(creature)
+            npc_empyreal_focusAI(Creature* creature) : Scripted_NoMovementAI(creature)
             {
                 instance = creature->GetInstanceScript();
                 me->SetReactState(REACT_PASSIVE);
