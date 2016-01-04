@@ -360,8 +360,8 @@ class Object
 
         virtual bool hasQuest(uint32 /* quest_id */) const { return false; }
         virtual bool hasInvolvedQuest(uint32 /* quest_id */) const { return false; }
-        virtual UpdateDataMapType BuildUpdate(UpdateDataMapType) { UpdateDataMapType update_players; return update_players; }
-        UpdateDataMapType BuildFieldsUpdate(Player*, UpdateDataMapType) const;
+        virtual void BuildUpdate(UpdateDataMapType&) {}
+        void BuildFieldsUpdate(Player*, UpdateDataMapType &) const;
 
         virtual uint32 GetVignetteId() const { return 0; }
 
@@ -1023,7 +1023,7 @@ class WorldObject : public Object, public WorldLocation
         void DestroyForNearbyPlayers();
         void DestroyVignetteForNearbyPlayers();
         virtual void UpdateObjectVisibility(bool forced = true);
-        UpdateDataMapType BuildUpdate(UpdateDataMapType);
+        void BuildUpdate(UpdateDataMapType&);
 
         bool isActiveObject() const { return m_isActive; }
         void setActive(bool isActiveObject);

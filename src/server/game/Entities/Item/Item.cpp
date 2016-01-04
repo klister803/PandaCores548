@@ -1176,12 +1176,11 @@ bool Item::IsBindedNotWith(Player const* player) const
     return true;
 }
 
-UpdateDataMapType Item::BuildUpdate(UpdateDataMapType data_map)
+void Item::BuildUpdate(UpdateDataMapType& data_map)
 {
     if (Player* owner = GetOwner())
-        data_map = BuildFieldsUpdate(owner, data_map);
+        BuildFieldsUpdate(owner, data_map);
     ClearUpdateMask(false);
-    return data_map;
 }
 
 void Item::SaveRefundDataToDB()

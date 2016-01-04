@@ -1155,7 +1155,7 @@ void Object::ClearUpdateMask(bool remove)
     }
 }
 
-UpdateDataMapType Object::BuildFieldsUpdate(Player* player, UpdateDataMapType data_map) const
+void Object::BuildFieldsUpdate(Player* player, UpdateDataMapType& data_map) const
 {
     UpdateDataMapType::iterator iter = data_map.find(player);
 
@@ -1167,8 +1167,6 @@ UpdateDataMapType Object::BuildFieldsUpdate(Player* player, UpdateDataMapType da
     }
 
     BuildValuesUpdateBlockForPlayer(&iter->second, iter->first);
-
-    return data_map;
 }
 
 void Object::_LoadIntoDataField(char const* data, uint32 startOffset, uint32 count)
@@ -3781,7 +3779,7 @@ struct WorldObjectChangeAccumulator
         // Only send update once to a player
         if (plr_list.find(player->GetGUID()) == plr_list.end() && player->HaveAtClient(&i_object))
         {
-            i_updateDatas = i_object.BuildFieldsUpdate(player, i_updateDatas);
+            i_object.BuildFieldsUpdate(player, i_updateDatas);
             plr_list.insert(player->GetGUID());
         }
     }
@@ -3789,7 +3787,7 @@ struct WorldObjectChangeAccumulator
     template<class SKIP> void Visit(GridRefManager<SKIP> &) {}
 };
 
-UpdateDataMapType WorldObject::BuildUpdate(UpdateDataMapType data_map)
+void WorldObject::BuildUpdate(UpdateDataMapType& data_map)
 {
     CellCoord p = Trinity::ComputeCellCoord(GetPositionX(), GetPositionY());
     Cell cell(p);
@@ -3801,7 +3799,6 @@ UpdateDataMapType WorldObject::BuildUpdate(UpdateDataMapType data_map)
     cell.Visit(p, player_notifier, map, *this, GetVisibilityRange());
 
     ClearUpdateMask(false);
-    return data_map;
 }
 
 uint64 WorldObject::GetTransGUID() const
