@@ -363,17 +363,17 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              if (!UpdateVictim())
                  return;
 
-             if (checkvictim)
+             if (me->getVictim() && checkvictim)
              {
                  if (checkvictim <= diff)
                  {
-                     if (me->getVictim() && me->getVictim()->HasAura(SPELL_ON_CONVEYOR))
+                     if (me->getVictim()->GetPositionZ() >= -294.00f || me->getVictim()->HasAura(SPELL_ON_CONVEYOR))
                      {
                          me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                          EnterEvadeMode();
+                         return;
                      }
-                     else
-                         checkvictim = 1000;
+                     checkvictim = 1000;
                  }
                  else
                      checkvictim -= diff;

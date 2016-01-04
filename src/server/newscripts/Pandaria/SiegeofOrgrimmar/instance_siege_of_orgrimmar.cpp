@@ -1214,11 +1214,14 @@ public:
                 {
                 case NOT_STARTED:
                     weaponsdone = 0;
+                    HandleGameObject(blackfuseentdoorGuid, true);
                     break;
                 case IN_PROGRESS:
                     crawlerminenum = instance->Is25ManRaid() ? 7 : 3;
+                    HandleGameObject(blackfuseentdoorGuid, false);
                     break;
                 case DONE:
+                    HandleGameObject(blackfuseentdoorGuid, true);
                     CheckProgressForKlaxxi();
                     break;
                 }

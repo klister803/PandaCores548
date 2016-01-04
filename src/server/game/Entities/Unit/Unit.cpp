@@ -4518,7 +4518,7 @@ void Unit::RemoveAurasWithMechanic(uint32 mechanic_mask, AuraRemoveMode removemo
     for (AuraApplicationMap::iterator iter = m_appliedAuras.begin(); iter != m_appliedAuras.end();)
     {
         Aura const* aura = iter->second->GetBase();
-        if (!except || aura->GetId() != except)
+        if ((!except || aura->GetId() != except) && aura->GetId() != 143385) //TODO : Boss debuffs dont remove class ability(Berserker rage 18499 warrior)[Electrostatic charge, OO:Blackfuse]
         {
             if (aura->GetSpellInfo()->GetAllEffectsMechanicMask() & mechanic_mask)
             {
