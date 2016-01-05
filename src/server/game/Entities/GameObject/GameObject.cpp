@@ -2265,6 +2265,13 @@ void GameObject::SetLootRecipient(Unit* unit)
 
 bool GameObject::IsLootAllowedFor(Player const* player) const
 {
+    if (GetInstanceId()) // Check player for looting on instance
+    {
+        if (const_cast<GameObject*>(this)->GetSizeSaveThreatLoot() > 0)
+            if (!const_cast<GameObject*>(this)->GetThreatTargetLoot(player->GetGUID()))
+                return false;
+    }
+
     if (!m_lootRecipient && !m_lootRecipientGroup)
         return true;
 

@@ -999,6 +999,15 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         uint32 m_groupLootTimer;                            // (msecs)timer used for group loot
         uint32 lootingGroupLowGUID;                         // used to find group which is looting
 
+        // For prevent looting left user
+        std::list<uint64>* GetSaveThreatListLoot() { return &m_threatlistforloot; }
+        void ClearSaveThreatTargetLoot() { m_threatlistforloot.clear(); }
+        uint32 GetSizeSaveThreatLoot() { return m_threatlistforloot.size(); }
+        void AddThreatTargetLoot(uint64 targetGuid) { m_threatlistforloot.push_back(targetGuid); }
+        void RemoveThreatTargetLoot(uint64 targetGuid) { m_threatlistforloot.remove(targetGuid); }
+        bool GetThreatTargetLoot(uint64 targetGuid);
+        void AddThreatTargetLoot(std::list<uint64>* m_listforloot) { m_threatlistforloot = *m_listforloot; }
+
         bool hasQuest(uint32 quest_id) const;
         bool hasInvolvedQuest(uint32 quest_id) const;
         bool ActivateToQuest(Player* target) const;
@@ -1079,6 +1088,8 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         GameObjectTemplate const* m_goInfo;
         GameObjectData const* m_goData;
         GameObjectValue * const m_goValue;
+
+        std::list<uint64> m_threatlistforloot;
 
         uint64 m_rotation;
 
