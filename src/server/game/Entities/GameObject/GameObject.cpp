@@ -2312,3 +2312,12 @@ bool GameObject::IsPersonalLoot() const
 
     return false;
 }
+
+bool GameObject::GetThreatTargetLoot(uint64 targetGuid)
+{
+    for (std::list<uint64>::const_iterator itr = m_threatlistforloot.begin(); itr != m_threatlistforloot.end(); ++itr)
+        if ((*itr) == targetGuid)
+            return true;
+
+    return false;
+}
