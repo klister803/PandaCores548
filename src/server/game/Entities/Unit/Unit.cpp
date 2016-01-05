@@ -4053,8 +4053,12 @@ void Unit::_RegisterAuraEffect(AuraEffect* aurEff, bool apply)
 {
     if (apply)
         m_modAuras[aurEff->GetAuraType()].emplace_back(aurEff);
-    else if(!m_modAuras[aurEff->GetAuraType()].empty())
+    else
+    {
+        m_auraEffectListLock.acquire();
         m_modAuras[aurEff->GetAuraType()].remove(aurEff);
+        m_auraEffectListLock.release();
+    }
 }
 
 // All aura base removes should go threw this function!
@@ -21177,9 +21181,7 @@ void Unit::Kill(Unit* victim, bool durabilityLoss, SpellInfo const* spellProto)
             }
         }
         else
-        {
             player->SendDirectMessage(&data);
-        }
 
         if (creature)
         {

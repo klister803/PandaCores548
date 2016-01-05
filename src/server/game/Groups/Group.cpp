@@ -2265,18 +2265,29 @@ void Group::ChangeMembersGroup(uint64 guid, uint8 group)
 //      if not, he loses his turn.
 void Group::UpdateLooterGuid(WorldObject* pLootedObject, bool ifneed)
 {
+    uint64 oldLooterGUID = GetLooterGuid();
     switch (GetLootMethod())
     {
-    case MASTER_LOOT:
-    case FREE_FOR_ALL:
-        return;
-    default:
-        // round robin style looting applies for all low
-        // quality items in each loot method except free for all and master loot
-        break;
+        case FREE_FOR_ALL:
+            return;
+        case MASTER_LOOT:
+            if (ObjectAccessor::FindPlayer(oldLooterGUID))
+                return;
+            else
+            {
+                if (ObjectAccessor::FindPlayer(m_leaderGuid))
+                {
+                    SetLooterGuid(m_leaderGuid);
+                    SendUpdate();
+                    return;
+                }
+            }
+        default:
+            // round robin style looting applies for all low
+            // quality items in each loot method except free for all and master loot
+            break;
     }
 
-    uint64 oldLooterGUID = GetLooterGuid();
     member_citerator guid_itr = _getMemberCSlot(oldLooterGUID);
     if (guid_itr != m_memberSlots.end())
     {

@@ -2463,7 +2463,26 @@ bool InstanceMap::AddPlayerToMap(Player* player)
                     }
                     // bind to the group or keep using the group save
                     if (!groupBind)
-                        group->BindToInstance(mapSave, false);
+                    {
+                        Player* leader = ObjectAccessor::FindPlayer(group->GetLeaderGUID());
+                        InstancePlayerBind* leaderBind = NULL;
+
+                        if (leader)
+                            leaderBind = leader->GetBoundInstance(GetId(), Difficulty(GetSpawnMode()));
+
+                        if (leaderBind && leaderBind->perm)
+                        {
+                            WorldPacket data(SMSG_INSTANCE_LOCK_WARNING_QUERY, 10);
+                            data << uint32(i_data ? i_data->GetCompletedEncounterMask() : 0);
+                            data << uint32(60000);
+                            data.WriteBit(0);
+                            data.WriteBit(0); // events it throws:  1 : INSTANCE_LOCK_WARNING   0 : INSTANCE_LOCK_STOP / INSTANCE_LOCK_START
+                            player->GetSession()->SendPacket(&data);
+                            player->SetPendingBind(mapSave->GetInstanceId(), 60000);
+                        }
+                        else
+                            group->BindToInstance(mapSave, false);
+                    }
                     else
                     {
                         // cannot jump to a different instance without resetting it

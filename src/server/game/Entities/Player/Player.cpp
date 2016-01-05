@@ -3605,10 +3605,10 @@ void Player::GiveXP(uint32 xp, Unit* victim, float group_rate)
 
     if (victim && victim->GetTypeId() == TYPEID_UNIT && !victim->ToCreature()->hasLootRecipient())
         return;
-    
+
     if (IsForbiddenMapForLevel(GetMapId(), m_zoneUpdateId))
         xp = 0;
-        
+
     if (IsLoXpMap(GetMapId()))
         xp = uint32(xp / (sWorld->getRate(RATE_XP_QUEST)));
         
@@ -10602,13 +10602,13 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
     {
         Creature* creature = GetMap()->GetCreature(guid);
 
+        // must be in range and creature must be alive for pickpocket and must be dead for another loot
         if (!creature || creature->isAlive() != (loot_type == LOOT_PICKPOCKETING))
         {
             SendLootRelease(guid);
             return;
         }
 
-        // must be in range and creature must be alive for pickpocket and must be dead for another loot
         Unit *looter = creature->GetOtherRecipient();
         if (!looter)
             looter = this;
@@ -10652,9 +10652,13 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
         else
         {
             // the player whose group may loot the corpse
+            Group* group = creature->GetLootRecipientGroup();
             Player* recipient = creature->GetLootRecipient();
-            if (!recipient)
+            if (!recipient && !group)
                 return;
+
+            if (!group)
+                group = recipient->GetGroup();
 
             if (!creature->lootForBody && !creature->IsPersonalLoot())
             {
@@ -10662,7 +10666,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
 
                 // for creature, loot is filled when creature is killed.
 
-                if (Group* group = recipient->GetGroup())
+                if (group)
                 {
                     groupThreshold = group->GetThreshold();
                     switch (group->GetLootMethod())
@@ -10695,12 +10699,12 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
             {
                 if(creature->IsPersonalLoot())
                     permission = OWNER_PERMISSION;
-                else if (Group* group = GetGroup())
+                else if (Group* groupPlr = GetGroup())
                 {
-                    groupThreshold = group->GetThreshold();
-                    if (group == recipient->GetGroup())
+                    groupThreshold = groupPlr->GetThreshold();
+                    if (groupPlr == group)
                     {
-                        switch (group->GetLootMethod())
+                        switch (groupPlr->GetLootMethod())
                         {
                             case MASTER_LOOT:
                                 permission = MASTER_PERMISSION;

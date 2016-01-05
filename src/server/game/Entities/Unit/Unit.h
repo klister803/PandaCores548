@@ -2727,6 +2727,8 @@ class Unit : public WorldObject
 
         // ccd system
         uint32 _delayInterruptFlag;
+
+        mutable ACE_Thread_Mutex m_auraEffectListLock;
 };
 
 class DelayCastEvent : public BasicEvent
