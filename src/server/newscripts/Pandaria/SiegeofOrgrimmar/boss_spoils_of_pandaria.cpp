@@ -364,6 +364,8 @@ public:
                             {
                                 if (!lfl.empty())
                                     chest->AddThreatTargetLoot(&lfl);
+                                else
+                                    me->MonsterTextEmote("lfl empty", 0, true);
                                 chest->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
                             }
                         }
