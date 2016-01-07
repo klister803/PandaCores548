@@ -2271,17 +2271,25 @@ void Group::UpdateLooterGuid(WorldObject* pLootedObject, bool ifneed)
         case FREE_FOR_ALL:
             return;
         case MASTER_LOOT:
-            if (ObjectAccessor::FindPlayer(oldLooterGUID))
-                return;
-            else
-            {
-                if (ObjectAccessor::FindPlayer(m_leaderGuid))
-                {
-                    SetLooterGuid(m_leaderGuid);
-                    SendUpdate();
+        {
+            if (Player* player = ObjectAccessor::FindPlayer(oldLooterGUID))
+                if (player->IsWithinDistInMap(pLootedObject, sWorld->getFloatConfig(CONFIG_GROUP_XP_DISTANCE), false))
                     return;
+
+            if (oldLooterGUID != m_leaderGuid)
+            {
+                if (Player* player = ObjectAccessor::FindPlayer(m_leaderGuid))
+                {
+                    if (player->IsWithinDistInMap(pLootedObject, sWorld->getFloatConfig(CONFIG_GROUP_XP_DISTANCE), false))
+                    {
+                        SetLooterGuid(m_leaderGuid);
+                        SendUpdate();
+                        return;
+                    }
                 }
             }
+            break;
+        }
         default:
             // round robin style looting applies for all low
             // quality items in each loot method except free for all and master loot
