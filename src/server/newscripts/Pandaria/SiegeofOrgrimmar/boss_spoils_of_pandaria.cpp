@@ -273,11 +273,13 @@ public:
             firstlevel = false;
             secondlever = false;
             done = false;
+            lfl.clear();
         }
         
         InstanceScript* instance;
         SummonList _summons;
         EventMap events;
+        std::list<uint64>lfl;
         uint32 lastcount;
         uint32 newcount;
         bool firstlevel, secondlever, done;
@@ -318,6 +320,16 @@ public:
                 }
             }
         }
+
+        void GenerateListForLoot()
+        {
+            std::list<Player*>pllist;
+            pllist.clear();
+            GetPlayerListInGrid(pllist, me, 100.0f);
+            if (!pllist.empty())
+                for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                    lfl.push_back((*itr)->GetGUID());
+        }
         
         void DoAction(int32 const action)
         {
@@ -327,6 +339,7 @@ public:
                 {
                 case ACTION_SSOPS_IN_PROGRESS:
                     ZoneTalk(SAY_START, 0);
+                    GenerateListForLoot();
                     events.ScheduleEvent(EVENT_START_2, 9000);
                     break;
                 case ACTION_SSOPS_SECOND_ROOM:
@@ -346,9 +359,15 @@ public:
                         DespawnAllAT();
                         OfflineWorldState();
                         if (!me->GetMap()->IsLfr())
+                        {
                             if (GameObject* chest = me->SummonGameObject(GO_NSOP_SPOILS, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 604800))
+                            {
+                                if (!lfl.empty())
+                                    chest->AddThreatTargetLoot(&lfl);
                                 chest->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
-
+                            }
+                        }
+                        lfl.clear();
                         me->GeneratePersonalLoot(me, NULL); // bonus loot
                         events.ScheduleEvent(EVENT_OUTRO, 4000);
                     }
@@ -398,6 +417,7 @@ public:
                 done = false;
                 lastcount = 270;
                 newcount = 0;
+                lfl.clear();
             }
         }
         
@@ -441,6 +461,7 @@ public:
                         done = false;
                         lastcount = 270;
                         newcount = 0;
+                        lfl.clear();
                         instance->SetBossState(DATA_SPOILS_OF_PANDARIA, NOT_STARTED);
                     }
                     else

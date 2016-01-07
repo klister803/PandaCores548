@@ -2217,6 +2217,7 @@ class Unit : public WorldObject
         std::list<uint64>* GetSaveThreatListLoot() { return &m_threatlistforloot; }
         void ClearSaveThreatTargetLoot() { m_threatlistforloot.clear(); }
         uint32 GetSizeSaveThreatLoot() { return m_threatlistforloot.size(); }
+        bool IsSaveThreatListEmpty() { return m_threatlistforloot.size() >= 1 ? false : true; }
         void AddThreatTargetLoot(uint64 targetGuid) { m_threatlistforloot.push_back(targetGuid); }
         void RemoveThreatTargetLoot(uint64 targetGuid) { m_threatlistforloot.remove(targetGuid); }
         bool GetThreatTargetLoot(uint64 targetGuid);

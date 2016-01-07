@@ -508,8 +508,12 @@ class boss_immerseus : public CreatureScript
                 {
                     _JustDied();
                     me->setFaction(35);
-                    if(!me->GetMap()->IsLfr())
-                        me->SummonGameObject(221776, 1441.22f, 821.749f, 246.836f, 4.727f, 0.0f, 0.0f, 0.701922f, -0.712254f, 604800);
+                    if (!me->GetMap()->IsLfr())
+                    {
+                        if (GameObject* chest = me->SummonGameObject(221776, 1441.22f, 821.749f, 246.836f, 4.727f, 0.0f, 0.0f, 0.701922f, -0.712254f, 604800))
+                            if (!me->IsSaveThreatListEmpty())
+                                chest->AddThreatTargetLoot(me->GetSaveThreatListLoot());
+                    }
                     Map::PlayerList const& players = me->GetMap()->GetPlayers();
                     if (!players.isEmpty())
                     {
