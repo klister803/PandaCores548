@@ -127,7 +127,7 @@ class npc_woi_controller : public CreatureScript
 
         struct npc_woi_controllerAI : public BossAI
         {
-            npc_woi_controllerAI(Creature* creature) : BossAI(creature, DATA_WILL_OF_EMPEROR)
+            npc_woi_controllerAI(Creature* creature) : BossAI(creature, DATA_WILL_OF_EMPEROR), summons(me)
             {
                 pInstance = creature->GetInstanceScript();
                 me->SetDisplayId(11686);
@@ -135,6 +135,7 @@ class npc_woi_controller : public CreatureScript
             }
 
             InstanceScript* pInstance;
+            SummonList summons;
             uint8 raidMode;
             uint32 addentry[3]; //Array for summons entry
 
@@ -143,6 +144,7 @@ class npc_woi_controller : public CreatureScript
                 if (pInstance)
                 {
                     _Reset();
+                    summons.DespawnAll();
                     me->RemoveAurasDueToSpell(SPELL_TITAN_GAS);
                     RemovePursuitAuraOnPlayers();
                     for (uint8 n = 0; n < 3 ; n++)
@@ -212,6 +214,9 @@ class npc_woi_controller : public CreatureScript
                             me->RemoveAurasDueToSpell(SPELL_TITAN_GAS);
                             RemovePursuitAuraOnPlayers();
                             pInstance->SetBossState(DATA_WILL_OF_EMPEROR, DONE);
+                            summons.DespawnEntry(NPC_RAGE);
+                            summons.DespawnEntry(NPC_FORCE);
+                            summons.DespawnEntry(NPC_COURAGE);
                             me->Kill(me);
                         }
                         break;
@@ -279,7 +284,10 @@ class npc_woi_controller : public CreatureScript
                         break;
                     case EVENT_TITAN_GAS:
                         DoCast(me, SPELL_TITAN_GAS, true);
-                        events.ScheduleEvent(EVENT_TITAN_GAS, 120000);
+                        if (!IsHeroic())
+                            events.ScheduleEvent(EVENT_TITAN_GAS, 120000);
+                        else
+                            events.ScheduleEvent(EVENT_TITAN_GAS, 30000);
                         break;
                     }
                 }
