@@ -32,6 +32,14 @@
 
 #define CHALLENGE_START 5
 
+uint32 SatedSpell[4] =
+{
+    80354, //Mage
+    57724, //Shaman and Druid(Horde)
+    57723, //Shaman and Druid(Aliance)
+    95809, //Hunter
+};
+
 enum events
 {
     EVENT_START_CHALLENGE = 1,
@@ -247,6 +255,18 @@ bool InstanceScript::SetBossState(uint32 id, EncounterState state)
             ResurectCount = 0;
             bossInfo->state = state;
             SaveToDB();
+            switch (state)
+            {
+            case NOT_STARTED:
+                RemoveSatedAuraFromPlayers();
+                break;
+            case DONE:
+                RemoveSatedAuraFromPlayers();
+                RemoveCombatFromPlayers();
+                break;
+            default:
+                break;
+            }
         }
 
         for (uint32 type = 0; type < MAX_DOOR_TYPES; ++type)
@@ -557,6 +577,32 @@ bool InstanceScript::IsWipe()
     }
 
     return true;
+}
+
+void InstanceScript::RemoveCombatFromPlayers()
+{
+    Map::PlayerList const &PlayerList = instance->GetPlayers();
+    if (!PlayerList.isEmpty())
+        for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+            if (Player* player = Itr->getSource())
+                if (player->isAlive() && player->isInCombat())
+                    player->CombatStop(false);
+}
+
+void InstanceScript::RemoveSatedAuraFromPlayers()
+{
+    for (uint8 n = 0; n < 4; n++)
+        DoRemoveAurasDueToSpellOnPlayers(SatedSpell[n]);
+}
+
+void InstanceScript::RemoveSelfResFieldFromPlayers()
+{
+    Map::PlayerList const &PlayerList = instance->GetPlayers();
+    if (!PlayerList.isEmpty())
+        for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+            if (Player* player = Itr->getSource())
+                if (!player->isAlive() && player->GetUInt32Value(PLAYER_SELF_RES_SPELL))
+                    player->SetUInt32Value(PLAYER_SELF_RES_SPELL, 0);
 }
 
 //void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* /*source*/)

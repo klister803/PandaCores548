@@ -227,15 +227,17 @@ class InstanceScript : public ZoneScript
         void SetResurectSpell()
         {
             ResurectCount++;
+            if (!GetResurectSpell())
+                RemoveSelfResFieldFromPlayers();
         }
 
         bool GetResurectSpell()
         {
-            if(instance->IsNonRaidDungeon())
+            if (instance->IsNonRaidDungeon())
                 return true;
-            if(instance->Is25ManRaid() && ResurectCount < 3)
+            if (instance->Is25ManRaid() && ResurectCount < 3)
                 return true;
-            if(ResurectCount < 1)
+            if (ResurectCount < 1)
                 return true;
 
             return false;
@@ -245,6 +247,10 @@ class InstanceScript : public ZoneScript
 
         // Check if all players are dead (except gamemasters)
         virtual bool IsWipe();
+
+        void RemoveCombatFromPlayers();
+        void RemoveSatedAuraFromPlayers();
+        void RemoveSelfResFieldFromPlayers();
 
         virtual void FillInitialWorldStates(WorldPacket& /*data*/) {}
 

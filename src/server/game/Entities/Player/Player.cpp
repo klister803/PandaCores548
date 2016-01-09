@@ -2201,7 +2201,18 @@ void Player::setDeathState(DeathState s)
 
     // restore resurrection spell id for player after aura remove
     if (s == JUST_DIED && cur && ressSpellId)
-        SetUInt32Value(PLAYER_SELF_RES_SPELL, ressSpellId);
+    {
+        if (InstanceScript* instance = GetInstanceScript())
+        {
+            if (instance->GetResurectSpell())
+            {
+                SetUInt32Value(PLAYER_SELF_RES_SPELL, ressSpellId);
+                instance->SetResurectSpell();
+            }
+        }
+        else
+            SetUInt32Value(PLAYER_SELF_RES_SPELL, ressSpellId);
+    }
 
     if (isAlive() && !cur)
         //clear aura case after resurrection by another way (spells will be applied before next death)
