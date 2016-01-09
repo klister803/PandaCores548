@@ -427,11 +427,11 @@ class boss_generic_imperator : public CreatureScript
                             if (me->GetPower(POWER_MANA) > 0)
                             {
                                 uint8 now = urand(0, listStrike.size() - 1);
-                                if (Unit* pTarget = SelectTarget(SELECT_TARGET_TOPAGGRO))
-                                {
-                                    DoCast(pTarget, spellList[listStrike[now]]);
-                                    me->SetFacingToObject(pTarget);
-                                }
+                                //if (Unit* pTarget = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                                //{
+                                    DoCast(spellList[listStrike[now]]);
+                                //    me->SetFacingToObject(pTarget);
+                                //}
                                 listStrike.erase(listStrike.begin() + now);
  
                                 if (listStrike.empty())

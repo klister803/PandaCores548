@@ -8,8 +8,8 @@ INSERT INTO `spell_dbc` (`Id`, `runeCostID`, `SpellScalingId`, `SpellAuraOptions
 
 delete from spell_target_filter where spellId in (116819,117194,116829);
 INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `option`, `param1`, `param2`, `param3`, `aura`, `chance`, `effectMask`, `resizeType`, `count`, `maxcount`, `addcount`, `addcaster`, `comments`) VALUES 
-(116819, 15, 2, -1, 15, 0, 0, 0, 1, 0, 0, 0, 0, 0, 'Eperor - Magnetic Pull'),
-(117194, 15, 2, -1, 15, 0, 0, 0, 1, 0, 0, 0, 0, 0, 'Eperor - Magnetic Pull'),
+(116819, 15, 2, -1, 17, 0, 0, 0, 1, 0, 0, 0, 0, 0, 'Eperor - Magnetic Pull'),
+(117194, 15, 2, -1, 17, 0, 0, 0, 1, 0, 0, 0, 0, 0, 'Eperor - Magnetic Pull'),
 (116829, 15, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0, 'Emperor - Focused Energy');
 
 delete from conditions where SourceTypeOrReferenceId = 13 and SourceEntry in (116805,127758);

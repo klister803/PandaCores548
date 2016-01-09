@@ -646,6 +646,7 @@ class npc_empyreal_focus : public CreatureScript
                     targetfocusGUID = 0;
                     me->SetHealth(me->GetMaxHealth());
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
+                    me->SetOrientation(me->GetHomePosition().GetOrientation());
                     DoCast(me, SPELL_ENERGY_CONDUIT_AT, true);
                     DoCast(me, SPELL_FOCUS_STATE_ACTIVATE, true);
                     DoCast(me, SPELL_LINKED_FOCUS_ACTIVATE, true);
