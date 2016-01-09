@@ -18,31 +18,45 @@
 
 #include "NewScriptPCH.h"
 #include "mogu_shan_vault.h"
+#include "MoveSplineInit.h"
 
 enum eSpells
 {
     // Jan Xi && Qin Xi
-    SPELL_STOMP                 = 116969,
-    SPELL_DEVASTATING_ARC       = 117006,
-    SPELL_MAGNETIC_ARMOR        = 116815,
+    SPELL_ZERO_REGEN                = 118357,
+    SPELL_ENERGIZE_REGEN            = 118365,
+    SPELL_MAGNETIC_ARMOR_Q          = 116815,
+    SPELL_MAGNETIC_ARMOR_J          = 117193,
+
+    SPELL_ARC_RIGHT                 = 116971, // Удар по дуге справа 117005
+    SPELL_DEVASTATING_ARC_RIGHT     = 117005,
+    SPELL_ARC_LEFT                  = 116968, // Удар по дуге слева 117003
+    SPELL_DEVASTATING_ARC_LEFT      = 117003,
+    SPELL_ARC_CENTER                = 116972, // Удар по дуге перед собой
+    SPELL_DEVASTATING_ARC_FRONT     = 117006,
+    SPELL_STOMP                     = 116969,
+    SPELL_GROWING_OPPORTUNITY       = 117854, // Ожидание нужного момента
+
     // Woi controller
-    SPELL_TITAN_GAS             = 116779,
+    SPELL_TITAN_GAS                 = 116779,
     // On players if evade death attack from boss
-    SPELL_OPPORTUNISTIC_STRIKE  = 116808,
+    SPELL_OPPORTUNISTIC_STRIKE      = 116808,
     // Rage
-    SPELL_FOCALISED_ASSAULT     = 116525,
-    SPELL_WITHOUT_ARMOR         = 116535,
+    SPELL_FOCALISED_ASSAULT         = 116525,
+    SPELL_WITHOUT_ARMOR             = 116535,
     // Courage
-    SPELL_FOCALISED_DEFENSE     = 116778,
-    SPELL_IMPEDING_THRUST       = 117485,
-    SPELL_HALF_PLATE            = 116537,
+    SPELL_FOCALISED_DEFENSE         = 116778,
+    SPELL_PHALANX_WALL              = 116549,
+    SPELL_IMPEDING_THRUST           = 117485,
+    SPELL_HALF_PLATE                = 116537,
     // Force
-    SPELL_ENERGIZING_SMASH      = 116550,
-    SPELL_FULL_PLATE            = 116540,
+    SPELL_ENERGIZING_SMASH          = 116550,
+    SPELL_FULL_PLATE                = 116540,
     // Titan Spark
-    SPELL_SUMMON_TITAN_SPARK    = 117746,
-    SPELL_FOCALISED_ENERGY      = 116829,
-    SPELL_ENERGY_OF_CREATION    = 116805
+    SPELL_ENERGY_VISUAL             = 116673,
+    SPELL_SUMMON_TITAN_SPARK        = 117746,
+    SPELL_FOCALISED_ENERGY          = 116829,
+    SPELL_ENERGY_OF_CREATION        = 117734
 };
 
 enum eEvents
@@ -69,7 +83,7 @@ enum eEvents
 enum esAction
 {
     // Jan Xi && Qin Xi
-    ACTION_DEATH_ATTACK         = 1,
+    ACTION_HIT_DEATH_ATTACK     = 1,
     // Woi controller
     ACTION_DONE                 = 2,
 };
@@ -77,7 +91,13 @@ enum esAction
 Position const janxipos  = {3829.48f, 1523.41f, 362.26f, 0.6683f};
 Position const qinxipos  = {3828.49f, 1576.28f, 362.26f, 5.9148f};
 
-Position const ragepos = {3821.39f, 1550.37f, 362.26f, 0.0471f};
+Position const ragepos[4] =
+{
+    {3819.99f, 1538.02f, 362.31f, 0.19f},
+    {3821.39f, 1550.37f, 362.26f, 0.04f},
+    {3814.87f, 1563.53f, 368.72f, 6.07f},
+    {3827.08f, 1577.66f, 362.30f, 5.79f},
+};
 
 Position const couragepos[2] =
 {
@@ -97,6 +117,9 @@ uint32 imperators[2] =
     NPC_JAN_XI,  
 };
 
+uint32 spellList[4] = {SPELL_ARC_RIGHT, SPELL_ARC_LEFT, SPELL_ARC_CENTER, SPELL_STOMP};
+
+//90787
 class npc_woi_controller : public CreatureScript
 {
     public:
@@ -108,10 +131,11 @@ class npc_woi_controller : public CreatureScript
             {
                 pInstance = creature->GetInstanceScript();
                 me->SetDisplayId(11686);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_STUNNED);
             }
 
             InstanceScript* pInstance;
+            uint8 raidMode;
             uint32 addentry[3]; //Array for summons entry
 
             void Reset()
@@ -174,23 +198,25 @@ class npc_woi_controller : public CreatureScript
                 events.ScheduleEvent(addentry[1],            30000);
                 events.ScheduleEvent(addentry[2],            60000);
                 events.ScheduleEvent(EVENT_SPAWN_IMPERATOR,  90000);
+                if (IsHeroic())
+                    events.ScheduleEvent(EVENT_TITAN_GAS, 1000);
             }
 
             void DoAction(const int32 action)
             {
                 switch (action)
                 {
-                case ACTION_DONE:
-                    if (pInstance)
-                    {
-                        me->RemoveAurasDueToSpell(SPELL_TITAN_GAS);
-                        RemovePursuitAuraOnPlayers();
-                        pInstance->SetBossState(DATA_WILL_OF_EMPEROR, DONE);
-                        me->DespawnOrUnsummon(1000);
-                    }
-                    break;
-                default:
-                    break;
+                    case ACTION_DONE:
+                        if (pInstance)
+                        {
+                            me->RemoveAurasDueToSpell(SPELL_TITAN_GAS);
+                            RemovePursuitAuraOnPlayers();
+                            pInstance->SetBossState(DATA_WILL_OF_EMPEROR, DONE);
+                            me->Kill(me);
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
 
@@ -208,13 +234,23 @@ class npc_woi_controller : public CreatureScript
                         events.ScheduleEvent(EVENT_CHECK_WIPE, 1500);
                         break;
                     case EVENT_SPAWN_RAGE:
-                        me->SummonCreature(NPC_RAGE, ragepos, TEMPSUMMON_CORPSE_DESPAWN);
+                        raidMode = Is25ManRaid() ? 4 : 2;
+                        for (uint8 i = 0; i < raidMode; i++)
+                            me->SummonCreature(NPC_RAGE, ragepos[i], TEMPSUMMON_CORPSE_DESPAWN);
                         break;
                     case EVENT_SPAWN_FORCE:
-                        me->SummonCreature(NPC_FORCE, forcepos[rand()%2], TEMPSUMMON_CORPSE_DESPAWN);
+                        if (Is25ManRaid())
+                            for (uint8 i = 0; i < 2; i++)
+                                me->SummonCreature(NPC_FORCE, forcepos[i], TEMPSUMMON_CORPSE_DESPAWN);
+                        else
+                            me->SummonCreature(NPC_COURAGE, couragepos[rand()%2], TEMPSUMMON_CORPSE_DESPAWN);
                         break;
                     case EVENT_SPAWN_COURAGE:
-                        me->SummonCreature(NPC_COURAGE, couragepos[rand()%2], TEMPSUMMON_CORPSE_DESPAWN);
+                        if (Is25ManRaid())
+                            for (uint8 i = 0; i < 2; i++)
+                                me->SummonCreature(NPC_COURAGE, couragepos[i], TEMPSUMMON_CORPSE_DESPAWN);
+                        else
+                            me->SummonCreature(NPC_COURAGE, couragepos[rand()%2], TEMPSUMMON_CORPSE_DESPAWN);
                         break;
                     case EVENT_SPAWN_RANDOM_ADD:
                         {
@@ -238,10 +274,11 @@ class npc_woi_controller : public CreatureScript
                         me->SummonCreature(NPC_QIN_XI, qinxipos);
                         me->SummonCreature(NPC_JAN_XI, janxipos);
                         events.ScheduleEvent(EVENT_SPAWN_RANDOM_ADD, 500);
-                        events.ScheduleEvent(EVENT_TITAN_GAS,     120000);
+                        if (!IsHeroic())
+                            events.ScheduleEvent(EVENT_TITAN_GAS, 120000);
                         break;
                     case EVENT_TITAN_GAS:
-                        me->AddAura(SPELL_TITAN_GAS, me);
+                        DoCast(me, SPELL_TITAN_GAS, true);
                         events.ScheduleEvent(EVENT_TITAN_GAS, 120000);
                         break;
                     }
@@ -291,6 +328,7 @@ void SendDamage(InstanceScript* pInstance, Creature* caller, uint32 callerentry,
     }
 }
 
+//60399, 60400
 class boss_generic_imperator : public CreatureScript
 {
     public:
@@ -305,56 +343,29 @@ class boss_generic_imperator : public CreatureScript
 
             InstanceScript* pInstance;
             EventMap events;
-            uint32 attackspell[2];
+            bool deathAttack;
+            bool checkHitAttack;
+            uint16 powerTimer;
+            std::vector<int> list;
+            std::vector<int> listStrike;
 
             void Reset()
             {
+                deathAttack = false;
                 me->LowerPlayerDamageReq(me->GetMaxHealth());
-                me->setPowerType(POWER_ENERGY);
-                me->SetPower(POWER_ENERGY, 0);
+                me->RemoveAurasDueToSpell(SPELL_ENERGIZE_REGEN);
+                DoCast(me, SPELL_ZERO_REGEN, true);
                 DoZoneInCombat(me, 150.0f);
+                powerTimer = 500;
+                list = { 0, 1, 2, 3 };
+                listStrike = { 0, 1, 2, 3 };
             }
 
-            void RegeneratePower(Powers power, float &value)
+            void EnterCombat(Unit* /*who*/)
             {
-                if (!me->isInCombat())
-                {
-                    value = 0;
-                    return;
-                }
+                DoCast(me, SPELL_ENERGIZE_REGEN, true);
 
-                if (me->GetPower(POWER_ENERGY) == 98)
-                    DoAction(ACTION_DEATH_ATTACK);
-                value = 2;
-            }
-
-            void DoAction(const int32 action)
-            {
-                switch (action)
-                {
-                case ACTION_DEATH_ATTACK:
-                    for (uint8 n = 0; n < 2; n++)
-                        attackspell[n] = 0;
-
-                    me->SetReactState(REACT_PASSIVE);
-                    me->AttackStop();
-
-                    uint8 pos = urand(0, 1);
-                    switch (pos)
-                    {
-                    case 0:
-                        attackspell[0] = SPELL_STOMP;
-                        attackspell[1] = SPELL_DEVASTATING_ARC;
-                        break;
-                    case 1:
-                        attackspell[0] = SPELL_DEVASTATING_ARC;
-                        attackspell[1] = SPELL_STOMP;
-                        break;
-                    }
-                    DoCast(me, attackspell[0]);
-                    events.ScheduleEvent(EVENT_DEATH_ATTACKS_START, 3500); 
-                    break;
-                }
+                events.ScheduleEvent(EVENT_1, 10000);
             }
 
             void DamageTaken(Unit* attacker, uint32 &damage)
@@ -364,32 +375,88 @@ class boss_generic_imperator : public CreatureScript
                 else
                     SendDamage(pInstance, me, me->GetEntry(), damage);
             }
-            
+
+            void DoAction(const int32 action)
+            {
+                if (action == ACTION_HIT_DEATH_ATTACK)
+                    checkHitAttack = false;
+            }
+
             void UpdateAI(uint32 diff)
             {
-                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                if (!UpdateVictim())
                     return;
 
                 events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                if (powerTimer <= diff)
+                {
+                    powerTimer = 500;
+                    if (me->isInCombat())
+                    {
+                        if (me->GetPower(POWER_MANA) == 20 && !deathAttack)
+                        {
+                            deathAttack = true;
+                            checkHitAttack = true;
+                            me->RemoveAurasDueToSpell(SPELL_ENERGIZE_REGEN);
+                            events.ScheduleEvent(EVENT_DEATH_ATTACKS_START, 1000);
+                        }
+                    }
+                }
+                else
+                    powerTimer -= diff;
 
                 while (uint32 eventId = events.ExecuteEvent())
                 {
                     switch (eventId)
                     {
-                    case EVENT_DEATH_ATTACKS_START:
-                        DoCast(me, attackspell[1]);
-                        events.ScheduleEvent(EVENT_DEATH_ATTACKS_END, 3500);
-                        break;
-                    case EVENT_DEATH_ATTACKS_END:
-                        me->SetReactState(REACT_AGGRESSIVE);
-                        DoZoneInCombat(me, 150.0f);
-                        if (me->getVictim())
-                            me->GetMotionMaster()->MoveChase(me->getVictim());
-                        me->SetPower(POWER_ENERGY, 0);
-                        break;
+                        case EVENT_1:
+                        {
+                            if (me->GetEntry() == NPC_QIN_XI)
+                                DoCast(me, SPELL_MAGNETIC_ARMOR_Q, true);
+                            if (me->GetEntry() == NPC_JAN_XI)
+                                DoCast(me, SPELL_MAGNETIC_ARMOR_J, true);
+                            events.ScheduleEvent(EVENT_1, 10000);
+                            break;
+                        }
+                        case EVENT_DEATH_ATTACKS_START:
+                        {
+                            if (me->GetPower(POWER_MANA) > 0)
+                            {
+                                uint8 now = urand(0, listStrike.size() - 1);
+                                if (Unit* pTarget = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                                {
+                                    DoCast(pTarget, spellList[listStrike[now]]);
+                                    me->SetFacingToObject(pTarget);
+                                }
+                                listStrike.erase(listStrike.begin() + now);
+ 
+                                if (listStrike.empty())
+                                    listStrike = list;
+                            }
+                            else
+                            {
+                                deathAttack = false;
+                                DoCast(me, SPELL_ENERGIZE_REGEN, true);
+                                if (checkHitAttack)
+                                {
+                                    checkHitAttack = false;
+                                    if (Unit* pTarget = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                                        pTarget->CastSpell(pTarget, SPELL_OPPORTUNISTIC_STRIKE, true);
+                                }
+                            }
+ 
+                            if (deathAttack)
+                                events.ScheduleEvent(EVENT_DEATH_ATTACKS_START, 3000);
+                            break;
+                        }
                     }
                 }
-                DoMeleeAttackIfReady();
+                if (!deathAttack)
+                    DoMeleeAttackIfReady();
             }
         };
 
@@ -427,7 +494,7 @@ class mob_woi_add_generic : public CreatureScript
                         focusspell = SPELL_FOCALISED_ASSAULT;
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
                         {
-                            target->AddAura(focusspell, target);
+                            DoCast(target, focusspell, true);
                             targetguid = target->GetGUID();
                             AttackStart(target);
                             me->getThreatManager().addThreat(target, 1000000.0f);
@@ -440,7 +507,7 @@ class mob_woi_add_generic : public CreatureScript
                         {
                             if (Unit* tank = randomBoss->getVictim())
                             {
-                                tank->AddAura(focusspell, tank);
+                                DoCast(tank, focusspell, true);
                                 targetguid = tank->GetGUID();
                                 AttackStart(tank);
                                 me->getThreatManager().addThreat(tank, 1000000.0f);
@@ -453,12 +520,13 @@ class mob_woi_add_generic : public CreatureScript
                             AttackStart(target);
                             me->getThreatManager().addThreat(target, 1000000.0f);                           
                         }
-                        me->AddAura(SPELL_HALF_PLATE, me);
+                        DoCast(me, SPELL_HALF_PLATE, true);
+                        DoCast(me, SPELL_PHALANX_WALL, true);
                         events.ScheduleEvent(EVENT_IMPEDING_THRUST, 5000);
                         break;
                     case NPC_FORCE:
-                        me->AddAura(SPELL_FULL_PLATE, me);
-                        events.ScheduleEvent(EVENT_ENERGIZING_SMASH, urand(5000, 7000));
+                        DoCast(me, SPELL_FULL_PLATE, true);
+                        events.ScheduleEvent(EVENT_ENERGIZING_SMASH, 6000);
                         break;
                 }
                 events.ScheduleEvent(EVENT_CHECK_TARGET, 1500);
@@ -483,12 +551,21 @@ class mob_woi_add_generic : public CreatureScript
                 }
             }
 
+            void JustDied(Unit* /*killer*/)
+            {
+                if (me->GetMap()->IsHeroic())
+                    DoCast(me, SPELL_SUMMON_TITAN_SPARK, true);
+            }
+
             void UpdateAI(uint32 diff)
             {
-                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                if (!UpdateVictim())
                     return;
 
                 events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
 
                 while (uint32 eventId = events.ExecuteEvent())
                 {
@@ -553,9 +630,8 @@ class mob_woi_add_generic : public CreatureScript
                             break;
                         case EVENT_ENERGIZING_SMASH: // Strenght
                             DoCast(me, SPELL_ENERGIZING_SMASH);
-                            events.ScheduleEvent(EVENT_ENERGIZING_SMASH, urand(5000, 7000));
+                            events.ScheduleEvent(EVENT_ENERGIZING_SMASH, 6000);
                             break;
-                        
                     }
                 }
                 if (me->GetEntry() != NPC_FORCE)
@@ -569,9 +645,237 @@ class mob_woi_add_generic : public CreatureScript
         }
 };
 
+//67221, 60575
+class npc_emperor_terracotta_boss : public CreatureScript
+{
+    public:
+        npc_emperor_terracotta_boss() : CreatureScript("npc_emperor_terracotta_boss") {}
+
+        struct npc_emperor_terracotta_bossAI : public ScriptedAI
+        {
+            npc_emperor_terracotta_bossAI(Creature* creature) : ScriptedAI(creature)
+            {
+                pInstance = creature->GetInstanceScript();
+                me->SetReactState(REACT_PASSIVE);
+            }
+
+            InstanceScript* pInstance;
+
+            void Reset() {}
+
+            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+            {
+                damage = 0;
+            }
+
+            void SpellHit(Unit* caster, const SpellInfo* spell)
+            {
+                switch (spell->Id)
+                {
+                    case SPELL_ARC_RIGHT:
+                        me->SetFacingTo(caster->GetOrientation() - 1.7f);
+                        me->CastSpell(me, SPELL_DEVASTATING_ARC_RIGHT, TriggerCastFlags(TRIGGERED_IGNORE_CASTER_MOUNTED_OR_ON_VEHICLE));
+                        break;
+                    case SPELL_ARC_LEFT:
+                        me->SetFacingTo(caster->GetOrientation() + 1.7f);
+                        me->CastSpell(me, SPELL_DEVASTATING_ARC_LEFT, TriggerCastFlags(TRIGGERED_IGNORE_CASTER_MOUNTED_OR_ON_VEHICLE));
+                        break;
+                    case SPELL_ARC_CENTER:
+                        me->CastSpell(me, SPELL_DEVASTATING_ARC_FRONT, TriggerCastFlags(TRIGGERED_IGNORE_CASTER_MOUNTED_OR_ON_VEHICLE));
+                        break;
+                }
+            }
+
+            void SpellHitTarget(Unit* target, const SpellInfo* spell)
+            {
+                switch (spell->Id)
+                {
+                    case SPELL_DEVASTATING_ARC_RIGHT:
+                    case SPELL_DEVASTATING_ARC_LEFT:
+                    case SPELL_DEVASTATING_ARC_FRONT:
+                        if (Unit* summoner = me->ToTempSummon()->GetSummoner())
+                            if (Creature* emperor = summoner->ToCreature())
+                                if (Unit* tank = emperor->AI()->SelectTarget(SELECT_TARGET_TOPAGGRO))
+                                    if (target == tank)
+                                        emperor->AI()->DoAction(ACTION_HIT_DEATH_ATTACK);
+                        break;
+                }
+            }
+
+            void UpdateAI(uint32 diff) {}
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_emperor_terracotta_bossAI(creature);
+        }
+};
+
+//60480
+class npc_emperor_titan_spark : public CreatureScript
+{
+    public:
+        npc_emperor_titan_spark() : CreatureScript("npc_emperor_titan_spark") {}
+
+        struct npc_emperor_titan_sparkAI : public ScriptedAI
+        {
+            npc_emperor_titan_sparkAI(Creature* creature) : ScriptedAI(creature)
+            {
+                pInstance = creature->GetInstanceScript();
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISTRACT, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+            }
+
+            InstanceScript* pInstance;
+            EventMap events;
+            bool active;
+            bool explosion;
+
+            void Reset() {}
+            
+            void IsSummonedBy(Unit* summoner)
+            {
+                active = false;
+                explosion = false;
+                DoCast(me, SPELL_ENERGY_VISUAL, true);
+                events.ScheduleEvent(EVENT_1, 3000); //Active
+            }
+
+            void SpellHitTarget(Unit* target, const SpellInfo* spell)
+            {
+                if (spell->Id == SPELL_FOCALISED_ENERGY)
+                {
+                    DoZoneInCombat(me, 100.0f);
+                    me->AddThreat(target, 100000.0f);
+                }
+                if (spell->Id == 117766)
+                    events.ScheduleEvent(EVENT_2, 1000); //Despawn
+            }
+
+            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+            {
+                if (damage >= me->GetHealth())
+                {
+                    damage = 0;
+
+                    if (!explosion)
+                    {
+                        explosion = true;
+                        DoStopAttack();
+                        me->StopMoving();
+                        DoCast(117766); //Explosion
+                        events.ScheduleEvent(EVENT_2, 1000); //Despawn
+                    }
+                }
+            }
+
+            void UpdateAI(uint32 diff) 
+            {
+                if (!UpdateVictim() && active)
+                    return;
+
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_1:
+                            active = true;
+                            DoCast(me, SPELL_FOCALISED_ENERGY, true);
+                            DoCast(me, SPELL_ENERGY_OF_CREATION, true);
+                            break;
+                        case EVENT_2:
+                            me->DespawnOrUnsummon();
+                            break;
+                    }
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_emperor_titan_sparkAI(creature);
+        }
+};
+
+class ExactDistanceCheck
+{
+    public:
+        ExactDistanceCheck(Unit* source, float dist) : _source(source), _dist(dist) { }
+
+        bool operator()(WorldObject* unit)
+        {
+            return _source->GetExactDist2d(unit) > _dist;
+        }
+
+    private:
+        Unit* _source;
+        float _dist;
+};
+
+//116550
+class spell_eperor_energizing_smash : public SpellScriptLoader
+{
+    public:
+        spell_eperor_energizing_smash() : SpellScriptLoader("spell_eperor_energizing_smash") { }
+
+        class spell_eperor_energizing_smash_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_eperor_energizing_smash_SpellScript);
+
+            uint8 stacks;
+
+            bool Load()
+            {
+                stacks = 0;
+                return true;
+            }
+
+            void ResizeEffectRadiusTargetChecker(std::list<WorldObject*>& targets)
+            {
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                Aura* aura = caster->GetAura(113314);
+                if (!aura)
+                    stacks = 0;
+                else
+                    stacks = aura->GetStackAmount();
+
+                targets.remove_if(ExactDistanceCheck(caster, 10.0f + stacks));
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_eperor_energizing_smash_SpellScript::ResizeEffectRadiusTargetChecker, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_eperor_energizing_smash_SpellScript::ResizeEffectRadiusTargetChecker, EFFECT_1, TARGET_UNIT_SRC_AREA_ENEMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_eperor_energizing_smash_SpellScript();
+        }
+};
+
 void AddSC_boss_will_of_emperor()
 {
     new npc_woi_controller();
     new boss_generic_imperator();
     new mob_woi_add_generic();
+    new npc_emperor_terracotta_boss();
+    new npc_emperor_titan_spark();
+    new spell_eperor_energizing_smash();
 }

@@ -4667,11 +4667,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 118327: //Titan Gase (trigger spell)
                     spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(41); //150yards
                     break;
-                case 116550: //Emergizing Smash
-                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(13); //10yards
-                    spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(13); //10yards
-                    spellInfo->Effects[EFFECT_2].RadiusEntry = sSpellRadiusStore.LookupEntry(13); //10yards
-                    break;
                 case 116161:
                     spellInfo->Effects[EFFECT_1].MiscValue = 2; // Set Phase to 2
                     spellInfo->Effects[EFFECT_3].Effect    = 0; // No need to summon
@@ -5702,6 +5697,13 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 117954: // Materialize Protector
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
+                    break;
+                case 113314: // Energizing Smash
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_CASTER;
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21); // -1s
+                    spellInfo->StackAmount = 99;
                     break;
                 default:
                     break;
