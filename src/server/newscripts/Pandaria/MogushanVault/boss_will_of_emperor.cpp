@@ -164,6 +164,11 @@ class npc_woi_controller : public CreatureScript
                 PushAddArray();
             }
 
+            void JustSummoned(Creature* summoned)
+            {
+                summons.Summon(summoned);
+            }
+
             void PushAddArray()
             {
                 uint8 pos = urand(0, 3);
