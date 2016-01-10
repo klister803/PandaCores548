@@ -24527,7 +24527,7 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
     ItemPosCountVec vDest;
     uint16 uiDest = 0;
     uint32 uicount = 0;
-    bool isTransDonate = pVendor->GetEntry() == 220024 || pVendor->GetEntry() == 220022 || (pVendor->GetEntry() >= 200200 && pVendor->GetEntry() <= 200203);
+    bool isTransDonate = pVendor->GetEntry() == 220024 || pVendor->GetEntry() == 220022 || (pVendor->GetEntry() >= 200200 && pVendor->GetEntry() <= 200205);
 
     InventoryResult msg = bStore ?
         CanStoreNewItem(bag, slot, vDest, item, count) :
