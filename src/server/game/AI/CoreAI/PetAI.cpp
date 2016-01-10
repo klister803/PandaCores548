@@ -123,13 +123,11 @@ void PetAI::UpdateAI(uint32 diff)
     else
         m_updateAlliesTimer -= diff;
 
+    CharmInfo* charmInfo = me->GetCharmInfo();
+
     // me->getVictim() can't be used for check in case stop fighting, me->getVictim() clear at Unit death etc.
-    if(owner && owner->IsMounted())
-    {
-        if(!me->HasUnitState(UNIT_STATE_FOLLOW))
-            me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetFollowAngle());
-    }
-    else if (me->getVictim())
+
+    if (me->getVictim() && (!charmInfo || !charmInfo->IsFollowing()))
     {
         // is only necessary to stop casting, the pet must not exit combat
         if (me->getVictim()->HasCrowdControlAura(me))
@@ -159,7 +157,7 @@ void PetAI::UpdateAI(uint32 diff)
         if(!me->GetCasterPet())
             DoMeleeAttackIfReady();
     }
-    else if (owner && me->GetCharmInfo()) //no victim
+    else if (owner && charmInfo) //no victim
     {
         //sLog->outDebug(LOG_FILTER_PETS, "PetAI::UpdateAI [guid=%u] no victim GetCasterPet %i", me->GetGUIDLow(), me->GetCasterPet());
         // Only aggressive pets do target search every update.
@@ -176,7 +174,7 @@ void PetAI::UpdateAI(uint32 diff)
             else
                 HandleReturnMovement();
         }
-        else if (owner->isInCombat() && me->HasReactState(REACT_HELPER))
+        else if (owner->isInCombat() && me->HasReactState(REACT_HELPER) && !charmInfo->IsFollowing())
         {
             if (Unit* target = ObjectAccessor::GetUnit(*me, owner->GetLastCastTargetGUID()))
                 AttackStart(target);
@@ -189,7 +187,7 @@ void PetAI::UpdateAI(uint32 diff)
     else if (owner && !me->HasUnitState(UNIT_STATE_FOLLOW)) // no charm info and no victim
         me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetFollowAngle());
 
-    if (!me->GetCharmInfo() || me->m_Stampeded)
+    if (!charmInfo || me->m_Stampeded)
         return;
 
     // Autocast (casted only in combat or persistent spells in any state)
@@ -212,7 +210,7 @@ void PetAI::UpdateAI(uint32 diff)
             //sLog->outDebug(LOG_FILTER_PETS, "PetAI::UpdateAI spellID %i, Cooldown %i IsPositive %i CanBeUsedInCombat %i GUID %u",
             //spellID, me->HasSpellCooldown(spellID), spellInfo->IsPositive(), spellInfo->CanBeUsedInCombat(), me->GetGUIDLow());
 
-            if (me->GetCharmInfo() && me->GetCharmInfo()->GetGlobalCooldownMgr().HasGlobalCooldown(spellInfo))
+            if (charmInfo && charmInfo->GetGlobalCooldownMgr().HasGlobalCooldown(spellInfo))
                 continue;
 
             if (spellInfo->IsPositive())
@@ -224,7 +222,7 @@ void PetAI::UpdateAI(uint32 diff)
                         continue;
 
                     // Check if we're in combat or commanded to attack
-                    if (!me->isInCombat() && !me->GetCharmInfo()->IsCommandAttack())
+                    if (!me->isInCombat() && !charmInfo->IsCommandAttack())
                         continue;
                 }
 
@@ -427,6 +425,9 @@ void PetAI::OwnerAttacked(Unit* target)
     if (me->getVictim() && me->getVictim()->isAlive())
         return;
 
+    if (me->GetCharmInfo() && me->GetCharmInfo()->IsFollowing())
+        return;
+
     // Continue to evaluate and attack if necessary
     AttackStart(target);
 }
@@ -580,7 +581,6 @@ void PetAI::MovementInform(uint32 moveType, uint32 data)
             {
                 me->GetCharmInfo()->SetIsAtStay(true);
                 me->GetCharmInfo()->SetIsReturning(false);
-                me->GetCharmInfo()->SetIsFollowing(false);
                 me->GetCharmInfo()->SetIsCommandAttack(false);
                 me->GetMotionMaster()->Clear();
                 me->GetMotionMaster()->MoveIdle();
@@ -604,7 +604,6 @@ void PetAI::MovementInform(uint32 moveType, uint32 data)
             {
                 me->GetCharmInfo()->SetIsAtStay(false);
                 me->GetCharmInfo()->SetIsReturning(false);
-                me->GetCharmInfo()->SetIsFollowing(false);
                 me->GetCharmInfo()->SetIsCommandAttack(false);
                 //me->GetMotionMaster()->Clear();
             }

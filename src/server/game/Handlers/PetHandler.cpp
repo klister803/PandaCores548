@@ -220,7 +220,7 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid
                     charmInfo->SetIsCommandAttack(false);
                     charmInfo->SetIsAtStay(false);
                     charmInfo->SetIsReturning(true);
-                    charmInfo->SetIsFollowing(false);
+                    charmInfo->SetIsFollowing(true);
                     charmInfo->SetMoveToNextPoint(true);
                     break;
                 case COMMAND_ATTACK:                        //spellid=1792  //ATTACK
@@ -326,14 +326,26 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid
                 case REACT_PASSIVE:                         //passive
                     pet->AttackStop();
                     //pet->GetMotionMaster()->Clear();
-                    pet->GetMotionMaster()->MoveFollow(_player, PET_FOLLOW_DIST, pet->GetFollowAngle());
+                    charmInfo->SetMoveToNextPoint(true);
                     charmInfo->SetIsReturning(true);
+                    charmInfo->SetIsFollowing(true);
                 case REACT_DEFENSIVE:                       //recovery
-                case REACT_HELPER:
                 case REACT_AGGRESSIVE:
+                {
                     if (pet->GetTypeId() == TYPEID_UNIT)
                         pet->ToCreature()->SetReactState(ReactStates(spellid));
                     break;
+                }
+                case REACT_HELPER:
+                {
+                    if (pet->GetTypeId() == TYPEID_UNIT)
+                        pet->ToCreature()->SetReactState(ReactStates(spellid));
+
+                    charmInfo->SetIsReturning(false);
+                    charmInfo->SetIsFollowing(false);
+                    charmInfo->SetIsAtStay(false);
+                    charmInfo->SetIsCommandAttack(false);
+                }
                 default:
                     break;
             }

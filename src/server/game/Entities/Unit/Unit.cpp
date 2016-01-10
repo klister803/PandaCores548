@@ -11358,8 +11358,18 @@ void Unit::CombatStop(bool includingCast)
 
     AttackStop();
     RemoveAllAttackers();
-    if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->SendAttackSwingResult(ATTACK_SWING_ERROR_DEAD_TARGET);     // melee and ranged forced attack cancel
+
+    if (Player* plr = ToPlayer())
+    {
+        plr->SendAttackSwingResult(ATTACK_SWING_ERROR_DEAD_TARGET);     // melee and ranged forced attack cancel
+
+        if (Pet* pet = plr->GetPet())
+            if (CharmInfo* charmInfo = pet->GetCharmInfo())
+            {
+                charmInfo->SetIsFollowing(false);
+                charmInfo->SetIsCommandAttack(false);
+            }
+    }
     ClearInCombat();
 }
 
