@@ -784,6 +784,9 @@ enum MovementFlags
     //! TODO if needed: add more flags to this masks that are exclusive to players
     MOVEMENTFLAG_MASK_PLAYER_ONLY =
         MOVEMENTFLAG_FLYING,
+
+    MOVEMENTFLAG_MASK_DISLOCATION =
+    MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_BACKWARD | MOVEMENTFLAG_STRAFE_LEFT | MOVEMENTFLAG_STRAFE_RIGHT | MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR,
 };
 enum MovementFlags2
 {
@@ -1267,6 +1270,10 @@ struct CharmInfo
         bool IsReturning();
         void SaveStayPosition();
         void GetStayPosition(float &x, float &y, float &z);
+        void GetHomePosition(float &x, float &y, float &z, float &o) { x = m_homeX; y = m_homeY; z = m_homeZ; o = m_homeOrientation; }
+        void SetHomePosition(float x, float y, float z, float o) { m_homeX = x; m_homeY = y; m_homeZ = z; m_homeOrientation = o; m_canMoveToNextPoint = true; }
+        void SetMoveToNextPoint(bool val) { m_canMoveToNextPoint = val; }
+        bool IsCanMoveToNextPoint() { return m_canMoveToNextPoint; }
 
     private:
 
@@ -1287,6 +1294,11 @@ struct CharmInfo
         float m_stayX;
         float m_stayY;
         float m_stayZ;
+        float m_homeX;
+        float m_homeY;
+        float m_homeZ;
+        float m_homeOrientation;
+        bool m_canMoveToNextPoint;
 
         GlobalCooldownMgr m_GlobalCooldownMgr;
 };

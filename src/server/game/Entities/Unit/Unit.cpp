@@ -14744,14 +14744,7 @@ void Unit::ClearInCombat()
         if (CreatureAI* ai = creature->AI())
             ai->OutOfCombat();
 
-        if (creature->isPet())
-        {
-            if (Unit* owner = GetOwner())
-                for (uint8 i = 0; i < MAX_MOVE_TYPE; ++i)
-                    if (owner->GetSpeedRate(UnitMoveType(i)) > GetSpeedRate(UnitMoveType(i)))
-                        SetSpeed(UnitMoveType(i), owner->GetSpeedRate(UnitMoveType(i)), true);
-        }
-        else if (!isCharmed())
+        if (!isCharmed() && !creature->isPet())
             return;
     }
     else
@@ -15514,22 +15507,22 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
             // Set creature speed rate
             if (GetTypeId() == TYPEID_UNIT)
             {
-                if (Unit* owner = GetAnyOwner()) // Must check for owner
-                {
-                    if (HasUnitState(UNIT_STATE_FOLLOW) && !isInCombat())
-                    {
-                        // Sync speed with owner when near or slower
-                        float owner_speed = owner->GetSpeedRate(mtype);
-                        if (speed < owner_speed)
-                            speed = owner_speed;
-
-                        // Decrease speed when near to help prevent stop-and-go movement
-                        // and increase speed when away to help prevent falling behind
-                        speed *= std::max(0.6f + (GetDistance(owner) / 10.0f), 1.1f);
-                    }
-                }
-                else
-                    speed *= ToCreature()->GetCreatureTemplate()->speed_run;    // at this point, MOVE_WALK is never reached
+//                 if (Unit* owner = GetAnyOwner()) // Must check for owner
+//                 {
+//                     if (HasUnitState(UNIT_STATE_FOLLOW) && !isInCombat())
+//                     {
+//                         // Sync speed with owner when near or slower
+//                         float owner_speed = owner->GetSpeedRate(mtype);
+//                         if (speed < owner_speed)
+//                             speed = owner_speed;
+// 
+//                         // Decrease speed when near to help prevent stop-and-go movement
+//                         // and increase speed when away to help prevent falling behind
+//                         speed *= std::max(0.6f + (GetDistance(owner) / 10.0f), 1.1f);
+//                     }
+//                 }
+//                 else
+                speed *= ToCreature()->GetCreatureTemplate()->speed_run;    // at this point, MOVE_WALK is never reached
             }
             // Normalize speed by 191 aura SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED if need
             // TODO: possible affect only on MOVE_RUN
@@ -15715,10 +15708,6 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
             // register forced speed changes for WorldSession::HandleForceSpeedChangeAck
             // and do it only for real sent packets and use run for run/mounted as client expected
             ++ToPlayer()->m_forced_speed_changes[mtype];
-
-            if (!isInCombat())
-                if (Pet* pet = ToPlayer()->GetPet())
-                    pet->SetSpeed(mtype, m_speed_rate[mtype], forced);
         }
 
         switch (mtype)
@@ -17339,9 +17328,10 @@ void Unit::DeleteCharmInfo()
 }
 
 CharmInfo::CharmInfo(Unit* unit)
-: m_unit(unit), m_CommandState(COMMAND_FOLLOW), m_petnumber(0), m_barInit(false),
-  m_isCommandAttack(false), m_isAtStay(false), m_isFollowing(false), m_isReturning(false),
-  m_stayX(0.0f), m_stayY(0.0f), m_stayZ(0.0f)
+    : m_unit(unit), m_CommandState(COMMAND_FOLLOW), m_petnumber(0), m_barInit(false),
+    m_isCommandAttack(false), m_isAtStay(false), m_isFollowing(false), m_isReturning(false),
+    m_stayX(0.0f), m_stayY(0.0f), m_stayZ(0.0f), m_homeX(0.0f), m_homeY(0.0f), m_homeZ(0.0f),
+    m_homeOrientation(0.0f), m_canMoveToNextPoint(true)
 {
     for (uint8 i = 0; i < MAX_SPELL_CHARM; ++i)
         m_charmspells[i].SetActionAndType(0, ACT_DISABLED);

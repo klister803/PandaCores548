@@ -758,6 +758,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_focusRegenTimerCount = 0;
     m_weaponChangeTimer = 0;
     m_statsUpdateTimer = 0;
+    m_petHomePositionTimer = 0;
     m_needToUpdateRunesRegen = false;
     m_needToUpdateSpellHastDurationRecovery = false;
     m_needUpdateCastHastMods = false;
@@ -765,6 +766,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_needUpdateRangeHastMod = false;
     m_needUpdateHastMod = false;
     m_duelLock = false;
+    m_needToUpdatePetHomePosition = true;
 
     m_zoneUpdateId = 0;
     m_zoneUpdateTimer = 0;
@@ -2150,9 +2152,88 @@ void Player::Update(uint32 p_time)
 
     UpdateSpellCharges(p_time);
 
-    Pet* pet = GetPet();
-    if (pet && (HasUnitMovementFlag(MOVEMENTFLAG_FLYING) || !pet->IsWithinDistInMap(this, GetMap()->GetVisibilityRange())) && !pet->isPossessed())
-        UnsummonPetTemporaryIfAny();
+    if (Pet* pet = GetPet())
+    {
+        if ((HasUnitMovementFlag(MOVEMENTFLAG_FLYING) || !pet->IsWithinDistInMap(this, GetMap()->GetVisibilityRange())) && !pet->isPossessed())
+            UnsummonPetTemporaryIfAny();
+
+        m_petHomePositionTimer += p_time;
+
+        if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_DISLOCATION) || m_needToUpdatePetHomePosition)
+        {
+            if (!m_needToUpdatePetHomePosition)
+            {
+                m_petHomePositionTimer = 0;
+                m_needToUpdatePetHomePosition = true;
+            }
+
+            if (m_petHomePositionTimer >= 500)
+                if (CharmInfo* charmInfo = pet->GetCharmInfo())
+                {
+                    float x, y, z;
+                    m_needToUpdatePetHomePosition = m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_DISLOCATION);
+
+                    GetNearPoint(pet, x, y, z, CONTACT_DISTANCE, PET_FOLLOW_DIST, GetOrientation() + pet->GetFollowAngle());
+
+                    float speed = 0.0f;
+                    float orien = 0.0f;
+
+                    if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FORWARD))
+                    {
+                        speed = 4.0f * GetSpeedRate(MOVE_RUN);
+                        orien = GetOrientation();
+
+                        if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_LEFT))
+                        {
+                            speed = sqrt(speed*speed + speed*speed);
+                            orien = orien + M_PI / 4.0f;
+                        }
+                        else if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_RIGHT))
+                        {
+                            speed = sqrt(speed*speed + speed*speed);
+                            orien = orien - M_PI / 4.0f;
+                        }
+                    }
+                    else if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_BACKWARD))
+                    {
+                        speed = 1.0f;
+                        orien = GetOrientation() - M_PI;
+
+                        if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_LEFT))
+                        {
+                            speed = sqrt(speed*speed + speed*speed);
+                            orien = orien - M_PI / 4.0f;
+                        }
+                        else if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_RIGHT))
+                        {
+                            speed = sqrt(speed*speed + speed*speed);
+                            orien = orien + M_PI / 4.0f;
+                        }
+                    }
+                    else if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_LEFT))
+                    {
+                        speed = 4.0f * GetSpeedRate(MOVE_RUN);
+                        orien = GetOrientation() + M_PI / 2.0f;
+                    }
+                    else if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_RIGHT))
+                    {
+                        speed = 4.0f * GetSpeedRate(MOVE_RUN);
+                        orien = GetOrientation() - M_PI / 2.0f;
+                    }
+
+                    x = x + speed * std::cos(orien);
+                    y = y + speed * std::sin(orien);
+
+                    z += 5.0f;
+                    Trinity::NormalizeMapCoord(x);
+                    Trinity::NormalizeMapCoord(y);
+                    UpdateAllowedPositionZ(x, y, z);
+
+                    charmInfo->SetHomePosition(x, y, z, GetOrientation());
+                    m_petHomePositionTimer = 0;
+                }
+        }
+    }
 
     //we should execute delayed teleports only for alive(!) players
     //because we don't want player's ghost teleported from graveyard
