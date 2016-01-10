@@ -127,7 +127,11 @@ void PetAI::UpdateAI(uint32 diff)
 
     // me->getVictim() can't be used for check in case stop fighting, me->getVictim() clear at Unit death etc.
 
-    if (me->getVictim() && (!charmInfo || !charmInfo->IsFollowing()))
+    if (owner && owner->IsMounted())
+    {
+        HandleReturnMovement();
+    }
+    else if (me->getVictim() && (!charmInfo || !charmInfo->IsFollowing()))
     {
         // is only necessary to stop casting, the pet must not exit combat
         if (me->getVictim()->HasCrowdControlAura(me))
@@ -403,6 +407,10 @@ void PetAI::OwnerDamagedBy(Unit* attacker)
     // Prevent pet from disengaging from current target
     if (me->getVictim() && me->getVictim()->isAlive())
         return;
+
+    if (Unit* owner = me->GetOwner())
+        if (owner->IsMounted())
+            return;
 
     // Continue to evaluate and attack if necessary
     AttackStart(attacker);

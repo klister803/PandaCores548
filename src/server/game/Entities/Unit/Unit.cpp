@@ -15517,22 +15517,26 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
             // Set creature speed rate
             if (GetTypeId() == TYPEID_UNIT)
             {
-//                 if (Unit* owner = GetAnyOwner()) // Must check for owner
-//                 {
-//                     if (HasUnitState(UNIT_STATE_FOLLOW) && !isInCombat())
-//                     {
-//                         // Sync speed with owner when near or slower
-//                         float owner_speed = owner->GetSpeedRate(mtype);
-//                         if (speed < owner_speed)
-//                             speed = owner_speed;
-// 
-//                         // Decrease speed when near to help prevent stop-and-go movement
-//                         // and increase speed when away to help prevent falling behind
-//                         speed *= std::max(0.6f + (GetDistance(owner) / 10.0f), 1.1f);
-//                     }
-//                 }
-//                 else
-                speed *= ToCreature()->GetCreatureTemplate()->speed_run;    // at this point, MOVE_WALK is never reached
+                if (isPet())
+                {
+                    speed *= ToCreature()->GetCreatureTemplate()->speed_run;
+                }
+                else if (Unit* owner = GetAnyOwner()) // Must check for owner
+                {
+                    if (HasUnitState(UNIT_STATE_FOLLOW) && !isInCombat())
+                    {
+                        // Sync speed with owner when near or slower
+                        float owner_speed = owner->GetSpeedRate(mtype);
+                        if (speed < owner_speed)
+                            speed = owner_speed;
+
+                        // Decrease speed when near to help prevent stop-and-go movement
+                        // and increase speed when away to help prevent falling behind
+                        speed *= std::max(0.6f + (GetDistance(owner) / 10.0f), 1.1f);
+                    }
+                }
+                else
+                    speed *= ToCreature()->GetCreatureTemplate()->speed_run;    // at this point, MOVE_WALK is never reached
             }
             // Normalize speed by 191 aura SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED if need
             // TODO: possible affect only on MOVE_RUN
