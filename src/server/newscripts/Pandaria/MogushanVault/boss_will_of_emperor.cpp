@@ -686,11 +686,11 @@ class npc_emperor_terracotta_boss : public CreatureScript
                 switch (spell->Id)
                 {
                     case SPELL_ARC_RIGHT:
-                        me->SetFacingTo(caster->GetOrientation() - 1.7f);
+                        me->SetFacingTo(caster->GetOrientation() - 1.5f);
                         me->CastSpell(me, SPELL_DEVASTATING_ARC_RIGHT, TriggerCastFlags(TRIGGERED_IGNORE_CASTER_MOUNTED_OR_ON_VEHICLE));
                         break;
                     case SPELL_ARC_LEFT:
-                        me->SetFacingTo(caster->GetOrientation() + 1.7f);
+                        me->SetFacingTo(caster->GetOrientation() + 1.5f);
                         me->CastSpell(me, SPELL_DEVASTATING_ARC_LEFT, TriggerCastFlags(TRIGGERED_IGNORE_CASTER_MOUNTED_OR_ON_VEHICLE));
                         break;
                     case SPELL_ARC_CENTER:
