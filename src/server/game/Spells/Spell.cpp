@@ -1156,8 +1156,15 @@ void Spell::SelectImplicitConeTargets(SpellEffIndex effIndex, SpellImplicitTarge
     ConditionList* condList = m_spellInfo->Effects[effIndex].ImplicitTargetConditions;
     float coneAngle = M_PI/2;
 
-    if (m_spellInfo->GetEffect(effIndex, m_diffMode)->TargetA.GetTarget() == TARGET_UNIT_CONE_ENEMY_110)
-        coneAngle = M_PI/6;
+    switch (m_spellInfo->GetEffect(effIndex, m_diffMode)->TargetA.GetTarget())
+    {
+        case TARGET_UNIT_CONE_ENEMY_54:
+            coneAngle = M_PI;
+            break;
+        case TARGET_UNIT_CONE_ENEMY_110:
+            coneAngle = M_PI/6;
+            break;
+    }
 
     switch (m_spellInfo->Id)
     {
