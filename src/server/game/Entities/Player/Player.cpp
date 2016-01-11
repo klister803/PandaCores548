@@ -2180,19 +2180,13 @@ void Player::Update(uint32 p_time)
 
                     if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FORWARD))
                     {
-                        speed = 4.0f * GetSpeedRate(MOVE_RUN);
+                        speed = (3.0f + GetSpeedRate(MOVE_RUN)) * GetSpeedRate(MOVE_RUN);
                         orien = GetOrientation();
 
                         if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_LEFT))
-                        {
-                            speed = sqrt(speed*speed + speed*speed);
                             orien = orien + M_PI / 4.0f;
-                        }
                         else if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_RIGHT))
-                        {
-                            speed = sqrt(speed*speed + speed*speed);
                             orien = orien - M_PI / 4.0f;
-                        }
                     }
                     else if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_BACKWARD))
                     {
@@ -2200,24 +2194,18 @@ void Player::Update(uint32 p_time)
                         orien = GetOrientation() - M_PI;
 
                         if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_LEFT))
-                        {
-                            speed = sqrt(speed*speed + speed*speed);
                             orien = orien - M_PI / 4.0f;
-                        }
                         else if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_RIGHT))
-                        {
-                            speed = sqrt(speed*speed + speed*speed);
                             orien = orien + M_PI / 4.0f;
-                        }
                     }
                     else if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_LEFT))
                     {
-                        speed = 4.0f * GetSpeedRate(MOVE_RUN);
+                        speed = (3.0f + GetSpeedRate(MOVE_RUN)) * GetSpeedRate(MOVE_RUN);
                         orien = GetOrientation() + M_PI / 2.0f;
                     }
                     else if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_RIGHT))
                     {
-                        speed = 4.0f * GetSpeedRate(MOVE_RUN);
+                        speed = (3.0f + GetSpeedRate(MOVE_RUN)) * GetSpeedRate(MOVE_RUN);
                         orien = GetOrientation() - M_PI / 2.0f;
                     }
 
