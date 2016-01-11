@@ -18563,17 +18563,21 @@ void Unit::SendPetAIReaction(uint64 guid)
 
 ///----------End of Pet responses methods----------
 
-void Unit::StopMoving()
+void Unit::StopMoving(bool clearUnitState, bool updateSPos, bool mSplineStop)
 {
-    ClearUnitState(UNIT_STATE_MOVING);
+    if (clearUnitState)
+        ClearUnitState(UNIT_STATE_MOVING);
 
     // not need send any packets if not in world or not moving
     if (!IsInWorld() || movespline->Finalized())
         return;
 
     // Update position using old spline
-    UpdateSplinePosition(true);
-    Movement::MoveSplineInit(*this).Stop();
+    if (updateSPos)
+        UpdateSplinePosition(true);
+
+    if (mSplineStop)
+        Movement::MoveSplineInit(*this).Stop();
 }
 
 void Unit::SendMovementFlagUpdate(bool self /* = false */)
