@@ -3397,7 +3397,9 @@ void WorldObject::GetNearPoint2D(Position &pos, float distance2d, float angle) c
     pos.m_positionY = y;
     pos.m_positionZ = GetPositionZ();
 
-    float ground = GetMap()->GetHeight(GetPhaseMask(), x, y, MAX_HEIGHT, true);
+    float ground = pos.m_positionZ;
+
+    UpdateAllowedPositionZ(x, y, ground);
 
     if (fabs(pos.m_positionZ - ground) < 6)
         pos.m_positionZ = ground;
