@@ -11368,16 +11368,8 @@ void Unit::CombatStop(bool includingCast)
     RemoveAllAttackers();
 
     if (Player* plr = ToPlayer())
-    {
         plr->SendAttackSwingResult(ATTACK_SWING_ERROR_DEAD_TARGET);     // melee and ranged forced attack cancel
 
-        if (Pet* pet = plr->GetPet())
-            if (CharmInfo* charmInfo = pet->GetCharmInfo())
-            {
-                charmInfo->SetIsFollowing(false);
-                charmInfo->SetIsCommandAttack(false);
-            }
-    }
     ClearInCombat();
 }
 
@@ -14765,8 +14757,17 @@ void Unit::ClearInCombat()
         if (!isCharmed() && !creature->isPet())
             return;
     }
-    else
-        ToPlayer()->UpdatePotionCooldown();
+    else if (Player* plr = ToPlayer())
+    {
+        plr->UpdatePotionCooldown();
+
+        if (Pet* pet = plr->GetPet())
+            if (CharmInfo* charmInfo = pet->GetCharmInfo())
+            {
+                charmInfo->SetIsFollowing(false);
+                charmInfo->SetIsCommandAttack(false);
+            }
+    }
 
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
 }
