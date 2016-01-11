@@ -513,12 +513,12 @@ void PetAI::HandleReturnMovement()
                 me->GetCharmInfo()->SetMoveToNextPoint(true);
             }
 
-            if (!owner->IsWithinLOS(x, y, z))
-            {
-                x = owner->GetPositionX();
-                y = owner->GetPositionY();
-                z = owner->GetPositionZ();
-            }
+//             if (!owner->IsWithinLOS(x, y, z))
+//             {
+//                 x = owner->GetPositionX();
+//                 y = owner->GetPositionY();
+//                 z = owner->GetPositionZ();
+//             }
 
             if (me->GetPositionX() != x || me->GetPositionY() != y || me->GetPositionZ() != z)
             {
