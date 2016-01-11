@@ -533,8 +533,7 @@ void PetAI::HandleReturnMovement()
                 if (!me->isInCombat() && !owner->isInCombat())
                     speed = 7.0f * (0.1f + (me->GetExactDist(x, y, z)) / 6.9f);
 
-                
-                me->StopMoving(false, true, false);
+                me->NeedToUpdateSplinePosition();
                 me->GetMotionMaster()->MovePoint(me->GetGUIDLow(), x, y, z, true, speed);
                 me->GetCharmInfo()->SetMoveToNextPoint(false);
             }

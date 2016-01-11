@@ -475,6 +475,14 @@ void Unit::UpdateSplineMovement(uint32 t_diff)
         UpdateSplinePosition();
 }
 
+void Unit::NeedToUpdateSplinePosition(bool stop/* = false*/)
+{
+    if (!IsInWorld() || movespline->Finalized())
+        return;
+
+    UpdateSplinePosition(stop);
+}
+
 void Unit::UpdateSplinePosition(bool stop/* = false*/)
 {
     m_movesplineTimer.Reset(positionUpdateDelay);
@@ -18563,21 +18571,17 @@ void Unit::SendPetAIReaction(uint64 guid)
 
 ///----------End of Pet responses methods----------
 
-void Unit::StopMoving(bool clearUnitState, bool updateSPos, bool mSplineStop)
+void Unit::StopMoving()
 {
-    if (clearUnitState)
-        ClearUnitState(UNIT_STATE_MOVING);
+    ClearUnitState(UNIT_STATE_MOVING);
 
     // not need send any packets if not in world or not moving
     if (!IsInWorld() || movespline->Finalized())
         return;
 
     // Update position using old spline
-    if (updateSPos)
-        UpdateSplinePosition(true);
-
-    if (mSplineStop)
-        Movement::MoveSplineInit(*this).Stop();
+    UpdateSplinePosition(true);
+    Movement::MoveSplineInit(*this).Stop();
 }
 
 void Unit::SendMovementFlagUpdate(bool self /* = false */)

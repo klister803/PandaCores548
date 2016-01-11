@@ -2369,7 +2369,8 @@ class Unit : public WorldObject
         const MotionMaster* GetMotionMaster() const { return &i_motionMaster; }
 
         bool IsStopped() const { return !(HasUnitState(UNIT_STATE_MOVING)); }
-        void StopMoving(bool clearUnitState = true, bool updateSPos = true, bool mSplineStop = true);
+        void StopMoving();
+        void NeedToUpdateSplinePosition(bool stop = false);
 
         void AddUnitMovementFlag(uint32 f) { m_movementInfo.flags |= f; }
         void RemoveUnitMovementFlag(uint32 f) { m_movementInfo.flags &= ~f; }
