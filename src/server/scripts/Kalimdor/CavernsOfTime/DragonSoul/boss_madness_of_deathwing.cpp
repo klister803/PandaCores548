@@ -829,10 +829,10 @@ class npc_dragon_soul_thrall_1 : public CreatureScript
                 if (pInstance->IsEncounterInProgress())
                     return true;
 
-                /* if (pInstance->GetBossState(DATA_SPINE) != DONE ||
+                if (pInstance->GetBossState(DATA_SPINE) != DONE ||
                     pInstance->GetBossState(DATA_MADNESS) == IN_PROGRESS ||
                     pInstance->GetBossState(DATA_MADNESS) == DONE)
-                    return true; */
+                    return true;
 
                 if (pInstance->instance->IsHeroic())
                 {
@@ -1576,19 +1576,19 @@ class npc_madness_of_deathwing_limb_tentacle : public CreatureScript
                     {
                         case 1:
                             if (Creature* pAspect = sObjectAccessor->GetCreature(*me, pInstance->GetData64(DATA_ALEXSTRASZA_DRAGON)))
-                                DoCast(pAspect, SPELL_TRIGGER_CONCENTRATION, true);
+                                pAspect->CastSpell(pAspect, SPELL_TRIGGER_CONCENTRATION, true);
                             break;
                         case 2:
                             if (Creature* pAspect = sObjectAccessor->GetCreature(*me, pInstance->GetData64(DATA_NOZDORMU_DRAGON)))
-                                DoCast(pAspect, SPELL_TRIGGER_CONCENTRATION, true);
+                                pAspect->CastSpell(pAspect, SPELL_TRIGGER_CONCENTRATION, true);
                             break;
                         case 3:
                             if (Creature* pAspect = sObjectAccessor->GetCreature(*me, pInstance->GetData64(DATA_YSERA_DRAGON)))
-                                DoCast(pAspect, SPELL_TRIGGER_CONCENTRATION, true);
+                                pAspect->CastSpell(pAspect, SPELL_TRIGGER_CONCENTRATION, true);
                             break;
                         case 4:
                             if (Creature* pAspect = sObjectAccessor->GetCreature(*me, pInstance->GetData64(DATA_KALECGOS_DRAGON)))
-                                DoCast(pAspect, SPELL_TRIGGER_CONCENTRATION, true);
+                                pAspect->CastSpell(pAspect, SPELL_TRIGGER_CONCENTRATION, true);
                             break;
                     }
                 }
@@ -2448,9 +2448,9 @@ class npc_dragon_soul_alexstrasza_dragon : public CreatureScript
                 return;
             }
 
-            void SpellHit(Unit* /*who*/, const SpellInfo* spellInfo)
+            void SpellHit(Unit* caster, const SpellInfo* spellInfo)
             {
-                if (spellInfo->Id == SPELL_TRIGGER_CONCENTRATION)
+                if (spellInfo->Id == SPELL_TRIGGER_CONCENTRATION && caster->GetEntry() == NPC_ALEXSTRASZA_DRAGON)
                 {
                     isActive = false;
                     events.Reset();
@@ -2528,9 +2528,9 @@ class npc_dragon_soul_nozdormu_dragon : public CreatureScript
                 return;
             }
 
-            void SpellHit(Unit* /*who*/, const SpellInfo* spellInfo)
+            void SpellHit(Unit* caster, const SpellInfo* spellInfo)
             {
-                if (spellInfo->Id == SPELL_TRIGGER_CONCENTRATION)
+                if (spellInfo->Id == SPELL_TRIGGER_CONCENTRATION && caster->GetEntry() == NPC_NOZDORMU_DRAGON)
                 {
                     isActive = false;
                     events.Reset();
@@ -2616,9 +2616,9 @@ class npc_dragon_soul_ysera_dragon : public CreatureScript
                 return;
             }
 
-            void SpellHit(Unit* /*who*/, const SpellInfo* spellInfo)
+            void SpellHit(Unit* caster, const SpellInfo* spellInfo)
             {
-                if (spellInfo->Id == SPELL_TRIGGER_CONCENTRATION)
+                if (spellInfo->Id == SPELL_TRIGGER_CONCENTRATION && caster->GetEntry() == NPC_YSERA_DRAGON)
                 {
                     me->RemoveAura(SPELL_YSERA_PRESENCE);
                     me->RemoveAura(SPELL_THE_DREAMER);
@@ -2668,9 +2668,9 @@ class npc_dragon_soul_kalecgos_dragon : public CreatureScript
                 return;
             }
 
-            void SpellHit(Unit* /*who*/, const SpellInfo* spellInfo)
+            void SpellHit(Unit* caster, const SpellInfo* spellInfo)
             {
-                if (spellInfo->Id == SPELL_TRIGGER_CONCENTRATION)
+                if (spellInfo->Id == SPELL_TRIGGER_CONCENTRATION && caster->GetEntry() == NPC_KALECGOS_DRAGON)
                 {
                     me->RemoveAura(SPELL_KALECGOS_PRESENCE);
                     me->RemoveAura(SPELL_SPELLWEAVER);
