@@ -2224,7 +2224,6 @@ void Player::Update(uint32 p_time)
                     x = x + speed * std::cos(orien);
                     y = y + speed * std::sin(orien);
 
-                    //z += 5.0f;
                     Trinity::NormalizeMapCoord(x);
                     Trinity::NormalizeMapCoord(y);
                     UpdateAllowedPositionZ(x, y, z);
