@@ -498,7 +498,7 @@ void PetAI::HandleReturnMovement()
     }
     else // COMMAND_FOLLOW
     {
-        if (me->HasUnitState(UNIT_STATE_LOST_CONTROL | UNIT_STATE_NOT_MOVE))
+        if (me->HasUnitState(UNIT_STATE_LOST_CONTROL | UNIT_STATE_NOT_MOVE) || me->GetCharmInfo()->IsReturning())
             return;
 
         if (Unit* owner = me->GetOwner())
