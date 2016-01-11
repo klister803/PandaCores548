@@ -127,7 +127,7 @@ void PetAI::UpdateAI(uint32 diff)
 
     // me->getVictim() can't be used for check in case stop fighting, me->getVictim() clear at Unit death etc.
 
-    if (owner && owner->IsMounted())
+    if (owner && owner->IsMounted() && charmInfo)
     {
         HandleReturnMovement();
     }
