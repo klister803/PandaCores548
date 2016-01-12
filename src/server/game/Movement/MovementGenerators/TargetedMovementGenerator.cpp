@@ -290,6 +290,9 @@ bool TargetedMovementGeneratorMedium<T,D>::DoUpdate(T &owner, const uint32 & tim
             //sLog->outDebug(LOG_FILTER_PETS, "DoUpdate Pet %u targetMoved %i search %i Finalized %i i_recalculateTravel %i allowed_dist %f Type %i",
             //owner.GetEntry(), targetMoved, i_targetSearchingTimer, owner.movespline->Finalized(), i_recalculateTravel, allowed_dist, static_cast<D*>(this)->GetMovementGeneratorType());
 
+            if (targetMoved)
+                i_path = NULL;
+
             _updateSpeed(owner);
             _setTargetLocation(owner);
         }
