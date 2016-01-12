@@ -89,10 +89,14 @@ enum Spells
     SPELL_OXEN_FORTITUDE        = 144606,
     SPELL_HEADBUTT              = 144610,
     SPELL_CHARGE                = 144608,
-    
+
     //Ordos
     SPELL_BANISHMENT            = 148705,
-    
+    SPELL_CELESTIAL_WINDS       = 149322,
+    SPELL_ANCIENT_FLAME         = 144695,
+    SPELL_MAGMA_CRUSH           = 144688,
+    SPELL_BURNING_SOUL          = 144689,
+
     //Other
     SPELL_GHOSTLY_VOID          = 147495,
     SPELL_DESATURATE            = 129290,
@@ -1090,6 +1094,95 @@ public:
         return new boss_niuzaoAI (creature);
     }
 };
+
+//72057
+class boss_ordos : public CreatureScript
+{
+public:
+    boss_ordos() : CreatureScript("boss_ordos") { }
+
+    struct boss_ordosAI : public ScriptedAI
+    {
+        boss_ordosAI(Creature* creature) : ScriptedAI(creature), summons(me) {}
+
+        EventMap events;
+        SummonList summons;
+
+        void Reset() 
+        {
+            events.Reset();
+            summons.DespawnAll();
+        }
+
+        void EnterCombat(Unit* who)
+        {
+            Talk(0); //Aggro
+            events.ScheduleEvent(EVENT_1, 42000); // Ancient Flame
+            events.ScheduleEvent(EVENT_2, 10000); // Magma Crush
+            events.ScheduleEvent(EVENT_3, 22000); // Burning Soul
+            events.ScheduleEvent(EVENT_4, 5 * MINUTE * IN_MILLISECONDS); //Eternal Agony (berserk)
+        }
+
+        void JustSummoned(Creature* summon)
+        {
+            summons.Summon(summon);
+        }
+
+        void JustDied(Unit* /*killer*/)
+        {
+            Talk(5);
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
+
+            EnterEvadeIfOutOfCombatArea(diff);
+            events.Update(diff);
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EVENT_1:
+                        DoCast(SPELL_ANCIENT_FLAME);
+                        Talk(3);
+                        events.ScheduleEvent(EVENT_1, 42000); // Ancient Flame
+                        break;
+                    case EVENT_2:
+                        if (me->getVictim())
+                            DoCast(me->getVictim(), SPELL_MAGMA_CRUSH);
+                        events.ScheduleEvent(EVENT_2, 15000); // Magma Crush
+                        break;
+                    case EVENT_3:
+                        DoCast(SPELL_BURNING_SOUL);
+                        Talk(1);
+                        events.ScheduleEvent(EVENT_3, 26000); // Burning Soul
+                        break;
+                    case EVENT_4:
+                        Talk(4);
+                        DoStopAttack();
+                        events.CancelEvent();
+                        me->DespawnOrUnsummon(15000);
+                        DoCast(144696); // Eternal Agony (berserk)
+                        summons.DespawnAll();
+                        break;
+                }
+            }
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new boss_ordosAI (creature);
+    }
+};
+
 class npc_timeless_spirit : public CreatureScript
 {
 public:
@@ -1143,15 +1236,22 @@ class at_ordos_entrance : public AreaTriggerScript
 public:
     at_ordos_entrance() : AreaTriggerScript("at_ordos_entrance") { }
 
-    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/, bool /*enter*/)
+    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* pAt, bool /*enter*/)
     {
         if (pPlayer->isGameMaster())
             return false;
 
-        // A Pandaren Legend
-        if (pPlayer->GetQuestStatus(33104) != QUEST_STATUS_REWARDED && !pPlayer->HasAchieved(8325))
-            pPlayer->CastSpell(pPlayer, SPELL_BANISHMENT, true);
-
+        switch (pAt->id)
+        {
+            // A Pandaren Legend
+            case 9414:
+                if (pPlayer->GetQuestStatus(33104) != QUEST_STATUS_REWARDED && !pPlayer->HasAchieved(8325))
+                    pPlayer->CastSpell(pPlayer, SPELL_BANISHMENT, true);
+                    break;
+            case 9509:
+                pPlayer->CastSpell(pPlayer, SPELL_CELESTIAL_WINDS, true); // Прыжок через мост Ордоса
+                break;
+        }
         return false;
     }
 };
@@ -1288,6 +1388,7 @@ void AddSC_timeless_isle()
     new boss_xuen();
     new boss_yulon();
     new boss_niuzao();
+    new boss_ordos();
     new npc_timeless_spirit();
     new at_ordos_entrance();
     new at_tom_bone_apart();
