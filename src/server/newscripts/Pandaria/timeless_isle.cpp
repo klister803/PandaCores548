@@ -152,6 +152,26 @@ enum Actions
     ACTION_NIUZAO_FAIL      = 9,
 };
 
+enum LegBag
+{
+    COURAGE_OF_NIUZAO   = 102245,
+    KINDNESS_OF_CHI_JI  = 102247,
+    FURY_OF_XUEN        = 102248,
+    STRENGTH_OF_XUEN    = 102249,
+    FORTITUDE_OF_NIUZAO = 102250,
+    BREATH_OF_YU_LON    = 102246
+};
+
+uint32 LegBagCoung[6] =
+{
+    COURAGE_OF_NIUZAO,
+    KINDNESS_OF_CHI_JI,
+    FURY_OF_XUEN,
+    STRENGTH_OF_XUEN,
+    FORTITUDE_OF_NIUZAO,
+    BREATH_OF_YU_LON,
+};
+
 const Position summonPos[4] = 
 {
     {-553.17f, -4949.02f, -6.27f, -2.30f},
@@ -1097,26 +1117,6 @@ public:
 };
 
 //72057
-enum LegBag
-{
-    COURAGE_OF_NIUZAO   = 102245,
-    KINDNESS_OF_CHI_JI  = 102247,
-    FURY_OF_XUEN        = 102248,
-    STRENGTH_OF_XUEN    = 102249,
-    FORTITUDE_OF_NIUZAO = 102250,
-    BREATH_OF_YU_LON    = 102246
-};
-
-uint32 LegBagCoung[6] =
-{
-    COURAGE_OF_NIUZAO,
-    KINDNESS_OF_CHI_JI,
-    FURY_OF_XUEN,
-    STRENGTH_OF_XUEN,
-    FORTITUDE_OF_NIUZAO,
-    BREATH_OF_YU_LON,
-};
-
 class boss_ordos : public CreatureScript
 {
 public:
@@ -1284,9 +1284,15 @@ public:
         {
             // A Pandaren Legend
             case 9414:
+            {
+                for (uint8 i = 0; i < 5; i++)
+                    if (pPlayer->HasItemCount(LegBagCoung[i], 1, true))
+                        return true;
+
                 if (pPlayer->GetQuestStatus(33104) != QUEST_STATUS_REWARDED && !pPlayer->HasAchieved(8325))
                     pPlayer->CastSpell(pPlayer, SPELL_BANISHMENT, true);
                     break;
+            }
             case 9509:
                 pPlayer->CastSpell(pPlayer, SPELL_CELESTIAL_WINDS, true); // Прыжок через мост Ордоса
                 break;
