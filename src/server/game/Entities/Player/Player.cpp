@@ -28599,8 +28599,8 @@ void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 mis
             guild->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, player, loginCheck);
 
         /// Quest "A Test of Valor"
-        if (player->HasAchieved(8030) || player->HasAchieved(8031))
-            player->KilledMonsterCredit(69145, 0);
+        //if (player->HasAchieved(8030) || player->HasAchieved(8031))
+            //player->KilledMonsterCredit(69145, 0);
 
         player->_deleteLock.release();
     };
