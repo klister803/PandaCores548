@@ -96,6 +96,7 @@ enum Spells
     SPELL_ANCIENT_FLAME         = 144695,
     SPELL_MAGMA_CRUSH           = 144688,
     SPELL_BURNING_SOUL          = 144689,
+    SPELL_ETERNAL_AGONY         = 144696,
 
     //Other
     SPELL_GHOSTLY_VOID          = 147495,
@@ -1096,6 +1097,26 @@ public:
 };
 
 //72057
+enum LegBag
+{
+    COURAGE_OF_NIUZAO   = 102245,
+    KINDNESS_OF_CHI_JI  = 102247,
+    FURY_OF_XUEN        = 102248,
+    STRENGTH_OF_XUEN    = 102249,
+    FORTITUDE_OF_NIUZAO = 102250,
+    BREATH_OF_YU_LON    = 102246
+};
+
+uint32 LegBagCoung[6] =
+{
+    COURAGE_OF_NIUZAO,
+    KINDNESS_OF_CHI_JI,
+    FURY_OF_XUEN,
+    STRENGTH_OF_XUEN,
+    FORTITUDE_OF_NIUZAO,
+    BREATH_OF_YU_LON,
+};
+
 class boss_ordos : public CreatureScript
 {
 public:
@@ -1133,6 +1154,24 @@ public:
             Talk(5);
         }
 
+        bool doAddThreat(Unit* victim, float& /*threat*/)
+        {
+            if (Player* pPlayer = victim->ToPlayer())
+            {
+                for (uint8 i = 0; i < 5; i++)
+                    if (pPlayer->HasItemCount(LegBagCoung[i], 1, true))
+                        return true;
+
+                if (pPlayer->GetQuestStatus(33104) != QUEST_STATUS_REWARDED && !pPlayer->HasAchieved(8325))
+                {
+                    pPlayer->CastSpell(pPlayer, SPELL_BANISHMENT, true);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
@@ -1151,23 +1190,23 @@ public:
                     case EVENT_1:
                         DoCast(SPELL_ANCIENT_FLAME);
                         Talk(3);
-                        events.ScheduleEvent(EVENT_1, 42000); // Ancient Flame
+                        events.ScheduleEvent(EVENT_1, 42000);
                         break;
                     case EVENT_2:
                         if (me->getVictim())
                             DoCast(me->getVictim(), SPELL_MAGMA_CRUSH);
-                        events.ScheduleEvent(EVENT_2, 15000); // Magma Crush
+                        events.ScheduleEvent(EVENT_2, 15000);
                         break;
                     case EVENT_3:
                         DoCast(SPELL_BURNING_SOUL);
                         Talk(1);
-                        events.ScheduleEvent(EVENT_3, 26000); // Burning Soul
+                        events.ScheduleEvent(EVENT_3, 26000);
                         break;
-                    case EVENT_4:
+                    case EVENT_4: // Berserk
                         Talk(4);
                         DoStopAttack();
                         me->DespawnOrUnsummon(15000);
-                        DoCast(144696); // Eternal Agony (berserk)
+                        DoCast(SPELL_ETERNAL_AGONY);
                         summons.DespawnAll();
                         events.Reset();
                         break;
