@@ -4020,7 +4020,7 @@ class npc_wild_imp : public CreatureScript
                         {
                             if (victim && victim->GetGUID() == lastCastTargetGUID)
                                 HandleCastFireBolt(me, victim, owner);
-                            else if (Unit* target = ObjectAccessor::GetUnit(*me, lastCastTargetGUID))
+                            else if (Unit* target = owner->GetLastCastTarget())
                                 HandleCastFireBolt(me, target, owner);
                         }
                         else if (victim)

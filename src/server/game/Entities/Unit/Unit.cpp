@@ -25440,3 +25440,19 @@ bool Unit::HasAuraLinkedSpell(Unit* caster, Unit* target, uint8 type, int32 hast
     }
     return true;
 }
+
+Unit* Unit::GetLastCastTarget()
+{
+    if (Unit* target = ObjectAccessor::GetUnit(*this, GetLastCastTargetGUID()))
+    {
+        if (!target->isAlive() || !target->IsInWorld())
+        {
+            SetLastCastTargetGUID(0);
+            return NULL;
+        }
+        
+        return target;
+    }
+
+    return NULL;
+}

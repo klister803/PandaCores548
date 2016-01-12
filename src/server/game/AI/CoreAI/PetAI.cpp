@@ -154,7 +154,7 @@ void PetAI::UpdateAI(uint32 diff)
 
             if (!me->HasUnitState(UNIT_STATE_CASTING))
                 if (me->getVictim()->GetGUID() != owner->GetLastCastTargetGUID())
-                    if (Unit* target = ObjectAccessor::GetUnit(*me, owner->GetLastCastTargetGUID()))
+                    if (Unit* target = owner->GetLastCastTarget())
                         AttackStart(target);
         }
 
@@ -180,7 +180,7 @@ void PetAI::UpdateAI(uint32 diff)
         }
         else if (owner->isInCombat() && me->HasReactState(REACT_HELPER) && !charmInfo->IsFollowing())
         {
-            if (Unit* target = ObjectAccessor::GetUnit(*me, owner->GetLastCastTargetGUID()))
+            if (Unit* target = owner->GetLastCastTarget())
                 AttackStart(target);
             else
                 HandleReturnMovement();

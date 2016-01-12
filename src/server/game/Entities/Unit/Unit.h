@@ -1443,6 +1443,7 @@ class Unit : public WorldObject
         Unit* getVictim() const { return m_attacking; }
         uint64 GetLastCastTargetGUID() { return m_lastCastTargetGUID; }
         void SetLastCastTargetGUID(uint64 guid) { m_lastCastTargetGUID = guid; }
+        Unit* GetLastCastTarget();
 
         void CombatStop(bool includingCast = false);
         void CombatStopWithPets(bool includingCast = false);

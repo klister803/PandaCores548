@@ -420,7 +420,7 @@ void AnyPetAI::UpdateAI(uint32 diff)
             if (owner->isInCombat())
                 if (owner->GetLastCastTargetGUID())
                     if (!targetOwner || (targetOwner && targetOwner->GetGUID() != owner->GetLastCastTargetGUID()))
-                        if (Unit* _target = ObjectAccessor::GetUnit(*me, owner->GetLastCastTargetGUID()))
+                        if (Unit* _target = owner->GetLastCastTarget())
                             targetOwner = _target;
         }
 
