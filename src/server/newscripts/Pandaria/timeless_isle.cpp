@@ -1166,10 +1166,10 @@ public:
                     case EVENT_4:
                         Talk(4);
                         DoStopAttack();
-                        events.CancelEvent();
                         me->DespawnOrUnsummon(15000);
                         DoCast(144696); // Eternal Agony (berserk)
                         summons.DespawnAll();
+                        events.Reset();
                         break;
                 }
             }
