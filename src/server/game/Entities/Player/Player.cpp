@@ -28598,14 +28598,14 @@ void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 mis
         if (auto guild = sGuildMgr->GetGuildById(player->GetGuildId()))
             guild->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, player, loginCheck);
 
-        /// Quest "A Test of Valor"
-        //if (player->HasAchieved(8030) || player->HasAchieved(8031))
-            //player->KilledMonsterCredit(69145, 0);
-
         player->_deleteLock.release();
     };
 
     sAchievementMgr->AddCriteriaUpdateTask(task);
+
+    /// Quest "A Test of Valor"
+    if (player->HasAchieved(8030) || player->HasAchieved(8031))
+        player->KilledMonsterCredit(69145, 0);
 }
 
 void Player::CompletedAchievement(AchievementEntry const* entry)
