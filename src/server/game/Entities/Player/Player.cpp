@@ -28602,10 +28602,6 @@ void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 mis
     };
 
     sAchievementMgr->AddCriteriaUpdateTask(task);
-
-    /// Quest "A Test of Valor"
-    if (HasAchieved(8030) || HasAchieved(8031))
-        KilledMonsterCredit(69145, 0);
 }
 
 void Player::CompletedAchievement(AchievementEntry const* entry)
