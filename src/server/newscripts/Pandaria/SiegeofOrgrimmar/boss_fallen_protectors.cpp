@@ -888,6 +888,7 @@ struct npc_measure : public ScriptedAI
 
         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         summons.DespawnAll();
+        events.Reset();
         me->CastSpell(me, SPELL_DESPAWN_AT, true);
 
         if (Creature* owner = instance->instance->GetCreature(instance->GetData64(ownSummoner)))
@@ -904,14 +905,14 @@ struct npc_measure : public ScriptedAI
             me->RemoveAura(SPELL_SHA_CORRUPTION_GLOOM_OF_ROOK);     //rook
             me->RemoveAura(SPELL_SHA_CORRUPTION_SOR_OF_ROOK);       //rook
             me->RemoveAura(SPELL_SHA_CORRUPTION_OF_SUN);            //sun
-            
+
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             me->EnterVehicle(lotos, vehSlotForMeasures(me->GetEntry()));
             me->CastSpell(me, SPELL_SHA_CORRUPTION, true);
         }
         else
             sLog->outError(LOG_FILTER_GENERAL, " >> Script boss_fallen_protectors::npc_measure can't find vehowner %u", ownVehicle);
-        
+
         me->CombatStop();
     }
 
