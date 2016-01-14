@@ -36,6 +36,10 @@ EndScriptData */
 
 #include <fstream>
 
+#include <json/json.h>
+#include <json/writer.h>
+#include <src/redisclient/redissyncclient.h>
+
 class debug_commandscript : public CommandScript
 {
 public:
@@ -113,10 +117,19 @@ public:
             { "uws",            SEC_ADMINISTRATOR,  false, &HandleDebugUpdateWorldStateCommand, "", NULL },
             { NULL,             SEC_PLAYER,         false, NULL,                               "", NULL }
         };
+
+        static ChatCommand redisCommandTable[] =
+        {
+            { "print",          SEC_MODERATOR,      false, &HandleRedisPrint,                  "", NULL },
+            { "json",           SEC_MODERATOR,      false, &HandleRedisJson,                   "", NULL },
+            { NULL,             SEC_PLAYER,         false, NULL,                               "", NULL }
+        };
+
         static ChatCommand commandTable[] =
         {
             { "debug",          SEC_MODERATOR,      true,  NULL,                  "", debugCommandTable },
             { "wpgps",          SEC_ADMINISTRATOR,  false, &HandleWPGPSCommand,                "", NULL },
+            { "redis",          SEC_ADMINISTRATOR,  true,  NULL,                  "", redisCommandTable },
             { NULL,             SEC_PLAYER,         false, NULL,                  "",              NULL }
         };
         return commandTable;
@@ -1766,6 +1779,7 @@ public:
         player->ApplyRatingMod(CR_HIT_SPELL, Value, true);
         return true;
     }
+
     static bool HandleDebugModifyMasteryCommand(ChatHandler* handler, const char* args)
     {
         if (!*args)
@@ -1826,6 +1840,92 @@ public:
         }
 
         player->UpdateAchievementCriteria(AchievementCriteriaTypes(criteriaType), miscValue1, miscValue2, miscValue3, unit, true);
+        return true;
+    }
+
+    static bool HandleRedisPrint(ChatHandler* handler, const char* args)
+    {
+        if (!*args)
+            return false;
+
+        char* cval = strtok((char*)args, " ");
+        if (!cval)
+            return false;
+
+        int32 Value = (int32)atoi(cval);
+
+        boost::asio::ip::address address = boost::asio::ip::address::from_string("127.0.0.1");
+        const unsigned short port = 5879;
+
+        boost::asio::io_service ioService;
+        RedisSyncClient redis(ioService);
+        std::string errmsg;
+
+        Json::Value testJson;
+        testJson["name"] = "Vasya";
+        testJson["Class"] = 2;
+        testJson["Power"][0] = 1000;
+        testJson["Power"][2] = 2000;
+
+        Json::StreamWriterBuilder wbuilder;
+        wbuilder["indentation"] = "\t";
+        std::string testJsonStr = Json::writeString(wbuilder, testJson);
+
+        if( !redis.connect(address, port, errmsg) )
+        {
+            handler->PSendSysMessage("HandleRedisPrint error connect %s", errmsg.c_str());
+            return true;
+        }
+
+        RedisValue result;
+
+        result = redis.command("SET", "key", testJsonStr);
+
+        if( result.isError() )
+        {
+            handler->PSendSysMessage("HandleRedisPrint SET error %s", result.toString().c_str());
+            return true;
+        }
+
+        result = redis.command("GET", "key");
+
+        if( result.isOk() )
+        {
+            handler->PSendSysMessage("HandleRedisPrint GET %s", result.toString().c_str());
+            return true;
+        }
+        else
+        {
+            handler->PSendSysMessage("HandleRedisPrint SET error %s", result.toString().c_str());
+            return true;
+        }
+
+        return true;
+    }
+
+    static bool HandleRedisJson(ChatHandler* handler, const char* args)
+    {
+        if (!*args)
+            return false;
+
+        char* cval = strtok((char*)args, " ");
+        if (!cval)
+            return false;
+
+        int32 Value = (int32)atoi(cval);
+
+        Json::Value testJson;
+        testJson["name"] = "Vasya";
+        testJson["Class"] = 2;
+        testJson["Power"][0] = 1000;
+        testJson["Power"][2] = 2000;
+
+        Json::StreamWriterBuilder wbuilder;
+        wbuilder["indentation"] = "\t";
+        std::string testJsonStr = Json::writeString(wbuilder, testJson);
+
+        handler->PSendSysMessage("HandleRedisJson testJsonStr %s", testJsonStr.c_str());
+
         return true;
     }
 };
