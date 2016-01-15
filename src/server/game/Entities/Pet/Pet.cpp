@@ -238,7 +238,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool s
 
     // ignore model info data for 
     SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_WORLD_OBJECT_SIZE);
-    SetFloatValue(UNIT_FIELD_COMBATREACH, ATTACK_DISTANCE);
+    SetFloatValue(UNIT_FIELD_COMBATREACH, DEFAULT_COMBAT_REACH);
 
     switch (getPetType())
     {
