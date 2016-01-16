@@ -498,51 +498,7 @@ void PetAI::HandleReturnMovement()
     }
     else // COMMAND_FOLLOW
     {
-        if (me->HasUnitState(UNIT_STATE_LOST_CONTROL | UNIT_STATE_NOT_MOVE))
-            return;
-
-        if (Unit* owner = me->GetOwner())
-        {
-            float x, y, z, o;
-
-            me->GetCharmInfo()->GetHomePosition(x, y, z, o);
-
-            if (!x && !y && !z)
-            {
-                owner->GetNearPoint(me, x, y, z, CONTACT_DISTANCE, PET_FOLLOW_DIST, owner->GetOrientation() + me->GetFollowAngle());
-                me->GetCharmInfo()->SetMoveToNextPoint(true);
-            }
-
-            if (!owner->IsWithinLOS(x, y, z))
-            {
-                x = owner->GetPositionX();
-                y = owner->GetPositionY();
-                z = owner->GetPositionZ();
-            }
-
-            if (me->GetPositionX() != x || me->GetPositionY() != y || me->GetPositionZ() != z)
-            {
-                if (!me->GetCharmInfo()->IsCanMoveToNextPoint())
-                    return;
-
-                me->GetCharmInfo()->SetIsReturning(true);
-                me->GetMotionMaster()->Clear();
-
-                float speed = me->GetSpeedRate(MOVE_RUN) * 7.0f;
-
-                if (!me->isInCombat() && !owner->isInCombat())
-                    speed = 7.0f * (0.1f + (me->GetExactDist(x, y, z)) / 6.9f);
-
-                me->NeedToUpdateSplinePosition();
-                me->GetMotionMaster()->MovePoint(me->GetGUIDLow(), x, y, z, true, speed);
-                me->GetCharmInfo()->SetMoveToNextPoint(false);
-            }
-            else if (me->GetOrientation() != o)
-            {
-                me->SetOrientation(o);
-                me->SetFacingTo(o);
-            }
-        }
+        me->HandleFollowCommand();
     }
 }
 

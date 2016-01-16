@@ -198,6 +198,10 @@ m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_o
     m_Stampeded = false;
     m_despan = false;
 
+    m_needToUpdatePetFollowPosition = true;
+    m_petFollowPositionTimer = 0;
+    m_followOrientation = 0;
+
     m_creatureDiffData = NULL;
 }
 
@@ -519,6 +523,11 @@ void Creature::UpdateStat()
 void Creature::Update(uint32 diff)
 {
     volatile uint32 creatureEntry = GetEntry();
+
+    m_petFollowPositionTimer += diff;
+
+    if (m_petFollowPositionTimer > 500)
+        m_petFollowPositionTimer = 500;
 
 	if (m_LOSCheckTimer <= diff)
 	{
@@ -3124,5 +3133,106 @@ void Creature::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs
         if ((idSchoolMask & spellInfo->GetSchoolMask()) && _GetSpellCooldownDelay(spellID) < unTimeMs)
             _AddCreatureSpellCooldown(spellID, time(NULL) + unTimeMs/IN_MILLISECONDS);
     }
+}
+
+void Creature::HandleFollowCommand()
+{
+    if (Unit* owner = GetOwner())
+        if (Player* plr = owner->ToPlayer())
+        {
+            if (plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_DISLOCATION) || m_needToUpdatePetFollowPosition)
+            {
+                if (!m_needToUpdatePetFollowPosition)
+                {
+                    m_petFollowPositionTimer = 0;
+                    m_needToUpdatePetFollowPosition = true;
+                }
+
+                if (m_petFollowPositionTimer >= 500)
+                {
+                    m_needToUpdatePetFollowPosition = plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_DISLOCATION);
+
+                    float x, y, z;
+
+                    plr->GetNearPoint(this, x, y, z, CONTACT_DISTANCE, PET_FOLLOW_DIST, plr->GetOrientation() + GetFollowAngle());
+
+                    float dist = 0.0f;
+                    float orien = 0.0f;
+
+                    if (plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FORWARD))
+                    {
+                        dist = (3.0f + plr->GetSpeedRate(MOVE_RUN)) * plr->GetSpeedRate(MOVE_RUN);
+                        orien = plr->GetOrientation();
+
+                        if (plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_LEFT))
+                            orien = orien + M_PI / 4.0f;
+                        else if (plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_RIGHT))
+                            orien = orien - M_PI / 4.0f;
+                    }
+                    else if (plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_BACKWARD))
+                    {
+                        dist = 1.0f;
+                        orien = plr->GetOrientation() - M_PI;
+
+                        if (plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_LEFT))
+                            orien = orien - M_PI / 4.0f;
+                        else if (plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_RIGHT))
+                            orien = orien + M_PI / 4.0f;
+                    }
+                    else if (plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_LEFT))
+                    {
+                        dist = (3.0f + plr->GetSpeedRate(MOVE_RUN)) * plr->GetSpeedRate(MOVE_RUN);
+                        orien = plr->GetOrientation() + M_PI / 2.0f;
+                    }
+                    else if (plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_RIGHT))
+                    {
+                        dist = (3.0f + plr->GetSpeedRate(MOVE_RUN)) * plr->GetSpeedRate(MOVE_RUN);
+                        orien = plr->GetOrientation() - M_PI / 2.0f;
+                    }
+
+                    x = x + dist * std::cos(orien);
+                    y = y + dist * std::sin(orien);
+
+                    Trinity::NormalizeMapCoord(x);
+                    Trinity::NormalizeMapCoord(y);
+                    plr->UpdateAllowedPositionZ(x, y, z);
+
+                    m_petFollowPositionTimer = 0;
+
+                    if (HasUnitState(UNIT_STATE_LOST_CONTROL | UNIT_STATE_NOT_MOVE))
+                        return;
+
+                    if (!owner->IsWithinLOS(x, y, z))
+                    {
+                        x = owner->GetPositionX();
+                        y = owner->GetPositionY();
+                        z = owner->GetPositionZ();
+                    }
+
+                    if (GetPositionX() != x || GetPositionY() != y || GetPositionZ() != z)
+                    {
+                        GetMotionMaster()->Clear();
+                        if (CharmInfo* charmInfo = GetCharmInfo())
+                            charmInfo->SetIsReturning(true);
+
+                        float speed = GetSpeedRate(MOVE_RUN) * 7.0f;
+
+                        if (!isInCombat() && !owner->isInCombat())
+                            speed = 7.0f * (0.1f + (GetExactDist(x, y, z)) / 6.9f);
+
+                        NeedToUpdateSplinePosition();
+                        GetMotionMaster()->MovePoint(GetGUIDLow(), x, y, z, true, speed);
+                    }
+
+                    m_followOrientation = plr->GetOrientation();
+                }
+            }
+        }
+
+        if (m_movementInfo.GetMovementFlags() == MOVEMENTFLAG_NONE && GetOrientation() != m_followOrientation)
+        {
+            SetOrientation(m_followOrientation);
+            SetFacingTo(m_followOrientation);
+        }
 }
 
