@@ -32,6 +32,8 @@
 #include "Configuration/Config.h"
 #include "Database/DatabaseEnv.h"
 #include "Database/DatabaseWorkerPool.h"
+#include "Redis/RedisEnv.h"
+#include "Redis/RedisWorkerPool.h"
 
 #include "CliRunnable.h"
 #include "Log.h"
@@ -442,6 +444,26 @@ bool Master::_StartDB()
         return false;
     }
 
+    ///- Get login database info from configuration file
+    dbstring = ConfigMgr::GetStringDefault("RedisDatabaseInfo", "");
+    if (dbstring.empty())
+    {
+        sLog->outError(LOG_FILTER_WORLDSERVER, "Login database not specified in configuration file");
+        return false;
+    }
+
+    async_threads = ConfigMgr::GetIntDefault("RedisDatabase.WorkerThreads", 1);
+    if (async_threads < 1)
+        async_threads = 1;
+
+    synch_threads = ConfigMgr::GetIntDefault("RedisDatabase.SynchThreads", 1);
+    ///- Initialise the login database
+    if (!RedisDatabase.Open(dbstring, async_threads, synch_threads))
+    {
+        sLog->outError(LOG_FILTER_WORLDSERVER, "Cannot connect to login database %s", dbstring.c_str());
+        return false;
+    }
+
     ///- Get the realm Id from the configuration file
     realmID = ConfigMgr::GetIntDefault("RealmID", 0);
     if (!realmID)
@@ -470,6 +492,7 @@ void Master::_StopDB()
     CharacterDatabase.Close();
     WorldDatabase.Close();
     LoginDatabase.Close();
+    RedisDatabase.Close();
 
     MySQL::Library_End();
 }

@@ -86,10 +86,12 @@ LogsDir = ""
 #        Default:     "127.0.0.1;3306;trinity;trinity;auth"       - (LoginDatabaseInfo)
 #                     "127.0.0.1;3306;trinity;trinity;world"      - (WorldDatabaseInfo)
 #                     "127.0.0.1;3306;trinity;trinity;characters" - (CharacterDatabaseInfo)
+#                     "127.0.0.1;6379;trinity;trinity;0" - (RedisDatabaseInfo)
 
 LoginDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;auth"
 WorldDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;world"
 CharacterDatabaseInfo = "127.0.0.1;3306;trinity;trinity;characters"
+RedisDatabaseInfo     = "127.0.0.1;6379;trinity;trinity;0"
 
 #
 #    LoginDatabase.WorkerThreads
@@ -101,23 +103,27 @@ CharacterDatabaseInfo = "127.0.0.1;3306;trinity;trinity;characters"
 #        Default:     1 - (LoginDatabase.WorkerThreads)
 #                     1 - (WorldDatabase.WorkerThreads)
 #                     1 - (CharacterDatabase.WorkerThreads)
+#                     50 - (RedisDatabase.WorkerThreads)
 
 LoginDatabase.WorkerThreads     = 2
 WorldDatabase.WorkerThreads     = 1
 CharacterDatabase.WorkerThreads = 4
+RedisDatabase.WorkerThreads = 50
 
 #
 #    LoginDatabase.SynchThreads
 #    WorldDatabase.SynchThreads
 #    CharacterDatabase.SynchThreads
 #        Description: The amount of MySQL connections spawned to handle.
-#        Default:     1 - (LoginDatabase.WorkerThreads)
-#                     1 - (WorldDatabase.WorkerThreads)
-#                     2 - (CharacterDatabase.WorkerThreads)
+#        Default:     1 - (LoginDatabase.SynchThreads)
+#                     1 - (WorldDatabase.SynchThreads)
+#                     2 - (CharacterDatabase.SynchThreads)
+#                     20 - (RedisDatabase.SynchThreads)
 
 LoginDatabase.SynchThreads     = 4
 WorldDatabase.SynchThreads     = 1
 CharacterDatabase.SynchThreads = 8
+RedisDatabase.SynchThreads = 50
 
 #
 #    MaxPingTime

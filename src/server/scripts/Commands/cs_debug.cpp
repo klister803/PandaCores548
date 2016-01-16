@@ -33,12 +33,13 @@ EndScriptData */
 #include "GossipDef.h"
 #include "MapManager.h"
 #include "Vehicle.h"
+#include "RedisWorker.h"
 
 #include <fstream>
 
 #include <json/json.h>
 #include <json/writer.h>
-#include <src/redisclient/redissyncclient.h>
+#include <src/redisclient/redisasyncclient.h>
 
 class debug_commandscript : public CommandScript
 {
@@ -1854,51 +1855,44 @@ public:
 
         int32 Value = (int32)atoi(cval);
 
-        boost::asio::ip::address address = boost::asio::ip::address::from_string("127.0.0.1");
-        const unsigned short port = 5879;
+        //char key[50];
+        //sprintf(key, "%i", keyCount);
+
+        /*boost::asio::ip::address address = boost::asio::ip::address::from_string("127.0.0.1");
+        const unsigned short port = 6379;
 
         boost::asio::io_service ioService;
-        RedisSyncClient redis(ioService);
-        std::string errmsg;
+        RedisAsyncClient client(ioService);
+
+        RedisWorker worker(ioService, client);
+        boost::asio::ip::tcp::endpoint endpoint(address, port);
 
         Json::Value testJson;
         testJson["name"] = "Vasya";
         testJson["Class"] = 2;
         testJson["Power"][0] = 1000;
         testJson["Power"][2] = 2000;
+        Json::FastWriter wbuilder;
+        std::string testJsonStr = wbuilder.write(testJson);
 
-        Json::StreamWriterBuilder wbuilder;
-        wbuilder["indentation"] = "\t";
-        std::string testJsonStr = Json::writeString(wbuilder, testJson);
+        worker.SetKey(cval);
+        worker.SetValue(testJsonStr);
 
-        if( !redis.connect(address, port, errmsg) )
-        {
-            handler->PSendSysMessage("HandleRedisPrint error connect %s", errmsg.c_str());
-            return true;
-        }
+        client.asyncConnect(endpoint, boost::bind(&Worker::onConnect, &worker, _1, _2));
 
-        RedisValue result;
+        ioService.run();*/
 
-        result = redis.command("SET", "key", testJsonStr);
-
-        if( result.isError() )
-        {
-            handler->PSendSysMessage("HandleRedisPrint SET error %s", result.toString().c_str());
-            return true;
-        }
-
-        result = redis.command("GET", "key");
+        /*Json::Reader reader;
+        Json::Value testJsonFinish;
+        bool isReader = reader.parse(result.toString().c_str(), testJsonFinish);
+        sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "HandleRedisPrint isReader %u result %s name %s Class %s Power %i",
+            isReader, result.toString().c_str(),
+            testJsonFinish["name"].asString().c_str(),
+            testJsonFinish["Class"].asString().c_str(),
+            testJsonFinish["Power"][2].asInt());
 
         if( result.isOk() )
-        {
-            handler->PSendSysMessage("HandleRedisPrint GET %s", result.toString().c_str());
-            return true;
-        }
-        else
-        {
-            handler->PSendSysMessage("HandleRedisPrint SET error %s", result.toString().c_str());
-            return true;
-        }
+            handler->PSendSysMessage("HandleRedisPrint GET %s", result.toString().c_str());*/
 
         return true;
     }

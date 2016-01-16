@@ -26,6 +26,7 @@
 
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
+#include "Redis/RedisEnv.h"
 #include "Configuration/Config.h"
 
 #include "Log.h"
@@ -52,6 +53,7 @@ int m_ServiceStatus = -1;
 WorldDatabaseWorkerPool WorldDatabase;                      ///< Accessor to the world database
 CharacterDatabaseWorkerPool CharacterDatabase;              ///< Accessor to the character database
 LoginDatabaseWorkerPool LoginDatabase;                      ///< Accessor to the realm/login database
+RedisDatabaseWorkerPool RedisDatabase;                      ///< Accessor to the Redis database
 
 uint32 realmID;                                             ///< Id of the realm
 
