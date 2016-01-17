@@ -493,7 +493,18 @@ void PetAI::HandleReturnMovement()
     }
     else if (me->GetCharmInfo()->HasCommandState(COMMAND_MOVE_TO))
     {
-        //TODO: Do we have to write something ?
+        if (me->HasUnitState(UNIT_STATE_LOST_CONTROL | UNIT_STATE_NOT_MOVE))
+            return;
+
+        if (me->isMoving())
+            return;
+
+        float x, y, z;
+
+        me->GetCharmInfo()->GetStayPosition(x, y, z);
+
+        if (me->GetPositionX() != x || me->GetPositionY() != y || me->GetPositionZ() != z)
+            me->GetMotionMaster()->MovePoint(0, x, y, z);
     }
     else // COMMAND_FOLLOW
     {

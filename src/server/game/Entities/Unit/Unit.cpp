@@ -23885,9 +23885,9 @@ void CharmInfo::SaveStayPosition()
 {
     //! At this point a new spline destination is enabled because of Unit::StopMoving()
     G3D::Vector3 const stayPos = m_unit->movespline->FinalDestination();
-    m_stayX = stayPos.x;
-    m_stayY = stayPos.y;
-    m_stayZ = stayPos.z;
+    SetStayPositionX(stayPos.x);
+    SetStayPositionY(stayPos.y);
+    SetStayPositionZ(stayPos.z);
 }
 
 void CharmInfo::GetStayPosition(float &x, float &y, float &z)

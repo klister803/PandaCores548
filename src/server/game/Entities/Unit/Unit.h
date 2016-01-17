@@ -1269,6 +1269,9 @@ struct CharmInfo
         void SetIsReturning(bool val);
         bool IsReturning();
         void SaveStayPosition();
+        void SetStayPositionX(float val) { m_stayX = val; }
+        void SetStayPositionY(float val) { m_stayY = val; }
+        void SetStayPositionZ(float val) { m_stayZ = val; }
         void GetStayPosition(float &x, float &y, float &z);
 
     private:

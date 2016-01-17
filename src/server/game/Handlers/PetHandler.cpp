@@ -308,13 +308,14 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid
                 case COMMAND_MOVE_TO:
                     pet->StopMoving();
                     pet->GetMotionMaster()->Clear(false);
-                    pet->GetMotionMaster()->MovePoint(0, x, y, z);
                     charmInfo->SetCommandState(COMMAND_MOVE_TO);
                     charmInfo->SetIsCommandAttack(false);
                     charmInfo->SetIsAtStay(true);
                     charmInfo->SetIsFollowing(false);
                     charmInfo->SetIsReturning(false);
-                    charmInfo->SaveStayPosition();
+                    charmInfo->SetStayPositionX(x);
+                    charmInfo->SetStayPositionY(y);
+                    charmInfo->SetStayPositionZ(z);
                     break;
 
                 default:
