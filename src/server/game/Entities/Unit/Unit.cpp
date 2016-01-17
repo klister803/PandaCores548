@@ -14760,6 +14760,7 @@ void Unit::ClearInCombat()
     else if (Player* plr = ToPlayer())
     {
         plr->UpdatePotionCooldown();
+        plr->SetLastCastTargetGUID(0);
 
         if (Pet* pet = plr->GetPet())
             if (CharmInfo* charmInfo = pet->GetCharmInfo())
