@@ -149,8 +149,7 @@ void PetAI::UpdateAI(uint32 diff)
 
         if (owner)
         {
-            if (!owner->isInCombat())
-                owner->SetInCombatWith(me->getVictim());
+            owner->SetInCombatWith(me->getVictim());
 
             if (!me->HasUnitState(UNIT_STATE_CASTING))
                 if (me->getVictim()->GetGUID() != owner->GetLastCastTargetGUID())
