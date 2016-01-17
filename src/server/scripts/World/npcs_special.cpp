@@ -2597,7 +2597,7 @@ public:
         void UpdateAI(uint32 diff)
         {
             targetCheckTime += diff;
-            if (targetCheckTime > 2000 || !firstCheck)
+            if (targetCheckTime > 1000 || !firstCheck)
             {
                 if (Unit* owner = me->GetOwner())
                 {
