@@ -309,7 +309,7 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, AreaTriggerActionMoment acti
             }
             else
             {
-                if (!unit->IsWithinDistInMap(searcher, GetRadius()) ||
+                if (!unit->IsWithinDistInMap(searcher, GetRadius(), true, false) ||
                     (isMoving() && _HasActionsWithCharges(AT_ACTION_MOMENT_ON_THE_WAY) && !unit->IsInBetween(this, m_movePath[m_currentNode + 1].x, m_movePath[m_currentNode + 1].y)))
                 {
                     affectedPlayers.erase(itr);
