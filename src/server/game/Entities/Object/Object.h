@@ -152,6 +152,7 @@ class Object
         virtual ~Object();
 
         bool IsInWorld() const { return m_inWorld; }
+        virtual bool isLogingOut() const { return false; }
 
         virtual void AddToWorld();
         virtual void RemoveFromWorld();

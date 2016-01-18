@@ -22117,7 +22117,7 @@ Aura* Unit::ToggleAura(uint32 spellId, Unit* target)
 
 Aura* Unit::AddAura(uint32 spellId, Unit* target, Item* castItem, uint16 stackAmount)
 {
-    if (!target)
+    if (!target || isLogingOut())
         return NULL;
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
@@ -22132,7 +22132,7 @@ Aura* Unit::AddAura(uint32 spellId, Unit* target, Item* castItem, uint16 stackAm
 
 Aura* Unit::AddAura(SpellInfo const* spellInfo, uint32 effMask, Unit* target, Item* castItem, uint16 stackAmount)
 {
-    if (!spellInfo)
+    if (!spellInfo || isLogingOut())
         return NULL;
 
     if (target->IsImmunedToSpell(spellInfo))

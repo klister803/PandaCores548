@@ -2622,6 +2622,8 @@ class Player : public Unit, public GridObject<Player>
 
         void ResetLootCooldown();
 
+        bool isLogingOut() const { return GetSession() && GetSession()->isLogingOut(); }
+
         /*********************************************************/
         /***                  PVP SYSTEM                       ***/
         /*********************************************************/
