@@ -1,19 +1,6 @@
 /*
- * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+* Copyright (C) 2008-2016 UwowCore <http://uwow.biz/>
+*/
 
 #ifndef _REDISWORKER_H
 #define _REDISWORKER_H
@@ -21,6 +8,8 @@
 #include <thread>
 #include "ProducerConsumerQueue.h"
 #include "Log.h"
+
+#include <src/redisclient/redisasyncclient.h>
 
 #include <boost/asio/ip/address.hpp>
 #include <boost/asio/io_service.hpp>
@@ -36,24 +25,47 @@ class RedisOperation;
 class RedisWorker
 {
     public:
+        RedisWorker(ProducerConsumerQueue<RedisOperation*>* newQueue, RedisConnection* connection);
+        ~RedisWorker();
+
+        // Run when query to redis is complete
+        void onConnect(bool connected, const std::string &errorMessage);
+        void onSet(const RedisValue &value);
+        void onGet(const RedisValue &value);
+
+        // Execute
+        void GetKey(const char* key, const boost::function<void(const RedisValue &)> &handler);
+        void SetKey(const char* key, const char* value, const boost::function<void(const RedisValue &)> &handler);
+
+        /// Get an io_service to use.
+        boost::asio::io_service& get_io_service();
+
+        RedisAsyncClient* GetHandle()  { return m_client; }
+        bool IsConnected()  { return m_connected; }
+
+    private:
         typedef boost::shared_ptr<boost::asio::io_service> io_service_ptr;
         typedef boost::shared_ptr<boost::asio::io_service::work> work_ptr;
 
-        RedisWorker(ProducerConsumerQueue<RedisOperation*>* newQueue, RedisConnection* connection);
-        ~RedisWorker();
-        void onConnect(bool connected, const std::string &errorMessage);
+        /// The pool of io_services.
+        std::vector<io_service_ptr> io_services_;
 
-        work_ptr m_work;
-        io_service_ptr m_ioService;
+        /// The work that keeps the io_services running.
+        std::vector<work_ptr> work_;
 
-    private:
+        /// The next io_service to use for a connection.
+        std::size_t next_io_service_;
+
         ProducerConsumerQueue<RedisOperation*>* _queue;
         RedisConnection* _connection;
 
         void WorkerThread();
         boost::thread _workerThread;
+        boost::thread _clientThread;
 
         std::atomic_bool _cancelationToken;
+        RedisAsyncClient*     m_client;
+        bool m_connected;
 
         RedisWorker(RedisWorker const& right) = delete;
         RedisWorker& operator=(RedisWorker const& right) = delete;

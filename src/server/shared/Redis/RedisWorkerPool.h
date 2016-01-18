@@ -1,18 +1,5 @@
 /*
- * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2008-2016 UwowCore <http://uwow.biz/>
  */
 
 #ifndef _REDISWORKERPOOL_H
@@ -23,10 +10,10 @@
 #include "RedisConnection.h"
 #include "RedisWorker.h"
 #include "Log.h"
+#include "BasicRedisTask.h"
 
 #include <src/redisclient/redisasyncclient.h>
 
-#include <mysqld_error.h>
 #include <memory>
 
 template <class T>
@@ -58,46 +45,44 @@ class RedisWorkerPool
             bool res = true;
             _connectionInfo.reset(new RedisConnectionInfo(infoString));
 
-            sLog->outInfo(LOG_FILTER_SQL_DRIVER, "Opening DatabasePool '%s'. Asynchronous connections: %u, synchronous connections: %u.", GetDatabaseName(), async_threads, synch_threads);
+            sLog->outInfo(LOG_FILTER_SQL_DRIVER, "Opening RedisPool '%s'. Asynchronous connections: %u, synchronous connections: %u.", GetDatabaseName(), async_threads, synch_threads);
 
             //! Open asynchronous connections (delayed operations)
             _connections[IDX_ASYNC].resize(async_threads);
             for (uint8 i = 0; i < async_threads; ++i)
             {
                 T* t = new T(_queue.get(), *_connectionInfo);
-                res = t->Open();
                 _connections[IDX_ASYNC][i] = t;
                 ++_connectionCount[IDX_ASYNC];
             }
-
+ 
             //! Open synchronous connections (direct, blocking operations)
             _connections[IDX_SYNCH].resize(synch_threads);
             for (uint8 i = 0; i < synch_threads; ++i)
             {
                 T* t = new T(*_connectionInfo);
-                res = t->Open();
                 _connections[IDX_SYNCH][i] = t;
                 ++_connectionCount[IDX_SYNCH];
             }
 
             if (res)
-                sLog->outInfo(LOG_FILTER_SQL_DRIVER, "DatabasePool '%s' opened successfully. %u total connections running.", GetDatabaseName(), (_connectionCount[IDX_SYNCH] + _connectionCount[IDX_ASYNC]));
+                sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisPool '%s' opened successfully. %u total connections running.", GetDatabaseName(), (_connectionCount[IDX_SYNCH] + _connectionCount[IDX_ASYNC]));
             else
-                sLog->outError(LOG_FILTER_SQL_DRIVER, "DatabasePool %s NOT opened. There were errors opening the MySQL connections. Check your SQLDriverLogFile for specific errors.", GetDatabaseName());
+                sLog->outError(LOG_FILTER_SQL_DRIVER, "RedisPool %s NOT opened. There were errors opening the MySQL connections. Check your SQLDriverLogFile for specific errors.", GetDatabaseName());
             return res;
         }
 
         void Close()
         {
-            sLog->outInfo(LOG_FILTER_SQL_DRIVER, "Closing down DatabasePool '%s'.", GetDatabaseName());
+            sLog->outInfo(LOG_FILTER_SQL_DRIVER, "Closing down RedisPool '%s'.", GetDatabaseName());
 
             for (uint8 i = 0; i < _connectionCount[IDX_ASYNC]; ++i)
             {
                 T* t = _connections[IDX_ASYNC][i];
-                t->Close();         //! Closes the actualy MySQL connection.
+                t->Close();         //! Closes the actualy connection.
             }
 
-            sLog->outInfo(LOG_FILTER_SQL_DRIVER, "Asynchronous connections on DatabasePool '%s' terminated. Proceeding with synchronous connections.", GetDatabaseName());
+            sLog->outInfo(LOG_FILTER_SQL_DRIVER, "Asynchronous connections on RedisPool '%s' terminated. Proceeding with synchronous connections.", GetDatabaseName());
 
             //! Shut down the synchronous connections
             //! There's no need for locking the connection, because RedisWorkerPool<>::Close
@@ -106,7 +91,7 @@ class RedisWorkerPool
             for (uint8 i = 0; i < _connectionCount[IDX_SYNCH]; ++i)
                 _connections[IDX_SYNCH][i]->Close();
 
-            sLog->outInfo(LOG_FILTER_SQL_DRIVER, "All connections on DatabasePool '%s' closed.", GetDatabaseName());
+            sLog->outInfo(LOG_FILTER_SQL_DRIVER, "All connections on RedisPool '%s' closed.", GetDatabaseName());
         }
 
         inline RedisConnectionInfo const* GetConnectionInfo() const
@@ -116,18 +101,16 @@ class RedisWorkerPool
 
         //! Enqueues a one-way SQL operation in string format that will be executed asynchronously.
         //! This method should only be used for queries that are only executed once, e.g during startup.
-        void GetExecute(const char* query_key)
+        void ExecuteGet(const char* key, const boost::function<void(const RedisValue &)> &handler)
         {
-            BasicStatementTask* task = new BasicStatementTask(redis_query);
-            Enqueue(task);
+            T* t = GetFreeConnection();
+            t->Execute(key, nullptr, handler);
         }
 
-        //! Enqueues a one-way SQL operation in string format -with variable args- that will be executed asynchronously.
-        //! This method should only be used for queries that are only executed once, e.g during startup.
-        template<typename Format, typename... Args>
-        void PExecute(Format&& sql, Args&&... args)
+        void ExecuteSet(const char* key, const char* value)
         {
-            Execute(Trinity::StringFormat(std::forward<Format>(sql), std::forward<Args>(args)...).c_str());
+            T* t = GetFreeConnection();
+            t->Execute(key, value);
         }
 
         //! Directly executes a one-way SQL operation in string format, that will block the calling thread until finished.
@@ -139,15 +122,6 @@ class RedisWorkerPool
 
             T* t = GetFreeConnection();
             t->Execute(sql);
-            t->Unlock();
-        }
-
-        //! Directly executes a one-way SQL operation in string format -with variable args-, that will block the calling thread until finished.
-        //! This method should only be used for queries that are only executed once, e.g during startup.
-        template<typename Format, typename... Args>
-        void DirectPExecute(Format&& sql, Args&&... args)
-        {
-            DirectExecute(Trinity::StringFormat(std::forward<Format>(sql), std::forward<Args>(args)...).c_str());
         }
 
         //! Directly executes an SQL query in string format that will block the calling thread until finished.
@@ -168,22 +142,6 @@ class RedisWorkerPool
             return QueryResult(result);
         }
 
-        //! Directly executes an SQL query in string format -with variable args- that will block the calling thread until finished.
-        //! Returns reference counted auto pointer, no need for manual memory management in upper level code.
-        template<typename Format, typename... Args>
-        QueryResult PQuery(Format&& sql, T* conn, Args&&... args)
-        {
-            return Query(Trinity::StringFormat(std::forward<Format>(sql), std::forward<Args>(args)...).c_str(), conn);
-        }
-
-        //! Directly executes an SQL query in string format -with variable args- that will block the calling thread until finished.
-        //! Returns reference counted auto pointer, no need for manual memory management in upper level code.
-        template<typename Format, typename... Args>
-        QueryResult PQuery(Format&& sql, Args&&... args)
-        {
-            return Query(Trinity::StringFormat(std::forward<Format>(sql), std::forward<Args>(args)...).c_str());
-        }
-
         /**
             Asynchronous query (with resultset) methods.
         */
@@ -192,85 +150,26 @@ class RedisWorkerPool
         //! The return value is then processed in ProcessQueryCallback methods.
         QueryResultFuture AsyncQuery(const char* sql)
         {
-            BasicStatementTask* task = new BasicStatementTask(sql, true);
+            BasicRedisTask* task = new BasicRedisTask(sql);
             // Store future result before enqueueing - task might get already processed and deleted before returning from this method
             QueryResultFuture result = task->GetFuture();
             Enqueue(task);
             return result;
         }
 
-        //! Enqueues a query in string format -with variable args- that will set the value of the QueryResultFuture return object as soon as the query is executed.
-        //! The return value is then processed in ProcessQueryCallback methods.
-        template<typename Format, typename... Args>
-        QueryResultFuture AsyncPQuery(Format&& sql, Args&&... args)
+        void AsyncExecuteGet(const char* key)
         {
-            return AsyncQuery(Trinity::StringFormat(std::forward<Format>(sql), std::forward<Args>(args)...).c_str());
+            BasicRedisTask* task = new BasicRedisTask(key);
+            Enqueue(task);
         }
 
-        //! Apply escape string'ing for current collation. (utf8)
-        void EscapeString(std::string& str)
+        void AsyncExecuteSet(const char* key, const char* value)
         {
-            if (str.empty())
-                return;
-
-            char* buf = new char[str.size() * 2 + 1];
-            EscapeString(buf, str.c_str(), uint32(str.length()));
-            str = buf;
-            delete[] buf;
-        }
-
-        //! Keeps all our MySQL connections alive, prevent the server from disconnecting us.
-        void KeepAlive()
-        {
-            //! Ping synchronous connections
-            for (uint8 i = 0; i < _connectionCount[IDX_SYNCH]; ++i)
-            {
-                T* t = _connections[IDX_SYNCH][i];
-                if (t->LockIfReady())
-                {
-                    t->Ping();
-                    t->Unlock();
-                }
-            }
-
-            //! Assuming all worker threads are free, every worker thread will receive 1 ping operation request
-            //! If one or more worker threads are busy, the ping operations will not be split evenly, but this doesn't matter
-            //! as the sole purpose is to prevent connections from idling.
-            //for (size_t i = 0; i < _connections[IDX_ASYNC].size(); ++i)
-                //Enqueue(new PingOperation);
+            BasicRedisTask* task = new BasicRedisTask(key, value);
+            Enqueue(task);
         }
 
     private:
-        uint32 OpenConnections(InternalIndex type, uint8 numConnections)
-        {
-            _connections[type].resize(numConnections);
-            for (uint8 i = 0; i < numConnections; ++i)
-            {
-                T* t;
-
-                if (type == IDX_ASYNC)
-                    t = new T(_queue.get(), *_connectionInfo);
-                else if (type == IDX_SYNCH)
-                    t = new T(*_connectionInfo);
-                else
-                    ABORT();
-
-                _connections[type][i] = t;
-                ++_connectionCount[type];
-            }
-
-            // Everything is fine
-            return 0;
-        }
-
-        unsigned long EscapeString(char *to, const char *from, unsigned long length)
-        {
-            if (!to || !from || !length)
-                return 0;
-
-            return mysql_real_escape_string(_connections[IDX_SYNCH][0]->GetHandle(), to, from, length);
-        }
-
         void Enqueue(RedisOperation* op)
         {
             _queue->Push(op);

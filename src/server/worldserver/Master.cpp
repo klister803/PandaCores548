@@ -460,7 +460,7 @@ bool Master::_StartDB()
     ///- Initialise the login database
     if (!RedisDatabase.Open(dbstring, async_threads, synch_threads))
     {
-        sLog->outError(LOG_FILTER_WORLDSERVER, "Cannot connect to login database %s", dbstring.c_str());
+        sLog->outError(LOG_FILTER_WORLDSERVER, "Cannot connect to Redis database %s", dbstring.c_str());
         return false;
     }
 

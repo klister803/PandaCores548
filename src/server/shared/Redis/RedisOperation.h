@@ -18,6 +18,9 @@
 #ifndef _REDISOPERATION_H
 #define _REDISOPERATION_H
 
+#include "Log.h"
+#include <boost/thread/thread.hpp>
+
 class RedisConnection;
 
 class RedisOperation

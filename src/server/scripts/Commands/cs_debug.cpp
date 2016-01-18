@@ -33,13 +33,12 @@ EndScriptData */
 #include "GossipDef.h"
 #include "MapManager.h"
 #include "Vehicle.h"
-#include "RedisWorker.h"
+#include "RedisEnv.h"
 
 #include <fstream>
 
 #include <json/json.h>
 #include <json/writer.h>
-#include <src/redisclient/redisasyncclient.h>
 
 class debug_commandscript : public CommandScript
 {
@@ -1846,6 +1845,8 @@ public:
 
     static bool HandleRedisPrint(ChatHandler* handler, const char* args)
     {
+        Player* player = handler->GetSession()->GetPlayer();
+
         if (!*args)
             return false;
 
@@ -1854,6 +1855,51 @@ public:
             return false;
 
         int32 Value = (int32)atoi(cval);
+
+        Json::Value testJson;
+        testJson["name"] = "Kysya";
+        testJson["Class"] = 11;
+        testJson["Power"][0] = 100;
+        testJson["Power"][2] = 2000;
+        Json::FastWriter wbuilder;
+        std::string testJsonStr = wbuilder.write(testJson);
+
+        //RedisDatabase.ExecuteSet(cval, testJsonStr.c_str());
+        //RedisDatabase.ExecuteGet(cval);
+        RedisDatabase.ExecuteGet(cval, /*player, */[&](const RedisValue &v/*, Player* player*/) {
+            Json::Reader reader;
+            Json::Value testJsonFinish;
+            bool isReader = reader.parse(v.toString().c_str(), testJsonFinish);
+            sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "HandleRedisPrint isReader %u result %s name %s Class %s Power %i guid %u",
+                isReader, v.toString().c_str(),
+                testJsonFinish["name"].asString().c_str(),
+                testJsonFinish["Class"].asString().c_str(),
+                testJsonFinish["Power"][2].asInt(), 0/* player->GetGUIDLow()*/);
+        });
+
+        /*int32 keyCount = 0;
+        uint32 oldMSTime = getMSTime();
+        while (keyCount < 100000)
+        {
+            keyCount++;
+            char key[50];
+            sprintf(key, "%i", keyCount);
+
+            RedisDatabase.AsyncExecuteSet(key, testJsonStr.c_str());
+        }
+        sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "HandleRedisPrint Redis keyCount %u in %u ms", keyCount, GetMSTimeDiffToNow(oldMSTime));*/
+
+        /*keyCount = 0;
+        oldMSTime = getMSTime();
+        while (keyCount < 100000)
+        {
+            keyCount++;
+            char key[50];
+            sprintf(key, "%i", keyCount);
+            WorldDatabase.PQuery("replace into `test_query_table` (`id`, `value`) values('%u','%s')", keyCount, testJsonStr.c_str());
+            //WorldDatabase.PQuery("SELECT * FROM test_query_table WHERE id = '%u'", keyCount);
+        }
+        sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "HandleRedisPrint Mysql keyCount %u in %u ms", keyCount, GetMSTimeDiffToNow(oldMSTime));*/
 
         //char key[50];
         //sprintf(key, "%i", keyCount);
