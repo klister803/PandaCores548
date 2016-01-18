@@ -19,7 +19,7 @@
 #ifndef _REDISCONNECTION_H
 #define _REDISCONNECTION_H
 
-class RedisWorker;
+class Player;
 
 struct RedisConnectionInfo
 {
@@ -58,8 +58,8 @@ class RedisConnection
         void Close();
 
     public:
-        bool Execute(const char* key, const char* value, const boost::function<void(const RedisValue &)> &handler);
-        ResultSet* Query(const char* sql);
+        bool ExecuteSet(const char* key, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
+        bool ExecuteGet(const char* key, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
 
         operator bool() const { return m_worker != NULL; }
 

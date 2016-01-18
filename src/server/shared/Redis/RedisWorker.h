@@ -21,6 +21,8 @@
 
 class RedisConnection;
 class RedisOperation;
+class Player;
+
 
 class RedisWorker
 {
@@ -34,8 +36,8 @@ class RedisWorker
         void onGet(const RedisValue &value);
 
         // Execute
-        void GetKey(const char* key, const boost::function<void(const RedisValue &)> &handler);
-        void SetKey(const char* key, const char* value, const boost::function<void(const RedisValue &)> &handler);
+        void GetKey(const char* key, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
+        void SetKey(const char* key, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
 
         /// Get an io_service to use.
         boost::asio::io_service& get_io_service();

@@ -39,20 +39,22 @@ void RedisConnection::Close()
     delete this;
 }
 
-bool RedisConnection::Execute(const char* key, const char* value, const boost::function<void(const RedisValue &)> &handler)
+bool RedisConnection::ExecuteSet(const char* key, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
 {
     //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisConnection::Execute %i", boost::this_thread::get_id());
 
-    if (value)
-        m_worker->SetKey(key, value, handler);
-    else
-        m_worker->GetKey(key, handler);
+    m_worker->SetKey(key, value, guid, handler);
 
     return true;
 }
 
-ResultSet* RedisConnection::Query(const char* sql)
+bool RedisConnection::ExecuteGet(const char* key, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
 {
-    return NULL;
+    //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisConnection::Execute %i", boost::this_thread::get_id());
+
+    m_worker->GetKey(key, guid, handler);
+
+    return true;
 }
+
 

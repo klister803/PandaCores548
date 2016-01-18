@@ -59,18 +59,18 @@ void RedisWorker::onSet(const RedisValue &value)
     _connection->Unlock();
 }
 
-void RedisWorker::GetKey(const char* key, const boost::function<void(const RedisValue &)> &handler)
+void RedisWorker::GetKey(const char* key, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
 {
     //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::GetKey key %s %i", key, boost::this_thread::get_id());
 
-    m_client->command("GET", key, handler);
+    m_client->command(guid, "GET", key, handler);
 }
 
-void RedisWorker::SetKey(const char* key, const char* value, const boost::function<void(const RedisValue &)> &handler)
+void RedisWorker::SetKey(const char* key, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
 {
     //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::SetKey key %s value %s %i", key, value, boost::this_thread::get_id());
 
-    m_client->command("SET", key, value, handler);
+    m_client->command(guid, "SET", key, value, handler);
 }
 
 boost::asio::io_service& RedisWorker::get_io_service()

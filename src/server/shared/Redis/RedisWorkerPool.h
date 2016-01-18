@@ -13,6 +13,7 @@
 #include "BasicRedisTask.h"
 
 #include <src/redisclient/redisasyncclient.h>
+#include <boost/function.hpp>
 
 #include <memory>
 
@@ -101,16 +102,16 @@ class RedisWorkerPool
 
         //! Enqueues a one-way SQL operation in string format that will be executed asynchronously.
         //! This method should only be used for queries that are only executed once, e.g during startup.
-        void ExecuteGet(const char* key, const boost::function<void(const RedisValue &)> &handler)
+        void ExecuteGet(const char* key, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
         {
             T* t = GetFreeConnection();
-            t->Execute(key, nullptr, handler);
+            t->ExecuteGet(key, guid, handler);
         }
 
-        void ExecuteSet(const char* key, const char* value)
+        void ExecuteSet(const char* key, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
         {
             T* t = GetFreeConnection();
-            t->Execute(key, value);
+            t->ExecuteSet(key, value, guid, handler);
         }
 
         //! Directly executes a one-way SQL operation in string format, that will block the calling thread until finished.
@@ -121,7 +122,7 @@ class RedisWorkerPool
                 return;
 
             T* t = GetFreeConnection();
-            t->Execute(sql);
+            t->ExecuteGet(sql);
         }
 
         //! Directly executes an SQL query in string format that will block the calling thread until finished.

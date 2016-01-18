@@ -7,10 +7,12 @@
 
 #include "RedisOperation.h"
 
+class Player;
+
 class BasicRedisTask : public RedisOperation
 {
     public:
-        BasicRedisTask(const char* key, const char* value = NULL);
+        BasicRedisTask(const char* key, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler, bool get = false);
         ~BasicRedisTask();
 
         bool Execute() override;
@@ -18,6 +20,9 @@ class BasicRedisTask : public RedisOperation
     private:
         const char* m_key;      //- query key to be executed
         const char* m_value;    //- query set value to be executed
+        uint64 m_guid;          //- query owner guid
+        const boost::function<void(const RedisValue &, uint64)>* m_hander;
+        bool m_get;
 };
 
 #endif

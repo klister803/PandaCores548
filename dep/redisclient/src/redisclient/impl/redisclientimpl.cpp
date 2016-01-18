@@ -36,7 +36,6 @@ void RedisClientImpl::close()
     }
 }
 
-
 void RedisClientImpl::processMessage()
 {
     using boost::system::error_code;
@@ -46,7 +45,7 @@ void RedisClientImpl::processMessage()
                                        shared_from_this(), _1, _2));
 }
 
-void RedisClientImpl::doProcessMessage(const RedisValue &v)
+void RedisClientImpl::doProcessMessage(const RedisValue &v, uint64 guid)
 {
     if( state == RedisClientImpl::Subscribed )
     {
@@ -79,12 +78,12 @@ void RedisClientImpl::doProcessMessage(const RedisValue &v)
             }
             else if( cmd == "subscribe" && handlers.empty() == false )
             {
-                handlers.front()(v);
+                handlers.front()(v, guid);
                 handlers.pop();
             }
             else if(cmd == "unsubscribe" && handlers.empty() == false )
             {
-                handlers.front()(v);
+                handlers.front()(v, guid);
                 handlers.pop();
             }
             else
@@ -108,7 +107,7 @@ void RedisClientImpl::doProcessMessage(const RedisValue &v)
     {
         if( handlers.empty() == false )
         {
-            handlers.front()(v);
+            handlers.front()(v, guid);
             handlers.pop();
         }
         else
@@ -233,10 +232,11 @@ RedisValue RedisClientImpl::doSyncCommand(const std::vector<RedisBuffer> &buff)
     }
 }
 
-void RedisClientImpl::doAsyncCommand(const std::vector<char> &buff,
-                                     const boost::function<void(const RedisValue &)> &handler)
+void RedisClientImpl::doAsyncCommand(const std::vector<char> &buff, uint64 guid,
+                                     const boost::function<void(const RedisValue &, uint64)> &handler)
 {
     QueueItem item;
+    ownerGuid = guid;
 
     item.buff.reset( new std::vector<char>(buff) );
     item.handler = handler;
@@ -266,7 +266,7 @@ void RedisClientImpl::asyncRead(const boost::system::error_code &ec, const size_
 
         if( result.second == RedisParser::Completed )
         {
-            doProcessMessage(redisParser.result());
+            doProcessMessage(redisParser.result(), ownerGuid);
         }
         else if( result.second == RedisParser::Incompleted )
         {
@@ -291,7 +291,6 @@ void RedisClientImpl::onRedisError(const RedisValue &v)
     std::string message = v.toString();
     errorHandler(message);
 }
-
 
 void RedisClientImpl::defaulErrorHandler(const std::string &s)
 {

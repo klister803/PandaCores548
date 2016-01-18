@@ -1866,7 +1866,11 @@ public:
 
         //RedisDatabase.ExecuteSet(cval, testJsonStr.c_str());
         //RedisDatabase.ExecuteGet(cval);
-        RedisDatabase.ExecuteGet(cval, /*player, */[&](const RedisValue &v/*, Player* player*/) {
+        RedisDatabase.ExecuteGet(cval, player->GetGUIDLow(), [&](const RedisValue &v, uint64 guid) {
+            Player* player = HashMapHolder<Player>::Find(guid);
+            if (!player)
+                return;
+
             Json::Reader reader;
             Json::Value testJsonFinish;
             bool isReader = reader.parse(v.toString().c_str(), testJsonFinish);
@@ -1874,7 +1878,13 @@ public:
                 isReader, v.toString().c_str(),
                 testJsonFinish["name"].asString().c_str(),
                 testJsonFinish["Class"].asString().c_str(),
-                testJsonFinish["Power"][2].asInt(), 0/* player->GetGUIDLow()*/);
+                testJsonFinish["Power"][2].asInt(), guid);
+            ChatHandler(player).PSendSysMessage("HandleRedisPrint isReader %u result %s name %s Class %s Power %i guid %u",
+                isReader, v.toString().c_str(),
+                testJsonFinish["name"].asString().c_str(),
+                testJsonFinish["Class"].asString().c_str(),
+                testJsonFinish["Power"][2].asInt(), guid);
+
         });
 
         /*int32 keyCount = 0;
