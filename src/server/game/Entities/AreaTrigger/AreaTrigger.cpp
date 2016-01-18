@@ -322,7 +322,7 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, AreaTriggerActionMoment acti
         }
 
         std::list<Unit*> unitList;
-        searcher->GetAttackableUnitListInRange(unitList, GetRadius());
+        searcher->GetAttackableUnitListInRange(unitList, GetRadius(), false);
         for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
         {
             if (!IsUnitAffected((*itr)->GetGUID()))

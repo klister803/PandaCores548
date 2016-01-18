@@ -4954,6 +4954,45 @@ void ObjectMgr::LoadSpellScriptNames()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u spell script names in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
+void ObjectMgr::LoadAchievementScriptNames()
+{
+    uint32 oldMSTime = getMSTime();
+
+    _achievementScriptsStore.clear();                            // need for reload case
+
+    QueryResult result = WorldDatabase.Query("SELECT id, ScriptName FROM achievement_script_names");
+
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 achievement script names. DB table `achievement_script_names` is empty!");
+        return;
+    }
+
+    uint32 count = 0;
+
+    do
+    {
+
+        Field* fields = result->Fetch();
+
+        int32 Id          = fields[0].GetInt32();
+        const char *scriptName = fields[1].GetCString();
+
+        AchievementEntry const* achievement = sAchievementMgr->GetAchievement(Id);
+        if (!achievement)
+        {
+            sLog->outError(LOG_FILTER_SQL, "Scriptname:`%s` achievement (id:%d) does not exist in `Achievement.dbc`.", scriptName, fields[0].GetInt32());
+            continue;
+        }
+
+        _achievementScriptsStore.insert(SpellScriptsContainer::value_type(Id, GetScriptId(scriptName)));
+        ++count;
+    }
+    while (result->NextRow());
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u achievement script names in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
 void ObjectMgr::ValidateSpellScripts()
 {
     uint32 oldMSTime = getMSTime();
@@ -8048,6 +8087,11 @@ uint32 ObjectMgr::GetAreaTriggerScriptId(uint32 trigger_id)
 SpellScriptsBounds ObjectMgr::GetSpellScriptsBounds(uint32 spell_id)
 {
     return SpellScriptsBounds(_spellScriptsStore.lower_bound(spell_id), _spellScriptsStore.upper_bound(spell_id));
+}
+
+AchievementScriptsBounds ObjectMgr::GetAchievementScriptsBounds(uint32 id)
+{
+    return AchievementScriptsBounds(_achievementScriptsStore.lower_bound(id), _achievementScriptsStore.upper_bound(id));
 }
 
 SkillRangeType GetSkillRangeType(SkillLineEntry const* pSkill, bool racial)

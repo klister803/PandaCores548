@@ -3028,9 +3028,10 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ACHIEVEMENT, 0, 0, 0, NULL, referencePlayer);
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARN_ACHIEVEMENT_POINTS, achievement->points, 0, 0, NULL, referencePlayer);
 
+    sAchievementMgr->AchievementScriptLoaders(achievement, GetOwner());
+
     // reward items and titles if any
     AchievementReward const* reward = sAchievementMgr->GetAchievementReward(achievement);
-
     // no rewards
     if (!reward)
         return;
@@ -5278,4 +5279,12 @@ uint32 AchievementGlobalMgr::GetParantTreeId(uint32 parent)
             return GetParantTreeId(pTree->parent);
     }
     return parent;
+}
+
+void AchievementGlobalMgr::AchievementScriptLoaders(AchievementEntry const* achievement, Player* source)
+{
+    AchievementScriptsBounds bounds = sObjectMgr->GetAchievementScriptsBounds(achievement->ID);
+
+    for (AchievementScriptsContainer::iterator itr = bounds.first; itr != bounds.second; ++itr)
+        sScriptMgr->OnCompletedAchievement(achievement, source, itr->second);
 }

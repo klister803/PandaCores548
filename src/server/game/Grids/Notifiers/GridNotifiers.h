@@ -1026,10 +1026,10 @@ namespace Trinity
     class AnyUnitInObjectRangeCheck
     {
         public:
-            AnyUnitInObjectRangeCheck(WorldObject const* obj, float range) : i_obj(obj), i_range(range) {}
+            AnyUnitInObjectRangeCheck(WorldObject const* obj, float range, bool size) : i_obj(obj), i_range(range), i_size(size) {}
             bool operator()(Unit* u)
             {
-                if (u->isAlive() && i_obj->IsWithinDistInMap(u, i_range) && !u->isTotem())
+                if (u->isAlive() && i_obj->IsWithinDistInMap(u, i_range, true, i_size) && !u->isTotem())
                     return true;
 
                 return false;
@@ -1037,6 +1037,7 @@ namespace Trinity
         private:
             WorldObject const* i_obj;
             float i_range;
+            bool i_size;
     };
 
     class AnyAreaTriggerInObjectRangeCheck

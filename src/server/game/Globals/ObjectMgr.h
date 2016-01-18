@@ -327,6 +327,8 @@ typedef std::multimap<uint32, ScriptInfo> ScriptMap;
 typedef std::map<uint32, ScriptMap > ScriptMapMap;
 typedef std::multimap<uint32, uint32> SpellScriptsContainer;
 typedef std::pair<SpellScriptsContainer::iterator, SpellScriptsContainer::iterator> SpellScriptsBounds;
+typedef std::multimap<uint32, uint32> AchievementScriptsContainer;
+typedef std::pair<AchievementScriptsContainer::iterator, AchievementScriptsContainer::iterator> AchievementScriptsBounds;
 extern ScriptMapMap sQuestEndScripts;
 extern ScriptMapMap sQuestStartScripts;
 extern ScriptMapMap sSpellScripts;
@@ -1023,6 +1025,8 @@ class ObjectMgr
         uint32 GetAreaTriggerScriptId(uint32 trigger_id);
         SpellScriptsBounds GetSpellScriptsBounds(uint32 spell_id);
 
+        AchievementScriptsBounds GetAchievementScriptsBounds(uint32 id);
+
         RepRewardRate const* GetRepRewardRate(uint32 factionId) const
         {
             RepRewardRateContainer::const_iterator itr = _repRewardRateStore.find(factionId);
@@ -1157,6 +1161,8 @@ class ObjectMgr
 
         void LoadSpellScriptNames();
         void ValidateSpellScripts();
+
+        void LoadAchievementScriptNames();
 
         bool LoadTrinityStrings(char const* table, int32 min_value, int32 max_value);
         bool LoadTrinityStrings() { return LoadTrinityStrings("trinity_string", MIN_TRINITY_STRING_ID, MAX_TRINITY_STRING_ID); }
@@ -1711,6 +1717,8 @@ class ObjectMgr
         SpellClickInfoContainer _spellClickInfoStore;
 
         SpellScriptsContainer _spellScriptsStore;
+
+        AchievementScriptsContainer _achievementScriptsStore;
 
         VehicleAccessoryContainer _vehicleTemplateAccessoryStore;
         VehicleAccessoryContainer _vehicleAccessoryStore;
