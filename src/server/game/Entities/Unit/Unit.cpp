@@ -201,7 +201,6 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_modAttackSpeedPct[OFF_ATTACK] = 1.0f;
     m_modAttackSpeedPct[RANGED_ATTACK] = 1.0f;
     m_attackDist = MELEE_RANGE;
-    Zliquid_status = LIQUID_MAP_NO_WATER;
 
     m_extraAttacks = 0;
     countCrit = 0;
@@ -291,6 +290,8 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     _lastLiquid = NULL;
     _isWalkingBeforeCharm = false;
     _mount = NULL;
+
+    m_vmapUpdateAllow = true;
 
     m_IsInKillingProcess = false;
     m_VisibilityUpdScheduled = false;
@@ -3640,21 +3641,35 @@ bool Unit::isInAccessiblePlaceFor(Creature const* c) const
 
 bool Unit::IsInWater() const
 {
-    return Zliquid_status & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER);
+    return vmapInfo.Zliquid_status & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER);
 }
 
 bool Unit::IsUnderWater() const
 {
-    return Zliquid_status & LIQUID_MAP_UNDER_WATER;
+    return vmapInfo.Zliquid_status & LIQUID_MAP_UNDER_WATER;
 }
 
-void Unit::UpdateUnderwaterState(Map* m, float x, float y, float z)
+void Unit::UpdateVmapInfo(Map* m, float x, float y, float z)
 {
     if (!isPet() && !IsVehicle())
+    {
+        if(m_vmapUpdateAllow)
+        {
+            m->getVmapInfo(x, y, z, &vmapInfo);
+            m_zoneUpdateId = vmapInfo.zoneid;
+            m_areaUpdateId = vmapInfo.areaid;
+            m_vmapUpdateAllow = false;
+        }
         return;
+    }
 
-    Zliquid_status = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
-    if (!Zliquid_status)
+    m->getVmapInfo(x, y, z, &vmapInfo);
+    m_zoneUpdateId = vmapInfo.zoneid;
+    m_areaUpdateId = vmapInfo.areaid;
+
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit::UpdateVmapInfo m_zoneUpdateId %i m_areaUpdateId %i m_saveZoneUpdateId %i m_saveAreaUpdateId %i", m_zoneUpdateId, m_areaUpdateId, m_saveZoneUpdateId, m_saveAreaUpdateId);
+
+    if (!vmapInfo.Zliquid_status)
     {
         if (_lastLiquid && _lastLiquid->SpellId)
             RemoveAurasDueToSpell(_lastLiquid->SpellId);
@@ -3664,7 +3679,7 @@ void Unit::UpdateUnderwaterState(Map* m, float x, float y, float z)
         return;
     }
 
-    if (uint32 liqEntry = liquid_status.entry)
+    if (uint32 liqEntry = vmapInfo.liquid_status.entry)
     {
         LiquidTypeEntry const* liquid = sLiquidTypeStore.LookupEntry(liqEntry);
         if (_lastLiquid && _lastLiquid->SpellId && _lastLiquid->Id != liqEntry)
@@ -3672,7 +3687,7 @@ void Unit::UpdateUnderwaterState(Map* m, float x, float y, float z)
 
         if (liquid && liquid->SpellId)
         {
-            if (Zliquid_status & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER))
+            if (vmapInfo.Zliquid_status & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER))
             {
                 if (!HasAura(liquid->SpellId))
                     CastSpell(this, liquid->SpellId, true);
@@ -14446,7 +14461,6 @@ void Unit::UpdateMount()
         for (AuraEffectList::const_reverse_iterator itr = auras.rbegin(); itr != auras.rend(); ++itr)
         {
             AuraEffect* aura = *itr;
-            aura->GetMiscValueB();
             mountType = sMountTypeStore.LookupEntry(uint32(aura->GetMiscValueB()));
             if (mountType)
             {
@@ -14458,9 +14472,6 @@ void Unit::UpdateMount()
 
     if (mountType)
     {
-        uint32 zoneId, areaId;
-        GetZoneAndAreaId(zoneId, areaId);
-
         uint32 ridingSkill = 5000;
         if (GetTypeId() == TYPEID_PLAYER)
             ridingSkill = ToPlayer()->GetSkillValue(SKILL_RIDING);
@@ -14477,13 +14488,8 @@ void Unit::UpdateMount()
             }
             else
             {
-                AreaTableEntry const* entry;
-                entry = GetAreaEntryByAreaID(areaId);
-                if (!entry)
-                    entry = GetAreaEntryByAreaID(zoneId);
-
-                if (entry)
-                    currentMountFlags = entry->mountFlags;
+                if (vmapInfo.atEntry)
+                    currentMountFlags = vmapInfo.atEntry->mountFlags;
             }
         }
 
@@ -14534,7 +14540,7 @@ void Unit::UpdateMount()
             if (mountCapability->RequiredMap != -1 && GetMapId() != uint32(mountCapability->RequiredMap))
                 continue;
 
-            if (mountCapability->RequiredArea && (mountCapability->RequiredArea != zoneId && mountCapability->RequiredArea != areaId))
+            if (mountCapability->RequiredArea && (mountCapability->RequiredArea != GetZoneId() && mountCapability->RequiredArea != GetAreaId()))
                 continue;
 
             if (mountCapability->RequiredAura && !HasAura(mountCapability->RequiredAura))
@@ -14591,8 +14597,6 @@ MountCapabilityEntry const* Unit::GetMountCapability(uint32 mountType) const
     if (!mountTypeEntry)
         return NULL;
 
-    uint32 zoneId, areaId;
-    GetZoneAndAreaId(zoneId, areaId);
     uint32 ridingSkill = 5000;
     if (GetTypeId() == TYPEID_PLAYER)
         ridingSkill = ToPlayer()->GetSkillValue(SKILL_RIDING);
@@ -14625,7 +14629,7 @@ MountCapabilityEntry const* Unit::GetMountCapability(uint32 mountType) const
         if (mountCapability->RequiredMap != -1 && int32(GetMapId()) != mountCapability->RequiredMap)
             continue;
 
-        if (mountCapability->RequiredArea && (mountCapability->RequiredArea != zoneId && mountCapability->RequiredArea != areaId))
+        if (mountCapability->RequiredArea && (mountCapability->RequiredArea != GetZoneId() && mountCapability->RequiredArea != GetAreaId()))
             continue;
 
         if (mountCapability->RequiredAura && !HasAura(mountCapability->RequiredAura))
@@ -23527,7 +23531,7 @@ bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool tel
             GetMap()->CreatureRelocation(ToCreature(), x, y, z, orientation);
 
         // code block for underwater state update
-        UpdateUnderwaterState(GetMap(), x, y, z);
+        UpdateVmapInfo(GetMap(), x, y, z);
     }
     else if (turn)
         UpdateOrientation(orientation);

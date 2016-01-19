@@ -1735,7 +1735,7 @@ class Unit : public WorldObject
 
         virtual bool IsInWater() const;
         virtual bool IsUnderWater() const;
-        virtual void UpdateUnderwaterState(Map* m, float x, float y, float z);
+        virtual void UpdateVmapInfo(Map* m, float x, float y, float z);
         bool isInAccessiblePlaceFor(Creature const* c) const;
 
         void SendHealSpellLog(Unit* victim, uint32 SpellID, uint32 Damage, uint32 OverHeal, uint32 Absorb, bool critical = false);
@@ -2159,8 +2159,6 @@ class Unit : public WorldObject
         float m_modSpellHitChance;
         float m_expertise;
         int32 m_baseSpellCritChance;
-        LiquidData liquid_status;
-        ZLiquidStatus Zliquid_status;
 
         float m_threatModifier[MAX_SPELL_SCHOOL];
         float m_modAttackSpeedPct[3];
@@ -2662,6 +2660,8 @@ class Unit : public WorldObject
         uint32 m_unitTypeMask;
         LiquidTypeEntry const* _lastLiquid;
         MountCapabilityEntry const* _mount;
+
+        bool m_vmapUpdateAllow;
 
         uint8 m_diffMode;
 
