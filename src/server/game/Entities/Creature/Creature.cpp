@@ -523,7 +523,6 @@ void Creature::Update(uint32 diff)
     volatile uint32 creatureEntry = GetEntry();
 
     m_petFollowPositionTimer += diff;
-
     if (m_petFollowPositionTimer > 500)
         m_petFollowPositionTimer = 500;
 

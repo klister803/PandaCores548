@@ -155,6 +155,28 @@ struct LiquidData
     float  depth_level;
 };
 
+struct VMAPSInfo
+{
+    VMAPSInfo()
+    {
+        isOutdoors = true;
+        areaFlag = 0;
+        liquid_type = 0;
+        mogpFlags = areaid = zoneid = 0;
+        adtId = rootId = groupId = 0;
+        Zliquid_status = LIQUID_MAP_NO_WATER;
+        atEntry = NULL;
+    }
+    bool isOutdoors;
+    uint16 areaFlag;
+    uint32 liquid_type;
+    uint32 mogpFlags, areaid, zoneid;
+    int32 adtId, rootId, groupId;
+    ZLiquidStatus Zliquid_status;
+    LiquidData liquid_status;
+    AreaTableEntry const* atEntry;
+};
+
 class GridMap
 {
     uint32  _flags;
