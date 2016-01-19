@@ -521,18 +521,17 @@ void Creature::UpdateStat()
 void Creature::Update(uint32 diff)
 {
     volatile uint32 creatureEntry = GetEntry();
+
     m_petFollowPositionTimer += diff;
 
     if (m_petFollowPositionTimer > 500)
         m_petFollowPositionTimer = 500;
 
-	if (m_LOSCheckTimer <= diff)
-	{
+    if (m_LOSCheckTimer <= diff)
+    {
         m_vmapUpdateAllow = true;
         m_LOSCheckTimer = DEFAULT_VISIBILITY_NOTIFY_PERIOD*2;
-	}
-    else 
-        m_LOSCheckTimer -= diff;
+    } else m_LOSCheckTimer -= diff;
 
     bool isPlayersPet = false;
     if (Unit * unit = ToUnit())
