@@ -3097,3 +3097,10 @@ DisableRestart = 0
 #                     1 - (Enabled)
 
 DisableUpdateOnlineTable = 0
+
+#   FasterLoading.Enabled
+#        Description: Disable some functions (like GOs, spawns, etc) to increase loading speed. Only for debugging.
+#        Default:     0 - Disabled
+#                     1 - Enabled
+
+FasterLoading.Enabled = 0

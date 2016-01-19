@@ -1416,6 +1416,10 @@ void World::LoadConfigSettings(bool reload)
     // Test new damage from dbc
     m_bool_configs[CONFIG_DAMAGE_ENABLE_FROM_DBC] = ConfigMgr::GetBoolDefault("Damage.Dbc.Enabled", false);
 
+    // Faster for loading via disable some functions like GOs, some spawns, etc
+    // only for debugging
+    m_bool_configs[CONFIG_FASTER_LOADING] = ConfigMgr::GetBoolDefault("FasterLoading.Enabled", false);
+
     if (reload)
         sScriptMgr->OnConfigLoad(reload);
 }
@@ -1529,14 +1533,18 @@ void World::SetInitialWorldSettings()
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Localization strings...");
     uint32 oldMSTime = getMSTime();
-    sObjectMgr->LoadCreatureLocales();
-    sObjectMgr->LoadGameObjectLocales();
-    sObjectMgr->LoadItemLocales();
-    sObjectMgr->LoadQuestLocales();
-    sObjectMgr->LoadNpcTextLocales();
-    sObjectMgr->LoadPageTextLocales();
-    sObjectMgr->LoadGossipMenuItemsLocales();
-    sObjectMgr->LoadPointOfInterestLocales();
+    
+    if (!getBoolConfig(CONFIG_FASTER_LOADING))
+    {
+        sObjectMgr->LoadCreatureLocales();
+        sObjectMgr->LoadGameObjectLocales();
+        sObjectMgr->LoadItemLocales();
+        sObjectMgr->LoadQuestLocales();
+        sObjectMgr->LoadNpcTextLocales();
+        sObjectMgr->LoadPageTextLocales();
+        sObjectMgr->LoadGossipMenuItemsLocales();
+        sObjectMgr->LoadPointOfInterestLocales();
+    }
 
     sObjectMgr->SetDBCLocaleIndex(GetDefaultDbcLocale());        // Get once for all the locale index of DBC language (console/broadcasts)
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Localization strings loaded in %u ms", GetMSTimeDiffToNow(oldMSTime));
@@ -1547,8 +1555,11 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING,"Loading Bad Words...");
     sWordFilterMgr->LoadBadWords();
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Page Texts...");
-    sObjectMgr->LoadPageTexts();
+    if (!getBoolConfig(CONFIG_FASTER_LOADING))
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Page Texts...");
+        sObjectMgr->LoadPageTexts();
+    }
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Game Object Templates...");         // must be after LoadPageTexts
     sObjectMgr->LoadGameObjectTemplate();
@@ -1604,8 +1615,11 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Items...");                         // must be after LoadRandomEnchantmentsTable and LoadPageTexts
     sObjectMgr->LoadItemTemplates();
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Item set names...");                // must be after LoadItemPrototypes
-    sObjectMgr->LoadItemTemplateAddon();
+    if (!getBoolConfig(CONFIG_FASTER_LOADING))
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Item set names...");                // must be after LoadItemPrototypes
+        sObjectMgr->LoadItemTemplateAddon();
+    }
 
     sLog->outInfo(LOG_FILTER_GENERAL, "Loading Item Scripts...");                 // must be after LoadItemPrototypes
     sObjectMgr->LoadItemScriptNames();
@@ -1619,8 +1633,11 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Creature templates...");
     sObjectMgr->LoadCreatureTemplates();
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Creature template addons...");
-    sObjectMgr->LoadCreatureTemplateAddons();
+    if (!getBoolConfig(CONFIG_FASTER_LOADING))
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Creature template addons...");
+        sObjectMgr->LoadCreatureTemplateAddons();
+    }
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Creature difficulty stat...");
     sObjectMgr->LoadCreatureDifficultyStat();
@@ -1649,17 +1666,23 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading pet default spells additional to levelup spells...");
     sSpellMgr->LoadPetDefaultSpells();
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Creature Addon Data...");
-    sObjectMgr->LoadCreatureAddons();                            // must be after LoadCreatureTemplates() and LoadCreatures()
+    if (!getBoolConfig(CONFIG_FASTER_LOADING))
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Creature Addon Data...");
+        sObjectMgr->LoadCreatureAddons();                            // must be after LoadCreatureTemplates() and LoadCreatures()
+    }
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Treasure Data...");
     sObjectMgr->LoadPersonalLootTemplate();
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Gameobject Data...");
-    sObjectMgr->LoadGameobjects();
+    if (!getBoolConfig(CONFIG_FASTER_LOADING))
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Gameobject Data...");
+        sObjectMgr->LoadGameobjects();
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Creature Linked Respawn...");
-    sObjectMgr->LoadLinkedRespawn();                             // must be after LoadCreatures(), LoadGameObjects()
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Creature Linked Respawn...");
+        sObjectMgr->LoadLinkedRespawn();                             // must be after LoadCreatures(), LoadGameObjects()
+    }
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Weather Data...");
     WeatherMgr::LoadWeatherData();
