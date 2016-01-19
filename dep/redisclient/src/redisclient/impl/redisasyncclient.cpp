@@ -75,7 +75,7 @@ void RedisAsyncClient::command(uint64 guid, const std::string &cmd, const RedisB
                           const RedisBuffer &arg2,
                           const boost::function<void(const RedisValue &v, uint64 guid)> &handler)
 {
-    fprintf(stderr, "RedisAsyncClient::command: guid: %i id %i\n", guid, boost::this_thread::get_id());
+    //fprintf(stderr, "RedisAsyncClient::command: guid: %i id %i\n", guid, boost::this_thread::get_id());
 
     if(stateValid())
     {

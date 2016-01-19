@@ -130,16 +130,22 @@ class RedisWorkerPool
 
         void AsyncExecute(const char* cmd, const char* key, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
         {
-            BasicRedisTask* task = new BasicRedisTask(cmd, key, nullptr, guid, handler);
-            Enqueue(task);
+            T* t = GetFreeConnection(IDX_ASYNC);
+            t->ExecuteAsync(cmd, key, guid, handler);
+
+            //BasicRedisTask* task = new BasicRedisTask(cmd, key, nullptr, guid, handler);
+            //Enqueue(task);
         }
 
         void AsyncExecuteSet(const char* cmd, const char* key, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
         {
-            sLog->outInfo(LOG_FILTER_SQL_DRIVER, "AsyncExecuteSet cmd %s key %s value %s %i", cmd, key, value, boost::this_thread::get_id());
+            //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "AsyncExecuteSet cmd %s key %s value %s %i", cmd, key, value, boost::this_thread::get_id());
 
-            BasicRedisTask* task = new BasicRedisTask(cmd, key, value, guid, handler);
-            Enqueue(task);
+            T* t = GetFreeConnection(IDX_ASYNC);
+            t->ExecuteAsyncSet(cmd, key, value, guid, handler);
+
+            //BasicRedisTask* task = new BasicRedisTask(cmd, key, value, guid, handler);
+            //Enqueue(task);
         }
 
     private:

@@ -26,7 +26,7 @@ BasicRedisTask::~BasicRedisTask()
 
 bool BasicRedisTask::Execute()
 {
-    sLog->outInfo(LOG_FILTER_SQL_DRIVER, "asicRedisTask::Execute cmd %s key %s value %s %i", m_cmd, m_key, m_value, boost::this_thread::get_id());
+    //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "asicRedisTask::Execute cmd %s key %s value %s %i", m_cmd, m_key, m_value, boost::this_thread::get_id());
 
     if (m_value)
         m_conn->ExecuteAsyncSet(m_cmd, m_key, m_value, m_guid, m_hander);

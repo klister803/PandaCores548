@@ -1877,7 +1877,7 @@ public:
         RedisDatabase.AsyncExecuteSet("SET", cval, testJsonStr.c_str(), player->GetGUIDLow(), [&](const RedisValue &v, uint64 guid) {
 
             sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "HandleRedisPrint Redis AsyncSet guid %i", guid);
-            /*RedisDatabase.AsyncExecute("GET", &cmd, guid, [&](const RedisValue &v, uint64 guid, const char& cmd) {
+            RedisDatabase.AsyncExecute("GET", "1", guid, [&](const RedisValue &v, uint64 guid) {
                 Player* player = HashMapHolder<Player>::Find(guid);
                 if (!player)
                     return;
@@ -1896,11 +1896,11 @@ public:
                     testJsonFinish["Class"].asString().c_str(),
                     testJsonFinish["Power"][2].asInt(), guid);
 
-                RedisDatabase.AsyncExecute("DEL", &cmd, guid, [&](const RedisValue &v, uint64 guid, const char& cmd) {
+                RedisDatabase.AsyncExecute("DEL", "1", guid, [&](const RedisValue &v, uint64 guid) {
                     sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "HandleRedisPrint Redis AsyncGet Del guid %i", guid);
 
                 });
-            });*/
+            });
         });
 
         /*int32 keyCount = 0;
