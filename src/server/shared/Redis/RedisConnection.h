@@ -58,8 +58,11 @@ class RedisConnection
         void Close();
 
     public:
-        bool ExecuteSet(const char* key, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
-        bool ExecuteGet(const char* key, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
+        void ExecuteAsyncSet(const char* cmd, const char* key, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
+        void ExecuteAsync(const char* cmd, const char* key, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
+
+        const RedisValue ExecuteSet(const char* cmd, const char* key, const char* value);
+        const RedisValue Execute(const char* cmd, const char* key);
 
         operator bool() const { return m_worker != NULL; }
 

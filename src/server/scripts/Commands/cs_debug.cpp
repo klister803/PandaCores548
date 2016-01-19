@@ -1864,27 +1864,43 @@ public:
         Json::FastWriter wbuilder;
         std::string testJsonStr = wbuilder.write(testJson);
 
-        //RedisDatabase.ExecuteSet(cval, testJsonStr.c_str());
-        //RedisDatabase.ExecuteGet(cval);
-        RedisDatabase.ExecuteGet(cval, player->GetGUIDLow(), [&](const RedisValue &v, uint64 guid) {
-            Player* player = HashMapHolder<Player>::Find(guid);
-            if (!player)
-                return;
+        RedisValue result;
 
-            Json::Reader reader;
-            Json::Value testJsonFinish;
-            bool isReader = reader.parse(v.toString().c_str(), testJsonFinish);
-            sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "HandleRedisPrint isReader %u result %s name %s Class %s Power %i guid %u",
-                isReader, v.toString().c_str(),
-                testJsonFinish["name"].asString().c_str(),
-                testJsonFinish["Class"].asString().c_str(),
-                testJsonFinish["Power"][2].asInt(), guid);
-            ChatHandler(player).PSendSysMessage("HandleRedisPrint isReader %u result %s name %s Class %s Power %i guid %u",
-                isReader, v.toString().c_str(),
-                testJsonFinish["name"].asString().c_str(),
-                testJsonFinish["Class"].asString().c_str(),
-                testJsonFinish["Power"][2].asInt(), guid);
+        result = RedisDatabase.ExecuteSet("SET", cval, testJsonStr.c_str());
+        sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "HandleRedisPrint Redis Set cval %s result %s", cval, result.toString().c_str());
 
+        result = RedisDatabase.Execute("GET", cval);
+        sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "HandleRedisPrint Redis Get cval %s result %s", cval, result.toString().c_str());
+
+        result = RedisDatabase.Execute("DEL", cval);
+
+        RedisDatabase.AsyncExecuteSet("SET", cval, testJsonStr.c_str(), player->GetGUIDLow(), [&](const RedisValue &v, uint64 guid) {
+
+            sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "HandleRedisPrint Redis AsyncSet guid %i", guid);
+            /*RedisDatabase.AsyncExecute("GET", &cmd, guid, [&](const RedisValue &v, uint64 guid, const char& cmd) {
+                Player* player = HashMapHolder<Player>::Find(guid);
+                if (!player)
+                    return;
+
+                Json::Reader reader;
+                Json::Value testJsonFinish;
+                bool isReader = reader.parse(v.toString().c_str(), testJsonFinish);
+                sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "HandleRedisPrint isReader %u result %s name %s Class %s Power %i guid %u",
+                    isReader, v.toString().c_str(),
+                    testJsonFinish["name"].asString().c_str(),
+                    testJsonFinish["Class"].asString().c_str(),
+                    testJsonFinish["Power"][2].asInt(), guid);
+                ChatHandler(player).PSendSysMessage("HandleRedisPrint isReader %u result %s name %s Class %s Power %i guid %u",
+                    isReader, v.toString().c_str(),
+                    testJsonFinish["name"].asString().c_str(),
+                    testJsonFinish["Class"].asString().c_str(),
+                    testJsonFinish["Power"][2].asInt(), guid);
+
+                RedisDatabase.AsyncExecute("DEL", &cmd, guid, [&](const RedisValue &v, uint64 guid, const char& cmd) {
+                    sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "HandleRedisPrint Redis AsyncGet Del guid %i", guid);
+
+                });
+            });*/
         });
 
         /*int32 keyCount = 0;

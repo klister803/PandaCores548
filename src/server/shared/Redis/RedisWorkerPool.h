@@ -95,6 +95,16 @@ class RedisWorkerPool
             sLog->outInfo(LOG_FILTER_SQL_DRIVER, "All connections on RedisPool '%s' closed.", GetDatabaseName());
         }
 
+        bool isConnected()
+        {
+            for (uint8 i = 0; i < _connectionCount[IDX_ASYNC]; ++i)
+            {
+                T* t = _connections[IDX_ASYNC][i];
+                if (t->GetWorker()->IsConnected())
+                    return true;
+            }
+        }
+
         inline RedisConnectionInfo const* GetConnectionInfo() const
         {
             return _connectionInfo.get();
@@ -102,71 +112,33 @@ class RedisWorkerPool
 
         //! Enqueues a one-way SQL operation in string format that will be executed asynchronously.
         //! This method should only be used for queries that are only executed once, e.g during startup.
-        void ExecuteGet(const char* key, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
+        const RedisValue Execute(const char* cmd, const char* key)
         {
             T* t = GetFreeConnection();
-            t->ExecuteGet(key, guid, handler);
+            return t->Execute(cmd, key);
         }
 
-        void ExecuteSet(const char* key, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
+        const RedisValue ExecuteSet(const char* cmd, const char* key, const char* value)
         {
             T* t = GetFreeConnection();
-            t->ExecuteSet(key, value, guid, handler);
-        }
-
-        //! Directly executes a one-way SQL operation in string format, that will block the calling thread until finished.
-        //! This method should only be used for queries that are only executed once, e.g during startup.
-        void DirectExecute(const char* sql)
-        {
-            if (!sql)
-                return;
-
-            T* t = GetFreeConnection();
-            t->ExecuteGet(sql);
-        }
-
-        //! Directly executes an SQL query in string format that will block the calling thread until finished.
-        //! Returns reference counted auto pointer, no need for manual memory management in upper level code.
-        QueryResult Query(const char* sql, T* conn = nullptr)
-        {
-            if (!conn)
-                conn = GetFreeConnection();
-
-            ResultSet* result = conn->Query(sql);
-            conn->Unlock();
-            if (!result || !result->GetRowCount() || !result->NextRow())
-            {
-                delete result;
-                return QueryResult(NULL);
-            }
-
-            return QueryResult(result);
+            return t->ExecuteSet(cmd, key, value);
         }
 
         /**
             Asynchronous query (with resultset) methods.
         */
 
-        //! Enqueues a query in string format that will set the value of the QueryResultFuture return object as soon as the query is executed.
-        //! The return value is then processed in ProcessQueryCallback methods.
-        QueryResultFuture AsyncQuery(const char* sql)
+        void AsyncExecute(const char* cmd, const char* key, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
         {
-            BasicRedisTask* task = new BasicRedisTask(sql);
-            // Store future result before enqueueing - task might get already processed and deleted before returning from this method
-            QueryResultFuture result = task->GetFuture();
-            Enqueue(task);
-            return result;
-        }
-
-        void AsyncExecuteGet(const char* key)
-        {
-            BasicRedisTask* task = new BasicRedisTask(key);
+            BasicRedisTask* task = new BasicRedisTask(cmd, key, nullptr, guid, handler);
             Enqueue(task);
         }
 
-        void AsyncExecuteSet(const char* key, const char* value)
+        void AsyncExecuteSet(const char* cmd, const char* key, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
         {
-            BasicRedisTask* task = new BasicRedisTask(key, value);
+            sLog->outInfo(LOG_FILTER_SQL_DRIVER, "AsyncExecuteSet cmd %s key %s value %s %i", cmd, key, value, boost::this_thread::get_id());
+
+            BasicRedisTask* task = new BasicRedisTask(cmd, key, value, guid, handler);
             Enqueue(task);
         }
 
@@ -178,17 +150,17 @@ class RedisWorkerPool
 
         //! Gets a free connection in the synchronous connection pool.
         //! Caller MUST call t->Unlock() after touching the MySQL context to prevent deadlocks.
-        T* GetFreeConnection()
+        T* GetFreeConnection(InternalIndex idx = IDX_SYNCH)
         {
             uint8 i = 0;
-            size_t num_cons = _connectionCount[IDX_SYNCH];
+            size_t num_cons = _connectionCount[idx];
             T* t = NULL;
             //! Block forever until a connection is free
             for (;;)
             {
-                t = _connections[IDX_SYNCH][++i % num_cons];
+                t = _connections[idx][++i % num_cons];
                 //! Must be matched with t->Unlock() or you will get deadlocks
-                if (t->LockIfReady())
+                if (t->GetWorker()->IsConnected() && t->LockIfReady())
                     break;
             }
 

@@ -35,16 +35,16 @@ RedisWorker::~RedisWorker()
     _workerThread.join();
 }
 
-void RedisWorker::onConnect(bool connected, const std::string &errorMessage)
+void RedisWorker::onAsyncConnect(bool connected, const std::string &errorMessage)
 {
     if (connected)
     {
         m_connected = true;
-        sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::onConnect connected Succes %i", boost::this_thread::get_id());
+        sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::onAsyncConnect connected Succes %i", boost::this_thread::get_id());
         return;
     }
     else
-        sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::onConnect connected Faile %i", boost::this_thread::get_id());
+        sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::onAsyncConnect connected Faile %i", boost::this_thread::get_id());
 }
 
 void RedisWorker::onGet(const RedisValue &value)
@@ -59,18 +59,38 @@ void RedisWorker::onSet(const RedisValue &value)
     _connection->Unlock();
 }
 
-void RedisWorker::GetKey(const char* key, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
+const RedisValue RedisWorker::GetKey(const char* cmd, const char* key)
 {
     //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::GetKey key %s %i", key, boost::this_thread::get_id());
 
-    m_client->command(guid, "GET", key, handler);
+    const RedisValue v = m_client->command(cmd, key);
+    _connection->Unlock();
+    return v;
 }
 
-void RedisWorker::SetKey(const char* key, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
+const RedisValue RedisWorker::SetKey(const char* cmd, const char* key, const char* value)
 {
     //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::SetKey key %s value %s %i", key, value, boost::this_thread::get_id());
 
-    m_client->command(guid, "SET", key, value, handler);
+    const RedisValue v = m_client->command(cmd, key, value);
+    _connection->Unlock();
+    return v;
+}
+
+void RedisWorker::GetKeyAsync(const char* cmd, const char* key, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
+{
+    sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::GetKey cmd %s key %s %i", cmd, key, boost::this_thread::get_id());
+
+    m_aclient->command(guid, cmd, key, handler);
+    _connection->Unlock();
+}
+
+void RedisWorker::SetKeyAsync(const char* cmd, const char* key, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
+{
+    sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::SetKey cmd %s key %s value %s guid %i thread %i", cmd, key, value, guid, boost::this_thread::get_id());
+
+    m_aclient->command(guid, cmd, key, value, handler);
+    _connection->Unlock();
 }
 
 boost::asio::io_service& RedisWorker::get_io_service()
@@ -95,10 +115,17 @@ void RedisWorker::WorkerThread()
     io_services_.push_back(io_service);
     work_.push_back(work);
 
-    m_client = new RedisAsyncClient(*io_service);
-
-    m_client->asyncConnect(endpoint, boost::bind(&RedisWorker::onConnect, this, _1, _2));
-
+    if (_queue)
+    {
+        m_aclient = new RedisAsyncClient(*io_service);
+        m_aclient->asyncConnect(endpoint, boost::bind(&RedisWorker::onAsyncConnect, this, _1, _2));
+    }
+    else
+    {
+        std::string errmsg;
+        m_client = new RedisSyncClient(*io_service);
+        m_connected = m_client->connect(endpoint, errmsg);
+    }
     _clientThread = boost::thread(boost::bind(&boost::asio::io_service::run, io_services_[0]));
 
     sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::WorkerThread() run %i", boost::this_thread::get_id());

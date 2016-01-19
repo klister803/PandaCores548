@@ -39,22 +39,24 @@ void RedisConnection::Close()
     delete this;
 }
 
-bool RedisConnection::ExecuteSet(const char* key, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
+void RedisConnection::ExecuteAsyncSet(const char* cmd, const char* key, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
 {
-    //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisConnection::Execute %i", boost::this_thread::get_id());
-
-    m_worker->SetKey(key, value, guid, handler);
-
-    return true;
+    m_worker->SetKeyAsync(cmd, key, value, guid, handler);
 }
 
-bool RedisConnection::ExecuteGet(const char* key, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
+void RedisConnection::ExecuteAsync(const char* cmd, const char* key, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
 {
-    //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisConnection::Execute %i", boost::this_thread::get_id());
+    m_worker->GetKeyAsync(cmd, key, guid, handler);
+}
 
-    m_worker->GetKey(key, guid, handler);
+const RedisValue RedisConnection::ExecuteSet(const char* cmd, const char* key, const char* value)
+{
+    return m_worker->SetKey(cmd, key, value);
+}
 
-    return true;
+const RedisValue RedisConnection::Execute(const char* cmd, const char* key)
+{
+    return m_worker->GetKey(cmd, key);
 }
 
 

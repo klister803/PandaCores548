@@ -10,6 +10,7 @@
 #include "Log.h"
 
 #include <src/redisclient/redisasyncclient.h>
+#include <src/redisclient/redissyncclient.h>
 
 #include <boost/asio/ip/address.hpp>
 #include <boost/asio/io_service.hpp>
@@ -31,18 +32,20 @@ class RedisWorker
         ~RedisWorker();
 
         // Run when query to redis is complete
-        void onConnect(bool connected, const std::string &errorMessage);
+        void onAsyncConnect(bool connected, const std::string &errorMessage);
         void onSet(const RedisValue &value);
         void onGet(const RedisValue &value);
 
         // Execute
-        void GetKey(const char* key, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
-        void SetKey(const char* key, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
+        const RedisValue GetKey(const char* cmd, const char* key);
+        const RedisValue SetKey(const char* cmd, const char* key, const char* value);
+
+        void GetKeyAsync(const char* cmd, const char* key, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
+        void SetKeyAsync(const char* cmd, const char* key, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
 
         /// Get an io_service to use.
         boost::asio::io_service& get_io_service();
 
-        RedisAsyncClient* GetHandle()  { return m_client; }
         bool IsConnected()  { return m_connected; }
 
     private:
@@ -66,7 +69,8 @@ class RedisWorker
         boost::thread _clientThread;
 
         std::atomic_bool _cancelationToken;
-        RedisAsyncClient*     m_client;
+        RedisAsyncClient*     m_aclient;
+        RedisSyncClient*      m_client;
         bool m_connected;
 
         RedisWorker(RedisWorker const& right) = delete;
