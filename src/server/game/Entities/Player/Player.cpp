@@ -23853,17 +23853,20 @@ void Player::DropModCharge(SpellModifier* mod, Spell* spell)
         return;
     }
 
-//     if (spell && GetGlobalCooldownMgr().HasGlobalCooldown(spell->GetSpellInfo()))
-//         return;
-
-    if (spell && mod->ownerAura && mod->charges > 0)
+    if (spell)
     {
+        if (mod->op == SPELLMOD_COST && GetGlobalCooldownMgr().HasGlobalCooldown(spell->GetSpellInfo()))
+            return;
+
         //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "DropModCharge spell %i, modId %i, charges %i, GetCharges %i, GetStackAmount %i, op %i", spell->GetSpellInfo()->Id, mod->spellId, mod->charges, mod->ownerAura->GetCharges(), mod->ownerAura->GetStackAmount(), mod->op);
 
-        if (--mod->charges == 0)
-            mod->charges = -1;
+        if (mod->ownerAura && mod->charges > 0)
+        {
+            if (--mod->charges == 0)
+                mod->charges = -1;
 
-        spell->m_appliedMods.insert(mod->ownerAura);
+            spell->m_appliedMods.insert(mod->ownerAura);
+        }
     }
 }
 
