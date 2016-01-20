@@ -4079,7 +4079,10 @@ void Unit::RemoveOwnedAura(AuraMap::iterator &i, AuraRemoveMode removeMode)
     if (m_auraUpdateIterator == i)
         ++m_auraUpdateIterator;
 
+    m_ownedAurasLock.acquire();
     m_ownedAuras.erase(i);
+    m_ownedAurasLock.release();
+
     m_removedAuras.push_back(aura);
 
     // Unregister single target aura

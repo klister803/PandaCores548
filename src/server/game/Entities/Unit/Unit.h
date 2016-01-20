@@ -2738,6 +2738,7 @@ class Unit : public WorldObject
         uint32 _delayInterruptFlag;
 
         mutable ACE_Thread_Mutex m_auraEffectListLock;
+        mutable ACE_Thread_Mutex m_ownedAurasLock;
 };
 
 class DelayCastEvent : public BasicEvent
