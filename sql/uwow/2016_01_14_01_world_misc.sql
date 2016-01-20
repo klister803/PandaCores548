@@ -25,10 +25,10 @@ INSERT INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `use
 delete from conditions where SourceTypeOrReferenceId = 15 and SourceGroup = 15555;
 delete from conditions where SourceTypeOrReferenceId = 18 and SourceGroup = 70271;
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES 
-(15, 15555, 0, 0, 0, 9, 0, 32325, 0, 0, 0, 0, '', NULL),
+(15, 15555, 0, 0, 0, 8, 0, 32325, 0, 0, 0, 0, '', NULL),
 (15, 15555, 0, 0, 0, 1, 0, 101508, 0, 0, 0, 0, '', NULL),
 (15, 15555, 0, 0, 0, 1, 0, 137206, 0, 0, 0, 0, '', NULL),
-(18, 70271, 139200, 0, 0, 9, 0, 32325, 0, 0, 0, 0, '', NULL),
+(18, 70271, 139200, 0, 0, 8, 0, 32325, 0, 0, 0, 0, '', NULL),
 (18, 70271, 139200, 0, 0, 1, 0, 101508, 0, 0, 1, 0, '', NULL),
 (18, 70271, 139200, 0, 0, 1, 0, 137206, 0, 0, 1, 0, '', NULL);
 
