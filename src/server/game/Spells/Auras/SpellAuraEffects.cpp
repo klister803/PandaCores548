@@ -7856,6 +7856,10 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
         // Spell exist but require custom code
         switch (auraId)
         {
+            case 122761:
+                caster->SetFacingToObject(target);
+                caster->CastSpell(target, triggerSpellId, true);
+                return;
             // Hour of Twilight, Ultraxion, Dragon Soul
             case 106371:
                 if (caster)

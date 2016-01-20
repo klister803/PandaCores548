@@ -33,7 +33,7 @@ enum eSpells
     SPELL_FORCE_AND_VERVE           = 122713,
     //Platform 2
     SPELL_ATTENUATION               = 122496,
-    
+
     //Other
     SPELL_SONIC_RING_VISUAL         = 122334,
 };
@@ -114,13 +114,15 @@ class boss_vizier_zorlok : public CreatureScript
                 {
                     if (state)
                     {
-                        if (Creature* gc = me->GetCreature(*me, instance->GetData64(NPC_GAS_CONTROLLER)))
-                            gc->AI()->DoAction(ACTION_GAS_ON);
+                        //if (Creature* gc = me->GetCreature(*me, instance->GetData64(NPC_GAS_CONTROLLER)))
+                        //    gc->AI()->DoAction(ACTION_GAS_ON);
+                        DoCast(me, SPELL_GAS_VISUAL, true);
                     }
                     else
                     {
-                        if (Creature* gc = me->GetCreature(*me, instance->GetData64(NPC_GAS_CONTROLLER)))
-                            gc->AI()->DoAction(ACTION_GAS_OFF);
+                        //if (Creature* gc = me->GetCreature(*me, instance->GetData64(NPC_GAS_CONTROLLER)))
+                        //    gc->AI()->DoAction(ACTION_GAS_OFF);
+                        me->RemoveAllAreaObjects();
                     }
                 }
             }
