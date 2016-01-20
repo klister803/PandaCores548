@@ -33,6 +33,7 @@ enum eSpells
     SPELL_FORCE_AND_VERVE           = 122713,
     //Platform 2
     SPELL_ATTENUATION               = 122496,
+    SPELL_BERSERK                   = 47008,
 
     //Other
     SPELL_SONIC_RING_VISUAL         = 122334,
@@ -91,6 +92,7 @@ class boss_vizier_zorlok : public CreatureScript
 
             uint8 newindex, lastindex, flycount;
             uint8 InhaleCount;
+            uint32 berserkTimer;
             bool flyMove;
 
             void Reset()
@@ -103,10 +105,13 @@ class boss_vizier_zorlok : public CreatureScript
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->RemoveAurasDueToSpell(SPELL_PHEROMONES_OF_ZEAL_BUFF);
                 me->RemoveAurasDueToSpell(SPELL_INHALE);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PHEROMONES_OF_ZEAL);
+                instance->DoRemoveAurasDueToSpellOnPlayers(122706); // AT buff
                 newindex = 0;
                 lastindex = urand(0, 2);
                 flycount = 0;
                 InhaleCount = 0;
+                berserkTimer = 60 * MINUTE * IN_MILLISECONDS;
             }
 
             void GasControl(bool state)
@@ -244,6 +249,7 @@ class boss_vizier_zorlok : public CreatureScript
             void JustDied(Unit* /*killer*/)
             {
                 _JustDied();
+
                 Map::PlayerList const& players = me->GetMap()->GetPlayers();
                 if (!players.isEmpty())
                 {
@@ -259,6 +265,13 @@ class boss_vizier_zorlok : public CreatureScript
             {
                 if (!UpdateVictim())
                     return;
+
+                if (berserkTimer <= diff)
+                {
+                    DoCast(me, SPELL_BERSERK, true);
+                    berserkTimer = 60 * MINUTE * IN_MILLISECONDS;
+                }
+                else berserkTimer -= diff;
 
                 events.Update(diff);
 
