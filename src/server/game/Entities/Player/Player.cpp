@@ -23853,8 +23853,8 @@ void Player::DropModCharge(SpellModifier* mod, Spell* spell)
         return;
     }
 
-    if (spell && GetGlobalCooldownMgr().HasGlobalCooldown(spell->GetSpellInfo()))
-        return;
+//     if (spell && GetGlobalCooldownMgr().HasGlobalCooldown(spell->GetSpellInfo()))
+//         return;
 
     if (spell && mod->ownerAura && mod->charges > 0)
     {
