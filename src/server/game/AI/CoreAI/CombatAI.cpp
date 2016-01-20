@@ -442,7 +442,8 @@ void AnyPetAI::UpdateAI(uint32 diff)
                 return;
             }
 
-            owner->SetInCombatWith(me->getVictim());
+            if (owner)
+                owner->SetInCombatWith(me->getVictim());
 
             if(!me->GetCasterPet())
                 DoMeleeAttackIfReady();
