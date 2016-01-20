@@ -19,8 +19,9 @@ INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targe
 (363, 0, 1, 0, 4096, 123812, 0, 0, 0, 0, 0, 0, 0, 'Pheromones of Zeal - Apply'),
 (363, 1, 42, 1, 4096, 123812, 0, 0, 0, 0, 0, 0, 0, 'Pheromones of Zeal - Remove');
 
-delete from spell_target_filter where spellId = 122336;
+delete from spell_target_filter where spellId in (122336,124673);
 INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `option`, `param1`, `param2`, `param3`, `aura`, `chance`, `effectMask`, `resizeType`, `count`, `maxcount`, `addcount`, `addcaster`, `comments`) VALUES 
-(122336, 7, 2, 0, 4, 0, 0, 0, 3, 0, 0, 0, 0, 0, 'Zorlok - Sonic Ring');
+(122336, 7, 2, 0, 4, 0, 0, 0, 3, 0, 0, 0, 0, 0, 'Zorlok - Sonic Ring'),
+(124673, 7, 2, 0, 4, 0, 0, 0, 3, 0, 0, 0, 0, 0, 'Zorlok - Sonic Ring_H');
 
 update creature_template set minlevel = 93, maxlevel = 93, faction = 14, speed_walk = 1, speed_run = 1, ScriptName = 'npc_zorlok_sonic_ring', flags_extra = 128 where entry in (62689, 62716, 62717, 62743, 62744);

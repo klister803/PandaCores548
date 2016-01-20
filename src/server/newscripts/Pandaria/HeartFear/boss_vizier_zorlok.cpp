@@ -36,6 +36,7 @@ enum eSpells
 
     //Other
     SPELL_SONIC_RING_VISUAL         = 122334,
+    SPELL_SONIC_RING_VISUAL_H       = 124668,
 };
 
 enum eEvents
@@ -435,6 +436,8 @@ class npc_zorlok_sonic_ring : public CreatureScript
             void IsSummonedBy(Unit* summoner)
             {
                 DoCast(me, SPELL_SONIC_RING_VISUAL, true);
+                if (me->GetMap()->IsHeroic())
+                    DoCast(me, SPELL_SONIC_RING_VISUAL_H, true);
                 Position pos;
                 me->GetRandomNearPosition(pos, 40);
                 me->GetMotionMaster()->MovePoint(1, pos);
