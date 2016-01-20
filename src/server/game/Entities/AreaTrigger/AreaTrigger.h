@@ -221,6 +221,7 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         float getMoveSpeed() const { return _moveSpeed; }
         uint32 GetObjectMovementParts() const;
         void PutObjectUpdateMovement(ByteBuffer* data) const;
+        bool IsInHeight(Unit* unit, WorldObject const* obj);
         bool IsInPolygon(Unit* target, WorldObject const* obj);
         float CalculateRadius();
 

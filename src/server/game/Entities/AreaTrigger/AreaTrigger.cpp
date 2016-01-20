@@ -309,7 +309,7 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, AreaTriggerActionMoment acti
             }
             else
             {
-                if (!unit->IsWithinDistInMap(searcher, GetRadius(), true, false) ||
+                if (!IsInHeight(unit, searcher) || !unit->IsWithinDistInMap(searcher, GetRadius(), true, false) ||
                     (isMoving() && _HasActionsWithCharges(AT_ACTION_MOMENT_ON_THE_WAY) && !unit->IsInBetween(this, m_movePath[m_currentNode + 1].x, m_movePath[m_currentNode + 1].y)))
                 {
                     affectedPlayers.erase(itr);
@@ -328,6 +328,9 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, AreaTriggerActionMoment acti
             if (!IsUnitAffected((*itr)->GetGUID()))
             {
                 if(atInfo.polygon && !IsInPolygon((*itr), searcher))
+                    continue;
+
+                if (!IsInHeight((*itr), searcher))
                     continue;
 
                 //No 
@@ -884,13 +887,24 @@ void AreaTrigger::UpdateMovement(uint32 diff)
 
 }
 
+bool AreaTrigger::IsInHeight(Unit* unit, WorldObject const* obj)
+{
+    if (!atInfo.Height)
+        return true;
+
+    float z_source = unit->GetPositionZ() - obj->GetPositionZ();
+    if(z_source > atInfo.Height)
+        return false;
+
+    return true;
+}
+
 bool AreaTrigger::IsInPolygon(Unit* unit, WorldObject const* obj)
 {
     if (atInfo.polygonPoints.size() < 3)
         return false;
 
-    float z_source = unit->GetPositionZ() - obj->GetPositionZ(); //Point Z on polygon
-    if(atInfo.Height && z_source > atInfo.Height)
+    if(!IsInHeight(unit, obj))
         return false;
 
     static const int q_patt[2][2]= { {0,1}, {3,2} };
