@@ -5142,6 +5142,14 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
 
             switch (m_spellInfo->Id)
             {
+                case 124258: //Storm Unleashed Ride Me
+                {
+                    if (!unitTarget || unitTarget->GetUnitState() == UNIT_STATE_ONVEHICLE)
+                        return;
+
+                    unitTarget->CastSpell(m_caster, damage, true);
+                    return;
+                }
                 case 143483: //Paragons Purpose heal, Paragons of the Klaxxi[SO]
                 {
                     if (!unitTarget)
@@ -5163,7 +5171,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
 
                         if (unitTarget->GetStat(STAT_STRENGTH) > stat) { spellId = 87584; stat = unitTarget->GetStat(STAT_STRENGTH); }
                         if (unitTarget->GetStat(STAT_AGILITY)  > stat) { spellId = 87586; stat = unitTarget->GetStat(STAT_AGILITY); }
-                        if (unitTarget->GetStat(STAT_INTELLECT)  > stat) { spellId = 87587; stat = unitTarget->GetStat(STAT_INTELLECT); }
+                        if (unitTarget->GetStat(STAT_INTELLECT) > stat) { spellId = 87587; stat = unitTarget->GetStat(STAT_INTELLECT); }
                         if (unitTarget->GetStat(STAT_SPIRIT)  > stat) { spellId = 87588; }
                         
                         if (spellId)
