@@ -25,6 +25,7 @@
 #include "World.h"
 #include "WorldSocketMgr.h"
 #include "Database/DatabaseEnv.h"
+#include "Redis/RedisEnv.h"
 #include "ScriptMgr.h"
 #include "BattlegroundMgr.h"
 #include "MapManager.h"

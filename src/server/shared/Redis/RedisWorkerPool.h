@@ -69,7 +69,7 @@ class RedisWorkerPool
             if (res)
                 sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisPool '%s' opened successfully. %u total connections running.", GetDatabaseName(), (_connectionCount[IDX_SYNCH] + _connectionCount[IDX_ASYNC]));
             else
-                sLog->outError(LOG_FILTER_SQL_DRIVER, "RedisPool %s NOT opened. There were errors opening the MySQL connections. Check your SQLDriverLogFile for specific errors.", GetDatabaseName());
+                sLog->outError(LOG_FILTER_SQL_DRIVER, "RedisPool %s NOT opened. There were errors opening the Redis connections. Check your SQLDriverLogFile for specific errors.", GetDatabaseName());
             return res;
         }
 
@@ -95,14 +95,42 @@ class RedisWorkerPool
             sLog->outInfo(LOG_FILTER_SQL_DRIVER, "All connections on RedisPool '%s' closed.", GetDatabaseName());
         }
 
-        bool isConnected()
+        //! Check Redis connections
+        void CheckConnect()
         {
+            //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "CheckConnect");
+
+            //uint32 oldMSTime = getMSTime();
+            for (uint8 i = 0; i < _connectionCount[IDX_SYNCH]; ++i)
+            {
+                T* t = _connections[IDX_SYNCH][i];
+                if (!t->GetWorker()->IsConnected())
+                    boost::thread(&RedisWorker::Reconnect, t->GetWorker());
+            }
+            //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "CheckConnect %u ms", GetMSTimeDiffToNow(oldMSTime));
             for (uint8 i = 0; i < _connectionCount[IDX_ASYNC]; ++i)
             {
                 T* t = _connections[IDX_ASYNC][i];
+                if (!t->GetWorker()->IsConnected())
+                    t->GetWorker()->Reconnect();
+            }
+            //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "CheckConnect %u ms", GetMSTimeDiffToNow(oldMSTime));
+        }
+
+        bool isConnected(InternalIndex idx = IDX_SYNCH)
+        {
+            //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "isConnected");
+
+            for (uint8 i = 0; i < _connectionCount[idx]; ++i)
+            {
+                T* t = _connections[idx][i];
                 if (t->GetWorker()->IsConnected())
                     return true;
+                //else
+                    //t->GetWorker()->Reconnect();
             }
+            //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "isConnected false");
+            return false;
         }
 
         inline RedisConnectionInfo const* GetConnectionInfo() const
@@ -114,12 +142,22 @@ class RedisWorkerPool
         //! This method should only be used for queries that are only executed once, e.g during startup.
         const RedisValue Execute(const char* cmd, const char* key)
         {
+            //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "AsyncExecute");
+
+            if (!isConnected())
+                return RedisValue::RedisValue();
+
             T* t = GetFreeConnection();
             return t->Execute(cmd, key);
         }
 
         const RedisValue ExecuteSet(const char* cmd, const char* key, const char* value)
         {
+            //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "AsyncExecute");
+
+            if (!isConnected())
+                return RedisValue::RedisValue();
+
             T* t = GetFreeConnection();
             return t->ExecuteSet(cmd, key, value);
         }
@@ -130,6 +168,13 @@ class RedisWorkerPool
 
         void AsyncExecute(const char* cmd, const char* key, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
         {
+            //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "AsyncExecute");
+
+            if (!isConnected(IDX_ASYNC))
+                return;
+
+            //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "AsyncExecuteSet cmd %s key %s", cmd, key);
+
             T* t = GetFreeConnection(IDX_ASYNC);
             t->ExecuteAsync(cmd, key, guid, handler);
 
@@ -139,7 +184,12 @@ class RedisWorkerPool
 
         void AsyncExecuteSet(const char* cmd, const char* key, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
         {
-            //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "AsyncExecuteSet cmd %s key %s value %s %i", cmd, key, value, boost::this_thread::get_id());
+            //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "AsyncExecuteSet");
+
+            if (!isConnected(IDX_ASYNC))
+                return;
+
+            //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "AsyncExecuteSet cmd %s key %s value %s", cmd, key, value);
 
             T* t = GetFreeConnection(IDX_ASYNC);
             t->ExecuteAsyncSet(cmd, key, value, guid, handler);
@@ -155,7 +205,7 @@ class RedisWorkerPool
         }
 
         //! Gets a free connection in the synchronous connection pool.
-        //! Caller MUST call t->Unlock() after touching the MySQL context to prevent deadlocks.
+        //! Caller MUST call t->Unlock() after touching the Redis context to prevent deadlocks.
         T* GetFreeConnection(InternalIndex idx = IDX_SYNCH)
         {
             uint8 i = 0;
@@ -165,6 +215,9 @@ class RedisWorkerPool
             for (;;)
             {
                 t = _connections[idx][++i % num_cons];
+
+                //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "GetFreeConnection i %i idx %i IsConnected %i", i, idx, t->GetWorker()->IsConnected());
+
                 //! Must be matched with t->Unlock() or you will get deadlocks
                 if (t->GetWorker()->IsConnected() && t->LockIfReady())
                     break;
@@ -181,7 +234,7 @@ class RedisWorkerPool
         //! Queue shared by async worker threads.
         std::unique_ptr<ProducerConsumerQueue<RedisOperation*>> _queue;
         std::vector<std::vector<T*>> _connections;
-        //! Counter of MySQL connections;
+        //! Counter of Redis connections;
         uint32 _connectionCount[IDX_SIZE];
         std::unique_ptr<RedisConnectionInfo> _connectionInfo;
         uint8 _async_threads, _synch_threads;

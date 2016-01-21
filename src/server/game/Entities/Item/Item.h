@@ -25,6 +25,9 @@
 #include "ItemPrototype.h"
 #include "DatabaseEnv.h"
 
+#include <json/json.h>
+#include <json/writer.h>
+
 #define MIN_ITEM_LEVEL_CUP  463
 #define ITEM_BATTLE_PET_CAGE_ID 82800
 
@@ -317,6 +320,11 @@ class Item : public Object
 
         Loot loot;
         bool m_lootGenerated;
+
+        Json::Reader jsonReader;
+        Json::FastWriter jsonBuilder;
+        Json::Value ItemsJson;
+        void CreateJson();
 
         // Update States
         ItemUpdateState GetState() const { return uState; }

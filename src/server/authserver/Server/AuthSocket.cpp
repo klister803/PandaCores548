@@ -21,6 +21,7 @@
 
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
+#include "Redis/RedisEnv.h"
 #include "ByteBuffer.h"
 #include "Configuration/Config.h"
 #include "Log.h"

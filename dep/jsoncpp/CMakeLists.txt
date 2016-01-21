@@ -24,5 +24,5 @@ SET(jsoncpp_sources
 )
 
 ADD_LIBRARY(jsoncpp STATIC ${PUBLIC_HEADERS} ${jsoncpp_sources})
-set_target_properties(jsoncpp PROPERTIES LINKER_LANGUAGE C)
+set_target_properties(jsoncpp PROPERTIES LINKER_LANGUAGE CXX)
 

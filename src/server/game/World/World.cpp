@@ -23,6 +23,7 @@
 #include "Common.h"
 #include "Memory.h"
 #include "DatabaseEnv.h"
+#include "RedisEnv.h"
 #include "Config.h"
 #include "SystemConfig.h"
 #include "Log.h"
@@ -85,6 +86,8 @@
 #include "PlayerDump.h"
 #include "ChallengeMgr.h"
 #include "ScenarioMgr.h"
+
+#include <boost/thread/thread.hpp>
 
 ACE_Atomic_Op<ACE_Thread_Mutex, bool> World::m_stopEvent = false;
 uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
@@ -1967,6 +1970,8 @@ void World::SetInitialWorldSettings()
 
     m_timers[WUPDATE_PINGDB].SetInterval(getIntConfig(CONFIG_DB_PING_INTERVAL)*MINUTE*IN_MILLISECONDS);    // Mysql ping time in minutes
 
+    m_timers[WUPDATE_PINGREDIS].SetInterval(30*IN_MILLISECONDS);    // Redis time in secconds
+
     m_timers[WUPDATE_GUILDSAVE].SetInterval(getIntConfig(CONFIG_GUILD_SAVE_INTERVAL) * MINUTE * IN_MILLISECONDS);
 
     //to set mailtimer to return mails every day between 4 and 5 am
@@ -2396,6 +2401,13 @@ void World::Update(uint32 diff)
         CharacterDatabase.KeepAlive();
         LoginDatabase.KeepAlive();
         WorldDatabase.KeepAlive();
+    }
+
+    ///- Check Redis connections
+    if (m_timers[WUPDATE_PINGREDIS].Passed())
+    {
+        m_timers[WUPDATE_PINGREDIS].Reset();
+        RedisDatabase.CheckConnect();
     }
 
     if (m_timers[WUPDATE_GUILDSAVE].Passed())

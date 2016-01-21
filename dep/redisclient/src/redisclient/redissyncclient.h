@@ -84,7 +84,6 @@ public:
     REDIS_CLIENT_DECL RedisValue command(
             const std::string &cmd, const std::list<std::string> &args);
 
-protected:
     REDIS_CLIENT_DECL bool stateValid() const;
 
 private:

@@ -294,7 +294,8 @@ void RedisClientImpl::onRedisError(const RedisValue &v)
 
 void RedisClientImpl::defaulErrorHandler(const std::string &s)
 {
-    throw std::runtime_error(s);
+    //throw std::runtime_error(s);
+    state = NotConnected;
 }
 
 void RedisClientImpl::ignoreErrorHandler(const std::string &)

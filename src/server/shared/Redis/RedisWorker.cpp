@@ -2,7 +2,7 @@
 * Copyright (C) 2008-2016 UwowCore <http://uwow.biz/>
 */
 
-#include "DatabaseEnv.h"
+#include "RedisEnv.h"
 #include "RedisWorker.h"
 #include "RedisOperation.h"
 #include "RedisConnection.h"
@@ -10,7 +10,7 @@
 
 RedisWorker::RedisWorker(ProducerConsumerQueue<RedisOperation*>* newQueue, RedisConnection* connection)
 {
-    sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::RedisWorker %i", boost::this_thread::get_id());
+    //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::RedisWorker %i", boost::this_thread::get_id());
     _connection = connection;
     _queue = newQueue;
     _cancelationToken = false;
@@ -21,7 +21,7 @@ RedisWorker::RedisWorker(ProducerConsumerQueue<RedisOperation*>* newQueue, Redis
 
 RedisWorker::~RedisWorker()
 {
-    sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::~RedisWorker %i", boost::this_thread::get_id());
+    //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::~RedisWorker %i", boost::this_thread::get_id());
 
     _cancelationToken = true;
 
@@ -30,6 +30,9 @@ RedisWorker::~RedisWorker()
 
     if (_queue)
         _queue->Cancel();
+
+    delete m_client;
+    delete m_aclient;
 
     _clientThread.join();
     _workerThread.join();
@@ -40,11 +43,14 @@ void RedisWorker::onAsyncConnect(bool connected, const std::string &errorMessage
     if (connected)
     {
         m_connected = true;
-        sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::onAsyncConnect connected Succes %i", boost::this_thread::get_id());
-        return;
+        if (!_connection->m_connectionInfo.password.empty())
+            m_aclient->command(0, "AUTH", _connection->m_connectionInfo.password, [&](const RedisValue &v, uint64 guid) {});
+        m_aclient->command(0, "SELECT", _connection->m_connectionInfo.database, [&](const RedisValue &v, uint64 guid) {});
+        //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::onAsyncConnect connected Succes %i", boost::this_thread::get_id());
     }
-    else
-        sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::onAsyncConnect connected Faile %i", boost::this_thread::get_id());
+    //else
+        //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::onAsyncConnect connected Faile %i", boost::this_thread::get_id());
+    _connection->Unlock();
 }
 
 void RedisWorker::onGet(const RedisValue &value)
@@ -103,32 +109,72 @@ boost::asio::io_service& RedisWorker::get_io_service()
     return io_service;
 }
 
+void RedisWorker::Reconnect()
+{
+    //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::Reconnect start %i", boost::this_thread::get_id());
+
+    if (!_connection->LockIfReady()) //Try lock thread to wait recconected
+        return;
+
+    if (_queue)
+    {
+        m_aclient = new RedisAsyncClient(*io_services_[0]);
+        m_aclient->asyncConnect(*m_endpoint[0], boost::bind(&RedisWorker::onAsyncConnect, this, _1, _2));
+    }
+    else
+    {
+        std::string errmsg;
+        m_client = new RedisSyncClient(*io_services_[0]);
+        m_connected = m_client->connect(*m_endpoint[0], errmsg);
+        if (m_connected)
+        {
+            if (!_connection->m_connectionInfo.password.empty())
+                m_client->command("AUTH", _connection->m_connectionInfo.password);
+            m_client->command("SELECT", _connection->m_connectionInfo.database);
+        }
+
+        //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::Reconnect sync cooect %i", m_connected);
+        _connection->Unlock();
+    }
+}
+
 void RedisWorker::WorkerThread()
 {
     next_io_service_ = 0;
     boost::asio::ip::address address = boost::asio::ip::address::from_string(_connection->m_connectionInfo.host);
     const unsigned int port = std::stoi(_connection->m_connectionInfo.port_or_socket);
-    boost::asio::ip::tcp::endpoint endpoint(address, port);
 
     io_service_ptr io_service(new boost::asio::io_service);
     work_ptr work(new boost::asio::io_service::work(*io_service));
+    endpoint_ptr endpoint(new boost::asio::ip::tcp::endpoint(address, port));
+
     io_services_.push_back(io_service);
     work_.push_back(work);
+    m_endpoint.push_back(endpoint);
 
     if (_queue)
     {
+        _connection->LockIfReady();
         m_aclient = new RedisAsyncClient(*io_service);
-        m_aclient->asyncConnect(endpoint, boost::bind(&RedisWorker::onAsyncConnect, this, _1, _2));
+        m_aclient->asyncConnect(*endpoint, boost::bind(&RedisWorker::onAsyncConnect, this, _1, _2));
     }
     else
     {
+        _connection->LockIfReady();
         std::string errmsg;
         m_client = new RedisSyncClient(*io_service);
-        m_connected = m_client->connect(endpoint, errmsg);
+        m_connected = m_client->connect(*endpoint, errmsg);
+        if (m_connected)
+        {
+            if (!_connection->m_connectionInfo.password.empty())
+                m_client->command("AUTH", _connection->m_connectionInfo.password);
+            m_client->command("SELECT", _connection->m_connectionInfo.database);
+        }
+        _connection->Unlock();
     }
     _clientThread = boost::thread(boost::bind(&boost::asio::io_service::run, io_services_[0]));
 
-    sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::WorkerThread() run %i", boost::this_thread::get_id());
+    //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::WorkerThread() run %i", boost::this_thread::get_id());
 
     if (!_queue)
         return;

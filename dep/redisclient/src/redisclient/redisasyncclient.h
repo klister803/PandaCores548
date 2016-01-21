@@ -19,6 +19,7 @@
 #include "config.h"
 
 class RedisClientImpl;
+class Player;
 
 class RedisAsyncClient : boost::noncopyable {
 public:
@@ -146,7 +147,6 @@ public:
 
     REDIS_CLIENT_DECL static void dummyHandler(const RedisValue &, uint64) {}
 
-protected:
     REDIS_CLIENT_DECL bool stateValid() const;
 
 private:

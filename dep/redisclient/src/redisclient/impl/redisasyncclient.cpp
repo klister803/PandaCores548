@@ -271,16 +271,16 @@ void RedisAsyncClient::publish(const std::string &channel, const RedisBuffer &ms
 
 bool RedisAsyncClient::stateValid() const
 {
-    assert( pimpl->state == RedisClientImpl::Connected );
+    //assert( pimpl->state == RedisClientImpl::Connected );
 
     if( pimpl->state != RedisClientImpl::Connected )
     {
-        std::stringstream ss;
+        /*std::stringstream ss;
 
         ss << "RedisAsyncClient::command called with invalid state "
            << pimpl->state;
 
-        pimpl->errorHandler(ss.str());
+        pimpl->errorHandler(ss.str());*/
         return false;
     }
 

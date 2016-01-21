@@ -1859,24 +1859,26 @@ public:
         Json::Value testJson;
         testJson["name"] = "Kysya";
         testJson["Class"] = 11;
-        testJson["Power"][0] = 100;
-        testJson["Power"][2] = 2000;
+        testJson["Power"]["0"] = 100;
+        testJson["Power"]["2"] = 2000;
         Json::FastWriter wbuilder;
         std::string testJsonStr = wbuilder.write(testJson);
 
         RedisValue result;
 
-        result = RedisDatabase.ExecuteSet("SET", cval, testJsonStr.c_str());
-        sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "HandleRedisPrint Redis Set cval %s result %s", cval, result.toString().c_str());
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint Redis start");
+
+        /*result = RedisDatabase.ExecuteSet("SET", cval, testJsonStr.c_str());
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint Redis Set cval %s result %s", cval, result.toString().c_str());
 
         result = RedisDatabase.Execute("GET", cval);
-        sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "HandleRedisPrint Redis Get cval %s result %s", cval, result.toString().c_str());
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint Redis Get cval %s result %s", cval, result.toString().c_str());
 
         result = RedisDatabase.Execute("DEL", cval);
 
         RedisDatabase.AsyncExecuteSet("SET", cval, testJsonStr.c_str(), player->GetGUIDLow(), [&](const RedisValue &v, uint64 guid) {
 
-            sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "HandleRedisPrint Redis AsyncSet guid %i", guid);
+            sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint Redis AsyncSet guid %i", guid);
             RedisDatabase.AsyncExecute("GET", "1", guid, [&](const RedisValue &v, uint64 guid) {
                 Player* player = HashMapHolder<Player>::Find(guid);
                 if (!player)
@@ -1885,23 +1887,26 @@ public:
                 Json::Reader reader;
                 Json::Value testJsonFinish;
                 bool isReader = reader.parse(v.toString().c_str(), testJsonFinish);
-                sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "HandleRedisPrint isReader %u result %s name %s Class %s Power %i guid %u",
+                sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint isReader %u result %s name %s Class %s Power %i guid %u",
                     isReader, v.toString().c_str(),
                     testJsonFinish["name"].asString().c_str(),
                     testJsonFinish["Class"].asString().c_str(),
-                    testJsonFinish["Power"][2].asInt(), guid);
+                    testJsonFinish["Power"]["2"].asInt(), guid);
                 ChatHandler(player).PSendSysMessage("HandleRedisPrint isReader %u result %s name %s Class %s Power %i guid %u",
                     isReader, v.toString().c_str(),
                     testJsonFinish["name"].asString().c_str(),
                     testJsonFinish["Class"].asString().c_str(),
-                    testJsonFinish["Power"][2].asInt(), guid);
+                    testJsonFinish["Power"]["2"].asInt(), guid);
 
                 RedisDatabase.AsyncExecute("DEL", "1", guid, [&](const RedisValue &v, uint64 guid) {
-                    sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "HandleRedisPrint Redis AsyncGet Del guid %i", guid);
+                    sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint Redis AsyncGet Del guid %i", guid);
 
                 });
             });
-        });
+        });*/
+
+        player->CreateJson();
+        player->CreateBGJson();
 
         /*int32 keyCount = 0;
         uint32 oldMSTime = getMSTime();
@@ -1980,17 +1985,59 @@ public:
 
         int32 Value = (int32)atoi(cval);
 
+        int32 counter = 0;
+        uint32 oldMSTime = getMSTime();
+        while (counter < 1000000)
+        {
+            counter++;
+            Json::Value testJson;
+            testJson["name"] = "Vasya";
+            testJson["Class"] = 2;
+            testJson["Power"][0] = 1000;
+            testJson["Power"][2] = 2000;
+
+            Json::FastWriter wbuilder;
+            std::string testJsonStr = wbuilder.write(testJson);
+        }
+        handler->PSendSysMessage("HandleRedisJson test 1 %u ms", GetMSTimeDiffToNow(oldMSTime));
+
         Json::Value testJson;
         testJson["name"] = "Vasya";
         testJson["Class"] = 2;
         testJson["Power"][0] = 1000;
         testJson["Power"][2] = 2000;
+        
+        counter = 0;
+        oldMSTime = getMSTime();
+        while (counter < 1000000)
+        {
+            counter++;
+            Json::FastWriter wbuilder;
+            std::string testJsonStr = wbuilder.write(testJson);
+        }
+        handler->PSendSysMessage("HandleRedisJson test 2 %u ms", GetMSTimeDiffToNow(oldMSTime));
 
-        Json::StreamWriterBuilder wbuilder;
-        wbuilder["indentation"] = "\t";
-        std::string testJsonStr = Json::writeString(wbuilder, testJson);
+        Json::FastWriter wbuilder;
 
-        handler->PSendSysMessage("HandleRedisJson testJsonStr %s", testJsonStr.c_str());
+        counter = 0;
+        oldMSTime = getMSTime();
+        while (counter < 1000000)
+        {
+            counter++;
+            std::string testJsonStr = wbuilder.write(testJson);
+
+        }
+        handler->PSendSysMessage("HandleRedisJson test 3 %u ms", GetMSTimeDiffToNow(oldMSTime));
+
+        counter = 0;
+        oldMSTime = getMSTime();
+        while (counter < 1000000)
+        {
+            counter++;
+            int sum = counter + counter * 2;
+            int summ = sum - counter;
+        }
+        handler->PSendSysMessage("HandleRedisJson test 4 %u ms", GetMSTimeDiffToNow(oldMSTime));
 
         return true;
     }

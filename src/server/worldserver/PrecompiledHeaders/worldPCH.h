@@ -4,5 +4,6 @@
 #include "World.h"
 #include "Log.h"
 #include "Database/DatabaseEnv.h"
+#include "Redis/RedisEnv.h"
 #include "Configuration/Config.h"
 #include "Util.h"

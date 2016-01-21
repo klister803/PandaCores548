@@ -247,16 +247,16 @@ RedisValue RedisSyncClient::command(const std::string &cmd, const std::list<std:
 
 bool RedisSyncClient::stateValid() const
 {
-    assert( pimpl->state == RedisClientImpl::Connected );
+    //assert( pimpl->state == RedisClientImpl::Connected );
 
     if( pimpl->state != RedisClientImpl::Connected )
     {
-        std::stringstream ss;
+        /*std::stringstream ss;
 
         ss << "RedisClient::command called with invalid state "
            << pimpl->state;
 
-        pimpl->errorHandler(ss.str());
+        pimpl->errorHandler(ss.str());*/
         return false;
     }
 

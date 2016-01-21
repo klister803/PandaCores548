@@ -9,8 +9,8 @@
 #include "ProducerConsumerQueue.h"
 #include "Log.h"
 
-#include <src/redisclient/redisasyncclient.h>
 #include <src/redisclient/redissyncclient.h>
+#include <src/redisclient/redisasyncclient.h>
 
 #include <boost/asio/ip/address.hpp>
 #include <boost/asio/io_service.hpp>
@@ -46,17 +46,22 @@ class RedisWorker
         /// Get an io_service to use.
         boost::asio::io_service& get_io_service();
 
-        bool IsConnected()  { return m_connected; }
+        bool IsConnected()  { if (_queue) return m_aclient->stateValid(); else return m_client->stateValid(); }
+        void Reconnect();
 
     private:
         typedef boost::shared_ptr<boost::asio::io_service> io_service_ptr;
         typedef boost::shared_ptr<boost::asio::io_service::work> work_ptr;
+        typedef boost::shared_ptr<boost::asio::ip::tcp::endpoint> endpoint_ptr;
 
         /// The pool of io_services.
         std::vector<io_service_ptr> io_services_;
 
         /// The work that keeps the io_services running.
         std::vector<work_ptr> work_;
+
+        /// Save endpoint
+        std::vector<endpoint_ptr> m_endpoint;
 
         /// The next io_service to use for a connection.
         std::size_t next_io_service_;

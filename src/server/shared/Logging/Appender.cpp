@@ -219,6 +219,8 @@ char const* Appender::getLogFilterTypeString(LogFilterType type)
             return "OPCODE";
         case LOG_FILTER_POWER:
             return "POWER";
+        case LOG_FILTER_REDIS:
+            return "REDIS";
         default:
             break;
     }

@@ -1,5 +1,6 @@
 #include "Configuration/Config.h"
 #include "Database/DatabaseEnv.h"
+#include "Redis/RedisEnv.h"
 #include "Log.h"
 #include "RealmList.h"
 #include "RealmSocket.h"

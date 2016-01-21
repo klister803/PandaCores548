@@ -25,6 +25,7 @@
 #include "Bag.h"
 #include "Common.h"
 #include "DatabaseEnv.h"
+#include "RedisEnv.h"
 #include "DBCEnums.h"
 #include "GroupReference.h"
 #include "ItemPrototype.h"
@@ -46,6 +47,9 @@
 
 #include<string>
 #include<vector>
+
+#include <json/json.h>
+#include <json/writer.h>
 
 struct Mail;
 struct ItemExtendedCostEntry;
@@ -1505,6 +1509,18 @@ class Player : public Unit, public GridObject<Player>
 
         void InitStatsForLevel(bool reapplyMods = false);
 
+        Json::Reader jsonReader;
+        Json::FastWriter jsonBuilder;
+        Json::Value PlayerJson;
+        Json::Value PlayerBGJson;
+        Json::Value PlayerGroupJson;
+        Json::Value PlayerLootCooldownJson;
+        void InitDefaultJson();
+        void LoadFromRedis(const RedisValue &v);
+        void CreateJson();
+        void CreateBGJson();
+        void CreateGroupJson();
+        void CreateLootCooldownJson();
 
         // .cheat command related
         bool GetCommandStatus(uint32 command) const { return _activeCheats & command; }

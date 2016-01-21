@@ -86,6 +86,8 @@ add_library(shared STATIC
 
 target_link_libraries(shared
   ${ACE_LIBRARY}
+  jsoncpp
+  redisclient
 )
 
 # Generate precompiled header
