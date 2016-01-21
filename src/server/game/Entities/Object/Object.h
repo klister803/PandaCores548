@@ -152,6 +152,7 @@ class Object
         virtual ~Object();
 
         bool IsInWorld() const { return m_inWorld; }
+        virtual bool isLogingOut() const { return false; }
 
         virtual void AddToWorld();
         virtual void RemoveFromWorld();
@@ -919,9 +920,9 @@ class WorldObject : public Object, public WorldLocation
         {
             return obj && _IsWithinDist(obj, dist2compare, is3D);
         }
-        bool IsWithinDistInMap(WorldObject const* obj, float dist2compare, bool is3D = true) const
+        bool IsWithinDistInMap(WorldObject const* obj, float dist2compare, bool is3D = true, bool size = true) const
         {
-            return obj && IsInMap(obj) && InSamePhase(obj) && InSamePhaseId(obj) && _IsWithinDist(obj, dist2compare, is3D);
+            return obj && IsInMap(obj) && InSamePhase(obj) && InSamePhaseId(obj) && _IsWithinDist(obj, dist2compare, is3D, size);
         }
         bool IsWithinLOS(float x, float y, float z) const;
         bool IsWithinLOSInMap(const WorldObject* obj) const;
@@ -1010,7 +1011,7 @@ class WorldObject : public Object, public WorldLocation
         GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime, uint64 viewerGuid = 0, std::list<uint64>* viewersList = NULL);
         Creature*   SummonTrigger(float x, float y, float z, float ang, uint32 dur, CreatureAI* (*GetAI)(Creature*) = NULL);
 
-        void GetAttackableUnitListInRange(std::list<Unit*> &list, float fMaxSearchRange) const;
+        void GetAttackableUnitListInRange(std::list<Unit*> &list, float fMaxSearchRange, bool size = true) const;
         void GetAreaTriggersWithEntryInRange(std::list<AreaTrigger*>& list, uint32 entry, uint64 casterGuid, float fMaxSearchRange) const;
         Creature*   FindNearestCreature(uint32 entry, float range, bool alive = true) const;
         GameObject* FindNearestGameObject(uint32 entry, float range) const;
@@ -1108,7 +1109,7 @@ class WorldObject : public Object, public WorldLocation
 
         std::list<uint64/* guid*/> _visibilityPlayerList;
 
-        virtual bool _IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D) const;
+        virtual bool _IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D, bool size = true) const;
 
         bool CanNeverSee(WorldObject const* obj) const { return GetMap() != obj->GetMap() || !InSamePhase(obj) || !InSamePhaseId(obj); }
         virtual bool CanAlwaysSee(WorldObject const* /*obj*/) const { return false; }

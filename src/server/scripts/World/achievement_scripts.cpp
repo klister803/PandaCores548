@@ -345,6 +345,21 @@ class achievement_weighed_down : public AchievementCriteriaScript
         }
 };
 
+// 8030, 8031 - A Test of Valor
+class achievement_a_test_of_valor_kill : public AchievementScript
+{
+    public:
+        achievement_a_test_of_valor_kill() : AchievementScript("achievement_a_test_of_valor_kill") {}
+
+        void OnCompletedAchievement(AchievementEntry const* /*achievement*/, Player* source)
+        {
+            if (!source)
+                return;
+
+            source->KilledMonsterCredit(69145, 0);
+        }
+};
+
 void AddSC_achievement_scripts()
 {
     new achievement_resilient_victory();
@@ -365,4 +380,5 @@ void AddSC_achievement_scripts()
     new achievement_not_even_a_scratch();
     new achievement_a_test_of_valor();
     new achievement_weighed_down();
+    new achievement_a_test_of_valor_kill();
 }

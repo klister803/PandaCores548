@@ -21,27 +21,47 @@
 
 enum eSpells
 {
-    SPELL_SONG_OF_THE_IMPERATOR   = 123793,
-    SPELL_PHEROMONES_OF_ZEAL      = 123812,
-    SPELL_PHEROMONES_OF_ZEAL_BUFF = 123833,
-    SPELL_GAS_VISUAL              = 123811,
+    SPELL_SONG_OF_THE_IMPERATOR     = 123793,
+    SPELL_PHEROMONES_OF_ZEAL        = 123812,
+    SPELL_PHEROMONES_OF_ZEAL_BUFF   = 123833,
+    SPELL_GAS_VISUAL                = 123811,
+    SPELL_SONG_OF_THE_EMPRESS       = 123791,
+    SPELL_INHALE                    = 122852,
+    SPELL_EXHALE                    = 122761,
+    //Platform 1
+    SPELL_NOISE_CANCELLING          = 122707,
+    SPELL_FORCE_AND_VERVE           = 122713,
+    //Platform 2
+    SPELL_ATTENUATION               = 122496,
+    SPELL_BERSERK                   = 47008,
+
+    //Other
+    SPELL_SONIC_RING_VISUAL         = 122334,
+    SPELL_SONIC_RING_VISUAL_H       = 124668,
 };
 
 enum eEvents
 {
     //Vizier Zorlok
-    EVENT_GO_LAST_POS         = 6,
-    EVENT_GO_NEXT_PLATFORM    = 7,
+    EVENT_MELEE_CHECK         = 1,
+    EVENT_GO_LAST_POS         = 2,
+    EVENT_GO_NEXT_PLATFORM    = 3,
+    EVENT_INHALE              = 4,
+    EVENT_EXHALE              = 5,
+    //Platform 1
+    EVENT_FORCE_AND_VERVE     = 6,
+    //Platform 2
+    EVENT_ATTENUATION         = 7,
 
     //Gas Controller
-    EVENT_CHECK_PLAYERS       = 8,
+    EVENT_CHECK_PLAYERS       = 1,
 };
 
 enum Actions
 {
     //Gas Controller
-    ACTION_GAS_ON             = 3,
-    ACTION_GAS_OFF            = 4,
+    ACTION_GAS_ON             = 1,
+    ACTION_GAS_OFF            = 2,
 };
 
 Position const centerpos = {-2275.27f, 259.1f, 415.34f}; //In air
@@ -65,25 +85,33 @@ class boss_vizier_zorlok : public CreatureScript
         {
             boss_vizier_zorlokAI(Creature* creature) : BossAI(creature, DATA_VIZIER_ZORLOK)
             {
-                instance = creature->GetInstanceScript();
                 me->SetCanFly(true);
                 me->SetDisableGravity(true);
                 me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
             }
 
-            InstanceScript* instance;
             uint8 newindex, lastindex, flycount;
+            uint8 InhaleCount;
+            uint32 berserkTimer;
+            bool flyMove;
 
             void Reset()
             {
                 _Reset();
+                events.Reset();
                 GasControl(false);
                 FlyControl(true);
+                flyMove = false;
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->RemoveAurasDueToSpell(SPELL_PHEROMONES_OF_ZEAL_BUFF);
+                me->RemoveAurasDueToSpell(SPELL_INHALE);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PHEROMONES_OF_ZEAL);
+                instance->DoRemoveAurasDueToSpellOnPlayers(122706); // AT buff
                 newindex = 0;
                 lastindex = urand(0, 2);
                 flycount = 0;
+                InhaleCount = 0;
+                berserkTimer = 60 * MINUTE * IN_MILLISECONDS;
             }
 
             void GasControl(bool state)
@@ -92,13 +120,15 @@ class boss_vizier_zorlok : public CreatureScript
                 {
                     if (state)
                     {
-                        if (Creature* gc = me->GetCreature(*me, instance->GetData64(NPC_GAS_CONTROLLER)))
-                            gc->AI()->DoAction(ACTION_GAS_ON);
+                        //if (Creature* gc = me->GetCreature(*me, instance->GetData64(NPC_GAS_CONTROLLER)))
+                        //    gc->AI()->DoAction(ACTION_GAS_ON);
+                        DoCast(me, SPELL_GAS_VISUAL, true);
                     }
                     else
                     {
-                        if (Creature* gc = me->GetCreature(*me, instance->GetData64(NPC_GAS_CONTROLLER)))
-                            gc->AI()->DoAction(ACTION_GAS_OFF);
+                        //if (Creature* gc = me->GetCreature(*me, instance->GetData64(NPC_GAS_CONTROLLER)))
+                        //    gc->AI()->DoAction(ACTION_GAS_OFF);
+                        me->RemoveAllAreaObjects();
                     }
                 }
             }
@@ -107,6 +137,7 @@ class boss_vizier_zorlok : public CreatureScript
             {
                 if (apply)
                 {
+                    flyMove = true;
                     me->AttackStop();
                     me->SetReactState(REACT_PASSIVE);
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
@@ -117,6 +148,7 @@ class boss_vizier_zorlok : public CreatureScript
                 }
                 else
                 {
+                    flyMove = false;
                     me->SetCanFly(false);
                     me->SetDisableGravity(false);
                     me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
@@ -143,7 +175,15 @@ class boss_vizier_zorlok : public CreatureScript
                         if (flycount < 3)
                             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                         else
-                            me->AddAura(SPELL_PHEROMONES_OF_ZEAL_BUFF, me);
+                        {
+                            events.ScheduleEvent(EVENT_MELEE_CHECK, 2000);
+                            events.ScheduleEvent(EVENT_INHALE, 17000);
+                            events.ScheduleEvent(EVENT_EXHALE, 17000);
+                            events.ScheduleEvent(EVENT_FORCE_AND_VERVE, 16000);
+                            events.ScheduleEvent(EVENT_ATTENUATION, 22000);
+                            GasControl(false);
+                            DoCast(me, SPELL_PHEROMONES_OF_ZEAL_BUFF, true);
+                        }
                         me->SetReactState(REACT_AGGRESSIVE);
                         DoZoneInCombat(me, 150.0f);
                     }
@@ -152,11 +192,29 @@ class boss_vizier_zorlok : public CreatureScript
             
             void GoNextRandomPlatform()
             {
+                events.Reset();
+                events.ScheduleEvent(EVENT_MELEE_CHECK, 2000);
+                events.ScheduleEvent(EVENT_INHALE, 17000);
+                events.ScheduleEvent(EVENT_EXHALE, 17000);
+
                 do
                 {
                     newindex = urand(0, 2);
                 }
                 while (newindex == lastindex);
+
+                switch (newindex)
+                {
+                    case 0:
+                        events.ScheduleEvent(EVENT_FORCE_AND_VERVE, 16000);
+                        break;
+                    case 1:
+                        events.ScheduleEvent(EVENT_ATTENUATION, 22000);
+                        break;
+                    case 2:
+                        //MK
+                        break;
+                }
 
                 lastindex = newindex;
                 // In future send newindex in id point, for specific platform events.
@@ -165,6 +223,11 @@ class boss_vizier_zorlok : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32 &damage)
             {
+                if (me->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+                    if (me->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->m_spellInfo->Id == SPELL_SONG_OF_THE_EMPRESS)
+                        if (me->IsWithinMeleeRange(me->getVictim()))
+                            me->InterruptSpell(CURRENT_CHANNELED_SPELL);
+
                 if (HealthBelowPct(80) && !flycount ||
                     HealthBelowPct(60) && flycount == 1)
                 {
@@ -182,10 +245,11 @@ class boss_vizier_zorlok : public CreatureScript
                     events.ScheduleEvent(EVENT_GO_LAST_POS, 3000);
                 }
             }
-            
+
             void JustDied(Unit* /*killer*/)
             {
                 _JustDied();
+
                 Map::PlayerList const& players = me->GetMap()->GetPlayers();
                 if (!players.isEmpty())
                 {
@@ -202,21 +266,65 @@ class boss_vizier_zorlok : public CreatureScript
                 if (!UpdateVictim())
                     return;
 
+                if (berserkTimer <= diff)
+                {
+                    DoCast(me, SPELL_BERSERK, true);
+                    berserkTimer = 60 * MINUTE * IN_MILLISECONDS;
+                }
+                else berserkTimer -= diff;
+
                 events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
 
                 while (uint32 eventId = events.ExecuteEvent())
                 {
                     switch (eventId)
                     {
-                    case EVENT_GO_NEXT_PLATFORM:
-                        GoNextRandomPlatform();
-                        break;
-                    case EVENT_GO_LAST_POS:
-                        me->GetMotionMaster()->MovePoint(1, centerlandpos.GetPositionX(), centerlandpos.GetPositionY(), centerlandpos.GetPositionZ());
-                        break;
+                        case EVENT_MELEE_CHECK:
+                            if (!me->IsWithinMeleeRange(me->getVictim()) && !flyMove)
+                                DoCast(SPELL_SONG_OF_THE_EMPRESS);
+                            events.ScheduleEvent(EVENT_MELEE_CHECK, 2000);
+                            break;
+                        case EVENT_GO_NEXT_PLATFORM:
+                            GoNextRandomPlatform();
+                            break;
+                        case EVENT_GO_LAST_POS:
+                            me->GetMotionMaster()->MovePoint(1, centerlandpos.GetPositionX(), centerlandpos.GetPositionY(), centerlandpos.GetPositionZ());
+                            events.Reset();
+                            break;
+                        case EVENT_INHALE:
+                            DoCast(SPELL_INHALE);
+                            InhaleCount++;
+                            events.ScheduleEvent(EVENT_INHALE, 18000);
+                            break;
+                        case EVENT_EXHALE:
+                            if (InhaleCount > 1)
+                            {
+                                InhaleCount = 0;
+                                DoCast(SPELL_EXHALE);
+                            }
+                            events.ScheduleEvent(EVENT_EXHALE, 18000);
+                            break;
+                        case EVENT_FORCE_AND_VERVE:
+                            for (uint8 i = 0; i < 3; i++)
+                            {
+                                float angle = urand(0, 6);
+                                float distance = 7 * (i + 0.5);
+                                float x = me->GetPositionX() + distance * std::cos(angle);
+                                float y = me->GetPositionY() + distance * std::sin(angle);
+                                me->CastSpell(x, y, me->GetPositionZ(), SPELL_NOISE_CANCELLING, true);
+                            }
+                            DoCast(SPELL_FORCE_AND_VERVE);
+                            events.ScheduleEvent(EVENT_FORCE_AND_VERVE, 34000);
+                            break;
+                        case EVENT_ATTENUATION:
+                            DoCast(SPELL_ATTENUATION);
+                            events.ScheduleEvent(EVENT_ATTENUATION, 40000);
+                            break;
                     }
                 }
-
                 DoMeleeAttackIfReady();
             }
         };
@@ -232,9 +340,9 @@ class npc_gas_controller : public CreatureScript
     public:
         npc_gas_controller() : CreatureScript("npc_gas_controller") {}
 
-        struct npc_gas_controllerAI : public CreatureAI
+        struct npc_gas_controllerAI : public ScriptedAI
         {
-            npc_gas_controllerAI(Creature* creature) : CreatureAI(creature)
+            npc_gas_controllerAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
                 me->SetReactState(REACT_PASSIVE);
@@ -253,15 +361,14 @@ class npc_gas_controller : public CreatureScript
             {
                 switch (action)
                 {
-                case ACTION_GAS_ON:
-                    DoCast(me, SPELL_GAS_VISUAL);
-                    events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1000);
-                    break;
-                case ACTION_GAS_OFF:
-                    gaseoff = true;
-                    if (DynamicObject* tr = me->GetDynObject(SPELL_GAS_VISUAL))
-                        tr->RemoveAura();
-                    break;
+                    case ACTION_GAS_ON:
+                        DoCast(me, SPELL_GAS_VISUAL);
+                        events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1000);
+                        break;
+                    case ACTION_GAS_OFF:
+                        gaseoff = true;
+                        me->RemoveAllAreaObjects();
+                        break;
                 }
             }
 
@@ -278,7 +385,7 @@ class npc_gas_controller : public CreatureScript
                                 if (pl->isAlive() && pl->GetPositionZ() < curplpos)
                                 {
                                     if (!pl->HasAura(SPELL_PHEROMONES_OF_ZEAL))
-                                        pl->AddAura(SPELL_PHEROMONES_OF_ZEAL, pl);
+                                        me->CastSpell(pl, SPELL_PHEROMONES_OF_ZEAL, true);
                                 }
                                 else if (pl->isAlive() && pl->GetPositionZ() >= curplpos)
                                     pl->RemoveAurasDueToSpell(SPELL_PHEROMONES_OF_ZEAL);
@@ -320,8 +427,56 @@ class npc_gas_controller : public CreatureScript
         }
 };
 
+//62689, 62716, 62717, 62743, 62744
+class npc_zorlok_sonic_ring : public CreatureScript
+{
+    public:
+        npc_zorlok_sonic_ring() : CreatureScript("npc_zorlok_sonic_ring") {}
+
+        struct npc_zorlok_sonic_ringAI : public ScriptedAI
+        {
+            npc_zorlok_sonic_ringAI(Creature* creature) : ScriptedAI(creature)
+            {
+                instance = creature->GetInstanceScript();
+                me->SetReactState(REACT_PASSIVE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            }
+
+            InstanceScript* instance;
+
+            void Reset(){}
+            
+            void IsSummonedBy(Unit* summoner)
+            {
+                DoCast(me, SPELL_SONIC_RING_VISUAL, true);
+                if (me->GetMap()->IsHeroic())
+                    DoCast(me, SPELL_SONIC_RING_VISUAL_H, true);
+                Position pos;
+                me->GetRandomNearPosition(pos, 40);
+                me->GetMotionMaster()->MovePoint(1, pos);
+            }
+            
+            void MovementInform(uint32 type, uint32 id)
+            {
+                if (type != POINT_MOTION_TYPE)
+                    return;
+
+                if (id == 1)
+                    me->DespawnOrUnsummon();
+            }
+
+            void UpdateAI(uint32 diff) {}
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_zorlok_sonic_ringAI(creature);
+        }
+};
+
 void AddSC_boss_vizier_zorlok()
 {
     new boss_vizier_zorlok();
     new npc_gas_controller();
+    new npc_zorlok_sonic_ring();
 }

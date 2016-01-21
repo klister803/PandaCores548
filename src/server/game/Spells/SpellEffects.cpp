@@ -429,6 +429,16 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             {
                 switch (m_spellInfo->Id)                     // better way to check unknown
                 {
+                    // Zorlok Force and Verve
+                    case 122718:
+                        if (unitTarget->HasAura(122706)) // Noise Cancelling
+                            damage *= 0.4f;
+                        break;
+                    // Zorlok Sonic Ring
+                    case 122336:
+                        if (unitTarget->HasAura(122706)) // Noise Cancelling
+                            damage *= 0.25f;
+                        break;
                     case 105408: // Burning Blood dmg, Madness of Deathwing, Dragon Soul
                         if (m_triggeredByAuraSpell)
                         {

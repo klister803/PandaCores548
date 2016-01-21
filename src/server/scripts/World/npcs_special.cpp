@@ -2597,15 +2597,26 @@ public:
         void UpdateAI(uint32 diff)
         {
             targetCheckTime += diff;
-            if (targetCheckTime > 2000 || !firstCheck)
+            if (targetCheckTime > 1000 || !firstCheck)
             {
                 if (Unit* owner = me->GetOwner())
+                {
                     if (Unit* victim = owner->getVictim())
+                    {
+                        owner->SetLastCastTargetGUID(0);
                         me->Attack(victim, false);
+                    }
+                    else if (Unit* victim = owner->GetLastCastTarget())
+                        me->Attack(victim, false);
+                    else if (!me->getVictim())
+                        me->HandleFollowCommand();
+                }
 
                 firstCheck = true;
                 targetCheckTime = 0;
             }
+            else if (!me->getVictim())
+                me->HandleFollowCommand();
 
             CasterAI::UpdateAI(diff);
         }

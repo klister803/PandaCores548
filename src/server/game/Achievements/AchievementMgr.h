@@ -452,6 +452,8 @@ class AchievementGlobalMgr
         CriteriaTreeEntry const* GetAchievementCriteriaTree(uint32 criteriaId) const;
         uint32 GetParantTreeId(uint32 parent);
 
+        void AchievementScriptLoaders(AchievementEntry const* achievement, Player* source);
+
         void PrepareCriteriaUpdateTaskThread();
 
         void AddCriteriaUpdateTask(AchievementCriteriaUpdateTask const& p_Task)

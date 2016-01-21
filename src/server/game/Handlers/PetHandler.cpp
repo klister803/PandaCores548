@@ -221,7 +221,8 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid
                     charmInfo->SetIsAtStay(false);
                     charmInfo->SetIsReturning(true);
                     charmInfo->SetIsFollowing(true);
-                    charmInfo->SetMoveToNextPoint(true);
+                    if (Creature* crt = pet->ToCreature())
+                        crt->SetNeedToUpdatePetFollowPosition(true);
                     break;
                 case COMMAND_ATTACK:                        //spellid=1792  //ATTACK
                 {
@@ -307,13 +308,14 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid
                 case COMMAND_MOVE_TO:
                     pet->StopMoving();
                     pet->GetMotionMaster()->Clear(false);
-                    pet->GetMotionMaster()->MovePoint(0, x, y, z);
                     charmInfo->SetCommandState(COMMAND_MOVE_TO);
                     charmInfo->SetIsCommandAttack(false);
                     charmInfo->SetIsAtStay(true);
                     charmInfo->SetIsFollowing(false);
                     charmInfo->SetIsReturning(false);
-                    charmInfo->SaveStayPosition();
+                    charmInfo->SetStayPositionX(x);
+                    charmInfo->SetStayPositionY(y);
+                    charmInfo->SetStayPositionZ(z);
                     break;
 
                 default:
@@ -326,7 +328,8 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid
                 case REACT_PASSIVE:                         //passive
                     pet->AttackStop();
                     //pet->GetMotionMaster()->Clear();
-                    charmInfo->SetMoveToNextPoint(true);
+                    if (Creature* crt = pet->ToCreature())
+                        crt->SetNeedToUpdatePetFollowPosition(true);
                     charmInfo->SetIsReturning(true);
                     charmInfo->SetIsFollowing(true);
                 case REACT_DEFENSIVE:                       //recovery

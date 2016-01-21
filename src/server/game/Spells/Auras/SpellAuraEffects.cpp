@@ -7329,6 +7329,9 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
         case SPELLFAMILY_GENERIC:
             switch (GetId())
             {
+                case 122496: // Zorlok - Sonic Ring Visual
+                    caster->CastSpell(caster, 122491, true);
+                    break;
                 case 145715: // Gusting Bomb
                     if(caster && target)
                         caster->CastSpell(target, 145716, true);
@@ -7853,6 +7856,10 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
         // Spell exist but require custom code
         switch (auraId)
         {
+            case 122761:
+                caster->SetFacingToObject(target);
+                caster->CastSpell(target, triggerSpellId, true);
+                return;
             // Hour of Twilight, Ultraxion, Dragon Soul
             case 106371:
                 if (caster)

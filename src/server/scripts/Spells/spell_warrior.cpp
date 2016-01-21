@@ -974,9 +974,13 @@ class spell_warr_shield_visual : public SpellScriptLoader
             PrepareSpellScript(spell_warr_shield_visual_SpellScript);
             
             void HandleOnCast()
-            {                
+            {
+                if (!GetCaster())
+                    return;
                 Player* caster = GetCaster()->ToPlayer();
-                
+                if (!caster)
+                    return;
+
                 if (GetSpellInfo()->Id == WARRIOR_SPELL_SPELL_REFLECTION)
                 {
                         if (!caster->GetShield())

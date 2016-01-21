@@ -2396,6 +2396,7 @@ bool AchievementMgr<T>::IsCompletedCriteriaTree(CriteriaTreeEntry const* criteri
             return false;
     }
 
+    volatile uint32 parent_count = achievement->count > 0 ? achievement->count : criteriaTree->requirement_count;
     volatile uint32 count = 0;
     if(!treeProgress->ChildrenCriteria.empty())
     for (std::vector<CriteriaTreeProgress const*>::const_iterator itr = treeProgress->ChildrenCriteria.begin(); itr != treeProgress->ChildrenCriteria.end(); ++itr)
@@ -2413,15 +2414,15 @@ bool AchievementMgr<T>::IsCompletedCriteriaTree(CriteriaTreeEntry const* criteri
         volatile uint32 criteriaID = criteria->ID;
         volatile uint32 criteriaProgressID = criteriaProgress->ID;
 
-        volatile uint32 requirement_count = achievement->count > 0 ? achievement->count : criteriaProgress->requirement_count;
+        volatile uint32 requirement_count = parent_count ? parent_count : criteriaProgress->requirement_count;
 
         volatile bool check = false;
-        if(parent && achievement->count <= 0)
+        if (parent_count <= 0)
             count = progress->counter;
         else
             count += progress->counter;
 
-        //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "IsCompletedCriteriaTree ChildrenCriteria criteria %u, achievement %u criteria %u count %i requirement_count %i", criteriaTree->ID, achievement ? achievement->ID : 0, criteria->ID, count, requirement_count);
+        //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "IsCompletedCriteriaTree ChildrenCriteria criteria %u, achievement %u criteria %u count %i requirement_count %i parent_count %i", criteriaTree->ID, achievement ? achievement->ID : 0, criteria->ID, count, requirement_count, parent_count);
 
         switch (criteria->type)
         {
@@ -2548,7 +2549,7 @@ bool AchievementMgr<T>::IsCompletedCriteriaTree(CriteriaTreeEntry const* criteri
             default:
                 break;
         }
-        if(achievement->count <= 0)
+        if (parent_count <= 0)
         {
             if(parent && !check)
             {
@@ -2563,12 +2564,12 @@ bool AchievementMgr<T>::IsCompletedCriteriaTree(CriteriaTreeEntry const* criteri
                 return treeProgress->completed;
             }
         }
-        else if(achievement->count > 0 && check)
+        else if (parent_count > 0 && check)
             return true;
     }
 
     //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "IsCompletedCriteriaTree finish criteriaTree %u, achievement %u count %i requirement_count %i parent %u", criteriaTree->ID, achievement ? achievement->ID : 0, count, criteriaTree->requirement_count, parent);
-    return parent && achievement->count <= 0 ? true : false;
+    return parent && parent_count <= 0 ? true : false;
 }
 
 template<class T>
@@ -3028,9 +3029,10 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ACHIEVEMENT, 0, 0, 0, NULL, referencePlayer);
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARN_ACHIEVEMENT_POINTS, achievement->points, 0, 0, NULL, referencePlayer);
 
+    sAchievementMgr->AchievementScriptLoaders(achievement, GetOwner());
+
     // reward items and titles if any
     AchievementReward const* reward = sAchievementMgr->GetAchievementReward(achievement);
-
     // no rewards
     if (!reward)
         return;
@@ -5278,4 +5280,12 @@ uint32 AchievementGlobalMgr::GetParantTreeId(uint32 parent)
             return GetParantTreeId(pTree->parent);
     }
     return parent;
+}
+
+void AchievementGlobalMgr::AchievementScriptLoaders(AchievementEntry const* achievement, Player* source)
+{
+    AchievementScriptsBounds bounds = sObjectMgr->GetAchievementScriptsBounds(achievement->ID);
+
+    for (AchievementScriptsContainer::iterator itr = bounds.first; itr != bounds.second; ++itr)
+        sScriptMgr->OnCompletedAchievement(achievement, source, itr->second);
 }

@@ -1104,7 +1104,7 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         void UpdateModel();                                 // updates model in case displayId were changed
 
         //! Object distance/size - overridden from Object::_IsWithinDist. Needs to take in account proper GO size.
-        bool _IsWithinDist(WorldObject const* obj, float dist2compare, bool /*is3D*/) const
+        bool _IsWithinDist(WorldObject const* obj, float dist2compare, bool /*is3D*/, bool size = true) const
         {
             //! Following check does check 3d distance
             return IsInRange(obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), dist2compare);

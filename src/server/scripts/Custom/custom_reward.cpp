@@ -170,12 +170,8 @@ public:
                     player->CompletedAchievement(achiev);
 
             // Quest "A Test of Valor"
-            if (AchievementEntry const *achiev = sAchievementStore.LookupEntry(8030))
-                if (player->GetAchievementMgr().IsCompletedAchievement(achiev, player))
-                    player->KilledMonsterCredit(69145, 0);
-            if (AchievementEntry const *achiev = sAchievementStore.LookupEntry(8031))
-                if (player->GetAchievementMgr().IsCompletedAchievement(achiev, player))
-                    player->KilledMonsterCredit(69145, 0);
+            if (player->GetAchievementMgr().HasAchieved(8030) || player->GetAchievementMgr().HasAchieved(8031))
+                player->KilledMonsterCredit(69145, 0);
 
             if(QueryResult share_result = CharacterDatabase.PQuery("SELECT * FROM `character_share` WHERE guid = '%u'", owner_guid))
             {

@@ -4094,7 +4094,10 @@ void Unit::RemoveOwnedAura(AuraMap::iterator &i, AuraRemoveMode removeMode)
     if (m_auraUpdateIterator == i)
         ++m_auraUpdateIterator;
 
+    m_ownedAurasLock.acquire();
     m_ownedAuras.erase(i);
+    m_ownedAurasLock.release();
+
     m_removedAuras.push_back(aura);
 
     // Unregister single target aura
@@ -14764,6 +14767,7 @@ void Unit::ClearInCombat()
     else if (Player* plr = ToPlayer())
     {
         plr->UpdatePotionCooldown();
+        plr->SetLastCastTargetGUID(0);
 
         if (Pet* pet = plr->GetPet())
             if (CharmInfo* charmInfo = pet->GetCharmInfo())
@@ -17360,8 +17364,7 @@ void Unit::DeleteCharmInfo()
 CharmInfo::CharmInfo(Unit* unit)
     : m_unit(unit), m_CommandState(COMMAND_FOLLOW), m_petnumber(0), m_barInit(false),
     m_isCommandAttack(false), m_isAtStay(false), m_isFollowing(false), m_isReturning(false),
-    m_stayX(0.0f), m_stayY(0.0f), m_stayZ(0.0f), m_homeX(0.0f), m_homeY(0.0f), m_homeZ(0.0f),
-    m_homeOrientation(0.0f), m_canMoveToNextPoint(true)
+    m_stayX(0.0f), m_stayY(0.0f), m_stayZ(0.0f)
 {
     for (uint8 i = 0; i < MAX_SPELL_CHARM; ++i)
         m_charmspells[i].SetActionAndType(0, ACT_DISABLED);
@@ -22121,7 +22124,7 @@ Aura* Unit::ToggleAura(uint32 spellId, Unit* target)
 
 Aura* Unit::AddAura(uint32 spellId, Unit* target, Item* castItem, uint16 stackAmount)
 {
-    if (!target)
+    if (!target || isLogingOut())
         return NULL;
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
@@ -22136,7 +22139,7 @@ Aura* Unit::AddAura(uint32 spellId, Unit* target, Item* castItem, uint16 stackAm
 
 Aura* Unit::AddAura(SpellInfo const* spellInfo, uint32 effMask, Unit* target, Item* castItem, uint16 stackAmount)
 {
-    if (!spellInfo)
+    if (!spellInfo || isLogingOut())
         return NULL;
 
     if (target->IsImmunedToSpell(spellInfo))
@@ -23889,9 +23892,9 @@ void CharmInfo::SaveStayPosition()
 {
     //! At this point a new spline destination is enabled because of Unit::StopMoving()
     G3D::Vector3 const stayPos = m_unit->movespline->FinalDestination();
-    m_stayX = stayPos.x;
-    m_stayY = stayPos.y;
-    m_stayZ = stayPos.z;
+    SetStayPositionX(stayPos.x);
+    SetStayPositionY(stayPos.y);
+    SetStayPositionZ(stayPos.z);
 }
 
 void CharmInfo::GetStayPosition(float &x, float &y, float &z)

@@ -688,6 +688,17 @@ class AchievementRewardScript : public ScriptObject
         virtual uint32 SelectItem(Player* /*source*/, AchievementReward const* /*data*/) { return 0; };
 };
 
+class AchievementScript : public ScriptObject
+{
+    protected:
+
+        AchievementScript(const char* name);
+
+    public:
+
+        virtual void OnCompletedAchievement(AchievementEntry const* /*achievement*/, Player* /*source*/) { }
+};
+
 class PlayerScript : public ScriptObject
 {
     protected:
@@ -1020,6 +1031,10 @@ class ScriptMgr
 
         bool OnRewardCheck(AchievementReward const* data, Player* source);
         uint32 OnSelectItemReward(AchievementReward const* data, Player* source);
+
+    public: /* AchievementScript */
+
+        void OnCompletedAchievement(AchievementEntry const* achievement, Player* source, uint32 ScriptId);
 
     public: /* PlayerScript */
 

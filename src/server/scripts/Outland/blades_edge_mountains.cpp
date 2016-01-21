@@ -51,37 +51,6 @@ bool     obelisk_one, obelisk_two, obelisk_three, obelisk_four, obelisk_five;
 #define LEGION_OBELISK_FIVE          185198
 
 /*######
-## mobs_bladespire_ogre
-######*/
-
-//TODO: add support for quest 10512 + Creature abilities
-class mobs_bladespire_ogre : public CreatureScript
-{
-public:
-    mobs_bladespire_ogre() : CreatureScript("mobs_bladespire_ogre") { }
-
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new mobs_bladespire_ogreAI (creature);
-    }
-
-    struct mobs_bladespire_ogreAI : public ScriptedAI
-    {
-        mobs_bladespire_ogreAI(Creature* creature) : ScriptedAI(creature) {}
-
-        void Reset() { }
-
-        void UpdateAI(uint32 /*uiDiff*/)
-        {
-            if (!UpdateVictim())
-                return;
-
-            DoMeleeAttackIfReady();
-        }
-    };
-};
-
-/*######
 ## mobs_nether_drake
 ######*/
 
@@ -1141,7 +1110,6 @@ class go_apexis_relic : public GameObjectScript
 
 void AddSC_blades_edge_mountains()
 {
-    new mobs_bladespire_ogre();
     new mobs_nether_drake();
     new npc_daranelle();
     new npc_overseer_nuaar();

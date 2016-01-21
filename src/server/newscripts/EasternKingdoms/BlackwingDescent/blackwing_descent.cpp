@@ -1429,7 +1429,7 @@ public:
     {
         PrepareAuraScript(spell_drakonid_chainwielder_grievous_wound_AuraScript)
 
-            void OnPeriodic(AuraEffect const*aurEff)
+        void OnPeriodic(AuraEffect const*aurEff)
         {
             if (!GetTarget())
                 return;

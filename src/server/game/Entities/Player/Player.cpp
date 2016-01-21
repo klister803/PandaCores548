@@ -756,7 +756,6 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_focusRegenTimerCount = 0;
     m_weaponChangeTimer = 0;
     m_statsUpdateTimer = 0;
-    m_petHomePositionTimer = 0;
     m_needToUpdateRunesRegen = false;
     m_needToUpdateSpellHastDurationRecovery = false;
     m_needUpdateCastHastMods = false;
@@ -764,7 +763,6 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_needUpdateRangeHastMod = false;
     m_needUpdateHastMod = false;
     m_duelLock = false;
-    m_needToUpdatePetHomePosition = true;
 
     m_nextSave = sWorld->getIntConfig(CONFIG_INTERVAL_SAVE);
 
@@ -2120,74 +2118,8 @@ void Player::Update(uint32 p_time)
     UpdateSpellCharges(p_time);
 
     if (Pet* pet = GetPet())
-    {
         if ((HasUnitMovementFlag(MOVEMENTFLAG_FLYING) || !pet->IsWithinDistInMap(this, GetMap()->GetVisibilityRange())) && !pet->isPossessed())
             UnsummonPetTemporaryIfAny();
-
-        m_petHomePositionTimer += p_time;
-
-        if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_DISLOCATION) || m_needToUpdatePetHomePosition)
-        {
-            if (!m_needToUpdatePetHomePosition)
-            {
-                m_petHomePositionTimer = 0;
-                m_needToUpdatePetHomePosition = true;
-            }
-
-            if (m_petHomePositionTimer >= 500)
-                if (CharmInfo* charmInfo = pet->GetCharmInfo())
-                {
-                    float x, y, z;
-                    m_needToUpdatePetHomePosition = m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_DISLOCATION);
-
-                    GetNearPoint(pet, x, y, z, CONTACT_DISTANCE, PET_FOLLOW_DIST, GetOrientation() + pet->GetFollowAngle());
-
-                    float speed = 0.0f;
-                    float orien = 0.0f;
-
-                    if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FORWARD))
-                    {
-                        speed = (3.0f + GetSpeedRate(MOVE_RUN)) * GetSpeedRate(MOVE_RUN);
-                        orien = GetOrientation();
-
-                        if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_LEFT))
-                            orien = orien + M_PI / 4.0f;
-                        else if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_RIGHT))
-                            orien = orien - M_PI / 4.0f;
-                    }
-                    else if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_BACKWARD))
-                    {
-                        speed = 1.0f;
-                        orien = GetOrientation() - M_PI;
-
-                        if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_LEFT))
-                            orien = orien - M_PI / 4.0f;
-                        else if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_RIGHT))
-                            orien = orien + M_PI / 4.0f;
-                    }
-                    else if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_LEFT))
-                    {
-                        speed = (3.0f + GetSpeedRate(MOVE_RUN)) * GetSpeedRate(MOVE_RUN);
-                        orien = GetOrientation() + M_PI / 2.0f;
-                    }
-                    else if (m_movementInfo.HasMovementFlag(MOVEMENTFLAG_STRAFE_RIGHT))
-                    {
-                        speed = (3.0f + GetSpeedRate(MOVE_RUN)) * GetSpeedRate(MOVE_RUN);
-                        orien = GetOrientation() - M_PI / 2.0f;
-                    }
-
-                    x = x + speed * std::cos(orien);
-                    y = y + speed * std::sin(orien);
-
-                    Trinity::NormalizeMapCoord(x);
-                    Trinity::NormalizeMapCoord(y);
-                    UpdateAllowedPositionZ(x, y, z);
-
-                    charmInfo->SetHomePosition(x, y, z, GetOrientation());
-                    m_petHomePositionTimer = 0;
-                }
-        }
-    }
 
     //we should execute delayed teleports only for alive(!) players
     //because we don't want player's ghost teleported from graveyard
@@ -23872,14 +23804,20 @@ void Player::DropModCharge(SpellModifier* mod, Spell* spell)
         return;
     }
 
-    if (spell && mod->ownerAura && mod->charges > 0)
+    if (spell)
     {
+        if (mod->op == SPELLMOD_COST && GetGlobalCooldownMgr().HasGlobalCooldown(spell->GetSpellInfo()))
+            return;
+
         //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "DropModCharge spell %i, modId %i, charges %i, GetCharges %i, GetStackAmount %i, op %i", spell->GetSpellInfo()->Id, mod->spellId, mod->charges, mod->ownerAura->GetCharges(), mod->ownerAura->GetStackAmount(), mod->op);
 
-        if (--mod->charges == 0)
-            mod->charges = -1;
+        if (mod->ownerAura && mod->charges > 0)
+        {
+            if (--mod->charges == 0)
+                mod->charges = -1;
 
-        spell->m_appliedMods.insert(mod->ownerAura);
+            spell->m_appliedMods.insert(mod->ownerAura);
+        }
     }
 }
 

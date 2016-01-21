@@ -1950,6 +1950,9 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading spell script names...");
     sObjectMgr->LoadSpellScriptNames();
 
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Achievement script names...");
+    sObjectMgr->LoadAchievementScriptNames();
+
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Creature Texts...");
     sCreatureTextMgr->LoadCreatureTexts();
 

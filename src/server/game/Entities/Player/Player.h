@@ -2622,6 +2622,8 @@ class Player : public Unit, public GridObject<Player>
 
         void ResetLootCooldown();
 
+        bool isLogingOut() const { return GetSession() && GetSession()->isLogingOut(); }
+
         /*********************************************************/
         /***                  PVP SYSTEM                       ***/
         /*********************************************************/
@@ -3241,7 +3243,6 @@ class Player : public Unit, public GridObject<Player>
         float m_powerFraction[MAX_POWERS_PER_CLASS];
         uint32 m_contestedPvPTimer;
         uint32 m_statsUpdateTimer;
-        uint32 m_petHomePositionTimer;
         bool m_needToUpdateRunesRegen;
         bool m_needToUpdateSpellHastDurationRecovery;
         bool m_needUpdateCastHastMods = false;
@@ -3249,7 +3250,6 @@ class Player : public Unit, public GridObject<Player>
         bool m_needUpdateRangeHastMod = false;
         bool m_needUpdateHastMod = false;
         bool m_duelLock = false;
-        bool m_needToUpdatePetHomePosition;
 
 
         /*********************************************************/

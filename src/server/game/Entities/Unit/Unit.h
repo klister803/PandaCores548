@@ -1269,11 +1269,10 @@ struct CharmInfo
         void SetIsReturning(bool val);
         bool IsReturning();
         void SaveStayPosition();
+        void SetStayPositionX(float val) { m_stayX = val; }
+        void SetStayPositionY(float val) { m_stayY = val; }
+        void SetStayPositionZ(float val) { m_stayZ = val; }
         void GetStayPosition(float &x, float &y, float &z);
-        void GetHomePosition(float &x, float &y, float &z, float &o) { x = m_homeX; y = m_homeY; z = m_homeZ; o = m_homeOrientation; }
-        void SetHomePosition(float x, float y, float z, float o) { m_homeX = x; m_homeY = y; m_homeZ = z; m_homeOrientation = o; m_canMoveToNextPoint = true; }
-        void SetMoveToNextPoint(bool val) { m_canMoveToNextPoint = val; }
-        bool IsCanMoveToNextPoint() { return m_canMoveToNextPoint; }
 
     private:
 
@@ -1294,11 +1293,6 @@ struct CharmInfo
         float m_stayX;
         float m_stayY;
         float m_stayZ;
-        float m_homeX;
-        float m_homeY;
-        float m_homeZ;
-        float m_homeOrientation;
-        bool m_canMoveToNextPoint;
 
         GlobalCooldownMgr m_GlobalCooldownMgr;
 };
@@ -2744,6 +2738,7 @@ class Unit : public WorldObject
         uint32 _delayInterruptFlag;
 
         mutable ACE_Thread_Mutex m_auraEffectListLock;
+        mutable ACE_Thread_Mutex m_ownedAurasLock;
 };
 
 class DelayCastEvent : public BasicEvent

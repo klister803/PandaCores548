@@ -836,6 +836,9 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         void GetHomePosition(float &x, float &y, float &z, float &ori) const { m_homePosition.GetPosition(x, y, z, ori); }
         Position GetHomePosition() const { return m_homePosition; }
 
+        void SetNeedToUpdatePetFollowPosition(bool val) { m_needToUpdatePetFollowPosition = val; }
+        void HandleFollowCommand();
+
         void SetTransportHomePosition(float x, float y, float z, float o) { m_transportHomePosition.Relocate(x, y, z, o); }
         void SetTransportHomePosition(const Position &pos) { m_transportHomePosition.Relocate(pos); }
         void GetTransportHomePosition(float &x, float &y, float &z, float &ori) { m_transportHomePosition.GetPosition(x, y, z, ori); }
@@ -894,6 +897,10 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         AutoSpellList   m_autospells;
         AutoSpellList   m_castspells;
         PetSpellMap     m_spells;
+
+        uint16 m_petFollowPositionTimer;
+        float m_followOrientation;
+        bool m_needToUpdatePetFollowPosition;
 
         bool onVehicleAccessoryInit() const { return m_onVehicleAccessory; }
         void SetVehicleAccessoryInit(bool r) { m_onVehicleAccessory = r; }

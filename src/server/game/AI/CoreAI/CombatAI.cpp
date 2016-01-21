@@ -442,7 +442,7 @@ void AnyPetAI::UpdateAI(uint32 diff)
                 return;
             }
 
-            if (owner && !owner->isInCombat())
+            if (owner)
                 owner->SetInCombatWith(me->getVictim());
 
             if(!me->GetCasterPet())
@@ -450,7 +450,7 @@ void AnyPetAI::UpdateAI(uint32 diff)
         }
         else if (owner && !me->HasUnitState(UNIT_STATE_FOLLOW))
         {
-            me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetFollowAngle());
+            me->HandleFollowCommand();
             //sLog->outDebug(LOG_FILTER_PETS, "AnyPetAI::UpdateAI PET_FOLLOW_DIST");
         }
     }
@@ -633,7 +633,7 @@ void AnyPetAI::MovementInform(uint32 moveType, uint32 data)
             if(me->getVictim() && me->isInCombat())
                 me->GetMotionMaster()->MoveChase(me->getVictim(), me->GetAttackDist() - 0.5f);
             if(me->GetCharmerOrOwner() && (!me->getVictim() || !me->isInCombat()))
-                me->GetMotionMaster()->MoveFollow(me->GetCharmerOrOwner(), PET_FOLLOW_DIST, me->GetFollowAngle());
+                me->HandleFollowCommand();
             break;
         }
         default:
