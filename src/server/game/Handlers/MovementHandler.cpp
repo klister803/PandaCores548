@@ -98,6 +98,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
         GetPlayer()->ResetMap();
         GetPlayer()->SetMap(oldMap);
         GetPlayer()->TeleportTo(GetPlayer()->m_homebindMapId, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->GetOrientation());
+        GetPlayer()->UpdateVmapInfo(oldMap, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ);
         return;
     }
 
@@ -197,6 +198,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
 
     //lets process all delayed operations on successful teleport
     GetPlayer()->ProcessDelayedOperations();
+    GetPlayer()->UpdateVmapInfo(newMap, _player->m_movementInfo.pos.m_positionX, _player->m_movementInfo.pos.m_positionY, _player->m_movementInfo.pos.m_positionZ);
 }
 
 void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)

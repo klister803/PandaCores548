@@ -89,7 +89,7 @@ class CreatureAI : public UnitAI
         /// == Reactions At =================================
 
         // Called if IsVisible(Unit* who) is true at each who move, reaction at visibility zone enter
-        void MoveInLineOfSight_Safe(Unit* who);
+        void SafeMoveInLineOfSight(Unit* who);
 
         bool CanSeeEvenInPassiveMode() { return m_canSeeEvenInPassiveMode; }
         void SetCanSeeEvenInPassiveMode(bool canSeeEvenInPassiveMode) { m_canSeeEvenInPassiveMode = canSeeEvenInPassiveMode; }
@@ -196,9 +196,9 @@ class CreatureAI : public UnitAI
         virtual void OnInterruptCast(Unit* /*caster*/, uint32 /*spellId*/, uint32 /*curSpellID*/, uint32 /*schoolMask*/) {}
 
         virtual bool doAddThreat(Unit* /*victim*/, float& /*threat*/) { return true; }
-    protected:
-        virtual void MoveInLineOfSight(Unit* /*who*/);
 
+    protected:
+        virtual void MoveInLineOfSight(Unit* who);
         bool _EnterEvadeMode();
 
     private:
