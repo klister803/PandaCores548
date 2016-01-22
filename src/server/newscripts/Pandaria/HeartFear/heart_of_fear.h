@@ -34,6 +34,22 @@ enum eCreatures
     NPC_SRATHIK            = 65499,
     NPC_ZARTHIK            = 62408,
     NPC_KORTHIK            = 65500,
+
+    //Ta'yak summons
+    NPC_GALE_WINDS_STALKER      = 63292,
+    NPC_STORM_EAST_1_TARGET     = 63212,
+    NPC_STORM_EAST_2_TARGET     = 63213,
+    NPC_STORM_EAST_3_TARGET     = 63214,
+    NPC_STORM_WEST_1_TARGET     = 63207,
+    NPC_STORM_WEST_2_TARGET     = 63208,
+    NPC_STORM_WEST_3_TARGET     = 63209,
+
+    NPC_STORM_WEST_1_SUM        = 63278,
+    NPC_STORM_WEST_2_SUM        = 63299,
+    NPC_STORM_WEST_3_SUM        = 63300,
+    NPC_STORM_EAST_1_SUM        = 63301,
+    NPC_STORM_EAST_2_SUM        = 63302,
+    NPC_STORM_EAST_3_SUM        = 63303,
 };
 
 enum Soldiers

@@ -269,7 +269,7 @@ class boss_vizier_zorlok : public CreatureScript
                 if (berserkTimer <= diff)
                 {
                     DoCast(me, SPELL_BERSERK, true);
-                    berserkTimer = 60 * MINUTE * IN_MILLISECONDS;
+                    berserkTimer = 10 * MINUTE * IN_MILLISECONDS;
                 }
                 else berserkTimer -= diff;
 
