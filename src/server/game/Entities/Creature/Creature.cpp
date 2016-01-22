@@ -528,10 +528,11 @@ void Creature::Update(uint32 diff)
 
 	if (m_LOSCheckTimer <= diff)
 	{
-		m_LOSCheck_player = true;
-		m_LOSCheck_creature = true;
-		m_LOSCheckTimer = DEFAULT_VISIBILITY_NOTIFY_PERIOD*2;
-	} else m_LOSCheckTimer -= diff;
+        m_vmapUpdateAllow = true;
+        m_LOSCheckTimer = DEFAULT_VISIBILITY_NOTIFY_PERIOD*2;
+	}
+    else 
+        m_LOSCheckTimer -= diff;
 
     bool isPlayersPet = false;
     if (Unit * unit = ToUnit())
