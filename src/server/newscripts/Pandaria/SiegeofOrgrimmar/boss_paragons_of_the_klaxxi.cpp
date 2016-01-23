@@ -154,31 +154,32 @@ enum sEvents
     EVENT_MULTI_SHOT                   = 8,
     EVENT_AIM                          = 9,
     EVENT_RAPID_FIRE                   = 10,
+    EVENT_FIRE                         = 11,
     //Rikkal
-    EVENT_MUTATE                       = 11,
-    EVENT_INJECTION                    = 12,
+    EVENT_MUTATE                       = 12,
+    EVENT_INJECTION                    = 13,
     //Xaril
-    EVENT_TOXIC_INJECTION              = 13,
-    EVENT_CATALYST                     = 14,
+    EVENT_TOXIC_INJECTION              = 14,
+    EVENT_CATALYST                     = 15,
     //Korven
-    EVENT_SHIELD_BASH                  = 15,
+    EVENT_SHIELD_BASH                  = 16,
     //Iyyokyk
-    EVENT_DIMINISH                     = 16,
-    EVENT_INSANE_CALCULATION           = 17,
+    EVENT_DIMINISH                     = 17,
+    EVENT_INSANE_CALCULATION           = 18,
     //Kaztik
-    EVENT_SONIC_PROJECTION             = 18,
-    EVENT_SUM_HUNGRY_KUNCHONG          = 19,
+    EVENT_SONIC_PROJECTION             = 19,
+    EVENT_SUM_HUNGRY_KUNCHONG          = 20,
     //Karoz
-    EVENT_HURL_AMBER                   = 20,
-    EVENT_FLASH                        = 21,
+    EVENT_HURL_AMBER                   = 21,
+    EVENT_FLASH                        = 22,
     //Amber Parasite
-    EVENT_FEED                         = 22,
-    EVENT_REGENERATE                   = 23,
+    EVENT_FEED                         = 23,
+    EVENT_REGENERATE                   = 24,
     //Blood
-    EVENT_FIND_LOW_HP_KLAXXI           = 24,
-    EVENT_CHECK_DIST_TO_KLAXXI         = 25,
-    EVENT_CHECK_PLAYER                 = 26,
-    EVENT_RE_ATTACK                    = 27,
+    EVENT_FIND_LOW_HP_KLAXXI           = 25,
+    EVENT_CHECK_DIST_TO_KLAXXI         = 26,
+    EVENT_CHECK_PLAYER                 = 27,
+    EVENT_RE_ATTACK                    = 28,
 };
 
 enum sActions
@@ -416,7 +417,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
             InstanceScript* instance;
             SummonList summons;
             EventMap events;
-            uint64 jtGuid, dfatargetGuid;
+            uint64 jtGuid, dfatargetGuid, ftargetGuid;
             uint32 checkklaxxi, healcooldown;
             uint8 flashcount;
             bool healready;
@@ -436,6 +437,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 checkklaxxi = 0;
                 healcooldown = 0;
                 flashcount = 0;
+                ftargetGuid = 0;
                 healready = true;
                 switch (me->GetEntry())
                 {
@@ -756,6 +758,15 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 return 0;
             }
 
+            void SetGUID(uint64 guid, int32 id)
+            {
+                if (guid && id)
+                {
+                    ftargetGuid = guid;
+                    events.ScheduleEvent(EVENT_FIRE, 3000);
+                }
+            }
+
             void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
@@ -843,6 +854,12 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                             DoCast(pl, SPELL_AIM_DUMMY);
                         }
                         events.ScheduleEvent(EVENT_AIM, 39500);
+                        break;
+                    case EVENT_FIRE:
+                        if (Player* pl = me->GetPlayer(*me, ftargetGuid))
+                            if (pl->isAlive())
+                                DoCast(pl, SPELL_FIRE);
+                        ftargetGuid = 0;
                         break;
                     case EVENT_RAPID_FIRE:
                         DoCast(me, SPELL_RAPID_FIRE_DUMMY);
@@ -1113,6 +1130,7 @@ public:
         {
             instance = creature->GetInstanceScript();
             me->SetReactState(REACT_PASSIVE);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
             klaxxiGuid = 0;
         }
 
@@ -1982,7 +2000,7 @@ public:
 
         void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            if (GetCaster() && GetTarget())
+            if (GetCaster() && GetCaster()->ToCreature() && GetTarget())
             {
                 GetTarget()->AddAura(SPELL_AIM_STUN, GetTarget());
                 if (GetCaster()->GetDistance(GetTarget()) < 45.0f)
@@ -1992,23 +2010,14 @@ public:
                     GetCaster()->SetFacingTo(GetTarget());
                     GetPositionWithDistInOrientation(GetCaster(), 45.0f, ang, x, y);
                     GetTarget()->GetMotionMaster()->MoveJump(x, y, GetTarget()->GetPositionZ(), 15.0f, 15.0f);
+                    GetCaster()->ToCreature()->AI()->SetGUID(GetTarget()->GetGUID(), 1);
                 }
-            }
-        }
-
-        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
-        {
-            if (GetCaster() && GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
-            {
-                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
-                    GetCaster()->CastSpell(GetTarget(), SPELL_FIRE);
             }
         }
 
         void Register()
         {
             OnEffectApply += AuraEffectApplyFn(spell_klaxxi_aim_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-            OnEffectRemove += AuraEffectRemoveFn(spell_klaxxi_aim_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
         }
     };
 

@@ -353,6 +353,14 @@ enum eCreatures
     //
 
     NPC_GARROSH                     = 71865,
+    //Garrosh warriors
+    NPC_DESECRATED_WEAPON           = 72154,
+    NPC_EMPOWERED_DESECRATED_WEAPON = 72198,
+    NPC_HEART_OF_YSHAARJ            = 72215,
+    NPC_KORKRON_IRON_STAR           = 71985,
+
+    NPC_THRALL                      = 73483,
+    NPC_THE_LAST_GASP_OF_YSHAARJ    = 73335,
 };
 
 enum eGameObjects
@@ -494,8 +502,14 @@ enum eGameObjects
     GO_YAUNGOLIAN_JAIL2            = 223006,
 
     //Paragons of the Klaxxi
-    GO_PRE_ENT_KLAXXI_DOOR        = 221912,
-    GO_ARENA_WALL                 = 221264,
+    GO_PRE_ENT_KLAXXI_DOOR         = 221912,
+    GO_ARENA_WALL                  = 221264,
+    GO_KLAXXI_EX_DOOR              = 223235,
+
+    //Garrosh
+    GO_GARROSH_ENT_DOOR            = 221792,
+    GO_GARROSH_FENCH               = 221441,
+    GO_GARROSH_FENCH2              = 221438,
 };
 
 enum esSpells
