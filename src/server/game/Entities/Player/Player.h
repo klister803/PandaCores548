@@ -272,6 +272,12 @@ struct ActionButton
 
 typedef std::map<uint8, ActionButton> ActionButtonList;
 
+// corpse reclaim times
+#define DEATH_EXPIRE_STEP (5*MINUTE)
+#define MAX_DEATH_COUNT 3
+
+#define MAX_RESEARCH_PROJECTS 12
+
 struct PlayerCreateInfoItem
 {
     PlayerCreateInfoItem(uint32 id, uint32 amount) : item_id(id), item_amount(amount) {}
@@ -1509,19 +1515,6 @@ class Player : public Unit, public GridObject<Player>
 
         void InitStatsForLevel(bool reapplyMods = false);
 
-        Json::Reader jsonReader;
-        Json::FastWriter jsonBuilder;
-        Json::Value PlayerJson;
-        Json::Value PlayerBGJson;
-        Json::Value PlayerGroupJson;
-        Json::Value PlayerLootCooldownJson;
-        void InitDefaultJson();
-        void LoadFromRedis(const RedisValue &v);
-        void CreateJson();
-        void CreateBGJson();
-        void CreateGroupJson();
-        void CreateLootCooldownJson();
-
         // .cheat command related
         bool GetCommandStatus(uint32 command) const { return _activeCheats & command; }
         void SetCommandStatusOn(uint32 command) { _activeCheats |= command; }
@@ -1572,6 +1565,137 @@ class Player : public Unit, public GridObject<Player>
         void WhisperAddon(const std::string& text, const std::string& prefix, Player* receiver);
         void BuildPlayerChat(WorldPacket* data, uint8 msgtype, const std::string& text, uint32 language, const char* addonPrefix = NULL) const;
         void BuildPlayerChatData(Trinity::ChatData& c, uint8 msgtype, const std::string& text, uint32 language, const char* addonPrefix = NULL) const;
+
+        /*********************************************************/
+        /***                    SERIALIZE SYSTEM               ***/
+        /*********************************************************/
+
+        char* itemKey;
+        char* userKey;
+        char* accountKey;
+        char* GetItemKey() { return itemKey; }
+        char* GetUserKey() { return userKey; }
+        char* GetAccountKey() { return accountKey; }
+
+        Json::Reader jsonReader;
+        Json::FastWriter jsonBuilder;
+        Json::Value PlayerJson;
+        Json::Value PlayerBGJson;
+        Json::Value PlayerGroupJson;
+        Json::Value PlayerLootCooldownJson;
+        Json::Value PlayerCurrencyJson;
+        Json::Value PlayerBoundInstancesJson;
+        Json::Value PlayerInstanceTimesJson;
+        Json::Value PlayerSkillsJson;
+        Json::Value PlayerTalentsJson;
+        Json::Value PlayerSpellsJson;
+        Json::Value PlayerMountsJson;
+        Json::Value PlayerGlyphsJson;
+        Json::Value PlayerAurasJson;
+        Json::Value PlayerQuestStatusJson;
+        Json::Value AccountQuestStatusJson;
+        Json::Value PlayerQuestRewardedJson;
+        Json::Value AccountQuestRewardedJson;
+        Json::Value PlayerQuestDailyJson;
+        Json::Value AccountQuestDailyJson;
+        Json::Value PlayerQuestWeeklyJson;
+        Json::Value AccountQuestWeeklyJson;
+        Json::Value PlayerQuestSeasonalJson;
+        Json::Value AccountQuestSeasonalJson;
+        Json::Value AccountBattlePetsJson;
+        Json::Value AccountBattlePetSlotsJson;
+        Json::Value PlayerArchaeologyJson;
+        Json::Value PlayerReputationJson;
+        Json::Value PlayerVoidStorageJson;
+        Json::Value PlayerActionsJson;
+        Json::Value PlayerSocialJson;
+        Json::Value PlayerSpellCooldownsJson;
+        Json::Value PlayerKillsJson;
+        Json::Value PlayerDeclinedNameJson;
+        Json::Value PlayerEquipmentSetsJson;
+        Json::Value PlayerCUFProfilesJson;
+        Json::Value PlayerVisualsJson;
+        Json::Value PlayerAccountDataJson;
+        Json::Value AccountDataJson;
+        Json::Value PlayerHomeBindJson;
+
+        //load data for serialize
+        void InitSerializePlayer();
+        void SerializePlayer();
+        void SerializePlayerBG();
+        void SerializePlayerGroup();
+        void SerializePlayerLootCooldown();
+        void SerializePlayerCurrency();
+        void SerializePlayerBoundInstances();
+        void SerializePlayerInstanceTimes();
+        void SerializePlayerSkills();
+        void SerializePlayerTalents();
+        void SerializePlayerSpells();
+        void SerializePlayerGlyphs();
+        void SerializePlayerAuras();
+        void SerializePlayerQuestStatus();
+        void SerializePlayerQuestRewarded();
+        void SerializePlayerQuestDaily();
+        void SerializePlayerQuestWeekly();
+        void SerializePlayerQuestSeasonal();
+        void SerializePlayerBattlePets();
+        void SerializePlayerBattlePetSlots();
+        void SerializePlayerArchaeology();
+        void SerializePlayerReputation();
+        void SerializePlayerVoidStorage();
+        void SerializePlayerActions();
+        void SerializePlayerSocial();
+        void SerializePlayerSpellCooldowns();
+        void SerializePlayerKills();
+        void SerializePlayerDeclinedName();
+        void SerializePlayerEquipmentSets();
+        void SerializePlayerCUFProfiles();
+        void SerializePlayerVisuals();
+        void SerializePlayerAccountData();
+        void SerializePlayerHomeBind();
+
+        //load data into player deserialize
+        void LoadFromRedis(uint64 guid, uint8 step = 0, const RedisValue* v = NULL);
+        void DeSerializePlayer(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerGroup(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerLootCooldown(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerCurrency(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerBoundInstances(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerBG(const RedisValue* v, uint64 playerGuid);
+        void InitSecondPartDataPlayer();
+        void DeSerializePlayerBattlePets(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerBattlePetSlots(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerSkills(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerArchaeology(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerTalents(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerSpells(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerMounts(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerGlyphs(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerAuras(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerQuestStatus(const RedisValue* v, uint64 playerGuid);
+        void DeSerializeAccountQuestStatus(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerQuestRewarded(const RedisValue* v, uint64 playerGuid);
+        void DeSerializeAccountQuestRewarded(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerQuestDaily(const RedisValue* v, uint64 playerGuid);
+        void DeSerializeAccountQuestDaily(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerQuestWeekly(const RedisValue* v, uint64 playerGuid);
+        void DeSerializeAccountQuestWeekly(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerQuestSeasonal(const RedisValue* v, uint64 playerGuid);
+        void DeSerializeAccountQuestSeasonal(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerReputation(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerLoadItems(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerVoidStorage(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerActions(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerSpellCooldowns(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerKills(const RedisValue* v, uint64 playerGuid);
+        void InitThirdPartDataPlayer();
+        void DeSerializeDeclinedName(const RedisValue* v, uint64 playerGuid);
+        void DeSerializeEquipmentSets(const RedisValue* v, uint64 playerGuid);
+        void DeSerializeCUFProfiles(const RedisValue* v, uint64 playerGuid);
+        void DeSerializeVisuals(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerAccountData(const RedisValue* v, uint64 playerGuid);
+        void DeSerializeAccountData(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerHomeBind(const RedisValue* v, uint64 playerGuid);
 
         /*********************************************************/
         /***                    STORAGE SYSTEM                 ***/
@@ -2325,6 +2449,8 @@ class Player : public Unit, public GridObject<Player>
         bool IsRessurectRequested() const { return _resurrectionData != NULL; }
 
         void ResurectUsingRequestData();
+
+        bool m_mustResurrectFromUnlock;
 
         uint8 getCinematic()
         {
@@ -3588,6 +3714,7 @@ class Player : public Unit, public GridObject<Player>
         InventoryResult CanStoreItem_InInventorySlots(uint8 slot_begin, uint8 slot_end, ItemPosCountVec& dest, ItemTemplate const* pProto, uint32& count, bool merge, Item* pSrcItem, uint8 skip_bag, uint8 skip_slot) const;
         Item* _StoreItem(uint16 pos, Item* pItem, uint32 count, bool clone, bool update);
         Item* _LoadItem(SQLTransaction& trans, uint32 zoneId, uint32 timeDiff, Field* fields);
+        Item* _LoadItem(uint32 zoneId, uint32 timeDiff, Json::Value& itemValue);
 
         std::set<uint32> m_refundableItems;
         void SendRefundInfo(Item* item);

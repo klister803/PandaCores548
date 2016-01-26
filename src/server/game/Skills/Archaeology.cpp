@@ -24,8 +24,6 @@
 #include "World.h"
 #include "WorldSession.h"
 
-#define MAX_RESEARCH_PROJECTS 12
-
 enum ArchaeologyBotDistance
 {
     ARCHAEOLOGY_DIG_SITE_FAR_DIST   = 60,

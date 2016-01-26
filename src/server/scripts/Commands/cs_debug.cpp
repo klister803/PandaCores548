@@ -118,18 +118,11 @@ public:
             { NULL,             SEC_PLAYER,         false, NULL,                               "", NULL }
         };
 
-        static ChatCommand redisCommandTable[] =
-        {
-            { "print",          SEC_MODERATOR,      false, &HandleRedisPrint,                  "", NULL },
-            { "json",           SEC_MODERATOR,      false, &HandleRedisJson,                   "", NULL },
-            { NULL,             SEC_PLAYER,         false, NULL,                               "", NULL }
-        };
-
         static ChatCommand commandTable[] =
         {
             { "debug",          SEC_MODERATOR,      true,  NULL,                  "", debugCommandTable },
             { "wpgps",          SEC_ADMINISTRATOR,  false, &HandleWPGPSCommand,                "", NULL },
-            { "redis",          SEC_ADMINISTRATOR,  true,  NULL,                  "", redisCommandTable },
+            { "redis",          SEC_ADMINISTRATOR,  true,  &HandleRedisPrint,     "",              NULL },
             { NULL,             SEC_PLAYER,         false, NULL,                  "",              NULL }
         };
         return commandTable;
@@ -1847,68 +1840,35 @@ public:
     {
         Player* player = handler->GetSession()->GetPlayer();
 
-        if (!*args)
-            return false;
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint Redis start");
 
-        char* cval = strtok((char*)args, " ");
-        if (!cval)
-            return false;
+        RedisDatabase.AsyncExecute("HGETALL", player->GetItemKey(), player->GetGUID(), [&](const RedisValue &v, uint64 guid) {
+            Player* player = HashMapHolder<Player>::Find(guid);
+            if (!player)
+                return;
 
-        int32 Value = (int32)atoi(cval);
+            sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint guid %u%u isArray %u isOk %u isString %u isInt %u isByteArray %u", guid, v.isArray(), v.isOk(), v.isString(), v.isInt(), v.isByteArray());
+            if (v.isArray())
+            {
+                std::vector<RedisValue> array = v.toArray();
+                for (std::vector<RedisValue>::iterator itr = array.begin(); itr != array.end(); ++itr)
+                {
+                    RedisValue result = *itr;
+                    sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint result %s ", result.toString().c_str());
+                }
+            }
+        });
 
+        /*
         Json::Value testJson;
         testJson["name"] = "Kysya";
         testJson["Class"] = 11;
         testJson["Power"]["0"] = 100;
-        testJson["Power"]["2"] = 2000;
+        testJson["Power"]["20000"] = 2000;
         Json::FastWriter wbuilder;
         std::string testJsonStr = wbuilder.write(testJson);
 
-        RedisValue result;
-
-        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint Redis start");
-
-        /*result = RedisDatabase.ExecuteSet("SET", cval, testJsonStr.c_str());
-        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint Redis Set cval %s result %s", cval, result.toString().c_str());
-
-        result = RedisDatabase.Execute("GET", cval);
-        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint Redis Get cval %s result %s", cval, result.toString().c_str());
-
-        result = RedisDatabase.Execute("DEL", cval);
-
-        RedisDatabase.AsyncExecuteSet("SET", cval, testJsonStr.c_str(), player->GetGUIDLow(), [&](const RedisValue &v, uint64 guid) {
-
-            sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint Redis AsyncSet guid %i", guid);
-            RedisDatabase.AsyncExecute("GET", "1", guid, [&](const RedisValue &v, uint64 guid) {
-                Player* player = HashMapHolder<Player>::Find(guid);
-                if (!player)
-                    return;
-
-                Json::Reader reader;
-                Json::Value testJsonFinish;
-                bool isReader = reader.parse(v.toString().c_str(), testJsonFinish);
-                sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint isReader %u result %s name %s Class %s Power %i guid %u",
-                    isReader, v.toString().c_str(),
-                    testJsonFinish["name"].asString().c_str(),
-                    testJsonFinish["Class"].asString().c_str(),
-                    testJsonFinish["Power"]["2"].asInt(), guid);
-                ChatHandler(player).PSendSysMessage("HandleRedisPrint isReader %u result %s name %s Class %s Power %i guid %u",
-                    isReader, v.toString().c_str(),
-                    testJsonFinish["name"].asString().c_str(),
-                    testJsonFinish["Class"].asString().c_str(),
-                    testJsonFinish["Power"]["2"].asInt(), guid);
-
-                RedisDatabase.AsyncExecute("DEL", "1", guid, [&](const RedisValue &v, uint64 guid) {
-                    sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint Redis AsyncGet Del guid %i", guid);
-
-                });
-            });
-        });*/
-
-        player->CreateJson();
-        player->CreateBGJson();
-
-        /*int32 keyCount = 0;
+        int32 keyCount = 0;
         uint32 oldMSTime = getMSTime();
         while (keyCount < 100000)
         {
@@ -1959,7 +1919,10 @@ public:
 
         ioService.run();*/
 
-        /*Json::Reader reader;
+        /*
+        RedisValue result;
+
+        Json::Reader reader;
         Json::Value testJsonFinish;
         bool isReader = reader.parse(result.toString().c_str(), testJsonFinish);
         sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "HandleRedisPrint isReader %u result %s name %s Class %s Power %i",
@@ -1970,74 +1933,6 @@ public:
 
         if( result.isOk() )
             handler->PSendSysMessage("HandleRedisPrint GET %s", result.toString().c_str());*/
-
-        return true;
-    }
-
-    static bool HandleRedisJson(ChatHandler* handler, const char* args)
-    {
-        if (!*args)
-            return false;
-
-        char* cval = strtok((char*)args, " ");
-        if (!cval)
-            return false;
-
-        int32 Value = (int32)atoi(cval);
-
-        int32 counter = 0;
-        uint32 oldMSTime = getMSTime();
-        while (counter < 1000000)
-        {
-            counter++;
-            Json::Value testJson;
-            testJson["name"] = "Vasya";
-            testJson["Class"] = 2;
-            testJson["Power"][0] = 1000;
-            testJson["Power"][2] = 2000;
-
-            Json::FastWriter wbuilder;
-            std::string testJsonStr = wbuilder.write(testJson);
-        }
-        handler->PSendSysMessage("HandleRedisJson test 1 %u ms", GetMSTimeDiffToNow(oldMSTime));
-
-        Json::Value testJson;
-        testJson["name"] = "Vasya";
-        testJson["Class"] = 2;
-        testJson["Power"][0] = 1000;
-        testJson["Power"][2] = 2000;
-        
-        counter = 0;
-        oldMSTime = getMSTime();
-        while (counter < 1000000)
-        {
-            counter++;
-            Json::FastWriter wbuilder;
-            std::string testJsonStr = wbuilder.write(testJson);
-        }
-        handler->PSendSysMessage("HandleRedisJson test 2 %u ms", GetMSTimeDiffToNow(oldMSTime));
-
-        Json::FastWriter wbuilder;
-
-        counter = 0;
-        oldMSTime = getMSTime();
-        while (counter < 1000000)
-        {
-            counter++;
-            std::string testJsonStr = wbuilder.write(testJson);
-
-        }
-        handler->PSendSysMessage("HandleRedisJson test 3 %u ms", GetMSTimeDiffToNow(oldMSTime));
-
-        counter = 0;
-        oldMSTime = getMSTime();
-        while (counter < 1000000)
-        {
-            counter++;
-            int sum = counter + counter * 2;
-            int summ = sum - counter;
-        }
-        handler->PSendSysMessage("HandleRedisJson test 4 %u ms", GetMSTimeDiffToNow(oldMSTime));
 
         return true;
     }

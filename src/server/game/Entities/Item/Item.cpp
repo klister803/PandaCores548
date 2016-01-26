@@ -271,11 +271,15 @@ Item::Item() : ItemLevelBeforeCap(0)
     }
 
     memset(m_dynamicModInfo, 0, sizeof(uint32) * ITEM_DYN_MOD_END);
+
+    itemKey = new char[32];
 }
 
 bool Item::Create(uint32 guidlow, uint32 itemid, Player const* owner)
 {
     Object::_Create(guidlow, 0, HIGHGUID_ITEM);
+
+    sprintf(itemKey, "r{%i}u{%i}items", realmID, owner ? owner->GetGUID() : 0);
 
     SetEntry(itemid);
     SetObjectScale(1.0f);
@@ -440,6 +444,8 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, Field* fields, uint32 entr
     // create item before any checks for store correct guid
     // and allow use "FSetState(ITEM_REMOVED); SaveToDB();" for deleting item from DB
     Object::_Create(guid, 0, HIGHGUID_ITEM);
+
+    sprintf(itemKey, "r{%i}u{%i}items", realmID, owner_guid);
 
     // Set entry, MUST be before proto check
     SetEntry(entry);
@@ -1751,41 +1757,3 @@ void Item::SetLevelCap(uint32 cap, bool pvp)
     SetLevel(cap);
 }
 
-void Item::CreateJson()
-{
-    char queryKey[50];
-    sprintf(queryKey, "realmID:{%i}userId:{%i}Items %i", realmID, GetOwnerGUID(), GetGUIDLow());
-
-    ItemsJson["itemGuid"] = GetGUIDLow();
-    ItemsJson["owner_guid"] = GetOwnerGUID();
-    ItemsJson["itemEntry"] = GetEntry();
-    ItemsJson["creatorGuid"] = GetUInt64Value(ITEM_FIELD_CREATOR);
-    ItemsJson["giftCreatorGuid"] = GetUInt64Value(ITEM_FIELD_GIFTCREATOR);
-    ItemsJson["count"] = GetCount();
-    ItemsJson["duration"] = GetUInt32Value(ITEM_FIELD_DURATION);
-    std::ostringstream ssSpells;
-    for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
-        ssSpells << GetSpellCharges(i) << ' ';
-    ItemsJson["charges"] = ssSpells.str();
-    ItemsJson["flags"] = GetUInt32Value(ITEM_FIELD_FLAGS);
-    std::ostringstream ssEnchants;
-    for (uint8 i = 0; i < MAX_ENCHANTMENT_SLOT; ++i)
-    {
-        ssEnchants << GetEnchantmentId(EnchantmentSlot(i)) << ' ';
-        ssEnchants << GetEnchantmentDuration(EnchantmentSlot(i)) << ' ';
-        ssEnchants << GetEnchantmentCharges(EnchantmentSlot(i)) << ' ';
-    }
-    ItemsJson["enchantments"] = ssEnchants.str();
-    ItemsJson["randomPropertyId"] = GetItemRandomPropertyId();
-    ItemsJson["reforgeId"] = GetReforge();
-    ItemsJson["transmogrifyId"] = GetTransmogrification();
-    ItemsJson["upgradeId"] = GetUpgradeId();
-    ItemsJson["durability"] = GetUInt32Value(ITEM_FIELD_DURABILITY);
-    ItemsJson["playedTime"] = GetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME);
-    ItemsJson["text"] = GetText().c_str();
-    ItemsJson["uState"] = GetState();
-
-    RedisDatabase.AsyncExecuteSet("HSET", queryKey, jsonBuilder.write(ItemsJson).c_str(), GetGUIDLow(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Item::CreateJson guid %u", guid);
-    });
-}

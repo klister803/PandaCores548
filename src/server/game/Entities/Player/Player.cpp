@@ -134,10 +134,6 @@ enum CharacterCustomizeFlags
     CHAR_CUSTOMIZE_FLAG_RACE_CHANGE_DISABLED    = 0x10000000,       // Paid Race Change is currently disabled for this character.|nThis is due to not finishing the quests in this character's starting area.
 };
 
-// corpse reclaim times
-#define DEATH_EXPIRE_STEP (5*MINUTE)
-#define MAX_DEATH_COUNT 3
-
 static uint32 copseReclaimDelay[MAX_DEATH_COUNT] = { 30, 60, 120 };
 
 // == PlayerTaxi ================================================
@@ -984,6 +980,11 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_watching_movie = false;
     plrUpdate = false;
+    m_mustResurrectFromUnlock = false;
+
+    itemKey = new char[23];
+    userKey = new char[18];
+    accountKey = new char[18];
 }
 
 Player::~Player()
@@ -1056,6 +1057,10 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
     // also do it in Player::BuildEnumData, Player::LoadFromDB
 
     Object::_Create(guidlow, 0, HIGHGUID_PLAYER);
+
+    sprintf(itemKey, "r{%i}u{%i}items", realmID, guidlow);
+    sprintf(userKey, "r{%i}u{%i}", realmID, guidlow);
+    sprintf(accountKey, "r{%i}a{%i}", realmID, GetSession()->GetAccountId());
 
     m_name = createInfo->Name;
 
@@ -18999,6 +19004,10 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     uint32 dbAccountId = fields[1].GetUInt32();
 
+    sprintf(itemKey, "r{%i}u{%i}items", realmID, guid);
+    sprintf(userKey, "r{%i}u{%i}", realmID, guid);
+    sprintf(accountKey, "r{%i}a{%i}", realmID, dbAccountId);
+
     // check if the character's account in the db and the logged in account match.
     // player should be able to load/delete character only with correct account!
     if (dbAccountId != GetSession()->GetAccountId())
@@ -19139,7 +19148,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     SetUInt16Value(PLAYER_FIELD_KILLS, 1, fields[42].GetUInt16());
 
     _LoadBoundInstances(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADBOUNDINSTANCES));
-    _LoadInstanceTimeRestrictions(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADINSTANCELOCKTIMES));
+    //_LoadInstanceTimeRestrictions(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADINSTANCELOCKTIMES));
     _LoadBGData(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADBGDATA));
 
     GetSession()->SetPlayer(this);
@@ -19161,7 +19170,6 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
             DungeonDesert = true;
         if (HasAura(15007))
             MalDeRez = true;
-
 
         RemoveAllAuras();
         RemoveFromGroup();
@@ -19764,6 +19772,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         sLog->outDebug(LOG_FILTER_DUPE, "---PlayerLoaded;");
     }
 
+    //init json data for save in redis db
+    InitSerializePlayer();
+
     return true;
 }
 
@@ -20010,7 +20021,9 @@ void Player::LoadCorpse()
 
 void Player::_LoadInventory(PreparedQueryResult result, uint32 timeDiff)
 {
-    //QueryResult* result = CharacterDatabase.PQuery("SELECT data, text, bag, slot, item, item_template FROM character_inventory JOIN item_instance ON character_inventory.item = item_instance.guid WHERE character_inventory.guid = '%u' ORDER BY bag, slot", GetGUIDLow());
+    //                                                             0             1           2        3        4       5         6               7              8             9            10          11          12      13   14    15      16        17      18
+    //QueryResult* result = CharacterDatabase.PQuery("SELECT creatorGuid, giftCreatorGuid, count, duration, charges, flags, enchantments, randomPropertyId, reforgeId, transmogrifyId, upgradeId, durability, playedTime, text, bag, slot, ii.guid, itemEntry, item "
+    //"FROM item_instance ii LEFT JOIN character_inventory ci ON ci.item = ii.guid WHERE ii.owner_guid = %u ORDER BY ci.bag, ci.slot", GetGUIDLow());
     //NOTE: the "order by `bag`" is important because it makes sure
     //the bagMap is filled before items in the bags are loaded
     //NOTE2: the "order by `slot`" is needed because mainhand weapons are (wrongly?)
@@ -20128,7 +20141,10 @@ void Player::_LoadInventory(PreparedQueryResult result, uint32 timeDiff)
 
                 // Item's state may have changed after storing
                 if (err == EQUIP_ERR_OK)
+                {
                     item->SetState(ITEM_UNCHANGED, this);
+                    item->SerializeItem();
+                }
                 else
                 {
                     sLog->outError(LOG_FILTER_PLAYER, "Player::_LoadInventory: player (GUID: %u, name: '%s') has item (GUID: %u, entry: %u) which can't be loaded into inventory (Bag GUID: %u, slot: %u) by reason %u. Item will be sent by mail.",
@@ -20791,7 +20807,7 @@ void Player::_LoadBattlePets(PreparedQueryResult result)
 
     do
     {
-        // SELECT guid, customName, creatureEntry, speciesID, spell, level, displayID, power, speed, health, maxHealth, quality, xp, flags FROM character_battle_pet_journal WHERE ownerAccID = ?
+        // SELECT guid, customName, creatureEntry, speciesID, spell, level, displayID, power, speed, health, maxHealth, quality, xp, flags, breedID FROM account_battle_pet_journal WHERE ownerAccID = ?
         Field* fields = result->Fetch();
 
         uint64 guid        = fields[0].GetUInt64();
@@ -31144,166 +31160,4 @@ SpellModifier* Player::ChangePriorityMods(SpellModifier* currentMod, SpellModifi
         return newMod;
 
     return currentMod;
-}
-
-void Player::LoadFromRedis(const RedisValue &v)
-{
-    bool isReader = jsonReader.parse(v.toString().c_str(), PlayerJson);
-}
-
-void Player::InitDefaultJson()
-{
-    char queryKey[50];
-    sprintf(queryKey, "realmID:{%i}userId:{%i} userdata", realmID, GetGUIDLow());
-
-    RedisDatabase.AsyncExecute("HGET", queryKey, GetGUIDLow(), [&](const RedisValue &v, uint64 guid) {
-        Player* player = HashMapHolder<Player>::Find(guid); // Now don`t work, in login player not exist
-        if (!player)
-            return;
-
-        player->LoadFromRedis(v);
-    });
-}
-
-void Player::CreateJson()
-{
-    char queryKey[50];
-    sprintf(queryKey, "realmID:{%i}userId:{%i} userdata", realmID, GetGUIDLow());
-
-    sLog->outInfo(LOG_FILTER_REDIS, "Player::CreateJson queryKey %s", queryKey);
-
-    PlayerJson["realm"] = realmID;
-    PlayerJson["guid"] = GetGUIDLow();
-    PlayerJson["account"] = GetSession()->GetAccountId();
-    PlayerJson["name"] = GetName();
-    PlayerJson["race"] = getRace();
-    PlayerJson["class"] = getClass();
-    PlayerJson["gender"] = getGender();
-    PlayerJson["level"] = getLevel();
-    PlayerJson["xp"] = GetUInt32Value(PLAYER_XP);
-    PlayerJson["money"] = GetMoney();
-    PlayerJson["playerBytes"] = GetUInt32Value(PLAYER_BYTES);
-    PlayerJson["playerBytes2"] = GetUInt32Value(PLAYER_BYTES_2);
-    PlayerJson["playerFlags"] = GetUInt32Value(PLAYER_FLAGS);
-    PlayerJson["map"] = GetMapId();
-    PlayerJson["instance_id"] = GetInstanceId();
-    PlayerJson["instance_mode_mask"] = (uint16(GetDungeonDifficulty()) | uint16(GetRaidDifficulty()) << 16);
-    PlayerJson["position_x"] = finiteAlways(GetPositionX());
-    PlayerJson["position_y"] = finiteAlways(GetPositionY());
-    PlayerJson["position_z"] = finiteAlways(GetPositionZ());
-    PlayerJson["orientation"] = finiteAlways(GetOrientation());
-    std::ostringstream ss;
-    ss << m_taxi;
-    PlayerJson["taximask"] = ss.str();
-    PlayerJson["cinematic"] = m_cinematic;
-    PlayerJson["totaltime"] = m_Played_time[PLAYED_TIME_TOTAL];
-    PlayerJson["leveltime"] = m_Played_time[PLAYED_TIME_LEVEL];
-    PlayerJson["rest_bonus"] = finiteAlways(m_rest_bonus);
-    PlayerJson["logout_time"] = uint32(time(NULL));
-    PlayerJson["is_logout_resting"] = (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) ? 1 : 0);
-    PlayerJson["resettalents_cost"] = GetTalentResetCost();
-    PlayerJson["resettalents_time"] = GetTalentResetTime();
-    ss.str("");
-    for (uint8 i = 0; i < MAX_TALENT_SPECS; ++i)
-        ss << uint32(0) << " ";
-    PlayerJson["talentTree"] = ss.str();
-    PlayerJson["extra_flags"] = m_ExtraFlags;
-    PlayerJson["stable_slots"] = m_stableSlots;
-    PlayerJson["at_login"] = m_atLoginFlags;
-    PlayerJson["zone"] = m_zoneUpdateId;
-    PlayerJson["death_expire_time"] = m_deathExpireTime;
-    ss.str("");
-    ss << m_taxi.SaveTaxiDestinationsToString();
-    PlayerJson["taxi_path"] = ss.str();
-    PlayerJson["totalKills"] = GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS);
-    PlayerJson["todayKills"] = GetUInt16Value(PLAYER_FIELD_KILLS, 0);
-    PlayerJson["yesterdayKills"] = GetUInt16Value(PLAYER_FIELD_KILLS, 1);
-    PlayerJson["chosenTitle"] = GetUInt32Value(PLAYER_CHOSEN_TITLE);
-    PlayerJson["watchedFaction"] = GetUInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX);
-    PlayerJson["drunk"] = GetDrunkValue();
-    PlayerJson["health"] = GetHealth();
-    PlayerJson["power"] = GetPower(getPowerType());
-    PlayerJson["speccount"] = GetSpecsCount();
-    PlayerJson["activespec"] = GetActiveSpec();
-        ss.str("");
-    for (uint32 i = 0; i < PLAYER_EXPLORED_ZONES_SIZE; ++i)
-        ss << GetUInt32Value(PLAYER_EXPLORED_ZONES_1 + i) << ' ';
-    PlayerJson["exploredZones"] = ss.str();
-    ss.str("");
-    // cache equipment...
-    for (uint32 i = 0; i < EQUIPMENT_SLOT_END * 2; ++i)
-        ss << GetUInt32Value(PLAYER_VISIBLE_ITEM_1_ENTRYID + i) << ' ';
-
-    // ...and bags for enum opcode
-    for (uint32 i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; ++i)
-    {
-        if (Item* item = GetItemByPos(INVENTORY_SLOT_BAG_0, i))
-            ss << item->GetEntry();
-        else
-            ss << '0';
-        ss << " 0 ";
-    }
-    PlayerJson["equipmentCache"] = ss.str();
-    ss.str("");
-    for (uint32 i = 0; i < KNOWN_TITLES_SIZE*2; ++i)
-        ss << GetUInt32Value(PLAYER_FIELD_KNOWN_TITLES + i) << ' ';
-    PlayerJson["knownTitles"] = ss.str();
-    PlayerJson["actionBars"] = GetByteValue(PLAYER_FIELD_BYTES, 2);
-    PlayerJson["currentpetnumber"] = m_currentPetNumber;
-    ss.str("");
-    for (uint32 i = 0; i < PET_SLOT_LAST; ++i)
-        ss << m_PetSlots[i] << ' ';
-    PlayerJson["petslot"] = m_currentPetNumber;
-    PlayerJson["grantableLevels"] = m_grantableLevels;
-
-    RedisDatabase.AsyncExecuteSet("HSET", queryKey, jsonBuilder.write(PlayerJson).c_str(), GetGUIDLow(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::CreateJson guid %u", guid);
-    });
-}
-
-void Player::CreateBGJson()
-{
-    char queryKey[50];
-    sprintf(queryKey, "realmID:{%i}userId:{%i} BGdata", realmID, GetGUIDLow());
-
-    sLog->outInfo(LOG_FILTER_REDIS, "Player::CreateBGJson queryKey %s", queryKey);
-
-    PlayerBGJson["instanceId"] = m_bgData.bgInstanceID;
-    PlayerBGJson["team"] = m_bgData.bgTeam;
-    PlayerBGJson["joinX"] = m_bgData.joinPos.GetPositionX();
-    PlayerBGJson["joinY"] = m_bgData.joinPos.GetPositionY();
-    PlayerBGJson["joinZ"] = m_bgData.joinPos.GetPositionZ();
-    PlayerBGJson["joinO"] = m_bgData.joinPos.GetOrientation();
-    PlayerBGJson["joinMapId"] = m_bgData.joinPos.GetMapId();
-    PlayerBGJson["taxiStart"] = m_bgData.taxiPath[0];
-    PlayerBGJson["taxiEnd"] = m_bgData.taxiPath[1];
-    PlayerBGJson["mountSpell"] = m_bgData.mountSpell;
-
-    RedisDatabase.AsyncExecuteSet("HSET", queryKey, jsonBuilder.write(PlayerBGJson).c_str(), GetGUIDLow(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::CreateBGJson guid %u", guid);
-    });
-}
-
-void Player::CreateGroupJson()
-{
-    char queryKey[50];
-    sprintf(queryKey, "realmID:{%i}userId:{%i} group", realmID, GetGUIDLow());
-
-    PlayerGroupJson["guid"] = GetGroup() ? GetGroup()->GetGUID() : 0;
-
-    RedisDatabase.AsyncExecuteSet("HSET", queryKey, jsonBuilder.write(PlayerGroupJson).c_str(), GetGUIDLow(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::CreateGroupJson guid %u", guid);
-    });
-}
-
-void Player::CreateLootCooldownJson()
-{
-    char queryKey[50];
-    sprintf(queryKey, "realmID:{%i}userId:{%i} lootCooldown", realmID, GetGUIDLow());
-
-    //PlayerLootCooldownJson["guid"] = GetGroup() ? GetGroup()->GetGUIDLow() : 0;
-
-    RedisDatabase.AsyncExecuteSet("HSET", queryKey, jsonBuilder.write(PlayerGroupJson).c_str(), GetGUIDLow(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::CreateLootCooldownJson guid %u", guid);
-    });
 }

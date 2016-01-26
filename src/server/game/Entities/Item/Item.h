@@ -245,6 +245,7 @@ class Item : public Object
         bool IsBoundByEnchant() const;
         virtual void SaveToDB(SQLTransaction& trans);
         virtual bool LoadFromDB(uint32 guid, uint64 owner_guid, Field* fields, uint32 entry);
+        virtual bool LoadFromDB(uint32 guid, uint64 owner_guid, Json::Value& itemValue, uint32 entry);
         static void DeleteFromDB(SQLTransaction& trans, uint32 itemGuid);
         virtual void DeleteFromDB(SQLTransaction& trans);
         static void DeleteFromInventoryDB(SQLTransaction& trans, uint32 itemGuid);
@@ -321,11 +322,6 @@ class Item : public Object
         Loot loot;
         bool m_lootGenerated;
 
-        Json::Reader jsonReader;
-        Json::FastWriter jsonBuilder;
-        Json::Value ItemsJson;
-        void CreateJson();
-
         // Update States
         ItemUpdateState GetState() const { return uState; }
         void SetState(ItemUpdateState state, Player* forplayer = NULL);
@@ -401,6 +397,16 @@ class Item : public Object
         uint32 m_dynamicModInfo[ITEM_DYN_MOD_END];
         void AppendDynamicInfo(ByteBuffer& buff) const;
         void SetLevelCap(uint32 cup, bool pvp);
+
+        /*********************************************************/
+        /***                    SERIALIZE SYSTEM               ***/
+        /*********************************************************/
+
+        char* itemKey;
+        Json::Reader jsonReader;
+        Json::FastWriter jsonBuilder;
+        Json::Value ItemsJson;
+        void SerializeItem();
 
     private:
         std::string m_text;

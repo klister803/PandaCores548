@@ -122,8 +122,9 @@ class PlayerSocial
         uint32 GetPlayerGUID() const { return m_playerGUID; }
         void SetPlayerGUID(uint32 guid) { m_playerGUID = guid; }
         uint32 GetNumberOfSocialsWithFlag(SocialFlag flag);
-    private:
+
         PlayerSocialMap m_playerSocialMap;
+    private:
         uint32 m_playerGUID;
 };
 
@@ -138,6 +139,7 @@ class SocialMgr
     public:
         // Misc
         void RemovePlayerSocial(uint32 guid) { m_socialMap.erase(guid); }
+        PlayerSocial* GetPlayerSocial(uint32 guid) { return &m_socialMap[guid]; }
 
         void GetFriendInfo(Player* player, uint32 friendGUID, FriendInfo &friendInfo);
         // Packet management
@@ -146,6 +148,7 @@ class SocialMgr
         void BroadcastToFriendListers(Player* player, WorldPacket* packet);
         // Loading
         PlayerSocial *LoadFromDB(PreparedQueryResult result, uint32 guid);
+        PlayerSocial *LoadFromDB(const RedisValue* v, Player* player);
     private:
         SocialMap m_socialMap;
 };

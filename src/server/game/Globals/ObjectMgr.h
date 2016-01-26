@@ -69,11 +69,14 @@ struct PageText
 #pragma pack(pop)
 #endif
 
-// Benchmarked: Faster than UNORDERED_MAP (insert/find)
+// Benchmarked: Faster than std::unordered_map (insert/find)
 typedef std::map<uint32, PageText> PageTextContainer;
 
 // Benchmarked: Faster than std::map (insert/find)
-typedef UNORDERED_MAP<uint16, InstanceTemplate> InstanceTemplateContainer;
+typedef std::unordered_map<uint16, InstanceTemplate> InstanceTemplateContainer;
+
+// Save login player for fast find
+typedef std::unordered_map<uint64, Player*> PlayerLoadContainer;
 
 struct GameTele
 {
@@ -86,7 +89,7 @@ struct GameTele
     std::wstring wnameLow;
 };
 
-typedef UNORDERED_MAP<uint32, GameTele > GameTeleContainer;
+typedef std::unordered_map<uint32, GameTele > GameTeleContainer;
 
 enum ScriptsType
 {
@@ -945,6 +948,18 @@ class ObjectMgr
             return info;
         }
 
+        Player* GetPlayerLoad(uint64 guid)
+        {
+            PlayerLoadContainer::const_iterator itr = _playerLoadMap.find(guid);
+            if (itr != _playerLoadMap.end())
+                return itr->second;
+
+            return NULL;
+        }
+
+        void AddPlayerLoad(uint64 guid, Player* player) { _playerLoadMap[guid] = player; }
+        void RemovePlayerLoad(uint64 guid) { _playerLoadMap.erase(guid); }
+
         void GetPlayerLevelInfo(uint32 race, uint32 class_, uint8 level, PlayerLevelInfo* info) const;
 
         static uint64 GetPlayerGUIDByName(std::string name);
@@ -1719,6 +1734,8 @@ class ObjectMgr
 
         PageTextContainer _pageTextStore;
         InstanceTemplateContainer _instanceTemplateStore;
+
+        PlayerLoadContainer _playerLoadMap;
 
         PhaseDefinitionStore _PhaseDefinitionStore;
         SpellPhaseStore _SpellPhaseStore;

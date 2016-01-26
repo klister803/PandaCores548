@@ -442,7 +442,7 @@ class WorldSession
         void HandleCharFactionOrRaceChange(WorldPacket& recvData);
         void HandleRandomizeCharNameOpcode(WorldPacket& recvData);
         void HandleReorderCharacters(WorldPacket& recvData);
-
+        void HandlePlayerLogin(uint32 accountId, uint64 playerGuid, uint8 step = 0);
 
         // played time
         void HandlePlayedTime(WorldPacket& recvPacket);
@@ -1064,6 +1064,9 @@ class WorldSession
         void HandleWarGameAccept(WorldPacket& recvPacket);
 
         void LootCorps(uint64 corpsGUID, WorldObject* lootedBy = NULL);
+
+        AccountData m_accountData[NUM_ACCOUNT_DATA_TYPES];
+
     private:
         void InitializeQueryCallbackParameters();
         void ProcessQueryCallbacks();
@@ -1119,7 +1122,6 @@ class WorldSession
         LocaleConstant m_sessionDbcLocale;
         LocaleConstant m_sessionDbLocaleIndex;
         uint32 m_latency;
-        AccountData m_accountData[NUM_ACCOUNT_DATA_TYPES];
         uint32 m_Tutorials[MAX_ACCOUNT_TUTORIAL_VALUES];
         bool   m_TutorialsChanged;
         AddonsList m_addonsList;
