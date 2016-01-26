@@ -236,6 +236,37 @@ class spell_hun_stampede : public SpellScriptLoader
         }
 };
 
+
+// 50274 - Spore Cloud (Pet)
+class spell_hunt_spore_cloud : public SpellScriptLoader
+{
+public:
+    spell_hunt_spore_cloud() : SpellScriptLoader("spell_hunt_spore_cloud") { }
+
+    class spell_hunt_spore_cloud_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_hunt_spore_cloud_AuraScript);
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (Unit* owner = GetTarget())
+                if (owner->GetTypeId() == TYPEID_PLAYER)
+                    if (AuraEffect* eff = GetEffect(EFFECT_0))
+                        eff->SetAmount(10);
+        }
+
+        void Register()
+        {
+            AfterEffectApply += AuraEffectApplyFn(spell_hunt_spore_cloud_AuraScript::OnApply, EFFECT_0, SPELL_AURA_HASTE_SPELLS, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_hunt_spore_cloud_AuraScript();
+    }
+};
+
 // Dire Beast - 120679
 class spell_hun_dire_beast : public SpellScriptLoader
 {
@@ -2199,4 +2230,5 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_bestial_wrath();
     new spell_hun_toss_damage();
     new spell_hun_widow_venom();
+    new spell_hunt_spore_cloud();
 }

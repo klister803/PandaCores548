@@ -1265,7 +1265,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
             {                
                 case 5760:   // Mind-numbing Poison  
                 case 31589:  // Slow
-                case 50274:
                 case 73975:  // Necrotic Strike             
                 case 58604:  // Lava Breath
                 case 90315:  // Tailspin

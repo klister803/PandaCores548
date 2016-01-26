@@ -1,0 +1,1 @@
+INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('50274', 'spell_hunt_spore_cloud');
