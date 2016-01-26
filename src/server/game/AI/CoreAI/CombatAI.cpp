@@ -575,6 +575,9 @@ void AnyPetAI::UpdateAI(uint32 diff)
         // deleted cached Spell objects
         for (TargetSpellList::const_iterator itr = targetSpellStore.begin(); itr != targetSpellStore.end(); ++itr)
             delete itr->second;
+
+        if (me->HasReactState(REACT_PASSIVE))
+            me->HandleFollowCommand();
     }
 
     if(!me->GetCasterPet())
