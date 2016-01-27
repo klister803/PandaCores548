@@ -353,12 +353,12 @@ enum eCreatures
     //
 
     NPC_GARROSH                     = 71865,
-    //Garrosh warriors
+    //Garrosh soldiers
+    //
     NPC_DESECRATED_WEAPON           = 72154,
     NPC_EMPOWERED_DESECRATED_WEAPON = 72198,
     NPC_HEART_OF_YSHAARJ            = 72215,
     NPC_KORKRON_IRON_STAR           = 71985,
-
     NPC_THRALL                      = 73483,
     NPC_THE_LAST_GASP_OF_YSHAARJ    = 73335,
 };

@@ -123,7 +123,8 @@ class InstanceScript : public ZoneScript
         //Used by the map's CanEnter function.
         //This is to prevent players from entering during boss encounters.
         virtual bool IsEncounterInProgress() const;
-
+        bool IsInstanceEmpty();
+        void ResetEncounters();
         //Called when a player successfully enters the instance.
         virtual void OnPlayerEnter(Player* /*player*/) {}
         virtual void OnPlayerLeave(Player* /*player*/) {}
