@@ -4688,12 +4688,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_TAKE_DAMAGE;
                     break;
                 //Heart of Fear
-                case 123120: //Pheromones trail tr ef
-                    spellInfo->Effects[0].TargetA = 22;
-                    spellInfo->Effects[0].TargetB = 15;
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(44); //0.5yard
-                    break;
-                //
                 //Lord Meljarak
                 case 122193: //Heal
                     spellInfo->TargetAuraSpell = 0;
