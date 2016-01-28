@@ -4689,11 +4689,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_TAKE_DAMAGE;
                     break;
                 //Heart of Fear
-                //Garalon
-                case 122835: //Pheromones
-                    spellInfo->Effects[0].TriggerSpell = 0; 
-                    spellInfo->Effects[3].TriggerSpell = 0;
-                    break;
                 case 123120: //Pheromones trail tr ef
                     spellInfo->Effects[0].TargetA = 22;
                     spellInfo->Effects[0].TargetB = 15;
