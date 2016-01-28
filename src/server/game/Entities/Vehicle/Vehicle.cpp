@@ -903,6 +903,22 @@ bool VehicleJoinEvent::Execute(uint64, uint32)
             Passenger->m_movementInfo.t_pos.m_positionY = 0.0f;
             Passenger->m_movementInfo.t_pos.m_positionZ = 30.0f;
             break;
+        case 11375: //Garalon Legs
+            Passenger->m_movementInfo.t_pos.m_positionX = 18.7f;
+            Passenger->m_movementInfo.t_pos.m_positionY = 12.1f;
+            break;
+        case 11376: //Garalon Legs
+            Passenger->m_movementInfo.t_pos.m_positionX = 18.8f;
+            Passenger->m_movementInfo.t_pos.m_positionY = -12.1f;
+            break;
+        case 11377: //Garalon Legs
+            Passenger->m_movementInfo.t_pos.m_positionX = -25.1f;
+            Passenger->m_movementInfo.t_pos.m_positionY = -19.0f;
+            break;
+        case 11378: //Garalon Legs
+            Passenger->m_movementInfo.t_pos.m_positionX = -25.4f;
+            Passenger->m_movementInfo.t_pos.m_positionY = 19.0f;
+            break;
         default:
             break;
     }
