@@ -51,6 +51,7 @@ enum eEvents
     EVENT_CRUSH             = 4,
     EVENT_CRUSH_DELAY       = 5,
     EVENT_BERSERK           = 6,
+    EVENT_CHECK_VICTIM      = 7,
 };
 
 uint32 legSpells[4] =
@@ -84,13 +85,17 @@ class boss_garalon : public CreatureScript
                 hitcount = 0;
                 bPhase2 = false;
                 crush = false;
+                me->RemoveAllAuras();
                 DoCast(me, SPELL_AURA_MULTI_CANCELLER, true);
+                instance->DoRemoveAurasDueToSpellOnPlayers(123081);
+                instance->DoRemoveAurasDueToSpellOnPlayers(122835);
             }
 
             void EnterCombat(Unit* who)
             {
                 _EnterCombat();
                 DoCast(SPELL_PHEROMONES);
+                events.ScheduleEvent(EVENT_CHECK_VICTIM, 2000);
                 events.ScheduleEvent(EVENT_FURIOUS_SWIPE, 10000);
                 events.ScheduleEvent(EVENT_MEND_LEG, 30000);
                 events.ScheduleEvent(EVENT_BERSERK, 7 * MINUTE * IN_MILLISECONDS);
@@ -117,8 +122,12 @@ class boss_garalon : public CreatureScript
 
             void DoAction(const int32 action)
             {
-                if (action == ACTION_1 && !IsHeroic())
-                    me->CastSpell(me, SPELL_CRUSH, true);
+                if (action == ACTION_1 && !IsHeroic() && !crush)
+                {
+                    crush = true;
+                    DoCast(SPELL_CRUSH);
+                    events.ScheduleEvent(EVENT_CRUSH_DELAY, 2000);
+                }
             }
 
             void DamageTaken(Unit* /*attacker*/, uint32& damage)
@@ -147,7 +156,11 @@ class boss_garalon : public CreatureScript
             void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
+                {
+                    if (me->isInCombat())
+                        EnterEvadeMode();
                     return;
+                }
 
                 events.Update(diff);
 
@@ -161,7 +174,7 @@ class boss_garalon : public CreatureScript
                         case EVENT_FURIOUS_SWIPE:
                             if (me->getVictim())
                                 DoCast(me->getVictim(), SPELL_FURIOUS_SWIPE);
-                            events.ScheduleEvent(EVENT_CHECK_HIT_SWIPE, 1000);
+                            events.ScheduleEvent(EVENT_CHECK_HIT_SWIPE, 3000);
                             events.ScheduleEvent(EVENT_FURIOUS_SWIPE, 10000);
                             break;
                         case EVENT_CHECK_HIT_SWIPE:
@@ -192,6 +205,11 @@ class boss_garalon : public CreatureScript
                             break;
                         case EVENT_BERSERK:
                             DoCast(me, SPELL_BERSERK);
+                            break;
+                        case EVENT_CHECK_VICTIM:
+                            if (!me->getVictim())
+                                EnterEvadeMode();
+                            events.ScheduleEvent(EVENT_CHECK_VICTIM, 3000);
                             break;
                     }
                 }

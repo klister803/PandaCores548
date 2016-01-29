@@ -94,12 +94,8 @@ class boss_lord_tayak : public CreatureScript
 
         struct boss_lord_tayakAI : public BossAI
         {
-            boss_lord_tayakAI(Creature* creature) : BossAI(creature, DATA_LORD_TAYAK), summons(me)
-            {
-                instance = creature->GetInstanceScript();
-            }
+            boss_lord_tayakAI(Creature* creature) : BossAI(creature, DATA_LORD_TAYAK), summons(me) {}
 
-            InstanceScript* instance;
             SummonList summons;
             uint64 striketarget;
             bool LastPhaseWest, LastPhaseEast;
@@ -117,6 +113,7 @@ class boss_lord_tayak : public CreatureScript
                 me->RemoveAurasDueToSpell(SPELL_INTENSIFY_PHASE_TWO);
                 me->RemoveAurasDueToSpell(SPELL_INTENSIFY_TRIGGER_EF);
                 me->RemoveAurasDueToSpell(SPELL_STORM_UNLEASHED_VIS_1);
+                instance->SetData(DATA_STORM_UNLEASHED, NOT_STARTED);
             }
 
             void EnterCombat(Unit* /*who*/)
@@ -192,6 +189,8 @@ class boss_lord_tayak : public CreatureScript
             void JustDied(Unit* /*killer*/)
             {
                 _JustDied();
+                summons.DespawnAll();
+                instance->SetData(DATA_STORM_UNLEASHED, NOT_STARTED);
             }
 
             void JustSummoned(Creature* summoned)
@@ -244,6 +243,8 @@ class boss_lord_tayak : public CreatureScript
                 {
                     case 1:
                         events.ScheduleEvent(EVENT_STORM_UNLEASHED_1, 1000);
+                        if (instance->GetData(DATA_STORM_UNLEASHED) != IN_PROGRESS)
+                            instance->SetData(DATA_STORM_UNLEASHED, IN_PROGRESS);
                         break;
                     case 2:
                         DoCast(me, SPELL_STORM_UNLEASHED_AURA, true);
@@ -521,9 +522,7 @@ class npc_tayak_storm_unleashed_veh : public CreatureScript
             void IsSummonedBy(Unit* summoner)
             {
                 DoCast(me, SPELL_RIDE_VEHICLE_2, true);
-                /* Position pos;
-                me->GetNearPosition(pos, 190.0f, 0.0f);
-                me->GetMotionMaster()->MovePoint(1, pos); */
+
                 switch (me->GetEntry())
                 {
                     case NPC_STORM_WEST_1_SUM:
@@ -556,10 +555,35 @@ class npc_tayak_storm_unleashed_veh : public CreatureScript
         }
 };
 
+//8196 8197 - 126159
+class at_storm_unleashed : public AreaTriggerScript
+{
+    public:
+
+        at_storm_unleashed() : AreaTriggerScript("at_storm_unleashed") {}
+
+        bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/, bool apply)
+        {
+            if (InstanceScript* pInstance = player->GetInstanceScript())
+            {
+                if (pInstance->GetData(DATA_STORM_UNLEASHED) != IN_PROGRESS)
+                    return false;
+
+                if (apply)
+                    player->CastSpell(player, 126159, true);
+                else
+                    player->RemoveAurasDueToSpell(126159);
+            }
+
+            return false;
+        }
+};
+
 void AddSC_boss_lord_tayak()
 {
     new boss_lord_tayak();
     new npc_tempest_slash();
     new npc_tayak_storm_unleashed_plr_veh();
     new npc_tayak_storm_unleashed_veh();
+    new at_storm_unleashed();
 }

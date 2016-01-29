@@ -19,6 +19,12 @@ enum eData
     DATA_SHEKZEER          = 6,
 };
 
+enum eOther
+{
+    //Tayak
+    DATA_STORM_UNLEASHED,
+};
+
 enum eCreatures
 {
     NPC_VIZIER_ZORLOK      = 62980,
