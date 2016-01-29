@@ -368,8 +368,97 @@ class npc_generic_soldier : public CreatureScript
         }
 };
 
+//121898
+class spell_meljarak_whirling_blade : public SpellScriptLoader
+{
+    public:
+        spell_meljarak_whirling_blade() : SpellScriptLoader("spell_meljarak_whirling_blade") { }
+
+        class spell_meljarak_whirling_blade_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_meljarak_whirling_blade_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                if (targets.empty())
+                    return;
+
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                AuraEffect const* aurEff = GetSpell()->GetTriggeredAuraEff();
+                if (!aurEff)
+                {
+                    targets.clear();
+                    return;
+                }
+
+                uint32 tick = aurEff->GetTickNumber();
+                Aura* auraTrigger = aurEff->GetBase();
+                Position const* pos = auraTrigger->GetDstPos();
+
+                float distanceintick = 6.0f * tick;
+                if(distanceintick > 24.0f)
+                    distanceintick = (24.0f * 2) - distanceintick;
+
+                if(distanceintick < 0.0f)
+                {
+                    targets.clear();
+                    return;
+                }
+
+                float angle = caster->GetAngle(pos);
+
+                // expload at tick
+                float x = caster->GetPositionX() + (caster->GetObjectSize() + distanceintick) * std::cos(angle);
+                float y = caster->GetPositionY() + (caster->GetObjectSize() + distanceintick) * std::sin(angle);
+                Trinity::NormalizeMapCoord(x);
+                Trinity::NormalizeMapCoord(y);
+
+                std::list<uint64> saveTargets = auraTrigger->GetEffectTargets();
+
+                for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end();)
+                {
+                    uint64 guid = (*itr)->GetGUID();
+                    bool find = false;
+                    if(!saveTargets.empty())
+                    {
+                        for (std::list<uint64>::iterator itrGuid = saveTargets.begin(); itrGuid != saveTargets.end();)
+                        {
+                            if(guid == (*itrGuid))
+                            {
+                                find = true;
+                                break;
+                            }
+                            ++itrGuid;
+                        }
+                    }
+                    if(find || ((*itr)->GetDistance2d(x, y) > 4.0f))
+                        targets.erase(itr++);
+                    else
+                    {
+                        auraTrigger->AddEffectTarget(guid);
+                        ++itr;
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_meljarak_whirling_blade_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_meljarak_whirling_blade_SpellScript();
+        }
+};
+
 void AddSC_boss_lord_meljarak()
 {
     new boss_lord_meljarak();
     new npc_generic_soldier();
+    new spell_meljarak_whirling_blade();
 }

@@ -325,12 +325,13 @@ class npc_pheromone_trail : public CreatureScript
     public:
         npc_pheromone_trail() : CreatureScript("npc_pheromone_trail") {}
 
-        struct npc_pheromone_trailAI : public Scripted_NoMovementAI
+        struct npc_pheromone_trailAI : public ScriptedAI
         {
-            npc_pheromone_trailAI(Creature* creature) : Scripted_NoMovementAI(creature)
+            npc_pheromone_trailAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
                 me->SetReactState(REACT_PASSIVE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
             }
 
             InstanceScript* instance;
