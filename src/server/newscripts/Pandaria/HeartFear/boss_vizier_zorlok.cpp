@@ -185,6 +185,7 @@ class boss_vizier_zorlok : public CreatureScript
                             DoCast(me, SPELL_PHEROMONES_OF_ZEAL_BUFF, true);
                         }
                         me->SetReactState(REACT_AGGRESSIVE);
+                        DoCast(me, SPELL_SONG_OF_THE_EMPRESS, true);
                         DoZoneInCombat(me, 150.0f);
                     }
                 }
