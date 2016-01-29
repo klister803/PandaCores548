@@ -205,6 +205,8 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          boss_siegecrafter_blackfuseAI(Creature* creature) : BossAI(creature, DATA_BLACKFUSE)
          {
              instance = creature->GetInstanceScript();
+             me->ApplySpellImmune(0, IMMUNITY_ID, 348, true);
+             me->ApplySpellImmune(0, IMMUNITY_ID, 108686, true);
          }
          
          InstanceScript* instance;
@@ -567,6 +569,7 @@ public:
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, true);
             me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
             me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
             me->SetReactState(REACT_PASSIVE);
             me->SetCanFly(true);
             me->SetDisableGravity(true);

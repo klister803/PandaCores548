@@ -165,6 +165,8 @@ public:
         std::vector<uint64> jaillistGuids;
         std::vector<uint64> klaxxiarenagateGuid;
         uint64 blackfuseentdoorGuid;
+        std::vector<uint64> garroshfench;
+        uint64 garroshentdoorGuid;
         
         //Creature
         std::set<uint64> shaSlgGUID;
@@ -253,6 +255,8 @@ public:
             jaillistGuids.clear();
             klaxxiarenagateGuid.clear();
             blackfuseentdoorGuid    = 0;
+            garroshfench.clear();
+            garroshentdoorGuid      = 0;
            
             //Creature
             LorewalkerChoGUIDtmp    = 0;
@@ -785,6 +789,13 @@ public:
                 case GO_ARENA_WALL:
                     klaxxiarenagateGuid.push_back(go->GetGUID());
                     break;
+                case GO_GARROSH_FENCH:
+                case GO_GARROSH_FENCH2:
+                    garroshfench.push_back(go->GetGUID());
+                    break;
+                case GO_GARROSH_ENT_DOOR:
+                    garroshentdoorGuid = go->GetGUID();
+                    break;
             }
         }
 
@@ -1223,6 +1234,28 @@ public:
                 case DONE:
                     HandleGameObject(blackfuseentdoorGuid, true);
                     CheckProgressForKlaxxi();
+                    break;
+                }
+            }
+            break;
+            case DATA_GARROSH:
+            {
+                switch (state)
+                {
+                case NOT_STARTED:
+                    for (std::vector<uint64>::const_iterator itr = garroshfench.begin(); itr != garroshfench.end(); ++itr)
+                        HandleGameObject(*itr, true);
+                    HandleGameObject(garroshentdoorGuid, true);
+                    break;
+                case IN_PROGRESS:
+                    for (std::vector<uint64>::const_iterator itr = garroshfench.begin(); itr != garroshfench.end(); ++itr)
+                        HandleGameObject(*itr, false);
+                    HandleGameObject(garroshentdoorGuid, false);
+                    break;
+                case DONE:
+                    for (std::vector<uint64>::const_iterator itr = garroshfench.begin(); itr != garroshfench.end(); ++itr)
+                        HandleGameObject(*itr, true);
+                    HandleGameObject(garroshentdoorGuid, true);
                     break;
                 }
             }
