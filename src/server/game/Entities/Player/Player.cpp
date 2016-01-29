@@ -27436,11 +27436,11 @@ void Player::UpdateVmapInfo(Map* m, float x, float y, float z)
 
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::UpdateVmapInfo m_zoneUpdateId %i m_areaUpdateId %i m_saveZoneUpdateId %i m_saveAreaUpdateId %i", m_zoneUpdateId, m_areaUpdateId, m_saveZoneUpdateId, m_saveAreaUpdateId);
 
-    if(IsInWorld())
+    if (IsInWorld())
     {
-        if(m_zoneUpdateId != m_saveZoneUpdateId)
+        if (m_zoneUpdateId != m_saveZoneUpdateId)
             UpdateZone();
-        else if(m_areaUpdateId != m_saveAreaUpdateId)
+        else if (m_areaUpdateId != m_saveAreaUpdateId)
             UpdateArea();
     }
 
@@ -27478,7 +27478,6 @@ void Player::UpdateVmapInfo(Map* m, float x, float y, float z)
         RemoveAurasDueToSpell(_lastLiquid->SpellId);
         _lastLiquid = NULL;
     }
-
 
     // All liquids type - check under water position
     if (vmapInfo.liquid_status.type_flags & (MAP_LIQUID_TYPE_WATER | MAP_LIQUID_TYPE_OCEAN | MAP_LIQUID_TYPE_MAGMA | MAP_LIQUID_TYPE_SLIME))

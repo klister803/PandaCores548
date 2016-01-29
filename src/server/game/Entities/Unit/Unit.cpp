@@ -3651,9 +3651,12 @@ bool Unit::IsUnderWater() const
 
 void Unit::UpdateVmapInfo(Map* m, float x, float y, float z)
 {
+    if (GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->UpdateVmapInfo(m, x, y, z);
+
     if (!isPet() && !IsVehicle())
     {
-        if(m_vmapUpdateAllow)
+        if (m_vmapUpdateAllow)
         {
             m->getVmapInfo(x, y, z, &vmapInfo);
             m_zoneUpdateId = vmapInfo.zoneid;
@@ -3666,8 +3669,6 @@ void Unit::UpdateVmapInfo(Map* m, float x, float y, float z)
     m->getVmapInfo(x, y, z, &vmapInfo);
     m_zoneUpdateId = vmapInfo.zoneid;
     m_areaUpdateId = vmapInfo.areaid;
-
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit::UpdateVmapInfo m_zoneUpdateId %i m_areaUpdateId %i m_saveZoneUpdateId %i m_saveAreaUpdateId %i", m_zoneUpdateId, m_areaUpdateId, m_saveZoneUpdateId, m_saveAreaUpdateId);
 
     if (!vmapInfo.Zliquid_status)
     {
