@@ -60,7 +60,12 @@ enum LoadingStep
     LOAD_PLAYER_CUFPROFILES         = 36,
     LOAD_PLAYER_VISUALS             = 37,
     LOAD_PLAYER_PLAYERACCOUNTDATA   = 38,
-    LOAD_PLAYER_PLAYER_LOGIN        = 39,
+    LOAD_PLAYER_LOGIN               = 39,
+    LOAD_PLAYER_ACHIEVEMENT         = 40,
+    LOAD_ACCOUNT_ACHIEVEMENT        = 41,
+    LOAD_PLAYER_CRITERIA            = 42,
+    LOAD_ACCOUNT_CRITERIA           = 43,
+    LOAD_PLAYER_NEXT                = 44,
 };
 
 #endif

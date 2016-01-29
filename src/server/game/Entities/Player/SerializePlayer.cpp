@@ -35,6 +35,7 @@
 #include "GameEventMgr.h"
 #include "SocialMgr.h"
 #include "SerializePlayer.h"
+#include "AchievementMgr.h"
 
 void Player::InitSerializePlayer()
 {
@@ -73,6 +74,8 @@ void Player::InitSerializePlayer()
     SerializePlayerVisuals();
     SerializePlayerAccountData();
     SerializePlayerHomeBind();
+    SerializePlayerAchievement();
+    SerializePlayerCriteria();
 }
 
 void Player::SerializePlayer()
@@ -991,4 +994,89 @@ void Player::SerializePlayerHomeBind()
     RedisDatabase.AsyncExecuteHSet("HSET", userKey, "homebind", jsonBuilder.write(PlayerHomeBindJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SerializePlayerHomeBind player guid %u", guid);
     });
+}
+
+void Player::SerializePlayerAchievement()
+{
+    for (auto iter = GetAchievementMgr().GetCompletedAchievementsList().begin(); iter != GetAchievementMgr().GetCompletedAchievementsList().end(); ++iter)
+    {
+        std::string achievementId = std::to_string(iter->first);
+        PlayerAchievementJson[achievementId.c_str()] = iter->second.date;
+
+        AccountAchievementJson[achievementId.c_str()]["first_guid"] = iter->second.first_guid;
+        AccountAchievementJson[achievementId.c_str()]["date"] = iter->second.date;
+    }
+
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "achievement", jsonBuilder.write(PlayerAchievementJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::SerializePlayerAchievement player guid %u", guid);
+    });
+
+    RedisDatabase.AsyncExecuteHSet("HSET", accountKey, "achievement", jsonBuilder.write(AccountAchievementJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::SerializePlayerAchievement account guid %u", guid);
+    });
+}
+
+void Player::SerializePlayerCriteria()
+{
+    for (auto itr = GetAchievementMgr().GetAchievementProgress().begin(); itr != GetAchievementMgr().GetAchievementProgress().end(); ++itr)
+    {
+        std::string achievID = std::to_string(itr->first);
+        bool save_pl = false;
+        bool save_ac = false;
+        Json::Value CriteriaPl;
+        Json::Value CriteriaAc;
+
+        if(auto progressMap = &itr->second)
+        {
+            uint64 guid      = GetGUIDLow();
+
+            for (auto iter = progressMap->begin(); iter != progressMap->end(); ++iter)
+            {
+                if (iter->second.deactiveted)
+                    continue;
+
+                //disable? active before test achivement system
+                AchievementEntry const* achievement = iter->second.achievement;
+                if (!achievement)
+                    continue;
+
+                // store data only for real progress
+                bool hasAchieve = HasAchieved(achievement->ID) || (achievement->parent && !HasAchieved(achievement->parent));
+                if (iter->second.counter != 0 && !hasAchieve)
+                {
+                    std::string criteriaId = std::to_string(iter->first);
+                    if (achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
+                    {
+                        save_ac = true;
+                        CriteriaAc[criteriaId.c_str()]["counter"] = iter->second.counter;
+                        CriteriaAc[criteriaId.c_str()]["date"] = iter->second.date;
+                        CriteriaAc[criteriaId.c_str()]["completed"] = iter->second.completed;
+                    }
+                    else
+                    {
+                        save_pl = true;
+                        CriteriaPl[criteriaId.c_str()]["counter"] = iter->second.counter;
+                        CriteriaPl[criteriaId.c_str()]["date"] = iter->second.date;
+                        CriteriaPl[criteriaId.c_str()]["completed"] = iter->second.completed;
+                    }
+                }
+            }
+        }
+
+        if (save_pl)
+        {
+            PlayerCriteriaJson[achievID.c_str()] = CriteriaPl;
+            RedisDatabase.AsyncExecuteHSet("HSET", criteriaPlKey, achievID.c_str(), jsonBuilder.write(CriteriaPl).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+                sLog->outInfo(LOG_FILTER_REDIS, "Player::SerializePlayerCriteria player guid %u", guid);
+            });
+        }
+
+        if (save_ac)
+        {
+            AccountCriteriaJson[achievID.c_str()] = CriteriaAc;
+            RedisDatabase.AsyncExecuteHSet("HSET", criteriaAcKey, achievID.c_str(), jsonBuilder.write(CriteriaAc).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+                sLog->outInfo(LOG_FILTER_REDIS, "Player::SerializePlayerCriteria account guid %u", guid);
+            });
+        }
+    }
 }

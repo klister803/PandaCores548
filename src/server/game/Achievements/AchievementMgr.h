@@ -102,6 +102,7 @@ enum AchievementCriteriaDataType
 class Player;
 class Unit;
 class WorldPacket;
+class RedisValue;
 
 struct AchievementCriteriaData
 {
@@ -295,6 +296,7 @@ class AchievementMgr
         void Reset();
         static void DeleteFromDB(uint32 lowguid, uint32 accountId = 0);
         void LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult achievementAccountResult = nullptr, PreparedQueryResult criteriaAccountResult = nullptr);
+
         void SaveToDB(SQLTransaction& trans);
         void ResetAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, bool evenIfCriteriaComplete = false);
         void UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, uint32 miscValue3 = 0, Unit const* unit = nullptr,
@@ -324,7 +326,14 @@ class AchievementMgr
         void ClearProgressMap(CriteriaProgressMap* progressMap);
 
         const CompletedAchievementMap &GetCompletedAchievementsList() const { return m_completedAchievements; }
+        const AchievementProgressMap &GetAchievementProgress() const { return m_achievementProgress; }
         ACE_Thread_Mutex &GetCompletedAchievementLock() { return m_CompletedAchievementsLock; }
+
+        void AddAccountAchievements(uint32 achievementid, uint64 first_guid, uint32 date);
+        void AddAchievements(uint32 achievementid, uint32 date);
+        void AddCriteriaProgress(uint32 achievementID, uint32 char_criteria_id, uint32 _date, uint32 counter, bool completed);
+        void AddAccountCriteriaProgress(uint32 achievementID, uint32 char_criteria_id, uint32 _date, uint32 counter, bool completed);
+        void GenerateProgressMap();
 
     private:
         enum ProgressType { PROGRESS_SET, PROGRESS_ACCUMULATE, PROGRESS_HIGHEST };

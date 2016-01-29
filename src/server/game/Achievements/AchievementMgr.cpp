@@ -855,8 +855,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
                     if (CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId))
                         GetOwner()->SetTitle(titleEntry);
             }
-
-        } 
+        }
         while (achievementAccountResult->NextRow());
     }
 
@@ -896,7 +895,6 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
                     if (CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId))
                         GetOwner()->SetTitle(titleEntry);
             }
-
         }
         while (achievementResult->NextRow());
     }
@@ -4581,6 +4579,195 @@ CriteriaSort AchievementMgr<ScenarioProgress>::GetCriteriaSort() const
 {
     return SCENARIO_CRITERIA;
 }
+
+template<class T>
+void AchievementMgr<T>::AddAccountAchievements(uint32 achievementid, uint64 first_guid, uint32 date)
+{
+}
+
+template<>
+void AchievementMgr<Player>::AddAccountAchievements(uint32 achievementid, uint64 first_guid, uint32 date)
+{
+    // must not happen: cleanup at server startup in sAchievementMgr->LoadCompletedAchievements()
+    AchievementEntry const* achievement = sAchievementMgr->GetAchievement(achievementid);
+    if (!achievement)
+        return;
+
+    CompletedAchievementData& ca = m_completedAchievements[achievementid];
+    ca.date = time_t(date);
+    ca.changed = false;
+    ca.first_guid = first_guid;
+    ca.isAccountAchievement = achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT;
+
+    _achievementPoints += achievement->points;
+
+    // title achievement rewards are retroactive
+    if (AchievementReward const* reward = sAchievementMgr->GetAchievementReward(achievement))
+    {
+        if (uint32 titleId = reward->titleId[Player::TeamForRace(GetOwner()->getRace()) == ALLIANCE ? 0 : 1])
+            if (CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId))
+                GetOwner()->SetTitle(titleEntry);
+    }
+}
+template<class T>
+void AchievementMgr<T>::AddAchievements(uint32 achievementid, uint32 date)
+{
+}
+
+template<>
+void AchievementMgr<Player>::AddAchievements(uint32 achievementid, uint32 date)
+{
+    // must not happen: cleanup at server startup in sAchievementMgr->LoadCompletedAchievements()
+    AchievementEntry const* achievement = sAchievementMgr->GetAchievement(achievementid);
+    if (!achievement)
+        return;
+
+    // not added on account?
+    if (m_completedAchievements.find(achievementid) == m_completedAchievements.end())
+    {
+        CompletedAchievementData& ca = m_completedAchievements[achievementid];
+        ca.changed = true;
+        ca.first_guid = GetOwner()->GetGUIDLow();
+        ca.date = time_t(date);
+        _achievementPoints += achievement->points;
+    }
+    else
+    {
+        CompletedAchievementData& ca = m_completedAchievements[achievementid];
+        ca.changed = false;
+        ca.first_guid = GetOwner()->GetGUIDLow();
+        ca.date = time_t(date);
+    }
+
+    // title achievement rewards are retroactive
+    if (AchievementReward const* reward = sAchievementMgr->GetAchievementReward(achievement))
+    {
+        if (uint32 titleId = reward->titleId[Player::TeamForRace(GetOwner()->getRace()) == ALLIANCE ? 0 : 1])
+            if (CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId))
+                GetOwner()->SetTitle(titleEntry);
+    }
+}
+template<class T>
+void AchievementMgr<T>::AddCriteriaProgress(uint32 achievementID, uint32 char_criteria_id, uint32 _date, uint32 counter, bool completed)
+{
+}
+
+template<>
+void AchievementMgr<Player>::AddCriteriaProgress(uint32 achievementID, uint32 char_criteria_id, uint32 _date, uint32 counter, bool completed)
+{
+    time_t now = time(NULL);
+    time_t date                  = time_t(_date);
+    
+    CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(char_criteria_id);
+    if (!criteriaTree)
+        return;
+
+    CriteriaEntry const* criteria = sAchievementMgr->GetAchievementCriteria(criteriaTree->criteria);
+    if (!criteria)
+        return;
+
+    bool update = false;
+    AchievementEntry const* achievement = NULL;
+    if(!achievementID)
+    {
+        uint32 parent = sAchievementMgr->GetParantTreeId(criteriaTree->parent);
+        achievement = GetsAchievementByTreeList(parent);
+        update = true;
+    }
+    else
+        achievement = sAchievementMgr->GetAchievement(achievementID);
+
+    bool hasAchieve = !achievement || HasAchieved(achievement->ID, GetOwner()->GetGUIDLow());
+    if (hasAchieve)
+        return;
+
+    if (criteria->timeLimit && time_t(date + criteria->timeLimit) < now)
+        return;
+
+    CriteriaProgressMap* progressMap = GetCriteriaProgressMap(achievement->ID);
+    CriteriaTreeProgress& progress = (*progressMap)[char_criteria_id];
+    progress.counter = counter;
+    progress.date    = date;
+    progress.changed = false;
+    progress.updated = update;
+    progress.completed = completed;
+    progress.deactiveted = false;
+    progress.achievement = achievement;
+    progress.criteriaTree = criteriaTree;
+    progress.criteria = criteria;
+    progress.parent = sCriteriaTreeStore.LookupEntry(criteriaTree->parent);
+}
+
+template<class T>
+void AchievementMgr<T>::AddAccountCriteriaProgress(uint32 achievementID, uint32 char_criteria_id, uint32 _date, uint32 counter, bool completed)
+{
+}
+
+template<>
+void AchievementMgr<Player>::AddAccountCriteriaProgress(uint32 achievementID, uint32 char_criteria_id, uint32 _date, uint32 counter, bool completed)
+{
+    time_t now = time(NULL);
+    time_t date                  = time_t(_date);
+
+    CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(char_criteria_id);
+    if (!criteriaTree)
+        return;
+
+    CriteriaEntry const* criteria = sAchievementMgr->GetAchievementCriteria(criteriaTree->criteria);
+    if (!criteria)
+        return;
+
+    bool update = false;
+    AchievementEntry const* achievement = NULL;
+    if(!achievementID)
+    {
+        uint32 parent = sAchievementMgr->GetParantTreeId(criteriaTree->parent);
+        achievement = GetsAchievementByTreeList(parent);
+        update = true;
+    }
+    else
+        achievement = sAchievementMgr->GetAchievement(achievementID);
+
+    bool hasAchieve = !achievement || HasAchieved(achievement->ID, GetOwner()->GetGUIDLow());
+    if (hasAchieve)
+        return;
+
+    if (criteria->timeLimit && time_t(date + criteria->timeLimit) < now)
+        return;
+
+    CriteriaProgressMap* progressMap = GetCriteriaProgressMap(achievement->ID);
+    // Achievement in both account & characters achievement_progress, problem
+    if (progressMap->find(char_criteria_id) != progressMap->end())
+    {
+        sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Achievement '%u' in both account & characters achievement_progress", char_criteria_id);
+        return;
+    }
+
+    CriteriaTreeProgress& progress = (*progressMap)[char_criteria_id];
+    progress.counter = counter;
+    progress.date    = date;
+    progress.changed = false;
+    progress.updated = update;
+    progress.completed = completed;
+    progress.deactiveted = false;
+    progress.achievement = achievement;
+    progress.criteriaTree = criteriaTree;
+    progress.criteria = criteria;
+    progress.parent = sCriteriaTreeStore.LookupEntry(criteriaTree->parent);
+}
+
+template<class T>
+void AchievementMgr<T>::GenerateProgressMap()
+{
+    for (AchievementProgressMap::iterator iter = m_achievementProgress.begin(); iter != m_achievementProgress.end(); ++iter)
+    {
+        AchievementEntry const* achievement = sAchievementMgr->GetAchievement(iter->first);
+        CriteriaProgressTree& parentTreeProgress = m_achievementTreeProgress[achievement->criteriaTree];
+        CriteriaTreeEntry const* parentTree = sCriteriaTreeStore.LookupEntry(achievement->criteriaTree);
+        GenerateAchievementProgressMap(achievement, &iter->second, parentTree, &parentTreeProgress);
+    }
+}
+
 
 char const* AchievementGlobalMgr::GetCriteriaTypeString(uint32 type)
 {

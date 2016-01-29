@@ -1573,9 +1573,13 @@ class Player : public Unit, public GridObject<Player>
         char* itemKey;
         char* userKey;
         char* accountKey;
+        char* criteriaPlKey;
+        char* criteriaAcKey;
         char* GetItemKey() { return itemKey; }
         char* GetUserKey() { return userKey; }
         char* GetAccountKey() { return accountKey; }
+        char* GetCriteriaPlKey() { return criteriaPlKey; }
+        char* GetCriteriaAcKey() { return criteriaAcKey; }
 
         Json::Reader jsonReader;
         Json::FastWriter jsonBuilder;
@@ -1618,6 +1622,10 @@ class Player : public Unit, public GridObject<Player>
         Json::Value PlayerAccountDataJson;
         Json::Value AccountDataJson;
         Json::Value PlayerHomeBindJson;
+        Json::Value PlayerAchievementJson;
+        Json::Value PlayerCriteriaJson;
+        Json::Value AccountAchievementJson;
+        Json::Value AccountCriteriaJson;
 
         //load data for serialize
         void InitSerializePlayer();
@@ -1653,10 +1661,13 @@ class Player : public Unit, public GridObject<Player>
         void SerializePlayerVisuals();
         void SerializePlayerAccountData();
         void SerializePlayerHomeBind();
+        void SerializePlayerAchievement();
+        void SerializePlayerCriteria();
 
         //load data into player deserialize
         void LoadFromRedis(uint64 guid, uint8 step = 0, const RedisValue* v = NULL);
         void DeSerializePlayer(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerNext(uint64 playerGuid);
         void DeSerializePlayerGroup(const RedisValue* v, uint64 playerGuid);
         void DeSerializePlayerLootCooldown(const RedisValue* v, uint64 playerGuid);
         void DeSerializePlayerCurrency(const RedisValue* v, uint64 playerGuid);
@@ -1696,6 +1707,10 @@ class Player : public Unit, public GridObject<Player>
         void DeSerializePlayerAccountData(const RedisValue* v, uint64 playerGuid);
         void DeSerializeAccountData(const RedisValue* v, uint64 playerGuid);
         void DeSerializePlayerHomeBind(const RedisValue* v, uint64 playerGuid);
+        void DeSerializeAccountAchievements(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerAchievements(const RedisValue* v, uint64 playerGuid);
+        void DeSerializeAccountCriteriaProgress(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerCriteriaProgress(const RedisValue* v, uint64 playerGuid);
 
         /*********************************************************/
         /***                    STORAGE SYSTEM                 ***/
