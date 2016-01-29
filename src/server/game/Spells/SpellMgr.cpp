@@ -5695,6 +5695,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21); // -1s
                     spellInfo->StackAmount = 99;
                     break;
+                case 142910: // Iron Warhorse
+                    spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(16);
+                    break;
                 default:
                     break;
             }

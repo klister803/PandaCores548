@@ -549,7 +549,7 @@ void Guild::Member::SetStats(Player* player)
     }
 
     std::set<uint32> profSpells[MAX_GUILD_PROFESSIONS];
-    PlayerSpellMap const& spellMap = player->GetSpellMap();
+    PlayerSpellMap spellMap = player->GetSpellMap();
     for (PlayerSpellMap::const_iterator itr = spellMap.begin(); itr != spellMap.end(); ++itr)
     {
         if (itr->second->state == PLAYERSPELL_REMOVED)
