@@ -505,6 +505,7 @@ class npc_tayak_storm_unleashed_veh : public CreatureScript
             }
 
             InstanceScript* pInstance;
+            EventMap events;
 
             void Reset() {}
 
@@ -517,6 +518,14 @@ class npc_tayak_storm_unleashed_veh : public CreatureScript
                     me->GetVehicleKit()->RemoveAllPassengers();
 
                 me->DespawnOrUnsummon();
+            }
+
+            void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
+            {
+                if (apply)
+                    me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_CONTROL_VEHICLE, true);
+                else
+                    events.ScheduleEvent(EVENT_1, 2000);
             }
 
             void IsSummonedBy(Unit* summoner)
@@ -546,7 +555,20 @@ class npc_tayak_storm_unleashed_veh : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 diff) {}
+            void UpdateAI(uint32 diff)
+            {
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_1:
+                            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_CONTROL_VEHICLE, false);
+                            break;
+                    }
+                }
+            }
         };
 
         CreatureAI* GetAI(Creature* creature) const
