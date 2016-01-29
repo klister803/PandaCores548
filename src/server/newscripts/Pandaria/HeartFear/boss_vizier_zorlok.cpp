@@ -185,7 +185,7 @@ class boss_vizier_zorlok : public CreatureScript
                             DoCast(me, SPELL_PHEROMONES_OF_ZEAL_BUFF, true);
                         }
                         me->SetReactState(REACT_AGGRESSIVE);
-                        DoCast(me, SPELL_SONG_OF_THE_EMPRESS, true);
+                        DoCast(SPELL_SONG_OF_THE_EMPRESS);
                         DoZoneInCombat(me, 150.0f);
                     }
                 }
@@ -285,7 +285,7 @@ class boss_vizier_zorlok : public CreatureScript
                     {
                         case EVENT_MELEE_CHECK:
                             if (!me->IsWithinMeleeRange(me->getVictim()) && !flyMove)
-                                DoCast(SPELL_SONG_OF_THE_EMPRESS);
+                                DoCast(me, SPELL_SONG_OF_THE_EMPRESS, true);
                             events.ScheduleEvent(EVENT_MELEE_CHECK, 2000);
                             break;
                         case EVENT_GO_NEXT_PLATFORM:

@@ -396,19 +396,19 @@ class spell_meljarak_whirling_blade : public SpellScriptLoader
 
                 uint32 tick = aurEff->GetTickNumber();
                 Aura* auraTrigger = aurEff->GetBase();
-                Position const* pos = auraTrigger->GetDstPos();
+                Creature* target = caster->FindNearestCreature(63930, 50.0f);
 
                 float distanceintick = 6.0f * tick;
                 if(distanceintick > 24.0f)
                     distanceintick = (24.0f * 2) - distanceintick;
 
-                if(distanceintick < 0.0f)
+                if(distanceintick < 0.0f || !target)
                 {
                     targets.clear();
                     return;
                 }
 
-                float angle = caster->GetAngle(pos);
+                float angle = caster->GetAngle(target);
 
                 // expload at tick
                 float x = caster->GetPositionX() + (caster->GetObjectSize() + distanceintick) * std::cos(angle);
