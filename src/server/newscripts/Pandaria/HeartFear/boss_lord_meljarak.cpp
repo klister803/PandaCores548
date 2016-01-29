@@ -22,26 +22,31 @@
 enum eSpells
 {
     //Lord Meljarak
-    SPELL_RECKLESSNESS    = 122354,
-    SPELL_RAIN_OF_BLADES  = 122406,
+    SPELL_RECKLESSNESS          = 122354,
+    SPELL_RAIN_OF_BLADES        = 122406,
+    SPELL_WHIRLING_BLADE        = 121896,
+    SPELL_WHIRLING_BLADE_PLR    = 124850,
+    SPELL_WHIRLING_BLADE_SUM    = 124851,
 
     //Zarthik spells
-    SPELL_HEAL            = 122193,
-    SPELL_HEAL_TR_EF      = 122147,
-    SPELL_HASTE           = 122149,
+    SPELL_HEAL                  = 122193,
+    SPELL_HEAL_TR_EF            = 122147,
+    SPELL_HASTE                 = 122149,
 
     //Korthik spells
-    SPELL_KORTHIK_STRIKE  = 122409, //not work 
+    SPELL_KORTHIK_STRIKE        = 122409, //not work 
 };
 
 enum eEvents
 {
     //Lord Meljarak
-    EVENT_RAIN_BLADES     = 1,
+    EVENT_RAIN_BLADES           = 1,
+    EVENT_WHIRLING_BLADE        = 2,
+    EVENT_WHIRLING_BLADE_CAST   = 3,
 
     //Soldiers
-    EVENT_HEAL            = 2,
-    EVENT_HASTE           = 3,
+    EVENT_HEAL                  = 1,
+    EVENT_HASTE                 = 2,
 };
 
 const AuraType auratype[6] = 
@@ -79,26 +84,37 @@ class boss_lord_meljarak : public CreatureScript
             void EnterCombat(Unit* /*who*/)
             {
                 _EnterCombat();
-                events.ScheduleEvent(EVENT_RAIN_BLADES, 30000);
+                events.ScheduleEvent(EVENT_RAIN_BLADES, 50000);
+                events.ScheduleEvent(EVENT_WHIRLING_BLADE, 35000); //19:05
             }
 
             void UpdateAI(uint32 diff)
             {
-                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                if (!UpdateVictim())
                     return;
 
                 events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
 
                 while (uint32 eventId = events.ExecuteEvent())
                 {
                     switch (eventId)
                     {
-                    case EVENT_RAIN_BLADES:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 40.0f, true))
-                            DoCast(target, SPELL_RAIN_OF_BLADES);
-                        events.ScheduleEvent(EVENT_RAIN_BLADES, urand(30000, 90000));
-                        break;
-                    //In future must be more events
+                        case EVENT_RAIN_BLADES:
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 40.0f, true))
+                                DoCast(target, SPELL_RAIN_OF_BLADES);
+                            events.ScheduleEvent(EVENT_RAIN_BLADES, 60000);
+                            break;
+                        case EVENT_WHIRLING_BLADE:
+                            DoCast(SPELL_WHIRLING_BLADE_PLR);
+                            events.ScheduleEvent(EVENT_WHIRLING_BLADE_CAST, 500);
+                            events.ScheduleEvent(EVENT_WHIRLING_BLADE, 35000);
+                            break;
+                        case EVENT_WHIRLING_BLADE_CAST:
+                            DoCast(SPELL_WHIRLING_BLADE);
+                            break;
                     }
                 }
                 DoMeleeAttackIfReady();
@@ -396,13 +412,13 @@ class spell_meljarak_whirling_blade : public SpellScriptLoader
 
                 uint32 tick = aurEff->GetTickNumber();
                 Aura* auraTrigger = aurEff->GetBase();
-                Creature* target = caster->FindNearestCreature(63930, 50.0f);
+                Creature* target = caster->FindNearestCreature(63930, 60.0f);
 
                 float distanceintick = 6.0f * tick;
-                if(distanceintick > 24.0f)
-                    distanceintick = (24.0f * 2) - distanceintick;
+                if (distanceintick > 40.0f)
+                    distanceintick = (40.0f * 2) - distanceintick;
 
-                if(distanceintick < 0.0f || !target)
+                if (distanceintick < 0.0f || !target)
                 {
                     targets.clear();
                     return;
@@ -456,9 +472,143 @@ class spell_meljarak_whirling_blade : public SpellScriptLoader
         }
 };
 
+//121896
+class spell_meljarak_whirling_blade_visual : public SpellScriptLoader
+{
+    public:
+        spell_meljarak_whirling_blade_visual() : SpellScriptLoader("spell_meljarak_whirling_blade_visual") { }
+
+        class spell_meljarak_whirling_blade_visual_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_meljarak_whirling_blade_visual_AuraScript)
+
+            Position pos, _ownPos;
+            bool check;
+
+            bool Load()
+            {
+                pos.Relocate(0, 0, 0, 0);
+                _ownPos.Relocate(0, 0, 0, 0);
+                check = false;
+                return true;
+            }
+
+            void OnPereodic(AuraEffect const* aurEff)
+            {
+                PreventDefaultAction();
+                Unit* caster = GetCaster();
+                if (!caster || !check)
+                    return;
+
+                uint32 tick = aurEff->GetTickNumber() - 1;
+
+                if (tick == 7)
+                {
+                    caster->SendMissileCancel(GetSpellInfo()->Effects[2].TriggerSpell);
+                    caster->SendMissileCancel(GetSpellInfo()->Effects[3].TriggerSpell);
+                    GetAura()->ClearEffectTarget();
+                }
+
+                float distanceintick = 6.0f * tick;
+                if (distanceintick > 40.0f)
+                    distanceintick = (40.0f * 2) - distanceintick;
+
+                if (distanceintick < 0.0f)
+                    return;
+
+                // expload at tick
+                float x = _ownPos.GetPositionX() + (caster->GetObjectSize() + distanceintick) * std::cos(_ownPos.GetOrientation());
+                float y = _ownPos.GetPositionY() + (caster->GetObjectSize() + distanceintick) * std::sin(_ownPos.GetOrientation());
+                Trinity::NormalizeMapCoord(x);
+                Trinity::NormalizeMapCoord(y);
+
+                caster->CastSpell(x, y, _ownPos.GetPositionZ(), GetSpellInfo()->Effects[0].TriggerSpell, true, NULL, aurEff);
+            }
+
+            void HandleApplyEffect(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                Creature* target = caster->FindNearestCreature(63930, 60.0f);
+                if (!target)
+                    return;
+
+                check = true;
+                float x, y;
+                float angle = caster->GetAngle(target);
+                
+                caster->GetNearPoint2D(x, y, 40.0f, angle);
+                pos.Relocate(x, y, caster->GetPositionZ(), angle);
+
+                GetAura()->SetDuration(uint32(1000.0f * 4));
+                _ownPos.Relocate(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ(), angle);
+            }
+
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    caster->SendMissileCancel(GetSpellInfo()->Effects[2].TriggerSpell);
+                    caster->SendMissileCancel(GetSpellInfo()->Effects[3].TriggerSpell);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_meljarak_whirling_blade_visual_AuraScript::OnPereodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+                OnEffectApply += AuraEffectApplyFn(spell_meljarak_whirling_blade_visual_AuraScript::HandleApplyEffect, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_meljarak_whirling_blade_visual_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        class spell_meljarak_whirling_blade_visual_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_meljarak_whirling_blade_visual_SpellScript);
+ 
+            void HandleTriggerEffect(SpellEffIndex effIndex)
+            {
+                PreventHitDefaultEffect(effIndex);
+
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                Creature* target = caster->FindNearestCreature(63930, 60.0f);
+                if (!target)
+                    return;
+
+                float x, y;
+                float angle = caster->GetAngle(target);
+                caster->GetNearPoint2D(x, y, 40.0f, angle);
+
+                caster->CastSpell(x, y, caster->GetPositionZ(), GetSpellInfo()->Effects[2].TriggerSpell, true);
+                caster->CastSpell(x, y, caster->GetPositionZ(), GetSpellInfo()->Effects[3].TriggerSpell, true);
+            }
+            
+            void Register()
+            {
+                OnEffectLaunch += SpellEffectFn(spell_meljarak_whirling_blade_visual_SpellScript::HandleTriggerEffect, EFFECT_2, SPELL_EFFECT_TRIGGER_SPELL);
+                OnEffectLaunch += SpellEffectFn(spell_meljarak_whirling_blade_visual_SpellScript::HandleTriggerEffect, EFFECT_3, SPELL_EFFECT_TRIGGER_SPELL);
+            }
+        };
+        
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_meljarak_whirling_blade_visual_AuraScript();
+        }
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_meljarak_whirling_blade_visual_SpellScript();
+        }
+};
+
 void AddSC_boss_lord_meljarak()
 {
     new boss_lord_meljarak();
     new npc_generic_soldier();
     new spell_meljarak_whirling_blade();
+    new spell_meljarak_whirling_blade_visual();
 }

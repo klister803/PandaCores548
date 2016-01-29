@@ -61,6 +61,9 @@ public:
         uint64 korthik[3];
         std::vector<uint64> meljaraksoldiersGuids;
         
+        //other
+        uint8 stormUnleashed;
+        
         void Initialize()
         {
             SetBossNumber(7);
@@ -96,6 +99,13 @@ public:
                 zarthik[n] = 0;
                 korthik[n] = 0;
             }
+            //Other
+            stormUnleashed = 0;
+        }
+
+        void OnPlayerLeave(Player* player)
+        {
+            DoRemoveAurasDueToSpellOnPlayers(126159);
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -358,10 +368,25 @@ public:
             return true;
         }
 
-        void SetData(uint32 type, uint32 data){}
+        void SetData(uint32 type, uint32 data)
+        {
+            switch (type)
+            {
+                case DATA_STORM_UNLEASHED:
+                    stormUnleashed = data;
+                    if (data == NOT_STARTED)
+                        DoRemoveAurasDueToSpellOnPlayers(126159);
+                    break;
+            }
+        }
 
         uint32 GetData(uint32 type)
         {
+            switch (type)
+            {
+                case DATA_STORM_UNLEASHED:
+                    return stormUnleashed;
+            }
             return 0;
         }
 
