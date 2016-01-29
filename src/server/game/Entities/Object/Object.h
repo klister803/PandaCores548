@@ -144,6 +144,28 @@ private:
     uint16 _dungeonId;
 };
 
+struct VMAPSInfo
+{
+    VMAPSInfo()
+    {
+        isOutdoors = true;
+        areaFlag = 0;
+        liquid_type = 0;
+        mogpFlags = areaid = zoneid = 0;
+        adtId = rootId = groupId = 0;
+        Zliquid_status = LIQUID_MAP_NO_WATER;
+        atEntry = NULL;
+    }
+    bool isOutdoors;
+    uint16 areaFlag;
+    uint32 liquid_type;
+    uint32 mogpFlags, areaid, zoneid;
+    int32 adtId, rootId, groupId;
+    ZLiquidStatus Zliquid_status;
+    LiquidData liquid_status;
+    AreaTableEntry const* atEntry;
+};
+
 typedef std::map<Player*, UpdateData> UpdateDataMapType;
 typedef cyber_ptr<Object> C_PTR;
 class Object
@@ -456,6 +478,7 @@ class Object
         static char const* GetTypeName(uint32 high);
         char const* GetTypeName() const { return m_valuesCount ? GetTypeName(GetGUIDHigh()) : "None"; }
         std::string GetString() const;
+        VMAPSInfo vmapInfo;
 };
 
 struct Position
@@ -859,7 +882,6 @@ class WorldObject : public Object, public WorldLocation
         uint32 m_saveZoneUpdateId;
         uint32 m_areaUpdateId;
         uint32 m_saveAreaUpdateId;
-        VMAPSInfo vmapInfo;
 
         InstanceScript* GetInstanceScript();
 
