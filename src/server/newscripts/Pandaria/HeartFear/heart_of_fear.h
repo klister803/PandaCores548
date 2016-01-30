@@ -19,6 +19,12 @@ enum eData
     DATA_SHEKZEER          = 6,
 };
 
+enum eOther
+{
+    //Tayak
+    DATA_STORM_UNLEASHED,
+};
+
 enum eCreatures
 {
     NPC_VIZIER_ZORLOK      = 62980,
@@ -36,20 +42,24 @@ enum eCreatures
     NPC_KORTHIK            = 65500,
 
     //Ta'yak summons
-    NPC_GALE_WINDS_STALKER      = 63292,
-    NPC_STORM_EAST_1_TARGET     = 63212,
-    NPC_STORM_EAST_2_TARGET     = 63213,
-    NPC_STORM_EAST_3_TARGET     = 63214,
-    NPC_STORM_WEST_1_TARGET     = 63207,
-    NPC_STORM_WEST_2_TARGET     = 63208,
-    NPC_STORM_WEST_3_TARGET     = 63209,
+    NPC_GALE_WINDS_STALKER   = 63292,
+    NPC_STORM_EAST_1_TARGET  = 63212,
+    NPC_STORM_EAST_2_TARGET  = 63213,
+    NPC_STORM_EAST_3_TARGET  = 63214,
+    NPC_STORM_WEST_1_TARGET  = 63207,
+    NPC_STORM_WEST_2_TARGET  = 63208,
+    NPC_STORM_WEST_3_TARGET  = 63209,
 
-    NPC_STORM_WEST_1_SUM        = 63278,
-    NPC_STORM_WEST_2_SUM        = 63299,
-    NPC_STORM_WEST_3_SUM        = 63300,
-    NPC_STORM_EAST_1_SUM        = 63301,
-    NPC_STORM_EAST_2_SUM        = 63302,
-    NPC_STORM_EAST_3_SUM        = 63303,
+    NPC_STORM_WEST_1_SUM     = 63278,
+    NPC_STORM_WEST_2_SUM     = 63299,
+    NPC_STORM_WEST_3_SUM     = 63300,
+    NPC_STORM_EAST_1_SUM     = 63301,
+    NPC_STORM_EAST_2_SUM     = 63302,
+    NPC_STORM_EAST_3_SUM     = 63303,
+    
+    //Garalon
+    NPC_GARALONS_LEG         = 63053,
+    NPC_PHEROMONE_TRAIL      = 63021,
 };
 
 enum Soldiers

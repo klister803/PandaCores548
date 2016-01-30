@@ -33,6 +33,7 @@ enum eSpells
     //Iron Star
     SPELL_IRON_STAR_IMPACT_AT        = 144645,
     SPELL_IRON_STAR_IMPACT_DMG       = 144650,
+    SPELL_EXPLODING_IRON_STAR        = 144798,
 
     //Engeneer
     SPELL_POWER_IRON_STAR            = 144616, //engeneer entry 71984
@@ -45,6 +46,9 @@ enum sEvents
     //Desecrated weapon
     EVENT_REGENERATE                 = 2,
     //Summons
+    //Iron Star
+    EVENT_ACTIVE                     = 3,
+    EVENT_START_MOVING               = 4,
 };
 
 enum Phase
@@ -56,8 +60,20 @@ enum Phase
 
 Position ironstarspawnpos[2] =
 {
-    {1059.92f, -5520.2f, -317.689f, 4.64799f},
-    {1087.05f, -5758.29f, -317.689f, 1.45992f},
+    {1087.05f, -5758.29f, -317.689f, 1.45992f}, //Right
+    {1059.92f, -5520.2f, -317.689f, 4.64799f},  //Left
+};
+
+Position engeneerspawnpos[2] =
+{                                               //From Boss face
+    {1061.84f, -5746.28f, -304.4846f, 1.4820f}, //Right
+    {1084.89f, -5530.73f, -304.4842f, 4.5215f}, //Left
+};
+
+Position ironstardestpos[2] =
+{
+    {1106.16f, -5555.63f, -317.5304f},
+    {0.0f, 0.0f, 0.0f},
 };
 
 class boss_garrosh_hellscream : public CreatureScript
@@ -87,8 +103,9 @@ class boss_garrosh_hellscream : public CreatureScript
 
             void SpawnIronStar()
             {
-                for (uint8 n = 0; n < 2; n++)
-                    me->SummonCreature(NPC_KORKRON_IRON_STAR, ironstarspawnpos[n]);
+                me->SummonCreature(NPC_KORKRON_IRON_STAR, ironstarspawnpos[0]);
+                /*for (uint8 n = 0; n < 2; n++)
+                    me->SummonCreature(NPC_KORKRON_IRON_STAR, ironstarspawnpos[n]);*/
             }
 
             void EnterCombat(Unit* who)
@@ -184,6 +201,96 @@ class boss_garrosh_hellscream : public CreatureScript
         {
             return new boss_garrosh_hellscreamAI(creature);
         }
+};
+
+class npc_garrosh_soldier : public CreatureScript
+{
+public:
+    npc_garrosh_soldier() : CreatureScript("npc_garrosh_soldier") {}
+
+    struct npc_garrosh_soldierAI : public ScriptedAI
+    {
+        npc_garrosh_soldierAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+        }
+
+        InstanceScript* instance;
+
+        void Reset()
+        {
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_garrosh_soldierAI(creature);
+    }
+};
+
+//71985
+class npc_iron_star : public CreatureScript
+{
+public:
+    npc_iron_star() : CreatureScript("npc_iron_star") {}
+
+    struct npc_iron_starAI : public ScriptedAI
+    {
+        npc_iron_starAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+        }
+
+        InstanceScript* instance;
+        EventMap events;
+
+        void Reset()
+        {
+            events.ScheduleEvent(EVENT_ACTIVE, 5000);
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (type == EFFECT_MOTION_TYPE && pointId == 1)
+            {
+                DoCast(me, SPELL_EXPLODING_IRON_STAR, true);
+                me->Kill(me, true);
+            }
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_ACTIVE)
+                {
+                    float x, y;
+                    DoCast(me, SPELL_IRON_STAR_IMPACT_AT, true);
+                    GetPositionWithDistInOrientation(me, 200.0f, me->GetOrientation(), x, y);
+                    me->GetMotionMaster()->MoveJump(x, y, -317.4815f, 25.0f, 0.0f, 1);
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_iron_starAI(creature);
+    }
 };
 
 //72154
@@ -321,9 +428,45 @@ public:
     }
 };
 
+//144798
+class spell_exploding_iron_star : public SpellScriptLoader
+{
+public:
+    spell_exploding_iron_star() : SpellScriptLoader("spell_exploding_iron_star") { }
+
+    class spell_exploding_iron_star_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_exploding_iron_star_SpellScript);
+
+        void DealDamage()
+        {
+            if (GetCaster() && GetHitUnit())
+            {
+                float distance = GetCaster()->GetExactDist2d(GetHitUnit());
+                if (distance >= 0 && distance < 300)
+                    SetHitDamage(GetHitDamage() * (1 - (distance / 300)));
+            }
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_exploding_iron_star_SpellScript::DealDamage);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_exploding_iron_star_SpellScript();
+    }
+};
+
+
 void AddSC_boss_garrosh_hellscream()
 {
     new boss_garrosh_hellscream();
+    new npc_garrosh_soldier();
+    new npc_iron_star();
     new npc_desecrated_weapon();
     new npc_empowered_desecrated_weapon();
+    new spell_exploding_iron_star();
 }

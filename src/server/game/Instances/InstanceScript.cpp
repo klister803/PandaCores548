@@ -85,6 +85,25 @@ bool InstanceScript::IsEncounterInProgress() const
     return false;
 }
 
+bool InstanceScript::IsInstanceEmpty()
+{
+    Map::PlayerList const &pllist = instance->GetPlayers();
+    if (pllist.isEmpty())
+    {
+        ResetEncounters();
+        return true;
+    }
+    return false;
+}
+
+void InstanceScript::ResetEncounters()
+{
+    uint32 bossId = 0;
+    for (std::vector<BossInfo>::iterator itr = bosses.begin(); itr != bosses.end(); ++itr, ++bossId)
+        if (itr->state == IN_PROGRESS)
+            SetBossState(bossId, NOT_STARTED);
+}
+
 void InstanceScript::LoadMinionData(const MinionData* data)
 {
     while (data->entry)

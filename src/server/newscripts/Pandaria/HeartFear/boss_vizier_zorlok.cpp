@@ -26,6 +26,7 @@ enum eSpells
     SPELL_PHEROMONES_OF_ZEAL_BUFF   = 123833,
     SPELL_GAS_VISUAL                = 123811,
     SPELL_SONG_OF_THE_EMPRESS       = 123791,
+    SPELL_SONG_OF_THE_EMPRESS_RANGE = 130133,
     SPELL_INHALE                    = 122852,
     SPELL_EXHALE                    = 122761,
     //Platform 1
@@ -184,7 +185,9 @@ class boss_vizier_zorlok : public CreatureScript
                             GasControl(false);
                             DoCast(me, SPELL_PHEROMONES_OF_ZEAL_BUFF, true);
                         }
+                        me->RemoveAurasDueToSpell(SPELL_INHALE);
                         me->SetReactState(REACT_AGGRESSIVE);
+                        DoCast(SPELL_SONG_OF_THE_EMPRESS);
                         DoZoneInCombat(me, 150.0f);
                     }
                 }
@@ -193,7 +196,7 @@ class boss_vizier_zorlok : public CreatureScript
             void GoNextRandomPlatform()
             {
                 events.Reset();
-                events.ScheduleEvent(EVENT_MELEE_CHECK, 2000);
+                events.ScheduleEvent(EVENT_MELEE_CHECK, 500);
                 events.ScheduleEvent(EVENT_INHALE, 17000);
                 events.ScheduleEvent(EVENT_EXHALE, 17000);
 
@@ -224,7 +227,8 @@ class boss_vizier_zorlok : public CreatureScript
             void DamageTaken(Unit* attacker, uint32 &damage)
             {
                 if (me->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
-                    if (me->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->m_spellInfo->Id == SPELL_SONG_OF_THE_EMPRESS)
+                    if (me->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->m_spellInfo->Id == SPELL_SONG_OF_THE_EMPRESS
+                        || me->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->m_spellInfo->Id == SPELL_SONG_OF_THE_EMPRESS_RANGE)
                         if (me->IsWithinMeleeRange(me->getVictim()))
                             me->InterruptSpell(CURRENT_CHANNELED_SPELL);
 
@@ -283,9 +287,10 @@ class boss_vizier_zorlok : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_MELEE_CHECK:
-                            if (!me->IsWithinMeleeRange(me->getVictim()) && !flyMove)
-                                DoCast(SPELL_SONG_OF_THE_EMPRESS);
-                            events.ScheduleEvent(EVENT_MELEE_CHECK, 2000);
+                            if (me->getVictim())
+                                if (!me->IsWithinMeleeRange(me->getVictim()) && !flyMove)
+                                    DoCast(me, SPELL_SONG_OF_THE_EMPRESS_RANGE, true);
+                            events.ScheduleEvent(EVENT_MELEE_CHECK, 500);
                             break;
                         case EVENT_GO_NEXT_PLATFORM:
                             GoNextRandomPlatform();

@@ -15555,9 +15555,9 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
                             speed *= std::max(0.6f + (GetDistance(owner) / 10.0f), 1.1f);
                         }
                     }
-                    else
-                        speed *= ToCreature()->GetCreatureTemplate()->speed_run;    // at this point, MOVE_WALK is never reached
                 }
+                else
+                    speed *= ToCreature()->GetCreatureTemplate()->speed_run;    // at this point, MOVE_WALK is never reached
             }
             // Normalize speed by 191 aura SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED if need
             // TODO: possible affect only on MOVE_RUN
@@ -24978,8 +24978,8 @@ void Unit::SendSpellScene(uint32 miscValue, Position* pos)
 
 void Unit::SendMissileCancel(uint32 spellId, bool cancel)
 {
-    if (GetTypeId() != TYPEID_PLAYER)
-        return;
+    //if (GetTypeId() != TYPEID_PLAYER)
+    //    return;
 
     ObjectGuid guid = GetObjectGuid();
 
@@ -24990,7 +24990,7 @@ void Unit::SendMissileCancel(uint32 spellId, bool cancel)
     data.WriteGuidBytes<4, 5, 7, 6, 1, 3>(guid);
     data << uint32(spellId);
     data.WriteGuidBytes<0, 2>(guid);
-    ToPlayer()->GetSession()->SendPacket(&data);
+    SendMessageToSet(&data, true);
 }
 
 void Unit::SendLossOfControl(Unit* caster, uint32 spellId, uint32 duraction, uint32 rmDuraction, uint32 mechanic, uint32 schoolMask, LossOfControlType type, bool apply)
