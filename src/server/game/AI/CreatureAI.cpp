@@ -175,8 +175,20 @@ void CreatureAI::SafeMoveInLineOfSight(Unit* who)
         return;
 
     m_MoveInLineOfSight_locked = true;
-    MoveInLineOfSight(who);
+    DoMoveInLineOfSight(who);
     m_MoveInLineOfSight_locked = false;
+}
+
+void CreatureAI::DoMoveInLineOfSight(Unit* who)
+{
+    if (me->getVictim())
+        return;
+
+    if (me->GetCreatureType() == CREATURE_TYPE_NON_COMBAT_PET) // non-combat pets should just stand there and look good;)
+        return;
+
+    if (me->canStartAttack(who, false))
+        AttackStart(who);
 }
 
 void CreatureAI::MoveInLineOfSight(Unit* who)

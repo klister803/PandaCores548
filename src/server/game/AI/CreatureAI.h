@@ -90,6 +90,7 @@ class CreatureAI : public UnitAI
 
         // Called if IsVisible(Unit* who) is true at each who move, reaction at visibility zone enter
         void SafeMoveInLineOfSight(Unit* who);
+        void DoMoveInLineOfSight(Unit* who);
 
         bool CanSeeEvenInPassiveMode() { return m_canSeeEvenInPassiveMode; }
         void SetCanSeeEvenInPassiveMode(bool canSeeEvenInPassiveMode) { m_canSeeEvenInPassiveMode = canSeeEvenInPassiveMode; }
