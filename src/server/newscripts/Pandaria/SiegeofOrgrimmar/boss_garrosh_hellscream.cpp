@@ -43,12 +43,13 @@ enum sEvents
 {
     //Garrosh
     EVENT_DESECRATED_WEAPON          = 1,
+    EVENT_SUMMON_SOLDIERS            = 2,
     //Desecrated weapon
-    EVENT_REGENERATE                 = 2,
+    EVENT_REGENERATE                 = 3,
     //Summons
+    EVENT_LAUNCH_STAR                = 4,
     //Iron Star
-    EVENT_ACTIVE                     = 3,
-    EVENT_START_MOVING               = 4,
+    EVENT_ACTIVE                     = 5,
 };
 
 enum Phase
@@ -58,22 +59,21 @@ enum Phase
     PHASE_TWO,
 };
 
+enum sActions
+{
+    ACTION_LAUNCH                    = 1,
+};
+
 Position ironstarspawnpos[2] =
 {
-    {1087.05f, -5758.29f, -317.689f, 1.45992f}, //Right
-    {1059.92f, -5520.2f, -317.689f, 4.64799f},  //Left
+    {1087.05f, -5758.29f, -317.689f, 1.45992f},//R
+    {1059.92f, -5520.2f, -317.689f, 4.64799f}, //L
 };
 
 Position engeneerspawnpos[2] =
 {                                               //From Boss face
-    {1061.84f, -5746.28f, -304.4846f, 1.4820f}, //Right
-    {1084.89f, -5530.73f, -304.4842f, 4.5215f}, //Left
-};
-
-Position ironstardestpos[2] =
-{
-    {1106.16f, -5555.63f, -317.5304f},
-    {0.0f, 0.0f, 0.0f},
+    {1061.00f, -5755.13f, -304.4855f, 1.4820f},//R
+    {1084.50f, -5524.25f, -304.4856f, 4.5215f},//L
 };
 
 class boss_garrosh_hellscream : public CreatureScript
@@ -103,9 +103,8 @@ class boss_garrosh_hellscream : public CreatureScript
 
             void SpawnIronStar()
             {
-                me->SummonCreature(NPC_KORKRON_IRON_STAR, ironstarspawnpos[0]);
-                /*for (uint8 n = 0; n < 2; n++)
-                    me->SummonCreature(NPC_KORKRON_IRON_STAR, ironstarspawnpos[n]);*/
+                for (uint8 n = 0; n < 2; n++)
+                    me->SummonCreature(NPC_KORKRON_IRON_STAR, ironstarspawnpos[n]);
             }
 
             void EnterCombat(Unit* who)
@@ -113,6 +112,7 @@ class boss_garrosh_hellscream : public CreatureScript
                 _EnterCombat();
                 SpawnIronStar();
                 phase = PHASE_ONE;
+                events.ScheduleEvent(EVENT_SUMMON_SOLDIERS, 5000);
             }
 
             void DamageTaken(Unit* attacker, uint32 &damage)
@@ -155,6 +155,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     switch (eventId)
                     {
                     case EVENT_DESECRATED_WEAPON:
+                    {
                         uint8 count = Is25ManRaid() ? 7 : 3;
                         bool havetarget = false;
                         std::list<Player*> pllist;
@@ -192,6 +193,11 @@ class boss_garrosh_hellscream : public CreatureScript
                         }
                         break;
                     }
+                    case EVENT_SUMMON_SOLDIERS:
+                        for (uint8 n = 0; n < 2; n++)
+                            me->SummonCreature(NPC_SIEGE_ENGINEER, engeneerspawnpos[n]);
+                        break;
+                    }
                 }
                 DoMeleeAttackIfReady();
             }
@@ -217,16 +223,42 @@ public:
         }
 
         InstanceScript* instance;
+        EventMap events;
 
         void Reset()
         {
+            switch (me->GetEntry())
+            {
+            case NPC_SIEGE_ENGINEER:
+                events.ScheduleEvent(EVENT_LAUNCH_STAR, urand(1000, 3000));
+                break;
+            default:
+                break;
+            }
         }
 
         void EnterCombat(Unit* who){}
 
         void EnterEvadeMode(){}
 
-        void UpdateAI(uint32 diff){}
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                case EVENT_LAUNCH_STAR:
+                    if (Creature* ironstar = me->FindNearestCreature(NPC_KORKRON_IRON_STAR, 30.0f, true))
+                    {
+                        me->SetFacingToObject(ironstar);
+                        DoCast(me, SPELL_POWER_IRON_STAR);
+                    }
+                    break;
+                }
+            }
+        }
     };
 
     CreatureAI* GetAI(Creature* creature) const
@@ -252,9 +284,17 @@ public:
         InstanceScript* instance;
         EventMap events;
 
-        void Reset()
+        void Reset(){}
+
+        void DoAction(int32 const action)
         {
-            events.ScheduleEvent(EVENT_ACTIVE, 5000);
+            if (action == ACTION_LAUNCH)
+            {
+                float x, y;
+                DoCast(me, SPELL_IRON_STAR_IMPACT_AT, true);
+                GetPositionWithDistInOrientation(me, 200.0f, me->GetOrientation(), x, y);
+                me->GetMotionMaster()->MoveJump(x, y, -317.4815f, 25.0f, 0.0f, 1);
+            }
         }
 
         void MovementInform(uint32 type, uint32 pointId)
@@ -460,6 +500,37 @@ public:
     }
 };
 
+//144616
+class spell_power_iron_star : public SpellScriptLoader
+{
+public:
+    spell_power_iron_star() : SpellScriptLoader("spell_power_iron_star") { }
+
+    class spell_power_iron_star_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_power_iron_star_AuraScript);
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+        {
+            if (GetCaster() && GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
+            {
+                if (Creature* ironstar = GetCaster()->FindNearestCreature(NPC_KORKRON_IRON_STAR, 30.0f, true))
+                    ironstar->AI()->DoAction(ACTION_LAUNCH);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_power_iron_star_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_power_iron_star_AuraScript();
+    }
+};
+
 
 void AddSC_boss_garrosh_hellscream()
 {
@@ -469,4 +540,5 @@ void AddSC_boss_garrosh_hellscream()
     new npc_desecrated_weapon();
     new npc_empowered_desecrated_weapon();
     new spell_exploding_iron_star();
+    new spell_power_iron_star();
 }

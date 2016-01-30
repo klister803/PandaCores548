@@ -216,17 +216,13 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          void Reset()
          {
              _Reset();
+             me->NearTeleportTo(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY(), me->GetHomePosition().GetPositionZ(), me->GetHomePosition().GetOrientation());
+             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
              checkvictim = 0;
              weaponwavecount = 0;
              RemoveDebuffs();
              me->RemoveAurasDueToSpell(SPELL_PROTECTIVE_FRENZY);
              me->RemoveAurasDueToSpell(SPELL_AUTOMATIC_REPAIR_BEAM_AT);
-             me->SetReactState(REACT_DEFENSIVE);
-         }
-
-         void JustReachedHome()
-         {
-             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
              me->SetReactState(REACT_DEFENSIVE);
          }
 
@@ -264,14 +260,6 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          {
              if (unit->ToPlayer())
                  Talk(SAY_KILL_UNIT);
-         }
-
-         void EnterEvadeMode()
-         {
-             me->ClearSaveThreatTarget();
-             me->Kill(me, true);
-             me->Respawn(true);
-             me->GetMotionMaster()->MoveTargetedHome();
          }
 
          void CreateWeaponWave(uint8 wavecount)
@@ -347,17 +335,22 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          
          void JustDied(Unit* killer)
          {
-             if (killer != me)
-             {
-                 RemoveDebuffs();
-                 Talk(urand(SAY_DEATH, SAY_DEATH2));
-                 _JustDied();
-                 Map::PlayerList const& PlayerList = me->GetMap()->GetPlayers();
-                 if (!PlayerList.isEmpty())
-                     for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
-                         if (Player* player = Itr->getSource())
-                             player->ModifyCurrency(CURRENCY_TYPE_VALOR_POINTS, 7000);
-             }
+             RemoveDebuffs();
+             Talk(urand(SAY_DEATH, SAY_DEATH2));
+             _JustDied();
+             Map::PlayerList const& PlayerList = me->GetMap()->GetPlayers();
+             if (!PlayerList.isEmpty())
+                 for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+                     if (Player* player = Itr->getSource())
+                         player->ModifyCurrency(CURRENCY_TYPE_VALOR_POINTS, 7000);
+         }
+         
+
+         bool CheckEvade()
+         {
+             if (Creature* stalker = me->FindNearestCreature(NPC_SHOCKWAVE_MISSILE_STALKER, 60.0f, true))
+                 return true;
+             return false;
          }
 
          void UpdateAI(uint32 diff)
@@ -365,11 +358,11 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              if (!UpdateVictim())
                  return;
 
-             if (me->getVictim() && checkvictim)
+             if (checkvictim)
              {
                  if (checkvictim <= diff)
                  {
-                     if (me->getVictim()->GetPositionZ() >= -294.00f || me->getVictim()->HasAura(SPELL_ON_CONVEYOR))
+                     if (!CheckEvade())
                      {
                          me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                          EnterEvadeMode();

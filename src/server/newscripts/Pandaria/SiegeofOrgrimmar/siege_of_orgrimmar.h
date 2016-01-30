@@ -354,6 +354,7 @@ enum eCreatures
 
     NPC_GARROSH                     = 71865,
     //Garrosh soldiers
+    NPC_SIEGE_ENGINEER              = 71984,
     //
     NPC_DESECRATED_WEAPON           = 72154,
     NPC_EMPOWERED_DESECRATED_WEAPON = 72198,
