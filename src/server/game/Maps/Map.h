@@ -54,6 +54,8 @@ class Battleground;
 class MapInstanced;
 class InstanceMap;
 class BattlegroundMap;
+struct VMAPSInfo;
+
 namespace Trinity { struct ObjectUpdater; }
 
 struct ScriptAction
@@ -151,28 +153,6 @@ struct LiquidData
     uint32 entry;
     float  level;
     float  depth_level;
-};
-
-struct VMAPSInfo
-{
-    VMAPSInfo()
-    {
-        isOutdoors = true;
-        areaFlag = 0;
-        liquid_type = 0;
-        mogpFlags = areaid = zoneid = 0;
-        adtId = rootId = groupId = 0;
-        Zliquid_status = LIQUID_MAP_NO_WATER;
-        atEntry = NULL;
-    }
-    bool isOutdoors;
-    uint16 areaFlag;
-    uint32 liquid_type;
-    uint32 mogpFlags, areaid, zoneid;
-    int32 adtId, rootId, groupId;
-    ZLiquidStatus Zliquid_status;
-    LiquidData liquid_status;
-    AreaTableEntry const* atEntry;
 };
 
 class GridMap

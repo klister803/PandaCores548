@@ -3651,9 +3651,6 @@ bool Unit::IsUnderWater() const
 
 void Unit::UpdateVmapInfo(Map* m, float x, float y, float z)
 {
-    if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->UpdateVmapInfo(m, x, y, z);
-
     if (!isPet() && !IsVehicle())
     {
         if (m_vmapUpdateAllow)
@@ -23535,7 +23532,10 @@ bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool tel
             GetMap()->CreatureRelocation(ToCreature(), x, y, z, orientation);
 
         // code block for underwater state update
-        UpdateVmapInfo(GetMap(), x, y, z);
+        if (GetTypeId() == TYPEID_PLAYER)
+            ToPlayer()->UpdateVmapInfo(GetMap(), x, y, z);
+        else
+            UpdateVmapInfo(GetMap(), x, y, z);
     }
     else if (turn)
         UpdateOrientation(orientation);
