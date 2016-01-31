@@ -37,8 +37,8 @@ enum eCreatures
     NPC_SHEKZEER           = 62837,
 
     //Meljarak soldiers
-    NPC_SRATHIK            = 65499,
     NPC_ZARTHIK            = 62408,
+    NPC_SRATHIK            = 65499,
     NPC_KORTHIK            = 65500,
 
     //Ta'yak summons

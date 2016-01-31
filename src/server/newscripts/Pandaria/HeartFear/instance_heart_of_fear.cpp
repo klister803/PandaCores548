@@ -296,20 +296,6 @@ public:
                     case NOT_STARTED:
                         for (std::vector<uint64>::const_iterator guids = garalonexdoorGuids.begin(); guids != garalonexdoorGuids.end(); guids++)
                             HandleGameObject(*guids, true);
-
-                        for (std::vector<uint64>::const_iterator guid = meljaraksoldiersGuids.begin(); guid != meljaraksoldiersGuids.end(); guid++)
-                        {
-                            if (Creature* soldier = instance->GetCreature(*guid))
-                            {
-                                if (!soldier->isAlive())
-                                {
-                                    soldier->Respawn();
-                                    soldier->GetMotionMaster()->MoveTargetedHome();
-                                }
-                                else if (soldier->isAlive() && soldier->isInCombat())
-                                    soldier->AI()->EnterEvadeMode();
-                            }
-                        }
                         break;
                     case IN_PROGRESS:
                         for (std::vector<uint64>::const_iterator guids = garalonexdoorGuids.begin(); guids != garalonexdoorGuids.end(); guids++)
@@ -432,6 +418,28 @@ public:
                     return empresscocoonGuid;
             }
             return 0;
+        }
+
+        void CreatureDies(Creature* cre, Unit* /*killer*/)
+        {
+            switch (cre->GetEntry())
+            {
+                case NPC_SRATHIK:
+                    for (uint8 n = 0; n < 3; n++)
+                        if (srathik[n] == cre->GetGUID())
+                            srathik[n] = 0;
+                    break;
+                case NPC_ZARTHIK:
+                    for (uint8 n = 0; n < 3; n++)
+                        if (zarthik[n] == cre->GetGUID())
+                            zarthik[n] = 0;
+                    break;
+                case NPC_KORTHIK:
+                    for (uint8 n = 0; n < 3; n++)
+                        if (korthik[n] == cre->GetGUID())
+                            korthik[n] = 0;
+                    break;
+            }
         }
 
         bool IsWipe()

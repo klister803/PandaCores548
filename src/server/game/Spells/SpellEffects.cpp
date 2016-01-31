@@ -1887,6 +1887,12 @@ void Spell::EffectForceCast(SpellEffIndex effIndex)
         }
     }
 
+    if (m_spellInfo->Id == 131813) // Wind Lord Mel'jarak - Wind Bomb
+    {
+        m_caster->CastSpell(unitTarget, spellInfo->Id, true);
+        return;
+    }
+
     CustomSpellValues values;
     // set basepoints for trigger with value effect
     if (m_spellInfo->GetEffect(effIndex, m_diffMode)->Effect == SPELL_EFFECT_FORCE_CAST_WITH_VALUE)

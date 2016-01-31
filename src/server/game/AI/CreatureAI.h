@@ -69,8 +69,6 @@ class CreatureAI : public UnitAI
         Creature* const me;
 
         bool UpdateVictim();
-        bool IsInDisable();
-        bool IsInControl();
         bool UpdateVictimWithGaze();
 
         void SetGazeOn(Unit* target);
@@ -80,6 +78,8 @@ class CreatureAI : public UnitAI
         Creature* DoSummonFlyer(uint32 entry, WorldObject* obj, float flightZ, float radius = 5.0f, uint32 despawnTime = 30000, TempSummonType summonType = TEMPSUMMON_CORPSE_TIMED_DESPAWN);
 
     public:
+        bool IsInDisable();
+        bool IsInControl();
         void Talk(uint8 id, uint64 WhisperGuid = 0);
         void ZoneTalk(uint8 id, uint64 WhisperGuid = 0);
         explicit CreatureAI(Creature* creature) : UnitAI(creature), me(creature), m_MoveInLineOfSight_locked(false), m_canSeeEvenInPassiveMode(false) {}
