@@ -27431,7 +27431,7 @@ void Player::SetOriginalGroup(Group* group, int8 subgroup)
 
 void Player::UpdateVmapInfo(Map* m, float x, float y, float z)
 {
-    m->getVmapInfo(x, y, z, &vmapInfo);
+    vmapInfo = m->getVmapInfo(x, y, z);
     m_zoneUpdateId = vmapInfo.zoneid;
     m_areaUpdateId = vmapInfo.areaid;
 

@@ -3655,7 +3655,7 @@ void Unit::UpdateVmapInfo(Map* m, float x, float y, float z)
     {
         if (m_vmapUpdateAllow)
         {
-            m->getVmapInfo(x, y, z, &vmapInfo);
+            vmapInfo = m->getVmapInfo(x, y, z);
             m_zoneUpdateId = vmapInfo.zoneid;
             m_areaUpdateId = vmapInfo.areaid;
             m_vmapUpdateAllow = false;
@@ -3663,7 +3663,7 @@ void Unit::UpdateVmapInfo(Map* m, float x, float y, float z)
         return;
     }
 
-    m->getVmapInfo(x, y, z, &vmapInfo);
+    vmapInfo = m->getVmapInfo(x, y, z);
     m_zoneUpdateId = vmapInfo.zoneid;
     m_areaUpdateId = vmapInfo.areaid;
 
