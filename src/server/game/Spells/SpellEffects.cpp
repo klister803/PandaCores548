@@ -2224,6 +2224,13 @@ void Spell::EffectApplyAura(SpellEffIndex effIndex)
 
     switch (m_spellAura->GetId())
     {
+        case 121885: //Heart of Fear - Meljarak
+        {
+            if (InstanceScript* pInstance = m_caster->GetInstanceScript())
+                if (Creature* meljarak = pInstance->instance->GetCreature(pInstance->GetData64(62397)))
+                    m_caster->CastSpell(m_caster, 129078, true, NULL, NULL, meljarak->GetGUID());
+            break;
+        }
         case 38177:
             if (unitTarget->GetEntry() != 21387)
                 return;

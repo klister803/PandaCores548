@@ -87,18 +87,14 @@ const AuraType auratype[6] =
     SPELL_AURA_TRANSFORM,
 };
 
-uint32 fightSpells[6] =
+uint32 fightSpells[8] =
 {
     SPELL_WATCHFUL_EYE_1,
     SPELL_WATCHFUL_EYE_2,
     SPELL_WATCHFUL_EYE_3,
     SPELL_RECKLESSNESS,
     SPELL_RECKLESSNESS_H,
-    SPELL_HASTE
-};
-
-uint32 fightPlrSpells[2] =
-{
+    SPELL_HASTE,
     SPELL_AMBER_PRISON_PERIODIC,
     SPELL_AMBER_PRISON_STUN
 };
@@ -138,11 +134,11 @@ class boss_lord_meljarak : public CreatureScript
                 windBomb = false;
                 SummonSoldiers();
 
-                for (uint8 i = 0; i < 2; i++)
-                    instance->DoRemoveAurasDueToSpellOnPlayers(fightPlrSpells[i]);
-
                 for (uint8 i = 0; i < 6; i++)
                     me->RemoveAurasDueToSpell(fightSpells[i]);
+
+                for (uint8 i = 6; i < 8; i++)
+                    instance->DoRemoveAurasDueToSpellOnPlayers(fightSpells[i]);
             }
 
             void EnterCombat(Unit* /*who*/)
@@ -159,8 +155,8 @@ class boss_lord_meljarak : public CreatureScript
             {
                 _JustDied();
                 summons.DespawnAll();
-                for (uint8 i = 0; i < 2; i++)
-                    instance->DoRemoveAurasDueToSpellOnPlayers(fightPlrSpells[i]);
+                for (uint8 i = 6; i < 8; i++)
+                    instance->DoRemoveAurasDueToSpellOnPlayers(fightSpells[i]);
             }
 
             void DamageTaken(Unit* /*attacker*/, uint32& damage)
@@ -174,7 +170,7 @@ class boss_lord_meljarak : public CreatureScript
 
             void DoAction(const int32 action)
             {
-                if (!IsHeroic())
+                if (IsHeroic() && action == 1 || !IsHeroic() && action > 1)
                     return;
 
                 switch (action)
@@ -231,6 +227,7 @@ class boss_lord_meljarak : public CreatureScript
                 if (!UpdateVictim())
                     return;
 
+                EnterEvadeIfOutOfCombatArea(diff);
                 events.Update(diff);
 
                 if (me->HasUnitState(UNIT_STATE_CASTING))
@@ -647,7 +644,7 @@ class npc_meljarak_wind_bomb : public CreatureScript
 
             void MoveInLineOfSight(Unit* who)
             {
-                if (who->GetTypeId() != TYPEID_PLAYER || me->GetDistance(who) > 5.0f || !active)
+                if (who->GetTypeId() != TYPEID_PLAYER || me->GetDistance(who) > 3.0f || !active)
                     return;
 
                 active = false;
@@ -693,28 +690,29 @@ class npc_meljarak_amber_prison : public CreatureScript
 
             InstanceScript* pInstance;
             Player* owner;
+            bool click;
 
             void Reset() {}
 
             void IsSummonedBy(Unit* summoner)
             {
+                click = false;
                 owner = summoner->ToPlayer();
             }
 
-            void JustDied(Unit* killer)
+            void OnSpellClick(Unit* clicker)
             {
-                killer->CastSpell(killer, SPELL_RESIDUE, true);
+                if (clicker->HasAura(SPELL_RESIDUE) || !click || owner == clicker)
+                    return;
+
+                click = true;
+
+                clicker->CastSpell(clicker, SPELL_RESIDUE, true);
 
                 if (owner)
                     owner->RemoveAurasDueToSpell(SPELL_AMBER_PRISON_STUN);
 
-                me->SetDisplayId(11686);
-            }
-
-            void DamageTaken(Unit* attacker, uint32 &damage)
-            {
-                if (attacker->HasAura(SPELL_RESIDUE))
-                    damage = 0;
+                me->DespawnOrUnsummon(500);
             }
 
             void EnterCombat(Unit* attacker) {}
@@ -959,6 +957,11 @@ class spell_meljarak_corrosive_resin : public SpellScriptLoader
         {
             PrepareAuraScript(spell_meljarak_corrosive_resin_AuraScript) 
 
+            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                GetAura()->SetStackAmount(5);
+            }
+
             void OnPereodic(AuraEffect const* /*aurEff*/) 
             {
                 Unit* target = GetTarget();
@@ -983,6 +986,7 @@ class spell_meljarak_corrosive_resin : public SpellScriptLoader
             void Register() 
             {
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_meljarak_corrosive_resin_AuraScript::OnPereodic, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+                OnEffectApply += AuraEffectApplyFn(spell_meljarak_corrosive_resin_AuraScript::OnApply, EFFECT_1, SPELL_AURA_SCREEN_EFFECT, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
