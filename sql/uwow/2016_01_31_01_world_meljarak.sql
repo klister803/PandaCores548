@@ -29,6 +29,8 @@ INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry
 (13, 7, 125873, 0, 0, 31, 0, 3, 62397, 0, 0, 0, '', NULL);
 
 delete from spell_linked_spell where spell_trigger = 121885;
+INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `type`,`comment`) VALUES
+(121885, 129078, 0, 'Heart of Fear - Meljarak');
 
 delete from spell_area where spell = 121885;
 INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spell`, `racemask`, `gender`, `autocast`, `quest_start_status`, `quest_end_status`) VALUES 

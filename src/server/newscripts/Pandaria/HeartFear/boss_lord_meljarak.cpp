@@ -139,6 +139,8 @@ class boss_lord_meljarak : public CreatureScript
 
                 for (uint8 i = 6; i < 8; i++)
                     instance->DoRemoveAurasDueToSpellOnPlayers(fightSpells[i]);
+
+                DespawnPrison();
             }
 
             void EnterCombat(Unit* /*who*/)
@@ -155,6 +157,7 @@ class boss_lord_meljarak : public CreatureScript
             {
                 _JustDied();
                 summons.DespawnAll();
+                DespawnPrison();
                 for (uint8 i = 6; i < 8; i++)
                     instance->DoRemoveAurasDueToSpellOnPlayers(fightSpells[i]);
             }
@@ -222,12 +225,25 @@ class boss_lord_meljarak : public CreatureScript
                 }
             }
 
+            void DespawnPrison()
+            {
+                std::list<Creature*> prison;
+                GetCreatureListWithEntryInGrid(prison, me, NPC_AMBER_PRISON, 120.0f);
+                for (std::list<Creature*>::iterator itr = prison.begin(); itr != prison.end(); ++itr)
+                    (*itr)->DespawnOrUnsummon();
+            }
+
             void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
 
-                EnterEvadeIfOutOfCombatArea(diff);
+                if (me->GetDistance(me->GetHomePosition()) > 70.0f)
+                {
+                    EnterEvadeMode();
+                    return;
+                }
+
                 events.Update(diff);
 
                 if (me->HasUnitState(UNIT_STATE_CASTING))
@@ -689,30 +705,29 @@ class npc_meljarak_amber_prison : public CreatureScript
             }
 
             InstanceScript* pInstance;
-            Player* owner;
             bool click;
 
-            void Reset() {}
-
-            void IsSummonedBy(Unit* summoner)
+            void Reset() 
             {
                 click = false;
-                owner = summoner->ToPlayer();
             }
 
             void OnSpellClick(Unit* clicker)
             {
-                if (clicker->HasAura(SPELL_RESIDUE) || !click || owner == clicker)
+                Unit* summoner = me->ToTempSummon()->GetSummoner();
+                if (!summoner)
+                    return;
+
+                if (clicker->HasAura(SPELL_RESIDUE) || click || clicker == summoner)
                     return;
 
                 click = true;
 
                 clicker->CastSpell(clicker, SPELL_RESIDUE, true);
 
-                if (owner)
-                    owner->RemoveAurasDueToSpell(SPELL_AMBER_PRISON_STUN);
+                summoner->RemoveAurasDueToSpell(SPELL_AMBER_PRISON_STUN);
 
-                me->DespawnOrUnsummon(500);
+                me->DespawnOrUnsummon();
             }
 
             void EnterCombat(Unit* attacker) {}

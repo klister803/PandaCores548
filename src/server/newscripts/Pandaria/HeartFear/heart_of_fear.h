@@ -40,6 +40,7 @@ enum eCreatures
     NPC_ZARTHIK            = 62408,
     NPC_SRATHIK            = 65499,
     NPC_KORTHIK            = 65500,
+    NPC_AMBER_PRISON       = 62531,
 
     //Ta'yak summons
     NPC_GALE_WINDS_STALKER   = 63292,
