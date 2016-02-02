@@ -58,6 +58,7 @@ class Bag : public Item
         bool LoadFromDB(uint32 guid, uint64 owner_guid, Json::Value& itemValue, uint32 entry);
         // overwrite virtual Item::DeleteFromDB
         void DeleteFromDB(SQLTransaction& trans);
+        void DeleteFromRedis();
 
         void BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) const;
 

@@ -843,6 +843,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
             ca.date = time_t(fields[2].GetUInt32());
             ca.changed = false;
             ca.first_guid = first_guid;
+            ca.first_guid_real = first_guid;
             ca.isAccountAchievement = achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT;
             m_CompletedAchievementsLock.release();
 
@@ -2897,6 +2898,9 @@ bool AchievementMgr<T>::SetCriteriaProgress(AchievementEntry const* achievement,
     if (achievement && achievement->parent && !HasAchieved(achievement->parent, referencePlayer->GetGUIDLow())) //Don`t send update criteria to client if parent achievment not complete
         return false;
 
+    if (achievement && GetCriteriaSort() == PLAYER_CRITERIA)
+        referencePlayer->UpdateSerializePlayerCriteriaProgress(achievement, progressMap);
+
     if (achievement && achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
         SendAccountCriteriaUpdate(criteria, progress, timeElapsed, progress->completed);
     else
@@ -3008,8 +3012,15 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
     CompletedAchievementData& ca = m_completedAchievements[achievement->ID];
     ca.date = time(NULL);
     ca.first_guid = GetOwner()->GetGUIDLow();
+    ca.first_guid_real = GetOwner()->GetGUIDLow();
     ca.changed = true;
     m_CompletedAchievementsLock.release();
+
+    if (GetCriteriaSort() == PLAYER_CRITERIA)
+    {
+        referencePlayer->SerializePlayerAchievement();
+        referencePlayer->DeleteSerializePlayerCriteriaProgress(achievement);
+    }
 
     if (!progressMap)
         progressMap = GetCriteriaProgressMap(achievement->ID);
@@ -3070,11 +3081,11 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
 
         MailDraft draft(subject, text);
 
-        SQLTransaction trans = CharacterDatabase.BeginTransaction();
         if (item)
         {
+            item->SetItemKey(ITEM_KEY_USER, GetOwner()->GetGUIDLow());
             // save new item before send
-            item->SaveToDB(trans);                               // save for prevent lost at next mail load, if send fail then item will deleted
+            item->SerializeItem();                               // save for prevent lost at next mail load, if send fail then item will deleted
 
             // item
             draft.AddItem(item);
@@ -3082,8 +3093,7 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
                 sLog->outDebug(LOG_FILTER_EFIR, "CompletedAchievement - CreateItem of item %u; count = %u playerGUID %u, itemGUID %u", item->GetEntry(), 1, GetOwner()->GetGUID(), item->GetGUID());
         }
 
-        draft.SendMailTo(trans, GetOwner(), MailSender(MAIL_CREATURE, reward->sender));
-        CharacterDatabase.CommitTransaction(trans);
+        draft.SendMailTo(GetOwner(), MailSender(MAIL_CREATURE, reward->sender));
     }
 
     if (reward->learnSpell)
@@ -4596,6 +4606,7 @@ void AchievementMgr<Player>::AddAccountAchievements(uint32 achievementid, uint64
     CompletedAchievementData& ca = m_completedAchievements[achievementid];
     ca.date = time_t(date);
     ca.changed = false;
+    ca.first_guid_real = first_guid;
     ca.first_guid = first_guid;
     ca.isAccountAchievement = achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT;
 

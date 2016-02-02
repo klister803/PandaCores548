@@ -66,6 +66,11 @@ enum MailAuctionAnswers
 
 struct AuctionEntry
 {
+    AuctionEntry()
+    {
+        auctionKey = new char[32];
+        sprintf(auctionKey, "r{%u}auc{%u}", realmID, 0);
+    }
     uint32 Id;
     uint32 auctioneer;                                      // creature low guid
     uint32 itemGUIDLow;
@@ -88,12 +93,18 @@ struct AuctionEntry
     uint64 GetAuctionOutBid() const;
     bool BuildAuctionInfo(WorldPacket & data) const;
     void DeleteFromDB(SQLTransaction& trans) const;
-    void SaveToDB(SQLTransaction& trans) const;
+    void DeleteFromRedis();
     bool LoadFromDB(Field* fields);
     bool LoadFromFieldList(Field* fields);
     std::string BuildAuctionMailSubject(MailAuctionAnswers response) const;
     static std::string BuildAuctionMailBody(uint32 lowGuid, uint64 bid, uint64 buyout, uint64 deposit, uint64 cut);
 
+    char* auctionKey;
+    Json::Reader jsonReader;
+    Json::FastWriter jsonBuilder;
+    Json::Value AuctionJson;
+    void SerializeAuction();
+    void UpdateSerializeAuction();
 };
 
 //this class is used as auctionhouse instance
@@ -166,12 +177,12 @@ class AuctionHouseMgr
         }
 
         //auction messages
-        void SendAuctionWonMail(AuctionEntry* auction, SQLTransaction& trans);
-        void SendAuctionSalePendingMail(AuctionEntry* auction, SQLTransaction& trans);
-        void SendAuctionSuccessfulMail(AuctionEntry* auction, SQLTransaction& trans);
-        void SendAuctionExpiredMail(AuctionEntry* auction, SQLTransaction& trans);
-        void SendAuctionOutbiddedMail(AuctionEntry* auction, uint64 newPrice, Player* newBidder, SQLTransaction& trans);
-        void SendAuctionCancelledToBidderMail(AuctionEntry* auction, SQLTransaction& trans, Item* item);
+        void SendAuctionWonMail(AuctionEntry* auction);
+        void SendAuctionSalePendingMail(AuctionEntry* auction);
+        void SendAuctionSuccessfulMail(AuctionEntry* auction);
+        void SendAuctionExpiredMail(AuctionEntry* auction);
+        void SendAuctionOutbiddedMail(AuctionEntry* auction, uint64 newPrice, Player* newBidder);
+        void SendAuctionCancelledToBidderMail(AuctionEntry* auction, Item* item);
 
         static uint32 GetAuctionDeposit(AuctionHouseEntry const* entry, uint32 time, Item* pItem, uint32 count);
         static AuctionHouseEntry const* GetAuctionHouseEntry(uint32 factionTemplateId);
@@ -183,12 +194,17 @@ class AuctionHouseMgr
 
         //load first auction items, because of check if item exists, when loading
         void LoadAuctionItems();
+        void LoadAuctionItems(const RedisValue* v, uint64 aucId);
         void LoadAuctions();
+        void LoadAuctions(const RedisValue* v, uint64 aucId);
 
         void AddAItem(Item* it);
         bool RemoveAItem(uint32 id);
 
         void Update();
+
+        Json::Reader jsonReader;
+        Json::FastWriter jsonBuilder;
 
     private:
 

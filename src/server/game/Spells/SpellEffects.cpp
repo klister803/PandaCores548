@@ -3443,6 +3443,8 @@ void Spell::EffectSummonChangeItem(SpellEffIndex effIndex)
     if (!pNewItem)
         return;
 
+    pNewItem->SetItemKey(ITEM_KEY_USER, player->GetGUIDLow());
+
     if(pNewItem->GetEntry() == 38186)
         sLog->outDebug(LOG_FILTER_EFIR, "EffectSummonChangeItem - CreateItem of item %u; 1 = %u playerGUID %u, itemGUID %u m_CastItem %i", pNewItem->GetEntry(), 1, player->GetGUID(), pNewItem->GetGUID(), m_CastItem->GetEntry());
 
@@ -6181,6 +6183,7 @@ void Spell::EffectApplyGlyph(SpellEffIndex effIndex)
             }
         }
     }
+    player->SerializePlayerGlyphs();
 }
 
 void Spell::EffectEnchantHeldItem(SpellEffIndex effIndex)
@@ -8070,7 +8073,10 @@ void Spell::EffectUnlearnTalent(SpellEffIndex effIndex)
         break;
     }
 
-    plr->SaveToDB();
+
+    plr->SerializePlayerTalents();
+    plr->SerializePlayerSpells();
+    plr->SerializePlayerGlyphs();
     plr->SendTalentsInfoData(false);
 }
 
@@ -8422,6 +8428,8 @@ void Spell::EffectUncageBattlePet(SpellEffIndex effIndex)
             uint32 speed = accumulator->CalculateSpeed();
             delete accumulator;
             player->GetBattlePetMgr()->AddPetToList(petguid, bp->ID, bp->CreatureEntry, level, creature->Modelid1, power, speed, health, health, quality, 0, 0, bp->spellId, "", breedID, STATE_UPDATED);
+
+            player->SerializePlayerBattlePets();
         }
         std::list<uint64> updates;
         updates.clear();
@@ -8489,6 +8497,7 @@ void Spell::EffectHealBattlePetPct(SpellEffIndex effIndex)
             updates.push_back(j->first);
         }
     }
+    player->SerializePlayerBattlePets();
 
     player->GetBattlePetMgr()->SendUpdatePets(updates);
 }

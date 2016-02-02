@@ -66,6 +66,9 @@ enum LoadingStep
     LOAD_PLAYER_CRITERIA            = 42,
     LOAD_ACCOUNT_CRITERIA           = 43,
     LOAD_PLAYER_NEXT                = 44,
+    LOAD_PLAYER_GOLD                = 45,
+    LOAD_PLAYER_MAILS               = 46,
+    LOAD_PLAYER_MAIL_ITEMS          = 47,
 };
 
 #endif

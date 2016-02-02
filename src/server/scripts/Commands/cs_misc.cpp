@@ -2399,11 +2399,8 @@ public:
         MailSender sender(MAIL_NORMAL, handler->GetSession() ? handler->GetSession()->GetPlayer()->GetGUIDLow() : 0, MAIL_STATIONERY_GM);
 
         //- TODO: Fix poor design
-        SQLTransaction trans = CharacterDatabase.BeginTransaction();
         MailDraft(subject, text)
-            .SendMailTo(trans, MailReceiver(target, GUID_LOPART(targetGuid)), sender);
-
-        CharacterDatabase.CommitTransaction(trans);
+            .SendMailTo(MailReceiver(target, GUID_LOPART(targetGuid)), sender);
 
         std::string nameLink = handler->playerLink(targetName);
         handler->PSendSysMessage(LANG_MAIL_SENT, nameLink.c_str());
@@ -2499,19 +2496,13 @@ public:
         // fill mail
         MailDraft draft(subject, text);
 
-        SQLTransaction trans = CharacterDatabase.BeginTransaction();
-
         for (ItemPairs::const_iterator itr = items.begin(); itr != items.end(); ++itr)
         {
             if (Item* item = Item::CreateItem(itr->first, itr->second, handler->GetSession() ? handler->GetSession()->GetPlayer() : 0))
-            {
-                item->SaveToDB(trans);                               // save for prevent lost at next mail load, if send fail then item will deleted
                 draft.AddItem(item);
-            }
         }
 
-        draft.SendMailTo(trans, MailReceiver(receiver, GUID_LOPART(receiverGuid)), sender);
-        CharacterDatabase.CommitTransaction(trans);
+        draft.SendMailTo(MailReceiver(receiver, GUID_LOPART(receiverGuid)), sender);
 
         std::string nameLink = handler->playerLink(receiverName);
         handler->PSendSysMessage(LANG_MAIL_SENT, nameLink.c_str());
@@ -2556,13 +2547,9 @@ public:
         // from console show not existed sender
         MailSender sender(MAIL_NORMAL, handler->GetSession() ? handler->GetSession()->GetPlayer()->GetGUIDLow() : 0, MAIL_STATIONERY_GM);
 
-        SQLTransaction trans = CharacterDatabase.BeginTransaction();
-
         MailDraft(subject, text)
             .AddMoney(money)
-            .SendMailTo(trans, MailReceiver(receiver, GUID_LOPART(receiverGuid)), sender);
-
-        CharacterDatabase.CommitTransaction(trans);
+            .SendMailTo(MailReceiver(receiver, GUID_LOPART(receiverGuid)), sender);
 
         std::string nameLink = handler->playerLink(receiverName);
         handler->PSendSysMessage(LANG_MAIL_SENT, nameLink.c_str());

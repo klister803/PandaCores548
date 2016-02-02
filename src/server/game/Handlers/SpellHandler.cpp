@@ -427,21 +427,11 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
 
     if (item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED))// wrapped?
     {
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_GIFT_BY_ITEM);
-
-        stmt->setUInt32(0, item->GetGUIDLow());
-
-        PreparedQueryResult result = CharacterDatabase.Query(stmt);
-
-        if (result)
+        if (item->GetGiftEntry())
         {
-            Field* fields = result->Fetch();
-            uint32 entry = fields[0].GetUInt32();
-            uint32 flags = fields[1].GetUInt32();
-
             item->SetUInt64Value(ITEM_FIELD_GIFTCREATOR, 0);
-            item->SetEntry(entry);
-            item->SetUInt32Value(ITEM_FIELD_FLAGS, flags);
+            item->SetEntry(item->GetGiftEntry());
+            item->SetUInt32Value(ITEM_FIELD_FLAGS, 0);
             item->SetState(ITEM_CHANGED, pUser);
         }
         else
@@ -450,12 +440,6 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
             pUser->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
             return;
         }
-
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GIFT);
-
-        stmt->setUInt32(0, item->GetGUIDLow());
-
-        CharacterDatabase.Execute(stmt);
     }
     else
         pUser->SendLoot(item->GetGUID(), LOOT_CORPSE);
@@ -852,7 +836,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 {
                     spellInfo = newInfo;
                     spellId = newInfo->Id;
-                replaced = true;
+                    replaced = true;
                 }
                 break;
             }

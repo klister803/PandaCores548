@@ -134,12 +134,12 @@ class MailDraft
         MailDraft& AddCOD(uint64 COD) { m_COD = COD; return *this; }
 
     public:                                                 // finishers
-        void SendReturnToSender(uint32 sender_acc, uint32 sender_guid, uint32 receiver_guid, SQLTransaction& trans);
-        void SendMailTo(SQLTransaction& trans, MailReceiver const& receiver, MailSender const& sender, MailCheckMask checked = MAIL_CHECK_MASK_NONE, uint32 deliver_delay = 0);
+        void SendReturnToSender(uint32 sender_acc, uint32 sender_guid, uint32 receiver_guid);
+        void SendMailTo(MailReceiver const& receiver, MailSender const& sender, MailCheckMask checked = MAIL_CHECK_MASK_NONE, uint32 deliver_delay = 0);
 
     private:
-        void deleteIncludedItems(SQLTransaction& trans, bool inDB = false);
-        void prepareItems(Player* receiver, SQLTransaction& trans);                // called from SendMailTo for generate mailTemplateBase items
+        void deleteIncludedItems(bool inDB = false);
+        void prepareItems(Player* receiver);                // called from SendMailTo for generate mailTemplateBase items
 
         uint16      m_mailTemplateId;
         bool        m_mailTemplateItemsNeed;
@@ -177,6 +177,7 @@ struct Mail
     uint64 COD;
     uint32 checked;
     MailState state;
+    Json::Value MailJson;
 
     void AddItem(uint32 itemGuidLow, uint32 item_template)
     {

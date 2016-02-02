@@ -294,7 +294,6 @@ uint32 WorldSession::CompressPacket(uint8* buffer, WorldPacket const& packet)
         return 0;
     }
 
-
     return bufferSize - _compressionStream->avail_out;
 }
 
@@ -658,7 +657,8 @@ void WorldSession::LogoutPlayer(bool Save)
                 _player->SetUInt32Value(PLAYER_FIELD_BUYBACK_PRICE_1 + eslot, 0);
                 _player->SetUInt32Value(PLAYER_FIELD_BUYBACK_TIMESTAMP_1 + eslot, 0);
             }
-            _player->SaveToDB();
+            //_player->SaveToDB();
+            _player->UpdateSerializePlayer();
         }
 
         ///- Leave all channels before player delete...

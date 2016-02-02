@@ -3096,7 +3096,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
             return NULL;
         }
 
-        if (pet->LoadPetFromDB(this, entry, 0, stampeded))
+        if (pet->LoadPetFromRedis(this, entry, 0, stampeded))
         {
             if (duration > 0)
                 pet->SetDuration(duration);

@@ -1281,7 +1281,7 @@ void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recvData)
             sLog->outError(LOG_FILTER_NETWORKIO, "MISC: Unknown action button type %u for action %u into button %u for player %s (GUID: %u)", type, action, button, _player->GetName(), _player->GetGUIDLow());
             return;
         }
-        GetPlayer()->addActionButton(button, action, type);
+        GetPlayer()->addActionButton(button, action, type, GetPlayer()->GetActiveSpec());
     }
 }
 

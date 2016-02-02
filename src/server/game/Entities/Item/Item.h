@@ -218,6 +218,15 @@ enum ItemUpdateState
     ITEM_REMOVED                                 = 3
 };
 
+enum ItemKeyType
+{
+    ITEM_KEY_USER                                = 0,
+    ITEM_KEY_MAIL                                = 1,
+    ITEM_KEY_GUILD                               = 2,
+    ITEM_KEY_AUCT                                = 3,
+    ITEM_KEY_LOOT                                = 4
+};
+
 #define MAX_ITEM_SPELLS 5
 
 bool ItemCanGoIntoBag(ItemTemplate const* proto, ItemTemplate const* pBagProto);
@@ -251,7 +260,6 @@ class Item : public Object
         static void DeleteFromInventoryDB(SQLTransaction& trans, uint32 itemGuid);
         void DeleteFromInventoryDB(SQLTransaction& trans);
         void SaveRefundDataToDB();
-        void DeleteRefundDataFromDB(SQLTransaction* trans);
 
         Bag* ToBag() { if (IsBag()) return reinterpret_cast<Bag*>(this); else return NULL; }
         const Bag* ToBag() const { if (IsBag()) return reinterpret_cast<const Bag*>(this); else return NULL; }
@@ -344,7 +352,7 @@ class Item : public Object
         uint32 GetLeveledStatValue(uint8 statIndex) const;
 
         // Item Refund system
-        void SetNotRefundable(Player* owner, bool changestate = true, SQLTransaction* trans = NULL);
+        void SetNotRefundable(Player* owner, bool changestate = true);
         void SetRefundRecipient(uint32 pGuidLow) { m_refundRecipient = pGuidLow; }
         void SetPaidMoney(uint32 money) { m_paidMoney = money; }
         void SetPaidExtendedCost(uint32 iece) { m_paidExtendedCost = iece; }
@@ -398,6 +406,9 @@ class Item : public Object
         void AppendDynamicInfo(ByteBuffer& buff) const;
         void SetLevelCap(uint32 cup, bool pvp);
 
+        void SetGiftEntry(uint32 gift) { giftEntry = gift; }
+        uint32 GetGiftEntry() { return giftEntry; }
+
         /*********************************************************/
         /***                    SERIALIZE SYSTEM               ***/
         /*********************************************************/
@@ -407,6 +418,9 @@ class Item : public Object
         Json::FastWriter jsonBuilder;
         Json::Value ItemsJson;
         void SerializeItem();
+        void SetItemKey(uint8 type, uint32 guid);
+        void UpdateItemKey(uint8 type, uint32 guid);
+        void DeleteFromRedis();
 
     private:
         std::string m_text;
@@ -423,5 +437,6 @@ class Item : public Object
         AllowedLooterSet allowedGUIDs;
         uint32 ItemLevel;
         uint32 ItemLevelBeforeCap;
+        uint32 giftEntry;
 };
 #endif

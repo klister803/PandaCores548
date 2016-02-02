@@ -251,6 +251,8 @@ void WorldSession::HandleCageBattlePet(WorldPacket& recvData)
         // send packet twice? (sniff data)
         SendPacket(&data);
         SendPacket(&data);
+
+        _player->SerializePlayerBattlePets();
     }
 }
 
@@ -268,7 +270,6 @@ void WorldSession::HandleBattlePetSetSlot(WorldPacket& recvData)
 
     // find dest slot
     PetBattleSlot * slot = _player->GetBattlePetMgr()->GetPetBattleSlot(slotID);
-
     if (!slot)
         return;
 
@@ -288,6 +289,8 @@ void WorldSession::HandleBattlePetSetSlot(WorldPacket& recvData)
     }
 
     slot->SetPet(guid);
+
+    _player->SerializePlayerBattlePetSlots();
 }
 
 void WorldSession::HandlePetBattleRequestWild(WorldPacket& recvData)
@@ -532,4 +535,5 @@ void WorldSession::HandleBattlePetDelete(WorldPacket& recvData)
         return;
 
     _player->GetBattlePetMgr()->DeletePetByPetGUID(guid);
+    _player->SerializePlayerBattlePets();
 }

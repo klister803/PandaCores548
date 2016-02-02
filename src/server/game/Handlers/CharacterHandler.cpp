@@ -845,10 +845,12 @@ void WorldSession::HandlePlayerLoginOpcode(WorldPacket& recvData)
         return;
     }
 
+    sLog->outInfo(LOG_FILTER_REDIS, "WorldSession::HandlePlayerLoginOpcode time %u get_id %i", getMSTime(), boost::this_thread::get_id());
+
     bool playerInRedis = false;
     if (RedisDatabase.isConnected())
     {
-        char* userKey;
+        char* userKey = new char[18];
         sprintf(userKey, "r{%i}u{%i}", realmID, playerGuid);
         RedisValue v = RedisDatabase.ExecuteH("HEXISTS", userKey, "userdata");
         if (v.isOk())
@@ -1161,6 +1163,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
     m_playerLoading = false;
 
     sScriptMgr->OnPlayerLogin(pCurrChar);
+
+    sLog->outInfo(LOG_FILTER_REDIS, "HandlePlayerLogin time %u get_id %i", getMSTime(), boost::this_thread::get_id());
 
     delete holder;
 }
@@ -1595,6 +1599,7 @@ void WorldSession::HandleRemoveGlyph(WorldPacket & recvData)
             _player->SetGlyph(slot, 0);
             _player->SendTalentsInfoData(false);
         }
+        _player->SerializePlayerGlyphs();
     }
 }
 
@@ -2626,7 +2631,7 @@ void WorldSession::SendLoadCUFProfiles()
 
 void WorldSession::HandlePlayerLogin(uint32 accountId, uint64 playerGuid, uint8 step)
 {
-    sLog->outInfo(LOG_FILTER_REDIS, "WorldSession::HandlePlayerLogin accountId %u playerGuid %u step %u", accountId, playerGuid, step);
+    sLog->outInfo(LOG_FILTER_REDIS, "WorldSession::HandlePlayerLogin accountId %u playerGuid %u step %u get_id %i", accountId, playerGuid, step, boost::this_thread::get_id());
 
     switch (step)
     {
@@ -2921,6 +2926,8 @@ void WorldSession::HandlePlayerLogin(uint32 accountId, uint64 playerGuid, uint8 
             m_playerLoading = false;
 
             sScriptMgr->OnPlayerLogin(pCurrChar);
+
+            sLog->outInfo(LOG_FILTER_REDIS, "HandlePlayerLogin time %u get_id %u", getMSTime(), boost::this_thread::get_id());
             break;
         }
         case 2:
@@ -2938,4 +2945,6 @@ void WorldSession::HandlePlayerLogin(uint32 accountId, uint64 playerGuid, uint8 
         default:
             sLog->outError(LOG_FILTER_NETWORKIO, "Error HandlePlayerLogin step %u not found. account %u guid %u", step, accountId, playerGuid);
     }
+
+    sLog->outInfo(LOG_FILTER_REDIS, "HandlePlayerLogin end time %u get_id %u", getMSTime(), boost::this_thread::get_id());
 }

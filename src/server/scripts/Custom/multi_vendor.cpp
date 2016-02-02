@@ -243,17 +243,13 @@ public:
                     MailSender sendermail(MAIL_NORMAL, 0, MAIL_STATIONERY_GM);
                     // fill mail
                     MailDraft draft(sObjectMgr->GetTrinityString(20017, loc_idx), sObjectMgr->GetTrinityString(20017, loc_idx));
-                    SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
                     if (Item* item = Item::CreateItem(EFIRALS, transcount, 0))
                     {
                         sLog->outDebug(LOG_FILTER_EFIR, "EFIRALS_TRANS item %u; transcount efir = %u playerGUID %u, itemGUID %u receiver %u", EFIRALS, transcount, player->GetGUID(), item->GetGUID(), action);
 
-                        player->SaveInventoryAndGoldToDB(trans);
-                        item->SaveToDB(trans);                           // save for prevent lost at next mail load, if send fail then item will deleted
                         draft.AddItem(item);
-                        draft.SendMailTo(trans, MailReceiver(receiver, GUID_LOPART(action)), sendermail);
-                        CharacterDatabase.CommitTransaction(trans);
+                        draft.SendMailTo(MailReceiver(receiver, GUID_LOPART(action)), sendermail);
                         chH.PSendSysMessage(20019, transcount);
                     }
                     CharacterDatabase.PExecute("INSERT INTO character_donate_service SET `account`='%u',`guid`='%u', `service`='%s', `cost`='%u', `targetguid`='%u'", accountId , player->GetGUIDLow(), "EFIRALS_TRANS", transcount, action);

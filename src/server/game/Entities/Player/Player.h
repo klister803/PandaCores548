@@ -1394,6 +1394,7 @@ typedef std::set<uint32> ResearchProjectSet;
 
 #define MAX_RESEARCH_SITES 20
 #define MAX_DIGSITE_FINDS 6
+#define MAX_SPEC_COUNT 2
 
 struct Visuals
 {
@@ -1575,6 +1576,7 @@ class Player : public Unit, public GridObject<Player>
         char* accountKey;
         char* criteriaPlKey;
         char* criteriaAcKey;
+        char* mailKey;
         char* GetItemKey() { return itemKey; }
         char* GetUserKey() { return userKey; }
         char* GetAccountKey() { return accountKey; }
@@ -1626,6 +1628,8 @@ class Player : public Unit, public GridObject<Player>
         Json::Value PlayerCriteriaJson;
         Json::Value AccountAchievementJson;
         Json::Value AccountCriteriaJson;
+        Json::Value PlayerPetsJson;
+        Json::Value PlayerGoldJson;
 
         //load data for serialize
         void InitSerializePlayer();
@@ -1663,6 +1667,10 @@ class Player : public Unit, public GridObject<Player>
         void SerializePlayerHomeBind();
         void SerializePlayerAchievement();
         void SerializePlayerCriteria();
+        void SerializePlayerPets();
+        void CreatedPlayerPets();
+        void SerializePlayerMails();
+        void SerializePlayerGold();
 
         //load data into player deserialize
         void LoadFromRedis(uint64 guid, uint8 step = 0, const RedisValue* v = NULL);
@@ -1711,6 +1719,14 @@ class Player : public Unit, public GridObject<Player>
         void DeSerializePlayerAchievements(const RedisValue* v, uint64 playerGuid);
         void DeSerializeAccountCriteriaProgress(const RedisValue* v, uint64 playerGuid);
         void DeSerializePlayerCriteriaProgress(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerGold(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerMails(const RedisValue* v, uint64 playerGuid);
+        void DeSerializePlayerMailItems(const RedisValue* v, uint64 mailGuid);
+
+        //Update data in database
+        void UpdateSerializePlayer();
+        void DeleteSerializePlayerCriteriaProgress(AchievementEntry const* achievement);
+        void UpdateSerializePlayerCriteriaProgress(AchievementEntry const* achievement, CriteriaProgressMap* progressMap);
 
         /*********************************************************/
         /***                    STORAGE SYSTEM                 ***/
@@ -2132,8 +2148,6 @@ class Player : public Unit, public GridObject<Player>
         /*********************************************************/
 
         void SaveToDB(bool create = false);
-        void SaveInventoryAndGoldToDB(SQLTransaction& trans);                    // fast save function for item/money cheating preventing
-        void SaveGoldToDB(SQLTransaction& trans);
 
         static void SetUInt32ValueInArray(Tokenizer& data, uint16 index, uint32 value);
         static void SetFloatValueInArray(Tokenizer& data, uint16 index, float value);
@@ -2207,6 +2221,8 @@ class Player : public Unit, public GridObject<Player>
         bool IsMailsLoaded() const { return m_mailsLoaded; }
 
         void RemoveMail(uint32 id);
+        void RemoveMailFromRedis(uint32 id);
+        void RemoveMailItemsFromRedis(uint32 id);
         void SafeRemoveMailFromIgnored(uint32 ignoredPlayerGuid);
 
         void AddMail(Mail* mail) { m_mail.push_front(mail);}// for call from WorldSession::SendMailTo
@@ -2336,7 +2352,6 @@ class Player : public Unit, public GridObject<Player>
 
         PlayerTalentMap const* GetTalentMap(uint8 spec) const { return _talentMgr->SpecInfo[spec].Talents; }
         PlayerTalentMap* GetTalentMap(uint8 spec) { return _talentMgr->SpecInfo[spec].Talents; }
-        ActionButtonList const& GetActionButtons() const { return m_actionButtons; }
 
         uint32 GetFreePrimaryProfessionPoints() const { return GetUInt32Value(PLAYER_CHARACTER_POINTS); }
         void SetFreePrimaryProfessions(uint16 profs) { SetUInt32Value(PLAYER_CHARACTER_POINTS, profs); }
@@ -2476,7 +2491,7 @@ class Player : public Unit, public GridObject<Player>
             m_cinematic = cine;
         }
 
-        ActionButton* addActionButton(uint8 button, uint32 action, uint8 type);
+        ActionButton* addActionButton(uint8 button, uint32 action, uint8 type, uint8 spec);
         void removeActionButton(uint8 button);
         ActionButton const* GetActionButton(uint8 button);
         void SendInitialActionButtons() const { SendActionButtons(0); }
@@ -3585,7 +3600,7 @@ class Player : public Unit, public GridObject<Player>
 
         PlayerTalentInfo* _talentMgr;
 
-        ActionButtonList m_actionButtons;
+        ActionButtonList m_actionButtons[MAX_SPEC_COUNT];
 
         float m_auraBaseMod[BASEMOD_END][MOD_END];
         uint32 m_baseSpellPower;

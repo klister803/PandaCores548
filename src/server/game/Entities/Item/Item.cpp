@@ -261,6 +261,7 @@ Item::Item() : ItemLevelBeforeCap(0)
     m_refundRecipient = 0;
     m_paidMoney = 0;
     m_paidExtendedCost = 0;
+    giftEntry = 0;
 
     m_dynamicTab.resize(ITEM_DYNAMIC_END);
     m_dynamicChange.resize(ITEM_DYNAMIC_END);
@@ -278,8 +279,6 @@ Item::Item() : ItemLevelBeforeCap(0)
 bool Item::Create(uint32 guidlow, uint32 itemid, Player const* owner)
 {
     Object::_Create(guidlow, 0, HIGHGUID_ITEM);
-
-    sprintf(itemKey, "r{%i}u{%i}items", realmID, owner ? owner->GetGUID() : 0);
 
     SetEntry(itemid);
     SetObjectScale(1.0f);
@@ -444,8 +443,6 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, Field* fields, uint32 entr
     // create item before any checks for store correct guid
     // and allow use "FSetState(ITEM_REMOVED); SaveToDB();" for deleting item from DB
     Object::_Create(guid, 0, HIGHGUID_ITEM);
-
-    sprintf(itemKey, "r{%i}u{%i}items", realmID, owner_guid);
 
     // Set entry, MUST be before proto check
     SetEntry(entry);
@@ -769,6 +766,7 @@ void Item::SetState(ItemUpdateState state, Player* forplayer)
         // pretend the item never existed
         RemoveFromUpdateQueueOf(forplayer);
         forplayer->DeleteRefundReference(GetGUIDLow());
+        DeleteFromRedis();
         delete this;
         return;
     }
@@ -778,7 +776,10 @@ void Item::SetState(ItemUpdateState state, Player* forplayer)
         if (uState != ITEM_NEW)
             uState = state;
 
-        AddToUpdateQueueOf(forplayer);
+        if (state == ITEM_REMOVED)
+            DeleteFromRedis();
+        else
+            SerializeItem();
     }
     else
     {
@@ -1128,6 +1129,8 @@ Item* Item::CreateItem(uint32 item, uint32 count, Player const* player)
         ASSERT(count != 0 && "pProto->Stackable == 0 but checked at loading already");
 
         Item* pItem = NewItemOrBag(pProto);
+        pItem->SetItemKey(ITEM_KEY_USER, player->GetGUIDLow());
+
         if (pItem->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM), item, player))
         {
             pItem->SetCount(count);
@@ -1154,7 +1157,10 @@ Item* Item::CloneItem(uint32 count, Player const* player) const
     newItem->SetLevel(ItemLevel);
     // player CAN be NULL in which case we must not update random properties because that accesses player's item update queue
     if (player)
+    {
+        newItem->SetItemKey(ITEM_KEY_USER, player->GetGUIDLow());
         newItem->SetItemRandomProperties(GetItemRandomPropertyId());
+    }
 
     memcpy(newItem->m_dynamicModInfo, m_dynamicModInfo, sizeof(uint32) * ITEM_DYN_MOD_END);
     newItem->UpdateDynamicValues(newItem->isBattlePet() ? true : false);
@@ -1208,33 +1214,21 @@ void Item::SaveRefundDataToDB()
     CharacterDatabase.CommitTransaction(trans);
 }
 
-void Item::DeleteRefundDataFromDB(SQLTransaction* trans)
-{
-    if (trans && !trans->null())
-    {
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_REFUND_INSTANCE);
-        stmt->setUInt32(0, GetGUIDLow());
-        (*trans)->Append(stmt);
-
-    }
-}
-
-void Item::SetNotRefundable(Player* owner, bool changestate /*=true*/, SQLTransaction* trans /*=NULL*/)
+void Item::SetNotRefundable(Player* owner, bool changestate /*=true*/)
 {
     if (!HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_REFUNDABLE))
         return;
 
     RemoveFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_REFUNDABLE);
-    // Following is not applicable in the trading procedure
-    if (changestate)
-        SetState(ITEM_CHANGED, owner);
-
     SetRefundRecipient(0);
     SetPaidMoney(0);
     SetPaidExtendedCost(0);
-    DeleteRefundDataFromDB(trans);
 
     owner->DeleteRefundReference(GetGUIDLow());
+
+    // Following is not applicable in the trading procedure
+    if (changestate)
+        SetState(ITEM_CHANGED, owner);
 }
 
 void Item::UpdatePlayedTime(Player* owner)
@@ -1757,3 +1751,61 @@ void Item::SetLevelCap(uint32 cap, bool pvp)
     SetLevel(cap);
 }
 
+void Item::SetItemKey(uint8 type, uint32 guid)
+{
+    switch (type)
+    {
+        case ITEM_KEY_USER:
+            sprintf(itemKey, "r{%i}u{%i}items", realmID, guid);
+            break;
+        case ITEM_KEY_MAIL:
+            sprintf(itemKey, "r{%i}m{%i}items", realmID, guid);
+            break;
+        case ITEM_KEY_GUILD:
+            sprintf(itemKey, "r{%i}g{%i}items", realmID, guid);
+            break;
+        case ITEM_KEY_AUCT:
+            sprintf(itemKey, "r{%i}auc{%i}items", realmID, guid);
+            break;
+        case ITEM_KEY_LOOT:
+            sprintf(itemKey, "r{%i}l{%i}items", realmID, guid);
+            break;
+    }
+}
+
+void Item::UpdateItemKey(uint8 type, uint32 guid)
+{
+    std::string index = std::to_string(GetGUIDLow());
+    RedisDatabase.AsyncExecuteH("HDEL", itemKey, index.c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Item::UpdateItemKey guid %u", guid);
+    });
+
+    switch (type)
+    {
+        case ITEM_KEY_USER:
+            sprintf(itemKey, "r{%i}u{%i}items", realmID, guid);
+            break;
+        case ITEM_KEY_MAIL:
+            sprintf(itemKey, "r{%i}m{%i}items", realmID, guid);
+            break;
+        case ITEM_KEY_GUILD:
+            sprintf(itemKey, "r{%i}g{%i}items", realmID, guid);
+            break;
+        case ITEM_KEY_AUCT:
+            sprintf(itemKey, "r{%i}auc{%i}items", realmID, guid);
+            break;
+        case ITEM_KEY_LOOT:
+            sprintf(itemKey, "r{%i}l{%i}items", realmID, guid);
+            break;
+    }
+
+    SerializeItem();
+}
+
+void Item::DeleteFromRedis()
+{
+    std::string index = std::to_string(GetGUIDLow());
+    RedisDatabase.AsyncExecuteH("HDEL", itemKey, index.c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Item::DeleteFromRedis guid %u", guid);
+    });
+}

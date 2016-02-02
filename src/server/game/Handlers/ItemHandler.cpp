@@ -1501,7 +1501,6 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
     }
 
     Item* item = _player->GetItemByPos(item_bag, item_slot);
-
     if (!item)
     {
         _player->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, item, NULL);
@@ -1551,15 +1550,7 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
         return;
     }
 
-    SQLTransaction trans = CharacterDatabase.BeginTransaction();
-
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_GIFT);
-    stmt->setUInt32(0, GUID_LOPART(item->GetOwnerGUID()));
-    stmt->setUInt32(1, item->GetGUIDLow());
-    stmt->setUInt32(2, item->GetEntry());
-    stmt->setUInt32(3, item->GetUInt32Value(ITEM_FIELD_FLAGS));
-    trans->Append(stmt);
-
+    item->SetGiftEntry(item->GetEntry());
     item->SetEntry(gift->GetEntry());
 
     switch (item->GetEntry())
@@ -1574,14 +1565,6 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
     item->SetUInt64Value(ITEM_FIELD_GIFTCREATOR, _player->GetGUID());
     item->SetUInt32Value(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED);
     item->SetState(ITEM_CHANGED, _player);
-
-    if (item->GetState() == ITEM_NEW)                          // save new item, to have alway for `character_gifts` record in `item_instance`
-    {
-        // after save it will be impossible to remove the item from the queue
-        item->RemoveFromUpdateQueueOf(_player);
-        item->SaveToDB(trans);                                   // item gave inventory record unchanged and can be save standalone
-    }
-    CharacterDatabase.CommitTransaction(trans);
 
     uint32 count_dest = 1;
     _player->DestroyItemCount(gift, count_dest, true);

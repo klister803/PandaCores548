@@ -79,19 +79,12 @@ MailReceiver::MailReceiver(Player* receiver, uint32 receiver_lowguid) : m_receiv
 MailDraft& MailDraft::AddItem(Item* item)
 {
     if (item->GetOwnerGUID())
-    {
-        // just for disable error log and possible something else.
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ITEM_OWNER);
-        stmt->setUInt32(0, 0);
-        stmt->setUInt32(1, item->GetGUIDLow());
-        CharacterDatabase.Execute(stmt);
-
         item->SetOwnerGUID(0);
-    }
+
     m_items[item->GetGUIDLow()] = item; return *this;
 }
 
-void MailDraft::prepareItems(Player* receiver, SQLTransaction& trans)
+void MailDraft::prepareItems(Player* receiver)
 {
     if (!m_mailTemplateId || !m_mailTemplateItemsNeed)
         return;
@@ -110,7 +103,8 @@ void MailDraft::prepareItems(Player* receiver, SQLTransaction& trans)
         {
             if (Item* item = Item::CreateItem(lootitem->itemid, lootitem->count, receiver))
             {
-                item->SaveToDB(trans);                           // save for prevent lost at next mail load, if send fail then item will deleted
+                item->SetItemKey(ITEM_KEY_LOOT, receiver->GetGUIDLow());
+                item->SerializeItem();                           // save for prevent lost at next mail load, if send fail then item will deleted
                 AddItem(item);
                 if(item->GetEntry() == 38186)
                     sLog->outDebug(LOG_FILTER_EFIR, "MailDraft::prepareItems - CreateItem of item %u; count = %u playerGUID %u, itemGUID %u", item->GetEntry(), lootitem->count, receiver->GetGUID(), item->GetGUID());
@@ -119,18 +113,14 @@ void MailDraft::prepareItems(Player* receiver, SQLTransaction& trans)
     }
 }
 
-void MailDraft::deleteIncludedItems(SQLTransaction& trans, bool inDB /*= false*/ )
+void MailDraft::deleteIncludedItems(bool inDB /*= false*/ )
 {
     for (MailItemMap::iterator mailItemIter = m_items.begin(); mailItemIter != m_items.end(); ++mailItemIter)
     {
         Item* item = mailItemIter->second;
 
         if (inDB)
-        {
-            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_INSTANCE);
-            stmt->setUInt32(0, item->GetGUIDLow());
-            trans->Append(stmt);
-        }
+            item->DeleteFromRedis();
 
         delete item;
     }
@@ -138,7 +128,7 @@ void MailDraft::deleteIncludedItems(SQLTransaction& trans, bool inDB /*= false*/
     m_items.clear();
 }
 
-void MailDraft::SendReturnToSender(uint32 sender_acc, uint32 sender_guid, uint32 receiver_guid, SQLTransaction& trans)
+void MailDraft::SendReturnToSender(uint32 sender_acc, uint32 sender_guid, uint32 receiver_guid)
 {
     Player* receiver = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(receiver_guid, 0, HIGHGUID_PLAYER));
 
@@ -148,7 +138,7 @@ void MailDraft::SendReturnToSender(uint32 sender_acc, uint32 sender_guid, uint32
 
     if (!receiver && !rc_account)                            // sender not exist
     {
-        deleteIncludedItems(trans, true);
+        deleteIncludedItems(true);
         return;
     }
 
@@ -164,12 +154,7 @@ void MailDraft::SendReturnToSender(uint32 sender_acc, uint32 sender_guid, uint32
         for (MailItemMap::iterator mailItemIter = m_items.begin(); mailItemIter != m_items.end(); ++mailItemIter)
         {
             Item* item = mailItemIter->second;
-            item->SaveToDB(trans);                      // item not in inventory and can be save standalone
-            // owner in data will set at mail receive and item extracting
-            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ITEM_OWNER);
-            stmt->setUInt32(0, receiver_guid);
-            stmt->setUInt32(1, item->GetGUIDLow());
-            trans->Append(stmt);
+            item->UpdateItemKey(ITEM_KEY_USER, sender_guid);
         }
     }
 
@@ -177,16 +162,16 @@ void MailDraft::SendReturnToSender(uint32 sender_acc, uint32 sender_guid, uint32
     uint32 deliver_delay = needItemDelay ? sWorld->getIntConfig(CONFIG_MAIL_DELIVERY_DELAY) : 0;
 
     // will delete item or place to receiver mail list
-    SendMailTo(trans, MailReceiver(receiver, receiver_guid), MailSender(MAIL_NORMAL, sender_guid), MAIL_CHECK_MASK_RETURNED, deliver_delay);
+    SendMailTo(MailReceiver(receiver, receiver_guid), MailSender(MAIL_NORMAL, sender_guid), MAIL_CHECK_MASK_RETURNED, deliver_delay);
 }
 
-void MailDraft::SendMailTo(SQLTransaction& trans, MailReceiver const& receiver, MailSender const& sender, MailCheckMask checked, uint32 deliver_delay)
+void MailDraft::SendMailTo(MailReceiver const& receiver, MailSender const& sender, MailCheckMask checked, uint32 deliver_delay)
 {
     Player* pReceiver = receiver.GetPlayer();               // can be NULL
     Player* pSender = sObjectMgr->GetPlayerByLowGUID(sender.GetSenderId());
 
     if (pReceiver)
-        prepareItems(pReceiver, trans);                            // generate mail template items
+        prepareItems(pReceiver);                            // generate mail template items
 
     uint32 mailId = sObjectMgr->GenerateMailID();
 
@@ -211,32 +196,35 @@ void MailDraft::SendMailTo(SQLTransaction& trans, MailReceiver const& receiver, 
     time_t expire_time = deliver_time + expire_delay;
 
     // Add to DB
-    uint8 index = 0;
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_MAIL);
-    stmt->setUInt32(index++, mailId);
-    stmt->setUInt8 (index++, uint8(sender.GetMailMessageType()));
-    stmt->setInt8  (index++, int8(sender.GetStationery()));
-    stmt->setUInt16(index++, GetMailTemplateId());
-    stmt->setUInt32(index++, sender.GetSenderId());
-    stmt->setUInt32(index++, receiver.GetPlayerGUIDLow());
-    stmt->setString(index++, GetSubject());
-    stmt->setString(index++, GetBody());
-    stmt->setBool  (index++, !m_items.empty());
-    stmt->setUInt64(index++, uint64(expire_time));
-    stmt->setUInt64(index++, uint64(deliver_time));
-    stmt->setUInt64(index++, m_money);
-    stmt->setUInt64(index++, m_COD);
-    stmt->setUInt8 (index, uint8(checked));
-    trans->Append(stmt);
+    Json::FastWriter jsonBuilder;
+    std::string messageID = std::to_string(mailId);
+
+    char* mailKey = new char[32];
+    sprintf(mailKey, "r{%u}u{%u}mails", realmID, receiver.GetPlayerGUIDLow());
+    Json::Value MailJson;
+
+    MailJson["messageType"] = uint8(sender.GetMailMessageType());
+    MailJson["sender"] = sender.GetSenderId();
+    MailJson["receiver"] = receiver.GetPlayerGUIDLow();
+    MailJson["subject"] = GetSubject();
+    MailJson["body"] = GetBody();
+    MailJson["has_items"] = !m_items.empty();
+    MailJson["expire_time"] = uint64(expire_time);
+    MailJson["deliver_time"] = uint64(deliver_time);
+    MailJson["money"] = m_money;
+    MailJson["COD"] = m_COD;
+    MailJson["checked"] = uint8(checked);
+    MailJson["stationery"] = int8(sender.GetStationery());
+    MailJson["mailTemplateId"] = GetMailTemplateId();
+
+    RedisDatabase.AsyncExecuteHSet("HSET", mailKey, messageID.c_str(), jsonBuilder.write(MailJson).c_str(), mailId, [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "MailDraft::SendMailTo guid %u", guid);
+    });
 
     for (MailItemMap::const_iterator mailItemIter = m_items.begin(); mailItemIter != m_items.end(); ++mailItemIter)
     {
         Item* pItem = mailItemIter->second;
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_MAIL_ITEM);
-        stmt->setUInt32(0, mailId);
-        stmt->setUInt32(1, pItem->GetGUIDLow());
-        stmt->setUInt32(2, receiver.GetPlayerGUIDLow());
-        trans->Append(stmt);
+        pItem->UpdateItemKey(ITEM_KEY_MAIL, mailId);
     }
 
     // For online receiver update in game mail status and data
@@ -278,14 +266,8 @@ void MailDraft::SendMailTo(SQLTransaction& trans, MailReceiver const& receiver, 
             }
         }
         else if (!m_items.empty())
-        {
-            SQLTransaction temp = SQLTransaction(NULL);
-            deleteIncludedItems(temp);
-        }
+            deleteIncludedItems();
     }
     else if (!m_items.empty())
-    {
-        SQLTransaction temp = SQLTransaction(NULL);
-        deleteIncludedItems(temp);
-    }
+        deleteIncludedItems();
 }

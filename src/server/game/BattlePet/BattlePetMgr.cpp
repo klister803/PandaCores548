@@ -1714,6 +1714,8 @@ void PetBattleWild::UpdatePetsAfterBattle()
         }
     }
 
+    m_player->SerializePlayerBattlePets();
+
     if (!updates.empty())
         m_player->GetBattlePetMgr()->SendUpdatePets(updates, false);
 }

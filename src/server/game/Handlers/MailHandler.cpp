@@ -164,23 +164,9 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
     {
         rc_team = sObjectMgr->GetPlayerTeamByGUID(rc);
 
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_MAIL_COUNT);
-
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_LEVEL);
         stmt->setUInt32(0, GUID_LOPART(rc));
-
         PreparedQueryResult result = CharacterDatabase.Query(stmt);
-
-        if (result)
-        {
-            Field* fields = result->Fetch();
-            mails_count = fields[0].GetUInt64();
-        }
-
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_LEVEL);
-
-        stmt->setUInt32(0, GUID_LOPART(rc));
-
-        result = CharacterDatabase.Query(stmt);
 
         if (result)
         {
@@ -287,8 +273,6 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
 
     MailDraft draft(subject, body);
 
-    SQLTransaction trans = CharacterDatabase.BeginTransaction();
-
     if (items_count > 0 || money > 0)
     {
         if (items_count > 0)
@@ -304,10 +288,7 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
 
                 item->SetNotRefundable(GetPlayer()); // makes the item no longer refundable
                 player->MoveItemFromInventory(item, true);
-
-                item->DeleteFromInventoryDB(trans);     // deletes item from character's inventory
                 item->SetOwnerGUID(rc);
-                item->SaveToDB(trans);                  // recursive and not have transaction guard into self, item not in inventory and can be save standalone
 
                 draft.AddItem(item);
             }
@@ -331,10 +312,7 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
     draft
         .AddMoney(money)
         .AddCOD(COD)
-        .SendMailTo(trans, MailReceiver(receive, GUID_LOPART(rc)), MailSender(player), body.empty() ? MAIL_CHECK_MASK_COPIED : MAIL_CHECK_MASK_HAS_BODY, deliver_delay);
-
-    player->SaveInventoryAndGoldToDB(trans);
-    CharacterDatabase.CommitTransaction(trans);
+        .SendMailTo(MailReceiver(receive, GUID_LOPART(rc)), MailSender(player), body.empty() ? MAIL_CHECK_MASK_COPIED : MAIL_CHECK_MASK_HAS_BODY, deliver_delay);
 }
 
 // Called when mail is read
@@ -385,7 +363,11 @@ void WorldSession::HandleMailDelete(WorldPacket & recvData)
         }
 
         m->state = MAIL_STATE_DELETED;
+
+        player->RemoveMail(mailId);
+        player->RemoveMailItemsFromRedis(mailId);
     }
+
     player->SendMailResult(mailId, MAIL_DELETED, MAIL_OK);
 }
 
@@ -410,16 +392,6 @@ void WorldSession::HandleMailReturnToSender(WorldPacket & recvData)
     }
     //we can return mail now
     //so firstly delete the old one
-    SQLTransaction trans = CharacterDatabase.BeginTransaction();
-
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_MAIL_BY_ID);
-    stmt->setUInt32(0, mailId);
-    trans->Append(stmt);
-
-    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_MAIL_ITEM_BY_ID);
-    stmt->setUInt32(0, mailId);
-    trans->Append(stmt);
-
     player->RemoveMail(mailId);
 
     // only return mail if the player exists (and delete if not existing)
@@ -439,10 +411,8 @@ void WorldSession::HandleMailReturnToSender(WorldPacket & recvData)
                 player->RemoveMItem(itr2->item_guid);
             }
         }
-        draft.AddMoney(m->money).SendReturnToSender(GetAccountId(), m->receiver, m->sender, trans);
+        draft.AddMoney(m->money).SendReturnToSender(GetAccountId(), m->receiver, m->sender);
     }
-
-    CharacterDatabase.CommitTransaction(trans);
 
     delete m;                                               //we can deallocate old mail
     player->SendMailResult(mailId, MAIL_RETURNED_TO_SENDER, MAIL_OK);
@@ -491,7 +461,6 @@ void WorldSession::HandleMailTakeItem(WorldPacket& recvData)
     uint8 msg = _player->CanStoreItem(NULL_BAG, NULL_SLOT, dest, item, false);
     if (msg == EQUIP_ERR_OK)
     {
-        SQLTransaction trans = CharacterDatabase.BeginTransaction();
         m->RemoveItem(itemId);
         m->removedItems.push_back(itemId);
 
@@ -529,7 +498,7 @@ void WorldSession::HandleMailTakeItem(WorldPacket& recvData)
             {
                 MailDraft(m->subject, "")
                     .AddMoney(m->COD)
-                    .SendMailTo(trans, MailReceiver(receive, m->sender), MailSender(MAIL_NORMAL, m->receiver), MAIL_CHECK_MASK_COD_PAYMENT);
+                    .SendMailTo(MailReceiver(receive, m->sender), MailSender(MAIL_NORMAL, m->receiver), MAIL_CHECK_MASK_COD_PAYMENT);
             }
 
             player->ModifyMoney(-int32(m->COD));
@@ -542,10 +511,7 @@ void WorldSession::HandleMailTakeItem(WorldPacket& recvData)
         uint32 count = item->GetCount();                      // save counts before store and possible merge with deleting
         item->SetState(ITEM_UNCHANGED);                       // need to set this state, otherwise item cannot be removed later, if neccessary
         player->MoveItemToInventory(dest, item, true);
-
-        player->SaveInventoryAndGoldToDB(trans);
-        player->_SaveMail(trans);
-        CharacterDatabase.CommitTransaction(trans);
+        player->SerializePlayerMails();
 
         player->SendMailResult(mailId, MAIL_ITEM_TAKEN, MAIL_OK, 0, itemId, count);
     }
@@ -585,10 +551,7 @@ void WorldSession::HandleMailTakeMoney(WorldPacket& recvData)
     player->m_mailsUpdated = true;
 
     // save money and mail to prevent cheating
-    SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    player->SaveGoldToDB(trans);
-    player->_SaveMail(trans);
-    CharacterDatabase.CommitTransaction(trans);
+    player->SerializePlayerMails();
 }
 
 //called when player lists his received mails
@@ -602,10 +565,6 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
         return;
 
     Player* player = _player;
-
-    //load players mails, and mailed items
-    if (!player->m_mailsLoaded)
-        player->_LoadMail();
 
     // client can't work with packets > max int16 value
     const uint32 maxPacketSize = 32767;
@@ -821,9 +780,6 @@ void WorldSession::HandleMailCreateTextItem(WorldPacket& recvData)
 void WorldSession::HandleQueryNextMailTime(WorldPacket & /*recvData*/)
 {
     WorldPacket data(MSG_QUERY_NEXT_MAIL_TIME, 8 + _player->unReadMails*24);
-
-    if (!_player->m_mailsLoaded)
-        _player->_LoadMail();
 
     if (_player->unReadMails > 0)
     {

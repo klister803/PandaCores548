@@ -419,6 +419,8 @@ bool Guild::BankTab::LoadItemFromDB(Field* fields)
     }
 
     Item* pItem = NewItemOrBag(proto);
+    pItem->SetItemKey(ITEM_KEY_GUILD, m_guildId);
+
     if (!pItem->LoadFromDB(itemGuid, 0, fields, itemEntry))
     {
         sLog->outError(LOG_FILTER_GUILD, "Item (GUID %u, id: %u) not found in item_instance, deleting from guild bank!", itemGuid, itemEntry);
@@ -862,6 +864,7 @@ bool Guild::MoveItemData::CloneItem(uint32 count)
         m_pPlayer->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, m_pItem);
         return false;
     }
+    m_pClonedItem->SetItemKey(ITEM_KEY_GUILD, m_pGuild->GetId());
     if(m_pItem->GetEntry() == 38186)
         sLog->outDebug(LOG_FILTER_EFIR, "BankMoveItemData - CloneItem of item %u; count = %u playerGUID %u, guild %u", m_pItem->GetEntry(), count, m_pGuild->GetId(), m_pItem->GetGUID());
     return true;
@@ -911,7 +914,6 @@ void Guild::PlayerMoveItemData::RemoveItem(SQLTransaction& trans, MoveItemData* 
     {
         m_pItem->SetCount(m_pItem->GetCount() - splitedAmount);
         m_pItem->SetState(ITEM_CHANGED, m_pPlayer);
-        m_pPlayer->SaveInventoryAndGoldToDB(trans);
     }
     else
     {
@@ -929,7 +931,6 @@ Item* Guild::PlayerMoveItemData::StoreItem(SQLTransaction& trans, Item* pItem)
         sLog->outDebug(LOG_FILTER_EFIR, "PlayerMoveItemData::StoreItem - item %u; count = %u playerGUID %u, itemGUID %u", pItem->GetEntry(), pItem->GetCount(), m_pPlayer->GetGUID(), pItem->GetGUID());
 
     m_pPlayer->MoveItemToInventory(m_vec, pItem, true);
-    m_pPlayer->SaveInventoryAndGoldToDB(trans);
     return pItem;
 }
 
@@ -1009,6 +1010,8 @@ Item* Guild::BankMoveItemData::StoreItem(SQLTransaction& trans, Item* pItem)
         sLog->outDebug(LOG_FILTER_GUILD, "GUILD STORAGE: StoreItem tab = %u, slot = %u, item = %u, count = %u",
             m_container, m_slotId, pItem->GetEntry(), pItem->GetCount());
         pLastItem = _StoreItem(trans, pTab, pItem, pos, itr != m_vec.end());
+
+        pLastItem->SetItemKey(ITEM_KEY_GUILD, m_pGuild->GetId());
     }
     return pLastItem;
 }
@@ -2060,7 +2063,7 @@ void Guild::HandleMemberDepositMoney(WorldSession* session, uint64 amount, bool 
     _ModifyBankMoney(trans, amount, true);
     // Remove money from player
     player->ModifyMoney(-int64(amount));
-    player->SaveGoldToDB(trans);
+
     // Log GM action (TODO: move to scripts)
     if (!AccountMgr::IsPlayerAccount(player->GetSession()->GetSecurity()) && sWorld->getBoolConfig(CONFIG_GM_LOG_TRADE))
     {
@@ -2105,10 +2108,8 @@ bool Guild::HandleMemberWithdrawMoney(WorldSession* session, uint64 amount, bool
     _ModifyBankMoney(trans, amount, false);
     // Add money to player (if required)
     if (!repair)
-    {
         player->ModifyMoney(amount);
-        player->SaveGoldToDB(trans);
-    }
+
     // Log guild bank event
     _LogBankEvent(trans, repair ? GUILD_BANK_LOG_REPAIR_MONEY : GUILD_BANK_LOG_WITHDRAW_MONEY, uint8(0), player->GetGUIDLow(), amount);
     CharacterDatabase.CommitTransaction(trans);

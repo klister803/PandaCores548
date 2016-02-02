@@ -43,6 +43,7 @@ void Player::InitSerializePlayer()
         return;
 
     SerializePlayer();
+    SerializePlayerGold();
     SerializePlayerBG();
     SerializePlayerGroup();
     SerializePlayerLootCooldown();
@@ -76,11 +77,15 @@ void Player::InitSerializePlayer()
     SerializePlayerHomeBind();
     SerializePlayerAchievement();
     SerializePlayerCriteria();
+    SerializePlayerPets();
+    SerializePlayerMails();
 }
 
 void Player::SerializePlayer()
 {
-    sLog->outInfo(LOG_FILTER_REDIS, "Player::SerializePlayer userKey %s", userKey);
+    m_nextSave = sWorld->getIntConfig(CONFIG_INTERVAL_SAVE) / 10;
+
+    //sLog->outInfo(LOG_FILTER_REDIS, "Player::SerializePlayer userKey %s", userKey);
 
     PlayerJson["realm"] = realmID;
     PlayerJson["guid"] = GetGUIDLow();
@@ -91,7 +96,6 @@ void Player::SerializePlayer()
     PlayerJson["gender"] = getGender();
     PlayerJson["level"] = getLevel();
     PlayerJson["xp"] = GetUInt32Value(PLAYER_XP);
-    PlayerJson["money"] = GetMoney();
     PlayerJson["playerBytes"] = GetUInt32Value(PLAYER_BYTES);
     PlayerJson["playerBytes2"] = GetUInt32Value(PLAYER_BYTES_2);
     PlayerJson["playerFlags"] = GetUInt32Value(PLAYER_FLAGS);
@@ -172,7 +176,7 @@ void Player::SerializePlayer()
     PlayerJson["lfgBonusFaction"] = GetLfgBonusFaction();
 
     RedisDatabase.AsyncExecuteHSet("HSET", userKey, "userdata", jsonBuilder.write(PlayerJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::SerializePlayer guid %u", guid);
+        //sLog->outInfo(LOG_FILTER_REDIS, "Player::SerializePlayer guid %u", guid);
     });
 }
 
@@ -201,7 +205,7 @@ void Player::SerializePlayerGroup()
     PlayerGroupJson["guid"] = GetGroup() ? GetGroup()->GetGUID() : 0;
 
     RedisDatabase.AsyncExecuteHSet("HSET", userKey, "group", jsonBuilder.write(PlayerGroupJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::SerializePlayerGroup guid %u", guid);
+        //sLog->outInfo(LOG_FILTER_REDIS, "Player::SerializePlayerGroup guid %u", guid);
     });
 }
 
@@ -298,13 +302,23 @@ void Player::SerializePlayerSpells()
 {
     for (PlayerSpellMap::iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
     {
-        std::string spell = std::to_string(itr->first);
-        if(itr->second->mount)
-            PlayerMountsJson[spell.c_str()]["active"] = itr->second->active;
-        else
+        if (!itr->second || itr->second->state == PLAYERSPELL_REMOVED)
         {
-            PlayerSpellsJson[spell.c_str()]["active"] = itr->second->active;
-            PlayerSpellsJson[spell.c_str()]["disabled"] = itr->second->disabled;
+            if (itr->second)
+                delete itr->second;
+            m_spells.erase(itr++);
+            continue;
+        }
+        if (!itr->second->dependent)
+        {
+            std::string spell = std::to_string(itr->first);
+            if(itr->second->mount)
+                PlayerMountsJson[spell.c_str()]["active"] = itr->second->active;
+            else
+            {
+                PlayerSpellsJson[spell.c_str()]["active"] = itr->second->active;
+                PlayerSpellsJson[spell.c_str()]["disabled"] = itr->second->disabled;
+            }
         }
     }
 
@@ -378,7 +392,7 @@ void Player::SerializePlayerAuras()
     }
 
     RedisDatabase.AsyncExecuteHSet("HSET", userKey, "auras", jsonBuilder.write(PlayerAurasJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::SerializePlayerAuras auras guid %u", guid);
+        //sLog->outInfo(LOG_FILTER_REDIS, "Player::SerializePlayerAuras auras guid %u", guid);
     });
 }
 
@@ -697,9 +711,6 @@ void Player::SerializePlayerReputation()
 
 void Item::SerializeItem()
 {
-    if (!RedisDatabase.isConnected())
-        return;
-
     ItemsJson["state"] = "normal";
     ItemsJson["itemGuid"] = GetGUIDLow();
     ItemsJson["slot"] = m_slot;
@@ -708,6 +719,7 @@ void Item::SerializeItem()
     ItemsJson["itemEntry"] = GetEntry();
     ItemsJson["creatorGuid"] = GetUInt64Value(ITEM_FIELD_CREATOR);
     ItemsJson["giftCreatorGuid"] = GetUInt64Value(ITEM_FIELD_GIFTCREATOR);
+    ItemsJson["giftEntry"] = giftEntry;
     ItemsJson["count"] = GetCount();
     ItemsJson["duration"] = GetUInt32Value(ITEM_FIELD_DURATION);
     std::ostringstream ssSpells;
@@ -743,7 +755,7 @@ void Item::SerializeItem()
 
     std::string index = std::to_string(GetGUIDLow());
 
-    RedisDatabase.AsyncExecuteHSet("HSET", itemKey, index.c_str(), jsonBuilder.write(ItemsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", itemKey, index.c_str(), jsonBuilder.write(ItemsJson).c_str(), GetGUIDLow(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Item::SerializeItem guid %u", guid);
     });
 }
@@ -777,12 +789,15 @@ void Player::SerializePlayerVoidStorage()
 
 void Player::SerializePlayerActions()
 {
-    for (ActionButtonList::iterator itr = m_actionButtons.begin(); itr != m_actionButtons.end(); ++itr)
+    for (uint8 i = 0; i < MAX_SPEC_COUNT; ++i)
     {
-        std::string index = std::to_string(itr->first);
-        PlayerActionsJson[index.c_str()]["spec"] = GetActiveSpec();
-        PlayerActionsJson[index.c_str()]["action"] = itr->second.GetAction();
-        PlayerActionsJson[index.c_str()]["type"] = itr->second.GetType();
+        for (ActionButtonList::iterator itr = m_actionButtons[i].begin(); itr != m_actionButtons[i].end(); ++itr)
+        {
+            std::string spec = std::to_string(i);
+            std::string index = std::to_string(itr->first);
+            PlayerActionsJson[spec.c_str()][index.c_str()]["action"] = itr->second.GetAction();
+            PlayerActionsJson[spec.c_str()][index.c_str()]["type"] = itr->second.GetType();
+        }
     }
 
     RedisDatabase.AsyncExecuteHSet("HSET", userKey, "actions", jsonBuilder.write(PlayerActionsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
@@ -1001,10 +1016,15 @@ void Player::SerializePlayerAchievement()
     for (auto iter = GetAchievementMgr().GetCompletedAchievementsList().begin(); iter != GetAchievementMgr().GetCompletedAchievementsList().end(); ++iter)
     {
         std::string achievementId = std::to_string(iter->first);
-        PlayerAchievementJson[achievementId.c_str()] = iter->second.date;
+        if (iter->second.first_guid_real != iter->second.first_guid || iter->second.first_guid_real == GetGUIDLow())
+        {
+            PlayerAchievementJson[achievementId.c_str()]["date"] = iter->second.date;
+            PlayerAchievementJson[achievementId.c_str()]["changed"] = iter->second.changed;
+        }
 
-        AccountAchievementJson[achievementId.c_str()]["first_guid"] = iter->second.first_guid;
+        AccountAchievementJson[achievementId.c_str()]["first_guid"] = iter->second.first_guid_real;
         AccountAchievementJson[achievementId.c_str()]["date"] = iter->second.date;
+        AccountAchievementJson[achievementId.c_str()]["changed"] = iter->second.changed;
     }
 
     RedisDatabase.AsyncExecuteHSet("HSET", userKey, "achievement", jsonBuilder.write(PlayerAchievementJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
@@ -1028,8 +1048,6 @@ void Player::SerializePlayerCriteria()
 
         if(auto progressMap = &itr->second)
         {
-            uint64 guid      = GetGUIDLow();
-
             for (auto iter = progressMap->begin(); iter != progressMap->end(); ++iter)
             {
                 if (iter->second.deactiveted)
@@ -1079,4 +1097,333 @@ void Player::SerializePlayerCriteria()
             });
         }
     }
+}
+
+void Player::SerializePlayerPets()
+{
+    QueryResult result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = '%u'", GetGUIDLow());
+    if (result)
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+            std::string id = std::to_string(fields[0].GetUInt32());
+            PlayerPetsJson[id.c_str()]["entry"] = fields[1].GetUInt32();
+            PlayerPetsJson[id.c_str()]["modelid"] = fields[3].GetUInt32();
+            PlayerPetsJson[id.c_str()]["level"] = fields[4].GetUInt16();
+            PlayerPetsJson[id.c_str()]["exp"] = fields[5].GetUInt32();
+            PlayerPetsJson[id.c_str()]["Reactstate"] = fields[6].GetUInt8();
+            PlayerPetsJson[id.c_str()]["name"] = fields[7].GetString();
+            PlayerPetsJson[id.c_str()]["renamed"] = fields[8].GetBool();
+            PlayerPetsJson[id.c_str()]["curhealth"] = fields[9].GetUInt32();
+            PlayerPetsJson[id.c_str()]["curmana"] = fields[10].GetUInt32();
+            PlayerPetsJson[id.c_str()]["abdata"] = fields[11].GetString();
+            PlayerPetsJson[id.c_str()]["savetime"] = fields[12].GetUInt32();
+            PlayerPetsJson[id.c_str()]["CreatedBySpell"] = fields[13].GetUInt32();
+            PlayerPetsJson[id.c_str()]["PetType"] = fields[14].GetUInt8();
+            PlayerPetsJson[id.c_str()]["specialization"] = fields[15].GetUInt32();
+        }
+        while (result->NextRow());
+    }
+
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "pets", jsonBuilder.write(PlayerPetsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::SerializePlayerPets player guid %u", guid);
+    });
+}
+
+void Player::CreatedPlayerPets()
+{
+    if (getClass() == CLASS_HUNTER || getClass() == CLASS_WARLOCK)
+    {
+        m_currentPetNumber = sObjectMgr->GenerateLowGuid(HIGHGUID_PET);
+        std::string petId = std::to_string(m_currentPetNumber);
+
+        if (getClass() == CLASS_WARLOCK)
+        {
+            PlayerPetsJson[petId.c_str()]["entry"] = 416;
+            PlayerPetsJson[petId.c_str()]["modelid"] = 4449;
+            PlayerPetsJson[petId.c_str()]["level"] = 1;
+            PlayerPetsJson[petId.c_str()]["exp"] = 0;
+            PlayerPetsJson[petId.c_str()]["Reactstate"] = 0;
+            PlayerPetsJson[petId.c_str()]["name"] = "Imp";
+            PlayerPetsJson[petId.c_str()]["renamed"] = true;
+            PlayerPetsJson[petId.c_str()]["curhealth"] = 36;
+            PlayerPetsJson[petId.c_str()]["curmana"] = 200;
+            PlayerPetsJson[petId.c_str()]["abdata"] = "7 2 7 1 7 4 129 3110 1 0 1 0 1 0 6 2 6 3 6 0 ";
+            PlayerPetsJson[petId.c_str()]["savetime"] = 1409586285;
+            PlayerPetsJson[petId.c_str()]["CreatedBySpell"] = 0;
+            PlayerPetsJson[petId.c_str()]["PetType"] = 0;
+            PlayerPetsJson[petId.c_str()]["specialization"] = 0;
+        }else
+        {
+            switch (getRace())
+            {
+                case RACE_HUMAN:
+                    PlayerPetsJson[petId.c_str()]["entry"] = 299;
+                    PlayerPetsJson[petId.c_str()]["modelid"] = 903;
+                    PlayerPetsJson[petId.c_str()]["CreatedBySpell"] = 13481;
+                    PlayerPetsJson[petId.c_str()]["PetType"] = 1;
+                    PlayerPetsJson[petId.c_str()]["level"] = 1;
+                    PlayerPetsJson[petId.c_str()]["exp"] = 0;
+                    PlayerPetsJson[petId.c_str()]["Reactstate"] = 0;
+                    PlayerPetsJson[petId.c_str()]["name"] = "Wolf";
+                    PlayerPetsJson[petId.c_str()]["renamed"] = false;
+                    PlayerPetsJson[petId.c_str()]["curhealth"] = 192;
+                    PlayerPetsJson[petId.c_str()]["curmana"] = 0;
+                    PlayerPetsJson[petId.c_str()]["abdata"] = "7 2 7 1 7 0 129 2649 129 17253 1 0 1 0 6 2 6 1 6 0 ";
+                    PlayerPetsJson[petId.c_str()]["savetime"] = 1295727347;
+                    PlayerPetsJson[petId.c_str()]["specialization"] = 0;
+                    break;
+                case RACE_DWARF:
+                    PlayerPetsJson[petId.c_str()]["entry"] = 42713;
+                    PlayerPetsJson[petId.c_str()]["modelid"] = 822;
+                    PlayerPetsJson[petId.c_str()]["CreatedBySpell"] = 13481;
+                    PlayerPetsJson[petId.c_str()]["PetType"] = 1;
+                    PlayerPetsJson[petId.c_str()]["level"] = 1;
+                    PlayerPetsJson[petId.c_str()]["exp"] = 0;
+                    PlayerPetsJson[petId.c_str()]["Reactstate"] = 0;
+                    PlayerPetsJson[petId.c_str()]["name"] = "Bear";
+                    PlayerPetsJson[petId.c_str()]["renamed"] = false;
+                    PlayerPetsJson[petId.c_str()]["curhealth"] = 212;
+                    PlayerPetsJson[petId.c_str()]["curmana"] = 0;
+                    PlayerPetsJson[petId.c_str()]["abdata"] = "7 2 7 1 7 0 129 2649 129 16827 1 0 1 0 6 2 6 1 6 0 ";
+                    PlayerPetsJson[petId.c_str()]["savetime"] = 1295727650;
+                    PlayerPetsJson[petId.c_str()]["specialization"] = 0;
+                    break;
+                case RACE_ORC:
+                    PlayerPetsJson[petId.c_str()]["entry"] = 42719;
+                    PlayerPetsJson[petId.c_str()]["modelid"] = 744;
+                    PlayerPetsJson[petId.c_str()]["CreatedBySpell"] = 13481;
+                    PlayerPetsJson[petId.c_str()]["PetType"] = 1;
+                    PlayerPetsJson[petId.c_str()]["level"] = 1;
+                    PlayerPetsJson[petId.c_str()]["exp"] = 0;
+                    PlayerPetsJson[petId.c_str()]["Reactstate"] = 0;
+                    PlayerPetsJson[petId.c_str()]["name"] = "Boar";
+                    PlayerPetsJson[petId.c_str()]["renamed"] = false;
+                    PlayerPetsJson[petId.c_str()]["curhealth"] = 212;
+                    PlayerPetsJson[petId.c_str()]["curmana"] = 0;
+                    PlayerPetsJson[petId.c_str()]["abdata"] = "7 2 7 1 7 0 129 2649 129 17253 1 0 1 0 6 2 6 1 6 0 ";
+                    PlayerPetsJson[petId.c_str()]["savetime"] = 1295727175;
+                    PlayerPetsJson[petId.c_str()]["specialization"] = 0;
+                    break;
+                case RACE_NIGHTELF:
+                    PlayerPetsJson[petId.c_str()]["entry"] = 42718;
+                    PlayerPetsJson[petId.c_str()]["modelid"] = 17090;
+                    PlayerPetsJson[petId.c_str()]["CreatedBySpell"] = 13481;
+                    PlayerPetsJson[petId.c_str()]["PetType"] = 1;
+                    PlayerPetsJson[petId.c_str()]["level"] = 1;
+                    PlayerPetsJson[petId.c_str()]["exp"] = 0;
+                    PlayerPetsJson[petId.c_str()]["Reactstate"] = 0;
+                    PlayerPetsJson[petId.c_str()]["name"] = "Cat";
+                    PlayerPetsJson[petId.c_str()]["renamed"] = false;
+                    PlayerPetsJson[petId.c_str()]["curhealth"] = 192;
+                    PlayerPetsJson[petId.c_str()]["curmana"] = 0;
+                    PlayerPetsJson[petId.c_str()]["abdata"] = "7 2 7 1 7 0 129 2649 129 16827 1 0 1 0 6 2 6 1 6 0 ";
+                    PlayerPetsJson[petId.c_str()]["savetime"] = 1295727501;
+                    PlayerPetsJson[petId.c_str()]["specialization"] = 0;
+                    break;
+                case RACE_UNDEAD_PLAYER:
+                    PlayerPetsJson[petId.c_str()]["entry"] = 51107;
+                    PlayerPetsJson[petId.c_str()]["modelid"] = 368;
+                    PlayerPetsJson[petId.c_str()]["CreatedBySpell"] = 13481;
+                    PlayerPetsJson[petId.c_str()]["PetType"] = 1;
+                    PlayerPetsJson[petId.c_str()]["level"] = 1;
+                    PlayerPetsJson[petId.c_str()]["exp"] = 0;
+                    PlayerPetsJson[petId.c_str()]["Reactstate"] = 0;
+                    PlayerPetsJson[petId.c_str()]["name"] = "Spider";
+                    PlayerPetsJson[petId.c_str()]["renamed"] = false;
+                    PlayerPetsJson[petId.c_str()]["curhealth"] = 202;
+                    PlayerPetsJson[petId.c_str()]["curmana"] = 0;
+                    PlayerPetsJson[petId.c_str()]["abdata"] = "7 2 7 1 7 0 129 2649 129 17253 1 0 1 0 6 2 6 1 6 0 ";
+                    PlayerPetsJson[petId.c_str()]["savetime"] = 1295727821;
+                    PlayerPetsJson[petId.c_str()]["specialization"] = 0;
+                    break;
+                case RACE_TAUREN:
+                    PlayerPetsJson[petId.c_str()]["entry"] = 42720;
+                    PlayerPetsJson[petId.c_str()]["modelid"] = 29057;
+                    PlayerPetsJson[petId.c_str()]["CreatedBySpell"] = 13481;
+                    PlayerPetsJson[petId.c_str()]["PetType"] = 1;
+                    PlayerPetsJson[petId.c_str()]["level"] = 1;
+                    PlayerPetsJson[petId.c_str()]["exp"] = 0;
+                    PlayerPetsJson[petId.c_str()]["Reactstate"] = 0;
+                    PlayerPetsJson[petId.c_str()]["name"] = "Tallstrider";
+                    PlayerPetsJson[petId.c_str()]["renamed"] = false;
+                    PlayerPetsJson[petId.c_str()]["curhealth"] = 192;
+                    PlayerPetsJson[petId.c_str()]["curmana"] = 0;
+                    PlayerPetsJson[petId.c_str()]["abdata"] = "7 2 7 1 7 0 129 2649 129 16827 1 0 1 0 6 2 6 1 6 0 ";
+                    PlayerPetsJson[petId.c_str()]["savetime"] = 1295727912;
+                    PlayerPetsJson[petId.c_str()]["specialization"] = 0;
+                    break;
+                case RACE_TROLL:
+                    PlayerPetsJson[petId.c_str()]["entry"] = 42721;
+                    PlayerPetsJson[petId.c_str()]["modelid"] = 23518;
+                    PlayerPetsJson[petId.c_str()]["CreatedBySpell"] = 13481;
+                    PlayerPetsJson[petId.c_str()]["PetType"] = 1;
+                    PlayerPetsJson[petId.c_str()]["level"] = 1;
+                    PlayerPetsJson[petId.c_str()]["exp"] = 0;
+                    PlayerPetsJson[petId.c_str()]["Reactstate"] = 0;
+                    PlayerPetsJson[petId.c_str()]["name"] = "Raptor";
+                    PlayerPetsJson[petId.c_str()]["renamed"] = false;
+                    PlayerPetsJson[petId.c_str()]["curhealth"] = 192;
+                    PlayerPetsJson[petId.c_str()]["curmana"] = 0;
+                    PlayerPetsJson[petId.c_str()]["abdata"] = "7 2 7 1 7 0 129 2649 129 50498 129 16827 1 0 6 2 6 1 6 0 ";
+                    PlayerPetsJson[petId.c_str()]["savetime"] = 1295727987;
+                    PlayerPetsJson[petId.c_str()]["specialization"] = 0;
+                    break;
+                case RACE_GOBLIN:
+                    PlayerPetsJson[petId.c_str()]["entry"] = 42715;
+                    PlayerPetsJson[petId.c_str()]["modelid"] = 27692;
+                    PlayerPetsJson[petId.c_str()]["CreatedBySpell"] = 13481;
+                    PlayerPetsJson[petId.c_str()]["PetType"] = 1;
+                    PlayerPetsJson[petId.c_str()]["level"] = 1;
+                    PlayerPetsJson[petId.c_str()]["exp"] = 0;
+                    PlayerPetsJson[petId.c_str()]["Reactstate"] = 0;
+                    PlayerPetsJson[petId.c_str()]["name"] = "Crab";
+                    PlayerPetsJson[petId.c_str()]["renamed"] = false;
+                    PlayerPetsJson[petId.c_str()]["curhealth"] = 212;
+                    PlayerPetsJson[petId.c_str()]["curmana"] = 0;
+                    PlayerPetsJson[petId.c_str()]["abdata"] = "7 2 7 1 7 0 129 2649 129 16827 1 0 1 0 6 2 6 1 6 0 ";
+                    PlayerPetsJson[petId.c_str()]["savetime"] = 1295720595;
+                    PlayerPetsJson[petId.c_str()]["specialization"] = 0;
+                    break;
+                case RACE_BLOODELF:
+                    PlayerPetsJson[petId.c_str()]["entry"] = 42710;
+                    PlayerPetsJson[petId.c_str()]["modelid"] = 23515;
+                    PlayerPetsJson[petId.c_str()]["CreatedBySpell"] = 13481;
+                    PlayerPetsJson[petId.c_str()]["PetType"] = 1;
+                    PlayerPetsJson[petId.c_str()]["level"] = 1;
+                    PlayerPetsJson[petId.c_str()]["exp"] = 0;
+                    PlayerPetsJson[petId.c_str()]["Reactstate"] = 0;
+                    PlayerPetsJson[petId.c_str()]["name"] = "Dragonhawk";
+                    PlayerPetsJson[petId.c_str()]["renamed"] = false;
+                    PlayerPetsJson[petId.c_str()]["curhealth"] = 202;
+                    PlayerPetsJson[petId.c_str()]["curmana"] = 0;
+                    PlayerPetsJson[petId.c_str()]["abdata"] = "7 2 7 1 7 0 129 2649 129 17253 1 0 1 0 6 2 6 1 6 0 ";
+                    PlayerPetsJson[petId.c_str()]["savetime"] = 1295728068;
+                    PlayerPetsJson[petId.c_str()]["specialization"] = 0;
+                    break;
+                case RACE_DRAENEI:
+                    PlayerPetsJson[petId.c_str()]["entry"] = 42712;
+                    PlayerPetsJson[petId.c_str()]["modelid"] = 29056;
+                    PlayerPetsJson[petId.c_str()]["CreatedBySpell"] = 13481;
+                    PlayerPetsJson[petId.c_str()]["PetType"] = 1;
+                    PlayerPetsJson[petId.c_str()]["level"] = 1;
+                    PlayerPetsJson[petId.c_str()]["exp"] = 0;
+                    PlayerPetsJson[petId.c_str()]["Reactstate"] = 0;
+                    PlayerPetsJson[petId.c_str()]["name"] = 'Moth';
+                    PlayerPetsJson[petId.c_str()]["renamed"] = false;
+                    PlayerPetsJson[petId.c_str()]["curhealth"] = 192;
+                    PlayerPetsJson[petId.c_str()]["curmana"] = 0;
+                    PlayerPetsJson[petId.c_str()]["abdata"] = "7 2 7 1 7 0 129 2649 129 49966 1 0 1 0 6 2 6 1 6 0 ";
+                    PlayerPetsJson[petId.c_str()]["savetime"] = 1295728128;
+                    PlayerPetsJson[petId.c_str()]["specialization"] = 0;
+                    break;
+                case RACE_WORGEN:
+                    PlayerPetsJson[petId.c_str()]["entry"] = 42722;
+                    PlayerPetsJson[petId.c_str()]["modelid"] = 30221;
+                    PlayerPetsJson[petId.c_str()]["CreatedBySpell"] = 13481;
+                    PlayerPetsJson[petId.c_str()]["PetType"] = 1;
+                    PlayerPetsJson[petId.c_str()]["level"] = 1;
+                    PlayerPetsJson[petId.c_str()]["exp"] = 0;
+                    PlayerPetsJson[petId.c_str()]["Reactstate"] = 0;
+                    PlayerPetsJson[petId.c_str()]["name"] = "Dog";
+                    PlayerPetsJson[petId.c_str()]["renamed"] = false;
+                    PlayerPetsJson[petId.c_str()]["curhealth"] = 192;
+                    PlayerPetsJson[petId.c_str()]["curmana"] = 0;
+                    PlayerPetsJson[petId.c_str()]["abdata"] = "7 2 7 1 7 0 129 2649 129 17253 1 0 1 0 6 2 6 1 6 0 ";
+                    PlayerPetsJson[petId.c_str()]["savetime"] = 1295728219;
+                    PlayerPetsJson[petId.c_str()]["specialization"] = 0;
+                    break;
+                case RACE_PANDAREN_NEUTRAL:
+                    PlayerPetsJson[petId.c_str()]["entry"] = 57239;
+                    PlayerPetsJson[petId.c_str()]["modelid"] = 42656;
+                    PlayerPetsJson[petId.c_str()]["CreatedBySpell"] = 13481;
+                    PlayerPetsJson[petId.c_str()]["PetType"] = 1;
+                    PlayerPetsJson[petId.c_str()]["level"] = 1;
+                    PlayerPetsJson[petId.c_str()]["exp"] = 0;
+                    PlayerPetsJson[petId.c_str()]["Reactstate"] = 0;
+                    PlayerPetsJson[petId.c_str()]["name"] = "Turtle";
+                    PlayerPetsJson[petId.c_str()]["renamed"] = false;
+                    PlayerPetsJson[petId.c_str()]["curhealth"] = 192;
+                    PlayerPetsJson[petId.c_str()]["curmana"] = 0;
+                    PlayerPetsJson[petId.c_str()]["abdata"] = "7 2 7 1 7 0 129 2649 129 17253 1 0 1 0 6 2 6 1 6 0 ";
+                    PlayerPetsJson[petId.c_str()]["savetime"] = 1295728219;
+                    PlayerPetsJson[petId.c_str()]["specialization"] = 0;
+                    break;
+                default:
+                    break;
+            }
+        }
+        SetOnAnyFreeSlot(m_currentPetNumber);
+        SetTemporaryUnsummonedPetNumber(m_currentPetNumber);
+    }
+
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "pets", jsonBuilder.write(PlayerPetsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::CreatedPlayerPets player guid %u", guid);
+    });
+}
+
+void Player::SerializePlayerMails()
+{
+    //load players mails, and mailed items
+    if (!m_mailsLoaded)
+        _LoadMail();
+
+    for (PlayerMails::iterator itr = m_mail.begin(); itr != m_mail.end(); ++itr)
+    {
+        Mail* m = (*itr);
+        if (m->state != MAIL_STATE_DELETED)
+        {
+            std::string messageID = std::to_string(m->messageID);
+            m->MailJson["messageType"] = m->messageType;
+            m->MailJson["sender"] = m->sender;
+            m->MailJson["receiver"] = m->receiver;
+            m->MailJson["subject"] = m->subject;
+            m->MailJson["body"] = m->body;
+            m->MailJson["has_items"] = m->HasItems();
+            m->MailJson["expire_time"] = m->expire_time;
+            m->MailJson["deliver_time"] = m->deliver_time;
+            m->MailJson["money"] = m->money;
+            m->MailJson["COD"] = m->COD;
+            m->MailJson["checked"] = m->checked;
+            m->MailJson["stationery"] = m->stationery;
+            m->MailJson["mailTemplateId"] = m->mailTemplateId;
+
+            RedisDatabase.AsyncExecuteHSet("HSET", mailKey, messageID.c_str(), jsonBuilder.write(m->MailJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+                sLog->outInfo(LOG_FILTER_REDIS, "Player::SerializePlayerMails player guid %u", guid);
+            });
+        }
+    }
+}
+
+void Player::SerializePlayerGold()
+{
+    PlayerGoldJson = GetMoney();
+
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "money", jsonBuilder.write(PlayerGoldJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::SerializePlayer guid %u", guid);
+    });
+}
+
+void AuctionEntry::SerializeAuction()
+{
+    AuctionJson["Id"] = Id;
+    AuctionJson["auctioneer"] = auctioneer;
+    AuctionJson["itemGUIDLow"] = itemGUIDLow;
+    AuctionJson["itemEntry"] = itemEntry;
+    AuctionJson["itemCount"] = itemCount;
+    AuctionJson["owner"] = owner;
+    AuctionJson["startbid"] = startbid;
+    AuctionJson["bid"] = bid;
+    AuctionJson["buyout"] = buyout;
+    AuctionJson["expire_time"] = expire_time;
+    AuctionJson["bidder"] = bidder;
+    AuctionJson["deposit"] = deposit;
+    AuctionJson["factionTemplateId"] = factionTemplateId;
+
+    std::string index = std::to_string(Id);
+
+    RedisDatabase.AsyncExecuteHSet("HSET", auctionKey, index.c_str(), jsonBuilder.write(AuctionJson).c_str(), Id, [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Item::SerializeAuction guid %u", guid);
+    });
 }

@@ -34,6 +34,7 @@ class RedisWorkerPool
         {
             memset(_connectionCount, 0, sizeof(_connectionCount));
             _connections.resize(IDX_SIZE);
+            _connected = true;
         }
 
         ~RedisWorkerPool()
@@ -106,6 +107,8 @@ class RedisWorkerPool
                 T* t = _connections[IDX_SYNCH][i];
                 if (!t->GetWorker()->IsConnected())
                     boost::thread(&RedisWorker::Reconnect, t->GetWorker());
+                else
+                    _connected = true;
             }
             //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "CheckConnect %u ms", GetMSTimeDiffToNow(oldMSTime));
             for (uint8 i = 0; i < _connectionCount[IDX_ASYNC]; ++i)
@@ -113,24 +116,33 @@ class RedisWorkerPool
                 T* t = _connections[IDX_ASYNC][i];
                 if (!t->GetWorker()->IsConnected())
                     t->GetWorker()->Reconnect();
+                else
+                    _connected = true;
             }
             //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "CheckConnect %u ms", GetMSTimeDiffToNow(oldMSTime));
         }
 
-        bool isConnected(InternalIndex idx = IDX_SYNCH)
+        bool isConnected(InternalIndex idx = IDX_ASYNC)
         {
+            if (!_connected)
+                return false;
+
             //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "isConnected");
 
+            _connected = false;
             for (uint8 i = 0; i < _connectionCount[idx]; ++i)
             {
                 T* t = _connections[idx][i];
                 if (t->GetWorker()->IsConnected())
-                    return true;
+                {
+                    _connected = true;
+                    break;
+                }
                 //else
                     //t->GetWorker()->Reconnect();
             }
             //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "isConnected false");
-            return false;
+            return _connected;
         }
 
         inline RedisConnectionInfo const* GetConnectionInfo() const
@@ -144,7 +156,7 @@ class RedisWorkerPool
         {
             //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "AsyncExecute");
 
-            if (!isConnected())
+            if (!isConnected(IDX_SYNCH))
                 return RedisValue::RedisValue();
 
             T* t = GetFreeConnection();
@@ -155,7 +167,7 @@ class RedisWorkerPool
         {
             //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "AsyncExecute");
 
-            if (!isConnected())
+            if (!isConnected(IDX_SYNCH))
                 return RedisValue::RedisValue();
 
             T* t = GetFreeConnection();
@@ -166,7 +178,7 @@ class RedisWorkerPool
         {
             //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "AsyncExecute");
 
-            if (!isConnected())
+            if (!isConnected(IDX_SYNCH))
                 return RedisValue::RedisValue();
 
             T* t = GetFreeConnection();
@@ -177,7 +189,7 @@ class RedisWorkerPool
         {
             //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "AsyncExecute");
 
-            if (!isConnected())
+            if (!isConnected(IDX_SYNCH))
                 return RedisValue::RedisValue();
 
             T* t = GetFreeConnection();
@@ -192,7 +204,7 @@ class RedisWorkerPool
         {
             //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "AsyncExecute");
 
-            if (!isConnected(IDX_ASYNC))
+            if (!isConnected())
                 return;
 
             //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "AsyncExecuteSet cmd %s key %s", cmd, key);
@@ -208,7 +220,7 @@ class RedisWorkerPool
         {
             //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "AsyncExecute");
 
-            if (!isConnected(IDX_ASYNC))
+            if (!isConnected())
                 return;
 
             //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "AsyncExecuteSet cmd %s key %s", cmd, key);
@@ -224,7 +236,7 @@ class RedisWorkerPool
         {
             //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "AsyncExecuteSet");
 
-            if (!isConnected(IDX_ASYNC))
+            if (!isConnected())
                 return;
 
             //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "AsyncExecuteSet cmd %s key %s value %s", cmd, key, value);
@@ -240,7 +252,7 @@ class RedisWorkerPool
         {
             //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "AsyncExecuteSet");
 
-            if (!isConnected(IDX_ASYNC))
+            if (!isConnected())
                 return;
 
             //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "AsyncExecuteSet cmd %s key %s value %s", cmd, key, value);
@@ -292,6 +304,8 @@ class RedisWorkerPool
         uint32 _connectionCount[IDX_SIZE];
         std::unique_ptr<RedisConnectionInfo> _connectionInfo;
         uint8 _async_threads, _synch_threads;
+
+        bool _connected;
 };
 
 #endif

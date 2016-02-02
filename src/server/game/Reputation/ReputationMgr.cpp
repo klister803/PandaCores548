@@ -291,6 +291,8 @@ void ReputationMgr::Initialize()
             _factions[newFaction.ReputationListID] = newFaction;
         }
     }
+
+    _player->SerializePlayerReputation();
 }
 
 bool ReputationMgr::SetReputation(FactionEntry const* factionEntry, int32 standing, bool incremental)
@@ -407,6 +409,8 @@ bool ReputationMgr::SetOneFactionReputation(FactionEntry const* factionEntry, in
         _player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_GAIN_REVERED_REPUTATION, factionEntry->ID);
         _player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_GAIN_HONORED_REPUTATION, factionEntry->ID);
 
+        _player->SerializePlayerReputation();
+
         return true;
     }
     return false;
@@ -433,6 +437,8 @@ void ReputationMgr::SetVisible(FactionEntry const* factionEntry)
         return;
 
     SetVisible(&itr->second);
+
+    _player->SerializePlayerReputation();
 }
 
 void ReputationMgr::SetVisible(FactionState* faction)
@@ -475,6 +481,8 @@ void ReputationMgr::SetAtWar(RepListID repListID, bool on)
         return;
 
     SetAtWar(&itr->second, on);
+
+    _player->SerializePlayerReputation();
 }
 
 void ReputationMgr::SetAtWar(FactionState* faction, bool atWar) const
@@ -503,6 +511,8 @@ void ReputationMgr::SetInactive(RepListID repListID, bool on)
         return;
 
     SetInactive(&itr->second, on);
+
+    _player->SerializePlayerReputation();
 }
 
 void ReputationMgr::SetInactive(FactionState* faction, bool inactive) const

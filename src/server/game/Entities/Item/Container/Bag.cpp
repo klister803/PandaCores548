@@ -138,6 +138,15 @@ void Bag::DeleteFromDB(SQLTransaction& trans)
     Item::DeleteFromDB(trans);
 }
 
+void Bag::DeleteFromRedis()
+{
+    for (uint8 i = 0; i < MAX_BAG_SIZE; ++i)
+        if (m_bagslot[i])
+            m_bagslot[i]->DeleteFromRedis();
+
+    Item::DeleteFromRedis();
+}
+
 uint32 Bag::GetFreeSlots() const
 {
     uint32 slots = 0;
