@@ -60,6 +60,8 @@ enum eData
     DATA_CRAWLER_MINE_ENTERCOMBAT,
     DATA_GET_WEAPON_WAVE_INDEX,
     DATA_SHOCK_WAVE_MISSILE,
+    DATA_CHECK_INSTANCE_PROGRESS,
+    DATA_OPEN_SOLDIER_FENCH,
 
     //Galakras
     DATA_GALAKRAS_PRE_EVENT,
@@ -355,6 +357,8 @@ enum eCreatures
     NPC_GARROSH                     = 71865,
     //Garrosh soldiers
     NPC_SIEGE_ENGINEER              = 71984,
+    NPC_WARBRINGER                  = 71979,
+    NPC_WOLF_RIDER                  = 71983,
     //
     NPC_DESECRATED_WEAPON           = 72154,
     NPC_EMPOWERED_DESECRATED_WEAPON = 72198,
@@ -511,6 +515,8 @@ enum eGameObjects
     GO_GARROSH_ENT_DOOR            = 221792,
     GO_GARROSH_FENCH               = 221441,
     GO_GARROSH_FENCH2              = 221438,
+    GO_SOLDIER_RIGHT_DOOR          = 221439,
+    GO_SOLDIER_LEFT_DOOR           = 221440,
 };
 
 enum esSpells

@@ -36,7 +36,13 @@ enum eSpells
     SPELL_EXPLODING_IRON_STAR        = 144798,
 
     //Engeneer
-    SPELL_POWER_IRON_STAR            = 144616, //engeneer entry 71984
+    SPELL_POWER_IRON_STAR            = 144616,
+    //Warbringer
+    SPELL_HAMSTRING                  = 144582,
+    //Wolf Rider
+    SPELL_ANCESTRAL_FURY             = 144585,
+    SPELL_ANCESTRAL_CHAIN_HEAL       = 144583,
+    SPELL_CHAIN_LIGHTNING            = 144584,
 };
 
 enum sEvents
@@ -48,8 +54,11 @@ enum sEvents
     EVENT_REGENERATE                 = 3,
     //Summons
     EVENT_LAUNCH_STAR                = 4,
+    EVENT_HAMSTRING                  = 5,
+    EVENT_CHAIN_HEAL                 = 6,
+    EVENT_CHAIN_LIGHTNING            = 7,
     //Iron Star
-    EVENT_ACTIVE                     = 5,
+    EVENT_ACTIVE                     = 8,
 };
 
 enum Phase
@@ -71,9 +80,29 @@ Position ironstarspawnpos[2] =
 };
 
 Position engeneerspawnpos[2] =
-{                                               //From Boss face
+{
     {1061.00f, -5755.13f, -304.4855f, 1.4820f},//R
     {1084.50f, -5524.25f, -304.4856f, 4.5215f},//L
+};
+
+Position rsspos[3] =
+{
+    {1015.77f, -5696.90f, -317.6967f, 6.1730f}, 
+    {1014.27f, -5703.18f, -317.6998f, 6.1730f},
+    {1012.70f, -5711.02f, -317.7060f, 6.1730f},
+};
+
+Position lsspos[3] = 
+{
+    {1028.11f, -5572.19f, -317.6992f, 6.1730f},
+    {1028.52f, -5563.87f, -317.7022f, 6.1730f},
+    {1029.31f, -5556.24f, -317.7059f, 6.1730f},
+};
+
+Position wspos[2] =
+{
+    {1020.22f, -5703.03f, -317.6922f, 6.1730f},
+    {1034.52f, -5565.62f, -317.6930f, 6.1730f},
 };
 
 class boss_garrosh_hellscream : public CreatureScript
@@ -109,6 +138,11 @@ class boss_garrosh_hellscream : public CreatureScript
 
             void EnterCombat(Unit* who)
             {
+                /*if (!instance->GetData(DATA_CHECK_INSTANCE_PROGRESS))
+                {
+                    EnterEvadeMode();
+                    return;
+                }*/
                 _EnterCombat();
                 SpawnIronStar();
                 phase = PHASE_ONE;
@@ -196,6 +230,16 @@ class boss_garrosh_hellscream : public CreatureScript
                     case EVENT_SUMMON_SOLDIERS:
                         for (uint8 n = 0; n < 2; n++)
                             me->SummonCreature(NPC_SIEGE_ENGINEER, engeneerspawnpos[n]);
+                        instance->SetData(DATA_OPEN_SOLDIER_FENCH, 0);
+                        for (uint8 n = 0; n < 3; n++)
+                            if (Creature* rsoldier = me->SummonCreature(NPC_WARBRINGER, rsspos[n]))
+                                rsoldier->AI()->DoZoneInCombat(rsoldier, 200.0f);
+                        for (uint8 n = 0; n < 3; n++)
+                            if (Creature* lsoldier = me->SummonCreature(NPC_WARBRINGER, lsspos[n]))
+                                lsoldier->AI()->DoZoneInCombat(lsoldier, 200.0f);
+                        uint8 pos = urand(0, 1);
+                        if (Creature* wrider = me->SummonCreature(NPC_WOLF_RIDER, wspos[pos]))
+                            wrider->AI()->DoZoneInCombat(wrider, 200.0f);
                         break;
                     }
                 }
@@ -219,7 +263,6 @@ public:
         npc_garrosh_soldierAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
-            me->SetReactState(REACT_PASSIVE);
         }
 
         InstanceScript* instance;
@@ -227,17 +270,29 @@ public:
 
         void Reset()
         {
+            if (me->GetEntry() == NPC_SIEGE_ENGINEER)
+            {
+                me->SetReactState(REACT_PASSIVE);
+                events.ScheduleEvent(EVENT_LAUNCH_STAR, urand(1000, 3000));
+            }
+            else
+                me->SetReactState(REACT_DEFENSIVE);
+        }
+
+        void EnterCombat(Unit* who)
+        {
             switch (me->GetEntry())
             {
-            case NPC_SIEGE_ENGINEER:
-                events.ScheduleEvent(EVENT_LAUNCH_STAR, urand(1000, 3000));
+            case NPC_WARBRINGER:
+                events.ScheduleEvent(EVENT_HAMSTRING, 10000);
                 break;
-            default:
+            case NPC_WOLF_RIDER:
+                DoCast(me, SPELL_ANCESTRAL_FURY);
+                events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, 10000);
+                events.ScheduleEvent(EVENT_CHAIN_HEAL, 15000);
                 break;
             }
         }
-
-        void EnterCombat(Unit* who){}
 
         void EnterEvadeMode(){}
 
@@ -245,16 +300,52 @@ public:
         {
             events.Update(diff);
 
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
             while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
+                //Engineer
                 case EVENT_LAUNCH_STAR:
                     if (Creature* ironstar = me->FindNearestCreature(NPC_KORKRON_IRON_STAR, 30.0f, true))
                     {
                         me->SetFacingToObject(ironstar);
                         DoCast(me, SPELL_POWER_IRON_STAR);
                     }
+                    break;
+                //Warbringer
+                case EVENT_HAMSTRING:
+                    if (me->getVictim())
+                        DoCastVictim(SPELL_HAMSTRING);
+                    events.ScheduleEvent(EVENT_HAMSTRING, 10000);
+                    break;
+                //Wolf Rider
+                case EVENT_CHAIN_LIGHTNING:
+                {
+                    std::list<Player*> pllist;
+                    pllist.clear();
+                    GetPlayerListInGrid(pllist, me, 100.0f);
+                    if (!pllist.empty())
+                    {
+                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                        {
+                            if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
+                            {
+                                DoCast(*itr, SPELL_CHAIN_LIGHTNING);
+                                break;
+                            }
+                        }
+                    }
+                    events.ScheduleEvent(EVENT_CHAIN_HEAL, 15000);
+                    break;
+                }
+                case EVENT_CHAIN_HEAL:
+                    if (Unit* ftarget = DoSelectLowestHpFriendly(60.0f))
+                        if (ftarget->HealthBelowPct(90))
+                            DoCast(ftarget, SPELL_ANCESTRAL_CHAIN_HEAL);
+                    events.ScheduleEvent(EVENT_CHAIN_HEAL, 15000);
                     break;
                 }
             }

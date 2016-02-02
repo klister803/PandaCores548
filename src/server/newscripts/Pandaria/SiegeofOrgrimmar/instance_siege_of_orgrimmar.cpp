@@ -165,7 +165,9 @@ public:
         std::vector<uint64> jaillistGuids;
         std::vector<uint64> klaxxiarenagateGuid;
         uint64 blackfuseentdoorGuid;
-        std::vector<uint64> garroshfench;
+        std::vector<uint64> garroshfenchGuids;
+        std::vector<uint64> soldierfenchGuids;
+        uint64 klaxxiexdoorGuid;
         uint64 garroshentdoorGuid;
         
         //Creature
@@ -255,7 +257,8 @@ public:
             jaillistGuids.clear();
             klaxxiarenagateGuid.clear();
             blackfuseentdoorGuid    = 0;
-            garroshfench.clear();
+            garroshfenchGuids.clear();
+            soldierfenchGuids.clear();
             garroshentdoorGuid      = 0;
            
             //Creature
@@ -789,9 +792,16 @@ public:
                 case GO_ARENA_WALL:
                     klaxxiarenagateGuid.push_back(go->GetGUID());
                     break;
+                case GO_KLAXXI_EX_DOOR:
+                    klaxxiexdoorGuid = go->GetGUID();
+                    break;
                 case GO_GARROSH_FENCH:
                 case GO_GARROSH_FENCH2:
-                    garroshfench.push_back(go->GetGUID());
+                    garroshfenchGuids.push_back(go->GetGUID());
+                    break;
+                case GO_SOLDIER_RIGHT_DOOR:
+                case GO_SOLDIER_LEFT_DOOR:
+                    soldierfenchGuids.push_back(go->GetGUID());
                     break;
                 case GO_GARROSH_ENT_DOOR:
                     garroshentdoorGuid = go->GetGUID();
@@ -803,6 +813,14 @@ public:
         {
             if (GetBossState(DATA_SPOILS_OF_PANDARIA) == DONE && GetBossState(DATA_THOK) == DONE && GetBossState(DATA_BLACKFUSE) == DONE)
                 HandleGameObject(klaxxientdoorGuid, true);
+        }
+
+        bool CheckProgressForGarrosh()
+        {
+            for (uint32 n = 0; n < DATA_GARROSH; n++)
+                if (GetBossState(n) != DONE)
+                    return false;
+            return true;
         }
 
         bool SetBossState(uint32 id, EncounterState state)
@@ -1243,17 +1261,17 @@ public:
                 switch (state)
                 {
                 case NOT_STARTED:
-                    for (std::vector<uint64>::const_iterator itr = garroshfench.begin(); itr != garroshfench.end(); ++itr)
+                    for (std::vector<uint64>::const_iterator itr = garroshfenchGuids.begin(); itr != garroshfenchGuids.end(); ++itr)
                         HandleGameObject(*itr, true);
                     HandleGameObject(garroshentdoorGuid, true);
                     break;
                 case IN_PROGRESS:
-                    for (std::vector<uint64>::const_iterator itr = garroshfench.begin(); itr != garroshfench.end(); ++itr)
+                    for (std::vector<uint64>::const_iterator itr = garroshfenchGuids.begin(); itr != garroshfenchGuids.end(); ++itr)
                         HandleGameObject(*itr, false);
                     HandleGameObject(garroshentdoorGuid, false);
                     break;
                 case DONE:
-                    for (std::vector<uint64>::const_iterator itr = garroshfench.begin(); itr != garroshfench.end(); ++itr)
+                    for (std::vector<uint64>::const_iterator itr = garroshfenchGuids.begin(); itr != garroshfenchGuids.end(); ++itr)
                         HandleGameObject(*itr, true);
                     HandleGameObject(garroshentdoorGuid, true);
                     break;
@@ -1262,7 +1280,11 @@ public:
             break;
             }
             if (state == DONE)
+            {
                 DoSummoneEventCreatures();
+                /*if (id < DATA_GARROSH && CheckProgressForGarrosh())
+                    HandleGameObject(klaxxiexdoorGuid, true);*/
+            }
             return true;
         }
 
@@ -1598,6 +1620,10 @@ public:
                     crawlerminenum = instance->Is25ManRaid() ? 7 : 3;
                 }
                 break;
+            case DATA_OPEN_SOLDIER_FENCH:
+                for (std::vector<uint64>::const_iterator itr = soldierfenchGuids.begin(); itr != soldierfenchGuids.end(); itr++)
+                    DoUseDoorOrButton(*itr);
+                break;
             }
         }
 
@@ -1629,6 +1655,8 @@ public:
                     return NorthTowerCount;
                 case DATA_SEND_KLAXXI_DIE_COUNT:
                     return klaxxidiecount;
+                case DATA_CHECK_INSTANCE_PROGRESS:
+                    return uint32(CheckProgressForGarrosh());
             }
             return 0;
         }
@@ -1910,7 +1938,6 @@ public:
                 case DATA_NORUSHEN:
                     return GetBossState(DATA_F_PROTECTORS) == DONE;
             }
-
             return true;
         }
 
