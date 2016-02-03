@@ -22473,7 +22473,12 @@ void Unit::UpdateObjectVisibility(bool forced)
 
 void Unit::SendMoveKnockBack(Player* player, float speedXY, float speedZ, float vcos, float vsin)
 {
-    AddUnitState(UNIT_STATE_JUMPING);
+    if (isAlive() && HasUnitState(UNIT_STATE_CONFUSED))
+    {
+         GetMotionMaster()->Clear();
+         ToPlayer()->SetClientControl(this, true);
+    }
+
     m_TempSpeed = fabs(speedZ * 10.0f);
 
     ObjectGuid guid = GetGUID();

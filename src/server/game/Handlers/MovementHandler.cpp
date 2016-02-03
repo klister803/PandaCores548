@@ -700,12 +700,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
 
         mover->m_movementInfo = movementInfo;
 
-        if(opcode == CMSG_MOVE_FALL_LAND)
-        {
-            mover->ClearUnitState(UNIT_STATE_JUMPING);
-            mover->m_TempSpeed = 0.0f;
-        }
-
         // this is almost never true (not sure why it is sometimes, but it is), normally use mover->IsVehicle()
         if (mover->GetVehicle())
         {
@@ -714,6 +708,23 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
         }
 
         mover->UpdatePosition(movementInfo.pos);
+
+        if (opcode == CMSG_MOVE_KNOCK_BACK_ACK)
+            mover->AddUnitState(UNIT_STATE_JUMPING);
+
+        if (opcode == CMSG_MOVE_FALL_LAND)
+        {
+            if (mover->HasAuraType(SPELL_AURA_MOD_CONFUSE) && mover->HasUnitState(UNIT_STATE_JUMPING))
+            {
+                 mover->GetMotionMaster()->MoveConfused();
+
+                 if (plrMover)
+                    plrMover->SetClientControl(mover, false);
+            }
+
+            mover->ClearUnitState(UNIT_STATE_JUMPING);
+            mover->m_TempSpeed = 0.0f;
+        }
 
         if (plrMover)                                            // nothing is charmed, or player charmed
         {

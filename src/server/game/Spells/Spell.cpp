@@ -7969,7 +7969,7 @@ SpellCastResult Spell::CheckCasterAuras() const
         else
             prevented_reason = SPELL_FAILED_STUNNED;
     }
-    else if (unitflag & UNIT_FLAG_CONFUSED && !(AttributesCustomEx5 & SPELL_ATTR5_USABLE_WHILE_CONFUSED))
+    else if ((unitflag & UNIT_FLAG_CONFUSED || m_caster->HasAuraType(SPELL_AURA_MOD_CONFUSE)) && !(AttributesCustomEx5 & SPELL_ATTR5_USABLE_WHILE_CONFUSED))
         prevented_reason = SPELL_FAILED_CONFUSED;
     else if (unitflag & UNIT_FLAG_FLEEING && !(AttributesCustomEx5 & SPELL_ATTR5_USABLE_WHILE_FEARED))
         prevented_reason = SPELL_FAILED_FLEEING;
