@@ -2188,7 +2188,7 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
             if (caster->GetTypeId() == TYPEID_PLAYER)
             {
                 // Pet don`t can buff not owner
-                if (unitTarget->isPet() && IsPositive() && unitTarget->GetAnyOwner() != caster)
+                if (unitTarget->isPet() && AttributesEx5 & SPELL_ATTR5_UNK8)
                     return SPELL_FAILED_BAD_TARGETS;
 
                 // Do not allow these spells to target creatures not tapped by us (Banish, Polymorph, many quest spells)
