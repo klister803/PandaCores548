@@ -494,7 +494,9 @@ void AuctionHouseMgr::LoadAuctions(const RedisValue* v, uint64 aucId)
             continue;
 
         aItem->factionTemplateId = auctioneerInfo->faction;
-        if (!AuctionHouseMgr::GetAuctionHouseEntry(aItem->factionTemplateId))
+        aItem->auctionHouseEntry = AuctionHouseMgr::GetAuctionHouseEntry(aItem->factionTemplateId);
+
+        if (!aItem->auctionHouseEntry)
             continue;
 
         // check if sold item exists for guid

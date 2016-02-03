@@ -755,8 +755,11 @@ void Item::SerializeItem()
 
     std::string index = std::to_string(GetGUIDLow());
 
-    RedisDatabase.AsyncExecuteHSet("HSET", itemKey, index.c_str(), jsonBuilder.write(ItemsJson).c_str(), GetGUIDLow(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Item::SerializeItem guid %u", guid);
+    sLog->outInfo(LOG_FILTER_REDIS, "Item::SerializeItem slot %u Entry %u Count %u guid %s itemKey %s",
+    m_slot, GetEntry(), GetCount(), index.c_str(), itemKey);
+
+    RedisDatabase.AsyncExecuteHSet("HSET", itemKey, index.c_str(), jsonBuilder.write(ItemsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Item::SerializeItem guid %u%u", guid);
     });
 }
 
@@ -1401,7 +1404,7 @@ void Player::SerializePlayerGold()
     PlayerGoldJson = GetMoney();
 
     RedisDatabase.AsyncExecuteHSet("HSET", userKey, "money", jsonBuilder.write(PlayerGoldJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::SerializePlayer guid %u", guid);
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::SerializePlayerGold guid %u", guid);
     });
 }
 
@@ -1424,6 +1427,6 @@ void AuctionEntry::SerializeAuction()
     std::string index = std::to_string(Id);
 
     RedisDatabase.AsyncExecuteHSet("HSET", auctionKey, index.c_str(), jsonBuilder.write(AuctionJson).c_str(), Id, [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Item::SerializeAuction guid %u", guid);
+        sLog->outInfo(LOG_FILTER_REDIS, "AuctionEntry::SerializeAuction guid %u", guid);
     });
 }

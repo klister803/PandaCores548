@@ -15115,6 +15115,11 @@ void Player::AddItemToBuyBackSlot(Item* pItem)
         RemoveItemFromBuyBackSlot(slot, true);
         sLog->outDebug(LOG_FILTER_PLAYER_ITEMS, "STORAGE: AddItemToBuyBackSlot item = %u, slot = %u", pItem->GetEntry(), slot);
 
+        //Remove item from slot anf bag
+        pItem->SetSlot(slot);
+        pItem->SetContainer(NULL);
+        pItem->SetState(ITEM_CHANGED, this);
+
         m_items[slot] = pItem;
         time_t base = time(NULL);
         uint32 etime = uint32(base - m_logintime + (30 * 3600));

@@ -565,7 +565,7 @@ void Player::DeSerializePlayerNext(uint64 playerGuid)
     uint32 guid = GUID_LOPART(playerGuid);
     uint8 Gender = PlayerJson["gender"].asInt();
 
-    uint64 money = PlayerJson["money"].asUInt64();
+    uint64 money = PlayerGoldJson.asUInt64();
     if (money > MAX_MONEY_AMOUNT)
         money = MAX_MONEY_AMOUNT;
     SetMoney(money);
@@ -2386,13 +2386,18 @@ void Player::DeSerializePlayerLoadItems(const RedisValue* v, uint64 playerGuid)
 
         if (Item* item = _LoadItem(zoneId, time_diff, loadItemJson))
         {
-            uint8  slot = loadItemJson["slot"].asInt();
+            uint8 slot = loadItemJson["slot"].asInt();
 
             uint8 err = EQUIP_ERR_OK;
             // Item is not in bag
             item->SetContainer(NULL);
             item->SetSlot(slot);
 
+            if (slot >= BUYBACK_SLOT_START && slot < BUYBACK_SLOT_END)
+            {
+                AddItemToBuyBackSlot(item);
+                continue;
+            }
             // check for already equiped item
             if (Item* item = GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
                 err = EQUIP_ERR_ITEM_MAX_COUNT;

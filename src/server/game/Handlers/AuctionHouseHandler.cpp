@@ -311,7 +311,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
             AH->SerializeAuction();
 
             _player->MoveItemFromInventory(item, true);
-            item->DeleteFromRedis();
+            item->UpdateItemKey(ITEM_KEY_AUCT, 0);
 
             SendAuctionCommandResult(AH, AUCTION_SELL_ITEM, ERR_AUCTION_OK);
 
@@ -336,6 +336,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
                     GetPlayerName().c_str(), GetAccountId(), newItem->GetTemplate()->Name1.c_str(), newItem->GetEntry(), newItem->GetCount());
             }
 
+            newItem->SetItemKey(ITEM_KEY_AUCT, 0);
             AH->itemGUIDLow = newItem->GetGUIDLow();
             AH->itemEntry = newItem->GetEntry();
             AH->itemCount = newItem->GetCount();
@@ -373,7 +374,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
                 }
             }
 
-            newItem->UpdateItemKey(ITEM_KEY_AUCT, 0);
+            newItem->SerializeItem();
             SendAuctionCommandResult(AH, AUCTION_SELL_ITEM, ERR_AUCTION_OK);
 
             GetPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CREATE_AUCTION, 1);

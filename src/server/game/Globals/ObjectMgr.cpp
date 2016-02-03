@@ -6213,17 +6213,37 @@ AreaTriggerStruct const* ObjectMgr::GetMapEntranceTrigger(uint32 Map) const
 
 void ObjectMgr::SetHighestGuids()
 {
-    QueryResult result = CharacterDatabase.Query("SELECT MAX(guid) FROM characters");
-    if (result)
-        _hiCharGuid = (*result)[0].GetUInt32()+1;
+    QueryResult result = NULL;
+    queryGuidKey = new char[18];
+    sprintf(queryGuidKey, "r{%i}HIGHESTGUIDS", realmID);
+
+    RedisValue v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "characters");
+    if (v.isOk() && !v.isNull())
+        _hiCharGuid = v.toInt() + 1;
+    else
+    {
+        result = CharacterDatabase.Query("SELECT MAX(guid) FROM characters");
+        if (result)
+            _hiCharGuid = (*result)[0].GetUInt32() + 1;
+        std::string guid = std::to_string(_hiCharGuid);
+        RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "characters", guid.c_str());
+    }
 
     result = WorldDatabase.Query("SELECT MAX(guid) FROM creature");
     if (result)
         _hiCreatureGuid = (*result)[0].GetUInt32()+1;
 
-    result = CharacterDatabase.Query("SELECT MAX(guid) FROM item_instance");
-    if (result)
-        _hiItemGuid = (*result)[0].GetUInt32()+1;
+    v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "item_instance");
+    if (v.isOk() && !v.isNull())
+        _hiItemGuid = v.toInt() + 1;
+    else
+    {
+        result = CharacterDatabase.Query("SELECT MAX(guid) FROM item_instance");
+        if (result)
+            _hiItemGuid = (*result)[0].GetUInt32() + 1;
+        std::string guid = std::to_string(_hiItemGuid);
+        RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "item_instance", guid.c_str());
+    }
 
     // Cleanup other tables from not existed guids ( >= _hiItemGuid)
     CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item >= '%u'", _hiItemGuid);      // One-time query
@@ -6239,21 +6259,45 @@ void ObjectMgr::SetHighestGuids()
     if (result)
         _hiMoTransGuid = (*result)[0].GetUInt32()+1;
 
-    result = CharacterDatabase.Query("SELECT MAX(id) FROM auctionhouse");
-    if (result)
-        _auctionId = (*result)[0].GetUInt32()+1;
+    v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "auctionhouse");
+    if (v.isOk() && !v.isNull())
+        _auctionId = v.toInt() + 1;
+    else
+    {
+        result = CharacterDatabase.Query("SELECT MAX(id) FROM auctionhouse");
+        if (result)
+            _auctionId = (*result)[0].GetUInt32() + 1;
+        std::string guid = std::to_string(_auctionId);
+        RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "auctionhouse", guid.c_str());
+    }
 
-    result = CharacterDatabase.Query("SELECT MAX(id) FROM mail");
-    if (result)
-        _mailId = (*result)[0].GetUInt32()+1;
+    v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "mail");
+    if (v.isOk() && !v.isNull())
+        _mailId = v.toInt() + 1;
+    else
+    {
+        result = CharacterDatabase.Query("SELECT MAX(id) FROM mail");
+        if (result)
+            _mailId = (*result)[0].GetUInt32() + 1;
+        std::string guid = std::to_string(_mailId);
+        RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "mail", guid.c_str());
+    }
 
     result = CharacterDatabase.Query("SELECT MAX(corpseGuid) FROM corpse");
     if (result)
         _hiCorpseGuid = (*result)[0].GetUInt32()+1;
 
-    result = CharacterDatabase.Query("SELECT MAX(setguid) FROM character_equipmentsets");
-    if (result)
-        _equipmentSetGuid = (*result)[0].GetUInt64()+1;
+    v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "character_equipmentsets");
+    if (v.isOk() && !v.isNull())
+        _equipmentSetGuid = v.toInt() + 1;
+    else
+    {
+        result = CharacterDatabase.Query("SELECT MAX(setguid) FROM character_equipmentsets");
+        if (result)
+            _equipmentSetGuid = (*result)[0].GetUInt64() + 1;
+        std::string guid = std::to_string(_equipmentSetGuid);
+        RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "character_equipmentsets", guid.c_str());
+    }
 
     result = CharacterDatabase.Query("SELECT MAX(guildId) FROM guild");
     if (result)
@@ -6263,9 +6307,23 @@ void ObjectMgr::SetHighestGuids()
     if (result)
         sGroupMgr->SetGroupDbStoreSize((*result)[0].GetUInt32()+1);
 
-    result = CharacterDatabase.Query("SELECT MAX(itemId) from character_void_storage");
-    if (result)
-        _voidItemId = (*result)[0].GetUInt64()+1;
+    v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "character_void_storage");
+    if (v.isOk() && !v.isNull())
+        _voidItemId = v.toInt() + 1;
+    else
+    {
+        result = CharacterDatabase.Query("SELECT MAX(itemId) from character_void_storage");
+        if (result)
+            _voidItemId = (*result)[0].GetUInt64() + 1;
+        std::string guid = std::to_string(_voidItemId);
+        RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "character_void_storage", guid.c_str());
+    }
+}
+
+void ObjectMgr::IncrementGuid(const char* field)
+{
+    std::string index = std::to_string(1);
+    RedisDatabase.AsyncExecuteHSet("HINCRBY", queryGuidKey, field, index.c_str(), 0, [&](const RedisValue&, uint64){});
 }
 
 uint32 ObjectMgr::GenerateAuctionID()
@@ -6275,6 +6333,7 @@ uint32 ObjectMgr::GenerateAuctionID()
         sLog->outError(LOG_FILTER_GENERAL, "Auctions ids overflow!! Can't continue, shutting down server. ");
         World::StopNow(ERROR_EXIT_CODE);
     }
+    IncrementGuid("auctionhouse");
     return _auctionId++;
 }
 
@@ -6285,6 +6344,7 @@ uint64 ObjectMgr::GenerateEquipmentSetGuid()
         sLog->outError(LOG_FILTER_GENERAL, "EquipmentSet guid overflow!! Can't continue, shutting down server. ");
         World::StopNow(ERROR_EXIT_CODE);
     }
+    IncrementGuid("character_equipmentsets");
     return _equipmentSetGuid++;
 }
 
@@ -6295,6 +6355,7 @@ uint32 ObjectMgr::GenerateMailID()
         sLog->outError(LOG_FILTER_GENERAL, "Mail ids overflow!! Can't continue, shutting down server. ");
         World::StopNow(ERROR_EXIT_CODE);
     }
+    IncrementGuid("mail");
     return _mailId++;
 }
 
@@ -6305,6 +6366,7 @@ uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh)
         case HIGHGUID_ITEM:
         {
             ASSERT(_hiItemGuid < 0xFFFFFFFE && "Item guid overflow!");
+            IncrementGuid("item_instance");
             return _hiItemGuid++;
         }
         case HIGHGUID_UNIT:
@@ -6325,6 +6387,7 @@ uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh)
         case HIGHGUID_PLAYER:
         {
             ASSERT(_hiCharGuid < 0xFFFFFFFE && "Player guid overflow!");
+            IncrementGuid("characters");
             return _hiCharGuid++;
         }
         case HIGHGUID_GAMEOBJECT:

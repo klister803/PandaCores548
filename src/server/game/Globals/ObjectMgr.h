@@ -1301,6 +1301,7 @@ class ObjectMgr
         uint64 GenerateVoidStorageItemId();
 
         uint64 GenerateBattlePetGuid();
+        void IncrementGuid(const char* field);
 
         typedef std::multimap<int32, uint32> ExclusiveQuestGroups;
         ExclusiveQuestGroups mExclusiveQuestGroups;
@@ -1823,6 +1824,7 @@ class ObjectMgr
         HotfixData _hotfixData;
 
         AreaTriggerInfoMap _areaTriggerData;
+        char* queryGuidKey;
 };
 
 uint32 GetItemArmor(uint32 itemlevel, uint32 itemClass, uint32 itemSubclass, uint32 quality, uint32 inventoryType);

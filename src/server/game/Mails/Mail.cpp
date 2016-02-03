@@ -149,13 +149,6 @@ void MailDraft::SendReturnToSender(uint32 sender_acc, uint32 sender_guid, uint32
     {
         // if item send to character at another account, then apply item delivery delay
         needItemDelay = sender_acc != rc_account;
-
-        // set owner to new receiver (to prevent delete item with sender char deleting)
-        for (MailItemMap::iterator mailItemIter = m_items.begin(); mailItemIter != m_items.end(); ++mailItemIter)
-        {
-            Item* item = mailItemIter->second;
-            item->UpdateItemKey(ITEM_KEY_USER, sender_guid);
-        }
     }
 
     // If theres is an item, there is a one hour delivery delay.
