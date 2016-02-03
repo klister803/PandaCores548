@@ -5360,13 +5360,16 @@ void Player::TakeSpellCharge(SpellInfo const* spellInfo)
         if (!categoryEntry)
             return;
 
-        SpellChargeData& data = m_spellChargeData[spellInfo->ChargeRecoveryCategory];
-        data.categoryEntry = categoryEntry;
-        data.chargeRegenTime = GetSpellCategoryChargesTimer(categoryEntry);
-        data.charges = data.maxCharges = GetMaxSpellCategoryCharges(categoryEntry);
-        data.timer = 0;
+        if (uint8 charges = GetMaxSpellCategoryCharges(categoryEntry))
+        {
+            SpellChargeData& data = m_spellChargeData[spellInfo->ChargeRecoveryCategory];
+            data.categoryEntry = categoryEntry;
+            data.chargeRegenTime = GetSpellCategoryChargesTimer(categoryEntry);
+            data.charges = data.maxCharges = charges;
+            data.timer = 0;
 
-        --data.charges;
+            --data.charges;
+        }
     }
     else
     {
