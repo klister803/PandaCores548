@@ -10284,7 +10284,10 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
             if (!procSpell)
                 return false;
 
-            if (procSpell->Id == 4143 || procSpell->Id == 7268)
+            if (procSpell->SpellFamilyName != SPELLFAMILY_MAGE)
+                return false;
+
+            if (procSpell->Id == 7268)
                 return false;
 
             if (Aura* arcaneMissiles = GetAura(79683))
