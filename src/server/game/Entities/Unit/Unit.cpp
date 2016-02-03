@@ -12622,7 +12622,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
                     // search Fingers of Frost
                     if (AuraEffect const* aurEff = GetAuraEffect(44544, EFFECT_1))
-                        AddPct(DoneTotalMod, aurEff->GetAmount());
+                        AddPct(DoneTotalMod, aurEff->GetBaseAmount());
                 }
 
                 // Torment the weak
