@@ -308,7 +308,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
             sLog->outInfo(LOG_FILTER_NETWORKIO, "CMSG_AUCTION_SELL_ITEM: Player %s (guid %d) is selling item %s entry %u (guid %d) to auctioneer %u with count %u with initial bid %u with buyout %u and with time %u (in sec) in auctionhouse %u", _player->GetName(), _player->GetGUIDLow(), item->GetTemplate()->Name1.c_str(), item->GetEntry(), item->GetGUIDLow(), AH->auctioneer, item->GetCount(), bid, buyout, auctionTime, AH->GetHouseId());
             sAuctionMgr->AddAItem(item);
             auctionHouse->AddAuction(AH);
-            AH->SerializeAuction();
+            AH->SaveAuction();
 
             _player->MoveItemFromInventory(item, true);
             item->UpdateItemKey(ITEM_KEY_AUCT, 0);
@@ -352,7 +352,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
             sLog->outInfo(LOG_FILTER_NETWORKIO, "CMSG_AUCTION_SELL_ITEM: Player %s (guid %d) is selling item %s entry %u (guid %d) to auctioneer %u with count %u with initial bid %u with buyout %u and with time %u (in sec) in auctionhouse %u", _player->GetName(), _player->GetGUIDLow(), newItem->GetTemplate()->Name1.c_str(), newItem->GetEntry(), newItem->GetGUIDLow(), AH->auctioneer, newItem->GetCount(), bid, buyout, auctionTime, AH->GetHouseId());
             sAuctionMgr->AddAItem(newItem);
             auctionHouse->AddAuction(AH);
-            AH->SerializeAuction();
+            AH->SaveAuction();
 
             for (uint32 j = 0; j < itemsCount; ++j)
             {
@@ -374,7 +374,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
                 }
             }
 
-            newItem->SerializeItem();
+            newItem->SaveItem();
             SendAuctionCommandResult(AH, AUCTION_SELL_ITEM, ERR_AUCTION_OK);
 
             GetPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CREATE_AUCTION, 1);
@@ -471,7 +471,7 @@ void WorldSession::HandleAuctionPlaceBid(WorldPacket& recvData)
         auction->bid = price;
         GetPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_AUCTION_BID, price);
 
-        auction->SerializeAuction();
+        auction->SaveAuction();
 
         SendAuctionCommandResult(auction, AUCTION_PLACE_BID, ERR_AUCTION_OK);
     }

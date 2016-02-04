@@ -26,6 +26,7 @@
 #include "BattlegroundMgr.h"
 #include "Item.h"
 #include "AuctionHouseMgr.h"
+#include "RedisBuilderMgr.h"
 
 MailSender::MailSender(Object* sender, MailStationery stationery) : m_stationery(stationery)
 {
@@ -104,7 +105,7 @@ void MailDraft::prepareItems(Player* receiver)
             if (Item* item = Item::CreateItem(lootitem->itemid, lootitem->count, receiver))
             {
                 item->SetItemKey(ITEM_KEY_LOOT, receiver->GetGUIDLow());
-                item->SerializeItem();                           // save for prevent lost at next mail load, if send fail then item will deleted
+                item->SaveItem();                           // save for prevent lost at next mail load, if send fail then item will deleted
                 AddItem(item);
                 if(item->GetEntry() == 38186)
                     sLog->outDebug(LOG_FILTER_EFIR, "MailDraft::prepareItems - CreateItem of item %u; count = %u playerGUID %u, itemGUID %u", item->GetEntry(), lootitem->count, receiver->GetGUID(), item->GetGUID());
@@ -189,7 +190,6 @@ void MailDraft::SendMailTo(MailReceiver const& receiver, MailSender const& sende
     time_t expire_time = deliver_time + expire_delay;
 
     // Add to DB
-    Json::FastWriter jsonBuilder;
     std::string messageID = std::to_string(mailId);
 
     char* mailKey = new char[32];
@@ -210,7 +210,7 @@ void MailDraft::SendMailTo(MailReceiver const& receiver, MailSender const& sende
     MailJson["stationery"] = int8(sender.GetStationery());
     MailJson["mailTemplateId"] = GetMailTemplateId();
 
-    RedisDatabase.AsyncExecuteHSet("HSET", mailKey, messageID.c_str(), jsonBuilder.write(MailJson).c_str(), mailId, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", mailKey, messageID.c_str(), sRedisBuilder->BuildString(MailJson), mailId, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "MailDraft::SendMailTo guid %u", guid);
     });
 

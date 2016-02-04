@@ -818,7 +818,7 @@ void WorldSession::HandleBuybackItem(WorldPacket& recvData)
 
         if(pItem->GetEntry() == 38186)
             sLog->outDebug(LOG_FILTER_EFIR, "HandleBuyItemInSlotOpcode item %u; count = %u playerGUID %u vendorguid %u", pItem->GetEntry(), pItem->GetCount(), _player->GetGUID(), creature->GetGUID());
-    
+
         ItemPosCountVec dest;
         InventoryResult msg = _player->CanStoreItem(NULL_BAG, NULL_SLOT, dest, pItem, false);
         if (msg == EQUIP_ERR_OK)

@@ -34,17 +34,18 @@
 #include "AuctionHouseMgr.h"
 #include "GameEventMgr.h"
 #include "SocialMgr.h"
-#include "SerializePlayer.h"
+#include "RedisLoadPlayer.h"
 #include "AchievementMgr.h"
+#include "RedisBuilderMgr.h"
 
-void Player::UpdateSerializePlayer()
+void Player::UpdateSavePlayer()
 {
-    SerializePlayer();
-    SerializePlayerGroup();
-    SerializePlayerAuras();
+    SavePlayer();
+    SavePlayerGroup();
+    SavePlayerAuras();
 }
 
-void Player::DeleteSerializePlayerCriteriaProgress(AchievementEntry const* achievement)
+void Player::DeleteSavePlayerCriteriaProgress(AchievementEntry const* achievement)
 {
     std::string achievID = std::to_string(achievement->ID);
     if (achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
@@ -52,8 +53,8 @@ void Player::DeleteSerializePlayerCriteriaProgress(AchievementEntry const* achie
         Json::Value CriteriaAc;
         CriteriaAc = true;
         AccountCriteriaJson[achievID.c_str()] = CriteriaAc;
-        RedisDatabase.AsyncExecuteHSet("HSET", criteriaAcKey, achievID.c_str(), jsonBuilder.write(CriteriaAc).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
-            sLog->outInfo(LOG_FILTER_REDIS, "UpdateSerializePlayerCriteriaProgress account guid %u", guid);
+        RedisDatabase.AsyncExecuteHSet("HSET", criteriaAcKey, achievID.c_str(), sRedisBuilder->BuildString(CriteriaAc), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+            sLog->outInfo(LOG_FILTER_REDIS, "UpdateSavePlayerCriteriaProgress account guid %u", guid);
         });
     }
     else
@@ -61,13 +62,13 @@ void Player::DeleteSerializePlayerCriteriaProgress(AchievementEntry const* achie
         Json::Value CriteriaPl;
         CriteriaPl = true;
         PlayerCriteriaJson[achievID.c_str()] = CriteriaPl;
-        RedisDatabase.AsyncExecuteHSet("HSET", criteriaPlKey, achievID.c_str(), jsonBuilder.write(CriteriaPl).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
-            sLog->outInfo(LOG_FILTER_REDIS, "UpdateSerializePlayerCriteriaProgress player guid %u", guid);
+        RedisDatabase.AsyncExecuteHSet("HSET", criteriaPlKey, achievID.c_str(), sRedisBuilder->BuildString(CriteriaPl), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+            sLog->outInfo(LOG_FILTER_REDIS, "UpdateSavePlayerCriteriaProgress player guid %u", guid);
         });
     }
 }
 
-void Player::UpdateSerializePlayerCriteriaProgress(AchievementEntry const* achievement, CriteriaProgressMap* progressMap)
+void Player::UpdateSavePlayerCriteriaProgress(AchievementEntry const* achievement, CriteriaProgressMap* progressMap)
 {
     std::string achievID = std::to_string(achievement->ID);
     Json::Value CriteriaPl;
@@ -100,43 +101,17 @@ void Player::UpdateSerializePlayerCriteriaProgress(AchievementEntry const* achie
     if (achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
     {
         AccountCriteriaJson[achievID.c_str()] = CriteriaAc;
-        RedisDatabase.AsyncExecuteHSet("HSET", criteriaAcKey, achievID.c_str(), jsonBuilder.write(CriteriaAc).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
-            //sLog->outInfo(LOG_FILTER_REDIS, "Player::SerializePlayerCriteria account guid %u", guid);
+        RedisDatabase.AsyncExecuteHSet("HSET", criteriaAcKey, achievID.c_str(), sRedisBuilder->BuildString(CriteriaAc), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+            //sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerCriteria account guid %u", guid);
         });
     }
     else
     {
         PlayerCriteriaJson[achievID.c_str()] = CriteriaPl;
-        RedisDatabase.AsyncExecuteHSet("HSET", criteriaPlKey, achievID.c_str(), jsonBuilder.write(CriteriaPl).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
-            //sLog->outInfo(LOG_FILTER_REDIS, "Player::SerializePlayerCriteria player guid %u", guid);
+        RedisDatabase.AsyncExecuteHSet("HSET", criteriaPlKey, achievID.c_str(), sRedisBuilder->BuildString(CriteriaPl), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+            //sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerCriteria player guid %u", guid);
         });
     }
-}
-
-void AuctionEntry::UpdateSerializeAuction()
-{
-    AuctionJson["Id"] = Id;
-    AuctionJson["auctioneer"] = auctioneer;
-    AuctionJson["itemGUIDLow"] = itemGUIDLow;
-    AuctionJson["itemEntry"] = itemEntry;
-    AuctionJson["itemCount"] = itemCount;
-    AuctionJson["owner"] = owner;
-    AuctionJson["startbid"] = startbid;
-    AuctionJson["bid"] = bid;
-    AuctionJson["buyout"] = buyout;
-    AuctionJson["expire_time"] = expire_time;
-    AuctionJson["bidder"] = bidder;
-    AuctionJson["deposit"] = deposit;
-    AuctionJson["factionTemplateId"] = factionTemplateId;
-}
-
-void AuctionEntry::DeleteFromRedis()
-{
-    std::string index = std::to_string(Id);
-
-    RedisDatabase.AsyncExecuteH("HDEL", auctionKey, index.c_str(), Id, [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Item::DeleteFromRedis guid %u", guid);
-    });
 }
 
 void Player::RemoveMailFromRedis(uint32 id)

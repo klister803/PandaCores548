@@ -155,7 +155,7 @@ bool Player::OnSurvey(uint32& entry, float& x, float& y, float& z, float &orient
 
     _archaeologyChanged = true;
 
-    SerializePlayerArchaeology();
+    SavePlayerArchaeology();
 
     return true;
 }
@@ -395,7 +395,7 @@ void Player::GenerateResearchSiteInMap(uint32 mapId)
     _researchSites.insert(site_id);
     _archaeologyChanged = true;
 
-    SerializePlayerArchaeology();
+    SavePlayerArchaeology();
 
     ShowResearchSites();
 }
@@ -438,7 +438,7 @@ void Player::GenerateResearchSites()
 
     sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "Player::GenerateResearchSites(): %u", _researchSites.size());
 
-    SerializePlayerArchaeology();
+    SavePlayerArchaeology();
 
     ShowResearchSites();
 }
@@ -494,7 +494,7 @@ void Player::GenerateResearchProjects()
 
     _archaeologyChanged = true;
 
-    SerializePlayerArchaeology();
+    SavePlayerArchaeology();
 }
 
 bool Player::HasResearchProject(uint32 id) const
@@ -658,7 +658,7 @@ bool Player::SolveResearchProject(uint32 spellId, SpellCastTargets& targets)
 
     _archaeologyChanged = true;
 
-    SerializePlayerArchaeology();
+    SavePlayerArchaeology();
 
     return true;
 }

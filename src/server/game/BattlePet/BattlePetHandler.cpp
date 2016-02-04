@@ -252,7 +252,7 @@ void WorldSession::HandleCageBattlePet(WorldPacket& recvData)
         SendPacket(&data);
         SendPacket(&data);
 
-        _player->SerializePlayerBattlePets();
+        _player->SavePlayerBattlePets();
     }
 }
 
@@ -290,7 +290,7 @@ void WorldSession::HandleBattlePetSetSlot(WorldPacket& recvData)
 
     slot->SetPet(guid);
 
-    _player->SerializePlayerBattlePetSlots();
+    _player->SavePlayerBattlePetSlots();
 }
 
 void WorldSession::HandlePetBattleRequestWild(WorldPacket& recvData)
@@ -535,5 +535,5 @@ void WorldSession::HandleBattlePetDelete(WorldPacket& recvData)
         return;
 
     _player->GetBattlePetMgr()->DeletePetByPetGUID(guid);
-    _player->SerializePlayerBattlePets();
+    _player->SavePlayerBattlePets();
 }

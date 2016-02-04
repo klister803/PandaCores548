@@ -37,8 +37,9 @@
 #include "SocialMgr.h"
 #include "AccountMgr.h"
 #include "TicketMgr.h"
-#include "SerializePlayer.h"
+#include "RedisLoadPlayer.h"
 #include "AchievementMgr.h"
+#include "RedisBuilderMgr.h"
 
 void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
 {
@@ -55,12 +56,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
             sprintf(criteriaAcKey, "r{%u}a{%u}crit", realmID, GetSession()->GetAccountId());
             sprintf(mailKey, "r{%u}u{%u}mails", realmID, guid);
 
-            sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayer itemKey %s userKey %s accountKey %s criteriaPlKey %s criteriaAcKey %s",
+            sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayer itemKey %s userKey %s accountKey %s criteriaPlKey %s criteriaAcKey %s",
             itemKey, userKey, accountKey, criteriaPlKey, criteriaAcKey);
 
             RedisDatabase.AsyncExecuteH("HGET", userKey, "homebind", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerHomeBind(&v, guid);
+                    loadingPlayer->LoadPlayerHomeBind(&v, guid);
             });
             break;
         }
@@ -68,7 +69,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "userdata", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayer(&v, guid);
+                    loadingPlayer->LoadPlayer(&v, guid);
             });
             break;
         }
@@ -76,7 +77,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "money", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerGold(&v, guid);
+                    loadingPlayer->LoadPlayerGold(&v, guid);
             });
             break;
         }
@@ -84,7 +85,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", accountKey, "achievement", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializeAccountAchievements(&v, guid);
+                    loadingPlayer->LoadAccountAchievements(&v, guid);
             });
             break;
         }
@@ -92,7 +93,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "achievement", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerAchievements(&v, guid);
+                    loadingPlayer->LoadPlayerAchievements(&v, guid);
             });
             break;
         }
@@ -100,7 +101,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecute("HGETALL", criteriaPlKey, guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerCriteriaProgress(&v, guid);
+                    loadingPlayer->LoadPlayerCriteriaProgress(&v, guid);
             });
             break;
         }
@@ -108,20 +109,20 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecute("HGETALL", criteriaAcKey, guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializeAccountCriteriaProgress(&v, guid);
+                    loadingPlayer->LoadAccountCriteriaProgress(&v, guid);
             });
             break;
         }
         case LOAD_PLAYER_NEXT: //Load player data next
         {
-            DeSerializePlayerNext(guid);
+            LoadPlayerNext(guid);
             break;
         }
         case LOAD_PLAYER_GROUP: //Load player group
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "group", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerGroup(&v, guid);
+                    loadingPlayer->LoadPlayerGroup(&v, guid);
             });
             break;
         }
@@ -129,7 +130,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "lootCooldown", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerLootCooldown(&v, guid);
+                    loadingPlayer->LoadPlayerLootCooldown(&v, guid);
             });
             break;
         }
@@ -137,7 +138,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "currency", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerCurrency(&v, guid);
+                    loadingPlayer->LoadPlayerCurrency(&v, guid);
             });
             break;
         }
@@ -145,7 +146,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "boundinstances", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerBoundInstances(&v, guid);
+                    loadingPlayer->LoadPlayerBoundInstances(&v, guid);
             });
             break;
         }
@@ -153,7 +154,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "BGdata", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerBG(&v, guid);
+                    loadingPlayer->LoadPlayerBG(&v, guid);
             });
             break;
         }
@@ -161,7 +162,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", accountKey, "battlepets", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerBattlePets(&v, guid);
+                    loadingPlayer->LoadPlayerBattlePets(&v, guid);
             });
             break;
         }
@@ -169,7 +170,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", accountKey, "battlepetslots", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerBattlePetSlots(&v, guid);
+                    loadingPlayer->LoadPlayerBattlePetSlots(&v, guid);
             });
             break;
         }
@@ -177,7 +178,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "skills", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerSkills(&v, guid);
+                    loadingPlayer->LoadPlayerSkills(&v, guid);
             });
             break;
         }
@@ -185,7 +186,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "archaeology", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerArchaeology(&v, guid);
+                    loadingPlayer->LoadPlayerArchaeology(&v, guid);
             });
             break;
         }
@@ -209,7 +210,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
 
             RedisDatabase.AsyncExecuteH("HGET", userKey, "talents", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerTalents(&v, guid);
+                    loadingPlayer->LoadPlayerTalents(&v, guid);
             });
             break;
         }
@@ -217,7 +218,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "spells", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerSpells(&v, guid);
+                    loadingPlayer->LoadPlayerSpells(&v, guid);
             });
             break;
         }
@@ -225,7 +226,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", accountKey, "mounts", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerMounts(&v, guid);
+                    loadingPlayer->LoadPlayerMounts(&v, guid);
             });
             break;
         }
@@ -233,7 +234,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "glyphs", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerGlyphs(&v, guid);
+                    loadingPlayer->LoadPlayerGlyphs(&v, guid);
             });
             break;
         }
@@ -241,7 +242,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "auras", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerAuras(&v, guid);
+                    loadingPlayer->LoadPlayerAuras(&v, guid);
             });
             break;
         }
@@ -257,7 +258,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
 
             RedisDatabase.AsyncExecuteH("HGET", userKey, "queststatus", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerQuestStatus(&v, guid);
+                    loadingPlayer->LoadPlayerQuestStatus(&v, guid);
             });
             break;
         }
@@ -265,7 +266,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", accountKey, "queststatus", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializeAccountQuestStatus(&v, guid);
+                    loadingPlayer->LoadAccountQuestStatus(&v, guid);
             });
             break;
         }
@@ -273,7 +274,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "questrewarded", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerQuestRewarded(&v, guid);
+                    loadingPlayer->LoadPlayerQuestRewarded(&v, guid);
             });
             break;
         }
@@ -281,7 +282,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", accountKey, "questrewarded", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializeAccountQuestRewarded(&v, guid);
+                    loadingPlayer->LoadAccountQuestRewarded(&v, guid);
             });
             break;
         }
@@ -289,7 +290,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "questdaily", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerQuestDaily(&v, guid);
+                    loadingPlayer->LoadPlayerQuestDaily(&v, guid);
             });
             break;
         }
@@ -297,7 +298,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", accountKey, "questdaily", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializeAccountQuestDaily(&v, guid);
+                    loadingPlayer->LoadAccountQuestDaily(&v, guid);
             });
             break;
         }
@@ -305,7 +306,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "questweekly", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerQuestWeekly(&v, guid);
+                    loadingPlayer->LoadPlayerQuestWeekly(&v, guid);
             });
             break;
         }
@@ -313,7 +314,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", accountKey, "questweekly", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializeAccountQuestWeekly(&v, guid);
+                    loadingPlayer->LoadAccountQuestWeekly(&v, guid);
             });
             break;
         }
@@ -321,7 +322,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "questseasonal", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerQuestSeasonal(&v, guid);
+                    loadingPlayer->LoadPlayerQuestSeasonal(&v, guid);
             });
             break;
         }
@@ -329,7 +330,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", accountKey, "questseasonal", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializeAccountQuestSeasonal(&v, guid);
+                    loadingPlayer->LoadAccountQuestSeasonal(&v, guid);
             });
             break;
         }
@@ -352,7 +353,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecute("HGETALL", itemKey, guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerLoadItems(&v, guid);
+                    loadingPlayer->LoadPlayerLoadItems(&v, guid);
             });
             break;
         }
@@ -360,7 +361,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "voidstorage", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerVoidStorage(&v, guid);
+                    loadingPlayer->LoadPlayerVoidStorage(&v, guid);
             });
             break;
         }
@@ -368,7 +369,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "actions", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerActions(&v, guid);
+                    loadingPlayer->LoadPlayerActions(&v, guid);
             });
             break;
         }
@@ -387,7 +388,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "spellcooldowns", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerSpellCooldowns(&v, guid);
+                    loadingPlayer->LoadPlayerSpellCooldowns(&v, guid);
             });
             break;
         }
@@ -395,7 +396,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "kills", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerKills(&v, guid);
+                    loadingPlayer->LoadPlayerKills(&v, guid);
             });
             break;
         }
@@ -408,7 +409,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "declinedname", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializeDeclinedName(&v, guid);
+                    loadingPlayer->LoadPlayerDeclinedName(&v, guid);
             });
             break;
         }
@@ -416,7 +417,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "equipmentsets", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializeEquipmentSets(&v, guid);
+                    loadingPlayer->LoadPlayerEquipmentSets(&v, guid);
             });
             break;
         }
@@ -424,7 +425,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "cufprofiles", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializeCUFProfiles(&v, guid);
+                    loadingPlayer->LoadPlayerCUFProfiles(&v, guid);
             });
             break;
         }
@@ -432,7 +433,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "visuals", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializeVisuals(&v, guid);
+                    loadingPlayer->LoadPlayerVisuals(&v, guid);
             });
             break;
         }
@@ -440,7 +441,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "playeraccountdata", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->DeSerializePlayerAccountData(&v, guid);
+                    loadingPlayer->LoadPlayerAccountData(&v, guid);
             });
             break;
         }
@@ -454,7 +455,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecute("HGETALL", mailKey, guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* player = HashMapHolder<Player>::Find(guid))
-                    player->DeSerializePlayerMails(&v, guid);
+                    player->LoadPlayerMails(&v, guid);
             });
             break;
         }
@@ -464,7 +465,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
             sprintf(_key, "r{%u}m{%u}items", realmID, PAIR64_HIPART(guid));
             RedisDatabase.AsyncExecute("HGETALL", _key, guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* player = HashMapHolder<Player>::Find(PAIR64_LOPART(guid)))
-                    player->DeSerializePlayerMailItems(&v, guid);
+                    player->LoadPlayerMailItems(&v, guid);
             });
             break;
         }
@@ -475,21 +476,13 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
     //sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadFromRedis end step %i get_id %i", step, boost::this_thread::get_id());
 }
 
-void Player::DeSerializePlayer(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayer(const RedisValue* v, uint64 playerGuid)
 {
     uint32 guid = GUID_LOPART(playerGuid);
 
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayer userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayer data is empty");
-        GetSession()->HandlePlayerLogin(GetSession()->GetAccountId(), playerGuid, 2);
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayer jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayer data is empty");
         GetSession()->HandlePlayerLogin(GetSession()->GetAccountId(), playerGuid, 2);
         return;
     }
@@ -560,7 +553,7 @@ void Player::DeSerializePlayer(const RedisValue* v, uint64 playerGuid)
     LoadFromRedis(playerGuid, LOAD_PLAYER_GOLD); //Next step load
 }
 
-void Player::DeSerializePlayerNext(uint64 playerGuid)
+void Player::LoadPlayerNext(uint64 playerGuid)
 {
     uint32 guid = GUID_LOPART(playerGuid);
     uint8 Gender = PlayerJson["gender"].asInt();
@@ -595,7 +588,7 @@ void Player::DeSerializePlayerNext(uint64 playerGuid)
         m_items[slot] = NULL;
     }
 
-    sLog->outDebug(LOG_FILTER_PLAYER_LOADING, "Load Basic value of player %s is: ", m_name.c_str());
+    sLog->outDebug(LOG_FILTER_REDIS, "Load Basic value of player %s is: ", m_name.c_str());
     outDebugValues();
 
     //Need to call it to initialize m_team (m_team can be calculated from race)
@@ -632,24 +625,16 @@ void Player::DeSerializePlayerNext(uint64 playerGuid)
     LoadFromRedis(playerGuid, LOAD_PLAYER_GROUP); //Next step load
 }
 
-void Player::DeSerializePlayerGroup(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerGroup(const RedisValue* v, uint64 playerGuid)
 {
-    sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerGroup userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerGroupJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerGroup data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_LOOTCOOLDOWN); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerGroupJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerGroup jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerGroup data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_LOOTCOOLDOWN); //Next step load
         return;
     }
 
-    if (Group* group = sGroupMgr->GetGroupByDbStoreId(PlayerGroupJson["guid"].asUInt()))
+    if (Group* group = sGroupMgr->GetGroupByDbStoreId(PlayerGroupJson.asUInt()))
     {
         uint8 subgroup = group->GetMemberGroup(GetGUID());
         SetGroup(group, subgroup);
@@ -664,19 +649,11 @@ void Player::DeSerializePlayerGroup(const RedisValue* v, uint64 playerGuid)
     LoadFromRedis(playerGuid, LOAD_PLAYER_LOOTCOOLDOWN); //Next step load
 }
 
-void Player::DeSerializePlayerLootCooldown(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerLootCooldown(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerLootCooldown userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerLootCooldownJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerLootCooldown data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_CURRENCY); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerLootCooldownJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerLootCooldown jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerLootCooldown data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_CURRENCY); //Next step load
         return;
     }
@@ -700,19 +677,11 @@ void Player::DeSerializePlayerLootCooldown(const RedisValue* v, uint64 playerGui
     LoadFromRedis(playerGuid, LOAD_PLAYER_CURRENCY); //Next step load
 }
 
-void Player::DeSerializePlayerCurrency(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerCurrency(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerCurrency userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerCurrencyJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerCurrency data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_BOUNDINSTANCES); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerCurrencyJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerCurrency jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerCurrency data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_BOUNDINSTANCES); //Next step load
         return;
     }
@@ -743,19 +712,11 @@ void Player::DeSerializePlayerCurrency(const RedisValue* v, uint64 playerGuid)
     LoadFromRedis(playerGuid, LOAD_PLAYER_BOUNDINSTANCES); //Next step load
 }
 
-void Player::DeSerializePlayerBoundInstances(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerBoundInstances(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerBoundInstances userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerBoundInstancesJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerBoundInstances data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_BGDATA); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerBoundInstancesJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerBoundInstances jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerBoundInstances data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_BGDATA); //Next step load
         return;
     }
@@ -816,19 +777,11 @@ void Player::DeSerializePlayerBoundInstances(const RedisValue* v, uint64 playerG
     LoadFromRedis(playerGuid, LOAD_PLAYER_BGDATA); //Next step load
 }
 
-void Player::DeSerializePlayerBG(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerBG(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerBG userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerBGJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerBG data is empty");
-        InitSecondPartDataPlayer(); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerBGJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerBG jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerBG data is empty");
         InitSecondPartDataPlayer(); //Next step load
         return;
     }
@@ -995,7 +948,7 @@ void Player::InitSecondPartDataPlayer()
     {
         if (GetSession()->Expansion() < mapEntry->Expansion())
         {
-            sLog->outDebug(LOG_FILTER_PLAYER_LOADING, "Player %s using client without required expansion tried login at non accessible map %u", GetName(), mapId);
+            sLog->outDebug(LOG_FILTER_REDIS, "Player %s using client without required expansion tried login at non accessible map %u", GetName(), mapId);
             RelocateToHomebind();
         }
 
@@ -1159,19 +1112,11 @@ void Player::InitSecondPartDataPlayer()
     LoadFromRedis(GetGUID(), LOAD_PLAYER_BATTLEPETS); //Next step load
 }
 
-void Player::DeSerializePlayerBattlePets(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerBattlePets(const RedisValue* v, uint64 playerGuid)
 {
-    ///sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerBattlePets userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, AccountBattlePetsJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerBattlePets data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_BATTLEPETSLOTS); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), AccountBattlePetsJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerBattlePets jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerBattlePets data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_BATTLEPETSLOTS); //Next step load
         return;
     }
@@ -1229,23 +1174,13 @@ void Player::DeSerializePlayerBattlePets(const RedisValue* v, uint64 playerGuid)
     LoadFromRedis(playerGuid, LOAD_PLAYER_BATTLEPETSLOTS); //Next step load
 }
 
-void Player::DeSerializePlayerBattlePetSlots(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerBattlePetSlots(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerBattlePetSlots userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, AccountBattlePetSlotsJson))
     {
         for (int i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
             GetBattlePetMgr()->InitBattleSlot(0, i);
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerBattlePetSlots data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_SKILLS); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), AccountBattlePetSlotsJson);
-    if (!isReader)
-    {
-        for (int i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
-            GetBattlePetMgr()->InitBattleSlot(0, i);
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerBattlePetSlots jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerBattlePetSlots data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_SKILLS); //Next step load
         return;
     }
@@ -1259,19 +1194,11 @@ void Player::DeSerializePlayerBattlePetSlots(const RedisValue* v, uint64 playerG
     LoadFromRedis(playerGuid, LOAD_PLAYER_SKILLS); //Next step load
 }
 
-void Player::DeSerializePlayerSkills(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerSkills(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerSkills userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerSkillsJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerSkills data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_ARCHAEOLOGY); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerSkillsJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerSkills jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerSkills data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_ARCHAEOLOGY); //Next step load
         return;
     }
@@ -1387,7 +1314,7 @@ void Player::DeSerializePlayerSkills(const RedisValue* v, uint64 playerGuid)
     LoadFromRedis(playerGuid, LOAD_PLAYER_ARCHAEOLOGY); //Next step load
 }
 
-void Player::DeSerializePlayerArchaeology(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerArchaeology(const RedisValue* v, uint64 playerGuid)
 {
     for (uint8 i = 0; i < MAX_RESEARCH_SITES; ++i)
         _digSites[i].count = 0;
@@ -1398,21 +1325,11 @@ void Player::DeSerializePlayerArchaeology(const RedisValue* v, uint64 playerGuid
         return;
     }
 
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerArchaeology userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerArchaeologyJson))
     {
         GenerateResearchSites();
         GenerateResearchProjects();
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerArchaeology data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_TALENTS); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerArchaeologyJson);
-    if (!isReader)
-    {
-        GenerateResearchSites();
-        GenerateResearchProjects();
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerArchaeology jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerArchaeology data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_TALENTS); //Next step load
         return;
     }
@@ -1471,19 +1388,11 @@ void Player::DeSerializePlayerArchaeology(const RedisValue* v, uint64 playerGuid
     LoadFromRedis(playerGuid, LOAD_PLAYER_TALENTS); //Next step load
 }
 
-void Player::DeSerializePlayerTalents(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerTalents(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerTalents userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerTalentsJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerTalents data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_SPELLS); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerTalentsJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerTalents jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerTalents data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_SPELLS); //Next step load
         return;
     }
@@ -1510,19 +1419,11 @@ void Player::DeSerializePlayerTalents(const RedisValue* v, uint64 playerGuid)
     LoadFromRedis(playerGuid, LOAD_PLAYER_SPELLS); //Next step load
 }
 
-void Player::DeSerializePlayerSpells(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerSpells(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerSpells userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerSpellsJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerSpells data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_MOUNTS); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerSpellsJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerSpells jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerSpells data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_MOUNTS); //Next step load
         return;
     }
@@ -1540,19 +1441,11 @@ void Player::DeSerializePlayerSpells(const RedisValue* v, uint64 playerGuid)
     LoadFromRedis(playerGuid, LOAD_PLAYER_MOUNTS); //Next step load
 }
 
-void Player::DeSerializePlayerMounts(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerMounts(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerMounts userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerMountsJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerMounts data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_GLYPHS); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerMountsJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerMounts jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerMounts data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_GLYPHS); //Next step load
         return;
     }
@@ -1568,19 +1461,11 @@ void Player::DeSerializePlayerMounts(const RedisValue* v, uint64 playerGuid)
     LoadFromRedis(playerGuid, LOAD_PLAYER_GLYPHS); //Next step load
 }
 
-void Player::DeSerializePlayerGlyphs(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerGlyphs(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerGlyphs userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerGlyphsJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerGlyphs data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_AURAS); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerGlyphsJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerGlyphs jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerGlyphs data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_AURAS); //Next step load
         return;
     }
@@ -1600,19 +1485,11 @@ void Player::DeSerializePlayerGlyphs(const RedisValue* v, uint64 playerGuid)
     LoadFromRedis(playerGuid, LOAD_PLAYER_AURAS); //Next step load
 }
 
-void Player::DeSerializePlayerAuras(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerAuras(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerAuras userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerAurasJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerAuras data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTSTATUS); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerAurasJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerAuras jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerAuras data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTSTATUS); //Next step load
         return;
     }
@@ -1712,19 +1589,11 @@ void Player::DeSerializePlayerAuras(const RedisValue* v, uint64 playerGuid)
     LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTSTATUS); //Next step load
 }
 
-void Player::DeSerializePlayerQuestStatus(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerQuestStatus(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerQuestStatus userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerQuestStatusJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerQuestStatus data is empty");
-        LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTSTATUS); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerQuestStatusJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerQuestStatus jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerQuestStatus data is empty");
         LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTSTATUS); //Next step load
         return;
     }
@@ -1812,7 +1681,7 @@ void Player::DeSerializePlayerQuestStatus(const RedisValue* v, uint64 playerGuid
                 ++slot;
             }
 
-            sLog->outDebug(LOG_FILTER_PLAYER_LOADING, "Quest status is {%u} for quest {%u} for player (GUID: %u)", questStatusData.Status, quest_id, GetGUIDLow());
+            sLog->outDebug(LOG_FILTER_REDIS, "Quest status is {%u} for quest {%u} for player (GUID: %u) slot %u", questStatusData.Status, quest_id, GetGUIDLow(), slot);
         }
     }
 
@@ -1823,19 +1692,11 @@ void Player::DeSerializePlayerQuestStatus(const RedisValue* v, uint64 playerGuid
     LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTSTATUS); //Next step load
 }
 
-void Player::DeSerializeAccountQuestStatus(const RedisValue* v, uint64 playerGuid)
+void Player::LoadAccountQuestStatus(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeAccountQuestStatus userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, AccountQuestStatusJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeAccountQuestStatus data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTREWARDED); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), AccountQuestStatusJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeAccountQuestStatus jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountQuestStatus data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTREWARDED); //Next step load
         return;
     }
@@ -1923,7 +1784,7 @@ void Player::DeSerializeAccountQuestStatus(const RedisValue* v, uint64 playerGui
                 ++slot;
             }
 
-            sLog->outDebug(LOG_FILTER_PLAYER_LOADING, "Quest status is {%u} for quest {%u} for player (GUID: %u)", questStatusData.Status, quest_id, GetGUIDLow());
+            sLog->outDebug(LOG_FILTER_REDIS, "Quest status is {%u} for quest {%u} for player (GUID: %u)", questStatusData.Status, quest_id, GetGUIDLow());
         }
     }
 
@@ -1934,19 +1795,11 @@ void Player::DeSerializeAccountQuestStatus(const RedisValue* v, uint64 playerGui
     LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTREWARDED); //Next step load
 }
 
-void Player::DeSerializePlayerQuestRewarded(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerQuestRewarded(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerQuestRewarded userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerQuestRewardedJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerQuestRewarded data is empty");
-        LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTREWARDED); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerQuestRewardedJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerQuestRewarded jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerQuestRewarded data is empty");
         LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTREWARDED); //Next step load
         return;
     }
@@ -1981,19 +1834,11 @@ void Player::DeSerializePlayerQuestRewarded(const RedisValue* v, uint64 playerGu
     LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTREWARDED); //Next step load
 }
 
-void Player::DeSerializeAccountQuestRewarded(const RedisValue* v, uint64 playerGuid)
+void Player::LoadAccountQuestRewarded(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeAccountQuestRewarded userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, AccountQuestRewardedJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeAccountQuestRewarded data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTDAILY); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), AccountQuestRewardedJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeAccountQuestRewarded jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountQuestRewarded data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTDAILY); //Next step load
         return;
     }
@@ -2028,19 +1873,11 @@ void Player::DeSerializeAccountQuestRewarded(const RedisValue* v, uint64 playerG
     LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTDAILY); //Next step load
 }
 
-void Player::DeSerializePlayerQuestDaily(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerQuestDaily(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerQuestDaily userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerQuestDailyJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerQuestDaily data is empty");
-        LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTDAILY); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerQuestDailyJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerQuestDaily jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerQuestDaily data is empty");
         LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTDAILY); //Next step load
         return;
     }
@@ -2068,19 +1905,11 @@ void Player::DeSerializePlayerQuestDaily(const RedisValue* v, uint64 playerGuid)
     LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTDAILY); //Next step load
 }
 
-void Player::DeSerializeAccountQuestDaily(const RedisValue* v, uint64 playerGuid)
+void Player::LoadAccountQuestDaily(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeAccountQuestDaily userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, AccountQuestDailyJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeAccountQuestDaily data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTWEEKLY); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), AccountQuestDailyJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeAccountQuestDaily jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountQuestDaily data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTWEEKLY); //Next step load
         return;
     }
@@ -2107,19 +1936,11 @@ void Player::DeSerializeAccountQuestDaily(const RedisValue* v, uint64 playerGuid
     LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTWEEKLY); //Next step load
 }
 
-void Player::DeSerializePlayerQuestWeekly(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerQuestWeekly(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerQuestWeekly userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerQuestWeeklyJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerQuestWeekly data is empty");
-        LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTWEEKLY); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerQuestWeeklyJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerQuestWeekly jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerQuestWeekly data is empty");
         LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTWEEKLY); //Next step load
         return;
     }
@@ -2141,19 +1962,11 @@ void Player::DeSerializePlayerQuestWeekly(const RedisValue* v, uint64 playerGuid
     LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTWEEKLY); //Next step load
 }
 
-void Player::DeSerializeAccountQuestWeekly(const RedisValue* v, uint64 playerGuid)
+void Player::LoadAccountQuestWeekly(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeAccountQuestWeekly userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, AccountQuestWeeklyJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeAccountQuestWeekly data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTSEASONAL); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), AccountQuestWeeklyJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeAccountQuestWeekly jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountQuestWeekly data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTSEASONAL); //Next step load
         return;
     }
@@ -2177,19 +1990,11 @@ void Player::DeSerializeAccountQuestWeekly(const RedisValue* v, uint64 playerGui
     LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTSEASONAL); //Next step load
 }
 
-void Player::DeSerializePlayerQuestSeasonal(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerQuestSeasonal(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerQuestSeasonal userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerQuestSeasonalJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerQuestSeasonal data is empty");
-        LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTSEASONAL); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerQuestSeasonalJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerQuestSeasonal jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerQuestSeasonal data is empty");
         LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTSEASONAL); //Next step load
         return;
     }
@@ -2214,19 +2019,11 @@ void Player::DeSerializePlayerQuestSeasonal(const RedisValue* v, uint64 playerGu
     LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTSEASONAL); //Next step load
 }
 
-void Player::DeSerializeAccountQuestSeasonal(const RedisValue* v, uint64 playerGuid)
+void Player::LoadAccountQuestSeasonal(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeAccountQuestSeasonal userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, AccountQuestSeasonalJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeAccountQuestSeasonal data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_REPUTATION); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), AccountQuestSeasonalJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeAccountQuestSeasonal jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountQuestSeasonal data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_REPUTATION); //Next step load
         return;
     }
@@ -2256,17 +2053,9 @@ void ReputationMgr::LoadFromDB(const RedisValue* v, uint64 playerGuid)
     // Set initial reputations (so everything is nifty before DB data load)
     Initialize();
 
-    //sLog->outInfo(LOG_FILTER_REDIS, "ReputationMgr::LoadFromDB userKey %s", _player->userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, _player->PlayerReputationJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "ReputationMgr::LoadFromDB data is empty");
-        _player->LoadFromRedis(playerGuid, LOAD_PLAYER_ITEMS); //Next step load
-        return;
-    }
-    bool isReader = _player->jsonReader.parse(v->toString().c_str(), _player->PlayerReputationJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "ReputationMgr::LoadFromDB jsonReader false");
         _player->LoadFromRedis(playerGuid, LOAD_PLAYER_ITEMS); //Next step load
         return;
     }
@@ -2327,18 +2116,12 @@ void ReputationMgr::LoadFromDB(const RedisValue* v, uint64 playerGuid)
     _player->LoadFromRedis(playerGuid, LOAD_PLAYER_ITEMS); //Next step load
 }
 
-void Player::DeSerializePlayerLoadItems(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerLoadItems(const RedisValue* v, uint64 playerGuid)
 {
-    sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerLoadItems itemKey %s get_id %i", itemKey, boost::this_thread::get_id());
-    if (!v->isOk() || v->isNull())
+    std::vector<RedisValue> itemVector;
+    if (!sRedisBuilder->LoadFromRedisArray(v, itemVector))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerLoadItems data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_VOIDSTORAGE); //Next step load
-        return;
-    }
-    if (!v->isArray())
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerLoadItems items not found");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerLoadItems data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_VOIDSTORAGE); //Next step load
         return;
     }
@@ -2356,24 +2139,20 @@ void Player::DeSerializePlayerLoadItems(const RedisValue* v, uint64 playerGuid)
     std::list<Item*> problematicItems;
     std::map<uint32, Json::Value> itemInBag;                        // Save item in bag, for next step loading
 
-    std::vector<RedisValue> itemVector = v->toArray();
-
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerLoadItems isArray %i itemVector %u", v->isArray(), itemVector.size());
-
     for (std::vector<RedisValue>::iterator itr = itemVector.begin(); itr != itemVector.end();)
     {
         uint32 itemId = itr->toInt();
         ++itr;
-        std::string itemData = itr->toString();
-        ++itr;
 
         Json::Value loadItemJson;
-        bool isReader = jsonReader.parse(itemData.c_str(), loadItemJson);
-        if (!isReader)
+        if (!sRedisBuilder->LoadFromRedis(&(*itr), loadItemJson))
         {
-            sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerLoadItems not parse itemId %i", itemId);
+            ++itr;
+            sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerLoadItems not parse itemId %i", itemId);
             continue;
         }
+        else
+            ++itr;
 
         uint32 itemGuid = loadItemJson["itemGuid"].asUInt();
 
@@ -2544,128 +2323,6 @@ void Player::DeSerializePlayerLoadItems(const RedisValue* v, uint64 playerGuid)
     LoadFromRedis(playerGuid, LOAD_PLAYER_VOIDSTORAGE); //Next step load
 }
 
-bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, Json::Value& itemValue, uint32 entry)
-{
-    // create item before any checks for store correct guid
-    // and allow use "FSetState(ITEM_REMOVED); SaveToDB();" for deleting item from DB
-    Object::_Create(guid, 0, HIGHGUID_ITEM);
-
-    sprintf(itemKey, "r{%u}u{%u}items", realmID, owner_guid);
-
-    // Set entry, MUST be before proto check
-    SetEntry(entry);
-    SetObjectScale(1.0f);
-
-    ItemTemplate const* proto = GetTemplate();
-    if (!proto)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Item::LoadFromDB ItemTemplate not foundentry %u guid %u", entry, guid);
-        return false;
-    }
-
-    // set owner (not if item is only loaded for gbank/auction/mail
-    if (owner_guid != 0)
-        SetOwnerGUID(owner_guid);
-
-    bool need_save = false;                                 // need explicit save data at load fixes
-    SetUInt64Value(ITEM_FIELD_CREATOR, MAKE_NEW_GUID(itemValue["creatorGuid"].asUInt(), 0, HIGHGUID_PLAYER));
-    SetUInt64Value(ITEM_FIELD_GIFTCREATOR, MAKE_NEW_GUID(itemValue["giftCreatorGuid"].asUInt(), 0, HIGHGUID_PLAYER));
-    SetCount(itemValue["count"].asInt());
-    SetGiftEntry(itemValue["giftEntry"].asInt());
-
-    uint32 duration = itemValue["duration"].asUInt();
-    SetUInt32Value(ITEM_FIELD_DURATION, duration);
-    // update duration if need, and remove if not need
-    if ((proto->Duration == 0) != (duration == 0))
-        SetUInt32Value(ITEM_FIELD_DURATION, proto->Duration);
-
-    std::string charges = itemValue["charges"].asString();
-    if (charges.size() > MAX_ITEM_PROTO_SPELLS)
-    {
-        Tokenizer tokens(charges.c_str(), ' ', MAX_ITEM_PROTO_SPELLS);
-        if (tokens.size() == MAX_ITEM_PROTO_SPELLS)
-            for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
-                SetSpellCharges(i, atoi(tokens[i]));
-    }
-
-    SetUInt32Value(ITEM_FIELD_FLAGS, itemValue["flags"].asUInt());
-    // Remove bind flag for items vs NO_BIND set
-    if (IsSoulBound() && proto->Bonding == NO_BIND)
-    {
-        ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_SOULBOUND, false);
-        need_save = true;
-    }
-
-    std::string enchants = itemValue["enchantments"].asString();
-    _LoadIntoDataField(enchants.c_str(), ITEM_FIELD_ENCHANTMENT_1_1, MAX_ENCHANTMENT_SLOT * MAX_ENCHANTMENT_OFFSET);
-
-    uint32 dynMod1 = itemValue["reforgeId"].asInt();
-    uint32 dynMod2 = itemValue["transmogrifyId"].asInt();
-    uint32 dynMod3 = itemValue["upgradeId"].asInt();
-
-    if (isBattlePet())
-    {
-        if (dynMod1 && dynMod2 && dynMod3)
-        {
-            if (BattlePetSpeciesEntry const* bp = sBattlePetSpeciesStore.LookupEntry(dynMod1))
-                SetBattlePet(dynMod1, dynMod2, dynMod3);
-        }
-    }
-    else
-    {
-        if (dynMod1)
-        {
-            if (ItemReforgeEntry const* reforge = sItemReforgeStore.LookupEntry(dynMod1))
-                SetReforge(dynMod1);
-        }
-
-        if (dynMod2)
-        {
-            if (ItemTemplate const* transProto = sObjectMgr->GetItemTemplate(dynMod2))
-            {
-                if (proto->Class == transProto->Class)
-                    SetTransmogrification(dynMod2);
-            }
-        }
-
-        ItemLevel = proto->ItemLevel;
-        if (ItemUpgradeData const* upgradeData = GetItemUpgradeData(entry))
-        {
-            for (uint32 i = 0; i < MAX_ITEM_UPDGRADES; ++i)
-            {
-                ItemUpgradeEntry const* upgradeEntry = upgradeData->upgrade[i];
-
-                if (!upgradeEntry)
-                    continue;
-
-                if (upgradeEntry->id == dynMod3 || !dynMod3 && !upgradeEntry->prevUpgradeId)
-                {
-                    ItemLevel += upgradeEntry->levelBonus;
-                    SetUpgradeId(upgradeEntry->id);
-                    break;
-                }
-            }
-        }
-    }
-
-    SetInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID, itemValue["randomPropertyId"].asInt());
-    // recalculate suffix factor
-    if (GetItemRandomPropertyId() < 0)
-        UpdateItemSuffixFactor();
-
-    uint32 durability = itemValue["durability"].asUInt();
-    SetUInt32Value(ITEM_FIELD_DURABILITY, durability);
-    // update max durability (and durability) if need
-    SetUInt32Value(ITEM_FIELD_MAXDURABILITY, proto->MaxDurability);
-    if (durability > proto->MaxDurability)
-        SetUInt32Value(ITEM_FIELD_DURABILITY, proto->MaxDurability);
-
-    SetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME, itemValue["playedTime"].asUInt());
-    SetText(itemValue["text"].asCString());
-
-    return true;
-}
-
 Item* Player::_LoadItem(uint32 zoneId, uint32 timeDiff, Json::Value& itemValue)
 {
     Item* item = NULL;
@@ -2767,37 +2424,11 @@ Item* Player::_LoadItem(uint32 zoneId, uint32 timeDiff, Json::Value& itemValue)
     return item;
 }
 
-bool Bag::LoadFromDB(uint32 guid, uint64 owner_guid, Json::Value& itemValue, uint32 entry)
+void Player::LoadPlayerVoidStorage(const RedisValue* v, uint64 playerGuid)
 {
-    if (!Item::LoadFromDB(guid, owner_guid, itemValue, entry))
-        return false;
-
-    ItemTemplate const* itemProto = GetTemplate(); // checked in Item::LoadFromDB
-    SetUInt32Value(CONTAINER_FIELD_NUM_SLOTS, itemProto->ContainerSlots);
-    // cleanup bag content related item value (its will be filled correctly from `character_inventory`)
-    for (uint8 i = 0; i < MAX_BAG_SIZE; ++i)
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerVoidStorageJson))
     {
-        SetUInt64Value(CONTAINER_FIELD_SLOT_1 + (i*2), 0);
-        delete m_bagslot[i];
-        m_bagslot[i] = NULL;
-    }
-
-    return true;
-}
-
-void Player::DeSerializePlayerVoidStorage(const RedisValue* v, uint64 playerGuid)
-{
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerVoidStorage userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerVoidStorage data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_ACTIONS); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerVoidStorageJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerVoidStorage jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerVoidStorage data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_ACTIONS); //Next step load
         return;
     }
@@ -2852,19 +2483,11 @@ void Player::DeSerializePlayerVoidStorage(const RedisValue* v, uint64 playerGuid
     LoadFromRedis(playerGuid, LOAD_PLAYER_ACTIONS); //Next step load
 }
 
-void Player::DeSerializePlayerActions(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerActions(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerActions userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerActionsJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerActions data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_SOCIAL); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerActionsJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerActions jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerActions data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_SOCIAL); //Next step load
         return;
     }
@@ -2899,15 +2522,9 @@ PlayerSocial* SocialMgr::LoadFromDB(const RedisValue* v, Player* player)
     PlayerSocial *social = &m_socialMap[player->GetGUIDLow()];
     social->SetPlayerGUID(player->GetGUIDLow());
 
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, player->PlayerSocialJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "SocialMgr::LoadFromDB data is empty");
-        return social;
-    }
-    bool isReader = player->jsonReader.parse(v->toString().c_str(), player->PlayerSocialJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "SocialMgr::LoadFromDB jsonReader false");
         return social;
     }
 
@@ -2932,19 +2549,11 @@ PlayerSocial* SocialMgr::LoadFromDB(const RedisValue* v, Player* player)
     return social;
 }
 
-void Player::DeSerializePlayerSpellCooldowns(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerSpellCooldowns(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerSpellCooldowns userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerSpellCooldownsJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerSpellCooldowns data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_KILLS); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerSpellCooldownsJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerSpellCooldowns jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerSpellCooldowns data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_KILLS); //Next step load
         return;
     }
@@ -2960,7 +2569,7 @@ void Player::DeSerializePlayerSpellCooldowns(const RedisValue* v, uint64 playerG
 
         if (!sSpellMgr->GetSpellInfo(spell_id))
         {
-            sLog->outError(LOG_FILTER_PLAYER_LOADING, "Player %u has unknown spell %u in `character_spell_cooldown`, skipping.", GetGUIDLow(), spell_id);
+            sLog->outError(LOG_FILTER_REDIS, "Player %u has unknown spell %u in `character_spell_cooldown`, skipping.", GetGUIDLow(), spell_id);
             continue;
         }
 
@@ -2974,19 +2583,11 @@ void Player::DeSerializePlayerSpellCooldowns(const RedisValue* v, uint64 playerG
     LoadFromRedis(playerGuid, LOAD_PLAYER_KILLS); //Next step load
 }
 
-void Player::DeSerializePlayerKills(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerKills(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerKills userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerSpellCooldownsJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerKills data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_INIT_THIRD); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerKillsJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerKills jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerKills data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_INIT_THIRD); //Next step load
         return;
     }
@@ -3047,7 +2648,7 @@ void Player::InitThirdPartDataPlayer()
     // must be after loading spells and talents
     Tokenizer talentTrees(PlayerJson["talentTree"].asString(), ' ', MAX_TALENT_SPECS);
 
-    sLog->outDebug(LOG_FILTER_PLAYER_LOADING, "The value of player %s after load item and aura is: ", m_name.c_str());
+    sLog->outDebug(LOG_FILTER_REDIS, "The value of player %s after load item and aura is: ", m_name.c_str());
     outDebugValues();
 
     uint32 extraflags = PlayerJson["extra_flags"].asUInt();
@@ -3179,19 +2780,11 @@ void Player::InitThirdPartDataPlayer()
     LoadFromRedis(GetGUID(), LOAD_PLAYER_DECLINEDNAME); //Next step load
 }
 
-void Player::DeSerializeDeclinedName(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerDeclinedName(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeDeclinedName userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerDeclinedNameJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeDeclinedName data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_EQUIPMENTSETS); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerDeclinedNameJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeDeclinedName jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerDeclinedName data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_EQUIPMENTSETS); //Next step load
         return;
     }
@@ -3208,19 +2801,11 @@ void Player::DeSerializeDeclinedName(const RedisValue* v, uint64 playerGuid)
     LoadFromRedis(playerGuid, LOAD_PLAYER_EQUIPMENTSETS); //Next step load
 }
 
-void Player::DeSerializeEquipmentSets(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerEquipmentSets(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeEquipmentSets userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerEquipmentSetsJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeEquipmentSets data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_CUFPROFILES); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerEquipmentSetsJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeEquipmentSets jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerEquipmentSets data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_CUFPROFILES); //Next step load
         return;
     }
@@ -3270,19 +2855,11 @@ void Player::DeSerializeEquipmentSets(const RedisValue* v, uint64 playerGuid)
     LoadFromRedis(playerGuid, LOAD_PLAYER_CUFPROFILES); //Next step load
 }
 
-void Player::DeSerializeCUFProfiles(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerCUFProfiles(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeCUFProfiles userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerCUFProfilesJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeCUFProfiles data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_VISUALS); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerCUFProfilesJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeCUFProfiles jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerCUFProfiles data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_VISUALS); //Next step load
         return;
     }
@@ -3318,19 +2895,11 @@ void Player::DeSerializeCUFProfiles(const RedisValue* v, uint64 playerGuid)
     LoadFromRedis(playerGuid, LOAD_PLAYER_VISUALS); //Next step load
 }
 
-void Player::DeSerializeVisuals(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerVisuals(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeVisuals userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerVisualsJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeVisuals data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_PLAYERACCOUNTDATA); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerVisualsJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeVisuals jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerVisuals data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_PLAYERACCOUNTDATA); //Next step load
         return;
     }
@@ -3356,27 +2925,15 @@ void Player::DeSerializeVisuals(const RedisValue* v, uint64 playerGuid)
     LoadFromRedis(playerGuid, LOAD_PLAYER_PLAYERACCOUNTDATA); //Next step load
 }
 
-void Player::DeSerializePlayerAccountData(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerAccountData(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerAccountData userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerAccountDataJson))
     {
         for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
             if (PER_CHARACTER_CACHE_MASK & (1 << i))
                 GetSession()->m_accountData[i] = AccountData();
 
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerAccountData data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_LOGIN); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerAccountDataJson);
-    if (!isReader)
-    {
-        for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
-            if (PER_CHARACTER_CACHE_MASK & (1 << i))
-                GetSession()->m_accountData[i] = AccountData();
-
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerAccountData jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerAccountData data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_LOGIN); //Next step load
         return;
     }
@@ -3397,19 +2954,11 @@ void Player::DeSerializePlayerAccountData(const RedisValue* v, uint64 playerGuid
     LoadFromRedis(playerGuid, LOAD_PLAYER_LOGIN); //Next step load
 }
 
-void Player::DeSerializePlayerHomeBind(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerHomeBind(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerHomeBind userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerHomeBindJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerHomeBind data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_DATA); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerHomeBindJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerHomeBind jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerHomeBind data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_DATA); //Next step load
         return;
     }
@@ -3423,19 +2972,11 @@ void Player::DeSerializePlayerHomeBind(const RedisValue* v, uint64 playerGuid)
     LoadFromRedis(playerGuid, LOAD_PLAYER_DATA); //Next step load
 }
 
-void Player::DeSerializeAccountAchievements(const RedisValue* v, uint64 playerGuid)
+void Player::LoadAccountAchievements(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeAccountAchievements AccountKey %s", GetAccountKey());
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, AccountAchievementJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeAccountAchievements data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_ACHIEVEMENT); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), AccountAchievementJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeAccountAchievements jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountAchievements data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_ACHIEVEMENT); //Next step load
         return;
     }
@@ -3454,19 +2995,11 @@ void Player::DeSerializeAccountAchievements(const RedisValue* v, uint64 playerGu
     LoadFromRedis(playerGuid, LOAD_PLAYER_ACHIEVEMENT); //Next step load
 }
 
-void Player::DeSerializePlayerAchievements(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerAchievements(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerAchievements userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerAchievementJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerAchievements data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_CRITERIA); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerAchievementJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerAchievements jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerAchievements data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_CRITERIA); //Next step load
         return;
     }
@@ -3483,23 +3016,15 @@ void Player::DeSerializePlayerAchievements(const RedisValue* v, uint64 playerGui
     LoadFromRedis(playerGuid, LOAD_PLAYER_CRITERIA); //Next step load
 }
 
-void Player::DeSerializePlayerCriteriaProgress(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerCriteriaProgress(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerCriteriaProgress criteriaPlKey %s", criteriaPlKey);
-    if (!v->isOk() || v->isNull())
+    std::vector<RedisValue> progressVector;
+    if (!sRedisBuilder->LoadFromRedisArray(v, progressVector))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerCriteriaProgress data is empty");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerCriteriaProgress data is empty");
         LoadFromRedis(playerGuid, LOAD_ACCOUNT_CRITERIA); //Next step load
         return;
     }
-    if (!v->isArray())
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerCriteriaProgress Progress not found");
-        LoadFromRedis(playerGuid, LOAD_ACCOUNT_CRITERIA); //Next step load
-        return;
-    }
-
-    std::vector<RedisValue> progressVector = v->toArray();
 
     for (auto itr = progressVector.begin(); itr != progressVector.end();)
     {
@@ -3511,16 +3036,15 @@ void Player::DeSerializePlayerCriteriaProgress(const RedisValue* v, uint64 playe
             continue;
         }
 
-        std::string criteriaData = itr->toString();
-        ++itr;
-
         Json::Value CriteriaPl;
-        bool isReader = jsonReader.parse(criteriaData.c_str(), CriteriaPl);
-        if (!isReader)
+        if (!sRedisBuilder->LoadFromRedis(&(*itr), CriteriaPl))
         {
-            sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerCriteriaProgress not parse achievementID %i", achievementID);
+            ++itr;
+            sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerCriteriaProgress not parse achievementID %i", achievementID);
             continue;
         }
+        else
+            ++itr;
 
         time_t now = time(NULL);
         for (auto iter = CriteriaPl.begin(); iter != CriteriaPl.end(); ++iter)
@@ -3542,23 +3066,15 @@ void Player::DeSerializePlayerCriteriaProgress(const RedisValue* v, uint64 playe
     LoadFromRedis(playerGuid, LOAD_ACCOUNT_CRITERIA); //Next step load
 }
 
-void Player::DeSerializeAccountCriteriaProgress(const RedisValue* v, uint64 playerGuid)
+void Player::LoadAccountCriteriaProgress(const RedisValue* v, uint64 playerGuid)
 {
-    //sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeAccountCriteriaProgress criteriaAcKey %s", criteriaAcKey);
-    if (!v->isOk() || v->isNull())
+    std::vector<RedisValue> progressVector;
+    if (!sRedisBuilder->LoadFromRedisArray(v, progressVector))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeAccountCriteriaProgress data is empty");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountCriteriaProgress data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_NEXT); //Next step load
         return;
     }
-    if (!v->isArray())
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeAccountCriteriaProgress Progress not found");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_NEXT); //Next step load
-        return;
-    }
-
-    std::vector<RedisValue> progressVector = v->toArray();
 
     for (auto itr = progressVector.begin(); itr != progressVector.end();)
     {
@@ -3570,16 +3086,15 @@ void Player::DeSerializeAccountCriteriaProgress(const RedisValue* v, uint64 play
             continue;
         }
 
-        std::string criteriaData = itr->toString();
-        ++itr;
-
         Json::Value CriteriaAc;
-        bool isReader = jsonReader.parse(criteriaData.c_str(), CriteriaAc);
-        if (!isReader)
+        if (!sRedisBuilder->LoadFromRedis(&(*itr), CriteriaAc))
         {
-            sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializeAccountCriteriaProgress not parse achievementID %i", achievementID);
+            ++itr;
+            sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountCriteriaProgress not parse achievementID %i", achievementID);
             continue;
         }
+        else
+            ++itr;
 
         for (auto iter = CriteriaAc.begin(); iter != CriteriaAc.end(); ++iter)
         {
@@ -3874,19 +3389,11 @@ bool Pet::LoadPetFromRedis(Player* owner, uint32 petentry, uint32 petnumber, boo
     return true;
 }
 
-void Player::DeSerializePlayerGold(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerGold(const RedisValue* v, uint64 playerGuid)
 {
-    sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerGold userKey %s", userKey);
-    if (!v->isOk() || v->isNull())
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerGoldJson))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerGold data is empty");
-        LoadFromRedis(playerGuid, LOAD_ACCOUNT_ACHIEVEMENT); //Next step load
-        return;
-    }
-    bool isReader = jsonReader.parse(v->toString().c_str(), PlayerGoldJson);
-    if (!isReader)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerGold jsonReader false");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerGold data is empty");
         LoadFromRedis(playerGuid, LOAD_ACCOUNT_ACHIEVEMENT); //Next step load
         return;
     }
@@ -3896,39 +3403,31 @@ void Player::DeSerializePlayerGold(const RedisValue* v, uint64 playerGuid)
     LoadFromRedis(playerGuid, LOAD_ACCOUNT_ACHIEVEMENT); //Next step load
 }
 
-void Player::DeSerializePlayerMails(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerMails(const RedisValue* v, uint64 playerGuid)
 {
-    if (!v->isOk() || v->isNull())
+    std::vector<RedisValue> mailVector;
+    if (!sRedisBuilder->LoadFromRedisArray(v, mailVector))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerMails data is empty");
-        return;
-    }
-    if (!v->isArray())
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerMails items not found");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerMails data is empty");
         return;
     }
 
     uint32 plGuid = PAIR32_LOPART(playerGuid);
 
-    std::vector<RedisValue> mailVector = v->toArray();
-
-    sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerMails userKey %s plGuid %u size %u", userKey, plGuid, mailVector.size());
-
     for (std::vector<RedisValue>::iterator itr = mailVector.begin(); itr != mailVector.end();)
     {
         uint32 messageID = atoi(itr->toString().c_str());
         ++itr;
-        std::string itemData = itr->toString();
-        ++itr;
 
         Json::Value loadMailJson;
-        bool isReader = jsonReader.parse(itemData.c_str(), loadMailJson);
-        if (!isReader)
+        if (!sRedisBuilder->LoadFromRedis(&(*itr), loadMailJson))
         {
-            sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerMails not parse messageID %i", messageID);
+            ++itr;
+            sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerMails not parse messageID %i", messageID);
             continue;
         }
+        else
+            ++itr;
 
         Mail* m = new Mail;
 
@@ -3962,34 +3461,28 @@ void Player::DeSerializePlayerMails(const RedisValue* v, uint64 playerGuid)
         if (has_items)
             LoadFromRedis(mailGuid, LOAD_PLAYER_MAIL_ITEMS);
     }
-    sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerMails end");
+    sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerMails end");
 }
 
-void Player::DeSerializePlayerMailItems(const RedisValue* v, uint64 mailGuid)
+void Player::LoadPlayerMailItems(const RedisValue* v, uint64 mailGuid)
 {
-    if (!v->isOk() || v->isNull())
+    std::vector<RedisValue> itemVector;
+    if (!sRedisBuilder->LoadFromRedisArray(v, itemVector))
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerMailItems data is empty");
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerMailItems data is empty");
         return;
     }
-    if (!v->isArray())
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerMailItems items not found");
-        return;
-    }
-
-    std::vector<RedisValue> itemVector = v->toArray();
 
     uint32 messageID = PAIR64_HIPART(mailGuid);
     char* _key = new char[32];
     sprintf(_key, "r{%u}m{%u}items", realmID, messageID);
 
-    sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerMailItems _key %s messageID %u", _key, messageID);
+    sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerMailItems _key %s messageID %u", _key, messageID);
 
     Mail* mail = GetMail(messageID);
     if (!mail)
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerMailItems mail %u not found ", messageID);
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerMailItems mail %u not found ", messageID);
         return;
     }
 
@@ -3997,16 +3490,16 @@ void Player::DeSerializePlayerMailItems(const RedisValue* v, uint64 mailGuid)
     {
         uint32 itemId = atoi(itr->toString().c_str());
         ++itr;
-        std::string itemData = itr->toString();
-        ++itr;
 
         Json::Value loadItemJson;
-        bool isReader = jsonReader.parse(itemData.c_str(), loadItemJson);
-        if (!isReader)
+        if (!sRedisBuilder->LoadFromRedis(&(*itr), loadItemJson))
         {
-            sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerLoadItems not parse itemId %i", itemId);
+            ++itr;
+            sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerLoadItems not parse itemId %i", itemId);
             continue;
         }
+        else
+            ++itr;
 
         uint32 itemGuid = loadItemJson["itemGuid"].asUInt();
         uint32 itemEntry = loadItemJson["itemEntry"].asInt();
@@ -4016,7 +3509,7 @@ void Player::DeSerializePlayerMailItems(const RedisValue* v, uint64 mailGuid)
         {
             std::string index = std::to_string(itemGuid);
             RedisDatabase.AsyncExecuteH("HDEL", _key, index.c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
-                sLog->outInfo(LOG_FILTER_REDIS, "Item::DeSerializePlayerLoadItems delete guid %u", guid);
+                sLog->outInfo(LOG_FILTER_REDIS, "Item::LoadPlayerLoadItems delete guid %u", guid);
             });
             continue;
         }

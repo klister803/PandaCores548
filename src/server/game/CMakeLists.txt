@@ -39,6 +39,7 @@ file(GLOB_RECURSE sources_Movement Movement/*.cpp Movement/*.h)
 file(GLOB_RECURSE sources_OutdoorPvP OutdoorPvP/*.cpp OutdoorPvP/*.h)
 file(GLOB_RECURSE sources_Pools Pools/*.cpp Pools/*.h)
 file(GLOB_RECURSE sources_Quests Quests/*.cpp Quests/*.h)
+file(GLOB_RECURSE sources_RedisBuilder RedisBuilder/*.cpp RedisBuilder/*.h)
 file(GLOB_RECURSE sources_Reputation Reputation/*.cpp Reputation/*.h)
 file(GLOB_RECURSE sources_Scenarios Scenarios/*.cpp Scenarios/*.h)
 file(GLOB_RECURSE sources_Scripting Scripting/*.cpp Scripting/*.h)
@@ -92,6 +93,7 @@ set(game_STAT_SRCS
   ${sources_OutdoorPvP}
   ${sources_Pools}
   ${sources_Quests}
+  ${sources_RedisBuilder}
   ${sources_Reputation}
   ${sources_Scenarios}
   ${sources_Scripting}
@@ -193,6 +195,7 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/Pools
   ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders
   ${CMAKE_CURRENT_SOURCE_DIR}/Quests
+  ${CMAKE_CURRENT_SOURCE_DIR}/RedisBuilder
   ${CMAKE_CURRENT_SOURCE_DIR}/Reputation
   ${CMAKE_CURRENT_SOURCE_DIR}/Scenarios
   ${CMAKE_CURRENT_SOURCE_DIR}/Scripting

@@ -48,9 +48,6 @@
 #include<string>
 #include<vector>
 
-#include <json/json.h>
-#include <json/writer.h>
-
 struct Mail;
 struct ItemExtendedCostEntry;
 class Channel;
@@ -66,6 +63,7 @@ class UpdateMask;
 class PhaseMgr;
 class Bracket;
 class Guild;
+class RedisBuilder;
 
 typedef std::deque<Mail*> PlayerMails;
 
@@ -1583,8 +1581,6 @@ class Player : public Unit, public GridObject<Player>
         char* GetCriteriaPlKey() { return criteriaPlKey; }
         char* GetCriteriaAcKey() { return criteriaAcKey; }
 
-        Json::Reader jsonReader;
-        Json::FastWriter jsonBuilder;
         Json::Value PlayerJson;
         Json::Value PlayerBGJson;
         Json::Value PlayerGroupJson;
@@ -1632,101 +1628,101 @@ class Player : public Unit, public GridObject<Player>
         Json::Value PlayerGoldJson;
 
         //load data for serialize
-        void InitSerializePlayer();
-        void SerializePlayer();
-        void SerializePlayerBG();
-        void SerializePlayerGroup();
-        void SerializePlayerLootCooldown();
-        void SerializePlayerCurrency();
-        void SerializePlayerBoundInstances();
-        void SerializePlayerInstanceTimes();
-        void SerializePlayerSkills();
-        void SerializePlayerTalents();
-        void SerializePlayerSpells();
-        void SerializePlayerGlyphs();
-        void SerializePlayerAuras();
-        void SerializePlayerQuestStatus();
-        void SerializePlayerQuestRewarded();
-        void SerializePlayerQuestDaily();
-        void SerializePlayerQuestWeekly();
-        void SerializePlayerQuestSeasonal();
-        void SerializePlayerBattlePets();
-        void SerializePlayerBattlePetSlots();
-        void SerializePlayerArchaeology();
-        void SerializePlayerReputation();
-        void SerializePlayerVoidStorage();
-        void SerializePlayerActions();
-        void SerializePlayerSocial();
-        void SerializePlayerSpellCooldowns();
-        void SerializePlayerKills();
-        void SerializePlayerDeclinedName();
-        void SerializePlayerEquipmentSets();
-        void SerializePlayerCUFProfiles();
-        void SerializePlayerVisuals();
-        void SerializePlayerAccountData();
-        void SerializePlayerHomeBind();
-        void SerializePlayerAchievement();
-        void SerializePlayerCriteria();
-        void SerializePlayerPets();
+        void InitSavePlayer();
+        void SavePlayer();
+        void SavePlayerBG();
+        void SavePlayerGroup();
+        void SavePlayerLootCooldown();
+        void SavePlayerCurrency();
+        void SavePlayerBoundInstances();
+        void SavePlayerInstanceTimes();
+        void SavePlayerSkills();
+        void SavePlayerTalents();
+        void SavePlayerSpells();
+        void SavePlayerGlyphs();
+        void SavePlayerAuras();
+        void SavePlayerQuestStatus();
+        void SavePlayerQuestRewarded();
+        void SavePlayerQuestDaily();
+        void SavePlayerQuestWeekly();
+        void SavePlayerQuestSeasonal();
+        void SavePlayerBattlePets();
+        void SavePlayerBattlePetSlots();
+        void SavePlayerArchaeology();
+        void SavePlayerReputation();
+        void SavePlayerVoidStorage();
+        void SavePlayerActions();
+        void SavePlayerSocial();
+        void SavePlayerSpellCooldowns();
+        void SavePlayerKills();
+        void SavePlayerDeclinedName();
+        void SavePlayerEquipmentSets();
+        void SavePlayerCUFProfiles();
+        void SavePlayerVisuals();
+        void SavePlayerAccountData();
+        void SavePlayerHomeBind();
+        void SavePlayerAchievement();
+        void SavePlayerCriteria();
+        void SavePlayerPets();
         void CreatedPlayerPets();
-        void SerializePlayerMails();
-        void SerializePlayerGold();
+        void SavePlayerMails();
+        void SavePlayerGold();
 
-        //load data into player deserialize
+        //load data into player LoadPlayer
         void LoadFromRedis(uint64 guid, uint8 step = 0, const RedisValue* v = NULL);
-        void DeSerializePlayer(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerNext(uint64 playerGuid);
-        void DeSerializePlayerGroup(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerLootCooldown(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerCurrency(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerBoundInstances(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerBG(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayer(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerNext(uint64 playerGuid);
+        void LoadPlayerGroup(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerLootCooldown(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerCurrency(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerBoundInstances(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerBG(const RedisValue* v, uint64 playerGuid);
         void InitSecondPartDataPlayer();
-        void DeSerializePlayerBattlePets(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerBattlePetSlots(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerSkills(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerArchaeology(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerTalents(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerSpells(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerMounts(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerGlyphs(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerAuras(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerQuestStatus(const RedisValue* v, uint64 playerGuid);
-        void DeSerializeAccountQuestStatus(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerQuestRewarded(const RedisValue* v, uint64 playerGuid);
-        void DeSerializeAccountQuestRewarded(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerQuestDaily(const RedisValue* v, uint64 playerGuid);
-        void DeSerializeAccountQuestDaily(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerQuestWeekly(const RedisValue* v, uint64 playerGuid);
-        void DeSerializeAccountQuestWeekly(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerQuestSeasonal(const RedisValue* v, uint64 playerGuid);
-        void DeSerializeAccountQuestSeasonal(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerReputation(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerLoadItems(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerVoidStorage(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerActions(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerSpellCooldowns(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerKills(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerBattlePets(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerBattlePetSlots(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerSkills(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerArchaeology(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerTalents(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerSpells(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerMounts(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerGlyphs(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerAuras(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerQuestStatus(const RedisValue* v, uint64 playerGuid);
+        void LoadAccountQuestStatus(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerQuestRewarded(const RedisValue* v, uint64 playerGuid);
+        void LoadAccountQuestRewarded(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerQuestDaily(const RedisValue* v, uint64 playerGuid);
+        void LoadAccountQuestDaily(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerQuestWeekly(const RedisValue* v, uint64 playerGuid);
+        void LoadAccountQuestWeekly(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerQuestSeasonal(const RedisValue* v, uint64 playerGuid);
+        void LoadAccountQuestSeasonal(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerReputation(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerLoadItems(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerVoidStorage(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerActions(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerSpellCooldowns(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerKills(const RedisValue* v, uint64 playerGuid);
         void InitThirdPartDataPlayer();
-        void DeSerializeDeclinedName(const RedisValue* v, uint64 playerGuid);
-        void DeSerializeEquipmentSets(const RedisValue* v, uint64 playerGuid);
-        void DeSerializeCUFProfiles(const RedisValue* v, uint64 playerGuid);
-        void DeSerializeVisuals(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerAccountData(const RedisValue* v, uint64 playerGuid);
-        void DeSerializeAccountData(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerHomeBind(const RedisValue* v, uint64 playerGuid);
-        void DeSerializeAccountAchievements(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerAchievements(const RedisValue* v, uint64 playerGuid);
-        void DeSerializeAccountCriteriaProgress(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerCriteriaProgress(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerGold(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerMails(const RedisValue* v, uint64 playerGuid);
-        void DeSerializePlayerMailItems(const RedisValue* v, uint64 mailGuid);
+        void LoadPlayerDeclinedName(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerEquipmentSets(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerCUFProfiles(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerVisuals(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerAccountData(const RedisValue* v, uint64 playerGuid);
+        void LoadAccountData(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerHomeBind(const RedisValue* v, uint64 playerGuid);
+        void LoadAccountAchievements(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerAchievements(const RedisValue* v, uint64 playerGuid);
+        void LoadAccountCriteriaProgress(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerCriteriaProgress(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerGold(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerMails(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerMailItems(const RedisValue* v, uint64 mailGuid);
 
         //Update data in database
-        void UpdateSerializePlayer();
-        void DeleteSerializePlayerCriteriaProgress(AchievementEntry const* achievement);
-        void UpdateSerializePlayerCriteriaProgress(AchievementEntry const* achievement, CriteriaProgressMap* progressMap);
+        void UpdateSavePlayer();
+        void DeleteSavePlayerCriteriaProgress(AchievementEntry const* achievement);
+        void UpdateSavePlayerCriteriaProgress(AchievementEntry const* achievement, CriteriaProgressMap* progressMap);
 
         /*********************************************************/
         /***                    STORAGE SYSTEM                 ***/

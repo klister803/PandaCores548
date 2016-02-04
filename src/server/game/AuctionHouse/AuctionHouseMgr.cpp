@@ -301,77 +301,12 @@ void AuctionHouseMgr::LoadAuctionItems()
             delete item;
             continue;
         }
-        item->SerializeItem();
+        item->SaveItem();
         AddAItem(item);
 
         ++count;
     }
     while (result->NextRow());
-
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u auction items in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
-
-}
-
-void AuctionHouseMgr::LoadAuctionItems(const RedisValue* v, uint64 aucId)
-{
-    uint32 oldMSTime = getMSTime();
-
-    if (!v->isOk() || v->isNull())
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "AuctionHouseMgr::LoadAuctionItems data is empty");
-        return;
-    }
-    if (!v->isArray())
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "AuctionHouseMgr::LoadAuctionItems not found");
-        return;
-    }
-
-    std::vector<RedisValue> auctionItemVector = v->toArray();
-
-    uint32 count = 0;
-    for (auto itr = auctionItemVector.begin(); itr != auctionItemVector.end();)
-    {
-        uint32 item_guid = atoi(itr->toString().c_str());
-        ++itr;
-        if (itr->isInt())
-        {
-            ++itr;
-            continue;
-        }
-
-        std::string data = itr->toString();
-        ++itr;
-
-        Json::Value AuctionItemJson;
-        bool isReader = jsonReader.parse(data.c_str(), AuctionItemJson);
-        if (!isReader)
-        {
-            sLog->outInfo(LOG_FILTER_REDIS, "AuctionHouseMgr::LoadAuctionItems not parse Id %i", aucId);
-            continue;
-        }
-
-        uint32 itemEntry    = AuctionItemJson["itemEntry"].asInt();
-
-        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemEntry);
-        if (!proto)
-        {
-            sLog->outError(LOG_FILTER_GENERAL, "AuctionHouseMgr::LoadAuctionItems: Unknown item (GUID: %u id: #%u) in auction, skipped.", item_guid, itemEntry);
-            continue;
-        }
-
-        Item* item = NewItemOrBag(proto);
-        item->SetItemKey(ITEM_KEY_AUCT, 0);
-
-        if (!item->LoadFromDB(item_guid, 0, AuctionItemJson, itemEntry))
-        {
-            delete item;
-            continue;
-        }
-        AddAItem(item);
-
-        count++;
-    }
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u auction items in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 
@@ -420,7 +355,7 @@ void AuctionHouseMgr::LoadAuctions()
         }
 
         GetAuctionsMap(aItem->factionTemplateId)->AddAuction(aItem);
-        aItem->SerializeAuction();
+        aItem->SaveAuction();
 
         //Delete from DB use redis base next time
         aItem->DeleteFromDB(trans);
@@ -428,86 +363,6 @@ void AuctionHouseMgr::LoadAuctions()
     } while (result->NextRow());
 
     CharacterDatabase.CommitTransaction(trans);
-
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u auctions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
-
-}
-
-void AuctionHouseMgr::LoadAuctions(const RedisValue* v, uint64 aucId)
-{
-    uint32 oldMSTime = getMSTime();
-    if (!v->isOk() || v->isNull())
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "AuctionHouseMgr::LoadAuctions data is empty");
-        return;
-    }
-    if (!v->isArray())
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "AuctionHouseMgr::LoadAuctions not found");
-        return;
-    }
-
-    std::vector<RedisValue> auctionVector = v->toArray();
-
-    uint32 count = 0;
-    for (auto itr = auctionVector.begin(); itr != auctionVector.end();)
-    {
-        uint32 Id = atoi(itr->toString().c_str());
-        ++itr;
-        if (itr->isInt())
-        {
-            ++itr;
-            continue;
-        }
-
-        std::string data = itr->toString();
-        ++itr;
-
-        Json::Value AuctionJson;
-        bool isReader = jsonReader.parse(data.c_str(), AuctionJson);
-        if (!isReader)
-        {
-            sLog->outInfo(LOG_FILTER_REDIS, "Player::DeSerializePlayerCriteriaProgress not parse achievementID %i", aucId);
-            continue;
-        }
-
-        AuctionEntry* aItem = new AuctionEntry();
-        aItem->Id = Id;
-        aItem->auctioneer = AuctionJson["auctioneer"].asUInt();
-        aItem->itemGUIDLow = AuctionJson["itemGUIDLow"].asUInt();
-        aItem->itemEntry = AuctionJson["itemEntry"].asUInt();
-        aItem->itemCount = AuctionJson["itemCount"].asUInt();
-        aItem->owner = AuctionJson["owner"].asUInt();
-        aItem->startbid = AuctionJson["startbid"].asUInt64();
-        aItem->bid = AuctionJson["bid"].asUInt64();
-        aItem->buyout = AuctionJson["buyout"].asUInt64();
-        aItem->expire_time = AuctionJson["expire_time"].asUInt();
-        aItem->bidder = AuctionJson["bidder"].asUInt();
-        aItem->deposit = AuctionJson["deposit"].asUInt64();
-
-        CreatureData const* auctioneerData = sObjectMgr->GetCreatureData(aItem->auctioneer);
-        if (!auctioneerData)
-            continue;
-
-        CreatureTemplate const* auctioneerInfo = sObjectMgr->GetCreatureTemplate(auctioneerData->id);
-        if (!auctioneerInfo)
-            continue;
-
-        aItem->factionTemplateId = auctioneerInfo->faction;
-        aItem->auctionHouseEntry = AuctionHouseMgr::GetAuctionHouseEntry(aItem->factionTemplateId);
-
-        if (!aItem->auctionHouseEntry)
-            continue;
-
-        // check if sold item exists for guid
-        // and itemEntry in fact (GetAItem will fail if problematic in result check in AuctionHouseMgr::LoadAuctionItems)
-        if (!sAuctionMgr->GetAItem(aItem->itemGUIDLow))
-            continue;
-
-        GetAuctionsMap(aItem->factionTemplateId)->AddAuction(aItem);
-        aItem->UpdateSerializeAuction();
-        count++;
-    }
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u auctions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 

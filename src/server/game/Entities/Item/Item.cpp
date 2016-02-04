@@ -779,7 +779,7 @@ void Item::SetState(ItemUpdateState state, Player* forplayer)
         if (state == ITEM_REMOVED)
             DeleteFromRedis();
         else
-            SerializeItem();
+            SaveItem();
     }
     else
     {
@@ -1799,7 +1799,7 @@ void Item::UpdateItemKey(uint8 type, uint32 guid)
             break;
     }
 
-    SerializeItem();
+    SaveItem();
 }
 
 void Item::DeleteFromRedis()

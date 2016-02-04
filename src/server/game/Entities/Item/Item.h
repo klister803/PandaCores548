@@ -414,10 +414,8 @@ class Item : public Object
         /*********************************************************/
 
         char* itemKey;
-        Json::Reader jsonReader;
-        Json::FastWriter jsonBuilder;
-        Json::Value ItemsJson;
-        void SerializeItem();
+        Json::Value ItemData;
+        void SaveItem();
         void SetItemKey(uint8 type, uint32 guid);
         void UpdateItemKey(uint8 type, uint32 guid);
         void DeleteFromRedis();

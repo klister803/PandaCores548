@@ -652,7 +652,7 @@ void WorldSession::LogoutPlayer(bool Save)
             for (int j = BUYBACK_SLOT_START; j < BUYBACK_SLOT_END; ++j)
                 _player->RemoveItemFromBuyBackSlot(j, true);
             //_player->SaveToDB();
-            _player->UpdateSerializePlayer();
+            _player->UpdateSavePlayer();
         }
 
         ///- Leave all channels before player delete...

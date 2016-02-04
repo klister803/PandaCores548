@@ -2899,7 +2899,7 @@ bool AchievementMgr<T>::SetCriteriaProgress(AchievementEntry const* achievement,
         return false;
 
     if (achievement && GetCriteriaSort() == PLAYER_CRITERIA)
-        referencePlayer->UpdateSerializePlayerCriteriaProgress(achievement, progressMap);
+        referencePlayer->UpdateSavePlayerCriteriaProgress(achievement, progressMap);
 
     if (achievement && achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
         SendAccountCriteriaUpdate(criteria, progress, timeElapsed, progress->completed);
@@ -3018,8 +3018,8 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
 
     if (GetCriteriaSort() == PLAYER_CRITERIA)
     {
-        referencePlayer->SerializePlayerAchievement();
-        referencePlayer->DeleteSerializePlayerCriteriaProgress(achievement);
+        referencePlayer->SavePlayerAchievement();
+        referencePlayer->DeleteSavePlayerCriteriaProgress(achievement);
     }
 
     if (!progressMap)
@@ -3085,7 +3085,7 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
         {
             item->SetItemKey(ITEM_KEY_USER, GetOwner()->GetGUIDLow());
             // save new item before send
-            item->SerializeItem();                               // save for prevent lost at next mail load, if send fail then item will deleted
+            item->SaveItem();                               // save for prevent lost at next mail load, if send fail then item will deleted
 
             // item
             draft.AddItem(item);

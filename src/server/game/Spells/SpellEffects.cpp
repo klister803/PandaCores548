@@ -6183,7 +6183,7 @@ void Spell::EffectApplyGlyph(SpellEffIndex effIndex)
             }
         }
     }
-    player->SerializePlayerGlyphs();
+    player->SavePlayerGlyphs();
 }
 
 void Spell::EffectEnchantHeldItem(SpellEffIndex effIndex)
@@ -8074,9 +8074,9 @@ void Spell::EffectUnlearnTalent(SpellEffIndex effIndex)
     }
 
 
-    plr->SerializePlayerTalents();
-    plr->SerializePlayerSpells();
-    plr->SerializePlayerGlyphs();
+    plr->SavePlayerTalents();
+    plr->SavePlayerSpells();
+    plr->SavePlayerGlyphs();
     plr->SendTalentsInfoData(false);
 }
 
@@ -8429,7 +8429,7 @@ void Spell::EffectUncageBattlePet(SpellEffIndex effIndex)
             delete accumulator;
             player->GetBattlePetMgr()->AddPetToList(petguid, bp->ID, bp->CreatureEntry, level, creature->Modelid1, power, speed, health, health, quality, 0, 0, bp->spellId, "", breedID, STATE_UPDATED);
 
-            player->SerializePlayerBattlePets();
+            player->SavePlayerBattlePets();
         }
         std::list<uint64> updates;
         updates.clear();
@@ -8497,7 +8497,7 @@ void Spell::EffectHealBattlePetPct(SpellEffIndex effIndex)
             updates.push_back(j->first);
         }
     }
-    player->SerializePlayerBattlePets();
+    player->SavePlayerBattlePets();
 
     player->GetBattlePetMgr()->SendUpdatePets(updates);
 }

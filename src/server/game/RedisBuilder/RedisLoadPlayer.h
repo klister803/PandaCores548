@@ -16,8 +16,8 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SERIALIZEPLAYER_H
-#define __SERIALIZEPLAYER_H
+#ifndef __SavePlayer_H
+#define __SavePlayer_H
 
 enum LoadingStep
 {

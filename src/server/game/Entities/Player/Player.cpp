@@ -1794,7 +1794,7 @@ void Player::Update(uint32 p_time)
                 q_status.Timer -= p_time;
                 m_QuestStatusSave[*iter] = true;
 
-                SerializePlayerQuestStatus();
+                SavePlayerQuestStatus();
 
                 ++iter;
             }
@@ -2029,7 +2029,7 @@ void Player::Update(uint32 p_time)
         {
             // m_nextSave reseted in SaveToDB call
             if (RedisDatabase.isConnected())
-                UpdateSerializePlayer();
+                UpdateSavePlayer();
             else
                 SaveToDB();
             sLog->outDebug(LOG_FILTER_PLAYER, "Player '%s' (GUID: %u) saved", GetName(), GetGUIDLow());
@@ -4274,7 +4274,7 @@ bool Player::AddTalent(TalentEntry const* talent, uint8 spec, bool learning)
 
         (*GetTalentMap(spec))[talent->spellId] = newtalent;
 
-        SerializePlayerTalents();
+        SavePlayerTalents();
         return true;
     }
     return false;
@@ -5547,9 +5547,9 @@ bool Player::ResetTalents(bool no_cost)
         SetTalentResetTime(time(NULL));
     }
 
-    UpdateSerializePlayer();
-    SerializePlayerTalents();
-    SerializePlayerSpells();
+    UpdateSavePlayer();
+    SavePlayerTalents();
+    SavePlayerSpells();
 
     return true;
 }
@@ -5590,9 +5590,9 @@ void Player::ResetSpec(bool takeMoney)
     SetSpecializationResetTime(time(NULL));
     InitialPowers();
 
-    UpdateSerializePlayer();
-    SerializePlayerTalents();
-    SerializePlayerSpells();
+    UpdateSavePlayer();
+    SavePlayerTalents();
+    SavePlayerSpells();
 }
 
 void Player::SetSpecializationId(uint8 spec, uint32 id)
@@ -7169,7 +7169,7 @@ bool Player::UpdateSkill(uint32 skill_id, uint32 step)
         if (itr->second.uState != SKILL_NEW)
             itr->second.uState = SKILL_CHANGED;
 
-        SerializePlayerSkills();
+        SavePlayerSkills();
 
         UpdateSkillEnchantments(skill_id, value, new_value);
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_SKILL_LEVEL, skill_id);
@@ -7320,7 +7320,7 @@ bool Player::UpdateSkillPro(uint16 SkillId, int32 Chance, uint32 step)
             }
         }
 
-        SerializePlayerSkills();
+        SavePlayerSkills();
 
         UpdateSkillEnchantments(SkillId, value, new_value);
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_SKILL_LEVEL, SkillId);
@@ -7345,7 +7345,7 @@ void Player::ModifySkillBonus(uint32 skillid, int32 val, bool talent)
 
     SetUInt16Value(field, offset, bonus + val);
 
-    SerializePlayerSkills();
+    SavePlayerSkills();
 }
 
 // This functions sets a skill line value (and adds if doesn't exist yet)
@@ -8772,7 +8772,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         }
     }
 
-    SerializePlayerCurrency();
+    SavePlayerCurrency();
 }
 
 void Player::SetCurrency(uint32 id, uint32 count, bool printLog /*= true*/)
@@ -8801,7 +8801,7 @@ void Player::ResetCurrencyWeekCap()
     WorldPacket data(SMSG_WEEKLY_RESET_CURRENCY, 0);
     SendDirectMessage(&data);
 
-    SerializePlayerCurrency();
+    SavePlayerCurrency();
 }
 
 uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency)
@@ -17103,7 +17103,7 @@ void Player::AddQuest(Quest const* quest, Object* questGiver)
 
     UpdateForQuestWorldObjects();
 
-    SerializePlayerQuestStatus();
+    SavePlayerQuestStatus();
 }
 
 void Player::CompleteQuest(uint32 quest_id)
@@ -17327,7 +17327,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
     // StoreNewItem, mail reward, etc. save data directly to the database
     // to prevent exploitable data desynchronisation we save the quest status to the database too
     // (to prevent rewarding this quest another time while rewards were already given out)
-    SerializePlayerQuestRewarded();
+    SavePlayerQuestRewarded();
 
     if (announce)
         SendQuestReward(quest, XP, questGiver);
@@ -17386,7 +17386,7 @@ void Player::FailQuest(uint32 questId)
                 // Destroy items received during the quest.
                 DestroyItemCount(quest->RequiredSourceItemId[i], quest->RequiredSourceItemCount[i], true, true);
 
-        SerializePlayerQuestStatus();
+        SavePlayerQuestStatus();
     }
 }
 
@@ -17951,7 +17951,7 @@ void Player::SetQuestStatus(uint32 quest_id, QuestStatus status)
 
     UpdateForQuestWorldObjects();
 
-    SerializePlayerQuestStatus();
+    SavePlayerQuestStatus();
 }
 
 void Player::RemoveActiveQuest(uint32 quest_id)
@@ -17968,7 +17968,7 @@ void Player::RemoveActiveQuest(uint32 quest_id)
         phaseUdateData.AddQuestUpdate(quest_id);
 
         phaseMgr.NotifyConditionChanged(phaseUdateData);
-        SerializePlayerQuestStatus();
+        SavePlayerQuestStatus();
         return;
     }
 }
@@ -17986,7 +17986,7 @@ void Player::RemoveRewardedQuest(uint32 quest_id)
 
         phaseMgr.NotifyConditionChanged(phaseUdateData);
 
-        SerializePlayerQuestRewarded();
+        SavePlayerQuestRewarded();
     }
 }
 
@@ -18044,7 +18044,7 @@ void Player::AreaExploredOrEventHappens(uint32 questId)
             {
                 q_status.Explored = true;
                 m_QuestStatusSave[questId] = true;
-                SerializePlayerQuestStatus();
+                SavePlayerQuestStatus();
             }
         }
         if (CanCompleteQuest(questId))
@@ -18101,7 +18101,7 @@ void Player::ItemAddedQuestCheck(uint32 entry, uint32 count)
 
                     m_QuestStatusSave[questid] = true;
 
-                    SerializePlayerQuestStatus();
+                    SavePlayerQuestStatus();
                     //SendQuestUpdateAddItem(qInfo, j, additemcount);
                     // FIXME: verify if there's any packet sent updating item
                 }
@@ -18145,7 +18145,7 @@ void Player::ItemRemovedQuestCheck(uint32 entry, uint32 count)
                     uint16 remitemcount = curitemcount <= reqitemcount ? count : count + reqitemcount - curitemcount;
                     q_status.ItemCount[j] = (curitemcount <= remitemcount) ? 0 : curitemcount - remitemcount;
 
-                    SerializePlayerQuestStatus();
+                    SavePlayerQuestStatus();
 
                     m_QuestStatusSave[questid] = true;
 
@@ -18227,7 +18227,7 @@ void Player::KilledMonsterCredit(uint32 entry, uint64 guid)
 
                             m_QuestStatusSave[questid] = true;
 
-                            SerializePlayerQuestStatus();
+                            SavePlayerQuestStatus();
 
                             SendQuestUpdateAddCreatureOrGo(qInfo, guid, j, curkillcount, addkillcount);
                         }
@@ -18271,7 +18271,7 @@ void Player::KilledPlayerCredit()
 
                     m_QuestStatusSave[questid] = true;
 
-                    SerializePlayerQuestStatus();
+                    SavePlayerQuestStatus();
 
                     SendQuestUpdateAddPlayer(qInfo, curkill, addkillcount);
                 }
@@ -18350,7 +18350,7 @@ void Player::CastedCreatureOrGO(uint32 entry, uint64 guid, uint32 spell_id)
 
                         m_QuestStatusSave[questid] = true;
 
-                        SerializePlayerQuestStatus();
+                        SavePlayerQuestStatus();
 
                         SendQuestUpdateAddCreatureOrGo(qInfo, guid, j, curCastCount, addCastCount);
                     }
@@ -18409,7 +18409,7 @@ void Player::TalkedToCreature(uint32 entry, uint64 guid)
 
                             m_QuestStatusSave[questid] = true;
 
-                            SerializePlayerQuestStatus();
+                            SavePlayerQuestStatus();
 
                             SendQuestUpdateAddCreatureOrGo(qInfo, guid, j, curTalkCount, addTalkCount);
                         }
@@ -18858,7 +18858,7 @@ void Player::SetHomebind(WorldLocation const& loc, uint32 area_id)
     m_homebindY      = loc.GetPositionY();
     m_homebindZ      = loc.GetPositionZ();
 
-    SerializePlayerHomeBind();
+    SavePlayerHomeBind();
 }
 
 uint32 Player::GetUInt32ValueFromArray(Tokenizer const& data, uint16 index)
@@ -19676,7 +19676,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     }
 
     //init json data for save in redis db
-    InitSerializePlayer();
+    InitSavePlayer();
 
     return true;
 }
@@ -20048,7 +20048,7 @@ void Player::_LoadInventory(PreparedQueryResult result, uint32 timeDiff)
                 if (err == EQUIP_ERR_OK)
                 {
                     item->SetState(ITEM_UNCHANGED, this);
-                    item->SerializeItem();
+                    item->SaveItem();
                 }
                 else
                 {
@@ -20863,7 +20863,7 @@ void Player::ResetLootCooldown()
                 ++itr;
         }
     }
-    SerializePlayerLootCooldown();
+    SavePlayerLootCooldown();
 }
 
 void Player::AddPlayerLootCooldown(uint32 entry, uint8 type/* = 0*/, bool respawn/* = true*/, uint8 diff/* = 0*/)
@@ -20882,7 +20882,7 @@ void Player::AddPlayerLootCooldown(uint32 entry, uint8 type/* = 0*/, bool respaw
     else
         itr->second.difficultyMask |= (1 << (sObjectMgr->GetDiffFromSpawn(diff)));
 
-    SerializePlayerLootCooldown();
+    SavePlayerLootCooldown();
 }
 
 bool Player::IsPlayerLootCooldown(uint32 entry, uint8 type/* = 0*/, uint8 diff/* = 0*/) const
@@ -20999,7 +20999,7 @@ void Player::UnbindInstance(uint32 mapid, Difficulty difficulty, bool unload)
     BoundInstancesMap::iterator itr = m_boundInstances[difficulty].find(mapid);
     UnbindInstance(itr, difficulty, unload);
 
-    SerializePlayerBoundInstances();
+    SavePlayerBoundInstances();
 }
 
 void Player::UnbindInstance(BoundInstancesMap::iterator &itr, Difficulty difficulty, bool unload)
@@ -21200,7 +21200,7 @@ void Player::ConvertInstancesToGroup(Player* player, Group* group, bool switchLe
         }
     }
 
-    player->SerializePlayerBoundInstances();
+    player->SavePlayerBoundInstances();
 }
 
 bool Player::Satisfy(AccessRequirement const* ar, uint32 target_map, bool report)
@@ -22945,7 +22945,7 @@ void Player::ResetInstances(uint8 method, bool isRaid)
         p->RemovePlayer(this);
     }
 
-    SerializePlayerBoundInstances();
+    SavePlayerBoundInstances();
 }
 
 //! 5.4.1
@@ -25740,7 +25740,7 @@ void Player::ModifyMoney(int64 d)
         }
         SetMoney(newAmount);
     }
-    SerializePlayerGold();
+    SavePlayerGold();
 }
 
 Unit* Player::GetSelectedUnit() const
@@ -26519,7 +26519,7 @@ void Player::SetDailyQuestStatus(uint32 quest_id)
                 m_lastDailyQuestTime = time(NULL);              // last daily quest time
                 m_DailyQuestChanged = true;
 
-                SerializePlayerQuestDaily();
+                SavePlayerQuestDaily();
             }
         }
         else
@@ -26536,7 +26536,7 @@ void Player::SetWeeklyQuestStatus(uint32 quest_id)
     m_weeklyquests.insert(quest_id);
     m_WeeklyQuestChanged = true;
 
-    SerializePlayerQuestWeekly();
+    SavePlayerQuestWeekly();
 }
 
 void Player::SetSeasonalQuestStatus(uint32 quest_id)
@@ -26548,7 +26548,7 @@ void Player::SetSeasonalQuestStatus(uint32 quest_id)
     m_seasonalquests[sGameEventMgr->GetEventIdForQuest(quest)].insert(quest_id);
     m_SeasonalQuestChanged = true;
 
-    SerializePlayerQuestSeasonal();
+    SavePlayerQuestSeasonal();
 }
 
 void Player::ResetDailyQuestStatus()
@@ -26560,7 +26560,7 @@ void Player::ResetDailyQuestStatus()
     m_DailyQuestChanged = false;
     m_lastDailyQuestTime = 0;
 
-    SerializePlayerQuestDaily();
+    SavePlayerQuestDaily();
 }
 
 void Player::ResetWeeklyQuestStatus()
@@ -26572,7 +26572,7 @@ void Player::ResetWeeklyQuestStatus()
     // DB data deleted in caller
     m_WeeklyQuestChanged = false;
 
-    SerializePlayerQuestWeekly();
+    SavePlayerQuestWeekly();
 
 }
 
@@ -26585,7 +26585,7 @@ void Player::ResetSeasonalQuestStatus(uint16 event_id)
     // DB data deleted in caller
     m_SeasonalQuestChanged = false;
 
-    SerializePlayerQuestSeasonal();
+    SavePlayerQuestSeasonal();
 }
 
 Battleground* Player::GetBattleground() const
@@ -29184,7 +29184,7 @@ void Player::ActivateSpec(uint8 spec)
     if (IsNonMeleeSpellCasted(false))
         InterruptNonMeleeSpells(false);
 
-    SerializePlayerActions();
+    SavePlayerActions();
 
     // TO-DO: We need more research to know what happens with warlock's reagent
     if (Pet* pet = GetPet())
@@ -29306,9 +29306,9 @@ void Player::ActivateSpec(uint8 spec)
 
     UpdatePvPPower();
 
-    SerializePlayerTalents();
-    SerializePlayerSpells();
-    SerializePlayerGlyphs();
+    SavePlayerTalents();
+    SavePlayerSpells();
+    SavePlayerGlyphs();
 }
 
 void Player::ResetTimeSync()

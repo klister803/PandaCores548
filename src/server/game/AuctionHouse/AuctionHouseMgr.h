@@ -93,18 +93,17 @@ struct AuctionEntry
     uint64 GetAuctionOutBid() const;
     bool BuildAuctionInfo(WorldPacket & data) const;
     void DeleteFromDB(SQLTransaction& trans) const;
-    void DeleteFromRedis();
     bool LoadFromDB(Field* fields);
     bool LoadFromFieldList(Field* fields);
     std::string BuildAuctionMailSubject(MailAuctionAnswers response) const;
     static std::string BuildAuctionMailBody(uint32 lowGuid, uint64 bid, uint64 buyout, uint64 deposit, uint64 cut);
 
+    //Save and 
     char* auctionKey;
-    Json::Reader jsonReader;
-    Json::FastWriter jsonBuilder;
-    Json::Value AuctionJson;
-    void SerializeAuction();
-    void UpdateSerializeAuction();
+    Json::Value AuctionData;
+    void SaveAuction();
+    void UpdateSaveAuction();
+    void DeleteFromRedis();
 };
 
 //this class is used as auctionhouse instance
@@ -202,9 +201,6 @@ class AuctionHouseMgr
         bool RemoveAItem(uint32 id);
 
         void Update();
-
-        Json::Reader jsonReader;
-        Json::FastWriter jsonBuilder;
 
     private:
 

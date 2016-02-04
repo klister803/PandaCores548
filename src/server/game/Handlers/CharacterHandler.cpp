@@ -1599,7 +1599,7 @@ void WorldSession::HandleRemoveGlyph(WorldPacket & recvData)
             _player->SetGlyph(slot, 0);
             _player->SendTalentsInfoData(false);
         }
-        _player->SerializePlayerGlyphs();
+        _player->SavePlayerGlyphs();
     }
 }
 
