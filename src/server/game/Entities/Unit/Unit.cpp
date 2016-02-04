@@ -15553,6 +15553,8 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
                             speed *= std::max(0.6f + (GetDistance(owner) / 10.0f), 1.1f);
                         }
                     }
+                    else
+                        speed *= ToCreature()->GetCreatureTemplate()->speed_run;
                 }
                 else
                     speed *= ToCreature()->GetCreatureTemplate()->speed_run;    // at this point, MOVE_WALK is never reached
