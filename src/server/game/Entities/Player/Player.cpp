@@ -19684,6 +19684,13 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         sLog->outDebug(LOG_FILTER_DUPE, "---PlayerLoaded;");
     }
 
+    /// Quest "A Test of Valor"
+    if (!GetQuestRewardStatus(32474) && !GetQuestRewardStatus(32476))
+    {
+        if (HasAchieved(8030) || HasAchieved(8031))
+            KilledMonsterCredit(69145, 0);
+    }
+
     return true;
 }
 
