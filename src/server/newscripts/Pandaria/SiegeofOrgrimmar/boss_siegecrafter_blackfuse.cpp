@@ -710,6 +710,33 @@ public:
             }
         }
 
+        bool IsPlayerRangeddOrHeal(Player* pl)
+        {
+            switch (pl->getClass())
+            {
+            case CLASS_PRIEST:
+            case CLASS_WARLOCK:
+            case CLASS_MAGE:
+            case CLASS_HUNTER:
+                return true;
+            case CLASS_PALADIN:
+                if (pl->GetSpecializationId(pl->GetActiveSpec()) == SPEC_PALADIN_HOLY)
+                    return true;
+            case CLASS_MONK:
+                if (pl->GetSpecializationId(pl->GetActiveSpec()) == SPEC_MONK_MISTWEAVER)
+                    return true;
+            case CLASS_SHAMAN:
+                if (pl->GetSpecializationId(pl->GetActiveSpec()) == SPEC_SHAMAN_ELEMENTAL || pl->GetSpecializationId(pl->GetActiveSpec()) == SPEC_SHAMAN_RESTORATION)
+                    return true;
+            case CLASS_DRUID:
+                if (pl->GetSpecializationId(pl->GetActiveSpec()) == SPEC_DRUID_RESTORATION || pl->GetSpecializationId(pl->GetActiveSpec()) == SPEC_DRUID_BALANCE)
+                    return true;
+            default:
+                return false;
+            }
+            return false;
+        }
+
         void StartDisentegrationLaser()
         {
             if (me->ToTempSummon())
@@ -722,17 +749,20 @@ public:
                     {
                         for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                         {
-                            if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && !(*itr)->HasAura(SPELL_PATTERN_RECOGNITION) && !(*itr)->HasAura(SPELL_ON_CONVEYOR) && !(*itr)->HasAura(SPELL_CRAWLER_MINE_FIXATE_PL))
+                            if (!(*itr)->HasAura(SPELL_PATTERN_RECOGNITION) && !(*itr)->HasAura(SPELL_ON_CONVEYOR) && !(*itr)->HasAura(SPELL_CRAWLER_MINE_FIXATE_PL))
                             {
-                                if (Creature* laser = blackfuse->SummonCreature(NPC_LASER_TARGET, (*itr)->GetPositionX() + 10.0f, (*itr)->GetPositionY(), blackfuse->GetPositionZ()))
+                                if (IsPlayerRangeddOrHeal(*itr))
                                 {
-                                    laser->CastSpell(*itr, SPELL_PURSUIT_LASER);
-                                    DoCast(laser, SPELL_DISINTEGRATION_LASER_V);
-                                    laser->CastSpell(laser, SPELL_LASER_GROUND_PERIODIC_AT);
-                                    laser->AddThreat(*itr, 50000000.0f);
-                                    laser->SetReactState(REACT_AGGRESSIVE);
-                                    laser->TauntApply(*itr);
-                                    break;
+                                    if (Creature* laser = blackfuse->SummonCreature(NPC_LASER_TARGET, (*itr)->GetPositionX() + 10.0f, (*itr)->GetPositionY(), blackfuse->GetPositionZ()))
+                                    {
+                                        laser->CastSpell(*itr, SPELL_PURSUIT_LASER);
+                                        DoCast(laser, SPELL_DISINTEGRATION_LASER_V);
+                                        laser->CastSpell(laser, SPELL_LASER_GROUND_PERIODIC_AT);
+                                        laser->AddThreat(*itr, 50000000.0f);
+                                        laser->SetReactState(REACT_AGGRESSIVE);
+                                        laser->TauntApply(*itr);
+                                        break;
+                                    }
                                 }
                             }
                         }
