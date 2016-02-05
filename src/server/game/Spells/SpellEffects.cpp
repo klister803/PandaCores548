@@ -2263,6 +2263,7 @@ void Spell::EffectUnlearnSpecialization(SpellEffIndex effIndex)
     uint32 spellToUnlearn = m_spellInfo->GetEffect(effIndex, m_diffMode)->TriggerSpell;
 
     player->removeSpell(spellToUnlearn);
+    player->SavePlayerSpells();
 
     sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell: Player %u has unlearned spell %u from NpcGUID: %u", player->GetGUIDLow(), spellToUnlearn, m_caster->GetGUIDLow());
 }
@@ -6184,6 +6185,7 @@ void Spell::EffectApplyGlyph(SpellEffIndex effIndex)
         }
     }
     player->SavePlayerGlyphs();
+    player->SavePlayerSpells();
 }
 
 void Spell::EffectEnchantHeldItem(SpellEffIndex effIndex)
@@ -8072,7 +8074,6 @@ void Spell::EffectUnlearnTalent(SpellEffIndex effIndex)
         plr->SetFreeTalentPoints(plr->GetFreeTalentPoints()+1);
         break;
     }
-
 
     plr->SavePlayerTalents();
     plr->SavePlayerSpells();

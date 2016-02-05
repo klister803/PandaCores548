@@ -6398,7 +6398,10 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
                     case LINK_ACTION_LEARN:
                     {
                         if(Player* _lplayer = _caster->ToPlayer())
+                        {
                             _lplayer->removeSpell(abs(i->effect));
+                            _lplayer->SavePlayerSpells();
+                        }
                         break;
                     }
                     case LINK_ACTION_AURATYPE:

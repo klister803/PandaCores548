@@ -1283,6 +1283,7 @@ void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recvData)
         }
         GetPlayer()->addActionButton(button, action, type, GetPlayer()->GetActiveSpec());
     }
+    GetPlayer()->SavePlayerActions();
 }
 
 void WorldSession::HandleCompleteCinematic(WorldPacket& /*recvData*/)

@@ -55,7 +55,7 @@ void AuctionEntry::SaveAuction()
 
     std::string index = std::to_string(Id);
 
-    RedisDatabase.AsyncExecuteHSet("HSET", auctionKey, index.c_str(), sRedisBuilder->BuildString(AuctionData), Id, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", auctionKey, index.c_str(), sRedisBuilder->BuildString(AuctionData).c_str(), Id, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "AuctionEntry::SaveAuction guid %u", guid);
     });
 }

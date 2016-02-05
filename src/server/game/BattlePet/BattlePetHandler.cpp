@@ -239,6 +239,7 @@ void WorldSession::HandleCageBattlePet(WorldPacket& recvData)
 
         // at fourth - unlearn spell - TODO: fix it because more than one spell/battle pet of same type
         _player->removeSpell(petInfo->GetSummonSpell());
+        _player->SavePlayerSpells();
 
         // delete from journal
         _player->GetBattlePetMgr()->DeletePetByPetGUID(guid);

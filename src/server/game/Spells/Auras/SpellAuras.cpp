@@ -1733,7 +1733,10 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                             case LINK_ACTION_LEARN:
                             {
                                 if(Player* _lplayer = _target->ToPlayer())
+                                {
                                     _lplayer->removeSpell(abs(itr->effect));
+                                    _lplayer->SavePlayerSpells();
+                                }
                                 break;
                             }
                             case LINK_ACTION_AURATYPE:
@@ -1802,7 +1805,10 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                             case LINK_ACTION_LEARN:
                             {
                                 if(Player* _lplayer = _target->ToPlayer())
+                                {
                                     _lplayer->removeSpell(abs(itr->effect));
+                                    _lplayer->SavePlayerSpells();
+                                }
                                 break;
                             }
                             case LINK_ACTION_AURATYPE:
@@ -1883,7 +1889,10 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                                 case LINK_ACTION_LEARN:
                                 {
                                     if(Player* _lplayer = _target->ToPlayer())
+                                    {
                                         _lplayer->removeSpell(abs(itr->effect));
+                                        _lplayer->SavePlayerSpells();
+                                    }
                                     break;
                                 }
                                 case LINK_ACTION_AURATYPE:
@@ -1945,7 +1954,10 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                                 case LINK_ACTION_LEARN:
                                 {
                                     if(Player* _lplayer = _target->ToPlayer())
+                                    {
                                         _lplayer->removeSpell(abs(itr->effect));
+                                        _lplayer->SavePlayerSpells();
+                                    }
                                     break;
                                 }
                                 case LINK_ACTION_AURATYPE:

@@ -1792,7 +1792,6 @@ void Player::Update(uint32 p_time)
             else
             {
                 q_status.Timer -= p_time;
-                m_QuestStatusSave[*iter] = true;
 
                 SavePlayerQuestStatus();
 
@@ -4273,8 +4272,6 @@ bool Player::AddTalent(TalentEntry const* talent, uint8 spec, bool learning)
         newtalent->talentEntry = talent;
 
         (*GetTalentMap(spec))[talent->spellId] = newtalent;
-
-        SavePlayerTalents();
         return true;
     }
     return false;
@@ -4886,6 +4883,7 @@ void Player::learnSpell(uint32 spell_id, bool dependent)
         }
     }
 
+    SavePlayerSpells();
     // Many mounts depend on learned spells, update right now
     UpdateMount();
 }
@@ -7320,7 +7318,7 @@ bool Player::UpdateSkillPro(uint16 SkillId, int32 Chance, uint32 step)
             }
         }
 
-        SavePlayerSkills();
+        SavePlayerSpells();
 
         UpdateSkillEnchantments(SkillId, value, new_value);
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_SKILL_LEVEL, SkillId);
@@ -17083,8 +17081,6 @@ void Player::AddQuest(Quest const* quest, Object* questGiver)
 
     SetQuestSlot(log_slot, quest_id, qtime);
 
-    m_QuestStatusSave[quest_id] = true;
-
     GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_QUEST, quest_id);
 
     //starting initial quest script
@@ -17314,7 +17310,6 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
         SetSeasonalQuestStatus(quest_id);
 
     m_RewardedQuests.insert(quest_id);
-    m_RewardedQuestsSave[quest_id] = true;
 
     // Must come after the insert in m_RewardedQuests because of spell_area check
     RemoveActiveQuest(quest_id);
@@ -17935,10 +17930,7 @@ bool Player::CanShareQuest(uint32 quest_id) const
 void Player::SetQuestStatus(uint32 quest_id, QuestStatus status)
 {
     if (sObjectMgr->GetQuestTemplate(quest_id))
-    {
         m_QuestStatus[quest_id].Status = status;
-        m_QuestStatusSave[quest_id] = true;
-    }
 
     uint32 zone = 0, area = 0;
 
@@ -17960,7 +17952,6 @@ void Player::RemoveActiveQuest(uint32 quest_id)
     if (itr != m_QuestStatus.end())
     {
         m_QuestStatus.erase(itr);
-        m_QuestStatusSave[quest_id] = false;
 
         CheckSpellAreaOnQuestStatusChange(quest_id);
 
@@ -17968,6 +17959,7 @@ void Player::RemoveActiveQuest(uint32 quest_id)
         phaseUdateData.AddQuestUpdate(quest_id);
 
         phaseMgr.NotifyConditionChanged(phaseUdateData);
+
         SavePlayerQuestStatus();
         return;
     }
@@ -17979,7 +17971,6 @@ void Player::RemoveRewardedQuest(uint32 quest_id)
     if (rewItr != m_RewardedQuests.end())
     {
         m_RewardedQuests.erase(rewItr);
-        m_RewardedQuestsSave[quest_id] = false;
 
         PhaseUpdateData phaseUdateData;
         phaseUdateData.AddQuestUpdate(quest_id);
@@ -18016,7 +18007,7 @@ void Player::AdjustQuestReqItemCount(Quest const* quest, QuestStatusData& questS
                 uint32 curitemcount = GetItemCount(quest->RequiredItemId[i], true);
 
                 questStatusData.ItemCount[i] = std::min(curitemcount, reqitemcount);
-                m_QuestStatusSave[quest->GetQuestId()] = true;
+                SavePlayerQuestStatus();
             }
         }
     }
@@ -18043,7 +18034,6 @@ void Player::AreaExploredOrEventHappens(uint32 questId)
             if (!q_status.Explored)
             {
                 q_status.Explored = true;
-                m_QuestStatusSave[questId] = true;
                 SavePlayerQuestStatus();
             }
         }
@@ -18099,8 +18089,6 @@ void Player::ItemAddedQuestCheck(uint32 entry, uint32 count)
                     uint16 additemcount = curitemcount + count <= reqitemcount ? count : reqitemcount - curitemcount;
                     q_status.ItemCount[j] += additemcount;
 
-                    m_QuestStatusSave[questid] = true;
-
                     SavePlayerQuestStatus();
                     //SendQuestUpdateAddItem(qInfo, j, additemcount);
                     // FIXME: verify if there's any packet sent updating item
@@ -18145,11 +18133,9 @@ void Player::ItemRemovedQuestCheck(uint32 entry, uint32 count)
                     uint16 remitemcount = curitemcount <= reqitemcount ? count : count + reqitemcount - curitemcount;
                     q_status.ItemCount[j] = (curitemcount <= remitemcount) ? 0 : curitemcount - remitemcount;
 
-                    SavePlayerQuestStatus();
-
-                    m_QuestStatusSave[questid] = true;
-
                     IncompleteQuest(questid);
+
+                    SavePlayerQuestStatus();
                 }
                 return;
             }
@@ -18225,8 +18211,6 @@ void Player::KilledMonsterCredit(uint32 entry, uint64 guid)
                         {
                             q_status.CreatureOrGOCount[j] = curkillcount + addkillcount;
 
-                            m_QuestStatusSave[questid] = true;
-
                             SavePlayerQuestStatus();
 
                             SendQuestUpdateAddCreatureOrGo(qInfo, guid, j, curkillcount, addkillcount);
@@ -18268,8 +18252,6 @@ void Player::KilledPlayerCredit()
                 if (curkill < reqkill)
                 {
                     q_status.PlayerCount = curkill + addkillcount;
-
-                    m_QuestStatusSave[questid] = true;
 
                     SavePlayerQuestStatus();
 
@@ -18348,8 +18330,6 @@ void Player::CastedCreatureOrGO(uint32 entry, uint64 guid, uint32 spell_id)
                     {
                         q_status.CreatureOrGOCount[j] = curCastCount + addCastCount;
 
-                        m_QuestStatusSave[questid] = true;
-
                         SavePlayerQuestStatus();
 
                         SendQuestUpdateAddCreatureOrGo(qInfo, guid, j, curCastCount, addCastCount);
@@ -18406,8 +18386,6 @@ void Player::TalkedToCreature(uint32 entry, uint64 guid)
                         if (curTalkCount < reqTalkCount)
                         {
                             q_status.CreatureOrGOCount[j] = curTalkCount + addTalkCount;
-
-                            m_QuestStatusSave[questid] = true;
 
                             SavePlayerQuestStatus();
 
@@ -26322,6 +26300,7 @@ void Player::learnDefaultSpells()
         learnSpell(68996, true);
         learnSpell(94293, true);
     }
+    SavePlayerSpells();
 }
 
 void Player::learnQuestRewardedSpells(Quest const* quest)

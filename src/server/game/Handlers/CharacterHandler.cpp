@@ -1600,6 +1600,7 @@ void WorldSession::HandleRemoveGlyph(WorldPacket & recvData)
             _player->SendTalentsInfoData(false);
         }
         _player->SavePlayerGlyphs();
+        _player->SavePlayerSpells();
     }
 }
 

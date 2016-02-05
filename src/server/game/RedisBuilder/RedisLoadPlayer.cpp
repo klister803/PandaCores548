@@ -1413,6 +1413,7 @@ void Player::LoadPlayerTalents(const RedisValue* v, uint64 playerGuid)
                 continue;
 
             AddTalent(talent, spec, false);
+            sLog->outDebug(LOG_FILTER_REDIS, "Player::LoadPlayerTalents spec %u spellId %u talentId %u", spec, spellId, spell->talentId);
         }
     }
 
@@ -1598,7 +1599,7 @@ void Player::LoadPlayerQuestStatus(const RedisValue* v, uint64 playerGuid)
         return;
     }
 
-    uint16 slot = 0;
+    uint16 slot = FindQuestSlot(0);
     for (auto itr = PlayerQuestStatusJson.begin(); itr != PlayerQuestStatusJson.end(); ++itr)
     {
         uint32 quest_id = atoi(itr.memberName());
@@ -1701,7 +1702,7 @@ void Player::LoadAccountQuestStatus(const RedisValue* v, uint64 playerGuid)
         return;
     }
 
-    uint16 slot = 0;
+    uint16 slot = FindQuestSlot(0);
     for (auto itr = AccountQuestStatusJson.begin(); itr != AccountQuestStatusJson.end(); ++itr)
     {
         uint32 quest_id = atoi(itr.memberName());
@@ -1889,7 +1890,7 @@ void Player::LoadPlayerQuestDaily(const RedisValue* v, uint64 playerGuid)
         m_lastDailyQuestTime = time_t(itr->asUInt());
 
         Quest const* quest = sObjectMgr->GetQuestTemplate(quest_id);
-        if (quest)
+        if (!quest)
             continue;
 
         if (quest->IsDFQuest())
@@ -1920,7 +1921,7 @@ void Player::LoadAccountQuestDaily(const RedisValue* v, uint64 playerGuid)
         m_lastDailyQuestTime = time_t(itr->asUInt());
 
         Quest const* quest = sObjectMgr->GetQuestTemplate(quest_id);
-        if (quest)
+        if (!quest)
             continue;
 
         if (quest->IsDFQuest())

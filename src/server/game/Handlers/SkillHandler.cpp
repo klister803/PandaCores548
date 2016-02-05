@@ -86,6 +86,7 @@ void WorldSession::HandleLearnTalents(WorldPacket& recvData)
         _player->LearnTalent(talentId);
     }
 
+    _player->SavePlayerTalents();
     _player->SendTalentsInfoData(false);
 }
 
@@ -138,6 +139,7 @@ void WorldSession::HandleUnlearnSkillOpcode(WorldPacket& recvData)
         return;
 
     GetPlayer()->SetSkill(skillId, 0, 0, 0);
+    GetPlayer()->SavePlayerSkills();
 }
 
 void WorldSession::HandleQueryPlayerRecipes(WorldPacket& recvPacket)

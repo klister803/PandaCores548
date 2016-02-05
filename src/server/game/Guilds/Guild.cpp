@@ -2825,6 +2825,7 @@ void Guild::DeleteMember(uint64 guid, bool isDisbanding, bool isKicked)
 
         if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(REP_GUILD))
             player->GetReputationMgr().SetReputation(factionEntry, 0);
+        player->SavePlayerSpells();
     }
 
     _DeleteMemberFromDB(lowguid);

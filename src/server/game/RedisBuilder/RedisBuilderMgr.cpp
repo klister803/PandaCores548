@@ -12,9 +12,9 @@ RedisBuilder::~RedisBuilder()
 {
 }
 
-char const* RedisBuilder::BuildString(Json::Value& data)
+std::string RedisBuilder::BuildString(Json::Value& data)
 {
-    return Builder.write(data).c_str();
+    return Builder.write(data);
 }
 
 bool RedisBuilder::LoadFromRedis(const RedisValue* v, Json::Value& data)

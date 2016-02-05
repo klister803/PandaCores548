@@ -37,6 +37,7 @@
 #include "RedisLoadPlayer.h"
 #include "AchievementMgr.h"
 #include "RedisBuilderMgr.h"
+#include "QuestDef.h"
 
 void Player::InitSavePlayer()
 {
@@ -176,7 +177,7 @@ void Player::SavePlayer()
     PlayerJson["grantableLevels"] = m_grantableLevels;
     PlayerJson["lfgBonusFaction"] = GetLfgBonusFaction();
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "userdata", sRedisBuilder->BuildString(PlayerJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "userdata", sRedisBuilder->BuildString(PlayerJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         //sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayer guid %u", guid);
     });
 }
@@ -196,22 +197,23 @@ void Player::SavePlayerBG()
     PlayerBGJson["taxiEnd"] = m_bgData.taxiPath[1];
     PlayerBGJson["mountSpell"] = m_bgData.mountSpell;
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "BGdata", sRedisBuilder->BuildString(PlayerBGJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "BGdata", sRedisBuilder->BuildString(PlayerBGJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerBG guid %u", guid);
     });
 }
 
 void Player::SavePlayerGroup()
 {
-    PlayerGroupJson = GetGroup() ? GetGroup()->GetGUID() : 0;
+    PlayerGroupJson = GetGroup() ? GetGroup()->GetLowGUID() : 0;
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "group", sRedisBuilder->BuildString(PlayerGroupJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "group", sRedisBuilder->BuildString(PlayerGroupJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         //sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerGroup guid %u", guid);
     });
 }
 
 void Player::SavePlayerLootCooldown()
 {
+    PlayerLootCooldownJson.clear();
     for(int i = 0; i < MAX_LOOT_COOLDOWN_TYPE; i++)
     {
         std::string type = std::to_string(i);
@@ -225,7 +227,7 @@ void Player::SavePlayerLootCooldown()
         }
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "lootCooldown", sRedisBuilder->BuildString(PlayerLootCooldownJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "lootCooldown", sRedisBuilder->BuildString(PlayerLootCooldownJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerLootCooldown guid %u", guid);
     });
 }
@@ -242,26 +244,28 @@ void Player::SavePlayerCurrency()
         PlayerCurrencyJson[currencyID.c_str()]["curentCap"] = itr->second.curentCap;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "currency", sRedisBuilder->BuildString(PlayerCurrencyJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "currency", sRedisBuilder->BuildString(PlayerCurrencyJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerCurrency guid %u", guid);
     });
 }
 
 void Player::SavePlayerInstanceTimes()
 {
+    PlayerInstanceTimesJson.clear();
     for (InstanceTimeMap::const_iterator itr = _instanceResetTimes.begin(); itr != _instanceResetTimes.end(); ++itr)
     {
         std::string instanceId = std::to_string(itr->first);
         PlayerInstanceTimesJson[instanceId.c_str()]["releaseTime"] = itr->second;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "instancetime", sRedisBuilder->BuildString(PlayerInstanceTimesJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "instancetime", sRedisBuilder->BuildString(PlayerInstanceTimesJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerInstanceTimes guid %u", guid);
     });
 }
 
 void Player::SavePlayerSkills()
 {
+    PlayerSkillsJson.clear();
     for (SkillStatusMap::iterator itr = mSkillStatus.begin(); itr != mSkillStatus.end(); ++itr)
     {
         std::string skill = std::to_string(itr->first);
@@ -276,31 +280,43 @@ void Player::SavePlayerSkills()
         PlayerSkillsJson[skill.c_str()]["pos"] = itr->second.pos;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "skills", sRedisBuilder->BuildString(PlayerSkillsJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "skills", sRedisBuilder->BuildString(PlayerSkillsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerSkills guid %u", guid);
     });
 }
 
 void Player::SavePlayerTalents()
 {
+    PlayerTalentsJson.clear();
     for (uint8 i = 0; i < MAX_TALENT_SPECS; ++i)
     {
         std::string spec = std::to_string(i);
 
-        for (PlayerTalentMap::iterator itr = GetTalentMap(i)->begin(); itr != GetTalentMap(i)->end(); ++itr)
+        for (PlayerTalentMap::iterator itr = GetTalentMap(i)->begin(); itr != GetTalentMap(i)->end();)
         {
-            std::string spell = std::to_string(itr->first);
-            PlayerTalentsJson[spec.c_str()][spell.c_str()] = itr->second->spec;
+            if (itr->second->state == PLAYERSPELL_REMOVED)
+            {
+                delete itr->second;
+                GetTalentMap(i)->erase(itr++);
+            }
+            else
+            {
+                itr->second->state = PLAYERSPELL_UNCHANGED;
+                std::string spell = std::to_string(itr->first);
+                PlayerTalentsJson[spec.c_str()][spell.c_str()] = itr->second->spec;
+                ++itr;
+            }
         }
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "talents", sRedisBuilder->BuildString(PlayerTalentsJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "talents", sRedisBuilder->BuildString(PlayerTalentsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerTalents guid %u", guid);
     });
 }
 
 void Player::SavePlayerSpells()
 {
+    PlayerSpellsJson.clear();
     for (PlayerSpellMap::iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
     {
         if (!itr->second || itr->second->state == PLAYERSPELL_REMOVED)
@@ -323,13 +339,16 @@ void Player::SavePlayerSpells()
         }
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "spells", sRedisBuilder->BuildString(PlayerSpellsJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "spells", sRedisBuilder->BuildString(PlayerSpellsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerSpells Spells guid %u", guid);
     });
 
-    RedisDatabase.AsyncExecuteHSet("HSET", accountKey, "mounts", sRedisBuilder->BuildString(PlayerMountsJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", accountKey, "mounts", sRedisBuilder->BuildString(PlayerMountsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerSpells mounts guid %u", guid);
     });
+
+    //Update data skill
+    SavePlayerSkills();
 }
 
 void Player::SavePlayerGlyphs()
@@ -346,13 +365,14 @@ void Player::SavePlayerGlyphs()
         PlayerGlyphsJson[specId.c_str()]["glyph6"] = GetGlyph(spec, 5);
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "glyphs", sRedisBuilder->BuildString(PlayerGlyphsJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "glyphs", sRedisBuilder->BuildString(PlayerGlyphsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerGlyphs guid %u", guid);
     });
 }
 
 void Player::SavePlayerAuras()
 {
+    PlayerAurasJson.clear();
     for (AuraMap::const_iterator itr = m_ownedAuras.begin(); itr != m_ownedAuras.end(); ++itr)
     {
         if (!itr->second->CanBeSaved())
@@ -392,13 +412,15 @@ void Player::SavePlayerAuras()
         PlayerAurasJson["aura"][slot.c_str()]["remaincharges"] = itr->second->GetCharges();
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "auras", sRedisBuilder->BuildString(PlayerAurasJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "auras", sRedisBuilder->BuildString(PlayerAurasJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         //sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerAuras auras guid %u", guid);
     });
 }
 
 void Player::SavePlayerQuestStatus()
 {
+    AccountQuestStatusJson.clear();
+    PlayerQuestStatusJson.clear();
     for (QuestStatusMap::const_iterator itr = m_QuestStatus.begin(); itr != m_QuestStatus.end(); ++itr)
     {
         uint32 questId = itr->first;
@@ -462,17 +484,19 @@ void Player::SavePlayerQuestStatus()
         }
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "queststatus", sRedisBuilder->BuildString(PlayerQuestStatusJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "queststatus", sRedisBuilder->BuildString(PlayerQuestStatusJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerQuestStatus player guid %u", guid);
     });
 
-    RedisDatabase.AsyncExecuteHSet("HSET", accountKey, "queststatus", sRedisBuilder->BuildString(AccountQuestStatusJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", accountKey, "queststatus", sRedisBuilder->BuildString(AccountQuestStatusJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerQuestStatus account guid %u", guid);
     });
 }
 
 void Player::SavePlayerQuestRewarded()
 {
+    AccountQuestRewardedJson.clear();
+    PlayerQuestRewardedJson.clear();
     for (RewardedQuestSet::const_iterator itr = m_RewardedQuests.begin(); itr != m_RewardedQuests.end(); ++itr)
     {
         uint32 questId = *itr;
@@ -486,17 +510,19 @@ void Player::SavePlayerQuestRewarded()
             PlayerQuestRewardedJson[quest_id.c_str()] = quest_id;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questrewarded", sRedisBuilder->BuildString(PlayerQuestRewardedJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questrewarded", sRedisBuilder->BuildString(PlayerQuestRewardedJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerQuestRewarded player guid %u", guid);
     });
 
-    RedisDatabase.AsyncExecuteHSet("HSET", accountKey, "questrewarded", sRedisBuilder->BuildString(AccountQuestRewardedJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", accountKey, "questrewarded", sRedisBuilder->BuildString(AccountQuestRewardedJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerQuestRewarded account guid %u", guid);
     });
 }
 
 void Player::SavePlayerQuestDaily()
 {
+    AccountQuestDailyJson.clear();
+    PlayerQuestDailyJson.clear();
     for (QuestSet::const_iterator itr = m_dailyquests.begin(); itr != m_dailyquests.end(); ++itr)
     {
         uint32 questId = *itr;
@@ -510,17 +536,19 @@ void Player::SavePlayerQuestDaily()
             PlayerQuestDailyJson[quest_id.c_str()] = uint64(m_lastDailyQuestTime);
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questdaily", sRedisBuilder->BuildString(PlayerQuestDailyJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questdaily", sRedisBuilder->BuildString(PlayerQuestDailyJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerQuestDaily player guid %u", guid);
     });
 
-    RedisDatabase.AsyncExecuteHSet("HSET", accountKey, "questdaily", sRedisBuilder->BuildString(AccountQuestDailyJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", accountKey, "questdaily", sRedisBuilder->BuildString(AccountQuestDailyJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerQuestDaily account guid %u", guid);
     });
 }
 
 void Player::SavePlayerQuestWeekly()
 {
+    AccountQuestWeeklyJson.clear();
+    PlayerQuestWeeklyJson.clear();
     for (QuestSet::const_iterator itr = m_weeklyquests.begin(); itr != m_weeklyquests.end(); ++itr)
     {
         uint32 questId = *itr;
@@ -534,17 +562,19 @@ void Player::SavePlayerQuestWeekly()
             PlayerQuestWeeklyJson[quest_id.c_str()] = quest_id;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questweekly", sRedisBuilder->BuildString(PlayerQuestWeeklyJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questweekly", sRedisBuilder->BuildString(PlayerQuestWeeklyJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerQuestWeekly player guid %u", guid);
     });
 
-    RedisDatabase.AsyncExecuteHSet("HSET", accountKey, "questweekly", sRedisBuilder->BuildString(AccountQuestWeeklyJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", accountKey, "questweekly", sRedisBuilder->BuildString(AccountQuestWeeklyJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerQuestWeekly account guid %u", guid);
     });
 }
 
 void Player::SavePlayerQuestSeasonal()
 {
+    PlayerQuestSeasonalJson.clear();
+    AccountQuestSeasonalJson.clear();
     for (SeasonalEventQuestMap::const_iterator iter = m_seasonalquests.begin(); iter != m_seasonalquests.end(); ++iter)
     {
         std::string event_id = std::to_string(iter->first);
@@ -562,17 +592,18 @@ void Player::SavePlayerQuestSeasonal()
         }
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questseasonal", sRedisBuilder->BuildString(PlayerQuestSeasonalJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questseasonal", sRedisBuilder->BuildString(PlayerQuestSeasonalJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerQuestSeasonal player guid %u", guid);
     });
 
-    RedisDatabase.AsyncExecuteHSet("HSET", accountKey, "questseasonal", sRedisBuilder->BuildString(AccountQuestSeasonalJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", accountKey, "questseasonal", sRedisBuilder->BuildString(AccountQuestSeasonalJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerQuestSeasonal account guid %u", guid);
     });
 }
 
 void Player::SavePlayerBoundInstances()
 {
+    PlayerBoundInstancesJson.clear();
     for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
     {
         //std::string diff = std::to_string(i);
@@ -606,7 +637,7 @@ void Player::SavePlayerBoundInstances()
         }
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "boundinstances", sRedisBuilder->BuildString(PlayerBoundInstancesJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "boundinstances", sRedisBuilder->BuildString(PlayerBoundInstancesJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerBoundInstances guid %u", guid);
     });
 }
@@ -618,6 +649,7 @@ void Player::SavePlayerBattlePets()
     if (journal.empty())
         return;
 
+    AccountBattlePetsJson.clear();
     for (PetJournal::const_iterator pet = journal.begin(); pet != journal.end(); ++pet)
     {
         PetJournalInfo* pjInfo = pet->second;
@@ -641,7 +673,7 @@ void Player::SavePlayerBattlePets()
         AccountBattlePetsJson[petGuid.c_str()]["breedID"] = pjInfo->GetBreedID();
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", accountKey, "battlepets", sRedisBuilder->BuildString(AccountBattlePetsJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", accountKey, "battlepets", sRedisBuilder->BuildString(AccountBattlePetsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerBattlePets guid %u", guid);
     });
 }
@@ -655,7 +687,7 @@ void Player::SavePlayerBattlePetSlots()
         AccountBattlePetSlotsJson[index.c_str()] = slot ? slot->GetPet() : 0;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", accountKey, "battlepetslots", sRedisBuilder->BuildString(AccountBattlePetSlotsJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", accountKey, "battlepetslots", sRedisBuilder->BuildString(AccountBattlePetSlotsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerBattlePetSlots guid %u", guid);
     });
 }
@@ -684,6 +716,7 @@ void Player::SavePlayerArchaeology()
             ss << val << " ";
     PlayerArchaeologyJson["projects"] = ss.str().c_str();
 
+    PlayerArchaeologyJson.clear();
     for (CompletedProjectList::iterator itr = _completedProjects.begin(); itr != _completedProjects.end(); ++itr)
     {
         std::string ID = std::to_string(itr->entry->ID);
@@ -691,7 +724,7 @@ void Player::SavePlayerArchaeology()
         PlayerArchaeologyJson["finds"][ID.c_str()]["date"] = itr->date;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "archaeology", sRedisBuilder->BuildString(PlayerArchaeologyJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "archaeology", sRedisBuilder->BuildString(PlayerArchaeologyJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerArchaeology guid %u", guid);
     });
 }
@@ -705,13 +738,14 @@ void Player::SavePlayerReputation()
         PlayerReputationJson[faction.c_str()]["flags"] = itr->second.Flags;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "reputation", sRedisBuilder->BuildString(PlayerReputationJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "reputation", sRedisBuilder->BuildString(PlayerReputationJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerReputation player guid %u", guid);
     });
 }
 
 void Player::SavePlayerVoidStorage()
 {
+    PlayerVoidStorageJson.clear();
     for (uint8 i = 0; i < VOID_STORAGE_MAX_SLOT; ++i)
     {
         if (_voidStorageItems[i]) // unused item
@@ -732,13 +766,14 @@ void Player::SavePlayerVoidStorage()
         }
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "voidstorage", sRedisBuilder->BuildString(PlayerVoidStorageJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "voidstorage", sRedisBuilder->BuildString(PlayerVoidStorageJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerVoidStorage player guid %u", guid);
     });
 }
 
 void Player::SavePlayerActions()
 {
+    PlayerActionsJson.clear();
     for (uint8 i = 0; i < MAX_SPEC_COUNT; ++i)
     {
         for (ActionButtonList::iterator itr = m_actionButtons[i].begin(); itr != m_actionButtons[i].end(); ++itr)
@@ -750,13 +785,14 @@ void Player::SavePlayerActions()
         }
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "actions", sRedisBuilder->BuildString(PlayerActionsJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "actions", sRedisBuilder->BuildString(PlayerActionsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerActions player guid %u", guid);
     });
 }
 
 void Player::SavePlayerSocial()
 {
+    PlayerSocialJson.clear();
     PlayerSocial* social = sSocialMgr->GetPlayerSocial(GetGUIDLow());
     for (PlayerSocialMap::const_iterator itr = social->m_playerSocialMap.begin(); itr != social->m_playerSocialMap.end(); ++itr)
     {
@@ -765,7 +801,7 @@ void Player::SavePlayerSocial()
         PlayerSocialJson[friend_guid.c_str()]["Note"] = itr->second.Note.c_str();
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "social", sRedisBuilder->BuildString(PlayerSocialJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "social", sRedisBuilder->BuildString(PlayerSocialJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerSocial player guid %u", guid);
     });
 }
@@ -775,6 +811,7 @@ void Player::SavePlayerSpellCooldowns()
     time_t curTime = time(NULL);
     time_t infTime = curTime + infinityCooldownDelayCheck;
 
+    PlayerSpellCooldownsJson.clear();
     // remove outdated and save active
     for (SpellCooldowns::iterator itr = m_spellCooldowns.begin(); itr != m_spellCooldowns.end();)
     {
@@ -791,7 +828,7 @@ void Player::SavePlayerSpellCooldowns()
             ++itr;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "spellcooldowns", sRedisBuilder->BuildString(PlayerSpellCooldownsJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "spellcooldowns", sRedisBuilder->BuildString(PlayerSpellCooldownsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerSpellCooldowns player guid %u", guid);
     });
 }
@@ -801,6 +838,7 @@ void Player::SavePlayerKills()
     time_t curTime = time(NULL);
     time_t infTime = curTime + infinityCooldownDelayCheck;
 
+    PlayerKillsJson.clear();
     // remove outdated and save active
     for(KillInfoMap::iterator itr = m_killsPerPlayer.begin(); itr != m_killsPerPlayer.end(); ++itr)
     {
@@ -808,7 +846,7 @@ void Player::SavePlayerKills()
         PlayerKillsJson[victim.c_str()] = itr->second.count;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "kills", sRedisBuilder->BuildString(PlayerKillsJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "kills", sRedisBuilder->BuildString(PlayerKillsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerKills player guid %u", guid);
     });
 }
@@ -824,13 +862,14 @@ void Player::SavePlayerDeclinedName()
         }
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "declinedname", sRedisBuilder->BuildString(PlayerDeclinedNameJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "declinedname", sRedisBuilder->BuildString(PlayerDeclinedNameJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerDeclinedName player guid %u", guid);
     });
 }
 
 void Player::SavePlayerEquipmentSets()
 {
+    PlayerEquipmentSetsJson.clear();
     for (EquipmentSets::iterator itr = m_EquipmentSets.begin(); itr != m_EquipmentSets.end();++itr)
     {
         std::string index = std::to_string(itr->first);
@@ -860,13 +899,14 @@ void Player::SavePlayerEquipmentSets()
         PlayerEquipmentSetsJson[index.c_str()]["item18"] = eqset.Items[18];
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "equipmentsets", sRedisBuilder->BuildString(PlayerEquipmentSetsJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "equipmentsets", sRedisBuilder->BuildString(PlayerEquipmentSetsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerEquipmentSets player guid %u", guid);
     });
 }
 
 void Player::SavePlayerCUFProfiles()
 {
+    PlayerCUFProfilesJson.clear();
     for (uint8 i = 0; i < MAX_CUF_PROFILES; ++i)
     {
         if (_CUFProfiles[i])
@@ -887,7 +927,7 @@ void Player::SavePlayerCUFProfiles()
         }
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "cufprofiles", sRedisBuilder->BuildString(PlayerCUFProfilesJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "cufprofiles", sRedisBuilder->BuildString(PlayerCUFProfilesJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerCUFProfiles player guid %u", guid);
     });
 }
@@ -912,13 +952,15 @@ void Player::SavePlayerVisuals()
         PlayerVisualsJson["shirt"] = m_vis->m_visShirt;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "visuals", sRedisBuilder->BuildString(PlayerVisualsJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "visuals", sRedisBuilder->BuildString(PlayerVisualsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerVisuals player guid %u", guid);
     });
 }
 
 void Player::SavePlayerAccountData()
 {
+    PlayerAccountDataJson.clear();
+    AccountDataJson.clear();
     for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
     {
         if (PER_CHARACTER_CACHE_MASK & (1 << i))
@@ -939,11 +981,11 @@ void Player::SavePlayerAccountData()
         }
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "playeraccountdata", sRedisBuilder->BuildString(PlayerAccountDataJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "playeraccountdata", sRedisBuilder->BuildString(PlayerAccountDataJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerAccountData player guid %u", guid);
     });
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "accountdata", sRedisBuilder->BuildString(AccountDataJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "accountdata", sRedisBuilder->BuildString(AccountDataJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerAccountData player guid %u", guid);
     });
 }
@@ -956,7 +998,7 @@ void Player::SavePlayerHomeBind()
     PlayerHomeBindJson["posY"] = m_homebindY;
     PlayerHomeBindJson["posZ"] = m_homebindZ;
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "homebind", sRedisBuilder->BuildString(PlayerHomeBindJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "homebind", sRedisBuilder->BuildString(PlayerHomeBindJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerHomeBind player guid %u", guid);
     });
 }
@@ -977,17 +1019,19 @@ void Player::SavePlayerAchievement()
         AccountAchievementJson[achievementId.c_str()]["changed"] = iter->second.changed;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "achievement", sRedisBuilder->BuildString(PlayerAchievementJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "achievement", sRedisBuilder->BuildString(PlayerAchievementJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerAchievement player guid %u", guid);
     });
 
-    RedisDatabase.AsyncExecuteHSet("HSET", accountKey, "achievement", sRedisBuilder->BuildString(AccountAchievementJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", accountKey, "achievement", sRedisBuilder->BuildString(AccountAchievementJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerAchievement account guid %u", guid);
     });
 }
 
 void Player::SavePlayerCriteria()
 {
+    PlayerCriteriaJson.clear();
+    AccountCriteriaJson.clear();
     for (auto itr = GetAchievementMgr().GetAchievementProgress().begin(); itr != GetAchievementMgr().GetAchievementProgress().end(); ++itr)
     {
         std::string achievID = std::to_string(itr->first);
@@ -1034,7 +1078,7 @@ void Player::SavePlayerCriteria()
         if (save_pl)
         {
             PlayerCriteriaJson[achievID.c_str()] = CriteriaPl;
-            RedisDatabase.AsyncExecuteHSet("HSET", criteriaPlKey, achievID.c_str(), sRedisBuilder->BuildString(CriteriaPl), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+            RedisDatabase.AsyncExecuteHSet("HSET", criteriaPlKey, achievID.c_str(), sRedisBuilder->BuildString(CriteriaPl).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
                 sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerCriteria player guid %u", guid);
             });
         }
@@ -1042,7 +1086,7 @@ void Player::SavePlayerCriteria()
         if (save_ac)
         {
             AccountCriteriaJson[achievID.c_str()] = CriteriaAc;
-            RedisDatabase.AsyncExecuteHSet("HSET", criteriaAcKey, achievID.c_str(), sRedisBuilder->BuildString(CriteriaAc), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+            RedisDatabase.AsyncExecuteHSet("HSET", criteriaAcKey, achievID.c_str(), sRedisBuilder->BuildString(CriteriaAc).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
                 sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerCriteria account guid %u", guid);
             });
         }
@@ -1051,6 +1095,7 @@ void Player::SavePlayerCriteria()
 
 void Player::SavePlayerPets()
 {
+    PlayerPetsJson.clear();
     QueryResult result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = '%u'", GetGUIDLow());
     if (result)
     {
@@ -1076,7 +1121,7 @@ void Player::SavePlayerPets()
         while (result->NextRow());
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "pets", sRedisBuilder->BuildString(PlayerPetsJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "pets", sRedisBuilder->BuildString(PlayerPetsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerPets player guid %u", guid);
     });
 }
@@ -1308,7 +1353,7 @@ void Player::CreatedPlayerPets()
         SetTemporaryUnsummonedPetNumber(m_currentPetNumber);
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "pets", sRedisBuilder->BuildString(PlayerPetsJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "pets", sRedisBuilder->BuildString(PlayerPetsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::CreatedPlayerPets player guid %u", guid);
     });
 }
@@ -1339,7 +1384,7 @@ void Player::SavePlayerMails()
             m->MailJson["stationery"] = m->stationery;
             m->MailJson["mailTemplateId"] = m->mailTemplateId;
 
-            RedisDatabase.AsyncExecuteHSet("HSET", mailKey, messageID.c_str(), sRedisBuilder->BuildString(m->MailJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+            RedisDatabase.AsyncExecuteHSet("HSET", mailKey, messageID.c_str(), sRedisBuilder->BuildString(m->MailJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
                 sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerMails player guid %u", guid);
             });
         }
@@ -1350,7 +1395,7 @@ void Player::SavePlayerGold()
 {
     PlayerGoldJson = GetMoney();
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "money", sRedisBuilder->BuildString(PlayerGoldJson), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "money", sRedisBuilder->BuildString(PlayerGoldJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerGold guid %u", guid);
     });
 }

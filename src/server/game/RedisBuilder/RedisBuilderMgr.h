@@ -17,7 +17,7 @@ class RedisBuilder
             static RedisBuilder instance;
             return &instance;
         }
-        char const* BuildString(Json::Value& data);
+        std::string BuildString(Json::Value& data);
         bool LoadFromRedis(const RedisValue* v, Json::Value& data);
         bool LoadFromRedisArray(const RedisValue* v, std::vector<RedisValue>& data);
 
