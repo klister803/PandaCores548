@@ -4201,6 +4201,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 142890: //Blood Rage Dmg
                 case 143962: //Inferno Strike
                 case 120196: //Meteor
+                case 144688: //Magma Crush
                     // ONLY SPELLS WITH SPELLFAMILY_GENERIC and EFFECT_SCHOOL_DAMAGE
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     break;
