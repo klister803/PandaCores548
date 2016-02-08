@@ -49,23 +49,15 @@ LFGMgr::~LFGMgr()
         delete itr->second;
 }
 
-void LFGMgr::_LoadFromDB(Field* fields, uint64 guid)
+void LFGMgr::_LoadFromDB(uint32 dungeon, uint8 state, uint64 guid, uint64 leaderGuid)
 {
-    if (!fields)
-        return;
-
     if (!IS_GROUP(guid))
         return;
-
-    SetLeader(guid, MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER));
-
-    uint32 dungeon = fields[16].GetUInt32();
-
-    uint8 state = fields[17].GetUInt8();
 
     if (!dungeon || !state)
         return;
 
+    SetLeader(guid, leaderGuid);
     SetDungeon(guid, dungeon);
 
     switch (state)
@@ -77,26 +69,6 @@ void LFGMgr::_LoadFromDB(Field* fields, uint64 guid)
         default:
             break;
     }
-}
-
-void LFGMgr::_SaveToDB(uint64 guid, uint32 db_guid)
-{
-    if (!IS_GROUP(guid))
-        return;
-
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_LFG_DATA);
-
-    stmt->setUInt32(0, db_guid);
-
-    CharacterDatabase.Execute(stmt);
-
-    stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_LFG_DATA);
-    stmt->setUInt32(0, db_guid);
-
-    stmt->setUInt32(1, GetDungeon(guid));
-    stmt->setUInt32(2, GetState(guid));
-
-    CharacterDatabase.Execute(stmt);
 }
 
 /// Load rewards for completing dungeons
@@ -1049,7 +1021,7 @@ void LFGMgr::MakeNewGroup(LfgProposal const& proposal)
     }
 
     ASSERT(grp);
-    _SaveToDB(grp->GetGUID(), grp->GetDbStoreId());
+    grp->SetLfgData(GetDungeon(grp->GetGUID()), GetState(grp->GetGUID()));
 
     // Update group info
     grp->SendUpdate();

@@ -332,7 +332,7 @@ class LFGMgr
         /// Get kicks left in current group
         uint8 GetKicksLeft(uint64 gguid);
         /// Load Lfg group info from DB
-        void _LoadFromDB(Field* fields, uint64 guid);
+        void _LoadFromDB(uint32 dungeon, uint8 state, uint64 guid, uint64 leaderGuid);
         /// Initializes player data after loading group data from DB
         void SetupGroupMember(uint64 guid, uint64 gguid);
         /// Return Lfg dungeon entry for given dungeon id
@@ -440,7 +440,6 @@ class LFGMgr
         void SetState(uint64 guid, LfgState state);
         void RemovePlayerData(uint64 guid);
         void GetCompatibleDungeons(LfgDungeonSet& dungeons, LfgGuidSet const& players, LfgLockPartyMap& lockMap);
-        void _SaveToDB(uint64 guid, uint32 db_guid);
 
         // Proposals
         void RemoveProposal(LfgProposalContainer::iterator itProposal, LfgUpdateType type);

@@ -45,6 +45,14 @@ public:
     void   AddGroup(Group* group);
     void   RemoveGroup(Group* group);
 
+    char* GetGroupKey() { return groupKey; }
+    char* GetGroupMemberKey() { return groupMemberKey; }
+    char* GetGroupInstanceKey() { return groupInstanceKey; }
+    void LoadGroupsRedis();
+
+    char* groupKey;
+    char* groupMemberKey;
+    char* groupInstanceKey;
 
 protected:
     uint32           NextGroupId;

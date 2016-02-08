@@ -54,15 +54,21 @@ void InstanceScript::SaveToDB()
     if (data.empty())
         return;
 
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_INSTANCE_DATA);
-    stmt->setUInt32(0, GetCompletedEncounterMask());
-    stmt->setUInt32(1, GetChallengeProgresTime());
-    stmt->setString(2, data);
-    stmt->setUInt32(3, instance->GetInstanceId());
-    CharacterDatabase.Execute(stmt);
-
     if(InstanceSave* save = sInstanceSaveMgr->GetInstanceSave(instance->GetInstanceId()))
+    {
+        save->SetData(data);
         save->SetCompletedEncountersMask(GetCompletedEncounterMask());
+        save->SetChallenge(GetChallengeProgresTime());
+
+        for (InstanceSave::GroupListType::iterator itr = save->m_groupList.begin(); itr != save->m_groupList.end(); ++itr)
+        {
+            (*itr)->UpdateInstance(save);
+        }
+        for (InstanceSave::PlayerListType::iterator itr = save->m_playerList.begin(); itr != save->m_playerList.end(); ++itr)
+        {
+            (*itr)->UpdateInstance(save);
+        }
+    }
 }
 
 void InstanceScript::HandleGameObject(uint64 GUID, bool open, GameObject* go)

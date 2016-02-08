@@ -49,7 +49,7 @@ class InstanceSave
            - any new instance is being generated
            - the first time a player bound to InstanceId logs in
            - when a group bound to the instance is loaded */
-        InstanceSave(uint16 MapId, uint32 InstanceId, Difficulty difficulty, bool canReset);
+        InstanceSave(uint16 MapId, uint32 InstanceId, Difficulty difficulty, uint32 completedEncounter, uint32 challenge, std::string data, bool canReset);
 
         /* Unloaded when m_playerList and m_groupList become empty
            or when the instance is reset */
@@ -66,8 +66,6 @@ class InstanceSave
 
         /* Saved when the instance is generated for the first time */
         void SaveToDB();
-        /* When the instance is being reset (permanently deleted) */
-        void DeleteFromDB();
 
         /* for normal instances this corresponds to max(creature respawn time) + X hours
            for raid/heroic instances this caches the global respawn time for the map */
@@ -93,12 +91,28 @@ class InstanceSave
         uint32 GetCompletedEncounterMask() const { return m_completedEncounter; }
         void SetCompletedEncountersMask(uint32 _mask) { m_completedEncounter = _mask; }
 
+        void SetData(std::string _data) { m_data = _data; }
+        std::string GetData() const { return m_data; }
+
+        void SetChallenge(uint32 _challenge) { m_challenge = _challenge; }
+        uint32 GetChallenge() const { return m_challenge; }
+
+        void SetSaveTime(time_t _time) { m_saveTime = _time; }
+        time_t GetSaveTime() const { return m_saveTime; }
+
+        void SetPerm(bool _perm) { m_perm = _perm; }
+        bool GetPerm() const { return m_perm; }
+
         /* currently it is possible to omit this information from this structure
            but that would depend on a lot of things that can easily change in future */
         Difficulty GetDifficulty() const { return m_difficulty; }
 
         typedef std::list<Player*> PlayerListType;
         typedef std::list<Group*> GroupListType;
+
+        PlayerListType m_playerList;
+        GroupListType m_groupList;
+
     private:
         bool UnloadIfEmpty();
         /* used to flag the InstanceSave as to be deleted, so the caller can delete it */
@@ -110,15 +124,17 @@ class InstanceSave
         /* the only reason the instSave-object links are kept is because
            the object-instSave links need to be broken at reset time
            TODO: maybe it's enough to just store the number of players/groups */
-        PlayerListType m_playerList;
-        GroupListType m_groupList;
         uint32 m_instanceid;
         uint32 m_mapid;
         Difficulty m_difficulty;
         bool m_canReset;
         bool m_toDelete;
         bool m_canBeSave;
+        bool m_perm;
         uint32 m_completedEncounter;
+        std::string m_data;
+        uint32 m_challenge;
+        time_t m_saveTime;
 
         ACE_Thread_Mutex _lock;
 };
@@ -131,7 +147,7 @@ class InstanceSaveManager
     friend class InstanceSave;
 
     private:
-        InstanceSaveManager() : lock_instLists(false) {};
+        InstanceSaveManager() : lock_instLists(false), m_updateTimer(0) {};
         ~InstanceSaveManager();
 
     public:
@@ -155,7 +171,6 @@ class InstanceSaveManager
 
         void LoadInstances();
 
-        void LoadResetTimes();
         time_t GetResetTimeFor(uint32 mapid, Difficulty d) const
         {
             ResetTimeByMapDifficultyMap::const_iterator itr  = m_resetTimeByMapDifficulty.find(MAKE_PAIR32(mapid, d));
@@ -173,9 +188,9 @@ class InstanceSaveManager
         }
         void ScheduleReset(bool add, time_t time, InstResetEvent event);
 
-        void Update();
+        void Update(uint32 diff);
 
-        InstanceSave* AddInstanceSave(uint32 mapId, uint32 instanceId, Difficulty difficulty, bool canReset, bool load = false);
+        InstanceSave* AddInstanceSave(uint32 mapId, uint32 instanceId, Difficulty difficulty, uint32 completedEncounter, uint32 challenge, std::string data, bool canReset, bool load = false);
         void RemoveInstanceSave(uint32 InstanceId);
         void UnloadInstanceSave(uint32 InstanceId);
         static void DeleteInstanceFromDB(uint32 instanceid);
@@ -201,6 +216,7 @@ class InstanceSaveManager
         // fast lookup for reset times (always use existed functions for access/set)
         ResetTimeByMapDifficultyMap m_resetTimeByMapDifficulty;
         ResetTimeQueue m_resetTimeQueue;
+        uint32 m_updateTimer;
 };
 
 #define sInstanceSaveMgr ACE_Singleton<InstanceSaveManager, ACE_Thread_Mutex>::instance()

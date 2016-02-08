@@ -45,7 +45,7 @@ void RedisClientImpl::processMessage()
                                        shared_from_this(), _1, _2));
 }
 
-void RedisClientImpl::doProcessMessage(const RedisValue &v, uint64 guid)
+void RedisClientImpl::doProcessMessage(const RedisValue &v)
 {
     if( state == RedisClientImpl::Subscribed )
     {
@@ -78,12 +78,12 @@ void RedisClientImpl::doProcessMessage(const RedisValue &v, uint64 guid)
             }
             else if( cmd == "subscribe" && handlers.empty() == false )
             {
-                handlers.front()(v, guid);
+                handlers.front().handler(v, handlers.front().ownerGuid);
                 handlers.pop();
             }
             else if(cmd == "unsubscribe" && handlers.empty() == false )
             {
-                handlers.front()(v, guid);
+                handlers.front().handler(v, handlers.front().ownerGuid);
                 handlers.pop();
             }
             else
@@ -107,7 +107,7 @@ void RedisClientImpl::doProcessMessage(const RedisValue &v, uint64 guid)
     {
         if( handlers.empty() == false )
         {
-            handlers.front()(v, guid);
+            handlers.front().handler(v, handlers.front().ownerGuid);
             handlers.pop();
         }
         else
@@ -236,13 +236,15 @@ void RedisClientImpl::doAsyncCommand(const std::vector<char> &buff, uint64 guid,
                                      const boost::function<void(const RedisValue &, uint64)> &handler)
 {
     QueueItem item;
-    ownerGuid = guid;
 
     item.buff.reset( new std::vector<char>(buff) );
-    item.handler = handler;
     queue.push(item);
 
-    handlers.push( item.handler );
+    Queuehandler itemHandler;
+    itemHandler.handler = handler;
+    itemHandler.ownerGuid = guid;
+
+    handlers.push( itemHandler );
 
     if( queue.size() == 1 )
     {
@@ -266,7 +268,7 @@ void RedisClientImpl::asyncRead(const boost::system::error_code &ec, const size_
 
         if( result.second == RedisParser::Completed )
         {
-            doProcessMessage(redisParser.result(), ownerGuid);
+            doProcessMessage(redisParser.result());
         }
         else if( result.second == RedisParser::Incompleted )
         {

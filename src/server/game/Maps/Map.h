@@ -35,6 +35,8 @@
 
 #include <bitset>
 #include <list>
+#include <json/json.h>
+#include <src\redisclient\redisvalue.h>
 
 class Unit;
 class WorldPacket;
@@ -492,11 +494,21 @@ class Map : public GridRefManager<NGridType>
             return time_t(0);
         }
 
+        Json::Value CreatureRespawnData;
+        Json::Value GORespawnData;
+        char* goRespawmKey;
+        char* creatureRespawmKey;
+
+        virtual char* GetGoRespawmKey() { return goRespawmKey; }
+        virtual char* GetCreatureRespawmKey() { return creatureRespawmKey; }
+
         void SaveCreatureRespawnTime(uint32 dbGuid, time_t respawnTime);
         void RemoveCreatureRespawnTime(uint32 dbGuid);
         void SaveGORespawnTime(uint32 dbGuid, time_t respawnTime);
         void RemoveGORespawnTime(uint32 dbGuid);
         void LoadRespawnTimes();
+        void LoadGoRespawnTimes(const RedisValue* v);
+        void LoadCreatureRespawnTimes(const RedisValue* v);
         void DeleteRespawnTimes();
 
         static void DeleteRespawnTimesInDB(uint16 mapId, uint32 instanceId);
@@ -654,7 +666,7 @@ class InstanceMap : public Map
         bool AddPlayerToMap(Player*);
         void RemovePlayerFromMap(Player*, bool);
         void Update(const uint32);
-        void CreateInstanceData(bool load);
+        void CreateInstanceData(InstanceSave* save);
         bool Reset(uint8 method);
         uint32 GetScriptId() { return i_script_id; }
         InstanceScript* GetInstanceScript() { return i_data; }
@@ -667,6 +679,12 @@ class InstanceMap : public Map
         uint32 GetMaxPlayers() const;
         uint32 GetMaxResetDelay() const;
         const WorldLocation* GetClosestGraveYard() const;
+
+        char* goRespawmKey;
+        char* creatureRespawmKey;
+
+        char* GetGoRespawmKey() { return goRespawmKey; }
+        char* GetCreatureRespawmKey() { return creatureRespawmKey; }
 
         virtual void InitVisibilityDistance();
     private:

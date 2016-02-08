@@ -213,6 +213,8 @@ void Player::SavePlayerGroup()
 
 void Player::SavePlayerLootCooldown()
 {
+    if (isBeingLoaded())
+        return;
     PlayerLootCooldownJson.clear();
     for(int i = 0; i < MAX_LOOT_COOLDOWN_TYPE; i++)
     {
@@ -251,6 +253,8 @@ void Player::SavePlayerCurrency()
 
 void Player::SavePlayerInstanceTimes()
 {
+    if (isBeingLoaded())
+        return;
     PlayerInstanceTimesJson.clear();
     for (InstanceTimeMap::const_iterator itr = _instanceResetTimes.begin(); itr != _instanceResetTimes.end(); ++itr)
     {
@@ -265,6 +269,8 @@ void Player::SavePlayerInstanceTimes()
 
 void Player::SavePlayerSkills()
 {
+    if (isBeingLoaded())
+        return;
     PlayerSkillsJson.clear();
     for (SkillStatusMap::iterator itr = mSkillStatus.begin(); itr != mSkillStatus.end(); ++itr)
     {
@@ -287,6 +293,8 @@ void Player::SavePlayerSkills()
 
 void Player::SavePlayerTalents()
 {
+    if (isBeingLoaded())
+        return;
     PlayerTalentsJson.clear();
     for (uint8 i = 0; i < MAX_TALENT_SPECS; ++i)
     {
@@ -316,6 +324,9 @@ void Player::SavePlayerTalents()
 
 void Player::SavePlayerSpells()
 {
+    if (isBeingLoaded())
+        return;
+
     PlayerSpellsJson.clear();
     for (PlayerSpellMap::iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
     {
@@ -372,6 +383,8 @@ void Player::SavePlayerGlyphs()
 
 void Player::SavePlayerAuras()
 {
+    if (isBeingLoaded())
+        return;
     PlayerAurasJson.clear();
     for (AuraMap::const_iterator itr = m_ownedAuras.begin(); itr != m_ownedAuras.end(); ++itr)
     {
@@ -419,6 +432,8 @@ void Player::SavePlayerAuras()
 
 void Player::SavePlayerQuestStatus()
 {
+    if (isBeingLoaded())
+        return;
     AccountQuestStatusJson.clear();
     PlayerQuestStatusJson.clear();
     for (QuestStatusMap::const_iterator itr = m_QuestStatus.begin(); itr != m_QuestStatus.end(); ++itr)
@@ -495,6 +510,8 @@ void Player::SavePlayerQuestStatus()
 
 void Player::SavePlayerQuestRewarded()
 {
+    if (isBeingLoaded())
+        return;
     AccountQuestRewardedJson.clear();
     PlayerQuestRewardedJson.clear();
     for (RewardedQuestSet::const_iterator itr = m_RewardedQuests.begin(); itr != m_RewardedQuests.end(); ++itr)
@@ -521,6 +538,8 @@ void Player::SavePlayerQuestRewarded()
 
 void Player::SavePlayerQuestDaily()
 {
+    if (isBeingLoaded())
+        return;
     AccountQuestDailyJson.clear();
     PlayerQuestDailyJson.clear();
     for (QuestSet::const_iterator itr = m_dailyquests.begin(); itr != m_dailyquests.end(); ++itr)
@@ -547,6 +566,8 @@ void Player::SavePlayerQuestDaily()
 
 void Player::SavePlayerQuestWeekly()
 {
+    if (isBeingLoaded())
+        return;
     AccountQuestWeeklyJson.clear();
     PlayerQuestWeeklyJson.clear();
     for (QuestSet::const_iterator itr = m_weeklyquests.begin(); itr != m_weeklyquests.end(); ++itr)
@@ -573,6 +594,8 @@ void Player::SavePlayerQuestWeekly()
 
 void Player::SavePlayerQuestSeasonal()
 {
+    if (isBeingLoaded())
+        return;
     PlayerQuestSeasonalJson.clear();
     AccountQuestSeasonalJson.clear();
     for (SeasonalEventQuestMap::const_iterator iter = m_seasonalquests.begin(); iter != m_seasonalquests.end(); ++iter)
@@ -603,7 +626,9 @@ void Player::SavePlayerQuestSeasonal()
 
 void Player::SavePlayerBoundInstances()
 {
-    PlayerBoundInstancesJson.clear();
+    if (!isBeingLoaded())
+        PlayerBoundInstancesJson.clear();
+
     for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
     {
         //std::string diff = std::to_string(i);
@@ -614,15 +639,14 @@ void Player::SavePlayerBoundInstances()
             {
                 InstanceSave* save = itr->second.save;
 
-                std::string data;
-                uint32 challenge = 0;
                 Map* map = sMapMgr->FindMap(save->GetMapId(), save->GetInstanceId());
                 if (map && map->IsDungeon())
                 {
                     if (InstanceScript* instanceScript = ((InstanceMap*)map)->GetInstanceScript())
                     {
-                        data = instanceScript->GetSaveData();
-                        challenge = instanceScript->GetChallengeProgresTime();
+                        save->SetData(instanceScript->GetSaveData());
+                        save->SetCompletedEncountersMask(instanceScript->GetCompletedEncounterMask());
+                        save->SetChallenge(instanceScript->GetChallengeProgresTime());
                     }
                 }
 
@@ -630,9 +654,10 @@ void Player::SavePlayerBoundInstances()
                 PlayerBoundInstancesJson[instanceID.c_str()]["perm"] = itr->second.perm;
                 PlayerBoundInstancesJson[instanceID.c_str()]["map"] = save->GetMapId();
                 PlayerBoundInstancesJson[instanceID.c_str()]["difficulty"] = save->GetDifficulty();
-                PlayerBoundInstancesJson[instanceID.c_str()]["challenge"] = challenge;
-                PlayerBoundInstancesJson[instanceID.c_str()]["data"] = data.c_str();
+                PlayerBoundInstancesJson[instanceID.c_str()]["challenge"] = save->GetChallenge();
+                PlayerBoundInstancesJson[instanceID.c_str()]["data"] = save->GetData();
                 PlayerBoundInstancesJson[instanceID.c_str()]["completedEncounters"] = save->GetCompletedEncounterMask();
+                PlayerBoundInstancesJson[instanceID.c_str()]["saveTime"] = save->GetSaveTime();
             }
         }
     }
@@ -642,8 +667,40 @@ void Player::SavePlayerBoundInstances()
     });
 }
 
+void Player::UpdateInstance(InstanceSave* save)
+{
+    std::string instanceID = std::to_string(save->GetInstanceId());
+
+    Map* map = sMapMgr->FindMap(save->GetMapId(), save->GetInstanceId());
+    if (map && map->IsDungeon())
+    {
+        if (InstanceScript* instanceScript = ((InstanceMap*)map)->GetInstanceScript())
+        {
+            save->SetData(instanceScript->GetSaveData());
+            save->SetCompletedEncountersMask(instanceScript->GetCompletedEncounterMask());
+            save->SetChallenge(instanceScript->GetChallengeProgresTime());
+        }
+    }
+
+    PlayerBoundInstancesJson[instanceID.c_str()]["perm"] = save->GetPerm();
+    PlayerBoundInstancesJson[instanceID.c_str()]["map"] = save->GetMapId();
+    PlayerBoundInstancesJson[instanceID.c_str()]["difficulty"] = save->GetDifficulty();
+    PlayerBoundInstancesJson[instanceID.c_str()]["challenge"] = save->GetChallenge();
+    PlayerBoundInstancesJson[instanceID.c_str()]["data"] = save->GetData();
+    PlayerBoundInstancesJson[instanceID.c_str()]["completedEncounters"] = save->GetCompletedEncounterMask();
+    PlayerBoundInstancesJson[instanceID.c_str()]["saveTime"] = save->GetSaveTime();
+
+    sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdateInstance GetSaveTime %u", save->GetSaveTime());
+
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "boundinstances", sRedisBuilder->BuildString(PlayerBoundInstancesJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdateInstance guid %u", guid);
+    });
+}
+
 void Player::SavePlayerBattlePets()
 {
+    if (isBeingLoaded())
+        return;
     PetJournal journal = GetBattlePetMgr()->GetPetJournal();
     // nothing to save
     if (journal.empty())
@@ -700,6 +757,8 @@ void Player::SavePlayerArchaeology()
     if (!GetSkillValue(SKILL_ARCHAEOLOGY))
         return;
 
+    if (isBeingLoaded())
+        return;
     std::stringstream ss;
     for (ResearchSiteSet::const_iterator itr = _researchSites.begin(); itr != _researchSites.end(); ++itr)
         ss << (*itr) << " ";
@@ -745,6 +804,8 @@ void Player::SavePlayerReputation()
 
 void Player::SavePlayerVoidStorage()
 {
+    if (isBeingLoaded())
+        return;
     PlayerVoidStorageJson.clear();
     for (uint8 i = 0; i < VOID_STORAGE_MAX_SLOT; ++i)
     {
@@ -773,6 +834,8 @@ void Player::SavePlayerVoidStorage()
 
 void Player::SavePlayerActions()
 {
+    if (isBeingLoaded())
+        return;
     PlayerActionsJson.clear();
     for (uint8 i = 0; i < MAX_SPEC_COUNT; ++i)
     {
@@ -792,6 +855,8 @@ void Player::SavePlayerActions()
 
 void Player::SavePlayerSocial()
 {
+    if (isBeingLoaded())
+        return;
     PlayerSocialJson.clear();
     PlayerSocial* social = sSocialMgr->GetPlayerSocial(GetGUIDLow());
     for (PlayerSocialMap::const_iterator itr = social->m_playerSocialMap.begin(); itr != social->m_playerSocialMap.end(); ++itr)
@@ -808,6 +873,8 @@ void Player::SavePlayerSocial()
 
 void Player::SavePlayerSpellCooldowns()
 {
+    if (isBeingLoaded())
+        return;
     time_t curTime = time(NULL);
     time_t infTime = curTime + infinityCooldownDelayCheck;
 
@@ -835,6 +902,8 @@ void Player::SavePlayerSpellCooldowns()
 
 void Player::SavePlayerKills()
 {
+    if (isBeingLoaded())
+        return;
     time_t curTime = time(NULL);
     time_t infTime = curTime + infinityCooldownDelayCheck;
 
@@ -869,6 +938,8 @@ void Player::SavePlayerDeclinedName()
 
 void Player::SavePlayerEquipmentSets()
 {
+    if (isBeingLoaded())
+        return;
     PlayerEquipmentSetsJson.clear();
     for (EquipmentSets::iterator itr = m_EquipmentSets.begin(); itr != m_EquipmentSets.end();++itr)
     {
@@ -906,6 +977,8 @@ void Player::SavePlayerEquipmentSets()
 
 void Player::SavePlayerCUFProfiles()
 {
+    if (isBeingLoaded())
+        return;
     PlayerCUFProfilesJson.clear();
     for (uint8 i = 0; i < MAX_CUF_PROFILES; ++i)
     {
@@ -959,6 +1032,8 @@ void Player::SavePlayerVisuals()
 
 void Player::SavePlayerAccountData()
 {
+    if (isBeingLoaded())
+        return;
     PlayerAccountDataJson.clear();
     AccountDataJson.clear();
     for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
@@ -1030,6 +1105,8 @@ void Player::SavePlayerAchievement()
 
 void Player::SavePlayerCriteria()
 {
+    if (isBeingLoaded())
+        return;
     PlayerCriteriaJson.clear();
     AccountCriteriaJson.clear();
     for (auto itr = GetAchievementMgr().GetAchievementProgress().begin(); itr != GetAchievementMgr().GetAchievementProgress().end(); ++itr)
@@ -1095,6 +1172,8 @@ void Player::SavePlayerCriteria()
 
 void Player::SavePlayerPets()
 {
+    if (isBeingLoaded())
+        return;
     PlayerPetsJson.clear();
     QueryResult result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = '%u'", GetGUIDLow());
     if (result)

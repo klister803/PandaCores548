@@ -1832,7 +1832,8 @@ void World::SetInitialWorldSettings()
     sBracketMgr->LoadCharacterBrackets();
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Groups...");
-    sGroupMgr->LoadGroups();
+    //sGroupMgr->LoadGroups();
+    sGroupMgr->LoadGroupsRedis();
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading ReservedNames...");
     sObjectMgr->LoadReservedPlayersNames();
@@ -2417,7 +2418,7 @@ void World::Update(uint32 diff)
     }
 
     // update the instance reset times
-    sInstanceSaveMgr->Update();
+    sInstanceSaveMgr->Update(diff);
 
     // And last, but not least handle the issued cli commands
     ProcessCliCommands();
@@ -3227,6 +3228,23 @@ time_t World::getInstanceResetTime(uint32 resetTime)
             return sWorld->getWorldState(WS_INSTANCE_HALF_WEEK_RESET_TIME);
         case 604800:
             return sWorld->getWorldState(WS_INSTANCE_WEEKLY_RESET_TIME);
+        default:
+            return time(NULL);
+    }
+
+    return time(NULL);
+}
+
+time_t World::getConfigResetTime(uint32 resetTime)
+{
+    switch(resetTime)
+    {
+        case 86400:
+            return (getIntConfig(CONFIG_INSTANCE_DAILY_RESET) * DAY);
+        case 259200:
+            return (getIntConfig(CONFIG_INSTANCE_HALF_WEEK_RESET) * DAY);
+        case 604800:
+            return (getIntConfig(CONFIG_INSTANCE_WEEKLY_RESET) * DAY);
         default:
             return time(NULL);
     }

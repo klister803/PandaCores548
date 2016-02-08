@@ -46,7 +46,7 @@ public:
 
     REDIS_CLIENT_DECL void sendNextCommand();
     REDIS_CLIENT_DECL void processMessage();
-    REDIS_CLIENT_DECL void doProcessMessage(const RedisValue &v, uint64 guid);
+    REDIS_CLIENT_DECL void doProcessMessage(const RedisValue &v);
     REDIS_CLIENT_DECL void asyncWrite(const boost::system::error_code &ec, const size_t);
     REDIS_CLIENT_DECL void asyncRead(const boost::system::error_code &ec, const size_t);
 
@@ -83,7 +83,6 @@ public:
     RedisParser redisParser;
     boost::array<char, 4096> buf;
     size_t subscribeSeq;
-    uint64 ownerGuid;
 
     typedef std::pair<size_t, boost::function<void(const std::vector<char> &buf)> > MsgHandlerType;
     typedef boost::function<void(const std::vector<char> &buf)> SingleShotHandlerType;
@@ -91,16 +90,21 @@ public:
     typedef std::multimap<std::string, MsgHandlerType> MsgHandlersMap;
     typedef std::multimap<std::string, SingleShotHandlerType> SingleShotHandlersMap;
 
-    std::queue<boost::function<void(const RedisValue &v, uint64 guid)> > handlers;
     MsgHandlersMap msgHandlers;
     SingleShotHandlersMap singleShotMsgHandlers;
 
     struct QueueItem {
-        boost::function<void(const RedisValue &, uint64)> handler;
         boost::shared_ptr<std::vector<char> > buff;
+        uint64 ownerGuid;
+    };
+
+    struct Queuehandler {
+        boost::function<void(const RedisValue &, uint64)> handler;
+        uint64 ownerGuid;
     };
 
     std::queue<QueueItem> queue;
+    std::queue<Queuehandler> handlers;
 
     boost::function<void(const std::string &)> errorHandler;
 };

@@ -876,6 +876,8 @@ class World
         }
 
         time_t getInstanceResetTime(uint32 resetTime);
+        time_t getOldInstanceResetTime(uint32 resetTime) { return (getInstanceResetTime(resetTime) - getConfigResetTime(resetTime)); }
+        time_t getConfigResetTime(uint32 resetTime);
 
         void DeleteCharName(std::string name) { nameMap.erase(name); }
 

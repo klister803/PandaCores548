@@ -220,12 +220,24 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave* save,
     InstanceMap* map = new InstanceMap(GetId(), GetGridExpiry(), InstanceId, difficulty, this);
     ASSERT(map->IsDungeon());
 
-    map->LoadRespawnTimes();
-
-    bool load_data = save != NULL;
-    map->CreateInstanceData(load_data);
+    map->CreateInstanceData(save);
 
     m_InstancedMaps[InstanceId] = map;
+
+    uint64 mapGuid = MAKE_PAIR64(GetId(), InstanceId);
+    RedisDatabase.AsyncExecute("HGETALL", map->GetGoRespawmKey(), mapGuid, [&](const RedisValue &v, uint64 guid) {
+        uint32 mapId = PAIR64_LOPART(guid);
+        uint32 InstanceId = PAIR64_HIPART(guid);
+        if (Map* map = sMapMgr->FindMap(mapId, InstanceId))
+            map->LoadGoRespawnTimes(&v);
+    });
+    RedisDatabase.AsyncExecute("HGETALL", map->GetCreatureRespawmKey(), mapGuid, [&](const RedisValue &v, uint64 guid) {
+        uint32 mapId = PAIR64_LOPART(guid);
+        uint32 InstanceId = PAIR64_HIPART(guid);
+        if (Map* map = sMapMgr->FindMap(mapId, InstanceId))
+            map->LoadCreatureRespawnTimes(&v);
+    });
+
     return map;
 }
 

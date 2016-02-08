@@ -204,7 +204,7 @@ class Group
         // group manipulation methods
         bool   Create(Player* leader);
         void   LoadGroupFromDB(Field* field);
-        void   LoadMemberFromDB(uint32 guidLow, uint8 memberFlags, uint8 subgroup, uint8 roles);
+        void   LoadMemberFromDB(uint32 guidLow, uint8 memberFlags, uint8 subgroup, uint8 roles, std::string name);
         bool   AddInvite(Player* player);
         void   RemoveInvite(Player* player);
         void   RemoveAllInvites();
@@ -367,6 +367,25 @@ class Group
         uint32 GetAverageMMR(BracketType bracket) const;
         ItemQualities GetThreshold() const { return m_lootThreshold; }
 
+        /*********************************************************/
+        /***                    SERIALIZE SYSTEM               ***/
+        /*********************************************************/
+
+        Json::Value GroupData;
+        Json::Value GroupMemberData;
+        Json::Value GroupInstanceData;
+        void SaveGroup();
+        void SaveGroupMembers();
+        void SaveGroupInstances();
+        void DeleteMember(uint64 guid);
+        void DeleteFromRedis();
+        void LoadGroupFromDB(Json::Value groupData, uint32 groupId);
+        void SetLfgData(uint32 dungeon, uint8 state) { m_state = state; m_dungeon = dungeon; SaveGroup(); }
+        void UpdateMember(MemberSlot* member);
+        void UpdateInstance(InstanceSave* save);
+        void DeleteInstance(uint32 instance);
+        void RemoveAllInstance();
+
     protected:
         bool _setMembersGroup(uint64 guid, uint8 group);
         void _homebindIfInstance(Player* player);
@@ -403,5 +422,7 @@ class Group
         uint8               m_readyCheckCount;
         uint8               m_aoe_slots;                    // centrilize aoe loot method
         bool                m_readyCheck;
+        uint8               m_state;
+        uint32              m_dungeon;
 };
 #endif

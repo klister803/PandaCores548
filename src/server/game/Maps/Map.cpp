@@ -36,6 +36,7 @@
 #include "LFGMgr.h"
 #include "ChallengeMgr.h"
 #include "ScenarioMgr.h"
+#include "RedisBuilderMgr.h"
 
 union u_map_magic
 {
@@ -264,6 +265,12 @@ i_scriptLock(false)
 
     if(float _distMap = GetVisibleDistance(TYPE_VISIBLE_MAP, id))
         m_VisibleDistance = _distMap;
+
+    goRespawmKey = new char[30];
+    creatureRespawmKey = new char[30];
+
+    sprintf(goRespawmKey, "r{%u}m{%u}i{%u}go", realmID, id, InstanceId);
+    sprintf(creatureRespawmKey, "r{%u}m{%u}i{%u}cr", realmID, id, InstanceId);
 }
 
 void Map::InitVisibilityDistance()
@@ -2312,6 +2319,12 @@ InstanceMap::InstanceMap(uint32 id, time_t expiry, uint32 InstanceId, uint8 Spaw
     // the timer is started by default, and stopped when the first player joins
     // this make sure it gets unloaded if for some reason no player joins
     m_unloadTimer = std::max(sWorld->getIntConfig(CONFIG_INSTANCE_UNLOAD_DELAY), (uint32)MIN_UNLOAD_DELAY);
+
+    goRespawmKey = new char[30];
+    creatureRespawmKey = new char[30];
+
+    sprintf(goRespawmKey, "r{%u}m{%u}i{%u}go", realmID, id, InstanceId);
+    sprintf(creatureRespawmKey, "r{%u}m{%u}i{%u}cr", realmID, id, InstanceId);
 }
 
 InstanceMap::~InstanceMap()
@@ -2428,8 +2441,10 @@ bool InstanceMap::AddPlayerToMap(Player* player)
                     if (lfg::LFGDungeonData const* data = sLFGMgr->GetLFGDungeon(GetId(), Difficulty(i_difficulty), player->GetTeam()))
                         sScenarioMgr->AddScenarioProgress(GetInstanceId(), data, false);
 
+                std::string data;
                 sLog->outInfo(LOG_FILTER_MAPS, "InstanceMap::Add: creating instance save for map %d spawnmode %d with instance id %d", GetId(), GetSpawnMode(), GetInstanceId());
-                mapSave = sInstanceSaveMgr->AddInstanceSave(GetId(), GetInstanceId(), Difficulty(GetSpawnMode()), true);
+                mapSave = sInstanceSaveMgr->AddInstanceSave(GetId(), GetInstanceId(), Difficulty(GetSpawnMode()), 0, 0, data, true);
+                mapSave->SetSaveTime(time(NULL));
             }
 
             // check for existing instance binds
@@ -2573,7 +2588,7 @@ void InstanceMap::RemovePlayerFromMap(Player* player, bool remove)
     sInstanceSaveMgr->UnloadInstanceSave(GetInstanceId());
 }
 
-void InstanceMap::CreateInstanceData(bool load)
+void InstanceMap::CreateInstanceData(InstanceSave* save)
 {
     if (i_data != NULL)
         return;
@@ -2590,28 +2605,17 @@ void InstanceMap::CreateInstanceData(bool load)
 
     i_data->Initialize();
 
-    if (load)
+    if (save)
     {
-        // TODO: make a global storage for this
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_INSTANCE);
-        stmt->setUInt16(0, uint16(GetId()));
-        stmt->setUInt32(1, i_InstanceId);
-        PreparedQueryResult result = CharacterDatabase.Query(stmt);
-
-        if (result)
+        std::string data = save->GetData();
+        i_data->SetCompletedEncountersMask(save->GetCompletedEncounterMask());
+        i_data->SetChallengeProgresInSec(save->GetChallenge());
+        if (data != "")
         {
-            Field* fields = result->Fetch();
-            std::string data = fields[0].GetString();
-            uint32 completedEncounter = fields[1].GetUInt32();
-            i_data->SetCompletedEncountersMask(completedEncounter);
-            i_data->SetChallengeProgresInSec(fields[2].GetUInt32());
-            if (data != "")
-            {
-                #ifdef TRINITY_DEBUG
-                sLog->outDebug(LOG_FILTER_MAPS, "Loading instance data for `%s` with id %u", sObjectMgr->GetScriptName(i_script_id), i_InstanceId);
-                #endif
-                i_data->Load(data.c_str());
-            }
+            #ifdef TRINITY_DEBUG
+            sLog->outDebug(LOG_FILTER_MAPS, "Loading instance data for `%s` with id %u", sObjectMgr->GetScriptName(i_script_id), i_InstanceId);
+            #endif
+            i_data->Load(data.c_str());
         }
     }
 }
@@ -2666,6 +2670,8 @@ void InstanceMap::PermBindAllPlayers(Player* source)
         sLog->outError(LOG_FILTER_MAPS, "Cannot bind player (GUID: %u, Name: %s), because no instance save is available for instance map (Name: %s, Entry: %u, InstanceId: %u)!", source->GetGUIDLow(), source->GetName(), source->GetMap()->GetMapName(), source->GetMapId(), GetInstanceId());
         return;
     }
+
+    save->SetPerm(true);
 
     Group* group = source->GetGroup();
     // group members outside the instance group don't get bound
@@ -2859,120 +2865,6 @@ void Map::UpdateIteratorBack(Player* player)
 {
     if (m_mapRefIter == player->GetMapRef())
         m_mapRefIter = m_mapRefIter->nocheck_prev();
-}
-
-void Map::SaveCreatureRespawnTime(uint32 dbGuid, time_t respawnTime)
-{
-    if (!respawnTime)
-    {
-        // Delete only
-        RemoveCreatureRespawnTime(dbGuid);
-        return;
-    }
-
-    _creatureRespawnTimes[dbGuid] = respawnTime;
-
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_CREATURE_RESPAWN);
-    stmt->setUInt32(0, dbGuid);
-    stmt->setUInt32(1, uint32(respawnTime));
-    stmt->setUInt16(2, GetId());
-    stmt->setUInt32(3, GetInstanceId());
-    CharacterDatabase.Execute(stmt);
-}
-
-void Map::RemoveCreatureRespawnTime(uint32 dbGuid)
-{
-    _creatureRespawnTimes.erase(dbGuid);
-
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CREATURE_RESPAWN);
-    stmt->setUInt32(0, dbGuid);
-    stmt->setUInt16(1, GetId());
-    stmt->setUInt32(2, GetInstanceId());
-    CharacterDatabase.Execute(stmt);
-}
-
-void Map::SaveGORespawnTime(uint32 dbGuid, time_t respawnTime)
-{
-    if (!respawnTime)
-    {
-        // Delete only
-        RemoveGORespawnTime(dbGuid);
-        return;
-    }
-
-    _goRespawnTimes[dbGuid] = respawnTime;
-
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_GO_RESPAWN);
-    stmt->setUInt32(0, dbGuid);
-    stmt->setUInt32(1, uint32(respawnTime));
-    stmt->setUInt16(2, GetId());
-    stmt->setUInt32(3, GetInstanceId());
-    CharacterDatabase.Execute(stmt);
-}
-
-void Map::RemoveGORespawnTime(uint32 dbGuid)
-{
-    _goRespawnTimes.erase(dbGuid);
-
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GO_RESPAWN);
-    stmt->setUInt32(0, dbGuid);
-    stmt->setUInt16(1, GetId());
-    stmt->setUInt32(2, GetInstanceId());
-    CharacterDatabase.Execute(stmt);
-}
-
-void Map::LoadRespawnTimes()
-{
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CREATURE_RESPAWNS);
-    stmt->setUInt16(0, GetId());
-    stmt->setUInt32(1, GetInstanceId());
-    if (PreparedQueryResult result = CharacterDatabase.Query(stmt))
-    {
-        do
-        {
-            Field* fields = result->Fetch();
-            uint32 loguid      = fields[0].GetUInt32();
-            uint32 respawnTime = fields[1].GetUInt32();
-
-            _creatureRespawnTimes[loguid] = time_t(respawnTime);
-        } while (result->NextRow());
-    }
-
-    stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_GO_RESPAWNS);
-    stmt->setUInt16(0, GetId());
-    stmt->setUInt32(1, GetInstanceId());
-    if (PreparedQueryResult result = CharacterDatabase.Query(stmt))
-    {
-        do
-        {
-            Field* fields = result->Fetch();
-            uint32 loguid      = fields[0].GetUInt32();
-            uint32 respawnTime = fields[1].GetUInt32();
-
-            _goRespawnTimes[loguid] = time_t(respawnTime);
-        } while (result->NextRow());
-    }
-}
-
-void Map::DeleteRespawnTimes()
-{
-    _creatureRespawnTimes.clear();
-    _goRespawnTimes.clear();
-
-    DeleteRespawnTimesInDB(GetId(), GetInstanceId());
-}
-
-void Map::DeleteRespawnTimesInDB(uint16 mapId, uint32 instanceId)
-{
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CREATURE_RESPAWN_BY_INSTANCE);
-    stmt->setUInt16(0, mapId);
-    stmt->setUInt32(1, instanceId);
-    CharacterDatabase.Execute(stmt);
-
-    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GO_RESPAWN_BY_INSTANCE);
-    stmt->setUInt16(0, mapId);
-    stmt->setUInt32(1, instanceId);
-    CharacterDatabase.Execute(stmt);
 }
 
 time_t Map::GetLinkedRespawnTime(uint64 guid) const

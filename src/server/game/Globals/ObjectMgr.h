@@ -1653,6 +1653,8 @@ class ObjectMgr
             return 5;
         }
 
+        char* GetGuidKey() { return queryGuidKey; }
+
     private:
         // first free id for selected id type
         uint32 _auctionId;

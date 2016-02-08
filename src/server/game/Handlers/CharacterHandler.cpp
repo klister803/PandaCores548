@@ -1164,6 +1164,9 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
 
     sScriptMgr->OnPlayerLogin(pCurrChar);
 
+    //init json data for save in redis db
+    pCurrChar->InitSavePlayer();
+
     sLog->outInfo(LOG_FILTER_REDIS, "HandlePlayerLogin time %u get_id %i", getMSTime(), boost::this_thread::get_id());
 
     delete holder;

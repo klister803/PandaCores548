@@ -19653,9 +19653,6 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         sLog->outDebug(LOG_FILTER_DUPE, "---PlayerLoaded;");
     }
 
-    //init json data for save in redis db
-    InitSavePlayer();
-
     return true;
 }
 
@@ -20935,11 +20932,12 @@ void Player::_LoadBoundInstances(PreparedQueryResult result)
                 continue;
             }
 
+            std::string data;
             // since non permanent binds are always solo bind, they can always be reset
-            if (InstanceSave* save = sInstanceSaveMgr->AddInstanceSave(mapId, instanceId, Difficulty(difficulty), !perm, true))
+            if (InstanceSave* save = sInstanceSaveMgr->AddInstanceSave(mapId, instanceId, Difficulty(difficulty), completedEncounter, 0, data, !perm, true))
             {
-                save->SetCompletedEncountersMask(completedEncounter);
                 BindToInstance(save, perm, true);
+                save->SetSaveTime(time(NULL));
             }
         }
         while (result->NextRow());
@@ -21005,29 +21003,8 @@ InstancePlayerBind* Player::BindToInstance(InstanceSave* save, bool permanent, b
     if (save)
     {
         InstancePlayerBind& bind = m_boundInstances[save->GetDifficulty()][save->GetMapId()];
-        if (bind.save)
-        {
-            // update the save when the group kills a boss
-            if (permanent != bind.perm || save != bind.save)
-                if (!load && !RedisDatabase.isConnected())
-                {
-                    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_INSTANCE);
-                    stmt->setUInt32(0, save->GetInstanceId());
-                    stmt->setBool(1, permanent);
-                    stmt->setUInt32(2, GetGUIDLow());
-                    stmt->setUInt32(3, bind.save->GetInstanceId());
-                    CharacterDatabase.Execute(stmt);
-                }
-        }
-        else
-            if (!load && !RedisDatabase.isConnected())
-            {
-                PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_INSTANCE);
-                stmt->setUInt32(0, GetGUIDLow());
-                stmt->setUInt32(1, save->GetInstanceId());
-                stmt->setBool(2, permanent);
-                CharacterDatabase.Execute(stmt);
-            }
+        if (!load && save)
+            UpdateInstance(save);
 
         if (bind.save != save)
         {
@@ -22916,7 +22893,7 @@ void Player::ResetInstances(uint8 method, bool isRaid)
         if (method == INSTANCE_RESET_ALL || method == INSTANCE_RESET_CHANGE_DIFFICULTY)
             SendResetInstanceSuccess(p->GetMapId());
 
-        p->DeleteFromDB();
+//        p->DeleteFromDB();
         m_boundInstances[diff].erase(itr++);
 
         // the following should remove the instance save from the manager and delete it as well

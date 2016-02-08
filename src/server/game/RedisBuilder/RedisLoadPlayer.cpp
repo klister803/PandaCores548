@@ -731,9 +731,10 @@ void Player::LoadPlayerBoundInstances(const RedisValue* v, uint64 playerGuid)
         bool perm   = value["perm"].asBool();
         uint32 mapId = value["map"].asInt();
         uint8 difficulty = value["difficulty"].asInt();
-        //uint32 challenge = value["challenge"].asInt();
-        //std::string data = value["data"].asString();
+        uint32 challenge = value["challenge"].asInt();
+        std::string data = value["data"].asString();
         uint32 completedEncounter = value["completedEncounters"].asInt();
+        time_t saveTime = time_t(value["saveTime"].asUInt());
 
         bool deleteInstance = false;
 
@@ -761,16 +762,19 @@ void Player::LoadPlayerBoundInstances(const RedisValue* v, uint64 playerGuid)
                 sLog->outError(LOG_FILTER_PLAYER, "_LoadBoundInstances: player %s(%d) is in group %d but has a non-permanent character bind to map %d, %d, %d", GetName(), GetGUIDLow(), GUID_LOPART(group->GetGUID()), mapId, instanceId, difficulty);
                 deleteInstance = true;
             }
+            else if (sWorld->getOldInstanceResetTime(mapDiff->resetTime) > saveTime)
+                deleteInstance = true;
         }
 
         if (deleteInstance)
             continue;
 
         // since non permanent binds are always solo bind, they can always be reset
-        if (InstanceSave* save = sInstanceSaveMgr->AddInstanceSave(mapId, instanceId, Difficulty(difficulty), !perm, true))
+        if (InstanceSave* save = sInstanceSaveMgr->AddInstanceSave(mapId, instanceId, Difficulty(difficulty), completedEncounter, challenge, data, !perm, true))
         {
-            save->SetCompletedEncountersMask(completedEncounter);
             BindToInstance(save, perm, true);
+            save->SetSaveTime(time(NULL));
+            save->SetPerm(perm);
         }
     }
 

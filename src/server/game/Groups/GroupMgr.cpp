@@ -25,6 +25,14 @@ GroupMgr::GroupMgr()
 {
     NextGroupDbStoreId = 1;
     NextGroupId = 1;
+
+    groupKey = new char[32];
+    groupMemberKey = new char[32];
+    groupInstanceKey = new char[32];
+
+    sprintf(groupKey, "r{%i}group", realmID);
+    sprintf(groupMemberKey, "r{%i}groupmember", realmID);
+    sprintf(groupInstanceKey, "r{%i}instance", realmID);
 }
 
 GroupMgr::~GroupMgr()
@@ -138,6 +146,7 @@ void GroupMgr::LoadGroups()
             Group* group = new Group;
             group->LoadGroupFromDB(fields);
             AddGroup(group);
+            group->SaveGroup();
 
             // Get the ID used for storing the group in the database and register it in the pool.
             uint32 storageId = group->GetDbStoreId();
@@ -179,9 +188,13 @@ void GroupMgr::LoadGroups()
         {
             Field* fields = result->Fetch();
             Group* group = GetGroupByDbStoreId(fields[0].GetUInt32());
+            std::string name;
 
             if (group)
-                group->LoadMemberFromDB(fields[1].GetUInt32(), fields[2].GetUInt8(), fields[3].GetUInt8(), fields[4].GetUInt8());
+            {
+                group->LoadMemberFromDB(fields[1].GetUInt32(), fields[2].GetUInt8(), fields[3].GetUInt8(), fields[4].GetUInt8(), name);
+                group->SaveGroupMembers();
+            }
             else
                 sLog->outError(LOG_FILTER_GENERAL, "GroupMgr::LoadGroups: Consistency failed, can't find group (storage id: %u)", fields[0].GetUInt32());
 
@@ -226,8 +239,11 @@ void GroupMgr::LoadGroups()
                 diff = 0;                                   // default for both difficaly types
             }
 
-            InstanceSave* save = sInstanceSaveMgr->AddInstanceSave(mapEntry->MapID, fields[2].GetUInt32(), Difficulty(diff), (bool)fields[5].GetUInt64(), true);
+            std::string data;
+            InstanceSave* save = sInstanceSaveMgr->AddInstanceSave(mapEntry->MapID, fields[2].GetUInt32(), Difficulty(diff), 0, 0, data, (bool)fields[5].GetUInt64(), true);
             group->BindToInstance(save, fields[3].GetBool(), true);
+            save->SetSaveTime(time(NULL));
+            group->SaveGroupInstances();
             ++count;
         }
         while (result->NextRow());

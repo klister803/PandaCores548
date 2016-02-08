@@ -68,7 +68,7 @@ InstanceSaveManager::~InstanceSaveManager()
 - adding instance into manager
 - called from InstanceMap::Add, _LoadBoundInstances, LoadGroups
 */
-InstanceSave* InstanceSaveManager::AddInstanceSave(uint32 mapId, uint32 instanceId, Difficulty difficulty, bool canReset, bool load)
+InstanceSave* InstanceSaveManager::AddInstanceSave(uint32 mapId, uint32 instanceId, Difficulty difficulty, uint32 completedEncounter, uint32 challenge, std::string data, bool canReset, bool load)
 {
     if (InstanceSave* old_save = GetInstanceSave(instanceId))
         return old_save;
@@ -103,9 +103,9 @@ InstanceSave* InstanceSaveManager::AddInstanceSave(uint32 mapId, uint32 instance
 
     sLog->outDebug(LOG_FILTER_MAPS, "InstanceSaveManager::AddInstanceSave: mapid = %d, instanceid = %d", mapId, instanceId);
 
-    InstanceSave* save = new InstanceSave(mapId, instanceId, difficulty, canReset);
-    if (!load)
-        save->SaveToDB();
+    InstanceSave* save = new InstanceSave(mapId, instanceId, difficulty, completedEncounter, challenge, data, canReset);
+    //if (!load)
+        //save->SaveToDB();
 
     m_instanceSaveById[instanceId] = save;
     return save;
@@ -115,24 +115,6 @@ InstanceSave* InstanceSaveManager::GetInstanceSave(uint32 InstanceId)
 {
     InstanceSaveHashMap::iterator itr = m_instanceSaveById.find(InstanceId);
     return itr != m_instanceSaveById.end() ? itr->second : NULL;
-}
-
-void InstanceSaveManager::DeleteInstanceFromDB(uint32 instanceid)
-{
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INSTANCE_BY_INSTANCE);
-    stmt->setUInt32(0, instanceid);
-    CharacterDatabase.DirectExecute(stmt);
-
-    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GROUP_INSTANCE_BY_INSTANCE);
-    stmt->setUInt32(0, instanceid);
-    CharacterDatabase.DirectExecute(stmt);
-
-    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_INSTANCE_BY_INSTANCE);
-    stmt->setUInt32(0, instanceid);
-    CharacterDatabase.DirectExecute(stmt);
-    // Respawn times should be deleted only when the map gets unloaded
-
-    sScenarioMgr->RemoveScenarioProgress(instanceid);
 }
 
 void InstanceSaveManager::RemoveInstanceSave(uint32 InstanceId)
@@ -155,8 +137,9 @@ void InstanceSaveManager::UnloadInstanceSave(uint32 InstanceId)
     }
 }
 
-InstanceSave::InstanceSave(uint16 MapId, uint32 InstanceId, Difficulty difficulty, bool canReset)
-: m_instanceid(InstanceId), m_mapid(MapId), m_toDelete(false), m_difficulty(difficulty), m_canReset(canReset)
+InstanceSave::InstanceSave(uint16 MapId, uint32 InstanceId, Difficulty difficulty, uint32 completedEncounter, uint32 challenge, std::string data, bool canReset)
+: m_instanceid(InstanceId), m_mapid(MapId), m_toDelete(false), m_difficulty(difficulty), m_canReset(canReset),
+m_completedEncounter(completedEncounter), m_data(data), m_challenge(challenge), m_saveTime(0), m_perm(false)
 {
     m_canBeSave = difficulty != RAID_TOOL_DIFFICULTY && difficulty != HEROIC_SCENARIO_DIFFICULTY && difficulty != NORMAL_SCENARIO_DIFFICULTY && difficulty != FLEXIBLE_DIFFICULTY;
 }
@@ -173,28 +156,17 @@ InstanceSave::~InstanceSave()
 void InstanceSave::SaveToDB()
 {
     // save instance data too
-    std::string data;
-    uint32 challenge = 0;
     Map* map = sMapMgr->FindMap(GetMapId(), m_instanceid);
     if (map)
     {
         ASSERT(map->IsDungeon());
         if (InstanceScript* instanceScript = ((InstanceMap*)map)->GetInstanceScript())
         {
-            data = instanceScript->GetSaveData();
+            m_data = instanceScript->GetSaveData();
             m_completedEncounter = instanceScript->GetCompletedEncounterMask();
-            challenge = instanceScript->GetChallengeProgresTime();
+            m_challenge = instanceScript->GetChallengeProgresTime();
         }
     }
-
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_INSTANCE_SAVE);
-    stmt->setUInt32(0, m_instanceid);
-    stmt->setUInt16(1, GetMapId());
-    stmt->setUInt8(2, uint8(GetDifficulty()));
-    stmt->setUInt32(3, challenge);
-    stmt->setUInt32(4, m_completedEncounter);
-    stmt->setString(5, data);
-    CharacterDatabase.Execute(stmt);
 }
 
 // to cache or not to cache, that is the question
@@ -206,11 +178,6 @@ InstanceTemplate const* InstanceSave::GetTemplate()
 MapEntry const* InstanceSave::GetMapEntry()
 {
     return sMapStore.LookupEntry(m_mapid);
-}
-
-void InstanceSave::DeleteFromDB()
-{
-    InstanceSaveManager::DeleteInstanceFromDB(GetInstanceId());
 }
 
 /* true if the instance save is still valid */
@@ -237,7 +204,7 @@ void InstanceSaveManager::LoadInstances()
     uint32 oldMSTime = getMSTime();
 
     // Delete invalid character_instance and group_instance references
-    CharacterDatabase.DirectExecute("DELETE ci.* FROM character_instance AS ci LEFT JOIN characters AS c ON ci.guid = c.guid WHERE c.guid IS NULL");
+    /*CharacterDatabase.DirectExecute("DELETE ci.* FROM character_instance AS ci LEFT JOIN characters AS c ON ci.guid = c.guid WHERE c.guid IS NULL");
     CharacterDatabase.DirectExecute("DELETE gi.* FROM group_instance     AS gi LEFT JOIN groups     AS g ON gi.guid = g.guid WHERE g.guid IS NULL");
 
     // Delete invalid instance references
@@ -251,69 +218,12 @@ void InstanceSaveManager::LoadInstances()
 
     // Clean invalid references to instance
     CharacterDatabase.DirectExecute("UPDATE corpse SET instanceId = 0 WHERE instanceId > 0 AND instanceId NOT IN (SELECT id FROM instance)");
-    CharacterDatabase.DirectExecute("UPDATE characters AS tmp LEFT JOIN instance ON tmp.instance_id = instance.id SET tmp.instance_id = 0 WHERE tmp.instance_id > 0 AND instance.id IS NULL");
+    CharacterDatabase.DirectExecute("UPDATE characters AS tmp LEFT JOIN instance ON tmp.instance_id = instance.id SET tmp.instance_id = 0 WHERE tmp.instance_id > 0 AND instance.id IS NULL");*/
 
     // Initialize instance id storage (Needs to be done after the trash has been clean out)
     sMapMgr->InitInstanceIds();
 
-    // Load reset times and clean expired instances
-    sInstanceSaveMgr->LoadResetTimes();
-
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded instances in %u ms", GetMSTimeDiffToNow(oldMSTime));
-
-}
-
-void InstanceSaveManager::LoadResetTimes()
-{
-    time_t now = time(NULL);
-    time_t today = (now / DAY) * DAY;
-
-    // NOTE: Use DirectPExecute for tables that will be queried later
-
-    // get the current reset times for normal instances (these may need to be updated)
-    // these are only kept in memory for InstanceSaves that are loaded later
-    // resettime = 0 in the DB for raid/heroic instances so those are skipped
-    typedef std::pair<uint32 /*PAIR32(map, difficulty)*/, time_t> ResetTimeMapDiffType;
-    typedef std::map<uint32, ResetTimeMapDiffType> InstResetTimeMapDiffType;
-    InstResetTimeMapDiffType instResetTime;
-
-    QueryResult result = CharacterDatabase.Query("SELECT id, map, difficulty FROM instance ORDER BY id ASC");
-    if (result)
-    {
-        do
-        {
-            Field* fields = result->Fetch();
-
-            uint32 instanceId = fields[0].GetUInt32();
-            uint32 difficulty = fields[2].GetUInt8();
-            uint16 mapID = fields[1].GetUInt16();
-            MapEntry const* entry = sMapStore.LookupEntry(mapID);
-            if (!entry)
-            {
-                sLog->outError(LOG_FILTER_GENERAL, "InstanceSaveManager::AddInstanceSave: wrong mapid = %d, instanceid = %d!", mapID, instanceId);
-                continue;
-            }
-            // Instances are pulled in ascending order from db and nextInstanceId is initialized with 1,
-            // so if the instance id is used, increment until we find the first unused one for a potential new instance
-            if (sMapMgr->GetNextInstanceId() == instanceId)
-                sMapMgr->SetNextInstanceId(instanceId + 1);
-
-            // Mark instance id as being used
-            sMapMgr->RegisterInstanceId(instanceId);
-
-            // initialize reset time
-            // for normal instances if no creatures are killed the instance will reset in two hours
-            // Set 12H, no more. In any way regular dung plr could restary himself, but collecting regular dunges wuth inf spawn time is bad idea.
-            if (entry->map_type != MAP_RAID && difficulty <= REGULAR_DIFFICULTY)
-                instResetTime[instanceId] = ResetTimeMapDiffType(MAKE_PAIR32(entry->MapID, difficulty), time(NULL) + 12 * HOUR);
-        }
-        while (result->NextRow());
-
-        // schedule the reset times
-        for (InstResetTimeMapDiffType::iterator itr = instResetTime.begin(); itr != instResetTime.end(); ++itr)
-            if (itr->second.second > now)
-                ScheduleReset(true, itr->second.second, InstResetEvent(0, PAIR32_LOPART(itr->second.first), Difficulty(PAIR32_HIPART(itr->second.first)), itr->first));
-    }
 }
 
 void InstanceSaveManager::ScheduleReset(bool add, time_t time, InstResetEvent event)
@@ -353,8 +263,16 @@ void InstanceSaveManager::ScheduleReset(bool add, time_t time, InstResetEvent ev
         m_resetTimeQueue.insert(std::pair<time_t, InstResetEvent>(time, event));
 }
 
-void InstanceSaveManager::Update()
+void InstanceSaveManager::Update(uint32 diff)
 {
+    if (m_updateTimer < 1000)
+    {
+        m_updateTimer += diff;
+        return;
+    }
+    else
+        m_updateTimer = 0;
+
     time_t now = time(NULL);
     time_t t;
 
@@ -407,11 +325,11 @@ void InstanceSaveManager::_ResetInstance(uint32 mapid, uint32 instanceId)
     if (!map->Instanceable())
         return;
 
+    sScenarioMgr->RemoveScenarioProgress(instanceId);
+
     InstanceSaveHashMap::iterator itr = m_instanceSaveById.find(instanceId);
     if (itr != m_instanceSaveById.end())
         _ResetSave(itr);
-
-    DeleteInstanceFromDB(instanceId);                       // even if save not loaded
 
     Map* iMap = ((MapInstanced*)map)->FindInstanceMap(instanceId);
 
@@ -443,23 +361,6 @@ void InstanceSaveManager::ResetOrWarnAll(uint32 mapid, Difficulty difficulty)
             ++itr;
     }
 
-    // delete them from the DB, even if not loaded
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_INSTANCE_BY_MAP_DIFF);
-    stmt->setUInt16(0, uint16(mapid));
-    stmt->setUInt8(1, uint8(difficulty));
-    CharacterDatabase.DirectExecute(stmt);
-
-    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GROUP_INSTANCE_BY_MAP_DIFF);
-    stmt->setUInt16(0, uint16(mapid));
-    stmt->setUInt8(1, uint8(difficulty));
-    CharacterDatabase.DirectExecute(stmt);
-
-    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INSTANCE_BY_MAP_DIFF);
-    stmt->setUInt16(0, uint16(mapid));
-    stmt->setUInt8(1, uint8(difficulty));
-    CharacterDatabase.DirectExecute(stmt);
-
-
     // note: this isn't fast but it's meant to be executed very rarely
     Map const* map = sMapMgr->CreateBaseMap(mapid);          // _not_ include difficulty
     MapInstanced::InstancedMaps &instMaps = ((MapInstanced*)map)->GetInstancedMaps();
@@ -471,6 +372,7 @@ void InstanceSaveManager::ResetOrWarnAll(uint32 mapid, Difficulty difficulty)
         if (!map2->IsDungeon())
             continue;
 
+        map2->DeleteRespawnTimes();
         ((InstanceMap*)map2)->Reset(INSTANCE_RESET_GLOBAL);
     }
 

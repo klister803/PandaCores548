@@ -1635,6 +1635,7 @@ class Player : public Unit, public GridObject<Player>
         void SavePlayerLootCooldown();
         void SavePlayerCurrency();
         void SavePlayerBoundInstances();
+        void UpdateInstance(InstanceSave* save);
         void SavePlayerInstanceTimes();
         void SavePlayerSkills();
         void SavePlayerTalents();

@@ -6215,6 +6215,7 @@ void ObjectMgr::SetHighestGuids()
 {
     QueryResult result = NULL;
     queryGuidKey = new char[18];
+
     sprintf(queryGuidKey, "r{%i}HIGHESTGUIDS", realmID);
 
     RedisValue v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "characters");

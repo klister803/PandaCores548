@@ -118,10 +118,21 @@ Map* MapManager::CreateBaseMap(uint32 id)
         else
         {
             map = new Map(id, i_gridCleanUpDelay, 0, NONE_DIFFICULTY);
-            map->LoadRespawnTimes();
         }
 
         i_maps[id] = map;
+
+        if (!entry->Instanceable())
+        {
+            RedisDatabase.AsyncExecute("HGETALL", map->goRespawmKey, id, [&](const RedisValue &v, uint64 id) {
+                if (Map* map = sMapMgr->FindBaseMap(id))
+                    map->LoadGoRespawnTimes(&v);
+            });
+            RedisDatabase.AsyncExecute("HGETALL", map->creatureRespawmKey, id, [&](const RedisValue &v, uint64 id) {
+                if (Map* map = sMapMgr->FindBaseMap(id))
+                    map->LoadCreatureRespawnTimes(&v);
+            });
+        }
     }
 
     ASSERT(map);
@@ -449,13 +460,24 @@ void MapManager::InitInstanceIds()
 {
     _nextInstanceId = 1;
 
-    QueryResult result = CharacterDatabase.Query("SELECT MAX(id) FROM instance");
-    if (result)
+    RedisValue v = RedisDatabase.ExecuteH("HGET", sObjectMgr->GetGuidKey(), "instance");
+    if (v.isOk() && !v.isNull())
     {
-        uint32 maxId = (*result)[0].GetUInt32();
+        uint32 maxId = v.toInt();
 
         // Resize to multiples of 32 (vector<bool> allocates memory the same way)
         _instanceIds.resize((maxId / 32) * 32 + (maxId % 32 > 0 ? 32 : 0));
+    }
+    else
+    {
+        QueryResult result = CharacterDatabase.Query("SELECT MAX(id) FROM instance");
+        if (result)
+        {
+            uint32 maxId = (*result)[0].GetUInt32();
+
+            // Resize to multiples of 32 (vector<bool> allocates memory the same way)
+            _instanceIds.resize((maxId / 32) * 32 + (maxId % 32 > 0 ? 32 : 0));
+        }
     }
 }
 
@@ -478,6 +500,9 @@ uint32 MapManager::GenerateInstanceId()
             break;
         }
     }
+
+    std::string id = std::to_string(_nextInstanceId);
+    RedisDatabase.ExecuteSetH("HSET", sObjectMgr->GetGuidKey(), "instance", id.c_str());
 
     if (newInstanceId == _nextInstanceId)
     {
@@ -506,7 +531,12 @@ void MapManager::FreeInstanceId(uint32 instanceId)
 {
     // If freed instance id is lower than the next id available for new instances, use the freed one instead
     if (instanceId < _nextInstanceId)
+    {
         SetNextInstanceId(instanceId);
+
+        std::string id = std::to_string(instanceId);
+        RedisDatabase.ExecuteSetH("HSET", sObjectMgr->GetGuidKey(), "instance", id.c_str());
+    }
 
     _instanceIds[instanceId] = false;
 }
