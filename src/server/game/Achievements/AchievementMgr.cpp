@@ -546,13 +546,6 @@ void AchievementMgr<T>::DeleteFromDB(uint32 /*lowguid*/, uint32 /*accountId*/)
 template<>
 void AchievementMgr<ScenarioProgress>::DeleteFromDB(uint32 lowguid, uint32 accountId)
 {
-    SQLTransaction trans = CharacterDatabase.BeginTransaction();
-
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_SCENARIO_CRITERIAPROGRESS);
-    stmt->setUInt32(0, lowguid);
-    trans->Append(stmt);
-
-    CharacterDatabase.CommitTransaction(trans);
 }
 
 template<>

@@ -1587,7 +1587,6 @@ class Player : public Unit, public GridObject<Player>
         Json::Value PlayerLootCooldownJson;
         Json::Value PlayerCurrencyJson;
         Json::Value PlayerBoundInstancesJson;
-        Json::Value PlayerInstanceTimesJson;
         Json::Value PlayerSkillsJson;
         Json::Value PlayerTalentsJson;
         Json::Value PlayerSpellsJson;
@@ -1636,7 +1635,6 @@ class Player : public Unit, public GridObject<Player>
         void SavePlayerCurrency();
         void SavePlayerBoundInstances();
         void UpdateInstance(InstanceSave* save);
-        void SavePlayerInstanceTimes();
         void SavePlayerSkills();
         void SavePlayerTalents();
         void SavePlayerSpells();
@@ -3185,18 +3183,6 @@ class Player : public Unit, public GridObject<Player>
         static void ConvertInstancesToGroup(Player* player, Group* group, bool switchLeader);
         bool Satisfy(AccessRequirement const* ar, uint32 target_map, bool report = false);
         bool CheckInstanceLoginValid();
-        bool CheckInstanceCount(uint32 instanceId) const
-        {
-            if (_instanceResetTimes.size() < sWorld->getIntConfig(CONFIG_MAX_INSTANCES_PER_HOUR))
-                return true;
-            return _instanceResetTimes.find(instanceId) != _instanceResetTimes.end();
-        }
-
-        void AddInstanceEnterTime(uint32 instanceId, time_t enterTime)
-        {
-            if (_instanceResetTimes.find(instanceId) == _instanceResetTimes.end())
-                _instanceResetTimes.insert(InstanceTimeMap::value_type(instanceId, enterTime + HOUR));
-        }
 
         // last used pet number (for BG's)
         uint32 GetLastPetNumber() const { return m_lastpetnumber; }
@@ -3488,7 +3474,6 @@ class Player : public Unit, public GridObject<Player>
         void _LoadBGData(PreparedQueryResult result);
         void _LoadGlyphs(PreparedQueryResult result);
         void _LoadTalents(PreparedQueryResult result);
-        void _LoadInstanceTimeRestrictions(PreparedQueryResult result);
         void _LoadCurrency(PreparedQueryResult result);
         void _LoadArchaelogy(PreparedQueryResult result);
         void _LoadCUFProfiles(PreparedQueryResult result);
@@ -3517,7 +3502,6 @@ class Player : public Unit, public GridObject<Player>
         void _SaveGlyphs(SQLTransaction& trans);
         void _SaveTalents(SQLTransaction& trans);
         void _SaveStats(SQLTransaction& trans);
-        void _SaveInstanceTimeRestrictions(SQLTransaction& trans);
         void _SaveCurrency(SQLTransaction& trans);
         void _SaveArchaelogy(SQLTransaction& trans);
         void _SaveBrackets(SQLTransaction& trans);
@@ -3803,7 +3787,6 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_timeSyncClient;
         uint32 m_timeSyncServer;
 
-        InstanceTimeMap _instanceResetTimes;
         uint32 _pendingBindId;
         uint32 _pendingBindTimer;
 

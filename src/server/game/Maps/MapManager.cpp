@@ -276,13 +276,6 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
         uint32 instaceIdToCheck = 0;
         if (InstanceSave* save = player->GetInstanceSave(mapid, entry->IsRaid()))
             instaceIdToCheck = save->GetInstanceId();
-
-        // instanceId can never be 0 - will not be found
-        if (!player->CheckInstanceCount(instaceIdToCheck) && !player->isDead())
-        {
-            player->SendTransferAborted(mapid, TRANSFER_ABORT_TOO_MANY_INSTANCES);
-            return false;
-        }
     }
 
     //Other requirements

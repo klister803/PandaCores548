@@ -51,7 +51,6 @@ void Player::InitSavePlayer()
     SavePlayerLootCooldown();
     SavePlayerCurrency();
     SavePlayerBoundInstances();
-    SavePlayerInstanceTimes();
     SavePlayerSkills();
     SavePlayerTalents();
     SavePlayerSpells();
@@ -248,22 +247,6 @@ void Player::SavePlayerCurrency()
 
     RedisDatabase.AsyncExecuteHSet("HSET", userKey, "currency", sRedisBuilder->BuildString(PlayerCurrencyJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerCurrency guid %u", guid);
-    });
-}
-
-void Player::SavePlayerInstanceTimes()
-{
-    if (isBeingLoaded())
-        return;
-    PlayerInstanceTimesJson.clear();
-    for (InstanceTimeMap::const_iterator itr = _instanceResetTimes.begin(); itr != _instanceResetTimes.end(); ++itr)
-    {
-        std::string instanceId = std::to_string(itr->first);
-        PlayerInstanceTimesJson[instanceId.c_str()]["releaseTime"] = itr->second;
-    }
-
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "instancetime", sRedisBuilder->BuildString(PlayerInstanceTimesJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerInstanceTimes guid %u", guid);
     });
 }
 

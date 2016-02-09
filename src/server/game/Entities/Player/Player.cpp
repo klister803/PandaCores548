@@ -2094,17 +2094,6 @@ void Player::Update(uint32 p_time)
     UpdateEnchantTime(p_time);
     UpdateHomebindTime(p_time);
 
-    if (!_instanceResetTimes.empty())
-    {
-        for (InstanceTimeMap::iterator itr = _instanceResetTimes.begin(); itr != _instanceResetTimes.end();)
-        {
-            if (itr->second < now)
-                _instanceResetTimes.erase(itr++);
-            else
-                ++itr;
-        }
-    }
-
     // group update
     // Avoid spam of SMSG_PARTY_MEMBER_STAT
     if (m_groupUpdateDelay < p_time)
@@ -19029,7 +19018,6 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     SetUInt16Value(PLAYER_FIELD_KILLS, 1, fields[42].GetUInt16());
 
     _LoadBoundInstances(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADBOUNDINSTANCES));
-    //_LoadInstanceTimeRestrictions(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADINSTANCELOCKTIMES));
     _LoadBGData(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADBGDATA));
 
     GetSession()->SetPlayer(this);
@@ -21665,7 +21653,6 @@ void Player::SaveToDB(bool create /*=false*/)
     _SaveEquipmentSets(trans);
     GetSession()->SaveTutorialsData(trans);                 // changed only while character in game
     _SaveGlyphs(trans);
-    _SaveInstanceTimeRestrictions(trans);
     _SaveCurrency(trans);
     _SaveCUFProfiles(trans);
     _SaveArchaeology(trans);
@@ -29592,37 +29579,6 @@ float Player::GetAverageItemLevel()
     }
 
     return ((float)sum) / count;
-}
-
-void Player::_LoadInstanceTimeRestrictions(PreparedQueryResult result)
-{
-    if (!result)
-        return;
-
-    do
-    {
-        Field* fields = result->Fetch();
-        _instanceResetTimes.insert(InstanceTimeMap::value_type(fields[0].GetUInt32(), fields[1].GetUInt64()));
-    } while (result->NextRow());
-}
-
-void Player::_SaveInstanceTimeRestrictions(SQLTransaction& trans)
-{
-    if (_instanceResetTimes.empty())
-        return;
-
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ACCOUNT_INSTANCE_LOCK_TIMES);
-    stmt->setUInt32(0, GetSession()->GetAccountId());
-    trans->Append(stmt);
-
-    for (InstanceTimeMap::const_iterator itr = _instanceResetTimes.begin(); itr != _instanceResetTimes.end(); ++itr)
-    {
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_ACCOUNT_INSTANCE_LOCK_TIMES);
-        stmt->setUInt32(0, GetSession()->GetAccountId());
-        stmt->setUInt32(1, itr->first);
-        stmt->setUInt64(2, itr->second);
-        trans->Append(stmt);
-    }
 }
 
 bool Player::IsInWhisperWhiteList(uint64 guid)
