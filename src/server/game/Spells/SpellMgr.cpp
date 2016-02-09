@@ -4010,6 +4010,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 146051: // Amplification
                     spellInfo->Effects[0].ScalingMultiplier = 0.00177f;
                     spellInfo->Effects[2].ScalingMultiplier = 0.00177f;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_CANT_STACK_WITH_ITSELF;
                     break;
                 case 146202: // Wrath
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_HIDE_DURATION;
