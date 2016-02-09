@@ -12749,7 +12749,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_BONUS_MULTIPLIER, SPDCoeffMod);
                 SPDCoeffMod /= 100.0f;
             }
-            DoneTotal += int32(DoneAdvertisedBenefit * SPDCoeffMod * factorMod * stack);
+            DoneTotal += RoundingFloatValue(DoneAdvertisedBenefit * SPDCoeffMod * factorMod * stack);
         }
 
         if (getPowerType() == POWER_MANA)
