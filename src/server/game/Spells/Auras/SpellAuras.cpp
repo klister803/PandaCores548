@@ -2558,6 +2558,10 @@ bool Aura::CanStackWith(Aura const* existingAura) const
     if (IsPassive() && sameCaster && m_spellInfo->IsDifferentRankOf(existingSpellInfo))
         return false;
 
+    if (GetId() == existingSpellInfo->Id)
+        if (m_spellInfo->AttributesCu & SPELL_ATTR0_CU_CANT_STACK_WITH_ITSELF)
+            return false;
+
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         // prevent remove triggering aura by triggered aura
