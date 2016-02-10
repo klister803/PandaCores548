@@ -1069,15 +1069,18 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         case 123273:        // Surging Mist - 123273 and Surging Mist - 116995
         case 116694:        // Surging Mist - 116694 and Surging Mist - 116995
         {
-            // Surging Mist is instantly casted if player is channeling Soothing Mist
-            if (_player->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->GetSpellInfo()->Id == 115175)
+            if (Unit* target = targets.GetUnitTarget())
             {
-                recvPacket.rfinish();
-                _player->CastSpell(targets.GetUnitTarget(), 116995, true);
-                _player->EnergizeBySpell(_player, 116995, 1, POWER_CHI);
-                int32 powerCost = spellInfo->CalcPowerCost(_player, spellInfo->GetSchoolMask());
-                _player->ModifyPower(POWER_MANA, -powerCost, true);
-                return;
+                // Surging Mist is instantly casted if player is channeling Soothing Mist
+                if (_player->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->GetSpellInfo()->Id == 115175 && target->HasAura(115175, _player->GetGUID()))
+                {
+                    recvPacket.rfinish();
+                    _player->CastSpell(target, 116995, true);
+                    _player->EnergizeBySpell(_player, 116995, 1, POWER_CHI);
+                    int32 powerCost = spellInfo->CalcPowerCost(_player, spellInfo->GetSchoolMask());
+                    _player->ModifyPower(POWER_MANA, -powerCost, true);
+                    return;
+                }
             }
             break;
         }
