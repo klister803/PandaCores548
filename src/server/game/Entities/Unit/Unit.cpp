@@ -8355,6 +8355,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                             if (rogue->HasSpellCooldown(51699) || !rogue->isInCombat())
                                 break;
 
+                            if (procSpell && procSpell->SpellFamilyName == SPELLFAMILY_GENERIC)
+                                return false;
+
                             if (rogue->GetComboPoints() >= 5 && owner->HasAura(114015))
                             {
                                 owner->CastSpell(owner, 115189, true);
