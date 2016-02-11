@@ -24,7 +24,6 @@
 GroupMgr::GroupMgr()
 {
     NextGroupDbStoreId = 1;
-    NextGroupId = 1;
 
     groupKey = new char[32];
     groupMemberKey = new char[32];
@@ -88,16 +87,6 @@ Group* GroupMgr::GetGroupByDbStoreId(uint32 storageId) const
         return GroupDbStore[storageId];
 
     return NULL;
-}
-
-uint32 GroupMgr::GenerateGroupId()
-{
-    if (NextGroupId >= 0xFFFFFFFE)
-    {
-        sLog->outError(LOG_FILTER_GENERAL, "Group guid overflow!! Can't continue, shutting down server. ");
-        World::StopNow(ERROR_EXIT_CODE);
-    }
-    return NextGroupId++;
 }
 
 Group* GroupMgr::GetGroupByGUID(uint32 groupId) const

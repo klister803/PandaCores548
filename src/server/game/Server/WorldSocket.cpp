@@ -1042,9 +1042,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     // Get the account information from the realmd database
     PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_INFO_BY_NAME);
-
     stmt->setString(0, account);
-
     PreparedQueryResult result = LoginDatabase.Query(stmt);
 
     // Stop if the account is not found
@@ -1107,10 +1105,8 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
         mutetime = time(NULL) + llabs(mutetime);
 
         PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_MUTE_TIME);
-
         stmt->setInt64(0, mutetime);
         stmt->setUInt32(1, id);
-
         LoginDatabase.Execute(stmt);
     }
 
@@ -1123,10 +1119,8 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     // Checks gmlevel per Realm
     stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_GMLEVEL_BY_REALMID);
-
     stmt->setUInt32(0, id);
     stmt->setInt32(1, int32(realmID));
-
     result = LoginDatabase.Query(stmt);
 
     if (!result)
@@ -1139,10 +1133,8 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     // Re-check account ban (same check as in realmd)
     stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_BANS);
-
     stmt->setUInt32(0, id);
     stmt->setString(1, GetRemoteAddress());
-
     PreparedQueryResult banresult = LoginDatabase.Query(stmt);
 
     if (banresult) // if account banned
@@ -1207,9 +1199,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     // Check if this user is by any chance a recruiter
     stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_RECRUITER);
-
     stmt->setUInt32(0, id);
-
     result = LoginDatabase.Query(stmt);
 
     bool isRecruiter = false;

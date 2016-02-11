@@ -1201,7 +1201,7 @@ bool Guild::Create(Player* pLeader, const std::string& name)
     if (!pLeaderSession)
         return false;
 
-    m_id = sGuildMgr->GenerateGuildId();
+    m_id = sObjectMgr->GenerateGuildId();
     m_leaderGuid = pLeader->GetGUID();
     m_name = name;
     m_info = "";

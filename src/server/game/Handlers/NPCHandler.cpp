@@ -516,15 +516,6 @@ void WorldSession::SendBindPoint(Creature* npc)
     uint32 bindspell = 3286;
 
     // update sql homebind
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_PLAYER_HOMEBIND);
-    stmt->setUInt16(0, _player->GetMapId());
-    stmt->setUInt16(1, _player->GetAreaId());
-    stmt->setFloat (2, _player->GetPositionX());
-    stmt->setFloat (3, _player->GetPositionY());
-    stmt->setFloat (4, _player->GetPositionZ());
-    stmt->setUInt32(5, _player->GetGUIDLow());
-    CharacterDatabase.Execute(stmt);
-
     _player->m_homebindMapId = _player->GetMapId();
     _player->m_homebindAreaId = _player->GetAreaId();
     _player->m_homebindX = _player->GetPositionX();
@@ -533,6 +524,8 @@ void WorldSession::SendBindPoint(Creature* npc)
 
     // send spell for homebinding (3286)
     _player->CastSpell(_player, bindspell, true);
+
+    _player->SavePlayerHomeBind();
 
     SendTrainerService(npc->GetGUID(), bindspell, 2);
     _player->PlayerTalkClass->SendCloseGossip();
@@ -565,16 +558,6 @@ void WorldSession::HandleListStabledPetsOpcode(WorldPacket & recvData)
 
 void WorldSession::SendStablePet(uint64 guid)
 {
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_DETAIL);
-
-    stmt->setUInt32(0, _player->GetGUIDLow());
-
-    _sendStabledPetCallback.SetParam(guid);
-    _sendStabledPetCallback.SetFutureResult(CharacterDatabase.AsyncQuery(stmt));
-}
-
-void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid)
-{
     if (!GetPlayer())
         return;
 
@@ -587,39 +570,35 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
 
     std::vector<uint32> nameLen;
     std::set<uint32> stableNumber;
-    if (result)
+    for (auto iter = GetPlayer()->PlayerPetsJson.begin(); iter != GetPlayer()->PlayerPetsJson.end(); ++iter)
     {
-        do
+        uint32 petNumber = atoi(iter.memberName());
+        auto dataValue = *iter;
+
+        PetSlot petSlot = GetPlayer()->GetSlotForPetId(petNumber);
+        stableNumber.insert(petNumber);
+
+        if (petSlot > PET_SLOT_STABLE_LAST)
+            continue;
+
+        //Find free slot and move pet there
+        if (petSlot == PET_SLOT_FULL_LIST)
+            petSlot = (PetSlot)GetPlayer()->SetOnAnyFreeSlot(petNumber);
+
+        if (petSlot >= PET_SLOT_HUNTER_FIRST &&  petSlot < PET_SLOT_STABLE_LAST)
         {
-            Field* fields = result->Fetch();
+            std::string name = dataValue["name"].asString();
+            buf.WriteString(name);
+            nameLen.push_back(name.size());
+            buf << uint8(petSlot < PET_SLOT_STABLE_FIRST ? 1 : 3);     // 1 = current, 2/3 = in stable (any from 4, 5, ... create problems with proper show)
+            buf << uint32(petNumber);          // petnumber
+            buf << uint32(dataValue["modelid"].asUInt());          // model id
+            buf << uint32(dataValue["level"].asUInt());          // level
+            buf << uint32(dataValue["entry"].asUInt());          // creature entry
+            buf << uint32(petSlot);                        // 4.x petSlot
 
-            uint32 petNumber = fields[0].GetUInt32();
-            PetSlot petSlot = GetPlayer()->GetSlotForPetId(petNumber);
-            stableNumber.insert(petNumber);
-
-            if (petSlot > PET_SLOT_STABLE_LAST)
-                continue;
-
-            //Find free slot and move pet there
-            if (petSlot == PET_SLOT_FULL_LIST)
-                petSlot = (PetSlot)GetPlayer()->SetOnAnyFreeSlot(petNumber);
-
-            if (petSlot >= PET_SLOT_HUNTER_FIRST &&  petSlot < PET_SLOT_STABLE_LAST)
-            {
-                std::string name = fields[3].GetString();
-                buf.WriteString(name);
-                nameLen.push_back(name.size());
-                buf << uint8(petSlot < PET_SLOT_STABLE_FIRST ? 1 : 3);     // 1 = current, 2/3 = in stable (any from 4, 5, ... create problems with proper show)
-                buf << uint32(petNumber);          // petnumber
-                buf << uint32(fields[4].GetUInt32());          // model id
-                buf << uint32(fields[2].GetUInt16());          // level
-                buf << uint32(fields[1].GetUInt32());          // creature entry
-                buf << uint32(petSlot);                        // 4.x petSlot
-
-                ++num;
-            }
+            ++num;
         }
-        while (result->NextRow());
     }
 
     data.WriteBits(num, 19);
@@ -692,6 +671,7 @@ void WorldSession::HandleStableChangeSlot(WorldPacket & recv_data)
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
 
     Pet* pet = _player->GetPet();
+    std::string petId = std::to_string(pet_number);
 
     //If we move the pet already summoned...
     if (pet && pet->GetCharmInfo() && pet->GetCharmInfo()->GetPetNumber() == pet_number)
@@ -702,32 +682,17 @@ void WorldSession::HandleStableChangeSlot(WorldPacket & recv_data)
     if (pet && curentSlot == new_slot)
         _player->RemovePet(pet);
 
-
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_BY_ID);
-
-    stmt->setUInt32(0, _player->GetGUIDLow());
-    stmt->setUInt32(1, pet_number);
-
-    _stableChangeSlotCallback.SetParam(new_slot);
-    _stableChangeSlotCallback.SetFutureResult(CharacterDatabase.AsyncQuery(stmt));
-}
-
-void WorldSession::HandleStableChangeSlotCallback(PreparedQueryResult result, uint8 new_slot)
-{
     if (!GetPlayer())
         return;
 
-    if (!result)
+    if (_player->PlayerPetsJson[petId.c_str()].empty())
     {
         SendStableResult(STABLE_ERR_STABLE);
         return;
     }
 
-    Field *fields = result->Fetch();
-
-    uint32 pet_entry = fields[0].GetUInt32();
-    uint32 pet_number  = fields[1].GetUInt32();
-    bool isHunter = fields[2].GetUInt8() == HUNTER_PET;
+    uint32 pet_entry = _player->PlayerPetsJson[petId.c_str()]["entry"].asUInt();
+    bool isHunter = _player->PlayerPetsJson[petId.c_str()]["PetType"].asUInt() == HUNTER_PET;
 
     PetSlot slot = GetPlayer()->GetSlotForPetId(pet_number);
 

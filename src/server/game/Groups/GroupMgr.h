@@ -41,7 +41,7 @@ public:
     void   SetGroupDbStoreSize(uint32 newSize) { GroupDbStore.resize(newSize); }
 
     void   LoadGroups();
-    uint32 GenerateGroupId();
+
     void   AddGroup(Group* group);
     void   RemoveGroup(Group* group);
 
@@ -55,7 +55,7 @@ public:
     char* groupInstanceKey;
 
 protected:
-    uint32           NextGroupId;
+
     uint32           NextGroupDbStoreId;
     GroupContainer   GroupStore;
     GroupDbContainer GroupDbStore;

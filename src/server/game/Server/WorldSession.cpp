@@ -45,6 +45,7 @@
 #include "Transport.h"
 #include "WardenWin.h"
 #include "WardenMac.h"
+#include "RedisBuilderMgr.h"
 
 bool MapSessionFilter::Process(WorldPacket* packet)
 {
@@ -103,6 +104,9 @@ isRecruiter(isARecruiter), timeCharEnumOpcode(0), playerLoginCounter(0)
 {
     _warden = NULL;
     _filterAddonMessages = false;
+
+    accountKey = new char[32];
+    sprintf(accountKey, "r{%u}a{%u}", realmID, _accountId);
 
     if (sock)
     {
@@ -799,9 +803,29 @@ void WorldSession::SendAuthWaitQue(uint32 position)
 
 void WorldSession::LoadGlobalAccountData()
 {
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_ACCOUNT_DATA);
-    stmt->setUInt32(0, GetAccountId());
-    LoadAccountData(CharacterDatabase.Query(stmt), GLOBAL_CACHE_MASK);
+    Json::Value AccountDataJson;
+    RedisValue v = RedisDatabase.ExecuteH("HGET", GetAccountKey(), "accountdata");
+    if (sRedisBuilder->LoadFromRedis(&v, AccountDataJson))
+    {
+        for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
+            if (GLOBAL_CACHE_MASK & (1 << i))
+                m_accountData[i] = AccountData();
+
+        for (auto iter = AccountDataJson.begin(); iter != AccountDataJson.end(); ++iter)
+        {
+            uint32 type = atoi(iter.memberName());
+            auto dataValue = *iter;
+
+            m_accountData[type].Time = time_t(dataValue["Time"].asUInt());
+            m_accountData[type].Data = dataValue["Time"].asString();
+        }
+    }
+    else
+    {
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_ACCOUNT_DATA);
+        stmt->setUInt32(0, GetAccountId());
+        LoadAccountData(CharacterDatabase.Query(stmt), GLOBAL_CACHE_MASK);
+    }
 }
 
 void WorldSession::LoadAccountData(PreparedQueryResult result, uint32 mask)
@@ -856,12 +880,8 @@ void WorldSession::SetAccountData(AccountDataType type, time_t tm, std::string d
         index = CHAR_REP_PLAYER_ACCOUNT_DATA;
     }
 
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(index);
-    stmt->setUInt32(0, id);
-    stmt->setUInt8 (1, type);
-    stmt->setUInt32(2, uint32(tm));
-    stmt->setString(3, data);
-    CharacterDatabase.Execute(stmt);
+    if (_player)
+        _player->UpdatePlayerAccountData(type, tm, data);
 
     m_accountData[type].Time = tm;
     m_accountData[type].Data = data;
@@ -898,11 +918,26 @@ void WorldSession::LoadTutorialsData()
 {
     memset(m_Tutorials, 0, sizeof(uint32) * MAX_ACCOUNT_TUTORIAL_VALUES);
 
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_TUTORIALS);
-    stmt->setUInt32(0, GetAccountId());
-    if (PreparedQueryResult result = CharacterDatabase.Query(stmt))
-        for (uint8 i = 0; i < MAX_ACCOUNT_TUTORIAL_VALUES; ++i)
-            m_Tutorials[i] = (*result)[i].GetUInt32();
+    Json::Value TutorialsData;
+    RedisValue v = RedisDatabase.ExecuteH("HGET", GetAccountKey(), "tutorials");
+    if (sRedisBuilder->LoadFromRedis(&v, TutorialsData))
+    {
+        for (auto iter = TutorialsData.begin(); iter != TutorialsData.end(); ++iter)
+        {
+            uint32 index = atoi(iter.memberName());
+            auto dataValue = *iter;
+
+            m_Tutorials[index] = dataValue.asUInt();
+        }
+    }
+    else
+    {
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_TUTORIALS);
+        stmt->setUInt32(0, GetAccountId());
+        if (PreparedQueryResult result = CharacterDatabase.Query(stmt))
+            for (uint8 i = 0; i < MAX_ACCOUNT_TUTORIAL_VALUES; ++i)
+                m_Tutorials[i] = (*result)[i].GetUInt32();
+    }
 
     m_TutorialsChanged = false;
 }
@@ -1488,24 +1523,6 @@ void WorldSession::ProcessQueryCallbacks()
         _addIgnoreCallback.get(result);
         HandleAddIgnoreOpcodeCallBack(result);
         _addIgnoreCallback.cancel();
-    }
-
-    //- SendStabledPet
-    if (_sendStabledPetCallback.IsReady())
-    {
-        uint64 param = _sendStabledPetCallback.GetParam();
-        _sendStabledPetCallback.GetResult(result);
-        SendStablePetCallback(result, param);
-        _sendStabledPetCallback.FreeResult();
-    }
-
-    //- HandleStableChangeSlot
-    if (_stableChangeSlotCallback.IsReady())
-    {
-        uint8 param = _stableChangeSlotCallback.GetParam();
-        _stableChangeSlotCallback.GetResult(result);
-        HandleStableChangeSlotCallback(result, param);
-        _stableChangeSlotCallback.FreeResult();
     }
 }
 

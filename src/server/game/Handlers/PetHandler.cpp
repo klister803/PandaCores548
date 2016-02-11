@@ -713,7 +713,8 @@ void WorldSession::HandlePetRename(WorldPacket & recvData)
     if (namepart)
         len = recvData.ReadBits(8);
 
-    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    std::string petId = std::to_string(petnumber);
+
     if (namepart)
     {
         name = recvData.ReadString(len);
@@ -734,12 +735,6 @@ void WorldSession::HandlePetRename(WorldPacket & recvData)
         }
 
         pet->SetName(name);
-
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_PET_NAME);
-        stmt->setString(0, name);
-        stmt->setUInt32(1, _player->GetGUIDLow());
-        stmt->setUInt32(2, pet->GetCharmInfo()->GetPetNumber());
-        trans->Append(stmt);
     }
 
     if (isdeclined)
@@ -757,21 +752,15 @@ void WorldSession::HandlePetRename(WorldPacket & recvData)
                 return;
             }
 
-            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_PET_DECLINEDNAME);
-            stmt->setUInt32(0, pet->GetCharmInfo()->GetPetNumber());
-            trans->Append(stmt);
-
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_ADD_CHAR_PET_DECLINEDNAME);
-            stmt->setUInt32(0, _player->GetGUIDLow());
-
-            for (uint8 i = 0; i < 5; i++)
-                stmt->setString(i+1, declinedname.name[i]);
-
-            trans->Append(stmt);
+            for (uint8 i = 0; i < MAX_DECLINED_NAME_CASES; i++)
+            {
+                std::string index = std::to_string(i);
+                _player->PlayerPetsJson[petId.c_str()]["declinedname"][index.c_str()] = declinedname.name[i];
+            }
         }
     }
 
-    CharacterDatabase.CommitTransaction(trans);
+    _player->UpdatePlayerPet(pet);
 
     Unit* owner = pet->GetOwner();
     if (owner && (owner->GetTypeId() == TYPEID_PLAYER) && owner->ToPlayer()->GetGroup())

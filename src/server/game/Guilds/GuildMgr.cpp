@@ -20,7 +20,6 @@
 
 GuildMgr::GuildMgr()
 {
-    NextGuildId = 1;
 }
 
 GuildMgr::~GuildMgr()
@@ -46,16 +45,6 @@ void GuildMgr::SaveGuilds()
         if (itr->second->GetMembersOnline()) // Save guild only with player active
             itr->second->SaveToDB(true);
     }
-}
-
-uint32 GuildMgr::GenerateGuildId()
-{
-    if (NextGuildId >= 0xFFFFFFFE)
-    {
-        sLog->outError(LOG_FILTER_GUILD, "Guild ids overflow!! Can't continue, shutting down server. ");
-        World::StopNow(ERROR_EXIT_CODE);
-    }
-    return NextGuildId++;
 }
 
 // Guild collection

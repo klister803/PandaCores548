@@ -127,7 +127,7 @@ void Group::DeleteFromRedis()
 void Group::LoadGroupFromDB(Json::Value groupData, uint32 groupId)
 {
     m_dbStoreId = groupId;
-    m_guid = MAKE_NEW_GUID(sGroupMgr->GenerateGroupId(), 0, HIGHGUID_GROUP);
+    m_guid = MAKE_NEW_GUID(sObjectMgr->GenerateGroupId(), 0, HIGHGUID_GROUP);
     m_leaderGuid = MAKE_NEW_GUID(groupData["m_leaderGuid"].asUInt(), 0, HIGHGUID_PLAYER);
 
     // group leader not exist

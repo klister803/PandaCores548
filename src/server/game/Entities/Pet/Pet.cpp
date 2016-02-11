@@ -58,7 +58,7 @@ m_auraRaidUpdateMask(0), m_declinedname(NULL)
     }
 
     m_name = "Pet";
-    m_Update    = false;
+    m_Update = false;
 }
 
 Pet::~Pet()
@@ -397,6 +397,22 @@ void Pet::SavePetToDB(bool isDelete)
         if (getPetType() == HUNTER_PET)
             return;
     }
+
+    if (isDelete)
+    {
+        owner->RemovePlayerPet(this);
+        if((curentSlot >= PET_SLOT_HUNTER_FIRST && curentSlot <= owner->GetMaxCurentPetSlot()))
+            owner->cleanPetSlotForMove(curentSlot, m_charmInfo->GetPetNumber());     //could be already remove by early call this function
+    }
+    else
+    {
+        _SaveSpellCooldownsRedis();
+        _SaveSpellsRedis();
+        if (getPetType() == HUNTER_PET)
+            _SaveAurasRedis();
+        owner->UpdatePlayerPet(this);
+    }
+    return; // exit without saving in mysql
 
     uint32 curhealth = GetHealth();
     uint32 curmana = GetPower(POWER_MANA);
@@ -1330,7 +1346,7 @@ void Pet::_SaveAuras(SQLTransaction& trans)
         // don't save guid of caster in case we are caster of the spell - guid for pet is generated every pet load, so it won't match saved guid anyways
         uint64 casterGUID = (itr->second->GetCasterGUID() == GetGUID()) ? 0 : itr->second->GetCasterGUID();
 
-       
+        
         index = 0;
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_PET_AURA);
         stmt->setUInt32(index++, m_charmInfo->GetPetNumber());

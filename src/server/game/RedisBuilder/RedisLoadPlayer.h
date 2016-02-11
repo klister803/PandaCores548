@@ -69,6 +69,7 @@ enum LoadingStep
     LOAD_PLAYER_GOLD                = 45,
     LOAD_PLAYER_MAILS               = 46,
     LOAD_PLAYER_MAIL_ITEMS          = 47,
+    LOAD_PLAYER_PETS                = 48,
 };
 
 #endif

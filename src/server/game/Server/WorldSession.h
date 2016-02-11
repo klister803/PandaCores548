@@ -344,7 +344,6 @@ class WorldSession
         // Pet
         void SendPetNameQuery(uint64 guid, uint32 petnumber);
         void SendStablePet(uint64 guid);
-        void SendStablePetCallback(PreparedQueryResult result, uint64 guid);
         void SendStableResult(uint8 guid);
         bool CheckStableMaster(uint64 guid);
 
@@ -423,6 +422,8 @@ class WorldSession
         bool IsARecruiter() const { return isRecruiter; }
 
         z_stream_s* GetCompressionStream() { return _compressionStream; }
+
+        char* GetAccountKey() { return accountKey; }
 
     public:                                                 // opcodes handlers
 
@@ -661,7 +662,6 @@ class WorldSession
         void HandleBinderActivateOpcode(WorldPacket& recvPacket);
         void HandleListStabledPetsOpcode(WorldPacket& recvPacket);
         void HandleStableChangeSlot(WorldPacket& recvPacket);
-        void HandleStableChangeSlotCallback(PreparedQueryResult result, uint8 new_slot);        //void HandleBuyStableSlot(WorldPacket& recvPacket);
         void HandleStableRevivePet(WorldPacket& recvPacket);
         void SendTrainerService(uint64 guid, uint32 spellId, uint32 trainState);
 
@@ -1076,8 +1076,6 @@ class WorldSession
         PreparedQueryResultFuture _stablePetCallback;
         QueryCallback<PreparedQueryResult, std::string> _charRenameCallback;
         QueryCallback<PreparedQueryResult, std::string> _addFriendCallback;
-        QueryCallback<PreparedQueryResult, uint64> _sendStabledPetCallback;
-        QueryCallback<PreparedQueryResult, uint32> _stableChangeSlotCallback;
         QueryCallback<PreparedQueryResult, CharacterCreateInfo*, true> _charCreateCallback;
         QueryResultHolderFuture _charLoginCallback;
 
@@ -1137,6 +1135,8 @@ class WorldSession
         uint32 antispamm[PACKETS_COUNT][2];//0 count, 1 savetime
 
         z_stream_s* _compressionStream;
+
+        char* accountKey;
 };
 
 class PacketSendEvent : public BasicEvent

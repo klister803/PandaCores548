@@ -984,7 +984,6 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     itemKey = new char[23];
     userKey = new char[18];
-    accountKey = new char[18];
     criteriaPlKey = new char[23];
     criteriaAcKey = new char[23];
     mailKey = new char[23];
@@ -1064,7 +1063,6 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
     sprintf(itemKey, "r{%i}u{%i}items", realmID, guidlow);
     sprintf(userKey, "r{%i}u{%i}", realmID, guidlow);
     sprintf(mailKey, "r{%i}u{%i}", realmID, guidlow);
-    sprintf(accountKey, "r{%i}a{%i}", realmID, GetSession()->GetAccountId());
     sprintf(criteriaPlKey, "r{%i}u{%i}crit", realmID, guidlow);
     sprintf(criteriaAcKey, "r{%i}a{%i}crit", realmID, GetSession()->GetAccountId());
 
@@ -18874,7 +18872,6 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     sprintf(itemKey, "r{%i}u{%i}items", realmID, guid);
     sprintf(userKey, "r{%i}u{%i}", realmID, guid);
     sprintf(mailKey, "r{%i}u{%i}", realmID, guid);
-    sprintf(accountKey, "r{%i}a{%i}", realmID, dbAccountId);
     sprintf(criteriaPlKey, "r{%i}u{%i}crit", realmID, guid);
     sprintf(criteriaAcKey, "r{%i}a{%i}crit", realmID, dbAccountId);
 

@@ -214,10 +214,6 @@ bool LoginQueryHolder::Initialize()
     stmt->setUInt32(1, lowGuid);
     res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOADQUESTSTATUSREW, stmt);
 
-    stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_ACCOUNT_INSTANCELOCKTIMES);
-    stmt->setUInt32(0, m_accountId);
-    res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOADINSTANCELOCKTIMES, stmt);
-
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PLAYER_CURRENCY);
     stmt->setUInt32(0, lowGuid);
     res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOADCURRENCY, stmt);
@@ -1223,18 +1219,25 @@ void WorldSession::HandleTutorialFlag(WorldPacket & recvData)
     uint32 flag = GetTutorialInt(index);
     flag |= (1 << value);
     SetTutorialInt(index, flag);
+
+    if (_player)
+        _player->UpdateTutorials(index, value);    
 }
 
 void WorldSession::HandleTutorialClear(WorldPacket& /*recvData*/)
 {
     for (uint8 i = 0; i < MAX_ACCOUNT_TUTORIAL_VALUES; ++i)
         SetTutorialInt(i, 0xFFFFFFFF);
+    if (_player)
+        _player->SaveAccountTutorials();
 }
 
 void WorldSession::HandleTutorialReset(WorldPacket& /*recvData*/)
 {
     for (uint8 i = 0; i < MAX_ACCOUNT_TUTORIAL_VALUES; ++i)
         SetTutorialInt(i, 0x00000000);
+    if (_player)
+        _player->SaveAccountTutorials();
 }
 
 void WorldSession::HandleSetWatchedFactionOpcode(WorldPacket & recvData)

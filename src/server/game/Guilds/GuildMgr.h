@@ -48,14 +48,10 @@ public:
     void ResetExperienceCaps();
      void ResetReputationCaps();
 
-    uint32 GenerateGuildId();
-    void SetNextGuildId(uint32 Id) { NextGuildId = Id; }
-
     uint32 GetXPForGuildLevel(uint8 level) const;
     std::vector<GuildReward> const& GetGuildRewards() const { return GuildRewards; }
 
 protected:
-    uint32 NextGuildId;
     GuildContainer GuildStore;
     std::vector<uint64> GuildXPperLevel;
     std::vector<GuildReward> GuildRewards;

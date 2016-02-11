@@ -1571,13 +1571,12 @@ class Player : public Unit, public GridObject<Player>
 
         char* itemKey;
         char* userKey;
-        char* accountKey;
         char* criteriaPlKey;
         char* criteriaAcKey;
         char* mailKey;
         char* GetItemKey() { return itemKey; }
         char* GetUserKey() { return userKey; }
-        char* GetAccountKey() { return accountKey; }
+        char* GetAccountKey() { return GetSession()->GetAccountKey(); }
         char* GetCriteriaPlKey() { return criteriaPlKey; }
         char* GetCriteriaAcKey() { return criteriaAcKey; }
 
@@ -1625,6 +1624,7 @@ class Player : public Unit, public GridObject<Player>
         Json::Value AccountCriteriaJson;
         Json::Value PlayerPetsJson;
         Json::Value PlayerGoldJson;
+        Json::Value AccountTutorialsJson;
 
         //load data for serialize
         void InitSavePlayer();
@@ -1666,6 +1666,11 @@ class Player : public Unit, public GridObject<Player>
         void CreatedPlayerPets();
         void SavePlayerMails();
         void SavePlayerGold();
+        void SaveAccountTutorials();
+        void UpdatePlayerAccountData(AccountDataType type, time_t tm, std::string data);
+        void UpdateTutorials(uint8 index, uint32 value);
+        void UpdatePlayerPet(Pet* pet);
+        void RemovePlayerPet(Pet* pet);
 
         //load data into player LoadPlayer
         void LoadFromRedis(uint64 guid, uint8 step = 0, const RedisValue* v = NULL);
@@ -1717,6 +1722,8 @@ class Player : public Unit, public GridObject<Player>
         void LoadPlayerGold(const RedisValue* v, uint64 playerGuid);
         void LoadPlayerMails(const RedisValue* v, uint64 playerGuid);
         void LoadPlayerMailItems(const RedisValue* v, uint64 mailGuid);
+        void LoadAccountTutorialsJson(const RedisValue* v, uint64 mailGuid);
+        void LoadPlayerPets(const RedisValue* v, uint64 playerGuid);
 
         //Update data in database
         void UpdateSavePlayer();

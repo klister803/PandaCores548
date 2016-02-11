@@ -83,7 +83,6 @@ class Pet : public Guardian
         bool CreateBaseAtCreatureInfo(CreatureTemplate const* cinfo, Unit* owner);
         bool CreateBaseAtTamed(CreatureTemplate const* cinfo, Map* map, uint32 phaseMask);
         bool LoadPetFromDB(Player* owner, uint32 petentry = 0, uint32 petnumber = 0, bool stampeded = false);
-        bool LoadPetFromRedis(Player* owner, uint32 petentry = 0, uint32 petnumber = 0, bool stampeded = false);
         bool isBeingLoaded() const { return m_loading;}
         void SavePetToDB(bool isDelete = false);
         void Remove();
@@ -102,17 +101,6 @@ class Pet : public Guardian
         uint32 GetCurrentFoodBenefitLevel(uint32 itemlevel);
         void SetDuration(int32 dur) { m_duration = dur; }
         int32 GetDuration() { return m_duration; }
-
-        /*
-        bool UpdateStats(Stats stat);
-        bool UpdateAllStats();
-        void UpdateResistances(uint32 school);
-        void UpdateArmor();
-        void UpdateMaxHealth();
-        void UpdateMaxPower(Powers power);
-        void UpdateAttackPowerAndDamage(bool ranged = false);
-        void UpdateDamagePhysical(WeaponAttackType attType);
-        */
 
         bool HasSpell(uint32 spell) const;
 
@@ -135,7 +123,7 @@ class Pet : public Guardian
 
         DeclinedName const* GetDeclinedNames() const { return m_declinedname; }
 
-        bool    m_removed;                                  // prevent overwrite pet state in DB at next Pet::Update if pet already removed(saved)
+        bool m_removed;                                  // prevent overwrite pet state in DB at next Pet::Update if pet already removed(saved)
 
         Unit* GetOwner() { return m_owner; }
 
@@ -144,6 +132,17 @@ class Pet : public Guardian
         void LearnSpecializationSpell();
         void UnlearnSpecializationSpell();
         void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs);
+
+        Json::Value PetData;
+        Json::Value PetDataSpell;
+        bool LoadPetFromRedis(Player* owner, uint32 petentry = 0, uint32 petnumber = 0, bool stampeded = false);
+        void LoadPetSpellRedis(const RedisValue* v);
+        void _LoadSpellCooldownsRedis();
+        void _LoadAurasRedis(uint32 timediff);
+        void _LoadSpellsRedis();
+        void _SaveAurasRedis();
+        void _SaveSpellsRedis();
+        void _SaveSpellCooldownsRedis();
 
     protected:
         int32   m_duration;                                 // time until unsummon (used mostly for summoned guardians and not used for controlled pets)

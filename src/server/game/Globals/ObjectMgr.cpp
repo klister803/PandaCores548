@@ -6215,8 +6215,10 @@ void ObjectMgr::SetHighestGuids()
 {
     QueryResult result = NULL;
     queryGuidKey = new char[18];
+    petKey = new char[18];
 
-    sprintf(queryGuidKey, "r{%i}HIGHESTGUIDS", realmID);
+    sprintf(queryGuidKey, "r{%u}HIGHESTGUIDS", realmID);
+    sprintf(petKey, "r{%u}pets", realmID);
 
     RedisValue v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "characters");
     if (v.isOk() && !v.isNull())
@@ -6284,9 +6286,17 @@ void ObjectMgr::SetHighestGuids()
         RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "mail", guid.c_str());
     }
 
-    result = CharacterDatabase.Query("SELECT MAX(corpseGuid) FROM corpse");
-    if (result)
-        _hiCorpseGuid = (*result)[0].GetUInt32()+1;
+    v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "corpse");
+    if (v.isOk() && !v.isNull())
+        _hiCorpseGuid = v.toInt() + 1;
+    else
+    {
+        result = CharacterDatabase.Query("SELECT MAX(corpseGuid) FROM corpse");
+        if (result)
+            _hiCorpseGuid = (*result)[0].GetUInt32()+1;
+        std::string guid = std::to_string(_hiCorpseGuid);
+        RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "corpse", guid.c_str());
+    }
 
     v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "character_equipmentsets");
     if (v.isOk() && !v.isNull())
@@ -6300,13 +6310,30 @@ void ObjectMgr::SetHighestGuids()
         RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "character_equipmentsets", guid.c_str());
     }
 
-    result = CharacterDatabase.Query("SELECT MAX(guildId) FROM guild");
-    if (result)
-        sGuildMgr->SetNextGuildId((*result)[0].GetUInt32()+1);
+    v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "guild");
+    if (v.isOk() && !v.isNull())
+        _nextGuildId = v.toInt() + 1;
+    else
+    {
+        result = CharacterDatabase.Query("SELECT MAX(guildId) FROM guild");
+        if (result)
+            _nextGuildId = (*result)[0].GetUInt32()+1;
+        std::string guid = std::to_string(_nextGuildId);
+        RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "guild", guid.c_str());
+    }
 
-    result = CharacterDatabase.Query("SELECT MAX(guid) FROM groups");
-    if (result)
-        sGroupMgr->SetGroupDbStoreSize((*result)[0].GetUInt32()+1);
+    v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "group");
+    if (v.isOk() && !v.isNull())
+        _nextGroupId = v.toInt() + 1;
+    else
+    {
+        result = CharacterDatabase.Query("SELECT MAX(guid) FROM groups");
+        if (result)
+            _nextGroupId = (*result)[0].GetUInt32()+1;
+        std::string guid = std::to_string(_nextGroupId);
+        RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "group", guid.c_str());
+    }
+    sGroupMgr->SetGroupDbStoreSize(_nextGroupId);
 
     v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "character_void_storage");
     if (v.isOk() && !v.isNull())
@@ -6325,6 +6352,17 @@ void ObjectMgr::IncrementGuid(const char* field)
 {
     std::string index = std::to_string(1);
     RedisDatabase.AsyncExecuteHSet("HINCRBY", queryGuidKey, field, index.c_str(), 0, [&](const RedisValue&, uint64){});
+}
+
+uint32 ObjectMgr::GenerateGroupId()
+{
+    if (_nextGroupId >= 0xFFFFFFFE)
+    {
+        sLog->outError(LOG_FILTER_GENERAL, "Group ids overflow!! Can't continue, shutting down server. ");
+        World::StopNow(ERROR_EXIT_CODE);
+    }
+    IncrementGuid("group");
+    return _nextGroupId++;
 }
 
 uint32 ObjectMgr::GenerateAuctionID()
@@ -6399,6 +6437,7 @@ uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh)
         case HIGHGUID_CORPSE:
         {
             ASSERT(_hiCorpseGuid < 0xFFFFFFFE && "Corpse guid overflow!");
+            IncrementGuid("corpse");
             return _hiCorpseGuid++;
         }
         case HIGHGUID_AREATRIGGER:
@@ -6868,11 +6907,16 @@ void ObjectMgr::LoadPetNumber()
 {
     uint32 oldMSTime = getMSTime();
 
-    QueryResult result = CharacterDatabase.Query("SELECT MAX(id) FROM character_pet");
-    if (result)
+    RedisValue v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "pets");
+    if (v.isOk() && !v.isNull())
+        _hiPetNumber = v.toInt() + 1;
+    else
     {
-        Field* fields = result->Fetch();
-        _hiPetNumber = fields[0].GetUInt32()+1;
+        QueryResult result = CharacterDatabase.Query("SELECT MAX(id) FROM character_pet");
+        if (result)
+            _hiPetNumber = (*result)[0].GetUInt32() + 1;
+        std::string guid = std::to_string(_hiPetNumber);
+        RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "pets", guid.c_str());
     }
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded the max pet number: %d in %u ms", _hiPetNumber-1, GetMSTimeDiffToNow(oldMSTime));
@@ -6882,14 +6926,30 @@ void ObjectMgr::LoadBattlePetGuid()
 {
     uint32 oldMSTime = getMSTime();
 
-    QueryResult result = CharacterDatabase.Query("SELECT MAX(guid) FROM account_battle_pet_journal");
-    if (result)
+    RedisValue v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "battlepets");
+    if (v.isOk() && !v.isNull())
+        _hiBattlePetGuid = v.toInt() + 1;
+    else
     {
-        Field* fields = result->Fetch();
-        _hiBattlePetGuid = fields[0].GetUInt64()+1;
+        QueryResult result = CharacterDatabase.Query("SELECT MAX(guid) FROM account_battle_pet_journal");
+        if (result)
+            _hiBattlePetGuid = (*result)[0].GetUInt64() + 1;
+        std::string guid = std::to_string(_hiBattlePetGuid);
+        RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "battlepets", guid.c_str());
     }
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded the max battle pet guid: %d in %u ms", _hiBattlePetGuid-1, GetMSTimeDiffToNow(oldMSTime));
+}
+
+uint32 ObjectMgr::GenerateGuildId()
+{
+    if (_nextGuildId >= 0xFFFFFFFE)
+    {
+        sLog->outError(LOG_FILTER_GUILD, "Guild ids overflow!! Can't continue, shutting down server. ");
+        World::StopNow(ERROR_EXIT_CODE);
+    }
+    IncrementGuid("pets");
+    return _nextGuildId++;
 }
 
 std::string ObjectMgr::GeneratePetName(uint32 entry)
@@ -6912,11 +6972,13 @@ std::string ObjectMgr::GeneratePetName(uint32 entry)
 
 uint32 ObjectMgr::GeneratePetNumber()
 {
+    IncrementGuid("pets");
     return ++_hiPetNumber;
 }
 
 uint64 ObjectMgr::GenerateBattlePetGuid()
 {
+    IncrementGuid("battlepets");
     return ++_hiBattlePetGuid;
 }
 

@@ -51,13 +51,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             sprintf(itemKey, "r{%u}u{%u}items", realmID, guid);
             sprintf(userKey, "r{%u}u{%u}", realmID, guid);
-            sprintf(accountKey, "r{%u}a{%u}", realmID, GetSession()->GetAccountId());
             sprintf(criteriaPlKey, "r{%u}u{%u}crit", realmID, guid);
             sprintf(criteriaAcKey, "r{%u}a{%u}crit", realmID, GetSession()->GetAccountId());
             sprintf(mailKey, "r{%u}u{%u}mails", realmID, guid);
 
             sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayer itemKey %s userKey %s accountKey %s criteriaPlKey %s criteriaAcKey %s",
-            itemKey, userKey, accountKey, criteriaPlKey, criteriaAcKey);
+            itemKey, userKey, GetAccountKey(), criteriaPlKey, criteriaAcKey);
 
             RedisDatabase.AsyncExecuteH("HGET", userKey, "homebind", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
@@ -83,7 +82,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         }
         case LOAD_ACCOUNT_ACHIEVEMENT: //Load account Achievement
         {
-            RedisDatabase.AsyncExecuteH("HGET", accountKey, "achievement", guid, [&](const RedisValue &v, uint64 guid) {
+            RedisDatabase.AsyncExecuteH("HGET", GetAccountKey(), "achievement", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
                     loadingPlayer->LoadAccountAchievements(&v, guid);
             });
@@ -160,7 +159,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         }
         case LOAD_PLAYER_BATTLEPETS: //Load player Battle Pets
         {
-            RedisDatabase.AsyncExecuteH("HGET", accountKey, "battlepets", guid, [&](const RedisValue &v, uint64 guid) {
+            RedisDatabase.AsyncExecuteH("HGET", GetAccountKey(), "battlepets", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
                     loadingPlayer->LoadPlayerBattlePets(&v, guid);
             });
@@ -168,7 +167,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         }
         case LOAD_PLAYER_BATTLEPETSLOTS: //Load player Battle Pets Slot
         {
-            RedisDatabase.AsyncExecuteH("HGET", accountKey, "battlepetslots", guid, [&](const RedisValue &v, uint64 guid) {
+            RedisDatabase.AsyncExecuteH("HGET", GetAccountKey(), "battlepetslots", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
                     loadingPlayer->LoadPlayerBattlePetSlots(&v, guid);
             });
@@ -224,7 +223,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         }
         case LOAD_PLAYER_MOUNTS: //Load player mounts
         {
-            RedisDatabase.AsyncExecuteH("HGET", accountKey, "mounts", guid, [&](const RedisValue &v, uint64 guid) {
+            RedisDatabase.AsyncExecuteH("HGET", GetAccountKey(), "mounts", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
                     loadingPlayer->LoadPlayerMounts(&v, guid);
             });
@@ -264,7 +263,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         }
         case LOAD_ACCOUNT_QUESTSTATUS: //Load account Quest Status
         {
-            RedisDatabase.AsyncExecuteH("HGET", accountKey, "queststatus", guid, [&](const RedisValue &v, uint64 guid) {
+            RedisDatabase.AsyncExecuteH("HGET", GetAccountKey(), "queststatus", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
                     loadingPlayer->LoadAccountQuestStatus(&v, guid);
             });
@@ -280,7 +279,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         }
         case LOAD_ACCOUNT_QUESTREWARDED: //Load account Quest rewarded
         {
-            RedisDatabase.AsyncExecuteH("HGET", accountKey, "questrewarded", guid, [&](const RedisValue &v, uint64 guid) {
+            RedisDatabase.AsyncExecuteH("HGET", GetAccountKey(), "questrewarded", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
                     loadingPlayer->LoadAccountQuestRewarded(&v, guid);
             });
@@ -296,7 +295,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         }
         case LOAD_ACCOUNT_QUESTDAILY: //Load account Quest Daily
         {
-            RedisDatabase.AsyncExecuteH("HGET", accountKey, "questdaily", guid, [&](const RedisValue &v, uint64 guid) {
+            RedisDatabase.AsyncExecuteH("HGET", GetAccountKey(), "questdaily", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
                     loadingPlayer->LoadAccountQuestDaily(&v, guid);
             });
@@ -312,7 +311,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         }
         case LOAD_ACCOUNT_QUESTWEEKLY: //Load account Quest Weekly
         {
-            RedisDatabase.AsyncExecuteH("HGET", accountKey, "questweekly", guid, [&](const RedisValue &v, uint64 guid) {
+            RedisDatabase.AsyncExecuteH("HGET", GetAccountKey(), "questweekly", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
                     loadingPlayer->LoadAccountQuestWeekly(&v, guid);
             });
@@ -328,7 +327,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         }
         case LOAD_ACCOUNT_QUESTSEASONAL: //Load account Quest Seasonal
         {
-            RedisDatabase.AsyncExecuteH("HGET", accountKey, "questseasonal", guid, [&](const RedisValue &v, uint64 guid) {
+            RedisDatabase.AsyncExecuteH("HGET", GetAccountKey(), "questseasonal", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
                     loadingPlayer->LoadAccountQuestSeasonal(&v, guid);
             });
@@ -469,6 +468,14 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
             });
             break;
         }
+        case LOAD_PLAYER_PETS: //Load player pets
+        {
+            RedisDatabase.AsyncExecuteH("HGET", userKey, "pets", guid, [&](const RedisValue &v, uint64 guid) {
+                if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
+                    loadingPlayer->LoadPlayerPets(&v, guid);
+            });
+            break;
+        }
         default:
             break;
     }
@@ -490,7 +497,6 @@ void Player::LoadPlayer(const RedisValue* v, uint64 playerGuid)
     uint8 m_realmID = PlayerJson["realm"].asInt();
 
     uint32 dbAccountId = PlayerJson["account"].asUInt();
-    sprintf(accountKey, "r{%u}a{%u}", realmID, dbAccountId);
 
     // check if the character's account in the db and the logged in account match.
     // player should be able to load/delete character only with correct account!
@@ -2286,9 +2292,9 @@ void Player::LoadPlayerLoadItems(const RedisValue* v, uint64 playerGuid)
             {
                 sLog->outInfo(LOG_FILTER_REDIS, "Player::_LoadInventory: player (GUID: %u, name: '%s') has item (GUID: %u, entry: %u) which doesnt have a valid bag (Bag GUID: %u, slot: %u). Possible cheat?",
                     GetGUIDLow(), GetName(), item->GetGUIDLow(), item->GetEntry(), bagGuid, slot);
-                //item->DeleteFromInventoryDB(trans);
                 RemoveItemDurations(item);
                 RemoveTradeableItem(item);
+                item->DeleteFromRedis();
                 delete item;
                 continue;
             }
@@ -2939,7 +2945,7 @@ void Player::LoadPlayerAccountData(const RedisValue* v, uint64 playerGuid)
                 GetSession()->m_accountData[i] = AccountData();
 
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerAccountData data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_LOGIN); //Next step load
+        LoadFromRedis(playerGuid, LOAD_PLAYER_PETS); //Next step load
         return;
     }
 
@@ -2956,7 +2962,7 @@ void Player::LoadPlayerAccountData(const RedisValue* v, uint64 playerGuid)
         GetSession()->m_accountData[type].Data = dataValue["Time"].asString();
     }
 
-    LoadFromRedis(playerGuid, LOAD_PLAYER_LOGIN); //Next step load
+    LoadFromRedis(playerGuid, LOAD_PLAYER_PETS); //Next step load
 }
 
 void Player::LoadPlayerHomeBind(const RedisValue* v, uint64 playerGuid)
@@ -3123,277 +3129,6 @@ void Player::LoadAccountCriteriaProgress(const RedisValue* v, uint64 playerGuid)
     LoadFromRedis(playerGuid, LOAD_PLAYER_NEXT); //Next step load
 }
 
-bool Pet::LoadPetFromRedis(Player* owner, uint32 petentry, uint32 petnumber, bool stampeded)
-{
-    if (owner->getClass() == CLASS_WARLOCK)
-        if (owner->HasAura(108503))
-            owner->RemoveAura(108503);
-
-    if (owner->GetTypeId() == TYPEID_PLAYER && isControlled() && !isTemporarySummoned())
-        owner->SetLastPetEntry(petentry);
-
-    m_loading = true;
-    m_Stampeded = stampeded;
-    uint32 ownerid = owner->GetGUIDLow();
-
-    // find number
-    if (!petnumber && !petentry)
-    {
-        if(owner->m_currentSummonedSlot < PET_SLOT_HUNTER_FIRST)
-        {
-            sLog->outDebug(LOG_FILTER_PETS, "Pet::LoadPetFromRedis error m_currentSummonedSlot < 0");
-            m_loading = false;
-            return false;
-        }
-        else
-            petnumber = owner->getPetIdBySlot(owner->m_currentSummonedSlot);
-    }
-
-    uint32 pet_number = 0;
-    Json::Value petData;
-
-    if (petnumber)
-    {
-        std::string petId = std::to_string(petnumber);
-        petData = owner->PlayerPetsJson[petId.c_str()];
-        pet_number = petnumber;
-    }
-    else if (petentry)
-    {
-        std::string petId = std::to_string(petnumber);
-        for (auto itr = owner->PlayerPetsJson.begin(); itr != owner->PlayerPetsJson.end(); ++itr)
-        {
-            auto petValue = (*itr);
-            if (petValue["entry"].asUInt() == petentry)
-            {
-                pet_number = atoi(itr.memberName());
-                petData = petValue;
-                break;
-            }
-        }
-    }
-
-    if (petData.isNull())
-    {
-        sLog->outDebug(LOG_FILTER_PETS, "Pet::LoadPetFromRedis error result");
-        m_loading = false;
-        return false;
-    }
-
-    // update for case of current pet "slot = 0"
-    petentry = petData["entry"].asUInt();
-    if (!petentry)
-    {
-        sLog->outDebug(LOG_FILTER_PETS, "Pet::LoadPetFromRedis error petentry");
-        m_loading = false;
-        return false;
-    }
-
-    // Double call if use Player::SummonPet
-    // But this option for check through Player::LoadPet
-    if (!owner->CanSummonPet(petentry))
-    {
-        sLog->outDebug(LOG_FILTER_PETS, "Pet::LoadPetFromRedis error CanSummonPet");
-        m_loading = false;
-        return false;
-    }
-
-    uint32 summon_spell_id = petData["CreatedBySpell"].asUInt();
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(summon_spell_id);
-
-    bool is_temporary_summoned = spellInfo && spellInfo->GetDuration() > 0;
-
-    // check temporary summoned pets like mage water elemental
-    if (is_temporary_summoned && !stampeded)
-    {
-        m_loading = false;
-        sLog->outDebug(LOG_FILTER_PETS, "Pet::LoadPetFromRedis error is_temporary_summoned %i", is_temporary_summoned);
-        return false;
-    }
-
-    PetType pet_type = PetType(petData["PetType"].asUInt());
-    setPetType(pet_type);
-
-    if (owner->GetTypeId() == TYPEID_PLAYER && isControlled() && !isTemporarySummoned())
-        owner->SetLastPetEntry(petentry);
-
-    if (pet_type == HUNTER_PET)
-    {
-        CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(petentry);
-        if (!creatureInfo || !creatureInfo->isTameable(owner->CanTameExoticPets()))
-            return false;
-    }
-
-    if (owner->IsPetNeedBeTemporaryUnsummoned())
-    {
-        sLog->outDebug(LOG_FILTER_PETS, "Pet::LoadPetFromRedis error IsPetNeedBeTemporaryUnsummoned");
-        owner->SetTemporaryUnsummonedPetNumber(pet_number);
-        return false;
-    }
-
-    Map* map = owner->GetMap();
-    uint32 guid = sObjectMgr->GenerateLowGuid(HIGHGUID_PET);
-    if (!Create(guid, map, owner->GetPhaseMask(), petentry, pet_number))
-    {
-        sLog->outDebug(LOG_FILTER_PETS, "Pet::LoadPetFromRedis error Create");
-        return false;
-    }
-
-    if(petnumber && !stampeded)
-    {
-        Position pos;
-        owner->GetFirstCollisionPosition(pos, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
-        Relocate(pos.m_positionX, pos.m_positionY, pos.m_positionZ, owner->GetOrientation());
-    }
-
-    if (!IsPositionValid())
-    {
-        sLog->outError(LOG_FILTER_PETS, "Pet (guidlow %d, entry %d) not loaded. Suggested coordinates isn't valid (X: %f Y: %f)",
-            GetGUIDLow(), GetEntry(), GetPositionX(), GetPositionY());
-        return false;
-    }
-
-    setFaction(owner->getFaction());
-    SetUInt32Value(UNIT_CREATED_BY_SPELL, summon_spell_id);
-
-    CreatureTemplate const* cinfo = GetCreatureTemplate();
-    if (cinfo->type == CREATURE_TYPE_CRITTER)
-    {
-        map->AddToMap(this->ToCreature());
-        return true;
-    }
-
-    m_charmInfo->SetPetNumber(pet_number, IsPermanentPetFor(owner));
-
-    SetDisplayId(petData["modelid"].asUInt());
-    SetNativeDisplayId(petData["modelid"].asUInt());
-    uint32 petlevel = petData["level"].asUInt();
-    SetUInt32Value(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_NONE);
-    SetName(petData["name"].asString());
-
-    // ignore model info data for 
-    SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_WORLD_OBJECT_SIZE);
-    SetFloatValue(UNIT_FIELD_COMBATREACH, ATTACK_DISTANCE);
-
-    switch (getPetType())
-    {
-        case SUMMON_PET:
-        {
-            petlevel = owner->getLevel();
-            SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
-                                                            // this enables popup window (pet dismiss, cancel)
-            if (owner->getClass() == CLASS_WARLOCK)
-                SetClass(CLASS_ROGUE);
-            break;
-        }
-        case HUNTER_PET:
-        {
-            SetSheath(SHEATH_STATE_MELEE);
-            SetClass(CLASS_HUNTER);
-            SetGender(GENDER_NONE);
-
-            SetByteFlag(UNIT_FIELD_BYTES_2, 2, petData["renamed"].asBool() ? UNIT_CAN_BE_ABANDONED : UNIT_CAN_BE_RENAMED | UNIT_CAN_BE_ABANDONED);
-            SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
-                                                            // this enables popup window (pet abandon, cancel)
-            SetSpecializationId(petData["specialization"].asUInt());
-            break;
-        }
-        default:
-            if (!IsPetGhoul())
-                sLog->outError(LOG_FILTER_PETS, "Pet have incorrect type (%u) for pet loading.", getPetType());
-            break;
-    }
-
-    SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, uint32(time(NULL))); // cast can't be helped here
-    SetCreatorGUID(owner->GetGUID());
-
-    SetReactState(ReactStates(petData["Reactstate"].asUInt()));
-    if (GetReactState() == REACT_AGGRESSIVE)
-        SetReactState(REACT_DEFENSIVE);
-
-    InitStatsForLevel(petlevel);
-    SetUInt32Value(UNIT_FIELD_PETEXPERIENCE, petData["exp"].asUInt());
-
-    SynchronizeLevelWithOwner();
-    SetCanModifyStats(true);
-
-    if (!stampeded)
-    {
-        uint32 savedhealth = petData["curhealth"].asUInt();
-        uint32 savedmana = petData["curmana"].asUInt();
-
-        if (!savedhealth && getPetType() == HUNTER_PET)
-            setDeathState(JUST_DIED);
-        else if (getPetType() == HUNTER_PET)
-        {
-            SetHealth(savedhealth > GetMaxHealth() ? GetMaxHealth() : savedhealth);
-            SetPower(getPowerType(), savedmana > uint32(GetMaxPower(getPowerType())) ? GetMaxPower(getPowerType()) : savedmana);
-        }
-    }
-
-    owner->SetMinion(this, true, stampeded);
-    map->AddToMap(this->ToCreature());
-    setActive(true);
-
-    SetSlot(owner->m_currentSummonedSlot);
-
-    uint32 timediff = uint32(time(NULL) - petData["savetime"].asUInt());
-    _LoadAuras(timediff);
-
-    if (owner->GetTypeId() == TYPEID_PLAYER && owner->ToPlayer()->InArena())
-        RemoveArenaAuras();
-
-    // load action bar, if data broken will fill later by default spells.
-    m_charmInfo->LoadPetActionBar(petData["abdata"].asString());
-
-    _LoadSpells();
-    _LoadSpellCooldowns();
-    LearnPetPassives();
-
-    if(owner->HasSpell(108415)) // active talent Soul Link
-        CastSpell(this, 108446, true);
-
-    if(!stampeded)
-    {
-        CleanupActionBar();                                     // remove unknown spells from action bar after load
-        owner->PetSpellInitialize();
-    }
-
-    sLog->outDebug(LOG_FILTER_PETS, "New Pet has guid %u", GetGUIDLow());
-
-    if (owner->GetGroup())
-        owner->SetGroupUpdateFlag(GROUP_UPDATE_PET);
-
-    owner->SendTalentsInfoData(true);
-
-    if (getPetType() == HUNTER_PET)
-    {
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_DECLINED_NAME);
-        stmt->setUInt32(0, owner->GetGUIDLow());
-        stmt->setUInt32(1, GetCharmInfo()->GetPetNumber());
-        PreparedQueryResult result = CharacterDatabase.Query(stmt);
-
-        if (result)
-        {
-            delete m_declinedname;
-            m_declinedname = new DeclinedName;
-            Field* fields2 = result->Fetch();
-            for (uint8 i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
-            {
-                m_declinedname->name[i] = fields2[i].GetString();
-            }
-        }
-    }
-
-    //set last used pet number (for use in BG's)
-    if (owner->GetTypeId() == TYPEID_PLAYER && isControlled() && !isTemporarySummoned() && getPetType() == HUNTER_PET && !m_Stampeded)
-        owner->ToPlayer()->SetLastPetNumber(pet_number);
-
-    CastPetAuras(true);
-    m_loading = false;
-    return true;
-}
-
 void Player::LoadPlayerGold(const RedisValue* v, uint64 playerGuid)
 {
     if (!sRedisBuilder->LoadFromRedis(v, PlayerGoldJson))
@@ -3534,4 +3269,16 @@ void Player::LoadPlayerMailItems(const RedisValue* v, uint64 mailGuid)
     }
 
     m_mailsLoaded = true;
+}
+
+void Player::LoadPlayerPets(const RedisValue* v, uint64 playerGuid)
+{
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerPetsJson))
+    {
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerPets data is empty");
+        LoadFromRedis(playerGuid, LOAD_PLAYER_LOGIN);
+        return;
+    }
+
+    LoadFromRedis(playerGuid, LOAD_PLAYER_LOGIN);
 }

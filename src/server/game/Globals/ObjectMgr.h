@@ -1299,6 +1299,8 @@ class ObjectMgr
         uint32 GenerateMailID();
         uint32 GeneratePetNumber();
         uint64 GenerateVoidStorageItemId();
+        uint32 GenerateGuildId();
+        uint32 GenerateGroupId();
 
         uint64 GenerateBattlePetGuid();
         void IncrementGuid(const char* field);
@@ -1654,6 +1656,7 @@ class ObjectMgr
         }
 
         char* GetGuidKey() { return queryGuidKey; }
+        char* GetPetKey() { return petKey; }
 
     private:
         // first free id for selected id type
@@ -1676,6 +1679,8 @@ class ObjectMgr
         uint32 _hiAreaTriggerGuid;
         uint32 _hiMoTransGuid;
         uint32 _hiLootGuid;
+        uint32 _nextGuildId;
+        uint32 _nextGroupId;
 
         uint64 _hiBattlePetGuid;
 
@@ -1827,6 +1832,7 @@ class ObjectMgr
 
         AreaTriggerInfoMap _areaTriggerData;
         char* queryGuidKey;
+        char* petKey;
 };
 
 uint32 GetItemArmor(uint32 itemlevel, uint32 itemClass, uint32 itemSubclass, uint32 quality, uint32 inventoryType);
