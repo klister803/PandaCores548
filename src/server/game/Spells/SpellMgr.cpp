@@ -5239,7 +5239,13 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 143830: //Disentegration laser AT
                     spellInfo->Effects[0].TargetA = 18;
                     break;
-
+                //Garrosh
+                case 144867:
+                    spellInfo->Effects[0].Effect = 0;
+                    spellInfo->Effects[0].TriggerSpell = 0;
+                    spellInfo->Effects[1].Effect = 0;
+                    spellInfo->Effects[1].TriggerSpell = 0;
+                    break;
                     
                 //World Bosses
                 //Sha of Anger

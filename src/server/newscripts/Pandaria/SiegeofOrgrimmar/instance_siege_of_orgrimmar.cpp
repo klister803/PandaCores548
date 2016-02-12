@@ -124,6 +124,7 @@ public:
         //count weapons finish move
         uint8 weaponsdone;
         uint8 crawlerminenum;
+        uint8 rycount;
         //Misc
         uint32 TeamInInstance;
         uint32 _teamInInstance;
@@ -169,6 +170,7 @@ public:
         std::vector<uint64> soldierfenchGuids;
         uint64 klaxxiexdoorGuid;
         uint64 garroshentdoorGuid;
+        std::vector<uint64> goshavortexGuids;
         
         //Creature
         std::set<uint64> shaSlgGUID;
@@ -201,6 +203,9 @@ public:
         uint64 blackfuseGuid;
         std::vector<uint64> crawlermineGuids;
         uint64 swmstalkerGuid;
+        uint64 heartofyshaarjGuid;
+        std::vector<uint64> shavortexGuids;
+        std::vector<uint64> edespairGuids;
 
         EventMap Events;
 
@@ -229,6 +234,7 @@ public:
             _teamInInstance = 0;
             lingering_corruption_count = 0;
             crawlerminenum = 0;
+            rycount = 0;
 
             //GameObject
             immerseusexdoorGUID     = 0;
@@ -260,6 +266,7 @@ public:
             garroshfenchGuids.clear();
             soldierfenchGuids.clear();
             garroshentdoorGuid      = 0;
+            goshavortexGuids.clear();
            
             //Creature
             LorewalkerChoGUIDtmp    = 0;
@@ -290,6 +297,9 @@ public:
             blackfuseGuid           = 0;
             crawlermineGuids.clear();
             swmstalkerGuid = 0;
+            heartofyshaarjGuid = 0;
+            shavortexGuids.clear();
+            edespairGuids.clear();
 
             onInitEnterState = false;
             STowerFull = false;
@@ -622,6 +632,15 @@ public:
                 case NPC_SHOCKWAVE_MISSILE_STALKER:
                     swmstalkerGuid = creature->GetGUID();
                     break;
+                case NPC_HEART_OF_YSHAARJ:
+                    heartofyshaarjGuid = creature->GetGUID();
+                    break;
+                case NPC_SHA_VORTEX:
+                    shavortexGuids.push_back(creature->GetGUID());
+                    break;
+                case NPC_EMBODIED_DESPAIR:
+                    edespairGuids.push_back(creature->GetGUID());
+                    break;
             }
         }
 
@@ -805,6 +824,9 @@ public:
                     break;
                 case GO_GARROSH_ENT_DOOR:
                     garroshentdoorGuid = go->GetGUID();
+                    break;
+                case GO_SHA_VORTEX:
+                    goshavortexGuids.push_back(go->GetGUID());
                     break;
             }
         }
@@ -1261,11 +1283,13 @@ public:
                 switch (state)
                 {
                 case NOT_STARTED:
+                    ResetRealmOfYshaarj(true);
                     for (std::vector<uint64>::const_iterator itr = garroshfenchGuids.begin(); itr != garroshfenchGuids.end(); ++itr)
                         HandleGameObject(*itr, true);
                     HandleGameObject(garroshentdoorGuid, true);
                     break;
                 case IN_PROGRESS:
+                    rycount = urand(1, 3);
                     for (std::vector<uint64>::const_iterator itr = garroshfenchGuids.begin(); itr != garroshfenchGuids.end(); ++itr)
                         HandleGameObject(*itr, false);
                     HandleGameObject(garroshentdoorGuid, false);
@@ -1657,6 +1681,8 @@ public:
                     return klaxxidiecount;
                 case DATA_CHECK_INSTANCE_PROGRESS:
                     return uint32(CheckProgressForGarrosh());
+                case DATA_GET_REALM_OF_YSHAARJ:
+                    return rycount;
             }
             return 0;
         }
@@ -1814,6 +1840,8 @@ public:
                     return blackfuseGuid;
                 case NPC_SHOCKWAVE_MISSILE_STALKER:
                     return swmstalkerGuid;
+                case NPC_HEART_OF_YSHAARJ:
+                    return heartofyshaarjGuid;
             }
 
             std::map<uint32, uint64>::iterator itr = easyGUIDconteiner.find(type);
@@ -1840,6 +1868,49 @@ public:
                             Norushen->AI()->SetData(NPC_LINGERING_CORRUPTION, DONE);
                     }
                     break;
+                case NPC_EMBODIED_DESPAIR:
+                    for (std::vector<uint64>::const_iterator itr = edespairGuids.begin(); itr != edespairGuids.end(); itr++)
+                        if (Creature* ed = instance->GetCreature(*itr))
+                            if (ed->isAlive())
+                                return;
+                    RemoveProtectFromGarrosh();
+                    break;
+            }
+        }
+
+        void RemoveProtectFromGarrosh()
+        {
+            for (std::vector<uint64>::const_iterator itr = shavortexGuids.begin(); itr != shavortexGuids.end(); itr++)
+                if (Creature* sv = instance->GetCreature(*itr))
+                    sv->RemoveAurasDueToSpell(SPELL_YSHAARJ_PROTECTION_AT);
+
+            for (std::vector<uint64>::const_iterator Itr = goshavortexGuids.begin(); Itr != goshavortexGuids.end(); Itr++)
+                HandleGameObject(*Itr, true);
+        }
+
+        void ResetRealmOfYshaarj(bool full)
+        {
+            for (std::vector<uint64>::const_iterator itr = shavortexGuids.begin(); itr != shavortexGuids.end(); itr++)
+                if (Creature* sv = instance->GetCreature(*itr))
+                    if (!sv->HasAura(SPELL_YSHAARJ_PROTECTION_AT))
+                        sv->CastSpell(sv, SPELL_YSHAARJ_PROTECTION_AT);
+
+            for (std::vector<uint64>::const_iterator Itr = goshavortexGuids.begin(); Itr != goshavortexGuids.end(); Itr++)
+                HandleGameObject(*Itr, false);
+
+            if (full)
+            {
+                for (std::vector<uint64>::const_iterator itr = edespairGuids.begin(); itr != edespairGuids.end(); itr++)
+                {
+                    if (Creature* ed = instance->GetCreature(*itr))
+                    {
+                        if (!ed->isAlive())
+                        {
+                            ed->Respawn();
+                            ed->GetMotionMaster()->MoveTargetedHome();
+                        }
+                    }
+                }
             }
         }
 

@@ -29,6 +29,8 @@ enum eSpells
     SPELL_DESECRATED_WEAPON_AT       = 144760,
     SPELL_EM_DESECRATED_WEAPON_AT    = 144818,
     SPELL_DESECRATED_WEAPON_AXE      = 145880,
+    //Garrosh Special
+    SPELL_TRANSITION_VISUAL          = 144852,
 
     //Iron Star
     SPELL_IRON_STAR_IMPACT_AT        = 144645,
@@ -37,12 +39,27 @@ enum eSpells
 
     //Engeneer
     SPELL_POWER_IRON_STAR            = 144616,
+
     //Warbringer
     SPELL_HAMSTRING                  = 144582,
+
     //Wolf Rider
     SPELL_ANCESTRAL_FURY             = 144585,
     SPELL_ANCESTRAL_CHAIN_HEAL       = 144583,
     SPELL_CHAIN_LIGHTNING            = 144584,
+
+    //Realm of Yshaarj
+    SPELL_GARROSH_ENERGY             = 145801, //aura bar
+    SPELL_REMOVE_REALM_OF_YSHAARJ    = 145647,
+    SPELL_REALM_OF_YSHAARJ           = 144954,
+    SPELL_ANNIHILLATE                = 144969,
+    SPELL_COSMETIC_CHANNEL           = 145431, //caster 72228
+    SPELL_YSHAARJ_PROTECTION         = 144945,
+
+    //Special
+    SPELL_SUMMON_ADDS                = 144489,
+    SPELL_HEARTBEAT_SOUND            = 148591,
+    SPELL_ENTER_REALM_OF_YSHAARJ     = 144867,
 };
 
 enum sEvents
@@ -59,6 +76,7 @@ enum sEvents
     EVENT_CHAIN_LIGHTNING            = 7,
     //Iron Star
     EVENT_ACTIVE                     = 8,
+    EVENT_TP_YSHAARJ                 = 33,//Test event
 };
 
 enum Phase
@@ -71,6 +89,7 @@ enum Phase
 enum sActions
 {
     ACTION_LAUNCH                    = 1,
+    ACTION_INTRO_PHASE_TWO           = 2,
 };
 
 Position ironstarspawnpos[2] =
@@ -104,6 +123,18 @@ Position wspos[2] =
     {1020.22f, -5703.03f, -317.6922f, 6.1730f},
     {1034.52f, -5565.62f, -317.6930f, 6.1730f},
 };
+
+Position tppos[3] =
+{   //1.1 scale sha vortex
+    {1092.66f, -5453.67f, -354.902802f, 1.4436f},//Temple of the Jade Serpent
+    {1084.72f, -5631.07f, -423.453369f, 3.0819f},//Terrace of Endless Spring
+    {1055.22f, -5844.58f, -318.864105f, 4.6069f},//Temple of the Red Crane 
+};
+
+Position centerpos = {1073.09f, -5639.70f, -317.3894f};
+Position realmtppos = {1073.14f, -5639.47f, -317.3893f, 3.0128f};
+
+//SpellVisualKit ID: 26114
 
 class boss_garrosh_hellscream : public CreatureScript
 {
@@ -146,18 +177,40 @@ class boss_garrosh_hellscream : public CreatureScript
                 _EnterCombat();
                 SpawnIronStar();
                 phase = PHASE_ONE;
-                events.ScheduleEvent(EVENT_SUMMON_SOLDIERS, 5000);
+                events.ScheduleEvent(EVENT_SUMMON_SOLDIERS, 1000);
+                //events.ScheduleEvent(EVENT_TP_YSHAARJ, 5000);
             }
 
             void DamageTaken(Unit* attacker, uint32 &damage)
             {
                 if (HealthBelowPct(10) && phase == PHASE_ONE)
+                {
                     phase = PHASE_TWO; //enter phase two
+                    DoAction(ACTION_INTRO_PHASE_TWO);
+                }
             }
 
             void DoAction(int32 const action)
             {
+                switch (action)
+                {
+                case ACTION_INTRO_PHASE_TWO:
+                    events.Reset();
+                    me->SetAttackStop(false);
+                    me->GetMotionMaster()->MoveCharge(centerpos.GetPositionX(), centerpos.GetPositionY(), centerpos.GetPositionZ(), 15.0f, 1);
+                    break;
+                }
             }
+
+            /*void MovementInform(uint32 type, uint32 pointId)
+            {
+                if (type == POINT_MOTION_TYPE)
+                {
+                    if (pointId == 1)
+                    {
+                    }
+                }
+            }*/
 
             void JustDied(Unit* /*killer*/)
             {
@@ -228,6 +281,7 @@ class boss_garrosh_hellscream : public CreatureScript
                         break;
                     }
                     case EVENT_SUMMON_SOLDIERS:
+                    {
                         for (uint8 n = 0; n < 2; n++)
                             me->SummonCreature(NPC_SIEGE_ENGINEER, engeneerspawnpos[n]);
                         instance->SetData(DATA_OPEN_SOLDIER_FENCH, 0);
@@ -240,6 +294,11 @@ class boss_garrosh_hellscream : public CreatureScript
                         uint8 pos = urand(0, 1);
                         if (Creature* wrider = me->SummonCreature(NPC_WOLF_RIDER, wspos[pos]))
                             wrider->AI()->DoZoneInCombat(wrider, 200.0f);
+                        break;
+                    }
+                    case EVENT_TP_YSHAARJ:
+                        if (Creature* hoy = me->GetCreature(*me, instance->GetData64(NPC_HEART_OF_YSHAARJ)))
+                            hoy->CastSpell(hoy, SPELL_ENTER_REALM_OF_YSHAARJ);
                         break;
                     }
                 }
@@ -263,6 +322,7 @@ public:
         npc_garrosh_soldierAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
         }
 
         InstanceScript* instance;
@@ -276,7 +336,10 @@ public:
                 events.ScheduleEvent(EVENT_LAUNCH_STAR, urand(1000, 3000));
             }
             else
+            {
+                me->AddAura(SPELL_SUMMON_ADDS, me);
                 me->SetReactState(REACT_DEFENSIVE);
+            }
         }
 
         void EnterCombat(Unit* who)
@@ -298,6 +361,9 @@ public:
 
         void UpdateAI(uint32 diff)
         {
+            if (!UpdateVictim())
+                return;
+
             events.Update(diff);
 
             if (me->HasUnitState(UNIT_STATE_CASTING))
@@ -349,6 +415,7 @@ public:
                     break;
                 }
             }
+            DoMeleeAttackIfReady();
         }
     };
 
@@ -435,6 +502,7 @@ public:
         npc_desecrated_weaponAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
             lastpct = 90;
@@ -485,6 +553,7 @@ public:
         {
             instance = creature->GetInstanceScript();
             me->SetReactState(REACT_PASSIVE);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
             lastpct = 90;
         }
@@ -559,6 +628,88 @@ public:
     }
 };
 
+//72215 
+class npc_heart_of_yshaarj : public CreatureScript
+{
+public:
+    npc_heart_of_yshaarj() : CreatureScript("npc_heart_of_yshaarj") {}
+
+    struct npc_heart_of_yshaarjAI : public ScriptedAI
+    {
+        npc_heart_of_yshaarjAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetDisplayId(11686);
+            //me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
+        }
+
+        InstanceScript* instance;
+
+        void Reset()
+        {
+            DoCast(me, SPELL_HEARTBEAT_SOUND, true);
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            damage = 0;
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_heart_of_yshaarjAI(creature);
+    }
+};
+
+//72239
+class npc_sha_vortex : public CreatureScript
+{
+public:
+    npc_sha_vortex() : CreatureScript("npc_sha_vortex") {}
+
+    struct npc_sha_vortexAI : public ScriptedAI
+    {
+        npc_sha_vortexAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+        }
+
+        InstanceScript* instance;
+
+        void Reset()
+        {
+            DoCast(me, SPELL_YSHAARJ_PROTECTION_AT, true);
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            damage = 0;
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_sha_vortexAI(creature);
+    }
+};
+
 //144798
 class spell_exploding_iron_star : public SpellScriptLoader
 {
@@ -622,6 +773,71 @@ public:
     }
 };
 
+//144867
+class spell_enter_realm_of_yshaarj : public SpellScriptLoader
+{
+public:
+    spell_enter_realm_of_yshaarj() : SpellScriptLoader("spell_enter_realm_of_yshaarj") { }
+
+    class spell_enter_realm_of_yshaarj_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_enter_realm_of_yshaarj_AuraScript);
+
+        void HandleEffectApply(AuraEffect const * aurEff, AuraEffectHandleModes mode)
+        {
+            if (InstanceScript* instance = GetTarget()->GetInstanceScript())
+            {
+                uint8 mod = instance->GetData(DATA_GET_REALM_OF_YSHAARJ);
+                GetTarget()->NearTeleportTo(tppos[mod].GetPositionX(), tppos[mod].GetPositionY(), tppos[mod].GetPositionZ(), tppos[mod].GetOrientation());
+                GetTarget()->AddAura(SPELL_REALM_OF_YSHAARJ, GetTarget());
+                GetTarget()->CastSpell(GetTarget(), SPELL_GARROSH_ENERGY);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectRemoveFn(spell_enter_realm_of_yshaarj_AuraScript::HandleEffectApply, EFFECT_2, SPELL_AURA_SCREEN_EFFECT, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_enter_realm_of_yshaarj_AuraScript();
+    }
+};
+
+//144954
+class spell_realm_of_yshaarj : public SpellScriptLoader
+{
+public:
+    spell_realm_of_yshaarj() : SpellScriptLoader("spell_realm_of_yshaarj") { }
+
+    class spell_realm_of_yshaarj_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_realm_of_yshaarj_AuraScript);
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+        {
+            if (GetTarget() && GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+            {
+                GetTarget()->NearTeleportTo(realmtppos.GetPositionX(), realmtppos.GetPositionY(), realmtppos.GetPositionZ(), realmtppos.GetOrientation());
+                GetTarget()->RemoveAurasDueToSpell(SPELL_GARROSH_ENERGY);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_realm_of_yshaarj_AuraScript::HandleEffectRemove, EFFECT_1, SPELL_AURA_SCREEN_EFFECT, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_realm_of_yshaarj_AuraScript();
+    }
+};
+
+
 
 void AddSC_boss_garrosh_hellscream()
 {
@@ -630,6 +846,10 @@ void AddSC_boss_garrosh_hellscream()
     new npc_iron_star();
     new npc_desecrated_weapon();
     new npc_empowered_desecrated_weapon();
+    new npc_sha_vortex();
+    new npc_heart_of_yshaarj();
     new spell_exploding_iron_star();
     new spell_power_iron_star();
+    new spell_enter_realm_of_yshaarj();
+    new spell_realm_of_yshaarj();
 }
