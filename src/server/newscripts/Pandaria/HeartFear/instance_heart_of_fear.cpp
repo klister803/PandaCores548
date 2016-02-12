@@ -334,12 +334,16 @@ public:
                     switch (state)
                     {
                     case NOT_STARTED:
+                        DoRemoveAurasDueToSpellOnPlayers(122370);
+                        DoRemoveAurasDueToSpellOnPlayers(122516);
                         HandleGameObject(unsokendoorGuid, true);
                         break;
                     case IN_PROGRESS:
                         HandleGameObject(unsokendoorGuid, false);
                         break;
                     case DONE:
+                        DoRemoveAurasDueToSpellOnPlayers(122370);
+                        DoRemoveAurasDueToSpellOnPlayers(122516);
                         HandleGameObject(unsokendoorGuid, true);
                         HandleGameObject(unsokexdoorGuid, true);
                         break;

@@ -2224,6 +2224,23 @@ void Spell::EffectApplyAura(SpellEffIndex effIndex)
 
     switch (m_spellAura->GetId())
     {
+        case 122395: //Unsok - Struggle for Control
+        {
+            uint8 alterPower;
+            uint8 lfrMode = m_caster->GetMap()->IsLfr() ? 2 : 8;
+            if (alterPower = m_caster->GetPower(POWER_ALTERNATE_POWER))
+            {
+                if (alterPower > lfrMode)
+                    m_caster->SetPower(POWER_ALTERNATE_POWER, alterPower - lfrMode);
+                else
+                {
+                    if (alterPower <= 0)
+                        break;
+                    m_caster->SetPower(POWER_ALTERNATE_POWER, 0);
+                }
+            }
+            break;
+        }
         case 38177:
             if (unitTarget->GetEntry() != 21387)
                 return;
@@ -5148,6 +5165,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
 
             switch (m_spellInfo->Id)
             {
+                case 122415: //Grab - Ride Me
                 case 124258: //Storm Unleashed Ride Me
                 {
                     if (!unitTarget || unitTarget->GetUnitState() == UNIT_STATE_ONVEHICLE)

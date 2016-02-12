@@ -61,6 +61,9 @@ enum eCreatures
     //Garalon
     NPC_GARALONS_LEG         = 63053,
     NPC_PHEROMONE_TRAIL      = 63021,
+    
+    //Amber-Shaper Un'sok
+    NPC_AMBER_POOL           = 62762,
 };
 
 enum Soldiers
