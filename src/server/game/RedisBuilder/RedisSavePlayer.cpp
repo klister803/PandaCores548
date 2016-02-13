@@ -1475,3 +1475,12 @@ void Player::SaveAccountTutorials()
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerGold guid %u", guid);
     });
 }
+
+void Player::SavePlayerGuild()
+{
+    PlayerGuildJson = GetGuildId();
+
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "guild", sRedisBuilder->BuildString(PlayerGuildJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerGuild guid %u", guid);
+    });
+}

@@ -1318,7 +1318,7 @@ void AchievementMgr<T>::SendAchievementEarned(AchievementEntry const* achievemen
     if (achievement->flags & ACHIEVEMENT_FLAG_HIDDEN)
         return;
 
-    if (Guild* guild = sGuildMgr->GetGuildById(GetOwner()->GetGuildId()))
+    if (Guild* guild = GetOwner()->GetGuild())
     {
         Trinity::AchievementChatBuilder say_builder(*GetOwner(), CHAT_MSG_GUILD_ACHIEVEMENT, LANG_ACHIEVEMENT_EARNED, achievement->ID);
         Trinity::LocalizedPacketDo<Trinity::AchievementChatBuilder> say_do(say_builder);
@@ -2995,7 +2995,7 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
     //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "CompletedAchievement achievement %u", achievement->ID);
 
     if (achievement->flags & ACHIEVEMENT_FLAG_SHOW_IN_GUILD_NEWS)
-        if (Guild* guild = sGuildMgr->GetGuildById(referencePlayer->GetGuildId()))
+        if (Guild* guild = referencePlayer->GetGuild())
             guild->GetNewsLog().AddNewEvent(GUILD_NEWS_PLAYER_ACHIEVEMENT, time(NULL), referencePlayer->GetGUID(), achievement->flags & ACHIEVEMENT_FLAG_SHOW_IN_GUILD_HEADER, achievement->ID);
 
     if (!loginCheck && !GetOwner()->GetSession()->PlayerLoading())
@@ -3026,6 +3026,10 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
         sAchievementMgr->SetRealmCompleted(achievement);
 
     _achievementPoints += achievement->points;
+
+    if (GetCriteriaSort() == PLAYER_CRITERIA)
+        if (Guild* guild = referencePlayer->GetGuild())
+            guild->SetAchievementPoints(referencePlayer);
 
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ACHIEVEMENT, 0, 0, 0, NULL, referencePlayer);
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARN_ACHIEVEMENT_POINTS, achievement->points, 0, 0, NULL, referencePlayer);
@@ -3106,7 +3110,7 @@ void AchievementMgr<Guild>::CompletedAchievement(AchievementEntry const* achieve
         return;
 
     if (achievement->flags & ACHIEVEMENT_FLAG_SHOW_IN_GUILD_NEWS)
-        if (Guild* guild = sGuildMgr->GetGuildById(referencePlayer->GetGuildId()))
+        if (Guild* guild = referencePlayer->GetGuild())
             guild->GetNewsLog().AddNewEvent(GUILD_NEWS_GUILD_ACHIEVEMENT, time(NULL), 0, achievement->flags & ACHIEVEMENT_FLAG_SHOW_IN_GUILD_HEADER, achievement->ID);
 
     SendAchievementEarned(achievement);

@@ -637,7 +637,7 @@ void WorldSession::LogoutPlayer(bool Save)
             HandleMoveWorldportAckOpcode();
 
         ///- If the player is in a guild, update the guild roster and broadcast a logout message to other guild members
-        if (Guild* guild = sGuildMgr->GetGuildById(_player->GetGuildId()))
+        if (Guild* guild = _player->GetGuild())
             guild->HandleMemberLogout(this);
 
         ///- Remove pet
@@ -657,6 +657,7 @@ void WorldSession::LogoutPlayer(bool Save)
                 _player->RemoveItemFromBuyBackSlot(j, true);
             //_player->SaveToDB();
             _player->UpdateSavePlayer();
+            _player->UpdatePlayerNameData();
         }
 
         ///- Leave all channels before player delete...

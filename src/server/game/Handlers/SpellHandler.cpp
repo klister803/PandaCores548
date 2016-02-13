@@ -1377,8 +1377,8 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
 
     Player* player = creator->ToPlayer();
     ObjectGuid guildGuid;
-    if (uint32 guildId = player ? player->GetGuildId() : 0)
-        if (Guild* guild = sGuildMgr->GetGuildById(guildId))
+    if (player)
+        if (Guild* guild = player->GetGuild())
             guildGuid = guild->GetGUID();
 
     WorldPacket data(SMSG_MIRRORIMAGE_DATA, 80);

@@ -689,7 +689,6 @@ void KillRewarder::Reward()
             if (ScenarioProgress* progress = sScenarioMgr->GetScenarioProgress(instanceId))
                 progress->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, victim->GetEntry(), 1, 0, victim, _killer);
     }
-
 }
 
 // == Player ====================================================
@@ -5824,8 +5823,10 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
     // bones will be deleted by corpse/bones deleting thread shortly
     sObjectAccessor->ConvertCorpseForPlayer(playerguid);
 
-    if (uint32 guildId = GetGuildIdFromDB(playerguid))
-        if (Guild* guild = sGuildMgr->GetGuildById(guildId))
+    const CharacterNameData* nameData = sWorld->GetCharacterNameData(playerguid);
+
+    if (nameData && nameData->m_guildId)
+        if (Guild* guild = sGuildMgr->GetGuildById(nameData->m_guildId))
             guild->DeleteMember(guid);
 
     // the player was uninvited already on logout so just remove from group
@@ -6619,17 +6620,16 @@ uint32 Player::DurabilityRepair(uint16 pos, bool cost, float discountMod, bool g
                     return TotalCost;
                 }
 
-                Guild* guild = sGuildMgr->GetGuildById(GetGuildId());
-                if (!guild)
+                if (!m_guild)
                     return TotalCost;
 
-                if (!guild->HandleMemberWithdrawMoney(GetSession(), costs, true))
+                if (!m_guild->HandleMemberWithdrawMoney(GetSession(), costs, true))
                     return TotalCost;
 
                 TotalCost = costs;
 
-                if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
-                    guild->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SPENT_GOLD_GUILD_REPAIRS, costs, 0, 0, NULL, this);
+                if (m_guild)
+                    m_guild->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SPENT_GOLD_GUILD_REPAIRS, costs, 0, 0, NULL, this);
             }
             else if (!HasEnoughMoney(uint64(costs)))
             {
@@ -7340,8 +7340,18 @@ void Player::SetSkill(uint16 id, uint16 step, uint16 newVal, uint16 maxVal)
     if (!id)
         return;
 
+    bool isProf = false;
     uint16 currVal;
     SkillStatusMap::iterator itr = mSkillStatus.find(id);
+
+    SkillLineEntry const* skillEntry = sSkillLineStore.LookupEntry(id);
+    if (!skillEntry)
+    {
+        sLog->outError(LOG_FILTER_GENERAL, "Skill not found in SkillLineStore: skill #%u", id);
+        return;
+    }
+    if (skillEntry->categoryId == SKILL_CATEGORY_PROFESSION)
+        isProf = true;
 
     //has skill
     if (itr != mSkillStatus.end() && itr->second.uState != SKILL_DELETED)
@@ -7413,15 +7423,8 @@ void Player::SetSkill(uint16 id, uint16 step, uint16 newVal, uint16 maxVal)
 
             if (!GetUInt16Value(PLAYER_SKILL_LINEID_0 + field, offset))
             {
-                SkillLineEntry const* skillEntry = sSkillLineStore.LookupEntry(id);
-                if (!skillEntry)
-                {
-                    sLog->outError(LOG_FILTER_GENERAL, "Skill not found in SkillLineStore: skill #%u", id);
-                    return;
-                }
-
                 SetUInt16Value(PLAYER_SKILL_LINEID_0 + field, offset, id);
-                if (skillEntry->categoryId == SKILL_CATEGORY_PROFESSION)
+                if (isProf)
                 {
                     if (!GetUInt32Value(PLAYER_PROFESSION_SKILL_LINE_1))
                         SetUInt32Value(PLAYER_PROFESSION_SKILL_LINE_1, id);
@@ -7470,10 +7473,16 @@ void Player::SetSkill(uint16 id, uint16 step, uint16 newVal, uint16 maxVal)
 
                 // Learn all spells for skill
                 learnSkillRewardedSpells(id, newVal);
+
+                if (isProf && m_guild)
+                    m_guild->UpdateProf(this);
                 return;
             }
         }
     }
+
+    if (isProf && m_guild)
+        m_guild->UpdateProf(this);
 }
 
 bool Player::HasSkill(uint32 skill) const
@@ -8223,8 +8232,8 @@ void Player::RewardGuildReputation(Quest const* quest)
     if (GetsAFriendBonus(false))
         rep = int32(rep * (1 + sWorld->getRate(RATE_REPUTATION_RECRUIT_A_FRIEND_BONUS)));
 
-    if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
-        guild->RepGainedBy(this, rep);
+    if (m_guild)
+        m_guild->RepGainedBy(this, rep);
 
     //if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(REP_GUILD))
         //GetReputationMgr().ModifyReputation(factionEntry, rep);
@@ -8347,8 +8356,8 @@ bool Player::RewardHonor(Unit* victim, uint32 groupsize, int32 honor, bool pvpto
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL_AT_AREA, GetAreaId());
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL, 1, 0, 0, victim);
 
-            if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
-                guild->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILLS_GUILD, 1, 0, 0, victim, this);
+            if (m_guild)
+                m_guild->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILLS_GUILD, 1, 0, 0, victim, this);
 
             m_saveKills = true;
         }
@@ -8901,85 +8910,13 @@ void Player::SetInGuild(uint32 guildId)
     SetUInt16Value(OBJECT_FIELD_TYPE, 1, guildId != 0);
 }
 
-uint32 Player::GetGuildIdFromDB(uint64 guid)
-{
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_GUILD_MEMBER);
-    stmt->setUInt32(0, GUID_LOPART(guid));
-    if (PreparedQueryResult result = CharacterDatabase.Query(stmt))
-        return result->Fetch()[0].GetUInt32();
-
-    return 0;
-}
-
-uint8 Player::GetRankFromDB(uint64 guid)
-{
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_GUILD_MEMBER);
-    stmt->setUInt32(0, GUID_LOPART(guid));
-    if (PreparedQueryResult result = CharacterDatabase.Query(stmt))
-        return result->Fetch()[1].GetUInt8();
-
-    return 0;
-}
-
-uint32 Player::GetZoneIdFromDB(uint64 guid)
-{
-    uint32 guidLow = GUID_LOPART(guid);
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_ZONE);
-    stmt->setUInt32(0, guidLow);
-    PreparedQueryResult result = CharacterDatabase.Query(stmt);
-
-    if (!result)
-        return 0;
-    Field* fields = result->Fetch();
-    uint32 zone = fields[0].GetUInt16();
-
-    if (!zone)
-    {
-        // stored zone is zero, use generic and slow zone detection
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_POSITION_XYZ);
-        stmt->setUInt32(0, guidLow);
-        PreparedQueryResult result = CharacterDatabase.Query(stmt);
-
-        if (!result)
-            return 0;
-        fields = result->Fetch();
-        uint32 map = fields[0].GetUInt16();
-        float posx = fields[1].GetFloat();
-        float posy = fields[2].GetFloat();
-        float posz = fields[3].GetFloat();
-
-        if (!sMapStore.LookupEntry(map))
-            return 0;
-
-        zone = sMapMgr->GetZoneId(map, posx, posy, posz);
-
-        if (zone > 0)
-        {
-            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ZONE);
-
-            stmt->setUInt16(0, uint16(zone));
-            stmt->setUInt32(1, guidLow);
-
-            CharacterDatabase.Execute(stmt);
-        }
-    }
-
-    return zone;
-}
-
 uint32 Player::GetLevelFromDB(uint64 guid)
 {
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_LEVEL);
-    stmt->setUInt32(0, GUID_LOPART(guid));
-    PreparedQueryResult result = CharacterDatabase.Query(stmt);
-
-    if (!result)
+    const CharacterNameData* nameData = sWorld->GetCharacterNameData(guid);
+    if (!nameData)
         return 0;
 
-    Field* fields = result->Fetch();
-    uint8 level = fields[0].GetUInt8();
-
-    return level;
+    return nameData->m_level;
 }
 
 void Player::UpdateArea(uint32 newArea)
@@ -14166,7 +14103,7 @@ void Player::MoveItemToInventory(ItemPosCountVec const& dest, Item* pItem, bool 
 
     // store item
     Item* pLastItem = StoreItem(dest, pItem, update);
-    pLastItem->SetItemKey(ITEM_KEY_USER, GetGUIDLow());
+    pLastItem->UpdateItemKey(ITEM_KEY_USER, GetGUIDLow());
 
     // only set if not merged to existed stack (pItem can be deleted already but we can compare pointers any way)
     if (pLastItem == pItem)
@@ -17243,8 +17180,8 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
     else
         moneyRew = int32(quest->GetRewMoneyMaxLevel() * sWorld->getRate(RATE_DROP_MONEY));
 
-    if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
-        guild->GiveXP(uint32(quest->XPValue(this) * sWorld->getRate(RATE_XP_QUEST) * sWorld->getRate(RATE_XP_GUILD_MODIFIER)), this);
+    if (m_guild)
+        m_guild->GiveXP(uint32(quest->XPValue(this) * sWorld->getRate(RATE_XP_QUEST) * sWorld->getRate(RATE_XP_GUILD_MODIFIER)), this);
 
     // Give player extra money if GetRewOrReqMoney > 0 and get ReqMoney if negative
     if (quest->GetRewOrReqMoney())
@@ -17325,8 +17262,8 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUEST_COUNT);
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUEST, quest->GetQuestId());
 
-    if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
-        guild->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUESTS_GUILD, 1, 0, 0, NULL, this);
+    if (m_guild)
+        m_guild->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUESTS_GUILD, 1, 0, 0, NULL, this);
 
     //lets remove flag for delayed teleports
     SetCanDelayTeleport(false);
@@ -18154,8 +18091,8 @@ void Player::KilledMonsterCredit(uint32 entry, uint64 guid)
         if(killed)
         {
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE_TYPE, killed->GetCreatureType(), addkillcount, 0, guid ? GetMap()->GetCreature(guid) : NULL);
-            if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
-                guild->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE_TYPE_GUILD, killed->GetCreatureType(), addkillcount, 0, guid ? GetMap()->GetCreature(guid) : NULL, this);
+            if (m_guild)
+                m_guild->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE_TYPE_GUILD, killed->GetCreatureType(), addkillcount, 0, guid ? GetMap()->GetCreature(guid) : NULL, this);
         }
     }
 
@@ -24753,9 +24690,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
         if (pProto->ItemId != reward->Entry)
             continue;
 
-        Guild* guild = sGuildMgr->GetGuildById(this->GetGuildId());
-
-        if (!guild)
+        if (!m_guild)
         {
             SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
             return false;
@@ -24769,7 +24704,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
             }
 
         if (reward->AchievementId)
-            if (!guild->GetAchievementMgr().HasAchieved(reward->AchievementId))
+            if (!m_guild->GetAchievementMgr().HasAchieved(reward->AchievementId))
             {
                 SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
                 return false;
@@ -24832,8 +24767,8 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
     if (crItem->maxcount != 0) // bought
     { 
         if (pProto->Quality > ITEM_QUALITY_EPIC || (pProto->Quality == ITEM_QUALITY_EPIC && pProto->ItemLevel >= MinNewsItemLevel[sWorld->getIntConfig(CONFIG_EXPANSION)]))
-            if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
-                guild->GetNewsLog().AddNewEvent(GUILD_NEWS_ITEM_PURCHASED, time(NULL), GetGUID(), 0, item);
+            if (m_guild)
+                m_guild->GetNewsLog().AddNewEvent(GUILD_NEWS_ITEM_PURCHASED, time(NULL), GetGUID(), 0, item);
         return true;
     }
     return false;
@@ -28158,8 +28093,8 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot)
         if (const ItemTemplate* proto = sObjectMgr->GetItemTemplate(item->itemid))
         {
             if (proto->Quality > ITEM_QUALITY_EPIC || (proto->Quality == ITEM_QUALITY_EPIC && proto->ItemLevel >= MinNewsItemLevel[sWorld->getIntConfig(CONFIG_EXPANSION)]))
-                if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
-                    guild->GetNewsLog().AddNewEvent(GUILD_NEWS_ITEM_LOOTED, time(NULL), GetGUID(), 0, item->itemid);
+                if (m_guild)
+                    m_guild->GetNewsLog().AddNewEvent(GUILD_NEWS_ITEM_LOOTED, time(NULL), GetGUID(), 0, item->itemid);
 
             if (loot->personal && proto->Quality >= uint32(ITEM_QUALITY_UNCOMMON))
                 SendDisplayToast(item->itemid, 1, 0/*loot->bonusLoot*/, item->count, 1, newitem);
@@ -28471,7 +28406,7 @@ void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 mis
             return;
         }
 
-        if (auto guild = sGuildMgr->GetGuildById(player->GetGuildId()))
+        if (auto guild = player->GetGuild())
             guild->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, player, loginCheck);
 
         /// Quest "A Test of Valor"
@@ -29282,12 +29217,7 @@ uint32 Player::GetReputation(uint32 factionentry)
 
 std::string Player::GetGuildName()
 {
-    return GetGuildId() ? (sGuildMgr->GetGuildById(GetGuildId()) ? sGuildMgr->GetGuildById(GetGuildId())->GetName() : "") : "";
-}
-
-Guild* Player::GetGuild()
-{
-    return GetGuildId() ? sGuildMgr->GetGuildById(GetGuildId()) : NULL;
+    return m_guild ? m_guild->GetName() : "";
 }
 
 void Player::SendDuelCountdown(uint32 counter)
@@ -30925,4 +30855,9 @@ SpellModifier* Player::ChangePriorityMods(SpellModifier* currentMod, SpellModifi
         return newMod;
 
     return currentMod;
+}
+
+void Player::UpdatePlayerNameData()
+{
+    sWorld->UpdateCharacterNameDataZoneGuild(GetGUIDLow(), m_zoneUpdateId, GetGuildId(), GetRank());
 }

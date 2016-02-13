@@ -672,7 +672,7 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
             }
 
             // Avoid exploit of create multiple characters with same name
-            if (!sWorld->AddCharacterName(createInfo->Name))
+            if (!sWorld->CheckCharacterName(createInfo->Name))
             {
                 WorldPacket data(SMSG_CHAR_CREATE, 1);
                 data << uint8(CHAR_CREATE_NAME_IN_USE);
@@ -735,7 +735,7 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
             std::string IP_str = GetRemoteAddress();
             sLog->outInfo(LOG_FILTER_CHARACTER, "Account: %d (IP: %s) Create Character:[%s] (GUID: %u)", GetAccountId(), IP_str.c_str(), createInfo->Name.c_str(), newChar.GetGUIDLow());
             sScriptMgr->OnPlayerCreate(&newChar);
-            sWorld->AddCharacterNameData(newChar.GetGUIDLow(), std::string(newChar.GetName()), newChar.getGender(), newChar.getRace(), newChar.getClass(), newChar.getLevel());
+            sWorld->AddCharacterNameData(newChar.GetGUIDLow(), std::string(newChar.GetName()), newChar.getGender(), newChar.getRace(), newChar.getClass(), newChar.getLevel(), GetAccountId());
 
             newChar.CleanupsBeforeDelete();
             delete createInfo;
@@ -995,13 +995,18 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
         pCurrChar->SetInGuild(fields[0].GetUInt32());
         pCurrChar->SetRank(fields[1].GetUInt8());
         if (Guild* guild = sGuildMgr->GetGuildById(pCurrChar->GetGuildId()))
+        {
             pCurrChar->SetGuildLevel(guild->GetLevel());
+            pCurrChar->SetGuild(guild);
+        }
+        pCurrChar->SavePlayerGuild();
     }
     else if (pCurrChar->GetGuildId())                        // clear guild related fields in case wrong data about non existed membership
     {
         pCurrChar->SetInGuild(0);
         pCurrChar->SetRank(0);
         pCurrChar->SetGuildLevel(0);
+        pCurrChar->SavePlayerGuild();
     }
 
     //! 5.4.1
@@ -1059,12 +1064,16 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
     if (pCurrChar->GetGuildId() != 0)
     {
         if (Guild* guild = sGuildMgr->GetGuildById(pCurrChar->GetGuildId()))
+        {
             guild->SendLoginInfo(this);
+            pCurrChar->SetGuild(guild);
+        }
         else
         {
             // remove wrong guild data
             sLog->outError(LOG_FILTER_GENERAL, "Player %s (GUID: %u) marked as member of not existing guild (id: %u), removing guild membership for player.", pCurrChar->GetName(), pCurrChar->GetGUIDLow(), pCurrChar->GetGuildId());
             pCurrChar->SetInGuild(0);
+            pCurrChar->SavePlayerGuild();
         }
     }
 
@@ -2762,22 +2771,6 @@ void WorldSession::HandlePlayerLogin(uint32 accountId, uint64 playerGuid, uint8 
 
             SendTimeZoneInformation();
 
-            //QueryResult* result = CharacterDatabase.PQuery("SELECT guildid, rank FROM guild_member WHERE guid = '%u'", pCurrChar->GetGUIDLow());
-            /*if (PreparedQueryResult resultGuild = holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADGUILD))
-            {
-                Field* fields = resultGuild->Fetch();
-                pCurrChar->SetInGuild(fields[0].GetUInt32());
-                pCurrChar->SetRank(fields[1].GetUInt8());
-                if (Guild* guild = sGuildMgr->GetGuildById(pCurrChar->GetGuildId()))
-                    pCurrChar->SetGuildLevel(guild->GetLevel());
-            }
-            else */if (pCurrChar->GetGuildId())                        // clear guild related fields in case wrong data about non existed membership
-            {
-                pCurrChar->SetInGuild(0);
-                pCurrChar->SetRank(0);
-                pCurrChar->SetGuildLevel(0);
-            }
-
             //! 5.4.1
             // ToDo: add data from config
             data.Initialize(SMSG_ARENA_SEASON_WORLDSTATE, 4+4);
@@ -2830,17 +2823,8 @@ void WorldSession::HandlePlayerLogin(uint32 accountId, uint64 playerGuid, uint8 
             sObjectAccessor->AddObject(pCurrChar);
             //sLog->outDebug(LOG_FILTER_GENERAL, "Player %s added to Map.", pCurrChar->GetName());
 
-            if (pCurrChar->GetGuildId() != 0)
-            {
-                if (Guild* guild = sGuildMgr->GetGuildById(pCurrChar->GetGuildId()))
-                    guild->SendLoginInfo(this);
-                else
-                {
-                    // remove wrong guild data
-                    sLog->outError(LOG_FILTER_GENERAL, "Player %s (GUID: %u) marked as member of not existing guild (id: %u), removing guild membership for player.", pCurrChar->GetName(), pCurrChar->GetGUIDLow(), pCurrChar->GetGuildId());
-                    pCurrChar->SetInGuild(0);
-                }
-            }
+            if (Guild* guild = pCurrChar->GetGuild())
+                guild->SendLoginInfo(this);
 
             pCurrChar->SendInitialPacketsAfterAddToMap();
 

@@ -1359,7 +1359,6 @@ void World::LoadConfigSettings(bool reload)
 
     // Guild save interval
     m_bool_configs[CONFIG_GUILD_LEVELING_ENABLED] = ConfigMgr::GetBoolDefault("Guild.LevelingEnabled", true);
-    m_int_configs[CONFIG_GUILD_SAVE_INTERVAL] = ConfigMgr::GetIntDefault("Guild.SaveInterval", 15);
     m_int_configs[CONFIG_GUILD_MAX_LEVEL] = ConfigMgr::GetIntDefault("Guild.MaxLevel", 25);
     m_int_configs[CONFIG_GUILD_UNDELETABLE_LEVEL] = ConfigMgr::GetIntDefault("Guild.UndeletableLevel", 4);
     rate_values[RATE_XP_GUILD_MODIFIER] = ConfigMgr::GetFloatDefault("Guild.XPModifier", 0.25f);
@@ -1973,8 +1972,6 @@ void World::SetInitialWorldSettings()
 
     m_timers[WUPDATE_PINGREDIS].SetInterval(30*IN_MILLISECONDS);    // Redis time in secconds
 
-    m_timers[WUPDATE_GUILDSAVE].SetInterval(getIntConfig(CONFIG_GUILD_SAVE_INTERVAL) * MINUTE * IN_MILLISECONDS);
-
     //to set mailtimer to return mails every day between 4 and 5 am
     //mailtimer is increased when updating auctions
     //one second is 1000 -(tested on win system)
@@ -2409,12 +2406,6 @@ void World::Update(uint32 diff)
     {
         m_timers[WUPDATE_PINGREDIS].Reset();
         RedisDatabase.CheckConnect();
-    }
-
-    if (m_timers[WUPDATE_GUILDSAVE].Passed())
-    {
-        m_timers[WUPDATE_GUILDSAVE].Reset();
-        sGuildMgr->SaveGuilds();
     }
 
     // update the instance reset times
@@ -3551,7 +3542,7 @@ void World::LoadCharacterNameData()
 {
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading character name data");
 
-    QueryResult result = CharacterDatabase.Query("SELECT guid, name, race, gender, class, level FROM characters WHERE deleteDate IS NULL OR deleteDate = 0");
+    QueryResult result = CharacterDatabase.Query("SELECT c.guid, c.name, c.race, c.gender, c.class, c.level, c.account, c.zone, gm.rank, gm.guildid FROM  characters AS c LEFT JOIN guild_member AS gm ON c.guid = gm.guid WHERE deleteDate IS NULL OR deleteDate = 0");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, "No character name data loaded, empty query");
@@ -3564,14 +3555,15 @@ void World::LoadCharacterNameData()
     {
         Field* fields = result->Fetch();
         AddCharacterNameData(fields[0].GetUInt32(), fields[1].GetString(),
-            fields[3].GetUInt8() /*gender*/, fields[2].GetUInt8() /*race*/, fields[4].GetUInt8() /*class*/, fields[5].GetUInt8() /*level*/);
+            fields[3].GetUInt8() /*gender*/, fields[2].GetUInt8() /*race*/, fields[4].GetUInt8() /*class*/, fields[5].GetUInt8() /*level*/,
+            fields[6].GetUInt32() /*account*/, fields[7].GetUInt16() /*zoneId*/, fields[8].GetUInt32() /*guildId*/, fields[9].GetUInt32() /*rankId*/);
         ++count;
     } while (result->NextRow());
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loaded name data for %u characters", count);
 }
 
-void World::AddCharacterNameData(uint32 guid, std::string const& name, uint8 gender, uint8 race, uint8 playerClass, uint8 level)
+void World::AddCharacterNameData(uint32 guid, std::string const& name, uint8 gender, uint8 race, uint8 playerClass, uint8 level, uint32 accountId, uint8 zoneId, uint8 rankId, uint32 guildId)
 {
     CharacterNameData& data = _characterNameDataMap[guid];
     data.m_name = name;
@@ -3579,11 +3571,17 @@ void World::AddCharacterNameData(uint32 guid, std::string const& name, uint8 gen
     data.m_gender = gender;
     data.m_class = playerClass;
     data.m_level = level;
+    data.m_accountId = accountId;
+    data.m_zoneId = zoneId;
+    data.m_rankId = rankId;
+    data.m_guildId = guildId;
+
+    nameMap[name] = &data;
 }
 
 void World::UpdateCharacterNameData(uint32 guid, std::string const& name, uint8 gender /*= GENDER_NONE*/, uint8 race /*= RACE_NONE*/)
 {
-    std::map<uint32, CharacterNameData>::iterator itr = _characterNameDataMap.find(guid);
+    std::unordered_map<uint32, CharacterNameData>::iterator itr = _characterNameDataMap.find(guid);
     if (itr == _characterNameDataMap.end())
         return;
 
@@ -3598,18 +3596,38 @@ void World::UpdateCharacterNameData(uint32 guid, std::string const& name, uint8 
 
 void World::UpdateCharacterNameDataLevel(uint32 guid, uint8 level)
 {
-    std::map<uint32, CharacterNameData>::iterator itr = _characterNameDataMap.find(guid);
+    std::unordered_map<uint32, CharacterNameData>::iterator itr = _characterNameDataMap.find(guid);
     if (itr == _characterNameDataMap.end())
         return;
 
     itr->second.m_level = level;
 }
 
+void World::UpdateCharacterNameDataZoneGuild(uint32 guid, uint16 zoneId, uint16 guildId, uint8 rankId)
+{
+    std::unordered_map<uint32, CharacterNameData>::iterator itr = _characterNameDataMap.find(guid);
+    if (itr == _characterNameDataMap.end())
+        return;
+
+    itr->second.m_zoneId = zoneId;
+    itr->second.m_guildId = guildId;
+    itr->second.m_rankId = rankId;
+}
+
 CharacterNameData const* World::GetCharacterNameData(uint32 guid) const
 {
-    std::map<uint32, CharacterNameData>::const_iterator itr = _characterNameDataMap.find(guid);
+    std::unordered_map<uint32, CharacterNameData>::const_iterator itr = _characterNameDataMap.find(guid);
     if (itr != _characterNameDataMap.end())
         return &itr->second;
+    else
+        return NULL;
+}
+
+CharacterNameData const* World::GetCharacterNameData(std::string name) const
+{
+    std::unordered_map<std::string, CharacterNameData*>::const_iterator itr = nameMap.find(name);
+    if (itr != nameMap.end())
+        return itr->second;
     else
         return NULL;
 }

@@ -1449,7 +1449,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
     uint8 activeSpec = player->GetActiveSpec();
     uint32 talent_points = 41;
 
-    Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId());
+    Guild* guild = player->GetGuild();
     ObjectGuid playerGuid = player->GetGUID();
 
     WorldPacket data(SMSG_INSPECT_TALENT, 8 + 4 + 1 + 1 + talent_points + 8 + 4 + 8 + 4);
@@ -2081,7 +2081,7 @@ void WorldSession::HandleGuildAchievementProgressQuery(WorldPacket& recvData)
     uint32 achievementId;
     recvData >> achievementId;
 
-    if (Guild* guild = sGuildMgr->GetGuildById(_player->GetGuildId()))
+    if (Guild* guild = _player->GetGuild())
         guild->GetAchievementMgr().SendAchievementInfo(_player, achievementId);
 }
 

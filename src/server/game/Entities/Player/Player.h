@@ -1625,6 +1625,7 @@ class Player : public Unit, public GridObject<Player>
         Json::Value PlayerPetsJson;
         Json::Value PlayerGoldJson;
         Json::Value AccountTutorialsJson;
+        Json::Value PlayerGuildJson;
 
         //load data for serialize
         void InitSavePlayer();
@@ -1671,6 +1672,9 @@ class Player : public Unit, public GridObject<Player>
         void UpdateTutorials(uint8 index, uint32 value);
         void UpdatePlayerPet(Pet* pet);
         void RemovePlayerPet(Pet* pet);
+        void SavePlayerGuild();
+        void UpdateSavePlayer();
+        void UpdatePlayerNameData();
 
         //load data into player LoadPlayer
         void LoadFromRedis(uint64 guid, uint8 step = 0, const RedisValue* v = NULL);
@@ -1724,9 +1728,9 @@ class Player : public Unit, public GridObject<Player>
         void LoadPlayerMailItems(const RedisValue* v, uint64 mailGuid);
         void LoadAccountTutorialsJson(const RedisValue* v, uint64 mailGuid);
         void LoadPlayerPets(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerGuild(const RedisValue* v, uint64 playerGuid);
 
         //Update data in database
-        void UpdateSavePlayer();
         void DeleteSavePlayerCriteriaProgress(AchievementEntry const* achievement);
         void UpdateSavePlayerCriteriaProgress(AchievementEntry const* achievement, CriteriaProgressMap* progressMap);
 
@@ -2137,7 +2141,6 @@ class Player : public Unit, public GridObject<Player>
         void Initialize(uint32 guid);
         static uint32 GetUInt32ValueFromArray(Tokenizer const& data, uint16 index);
         static float  GetFloatValueFromArray(Tokenizer const& data, uint16 index);
-        static uint32 GetZoneIdFromDB(uint64 guid);
         static uint32 GetLevelFromDB(uint64 guid);
         static bool   LoadPositionFromDB(uint32& mapid, float& x, float& y, float& z, float& o, bool& in_flight, uint64 guid);
 
@@ -2293,8 +2296,6 @@ class Player : public Unit, public GridObject<Player>
         void RemoveTemporarySpell(uint32 spellId);
         void SetReputation(uint32 factionentry, uint32 value);
         uint32 GetReputation(uint32 factionentry);
-        std::string GetGuildName();
-        Guild* GetGuild();
 
         // Talents
         uint32 GetFreeTalentPoints() const { return _talentMgr->FreeTalentPoints; }
@@ -2551,11 +2552,12 @@ class Player : public Unit, public GridObject<Player>
         void SetGuildIdInvited(uint32 GuildId, uint64 guid = 0) { m_GuildIdInvited = GuildId; m_GuildInviterGuid = guid; }
         uint64 GetGuildInviterGuid() const { return m_GuildInviterGuid; }
         uint32 GetGuildId() const { return GetUInt32Value(OBJECT_FIELD_DATA); /* return only lower part */ }
-        static uint32 GetGuildIdFromDB(uint64 guid);
-        static uint8 GetRankFromDB(uint64 guid);
         int GetGuildIdInvited() { return m_GuildIdInvited; }
         static void RemovePetitionsAndSigns(uint64 guid, uint32 type);
 
+        std::string GetGuildName();
+        void SetGuild(Guild* guild) { m_guild = guild; }
+        Guild* GetGuild() { return m_guild; }
 
         // Bracket System
         void InitBrackets();
@@ -3577,6 +3579,7 @@ class Player : public Unit, public GridObject<Player>
 
         uint32 m_GuildIdInvited;
         uint64 m_GuildInviterGuid;
+        Guild* m_guild;
 
         PlayerMails m_mail;
         PlayerSpellMap m_spells;

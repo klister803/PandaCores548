@@ -1657,6 +1657,7 @@ class ObjectMgr
 
         char* GetGuidKey() { return queryGuidKey; }
         char* GetPetKey() { return petKey; }
+        void DeleteAllItems(uint8 type, uint32 guid);
 
     private:
         // first free id for selected id type

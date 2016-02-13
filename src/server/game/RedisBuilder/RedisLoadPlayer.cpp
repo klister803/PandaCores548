@@ -40,6 +40,7 @@
 #include "RedisLoadPlayer.h"
 #include "AchievementMgr.h"
 #include "RedisBuilderMgr.h"
+#include "GuildMgr.h"
 
 void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
 {
@@ -473,6 +474,14 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
             RedisDatabase.AsyncExecuteH("HGET", userKey, "pets", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
                     loadingPlayer->LoadPlayerPets(&v, guid);
+            });
+            break;
+        }
+        case LOAD_PLAYER_GUILD: //Load player guild
+        {
+            RedisDatabase.AsyncExecuteH("HGET", userKey, "guild", guid, [&](const RedisValue &v, uint64 guid) {
+                if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
+                    loadingPlayer->LoadPlayerGuild(&v, guid);
             });
             break;
         }
@@ -3276,9 +3285,35 @@ void Player::LoadPlayerPets(const RedisValue* v, uint64 playerGuid)
     if (!sRedisBuilder->LoadFromRedis(v, PlayerPetsJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerPets data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_LOGIN);
+        LoadFromRedis(playerGuid, LOAD_PLAYER_GUILD);
         return;
     }
 
-    LoadFromRedis(playerGuid, LOAD_PLAYER_LOGIN);
+    LoadFromRedis(playerGuid, LOAD_PLAYER_GUILD);
+}
+
+void Player::LoadPlayerGuild(const RedisValue* v, uint64 playerGuid)
+{
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerGuildJson))
+    {
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerGuild data is empty");
+        LoadFromRedis(playerGuid, LOAD_PLAYER_LOGIN); //Next step load
+        return;
+    }
+
+    uint32 guildId = PlayerGuildJson.asUInt();
+    if (guildId)
+    {
+        if (Guild* guild = sGuildMgr->GetGuildById(guildId))
+        {
+            SetInGuild(guildId);
+            SetGuild(guild);
+            SetRank(guild->GetRankId(this));
+            SetGuildLevel(guild->GetLevel());
+        }
+        else
+            SavePlayerGuild();
+    }
+
+    LoadFromRedis(playerGuid, LOAD_PLAYER_LOGIN); //Next step load
 }

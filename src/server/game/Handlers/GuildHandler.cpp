@@ -32,9 +32,8 @@
 // If guild does not exist, sends error (if necessary).
 inline Guild* _GetPlayerGuild(WorldSession* session, bool sendError = false)
 {
-    if (uint32 guildId = session->GetPlayer()->GetGuildId())    // If guild id = 0, player is not in guild
-        if (Guild* guild = sGuildMgr->GetGuildById(guildId))   // Find guild by id
-            return guild;
+    if (Guild* guild = session->GetPlayer()->GetGuild())    // If guild id = 0, player is not in guild
+        return guild;
     if (sendError)
         Guild::SendCommandResult(session, GUILD_CREATE_S, ERR_GUILD_PLAYER_NOT_IN_GUILD);
     return NULL;
@@ -135,6 +134,7 @@ void WorldSession::HandleGuildDeclineOpcode(WorldPacket& recvPacket)
 
     GetPlayer()->SetGuildIdInvited(0);
     GetPlayer()->SetInGuild(0);
+    GetPlayer()->SavePlayerGuild();
 }
 
 void WorldSession::HandleGuildRosterOpcode(WorldPacket& recvPacket)
@@ -675,7 +675,7 @@ void WorldSession::HandleGuildRewardsQueryOpcode(WorldPacket& recvPacket)
 {
     recvPacket.read_skip<uint32>();         // counter?
 
-    if (Guild* guild = sGuildMgr->GetGuildById(_player->GetGuildId()))
+    if (Guild* guild = _player->GetGuild())
     {
         std::vector<GuildReward> const& rewards = sGuildMgr->GetGuildRewards();
 
@@ -701,7 +701,7 @@ void WorldSession::HandleGuildQueryNewsOpcode(WorldPacket& recvPacket)
 {
     recvPacket.rfinish();   // guild guid
 
-    if (Guild* guild = sGuildMgr->GetGuildById(_player->GetGuildId()))
+    if (Guild* guild = _player->GetGuild())
     {
         WorldPacket data;
         guild->GetNewsLog().BuildNewsData(data);
@@ -720,7 +720,7 @@ void WorldSession::HandleGuildNewsUpdateStickyOpcode(WorldPacket& recvPacket)
     recvPacket.ReadGuidMask<1, 5, 2, 4, 3, 0>(guid);
     recvPacket.ReadGuidBytes<7, 6, 0, 1, 4, 3, 2, 5>(guid);
 
-    if (Guild* guild = sGuildMgr->GetGuildById(_player->GetGuildId()))
+    if (Guild* guild = _player->GetGuild())
     {
         if (GuildNewsEntry* newsEntry = guild->GetNewsLog().GetNewsById(newsId))
         {

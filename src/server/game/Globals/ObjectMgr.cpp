@@ -10091,3 +10091,30 @@ void ObjectMgr::DumpDupeConstant(Player *player)
     sLog->outDebug(LOG_FILTER_DUPE, "Name: %s. Items: %u; Pos: map - %u; %f; %f; %f;", player->GetName(), player->GetItemCount(38186, true),
                   player->GetMapId(), player->GetPositionX(), player->GetPositionY(), player->GetPositionZ());
 }
+
+void ObjectMgr::DeleteAllItems(uint8 type, uint32 guid)
+{
+    char* _key = new char[32];
+    switch (type)
+    {
+        case ITEM_KEY_USER:
+            sprintf(_key, "r{%i}u{%i}items", realmID, guid);
+            break;
+        case ITEM_KEY_MAIL:
+            sprintf(_key, "r{%i}m{%i}items", realmID, guid);
+            break;
+        case ITEM_KEY_GUILD:
+            sprintf(_key, "r{%i}g{%i}items", realmID, guid);
+            break;
+        case ITEM_KEY_AUCT:
+            sprintf(_key, "r{%i}auc{%i}items", realmID, guid);
+            break;
+        case ITEM_KEY_LOOT:
+            sprintf(_key, "r{%i}l{%i}items", realmID, guid);
+            break;
+    }
+
+    RedisDatabase.AsyncExecute("DEL", _key, guid, [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "ObjectMgr::DeleteAllItems id %u", guid);
+    });
+}

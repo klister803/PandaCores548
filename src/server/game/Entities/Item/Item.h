@@ -288,12 +288,14 @@ class Item : public Object
         uint8 GetGemCountWithLimitCategory(uint32 limitCategory) const;
         InventoryResult CanBeMergedPartlyWith(ItemTemplate const* proto) const;
 
-        uint8 GetSlot() const {return m_slot;}
+        uint8 GetSlot() const { return m_slot; }
         Bag* GetContainer() { return m_container; }
         uint8 GetBagSlot() const;
         void SetSlot(uint8 slot) { m_slot = slot; }
         uint16 GetPos() const { return uint16(GetBagSlot()) << 8 | GetSlot(); }
         void SetContainer(Bag* container) { m_container = container; }
+        void SetTabId(uint8 tabId) { m_tabId = tabId; }
+        uint8 GetTabId() const { return m_tabId; }
 
         bool IsInBag() const { return m_container != NULL; }
         bool IsEquipped() const;
@@ -419,10 +421,12 @@ class Item : public Object
         void SetItemKey(uint8 type, uint32 guid);
         void UpdateItemKey(uint8 type, uint32 guid);
         void DeleteFromRedis();
+        uint8 m_lastType;
 
     private:
         std::string m_text;
         uint8 m_slot;
+        uint8 m_tabId;
         Bag* m_container;
         //PetInfo* m_battlePetData;
         ItemUpdateState uState;

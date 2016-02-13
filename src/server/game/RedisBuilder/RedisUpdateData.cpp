@@ -42,6 +42,7 @@ void Player::UpdateSavePlayer()
 {
     SavePlayer();
     SavePlayerAuras();
+    sWorld->UpdateCharacterNameDataZoneGuild(GetGUIDLow(), m_zoneUpdateId, GetGuildId(), GetRank());
 }
 
 void Player::DeleteSavePlayerCriteriaProgress(AchievementEntry const* achievement)

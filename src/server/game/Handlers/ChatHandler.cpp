@@ -397,7 +397,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
         {
             if (GetPlayer()->GetGuildId())
             {
-                if (Guild* guild = sGuildMgr->GetGuildById(GetPlayer()->GetGuildId()))
+                if (Guild* guild = GetPlayer()->GetGuild())
                 {
                     sScriptMgr->OnPlayerChat(GetPlayer(), type, lang, msg, guild);
 
@@ -410,7 +410,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
         {
             if (GetPlayer()->GetGuildId())
             {
-                if (Guild* guild = sGuildMgr->GetGuildById(GetPlayer()->GetGuildId()))
+                if (Guild* guild = GetPlayer()->GetGuild())
                 {
                     sScriptMgr->OnPlayerChat(GetPlayer(), type, lang, msg, guild);
 
@@ -654,9 +654,8 @@ void WorldSession::HandleAddonMessagechatOpcode(WorldPacket& recvData)
         case CHAT_MSG_GUILD:
         case CHAT_MSG_OFFICER:
         {
-            if (sender->GetGuildId())
-                if (Guild* guild = sGuildMgr->GetGuildById(sender->GetGuildId()))
-                    guild->BroadcastAddonToGuild(this, type == CHAT_MSG_OFFICER, message, prefix);
+            if (Guild* guild = sender->GetGuild())
+                guild->BroadcastAddonToGuild(this, type == CHAT_MSG_OFFICER, message, prefix);
             break;
         }
         case CHAT_MSG_WHISPER:

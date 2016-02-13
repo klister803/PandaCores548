@@ -295,7 +295,7 @@ public:
                 CharacterDatabase.PExecute("UPDATE `characters` SET at_login = at_login | '1', name = deleteInfos_Name, account = deleteInfos_Account, deleteDate = NULL, deleteInfos_Name = NULL, deleteInfos_Account = NULL WHERE deleteDate IS NOT NULL AND guid = '%u'", action);
 
                 player->DestroyItemCount(EFIRALS, priceRecobery, true);
-                sWorld->AddCharacterNameData(action, name, gender, race, playerClass, level);
+                sWorld->AddCharacterNameData(action, name, gender, race, playerClass, level, accountId);
                 CharacterDatabase.PExecute("INSERT INTO character_donate_service SET `account`='%u',`guid`='%u', `service`='%s', `cost`='%u', `targetguid`='%u'",accountId , player->GetGUIDLow(), "RECOVERY_CHAR", priceRecobery, action);
                 chH.PSendSysMessage(20011);
             }

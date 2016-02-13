@@ -250,6 +250,7 @@ Item::Item() : ItemLevelBeforeCap(0)
 
     m_valuesCount = ITEM_END;
     m_slot = 0;
+    m_tabId = 0;
     uState = ITEM_NEW;
     uQueuePos = -1;
     m_container = NULL;
@@ -262,6 +263,7 @@ Item::Item() : ItemLevelBeforeCap(0)
     m_paidMoney = 0;
     m_paidExtendedCost = 0;
     giftEntry = 0;
+    m_lastType = 0;
 
     m_dynamicTab.resize(ITEM_DYNAMIC_END);
     m_dynamicChange.resize(ITEM_DYNAMIC_END);
@@ -1771,14 +1773,18 @@ void Item::SetItemKey(uint8 type, uint32 guid)
             sprintf(itemKey, "r{%i}l{%i}items", realmID, guid);
             break;
     }
+    m_lastType = type;
 }
 
 void Item::UpdateItemKey(uint8 type, uint32 guid)
 {
     std::string index = std::to_string(GetGUIDLow());
-    RedisDatabase.AsyncExecuteH("HDEL", itemKey, index.c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Item::UpdateItemKey guid %u", guid);
-    });
+    if (m_lastType != type)
+    {
+        RedisDatabase.AsyncExecuteH("HDEL", itemKey, index.c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+            sLog->outInfo(LOG_FILTER_REDIS, "Item::UpdateItemKey guid %u", guid);
+        });
+    }
 
     switch (type)
     {
@@ -1799,6 +1805,7 @@ void Item::UpdateItemKey(uint8 type, uint32 guid)
             break;
     }
 
+    m_lastType = type;
     SaveItem();
 }
 

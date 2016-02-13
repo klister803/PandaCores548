@@ -7640,8 +7640,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (!player)
                     return SPELL_FAILED_DONT_REPORT;
 
-                Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId());
-                
+                Guild* guild = player->GetGuild();
                 if (!guild)
                     return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
 

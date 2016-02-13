@@ -156,7 +156,11 @@ public:
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid))
             return false;
 
-        uint32 guildId = target ? target->GetGuildId() : Player::GetGuildIdFromDB(targetGuid);
+        uint32 guildId = target ? target->GetGuildId() : 0;
+        if (!target)
+            if (const CharacterNameData* nameData = sWorld->GetCharacterNameData(targetGuid))
+                guildId = nameData->m_guildId;
+
         if (!guildId)
             return false;
 
@@ -182,7 +186,11 @@ public:
         if (!handler->extractPlayerTarget(nameStr, &target, &targetGuid, &target_name))
             return false;
 
-        uint32 guildId = target ? target->GetGuildId() : Player::GetGuildIdFromDB(targetGuid);
+        uint32 guildId = target ? target->GetGuildId() : 0;
+        if (!target)
+            if (const CharacterNameData* nameData = sWorld->GetCharacterNameData(targetGuid))
+                guildId = nameData->m_guildId;
+
         if (!guildId)
             return false;
 

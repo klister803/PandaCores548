@@ -42,6 +42,7 @@ void Item::SaveItem()
     ItemData["state"] = "normal";
     ItemData["itemGuid"] = GetGUIDLow();
     ItemData["slot"] = m_slot;
+    ItemData["m_tabId"] = m_tabId;
     ItemData["bagGuid"] = m_container ? m_container->GetGUIDLow() : 0;
     ItemData["owner_guid"] = GetOwnerGUID();
     ItemData["itemEntry"] = GetEntry();

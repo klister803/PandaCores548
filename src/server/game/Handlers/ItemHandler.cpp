@@ -1052,8 +1052,7 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
                     if (itemTemplate->ItemId != reward->Entry)
                         continue;
 
-                    Guild* guild = sGuildMgr->GetGuildById(_player->GetGuildId());
-
+                    Guild* guild = _player->GetGuild();
                     if (!guild)
                     {
                         guildRewardCheckPassed = false;

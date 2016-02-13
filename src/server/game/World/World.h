@@ -92,7 +92,6 @@ enum WorldTimers
     WUPDATE_MAILBOXQUEUE,
     WUPDATE_DELETECHARS,
     WUPDATE_PINGDB,
-    WUPDATE_GUILDSAVE,
     WUPDATE_PINGREDIS,
     WUPDATE_COUNT
 };
@@ -384,7 +383,6 @@ enum WorldIntConfigs
     CONFIG_TOL_BARAD_PLR_MIN_LVL,
     CONFIG_TOL_BARAD_BATTLETIME,
     CONFIG_TOL_BARAD_NOBATTLETIME,
-    CONFIG_GUILD_SAVE_INTERVAL,
     CONFIG_GUILD_MAX_LEVEL,
     CONFIG_GUILD_UNDELETABLE_LEVEL,
     CONFIG_GUILD_DAILY_XP_CAP,
@@ -617,6 +615,10 @@ struct CharacterNameData
     uint8 m_race;
     uint8 m_gender;
     uint8 m_level;
+    uint16 m_zoneId;
+    uint8 m_rankId;
+    uint32 m_guildId;
+    uint32 m_accountId;
 };
 
 /// The World
@@ -854,10 +856,12 @@ class World
         bool isEventKillStart;
 
         CharacterNameData const* GetCharacterNameData(uint32 guid) const;
-        void AddCharacterNameData(uint32 guid, std::string const& name, uint8 gender, uint8 race, uint8 playerClass, uint8 level);
+        CharacterNameData const* GetCharacterNameData(std::string name) const;
+        void AddCharacterNameData(uint32 guid, std::string const& name, uint8 gender, uint8 race, uint8 playerClass, uint8 level, uint32 accountId, uint8 zoneId = 0, uint8 rankId = 0, uint32 guildId = 0);
         void UpdateCharacterNameData(uint32 guid, std::string const& name, uint8 gender = GENDER_NONE, uint8 race = RACE_NONE);
         void UpdateCharacterNameDataLevel(uint32 guid, uint8 level);
         void DeleteCharacterNameData(uint32 guid) { _characterNameDataMap.erase(guid); }
+        void UpdateCharacterNameDataZoneGuild(uint32 guid, uint16 zoneId, uint16 guildId, uint8 rankId);
 
         uint32 GetCleaningFlags() const { return m_CleaningFlags; }
         void   SetCleaningFlags(uint32 flags) { m_CleaningFlags = flags; }
@@ -866,14 +870,15 @@ class World
         std::string GetTrimmedRealmName() { return m_trimmedRealmName; }
         void UpdatePhaseDefinitions();
 
-        bool AddCharacterName(std::string name)
+        bool CheckCharacterName(std::string name)
         {
             if (nameMap.find(name) != nameMap.end())
                 return false;
 
-            nameMap[name] = true;
             return true;
         }
+
+        void AddCharacterName(std::string name, CharacterNameData* nameData) { nameMap[name] = nameData; }
 
         time_t getInstanceResetTime(uint32 resetTime);
         time_t getOldInstanceResetTime(uint32 resetTime) { return (getInstanceResetTime(resetTime) - getConfigResetTime(resetTime)); }
@@ -992,10 +997,10 @@ class World
 
         std::list<std::string> m_Autobroadcasts;
 
-        std::map<uint32, CharacterNameData> _characterNameDataMap;
+        std::unordered_map<uint32, CharacterNameData> _characterNameDataMap;
         void LoadCharacterNameData();
 
-        std::map<std::string, bool> nameMap;
+        std::unordered_map<std::string, CharacterNameData*> nameMap;
 
         void ProcessQueryCallbacks();
         ACE_Future_Set<PreparedQueryResult> m_realmCharCallbacks;

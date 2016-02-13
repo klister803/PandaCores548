@@ -20,6 +20,8 @@
 
 GuildMgr::GuildMgr()
 {
+    guildKey = new char[32];
+    sprintf(guildKey, "r{%u}guild", realmID);
 }
 
 GuildMgr::~GuildMgr()
@@ -36,15 +38,6 @@ void GuildMgr::AddGuild(Guild* guild)
 void GuildMgr::RemoveGuild(uint32 guildId)
 {
     GuildStore.erase(guildId);
-}
-
-void GuildMgr::SaveGuilds()
-{
-    for (GuildContainer::iterator itr = GuildStore.begin(); itr != GuildStore.end(); ++itr)
-    {
-        if (itr->second->GetMembersOnline()) // Save guild only with player active
-            itr->second->SaveToDB(true);
-    }
 }
 
 // Guild collection
@@ -301,7 +294,10 @@ void GuildMgr::LoadGuilds()
                 uint32 guildId = fields[0].GetUInt32();
 
                 if (Guild* guild = GetGuildById(guildId))
+                {
                     guild->LoadEventLogFromDB(fields);
+                    guild->SaveGuildEventLog();
+                }
 
                 ++count;
             }
@@ -335,7 +331,10 @@ void GuildMgr::LoadGuilds()
                 uint32 guildId = fields[0].GetUInt32();
 
                 if (Guild* guild = GetGuildById(guildId))
+                {
                     guild->LoadBankEventLogFromDB(fields);
+                    guild->SaveGuildBankEventLog();
+                }
 
                 ++count;
             }
@@ -440,6 +439,7 @@ void GuildMgr::LoadGuilds()
             PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOAD_GUILD_NEWS);
             stmt->setInt32(0, itr->first);
             itr->second->GetNewsLog().LoadFromDB(CharacterDatabase.Query(stmt));
+            itr->second->SaveGuildNewsLog();
          }
     }
 
@@ -464,6 +464,7 @@ void GuildMgr::LoadGuilds()
             if (guild)
             {
                 guild->Validate();
+                guild->SaveGuild();
                 /*if (!guild->Validate())
                 {
                     volatile uint32 _guildId = guild->GetId();
