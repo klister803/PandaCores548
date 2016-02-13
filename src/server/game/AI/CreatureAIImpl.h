@@ -721,7 +721,9 @@ inline bool CreatureAI::IsInDisable()
 inline bool CreatureAI::IsInControl()
 {
     if (me->HasAuraType(SPELL_AURA_MOD_STUN) || me->HasAuraType(SPELL_AURA_MOD_FEAR) ||
-        me->HasAuraType(SPELL_AURA_MOD_CHARM) || me->HasAuraType(SPELL_AURA_MOD_CONFUSE))
+        me->HasAuraType(SPELL_AURA_MOD_CHARM) || me->HasAuraType(SPELL_AURA_MOD_CONFUSE) ||
+        me->HasAuraType(SPELL_AURA_MOD_FEAR_2) || me->HasAuraType(SPELL_AURA_MOD_ROOT) ||
+        me->HasAuraType(SPELL_AURA_MOD_PACIFY_SILENCE))
         return true;
 
     return false;

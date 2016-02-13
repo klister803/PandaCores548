@@ -4009,6 +4009,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 146051: // Amplification
                     spellInfo->Effects[0].ScalingMultiplier = 0.00177f;
                     spellInfo->Effects[2].ScalingMultiplier = 0.00177f;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_CANT_STACK_WITH_ITSELF;
                     break;
                 case 146202: // Wrath
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_HIDE_DURATION;
@@ -4200,6 +4201,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 142890: //Blood Rage Dmg
                 case 143962: //Inferno Strike
                 case 120196: //Meteor
+                case 144688: //Magma Crush
                     // ONLY SPELLS WITH SPELLFAMILY_GENERIC and EFFECT_SCHOOL_DAMAGE
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     break;
@@ -5236,7 +5238,13 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 143830: //Disentegration laser AT
                     spellInfo->Effects[0].TargetA = 18;
                     break;
-
+                //Garrosh
+                case 144867:
+                    spellInfo->Effects[0].Effect = 0;
+                    spellInfo->Effects[0].TriggerSpell = 0;
+                    spellInfo->Effects[1].Effect = 0;
+                    spellInfo->Effects[1].TriggerSpell = 0;
+                    break;
                     
                 //World Bosses
                 //Sha of Anger

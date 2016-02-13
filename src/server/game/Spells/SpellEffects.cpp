@@ -1887,6 +1887,12 @@ void Spell::EffectForceCast(SpellEffIndex effIndex)
         }
     }
 
+    if (m_spellInfo->Id == 131813) // Wind Lord Mel'jarak - Wind Bomb
+    {
+        m_caster->CastSpell(unitTarget, spellInfo->Id, true);
+        return;
+    }
+
     CustomSpellValues values;
     // set basepoints for trigger with value effect
     if (m_spellInfo->GetEffect(effIndex, m_diffMode)->Effect == SPELL_EFFECT_FORCE_CAST_WITH_VALUE)
@@ -2218,6 +2224,23 @@ void Spell::EffectApplyAura(SpellEffIndex effIndex)
 
     switch (m_spellAura->GetId())
     {
+        case 122395: //Unsok - Struggle for Control
+        {
+            uint8 alterPower;
+            uint8 lfrMode = m_caster->GetMap()->IsLfr() ? 2 : 8;
+            if (alterPower = m_caster->GetPower(POWER_ALTERNATE_POWER))
+            {
+                if (alterPower > lfrMode)
+                    m_caster->SetPower(POWER_ALTERNATE_POWER, alterPower - lfrMode);
+                else
+                {
+                    if (alterPower <= 0)
+                        break;
+                    m_caster->SetPower(POWER_ALTERNATE_POWER, 0);
+                }
+            }
+            break;
+        }
         case 38177:
             if (unitTarget->GetEntry() != 21387)
                 return;
@@ -5142,6 +5165,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
 
             switch (m_spellInfo->Id)
             {
+                case 122415: //Grab - Ride Me
                 case 124258: //Storm Unleashed Ride Me
                 {
                     if (!unitTarget || unitTarget->GetUnitState() == UNIT_STATE_ONVEHICLE)
@@ -6814,8 +6838,8 @@ void Spell::EffectKnockBack(SpellEffIndex effIndex)
         if (creatureTarget->isWorldBoss() || creatureTarget->IsDungeonBoss())
             return;
 
-    // Spells with SPELL_EFFECT_KNOCK_BACK(like Thunderstorm) can't knoback target if target has ROOT/STUN
-    if (unitTarget->HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED))
+    // Spells with SPELL_EFFECT_KNOCK_BACK(like Thunderstorm) can't knoback target if target has ROOT/STUN (5.4.8 - ROOT only)
+    if (unitTarget->HasUnitState(UNIT_STATE_ROOT))
         return;
 
     // Thunderstorm

@@ -37,9 +37,10 @@ enum eCreatures
     NPC_SHEKZEER           = 62837,
 
     //Meljarak soldiers
-    NPC_SRATHIK            = 65499,
     NPC_ZARTHIK            = 62408,
+    NPC_SRATHIK            = 65499,
     NPC_KORTHIK            = 65500,
+    NPC_AMBER_PRISON       = 62531,
 
     //Ta'yak summons
     NPC_GALE_WINDS_STALKER   = 63292,
@@ -60,6 +61,9 @@ enum eCreatures
     //Garalon
     NPC_GARALONS_LEG         = 63053,
     NPC_PHEROMONE_TRAIL      = 63021,
+    
+    //Amber-Shaper Un'sok
+    NPC_AMBER_POOL           = 62762,
 };
 
 enum Soldiers
@@ -79,17 +83,18 @@ enum Soldiers
 
 enum eGameObjects
 {   
-    GO_VIZIER_ENT_DOOR     = 214485,
-    GO_VIZIER_ARENA_DOOR   = 212916,
-    GO_VIZIER_EX_DOOR      = 214486,
-    GO_TAYAK_EX_DOOR       = 214487,
-    GO_GARALON_ENT_DOOR    = 214488,
-    GO_GARALON_COMBAT_DOOR = 212695,
-    GO_GARALON_EX_DOOR     = 214634,
-    GO_MELJARAK_EX_DOOR    = 214489,
-    GO_UNSOK_EN_DOOR       = 214492,
-    GO_UNSOK_EX_DOOR       = 214493,
-    GO_EMPRESS_COCOON      = 213277,
+    GO_VIZIER_ENT_DOOR      = 214485,
+    GO_VIZIER_ARENA_DOOR    = 212916,
+    GO_VIZIER_EX_DOOR       = 214486,
+    GO_TAYAK_EX_DOOR        = 214487,
+    GO_GARALON_ENT_DOOR     = 214488,
+    GO_GARALON_COMBAT_DOOR  = 212695,
+    GO_GARALON_EX_DOOR      = 214634,
+    GO_MELJARAK_EX_DOOR     = 214489,
+    GO_MELJARAK_WEAPON_RACK = 212386,
+    GO_UNSOK_EN_DOOR        = 214492,
+    GO_UNSOK_EX_DOOR        = 214493,
+    GO_EMPRESS_COCOON       = 213277,
 };
 
 #endif HEARTOFFEAR

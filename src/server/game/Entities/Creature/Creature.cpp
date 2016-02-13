@@ -3220,7 +3220,7 @@ void Creature::HandleFollowCommand()
             }
         }
 
-        if (m_movementInfo.GetMovementFlags() == MOVEMENTFLAG_NONE && GetOrientation() != m_followOrientation)
+        if ((!m_movementInfo.GetMovementFlags() || m_movementInfo.GetMovementFlags() == MOVEMENTFLAG_HOVER) && GetOrientation() != m_followOrientation)
         {
             SetOrientation(m_followOrientation);
             SetFacingTo(m_followOrientation);

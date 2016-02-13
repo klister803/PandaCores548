@@ -23,18 +23,38 @@ enum eSpells
 {
     //Lord Meljarak
     SPELL_RECKLESSNESS          = 122354,
+    SPELL_RECKLESSNESS_H        = 125873,
     SPELL_RAIN_OF_BLADES        = 122406,
     SPELL_WHIRLING_BLADE        = 121896,
     SPELL_WHIRLING_BLADE_PLR    = 124850,
     SPELL_WHIRLING_BLADE_SUM    = 124851,
+    SPELL_WIND_BOMB             = 131813,
+    SPELL_WATCHFUL_EYE_1        = 125933, //3 soldiers
+    SPELL_WATCHFUL_EYE_2        = 125935, //2 soldiers
+    SPELL_WATCHFUL_EYE_3        = 125936, //1 soldiers
 
     //Zarthik spells
     SPELL_HEAL                  = 122193,
     SPELL_HEAL_TR_EF            = 122147,
     SPELL_HASTE                 = 122149,
 
+    //Sra'thik spells
+    SPELL_AMBER_PRISON          = 121876,
+    SPELL_AMBER_PRISON_PERIODIC = 121881,
+    SPELL_AMBER_PRISON_STUN     = 121885,
+    SPELL_RESIDUE               = 122055,
+    SPELL_CORROSIVE_RESIN       = 122064,
+    SPELL_CORROSIVE_RESIN_SUM   = 122123,
+    SPELL_CORROSIVE_RESIN_A_DMG = 129005,
+
     //Korthik spells
-    SPELL_KORTHIK_STRIKE        = 122409, //not work 
+    SPELL_KORTHIK_STRIKE        = 122409,
+    SPELL_KORTHIK_STRIKE_FIND_T = 123963,
+
+    //Bomb
+    SPELL_WIND_BOMB_SPAWN_DMG   = 131830,
+    SPELL_WIND_BOMB_VISUAL      = 131835,
+    SPELL_WIND_BOMB_EXPLOSION   = 131842,
 };
 
 enum eEvents
@@ -43,10 +63,18 @@ enum eEvents
     EVENT_RAIN_BLADES           = 1,
     EVENT_WHIRLING_BLADE        = 2,
     EVENT_WHIRLING_BLADE_CAST   = 3,
+    EVENT_WIND_BOMB             = 4,
+    EVENT_CHECK_CONTROL         = 5,
+    EVENT_KORTHIK_STRIKE        = 6,
+    EVENT_HEROIC_SUM_ZARTHIK    = 7,
+    EVENT_HEROIC_SUM_SRATHIK    = 8,
+    EVENT_HEROIC_SUM_KORTHIK    = 9,
 
     //Soldiers
-    EVENT_HEAL                  = 1,
+    EVENT_HEAL                  = 1, //Zarthik
     EVENT_HASTE                 = 2,
+    EVENT_AMBER_PRISON          = 3, //Sra'thik
+    EVENT_CORROSIVE_RESIN       = 4,
 };
 
 const AuraType auratype[6] = 
@@ -59,6 +87,31 @@ const AuraType auratype[6] =
     SPELL_AURA_TRANSFORM,
 };
 
+uint32 fightSpells[8] =
+{
+    SPELL_WATCHFUL_EYE_1,
+    SPELL_WATCHFUL_EYE_2,
+    SPELL_WATCHFUL_EYE_3,
+    SPELL_RECKLESSNESS,
+    SPELL_RECKLESSNESS_H,
+    SPELL_HASTE,
+    SPELL_AMBER_PRISON_PERIODIC,
+    SPELL_AMBER_PRISON_STUN
+};
+
+Position const soldiersPos[9] =
+{
+    {-2059.94f, 481.40f, 503.57f, 3.07f}, // 62408
+    {-2058.86f, 485.71f, 503.57f, 3.06f},
+    {-2062.94f, 466.99f, 503.57f, 3.13f},
+    {-2063.09f, 488.55f, 503.57f, 3.25f}, // 65499
+    {-2064.01f, 484.50f, 503.57f, 3.12f},
+    {-2064.49f, 480.21f, 503.57f, 3.13f},
+    {-2067.37f, 470.12f, 503.57f, 3.12f}, // 65500
+    {-2067.95f, 465.90f, 503.57f, 3.10f},
+    {-2069.22f, 461.29f, 503.57f, 3.02f},
+};
+
 class boss_lord_meljarak : public CreatureScript
 {
     public:
@@ -66,32 +119,130 @@ class boss_lord_meljarak : public CreatureScript
 
         struct boss_lord_meljarakAI : public BossAI
         {
-            boss_lord_meljarakAI(Creature* creature) : BossAI(creature, DATA_MELJARAK)
-            {
-                instance = creature->GetInstanceScript();
-                me->SetReactState(REACT_AGGRESSIVE);
-            }
+            boss_lord_meljarakAI(Creature* creature) : BossAI(creature, DATA_MELJARAK), summons(me) {}
 
-            InstanceScript* instance;
+            SummonList summons;
+            uint8 soldierDied, soldierControlCount;
+            bool windBomb, checkSoldier;
 
             void Reset()
             {
                 _Reset();
-                me->RemoveAurasDueToSpell(SPELL_RECKLESSNESS);
-                me->RemoveAurasDueToSpell(SPELL_HASTE);
+                events.Reset();
+                summons.DespawnAll();
+                soldierDied = 0;
+                windBomb = false;
+                SummonSoldiers();
+
+                for (uint8 i = 0; i < 6; i++)
+                    me->RemoveAurasDueToSpell(fightSpells[i]);
+
+                for (uint8 i = 6; i < 8; i++)
+                    instance->DoRemoveAurasDueToSpellOnPlayers(fightSpells[i]);
+
+                DespawnPrison();
             }
 
             void EnterCombat(Unit* /*who*/)
             {
                 _EnterCombat();
-                events.ScheduleEvent(EVENT_RAIN_BLADES, 50000);
-                events.ScheduleEvent(EVENT_WHIRLING_BLADE, 35000); //19:05
+                DoCast(me, SPELL_WATCHFUL_EYE_1, true);
+                events.ScheduleEvent(EVENT_RAIN_BLADES, 50000); //19:05
+                events.ScheduleEvent(EVENT_WHIRLING_BLADE, 35000);
+                events.ScheduleEvent(EVENT_CHECK_CONTROL, 1000);
+                events.ScheduleEvent(EVENT_KORTHIK_STRIKE, 30000);
+            }
+
+            void JustDied(Unit* /*killer*/)
+            {
+                _JustDied();
+                summons.DespawnAll();
+                DespawnPrison();
+                for (uint8 i = 6; i < 8; i++)
+                    instance->DoRemoveAurasDueToSpellOnPlayers(fightSpells[i]);
+            }
+
+            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+            {
+                if (me->HealthBelowPct(75) && !windBomb)
+                {
+                    windBomb = true;
+                    events.ScheduleEvent(EVENT_WIND_BOMB, 15000);
+                }
+            }
+
+            void DoAction(const int32 action)
+            {
+                if (IsHeroic() && action == 1 || !IsHeroic() && action > 1)
+                    return;
+
+                switch (action)
+                {
+                    case ACTION_1: 
+                        if (soldierDied < 2)
+                        {
+                            me->RemoveAurasDueToSpell(fightSpells[soldierDied]);
+                            soldierDied++;
+                            DoCast(me, fightSpells[soldierDied], true);
+                        }
+                        break;
+                    case ACTION_2:
+                        events.ScheduleEvent(EVENT_HEROIC_SUM_ZARTHIK, 45000);
+                        break;
+                    case ACTION_3:
+                        events.ScheduleEvent(EVENT_HEROIC_SUM_SRATHIK, 45000);
+                        break;
+                    case ACTION_4:
+                        events.ScheduleEvent(EVENT_HEROIC_SUM_KORTHIK, 45000);
+                        break;
+                }
+            }
+
+            void JustSummoned(Creature* summoned)
+            {
+                summons.Summon(summoned);
+
+                if (me->isInCombat())
+                {
+                    switch (summoned->GetEntry())
+                    {
+                        case NPC_ZARTHIK:
+                        case NPC_SRATHIK:
+                        case NPC_KORTHIK:
+                            summoned->AI()->DoZoneInCombat(summoned, 100.0f);
+                            break;
+                    }
+                }
+            }
+
+            void SummonSoldiers()
+            {
+                for (uint8 i = 0; i < 3; i++)
+                {
+                    me->SummonCreature(NPC_ZARTHIK, soldiersPos[i]);
+                    me->SummonCreature(NPC_SRATHIK, soldiersPos[i+3]);
+                    me->SummonCreature(NPC_KORTHIK, soldiersPos[i+6]);
+                }
+            }
+
+            void DespawnPrison()
+            {
+                std::list<Creature*> prison;
+                GetCreatureListWithEntryInGrid(prison, me, NPC_AMBER_PRISON, 120.0f);
+                for (std::list<Creature*>::iterator itr = prison.begin(); itr != prison.end(); ++itr)
+                    (*itr)->DespawnOrUnsummon();
             }
 
             void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
+
+                if (me->GetDistance(me->GetHomePosition()) > 70.0f)
+                {
+                    EnterEvadeMode();
+                    return;
+                }
 
                 events.Update(diff);
 
@@ -115,14 +266,80 @@ class boss_lord_meljarak : public CreatureScript
                         case EVENT_WHIRLING_BLADE_CAST:
                             DoCast(SPELL_WHIRLING_BLADE);
                             break;
+                        case EVENT_WIND_BOMB:
+                            DoCast(SPELL_WIND_BOMB);
+                            events.ScheduleEvent(EVENT_WIND_BOMB, 15000);
+                            break;
+                        case EVENT_KORTHIK_STRIKE:
+                        {
+                            DoCast(me, SPELL_KORTHIK_STRIKE_FIND_T, true);
+                            EntryCheckPredicate pred(NPC_KORTHIK);
+                            summons.DoAction(ACTION_1, pred);
+                            events.ScheduleEvent(EVENT_KORTHIK_STRIKE, 30000);
+                            break;
+                        }
+                        case EVENT_CHECK_CONTROL:
+                        {
+                            soldierControlCount = 0;
+                            checkSoldier = false;
+                            std::list<Creature*> soldiers;
+                            GetCreatureListWithEntryInGrid(soldiers, me, NPC_SRATHIK, 100.0f);
+                            GetCreatureListWithEntryInGrid(soldiers, me, NPC_ZARTHIK, 100.0f);
+                            GetCreatureListWithEntryInGrid(soldiers, me, NPC_KORTHIK, 100.0f);
+                            for (std::list<Creature*>::iterator itr = soldiers.begin(); itr != soldiers.end(); ++itr)
+                            {
+                                if ((*itr)->isAlive() && (*itr)->AI()->IsInControl())
+                                {
+                                    soldierControlCount++;
+                                    if (IsHeroic())
+                                    {
+                                        if (soldierControlCount > 3)
+                                            checkSoldier = true;
+                                    }
+                                    else
+                                    {
+                                        switch (soldierDied)
+                                        {
+                                            case 0:
+                                                if (soldierControlCount > 4)
+                                                    checkSoldier = true;
+                                                break;
+                                            case 1:
+                                                if (soldierControlCount > 2)
+                                                    checkSoldier = true;
+                                                break;
+                                            case 2:
+                                                if (soldierControlCount > 0)
+                                                    checkSoldier = true;
+                                                break;
+                                            default:
+                                                break;
+                                        }
+                                    }
+                                }
+                            }
+                            if (checkSoldier)
+                                for (std::list<Creature*>::iterator itr = soldiers.begin(); itr != soldiers.end(); ++itr)
+                                    if ((*itr)->isAlive())
+                                        (*itr)->RemoveAurasWithMechanic(IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK);
+                            events.ScheduleEvent(EVENT_CHECK_CONTROL, 1000);
+                            break;
+                        }
+                        case EVENT_HEROIC_SUM_ZARTHIK:
+                            for (uint8 i = 0; i < 3; i++)
+                                me->SummonCreature(NPC_ZARTHIK, soldiersPos[i]);
+                            break;
+                        case EVENT_HEROIC_SUM_SRATHIK:
+                            for (uint8 i = 3; i < 6; i++)
+                                me->SummonCreature(NPC_SRATHIK, soldiersPos[i]);
+                            break;
+                        case EVENT_HEROIC_SUM_KORTHIK:
+                            for (uint8 i = 6; i < 9; i++)
+                                me->SummonCreature(NPC_KORTHIK, soldiersPos[i]);
+                            break;
                     }
                 }
                 DoMeleeAttackIfReady();
-            }
-
-            void JustDied(Unit* /*killer*/)
-            {
-                _JustDied();
             }
         };
 
@@ -176,44 +393,48 @@ void SendDiedSoldiers(InstanceScript* instance, Creature* caller, uint32 callerE
 {
     if (caller && instance)
     {
+        Creature* meljarak = caller->GetCreature(*caller, instance->GetData64(NPC_MELJARAK));
+        if (!meljarak || !meljarak->isAlive())
+            return;
+
+        meljarak->AI()->DoAction(ACTION_1);
+        meljarak->CastSpell(meljarak, meljarak->GetMap()->IsHeroic() ? SPELL_RECKLESSNESS_H : SPELL_RECKLESSNESS, true);
+
         switch (callerEntry)
         {
-        case NPC_SRATHIK:
-            for (uint32 n = NPC_SRATHIK_1; n <= NPC_SRATHIK_3; n++)
-            {
-                if (Creature* soldier = caller->GetCreature(*caller, instance->GetData64(n)))
+            case NPC_ZARTHIK:
+                meljarak->AI()->DoAction(ACTION_2);
+                for (uint32 n = NPC_ZARTHIK_1; n <= NPC_ZARTHIK_3; n++)
                 {
-                    if (soldier->GetGUID() != callerGuid && soldier->isAlive())
-                        soldier->Kill(soldier, true);
+                    if (Creature* soldier = caller->GetCreature(*caller, instance->GetData64(n)))
+                    {
+                        if (soldier->GetGUID() != callerGuid && soldier->isAlive())
+                            soldier->Kill(soldier, true);
+                    }
                 }
-            }
-            break;
-        case NPC_ZARTHIK:
-            for (uint32 n = NPC_ZARTHIK_1; n <= NPC_ZARTHIK_3; n++)
-            {
-                if (Creature* soldier = caller->GetCreature(*caller, instance->GetData64(n)))
+                break;
+            case NPC_SRATHIK:
+                meljarak->AI()->DoAction(ACTION_3);
+                for (uint32 n = NPC_SRATHIK_1; n <= NPC_SRATHIK_3; n++)
                 {
-                    if (soldier->GetGUID() != callerGuid && soldier->isAlive())
-                        soldier->Kill(soldier, true);
+                    if (Creature* soldier = caller->GetCreature(*caller, instance->GetData64(n)))
+                    {
+                        if (soldier->GetGUID() != callerGuid && soldier->isAlive())
+                            soldier->Kill(soldier, true);
+                    }
                 }
-            }
-            break;
-        case NPC_KORTHIK:
-            for (uint32 n = NPC_KORTHIK_1; n <= NPC_KORTHIK_3; n++)
-            {
-                if (Creature* soldier = caller->GetCreature(*caller, instance->GetData64(n)))
+                break;
+            case NPC_KORTHIK:
+                meljarak->AI()->DoAction(ACTION_4);
+                for (uint32 n = NPC_KORTHIK_1; n <= NPC_KORTHIK_3; n++)
                 {
-                    if (soldier->GetGUID() != callerGuid && soldier->isAlive())
-                        soldier->Kill(soldier, true);
+                    if (Creature* soldier = caller->GetCreature(*caller, instance->GetData64(n)))
+                    {
+                        if (soldier->GetGUID() != callerGuid && soldier->isAlive())
+                            soldier->Kill(soldier, true);
+                    }
                 }
-            }
-            break;
-        }
-
-        if (Creature* meljarak = caller->GetCreature(*caller, instance->GetData64(NPC_MELJARAK)))
-        {
-            if (meljarak->isAlive())
-                meljarak->AddAura(SPELL_RECKLESSNESS, meljarak);
+                break;
         }
     }
 }
@@ -292,14 +513,25 @@ class npc_generic_soldier : public CreatureScript
 
                 switch (me->GetEntry())
                 {
-                case NPC_SRATHIK:
-                    break;
-                case NPC_ZARTHIK:
-                    events.ScheduleEvent(EVENT_HEAL, urand(60000,  120000));
-                    events.ScheduleEvent(EVENT_HASTE, urand(50000, 110000));
-                    break;
-                case NPC_KORTHIK:
-                    break;
+                    case NPC_SRATHIK:
+                        events.ScheduleEvent(EVENT_AMBER_PRISON, urand(35000, 90000));
+                        events.ScheduleEvent(EVENT_CORROSIVE_RESIN, urand(35000, 90000));
+                        break;
+                    case NPC_ZARTHIK:
+                        events.ScheduleEvent(EVENT_HEAL, urand(60000,  120000));
+                        events.ScheduleEvent(EVENT_HASTE, urand(50000, 110000));
+                        break;
+                    case NPC_KORTHIK:
+                        break;
+                }
+            }
+
+            void DoAction(const int32 action)
+            {
+                if (action == ACTION_1)
+                {
+                    DoResetThreat();
+                    DoCast(SPELL_KORTHIK_STRIKE);
                 }
             }
 
@@ -354,24 +586,35 @@ class npc_generic_soldier : public CreatureScript
 
             void UpdateAI(uint32 diff)
             {
-                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                if (!UpdateVictim())
                     return;
 
                 events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
 
                 while (uint32 eventId = events.ExecuteEvent())
                 {
                     switch (eventId)
                     {
-                    case EVENT_HEAL:
-                        if (pInstance)
-                            FindSoldierWithLowHealt();
-                        break;
-                    case EVENT_HASTE:
-                        if (!CheckMeIsInControl())
-                            DoCast(me, SPELL_HASTE);
-                        events.ScheduleEvent(EVENT_HASTE, urand(50000, 110000));
-                        break;
+                        case EVENT_HEAL:
+                            if (pInstance)
+                                FindSoldierWithLowHealt();
+                            break;
+                        case EVENT_HASTE:
+                            if (!CheckMeIsInControl())
+                                DoCast(me, SPELL_HASTE);
+                            events.ScheduleEvent(EVENT_HASTE, urand(50000, 110000));
+                            break;
+                        case EVENT_AMBER_PRISON:
+                            DoCast(SPELL_AMBER_PRISON);
+                            events.ScheduleEvent(EVENT_AMBER_PRISON, urand(30000, 90000));
+                            break;
+                        case EVENT_CORROSIVE_RESIN:
+                            DoCast(SPELL_CORROSIVE_RESIN);
+                            events.ScheduleEvent(EVENT_CORROSIVE_RESIN, urand(35000, 90000));
+                            break;
                     }
                 }
                 DoMeleeAttackIfReady();
@@ -381,6 +624,120 @@ class npc_generic_soldier : public CreatureScript
         CreatureAI* GetAI(Creature* creature) const
         {
             return new npc_generic_soldierAI(creature);
+        }
+};
+
+//67053
+class npc_meljarak_wind_bomb : public CreatureScript
+{
+    public:
+        npc_meljarak_wind_bomb() : CreatureScript("npc_meljarak_wind_bomb") {}
+
+        struct npc_meljarak_wind_bombAI : public ScriptedAI
+        {
+            npc_meljarak_wind_bombAI(Creature* creature) : ScriptedAI(creature)
+            {
+                pInstance = creature->GetInstanceScript();
+                me->SetDisplayId(45684); //Bomb morph
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
+            }
+
+            InstanceScript* pInstance;
+            EventMap events;
+            bool active;
+
+            void Reset() {}
+            
+            void EnterCombat(Unit* attacker) {}
+
+            void IsSummonedBy(Unit* summoner)
+            {
+                active = false;
+                DoCast(SPELL_WIND_BOMB_SPAWN_DMG);
+                DoCast(me, SPELL_WIND_BOMB_VISUAL, true);
+                events.ScheduleEvent(EVENT_1, 3000);
+            }
+
+            void MoveInLineOfSight(Unit* who)
+            {
+                if (who->GetTypeId() != TYPEID_PLAYER || me->GetDistance(who) > 3.0f || !active)
+                    return;
+
+                active = false;
+                DoCast(SPELL_WIND_BOMB_EXPLOSION); 
+                me->DespawnOrUnsummon(500);
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_1:
+                            active = true;
+                            break;
+                    }
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_meljarak_wind_bombAI(creature);
+        }
+};
+
+//62531
+class npc_meljarak_amber_prison : public CreatureScript
+{
+    public:
+        npc_meljarak_amber_prison() : CreatureScript("npc_meljarak_amber_prison") {}
+
+        struct npc_meljarak_amber_prisonAI : public ScriptedAI
+        {
+            npc_meljarak_amber_prisonAI(Creature* creature) : ScriptedAI(creature)
+            {
+                pInstance = creature->GetInstanceScript();
+                me->SetReactState(REACT_PASSIVE);
+            }
+
+            InstanceScript* pInstance;
+            bool click;
+
+            void Reset() 
+            {
+                click = false;
+            }
+
+            void OnSpellClick(Unit* clicker)
+            {
+                Unit* summoner = me->ToTempSummon()->GetSummoner();
+                if (!summoner)
+                    return;
+
+                if (clicker->HasAura(SPELL_RESIDUE) || click || clicker == summoner)
+                    return;
+
+                click = true;
+
+                clicker->CastSpell(clicker, SPELL_RESIDUE, true);
+
+                summoner->RemoveAurasDueToSpell(SPELL_AMBER_PRISON_STUN);
+
+                me->DespawnOrUnsummon();
+            }
+
+            void EnterCombat(Unit* attacker) {}
+
+            void UpdateAI(uint32 diff) {}
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_meljarak_amber_prisonAI(creature);
         }
 };
 
@@ -605,10 +962,62 @@ class spell_meljarak_whirling_blade_visual : public SpellScriptLoader
         }
 };
 
+//122064
+class spell_meljarak_corrosive_resin : public SpellScriptLoader
+{
+    public:                                                      
+        spell_meljarak_corrosive_resin() : SpellScriptLoader("spell_meljarak_corrosive_resin") { }
+
+        class spell_meljarak_corrosive_resin_AuraScript : public AuraScript 
+        {
+            PrepareAuraScript(spell_meljarak_corrosive_resin_AuraScript) 
+
+            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                GetAura()->SetStackAmount(5);
+            }
+
+            void OnPereodic(AuraEffect const* /*aurEff*/) 
+            {
+                Unit* target = GetTarget();
+                if (!target)
+                    return;
+
+                InstanceScript* pInstance = target->GetInstanceScript();
+                if (!pInstance)
+                    return;
+
+                if (target->isMoving())
+                {
+                    if (Creature* meljarak = pInstance->instance->GetCreature(pInstance->GetData64(NPC_MELJARAK)))
+                        target->CastSpell(target, SPELL_CORROSIVE_RESIN_SUM, true, NULL, NULL, meljarak->GetGUID());
+
+                    GetAura()->SetStackAmount(GetAura()->GetStackAmount() - 1);
+                    if (GetAura()->GetStackAmount() < 1)
+                        GetAura()->Remove();
+                }
+            }
+
+            void Register() 
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_meljarak_corrosive_resin_AuraScript::OnPereodic, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+                OnEffectApply += AuraEffectApplyFn(spell_meljarak_corrosive_resin_AuraScript::OnApply, EFFECT_1, SPELL_AURA_SCREEN_EFFECT, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_meljarak_corrosive_resin_AuraScript();
+        }
+};
+
 void AddSC_boss_lord_meljarak()
 {
     new boss_lord_meljarak();
     new npc_generic_soldier();
+    new npc_meljarak_wind_bomb();
+    new npc_meljarak_amber_prison();
     new spell_meljarak_whirling_blade();
     new spell_meljarak_whirling_blade_visual();
+    new spell_meljarak_corrosive_resin();
 }

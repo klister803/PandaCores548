@@ -45,6 +45,7 @@ public:
         std::vector<uint64> vizierarenadoorGuids;
         std::vector<uint64> garaloncdoorGuids;
         std::vector<uint64> garalonexdoorGuids;
+        std::vector<uint64> meljarakWeaponRackGUID;
 
         //Creature
         uint64 zorlokGuid;
@@ -70,28 +71,29 @@ public:
             LoadDoorData(doorData);
 
             //GameObject
-            vizierentdoorGuid   = 0;
-            vizierexdoorGuid    = 0;
-            tayakexdoorGuid     = 0;
-            garalonentdoorGuid  = 0;
-            meljarakexdoorGuid  = 0;
-            unsokendoorGuid     = 0;
-            unsokexdoorGuid     = 0;
-            empresscocoonGuid   = 0;
+            vizierentdoorGuid       = 0;
+            vizierexdoorGuid        = 0;
+            tayakexdoorGuid         = 0;
+            garalonentdoorGuid      = 0;
+            meljarakexdoorGuid      = 0;
+            unsokendoorGuid         = 0;
+            unsokexdoorGuid         = 0;
+            empresscocoonGuid       = 0;
 
             vizierarenadoorGuids.clear();
             garaloncdoorGuids.clear();
             garalonexdoorGuids.clear();
+            meljarakWeaponRackGUID.clear();
 
             //Creature
-            zorlokGuid          = 0;
-            gascontrollerGuid   = 0;
-            tayakGuid           = 0;
-            garalonGuid         = 0;
-            meljarakGuid        = 0;
-            unsokGuid           = 0;
-            ambermonsterGuid    = 0;
-            shekzeerGuid        = 0;
+            zorlokGuid              = 0;
+            gascontrollerGuid       = 0;
+            tayakGuid               = 0;
+            garalonGuid             = 0;
+            meljarakGuid            = 0;
+            unsokGuid               = 0;
+            ambermonsterGuid        = 0;
+            shekzeerGuid            = 0;
 
             for (uint8 n = 0; n < 3; n++)
             {
@@ -205,6 +207,9 @@ public:
                 AddDoor(go, true);
                 meljarakexdoorGuid = go->GetGUID();
                 break;
+            case GO_MELJARAK_WEAPON_RACK:
+                meljarakWeaponRackGUID.push_back(go->GetGUID());
+                break;
             case GO_UNSOK_EN_DOOR:
                 AddDoor(go, true);
                 unsokendoorGuid = go->GetGUID();
@@ -296,20 +301,10 @@ public:
                     case NOT_STARTED:
                         for (std::vector<uint64>::const_iterator guids = garalonexdoorGuids.begin(); guids != garalonexdoorGuids.end(); guids++)
                             HandleGameObject(*guids, true);
-
-                        for (std::vector<uint64>::const_iterator guid = meljaraksoldiersGuids.begin(); guid != meljaraksoldiersGuids.end(); guid++)
-                        {
-                            if (Creature* soldier = instance->GetCreature(*guid))
-                            {
-                                if (!soldier->isAlive())
-                                {
-                                    soldier->Respawn();
-                                    soldier->GetMotionMaster()->MoveTargetedHome();
-                                }
-                                else if (soldier->isAlive() && soldier->isInCombat())
-                                    soldier->AI()->EnterEvadeMode();
-                            }
-                        }
+                        for (std::vector<uint64>::const_iterator itr = meljarakWeaponRackGUID.begin(); itr != meljarakWeaponRackGUID.end(); itr++)
+                            if (GameObject* obj = instance->GetGameObject(*itr))
+                                obj->Respawn();
+                        DoRemoveAurasDueToSpellOnPlayers(122220);
                         break;
                     case IN_PROGRESS:
                         for (std::vector<uint64>::const_iterator guids = garalonexdoorGuids.begin(); guids != garalonexdoorGuids.end(); guids++)
@@ -325,6 +320,7 @@ public:
                         }
                         break;
                     case DONE:
+                        DoRemoveAurasDueToSpellOnPlayers(122220);
                         HandleGameObject(meljarakexdoorGuid, true);
                         HandleGameObject(unsokendoorGuid, true);
                         for (std::vector<uint64>::const_iterator guids = garalonexdoorGuids.begin(); guids != garalonexdoorGuids.end(); guids++)
@@ -338,12 +334,16 @@ public:
                     switch (state)
                     {
                     case NOT_STARTED:
+                        DoRemoveAurasDueToSpellOnPlayers(122370);
+                        DoRemoveAurasDueToSpellOnPlayers(122516);
                         HandleGameObject(unsokendoorGuid, true);
                         break;
                     case IN_PROGRESS:
                         HandleGameObject(unsokendoorGuid, false);
                         break;
                     case DONE:
+                        DoRemoveAurasDueToSpellOnPlayers(122370);
+                        DoRemoveAurasDueToSpellOnPlayers(122516);
                         HandleGameObject(unsokendoorGuid, true);
                         HandleGameObject(unsokexdoorGuid, true);
                         break;
@@ -432,6 +432,50 @@ public:
                     return empresscocoonGuid;
             }
             return 0;
+        }
+
+        void CreatureDies(Creature* cre, Unit* /*killer*/)
+        {
+            switch (cre->GetEntry())
+            {
+                case NPC_SRATHIK:
+                    for (uint8 n = 0; n < 3; n++)
+                        if (srathik[n] == cre->GetGUID())
+                            srathik[n] = 0;
+                    break;
+                case NPC_ZARTHIK:
+                    for (uint8 n = 0; n < 3; n++)
+                        if (zarthik[n] == cre->GetGUID())
+                            zarthik[n] = 0;
+                    break;
+                case NPC_KORTHIK:
+                    for (uint8 n = 0; n < 3; n++)
+                        if (korthik[n] == cre->GetGUID())
+                            korthik[n] = 0;
+                    break;
+            }
+        }
+
+        void OnCreatureRemove(Creature* cre)
+        {
+            switch (cre->GetEntry())
+            {
+                case NPC_SRATHIK:
+                    for (uint8 n = 0; n < 3; n++)
+                        if (srathik[n] == cre->GetGUID())
+                            srathik[n] = 0;
+                    break;
+                case NPC_ZARTHIK:
+                    for (uint8 n = 0; n < 3; n++)
+                        if (zarthik[n] == cre->GetGUID())
+                            zarthik[n] = 0;
+                    break;
+                case NPC_KORTHIK:
+                    for (uint8 n = 0; n < 3; n++)
+                        if (korthik[n] == cre->GetGUID())
+                            korthik[n] = 0;
+                    break;
+            }
         }
 
         bool IsWipe()

@@ -1457,7 +1457,6 @@ bool Aura::CanBeSaved() const
         case 126119:
         case 114695:
         case 144607:
-        case 30482:
             return false;
         default:
             break;
@@ -2555,6 +2554,10 @@ bool Aura::CanStackWith(Aura const* existingAura) const
     // passive auras don't stack with another rank of the spell cast by same caster
     if (IsPassive() && sameCaster && m_spellInfo->IsDifferentRankOf(existingSpellInfo))
         return false;
+
+    if (GetId() == existingSpellInfo->Id)
+        if (m_spellInfo->AttributesCu & SPELL_ATTR0_CU_CANT_STACK_WITH_ITSELF)
+            return false;
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {

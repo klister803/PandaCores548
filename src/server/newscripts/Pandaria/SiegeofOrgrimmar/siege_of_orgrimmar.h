@@ -60,6 +60,9 @@ enum eData
     DATA_CRAWLER_MINE_ENTERCOMBAT,
     DATA_GET_WEAPON_WAVE_INDEX,
     DATA_SHOCK_WAVE_MISSILE,
+    DATA_CHECK_INSTANCE_PROGRESS,
+    DATA_OPEN_SOLDIER_FENCH,
+    DATA_GET_REALM_OF_YSHAARJ,
 
     //Galakras
     DATA_GALAKRAS_PRE_EVENT,
@@ -354,13 +357,21 @@ enum eCreatures
 
     NPC_GARROSH                     = 71865,
     //Garrosh soldiers
+    NPC_SIEGE_ENGINEER              = 71984,
+    NPC_WARBRINGER                  = 71979,
+    NPC_WOLF_RIDER                  = 71983,
     //
     NPC_DESECRATED_WEAPON           = 72154,
     NPC_EMPOWERED_DESECRATED_WEAPON = 72198,
     NPC_HEART_OF_YSHAARJ            = 72215,
+    NPC_HEART_OF_YSHAARJ_REALM      = 72228,
     NPC_KORKRON_IRON_STAR           = 71985,
     NPC_THRALL                      = 73483,
     NPC_THE_LAST_GASP_OF_YSHAARJ    = 73335,
+    //Adds in Tempels
+    NPC_SHA_VORTEX                  = 72239,
+    //Embodied Despair
+    NPC_EMBODIED_DESPAIR            = 72238, //need update in DB(spawn)
 };
 
 enum eGameObjects
@@ -507,9 +518,13 @@ enum eGameObjects
     GO_KLAXXI_EX_DOOR              = 223235,
 
     //Garrosh
+    GO_M_HEART_OF_YSHAARJ          = 221995,
     GO_GARROSH_ENT_DOOR            = 221792,
     GO_GARROSH_FENCH               = 221441,
     GO_GARROSH_FENCH2              = 221438,
+    GO_SOLDIER_RIGHT_DOOR          = 221439,
+    GO_SOLDIER_LEFT_DOOR           = 221440,
+    GO_SHA_VORTEX                  = 221132,
 };
 
 enum esSpells
@@ -550,6 +565,9 @@ enum esSpells
     SPELL_ON_CONVEYOR                  = 144287,
     SPELL_ELECTROMAGNETIC_BARRIER      = 145154,
     SPELL_ELECTROMAGNETIC_BARRIER_V    = 146663,
+
+    //Garrosh
+    SPELL_YSHAARJ_PROTECTION_AT        = 144920,
 };
 
 

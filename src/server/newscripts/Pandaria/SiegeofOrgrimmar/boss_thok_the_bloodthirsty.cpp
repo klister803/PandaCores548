@@ -160,6 +160,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             {
                 instance = creature->GetInstanceScript();
                 me->ApplySpellImmune(0, IMMUNITY_ID, SPELL_CORROSIVE_BLOOD, true);
+                me->ApplySpellImmune(0, IMMUNITY_ID, 142657, true);
             }
             
             InstanceScript* instance;

@@ -130,7 +130,7 @@ public:
         {
             me->GetMotionMaster()->Clear(false);
             if (BladeHitCount >= 8)
-                DoCast(SPELL_ACHIEV_MOSH_PIT);
+                DoCast(me, SPELL_ACHIEV_MOSH_PIT, true);
             _JustDied();
         }
 

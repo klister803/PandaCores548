@@ -125,7 +125,6 @@ class boss_garalon : public CreatureScript
                 if (action == ACTION_1 && !IsHeroic() && !crush)
                 {
                     crush = true;
-                    DoCast(SPELL_CRUSH);
                     events.ScheduleEvent(EVENT_CRUSH_DELAY, 2000);
                 }
             }
@@ -148,8 +147,7 @@ class boss_garalon : public CreatureScript
                 if (me->GetExactDist2d(who) < 10.0f && !crush)
                 {
                     crush = true;
-                    DoCast(SPELL_CRUSH);
-                    events.ScheduleEvent(EVENT_CRUSH_DELAY, 2000);
+                    events.ScheduleEvent(EVENT_CRUSH_DELAY, 1000);
                 }
             }
 
@@ -202,6 +200,7 @@ class boss_garalon : public CreatureScript
                             break;
                         case EVENT_CRUSH_DELAY:
                             crush = false;
+                            DoCast(SPELL_CRUSH);
                             break;
                         case EVENT_BERSERK:
                             DoCast(me, SPELL_BERSERK);

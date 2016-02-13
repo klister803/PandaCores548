@@ -5327,13 +5327,16 @@ void Player::TakeSpellCharge(SpellInfo const* spellInfo)
         if (!categoryEntry)
             return;
 
-        SpellChargeData& data = m_spellChargeData[spellInfo->ChargeRecoveryCategory];
-        data.categoryEntry = categoryEntry;
-        data.chargeRegenTime = GetSpellCategoryChargesTimer(categoryEntry);
-        data.charges = data.maxCharges = GetMaxSpellCategoryCharges(categoryEntry);
-        data.timer = 0;
+        if (uint8 charges = GetMaxSpellCategoryCharges(categoryEntry))
+        {
+            SpellChargeData& data = m_spellChargeData[spellInfo->ChargeRecoveryCategory];
+            data.categoryEntry = categoryEntry;
+            data.chargeRegenTime = GetSpellCategoryChargesTimer(categoryEntry);
+            data.charges = data.maxCharges = charges;
+            data.timer = 0;
 
-        --data.charges;
+            --data.charges;
+        }
     }
     else
     {
@@ -19631,6 +19634,13 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     {
         sObjectMgr->DumpDupeConstant(this);
         sLog->outDebug(LOG_FILTER_DUPE, "---PlayerLoaded;");
+    }
+
+    /// Quest "A Test of Valor"
+    if (!GetQuestRewardStatus(32474) && !GetQuestRewardStatus(32476))
+    {
+        if (HasAchieved(8030) || HasAchieved(8031))
+            KilledMonsterCredit(69145, 0);
     }
 
     return true;

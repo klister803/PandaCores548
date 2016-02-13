@@ -1278,6 +1278,8 @@ SpellEffectInfo const* SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 149146: //Explose crawler mine
     case 143385: //Electrostatic charge
     case 143830: //Disentegration laser AT
+    //Garrosh
+    case 144867:
         return &Effects[effect];
     }
 
@@ -2188,7 +2190,7 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
             if (caster->GetTypeId() == TYPEID_PLAYER)
             {
                 // Pet don`t can buff not owner
-                if (unitTarget->isPet() && IsPositive() && unitTarget->GetAnyOwner() != caster)
+                if (unitTarget->isPet() && AttributesEx5 & SPELL_ATTR5_UNK8)
                     return SPELL_FAILED_BAD_TARGETS;
 
                 // Do not allow these spells to target creatures not tapped by us (Banish, Polymorph, many quest spells)

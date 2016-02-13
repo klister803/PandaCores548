@@ -8368,6 +8368,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                             if (rogue->HasSpellCooldown(51699) || !rogue->isInCombat())
                                 break;
 
+                            if (procSpell && procSpell->SpellFamilyName == SPELLFAMILY_GENERIC)
+                                return false;
+
                             if (rogue->GetComboPoints() >= 5 && owner->HasAura(114015))
                             {
                                 owner->CastSpell(owner, 115189, true);
@@ -10297,7 +10300,10 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
             if (!procSpell)
                 return false;
 
-            if (procSpell->Id == 4143 || procSpell->Id == 7268)
+            if (procSpell->SpellFamilyName != SPELLFAMILY_MAGE)
+                return false;
+
+            if (procSpell->Id == 7268)
                 return false;
 
             if (Aura* arcaneMissiles = GetAura(79683))
@@ -12632,7 +12638,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
                     // search Fingers of Frost
                     if (AuraEffect const* aurEff = GetAuraEffect(44544, EFFECT_1))
-                        AddPct(DoneTotalMod, aurEff->GetAmount());
+                        AddPct(DoneTotalMod, aurEff->GetBaseAmount());
                 }
 
                 // Torment the weak
@@ -12759,7 +12765,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_BONUS_MULTIPLIER, SPDCoeffMod);
                 SPDCoeffMod /= 100.0f;
             }
-            DoneTotal += int32(DoneAdvertisedBenefit * SPDCoeffMod * factorMod * stack);
+            DoneTotal += RoundingFloatValue(DoneAdvertisedBenefit * SPDCoeffMod * factorMod * stack);
         }
 
         if (getPowerType() == POWER_MANA)
@@ -15552,6 +15558,8 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
                             speed *= std::max(0.6f + (GetDistance(owner) / 10.0f), 1.1f);
                         }
                     }
+                    else
+                        speed *= ToCreature()->GetCreatureTemplate()->speed_run;
                 }
                 else
                     speed *= ToCreature()->GetCreatureTemplate()->speed_run;    // at this point, MOVE_WALK is never reached
@@ -22475,7 +22483,12 @@ void Unit::UpdateObjectVisibility(bool forced)
 
 void Unit::SendMoveKnockBack(Player* player, float speedXY, float speedZ, float vcos, float vsin)
 {
-    AddUnitState(UNIT_STATE_JUMPING);
+    if (isAlive() && HasUnitState(UNIT_STATE_CONFUSED))
+    {
+         GetMotionMaster()->Clear();
+         ToPlayer()->SetClientControl(this, true);
+    }
+
     m_TempSpeed = fabs(speedZ * 10.0f);
 
     ObjectGuid guid = GetGUID();

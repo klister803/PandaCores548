@@ -56,7 +56,7 @@ void ConfusedMovementGenerator<T>::DoReset(T &unit)
 template<class T>
 bool ConfusedMovementGenerator<T>::DoUpdate(T &unit, const uint32 &diff)
 {
-    if (unit.HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED | UNIT_STATE_DISTRACTED))
+    if (unit.HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED | UNIT_STATE_DISTRACTED | UNIT_STATE_JUMPING))
         return true;
 
     i_nextMoveTime.Update(diff);
