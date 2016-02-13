@@ -76,6 +76,7 @@ enum sSummons
     NPC_AMBER_BEAM_STALKER      = 62510,
     NPC_LIVING_AMBER            = 62691,
     NPC_AMBER_PARASITE          = 62509,
+    NPC_MUTATED_CONSTRUCT       = 62701,
     NPC_AMBER_MONSTROSITY       = 62711,
 };
 
@@ -162,7 +163,6 @@ class boss_unsok : public CreatureScript
             {
                 if (action == ACTION_INTRO_P3 && !phasethree)
                 {
-                    phasetwo = true;
                     phasethree = true;
                     events.Reset();
                     DoStopAttack();
@@ -652,7 +652,7 @@ class spell_unsok_reshape_life : public SpellScriptLoader
                     {
                         if (InstanceScript* pInstance = plr->GetInstanceScript())
                             if (Creature* unsok = pInstance->instance->GetCreature(pInstance->GetData64(NPC_UNSOK)))
-                                unsok->SummonCreature(NPC_AMBER_MONSTROSITY, amberStPos[urand(0,3)]);
+                                unsok->SummonCreature(NPC_MUTATED_CONSTRUCT, plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ() + 1.0f);
                         plr->CastSpell(plr, SPELL_RESHAPE_LIFE_SELF_DMG, true);
                         plr->Kill(plr);
                     }
