@@ -73,7 +73,7 @@ enum Actions
 
 enum sSummons
 {
-    NPC_AMBER_BEAM_STALKER      = 90903,
+    NPC_AMBER_BEAM_STALKER      = 62510,
     NPC_LIVING_AMBER            = 62691,
     NPC_AMBER_PARASITE          = 62509,
     NPC_AMBER_MONSTROSITY       = 62711,
@@ -132,8 +132,8 @@ class boss_unsok : public CreatureScript
                 {
                     phasetwo = true;
                     me->AddAura(SPELL_AMBER_CARAPACE, me);
-                    if (Creature* am = me->SummonCreature(NPC_AMBER_MONSTER, me->GetPositionX(), me->GetPositionY() + 5.0f, me->GetPositionZ()))
-                        am->AI()->DoZoneInCombat(am, 100.0f);
+                    if (Creature* amber = me->SummonCreature(NPC_AMBER_MONSTER, amberStPos[urand(0,3)]))
+                        amber->AI()->DoZoneInCombat(amber, 100.0f);
                 }
             }
 
@@ -162,6 +162,7 @@ class boss_unsok : public CreatureScript
             {
                 if (action == ACTION_INTRO_P3 && !phasethree)
                 {
+                    phasetwo = true;
                     phasethree = true;
                     events.Reset();
                     DoStopAttack();
@@ -206,13 +207,18 @@ class boss_unsok : public CreatureScript
                         case EVENT_AMBER_SCALPEL:
                             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 40.0f, true))
                             {
+                                if (target->HasAura(SPELL_RESHAPE_LIFE_MORPH))
+                                {
+                                    events.ScheduleEvent(EVENT_AMBER_SCALPEL, 0);
+                                    return;
+                                }
                                 if (Creature* abeam = me->SummonCreature(NPC_AMBER_BEAM_STALKER, target->GetPositionX()+6, target->GetPositionY(), target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 12000))
                                 {
                                     abeam->AI()->AttackStart(target);
                                     DoCast(abeam, SPELL_AMBER_SCALPEL);
                                 }
                             }
-                            events.ScheduleEvent(EVENT_AMBER_SCALPEL, urand(20000, 30000));
+                            events.ScheduleEvent(EVENT_AMBER_SCALPEL, 40000);
                             break;
                         case EVENT_PARASITIC_GROWTH:
                             DoCast(SPELL_PARASITIC_GROWTH);
@@ -268,7 +274,7 @@ class npc_amber_monster : public CreatureScript
             {
                 events.ScheduleEvent(EVENT_MASSIVE_STOMP, urand(10000, 20000));
                 events.ScheduleEvent(EVENT_AMBER_EXPLOSION, 54000);
-                events.ScheduleEvent(EVENT_FLING, 32000);
+                events.ScheduleEvent(EVENT_GRAB, 32000); //32s
                 events.ScheduleEvent(EVENT_DESTROY_WILL, 2000);
             }
 
@@ -302,6 +308,13 @@ class npc_amber_monster : public CreatureScript
                 }
                 if (spell->Id == SPELL_FLING)
                 {
+                    if (!plrRide || target == plrRide)
+                    {
+                        if (me->GetVehicleKit())
+                            me->GetVehicleKit()->RemoveAllPassengers();
+                        return;
+                    }
+
                     if (me->GetVehicleKit())
                         me->GetVehicleKit()->RemoveAllPassengers();
                     plrRide->CastSpell(target, 122420, true); //jump
@@ -311,7 +324,7 @@ class npc_amber_monster : public CreatureScript
 
             void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
             {
-                if (!apply)
+                if (!apply || !who->ToPlayer())
                     return;
 
                 plrRide = who->ToPlayer();
@@ -366,6 +379,7 @@ class npc_amber_monster : public CreatureScript
         }
 };
 
+//62510
 class npc_amberbeam_stalker : public CreatureScript
 {
 public:
@@ -377,7 +391,6 @@ public:
         {
             pInstance = creature->GetInstanceScript();
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_SCHOOL_DAMAGE, true);
-            me->SetDisplayId(11686);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
             me->SetReactState(REACT_PASSIVE);
         }
@@ -387,7 +400,7 @@ public:
 
         void Reset()
         {
-            sum = 10000;
+            sum = 3000;
         }
         
         void UpdateAI(uint32 diff)
@@ -399,11 +412,11 @@ public:
             {
                 if (sum <= diff)
                 {
-                    sum = 0;
+                    sum = 3000;
                     if (Creature* lamber = me->SummonCreature(NPC_LIVING_AMBER, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 3000))
                     {
                         lamber->AI()->DoZoneInCombat(lamber, 100.0f);
-                        lamber->AddAura(SPELL_CORROSIVE_AURA, lamber);
+                        lamber->CastSpell(lamber, SPELL_CORROSIVE_AURA, true);
                     }
                 }
                 else 
@@ -456,6 +469,7 @@ public:
                     DoCast(me, SPELL_EXPLOSE, true);
                     DoCast(me, SPELL_BURNING_AMBER, true);
                     DoCast(me, SPELL_FEIGN_DEATH, true);
+                    me->RemoveAurasDueToSpell(SPELL_CORROSIVE_AURA);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 }
                 damage = 0;
@@ -638,11 +652,12 @@ class spell_unsok_reshape_life : public SpellScriptLoader
                     {
                         if (InstanceScript* pInstance = plr->GetInstanceScript())
                             if (Creature* unsok = pInstance->instance->GetCreature(pInstance->GetData64(NPC_UNSOK)))
-                                unsok->SummonCreature(NPC_AMBER_MONSTROSITY, plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ());
+                                unsok->SummonCreature(NPC_AMBER_MONSTROSITY, amberStPos[urand(0,3)]);
                         plr->CastSpell(plr, SPELL_RESHAPE_LIFE_SELF_DMG, true);
+                        plr->Kill(plr);
                     }
                     explosionTimer++;
-                    if (explosionTimer > 45)
+                    if (explosionTimer > 20)
                     {
                         explosionTimer = 0;
                         plr->CastSpell(plr, 122398);

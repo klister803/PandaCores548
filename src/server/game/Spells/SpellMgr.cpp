@@ -5706,6 +5706,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 142910: // Iron Warhorse
                     spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(16);
                     break;
+                case 121949: //Unsok - Parasitic Growth
+                    spellInfo->ExcludeTargetAuraSpell = 122370;
+                    break;
                 default:
                     break;
             }
