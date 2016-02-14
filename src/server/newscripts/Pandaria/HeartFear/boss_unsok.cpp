@@ -272,7 +272,7 @@ class npc_amber_monster : public CreatureScript
             
             void EnterCombat(Unit* attacker)
             {
-                events.ScheduleEvent(EVENT_MASSIVE_STOMP, urand(10000, 20000));
+                events.ScheduleEvent(EVENT_MASSIVE_STOMP, 20000);
                 events.ScheduleEvent(EVENT_AMBER_EXPLOSION, 54000);
                 events.ScheduleEvent(EVENT_GRAB, 32000); //32s
                 events.ScheduleEvent(EVENT_DESTROY_WILL, 2000);
@@ -348,7 +348,7 @@ class npc_amber_monster : public CreatureScript
                         case EVENT_MASSIVE_STOMP:
                             if (me->getVictim())
                                 DoCast(me->getVictim(), SPELL_MASSIVE_STOMP);
-                            events.ScheduleEvent(EVENT_MASSIVE_STOMP, urand(20000, 30000));
+                            events.ScheduleEvent(EVENT_MASSIVE_STOMP, 30000);
                             break;
                         case EVENT_AMBER_EXPLOSION:
                             DoCast(SPELL_AMBER_EXPLOSION);
@@ -711,6 +711,37 @@ class spell_unsok_consume_amber : public SpellScriptLoader
         }
 };
 
+//123060
+class spell_unsok_break_free : public SpellScriptLoader
+{
+    public:
+        spell_unsok_break_free() : SpellScriptLoader("spell_unsok_break_free") { }
+
+        class spell_unsok_break_freeSpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_unsok_break_freeSpellScript);
+
+            void HandleOnHit()
+            {
+                if (!GetCaster())
+                    return;
+
+                GetCaster()->RemoveAurasDueToSpell(SPELL_RESHAPE_LIFE_MORPH);
+                GetCaster()->SetHealth(GetCaster()->CountPctFromMaxHealth(20));
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_unsok_break_freeSpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_unsok_break_freeSpellScript();
+        }
+};
+
 void AddSC_boss_unsok()
 {
     new boss_unsok();
@@ -721,4 +752,5 @@ void AddSC_boss_unsok()
     new spell_unsok_parasitic_growth();
     new spell_unsok_reshape_life();
     new spell_unsok_consume_amber();
+    new spell_unsok_break_free();
 }

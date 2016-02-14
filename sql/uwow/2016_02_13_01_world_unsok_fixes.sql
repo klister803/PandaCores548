@@ -9,3 +9,13 @@ INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_
 (62701, 0, 1, 0, 0, 0, 100, 0, 15000, 15000, 15000, 15000, 11, 122398, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'Cast Amber Explosion');
 
 update spell_linked_spell set spell_trigger = -122784 where spell_trigger = 122784;
+
+delete from conditions where SourceTypeOrReferenceId = 13 and SourceEntry = 122532;
+INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES 
+(13, 2, 122532, 0, 0, 1, 0, 122370, 0, 0, 0, 0, '', NULL);
+
+delete from spell_linked_spell where spell_trigger = 123060;
+
+delete from spell_script_names where spell_id = 123060;
+INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES 
+(123060, 'spell_unsok_break_free');

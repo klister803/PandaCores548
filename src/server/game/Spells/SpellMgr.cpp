@@ -4712,12 +4712,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].TargetA = 25;
                     spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(15);//3yards
                     break;
-                case 122532: //Explose
-                    spellInfo->Effects[EFFECT_0].TargetA = 22;
-                    spellInfo->Effects[EFFECT_0].TargetB = 15;
-                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);//8yards
-                    spellInfo->Effects[EFFECT_1].Effect = 0;
-                    break;
                 //
                 //Empress Shekzeer
                 case 123788: //Cry of terror
