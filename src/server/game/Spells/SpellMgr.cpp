@@ -4719,15 +4719,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].TargetB = 0;
                     spellInfo->Effects[EFFECT_1].TargetA = 1;
                     break;
-                case 123735: //Dread screetch
-                    spellInfo->Effects[EFFECT_0].TargetA = 1;
-                    spellInfo->Effects[EFFECT_0].TargetB = 0;
-                    spellInfo->Effects[EFFECT_1].TargetA = 1;
-                    spellInfo->Effects[EFFECT_1].TargetB = 0;
-                    break;
-                case 123743: //Dread screetch trigger spell
-                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(8);//5yards
-                    break;
                 case 66289: // Glaive
                 case 67439: // Boulder
                     spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(10);//30yards
@@ -4938,11 +4929,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 148310: // Bombard Stun
                 case 148311: // Bombard Stun
                 case 82881:  // Mortality
-                case 136992: //Bitting cold
-                case 140023: //Ring of Peace
-                case 134916: //Decapitate tr ef
-                case 146325: //Cutter Laser Visual Target
-                case 144918: //Cutter Laser Dmg
+                case 136992: // Bitting cold
+                case 140023: // Ring of Peace
+                case 134916: // Decapitate tr ef
+                case 146325: // Cutter Laser Visual Target
+                case 144918: // Cutter Laser Dmg
+                case 123707: // CC: Eyes of the Empress
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
                 case 144396: //Vengeful Strikes. WTF. SPELL_AURA_MOD_POSSESS_PET

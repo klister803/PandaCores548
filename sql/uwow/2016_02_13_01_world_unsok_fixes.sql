@@ -12,7 +12,8 @@ update spell_linked_spell set spell_trigger = -122784 where spell_trigger = 1227
 
 delete from conditions where SourceTypeOrReferenceId = 13 and SourceEntry = 122532;
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES 
-(13, 2, 122532, 0, 0, 1, 0, 122370, 0, 0, 0, 0, '', NULL);
+(13, 2, 122532, 0, 0, 1, 0, 122370, 0, 0, 0, 0, '', NULL),
+(13, 2, 122532, 0, 1, 31, 0, 3, 62691, 0, 0, 0, '', NULL);
 
 delete from spell_linked_spell where spell_trigger = 123060;
 

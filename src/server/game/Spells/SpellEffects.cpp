@@ -5163,6 +5163,20 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
 
             switch (m_spellInfo->Id)
             {
+                case 125390: //Shekzeer - Fixate
+                    unitTarget->CastSpell(m_caster, damage, true);
+                    break;
+                case 124843: //Shekzeer - Amassing Darkness
+                    m_caster->CastSpell(unitTarget, 124844, true);
+                    break;
+                case 123713: //Shekzeer - Servant of the Empress (MK)
+                {
+                    if (Player* plr = m_caster->ToPlayer())
+                        if (InstanceScript* pInstance = plr->GetInstanceScript())
+                            if (Creature* shekzeer = pInstance->instance->GetCreature(pInstance->GetData64(62837)))
+                                shekzeer->CastSpell(plr, damage, true);
+                    break;
+                }
                 case 122415: //Grab - Ride Me
                 case 124258: //Storm Unleashed Ride Me
                 {
