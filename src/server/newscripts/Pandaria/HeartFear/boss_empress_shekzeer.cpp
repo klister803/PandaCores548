@@ -138,7 +138,7 @@ class boss_empress_shekzeer : public CreatureScript
                 if (!me->isInCombat() || phase == PHASE_ONE)
                     value = 0;
                 else if (phase == PHASE_TWO)
-                    value = 2;
+                    value = 1;
             }
 
             void EnterCombat(Unit* /*who*/)
@@ -206,6 +206,7 @@ class boss_empress_shekzeer : public CreatureScript
                         DoZoneInCombat(me, 150.0f);
                         events.ScheduleEvent(EVENT_SCREECH, 8000, 0, PHASE_ONE);
                         events.ScheduleEvent(EVENT_TERROR,  urand(25000, 35000), 0, PHASE_ONE);
+                        events.ScheduleEvent(EVENT_EYES_OF_EMPRESS, 10000);
                         break;
                     case ACTION_SENTINEL_DIED:
                         if (sdiedval++ >= 7 && phase == PHASE_TWO)
@@ -293,8 +294,7 @@ class boss_empress_shekzeer : public CreatureScript
                             events.ScheduleEvent(EVENT_SCREECH, 8000, 0, PHASE_ONE);
                             break;
                         case EVENT_TERROR:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 40.0f, true))
-                                target->AddAura(SPELL_CRY_OF_TERROR, target);
+                            DoCast(SPELL_CRY_OF_TERROR);
                             events.ScheduleEvent(EVENT_TERROR,  urand(25000, 35000), 0, PHASE_ONE);
                             break;
                         case EVENT_CALAMITY:

@@ -4714,11 +4714,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 //
                 //Empress Shekzeer
-                case 123788: //Cry of terror
-                    spellInfo->Effects[EFFECT_0].TargetA = 1;
-                    spellInfo->Effects[EFFECT_0].TargetB = 0;
-                    spellInfo->Effects[EFFECT_1].TargetA = 1;
-                    break;
                 case 66289: // Glaive
                 case 67439: // Boulder
                     spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(10);//30yards
