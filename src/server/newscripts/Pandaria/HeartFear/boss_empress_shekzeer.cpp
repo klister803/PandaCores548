@@ -60,11 +60,11 @@ enum eEvents
     EVENT_EYES_OF_EMPRESS       = 9,
     EVENT_AMASSING_DARKNESS     = 10,
     EVENT_FIXATE                = 11,
+    EVENT_DISPATCH              = 12,
 
     //Sentinels
     EVENT_TOXIC_SLIME           = 1,
     EVENT_TOXIC_BOMB            = 2,
-    EVENT_DISPATCH              = 3,
     EVENT_SONIC_BLADE           = 4,
 };
 
