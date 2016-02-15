@@ -4059,14 +4059,12 @@ void Unit::_RemoveNoStackAurasDueToAura(Aura* aura)
 
 void Unit::_RegisterAuraEffect(AuraEffect* aurEff, bool apply)
 {
+    m_auraEffectListLock.acquire();
     if (apply)
         m_modAuras[aurEff->GetAuraType()].emplace_back(aurEff);
     else
-    {
-        m_auraEffectListLock.acquire();
         m_modAuras[aurEff->GetAuraType()].remove(aurEff);
-        m_auraEffectListLock.release();
-    }
+    m_auraEffectListLock.release();
 }
 
 // All aura base removes should go threw this function!

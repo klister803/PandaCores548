@@ -1642,18 +1642,10 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
         CriteriaProgressMap* progressMap = nullptr;
         CriteriaTreeProgress* progress = nullptr;
 
-        if (GetCriteriaSort() == GUILD_CRITERIA)
-        {
-            m_CompletedAchievementsLock.acquire();
-            progressMap = GetCriteriaProgressMap(achievement ? achievement->ID : 0);
-            progress = GetCriteriaProgress(criteriaTree->ID, achievement ? achievement->ID : 0, progressMap);
-            m_CompletedAchievementsLock.release();
-        }
-        else
-        {
-            progressMap = GetCriteriaProgressMap(achievement ? achievement->ID : 0);
-            progress = GetCriteriaProgress(criteriaTree->ID, achievement ? achievement->ID : 0, progressMap);
-        }
+        m_CompletedAchievementsLock.acquire();
+        progressMap = GetCriteriaProgressMap(achievement ? achievement->ID : 0);
+        progress = GetCriteriaProgress(criteriaTree->ID, achievement ? achievement->ID : 0, progressMap);
+        m_CompletedAchievementsLock.release();
 
         if (!CanUpdateCriteria(criteriaTree, criteria, achievement, miscValue1, miscValue2, miscValue3, unit, referencePlayer, progressMap, progress))
             continue;
@@ -3800,8 +3792,10 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
         case ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_WIN:
             break;
         case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ACHIEVEMENT:
+            m_CompletedAchievementsLock.acquire();
             if (m_completedAchievements.find(criteria->complete_achievement.linkedAchievement) == m_completedAchievements.end())
                 return false;
+            m_CompletedAchievementsLock.release();
             break;
         case ACHIEVEMENT_CRITERIA_TYPE_WIN_BG:
             if (!miscValue1 || criteria->win_bg.bgMapID != referencePlayer->GetMapId())
