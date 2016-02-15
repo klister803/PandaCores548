@@ -428,6 +428,9 @@ void GuildMgr::LoadGuilds()
             criteriaResult = CharacterDatabase.Query(stmt);
 
             itr->second->GetAchievementMgr().LoadFromDB(achievementResult, criteriaResult);
+
+            itr->second->SaveAchievement();
+            itr->second->SaveCriteria();
         }
     }
 

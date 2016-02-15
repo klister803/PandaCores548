@@ -6222,7 +6222,7 @@ void ObjectMgr::SetHighestGuids()
 
     RedisValue v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "characters");
     if (v.isOk() && !v.isNull())
-        _hiCharGuid = v.toInt() + 1;
+        _hiCharGuid = atoi(v.toString().c_str()) + 1;
     else
     {
         result = CharacterDatabase.Query("SELECT MAX(guid) FROM characters");
@@ -6238,7 +6238,7 @@ void ObjectMgr::SetHighestGuids()
 
     v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "item_instance");
     if (v.isOk() && !v.isNull())
-        _hiItemGuid = v.toInt() + 1;
+        _hiItemGuid = atoi(v.toString().c_str()) + 1;
     else
     {
         result = CharacterDatabase.Query("SELECT MAX(guid) FROM item_instance");
@@ -6264,7 +6264,7 @@ void ObjectMgr::SetHighestGuids()
 
     v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "auctionhouse");
     if (v.isOk() && !v.isNull())
-        _auctionId = v.toInt() + 1;
+        _auctionId = atoi(v.toString().c_str()) + 1;
     else
     {
         result = CharacterDatabase.Query("SELECT MAX(id) FROM auctionhouse");
@@ -6276,7 +6276,7 @@ void ObjectMgr::SetHighestGuids()
 
     v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "mail");
     if (v.isOk() && !v.isNull())
-        _mailId = v.toInt() + 1;
+        _mailId = atoi(v.toString().c_str()) + 1;
     else
     {
         result = CharacterDatabase.Query("SELECT MAX(id) FROM mail");
@@ -6288,7 +6288,7 @@ void ObjectMgr::SetHighestGuids()
 
     v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "corpse");
     if (v.isOk() && !v.isNull())
-        _hiCorpseGuid = v.toInt() + 1;
+        _hiCorpseGuid = atoi(v.toString().c_str()) + 1;
     else
     {
         result = CharacterDatabase.Query("SELECT MAX(corpseGuid) FROM corpse");
@@ -6300,7 +6300,7 @@ void ObjectMgr::SetHighestGuids()
 
     v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "character_equipmentsets");
     if (v.isOk() && !v.isNull())
-        _equipmentSetGuid = v.toInt() + 1;
+        _equipmentSetGuid = atoi(v.toString().c_str()) + 1;
     else
     {
         result = CharacterDatabase.Query("SELECT MAX(setguid) FROM character_equipmentsets");
@@ -6312,7 +6312,7 @@ void ObjectMgr::SetHighestGuids()
 
     v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "guild");
     if (v.isOk() && !v.isNull())
-        _nextGuildId = v.toInt() + 1;
+        _nextGuildId = atoi(v.toString().c_str()) + 1;
     else
     {
         result = CharacterDatabase.Query("SELECT MAX(guildId) FROM guild");
@@ -6324,7 +6324,7 @@ void ObjectMgr::SetHighestGuids()
 
     v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "group");
     if (v.isOk() && !v.isNull())
-        _nextGroupId = v.toInt() + 1;
+        _nextGroupId = atoi(v.toString().c_str()) + 1;
     else
     {
         result = CharacterDatabase.Query("SELECT MAX(guid) FROM groups");
@@ -6337,7 +6337,7 @@ void ObjectMgr::SetHighestGuids()
 
     v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "character_void_storage");
     if (v.isOk() && !v.isNull())
-        _voidItemId = v.toInt() + 1;
+        _voidItemId = atoi(v.toString().c_str()) + 1;
     else
     {
         result = CharacterDatabase.Query("SELECT MAX(itemId) from character_void_storage");
@@ -6909,7 +6909,7 @@ void ObjectMgr::LoadPetNumber()
 
     RedisValue v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "pets");
     if (v.isOk() && !v.isNull())
-        _hiPetNumber = v.toInt() + 1;
+        _hiPetNumber = atoi(v.toString().c_str()) + 1;
     else
     {
         QueryResult result = CharacterDatabase.Query("SELECT MAX(id) FROM character_pet");
@@ -6928,7 +6928,7 @@ void ObjectMgr::LoadBattlePetGuid()
 
     RedisValue v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "battlepets");
     if (v.isOk() && !v.isNull())
-        _hiBattlePetGuid = v.toInt() + 1;
+        _hiBattlePetGuid = atoi(v.toString().c_str()) + 1;
     else
     {
         QueryResult result = CharacterDatabase.Query("SELECT MAX(guid) FROM account_battle_pet_journal");

@@ -76,8 +76,8 @@ void Player::InitSavePlayer()
     SavePlayerVisuals();
     SavePlayerAccountData();
     SavePlayerHomeBind();
-    SavePlayerAchievement();
-    SavePlayerCriteria();
+    SaveAchievement();
+    SaveCriteria();
     SavePlayerPets();
     SavePlayerMails();
     SaveAccountTutorials();
@@ -1062,7 +1062,7 @@ void Player::SavePlayerHomeBind()
     });
 }
 
-void Player::SavePlayerAchievement()
+void Player::SaveAchievement()
 {
     for (auto iter = GetAchievementMgr().GetCompletedAchievementsList().begin(); iter != GetAchievementMgr().GetCompletedAchievementsList().end(); ++iter)
     {
@@ -1079,15 +1079,15 @@ void Player::SavePlayerAchievement()
     }
 
     RedisDatabase.AsyncExecuteHSet("HSET", userKey, "achievement", sRedisBuilder->BuildString(PlayerAchievementJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerAchievement player guid %u", guid);
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::SaveAchievement player guid %u", guid);
     });
 
     RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "achievement", sRedisBuilder->BuildString(AccountAchievementJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerAchievement account guid %u", guid);
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::SaveAchievement account guid %u", guid);
     });
 }
 
-void Player::SavePlayerCriteria()
+void Player::SaveCriteria()
 {
     if (isBeingLoaded())
         return;
@@ -1140,7 +1140,7 @@ void Player::SavePlayerCriteria()
         {
             PlayerCriteriaJson[achievID.c_str()] = CriteriaPl;
             RedisDatabase.AsyncExecuteHSet("HSET", criteriaPlKey, achievID.c_str(), sRedisBuilder->BuildString(CriteriaPl).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
-                sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerCriteria player guid %u", guid);
+                sLog->outInfo(LOG_FILTER_REDIS, "Player::SaveCriteria player guid %u", guid);
             });
         }
 
@@ -1148,7 +1148,7 @@ void Player::SavePlayerCriteria()
         {
             AccountCriteriaJson[achievID.c_str()] = CriteriaAc;
             RedisDatabase.AsyncExecuteHSet("HSET", criteriaAcKey, achievID.c_str(), sRedisBuilder->BuildString(CriteriaAc).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
-                sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerCriteria account guid %u", guid);
+                sLog->outInfo(LOG_FILTER_REDIS, "Player::SaveCriteria account guid %u", guid);
             });
         }
     }

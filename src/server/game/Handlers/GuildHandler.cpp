@@ -515,7 +515,10 @@ void WorldSession::HandleGuildBankBuyTab(WorldPacket & recvData)
 
     if (!GoGuid || GetPlayer()->GetGameObjectIfCanInteractWith(GoGuid, GAMEOBJECT_TYPE_GUILD_BANK))
         if (Guild* guild = _GetPlayerGuild(this))
+        {
             guild->HandleBuyBankTab(this, tabId);
+            guild->SendPermissions(this);
+        }
 }
 
 void WorldSession::HandleGuildBankUpdateTab(WorldPacket & recvData)

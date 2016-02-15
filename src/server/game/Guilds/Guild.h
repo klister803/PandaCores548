@@ -375,8 +375,9 @@ private:
         };
 
     public:
-        Member(uint32 guildId, uint64 guid, uint32 rankId):
-            m_guildId(guildId),
+        Member(Guild* guild, uint64 guid, uint32 rankId):
+            m_guild(guild),
+            m_guildId(guild->GetId()),
             m_guid(guid),
             m_zoneId(0),
             m_level(0),
@@ -393,8 +394,6 @@ private:
             m_weekReputation(0)
         {
             memset(m_bankWithdraw, 0, (GUILD_BANK_MAX_TABS + 1) * sizeof(int32));
-            guildMemberKey = new char[32];
-            sprintf(guildMemberKey, "r{%u}g{%u}member", realmID, m_guildId);
         }
         void SetStats(Player* player);
         void SetStats(std::string const& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId, uint32 reputation, uint8 gender, uint32 achPoints,
@@ -419,6 +418,7 @@ private:
         void ResetFlags() { m_flags = GUILDMEMBER_STATUS_NONE; }
 
         bool LoadFromDB(Field* fields);
+        bool LoadFromDB(Json::Value memberData);
 
         uint64 GetGUID() const { return m_guid; }
         std::string const& GetName() const { return m_name; }
@@ -464,9 +464,9 @@ private:
 
         Json::Value GuildMemberData;
         void SaveGuildMember();
-        char* guildMemberKey;
 
     private:
+        Guild* m_guild;
         uint32 m_guildId;
         // Fields from characters table
         uint64 m_guid;
@@ -684,6 +684,7 @@ private:
         bool LoadFromDB(Field* fields);
         void LoadFromDB(Json::Value bankTab);
         bool LoadItemFromDB(Field* fields);
+        bool LoadItemFromDB(Json::Value itemData);
         void Delete(bool removeItemsFromDB = false);
 
         void SetInfo(std::string const& name, std::string const& icon);
@@ -864,10 +865,11 @@ public:
 
     // Load from DB
     bool LoadFromDB(Field* fields);
-    bool LoadFromDB(uint32 guildId, Json::Value guildData, std::vector<RedisValue>* guildDataV);
+    bool LoadFromDB(uint32 guildId, Json::Value guildData);
     void LoadRankFromDB(Field* fields);
     void LoadRankFromDB(Json::Value rankData);
     bool LoadMemberFromDB(Field* fields);
+    bool LoadMemberFromDB(uint32 memberId, Json::Value memberData);
     bool LoadEventLogFromDB(Field* fields);
     bool LoadEventLogFromDB(Json::Value eventValue);
     void LoadBankRightFromDB(Field* fields);
@@ -961,6 +963,8 @@ public:
     Json::Value GuildEventLogData;
     Json::Value GuildBankEventLogData;
     Json::Value GuildNewsLogData;
+    Json::Value GuildAchievementData;
+    Json::Value GuildCriteriaData;
     void SaveGuild();
     void SaveGuildEventLog();
     void SaveGuildBankEventLog();
@@ -976,10 +980,17 @@ public:
     void UpdateGuildNewsLog(GuildNewsEntry* log, uint32 id);
     void DeleteMembers();
     void SaveGuildMoney();
+    void SaveAchievement();
+    void SaveCriteria();
+    void UpdateCriteriaProgress(AchievementEntry const* achievement, CriteriaProgressMap* progressMap);
+    void LoadAchievement(Json::Value achievData);
+    void DeleteCriteriaProgress(AchievementEntry const* achievement);
 
-    char* guildKey;
     void CreateKey();
     char* GetGuildKey() { return guildKey; }
+    char* GetGuildMemberKey() { return guildMemberKey; }
+    char* GetCriteriaKey() { return criteriaKey; }
+    char* GetItemKey() { return itemKey; }
 
 protected:
     uint32 m_id;
@@ -1008,6 +1019,11 @@ protected:
     uint64 _experience;
     uint64 _todayExperience;
     KnownRecipesMap _guildRecipes;
+
+    char* guildKey;
+    char* guildMemberKey;
+    char* criteriaKey;
+    char* itemKey;
 
 private:
     inline uint32 _GetRanksSize() const { return uint32(m_ranks.size()); }

@@ -66,6 +66,8 @@ public:
     uint32 GetScenarioCriteriaByStep(uint8 step);
 
     bool CanUpdateCriteria(uint32 criteriaTreeId, uint32 recursTree = 0) const;
+    void UpdateCriteriaProgress(AchievementEntry const* achievement, CriteriaProgressMap* progressMap) {}
+    void DeleteCriteriaProgress(AchievementEntry const* achievement) {}
 
 protected:
     uint32 instanceId;

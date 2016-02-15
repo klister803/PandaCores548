@@ -45,30 +45,26 @@ void Player::UpdateSavePlayer()
     sWorld->UpdateCharacterNameDataZoneGuild(GetGUIDLow(), m_zoneUpdateId, GetGuildId(), GetRank());
 }
 
-void Player::DeleteSavePlayerCriteriaProgress(AchievementEntry const* achievement)
+void Player::DeleteCriteriaProgress(AchievementEntry const* achievement)
 {
     std::string achievID = std::to_string(achievement->ID);
     if (achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
     {
-        Json::Value CriteriaAc;
-        CriteriaAc = true;
-        AccountCriteriaJson[achievID.c_str()] = CriteriaAc;
-        RedisDatabase.AsyncExecuteHSet("HSET", criteriaAcKey, achievID.c_str(), sRedisBuilder->BuildString(CriteriaAc).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
-            sLog->outInfo(LOG_FILTER_REDIS, "UpdateSavePlayerCriteriaProgress account guid %u", guid);
+        AccountCriteriaJson.removeMember(achievID.c_str());
+        RedisDatabase.AsyncExecuteH("HDEL", criteriaAcKey, achievID.c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+            sLog->outInfo(LOG_FILTER_REDIS, "Guild::DeleteCriteriaProgress guid %u", guid);
         });
     }
     else
     {
-        Json::Value CriteriaPl;
-        CriteriaPl = true;
-        PlayerCriteriaJson[achievID.c_str()] = CriteriaPl;
-        RedisDatabase.AsyncExecuteHSet("HSET", criteriaPlKey, achievID.c_str(), sRedisBuilder->BuildString(CriteriaPl).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
-            sLog->outInfo(LOG_FILTER_REDIS, "UpdateSavePlayerCriteriaProgress player guid %u", guid);
+        PlayerCriteriaJson.removeMember(achievID.c_str());
+        RedisDatabase.AsyncExecuteH("HDEL", criteriaPlKey, achievID.c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+            sLog->outInfo(LOG_FILTER_REDIS, "Guild::DeleteCriteriaProgress guid %u", guid);
         });
     }
 }
 
-void Player::UpdateSavePlayerCriteriaProgress(AchievementEntry const* achievement, CriteriaProgressMap* progressMap)
+void Player::UpdateCriteriaProgress(AchievementEntry const* achievement, CriteriaProgressMap* progressMap)
 {
     std::string achievID = std::to_string(achievement->ID);
     Json::Value CriteriaPl;

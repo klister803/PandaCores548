@@ -13613,6 +13613,7 @@ Item* Player::_StoreItem(uint16 pos, Item* pItem, uint32 count, bool clone, bool
             pItem->SendUpdateToPlayer(this);
         }
 
+        pItem->SetItemKey(ITEM_KEY_USER, GetGUIDLow());
         pItem->SetState(ITEM_CHANGED, this);
         if (pBag)
             pBag->SetState(ITEM_CHANGED, this);
@@ -14536,6 +14537,7 @@ void Player::SplitItem(uint16 src, uint16 dst, uint32 count)
 
         if (IsInWorld())
             pSrcItem->SendUpdateToPlayer(this);
+        pSrcItem->SetItemKey(ITEM_KEY_USER, GetGUIDLow());
         pSrcItem->SetState(ITEM_CHANGED, this);
         StoreItem(dest, pNewItem, true);
     }

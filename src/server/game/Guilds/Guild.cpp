@@ -911,6 +911,8 @@ Item* Guild::BankMoveItemData::_StoreItem(BankTab* pTab, Item* pItem, ItemPosCou
     else
         pItem->SetCount(count);
 
+    pItem->SetItemKey(ITEM_KEY_GUILD, m_pGuild->GetId());
+
     if(pItem->GetEntry() == 38186)
         sLog->outDebug(LOG_FILTER_EFIR, "BankMoveItemData - CloneItem %i of item %u; count = %u playerGUID %u, guild %u", clone, pItem->GetEntry(), count, m_pGuild->GetId(), pItem->GetGUID());
 
@@ -2204,7 +2206,7 @@ void Guild::LoadRankFromDB(Field* fields)
 bool Guild::LoadMemberFromDB(Field* fields)
 {
     uint32 lowguid = fields[1].GetUInt32();
-    Member *member = new Member(m_id, MAKE_NEW_GUID(lowguid, 0, HIGHGUID_PLAYER), fields[2].GetUInt8());
+    Member *member = new Member(this, MAKE_NEW_GUID(lowguid, 0, HIGHGUID_PLAYER), fields[2].GetUInt8());
     if (!member->LoadFromDB(fields))
     {
         DeleteMemberGuild(lowguid);
@@ -2445,9 +2447,15 @@ bool Guild::AddMember(uint64 guid, uint8 rankId)
     if (rankId == GUILD_RANK_NONE)
         rankId = _GetLowestRankId();
 
-    Member* member = new Member(m_id, guid, rankId);
+    Member* member = new Member(this, guid, rankId);
     if (player)
+    {
         member->SetStats(player);
+        player->SetInGuild(m_id);
+        player->SetGuild(this);
+        player->SetRank(member->GetRankId());
+        player->SetGuildLevel(GetLevel());
+    }
     else
     {
         bool ok = false;
@@ -2650,7 +2658,7 @@ bool Guild::_CreateNewBankTab()
         UpdateGuildRank(&(*itr));
     }
 
-    SaveGuildBankTab();
+    SaveGuild();
     return true;
 }
 
@@ -3713,5 +3721,11 @@ void Guild::SendGuildMemberRecipesResponse(WorldSession* session, ObjectGuid pla
 void Guild::CreateKey()
 {
     guildKey = new char[32];
+    guildMemberKey = new char[32];
+    criteriaKey = new char[32];
+    itemKey = new char[32];
     sprintf(guildKey, "r{%u}g{%u}", realmID, m_id);
+    sprintf(guildMemberKey, "r{%u}g{%u}member", realmID, m_id);
+    sprintf(criteriaKey, "r{%u}g{%u}crit", realmID, m_id);
+    sprintf(itemKey, "r{%i}g{%i}items", realmID, m_id);
 }

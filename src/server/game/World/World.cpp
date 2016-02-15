@@ -1824,7 +1824,8 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Guild rewards...");
     sGuildMgr->LoadGuildRewards();
 
-    sGuildMgr->LoadGuilds();
+    //sGuildMgr->LoadGuilds();
+    sGuildMgr->LoadGuildsRedis();
 
     sGuildFinderMgr->LoadFromDB();
 

@@ -2891,8 +2891,8 @@ bool AchievementMgr<T>::SetCriteriaProgress(AchievementEntry const* achievement,
     if (achievement && achievement->parent && !HasAchieved(achievement->parent, referencePlayer->GetGUIDLow())) //Don`t send update criteria to client if parent achievment not complete
         return false;
 
-    if (achievement && GetCriteriaSort() == PLAYER_CRITERIA)
-        referencePlayer->UpdateSavePlayerCriteriaProgress(achievement, progressMap);
+    if (achievement)
+        GetOwner()->UpdateCriteriaProgress(achievement, progressMap);
 
     if (achievement && achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
         SendAccountCriteriaUpdate(criteria, progress, timeElapsed, progress->completed);
@@ -3009,11 +3009,8 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
     ca.changed = true;
     m_CompletedAchievementsLock.release();
 
-    if (GetCriteriaSort() == PLAYER_CRITERIA)
-    {
-        referencePlayer->SavePlayerAchievement();
-        referencePlayer->DeleteSavePlayerCriteriaProgress(achievement);
-    }
+    GetOwner()->SaveAchievement();
+    GetOwner()->DeleteCriteriaProgress(achievement);
 
     if (!progressMap)
         progressMap = GetCriteriaProgressMap(achievement->ID);
@@ -4655,6 +4652,20 @@ void AchievementMgr<Player>::AddAchievements(uint32 achievementid, uint32 date)
                 GetOwner()->SetTitle(titleEntry);
     }
 }
+
+template<>
+void AchievementMgr<Guild>::AddAchievements(uint32 achievementid, uint32 date)
+{
+    // must not happen: cleanup at server startup in sAchievementMgr->LoadCompletedAchievements()
+    AchievementEntry const* achievement = sAchievementMgr->GetAchievement(achievementid);
+    if (!achievement)
+        return;
+
+    CompletedAchievementData& ca = m_completedAchievements[achievementid];
+    ca.changed = false;
+    ca.date = time_t(date);
+}
+
 template<class T>
 void AchievementMgr<T>::AddCriteriaProgress(uint32 achievementID, uint32 char_criteria_id, uint32 _date, uint32 counter, bool completed)
 {
@@ -4754,6 +4765,58 @@ void AchievementMgr<Player>::AddAccountCriteriaProgress(uint32 achievementID, ui
     CriteriaTreeProgress& progress = (*progressMap)[char_criteria_id];
     progress.counter = counter;
     progress.date    = date;
+    progress.changed = false;
+    progress.updated = update;
+    progress.completed = completed;
+    progress.deactiveted = false;
+    progress.achievement = achievement;
+    progress.criteriaTree = criteriaTree;
+    progress.criteria = criteria;
+    progress.parent = sCriteriaTreeStore.LookupEntry(criteriaTree->parent);
+}
+
+template<class T>
+void AchievementMgr<T>::AddGuildCriteriaProgress(uint32 achievementID, uint32 char_criteria_id, uint32 _date, uint32 counter, bool completed, uint32 guid)
+{
+}
+
+template<>
+void AchievementMgr<Guild>::AddGuildCriteriaProgress(uint32 achievementID, uint32 char_criteria_id, uint32 _date, uint32 counter, bool completed, uint32 guid)
+{
+    time_t now = time(NULL);
+    time_t date                  = time_t(_date);
+    
+    CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(char_criteria_id);
+    if (!criteriaTree)
+        return;
+
+    CriteriaEntry const* criteria = sAchievementMgr->GetAchievementCriteria(criteriaTree->criteria);
+    if (!criteria)
+        return;
+
+    bool update = false;
+    AchievementEntry const* achievement = NULL;
+    if(!achievementID)
+    {
+        uint32 parent = sAchievementMgr->GetParantTreeId(criteriaTree->parent);
+        achievement = GetsAchievementByTreeList(parent);
+        update = true;
+    }
+    else
+        achievement = sAchievementMgr->GetAchievement(achievementID);
+
+    bool hasAchieve = !achievement || HasAchieved(achievement->ID);
+    if (hasAchieve)
+        return;
+
+    if (criteria->timeLimit && time_t(date + criteria->timeLimit) < now)
+        return;
+
+    CriteriaProgressMap* progressMap = GetCriteriaProgressMap(achievement->ID);
+    CriteriaTreeProgress& progress = (*progressMap)[char_criteria_id];
+    progress.counter = counter;
+    progress.date    = date;
+    progress.CompletedGUID = MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER);
     progress.changed = false;
     progress.updated = update;
     progress.completed = completed;

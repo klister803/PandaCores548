@@ -1661,8 +1661,8 @@ class Player : public Unit, public GridObject<Player>
         void SavePlayerVisuals();
         void SavePlayerAccountData();
         void SavePlayerHomeBind();
-        void SavePlayerAchievement();
-        void SavePlayerCriteria();
+        void SaveAchievement();
+        void SaveCriteria();
         void SavePlayerPets();
         void CreatedPlayerPets();
         void SavePlayerMails();
@@ -1731,8 +1731,8 @@ class Player : public Unit, public GridObject<Player>
         void LoadPlayerGuild(const RedisValue* v, uint64 playerGuid);
 
         //Update data in database
-        void DeleteSavePlayerCriteriaProgress(AchievementEntry const* achievement);
-        void UpdateSavePlayerCriteriaProgress(AchievementEntry const* achievement, CriteriaProgressMap* progressMap);
+        void DeleteCriteriaProgress(AchievementEntry const* achievement);
+        void UpdateCriteriaProgress(AchievementEntry const* achievement, CriteriaProgressMap* progressMap);
 
         /*********************************************************/
         /***                    STORAGE SYSTEM                 ***/

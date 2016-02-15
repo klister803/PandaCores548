@@ -463,6 +463,7 @@ bool Master::_StartDB()
         sLog->outError(LOG_FILTER_WORLDSERVER, "Cannot connect to Redis database %s", dbstring.c_str());
         return false;
     }
+    RedisDatabase.CheckConnect();
 
     ///- Get the realm Id from the configuration file
     realmID = ConfigMgr::GetIntDefault("RealmID", 0);

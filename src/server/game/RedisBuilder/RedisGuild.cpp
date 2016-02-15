@@ -97,10 +97,11 @@ void Guild::Member::SaveGuildMember()
     GuildMemberData["m_totalActivity"] = m_totalActivity;
     GuildMemberData["m_weekActivity"] = m_weekActivity;
     GuildMemberData["m_weekReputation"] = m_weekReputation;
+    GuildMemberData["m_totalReputation"] = m_totalReputation;
 
     std::string index = std::to_string(GUID_LOPART(m_guid));
 
-    RedisDatabase.AsyncExecuteHSet("HSET", guildMemberKey, index.c_str(), sRedisBuilder->BuildString(GuildMemberData).c_str(), m_guid, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", m_guild->GetGuildMemberKey(), index.c_str(), sRedisBuilder->BuildString(GuildMemberData).c_str(), m_guid, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Guild::SaveGuildMember guid %u", guid);
     });
 }
@@ -311,7 +312,7 @@ void Guild::SaveGuildNewsLog()
     }
 
     RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "newslog", sRedisBuilder->BuildString(GuildNewsLogData).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Guild::SaveGuildBankTab guid %u", guid);
+        sLog->outInfo(LOG_FILTER_REDIS, "Guild::SaveGuildNewsLog guid %u", guid);
     });
 }
 
@@ -325,14 +326,14 @@ void Guild::UpdateGuildNewsLog(GuildNewsEntry* log, uint32 id)
     GuildNewsLogData[index.c_str()]["Date"] = log->Date;
 
     RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "newslog", sRedisBuilder->BuildString(GuildNewsLogData).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Guild::SaveGuildBankTab guid %u", guid);
+        sLog->outInfo(LOG_FILTER_REDIS, "Guild::UpdateGuildNewsLog guid %u", guid);
     });
 }
 
 void GuildMgr::LoadGuildsRedis()
 {
     // 1. Load all guilds
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading guilds definitions...");
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading guilds...");
     {
         uint32 oldMSTime = getMSTime();
 
@@ -358,8 +359,8 @@ void GuildMgr::LoadGuildsRedis()
                 continue;
             }
 
-            Json::Value guildData;
-            if (!sRedisBuilder->LoadFromRedis(&(*itr), guildData))
+            Json::Value guildDB;
+            if (!sRedisBuilder->LoadFromRedis(&(*itr), guildDB))
             {
                 ++itr;
                 sLog->outInfo(LOG_FILTER_REDIS, "GuildMgr::LoadGuildsRedis not parse guildId %i", guildId);
@@ -368,21 +369,9 @@ void GuildMgr::LoadGuildsRedis()
             else
                 ++itr;
 
-            char* guildKeyId = new char[32];
-            sprintf(guildKeyId, "r{%u}g{%u}", realmID, guildId);
-
-            RedisValue v = RedisDatabase.Execute("HGETALL", guildKeyId);
-
-            std::vector<RedisValue> guildDataV;
-            if (!sRedisBuilder->LoadFromRedisArray(&v, guildDataV))
-            {
-                sLog->outInfo(LOG_FILTER_REDIS, "GuildMgr::LoadGuildsRedis group not found");
-                continue;
-            }
-
             Guild* guild = new Guild();
 
-            if (!guild->LoadFromDB(guildId, guildData, &guildDataV))
+            if (!guild->LoadFromDB(guildId, guildDB))
             {
                 delete guild;
                 continue;
@@ -395,70 +384,7 @@ void GuildMgr::LoadGuildsRedis()
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u guild definitions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
     }
 
-    // 3. Load all guild members
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading guild members...");
-    {
-        uint32 oldMSTime = getMSTime();
-
-        // Delete orphaned guild member entries before loading the valid ones
-        CharacterDatabase.DirectExecute("DELETE gm FROM guild_member gm LEFT JOIN guild g ON gm.guildId = g.guildId WHERE g.guildId IS NULL");
-
-                                                     //          0        1        2     3      4        5                   6
-        QueryResult result = CharacterDatabase.Query("SELECT gm.guildid, gm.guid, rank, pnote, offnote, BankResetTimeMoney, BankRemMoney, "
-                                                     //   7                  8                 9                  10                11                 12
-                                                     "BankResetTimeTab0, BankRemSlotsTab0, BankResetTimeTab1, BankRemSlotsTab1, BankResetTimeTab2, BankRemSlotsTab2, "
-                                                     //   13                 14                15                 16                17                 18
-                                                     "BankResetTimeTab3, BankRemSlotsTab3, BankResetTimeTab4, BankRemSlotsTab4, BankResetTimeTab5, BankRemSlotsTab5, "
-                                                     //   19                 20                21                 22
-                                                     "BankResetTimeTab6, BankRemSlotsTab6, BankResetTimeTab7, BankRemSlotsTab7, "
-                                                     //   23      24       25       26      27         28             29          30           31          32       33         34
-                                                     "c.name, c.level, c.class, c.zone, c.account, c.logout_time, re.standing, XpContrib, XpContribWeek, RepWeek, AchPoint, c.gender, "
-                                                     //   35   36          37         38            39       40          41         42
-                                                     "profId1, profValue1, profRank1, recipesMask1, profId2, profValue2, profRank2, recipesMask2 "
-                                                     "FROM guild_member gm LEFT JOIN characters c ON c.guid = gm.guid LEFT JOIN character_reputation re ON re.guid = gm.guid AND re.faction = 1168 ORDER BY guildid ASC");
-
-        if (!result)
-        {
-            sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 guild members. DB table `guild_member` is empty.");
-        }
-        else
-        {
-            uint32 count = 0;
-
-            do
-            {
-                Field* fields = result->Fetch();
-                uint32 guildId = fields[0].GetUInt32();
-
-                if (Guild* guild = GetGuildById(guildId))
-                    guild->LoadMemberFromDB(fields);
-
-                ++count;
-            }
-            while (result->NextRow());
-
-            sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u guild members int %u ms", count, GetMSTimeDiffToNow(oldMSTime));
-        }
-    }
-
-    // 9. Load guild achievements
-    {
-        PreparedQueryResult achievementResult;
-        PreparedQueryResult criteriaResult;
-        for (GuildContainer::const_iterator itr = GuildStore.begin(); itr != GuildStore.end(); ++itr)
-        {
-            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_GUILD_ACHIEVEMENT);
-            stmt->setUInt32(0, itr->first);
-            achievementResult = CharacterDatabase.Query(stmt);
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_GUILD_ACHIEVEMENT_CRITERIA);
-            stmt->setUInt32(0, itr->first);
-            criteriaResult = CharacterDatabase.Query(stmt);
-
-            itr->second->GetAchievementMgr().LoadFromDB(achievementResult, criteriaResult);
-        }
-    }
-
-    // 11. Update Guild Known Recipes
+    // 2. Update Guild Known Recipes
     for (GuildContainer::iterator itr = GuildStore.begin(); itr != GuildStore.end(); ++itr)
     {
         Guild* guild = itr->second;
@@ -468,7 +394,7 @@ void GuildMgr::LoadGuildsRedis()
         guild->UpdateGuildRecipes();
     }
 
-    // 12. Validate loaded guild data
+    // 3. Validate loaded guild data
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Validating data of loaded guilds...");
     {
         uint32 oldMSTime = getMSTime();
@@ -479,7 +405,6 @@ void GuildMgr::LoadGuildsRedis()
             if (guild)
             {
                 guild->Validate();
-                guild->SaveGuild();
                 /*if (!guild->Validate())
                 {
                     volatile uint32 _guildId = guild->GetId();
@@ -497,7 +422,7 @@ void GuildMgr::LoadGuildsRedis()
     }
 }
 
-bool Guild::LoadFromDB(uint32 guildId, Json::Value guildData, std::vector<RedisValue>* guildDataV)
+bool Guild::LoadFromDB(uint32 guildId, Json::Value guildData)
 {
     m_id            = guildId;
     m_name          = guildData["m_name"].asString();
@@ -522,34 +447,148 @@ bool Guild::LoadFromDB(uint32 guildId, Json::Value guildData, std::vector<RedisV
     _CreateLogHolders();
     CreateKey();
 
-    for (auto itr = guildDataV->begin(); itr != guildDataV->end();)
+    //Load Guild data
+    RedisValue g = RedisDatabase.Execute("HGETALL", guildKey);
+    std::vector<RedisValue> data;
+    if (sRedisBuilder->LoadFromRedisArray(&g, data))
     {
-        std::string index = itr->toString();
-        ++itr;
-
-        Json::Value guildData2;
-        if (!sRedisBuilder->LoadFromRedis(&(*itr), guildData2))
+        for (auto itr = data.begin(); itr != data.end();)
         {
-            ++itr;
-            sLog->outInfo(LOG_FILTER_REDIS, "GuildMgr::LoadFromDB not parse guildId %i", guildId);
-            continue;
-        }
-        else
+            std::string index = itr->toString();
             ++itr;
 
-        if (!strcmp(index.c_str(), "money"))
-            m_bankMoney = guildData2.asUInt64();
-        else if (!strcmp(index.c_str(), "rank"))
-                LoadRankFromDB(guildData2);
-        else if (!strcmp(index.c_str(), "eventlog"))
-                LoadEventLogFromDB(guildData2);
-        else if (!strcmp(index.c_str(), "bankeventlog"))
-                LoadBankEventLogFromDB(guildData2);
-        else if (!strcmp(index.c_str(), "banktab"))
-                LoadBankTabFromDB(guildData2);
-        else if (!strcmp(index.c_str(), "newslog"))
-                GetNewsLog().LoadFromDB(guildData2);
+            Json::Value guildField;
+            if (!sRedisBuilder->LoadFromRedis(&(*itr), guildField))
+            {
+                ++itr;
+                sLog->outInfo(LOG_FILTER_REDIS, "Guild::LoadFromDB not parse guildId %i", guildId);
+                continue;
+            }
+            else
+                ++itr;
+
+            if (!strcmp(index.c_str(), "money"))
+                m_bankMoney = guildField.asUInt64();
+            else if (!strcmp(index.c_str(), "rank"))
+                    LoadRankFromDB(guildField);
+            else if (!strcmp(index.c_str(), "eventlog"))
+                    LoadEventLogFromDB(guildField);
+            else if (!strcmp(index.c_str(), "bankeventlog"))
+                    LoadBankEventLogFromDB(guildField);
+            else if (!strcmp(index.c_str(), "banktab"))
+                    LoadBankTabFromDB(guildField);
+            else if (!strcmp(index.c_str(), "newslog"))
+                    GetNewsLog().LoadFromDB(guildField);
+            else if (!strcmp(index.c_str(), "achievement"))
+                    LoadAchievement(guildField);
+        }
     }
+    else
+        return false;
+
+    //Load Member data
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading guild members...");
+    uint32 oldMSTime = getMSTime();
+    uint32 count = 0;
+    RedisValue m = RedisDatabase.Execute("HGETALL", GetGuildMemberKey());
+    std::vector<RedisValue> memberVector;
+    if (sRedisBuilder->LoadFromRedisArray(&m, memberVector))
+    {
+        for (auto itr = memberVector.begin(); itr != memberVector.end();)
+        {
+            uint32 memberId = atoi(itr->toString().c_str());
+            ++itr;
+
+            Json::Value memberData;
+            if (!sRedisBuilder->LoadFromRedis(&(*itr), memberData))
+            {
+                ++itr;
+                sLog->outInfo(LOG_FILTER_REDIS, "Guild::LoadFromDB not parse memberId %i", memberId);
+                continue;
+            }
+            else
+                ++itr;
+
+            LoadMemberFromDB(memberId, memberData);
+            ++count;
+        }
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u guild members int %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    }
+    else
+        return false;
+
+    //Load Criteria data
+    RedisValue cri = RedisDatabase.Execute("HGETALL", GetCriteriaKey());
+    std::vector<RedisValue> criteriaVector;
+    if (sRedisBuilder->LoadFromRedisArray(&cri, criteriaVector))
+    {
+        for (auto itr = criteriaVector.begin(); itr != criteriaVector.end();)
+        {
+            uint32 achievementID = atoi(itr->toString().c_str());
+            ++itr;
+
+            Json::Value CriteriaData;
+            if (!sRedisBuilder->LoadFromRedis(&(*itr), CriteriaData))
+            {
+                ++itr;
+                sLog->outInfo(LOG_FILTER_REDIS, "Guild::LoadFromDB not parse achievementID %i", achievementID);
+                continue;
+            }
+            else
+                ++itr;
+
+            for (auto iter = CriteriaData.begin(); iter != CriteriaData.end(); ++iter)
+            {
+                uint32 char_criteria_id = atoi(iter.memberName());
+                auto dataValue = *iter;
+
+
+                time_t date    = time_t(dataValue["date"].asUInt());
+                uint32 counter = dataValue["counter"].asUInt();
+                bool completed = dataValue["completed"].asBool();
+                uint32 guid = dataValue["CompletedGUID"].asUInt();
+
+                m_achievementMgr.AddGuildCriteriaProgress(achievementID, char_criteria_id, date, counter, completed, guid);
+            }
+
+            std::string achievID = std::to_string(achievementID);
+            GuildCriteriaData[achievID.c_str()] = CriteriaData;
+        }
+
+        m_achievementMgr.GenerateProgressMap();
+    }
+
+    //Load items
+    RedisValue item = RedisDatabase.Execute("HGETALL", GetItemKey());
+    std::vector<RedisValue> itemVector;
+    if (sRedisBuilder->LoadFromRedisArray(&item, itemVector))
+    {
+        for (auto itr = itemVector.begin(); itr != itemVector.end();)
+        {
+            uint32 itemGuid = atoi(itr->toString().c_str());
+            ++itr;
+
+            Json::Value itemData;
+            if (!sRedisBuilder->LoadFromRedis(&(*itr), itemData))
+            {
+                ++itr;
+                sLog->outInfo(LOG_FILTER_REDIS, "Guild::LoadFromDB not parse itemGuid %i", itemGuid);
+                continue;
+            }
+            else
+                ++itr;
+
+            uint8 tabId = itemData["m_tabId"].asUInt();
+            if (tabId >= GetPurchasedTabsSize())
+            {
+                sLog->outError(LOG_FILTER_GUILD, "Invalid tab for item (GUID: %u, id: #%u) in guild bank, skipped.",
+                    itemGuid, itemData["itemEntry"].asUInt());
+                continue;
+            }
+            m_bankTabs[tabId]->LoadItemFromDB(itemData);
+        }
+    }
+
     return true;
 }
 
@@ -580,7 +619,7 @@ void Guild::RankInfo::LoadFromDB(uint32 rankId, Json::Value rankValue)
     m_rankId            = rankId;
     m_name              = rankValue["m_name"].asString();
     m_rights            = rankValue["m_rights"].asUInt();
-    m_bankMoneyPerDay   = rankValue["m_bankMoneyPerDay"].asUInt();
+    m_bankMoneyPerDay   = rankValue["m_bankMoneyPerDay"].asUInt64();
     if (m_rankId == GR_GUILDMASTER)                     // Prevent loss of leader rights
         m_rights |= GR_RIGHT_ALL;
 }
@@ -708,4 +747,214 @@ void Guild::GuildNewsLog::LoadFromDB(Json::Value guildNews)
     }
 
     Shrink();
+}
+
+bool Guild::LoadMemberFromDB(uint32 memberId, Json::Value memberData)
+{
+    Member *member = new Member(this, MAKE_NEW_GUID(memberId, 0, HIGHGUID_PLAYER), memberData["m_rankId"].asUInt());
+    if (!member->LoadFromDB(memberData))
+    {
+        DeleteMemberGuild(memberId);
+        delete member;
+        return false;
+    }
+
+    sLog->outInfo(LOG_FILTER_REDIS, "Guild::LoadMemberFromDB memberId %i", memberId);
+    m_members[memberId] = member;
+    return true;
+}
+
+bool Guild::Member::LoadFromDB(Json::Value memberData)
+{
+    m_publicNote    = memberData["m_publicNote"].asString();
+    m_officerNote   = memberData["m_officerNote"].asString();
+    m_bankRemaining[GUILD_BANK_MAX_TABS].resetTime  = memberData["BankResetTimeMoney"].asUInt();
+    m_bankRemaining[GUILD_BANK_MAX_TABS].value      = memberData["BankRemMoney"].asUInt();
+
+    m_bankRemaining[0].resetTime                = memberData["BankResetTimeTab0"].asUInt();
+    m_bankRemaining[0].value                    = memberData["BankRemSlotsTab0"].asUInt();
+    m_bankRemaining[1].resetTime                = memberData["BankResetTimeTab1"].asUInt();
+    m_bankRemaining[1].value                    = memberData["BankRemSlotsTab1"].asUInt();
+    m_bankRemaining[2].resetTime                = memberData["BankResetTimeTab2"].asUInt();
+    m_bankRemaining[2].value                    = memberData["BankRemSlotsTab2"].asUInt();
+    m_bankRemaining[3].resetTime                = memberData["BankResetTimeTab3"].asUInt();
+    m_bankRemaining[3].value                    = memberData["BankRemSlotsTab3"].asUInt();
+    m_bankRemaining[4].resetTime                = memberData["BankResetTimeTab4"].asUInt();
+    m_bankRemaining[4].value                    = memberData["BankRemSlotsTab4"].asUInt();
+    m_bankRemaining[5].resetTime                = memberData["BankResetTimeTab5"].asUInt();
+    m_bankRemaining[5].value                    = memberData["BankRemSlotsTab5"].asUInt();
+    m_bankRemaining[6].resetTime                = memberData["BankResetTimeTab6"].asUInt();
+    m_bankRemaining[6].value                    = memberData["BankRemSlotsTab6"].asUInt();
+    m_bankRemaining[7].resetTime                = memberData["BankResetTimeTab7"].asUInt();
+    m_bankRemaining[7].value                    = memberData["BankRemSlotsTab7"].asUInt();
+
+    SetStats(memberData["m_name"].asString(),                       // characters.name
+            memberData["m_level"].asUInt(),                         // characters.level
+            memberData["m_class"].asUInt(),                         // characters.class
+            memberData["m_zoneId"].asUInt(),                        // characters.zone
+            memberData["m_accountId"].asUInt(),                     // characters.account
+            memberData["m_totalReputation"].asUInt(),               // character_reputation.standing
+            memberData["m_gender"].asUInt(),                        // characters.gender
+            memberData["m_achievementPoints"].asUInt(),             // achievement points
+            memberData["profId1"].asUInt(),                         // prof id 1
+            memberData["profValue1"].asUInt(),                      // prof value 1
+            memberData["profRank1"].asUInt(),                       // prof rank 1
+            memberData["recipesMask1"].asString(),                  // prof recipes mask 1
+            memberData["profId2"].asUInt(),                         // prof id 2
+            memberData["profValue2"].asUInt(),                      // prof value 2
+            memberData["profRank2"].asUInt(),                       // prof rank 2
+            memberData["recipesMask2"].asString()                   // prof recipes mask 2
+            );
+    m_logoutTime    = memberData["m_logoutTime"].asUInt();           // characters.logout_time
+    m_totalActivity = memberData["m_totalActivity"].asUInt64();
+    m_weekActivity = memberData["m_weekActivity"].asUInt64();
+    m_weekReputation = memberData["m_weekReputation"].asUInt();
+
+    if (!CheckStats())
+        return false;
+
+    if (!m_zoneId)
+        m_zoneId = 5736; //Hack
+
+    return true;
+}
+
+void Guild::SaveAchievement()
+{
+    for (auto iter = GetAchievementMgr().GetCompletedAchievementsList().begin(); iter != GetAchievementMgr().GetCompletedAchievementsList().end(); ++iter)
+    {
+        std::string achievementId = std::to_string(iter->first);
+        GuildAchievementData[achievementId.c_str()]["date"] = iter->second.date;
+    }
+
+    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "achievement", sRedisBuilder->BuildString(GuildAchievementData).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Guild::SaveAchievement guid %u", guid);
+    });
+}
+
+void Guild::DeleteCriteriaProgress(AchievementEntry const* achievement)
+{
+    std::string achievID = std::to_string(achievement->ID);
+
+    GuildCriteriaData.removeMember(achievID.c_str());
+
+    RedisDatabase.AsyncExecuteH("HDEL", criteriaKey, achievID.c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Guild::DeleteCriteriaProgress guid %u", guid);
+    });
+}
+
+void Guild::SaveCriteria()
+{
+    GuildCriteriaData.clear();
+    for (auto itr = GetAchievementMgr().GetAchievementProgress().begin(); itr != GetAchievementMgr().GetAchievementProgress().end(); ++itr)
+    {
+        std::string achievID = std::to_string(itr->first);
+        bool save_pl = false;
+        bool save_ac = false;
+        Json::Value Criteria;
+
+        if(auto progressMap = &itr->second)
+        {
+            for (auto iter = progressMap->begin(); iter != progressMap->end(); ++iter)
+            {
+                if (iter->second.deactiveted)
+                    continue;
+
+                //disable? active before test achivement system
+                AchievementEntry const* achievement = iter->second.achievement;
+                if (!achievement)
+                    continue;
+
+                // store data only for real progress
+                bool hasAchieve = m_achievementMgr.HasAchieved(achievement->ID) || (achievement->parent && !m_achievementMgr.HasAchieved(achievement->parent));
+                if (iter->second.counter != 0 && !hasAchieve)
+                {
+                    std::string criteriaId = std::to_string(iter->first);
+                    Criteria[criteriaId.c_str()]["counter"] = iter->second.counter;
+                    Criteria[criteriaId.c_str()]["date"] = iter->second.date;
+                    Criteria[criteriaId.c_str()]["completed"] = iter->second.completed;
+                    Criteria[criteriaId.c_str()]["CompletedGUID"] = GUID_LOPART(iter->second.CompletedGUID);
+                }
+            }
+        }
+
+        GuildCriteriaData[achievID.c_str()] = Criteria;
+        RedisDatabase.AsyncExecuteHSet("HSET", criteriaKey, achievID.c_str(), sRedisBuilder->BuildString(Criteria).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
+            sLog->outInfo(LOG_FILTER_REDIS, "Guild::SaveCriteria account guid %u", guid);
+        });
+    }
+}
+
+void Guild::UpdateCriteriaProgress(AchievementEntry const* achievement, CriteriaProgressMap* progressMap)
+{
+    std::string achievID = std::to_string(achievement->ID);
+    Json::Value Criteria;
+
+    for (auto iter = progressMap->begin(); iter != progressMap->end(); ++iter)
+    {
+        if (iter->second.deactiveted)
+            continue;
+
+        // store data only for real progress
+        if (iter->second.counter != 0)
+        {
+            std::string criteriaId = std::to_string(iter->first);
+            Criteria[criteriaId.c_str()]["counter"] = iter->second.counter;
+            Criteria[criteriaId.c_str()]["date"] = iter->second.date;
+            Criteria[criteriaId.c_str()]["completed"] = iter->second.completed;
+            Criteria[criteriaId.c_str()]["CompletedGUID"] = GUID_LOPART(iter->second.CompletedGUID);
+        }
+    }
+
+    GuildCriteriaData[achievID.c_str()] = Criteria;
+    RedisDatabase.AsyncExecuteHSet("HSET", criteriaKey, achievID.c_str(), sRedisBuilder->BuildString(Criteria).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
+        //sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerCriteria player guid %u", guid);
+    });
+}
+
+void Guild::LoadAchievement(Json::Value achievData)
+{
+    for (auto itr = achievData.begin(); itr != achievData.end(); ++itr)
+    {
+        uint32 achievID = atoi(itr.memberName());
+        auto achievValue = (*itr);
+
+        uint32 date    = achievValue["date"].asInt();
+
+        m_achievementMgr.AddAchievements(achievID, date);
+    }
+}
+
+bool Guild::BankTab::LoadItemFromDB(Json::Value itemData)
+{
+    uint8 slotId = itemData["slot"].asUInt();
+    uint32 itemGuid = itemData["itemGuid"].asUInt();
+    uint32 itemEntry = itemData["itemEntry"].asUInt();
+    if (slotId >= GUILD_BANK_MAX_SLOTS)
+    {
+        sLog->outError(LOG_FILTER_GUILD, "Invalid slot for item (GUID: %u, id: %u) in guild bank, skipped.", itemGuid, itemEntry);
+        return false;
+    }
+
+    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemEntry);
+    if (!proto)
+    {
+        sLog->outError(LOG_FILTER_GUILD, "Unknown item (GUID: %u, id: %u) in guild bank, skipped.", itemGuid, itemEntry);
+        return false;
+    }
+
+    Item* pItem = NewItemOrBag(proto);
+    pItem->SetItemKey(ITEM_KEY_GUILD, m_guildId);
+
+    if (!pItem->LoadFromDB(itemGuid, 0, itemData, itemEntry))
+    {
+        delete pItem;
+        return false;
+    }
+
+    pItem->SetTabId(m_tabId);
+    pItem->SetSlot(slotId);
+    pItem->AddToWorld();
+    m_items[slotId] = pItem;
+    return true;
 }

@@ -334,6 +334,7 @@ class AchievementMgr
         void AddAchievements(uint32 achievementid, uint32 date);
         void AddCriteriaProgress(uint32 achievementID, uint32 char_criteria_id, uint32 _date, uint32 counter, bool completed);
         void AddAccountCriteriaProgress(uint32 achievementID, uint32 char_criteria_id, uint32 _date, uint32 counter, bool completed);
+        void AddGuildCriteriaProgress(uint32 achievementID, uint32 char_criteria_id, uint32 _date, uint32 counter, bool completed, uint32 guid);
         void GenerateProgressMap();
 
     private:
