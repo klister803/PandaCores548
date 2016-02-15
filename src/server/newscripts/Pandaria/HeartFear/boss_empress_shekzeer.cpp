@@ -150,7 +150,8 @@ class boss_empress_shekzeer : public CreatureScript
                 events.ScheduleEvent(EVENT_SCREECH, 8000, 0, PHASE_ONE);
                 events.ScheduleEvent(EVENT_TERROR,  urand(25000, 35000), 0, PHASE_ONE);
                 events.ScheduleEvent(EVENT_EYES_OF_EMPRESS, 10000);
-                events.ScheduleEvent(EVENT_FIXATE, 20000);
+                events.ScheduleEvent(EVENT_FIXATE, 10000);
+                events.ScheduleEvent(EVENT_DISPATCH, 20000);
             }
 
             void JustDied(Unit* /*killer*/)
@@ -368,6 +369,7 @@ class npc_generic_royal_sentinel : public CreatureScript
                 switch (me->GetEntry())
                 {
                     case NPC_SETTHIK_WINDBLADE:
+                        DoCast(me, SPELL_BAND_OF_VALOR, true);
                         events.ScheduleEvent(EVENT_SONIC_BLADE, 8000);
                         break;
                     case NPC_KORTHIK_REAVER:
@@ -376,7 +378,6 @@ class npc_generic_royal_sentinel : public CreatureScript
                         events.ScheduleEvent(EVENT_TOXIC_BOMB,  urand(20000, 25000));
                         break;
                 }
-                DoCast(SPELL_BAND_OF_VALOR);
             }
 
             void JustDied(Unit* killer)
@@ -452,7 +453,7 @@ class spell_calamity : public SpellScriptLoader
                 if (!caster || !target)
                     return;
                 
-                int32 curdmg = target->GetMaxHealth()/2;
+                int32 curdmg = target->GetHealth()/2;
 
                 if (curdmg)
                     SetHitDamage(curdmg);

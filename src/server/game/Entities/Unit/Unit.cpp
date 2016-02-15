@@ -11098,7 +11098,7 @@ ReputationRank Unit::GetReactionTo(Unit const* target) const
                     return REP_HOSTILE;
 
                 // same group - checks dependant only on our faction - skip FFA_PVP for example
-                if (selfPlayerOwner->IsInRaidWith(targetPlayerOwner))
+                if (selfPlayerOwner->IsInRaidWith(targetPlayerOwner) && !HasAuraType(SPELL_AURA_MOD_FACTION))
                     return REP_FRIENDLY; // return true to allow config option AllowTwoSide.Interaction.Group to work
                     // however client seems to allow mixed group parties, because in 13850 client it works like:
                     // return GetFactionReactionTo(getFactionTemplateEntry(), target);
