@@ -269,14 +269,16 @@ enum SheathState
 // byte (1 from 0..3) of UNIT_FIELD_BYTES_2
 enum UnitPVPStateFlags
 {
-    UNIT_BYTE2_FLAG_PVP         = 0x01,
-    UNIT_BYTE2_FLAG_UNK1        = 0x02,
-    UNIT_BYTE2_FLAG_FFA_PVP     = 0x04,
-    UNIT_BYTE2_FLAG_SANCTUARY   = 0x08,
-    UNIT_BYTE2_FLAG_UNK4        = 0x10,
-    UNIT_BYTE2_FLAG_UNK5        = 0x20,
-    UNIT_BYTE2_FLAG_UNK6        = 0x40,
-    UNIT_BYTE2_FLAG_UNK7        = 0x80
+    UNIT_BYTE2_FLAG_PVP         = 0x001,
+    UNIT_BYTE2_FLAG_UNK1        = 0x002,
+    UNIT_BYTE2_FLAG_FFA_PVP     = 0x004,
+    UNIT_BYTE2_FLAG_SANCTUARY   = 0x008,
+    UNIT_BYTE2_FLAG_UNK4        = 0x010,
+    UNIT_BYTE2_FLAG_UNK5        = 0x020,
+    UNIT_BYTE2_FLAG_UNK6        = 0x040,
+    UNIT_BYTE2_FLAG_UNK7        = 0x080,
+    UNIT_BYTE2_FLAG_UNK8        = 0x100,
+    UNIT_BYTE2_FLAG_UNK9        = 0x200
 };
 
 // byte (2 from 0..3) of UNIT_FIELD_BYTES_2

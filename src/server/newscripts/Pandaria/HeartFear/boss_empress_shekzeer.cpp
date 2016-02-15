@@ -23,26 +23,27 @@ enum eSpells
 {
     //Empress
     //phase 1
-    SPELL_CRY_OF_TERROR         = 123788,
-    SPELL_DREAD_SCREECH         = 123735,
-    SPELL_EYES_OF_EMPRESS       = 123707,
+    SPELL_CRY_OF_TERROR          = 123788,
+    SPELL_DREAD_SCREECH          = 123735,
+    SPELL_EYES_OF_EMPRESS        = 123707,
+    SPELL_SERVANT_OF_THE_EMPRESS = 123713,
     //phase 3
-    SPELL_CALAMITY              = 124845,
-    SPELL_SHA_ENERGY            = 125464,
-    SPELL_CONSUMING_TERROR      = 124849,
-    SPELL_VISIONS_OF_DEMISE     = 124862,
-    SPELL_AMASSING_DARKNESS     = 124842,
+    SPELL_CALAMITY               = 124845,
+    SPELL_SHA_ENERGY             = 125464,
+    SPELL_CONSUMING_TERROR       = 124849,
+    SPELL_VISIONS_OF_DEMISE      = 124862,
+    SPELL_AMASSING_DARKNESS      = 124842,
 
-    SPELL_FIXATE                = 129149,
+    SPELL_FIXATE                 = 129149,
     //Sentinels
     //Setthik
-    SPELL_TOXIC_SLIME           = 124807,
-    SPELL_DISPATCH              = 124077,
-    SPELL_SONIC_BLADE           = 125888, //125886 ?
+    SPELL_TOXIC_SLIME            = 124807,
+    SPELL_DISPATCH               = 129154,
+    SPELL_SONIC_BLADE            = 125888, //125886 ?
     //Korthik
-    SPELL_BAND_OF_VALOR         = 125417,
-    SPELL_TOXIC_BOMB            = 124777,
-    SPELL_POISON_DRENCHED_ARMOR = 124838,
+    SPELL_BAND_OF_VALOR          = 125417,
+    SPELL_TOXIC_BOMB             = 124777,
+    SPELL_POISON_DRENCHED_ARMOR  = 124838,
 };
 
 enum eEvents
@@ -129,7 +130,7 @@ class boss_empress_shekzeer : public CreatureScript
                 me->SetMaxPower(POWER_ENERGY, 150);
                 me->SetPower(POWER_ENERGY, 150);
                 sdiedval = 0;
-                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EYES_OF_EMPRESS);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EYES_OF_EMPRESS | SPELL_SERVANT_OF_THE_EMPRESS);
             }
 
             void RegeneratePower(Powers power, float &value)
@@ -155,7 +156,7 @@ class boss_empress_shekzeer : public CreatureScript
             void JustDied(Unit* /*killer*/)
             {
                 _JustDied();
-                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EYES_OF_EMPRESS);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EYES_OF_EMPRESS | SPELL_SERVANT_OF_THE_EMPRESS);
             }
 
             void DamageTaken(Unit* attacker, uint32 &damage)
@@ -234,12 +235,15 @@ class boss_empress_shekzeer : public CreatureScript
                 if (spell->Id == SPELL_EYES_OF_EMPRESS)
                     if (Aura* aura = target->GetAura(SPELL_EYES_OF_EMPRESS))
                         if (aura->GetStackAmount() > 4)
+                        {
                             target->CastSpell(target, 123713, true);
+                            DoResetThreat();
+                        }
             }
 
             void UpdateAI(uint32 diff)
             {
-                if (!UpdateVictim() || phase == PHASE_THREE)
+                if (!UpdateVictim())
                     return;
 
                 events.Update(diff);
@@ -325,6 +329,10 @@ class boss_empress_shekzeer : public CreatureScript
                             DoCast(SPELL_FIXATE);
                             events.ScheduleEvent(EVENT_FIXATE, 22000);
                             break;
+                        case EVENT_DISPATCH:
+                            DoCast(SPELL_DISPATCH);
+                            events.ScheduleEvent(EVENT_DISPATCH, 20000);
+                            break;
                     }
                 }
                 DoMeleeAttackIfReady();
@@ -360,7 +368,6 @@ class npc_generic_royal_sentinel : public CreatureScript
                 switch (me->GetEntry())
                 {
                     case NPC_SETTHIK_WINDBLADE:
-                        events.ScheduleEvent(EVENT_DISPATCH,    urand(15000, 20000));
                         events.ScheduleEvent(EVENT_SONIC_BLADE, 8000);
                         break;
                     case NPC_KORTHIK_REAVER:
@@ -410,11 +417,6 @@ class npc_generic_royal_sentinel : public CreatureScript
                             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
                                 DoCast(target, SPELL_TOXIC_BOMB);
                             events.ScheduleEvent(EVENT_TOXIC_BOMB, urand(20000, 25000));
-                            break;
-                        case EVENT_DISPATCH:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 40.0f, true))
-                                DoCast(target, SPELL_DISPATCH);
-                            events.ScheduleEvent(EVENT_DISPATCH,   urand(15000, 20000));
                             break;
                         case EVENT_SONIC_BLADE:
                             if (me->getVictim())
