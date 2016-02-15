@@ -958,3 +958,141 @@ bool Guild::BankTab::LoadItemFromDB(Json::Value itemData)
     m_items[slotId] = pItem;
     return true;
 }
+
+void GuildFinderMgr::GuildFinderSave(std::string index, Json::Value finderData)
+{
+    RedisDatabase.AsyncExecuteHSet("HSET", guildFinderKey, index.c_str(), sRedisBuilder->BuildString(finderData).c_str(), 0, [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "GuildFinderMgr::GuildFinderSave guid %u", guid);
+    });
+}
+
+void GuildFinderMgr::GuildFinderMemberSave()
+{
+    for (auto itr = FinderMemberData.begin(); itr != FinderMemberData.end(); ++itr)
+    {
+        RedisDatabase.AsyncExecuteHSet("HSET", guildFinderMKey, itr.memberName(), sRedisBuilder->BuildString((*itr)).c_str(), 0, [&](const RedisValue &v, uint64 guid) {
+            sLog->outInfo(LOG_FILTER_REDIS, "GuildFinderMgr::GuildFinderMemberSave guid %u", guid);
+        });
+    }
+}
+
+void GuildFinderMgr::UpdateFinderMember(std::string index)
+{
+    RedisDatabase.AsyncExecuteHSet("HSET", guildFinderMKey, index.c_str(), sRedisBuilder->BuildString(FinderMemberData[index.c_str()]).c_str(), 0, [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "GuildFinderMgr::GuildFinderMemberSave guid %u", guid);
+    });
+}
+
+void GuildFinderMgr::DeleteFinderGuild(std::string index)
+{
+    RedisDatabase.AsyncExecuteH("HDEL", guildFinderMKey, index.c_str(), 0, [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Guild::DeleteFinderGuild guid %u", guid);
+    });
+    RedisDatabase.AsyncExecuteH("HDEL", guildFinderKey, index.c_str(), 0, [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Guild::DeleteFinderGuild guid %u", guid);
+    });
+}
+
+void GuildFinderMgr::LoadFromRedis()
+{
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading guild finder guild-related settings...");
+
+    uint32 oldMSTime = getMSTime();
+
+    RedisValue finder = RedisDatabase.Execute("HGETALL", guildFinderKey);
+
+    std::vector<RedisValue> finderVector;
+    if (!sRedisBuilder->LoadFromRedisArray(&finder, finderVector))
+    {
+        sLog->outInfo(LOG_FILTER_REDIS, "GuildFinderMgr::LoadFromRedis guild not found");
+        return;
+    }
+
+    uint32 count = 0;
+    for (auto itr = finderVector.begin(); itr != finderVector.end();)
+    {
+        uint32 guildId = atoi(itr->toString().c_str());
+        ++itr;
+        if (itr->isInt())
+        {
+            ++itr;
+            continue;
+        }
+
+        Json::Value _data;
+        if (!sRedisBuilder->LoadFromRedis(&(*itr), _data))
+        {
+            ++itr;
+            sLog->outInfo(LOG_FILTER_REDIS, "GuildFinderMgr::LoadFromRedis not parse guildId %i", guildId);
+            continue;
+        }
+        else
+            ++itr;
+
+        uint8  availability = _data["availability"].asUInt();
+        uint8  classRoles   = _data["classRoles"].asUInt();
+        uint8  interests    = _data["interests"].asUInt();
+        uint8  level        = _data["level"].asUInt();
+        bool   listed       = (_data["listed"].asUInt() != 0);
+        std::string comment = _data["comment"].asString();
+        TeamId guildTeam = TeamId(_data["guildTeam"].asUInt());
+
+        LFGuildSettings settings(listed, guildTeam, guildId, classRoles, availability, interests, level, comment);
+        _guildSettings[guildId] = settings;
+
+        ++count;
+    }
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u guild finder guild-related settings in %u ms.", count, GetMSTimeDiffToNow(oldMSTime));
+
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading guild finder membership requests...");
+
+    RedisValue finderM = RedisDatabase.Execute("HGETALL", guildFinderMKey);
+
+    std::vector<RedisValue> finderMVector;
+    if (!sRedisBuilder->LoadFromRedisArray(&finderM, finderVector))
+    {
+        sLog->outInfo(LOG_FILTER_REDIS, "GuildFinderMgr::LoadFromRedis guild not found");
+        return;
+    }
+
+    count = 0;
+    for (auto itr = finderMVector.begin(); itr != finderMVector.end();)
+    {
+        uint32 guildId = atoi(itr->toString().c_str());
+        ++itr;
+        if (itr->isInt())
+        {
+            ++itr;
+            continue;
+        }
+
+        Json::Value _data;
+        if (!sRedisBuilder->LoadFromRedis(&(*itr), _data))
+        {
+            ++itr;
+            sLog->outInfo(LOG_FILTER_REDIS, "GuildFinderMgr::LoadFromRedis not parse guildId %i", guildId);
+            continue;
+        }
+        else
+            ++itr;
+
+        for (auto itr = _data.begin(); itr != _data.end(); ++itr)
+        {
+            uint32 playerId = atoi(itr.memberName());
+            auto dataValue = *itr;
+
+            uint8  availability = dataValue["availability"].asUInt();
+            uint8  classRoles   = dataValue["classRoles"].asUInt();
+            uint8  interests    = dataValue["interests"].asUInt();
+            uint32  submitTime    = dataValue["submitTime"].asUInt();
+            std::string comment = dataValue["comment"].asString();
+
+            MembershipRequest request(playerId, guildId, availability, classRoles, interests, comment, time_t(submitTime));
+            _membershipRequests[guildId].push_back(request);
+
+            ++count;
+        }
+    }
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u guild finder membership requests in %u ms.", count, GetMSTimeDiffToNow(oldMSTime));
+}

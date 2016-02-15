@@ -756,6 +756,7 @@ void WorldSession::HandleCharDeleteOpcode(WorldPacket & recvData)
         return;
 
     uint32 accountId = 0;
+    uint32 guildId = 0;
     std::string name;
 
     // is guild leader
@@ -767,15 +768,14 @@ void WorldSession::HandleCharDeleteOpcode(WorldPacket & recvData)
         return;
     }
 
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_ACCOUNT_NAME_BY_GUID);
-    stmt->setUInt32(0, GUID_LOPART(guid));
-
-    if (PreparedQueryResult result = CharacterDatabase.Query(stmt))
+    if (const CharacterNameData* nameData = sWorld->GetCharacterNameData(GUID_LOPART(guid)))
     {
-        Field* fields = result->Fetch();
-        accountId     = fields[0].GetUInt32();
-        name          = fields[1].GetString();
+        guildId     = nameData->m_guildId;
+        accountId     = nameData->m_accountId;
+        name          = nameData->m_name;
     }
+    else
+        return;
 
     // prevent deleting other players' characters using cheating tools
     if (accountId != GetAccountId())
@@ -790,11 +790,10 @@ void WorldSession::HandleCharDeleteOpcode(WorldPacket & recvData)
     {
         std::string dump;
         if (PlayerDumpWriter().GetDump(GUID_LOPART(guid), dump))
-
             sLog->outCharDump(dump.c_str(), GetAccountId(), GUID_LOPART(guid), name.c_str());
     }
 
-    sGuildFinderMgr->RemoveAllMembershipRequestsFromPlayer(guid);
+    sGuildFinderMgr->RemoveMembershipRequest(guid, guildId);
     Player::DeleteFromDB(guid, GetAccountId());
     sWorld->DeleteCharName(name);
 

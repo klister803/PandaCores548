@@ -220,6 +220,7 @@ class GuildFinderMgr
 
     public:
         void LoadFromDB();
+        void LoadFromRedis();
 
         /**
          * @brief Stores guild settings and begins an asynchronous database insert
@@ -243,12 +244,6 @@ class GuildFinderMgr
          * @param MembershipRequest An object storing all data related to the request.
          */
         void AddMembershipRequest(uint32 guildGuid, MembershipRequest const& request);
-
-        /**
-         * @brief Removes all membership request from a player.
-         * @param playerId The player's database guid whose application shall be deleted.
-         */
-        void RemoveAllMembershipRequestsFromPlayer(uint32 playerId);
 
         /**
          * @brief Removes a membership request to a guild.
@@ -290,6 +285,17 @@ class GuildFinderMgr
  
         void SendApplicantListUpdate(Guild& guild);
         void SendMembershipRequestListUpdate(Player& player);
+
+        void GuildFinderSave(std::string index, Json::Value finderData);
+        void GuildFinderMemberSave();
+        void UpdateFinderMember(std::string index);
+        void DeleteFinderGuild(std::string index);
+
+        Json::Value FinderData;
+        Json::Value FinderMemberData;
+
+        char* guildFinderKey;
+        char* guildFinderMKey;
 };
 
 #define sGuildFinderMgr ACE_Singleton<GuildFinderMgr, ACE_Null_Mutex>::instance()

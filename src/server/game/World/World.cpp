@@ -1827,7 +1827,8 @@ void World::SetInitialWorldSettings()
     //sGuildMgr->LoadGuilds();
     sGuildMgr->LoadGuildsRedis();
 
-    sGuildFinderMgr->LoadFromDB();
+    //sGuildFinderMgr->LoadFromDB();
+    sGuildFinderMgr->LoadFromRedis();
 
     sBracketMgr->LoadCharacterBrackets();
 

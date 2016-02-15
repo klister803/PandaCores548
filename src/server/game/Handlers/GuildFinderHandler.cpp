@@ -363,7 +363,7 @@ void WorldSession::HandleGuildFinderSetGuildPost(WorldPacket& recvPacket)
     uint32 guildInterests =  0;
     uint32 level = 0;
 
-    recvPacket >> guildInterests >> availability >> level >> classRoles;
+    recvPacket >> level >> classRoles >> guildInterests >> availability;
     bool listed = recvPacket.ReadBit();
     // Level sent is zero if untouched, force to any (from interface). Idk why
     if (!level)

@@ -935,6 +935,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_contestedPvPTimer = 0;
 
     m_declinedname = NULL;
+    m_guild = NULL;
 
     m_isActive = true;
 

@@ -101,16 +101,12 @@ uint32 GuildMgr::GetXPForGuildLevel(uint8 level) const
 
 void GuildMgr::ResetExperienceCaps()
 {
-    CharacterDatabase.Execute(CharacterDatabase.GetPreparedStatement(CHAR_UPD_GUILD_RESET_TODAY_EXPERIENCE));
-
     for (GuildContainer::iterator itr = GuildStore.begin(); itr != GuildStore.end(); ++itr)
         itr->second->ResetDailyExperience();
 }
 
 void GuildMgr::ResetReputationCaps()
 {
-    CharacterDatabase.Execute("UPDATE guild_member SET XpContribWeek = 0, RepWeek = 0");
-
     for (GuildContainer::const_iterator itr = GuildStore.begin(); itr != GuildStore.end(); ++itr)
         if (Guild* guild = itr->second)
             guild->ResetWeek();

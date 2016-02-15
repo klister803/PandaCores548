@@ -602,8 +602,12 @@ bool Guild::Member::CheckStats() const
 
 void Guild::Member::ResetValues()
 {
+    uint32 activity = m_weekActivity;
+    uint32 reputation = m_weekReputation;
     m_weekActivity = 0;
     m_weekReputation = 0;
+    if (activity != m_weekActivity || reputation != m_weekReputation)
+        SaveGuildMember();
 }
 
 // Decreases amount of money/slots left for today.
@@ -3290,6 +3294,7 @@ void Guild::SendGuildXP(WorldSession* session) const
 void Guild::ResetDailyExperience()
 {
     _todayExperience = 0;
+    SaveGuild();
 
     for (Members::const_iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
         if (Player* player = itr->second->FindPlayer())
