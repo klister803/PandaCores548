@@ -3792,10 +3792,8 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
         case ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_WIN:
             break;
         case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ACHIEVEMENT:
-            m_CompletedAchievementsLock.acquire();
             if (m_completedAchievements.find(criteria->complete_achievement.linkedAchievement) == m_completedAchievements.end())
                 return false;
-            m_CompletedAchievementsLock.release();
             break;
         case ACHIEVEMENT_CRITERIA_TYPE_WIN_BG:
             if (!miscValue1 || criteria->win_bg.bgMapID != referencePlayer->GetMapId())
