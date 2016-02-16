@@ -25,6 +25,8 @@ enum ssActions
     ACTION_SSOPS_SECOND_ROOM        = 259,
     ACTION_KLAXXI_IN_PROGRESS       = 260,
     ACTION_KLAXXI_DONE              = 270,
+    ACTION_LAUNCH_ANNIHILLATE       = 271,
+    ACTION_FIRST_ENGENEER_DIED      = 272,
 };
 
 enum eData
@@ -63,6 +65,9 @@ enum eData
     DATA_CHECK_INSTANCE_PROGRESS,
     DATA_OPEN_SOLDIER_FENCH,
     DATA_GET_REALM_OF_YSHAARJ,
+    DATA_GARROSH_REALM,
+    DATA_UPDATE_GARROSH_REALM,
+    DATA_FIRST_ENGENEER_DIED,
 
     //Galakras
     DATA_GALAKRAS_PRE_EVENT,
@@ -370,8 +375,12 @@ enum eCreatures
     NPC_THE_LAST_GASP_OF_YSHAARJ    = 73335,
     //Adds in Tempels
     NPC_SHA_VORTEX                  = 72239,
-    //Embodied Despair
+    //Temple of the Red Crane
     NPC_EMBODIED_DESPAIR            = 72238, //need update in DB(spawn)
+    //Temple of the Jade Serpent
+    NPC_EMBODIED_DOUBT              = 72236,
+    //Terrace of Endless Spring
+    NPC_EMBODIED_FEAR               = 72237,
 };
 
 enum eGameObjects
@@ -568,6 +577,7 @@ enum esSpells
 
     //Garrosh
     SPELL_YSHAARJ_PROTECTION_AT        = 144920,
+    SPELL_YSHAARJ_PROTECTION           = 144945,
 };
 
 

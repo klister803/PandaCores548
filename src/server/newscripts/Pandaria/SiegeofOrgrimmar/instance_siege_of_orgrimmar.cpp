@@ -206,6 +206,11 @@ public:
         uint64 heartofyshaarjGuid;
         std::vector<uint64> shavortexGuids;
         std::vector<uint64> edespairGuids;
+        std::vector<uint64> edoubtGuids;
+        std::vector<uint64> efearGuids;
+        uint64 garroshGuid;
+        uint64 garroshrealmGuid;
+        std::vector<uint64> engeneerGuids;
 
         EventMap Events;
 
@@ -300,6 +305,11 @@ public:
             heartofyshaarjGuid = 0;
             shavortexGuids.clear();
             edespairGuids.clear();
+            edoubtGuids.clear();
+            efearGuids.clear();
+            garroshGuid             = 0;
+            garroshrealmGuid        = 0;
+            engeneerGuids.clear();
 
             onInitEnterState = false;
             STowerFull = false;
@@ -632,6 +642,16 @@ public:
                 case NPC_SHOCKWAVE_MISSILE_STALKER:
                     swmstalkerGuid = creature->GetGUID();
                     break;
+                //Garrosh
+                case NPC_GARROSH:
+                    if (Unit* garrosh = creature->ToUnit())
+                    {
+                        if (garrosh->ToTempSummon())
+                            garroshrealmGuid = creature->GetGUID();
+                        else
+                            garroshGuid = creature->GetGUID();
+                    }
+                    break;
                 case NPC_HEART_OF_YSHAARJ:
                     heartofyshaarjGuid = creature->GetGUID();
                     break;
@@ -640,6 +660,15 @@ public:
                     break;
                 case NPC_EMBODIED_DESPAIR:
                     edespairGuids.push_back(creature->GetGUID());
+                    break;
+                case NPC_EMBODIED_DOUBT:
+                    edoubtGuids.push_back(creature->GetGUID());
+                    break;
+                case NPC_EMBODIED_FEAR:
+                    efearGuids.push_back(creature->GetGUID());
+                    break;
+                case NPC_SIEGE_ENGINEER:
+                    engeneerGuids.push_back(creature->GetGUID());
                     break;
             }
         }
@@ -1289,7 +1318,7 @@ public:
                     HandleGameObject(garroshentdoorGuid, true);
                     break;
                 case IN_PROGRESS:
-                    rycount = urand(1, 3);
+                    rycount = urand(0, 2);
                     for (std::vector<uint64>::const_iterator itr = garroshfenchGuids.begin(); itr != garroshfenchGuids.end(); ++itr)
                         HandleGameObject(*itr, false);
                     HandleGameObject(garroshentdoorGuid, false);
@@ -1648,7 +1677,20 @@ public:
                 for (std::vector<uint64>::const_iterator itr = soldierfenchGuids.begin(); itr != soldierfenchGuids.end(); itr++)
                     DoUseDoorOrButton(*itr);
                 break;
-            }
+            case DATA_UPDATE_GARROSH_REALM:
+                rycount = rycount >= 2 ? urand(0, 1) : ++rycount;
+                break;
+            case DATA_FIRST_ENGENEER_DIED:
+                if (data)
+                {
+                    for (std::vector<uint64>::const_iterator itr = engeneerGuids.begin(); itr != engeneerGuids.end(); itr++)
+                        if (Creature* eng = instance->GetCreature(*itr))
+                            if (eng->isAlive())
+                                eng->AI()->DoAction(ACTION_FIRST_ENGENEER_DIED);
+                }
+                engeneerGuids.clear();
+                break;
+             }
         }
 
         uint32 GetData(uint32 type)
@@ -1842,8 +1884,11 @@ public:
                     return swmstalkerGuid;
                 case NPC_HEART_OF_YSHAARJ:
                     return heartofyshaarjGuid;
+                case DATA_GARROSH:
+                    return garroshGuid;
+                case DATA_GARROSH_REALM:
+                    return garroshrealmGuid;
             }
-
             std::map<uint32, uint64>::iterator itr = easyGUIDconteiner.find(type);
             if (itr != easyGUIDconteiner.end())
                 return itr->second;
@@ -1853,28 +1898,42 @@ public:
 
         void CreatureDies(Creature* creature, Unit* /*killer*/)
         {
-            switch(creature->GetEntry())
+            switch (creature->GetEntry())
             {
-                case NPC_ZEAL:
-                case NPC_ARROGANCE:
-                case NPC_VANITY:
-                    SetData(DATA_FIELD_OF_SHA, true);
-                    break;
-                case NPC_LINGERING_CORRUPTION:
-                    --lingering_corruption_count;
-                    if (!lingering_corruption_count)
-                    {
-                        if (Creature* Norushen = instance->GetCreature(GetData64(NPC_SHA_NORUSHEN)))
-                            Norushen->AI()->SetData(NPC_LINGERING_CORRUPTION, DONE);
-                    }
-                    break;
-                case NPC_EMBODIED_DESPAIR:
-                    for (std::vector<uint64>::const_iterator itr = edespairGuids.begin(); itr != edespairGuids.end(); itr++)
-                        if (Creature* ed = instance->GetCreature(*itr))
-                            if (ed->isAlive())
-                                return;
-                    RemoveProtectFromGarrosh();
-                    break;
+            case NPC_ZEAL:
+            case NPC_ARROGANCE:
+            case NPC_VANITY:
+                SetData(DATA_FIELD_OF_SHA, true);
+                break;
+            case NPC_LINGERING_CORRUPTION:
+                --lingering_corruption_count;
+                if (!lingering_corruption_count)
+                {
+                    if (Creature* Norushen = instance->GetCreature(GetData64(NPC_SHA_NORUSHEN)))
+                        Norushen->AI()->SetData(NPC_LINGERING_CORRUPTION, DONE);
+                }
+                break;
+            case NPC_EMBODIED_DESPAIR:
+                for (std::vector<uint64>::const_iterator itr = edespairGuids.begin(); itr != edespairGuids.end(); itr++)
+                    if (Creature* add = instance->GetCreature(*itr))
+                        if (add->isAlive())
+                            return;
+                RemoveProtectFromGarrosh();
+                break;
+            case NPC_EMBODIED_DOUBT:
+                for (std::vector<uint64>::const_iterator itr = edoubtGuids.begin(); itr != edoubtGuids.end(); itr++)
+                    if (Creature* add = instance->GetCreature(*itr))
+                        if (add->isAlive())
+                            return;
+                RemoveProtectFromGarrosh();
+                break;
+            case NPC_EMBODIED_FEAR:
+                for (std::vector<uint64>::const_iterator itr = efearGuids.begin(); itr != efearGuids.end(); itr++)
+                    if (Creature* add = instance->GetCreature(*itr))
+                        if (add->isAlive())
+                            return;
+                RemoveProtectFromGarrosh();
+                break;
             }
         }
 
@@ -1886,6 +1945,13 @@ public:
 
             for (std::vector<uint64>::const_iterator Itr = goshavortexGuids.begin(); Itr != goshavortexGuids.end(); Itr++)
                 HandleGameObject(*Itr, true);
+
+            if (Creature* garroshrealm = instance->GetCreature(garroshrealmGuid))
+            {
+                garroshrealm->RemoveAurasDueToSpell(SPELL_YSHAARJ_PROTECTION);
+                garroshrealm->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                garroshrealm->AI()->DoAction(ACTION_LAUNCH_ANNIHILLATE);
+            }
         }
 
         void ResetRealmOfYshaarj(bool full)
@@ -1902,12 +1968,36 @@ public:
             {
                 for (std::vector<uint64>::const_iterator itr = edespairGuids.begin(); itr != edespairGuids.end(); itr++)
                 {
-                    if (Creature* ed = instance->GetCreature(*itr))
+                    if (Creature* add = instance->GetCreature(*itr))
                     {
-                        if (!ed->isAlive())
+                        if (!add->isAlive())
                         {
-                            ed->Respawn();
-                            ed->GetMotionMaster()->MoveTargetedHome();
+                            add->Respawn();
+                            add->GetMotionMaster()->MoveTargetedHome();
+                        }
+                    }
+                }
+
+                for (std::vector<uint64>::const_iterator itr = edoubtGuids.begin(); itr != edoubtGuids.end(); itr++)
+                {
+                    if (Creature* add = instance->GetCreature(*itr))
+                    {
+                        if (!add->isAlive())
+                        {
+                            add->Respawn();
+                            add->GetMotionMaster()->MoveTargetedHome();
+                        }
+                    }
+                }
+
+                for (std::vector<uint64>::const_iterator itr = efearGuids.begin(); itr != efearGuids.end(); itr++)
+                {
+                    if (Creature* add = instance->GetCreature(*itr))
+                    {
+                        if (!add->isAlive())
+                        {
+                            add->Respawn();
+                            add->GetMotionMaster()->MoveTargetedHome();
                         }
                     }
                 }

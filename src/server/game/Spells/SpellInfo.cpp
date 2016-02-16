@@ -1279,7 +1279,7 @@ SpellEffectInfo const* SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 143385: //Electrostatic charge
     case 143830: //Disentegration laser AT
     //Garrosh
-    case 144867:
+    case 144821: //Hellscream warsong
         return &Effects[effect];
     }
 

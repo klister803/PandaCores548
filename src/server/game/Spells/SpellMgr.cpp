@@ -5221,13 +5221,13 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = 18;
                     break;
                 //Garrosh
-                case 144867:
-                    spellInfo->Effects[0].Effect = 0;
-                    spellInfo->Effects[0].TriggerSpell = 0;
-                    spellInfo->Effects[1].Effect = 0;
-                    spellInfo->Effects[1].TriggerSpell = 0;
+                case 144821: //Hellscream warsong
+                    spellInfo->Effects[0].TargetB = 30;
+                    spellInfo->Effects[1].TargetB = 30;
+                    spellInfo->Effects[2].TargetB = 30;
                     break;
-                    
+
+
                 //World Bosses
                 //Sha of Anger
                 case 119487: //Anger
