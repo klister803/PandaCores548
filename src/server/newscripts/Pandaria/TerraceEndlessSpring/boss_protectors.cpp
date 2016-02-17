@@ -311,6 +311,8 @@ class boss_protectors : public CreatureScript
 
             void JustSummoned(Creature* summon)
             {
+                summons.Summon(summon);
+
                 switch (summon->GetEntry())
                 {
                     case 60906:

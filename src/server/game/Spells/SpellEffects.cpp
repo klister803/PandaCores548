@@ -826,6 +826,12 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
 
         switch (m_spellInfo->Id)
         {
+            //Tsulong - Unstable Bolt
+            case 122907:
+            {
+                m_damage = unitTarget->CountPctFromMaxHealth(15);
+                break;
+            }
             case 117418: // Fists of Fury (damage)
             {
                 m_damage /= m_UniqueTargetInfo.size();
