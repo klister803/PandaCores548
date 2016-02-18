@@ -485,6 +485,14 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
             });
             break;
         }
+        case LOAD_PLAYER_CORPSE: //Load player corpse
+        {
+            RedisDatabase.AsyncExecuteH("HGET", userKey, "corpse", guid, [&](const RedisValue &v, uint64 guid) {
+                if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
+                    loadingPlayer->LoadPlayerCorpse(&v, guid);
+            });
+            break;
+        }
         default:
             break;
     }
@@ -3297,7 +3305,7 @@ void Player::LoadPlayerGuild(const RedisValue* v, uint64 playerGuid)
     if (!sRedisBuilder->LoadFromRedis(v, PlayerGuildJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerGuild data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_LOGIN); //Next step load
+        LoadFromRedis(playerGuid, LOAD_PLAYER_CORPSE); //Next step load
         return;
     }
 
@@ -3314,6 +3322,24 @@ void Player::LoadPlayerGuild(const RedisValue* v, uint64 playerGuid)
         else
             SavePlayerGuild();
     }
+
+    LoadFromRedis(playerGuid, LOAD_PLAYER_CORPSE); //Next step load
+}
+
+void Player::LoadPlayerCorpse(const RedisValue* v, uint64 playerGuid)
+{
+    if (!sRedisBuilder->LoadFromRedis(v, PlayerCorpse))
+    {
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerCorpse data is empty");
+        LoadFromRedis(playerGuid, LOAD_PLAYER_LOGIN); //Next step load
+        return;
+    }
+
+    Corpse* corpse = new Corpse(CorpseType(PlayerCorpse["corpseType"].asUInt()));
+    if (!corpse->LoadCorpseFromDB(PlayerCorpse, this))
+        delete corpse;
+    else
+        sObjectAccessor->AddCorpse(corpse);
 
     LoadFromRedis(playerGuid, LOAD_PLAYER_LOGIN); //Next step load
 }

@@ -313,9 +313,7 @@ Corpse* ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insignia
     RemoveCorpse(corpse);
 
     // remove corpse from DB
-    SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    corpse->DeleteFromDB(trans);
-    CharacterDatabase.CommitTransaction(trans);
+    corpse->DeleteFromDB();
 
     Corpse* bones = NULL;
     // create the bones only if the map and the grid is loaded at the corpse's location

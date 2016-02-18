@@ -1776,9 +1776,6 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading pet level stats...");
     sObjectMgr->LoadPetStats();
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Player Corpses...");
-    sObjectMgr->LoadCorpses();
-
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Player level dependent mail rewards...");
     sObjectMgr->LoadMailLevelRewards();
 

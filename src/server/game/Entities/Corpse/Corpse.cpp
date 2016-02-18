@@ -25,6 +25,7 @@
 #include "Opcodes.h"
 #include "GossipDef.h"
 #include "World.h"
+#include "RedisBuilderMgr.h"
 
 Corpse::Corpse(CorpseType type) : WorldObject(type != CORPSE_BONES), m_type(type)
 {
@@ -39,6 +40,7 @@ Corpse::Corpse(CorpseType type) : WorldObject(type != CORPSE_BONES), m_type(type
 
     lootForBody = false;
     lootRecipient = NULL;
+    m_owner = NULL;
 }
 
 Corpse::~Corpse()
@@ -74,6 +76,8 @@ bool Corpse::Create(uint32 guidlow, Player* owner)
 {
     ASSERT(owner);
 
+    m_owner = owner;
+
     Relocate(owner->GetPositionX(), owner->GetPositionY(), owner->GetPositionZ(), owner->GetOrientation());
 
     if (!IsPositionValid())
@@ -99,32 +103,29 @@ bool Corpse::Create(uint32 guidlow, Player* owner)
 
 void Corpse::SaveToDB()
 {
-    // prevent DB data inconsistence problems and duplicates
-    SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    DeleteFromDB(trans);
+    if (!m_owner)
+        return;
 
-    uint16 index = 0;
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CORPSE);
-    stmt->setUInt32(index++, GetGUIDLow());                                           // corpseGuid
-    stmt->setUInt32(index++, GUID_LOPART(GetOwnerGUID()));                            // guid
-    stmt->setFloat (index++, GetPositionX());                                         // posX
-    stmt->setFloat (index++, GetPositionY());                                         // posY
-    stmt->setFloat (index++, GetPositionZ());                                         // posZ
-    stmt->setFloat (index++, GetOrientation());                                       // orientation
-    stmt->setUInt16(index++, GetMapId());                                             // mapId
-    stmt->setUInt32(index++, GetUInt32Value(CORPSE_FIELD_DISPLAY_ID));                // displayId
-    stmt->setString(index++, _ConcatFields(CORPSE_FIELD_ITEM, EQUIPMENT_SLOT_END));   // itemCache
-    stmt->setUInt32(index++, GetUInt32Value(CORPSE_FIELD_BYTES_1));                   // bytes1
-    stmt->setUInt32(index++, GetUInt32Value(CORPSE_FIELD_BYTES_2));                   // bytes2
-    stmt->setUInt8 (index++, GetUInt32Value(CORPSE_FIELD_FLAGS));                     // flags
-    stmt->setUInt8 (index++, GetUInt32Value(CORPSE_FIELD_DYNAMIC_FLAGS));             // dynFlags
-    stmt->setUInt32(index++, uint32(m_time));                                         // time
-    stmt->setUInt8 (index++, GetType());                                              // corpseType
-    stmt->setUInt32(index++, GetInstanceId());                                        // instanceId
-    stmt->setUInt16(index++, GetPhaseMask());                                         // phaseMask
-    trans->Append(stmt);
+    m_owner->PlayerCorpse["corpseGuid"] = GetGUIDLow();
+    m_owner->PlayerCorpse["posX"] = GetPositionX();
+    m_owner->PlayerCorpse["posY"] = GetPositionY();
+    m_owner->PlayerCorpse["posZ"] = GetPositionZ();
+    m_owner->PlayerCorpse["orientation"] = GetOrientation();
+    m_owner->PlayerCorpse["mapId"] = GetMapId();
+    m_owner->PlayerCorpse["displayId"] = GetUInt32Value(CORPSE_FIELD_DISPLAY_ID);
+    m_owner->PlayerCorpse["itemCache"] = _ConcatFields(CORPSE_FIELD_ITEM, EQUIPMENT_SLOT_END);
+    m_owner->PlayerCorpse["bytes1"] = GetUInt32Value(CORPSE_FIELD_BYTES_1);
+    m_owner->PlayerCorpse["bytes2"] = GetUInt32Value(CORPSE_FIELD_BYTES_2);
+    m_owner->PlayerCorpse["flags"] = GetUInt32Value(CORPSE_FIELD_FLAGS);
+    m_owner->PlayerCorpse["dynFlags"] = GetUInt32Value(CORPSE_FIELD_DYNAMIC_FLAGS);
+    m_owner->PlayerCorpse["time"] = uint32(m_time);
+    m_owner->PlayerCorpse["corpseType"] = GetType();
+    m_owner->PlayerCorpse["instanceId"] = GetInstanceId();
+    m_owner->PlayerCorpse["phaseMask"] = GetPhaseMask();
 
-    CharacterDatabase.CommitTransaction(trans);
+    RedisDatabase.AsyncExecuteHSet("HSET", m_owner->GetUserKey(), "corpse", sRedisBuilder->BuildString(m_owner->PlayerCorpse).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Corpse::SaveToDB guid %u", guid);
+    });
 }
 
 void Corpse::DeleteBonesFromWorld()
@@ -141,50 +142,45 @@ void Corpse::DeleteBonesFromWorld()
     AddObjectToRemoveList();
 }
 
-void Corpse::DeleteFromDB(SQLTransaction& trans)
+void Corpse::DeleteFromDB()
 {
-    PreparedStatement* stmt = NULL;
-    if (GetType() == CORPSE_BONES)
-    {
-        // Only specific bones
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CORPSE);
-        stmt->setUInt32(0, GetGUIDLow());
-    }
-    else
-    {
-        // all corpses (not bones)
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_PLAYER_CORPSES);
-        stmt->setUInt32(0, GUID_LOPART(GetOwnerGUID()));
-    }
-    trans->Append(stmt);
+    if (!m_owner)
+        return;
+
+    m_owner->PlayerCorpse.clear();
+
+    RedisDatabase.AsyncExecuteH("HDEL", m_owner->GetUserKey(), "corpse", GetGUIDLow(), [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Corpse::DeleteFromDB id %u", guid);
+    });
 }
 
-bool Corpse::LoadCorpseFromDB(uint32 guid, Field* fields)
+bool Corpse::LoadCorpseFromDB(Json::Value corpseData, Player* owner)
 {
     //        0     1     2     3            4      5          6          7       8       9      10        11    12          13          14          15         16
     // SELECT posX, posY, posZ, orientation, mapId, displayId, itemCache, bytes1, bytes2, flags, dynFlags, time, corpseType, instanceId, phaseMask, corpseGuid, guid FROM corpse WHERE corpseType <> 0
 
-    uint32 ownerGuid = fields[16].GetUInt32();
-    float posX   = fields[0].GetFloat();
-    float posY   = fields[1].GetFloat();
-    float posZ   = fields[2].GetFloat();
-    float o      = fields[3].GetFloat();
-    uint32 mapId = fields[4].GetUInt16();
+    m_owner = owner;
 
-    Object::_Create(guid, 0, HIGHGUID_CORPSE);
+    float posX   = corpseData["posX"].asFloat();
+    float posY   = corpseData["posY"].asFloat();
+    float posZ   = corpseData["posZ"].asFloat();
+    float o      = corpseData["orientation"].asFloat();
+    uint32 mapId = corpseData["mapId"].asUInt();
 
-    SetUInt32Value(CORPSE_FIELD_DISPLAY_ID, fields[5].GetUInt32());
-    _LoadIntoDataField(fields[6].GetCString(), CORPSE_FIELD_ITEM, EQUIPMENT_SLOT_END);
-    SetUInt32Value(CORPSE_FIELD_BYTES_1, fields[7].GetUInt32());
-    SetUInt32Value(CORPSE_FIELD_BYTES_2, fields[8].GetUInt32());
-    SetUInt32Value(CORPSE_FIELD_FLAGS, fields[9].GetUInt8());
-    SetUInt32Value(CORPSE_FIELD_DYNAMIC_FLAGS, fields[10].GetUInt8());
-    SetUInt64Value(CORPSE_FIELD_OWNER, MAKE_NEW_GUID(ownerGuid, 0, HIGHGUID_PLAYER));
+    Object::_Create(corpseData["corpseGuid"].asUInt(), 0, HIGHGUID_CORPSE);
 
-    m_time = time_t(fields[11].GetUInt32());
+    SetUInt32Value(CORPSE_FIELD_DISPLAY_ID, corpseData["displayId"].asUInt());
+    _LoadIntoDataField(corpseData["itemCache"].asCString(), CORPSE_FIELD_ITEM, EQUIPMENT_SLOT_END);
+    SetUInt32Value(CORPSE_FIELD_BYTES_1, corpseData["bytes1"].asUInt());
+    SetUInt32Value(CORPSE_FIELD_BYTES_2, corpseData["bytes2"].asUInt());
+    SetUInt32Value(CORPSE_FIELD_FLAGS, corpseData["flags"].asUInt());
+    SetUInt32Value(CORPSE_FIELD_DYNAMIC_FLAGS, corpseData["dynFlags"].asUInt());
+    SetUInt64Value(CORPSE_FIELD_OWNER, m_owner->GetGUID());
 
-    uint32 instanceId  = fields[13].GetUInt32();
-    uint32 phaseMask   = fields[14].GetUInt16();
+    m_time = time_t(corpseData["time"].asUInt());
+
+    uint32 instanceId  = corpseData["instanceId"].asUInt();
+    uint32 phaseMask   = corpseData["phaseMask"].asUInt();
 
     // place
     SetLocationInstanceId(instanceId);

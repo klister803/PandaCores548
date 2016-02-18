@@ -1626,6 +1626,7 @@ class Player : public Unit, public GridObject<Player>
         Json::Value PlayerGoldJson;
         Json::Value AccountTutorialsJson;
         Json::Value PlayerGuildJson;
+        Json::Value PlayerCorpse;
 
         //load data for serialize
         void InitSavePlayer();
@@ -1729,6 +1730,7 @@ class Player : public Unit, public GridObject<Player>
         void LoadAccountTutorialsJson(const RedisValue* v, uint64 mailGuid);
         void LoadPlayerPets(const RedisValue* v, uint64 playerGuid);
         void LoadPlayerGuild(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerCorpse(const RedisValue* v, uint64 playerGuid);
 
         //Update data in database
         void DeleteCriteriaProgress(AchievementEntry const* achievement);

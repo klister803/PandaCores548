@@ -1228,7 +1228,6 @@ class ObjectMgr
         void LoadPetNames();
         void LoadPetNumber();
         void LoadBattlePetGuid();
-        void LoadCorpses();
         void LoadFishingBaseSkillLevel();
 
         void LoadReputationRewardRate();

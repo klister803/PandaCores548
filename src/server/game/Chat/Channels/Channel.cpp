@@ -145,10 +145,13 @@ void Channel::UpdateChannelInDB() const
 
 void Channel::UpdateChannelUseageInDB() const
 {
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHANNEL_USAGE);
-    stmt->setString(0, m_name);
-    stmt->setUInt32(1, m_Team);
-    CharacterDatabase.Execute(stmt);
+    if (m_IsSaved)
+    {
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHANNEL_USAGE);
+        stmt->setString(0, m_name);
+        stmt->setUInt32(1, m_Team);
+        CharacterDatabase.Execute(stmt);
+    }
 }
 
 void Channel::CleanOldChannelsInDB()

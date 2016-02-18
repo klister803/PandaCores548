@@ -59,10 +59,10 @@ class Corpse : public WorldObject, public GridObject<Corpse>
         bool Create(uint32 guidlow, Player* owner);
 
         void SaveToDB();
-        bool LoadCorpseFromDB(uint32 guid, Field* fields);
+        bool LoadCorpseFromDB(Json::Value corpseData, Player* owner);
 
         void DeleteBonesFromWorld();
-        void DeleteFromDB(SQLTransaction& trans);
+        void DeleteFromDB();
 
         uint64 GetOwnerGUID() const { return GetUInt64Value(CORPSE_FIELD_OWNER); }
 
@@ -75,6 +75,7 @@ class Corpse : public WorldObject, public GridObject<Corpse>
 
         Loot loot;                                          // remove insignia ONLY at BG
         Player* lootRecipient;
+        Player* m_owner;
         bool lootForBody;
 
         void Say(int32 textId, uint32 language, uint64 TargetGuid) { MonsterSay(textId, language, TargetGuid); }
