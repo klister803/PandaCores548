@@ -7855,7 +7855,11 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
         // Spell exist but require custom code
         switch (auraId)
         {
-            case 111850:
+            case 123011: //Tsulong - Terrorize
+                target->CastSpell(target, m_spellInfo->Effects[0].BasePoints, true);
+                target->CastSpell(target, triggerSpellId, true);
+                return;
+            case 111850: //Elder Regail - Lightning Prison
                 target->CastSpell(target, triggerSpellId, true);
                 return;
             case 122761:

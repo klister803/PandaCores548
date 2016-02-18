@@ -58,10 +58,11 @@ enum eEvents
     EVENT_LIGHTNING_BOLT                = 4,
     EVENT_LIGHTNING_PRISON              = 5,
     EVENT_LIGHTNING_STORM               = 6,
+    EVENT_LIGHTNING_STORM_2             = 7,
     //Asani
-    EVENT_WATER_BOLT                    = 7,
-    EVENT_CLEANSING_WATERS              = 8,
-    EVENT_CORRUPTED_WATERS              = 9,
+    EVENT_WATER_BOLT                    = 8,
+    EVENT_CLEANSING_WATERS              = 9,
+    EVENT_CORRUPTED_WATERS              = 10,
 };
 
 uint32 protectorsEntry[3] =
@@ -317,7 +318,7 @@ class boss_protectors : public CreatureScript
                 {
                     case 60906:
                         summon->SetReactState(REACT_PASSIVE);
-                        summon->CastSpell(summon, 117989, true, NULL, NULL, me->GetGUID()); //AOE dmg
+                        summon->CastSpell(summon, 117989, true); //AOE dmg
                         break;
                     case 60886:
                         summon->SetReactState(REACT_PASSIVE);
@@ -399,6 +400,10 @@ class boss_protectors : public CreatureScript
                             DoStopAttack();
                             DoCast(SPELL_LIGHTNING_STORM);
                             events.ScheduleEvent(EVENT_LIGHTNING_STORM, 40000);
+                            events.ScheduleEvent(EVENT_LIGHTNING_STORM_2, 12000);
+                            break;
+                        case EVENT_LIGHTNING_STORM_2:
+                            me->SetReactState(REACT_AGGRESSIVE);
                             break;
                         case EVENT_CLEANSING_WATERS:
                             CheckFriendlyLowHp();
@@ -584,7 +589,6 @@ class spell_regail_lightning_storm : public SpellScriptLoader
                         break;
                     case 12000:
                         caster->CastSpell(caster, 118008, true); //90 yard Dmg
-                        caster->ToCreature()->SetReactState(REACT_AGGRESSIVE);
                         break;
                     default:
                         break;

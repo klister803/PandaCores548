@@ -826,6 +826,12 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
 
         switch (m_spellInfo->Id)
         {
+            //Tsulong - Terrorize
+            case 123018:
+            {
+                m_damage = unitTarget->CountPctFromMaxHealth(m_spellInfo->Effects[0].BasePoints);
+                break;
+            }
             //Tsulong - Unstable Bolt
             case 122907:
             {

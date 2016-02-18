@@ -35,6 +35,8 @@ enum eSpells
     SPELL_BATHED_INLIGHT        = 122858,
     SPELL_SUM_EMBODIED_TERROR   = 122995,
     SPELL_SUM_UNSTABLE_SHA      = 122953,
+
+    SPELL_BERSERK               = 130008,
     //
     //Sha Summons
     SPELL_TERRORIZE             = 123011,
@@ -58,6 +60,7 @@ enum eEvents
     EVENT_SUN_BREATH            = 4,
     EVENT_SUM_EMBODIED_TERROR   = 5,
     EVENT_SUM_UNSTABLE_SHA      = 6,
+    EVENT_BERSERK               = 7,
 };
 
 enum Phase
@@ -156,6 +159,7 @@ class boss_tsulong : public CreatureScript
                 switch (action)
                 {
                     case ACTION_INTRO_DAY:
+                        summons.DespawnEntry(NPC_SUNBEAM);
                         me->RemoveAurasDueToSpell(SPELL_DREAD_SHADOWS);
                         me->RemoveAurasDueToSpell(SPELL_SHA_ACTIVE);
                         me->setFaction(35);
@@ -198,18 +202,30 @@ class boss_tsulong : public CreatureScript
                 events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(25000, 35000));
                 events.ScheduleEvent(EVENT_NIGHTMARE,     urand(15000, 25000));
                 events.ScheduleEvent(EVENT_SUNBEAM,       urand(15000, 20000));
+                events.ScheduleEvent(EVENT_BERSERK, 8 * MINUTE * IN_MILLISECONDS);
             }
 
             void DamageTaken(Unit* attacker, uint32 &damage)
             {
-                if (phase == PHASE_NIGHT)
+                if (damage >= me->GetHealth())
                 {
-                    if (damage >= me->GetHealth() && !done)
+                    switch (phase)
                     {
-                        done = true;
-                        damage = 0;
-                        SendDone();
+                        case PHASE_NIGHT:
+                            if (!done)
+                            {
+                                done = true;
+                                SendDone();
+                            }
+                            break;
+                        case PHASE_DAY:
+                            if (me->isInCombat())
+                                EnterEvadeMode();
+                            break;
+                        default:
+                            break;
                     }
+                    damage = 0;
                 }
             }
 
@@ -235,7 +251,13 @@ class boss_tsulong : public CreatureScript
             {
                 me->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
             }
-            
+
+            void JustReachedHome()
+            {
+                if (me->isInCombat())
+                    me->SetFacingTo(urand(0, 5));
+            }
+
             void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
@@ -318,21 +340,9 @@ class boss_tsulong : public CreatureScript
                             events.ScheduleEvent(EVENT_SUNBEAM, urand(15000, 20000));                      
                             break;
                         case EVENT_SUN_BREATH:
-                        {
-                            std::list<Creature*> creatures;
-                            GetCreatureListWithEntryInGrid(creatures, me, 62969, 100.0f);
-                            GetCreatureListWithEntryInGrid(creatures, me, 62977, 100.0f);
-                            GetCreatureListWithEntryInGrid(creatures, me, 62919, 100.0f);
-                            Trinity::Containers::RandomResizeList(creatures, 1);
-                            if (!creatures.empty())
-                                for (std::list<Creature*>::iterator itr = creatures.begin(); itr != creatures.end(); ++itr)
-                                {
-                                    me->SetFacingToObject((*itr));
-                                    DoCast((*itr), SPELL_SUM_UNSTABLE_SHA);
-                                }
+                            DoCast(SPELL_SUN_BREATH);
                             events.ScheduleEvent(EVENT_SUN_BREATH, 28000);
                             break;
-                        }
                         case EVENT_SUM_EMBODIED_TERROR:
                             DoCast(SPELL_SUM_EMBODIED_TERROR);
                             events.ScheduleEvent(EVENT_SUM_EMBODIED_TERROR, 40000);
@@ -348,6 +358,9 @@ class boss_tsulong : public CreatureScript
                             events.ScheduleEvent(EVENT_SUM_UNSTABLE_SHA, 16000);
                             break;
                         }
+                        case EVENT_BERSERK:
+                            DoCast(me, SPELL_BERSERK, true);
+                            break;
                     }
                 }
                 DoMeleeAttackIfReady();
@@ -558,6 +571,8 @@ class npc_tsulong_unstable_sha : public CreatureScript
                 me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
                 me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
                 me->SetReactState(REACT_PASSIVE);
+                me->SetSpeed(MOVE_RUN, 0.6f);
+                me->SetSpeed(MOVE_WALK, 0.6f);
             }
 
             EventMap events;
