@@ -23,6 +23,7 @@ enum eSpells
 {
     //Tsulong
     //Night phase
+    SPELL_SHA_ACTIVE            = 122438,
     SPELL_DREAD_SHADOWS         = 122767,
     SPELL_DREAD_SHADOWS_TR_EF   = 122768,
     SPELL_NIGHTMARES            = 122770,
@@ -111,8 +112,6 @@ class boss_tsulong : public CreatureScript
             boss_tsulongAI(Creature* creature) : BossAI(creature, DATA_TSULONG)
             {
                 instance = creature->GetInstanceScript();
-                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_ENERGIZE, true);
-                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_PERIODIC_ENERGIZE, true);
                 if (instance)
                 {
                     if (CheckProtectors(instance, me))
@@ -135,21 +134,22 @@ class boss_tsulong : public CreatureScript
                 done = false;
                 lowpower = 0;
                 checkpower = 0;
+                me->RemoveAurasDueToSpell(SPELL_DREAD_SHADOWS);
+                me->RemoveAurasDueToSpell(SPELL_SHA_ACTIVE);
                 me->setFaction(16);
                 me->SetDisplayId(NIGHT_ID);
                 me->SetReactState(REACT_DEFENSIVE);
                 me->setPowerType(POWER_ENERGY);
                 me->SetPower(POWER_ENERGY, 0);
-                me->RemoveAurasDueToSpell(SPELL_DREAD_SHADOWS);
             }
             
-            void RegeneratePower(Powers power, float &value)
+            /* void RegeneratePower(Powers power, float &value)
             {
                 if (phase == PHASE_NIGHT)
-                    value = 2;
+                    value = 1;
                 else
                     value = 0;
-            }
+            } */
 
             void DoAction(int32 const action)
             {
@@ -157,6 +157,7 @@ class boss_tsulong : public CreatureScript
                 {
                     case ACTION_INTRO_DAY:
                         me->RemoveAurasDueToSpell(SPELL_DREAD_SHADOWS);
+                        me->RemoveAurasDueToSpell(SPELL_SHA_ACTIVE);
                         me->setFaction(35);
                         me->SetDisplayId(DAY_ID);
                         DoStopAttack();
@@ -178,6 +179,7 @@ class boss_tsulong : public CreatureScript
                         if (me->getVictim())
                             me->GetMotionMaster()->MoveChase(me->getVictim());
                         me->AddAura(SPELL_DREAD_SHADOWS, me);
+                        DoCast(me, SPELL_SHA_ACTIVE, true);
                         events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(25000, 35000));
                         events.ScheduleEvent(EVENT_NIGHTMARE,     urand(15000, 25000));
                         events.ScheduleEvent(EVENT_SUNBEAM,       urand(15000, 20000));
@@ -192,6 +194,7 @@ class boss_tsulong : public CreatureScript
                 phase = PHASE_NIGHT;
                 checkpower = 1000; 
                 me->AddAura(SPELL_DREAD_SHADOWS, me);
+                DoCast(me, SPELL_SHA_ACTIVE, true);
                 events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(25000, 35000));
                 events.ScheduleEvent(EVENT_NIGHTMARE,     urand(15000, 25000));
                 events.ScheduleEvent(EVENT_SUNBEAM,       urand(15000, 20000));

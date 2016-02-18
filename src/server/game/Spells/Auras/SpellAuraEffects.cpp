@@ -7855,6 +7855,9 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
         // Spell exist but require custom code
         switch (auraId)
         {
+            case 111850:
+                target->CastSpell(target, triggerSpellId, true);
+                return;
             case 122761:
                 caster->SetFacingToObject(target);
                 caster->CastSpell(target, triggerSpellId, true);
@@ -8075,9 +8078,9 @@ void AuraEffect::HandlePeriodicTriggerSpellWithValueAuraTick(Unit* target, Unit*
     {
         if (Unit* triggerCaster = triggeredSpellInfo->NeedsToBeTriggeredByCaster() ? caster : target)
         {
-            int32 basepoints0 = GetAmount();
-            GetBase()->CallScriptEffectChangeTickDamageHandlers(const_cast<AuraEffect const*>(this), basepoints0, target);
-            triggerCaster->CastCustomSpell(target, triggerSpellId, &basepoints0, 0, 0, true, 0, this);
+            int32 basepoints = GetAmount();
+            GetBase()->CallScriptEffectChangeTickDamageHandlers(const_cast<AuraEffect const*>(this), basepoints, target);
+            triggerCaster->CastCustomSpell(target, triggerSpellId, &basepoints, &basepoints, &basepoints, true, 0, this);
             sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AuraEffect::HandlePeriodicTriggerSpellWithValueAuraTick: Spell %u Trigger %u", GetId(), triggeredSpellInfo->Id);
         }
     }

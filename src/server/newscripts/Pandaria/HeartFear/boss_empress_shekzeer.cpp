@@ -130,7 +130,8 @@ class boss_empress_shekzeer : public CreatureScript
                 me->SetMaxPower(POWER_ENERGY, 150);
                 me->SetPower(POWER_ENERGY, 150);
                 sdiedval = 0;
-                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EYES_OF_EMPRESS | SPELL_SERVANT_OF_THE_EMPRESS);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EYES_OF_EMPRESS);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SERVANT_OF_THE_EMPRESS);
             }
 
             void RegeneratePower(Powers power, float &value)
@@ -157,7 +158,8 @@ class boss_empress_shekzeer : public CreatureScript
             void JustDied(Unit* /*killer*/)
             {
                 _JustDied();
-                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EYES_OF_EMPRESS | SPELL_SERVANT_OF_THE_EMPRESS);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EYES_OF_EMPRESS);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SERVANT_OF_THE_EMPRESS);
             }
 
             void DamageTaken(Unit* attacker, uint32 &damage)

@@ -317,7 +317,7 @@ class boss_protectors : public CreatureScript
                 {
                     case 60906:
                         summon->SetReactState(REACT_PASSIVE);
-                        summon->CastSpell(summon, 117989, true); //AOE dmg
+                        summon->CastSpell(summon, 117989, true, NULL, NULL, me->GetGUID()); //AOE dmg
                         break;
                     case 60886:
                         summon->SetReactState(REACT_PASSIVE);
@@ -396,6 +396,7 @@ class boss_protectors : public CreatureScript
                             events.ScheduleEvent(EVENT_LIGHTNING_PRISON, 25000);
                             break;
                         case EVENT_LIGHTNING_STORM:
+                            DoStopAttack();
                             DoCast(SPELL_LIGHTNING_STORM);
                             events.ScheduleEvent(EVENT_LIGHTNING_STORM, 40000);
                             break;
@@ -583,6 +584,7 @@ class spell_regail_lightning_storm : public SpellScriptLoader
                         break;
                     case 12000:
                         caster->CastSpell(caster, 118008, true); //90 yard Dmg
+                        caster->ToCreature()->SetReactState(REACT_AGGRESSIVE);
                         break;
                     default:
                         break;
