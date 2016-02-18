@@ -6,6 +6,7 @@ uwow.biz
 #include "DatabaseEnv.h"
 #include "Log.h"
 #include "ObjectAccessor.h"
+#include "RedisBuilderMgr.h"
 
 BracketMgr::~BracketMgr()
 {
@@ -16,6 +17,12 @@ BracketMgr::~BracketMgr()
 
 void BracketMgr::LoadCharacterBrackets()
 {
+    if (sRedisBuilder->CheckKey(sRedisBuilder->GetBracketKey()))
+    {
+        sBracketMgr->LoadBrackets();
+        return;
+    }
+
     uint32 oldMSTime = getMSTime();
 
     //                                                      0           1       2       3           4       5       6       7               8        9
@@ -46,6 +53,7 @@ void BracketMgr::LoadCharacterBrackets()
         uint32 week_wins  = fields[8].GetUInt16();
 
         bracket->InitStats(rating, mmv, games, wins, week_games, week_wins, rating_best_week, rating_best);
+        bracket->SaveBracket();
         ++count;
     }
     while (result->NextRow());

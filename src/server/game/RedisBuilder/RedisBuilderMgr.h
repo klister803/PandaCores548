@@ -21,9 +21,39 @@ class RedisBuilder
         bool LoadFromRedis(const RedisValue* v, Json::Value& data);
         bool LoadFromRedisArray(const RedisValue* v, std::vector<RedisValue>& data);
 
+        void InitRedisKey();
+
+        bool CheckKey(char* _key);
+
+        char* GetGuidKey() { return queryGuidKey; }
+        char* GetPetKey() { return petKey; }
+        char* GetBracketKey() { return bracketKey; }
+        char* GetAucItemKey() { return aucItemKey; }
+        char* GetAucKey() { return aucKey; }
+        char* GetGuildKey() { return guildKey; }
+        char* GetGuildFKey() { return guildFKey; }
+        char* GetGuildFMKey() { return guildFMKey; }
+        char* GetGroupKey() { return groupKey; }
+        char* GetGroupMemberKey() { return groupMemberKey; }
+        char* GetGroupInstanceKey() { return groupInstanceKey; }
+
         Json::Reader Reader;
         Json::FastWriter Builder;
         //Value ItemData;
+
+    private:
+
+        char* queryGuidKey;
+        char* petKey;
+        char* bracketKey;
+        char* aucItemKey;
+        char* aucKey;
+        char* guildKey;
+        char* guildFKey;
+        char* guildFMKey;
+        char* groupKey;
+        char* groupMemberKey;
+        char* groupInstanceKey;
 };
 
 #define sRedisBuilder RedisBuilder::instance()

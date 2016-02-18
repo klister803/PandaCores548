@@ -17,11 +17,10 @@
 
 #include "Common.h"
 #include "GuildMgr.h"
+#include "RedisBuilderMgr.h"
 
 GuildMgr::GuildMgr()
 {
-    guildKey = new char[32];
-    sprintf(guildKey, "r{%u}guild", realmID);
 }
 
 GuildMgr::~GuildMgr()
@@ -114,6 +113,12 @@ void GuildMgr::ResetReputationCaps()
 
 void GuildMgr::LoadGuilds()
 {
+    if (sRedisBuilder->CheckKey(sRedisBuilder->GetGuildKey()))
+    {
+        LoadGuildsRedis();
+        return;
+    }
+
     // 1. Load all guilds
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading guilds definitions...");
     {

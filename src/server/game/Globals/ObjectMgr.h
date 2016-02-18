@@ -1655,8 +1655,6 @@ class ObjectMgr
             return 5;
         }
 
-        char* GetGuidKey() { return queryGuidKey; }
-        char* GetPetKey() { return petKey; }
         void DeleteAllItems(uint8 type, uint32 guid);
 
     private:
@@ -1832,8 +1830,6 @@ class ObjectMgr
         HotfixData _hotfixData;
 
         AreaTriggerInfoMap _areaTriggerData;
-        char* queryGuidKey;
-        char* petKey;
 };
 
 uint32 GetItemArmor(uint32 itemlevel, uint32 itemClass, uint32 itemSubclass, uint32 quality, uint32 inventoryType);

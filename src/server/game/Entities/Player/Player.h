@@ -3513,7 +3513,6 @@ class Player : public Unit, public GridObject<Player>
         void _SaveStats(SQLTransaction& trans);
         void _SaveCurrency(SQLTransaction& trans);
         void _SaveArchaelogy(SQLTransaction& trans);
-        void _SaveBrackets(SQLTransaction& trans);
         void _SaveCUFProfiles(SQLTransaction& trans);
         void _SaveBattlePets(SQLTransaction& trans);
         void _SaveBattlePetSlots(SQLTransaction& trans);

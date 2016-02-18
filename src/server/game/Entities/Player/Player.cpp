@@ -22603,13 +22603,6 @@ void Player::_SaveStats(SQLTransaction& trans)
     trans->Append(stmt);
 }
 
-void Player::_SaveBrackets(SQLTransaction& trans)
-{
-    for (uint8 i = 0; i < MAX_BRACKET_SLOT; ++i)
-        if (Bracket* br = getBracket((BracketType)i))
-            br->SaveStats(&trans);
-}
-
 void Player::outDebugValues() const
 {
     if (!sLog->ShouldLog(LOG_FILTER_UNITS, LOG_LEVEL_DEBUG))

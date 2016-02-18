@@ -22,6 +22,8 @@ class BracketMgr
         Bracket* TryGetOrCreateBracket(uint64 guid, BracketType bType);
         void DeleteBracketInfo(uint64 guid);
 
+        void LoadBrackets();
+
     private:
         BracketContainer m_conteiner;
 };

@@ -20,18 +20,11 @@
 #include "InstanceSaveMgr.h"
 #include "ScenarioMgr.h"
 #include "LFGMgr.h"
+#include "RedisBuilderMgr.h"
 
 GroupMgr::GroupMgr()
 {
     NextGroupDbStoreId = 1;
-
-    groupKey = new char[32];
-    groupMemberKey = new char[32];
-    groupInstanceKey = new char[32];
-
-    sprintf(groupKey, "r{%i}group", realmID);
-    sprintf(groupMemberKey, "r{%i}groupmember", realmID);
-    sprintf(groupInstanceKey, "r{%i}instance", realmID);
 }
 
 GroupMgr::~GroupMgr()
@@ -110,6 +103,12 @@ void GroupMgr::RemoveGroup(Group* group)
 
 void GroupMgr::LoadGroups()
 {
+    if (sRedisBuilder->CheckKey(sRedisBuilder->GetGroupKey()))
+    {
+        LoadGroupsRedis();
+        return;
+    }
+
     {
         uint32 oldMSTime = getMSTime();
 

@@ -52,9 +52,6 @@ public:
     uint32 GetXPForGuildLevel(uint8 level) const;
     std::vector<GuildReward> const& GetGuildRewards() const { return GuildRewards; }
 
-    char* guildKey;
-    char* GetGuildKey() { return guildKey; }
-
 protected:
     GuildContainer GuildStore;
     std::vector<uint64> GuildXPperLevel;

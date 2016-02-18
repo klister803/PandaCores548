@@ -116,52 +116,6 @@ int GetMatchmakerRatingMod(int ownRating, int opponentRating, bool won )
     return (int)RoundingFloatValue(mod);
 }
 
-void Bracket::SaveStats(SQLTransaction* trans)
-{
-    int32 index = 0;
-    PreparedStatement* stmt = NULL;
-
-    switch(m_state)
-    {
-        case BRACKET_NEW:
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_CHARACTER_BRACKETS_STATS);
-            stmt->setUInt32(index++, GUID_LOPART(m_owner));
-            stmt->setUInt8(index++, m_Type);
-            stmt->setUInt16(index++, m_rating);
-            stmt->setUInt16(index++, values[BRACKET_BEST]);
-            stmt->setUInt16(index++, values[BRACKET_WEEK_BEST]);
-            stmt->setUInt16(index++, m_mmv);
-            stmt->setUInt32(index++, values[BRACKET_SEASON_GAMES]);
-            stmt->setUInt32(index++, values[BRACKET_SEASON_WIN]);
-            stmt->setUInt32(index++, values[BRACKET_WEEK_GAMES]);
-            stmt->setUInt32(index++, values[BRACKET_WEEK_WIN]);
-            break;
-        case BRACKET_CHANGED:
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHARACTER_BRACKETS_STATS);
-            stmt->setUInt16(index++, m_rating);
-            stmt->setUInt16(index++, values[BRACKET_BEST]);
-            stmt->setUInt16(index++, values[BRACKET_WEEK_BEST]);
-            stmt->setUInt16(index++, m_mmv);
-            stmt->setUInt32(index++, values[BRACKET_SEASON_GAMES]);
-            stmt->setUInt32(index++, values[BRACKET_SEASON_WIN]);
-            stmt->setUInt32(index++, values[BRACKET_WEEK_GAMES]);
-            stmt->setUInt32(index++, values[BRACKET_WEEK_WIN]);
-            stmt->setUInt32(index++, GUID_LOPART(m_owner));
-            stmt->setUInt8(index++, m_Type);
-            break;
-        default:
-            //Do nothing.
-            return;
-    }
-
-    if (trans)
-        (*trans)->Append(stmt);
-    else
-        CharacterDatabase.Execute(stmt);
-
-    m_state = BRACKET_UNCHANGED;
-}
-
 uint16 Bracket::FinishGame(bool win, uint16 opponents_mmv)
 {
     values[BRACKET_SEASON_GAMES]++;
@@ -197,7 +151,7 @@ uint16 Bracket::FinishGame(bool win, uint16 opponents_mmv)
     if (m_state == BRACKET_UNCHANGED)
         m_state = BRACKET_CHANGED;
 
-    SaveStats();
+    SaveBracket();
 
     return m_ratingLastChange;
 }

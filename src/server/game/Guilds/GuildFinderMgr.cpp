@@ -19,13 +19,10 @@
 #include "GuildFinderMgr.h"
 #include "GuildMgr.h"
 #include "World.h"
+#include "RedisBuilderMgr.h"
 
 GuildFinderMgr::GuildFinderMgr()
 {
-    guildFinderKey = new char[32];
-    guildFinderMKey = new char[32];
-    sprintf(guildFinderKey, "r{%u}finder", realmID);
-    sprintf(guildFinderMKey, "r{%u}findermember", realmID);
 }
 
 GuildFinderMgr::~GuildFinderMgr()
@@ -34,6 +31,12 @@ GuildFinderMgr::~GuildFinderMgr()
 
 void GuildFinderMgr::LoadFromDB()
 {
+    if (sRedisBuilder->CheckKey(sRedisBuilder->GetGuildFKey()))
+    {
+        LoadFromRedis();
+        return;
+    }
+
     LoadGuildSettings();
     LoadMembershipRequests();
 }

@@ -45,12 +45,12 @@ public:
     int16 getRatingLastChange() const { return m_ratingLastChange; }
     uint16 getMMV()    const { return m_mmv;    }
     int16 getLastMMRChange() const{ return m_mmr_lastChage; }
-    
-    void SaveStats(SQLTransaction* trans = NULL);
 
     uint16 FinishGame(bool win, uint16 opponents_mmv);
     uint32 GetBracketInfo(BracketInfoType i) const { return values[i]; }
     uint16 GetSlotByType();
+
+    void SaveBracket();
 
     void SetState(uint8 s) { m_state = s; }
 private:
@@ -68,6 +68,8 @@ private:
 
     uint64 m_owner;
     uint8 m_state;
+
+    Json::Value BracketData;
 };
 
 #endif

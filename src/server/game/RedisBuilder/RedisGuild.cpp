@@ -49,7 +49,7 @@ void Guild::SaveGuild()
     SaveGuildMoney();
 
     std::string index = std::to_string(m_id);
-    RedisDatabase.AsyncExecuteHSet("HSET", sGuildMgr->GetGuildKey(), index.c_str(), sRedisBuilder->BuildString(GuildData).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilder->GetGuildKey(), index.c_str(), sRedisBuilder->BuildString(GuildData).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Guild::SaveGuild guid %u", guid);
     });
 }
@@ -337,7 +337,7 @@ void GuildMgr::LoadGuildsRedis()
     {
         uint32 oldMSTime = getMSTime();
 
-        RedisValue guildV = RedisDatabase.Execute("HGETALL", guildKey);
+        RedisValue guildV = RedisDatabase.Execute("HGETALL", sRedisBuilder->GetGuildKey());
 
         std::vector<RedisValue> guildVector;
         if (!sRedisBuilder->LoadFromRedisArray(&guildV, guildVector))
@@ -961,7 +961,7 @@ bool Guild::BankTab::LoadItemFromDB(Json::Value itemData)
 
 void GuildFinderMgr::GuildFinderSave(std::string index, Json::Value finderData)
 {
-    RedisDatabase.AsyncExecuteHSet("HSET", guildFinderKey, index.c_str(), sRedisBuilder->BuildString(finderData).c_str(), 0, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilder->GetGuildFKey(), index.c_str(), sRedisBuilder->BuildString(finderData).c_str(), 0, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "GuildFinderMgr::GuildFinderSave guid %u", guid);
     });
 }
@@ -970,7 +970,7 @@ void GuildFinderMgr::GuildFinderMemberSave()
 {
     for (auto itr = FinderMemberData.begin(); itr != FinderMemberData.end(); ++itr)
     {
-        RedisDatabase.AsyncExecuteHSet("HSET", guildFinderMKey, itr.memberName(), sRedisBuilder->BuildString((*itr)).c_str(), 0, [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilder->GetGuildFMKey(), itr.memberName(), sRedisBuilder->BuildString((*itr)).c_str(), 0, [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "GuildFinderMgr::GuildFinderMemberSave guid %u", guid);
         });
     }
@@ -978,17 +978,17 @@ void GuildFinderMgr::GuildFinderMemberSave()
 
 void GuildFinderMgr::UpdateFinderMember(std::string index)
 {
-    RedisDatabase.AsyncExecuteHSet("HSET", guildFinderMKey, index.c_str(), sRedisBuilder->BuildString(FinderMemberData[index.c_str()]).c_str(), 0, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilder->GetGuildFMKey(), index.c_str(), sRedisBuilder->BuildString(FinderMemberData[index.c_str()]).c_str(), 0, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "GuildFinderMgr::GuildFinderMemberSave guid %u", guid);
     });
 }
 
 void GuildFinderMgr::DeleteFinderGuild(std::string index)
 {
-    RedisDatabase.AsyncExecuteH("HDEL", guildFinderMKey, index.c_str(), 0, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteH("HDEL", sRedisBuilder->GetGuildFMKey(), index.c_str(), 0, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Guild::DeleteFinderGuild guid %u", guid);
     });
-    RedisDatabase.AsyncExecuteH("HDEL", guildFinderKey, index.c_str(), 0, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteH("HDEL", sRedisBuilder->GetGuildFKey(), index.c_str(), 0, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Guild::DeleteFinderGuild guid %u", guid);
     });
 }
@@ -999,7 +999,7 @@ void GuildFinderMgr::LoadFromRedis()
 
     uint32 oldMSTime = getMSTime();
 
-    RedisValue finder = RedisDatabase.Execute("HGETALL", guildFinderKey);
+    RedisValue finder = RedisDatabase.Execute("HGETALL", sRedisBuilder->GetGuildFKey());
 
     std::vector<RedisValue> finderVector;
     if (!sRedisBuilder->LoadFromRedisArray(&finder, finderVector))
@@ -1047,7 +1047,7 @@ void GuildFinderMgr::LoadFromRedis()
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading guild finder membership requests...");
 
-    RedisValue finderM = RedisDatabase.Execute("HGETALL", guildFinderMKey);
+    RedisValue finderM = RedisDatabase.Execute("HGETALL", sRedisBuilder->GetGuildFMKey());
 
     std::vector<RedisValue> finderMVector;
     if (!sRedisBuilder->LoadFromRedisArray(&finderM, finderVector))

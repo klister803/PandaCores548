@@ -30,6 +30,8 @@
 #include "Item.h"
 #include "Language.h"
 #include "Log.h"
+#include "RedisBuilderMgr.h"
+
 #include <vector>
 
 enum eAuctionHouse
@@ -251,18 +253,12 @@ void AuctionHouseMgr::SendAuctionCancelledToBidderMail(AuctionEntry* auction, It
 
 void AuctionHouseMgr::LoadAuctionItems()
 {
-    if (RedisDatabase.isConnected())
+    if (sRedisBuilder->CheckKey(sRedisBuilder->GetAucItemKey()))
     {
-        char* key = new char[32];
-        sprintf(key, "r{%i}auc{%i}items", realmID, 0);
-        RedisValue v = RedisDatabase.Execute("EXISTS", key);
-        if (v.isOk() && v.toInt())
-        {
-            RedisDatabase.AsyncExecute("HGETALL", key, 0, [&](const RedisValue &v, uint64 aucId) {
-                sAuctionMgr->LoadAuctionItems(&v, aucId);
-            });
-            return;
-        }
+        RedisDatabase.AsyncExecute("HGETALL", sRedisBuilder->GetAucItemKey(), 0, [&](const RedisValue &v, uint64 aucId) {
+            sAuctionMgr->LoadAuctionItems(&v, aucId);
+        });
+        return;
     }
 
     uint32 oldMSTime = getMSTime();
@@ -314,18 +310,12 @@ void AuctionHouseMgr::LoadAuctionItems()
 
 void AuctionHouseMgr::LoadAuctions()
 {
-    if (RedisDatabase.isConnected())
+    if (sRedisBuilder->CheckKey(sRedisBuilder->GetAucKey()))
     {
-        char* key = new char[18];
-        sprintf(key, "r{%u}auc{%u}", realmID, 0);
-        RedisValue v = RedisDatabase.Execute("EXISTS", key);
-        if (v.isOk() && v.toInt())
-        {
-            RedisDatabase.AsyncExecute("HGETALL", key, 0, [&](const RedisValue &v, uint64 aucId) {
-                sAuctionMgr->LoadAuctions(&v, aucId);
-            });
-            return;
-        }
+        RedisDatabase.AsyncExecute("HGETALL", sRedisBuilder->GetAucKey(), 0, [&](const RedisValue &v, uint64 aucId) {
+            sAuctionMgr->LoadAuctions(&v, aucId);
+        });
+        return;
     }
 
     uint32 oldMSTime = getMSTime();

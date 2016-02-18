@@ -48,6 +48,8 @@
 #include "DB2Stores.h"
 #include "Configuration/Config.h"
 #include "LFGMgr.h"
+#include "RedisBuilderMgr.h"
+
 #include <openssl/md5.h>
 
 ScriptMapMap sQuestEndScripts;
@@ -6214,13 +6216,8 @@ AreaTriggerStruct const* ObjectMgr::GetMapEntranceTrigger(uint32 Map) const
 void ObjectMgr::SetHighestGuids()
 {
     QueryResult result = NULL;
-    queryGuidKey = new char[18];
-    petKey = new char[18];
 
-    sprintf(queryGuidKey, "r{%u}HIGHESTGUIDS", realmID);
-    sprintf(petKey, "r{%u}pets", realmID);
-
-    RedisValue v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "characters");
+    RedisValue v = RedisDatabase.ExecuteH("HGET", sRedisBuilder->GetGuidKey(), "characters");
     if (v.isOk() && !v.isNull())
         _hiCharGuid = atoi(v.toString().c_str()) + 1;
     else
@@ -6229,14 +6226,14 @@ void ObjectMgr::SetHighestGuids()
         if (result)
             _hiCharGuid = (*result)[0].GetUInt32() + 1;
         std::string guid = std::to_string(_hiCharGuid);
-        RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "characters", guid.c_str());
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilder->GetGuidKey(), "characters", guid.c_str());
     }
 
     result = WorldDatabase.Query("SELECT MAX(guid) FROM creature");
     if (result)
         _hiCreatureGuid = (*result)[0].GetUInt32()+1;
 
-    v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "item_instance");
+    v = RedisDatabase.ExecuteH("HGET", sRedisBuilder->GetGuidKey(), "item_instance");
     if (v.isOk() && !v.isNull())
         _hiItemGuid = atoi(v.toString().c_str()) + 1;
     else
@@ -6245,7 +6242,7 @@ void ObjectMgr::SetHighestGuids()
         if (result)
             _hiItemGuid = (*result)[0].GetUInt32() + 1;
         std::string guid = std::to_string(_hiItemGuid);
-        RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "item_instance", guid.c_str());
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilder->GetGuidKey(), "item_instance", guid.c_str());
     }
 
     // Cleanup other tables from not existed guids ( >= _hiItemGuid)
@@ -6262,7 +6259,7 @@ void ObjectMgr::SetHighestGuids()
     if (result)
         _hiMoTransGuid = (*result)[0].GetUInt32()+1;
 
-    v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "auctionhouse");
+    v = RedisDatabase.ExecuteH("HGET", sRedisBuilder->GetGuidKey(), "auctionhouse");
     if (v.isOk() && !v.isNull())
         _auctionId = atoi(v.toString().c_str()) + 1;
     else
@@ -6271,10 +6268,10 @@ void ObjectMgr::SetHighestGuids()
         if (result)
             _auctionId = (*result)[0].GetUInt32() + 1;
         std::string guid = std::to_string(_auctionId);
-        RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "auctionhouse", guid.c_str());
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilder->GetGuidKey(), "auctionhouse", guid.c_str());
     }
 
-    v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "mail");
+    v = RedisDatabase.ExecuteH("HGET", sRedisBuilder->GetGuidKey(), "mail");
     if (v.isOk() && !v.isNull())
         _mailId = atoi(v.toString().c_str()) + 1;
     else
@@ -6283,10 +6280,10 @@ void ObjectMgr::SetHighestGuids()
         if (result)
             _mailId = (*result)[0].GetUInt32() + 1;
         std::string guid = std::to_string(_mailId);
-        RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "mail", guid.c_str());
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilder->GetGuidKey(), "mail", guid.c_str());
     }
 
-    v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "corpse");
+    v = RedisDatabase.ExecuteH("HGET", sRedisBuilder->GetGuidKey(), "corpse");
     if (v.isOk() && !v.isNull())
         _hiCorpseGuid = atoi(v.toString().c_str()) + 1;
     else
@@ -6295,10 +6292,10 @@ void ObjectMgr::SetHighestGuids()
         if (result)
             _hiCorpseGuid = (*result)[0].GetUInt32()+1;
         std::string guid = std::to_string(_hiCorpseGuid);
-        RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "corpse", guid.c_str());
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilder->GetGuidKey(), "corpse", guid.c_str());
     }
 
-    v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "character_equipmentsets");
+    v = RedisDatabase.ExecuteH("HGET", sRedisBuilder->GetGuidKey(), "character_equipmentsets");
     if (v.isOk() && !v.isNull())
         _equipmentSetGuid = atoi(v.toString().c_str()) + 1;
     else
@@ -6307,10 +6304,10 @@ void ObjectMgr::SetHighestGuids()
         if (result)
             _equipmentSetGuid = (*result)[0].GetUInt64() + 1;
         std::string guid = std::to_string(_equipmentSetGuid);
-        RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "character_equipmentsets", guid.c_str());
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilder->GetGuidKey(), "character_equipmentsets", guid.c_str());
     }
 
-    v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "guild");
+    v = RedisDatabase.ExecuteH("HGET", sRedisBuilder->GetGuidKey(), "guild");
     if (v.isOk() && !v.isNull())
         _nextGuildId = atoi(v.toString().c_str()) + 1;
     else
@@ -6319,10 +6316,10 @@ void ObjectMgr::SetHighestGuids()
         if (result)
             _nextGuildId = (*result)[0].GetUInt32()+1;
         std::string guid = std::to_string(_nextGuildId);
-        RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "guild", guid.c_str());
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilder->GetGuidKey(), "guild", guid.c_str());
     }
 
-    v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "group");
+    v = RedisDatabase.ExecuteH("HGET", sRedisBuilder->GetGuidKey(), "group");
     if (v.isOk() && !v.isNull())
         _nextGroupId = atoi(v.toString().c_str()) + 1;
     else
@@ -6331,11 +6328,11 @@ void ObjectMgr::SetHighestGuids()
         if (result)
             _nextGroupId = (*result)[0].GetUInt32()+1;
         std::string guid = std::to_string(_nextGroupId);
-        RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "group", guid.c_str());
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilder->GetGuidKey(), "group", guid.c_str());
     }
     sGroupMgr->SetGroupDbStoreSize(_nextGroupId);
 
-    v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "character_void_storage");
+    v = RedisDatabase.ExecuteH("HGET", sRedisBuilder->GetGuidKey(), "character_void_storage");
     if (v.isOk() && !v.isNull())
         _voidItemId = atoi(v.toString().c_str()) + 1;
     else
@@ -6344,14 +6341,14 @@ void ObjectMgr::SetHighestGuids()
         if (result)
             _voidItemId = (*result)[0].GetUInt64() + 1;
         std::string guid = std::to_string(_voidItemId);
-        RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "character_void_storage", guid.c_str());
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilder->GetGuidKey(), "character_void_storage", guid.c_str());
     }
 }
 
 void ObjectMgr::IncrementGuid(const char* field)
 {
     std::string index = std::to_string(1);
-    RedisDatabase.AsyncExecuteHSet("HINCRBY", queryGuidKey, field, index.c_str(), 0, [&](const RedisValue&, uint64){});
+    RedisDatabase.AsyncExecuteHSet("HINCRBY", sRedisBuilder->GetGuidKey(), field, index.c_str(), 0, [&](const RedisValue&, uint64){});
 }
 
 uint32 ObjectMgr::GenerateGroupId()
@@ -6907,7 +6904,7 @@ void ObjectMgr::LoadPetNumber()
 {
     uint32 oldMSTime = getMSTime();
 
-    RedisValue v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "pets");
+    RedisValue v = RedisDatabase.ExecuteH("HGET", sRedisBuilder->GetGuidKey(), "pets");
     if (v.isOk() && !v.isNull())
         _hiPetNumber = atoi(v.toString().c_str()) + 1;
     else
@@ -6916,7 +6913,7 @@ void ObjectMgr::LoadPetNumber()
         if (result)
             _hiPetNumber = (*result)[0].GetUInt32() + 1;
         std::string guid = std::to_string(_hiPetNumber);
-        RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "pets", guid.c_str());
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilder->GetGuidKey(), "pets", guid.c_str());
     }
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded the max pet number: %d in %u ms", _hiPetNumber-1, GetMSTimeDiffToNow(oldMSTime));
@@ -6926,7 +6923,7 @@ void ObjectMgr::LoadBattlePetGuid()
 {
     uint32 oldMSTime = getMSTime();
 
-    RedisValue v = RedisDatabase.ExecuteH("HGET", queryGuidKey, "battlepets");
+    RedisValue v = RedisDatabase.ExecuteH("HGET", sRedisBuilder->GetGuidKey(), "battlepets");
     if (v.isOk() && !v.isNull())
         _hiBattlePetGuid = atoi(v.toString().c_str()) + 1;
     else
@@ -6935,7 +6932,7 @@ void ObjectMgr::LoadBattlePetGuid()
         if (result)
             _hiBattlePetGuid = (*result)[0].GetUInt64() + 1;
         std::string guid = std::to_string(_hiBattlePetGuid);
-        RedisDatabase.ExecuteSetH("HSET", queryGuidKey, "battlepets", guid.c_str());
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilder->GetGuidKey(), "battlepets", guid.c_str());
     }
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded the max battle pet guid: %d in %u ms", _hiBattlePetGuid-1, GetMSTimeDiffToNow(oldMSTime));

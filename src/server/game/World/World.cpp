@@ -86,6 +86,7 @@
 #include "PlayerDump.h"
 #include "ChallengeMgr.h"
 #include "ScenarioMgr.h"
+#include "RedisBuilderMgr.h"
 
 #include <boost/thread/thread.hpp>
 
@@ -1443,6 +1444,7 @@ void World::SetInitialWorldSettings()
     LoadDBAllowedSecurityLevel();
 
     ///- Init highest guids before any table loading to prevent using not initialized guids in some code.
+    sRedisBuilder->InitRedisKey();
     sObjectMgr->SetHighestGuids();
 
     ///- Check the existence of the map files for all races' startup areas.
@@ -1824,17 +1826,12 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Guild rewards...");
     sGuildMgr->LoadGuildRewards();
 
-    //sGuildMgr->LoadGuilds();
-    sGuildMgr->LoadGuildsRedis();
-
-    //sGuildFinderMgr->LoadFromDB();
-    sGuildFinderMgr->LoadFromRedis();
-
+    sGuildMgr->LoadGuilds();
+    sGuildFinderMgr->LoadFromDB();
     sBracketMgr->LoadCharacterBrackets();
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Groups...");
-    //sGroupMgr->LoadGroups();
-    sGroupMgr->LoadGroupsRedis();
+    sGroupMgr->LoadGroups();
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading ReservedNames...");
     sObjectMgr->LoadReservedPlayersNames();

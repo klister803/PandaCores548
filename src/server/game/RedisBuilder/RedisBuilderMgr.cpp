@@ -53,3 +53,47 @@ bool RedisBuilder::LoadFromRedisArray(const RedisValue* v, std::vector<RedisValu
 
     return true;
 }
+
+bool RedisBuilder::CheckKey(char* _key)
+{
+    RedisValue v = RedisDatabase.Execute("EXISTS", _key);
+    if (!v.isOk() || v.isNull())
+    {
+        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilder::CheckKey data not found %s", _key);
+        return false;
+    }
+
+    if (!v.toInt())
+    {
+        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilder::CheckKey key not exist %s", _key);
+        return false;
+    }
+
+    return true;
+}
+
+void RedisBuilder::InitRedisKey()
+{
+    queryGuidKey = new char[18];
+    petKey = new char[18];
+    bracketKey = new char[18];
+    aucItemKey = new char[18];
+    aucKey = new char[18];
+    guildKey = new char[18];
+    guildFKey = new char[32];
+    guildFMKey = new char[32];
+    groupKey = new char[32];
+    groupMemberKey = new char[32];
+    groupInstanceKey = new char[32];
+
+    sprintf(queryGuidKey, "r{%u}HIGHESTGUIDS", realmID);
+    sprintf(petKey, "r{%u}pets", realmID);
+    sprintf(bracketKey, "r{%u}bracket", realmID);
+    sprintf(aucItemKey, "r{%i}auc{%i}items", realmID, 0);
+    sprintf(aucKey, "r{%i}auc", realmID);
+    sprintf(guildFKey, "r{%u}finder", realmID);
+    sprintf(guildFMKey, "r{%u}findermember", realmID);
+    sprintf(groupKey, "r{%i}group", realmID);
+    sprintf(groupMemberKey, "r{%i}groupmember", realmID);
+    sprintf(groupInstanceKey, "r{%i}instance", realmID);
+}

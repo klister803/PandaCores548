@@ -278,7 +278,7 @@ bool Pet::LoadPetFromRedis(Player* owner, uint32 petentry, uint32 petnumber, boo
         owner->ToPlayer()->SetLastPetNumber(pet_number);
 
     std::string petId = std::to_string(pet_number);
-    RedisDatabase.AsyncExecuteH("HGET", sObjectMgr->GetPetKey(), petId.c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteH("HGET", sRedisBuilder->GetPetKey(), petId.c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         if (Pet* pet = ObjectAccessor::GetObjectInWorld(guid, (Pet*)NULL))
             pet->LoadPetSpellRedis(&v);
     });

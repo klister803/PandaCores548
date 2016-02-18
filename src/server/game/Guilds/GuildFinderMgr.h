@@ -293,9 +293,6 @@ class GuildFinderMgr
 
         Json::Value FinderData;
         Json::Value FinderMemberData;
-
-        char* guildFinderKey;
-        char* guildFinderMKey;
 };
 
 #define sGuildFinderMgr ACE_Singleton<GuildFinderMgr, ACE_Null_Mutex>::instance()

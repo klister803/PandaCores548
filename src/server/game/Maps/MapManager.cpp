@@ -33,6 +33,7 @@
 #include "Language.h"
 #include "WorldPacket.h"
 #include "Group.h"
+#include "RedisBuilderMgr.h"
 
 #include <thread>
 
@@ -453,7 +454,7 @@ void MapManager::InitInstanceIds()
 {
     _nextInstanceId = 1;
 
-    RedisValue v = RedisDatabase.ExecuteH("HGET", sObjectMgr->GetGuidKey(), "instance");
+    RedisValue v = RedisDatabase.ExecuteH("HGET", sRedisBuilder->GetGuidKey(), "instance");
     if (v.isOk() && !v.isNull())
     {
         uint32 maxId = v.toInt();
@@ -495,7 +496,7 @@ uint32 MapManager::GenerateInstanceId()
     }
 
     std::string id = std::to_string(_nextInstanceId);
-    RedisDatabase.ExecuteSetH("HSET", sObjectMgr->GetGuidKey(), "instance", id.c_str());
+    RedisDatabase.ExecuteSetH("HSET", sRedisBuilder->GetGuidKey(), "instance", id.c_str());
 
     if (newInstanceId == _nextInstanceId)
     {
@@ -528,7 +529,7 @@ void MapManager::FreeInstanceId(uint32 instanceId)
         SetNextInstanceId(instanceId);
 
         std::string id = std::to_string(instanceId);
-        RedisDatabase.ExecuteSetH("HSET", sObjectMgr->GetGuidKey(), "instance", id.c_str());
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilder->GetGuidKey(), "instance", id.c_str());
     }
 
     _instanceIds[instanceId] = false;
