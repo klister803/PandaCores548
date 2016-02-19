@@ -135,9 +135,10 @@ public:
 
     void AppendResponse(const std::string& response) { _response += response; }
 
-    bool LoadFromDB(Field* fields);
-    void SaveToDB(SQLTransaction& trans) const;
-    void DeleteFromDB();
+    void LoadFromDB(Field* fields);
+    void LoadFromDB(uint32 ticketId, Json::Value data);
+    void SaveTicket();
+    void DeleteTicket();
 
     void WritePacket(WorldPacket& data) const;
     void SendResponse(WorldSession* session) const;
@@ -145,6 +146,8 @@ public:
     void TeleportTo(Player* player) const;
     std::string FormatMessageString(ChatHandler& handler, bool detailed = false) const;
     std::string FormatMessageString(ChatHandler& handler, const char* szClosedName, const char* szAssignedToName, const char* szUnassignedName, const char* szDeletedName) const;
+
+    Json::Value TicketData;
 
 private:
     uint32 _id;
@@ -179,6 +182,7 @@ private:
 public:
     void LoadTickets();
     void LoadSurveys();
+    void LoadFromRedis();
 
     GmTicket* GetTicket(uint32 ticketId)
     {

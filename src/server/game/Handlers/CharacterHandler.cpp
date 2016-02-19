@@ -711,7 +711,6 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
 
             // Player created, save it now
             newChar.SaveToDB(true);
-            newChar.InitSavePlayer();
             createInfo->CharCount += 1;
 
             SQLTransaction trans = LoginDatabase.BeginTransaction();
@@ -1349,27 +1348,21 @@ void WorldSession::HandleCharRenameOpcode(WorldPacket& recvData)
 
     // Update name and at_login flag in the db
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_NAME);
-
     stmt->setString(0, newName);
     stmt->setUInt16(1, AT_LOGIN_RENAME);
     stmt->setUInt32(2, guidLow);
-
     CharacterDatabase.Execute(stmt);
 
     // Removed declined name from db
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_DECLINED_NAME);
-
     stmt->setUInt32(0, guidLow);
-
     CharacterDatabase.Execute(stmt);
 
     // Logging
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_NAME_LOG);
-
     stmt->setUInt32(0, guidLow);
     stmt->setString(1, oldName);
     stmt->setString(2, newName);
-
     CharacterDatabase.Execute(stmt);
 
     sLog->outInfo(LOG_FILTER_CHARACTER, "Account: %d (IP: %s) Character:[%s] (guid:%u) Changed name to: %s", GetAccountId(), GetRemoteAddress().c_str(), oldName.c_str(), guidLow, newName.c_str());

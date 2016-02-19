@@ -3361,7 +3361,9 @@ void Player::LoadPlayerPetition(const RedisValue* v, uint64 playerGuid)
         return;
     }
 
-    sObjectMgr->AddPlayerPetition(PlayerPetitions["guid"].asUInt64(), this);
+    sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerPetition PlayerPetitions %u", PlayerPetitions["guid"].asUInt64());
+
+    sObjectMgr->AddPlayerPetition(PlayerPetitions["guid"].asUInt(), this);
 
     LoadFromRedis(playerGuid, LOAD_PLAYER_LOGIN); //Next step load
 }

@@ -963,7 +963,7 @@ class ObjectMgr
         void AddPlayerLoad(uint64 guid, Player* player) { _playerLoadMap[guid] = player; }
         void RemovePlayerLoad(uint64 guid) { _playerLoadMap.erase(guid); }
 
-        Player* GetPetitionPlayer(uint64 guid)
+        Player* GetPetitionPlayer(uint32 guid)
         {
             PetitionMap::const_iterator itr = _petitionMap.find(guid);
             if (itr != _petitionMap.end())
@@ -972,8 +972,8 @@ class ObjectMgr
             return NULL;
         }
 
-        void AddPlayerPetition(uint64 guid, Player* player) { _petitionMap[guid] = player; }
-        void RemovePlayerPetition(uint64 guid) { _petitionMap.erase(guid); }
+        void AddPlayerPetition(uint32 guid, Player* player) { _petitionMap[guid] = player; }
+        void RemovePlayerPetition(uint32 guid) { _petitionMap.erase(guid); }
 
         void GetPlayerLevelInfo(uint32 race, uint32 class_, uint8 level, PlayerLevelInfo* info) const;
 

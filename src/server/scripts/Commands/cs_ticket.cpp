@@ -121,9 +121,8 @@ public:
         }
 
         // Assign ticket
-        SQLTransaction trans = SQLTransaction(NULL);
         ticket->SetAssignedTo(targetGuid, AccountMgr::IsAdminAccount(targetGmLevel));
-        ticket->SaveToDB(trans);
+        ticket->SaveTicket();
         sTicketMgr->UpdateLastChange();
 
         std::string msg = ticket->FormatMessageString(*handler, NULL, target.c_str(), NULL, NULL);
@@ -201,9 +200,8 @@ public:
             return true;
         }
 
-        SQLTransaction trans = SQLTransaction(NULL);
         ticket->SetComment(comment);
-        ticket->SaveToDB(trans);
+        ticket->SaveTicket();
         sTicketMgr->UpdateLastChange();
 
         std::string msg = ticket->FormatMessageString(*handler, NULL, ticket->GetAssignedToName().c_str(), NULL, NULL);
@@ -233,10 +231,7 @@ public:
         }
 
         ticket->SetCompleted(true);
-
-        SQLTransaction trans = CharacterDatabase.BeginTransaction();
-        ticket->SaveToDB(trans);
-        CharacterDatabase.CommitTransaction(trans);
+        ticket->SaveTicket();
 
         if (Player* player = ticket->GetPlayer())
             if (player->IsInWorld())
@@ -391,9 +386,8 @@ public:
             return true;
         }
 
-        SQLTransaction trans = SQLTransaction(NULL);
         ticket->SetUnassigned();
-        ticket->SaveToDB(trans);
+        ticket->SaveTicket();
         sTicketMgr->UpdateLastChange();
 
         std::string msg = ticket->FormatMessageString(*handler, NULL, ticket->GetAssignedToName().c_str(),
@@ -416,9 +410,8 @@ public:
             return true;
         }
 
-        SQLTransaction trans = SQLTransaction(NULL);
         ticket->SetViewed();
-        ticket->SaveToDB(trans);
+        ticket->SaveTicket();
 
         handler->SendSysMessage(ticket->FormatMessageString(*handler, true).c_str());
         return true;
@@ -455,9 +448,8 @@ public:
             return true;
         }
 
-        SQLTransaction trans = SQLTransaction(NULL);
         ticket->SetViewed();
-        ticket->SaveToDB(trans);
+        ticket->SaveTicket();
 
         handler->SendSysMessage(ticket->FormatMessageString(*handler, true).c_str());
         return true;
@@ -491,11 +483,10 @@ public:
             return true;
         }
 
-        SQLTransaction trans = SQLTransaction(NULL);
         ticket->AppendResponse(response);
         if (newLine)
             ticket->AppendResponse("\n");
-        ticket->SaveToDB(trans);
+        ticket->SaveTicket();
 
         return true;
     }

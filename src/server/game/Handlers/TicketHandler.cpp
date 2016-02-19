@@ -68,9 +68,8 @@ void WorldSession::HandleGMTicketUpdateOpcode(WorldPacket & recvData)
     GMTicketResponse response = GMTICKET_RESPONSE_UPDATE_ERROR;
     if (GmTicket* ticket = sTicketMgr->GetTicketByPlayer(GetPlayer()->GetGUID()))
     {
-        SQLTransaction trans = SQLTransaction(NULL);
         ticket->SetMessage(message);
-        ticket->SaveToDB(trans);
+        ticket->SaveTicket();
 
         sWorld->SendGMText(LANG_COMMAND_TICKETUPDATED, GetPlayer()->GetName(), ticket->GetId());
 

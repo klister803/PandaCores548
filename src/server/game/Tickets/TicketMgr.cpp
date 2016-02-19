@@ -24,6 +24,7 @@
 #include "WorldSession.h"
 #include "Chat.h"
 #include "World.h"
+#include "RedisBuilderMgr.h"
 
 inline float GetAge(uint64 t) { return float(time(NULL) - t) / DAY; }
 
@@ -58,7 +59,7 @@ GmTicket::GmTicket(Player* player, WorldPacket& recvData) : _createTime(time(NUL
 
 GmTicket::~GmTicket() { }
 
-bool GmTicket::LoadFromDB(Field* fields)
+void GmTicket::LoadFromDB(Field* fields)
 {
     //     0       1     2      3          4        5      6     7     8           9            10         11         12        13        14        15
     // ticketId, guid, name, message, createTime, mapId, posX, posY, posZ, lastModifiedTime, closedBy, assignedTo, comment, completed, escalated, viewed
@@ -79,40 +80,6 @@ bool GmTicket::LoadFromDB(Field* fields)
     _completed          = fields[++index].GetBool();
     _escalatedStatus    = GMTicketEscalationStatus(fields[++index].GetUInt8());
     _viewed             = fields[++index].GetBool();
-    return true;
-}
-
-void GmTicket::SaveToDB(SQLTransaction& trans) const
-{
-    //     0       1     2      3          4        5      6     7     8           9            10         11         12        13        14        15
-    // ticketId, guid, name, message, createTime, mapId, posX, posY, posZ, lastModifiedTime, closedBy, assignedTo, comment, completed, escalated, viewed
-    uint8 index = 0;
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_GM_TICKET);
-    stmt->setUInt32(  index, _id);
-    stmt->setUInt32(++index, GUID_LOPART(_playerGuid));
-    stmt->setString(++index, _playerName);
-    stmt->setString(++index, _message);
-    stmt->setUInt32(++index, uint32(_createTime));
-    stmt->setUInt16(++index, _mapId);
-    stmt->setFloat (++index, _posX);
-    stmt->setFloat (++index, _posY);
-    stmt->setFloat (++index, _posZ);
-    stmt->setUInt32(++index, uint32(_lastModifiedTime));
-    stmt->setInt32 (++index, GUID_LOPART(_closedBy));
-    stmt->setUInt32(++index, GUID_LOPART(_assignedTo));
-    stmt->setString(++index, _comment);
-    stmt->setBool  (++index, _completed);
-    stmt->setUInt8 (++index, uint8(_escalatedStatus));
-    stmt->setBool  (++index, _viewed);
-
-    CharacterDatabase.ExecuteOrAppend(trans, stmt);
-}
-
-void GmTicket::DeleteFromDB()
-{
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GM_TICKET);
-    stmt->setUInt32(0, _id);
-    CharacterDatabase.Execute(stmt);
 }
 
 //! ToDo: Fix me
@@ -237,16 +204,10 @@ void TicketMgr::ResetTickets()
             sTicketMgr->RemoveTicket(itr->second->GetId());
 
     _lastTicketId = 0;
-
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ALL_GM_TICKETS);
-
-    CharacterDatabase.Execute(stmt);
 }
 
 void TicketMgr::LoadTickets()
 {
-    uint32 oldMSTime = getMSTime();
-
     for (GmTicketList::const_iterator itr = _ticketList.begin(); itr != _ticketList.end(); ++itr)
         delete itr->second;
     _ticketList.clear();
@@ -254,12 +215,19 @@ void TicketMgr::LoadTickets()
     _lastTicketId = 0;
     _openTicketCount = 0;
 
+    if (sRedisBuilder->CheckKey(sRedisBuilder->GetTicketKey()))
+    {
+        LoadFromRedis();
+        return;
+    }
+
+    uint32 oldMSTime = getMSTime();
+
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_GM_TICKETS);
     PreparedQueryResult result = CharacterDatabase.Query(stmt);
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 GM tickets. DB table `gm_tickets` is empty!");
-
         return;
     }
 
@@ -268,11 +236,8 @@ void TicketMgr::LoadTickets()
     {
         Field* fields = result->Fetch();
         GmTicket* ticket = new GmTicket();
-        if (!ticket->LoadFromDB(fields))
-        {
-            delete ticket;
-            continue;
-        }
+        ticket->LoadFromDB(fields);
+
         if (!ticket->IsClosed())
             ++_openTicketCount;
 
@@ -307,8 +272,7 @@ void TicketMgr::AddTicket(GmTicket* ticket)
     _ticketList[ticket->GetId()] = ticket;
     if (!ticket->IsClosed())
         ++_openTicketCount;
-    SQLTransaction trans = SQLTransaction(NULL);
-    ticket->SaveToDB(trans);
+    ticket->SaveTicket();
 }
 
 void TicketMgr::CloseTicket(uint32 ticketId, int64 source)
@@ -319,7 +283,7 @@ void TicketMgr::CloseTicket(uint32 ticketId, int64 source)
         ticket->SetClosedBy(source);
         if (source)
             --_openTicketCount;
-        ticket->SaveToDB(trans);
+        ticket->SaveTicket();
     }
 }
 
@@ -327,7 +291,7 @@ void TicketMgr::RemoveTicket(uint32 ticketId)
 {
     if (GmTicket* ticket = GetTicket(ticketId))
     {
-        ticket->DeleteFromDB();
+        ticket->DeleteTicket();
         _ticketList.erase(ticketId);
         delete ticket;
     }

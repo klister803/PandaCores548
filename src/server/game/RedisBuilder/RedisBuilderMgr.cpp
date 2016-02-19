@@ -86,6 +86,7 @@ void RedisBuilder::InitRedisKey()
     groupMemberKey = new char[20];
     groupInstanceKey = new char[18];
     challengeKey = new char[18];
+    ticketKey = new char[18];
 
     sprintf(queryGuidKey, "r{%u}HIGHESTGUIDS", realmID);
     sprintf(petKey, "r{%u}pets", realmID);
@@ -98,4 +99,6 @@ void RedisBuilder::InitRedisKey()
     sprintf(groupMemberKey, "r{%i}groupmember", realmID);
     sprintf(groupInstanceKey, "r{%i}instance", realmID);
     sprintf(challengeKey, "r{%i}challenge", realmID);
+    sprintf(ticketKey, "r{%i}ticket", realmID);
 }
+
