@@ -578,6 +578,8 @@ enum esSpells
     //Garrosh
     SPELL_YSHAARJ_PROTECTION_AT        = 144920,
     SPELL_YSHAARJ_PROTECTION           = 144945,
+    SPELL_ULTIMATE_DESPAIR             = 147341,
+    SPELL_CONSUMED_FAITH               = 149033,
 };
 
 

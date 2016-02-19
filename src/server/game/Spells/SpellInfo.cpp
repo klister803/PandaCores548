@@ -1280,6 +1280,8 @@ SpellEffectInfo const* SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 143830: //Disentegration laser AT
     //Garrosh
     case 144821: //Hellscream warsong
+    case 149032: //Consumed Hope
+    case 149033: //Consumed Faith
         return &Effects[effect];
     }
 

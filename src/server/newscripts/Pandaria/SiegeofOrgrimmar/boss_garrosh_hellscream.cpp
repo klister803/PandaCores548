@@ -30,8 +30,17 @@ enum eSpells
     SPELL_DESECRATED_WEAPON_AT       = 144760,
     SPELL_EM_DESECRATED_WEAPON_AT    = 144818,
     SPELL_DESECRATED_WEAPON_AXE      = 145880,
+    SPELL_WHIRLING_CORRUPTION        = 144985,
+    SPELL_EM_WHIRLING_CORRUPTION     = 145037,
+    SPELL_GRIPPING_DESPAIR           = 145183,
+    SPELL_EM_GRIPPING_DESPAIR        = 145195,
     //Garrosh Special
     SPELL_TRANSITION_VISUAL          = 144852,
+    //Embodied despair
+    SPELL_CONSUMED_HOPE              = 149032,
+    SPELL_HOPE_AT                    = 149003,
+    SPELL_HOPE_BUFF                  = 149004,
+    SPELL_EMBODIED_DESPAIR           = 145276,
 
     //Iron Star
     SPELL_IRON_STAR_IMPACT_AT        = 144645,
@@ -71,18 +80,21 @@ enum sEvents
     EVENT_SUMMON_WOLF_RIDER          = 4,
     EVENT_SUMMON_ENGINEER            = 5,
     EVENT_PHASE_TWO                  = 6,
+    EVENT_WHIRLING_CORRUPTION        = 7,
     //In Realm
-    EVENT_ANNIHILLATE                = 7,
+    EVENT_ANNIHILLATE                = 8,
     //Desecrated weapon
-    EVENT_REGENERATE                 = 8,
+    EVENT_REGENERATE                 = 9,
     //Summons
-    EVENT_LAUNCH_STAR                = 9,
-    EVENT_HAMSTRING                  = 10,
-    EVENT_CHAIN_HEAL                 = 11,
-    EVENT_CHAIN_LIGHTNING            = 12,
+    EVENT_LAUNCH_STAR                = 10,
+    EVENT_HAMSTRING                  = 11,
+    EVENT_CHAIN_HEAL                 = 12,
+    EVENT_CHAIN_LIGHTNING            = 13,
     //Iron Star
-    EVENT_ACTIVE                     = 13,
+    EVENT_ACTIVE                     = 14,
     EVENT_TP_YSHAARJ                 = 33,
+    //Adds in realm
+    EVENT_EMBODIED_DESPAIR           = 15,
 };
 
 enum Phase
@@ -234,6 +246,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     me->GetMotionMaster()->MoveCharge(centerpos.GetPositionX(), centerpos.GetPositionY(), centerpos.GetPositionZ(), 15.0f, 1);
                     break;
                 case ACTION_LAUNCH_ANNIHILLATE:
+                    updatepower = 0;
                     events.ScheduleEvent(EVENT_ANNIHILLATE, 4000);
                     break;
                 }
@@ -351,7 +364,7 @@ class boss_garrosh_hellscream : public CreatureScript
                                     if (IfTargetHavePlayersInRange(*itr, count))
                                     {
                                         havetarget = true;
-                                        DoCast(*itr, phase != PHASE_ONE ? SPELL_EM_DESECRETE : SPELL_DESECRETE);
+                                        DoCast(*itr, me->GetPower(POWER_ENERGY) >= 75 ? SPELL_EM_DESECRETE : SPELL_DESECRETE);
                                         break;
                                     }
                                 }
@@ -365,7 +378,7 @@ class boss_garrosh_hellscream : public CreatureScript
                                     {
                                         if (IfTargetHavePlayersInRange(*itr, count))
                                         {
-                                            DoCast(*itr, phase != PHASE_ONE ? SPELL_EM_DESECRETE : SPELL_DESECRETE);
+                                            DoCast(*itr, me->GetPower(POWER_ENERGY) >= 75 ? SPELL_EM_DESECRETE : SPELL_DESECRETE);
                                             break;
                                         }
                                     }
@@ -375,7 +388,7 @@ class boss_garrosh_hellscream : public CreatureScript
                         events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 40000);
                         break;
                     }
-                    case EVENT_TP_YSHAARJ:
+                    case EVENT_TP_YSHAARJ: //Test event
                     {
                         uint8 mod = instance->GetData(DATA_GET_REALM_OF_YSHAARJ);
                         if (Creature* garroshrealm = me->SummonCreature(NPC_GARROSH, gspos[mod]))
@@ -407,7 +420,12 @@ class boss_garrosh_hellscream : public CreatureScript
                             me->SetHealth(hp);
                             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                             me->ReAttackWithZone();
+                            events.ScheduleEvent(EVENT_WHIRLING_CORRUPTION, 30000); 
                         }
+                        break;
+                    case EVENT_WHIRLING_CORRUPTION:
+                        DoCast(me, me->GetPower(POWER_ENERGY) >= 25 ? SPELL_EM_WHIRLING_CORRUPTION : SPELL_WHIRLING_CORRUPTION);
+                        events.ScheduleEvent(EVENT_WHIRLING_CORRUPTION, 40000);
                         break;
                     }
                 }
@@ -422,6 +440,7 @@ class boss_garrosh_hellscream : public CreatureScript
         }
 };
 
+//All summons, include realm of yshaarj
 class npc_garrosh_soldier : public CreatureScript
 {
 public:
@@ -442,15 +461,19 @@ public:
         void Reset()
         {
             firstengeneerdied = false;
-            if (me->GetEntry() == NPC_SIEGE_ENGINEER)
+            switch (me->GetEntry())
             {
+            case NPC_SIEGE_ENGINEER:
                 me->SetReactState(REACT_PASSIVE);
                 events.ScheduleEvent(EVENT_LAUNCH_STAR, urand(1000, 3000));
-            }
-            else
-            {
+                break;
+            case NPC_EMBODIED_DESPAIR:
+                me->SetReactState(REACT_AGGRESSIVE);
+                DoCast(me, SPELL_CONSUMED_HOPE, true);
+                break;
+            default:
                 me->AddAura(SPELL_SUMMON_ADDS, me);
-                me->SetReactState(REACT_DEFENSIVE);
+                break;
             }
         }
 
@@ -486,6 +509,10 @@ public:
                 events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, 15000);
                 events.ScheduleEvent(EVENT_CHAIN_HEAL, 21500);
                 break;
+            case NPC_EMBODIED_DESPAIR:
+                events.ScheduleEvent(EVENT_EMBODIED_DESPAIR, 10000);
+            default:
+                break;
             }
         }
 
@@ -505,7 +532,7 @@ public:
             {
                 switch (eventId)
                 {
-                //Engineer
+                    //Engineer
                 case EVENT_LAUNCH_STAR:
                     if (Creature* ironstar = me->FindNearestCreature(NPC_KORKRON_IRON_STAR, 30.0f, true))
                     {
@@ -513,13 +540,13 @@ public:
                         DoCast(me, SPELL_POWER_IRON_STAR);
                     }
                     break;
-                //Warbringer
+                    //Warbringer
                 case EVENT_HAMSTRING:
                     if (me->getVictim())
                         DoCastVictim(SPELL_HAMSTRING);
                     events.ScheduleEvent(EVENT_HAMSTRING, 3000);
                     break;
-                //Wolf Rider
+                    //Wolf Rider
                 case EVENT_CHAIN_LIGHTNING:
                 {
                     std::list<Player*> pllist;
@@ -544,6 +571,12 @@ public:
                         if (ftarget->HealthBelowPct(90))
                             DoCast(ftarget, SPELL_ANCESTRAL_CHAIN_HEAL);
                     events.ScheduleEvent(EVENT_CHAIN_HEAL, 21500);
+                    break;
+                //Realm of Yshaarj
+                //Embodied Despair
+                case EVENT_EMBODIED_DESPAIR:
+                    DoCast(me, SPELL_EMBODIED_DESPAIR);
+                    events.ScheduleEvent(EVENT_EMBODIED_DESPAIR, 20000);
                     break;
                 }
             }
@@ -983,38 +1016,6 @@ public:
     }
 };
 
-//144954
-/*class spell_realm_of_yshaarj : public SpellScriptLoader
-{
-public:
-    spell_realm_of_yshaarj() : SpellScriptLoader("spell_realm_of_yshaarj") { }
-
-    class spell_realm_of_yshaarj_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_realm_of_yshaarj_AuraScript);
-
-        void HandleEffectRemove(AuraEffect const * aurEff, AuraEffectHandleModes mode)
-        {
-            if (GetTarget() && GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
-            {
-                GetTarget()->NearTeleportTo(realmtppos.GetPositionX(), realmtppos.GetPositionY(), realmtppos.GetPositionZ(), realmtppos.GetOrientation());
-                GetTarget()->RemoveAurasDueToSpell(SPELL_GARROSH_ENERGY);
-            }
-        }
-
-        void Register()
-        {
-            OnEffectRemove += AuraEffectRemoveFn(spell_realm_of_yshaarj_AuraScript::HandleEffectRemove, EFFECT_1, SPELL_AURA_SCREEN_EFFECT, AURA_EFFECT_HANDLE_REAL);
-        }
-    };
-
-    AuraScript* GetAuraScript() const
-    {
-        return new spell_realm_of_yshaarj_AuraScript();
-    }
-};*/
-
-
 
 void AddSC_boss_garrosh_hellscream()
 {
@@ -1029,5 +1030,4 @@ void AddSC_boss_garrosh_hellscream()
     new spell_exploding_iron_star();
     new spell_power_iron_star();
     new spell_enter_realm_of_yshaarj();
-    //new spell_realm_of_yshaarj();
 }

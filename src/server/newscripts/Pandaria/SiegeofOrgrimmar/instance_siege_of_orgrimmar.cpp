@@ -1724,9 +1724,23 @@ public:
                 case DATA_CHECK_INSTANCE_PROGRESS:
                     return uint32(CheckProgressForGarrosh());
                 case DATA_GET_REALM_OF_YSHAARJ:
+                    if (!rycount)
+                        ResetBuffOnEmbodiedDoubts();
                     return rycount;
             }
             return 0;
+        }
+
+        void ResetBuffOnEmbodiedDoubts()
+        {
+            for (std::vector<uint64>::const_iterator itr = edoubtGuids.begin(); itr != edoubtGuids.end(); itr++)
+                if (Creature* add = instance->GetCreature(*itr))
+                    add->RemoveAurasDueToSpell(SPELL_CONSUMED_FAITH);
+            std::random_shuffle(edoubtGuids.begin(), edoubtGuids.end());
+            uint8 count = instance->Is25ManRaid() ? 8 : 3;
+            for (uint8 n = 0; n < count; n++)
+                if (Creature* add = instance->GetCreature(edoubtGuids[n]))
+                    add->AddAura(SPELL_CONSUMED_FAITH, add);
         }
 
         uint64 GetData64(uint32 type)
@@ -1915,9 +1929,16 @@ public:
                 break;
             case NPC_EMBODIED_DESPAIR:
                 for (std::vector<uint64>::const_iterator itr = edespairGuids.begin(); itr != edespairGuids.end(); itr++)
+                {
                     if (Creature* add = instance->GetCreature(*itr))
+                    {
                         if (add->isAlive())
+                        {
+                            add->CastSpell(add, SPELL_ULTIMATE_DESPAIR, true);
                             return;
+                        }
+                    }
+                }
                 RemoveProtectFromGarrosh();
                 break;
             case NPC_EMBODIED_DOUBT:

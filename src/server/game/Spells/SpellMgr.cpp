@@ -5226,6 +5226,13 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].TargetB = 30;
                     spellInfo->Effects[2].TargetB = 30;
                     break;
+                case 149032: //Consumed Hope
+                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+                    spellInfo->Effects[0].TriggerSpell = 149003;
+                    break;
+                case 149033: //Consumed Faith
+                    spellInfo->Effects[0].TriggerSpell = 148992;
+                    break;
 
 
                 //World Bosses
