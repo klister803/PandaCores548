@@ -1483,11 +1483,6 @@ void World::SetInitialWorldSettings()
 
     LoginDatabase.PExecute("UPDATE realmlist SET icon = %u, timezone = %u WHERE id = '%d'", server_type, realm_zone, realmID);      // One-time query
 
-    ///- Remove the bones (they should not exist in DB though) and old corpses after a restart
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_OLD_CORPSES);
-    stmt->setUInt32(0, 3 * DAY);
-    CharacterDatabase.Execute(stmt);
-
     ///- Load the DBC files
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Initialize data stores...");
     LoadDBCStores(m_dataPath);
@@ -2777,14 +2772,12 @@ bool World::RemoveBanCharacter(std::string name)
     /// Pick a player to ban if not online
     if (!pBanned)
     {
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_GUID_BY_NAME);
-        stmt->setString(0, name);
-        PreparedQueryResult resultCharacter = CharacterDatabase.Query(stmt);
+        const CharacterNameData* nameData = sWorld->GetCharacterNameData(name);
 
-        if (!resultCharacter)
+        if (!nameData)
             return false;
 
-        guid = (*resultCharacter)[0].GetUInt32();
+        guid = nameData->m_guid;
     }
     else
         guid = pBanned->GetGUIDLow();
@@ -3562,6 +3555,7 @@ void World::LoadCharacterNameData()
 void World::AddCharacterNameData(uint32 guid, std::string const& name, uint8 gender, uint8 race, uint8 playerClass, uint8 level, uint32 accountId, uint8 zoneId, uint8 rankId, uint32 guildId)
 {
     CharacterNameData& data = _characterNameDataMap[guid];
+    data.m_guid = guid;
     data.m_name = name;
     data.m_race = race;
     data.m_gender = gender;

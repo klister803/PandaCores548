@@ -1499,32 +1499,6 @@ void WorldSession::ProcessQueryCallbacks()
         HandlePlayerLogin((LoginQueryHolder*)param);
         _charLoginCallback.cancel();
     }
-
-    //! HandleAddFriendOpcode
-    if (_addFriendCallback.IsReady())
-    {
-        std::string param = _addFriendCallback.GetParam();
-        _addFriendCallback.GetResult(result);
-        HandleAddFriendOpcodeCallBack(result, param);
-        _addFriendCallback.FreeResult();
-    }
-
-    //- HandleCharRenameOpcode
-    if (_charRenameCallback.IsReady())
-    {
-        std::string param = _charRenameCallback.GetParam();
-        _charRenameCallback.GetResult(result);
-        HandleChangePlayerNameOpcodeCallBack(result, param);
-        _charRenameCallback.FreeResult();
-    }
-
-    //- HandleCharAddIgnoreOpcode
-    if (_addIgnoreCallback.ready())
-    {
-        _addIgnoreCallback.get(result);
-        HandleAddIgnoreOpcodeCallBack(result);
-        _addIgnoreCallback.cancel();
-    }
 }
 
 void WorldSession::InitWarden(BigNumber* k, std::string os)

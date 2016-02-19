@@ -162,16 +162,11 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
     }
     else
     {
-        rc_team = sObjectMgr->GetPlayerTeamByGUID(rc);
 
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_LEVEL);
-        stmt->setUInt32(0, GUID_LOPART(rc));
-        PreparedQueryResult result = CharacterDatabase.Query(stmt);
-
-        if (result)
+        if (const CharacterNameData* nameData = sWorld->GetCharacterNameData(GUID_LOPART(rc)))
         {
-            Field* fields = result->Fetch();
-            receiveLevel = fields[0].GetUInt8();
+            receiveLevel = nameData->m_level;
+            rc_team = Player::TeamForRace(nameData->m_race);
         }
     }
     //do not allow to have more than 100 mails in mailbox.. mails count is in opcode uint8!!! - so max can be 255..

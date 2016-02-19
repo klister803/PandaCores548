@@ -309,8 +309,7 @@ void WorldSession::HandleCharEnumOpcode(WorldPacket & recvData)
         timeCharEnumOpcode = now;
 
     // remove expired bans
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_EXPIRED_BANS);
-    CharacterDatabase.Execute(stmt);
+    PreparedStatement* stmt = NULL;
 
     /// get all the data necessary for loading all characters (along with their pets) on the account
 
@@ -456,6 +455,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recvData)
     stmt->setString(0, name);
     _charCreateCallback.SetFutureResult(CharacterDatabase.AsyncQuery(stmt));
 }
+
 
 void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, CharacterCreateInfo* createInfo)
 {
@@ -711,6 +711,7 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
 
             // Player created, save it now
             newChar.SaveToDB(true);
+            newChar.InitSavePlayer();
             createInfo->CharCount += 1;
 
             SQLTransaction trans = LoginDatabase.BeginTransaction();
@@ -795,6 +796,7 @@ void WorldSession::HandleCharDeleteOpcode(WorldPacket & recvData)
 
     sGuildFinderMgr->RemoveMembershipRequest(guid, guildId);
     Player::DeleteFromDB(guid, GetAccountId());
+    Player::DeleteFromRedis(guid, GetAccountId());
     sWorld->DeleteCharName(name);
 
     WorldPacket data(SMSG_CHAR_DELETE, 1);
@@ -1329,24 +1331,10 @@ void WorldSession::HandleCharRenameOpcode(WorldPacket& recvData)
         return;
     }
 
-    // Ensure that the character belongs to the current account, that rename at login is enabled
-    // and that there is no character with the desired new name
-    _charRenameCallback.SetParam(newName);
+    const CharacterNameData* nameData = sWorld->GetCharacterNameData(GUID_LOPART(guid));
+    const CharacterNameData* newNameData = sWorld->GetCharacterNameData(newName);
 
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_FREE_NAME);
-
-    stmt->setUInt32(0, GUID_LOPART(guid));
-    stmt->setUInt32(1, GetAccountId());
-    stmt->setUInt16(2, AT_LOGIN_RENAME);
-    stmt->setUInt16(3, AT_LOGIN_RENAME);
-    stmt->setString(4, newName);
-
-    _charRenameCallback.SetFutureResult(CharacterDatabase.AsyncQuery(stmt));
-}
-
-void WorldSession::HandleChangePlayerNameOpcodeCallBack(PreparedQueryResult result, std::string newName)
-{
-    if (!result)
+    if (newNameData || !nameData)
     {
         WorldPacket data(SMSG_CHAR_RENAME, 2);
         data.WriteBit(0);
@@ -1356,12 +1344,8 @@ void WorldSession::HandleChangePlayerNameOpcodeCallBack(PreparedQueryResult resu
         return;
     }
 
-    Field* fields = result->Fetch();
-
-    uint32 guidLow      = fields[0].GetUInt32();
-    std::string oldName = fields[1].GetString();
-
-    uint64 guid = MAKE_NEW_GUID(guidLow, 0, HIGHGUID_PLAYER);
+    uint32 guidLow = GUID_LOPART(guid);
+    std::string oldName = nameData->m_name;
 
     // Update name and at_login flag in the db
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_NAME);

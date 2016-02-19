@@ -462,13 +462,10 @@ void WorldSession::HandleCalendarEventInvite(WorldPacket& recvData)
     }
     else
     {
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_GUID_RACE_ACC_BY_NAME);
-        stmt->setString(0, name);
-        if (PreparedQueryResult result = CharacterDatabase.Query(stmt))
+        if (const CharacterNameData* nameData = sWorld->GetCharacterNameData(name))
         {
-            Field* fields = result->Fetch();
-            invitee = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
-            team = Player::TeamForRace(fields[1].GetUInt8());
+            invitee = MAKE_NEW_GUID(nameData->m_guid, 0, HIGHGUID_PLAYER);
+            team = Player::TeamForRace(nameData->m_race);
         }
     }
 

@@ -710,19 +710,6 @@ void WorldSession::HandleAddFriendOpcode(WorldPacket& recvData)
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: %s asked to add friend : '%s'", GetPlayer()->GetName(), friendName.c_str());
 
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_GUID_RACE_ACC_BY_NAME);
-
-    stmt->setString(0, friendName);
-
-    _addFriendCallback.SetParam(friendNote);
-    _addFriendCallback.SetFutureResult(CharacterDatabase.AsyncQuery(stmt));
-}
-
-void WorldSession::HandleAddFriendOpcodeCallBack(PreparedQueryResult result, std::string friendNote)
-{
-    if (!GetPlayer())
-        return;
-
     uint64 friendGuid;
     uint32 friendAccountId;
     uint32 team;
@@ -731,13 +718,11 @@ void WorldSession::HandleAddFriendOpcodeCallBack(PreparedQueryResult result, std
     friendResult = FRIEND_NOT_FOUND;
     friendGuid = 0;
 
-    if (result)
+    if (const CharacterNameData* nameData = sWorld->GetCharacterNameData(friendName))
     {
-        Field* fields = result->Fetch();
-
-        friendGuid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
-        team = Player::TeamForRace(fields[1].GetUInt8());
-        friendAccountId = fields[2].GetUInt32();
+        friendGuid = MAKE_NEW_GUID(nameData->m_guid, 0, HIGHGUID_PLAYER);
+        team = Player::TeamForRace(nameData->m_race);
+        friendAccountId = nameData->m_accountId;
 
         if (!AccountMgr::IsPlayerAccount(GetSecurity()) || sWorld->getBoolConfig(CONFIG_ALLOW_GM_FRIEND) || AccountMgr::IsPlayerAccount(AccountMgr::GetSecurity(friendAccountId, realmID)))
         {
@@ -801,27 +786,15 @@ void WorldSession::HandleAddIgnoreOpcode(WorldPacket& recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: %s asked to Ignore: '%s'",
         GetPlayer()->GetName(), ignoreName.c_str());
 
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_GUID_BY_NAME);
-
-    stmt->setString(0, ignoreName);
-
-    _addIgnoreCallback = CharacterDatabase.AsyncQuery(stmt);
-}
-
-void WorldSession::HandleAddIgnoreOpcodeCallBack(PreparedQueryResult result)
-{
-    if (!GetPlayer())
-        return;
-
     uint64 IgnoreGuid;
     FriendsResult ignoreResult;
 
     ignoreResult = FRIEND_IGNORE_NOT_FOUND;
     IgnoreGuid = 0;
 
-    if (result)
+    if (const CharacterNameData* nameData = sWorld->GetCharacterNameData(ignoreName))
     {
-        IgnoreGuid = MAKE_NEW_GUID((*result)[0].GetUInt32(), 0, HIGHGUID_PLAYER);
+        IgnoreGuid = MAKE_NEW_GUID(nameData->m_guid, 0, HIGHGUID_PLAYER);
 
         if (IgnoreGuid)
         {
@@ -890,12 +863,10 @@ void WorldSession::HandleBugOpcode(WorldPacket& recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "%s", type.c_str());
     sLog->outDebug(LOG_FILTER_NETWORKIO, "%s", content.c_str());
 
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_BUG_REPORT);
-
+    /*PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_BUG_REPORT);
     stmt->setString(0, type);
     stmt->setString(1, content);
-
-    CharacterDatabase.Execute(stmt);
+    CharacterDatabase.Execute(stmt);*/
 }
 
 //! 5.4.1

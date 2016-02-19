@@ -54,31 +54,6 @@ void ChallengeMgr::CheckBestMemberMapId(uint64 guid, Challenge *c)
         m_ChallengesOfMember[guid][c->mapID] = c;
 }
 
-void ChallengeMgr::SaveChallengeToDB(Challenge *c)
-{
-    SQLTransaction trans = CharacterDatabase.BeginTransaction();
-
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHALLENGE);
-    stmt->setUInt32(0, c->Id);
-    stmt->setUInt32(1, c->guildId);
-    stmt->setUInt16(2, c->mapID);
-    stmt->setUInt32(3, c->recordTime);
-    stmt->setUInt32(4, c->date);
-    stmt->setUInt8(5, c->medal);
-    trans->Append(stmt);
-
-    for(ChallengeMemberList::const_iterator itr = c->member.begin(); itr != c->member.end(); ++itr)
-    {
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHALLENGE_MEMBER);
-        stmt->setUInt32(0, c->Id);
-        stmt->setUInt64(1, (*itr).guid);
-        stmt->setUInt16(2, (*itr).specId);
-        trans->Append(stmt);
-    }
-
-    CharacterDatabase.CommitTransaction(trans);
-}
-
 void ChallengeMgr::LoadFromDB()
 {
     uint32 count = 0;

@@ -58,7 +58,9 @@ class ChallengeMgr
 
     public:
         void LoadFromDB();
-        void SaveChallengeToDB(Challenge *c);
+        void LoadChallenges();
+        void SaveChallenges();
+        void SaveChallengeToDB(Challenge* challenge);
 
         uint32 GenerateChallengeID() { return ++challengeGUID; }
         void CheckBestMapId(Challenge *c);
@@ -80,6 +82,8 @@ class ChallengeMgr
         uint32 GetValorPointsReward(uint8 medal) { return m_valorPoints[medal]; }
 
     protected:
+        Json::Value СhallengeData;
+
         uint32 challengeGUID;
         ChallengeMap m_ChallengeMap;
         ChallengesOfMember m_ChallengesOfMember;

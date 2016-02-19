@@ -72,6 +72,7 @@ enum LoadingStep
     LOAD_PLAYER_PETS                = 48,
     LOAD_PLAYER_GUILD               = 49,
     LOAD_PLAYER_CORPSE              = 50,
+    LOAD_PLAYER_PETITION            = 51,
 };
 
 #endif

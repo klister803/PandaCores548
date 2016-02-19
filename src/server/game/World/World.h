@@ -619,6 +619,7 @@ struct CharacterNameData
     uint8 m_rankId;
     uint32 m_guildId;
     uint32 m_accountId;
+    uint32 m_guid;
 };
 
 /// The World

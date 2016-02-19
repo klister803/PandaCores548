@@ -1627,6 +1627,7 @@ class Player : public Unit, public GridObject<Player>
         Json::Value AccountTutorialsJson;
         Json::Value PlayerGuildJson;
         Json::Value PlayerCorpse;
+        Json::Value PlayerPetitions;
 
         //load data for serialize
         void InitSavePlayer();
@@ -1658,6 +1659,7 @@ class Player : public Unit, public GridObject<Player>
         void SavePlayerKills();
         void SavePlayerDeclinedName();
         void SavePlayerEquipmentSets();
+        void SavePlayerEquipmentSet(uint32 id, EquipmentSet eqset);
         void SavePlayerCUFProfiles();
         void SavePlayerVisuals();
         void SavePlayerAccountData();
@@ -1676,6 +1678,7 @@ class Player : public Unit, public GridObject<Player>
         void SavePlayerGuild();
         void UpdateSavePlayer();
         void UpdatePlayerNameData();
+        void SavePlayerPetitions();
 
         //load data into player LoadPlayer
         void LoadFromRedis(uint64 guid, uint8 step = 0, const RedisValue* v = NULL);
@@ -1731,10 +1734,12 @@ class Player : public Unit, public GridObject<Player>
         void LoadPlayerPets(const RedisValue* v, uint64 playerGuid);
         void LoadPlayerGuild(const RedisValue* v, uint64 playerGuid);
         void LoadPlayerCorpse(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerPetition(const RedisValue* v, uint64 playerGuid);
 
         //Update data in database
         void DeleteCriteriaProgress(AchievementEntry const* achievement);
         void UpdateCriteriaProgress(AchievementEntry const* achievement, CriteriaProgressMap* progressMap);
+        void DeletePetitions();
 
         /*********************************************************/
         /***                    STORAGE SYSTEM                 ***/
@@ -2162,6 +2167,7 @@ class Player : public Unit, public GridObject<Player>
         static void SavePositionInDB(uint32 mapid, float x, float y, float z, float o, uint32 zone, uint64 guid);
 
         static void DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmChars = true, bool deleteFinally = false);
+        static void DeleteFromRedis(uint64 playerguid, uint32 accountId);
         static void DeleteOldCharacters();
         static void DeleteOldCharacters(uint32 keepDays);
 

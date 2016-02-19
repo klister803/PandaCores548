@@ -78,6 +78,9 @@ typedef std::unordered_map<uint16, InstanceTemplate> InstanceTemplateContainer;
 // Save login player for fast find
 typedef std::unordered_map<uint64, Player*> PlayerLoadContainer;
 
+// Petition
+typedef std::unordered_map<uint64, Player*> PetitionMap;
+
 struct GameTele
 {
     float  position_x;
@@ -960,6 +963,18 @@ class ObjectMgr
         void AddPlayerLoad(uint64 guid, Player* player) { _playerLoadMap[guid] = player; }
         void RemovePlayerLoad(uint64 guid) { _playerLoadMap.erase(guid); }
 
+        Player* GetPetitionPlayer(uint64 guid)
+        {
+            PetitionMap::const_iterator itr = _petitionMap.find(guid);
+            if (itr != _petitionMap.end())
+                return itr->second;
+
+            return NULL;
+        }
+
+        void AddPlayerPetition(uint64 guid, Player* player) { _petitionMap[guid] = player; }
+        void RemovePlayerPetition(uint64 guid) { _petitionMap.erase(guid); }
+
         void GetPlayerLevelInfo(uint32 race, uint32 class_, uint8 level, PlayerLevelInfo* info) const;
 
         static uint64 GetPlayerGUIDByName(std::string name);
@@ -1742,6 +1757,8 @@ class ObjectMgr
         InstanceTemplateContainer _instanceTemplateStore;
 
         PlayerLoadContainer _playerLoadMap;
+
+        PetitionMap _petitionMap;
 
         PhaseDefinitionStore _PhaseDefinitionStore;
         SpellPhaseStore _SpellPhaseStore;

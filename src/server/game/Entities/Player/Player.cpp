@@ -28766,6 +28766,7 @@ void Player::SetEquipmentSet(uint32 index, EquipmentSet eqset)
     }
 
     eqslot.state = old_state == EQUIPMENT_SET_NEW ? EQUIPMENT_SET_NEW : EQUIPMENT_SET_CHANGED;
+    SavePlayerEquipmentSet(index, eqslot);
 }
 
 void Player::_SaveEquipmentSets(SQLTransaction& trans)

@@ -1484,3 +1484,10 @@ void Player::SavePlayerGuild()
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerGuild guid %u", guid);
     });
 }
+
+void Player::SavePlayerPetitions()
+{
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "petitions", sRedisBuilder->BuildString(PlayerPetitions).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerPetitions guid %u", guid);
+    });
+}

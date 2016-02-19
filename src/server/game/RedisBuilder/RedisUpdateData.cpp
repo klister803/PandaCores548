@@ -214,3 +214,76 @@ void Player::RemovePlayerPet(Pet* pet)
         sLog->outInfo(LOG_FILTER_REDIS, "Player::RemovePlayerPet id %u", guid);
     });
 }
+
+void Player::DeleteFromRedis(uint64 playerguid, uint32 accountId)
+{
+    uint32 guid = GUID_LOPART(playerguid);
+    char* itemKey = new char[23];
+    char* userKey = new char[18];
+    char* criteriaPlKey = new char[23];
+    char* criteriaAcKey = new char[23];
+    char* mailKey = new char[23];
+
+    sprintf(itemKey, "r{%u}u{%u}items", realmID, guid);
+    sprintf(userKey, "r{%u}u{%u}", realmID, guid);
+    sprintf(criteriaPlKey, "r{%u}u{%u}crit", realmID, guid);
+    sprintf(criteriaAcKey, "r{%u}a{%u}crit", realmID, accountId);
+    sprintf(mailKey, "r{%u}u{%u}mails", realmID, guid);
+
+    RedisDatabase.AsyncExecute("DEL", itemKey, playerguid, [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeleteFromRedis id %u", guid);
+    });
+    RedisDatabase.AsyncExecute("DEL", userKey, playerguid, [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeleteFromRedis id %u", guid);
+    });
+    RedisDatabase.AsyncExecute("DEL", criteriaPlKey, playerguid, [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeleteFromRedis id %u", guid);
+    });
+    RedisDatabase.AsyncExecute("DEL", criteriaAcKey, playerguid, [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeleteFromRedis id %u", guid);
+    });
+    RedisDatabase.AsyncExecute("DEL", mailKey, playerguid, [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeleteFromRedis id %u", guid);
+    });
+}
+
+void Player::SavePlayerEquipmentSet(uint32 id, EquipmentSet eqset)
+{
+    std::string index = std::to_string(id);
+    PlayerEquipmentSetsJson[index.c_str()]["setguid"] = eqset.Guid;
+    PlayerEquipmentSetsJson[index.c_str()]["name"] = eqset.Name.c_str();
+    PlayerEquipmentSetsJson[index.c_str()]["iconname"] = eqset.IconName.c_str();
+    PlayerEquipmentSetsJson[index.c_str()]["ignore_mask"] = eqset.IgnoreMask;
+    PlayerEquipmentSetsJson[index.c_str()]["item0"] = eqset.Items[0];
+    PlayerEquipmentSetsJson[index.c_str()]["item1"] = eqset.Items[1];
+    PlayerEquipmentSetsJson[index.c_str()]["item2"] = eqset.Items[2];
+    PlayerEquipmentSetsJson[index.c_str()]["item3"] = eqset.Items[3];
+    PlayerEquipmentSetsJson[index.c_str()]["item4"] = eqset.Items[4];
+    PlayerEquipmentSetsJson[index.c_str()]["item5"] = eqset.Items[5];
+    PlayerEquipmentSetsJson[index.c_str()]["item6"] = eqset.Items[6];
+    PlayerEquipmentSetsJson[index.c_str()]["item7"] = eqset.Items[7];
+    PlayerEquipmentSetsJson[index.c_str()]["item8"] = eqset.Items[8];
+    PlayerEquipmentSetsJson[index.c_str()]["item9"] = eqset.Items[9];
+    PlayerEquipmentSetsJson[index.c_str()]["item10"] = eqset.Items[10];
+    PlayerEquipmentSetsJson[index.c_str()]["item11"] = eqset.Items[11];
+    PlayerEquipmentSetsJson[index.c_str()]["item12"] = eqset.Items[12];
+    PlayerEquipmentSetsJson[index.c_str()]["item13"] = eqset.Items[13];
+    PlayerEquipmentSetsJson[index.c_str()]["item14"] = eqset.Items[14];
+    PlayerEquipmentSetsJson[index.c_str()]["item15"] = eqset.Items[15];
+    PlayerEquipmentSetsJson[index.c_str()]["item16"] = eqset.Items[16];
+    PlayerEquipmentSetsJson[index.c_str()]["item17"] = eqset.Items[17];
+    PlayerEquipmentSetsJson[index.c_str()]["item18"] = eqset.Items[18];
+
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "equipmentsets", sRedisBuilder->BuildString(PlayerEquipmentSetsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerEquipmentSets player guid %u", guid);
+    });
+}
+
+void Player::DeletePetitions()
+{
+    PlayerPetitions.clear();
+
+    RedisDatabase.AsyncExecuteH("HDEL", userKey, "petitions", GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeletePetitions guid %u", guid);
+    });
+}
