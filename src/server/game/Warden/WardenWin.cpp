@@ -350,12 +350,21 @@ void WardenWin::HandleData(ByteBuffer &buff)
 
     uint16 length;
     buff >> length;
+
+    if (!length)
+    {
+        buff.rfinish();
+        sLog->outWarn(LOG_FILTER_WARDEN, "%s invalid Warden packet. Action: %s", _session->GetPlayerName(false).c_str(), Penalty().c_str());
+        _session->KickPlayer();
+        return;
+    }
+
     uint32 checksum;
     buff >> checksum;
 
     if (!IsValidCheckSum(checksum, buff.contents() + buff.rpos(), length))
     {
-        buff.rpos(buff.wpos());
+        buff.rfinish();
         sLog->outWarn(LOG_FILTER_WARDEN, "%s failed checksum. Action: %s", _session->GetPlayerName(false).c_str(), Penalty().c_str());
         _session->KickPlayer();
         return;
