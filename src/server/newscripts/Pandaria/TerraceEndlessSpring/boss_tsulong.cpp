@@ -144,15 +144,8 @@ class boss_tsulong : public CreatureScript
                 me->SetReactState(REACT_DEFENSIVE);
                 me->setPowerType(POWER_ENERGY);
                 me->SetPower(POWER_ENERGY, 0);
+                me->SetHealth(me->GetMaxHealth());
             }
-            
-            /* void RegeneratePower(Powers power, float &value)
-            {
-                if (phase == PHASE_NIGHT)
-                    value = 1;
-                else
-                    value = 0;
-            } */
 
             void DoAction(int32 const action)
             {
@@ -169,10 +162,11 @@ class boss_tsulong : public CreatureScript
                         me->SetHealth(me->GetMaxHealth() - me->GetHealth());
                         lowpower = 1000;
                         events.ScheduleEvent(EVENT_SUN_BREATH, 20000);
-                        events.ScheduleEvent(EVENT_SUM_EMBODIED_TERROR, 2000);
+                        events.ScheduleEvent(EVENT_SUM_EMBODIED_TERROR, 5000);
                         events.ScheduleEvent(EVENT_SUM_UNSTABLE_SHA, 18000);
                         break;
                     case ACTION_INTRO_NIGHT:
+                        summons.DespawnAll();
                         me->SetHealth(me->GetMaxHealth() - me->GetHealth());
                         me->setFaction(16);
                         me->SetDisplayId(NIGHT_ID);
@@ -183,6 +177,7 @@ class boss_tsulong : public CreatureScript
                         if (me->getVictim())
                             me->GetMotionMaster()->MoveChase(me->getVictim());
                         me->AddAura(SPELL_DREAD_SHADOWS, me);
+                        me->RemoveAurasDueToSpell(123012);
                         DoCast(me, SPELL_SHA_ACTIVE, true);
                         events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(25000, 35000));
                         events.ScheduleEvent(EVENT_NIGHTMARE,     urand(15000, 25000));
@@ -220,7 +215,10 @@ class boss_tsulong : public CreatureScript
                             break;
                         case PHASE_DAY:
                             if (me->isInCombat())
+                            {
+                                me->RemoveAllAuras();
                                 EnterEvadeMode();
+                            }
                             break;
                         default:
                             break;
@@ -250,12 +248,6 @@ class boss_tsulong : public CreatureScript
             void JustDied(Unit* killer)
             {
                 me->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
-            }
-
-            void JustReachedHome()
-            {
-                if (me->isInCombat())
-                    me->SetFacingTo(urand(0, 5));
             }
 
             void UpdateAI(uint32 diff)
@@ -336,11 +328,13 @@ class boss_tsulong : public CreatureScript
                             events.ScheduleEvent(EVENT_NIGHTMARE, urand(15000, 25000));
                             break;
                         case EVENT_SUNBEAM:
+                            summons.DespawnEntry(NPC_SUNBEAM);
                             me->SummonCreature(NPC_SUNBEAM, sunbeampos[urand(0, 3)]);
                             events.ScheduleEvent(EVENT_SUNBEAM, urand(15000, 20000));                      
                             break;
                         case EVENT_SUN_BREATH:
-                            DoCast(SPELL_SUN_BREATH);
+                            me->SetFacingTo(urand(0, 5));
+                            DoCastAOE(SPELL_SUN_BREATH);
                             events.ScheduleEvent(EVENT_SUN_BREATH, 28000);
                             break;
                         case EVENT_SUM_EMBODIED_TERROR:
@@ -581,13 +575,19 @@ class npc_tsulong_unstable_sha : public CreatureScript
 
             void IsSummonedBy(Unit* summoner) 
             {
+                if (summoner->getFaction() == 16)
+                {
+                    me->DespawnOrUnsummon();
+                    return;
+                }
+
                 DoZoneInCombat(me, 100.0f);
                 me->GetMotionMaster()->MovePoint(1, centrPos);
             }
 
             void EnterCombat(Unit* /*who*/)
             {
-                events.ScheduleEvent(EVENT_1, urand(2000, 4000)); //05:49
+                events.ScheduleEvent(EVENT_1, urand(2000, 4000));
             }
 
             void MovementInform(uint32 type, uint32 id)
@@ -697,6 +697,9 @@ class spell_sun_breath : public SpellScriptLoader
                         SetHitDamage(0);
                         GetCaster()->CastSpell(GetHitUnit(), SPELL_BATHED_INLIGHT);
                     }
+                    if (GetHitUnit()->ToCreature())
+                        if (GetHitUnit()->ToCreature()->GetEntry() == 62962)
+                            SetHitDamage(0);
                 }
             }
 

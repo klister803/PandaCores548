@@ -7856,7 +7856,6 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
         switch (auraId)
         {
             case 123011: //Tsulong - Terrorize
-                target->CastSpell(target, m_spellInfo->Effects[0].BasePoints, true);
                 target->CastSpell(target, triggerSpellId, true);
                 return;
             case 111850: //Elder Regail - Lightning Prison
