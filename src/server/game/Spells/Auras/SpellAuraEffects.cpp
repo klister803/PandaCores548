@@ -7863,9 +7863,14 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
                 target->CastSpell(target, triggerSpellId, true);
                 return;
             case 122761:
-                caster->SetFacingToObject(target);
-                caster->CastSpell(target, triggerSpellId, true);
+            {
+                if (caster)
+                {
+                    caster->SetFacingToObject(target);
+                    caster->CastSpell(target, triggerSpellId, true);
+                }
                 return;
+            }
             // Hour of Twilight, Ultraxion, Dragon Soul
             case 106371:
                 if (caster)

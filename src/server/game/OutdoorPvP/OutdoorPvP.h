@@ -287,6 +287,8 @@ class OutdoorPvP : public ZoneScript
         bool HasPlayer(Player* player) const;
 
         void TeamCastSpell(TeamId team, int32 spellId);
+
+        std::mutex _lock;
 };
 
 #endif /*OUTDOOR_PVP_H_*/
