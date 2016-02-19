@@ -418,7 +418,7 @@ class Item : public Object
         char* itemKey;
         Json::Value ItemData;
         void SaveItem();
-        void SetItemKey(uint8 type, uint32 guid);
+        void SetItemKey(uint8 type, uint32 guid, bool save = false);
         void UpdateItemKey(uint8 type, uint32 guid);
         void DeleteFromRedis();
         uint8 m_lastType;

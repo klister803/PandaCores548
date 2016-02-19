@@ -13683,7 +13683,7 @@ Item* Player::EquipNewItem(uint16 pos, uint32 item, bool update)
     {
         ItemAddedQuestCheck(item, 1);
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_RECEIVE_EPIC_ITEM, item, 1);
-        pItem->SetItemKey(ITEM_KEY_USER, GetGUIDLow());
+        pItem->SetItemKey(ITEM_KEY_USER, GetGUIDLow(), true);
         return EquipItem(pos, pItem, update);
     }
 

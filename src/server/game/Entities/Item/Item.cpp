@@ -1752,7 +1752,7 @@ void Item::SetLevelCap(uint32 cap, bool pvp)
     SetLevel(cap);
 }
 
-void Item::SetItemKey(uint8 type, uint32 guid)
+void Item::SetItemKey(uint8 type, uint32 guid, bool save)
 {
     switch (type)
     {
@@ -1773,6 +1773,8 @@ void Item::SetItemKey(uint8 type, uint32 guid)
             break;
     }
     m_lastType = type;
+    if (save)
+        SaveItem();
 }
 
 void Item::UpdateItemKey(uint8 type, uint32 guid)

@@ -184,6 +184,9 @@ void Player::SavePlayer()
 
 void Player::SavePlayerBG()
 {
+    if (m_bgData.joinPos.m_mapId == MAPID_INVALID)
+        return;
+
     sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerBG userKey %s", userKey);
 
     PlayerBGJson["instanceId"] = m_bgData.bgInstanceID;
