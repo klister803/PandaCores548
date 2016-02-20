@@ -103,7 +103,7 @@ void Warden::Update(uint32 diff)
             {
                 RequestStaticData();
                 //sLog->outError("Packet of static checks sended to client");
-                _checkTimer = sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF);
+                _checkTimer = sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF) * IN_MILLISECONDS;
             }
             else
                 _checkTimer -= diff;
@@ -128,12 +128,12 @@ void Warden::Update(uint32 diff)
 
         // dynamic checks - second thread of checks
         // requires player in world
-        if (!_dynDataSent)
+        /*if (!_dynDataSent)
         {
             Player * plr = _session->GetPlayer();
-            if (plr && plr->IsInWorld() /*&& !plr->IsBlocked()*/ && !plr->IsBeingTeleported())
+            if (plr && plr->IsInWorld() /*&& !plr->IsBlocked() && !plr->IsBeingTeleported())
                 RequestDynamicData();
-        }
+        }*/
 
         /*if (!_recall && isDebuggerPresentFunc)
         {
@@ -178,6 +178,24 @@ uint32 Warden::BuildChecksum(const uint8* data, uint32 length)
         checkSum = checkSum ^ *(uint32*)(&hash[0] + i * 4);
 
     return checkSum;
+}
+
+void Warden::ClearAlerts()
+{
+    m_speedAlert = 0;
+    m_speedExtAlert = 0;
+    m_moveFlagsAlert = 0;
+    m_failedCoordsAlert = 0;
+}
+
+void Warden::ClearAddresses()
+{
+    playerBase = 0;
+    offset = 0;
+    playerMovementBase = 0;
+
+    if (_dynDataSent)
+        _dynDataSent = false;
 }
 
 /*void Warden::TestSendMemCheck()

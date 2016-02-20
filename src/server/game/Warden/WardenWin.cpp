@@ -459,7 +459,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
     if (!strcmp(packetSign.c_str(), dynamicCheckSign.c_str()))
     {
         // handle system data
-        if (isDebuggerPresentFunc == 0x00)
+        /*if (isDebuggerPresentFunc == 0x00)
         {
             uint8 res;
             buff >> res;
@@ -473,7 +473,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
             }
 
             buff >> isDebuggerPresentFunc;
-        }
+        }*/
 
         HandleDynamicData(buff);
         return;
@@ -482,7 +482,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
     //sLog->outWarden("Failed check header for account Id %u", _session->GetAccountId());
     buff.rpos(buff.wpos());
     //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed check Warden packet header. Player kicked",
-        _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId());
+        //_session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId());
     _session->KickPlayer();
 }
 
@@ -619,7 +619,6 @@ void WardenWin::RequestDynamicData()
     uint8 xorByte = _inputKey[0];
 
     buff << uint8(0x00);
-    buff << uint8(TIMING_CHECK ^ xorByte);                  // check TIMING_CHECK
 
     // header
     buff << uint8(MEM_CHECK ^ xorByte);
@@ -628,13 +627,13 @@ void WardenWin::RequestDynamicData()
     buff << uint8(0x6);
 
     // system
-    if (isDebuggerPresentFunc == 0x00)
+    /*if (isDebuggerPresentFunc == 0x00)
     {
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
         buff << uint32(0x009DF1B4);
         buff << uint8(0x4);
-    }
+    }*/
 
     buff << uint8(MEM_CHECK ^ xorByte);
     buff << uint8(0x00);
@@ -1261,8 +1260,8 @@ bool WardenWin::CheckMovementFlags(uint32 moveflags, std::string &reason, uint16
     if (new_info == "")
         new_info = "none";
 
-    reason = new_info;
-    return correct;*/
+    reason = new_info;*/
+    return correct;
 }
 
 std::string WardenWin::GetMovementFlagInfo(uint32 moveFlags)
@@ -1392,7 +1391,7 @@ MoveType WardenWin::SelectSpeedType(uint32 moveFlags)
 
 void WardenWin::SendControlMovementPacket(uint32 opcode, bool added, uint32 moveFlags)
 {
-    Player * plr = _session->GetPlayer();
+    /*Player * plr = _session->GetPlayer();
 
     if (!plr)
         return;
@@ -1409,7 +1408,7 @@ void WardenWin::SendControlMovementPacket(uint32 opcode, bool added, uint32 move
         mInfo.guid = plr->GetGUID();
         _session->WriteMovementInfo(&data, &mInfo);
         plr->SendMessageToSet(&data, true);
-    }
+    }*/
 }
 
 bool WardenWin::IsPlayerFaction(uint32 faction)
@@ -1694,17 +1693,17 @@ bool WardenWin::ReadMemChunk(ByteBuffer &buff, T &data)
 
 PlayerState WardenWin::GetPlayerState(Player * plr)
 {
-    /*uint16 st = PLAYER_NOT_FOUND;
-    if (!plr)
+    uint16 st = PLAYER_NOT_FOUND;
+    /*if (!plr)
         return PlayerState(st);
 
     if (plr->GetTransport() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
         st |= PLAYER_ON_TRANSPORT;
 
     if (plr->IsFalling() && plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR))
-        st |= PLAYER_FALLING;
+        st |= PLAYER_FALLING;*/
 
-    return PlayerState(st);*/
+    return PlayerState(st);
 }
 
 template<class T>
