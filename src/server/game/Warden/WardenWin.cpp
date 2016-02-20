@@ -313,7 +313,7 @@ void WardenWin::RequestStaticData()
     // header
     buff << uint8(MEM_CHECK ^ xorByte);
     buff << uint8(0x00);
-    buff << uint32(0x00A0F5F0);
+    buff << uint32(0x00D87AA0);
     buff << uint8(0x6);
 
     for (std::list<uint16>::iterator itr = _currentChecks.begin(); itr != _currentChecks.end(); ++itr)
@@ -623,7 +623,7 @@ void WardenWin::RequestDynamicData()
     // header
     buff << uint8(MEM_CHECK ^ xorByte);
     buff << uint8(0x00);
-    buff << uint32(0x009FA4C4);
+    buff << uint32(0x00E76E50);
     buff << uint8(0x6);
 
     // system
@@ -1736,15 +1736,15 @@ bool WardenWin::CheckCorrectBoundValues(float val)
 
 std::string WardenWin::GetSignature(uint8 * moduleId, WardenTypeCheck wtc)
 {
-    std::string Id = ConvertPacketDataToString(moduleId, 16);
+    //std::string Id = ConvertPacketDataToString(moduleId, 16);
 
-    if (!strcmp("79C0768D657977D697E10BAD956CCED1", Id.c_str()))
-    {
+    //if (!strcmp("79C0768D657977D697E10BAD956CCED1", Id.c_str()))
+    //{
         if (wtc == STATIC_CHECK)
             return "686561646572";
         else
             return "53595354454D";
-    }
+    //}
 
     return "";
 }
