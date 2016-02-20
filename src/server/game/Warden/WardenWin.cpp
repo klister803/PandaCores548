@@ -96,7 +96,7 @@ ClientWardenModule* WardenWin::GetModuleForClient()
     return mod;
 }
 
-void WardenWin::InitializeModule()
+void WardenWin::InitializeModule(bool recall)
 {
     sLog->outDebug(LOG_FILTER_WARDEN, "Initialize module");
 
@@ -185,7 +185,7 @@ void WardenWin::HandleHashResult(ByteBuffer &buff)
     _previousTimestamp = getMSTime();
 }
 
-void WardenWin::RequestData()
+void WardenWin::RequestStaticData()
 {
     //sLog->outDebug(LOG_FILTER_WARDEN, "Request data");
 
@@ -196,6 +196,12 @@ void WardenWin::RequestData()
     if (_otherChecksTodo.empty())
         _otherChecksTodo.assign(sWardenCheckMgr->OtherChecksIdPool.begin(), sWardenCheckMgr->OtherChecksIdPool.end());
 
+    //if (_impOtherChecksTodo.empty())
+        //_impOtherChecksTodo.assign(sWardenCheckMgr->ImportantOtherChecksIdPool.begin(), sWardenCheckMgr->ImportantOtherChecksIdPool.end());
+
+    //if (_impMemChecksTodo.empty())
+        //_impMemChecksTodo.assign(sWardenCheckMgr->ImportantMemChecksIdPool.begin(), sWardenCheckMgr->ImportantMemChecksIdPool.end());
+
     _serverTicks = getMSTime();
 
     uint16 id;
@@ -204,7 +210,7 @@ void WardenWin::RequestData()
 
     _currentChecks.clear();
 
-    // Build check request
+    // Build check request - general
     for (uint32 i = 0; i < sWorld->getIntConfig(CONFIG_WARDEN_NUM_MEM_CHECKS); ++i)
     {
         // If todo list is done break loop (will be filled on next Update() run)
@@ -219,11 +225,27 @@ void WardenWin::RequestData()
         _currentChecks.push_back(id);
     }
 
+    // Build check request - important
+    /*for (uint32 i = 0; i < 2; ++i)
+    {
+        // If todo list is done break loop (will be filled on next Update() run)
+        if (_impMemChecksTodo.empty())
+            break;
+
+        // Get check id from the end and remove it from todo
+        id = _impMemChecksTodo.back();
+        _impMemChecksTodo.pop_back();
+
+        // Add the id to the list sent in this cycle
+        _currentChecks.push_back(id);
+    }*/
+
     ByteBuffer buff;
     buff << uint8(WARDEN_SMSG_CHEAT_CHECKS_REQUEST);
 
     ACE_READ_GUARD(ACE_RW_Mutex, g, sWardenCheckMgr->_checkStoreLock);
 
+    // other checks - general
     for (uint32 i = 0; i < sWorld->getIntConfig(CONFIG_WARDEN_NUM_OTHER_CHECKS); ++i)
     {
         // If todo list is done break loop (will be filled on next Update() run)
@@ -241,23 +263,58 @@ void WardenWin::RequestData()
 
         switch (wd->Type)
         {
-            case MPQ_CHECK:
-            case LUA_STR_CHECK:
-            case DRIVER_CHECK:
-                buff << uint8(wd->Str.size());
-                buff.append(wd->Str.c_str(), wd->Str.size());
-                break;
-            default:
-                break;
+        case MPQ_CHECK:
+        case LUA_STR_CHECK:
+        case DRIVER_CHECK:
+            buff << uint8(wd->Str.size());
+            buff.append(wd->Str.c_str(), wd->Str.size());
+            break;
+        default:
+            break;
         }
     }
+
+    // other checks - important
+    /*for (uint32 i = 0; i < 2; ++i)
+    {
+        // If todo list is done break loop (will be filled on next Update() run)
+        if (_impOtherChecksTodo.empty())
+            break;
+
+        // Get check id from the end and remove it from todo
+        id = _impOtherChecksTodo.back();
+        _impOtherChecksTodo.pop_back();
+
+        // Add the id to the list sent in this cycle
+        _currentChecks.push_back(id);
+
+        wd = sWardenCheckMgr->GetWardenDataById(id);
+
+        switch (wd->Type)
+        {
+        case MPQ_CHECK:
+        case LUA_STR_CHECK:
+        case DRIVER_CHECK:
+            buff << uint8(wd->Str.size());
+            buff.append(wd->Str.c_str(), wd->Str.size());
+            break;
+        default:
+            break;
+        }
+    }*/
 
     uint8 xorByte = _inputKey[0];
 
     // Add separator
     buff << uint8(0x00);
-
+    // set string index
     uint8 index = 1;
+
+    // header
+    buff << uint8(MEM_CHECK ^ xorByte);
+    buff << uint8(0x00);
+    buff << uint32(0x00A0F5F0);
+    buff << uint8(0x6);
 
     for (std::list<uint16>::iterator itr = _currentChecks.begin(); itr != _currentChecks.end(); ++itr)
     {
@@ -267,56 +324,57 @@ void WardenWin::RequestData()
         buff << uint8(type ^ xorByte);
         switch (type)
         {
-            case MEM_CHECK:
-            {
-                buff << uint8(0x00);
-                buff << uint32(wd->Address);
-                buff << uint8(wd->Length);
-                break;
-            }
-            case PAGE_CHECK_A:
-            case PAGE_CHECK_B:
-            {
-                buff.append(wd->Data.AsByteArray(0, false), wd->Data.GetNumBytes());
-                buff << uint32(wd->Address);
-                buff << uint8(wd->Length);
-                break;
-            }
-            case MPQ_CHECK:
-            case LUA_STR_CHECK:
-            {
-                buff << uint8(index++);
-                break;
-            }
-            case DRIVER_CHECK:
-            {
-                buff.append(wd->Data.AsByteArray(0, false), wd->Data.GetNumBytes());
-                buff << uint8(index++);
-                break;
-            }
-            case MODULE_CHECK:
-            {
-                uint32 seed = static_cast<uint32>(rand32());
-                buff << uint32(seed);
-                HmacHash hmac(4, (uint8*)&seed);
-                hmac.UpdateData(wd->Str);
-                hmac.Finalize();
-                buff.append(hmac.GetDigest(), hmac.GetLength());
-                break;
-            }
-            /*case PROC_CHECK:
-            {
-                buff.append(wd->i.AsByteArray(0, false), wd->i.GetNumBytes());
-                buff << uint8(index++);
-                buff << uint8(index++);
-                buff << uint32(wd->Address);
-                buff << uint8(wd->Length);
-                break;
-            }*/
-            default:
-                break;                                      // Should never happen
+        case MEM_CHECK:
+        {
+            buff << uint8(0x00);
+            buff << uint32(wd->Address);
+            buff << uint8(wd->Length);
+            break;
+        }
+        case PAGE_CHECK_A:
+        case PAGE_CHECK_B:
+        {
+            buff.append(wd->Data.AsByteArray(0, false), wd->Data.GetNumBytes());
+            buff << uint32(wd->Address);
+            buff << uint8(wd->Length);
+            break;
+        }
+        case MPQ_CHECK:
+        case LUA_STR_CHECK:
+        {
+            buff << uint8(index++);
+            break;
+        }
+        case DRIVER_CHECK:
+        {
+            buff.append(wd->Data.AsByteArray(0, false), wd->Data.GetNumBytes());
+            buff << uint8(index++);
+            break;
+        }
+        case MODULE_CHECK:
+        {
+            uint32 seed = static_cast<uint32>(rand32());
+            buff << uint32(seed);
+            HmacHash hmac(4, (uint8*)&seed);
+            hmac.UpdateData(wd->Str);
+            hmac.Finalize();
+            buff.append(hmac.GetDigest(), hmac.GetLength());
+            break;
+        }
+        case PROC_CHECK:
+        {
+            buff.append(wd->Data.AsByteArray(0, false), wd->Data.GetNumBytes());
+            buff << uint8(index++);
+            buff << uint8(index++);
+            buff << uint32(wd->Address);
+            buff << uint8(wd->Length);
+            break;
+        }
+        default:
+            break;                                      // Should never happen
         }
     }
+
     buff << uint8(xorByte);
 
     // Encrypt with warden RC4 key
@@ -342,12 +400,10 @@ void WardenWin::RequestData()
     _session->SendPacket(&data1);
 }
 
+
 void WardenWin::HandleData(ByteBuffer &buff)
 {
     //sLog->outDebug(LOG_FILTER_WARDEN, "Handle data");
-
-    _dataSent = false;
-    _clientResponseTimer = 0;
 
     uint16 length;
     buff >> length;
@@ -371,10 +427,73 @@ void WardenWin::HandleData(ByteBuffer &buff)
         return;
     }
 
+    // read header
+    uint8 headerRes;
+    buff >> headerRes;
+
+    if (headerRes != 0)
+    {
+        //sLog->outWarden("Failed read header for account Id %u", _session->GetAccountId());
+        buff.rpos(buff.wpos());
+        //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed read Warden packet header. Player kicked", _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId());
+        _session->KickPlayer();
+        return;
+    }
+
+    uint8 sign[6];
+    buff.read(sign, 6);
+    std::string packetSign = ConvertPacketDataToString(sign, 6);
+
+    std::string staticCheckSign = GetSignature(_module->Id, STATIC_CHECK);
+
+    // static checks: verify header not equal kick player
+    if (!strcmp(packetSign.c_str(), staticCheckSign.c_str()))
+    {
+        HandleStaticData(buff);
+        return;
+    }
+
+    std::string dynamicCheckSign = GetSignature(_module->Id, DYNAMIC_CHECK);
+
+    // dynamic checks: verify header not equal kick player
+    if (!strcmp(packetSign.c_str(), dynamicCheckSign.c_str()))
+    {
+        // handle system data
+        if (isDebuggerPresentFunc == 0x00)
+        {
+            uint8 res;
+            buff >> res;
+            if (res != 0)
+            {
+                //sLog->outWarden("Failed read system import data for account Id %u", _session->GetAccountId());
+                buff.rpos(buff.wpos());
+                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed read Warden packet data. Player kicked", _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId());
+                _session->KickPlayer();
+                return;
+            }
+
+            buff >> isDebuggerPresentFunc;
+        }
+
+        HandleDynamicData(buff);
+        return;
+    }
+
+    //sLog->outWarden("Failed check header for account Id %u", _session->GetAccountId());
+    buff.rpos(buff.wpos());
+    //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed check Warden packet header. Player kicked",
+        _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId());
+    _session->KickPlayer();
+}
+
+void WardenWin::HandleStaticData(ByteBuffer &buff)
+{
+    _dataSent = false;
+    //sLog->outError("Packet of static checks answers has received by server");
+
     WardenCheckResult *rs;
     WardenCheck *rd;
     uint8 type;
-    uint16 checkFailed = 0;
 
     ACE_READ_GUARD(ACE_RW_Mutex, g, sWardenCheckMgr->_checkStoreLock);
 
@@ -386,123 +505,1247 @@ void WardenWin::HandleData(ByteBuffer &buff)
         type = rd->Type;
         switch (type)
         {
-            case MEM_CHECK:
-            {
-                uint8 Mem_Result;
-                buff >> Mem_Result;
-
-                if (Mem_Result != 0)
-                {
-                    sLog->outWarn(LOG_FILTER_WARDEN, "RESULT MEM_CHECK not 0x00, CheckId %u account Id %u", *itr, _session->GetAccountId());
-                    checkFailed = *itr;
-                    break;
-                }
-
-                if (memcmp(buff.contents() + buff.rpos(), rs->Result.AsByteArray(0, false), rd->Length) != 0)
-                {
-                    sLog->outWarn(LOG_FILTER_WARDEN, "RESULT MEM_CHECK fail CheckId %u account Id %u", *itr, _session->GetAccountId());
-                    checkFailed = *itr;
-                    break;
-                }
-
-                buff.rpos(buff.rpos() + rd->Length);
-                //sLog->outDebug(LOG_FILTER_WARDEN, "RESULT MEM_CHECK passed CheckId %u account Id %u", *itr, _session->GetAccountId());
-                continue;
-            }
-            case PAGE_CHECK_A:
-            case PAGE_CHECK_B:
-            case DRIVER_CHECK:
-            case MODULE_CHECK:
-            {
-                const uint8 byte = 0xE9;
-                if (memcmp(buff.contents() + buff.rpos(), &byte, sizeof(uint8)) != 0)
-                {
-                    if (type == PAGE_CHECK_A || type == PAGE_CHECK_B)
-                        sLog->outWarn(LOG_FILTER_WARDEN, "RESULT PAGE_CHECK fail, CheckId %u account Id %u", *itr, _session->GetAccountId());
-                    if (type == MODULE_CHECK)
-                        sLog->outWarn(LOG_FILTER_WARDEN, "RESULT MODULE_CHECK fail, CheckId %u account Id %u", *itr, _session->GetAccountId());
-                    if (type == DRIVER_CHECK)
-                        sLog->outWarn(LOG_FILTER_WARDEN, "RESULT DRIVER_CHECK fail, CheckId %u account Id %u", *itr, _session->GetAccountId());
-                    checkFailed = *itr;
-                    break;
-                }
-
-                buff.rpos(buff.rpos() + 1);
-                /*if (type == PAGE_CHECK_A || type == PAGE_CHECK_B)
-                    sLog->outDebug(LOG_FILTER_WARDEN, "RESULT PAGE_CHECK passed CheckId %u account Id %u", *itr, _session->GetAccountId());
-                else if (type == MODULE_CHECK)
-                    sLog->outDebug(LOG_FILTER_WARDEN, "RESULT MODULE_CHECK passed CheckId %u account Id %u", *itr, _session->GetAccountId());
-                else if (type == DRIVER_CHECK)
-                    sLog->outDebug(LOG_FILTER_WARDEN, "RESULT DRIVER_CHECK passed CheckId %u account Id %u", *itr, _session->GetAccountId());*/
-                continue;
-            }
-            case LUA_STR_CHECK:
-            {
-                uint8 Lua_Result;
-                buff >> Lua_Result;
-
-                if (Lua_Result != 0)
-                {
-                    sLog->outWarn(LOG_FILTER_WARDEN, "RESULT LUA_STR_CHECK fail, CheckId %u account Id %u", *itr, _session->GetAccountId());
-                    checkFailed = *itr;
-                    break;
-                }
-
-                uint8 luaStrLen;
-                buff >> luaStrLen;
-
-                if (luaStrLen != 0)
-                {
-                    char *str = new char[luaStrLen + 1];
-                    memset(str, 0, luaStrLen + 1);
-                    memcpy(str, buff.contents() + buff.rpos(), luaStrLen);
-                    sLog->outWarn(LOG_FILTER_WARDEN, "Lua string: %s", str);
-                    delete[] str;
-                }
-
-                buff.rpos(buff.rpos() + luaStrLen);         // Skip string
-                //sLog->outDebug(LOG_FILTER_WARDEN, "RESULT LUA_STR_CHECK passed, CheckId %u account Id %u", *itr, _session->GetAccountId());
-                continue;
-            }
-            case MPQ_CHECK:
-            {
-                uint8 Mpq_Result;
-                buff >> Mpq_Result;
-
-                if (Mpq_Result != 0)
-                {
-                    sLog->outWarn(LOG_FILTER_WARDEN, "RESULT MPQ_CHECK not 0x00 account id %u", _session->GetAccountId());
-                    checkFailed = *itr;
-                    break;
-                }
-
-                if (memcmp(buff.contents() + buff.rpos(), rs->Result.AsByteArray(0, false), 20) != 0) // SHA1
-                {
-                    sLog->outWarn(LOG_FILTER_WARDEN, "RESULT MPQ_CHECK fail, CheckId %u account Id %u", *itr, _session->GetAccountId());
-                    checkFailed = *itr;
-                    break;
-                }
-
-                buff.rpos(buff.rpos() + 20);                // 20 bytes SHA1
-                //sLog->outDebug(LOG_FILTER_WARDEN, "RESULT MPQ_CHECK passed, CheckId %u account Id %u", *itr, _session->GetAccountId());
-                continue;
-            }
-            default:                                        // Should never happen
-                continue;
-        }
-
-        if (checkFailed)
+        case MEM_CHECK:
         {
-            // read packet to end
-            buff.rfinish();
-            // penalty
-            WardenCheck* check = sWardenCheckMgr->GetWardenDataById(checkFailed);
-            sLog->outWarn(LOG_FILTER_WARDEN, "%s failed Warden check %u. Action: %s", _session->GetPlayerName(false).c_str(), checkFailed, Penalty(check).c_str());
+            uint8 Mem_Result;
+            buff >> Mem_Result;
+
+            if (Mem_Result != 0)
+            {
+                //sLog->outWarden("RESULT MEM_CHECK not 0x00, CheckId %u account Id %u", *itr, _session->GetAccountId());
+                buff.rpos(buff.wpos());
+                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
+                return;
+            }
+
+            std::string packet_data = ConvertPacketDataToString(buff.contents() + buff.rpos(), rd->Length);
+            if (strcmp(rs->Result.c_str(), packet_data.c_str()))
+            {
+                //sLog->outWarden("RESULT MEM_CHECK fail CheckId %u, account Id %u, Failed data %s", *itr, _session->GetAccountId(), packet_data.c_str());
+                buff.rpos(buff.wpos());
+                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
+                return;
+            }
+
+            buff.rpos(buff.rpos() + rd->Length);
+            break;
+        }
+        case PAGE_CHECK_A:
+        case PAGE_CHECK_B:
+        case DRIVER_CHECK:
+        case MODULE_CHECK:
+        {
+            std::string packet_data = ConvertPacketDataToString(buff.contents() + buff.rpos(), 1);
+            if (strcmp(rs->Result.c_str(), packet_data.c_str()))
+            {
+                if (type == PAGE_CHECK_A || type == PAGE_CHECK_B)
+                    //sLog->outWarden("RESULT PAGE_CHECK fail, CheckId %u, account Id %u", *itr, _session->GetAccountId());
+                if (type == MODULE_CHECK)
+                    //sLog->outWarden("RESULT MODULE_CHECK fail, CheckId %u, account Id %u", *itr, _session->GetAccountId());
+                if (type == DRIVER_CHECK)
+                    //sLog->outWarden("RESULT DRIVER_CHECK fail, CheckId %u, account Id %u", *itr, _session->GetAccountId());
+
+                buff.rpos(buff.wpos());
+                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
+                return;
+            }
+
+            buff.rpos(buff.rpos() + 1);
+            break;
+        }
+        case LUA_STR_CHECK:
+        {
+            uint8 Lua_Result;
+            buff >> Lua_Result;
+
+            //if (Lua_Result != 0)
+                //sLog->outWarden("unk byte in LUA_STR_CHECK is equal 1, CheckId %u, account Id %u", *itr, _session->GetAccountId());
+
+            uint8 luaStrLen;
+            buff >> luaStrLen;
+
+            if (luaStrLen != 0)
+            {
+                char *str = new char[luaStrLen + 1];
+                memset(str, 0, luaStrLen + 1);
+                memcpy(str, buff.contents() + buff.rpos(), luaStrLen);
+                //sLog->outWarden("RESULT LUA_STR_CHECK fail, CheckId %u, account Id %u", *itr, _session->GetAccountId());
+                //sLog->outWarden("Lua string found: %s", str);
+                delete[] str;
+
+                buff.rpos(buff.wpos());
+                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
+                return;
+            }
+
+            break;
+        }
+        case MPQ_CHECK:
+        {
+            uint8 Mpq_Result;
+            buff >> Mpq_Result;
+
+            if (Mpq_Result != 0)
+            {
+                //sLog->outWarden("RESULT MPQ_CHECK not 0x00 account id %u", _session->GetAccountId());
+                buff.rpos(buff.wpos());
+                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
+                return;
+            }
+
+            std::string packet_data = ConvertPacketDataToString(buff.contents() + buff.rpos(), rd->Length);
+            if (strcmp(rs->Result.c_str(), packet_data.c_str()))
+            {
+                //sLog->outWarden("RESULT MPQ_CHECK fail, CheckId %u, account Id %u", *itr, _session->GetAccountId());
+                buff.rpos(buff.wpos());
+                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
+                return;
+            }
+
+            buff.rpos(buff.rpos() + 20);                // 20 bytes SHA1
+            break;
+        }
+        default:                                        // Should never happen
             break;
         }
     }
+}
 
-    // Set hold off timer, minimum timer should at least be 1 second
-    uint32 holdOff = sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF);
-    _checkTimer = (holdOff < 1 ? 1 : holdOff) * IN_MILLISECONDS;
+void WardenWin::RequestDynamicData()
+{
+    ByteBuffer buff;
+    buff << uint8(WARDEN_SMSG_CHEAT_CHECKS_REQUEST);
+
+    uint8 xorByte = _inputKey[0];
+
+    buff << uint8(0x00);
+    buff << uint8(TIMING_CHECK ^ xorByte);                  // check TIMING_CHECK
+
+    // header
+    buff << uint8(MEM_CHECK ^ xorByte);
+    buff << uint8(0x00);
+    buff << uint32(0x009FA4C4);
+    buff << uint8(0x6);
+
+    // system
+    if (isDebuggerPresentFunc == 0x00)
+    {
+        buff << uint8(MEM_CHECK ^ xorByte);
+        buff << uint8(0x00);
+        buff << uint32(0x009DF1B4);
+        buff << uint8(0x4);
+    }
+
+    buff << uint8(MEM_CHECK ^ xorByte);
+    buff << uint8(0x00);
+
+    bool dataCreate = false;
+
+    // first packet in chain
+    if (playerBase == 0x00 && offset == 0x00 && playerMovementBase == 0x00)
+    {
+        buff << uint32(0x00CD87A8);
+        buff << uint8(0x04);
+        dataCreate = true;
+    }
+    // second packet in chain
+    else if (playerBase != 0x00 && offset == 0x00 && playerMovementBase == 0x00)
+    {
+        playerBase += 0x34;
+        buff << uint32(playerBase);
+        buff << uint8(0x04);
+        dataCreate = true;
+    }
+    // third packet in chain
+    else if (playerBase != 0x00 && offset != 0x00 && playerMovementBase == 0x00)
+    {
+        offset += 0x24;
+        buff << uint32(offset);
+        buff << uint8(0x04);
+        dataCreate = true;
+    }
+    // data from client, test packet - offset 81C - run speed
+    // C70 points to run(forward) 7 default value (float)
+    // data from client, test packet - offset 7CF - movement type
+    // C23 points to movement type 128 default value (4 bytes)
+    else if (playerBase != 0x00 && offset != 0x00 && playerMovementBase != 0x00)
+    {
+        // sedned for correct select of base packet
+        buff << uint32(playerMovementBase);
+        buff << uint8(0x04);
+
+        uint32 run_speed = playerMovementBase + 0x81C;
+        buff << uint8(MEM_CHECK ^ xorByte);
+        buff << uint8(0x00);
+        buff << uint32(run_speed);
+        buff << uint8(0x04);
+
+        uint32 flight_speed = playerMovementBase + 0x82C;
+        buff << uint8(MEM_CHECK ^ xorByte);
+        buff << uint8(0x00);
+        buff << uint32(flight_speed);
+        buff << uint8(0x04);
+
+        uint32 swim_speed = playerMovementBase + 0x824;
+        buff << uint8(MEM_CHECK ^ xorByte);
+        buff << uint8(0x00);
+        buff << uint32(swim_speed);
+        buff << uint8(0x04);
+
+        uint32 mov_flags = playerMovementBase + 0x7CC;
+        buff << uint8(MEM_CHECK ^ xorByte);
+        buff << uint8(0x00);
+        buff << uint32(mov_flags);
+        buff << uint8(0x04);
+
+        uint32 cur_speed = playerMovementBase + 0x814;
+        buff << uint8(MEM_CHECK ^ xorByte);
+        buff << uint8(0x00);
+        buff << uint32(cur_speed);
+        buff << uint8(0x04);
+
+        uint32 vert_delta = playerMovementBase + 0x858;
+        buff << uint8(MEM_CHECK ^ xorByte);
+        buff << uint8(0x00);
+        buff << uint32(vert_delta);
+        buff << uint8(0x04);
+
+        uint32 faction = playerMovementBase + 0x1A34;
+        buff << uint8(MEM_CHECK ^ xorByte);
+        buff << uint8(0x00);
+        buff << uint32(faction);
+        buff << uint8(0x04);
+
+        uint32 map_z = 0x00D3945C;
+        buff << uint8(MEM_CHECK ^ xorByte);
+        buff << uint8(0x00);
+        buff << uint32(map_z);
+        buff << uint8(0x04);
+
+        /*uint32 coord_x = playerMovementBase + 0x798;
+        buff << uint8(MEM_CHECK ^ xorByte);
+        buff << uint8(0x00);
+        buff << uint32(coord_x);
+        buff << uint8(0x04);
+
+        uint32 coord_y = playerMovementBase + 0x79C;
+        buff << uint8(MEM_CHECK ^ xorByte);
+        buff << uint8(0x00);
+        buff << uint32(coord_y);
+        buff << uint8(0x04);*/
+
+        uint32 coord_z = playerMovementBase + 0x7A0;
+        buff << uint8(MEM_CHECK ^ xorByte);
+        buff << uint8(0x00);
+        buff << uint32(coord_z);
+        buff << uint8(0x04);
+
+        dataCreate = true;
+    }
+
+    if (dataCreate)
+    {
+        buff << uint8(xorByte);
+
+        // Encrypt with warden RC4 key.
+        EncryptData(const_cast<uint8*>(buff.contents()), buff.size());
+
+        WorldPacket pkt(SMSG_WARDEN_DATA, buff.size() + 4);
+        pkt << uint32(buff.size());
+        pkt.append(buff);
+        _session->SendPacket(&pkt);
+
+        _dynDataSent = true;
+    }
+}
+
+void WardenWin::HandleDynamicData(ByteBuffer &buff)
+{
+    Player * plr = _session->GetPlayer();
+
+    if (!plr || !plr->IsInWorld() /*|| plr->IsBlocked()*/)
+    {
+        buff.rpos(buff.wpos());
+        _dynDataSent = false;
+        return;
+    }
+
+    //sLog->outError("Packet of dyn checks anwsers has received by server");
+    //_dynDataSent = false;
+
+    uint8 Mem_Result;
+    buff >> Mem_Result;
+
+    if (Mem_Result != 0x00)
+    {
+        buff.rpos(buff.wpos());
+        // for debug
+        //sLog->outWarden("RESULT MEM_CHECK not 0x00(get base data), Special check failed on account Id %u", _session->GetAccountId());
+        // nulled
+        ClearAddresses();
+        // restart timer
+        //_dynamicCheckTimer = 1000;
+        _dynDataSent = false;
+        return;
+    }
+
+    // first packet in chain
+    if (playerBase == 0x00 && offset == 0x00 && playerMovementBase == 0x00)
+    {
+        buff >> playerBase;
+        //_dynamicCheckTimer = 1000;
+        _dynDataSent = false;
+        return;
+    }
+
+    // second packet in chain
+    if (playerBase != 0x00 && offset == 0x00 && playerMovementBase == 0x00)
+    {
+        buff >> offset;
+        //_dynamicCheckTimer = 1000;
+        _dynDataSent = false;
+        return;
+    }
+
+    // third packet in chain
+    if (playerBase != 0x00 && offset != 0x00 && playerMovementBase == 0x00)
+    {
+        buff >> playerMovementBase;
+        //_dynamicCheckTimer = 1000;
+        _dynDataSent = false;
+        return;
+    }
+
+    // data from client
+    if (playerBase != 0x00 && offset != 0x00 && playerMovementBase != 0x00)
+    {
+        uint32 check_data;
+        buff >> check_data;
+
+        // check correct data
+        // player on vehicle
+        if (plr->GetVehicle())
+        {
+            if (check_data != 0xA34D90)
+            {
+                buff.rpos(buff.wpos());
+                // for debug
+                //sLog->outWarden("Check Data - %X on account %u", check_data, _session->GetAccountId());
+                ClearAddresses();
+                // restart timer
+                //_dynamicCheckTimer = 1000;
+                _dynDataSent = false;
+                return;
+            }
+        }
+        // player not vehicle
+        else
+        {
+            if (check_data != 0xA326C8)
+            {
+                buff.rpos(buff.wpos());
+                // for debug
+                //sLog->outWarden("Check Data - %X on account %u", check_data, _session->GetAccountId());
+                ClearAddresses();
+                // restart timer
+                //_dynamicCheckTimer = 1000;
+                _dynDataSent = false;
+                return;
+            }
+        }
+
+        // initialize temp variables
+        bool speedAlertsActivate = false;
+        bool speedExtAlertsActivate = false;
+        bool moveFlagsAlertsActivate = false;
+        bool failedCoordsAlertsActivate = false;
+
+        float baseRunClientSpeed = 0.0f;
+        if (!ReadMemChunk(buff, baseRunClientSpeed))
+            return;
+
+        float baseFlightClientSpeed = 0.0f;
+        if (!ReadMemChunk(buff, baseFlightClientSpeed))
+            return;
+
+        float baseSwimClientSpeed = 0.0f;
+        if (!ReadMemChunk(buff, baseSwimClientSpeed))
+            return;
+
+        uint32 m_flags = 0;
+        if (!ReadMemChunk(buff, m_flags))
+            return;
+
+        float curClientSpeed = 0.0f;
+        if (!ReadMemChunk(buff, curClientSpeed))
+            return;
+
+        float vDeltaConst = 0.0f;
+        if (!ReadMemChunk(buff, vDeltaConst))
+            return;
+
+        uint32 faction_id = 0;
+        if (!ReadMemChunk(buff, faction_id))
+            return;
+
+        float map_z = 0.0f;
+        if (!ReadMemChunk(buff, map_z))
+            return;
+
+        float client_z = 0.0f;
+        if (!ReadMemChunk(buff, client_z))
+            return;
+
+        MoveType mtype = SelectSpeedType(m_flags);
+        bool cheat_check = true;
+
+        if (_session->GetSecurity() >= SEC_GAMEMASTER)
+            cheat_check = false;
+
+        /*if (cheat_check)
+        {
+            // get move type of speed
+            UnitMoveType move_type = UnitMoveType(mtype);
+
+            // get alert aura
+            uint8 am = 0;
+            if (Aura * aura = plr->GetAura(300002))
+                am = aura->GetStackAmount();
+
+            // calculate server speed for player/vehicles
+            float serverSpeed = 0.0f;
+            if (plr->GetVehicle())
+                serverSpeed = GetServerSpeed(plr->GetVehicleBase(), move_type);
+            else
+                serverSpeed = GetServerSpeed(plr, move_type);
+
+            float baseClientSpeed = 0.0f;
+            if (move_type == MOVE_FLIGHT)
+                baseClientSpeed = baseFlightClientSpeed;
+            else if (move_type == MOVE_RUN)
+                baseClientSpeed = baseRunClientSpeed;
+            else if (move_type == MOVE_SWIM)
+                baseClientSpeed = baseSwimClientSpeed;
+
+            //sLog->outError("Current speed - %f, base speed - %f, server speed (%u) - %f, moving - %s, falling - %s, launched - %s,  launched speed - %f, on vehicle - %s, speed vehicle - %f, speed alert - %u, speed ext alert - %u, moveflag alerts - %u", curClientSpeed, baseClientSpeed, int8(move_type), serverSpeed, plr->isMoving() ? "true" : "false", plr->IsFalling() ? "true" : "false", plr->isLaunched() ? "true" : "false", plr->GetSpeedXY(), plr->GetVehicle() ? "true" : "false", plr->GetVehicleBase() ? GetServerSpeed(plr->GetVehicleBase(), move_type) : 0.0f,
+            //m_speedAlert, m_speedExtAlert, m_moveFlagsAlert);
+            AreaTableEntry const* srcZoneEntry = GetAreaEntryByAreaID(plr->GetZoneId());
+            AreaTableEntry const* srcAreaEntry = GetAreaEntryByAreaID(plr->GetAreaId());
+
+            if (!HasAnticheatImmune())
+            {
+                // SPEED - CHECK BLOCK
+                // 1000% speed - this value impossible get legal methods, only controlled by server (spline movement)
+                if (curClientSpeed >= 77.0f && !plr->isLaunched() && curClientSpeed > plr->GetSpeedXY())
+                {
+                    if (m_speedExtAlert == int8(sWorld->getIntConfig(CONFIG_WARDEN_NUM_SPEED_EXT_ALERTS)))
+                    {
+                        buff.rpos(buff.wpos());
+                        sLog->outWarden("CLIENT WARDEN: Player - %s banned - over-speed speedhack, data : base_speed - %f, server_speed - %f, cur_speed - %f, on_vehicle - %s", _session->GetPlayerName(), baseClientSpeed, serverSpeed, curClientSpeed, plr->GetVehicle() ? "true" : "false");
+                        ClearAlerts();
+
+                        // generate cryptostream
+                        std::stringstream c_data;
+                        int veh = plr->GetVehicle() ? 1 : 0;
+                        c_data << "OS" << baseClientSpeed << "|" << serverSpeed << "|" << curClientSpeed << "|" << veh;
+                        std::string cipherText = EncryptCustomData(c_data.str());
+
+                        // ban
+                        std::stringstream duration;
+                        duration << sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_BAN_DURATION) << "s";
+                        std::string accountName;
+                        AccountMgr::GetName(_session->GetAccountId(), accountName);
+                        std::stringstream banReason;
+                        banReason << "Warden Anticheat Violation: Over-speed speedhack (Dynamic check) " << "(" << cipherText.c_str() << ")";
+                        sWorld->BanAccount(BAN_ACCOUNT, accountName, duration.str(), banReason.str(), "Warden Anticheat");
+
+                        _dynDataSent = false;
+                        return;
+                    }
+
+                    m_speedExtAlert++;
+                    speedExtAlertsActivate = true;
+                }
+                // heuristic Hitchhiker detect - banned
+                else if (baseSwimClientSpeed > GetServerSpeed(plr, MOVE_SWIM) && baseSwimClientSpeed == baseRunClientSpeed && baseSwimClientSpeed > playerBaseMoveSpeed[MOVE_RUN] && !plr->GetVehicle())
+                {
+                    if (m_speedExtAlert == int8(sWorld->getIntConfig(CONFIG_WARDEN_NUM_SPEED_EXT_ALERTS)))
+                    {
+                        buff.rpos(buff.wpos());
+                        bool correct = CheckCorrectBoundValues(baseSwimClientSpeed);
+                        sLog->outWarden("CLIENT WARDEN: Player %s %s - detect Hitchhiker's Hack, base swim speed - %f, server swim speed - %f, on_vehicle - %s", _session->GetPlayerName(), correct ? "banned" : "kicked", baseSwimClientSpeed, GetServerSpeed(plr, MOVE_SWIM), plr->GetVehicle() ? "true" : "false");
+                        ClearAlerts();
+
+                        if (correct)
+                        {
+                            // generate cryptostream
+                            std::stringstream c_data1;
+                            int veh = plr->GetVehicle() ? 1 : 0;
+                            c_data1 << "HS" << baseSwimClientSpeed << "|" << GetServerSpeed(plr, MOVE_SWIM) << "|" << veh;
+                            std::string cipherText1 = EncryptCustomData(c_data1.str());
+
+                            // ban
+                            std::stringstream duration;
+                            duration << sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_BAN_DURATION) << "s";
+                            std::string accountName;
+                            AccountMgr::GetName(_session->GetAccountId(), accountName);
+                            std::stringstream banReason;
+                            banReason << "Warden Anticheat Violation: Hitchhiker's Hack - speedhack (Dynamic check) " << "(" << cipherText1.c_str() << ")";
+                            sWorld->BanAccount(BAN_ACCOUNT, accountName, duration.str(), banReason.str(), "Warden Anticheat");
+
+                            _dynDataSent = false;
+                            return;
+                        }
+                        else
+                        {
+                            _session->KickPlayer();
+                            _dynDataSent = false;
+                            return;
+                        }
+                    }
+
+                    m_speedExtAlert++;
+                    speedExtAlertsActivate = true;
+                }
+
+                if (baseClientSpeed >= 7.0f && serverSpeed >= 7.0f && baseClientSpeed > serverSpeed && baseClientSpeed - serverSpeed > 5.0f)
+                {
+                    if (m_speedAlert == int8(sWorld->getIntConfig(CONFIG_WARDEN_NUM_SPEED_ALERTS)))
+                    {
+                        buff.rpos(buff.wpos());
+                        sLog->outWarden("CLIENT WARDEN: Player - %s must be banned - force change base movespeed (Hithchiker's Hack, etc.), data : base_speed - %f, server_speed - %f, cur_speed - %f, on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, map name - %s, zone_name - %s, subzone_name - %s",
+                            _session->GetPlayerName(), baseClientSpeed, serverSpeed, curClientSpeed, plr->GetVehicle() ? "true" : "false", (plr->GetTransport() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT)) ? "true" : "false", plr->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plr->IsFalling() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false",
+                            plr->GetMap() ? plr->GetMap()->GetMapName() : "<unknown>", srcZoneEntry ? srcZoneEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", srcAreaEntry ? srcAreaEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>");
+                        ClearAlerts();
+                        _session->KickPlayer();
+                        _dynDataSent = false;
+                        return;
+                    }
+
+                    m_speedAlert++;
+                    speedAlertsActivate = true;
+                }
+                else if (curClientSpeed > 7.0f && curClientSpeed < 77.0f && curClientSpeed > serverSpeed && curClientSpeed > baseClientSpeed &&
+                    curClientSpeed - serverSpeed > 5.0f && curClientSpeed - baseClientSpeed > 5.0f)
+                {
+                    bool correct = true;
+
+                    // check launched state, if speed is bigger launched XY speed - alert
+                    if (plr->isLaunched())
+                    {
+                        if (curClientSpeed > plr->GetSpeedXY())
+                            correct = false;
+                    }
+                    else
+                    {
+                        // check falling, if not falling flag - alert
+                        if (!(plr->m_movementInfo.GetMovementFlags() & (MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) && !plr->IsFalling())
+                            correct = false;
+                    }
+
+                    if (!correct)
+                    {
+                        m_speedAlert++;
+                        speedAlertsActivate = true;
+                    }
+
+                    if (m_speedAlert == int8(sWorld->getIntConfig(CONFIG_WARDEN_NUM_SPEED_ALERTS)))
+                    {
+                        buff.rpos(buff.wpos());
+                        sLog->outWarden("CLIENT WARDEN: Player - %s must be banned - force change current speed(WoWEmuHacker, etc.), data : base_speed - %f, server_speed - %f, cur_speed - %f, on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, map name - %s, zone_name - %s, subzone_name - %s",
+                            _session->GetPlayerName(), baseClientSpeed, serverSpeed, curClientSpeed, plr->GetVehicle() ? "true" : "false", (plr->GetTransport() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT)) ? "true" : "false", plr->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plr->IsFalling() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false",
+                            plr->GetMap() ? plr->GetMap()->GetMapName() : "<unknown>", srcZoneEntry ? srcZoneEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", srcAreaEntry ? srcAreaEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>");
+                        ClearAlerts();
+                        _session->KickPlayer();
+                        _dynDataSent = false;
+                        return;
+                    }
+                }
+
+                // REAL MOVEMENT FLAGS - CHECK BLOCK
+                std::string mflags_reason = "";
+                uint16 banMask = 0;
+                uint32 weirdMoveFlags = 0;
+
+                if (!CheckMovementFlags(m_flags, mflags_reason, banMask))
+                {
+                    if (m_moveFlagsAlert == int8(sWorld->getIntConfig(CONFIG_WARDEN_NUM_MOVEFLAGS_ALERTS)))
+                    {
+                        buff.rpos(buff.wpos());
+                        sLog->outWarden("CLIENT WARDEN: Player - %s has incorrect moveflags, alert amount (%u), reason - %s, moveflags - %X (%s), on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, map name - %s, zone_name - %s, subzone_name - %s", _session->GetPlayerName(), am, mflags_reason.c_str(), m_flags, GetMovementFlagInfo(m_flags).c_str(),
+                            plr->GetVehicle() ? "true" : "false", (plr->GetTransport() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT)) ? "true" : "false", plr->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plr->IsFalling() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false",
+                            plr->GetMap() ? plr->GetMap()->GetMapName() : "<unknown>", srcZoneEntry ? srcZoneEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", srcAreaEntry ? srcAreaEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>");
+
+                        ClearAlerts();
+                        std::string reason = "Anticheat System : " + mflags_reason + ". You are disabled and kicked in 10 seconds";
+                        plr->SetBlocked(true, reason.c_str());
+                        //_session->KickPlayer();
+                        _dynDataSent = false;
+                        return;
+                    }
+
+                    m_moveFlagsAlert++;
+                    moveFlagsAlertsActivate = true;
+                    //sLog->outError("CLIENT WARDEN: player - %s, incorrect moveflags - %X (%s)", _session->GetPlayerName(), m_flags, GetMovementFlagInfo(m_flags).c_str());
+                }
+
+                // SYNCRONIZE SERVER/CLIENT COORDINATES - CHECK BLOCK (DISABLED)
+                // CALCULATE MAP Z COORDINAT - CHECK BLOCK (ENABLED)
+                // extreme shutdown in config
+                if (sWorld->getIntConfig(CONFIG_WARDEN_NUM_FALIED_COORDS_ALERTS))
+                {
+                    // ENABLED - reseacrhing....
+                    // exculde transport/launched/taxi/teleported/falling states
+                    if (!plr->GetTransport() && !plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT) && !plr->IsFalling() && !plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR) &&
+                        !plr->isLaunched())
+                    {
+                        if (!plr->IsFlying() && !plr->IsAllowFlying() && !plr->IsInWater() && !plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_CAN_FLY) && map_z != 0.0f && client_z > map_z + 2.0f)
+                        {
+                            if (m_failedCoordsAlert == int8(sWorld->getIntConfig(CONFIG_WARDEN_NUM_FALIED_COORDS_ALERTS)))
+                            {
+                                buff.rpos(buff.wpos());
+                                sLog->outWarden("CLIENT WARDEN: player - %s has invalid Z height, server_x - %f, server_y - %f, server_z - %f, client_z - %f, server speed - %f, client speed - %f, on_vehicle - %s, falling - %s, map name - %s, zone_name - %s, subzone_name - %s, client_map_height - %f", _session->GetPlayerName(),
+                                    plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ(), client_z, serverSpeed, curClientSpeed, plr->GetVehicle() ? "true" : "false", (plr->IsFalling() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false",
+                                    plr->GetMap() ? plr->GetMap()->GetMapName() : "<unknown>", srcZoneEntry ? srcZoneEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", srcAreaEntry ? srcAreaEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", map_z);
+
+                                ClearAlerts();
+                                SendControlMovementPacket(MSG_MOVE_STOP_SWIM, true, MOVEMENTFLAG_FALLING);
+                                _dynDataSent = false;
+                                return;
+                            }
+
+                            m_failedCoordsAlert++;
+                            failedCoordsAlertsActivate = true;
+                        }
+                    }
+                }
+            }
+
+            // DYNAMIC VERTICAL DELTA - CHECK BLOCK
+            if (vDeltaConst != 1.0f)
+            {
+                // Wallhack!
+                if (vDeltaConst == 255.0f)
+                {
+                    sLog->outWarden("CLIENT WARDEN: WallClimb on account %u, player %s", _session->GetAccountId(), _session->GetPlayerName());
+                    _session->KickPlayer();
+                    _dynDataSent = false;
+                    return;
+                }
+            }
+
+            // FACTION ID - CHECK BLOCK
+            if (plr->isSpectator() && !IsNotTeamFaction(plr->GetTeam(), faction_id) && faction_id != 35 && faction_id < 1629)
+            {
+                sLog->outWarden("CLIENT WARDEN: Faction ID is not allowed for spectator (client - %u, server - %u) on account %u, player %s", faction_id, plr->getFaction(), _session->GetAccountId(), _session->GetPlayerName());
+                _session->KickPlayer();
+                _dynDataSent = false;
+                return;
+            }
+
+            DecreaseAlertCount(CONFIG_WARDEN_NUM_SPEED_ALERTS, m_speedAlert, speedAlertsActivate);
+            DecreaseAlertCount(CONFIG_WARDEN_NUM_SPEED_EXT_ALERTS, m_speedExtAlert, speedExtAlertsActivate);
+            DecreaseAlertCount(CONFIG_WARDEN_NUM_MOVEFLAGS_ALERTS, m_moveFlagsAlert, moveFlagsAlertsActivate);
+            DecreaseAlertCount(CONFIG_WARDEN_NUM_FALIED_COORDS_ALERTS, m_failedCoordsAlert, failedCoordsAlertsActivate);
+        }*/
+
+        _dynDataSent = false;
+    }
+}
+
+bool WardenWin::CheckMovementFlags(uint32 moveflags, std::string &reason, uint16 &banMask)
+{
+    // get player
+    Player * plr = _session->GetPlayer();
+
+    if (!plr)
+        return false;
+
+    bool correct = true;
+
+    /*if (moveflags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING))
+    {
+        if (plr->GetVehicle() && plr->GetVehicleBase())
+        {
+            if (Unit * vb = plr->GetVehicleBase())
+            {
+                if (!IsAllowFlyingOnVehicles(vb))
+                {
+                    if (moveflags & MOVEMENTFLAG_INTERNAL)
+                        reason += "Vehicle flyhack detected (Hitchhiker's Hack type)";
+                    else
+                        reason += "Vehicle flyhack detected (WoWEmuHacker type)";
+
+                    banMask |= RESP_FLYHACK;
+                    correct = false;
+                }
+            }
+        }
+        else
+        {
+            if (!IsAllowPlayerFlying(plr))
+            {
+                if (moveflags & MOVEMENTFLAG_INTERNAL)
+                    reason += "Flyhack detected (Hitchhiker's Hack type)";
+                else
+                    reason += "Flyhack detected (WoWEmuHacker type)";
+
+                banMask |= RESP_FLYHACK;
+                correct = false;
+            }
+        }
+    }
+
+    /*if (moveflags & MOVEMENTFLAG_SWIMMING)
+    {
+    if (!plr->IsInWater())
+    {
+    reason += " + AirSwimHack detected";
+    banMask |= RESP_AIRSWIM_HACK;
+    correct = false;
+    }
+    }
+
+    if (moveflags & MOVEMENTFLAG_DISABLE_GRAVITY && !plr->GetVehicle())
+    {
+        reason += " + Freeze Z detected";
+        banMask |= RESP_FREEZE_Z_HACK;
+        correct = false;
+    }
+
+    if (moveflags & MOVEMENTFLAG_WATERWALKING)
+    {
+        if (!plr->IsAllowWaterwalking() && !plr->IsAllowWaterwalkingOnServer() && !plr->GetVehicle())
+        {
+            reason += " + WaterwalkHack detected";
+            banMask |= RESP_WATERWALK_HACK;
+            correct = false;
+        }
+    }
+
+    if (moveflags & MOVEMENTFLAG_HOVER)
+    {
+        if (plr->GetVehicle() && plr->GetVehicleBase())
+        {
+            if (plr->GetVehicleBase()->HasAuraType(SPELL_AURA_HOVER))
+            {
+                reason += " + LevitateHack detected (vehicle)";
+                banMask |= RESP_LEVITATE_HACK;
+                correct = false;
+            }
+        }
+        else
+        {
+            if (!plr->IsAllowHover())
+            {
+                reason += " + LevitateHack detected";
+                banMask |= RESP_LEVITATE_HACK;
+                correct = false;
+            }
+        }
+    }
+
+    // cut mistake begin
+    std::string new_info = "";
+    int i = -1;
+    for (std::string::iterator itr = reason.begin(); itr != reason.end(); ++itr)
+    {
+        i++;
+
+        if (i < 3 && (*itr == ' ' || *itr == '+'))
+            continue;
+
+        new_info += *itr;
+    }
+
+    if (new_info == "")
+        new_info = "none";
+
+    reason = new_info;
+    return correct;*/
+}
+
+std::string WardenWin::GetMovementFlagInfo(uint32 moveFlags)
+{
+    std::string info = "";
+
+    if (moveFlags & MOVEMENTFLAG_FORWARD)
+        info += "moveflag_forward";
+
+    if (moveFlags & MOVEMENTFLAG_BACKWARD)
+        info += " | moveflag_backward";
+
+    if (moveFlags & MOVEMENTFLAG_STRAFE_LEFT)
+        info += " | moveflag_strafe_left";
+
+    if (moveFlags & MOVEMENTFLAG_STRAFE_RIGHT)
+        info += " | moveflag_strafe_right";
+
+    if (moveFlags & MOVEMENTFLAG_LEFT)
+        info += " | moveflag_turn_left";
+
+    if (moveFlags & MOVEMENTFLAG_RIGHT)
+        info += " | moveflag_turn_right";
+
+    if (moveFlags & MOVEMENTFLAG_PITCH_UP)
+        info += " | moveflag_pitch_up";
+
+    if (moveFlags & MOVEMENTFLAG_PITCH_DOWN)
+        info += " | moveflag_pitch_down";
+
+    if (moveFlags & MOVEMENTFLAG_WALKING)
+        info += " | moveflag_walking";
+
+    if (moveFlags & MOVEMENTFLAG_DISABLE_GRAVITY)
+        info += " | moveflag_levitating";
+
+    if (moveFlags & MOVEMENTFLAG_ROOT)
+        info += " | moveflag_root";
+
+    if (moveFlags & MOVEMENTFLAG_FALLING)
+        info += " | moveflag_falling";
+
+    if (moveFlags & MOVEMENTFLAG_SWIMMING)
+        info += " | moveflag_swim";
+
+    if (moveFlags & MOVEMENTFLAG_ASCENDING)
+        info += " | moveflag_ascending";
+
+    if (moveFlags & MOVEMENTFLAG_DESCENDING)
+        info += " | moveflag_descending";
+
+    if (moveFlags & MOVEMENTFLAG_CAN_FLY)
+        info += " | moveflag_can_fly";
+
+    if (moveFlags & MOVEMENTFLAG_FLYING)
+        info += " | moveflag_flying";
+
+    //if (moveFlags & MOVEMENTFLAG_ONTRANSPORT)
+        //info += " | moveflag_on_transport";
+
+    if (moveFlags & MOVEMENTFLAG_SPLINE_ELEVATION)
+        info += " | moveflag_spilne_elevation";
+
+    //if (moveFlags & MOVEMENTFLAG_SPLINE_ENABLED)
+        //info += " | moveflag_spilne_enabled";
+
+    if (moveFlags & MOVEMENTFLAG_WATERWALKING)
+        info += " | moveflag_waterwalking";
+
+    if (moveFlags & MOVEMENTFLAG_FALLING_SLOW)
+        info += " | moveflag_falling_slow";
+
+    if (moveFlags & MOVEMENTFLAG_HOVER)
+        info += " | moveflag_hover";
+
+    //if (moveFlags & MOVEMENTFLAG_INTERNAL)
+        //info += " | moveflag_internal";
+
+    // cut mistake begin
+    std::string new_info = "";
+    int i = -1;
+    for (std::string::iterator itr = info.begin(); itr != info.end(); ++itr)
+    {
+        i++;
+
+        if (i < 3 && (*itr == ' ' || *itr == '|'))
+            continue;
+
+        new_info += *itr;
+    }
+
+    if (new_info == "")
+        new_info = "none";
+
+    return new_info;
+}
+
+MoveType WardenWin::SelectSpeedType(uint32 moveFlags)
+{
+    // get player
+    Player * plr = _session->GetPlayer();
+
+    if (!plr)
+        return MOVETYPE_NONE;
+
+    if (moveFlags & MOVEMENTFLAG_SWIMMING)
+    {
+        if (moveFlags & MOVEMENTFLAG_BACKWARD)
+            return MOVETYPE_SWIM_BACK;
+        else
+            return MOVETYPE_SWIM;
+    }
+    else if (moveFlags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING))
+    {
+        if (moveFlags & MOVEMENTFLAG_BACKWARD)
+            return MOVETYPE_FLIGHT_BACK;
+        else
+            return MOVETYPE_FLIGHT;
+    }
+    else if (moveFlags & MOVEMENTFLAG_WALKING)
+        return MOVETYPE_WALK;
+    else if (moveFlags & MOVEMENTFLAG_BACKWARD)
+        return MOVETYPE_RUN_BACK;
+
+    return MOVETYPE_RUN;
+}
+
+void WardenWin::SendControlMovementPacket(uint32 opcode, bool added, uint32 moveFlags)
+{
+    Player * plr = _session->GetPlayer();
+
+    if (!plr)
+        return;
+
+    if (moveFlags)
+    {
+        MovementInfo mInfo = plr->m_movementInfo;
+        if (added)
+            mInfo.AddMovementFlag(MovementFlags(moveFlags));
+        else
+            mInfo.RemoveMovementFlag(MovementFlags(moveFlags));
+
+        WorldPacket data(opcode, 200);
+        mInfo.guid = plr->GetGUID();
+        _session->WriteMovementInfo(&data, &mInfo);
+        plr->SendMessageToSet(&data, true);
+    }
+}
+
+bool WardenWin::IsPlayerFaction(uint32 faction)
+{
+    static uint32 factions[] = { 1, 2, 3, 4, 5, 6, 1610, 115, 116, 1629 };
+
+    for (int i = 0; i < sizeof(factions); i++)
+        if (faction == factions[i])
+            return true;
+
+    return false;
+}
+
+bool WardenWin::IsNotAllowedFaction(uint32 faction)
+{
+    static uint32 factions_n[] = { 0, 14 };
+
+    for (int i = 0; i < sizeof(factions_n); i++)
+        if (faction == factions_n[i])
+            return true;
+
+    return false;
+}
+
+bool WardenWin::IsNotTeamFaction(uint32 team, uint32 faction)
+{
+    static uint32 factions_h[] = { 2, 5, 6, 116, 1610 };
+    static uint32 factions_a[] = { 1, 3, 4, 117, 1629 };
+
+    if (team == ALLIANCE)
+    {
+        for (int i = 0; i < sizeof(factions_h); i++)
+            if (faction == factions_h[i])
+                return true;
+    }
+
+    if (team == HORDE)
+    {
+        for (int i = 0; i < sizeof(factions_a); i++)
+            if (faction == factions_a[i])
+                return true;
+    }
+
+    return false;
+}
+
+std::string WardenWin::ConvertPacketDataToString(const uint8 * packet_data, uint16 length)
+{
+    std::ostringstream ss;
+
+    // convert packet data to string
+    for (uint32 i = 0; i < length; i++)
+    {
+        if (int(packet_data[i]) < 16)
+            ss << std::uppercase << std::hex << "0" << int(packet_data[i]) << "";
+        else
+            ss << std::uppercase << std::hex << int(packet_data[i]) << "";
+    }
+
+    std::string data_str = ss.str();
+    return data_str;
+}
+
+bool WardenWin::HasAnticheatImmune()
+{
+    // get player
+    Player * plr = _session->GetPlayer();
+
+    if (!plr)
+        return true;
+
+    if (!plr->IsInWorld())
+        return true;
+
+    if (plr->IsBeingTeleported())
+        return true;
+
+    if (plr->m_taxi.GetCurrentTaxiPath())
+        return true;
+
+    if (plr->GetZoneId() == ZONE_DALARAN)
+        return true;
+
+    // temp immune anticheat checks for gunship battle
+    if (plr->GetMapId() == 631 && plr->GetTransport())
+        return true;
+
+    return false;
+}
+
+float WardenWin::GetServerSpeed(Unit * obj, UnitMoveType mtype)
+{
+    /*int32 main_speed_mod = 0;
+    float stack_bonus = 1.0f;
+    float non_stack_bonus = 1.0f;
+
+    switch (mtype)
+    {
+        // Only apply debuffs
+    case MOVE_FLIGHT_BACK:
+    case MOVE_RUN_BACK:
+    case MOVE_SWIM_BACK:
+        break;
+    case MOVE_WALK:
+        return 0.0f;
+    case MOVE_RUN:
+    {
+        if (obj->IsMounted()) // Use on mount auras
+        {
+            main_speed_mod = obj->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED);
+            stack_bonus = obj->GetTotalAuraMultiplier(SPELL_AURA_MOD_MOUNTED_SPEED_ALWAYS);
+            non_stack_bonus += obj->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_MOUNTED_SPEED_NOT_STACK) / 100.0f;
+        }
+        else
+        {
+            main_speed_mod = obj->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_INCREASE_SPEED);
+            stack_bonus = obj->GetTotalAuraMultiplier(SPELL_AURA_MOD_SPEED_ALWAYS);
+            non_stack_bonus += obj->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_SPEED_NOT_STACK) / 100.0f;
+        }
+        break;
+    }
+    case MOVE_SWIM:
+    {
+        main_speed_mod = obj->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_INCREASE_SWIM_SPEED);
+        break;
+    }
+    case MOVE_FLIGHT:
+    {
+        if (obj->GetTypeId() == TYPEID_UNIT && obj->IsControlledByPlayer()) // not sure if good for pet
+        {
+            main_speed_mod = obj->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED);
+            stack_bonus = obj->GetTotalAuraMultiplier(SPELL_AURA_MOD_VEHICLE_SPEED_ALWAYS);
+
+            // for some spells this mod is applied on vehicle owner
+            int32 owner_speed_mod = 0;
+
+            if (Unit* owner = obj->GetCharmer())
+                owner_speed_mod = owner->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED);
+
+            main_speed_mod = std::max(main_speed_mod, owner_speed_mod);
+        }
+        else if (obj->IsMounted())
+        {
+            main_speed_mod = obj->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
+            stack_bonus = obj->GetTotalAuraMultiplier(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS);
+        }
+        else             // Use not mount (shapeshift for example) auras (should stack)
+            main_speed_mod = obj->GetTotalAuraModifier(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED) + obj->GetTotalAuraModifier(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED);
+
+        non_stack_bonus += obj->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK) / 100.0f;
+
+        // Pursuit of Justice (increased flight speed on mounts)
+        if (AuraEffect * pj = obj->GetAuraEffect(SPELL_AURA_MOD_INCREASE_SPEED, SPELLFAMILY_GENERIC, 1797, 0))
+        {
+            float non_stack_bonus2 = 1.0f;
+            non_stack_bonus2 += pj->GetAmount() / 100.0f;
+
+            if (non_stack_bonus2 > non_stack_bonus)
+                non_stack_bonus = non_stack_bonus2;
+        }
+
+        break;
+    }
+    default:
+        sLog->outError("Unit::UpdateSpeed: Unsupported move type (%d)", mtype);
+        return 0.0f;
+    }
+
+    // now we ready for speed calculation
+    float speed = std::max(non_stack_bonus, stack_bonus);
+    if (main_speed_mod)
+        AddPctN(speed, main_speed_mod);
+
+    switch (mtype)
+    {
+    case MOVE_RUN:
+    case MOVE_SWIM:
+    case MOVE_FLIGHT:
+    {
+        // Set creature speed rate from CreatureInfo
+        if (obj->GetTypeId() == TYPEID_UNIT)
+            speed *= obj->ToCreature()->GetCreatureTemplate()->speed_run;    // at this point, MOVE_WALK is never reached
+
+        // Normalize speed by 191 aura SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED if need
+        // TODO: possible affect only on MOVE_RUN
+        if (int32 normalization = obj->GetMaxPositiveAuraModifier(SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED))
+        {
+            // Use speed from aura
+            float max_speed = normalization / (obj->IsControlledByPlayer() ? playerBaseMoveSpeed[mtype] : baseMoveSpeed[mtype]);
+            if (speed > max_speed)
+                speed = max_speed;
+        }
+        break;
+    }
+    default:
+        break;
+    }
+
+    // for creature case, we check explicit if mob searched for assistance
+    if (obj->GetTypeId() == TYPEID_UNIT)
+    {
+        if (obj->ToCreature()->HasSearchedAssistance())
+            speed *= 0.66f;                                 // best guessed value, so this will be 33% reduction. Based off initial speed, mob can then "run", "walk fast" or "walk".
+    }
+
+    // Apply strongest slow aura mod to speed
+    int32 slow = obj->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_DECREASE_SPEED);
+    if (slow)
+    {
+        AddPctN(speed, slow);
+        if (float minSpeedMod = (float)obj->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_MINIMUM_SPEED))
+        {
+            float min_speed = minSpeedMod / 100.0f;
+            if (speed < min_speed)
+                speed = min_speed;
+        }
+    }*/
+
+    return obj->GetSpeedRate(mtype)*(obj->IsControlledByPlayer() ? playerBaseMoveSpeed[mtype] : baseMoveSpeed[mtype]);
+}
+
+bool WardenWin::IsAllowFlyingOnVehicles(Unit * vb)
+{
+    if (vb->HasAuraType(SPELL_AURA_FLY) || vb->HasAuraType(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED) || vb->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED)
+        || vb->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED))
+        return true;
+
+    if (vb->GetTypeId() == TYPEID_UNIT)
+    {
+        if (vb->ToCreature() && vb->ToCreature()->CanFly())
+            return true;
+    }
+
+    return false;
+}
+
+bool WardenWin::IsAllowPlayerFlying(Player * plr)
+{
+    /*if (plr->HasAuraType(SPELL_AURA_FLY) || plr->HasAuraType(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED) || plr->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED)
+        || plr->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED))
+        return true;
+
+    if (plr->IsAllowFlying())
+        return true;*/
+
+    return false;
+}
+
+void WardenWin::DecreaseAlertCount(WorldIntConfigs index, int8 &count, bool activate)
+{
+    // decrease alert if not activated
+    if (!activate)
+    {
+        count--;
+
+        if (count < 0 || count > int8(sWorld->getIntConfig(index)))
+            count = 0;
+    }
+}
+
+template<class T>
+bool WardenWin::ReadMemChunk(ByteBuffer &buff, T &data)
+{
+    uint8 mem_result;
+    buff >> mem_result;
+
+    if (mem_result != 0x00)
+    {
+        buff.rpos(buff.wpos());
+        // nulled
+        ClearAddresses();
+        // restart timer
+        //_dynamicCheckTimer = 1000;
+        _dynDataSent = false;
+        return false;
+    }
+
+    buff >> data;
+
+    return true;
+}
+
+PlayerState WardenWin::GetPlayerState(Player * plr)
+{
+    /*uint16 st = PLAYER_NOT_FOUND;
+    if (!plr)
+        return PlayerState(st);
+
+    if (plr->GetTransport() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
+        st |= PLAYER_ON_TRANSPORT;
+
+    if (plr->IsFalling() && plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR))
+        st |= PLAYER_FALLING;
+
+    return PlayerState(st);*/
+}
+
+template<class T>
+bool WardenWin::CheckCorrectBoundValues(T val)
+{
+    // checked strange values of speed, player kicked
+    if (val >= 10000)
+        return false;
+    else
+        return true;
+}
+
+bool WardenWin::CheckCorrectBoundValues(float val)
+{
+    // checked strange values of speed, player kicked
+    if (val >= 10000.0f)
+        return false;
+    else
+    {
+        uint8 count = 0;
+        float f = val;
+        if (ceil(f) != f) do count++; while (((f *= 10) - (int)f) != 0);
+
+        if (count <= 3)
+            return true;
+        else
+            return false;
+    }
+}
+
+std::string WardenWin::GetSignature(uint8 * moduleId, WardenTypeCheck wtc)
+{
+    std::string Id = ConvertPacketDataToString(moduleId, 16);
+
+    if (!strcmp("79C0768D657977D697E10BAD956CCED1", Id.c_str()))
+    {
+        if (wtc == STATIC_CHECK)
+            return "686561646572";
+        else
+            return "53595354454D";
+    }
+
+    return "";
 }

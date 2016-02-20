@@ -489,7 +489,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     }
 
     if (m_Socket && !m_Socket->IsClosed() && _warden)
-        _warden->Update();
+        _warden->Update(diff);
 
     ProcessQueryCallbacks();
 

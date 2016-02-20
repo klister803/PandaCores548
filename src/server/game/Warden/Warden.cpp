@@ -30,7 +30,8 @@
 #include "Warden.h"
 #include "AccountMgr.h"
 
-Warden::Warden() : _inputCrypto(16), _outputCrypto(16), _checkTimer(10000/*10 sec*/), _clientResponseTimer(0), _dataSent(false), _initialized(false)
+Warden::Warden() : _inputCrypto(16), _outputCrypto(16), _checkTimer(10000), _dynamicCheckTimer(5000), isDebuggerPresentFunc(0),
+m_speedAlert(0), m_speedExtAlert(0), m_moveFlagsAlert(0), m_failedCoordsAlert(0), _dataSent(false), _dynDataSent(false), _initialized(false), _recall(false), pendingBan(false)
 {
 }
 
@@ -90,38 +91,55 @@ void Warden::RequestModule()
     _session->SendPacket(&pkt);
 }
 
-void Warden::Update()
+void Warden::Update(uint32 diff)
 {
     if (_initialized)
     {
-        uint32 currentTimestamp = getMSTime();
-        uint32 diff = currentTimestamp - _previousTimestamp;
-        _previousTimestamp = currentTimestamp;
-
-        if (_dataSent)
+        // static checks - first thread of checks
+        // not nessesary player in world
+        if (!_dataSent)
         {
-            uint32 maxClientResponseDelay = sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_RESPONSE_DELAY);
-
-            /*if (maxClientResponseDelay > 0)
+            if (_checkTimer <= diff)
             {
-                // Kick player if client response delays more than set in config
-                if (_clientResponseTimer > maxClientResponseDelay * IN_MILLISECONDS)
-                {
-                    sLog->outWarn(LOG_FILTER_WARDEN, "%s (latency: %u, IP: %s) exceeded Warden module response delay for more than %s - disconnecting client",
-                                   _session->GetPlayerName(false).c_str(), _session->GetLatency(), _session->GetRemoteAddress().c_str(), secsToTimeString(maxClientResponseDelay, true).c_str());
-                    _session->KickPlayer();
-                }
-                else
-                    _clientResponseTimer += diff;
-            }*/
-        }
-        else
-        {
-            if (diff >= _checkTimer)
-                RequestData();
+                RequestStaticData();
+                //sLog->outError("Packet of static checks sended to client");
+                _checkTimer = sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF);
+            }
             else
                 _checkTimer -= diff;
         }
+        else
+        {
+            //uint32 maxClientResponseDelay = sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_RESPONSE_DELAY);
+
+            /*if (maxClientResponseDelay > 0)
+            {
+            // Kick player if client response delays more than set in config
+            if (_clientResponseTimer > maxClientResponseDelay * IN_MILLISECONDS)
+            {
+            sLog->outWarn(LOG_FILTER_WARDEN, "%s (latency: %u, IP: %s) exceeded Warden module response delay for more than %s - disconnecting client",
+            _session->GetPlayerName(false).c_str(), _session->GetLatency(), _session->GetRemoteAddress().c_str(), secsToTimeString(maxClientResponseDelay, true).c_str());
+            _session->KickPlayer();
+            }
+            else
+            _clientResponseTimer += diff;
+            }*/
+        }
+
+        // dynamic checks - second thread of checks
+        // requires player in world
+        if (!_dynDataSent)
+        {
+            Player * plr = _session->GetPlayer();
+            if (plr && plr->IsInWorld() /*&& !plr->IsBlocked()*/ && !plr->IsBeingTeleported())
+                RequestDynamicData();
+        }
+
+        /*if (!_recall && isDebuggerPresentFunc)
+        {
+            InitializeModule(true);
+            _recall = true;
+        }*/
     }
 }
 
@@ -269,7 +287,7 @@ void WorldSession::HandleWardenDataOpcode(WorldPacket& recvData)
             break;
         case WARDEN_CMSG_HASH_RESULT:
             _warden->HandleHashResult(recvData);
-            _warden->InitializeModule();
+            _warden->InitializeModule(false);
             //_warden->TestSendMemCheck();
             break;
         case WARDEN_CMSG_MODULE_FAILED:

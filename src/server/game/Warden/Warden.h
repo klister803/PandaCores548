@@ -113,15 +113,20 @@ class Warden
 
         virtual void Init(WorldSession* session, BigNumber* k) = 0;
         virtual ClientWardenModule* GetModuleForClient() = 0;
-        virtual void InitializeModule() = 0;
+        virtual void InitializeModule(bool recall) = 0;
         virtual void RequestHash() = 0;
         virtual void HandleHashResult(ByteBuffer &buff) = 0;
-        virtual void RequestData() = 0;
+
+        virtual void RequestStaticData() = 0;
+        virtual void RequestDynamicData() = 0;
+
         virtual void HandleData(ByteBuffer &buff) = 0;
+        virtual void HandleStaticData(ByteBuffer &buff) = 0;
+        virtual void HandleDynamicData(ByteBuffer &buff) = 0;
 
         void SendModuleToClient();
         void RequestModule();
-        void Update();
+        void Update(uint32 diff);
         void DecryptData(uint8* buffer, uint32 length);
         void EncryptData(uint8* buffer, uint32 length);
 
@@ -130,6 +135,13 @@ class Warden
 
         // If no check is passed, the default action from config is executed
         std::string Penalty(WardenCheck* check = NULL);
+
+        void ClearAlerts();
+        void ClearAddresses();
+
+        // pending ban for intercept auth packet
+        void SetPendingBan(bool apply) { pendingBan = apply; }
+        bool IsPendingBan() { return pendingBan; }
 
         void TestSendMemCheck();
 
@@ -141,11 +153,27 @@ class Warden
         ARC4 _inputCrypto;
         ARC4 _outputCrypto;
         uint32 _checkTimer;                          // Timer for sending check requests
+        uint32 _dynamicCheckTimer;
         uint32 _clientResponseTimer;                 // Timer for client response delay
         bool _dataSent;
+        bool _dynDataSent;
+        time_t _requestSent;                         // DEBUG CODE
         uint32 _previousTimestamp;
         ClientWardenModule* _module;
         bool _initialized;
+        bool _recall;
+        bool pendingBan;
+
+        uint32 playerBase;
+        uint32 offset;
+        uint32 playerMovementBase;
+
+        uint32 isDebuggerPresentFunc;
+
+        int8 m_speedAlert;
+        int8 m_speedExtAlert;
+        int8 m_moveFlagsAlert;
+        int8 m_failedCoordsAlert;
 };
 
 #endif
