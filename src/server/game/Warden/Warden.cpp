@@ -269,7 +269,7 @@ void WorldSession::HandleWardenDataOpcode(WorldPacket& recvData)
             break;
         case WARDEN_CMSG_HASH_RESULT:
             _warden->HandleHashResult(recvData);
-            //_warden->InitializeModule();
+            _warden->InitializeModule();
             //_warden->TestSendMemCheck();
             break;
         case WARDEN_CMSG_MODULE_FAILED:

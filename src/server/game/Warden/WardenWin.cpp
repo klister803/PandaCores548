@@ -108,10 +108,10 @@ void WardenWin::InitializeModule()
     Request.Unk2 = 0;
     Request.Type = 1;
     Request.String_library1 = 0;
-    Request.Function1[0] = 0x00024F80;                      // 0x00400000 + 0x00024F80 SFileOpenFile
-    Request.Function1[1] = 0x000218C0;                      // 0x00400000 + 0x000218C0 SFileGetFileSize
-    Request.Function1[2] = 0x00022530;                      // 0x00400000 + 0x00022530 SFileReadFile
-    Request.Function1[3] = 0x00022910;                      // 0x00400000 + 0x00022910 SFileCloseFile
+    Request.Function1[0] = 0x0001466C;                      // SFileOpenFile
+    Request.Function1[1] = 0x00012048;                      // SFileGetFileSize
+    Request.Function1[2] = 0x00012EF4;                      // SFileReadFile
+    Request.Function1[3] = 0x000137A8;                      // SFileCloseFile
     Request.CheckSumm1 = BuildChecksum(&Request.Unk1, 20);
 
     Request.Command2 = WARDEN_SMSG_MODULE_INITIALIZE;
@@ -119,7 +119,7 @@ void WardenWin::InitializeModule()
     Request.Unk3 = 4;
     Request.Unk4 = 0;
     Request.String_library2 = 0;
-    Request.Function2 = 0x00419D40;                         // 0x00400000 + 0x00419D40 FrameScript::GetText
+    Request.Function2 = 0x00050AC1;                         // FrameScript::GetText
     Request.Function2_set = 1;
     Request.CheckSumm2 = BuildChecksum(&Request.Unk2, 8);
 
@@ -128,7 +128,7 @@ void WardenWin::InitializeModule()
     Request.Unk5 = 1;
     Request.Unk6 = 1;
     Request.String_library3 = 0;
-    Request.Function3 = 0x0046AE20;                         // 0x00400000 + 0x0046AE20 PerformanceCounter
+    Request.Function3 = 0x0010D627;                         // PerformanceCounter
     Request.Function3_set = 1;
     Request.CheckSumm3 = BuildChecksum(&Request.Unk5, 8);
 
@@ -136,6 +136,7 @@ void WardenWin::InitializeModule()
     EncryptData((uint8*)&Request, sizeof(WardenInitModuleRequest));
 
     WorldPacket pkt(SMSG_WARDEN_DATA, sizeof(WardenInitModuleRequest));
+    pkt << uint32(sizeof(WardenInitModuleRequest));
     pkt.append((uint8*)&Request, sizeof(WardenInitModuleRequest));
     _session->SendPacket(&pkt);
 }
