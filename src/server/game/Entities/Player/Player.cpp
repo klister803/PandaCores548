@@ -84,58 +84,6 @@
 #include "AuctionHouseMgr.h"
 #include "ScenarioMgr.h"
 
-#define ZONE_UPDATE_INTERVAL (1*IN_MILLISECONDS)
-
-enum CharacterFlags
-{
-    CHARACTER_FLAG_NONE                 = 0x00000000,
-    CHARACTER_FLAG_UNK1                 = 0x00000001,
-    CHARACTER_FLAG_UNK2                 = 0x00000002,
-    CHARACTER_LOCKED_FOR_TRANSFER       = 0x00000004,   // You cannot log in until the character update process you recently initiated is complete.
-    CHARACTER_FLAG_UNK4                 = 0x00000008,
-    CHARACTER_FLAG_UNK5                 = 0x00000010,
-    CHARACTER_FLAG_UNK6                 = 0x00000020,
-    CHARACTER_FLAG_UNK7                 = 0x00000040,
-    CHARACTER_FLAG_UNK8                 = 0x00000080,
-    CHARACTER_FLAG_UNK9                 = 0x00000100,
-    CHARACTER_FLAG_UNK10                = 0x00000200,
-    CHARACTER_FLAG_HIDE_HELM            = 0x00000400,
-    CHARACTER_FLAG_HIDE_CLOAK           = 0x00000800,
-    CHARACTER_FLAG_UNK13                = 0x00001000,
-    CHARACTER_FLAG_GHOST                = 0x00002000,
-    CHARACTER_FLAG_RENAME               = 0x00004000,
-    CHARACTER_FLAG_UNK16                = 0x00008000,
-    CHARACTER_FLAG_UNK17                = 0x00010000,
-    CHARACTER_FLAG_UNK18                = 0x00020000,
-    CHARACTER_FLAG_UNK19                = 0x00040000,
-    CHARACTER_FLAG_UNK20                = 0x00080000,
-    CHARACTER_FLAG_UNK21                = 0x00100000,
-    CHARACTER_FLAG_UNK22                = 0x00200000,
-    CHARACTER_FLAG_UNK23                = 0x00400000,
-    CHARACTER_FLAG_UNK24                = 0x00800000,
-    CHARACTER_FLAG_LOCKED_BY_BILLING    = 0x01000000,   // <html><body><p align=\"CENTER\">Character Locked.\nSee <a href=\"https://www.battle.net/support/article/6592\">https://www.battle.net/support/article/6592</a> for more information.</p></body></html>
-    CHARACTER_FLAG_DECLINED             = 0x02000000,
-    CHARACTER_FLAG_UNK27                = 0x04000000,
-    CHARACTER_FLAG_UNK28                = 0x08000000,
-    CHARACTER_FLAG_UNK29                = 0x10000000,
-    CHARACTER_FLAG_UNK30                = 0x20000000,
-    CHARACTER_FLAG_UNK31                = 0x40000000,
-    CHARACTER_FLAG_UNK32                = 0x80000000
-};
-
-enum CharacterCustomizeFlags
-{
-    CHAR_CUSTOMIZE_FLAG_NONE                    = 0x00000000,
-    CHAR_CUSTOMIZE_FLAG_CUSTOMIZE               = 0x00000001,       // name, gender, etc...
-    CHAR_CUSTOMIZE_FLAG_2                       = 0x00000002,
-    CHAR_CUSTOMIZE_FLAG_24                      = 0x00008000,
-    CHAR_CUSTOMIZE_FLAG_FACTION                 = 0x00010000,       // name, gender, faction, etc...
-    CHAR_CUSTOMIZE_FLAG_RACE                    = 0x00100000,       // name, gender, race, etc...
-    CHAR_CUSTOMIZE_FLAG_RACE_CHANGE_DISABLED    = 0x10000000,       // Paid Race Change is currently disabled for this character.|nThis is due to not finishing the quests in this character's starting area.
-};
-
-static uint32 copseReclaimDelay[MAX_DEATH_COUNT] = { 30, 60, 120 };
-
 // == PlayerTaxi ================================================
 
 PlayerTaxi::PlayerTaxi()
@@ -1080,6 +1028,14 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
         m_items[i] = NULL;
 
     Relocate(info->positionX, info->positionY, info->positionZ, info->orientation);
+    WorldLocation loc;
+    loc.m_mapId       = info->mapId;
+    loc.m_positionX   = info->positionX;
+    loc.m_positionY   = info->positionY;
+    loc.m_positionZ   = info->positionZ;
+    loc.SetOrientation(info->orientation);
+
+    SetHomebind(loc, 0);
 
     ChrClassesEntry const* cEntry = sChrClassesStore.LookupEntry(createInfo->Class);
     if (!cEntry)
@@ -2284,7 +2240,7 @@ bool Player::BuildEnumData(PreparedQueryResult result, ByteBuffer* dataBuffer, B
     uint32 playerFlags = fields[14].GetUInt32();
     uint32 atLoginFlags = fields[15].GetUInt16();
     Tokenizer equipment(fields[19].GetString(), ' ');
-    uint8 slot = fields[21].GetUInt8();
+    uint8 slotList = fields[21].GetUInt8();
 
     uint32 charFlags = CHARACTER_FLAG_UNK29 | CHARACTER_FLAG_UNK24 | CHARACTER_FLAG_UNK22;
     if (playerFlags & PLAYER_FLAGS_HIDE_HELM)
@@ -2393,7 +2349,7 @@ bool Player::BuildEnumData(PreparedQueryResult result, ByteBuffer* dataBuffer, B
     *dataBuffer << uint8(face);                                 // Face
     dataBuffer->WriteGuidBytes<0>(guildGuid);
 
-    *dataBuffer << uint8(slot);                                 // List order
+    *dataBuffer << uint8(slotList);                             // List order
     *dataBuffer << uint32(zone);                                // Zone id
 
     dataBuffer->WriteGuidBytes<7>(guildGuid);

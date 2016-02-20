@@ -279,6 +279,7 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
             sLog->outInfo(LOG_FILTER_NETWORKIO, "Loading char guid %u from account %u.", guidLow, GetAccountId());
 
             Player::BuildEnumData(result, &dataBuffer, &bitBuffer);
+            SaveEnumData(result);
 
             _allowedCharsToLogin.insert(guidLow);
         } while (result->NextRow());
@@ -308,19 +309,10 @@ void WorldSession::HandleCharEnumOpcode(WorldPacket & recvData)
     else
         timeCharEnumOpcode = now;
 
-    // remove expired bans
-    PreparedStatement* stmt = NULL;
-
-    /// get all the data necessary for loading all characters (along with their pets) on the account
-
-    if (sWorld->getBoolConfig(CONFIG_DECLINED_NAMES_USED))
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_ENUM_DECLINED_NAME);
-    else
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_ENUM);
-
-    stmt->setUInt32(0, GetAccountId());
-
-    _charEnumCallback = CharacterDatabase.AsyncQuery(stmt);
+    RedisDatabase.AsyncExecuteH("HGET", GetAccountKey(), "enumdata", _accountId, [&](const RedisValue &v, uint64 accountId) {
+        if (WorldSession* sess = sWorld->FindSession(accountId))
+            sess->LoadEnumData(&v, accountId);
+    });
 }
 
 void WorldSession::HandleCharCreateOpcode(WorldPacket & recvData)
@@ -450,12 +442,22 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recvData)
     }
 
     delete _charCreateCallback.GetParam();  // Delete existing if any, to make the callback chain reset to stage 0
+
+    if (const CharacterNameData* nameData = sWorld->GetCharacterNameData(name))
+    {
+        WorldPacket data(SMSG_CHAR_CREATE, 1);
+        data << uint8(CHAR_CREATE_NAME_IN_USE);
+        SendPacket(&data);
+        _charCreateCallback.Reset();
+        return;
+    }
     _charCreateCallback.SetParam(new CharacterCreateInfo(name, race_, class_, gender, skin, face, hairStyle, hairColor, facialHair, outfitId, recvData));
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHECK_NAME);
-    stmt->setString(0, name);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_SUM_CHARS);
+    stmt->setUInt32(0, GetAccountId());
+
+    _charCreateCallback.FreeResult();
     _charCreateCallback.SetFutureResult(CharacterDatabase.AsyncQuery(stmt));
 }
-
 
 void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, CharacterCreateInfo* createInfo)
 {
@@ -466,61 +468,6 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
     switch (_charCreateCallback.GetStage())
     {
         case 0:
-        {
-            if (result)
-            {
-                WorldPacket data(SMSG_CHAR_CREATE, 1);
-                data << uint8(CHAR_CREATE_NAME_IN_USE);
-                SendPacket(&data);
-                delete createInfo;
-                _charCreateCallback.Reset();
-                return;
-            }
-
-            ASSERT(_charCreateCallback.GetParam() == createInfo);
-
-            PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_SUM_REALM_CHARACTERS);
-            stmt->setUInt32(0, GetAccountId());
-
-            _charCreateCallback.FreeResult();
-            _charCreateCallback.SetFutureResult(LoginDatabase.AsyncQuery(stmt));
-            _charCreateCallback.NextStage();
-        }
-        break;
-        case 1:
-        {
-            uint16 acctCharCount = 0;
-            if (result)
-            {
-                Field* fields = result->Fetch();
-                // SELECT SUM(x) is MYSQL_TYPE_NEWDECIMAL - needs to be read as string
-                const char* ch = fields[0].GetCString();
-                if (ch)
-                    acctCharCount = atoi(ch);
-            }
-
-            if (acctCharCount >= sWorld->getIntConfig(CONFIG_CHARACTERS_PER_ACCOUNT))
-            {
-                WorldPacket data(SMSG_CHAR_CREATE, 1);
-                data << uint8(CHAR_CREATE_ACCOUNT_LIMIT);
-                SendPacket(&data);
-                delete createInfo;
-                _charCreateCallback.Reset();
-                return;
-            }
-
-
-            ASSERT(_charCreateCallback.GetParam() == createInfo);
-
-            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_SUM_CHARS);
-            stmt->setUInt32(0, GetAccountId());
-
-            _charCreateCallback.FreeResult();
-            _charCreateCallback.SetFutureResult(CharacterDatabase.AsyncQuery(stmt));
-            _charCreateCallback.NextStage();
-        }
-        break;
-        case 2:
         {
             if (result)
             {
@@ -557,7 +504,7 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
             HandleCharCreateCallback(PreparedQueryResult(NULL), createInfo);   // Will jump to case 3
         }
         break;
-        case 3:
+        case 1:
         {
             bool haveSameRace = false;
             uint32 heroicReqLevel = sWorld->getIntConfig(CONFIG_CHARACTER_CREATING_MIN_LEVEL_FOR_HEROIC_CHARACTER);
@@ -712,6 +659,8 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
             // Player created, save it now
             newChar.SaveToDB(true);
             newChar.InitSavePlayer();
+            UpdateEnumData(&newChar);
+
             createInfo->CharCount += 1;
 
             SQLTransaction trans = LoginDatabase.BeginTransaction();
@@ -798,6 +747,7 @@ void WorldSession::HandleCharDeleteOpcode(WorldPacket & recvData)
     Player::DeleteFromDB(guid, GetAccountId());
     Player::DeleteFromRedis(guid, GetAccountId());
     sWorld->DeleteCharName(name);
+    DeleteEnumData(GUID_LOPART(guid));
 
     WorldPacket data(SMSG_CHAR_DELETE, 1);
     data << uint8(CHAR_DELETE_SUCCESS);
@@ -2478,21 +2428,16 @@ void WorldSession::HandleReorderCharacters(WorldPacket& recvData)
     for (uint8 i = 0; i < charactersCount; ++i)
         recvData.ReadGuidMask<6, 2, 7, 0, 4, 3, 5, 1>(guids[i]);
 
-    SQLTransaction trans = CharacterDatabase.BeginTransaction();
     for (uint8 i = 0; i < charactersCount; ++i)
     {
         recvData.ReadGuidBytes<0>(guids[i]);
         recvData >> position;
         recvData.ReadGuidBytes<6, 4, 7, 1, 5, 3, 2>(guids[i]);
 
-        //! WARNING!!!
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_LIST_SLOT);
-        stmt->setUInt8(0, position);
-        stmt->setUInt32(1, GUID_LOPART(guids[i]));
-        trans->Append(stmt);
+        std::string index = std::to_string(GUID_LOPART(guids[i]));
+        EnumData[index.c_str()]["slot"] = position;
     }
-
-    CharacterDatabase.CommitTransaction(trans);
+    SaveEnum();
 }
 
 void WorldSession::HandleSaveCUFProfiles(WorldPacket& recvData)

@@ -640,6 +640,9 @@ void WorldSession::LogoutPlayer(bool Save)
         if (Guild* guild = _player->GetGuild())
             guild->HandleMemberLogout(this);
 
+        //Save Enum Data for login
+        UpdateEnumData(_player);
+
         ///- Remove pet
         if (_player->getClass() != CLASS_WARLOCK)
             _player->RemovePet(NULL);

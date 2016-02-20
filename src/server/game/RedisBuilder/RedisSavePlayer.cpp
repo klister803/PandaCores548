@@ -1159,9 +1159,9 @@ void Player::SaveCriteria()
 
 void Player::SavePlayerPets()
 {
-    if (isBeingLoaded())
+    if (isBeingLoaded() || !PlayerPetsJson.empty())
         return;
-    PlayerPetsJson.clear();
+
     QueryResult result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = '%u'", GetGUIDLow());
     if (result)
     {

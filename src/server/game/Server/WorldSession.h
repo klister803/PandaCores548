@@ -445,6 +445,13 @@ class WorldSession
         void HandleReorderCharacters(WorldPacket& recvData);
         void HandlePlayerLogin(uint32 accountId, uint64 playerGuid, uint8 step = 0);
 
+        //Redis
+        void SaveEnumData(PreparedQueryResult result);
+        void SaveEnum();
+        void LoadEnumData(const RedisValue* v, uint64 accountId);
+        void UpdateEnumData(Player* player);
+        void DeleteEnumData(uint32 guid);
+
         // played time
         void HandlePlayedTime(WorldPacket& recvPacket);
 
@@ -1131,6 +1138,7 @@ class WorldSession
         z_stream_s* _compressionStream;
 
         char* accountKey;
+        Json::Value EnumData;
 };
 
 class PacketSendEvent : public BasicEvent
