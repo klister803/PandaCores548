@@ -512,7 +512,7 @@ void Player::LoadPlayer(const RedisValue* v, uint64 playerGuid)
 {
     uint32 guid = GUID_LOPART(playerGuid);
 
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayer data is empty");
         GetSession()->HandlePlayerLogin(GetSession()->GetAccountId(), playerGuid, 2);
@@ -658,7 +658,7 @@ void Player::LoadPlayerNext(uint64 playerGuid)
 
 void Player::LoadPlayerGroup(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerGroupJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerGroupJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerGroup data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_LOOTCOOLDOWN); //Next step load
@@ -682,7 +682,7 @@ void Player::LoadPlayerGroup(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerLootCooldown(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerLootCooldownJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerLootCooldownJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerLootCooldown data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_CURRENCY); //Next step load
@@ -710,7 +710,7 @@ void Player::LoadPlayerLootCooldown(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerCurrency(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerCurrencyJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerCurrencyJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerCurrency data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_BOUNDINSTANCES); //Next step load
@@ -745,7 +745,7 @@ void Player::LoadPlayerCurrency(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerBoundInstances(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerBoundInstancesJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerBoundInstancesJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerBoundInstances data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_BGDATA); //Next step load
@@ -814,7 +814,7 @@ void Player::LoadPlayerBoundInstances(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerBG(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerBGJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerBGJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerBG data is empty");
         InitSecondPartDataPlayer(); //Next step load
@@ -1149,7 +1149,7 @@ void Player::InitSecondPartDataPlayer()
 
 void Player::LoadPlayerBattlePets(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, AccountBattlePetsJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, AccountBattlePetsJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerBattlePets data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_BATTLEPETSLOTS); //Next step load
@@ -1211,7 +1211,7 @@ void Player::LoadPlayerBattlePets(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerBattlePetSlots(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, AccountBattlePetSlotsJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, AccountBattlePetSlotsJson))
     {
         for (int i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
             GetBattlePetMgr()->InitBattleSlot(0, i);
@@ -1231,7 +1231,7 @@ void Player::LoadPlayerBattlePetSlots(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerSkills(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerSkillsJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerSkillsJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerSkills data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_ARCHAEOLOGY); //Next step load
@@ -1360,7 +1360,7 @@ void Player::LoadPlayerArchaeology(const RedisValue* v, uint64 playerGuid)
         return;
     }
 
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerArchaeologyJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerArchaeologyJson))
     {
         GenerateResearchSites();
         GenerateResearchProjects();
@@ -1425,7 +1425,7 @@ void Player::LoadPlayerArchaeology(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerTalents(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerTalentsJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerTalentsJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerTalents data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_SPELLS); //Next step load
@@ -1457,7 +1457,7 @@ void Player::LoadPlayerTalents(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerSpells(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerSpellsJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerSpellsJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerSpells data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_MOUNTS); //Next step load
@@ -1479,7 +1479,7 @@ void Player::LoadPlayerSpells(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerMounts(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerMountsJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerMountsJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerMounts data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_GLYPHS); //Next step load
@@ -1499,7 +1499,7 @@ void Player::LoadPlayerMounts(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerGlyphs(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerGlyphsJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerGlyphsJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerGlyphs data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_AURAS); //Next step load
@@ -1523,7 +1523,7 @@ void Player::LoadPlayerGlyphs(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerAuras(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerAurasJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerAurasJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerAuras data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTSTATUS); //Next step load
@@ -1627,7 +1627,7 @@ void Player::LoadPlayerAuras(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerQuestStatus(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerQuestStatusJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerQuestStatusJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerQuestStatus data is empty");
         LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTSTATUS); //Next step load
@@ -1730,7 +1730,7 @@ void Player::LoadPlayerQuestStatus(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadAccountQuestStatus(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, AccountQuestStatusJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, AccountQuestStatusJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountQuestStatus data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTREWARDED); //Next step load
@@ -1833,7 +1833,7 @@ void Player::LoadAccountQuestStatus(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerQuestRewarded(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerQuestRewardedJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerQuestRewardedJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerQuestRewarded data is empty");
         LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTREWARDED); //Next step load
@@ -1872,7 +1872,7 @@ void Player::LoadPlayerQuestRewarded(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadAccountQuestRewarded(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, AccountQuestRewardedJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, AccountQuestRewardedJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountQuestRewarded data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTDAILY); //Next step load
@@ -1911,7 +1911,7 @@ void Player::LoadAccountQuestRewarded(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerQuestDaily(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerQuestDailyJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerQuestDailyJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerQuestDaily data is empty");
         LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTDAILY); //Next step load
@@ -1943,7 +1943,7 @@ void Player::LoadPlayerQuestDaily(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadAccountQuestDaily(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, AccountQuestDailyJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, AccountQuestDailyJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountQuestDaily data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTWEEKLY); //Next step load
@@ -1974,7 +1974,7 @@ void Player::LoadAccountQuestDaily(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerQuestWeekly(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerQuestWeeklyJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerQuestWeeklyJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerQuestWeekly data is empty");
         LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTWEEKLY); //Next step load
@@ -2000,7 +2000,7 @@ void Player::LoadPlayerQuestWeekly(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadAccountQuestWeekly(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, AccountQuestWeeklyJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, AccountQuestWeeklyJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountQuestWeekly data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTSEASONAL); //Next step load
@@ -2028,7 +2028,7 @@ void Player::LoadAccountQuestWeekly(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerQuestSeasonal(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerQuestSeasonalJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerQuestSeasonalJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerQuestSeasonal data is empty");
         LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTSEASONAL); //Next step load
@@ -2057,7 +2057,7 @@ void Player::LoadPlayerQuestSeasonal(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadAccountQuestSeasonal(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, AccountQuestSeasonalJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, AccountQuestSeasonalJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountQuestSeasonal data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_REPUTATION); //Next step load
@@ -2089,7 +2089,7 @@ void ReputationMgr::LoadFromDB(const RedisValue* v, uint64 playerGuid)
     // Set initial reputations (so everything is nifty before DB data load)
     Initialize();
 
-    if (!sRedisBuilder->LoadFromRedis(v, _player->PlayerReputationJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, _player->PlayerReputationJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "ReputationMgr::LoadFromDB data is empty");
         _player->LoadFromRedis(playerGuid, LOAD_PLAYER_ITEMS); //Next step load
@@ -2155,7 +2155,7 @@ void ReputationMgr::LoadFromDB(const RedisValue* v, uint64 playerGuid)
 void Player::LoadPlayerLoadItems(const RedisValue* v, uint64 playerGuid)
 {
     std::vector<RedisValue> itemVector;
-    if (!sRedisBuilder->LoadFromRedisArray(v, itemVector))
+    if (!sRedisBuilderMgr->LoadFromRedisArray(v, itemVector))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerLoadItems data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_VOIDSTORAGE); //Next step load
@@ -2181,7 +2181,7 @@ void Player::LoadPlayerLoadItems(const RedisValue* v, uint64 playerGuid)
         ++itr;
 
         Json::Value loadItemJson;
-        if (!sRedisBuilder->LoadFromRedis(&(*itr), loadItemJson))
+        if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), loadItemJson))
         {
             ++itr;
             sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerLoadItems not parse itemId %i", itemId);
@@ -2462,7 +2462,7 @@ Item* Player::_LoadItem(uint32 zoneId, uint32 timeDiff, Json::Value& itemValue)
 
 void Player::LoadPlayerVoidStorage(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerVoidStorageJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerVoidStorageJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerVoidStorage data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_ACTIONS); //Next step load
@@ -2521,7 +2521,7 @@ void Player::LoadPlayerVoidStorage(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerActions(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerActionsJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerActionsJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerActions data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_SOCIAL); //Next step load
@@ -2558,7 +2558,7 @@ PlayerSocial* SocialMgr::LoadFromDB(const RedisValue* v, Player* player)
     PlayerSocial *social = &m_socialMap[player->GetGUIDLow()];
     social->SetPlayerGUID(player->GetGUIDLow());
 
-    if (!sRedisBuilder->LoadFromRedis(v, player->PlayerSocialJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, player->PlayerSocialJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "SocialMgr::LoadFromDB data is empty");
         return social;
@@ -2587,7 +2587,7 @@ PlayerSocial* SocialMgr::LoadFromDB(const RedisValue* v, Player* player)
 
 void Player::LoadPlayerSpellCooldowns(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerSpellCooldownsJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerSpellCooldownsJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerSpellCooldowns data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_KILLS); //Next step load
@@ -2621,7 +2621,7 @@ void Player::LoadPlayerSpellCooldowns(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerKills(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerSpellCooldownsJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerSpellCooldownsJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerKills data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_INIT_THIRD); //Next step load
@@ -2818,7 +2818,7 @@ void Player::InitThirdPartDataPlayer()
 
 void Player::LoadPlayerDeclinedName(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerDeclinedNameJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerDeclinedNameJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerDeclinedName data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_EQUIPMENTSETS); //Next step load
@@ -2839,7 +2839,7 @@ void Player::LoadPlayerDeclinedName(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerEquipmentSets(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerEquipmentSetsJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerEquipmentSetsJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerEquipmentSets data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_CUFPROFILES); //Next step load
@@ -2893,7 +2893,7 @@ void Player::LoadPlayerEquipmentSets(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerCUFProfiles(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerCUFProfilesJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerCUFProfilesJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerCUFProfiles data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_VISUALS); //Next step load
@@ -2933,7 +2933,7 @@ void Player::LoadPlayerCUFProfiles(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerVisuals(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerVisualsJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerVisualsJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerVisuals data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_PLAYERACCOUNTDATA); //Next step load
@@ -2963,7 +2963,7 @@ void Player::LoadPlayerVisuals(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerAccountData(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerAccountDataJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerAccountDataJson))
     {
         for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
             if (PER_CHARACTER_CACHE_MASK & (1 << i))
@@ -2992,7 +2992,7 @@ void Player::LoadPlayerAccountData(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerHomeBind(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerHomeBindJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerHomeBindJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerHomeBind data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_DATA); //Next step load
@@ -3010,7 +3010,7 @@ void Player::LoadPlayerHomeBind(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadAccountAchievements(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, AccountAchievementJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, AccountAchievementJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountAchievements data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_ACHIEVEMENT); //Next step load
@@ -3033,7 +3033,7 @@ void Player::LoadAccountAchievements(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerAchievements(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerAchievementJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerAchievementJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerAchievements data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_CRITERIA); //Next step load
@@ -3055,7 +3055,7 @@ void Player::LoadPlayerAchievements(const RedisValue* v, uint64 playerGuid)
 void Player::LoadPlayerCriteriaProgress(const RedisValue* v, uint64 playerGuid)
 {
     std::vector<RedisValue> progressVector;
-    if (!sRedisBuilder->LoadFromRedisArray(v, progressVector))
+    if (!sRedisBuilderMgr->LoadFromRedisArray(v, progressVector))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerCriteriaProgress data is empty");
         LoadFromRedis(playerGuid, LOAD_ACCOUNT_CRITERIA); //Next step load
@@ -3073,7 +3073,7 @@ void Player::LoadPlayerCriteriaProgress(const RedisValue* v, uint64 playerGuid)
         }
 
         Json::Value CriteriaPl;
-        if (!sRedisBuilder->LoadFromRedis(&(*itr), CriteriaPl))
+        if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), CriteriaPl))
         {
             ++itr;
             sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerCriteriaProgress not parse achievementID %i", achievementID);
@@ -3105,7 +3105,7 @@ void Player::LoadPlayerCriteriaProgress(const RedisValue* v, uint64 playerGuid)
 void Player::LoadAccountCriteriaProgress(const RedisValue* v, uint64 playerGuid)
 {
     std::vector<RedisValue> progressVector;
-    if (!sRedisBuilder->LoadFromRedisArray(v, progressVector))
+    if (!sRedisBuilderMgr->LoadFromRedisArray(v, progressVector))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountCriteriaProgress data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_NEXT); //Next step load
@@ -3123,7 +3123,7 @@ void Player::LoadAccountCriteriaProgress(const RedisValue* v, uint64 playerGuid)
         }
 
         Json::Value CriteriaAc;
-        if (!sRedisBuilder->LoadFromRedis(&(*itr), CriteriaAc))
+        if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), CriteriaAc))
         {
             ++itr;
             sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountCriteriaProgress not parse achievementID %i", achievementID);
@@ -3156,7 +3156,7 @@ void Player::LoadAccountCriteriaProgress(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerGold(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerGoldJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerGoldJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerGold data is empty");
         LoadFromRedis(playerGuid, LOAD_ACCOUNT_ACHIEVEMENT); //Next step load
@@ -3171,7 +3171,7 @@ void Player::LoadPlayerGold(const RedisValue* v, uint64 playerGuid)
 void Player::LoadPlayerMails(const RedisValue* v, uint64 playerGuid)
 {
     std::vector<RedisValue> mailVector;
-    if (!sRedisBuilder->LoadFromRedisArray(v, mailVector))
+    if (!sRedisBuilderMgr->LoadFromRedisArray(v, mailVector))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerMails data is empty");
         return;
@@ -3185,7 +3185,7 @@ void Player::LoadPlayerMails(const RedisValue* v, uint64 playerGuid)
         ++itr;
 
         Json::Value loadMailJson;
-        if (!sRedisBuilder->LoadFromRedis(&(*itr), loadMailJson))
+        if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), loadMailJson))
         {
             ++itr;
             sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerMails not parse messageID %i", messageID);
@@ -3232,7 +3232,7 @@ void Player::LoadPlayerMails(const RedisValue* v, uint64 playerGuid)
 void Player::LoadPlayerMailItems(const RedisValue* v, uint64 mailGuid)
 {
     std::vector<RedisValue> itemVector;
-    if (!sRedisBuilder->LoadFromRedisArray(v, itemVector))
+    if (!sRedisBuilderMgr->LoadFromRedisArray(v, itemVector))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerMailItems data is empty");
         return;
@@ -3257,7 +3257,7 @@ void Player::LoadPlayerMailItems(const RedisValue* v, uint64 mailGuid)
         ++itr;
 
         Json::Value loadItemJson;
-        if (!sRedisBuilder->LoadFromRedis(&(*itr), loadItemJson))
+        if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), loadItemJson))
         {
             ++itr;
             sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerLoadItems not parse itemId %i", itemId);
@@ -3298,7 +3298,7 @@ void Player::LoadPlayerMailItems(const RedisValue* v, uint64 mailGuid)
 
 void Player::LoadPlayerPets(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerPetsJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerPetsJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerPets data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_GUILD);
@@ -3310,7 +3310,7 @@ void Player::LoadPlayerPets(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerGuild(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerGuildJson))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerGuildJson))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerGuild data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_CORPSE); //Next step load
@@ -3336,7 +3336,7 @@ void Player::LoadPlayerGuild(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerCorpse(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerCorpse))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerCorpse))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerCorpse data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_PETITION); //Next step load
@@ -3354,7 +3354,7 @@ void Player::LoadPlayerCorpse(const RedisValue* v, uint64 playerGuid)
 
 void Player::LoadPlayerPetition(const RedisValue* v, uint64 playerGuid)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, PlayerPetitions))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerPetitions))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerPetition data is empty");
         LoadFromRedis(playerGuid, LOAD_PLAYER_LOGIN); //Next step load

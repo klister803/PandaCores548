@@ -215,7 +215,7 @@ void TicketMgr::LoadTickets()
     _lastTicketId = 0;
     _openTicketCount = 0;
 
-    if (sRedisBuilder->CheckKey(sRedisBuilder->GetTicketKey()))
+    if (sRedisBuilderMgr->CheckKey(sRedisBuilderMgr->GetTicketKey()))
     {
         LoadFromRedis();
         return;

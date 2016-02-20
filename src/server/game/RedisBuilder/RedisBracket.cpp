@@ -39,7 +39,7 @@ void Bracket::SaveBracket()
 
     std::string index = std::to_string(GUID_LOPART(m_owner));
 
-    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilder->GetBracketKey(), index.c_str(), sRedisBuilder->BuildString(BracketData).c_str(), m_owner, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetBracketKey(), index.c_str(), sRedisBuilderMgr->BuildString(BracketData).c_str(), m_owner, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Bracket::SaveBracket guid %u", guid);
     });
 }
@@ -48,10 +48,10 @@ void BracketMgr::LoadBrackets()
 {
     uint32 oldMSTime = getMSTime();
 
-    RedisValue bracket = RedisDatabase.Execute("HGETALL", sRedisBuilder->GetBracketKey());
+    RedisValue bracket = RedisDatabase.Execute("HGETALL", sRedisBuilderMgr->GetBracketKey());
 
     std::vector<RedisValue> bracketVector;
-    if (!sRedisBuilder->LoadFromRedisArray(&bracket, bracketVector))
+    if (!sRedisBuilderMgr->LoadFromRedisArray(&bracket, bracketVector))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "BracketMgr::LoadBrackets guild not found");
         return;
@@ -69,7 +69,7 @@ void BracketMgr::LoadBrackets()
         }
 
         Json::Value data;
-        if (!sRedisBuilder->LoadFromRedis(&(*itr), data))
+        if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), data))
         {
             ++itr;
             sLog->outInfo(LOG_FILTER_REDIS, "BracketMgr::LoadBrackets not parse guid %i", guid);

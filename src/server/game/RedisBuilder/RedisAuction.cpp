@@ -55,7 +55,7 @@ void AuctionEntry::SaveAuction()
 
     std::string index = std::to_string(Id);
 
-    RedisDatabase.AsyncExecuteHSet("HSET", auctionKey, index.c_str(), sRedisBuilder->BuildString(AuctionData).c_str(), Id, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", auctionKey, index.c_str(), sRedisBuilderMgr->BuildString(AuctionData).c_str(), Id, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "AuctionEntry::SaveAuction guid %u", guid);
     });
 }
@@ -90,7 +90,7 @@ void AuctionHouseMgr::LoadAuctions(const RedisValue* v, uint64 aucId)
 {
     uint32 oldMSTime = getMSTime();
     std::vector<RedisValue> auctionVector;
-    if (!sRedisBuilder->LoadFromRedisArray(v, auctionVector))
+    if (!sRedisBuilderMgr->LoadFromRedisArray(v, auctionVector))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "AuctionHouseMgr::LoadAuctions data is empty");
         return;
@@ -108,7 +108,7 @@ void AuctionHouseMgr::LoadAuctions(const RedisValue* v, uint64 aucId)
         }
 
         Json::Value valueData;
-        if (!sRedisBuilder->LoadFromRedis(&(*itr), valueData))
+        if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), valueData))
         {
             ++itr;
             sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerCriteriaProgress not parse achievementID %i", aucId);
@@ -164,7 +164,7 @@ void AuctionHouseMgr::LoadAuctionItems(const RedisValue* v, uint64 aucId)
     uint32 oldMSTime = getMSTime();
 
     std::vector<RedisValue> auctionItemVector;
-    if (!sRedisBuilder->LoadFromRedisArray(v, auctionItemVector))
+    if (!sRedisBuilderMgr->LoadFromRedisArray(v, auctionItemVector))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "AuctionHouseMgr::LoadAuctionItems data is empty");
         return;
@@ -182,7 +182,7 @@ void AuctionHouseMgr::LoadAuctionItems(const RedisValue* v, uint64 aucId)
         }
 
         Json::Value AuctionItemJson;
-        if (!sRedisBuilder->LoadFromRedis(&(*itr), AuctionItemJson))
+        if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), AuctionItemJson))
         {
             ++itr;
             sLog->outInfo(LOG_FILTER_REDIS, "AuctionHouseMgr::LoadAuctionItems not parse Id %i", aucId);

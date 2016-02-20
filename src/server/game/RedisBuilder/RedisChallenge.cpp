@@ -42,7 +42,7 @@ void ChallengeMgr::SaveChallenges()
                 СhallengeData[id.c_str()]["members"][guid.c_str()] = (*iter).specId;
             }
 
-            RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilder->GetChallengeKey(), id.c_str(), sRedisBuilder->BuildString(СhallengeData[id.c_str()]).c_str(), itr->first, [&](const RedisValue &v, uint64 guid) {});
+            RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetChallengeKey(), id.c_str(), sRedisBuilderMgr->BuildString(СhallengeData[id.c_str()]).c_str(), itr->first, [&](const RedisValue &v, uint64 guid) {});
         }
     }
 }
@@ -62,17 +62,17 @@ void ChallengeMgr::SaveChallengeToDB(Challenge* challenge)
         СhallengeData[id.c_str()]["members"][guid.c_str()] = (*itr).specId;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilder->GetChallengeKey(), id.c_str(), sRedisBuilder->BuildString(СhallengeData[id.c_str()]).c_str(), challenge->Id, [&](const RedisValue &v, uint64 guid) {});
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetChallengeKey(), id.c_str(), sRedisBuilderMgr->BuildString(СhallengeData[id.c_str()]).c_str(), challenge->Id, [&](const RedisValue &v, uint64 guid) {});
 }
 
 void ChallengeMgr::LoadChallenges()
 {
     uint32 oldMSTime = getMSTime();
 
-    RedisValue challenge = RedisDatabase.Execute("HGETALL", sRedisBuilder->GetChallengeKey());
+    RedisValue challenge = RedisDatabase.Execute("HGETALL", sRedisBuilderMgr->GetChallengeKey());
 
     std::vector<RedisValue> challengeVector;
-    if (!sRedisBuilder->LoadFromRedisArray(&challenge, challengeVector))
+    if (!sRedisBuilderMgr->LoadFromRedisArray(&challenge, challengeVector))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "ChallengeMgr::LoadChallenges guild not found");
         return;
@@ -90,7 +90,7 @@ void ChallengeMgr::LoadChallenges()
         }
 
         Json::Value data;
-        if (!sRedisBuilder->LoadFromRedis(&(*itr), data))
+        if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), data))
         {
             ++itr;
             sLog->outInfo(LOG_FILTER_REDIS, "ChallengeMgr::LoadChallenges not parse guid %i", id);

@@ -4,48 +4,48 @@
 
 #include "RedisBuilderMgr.h"
 
-RedisBuilder::RedisBuilder()
+RedisBuilderMgr::RedisBuilderMgr()
 {
 }
 
-RedisBuilder::~RedisBuilder()
+RedisBuilderMgr::~RedisBuilderMgr()
 {
 }
 
-std::string RedisBuilder::BuildString(Json::Value& data)
+std::string RedisBuilderMgr::BuildString(Json::Value& data)
 {
     return Builder.write(data);
 }
 
-bool RedisBuilder::LoadFromRedis(const RedisValue* v, Json::Value& data)
+bool RedisBuilderMgr::LoadFromRedis(const RedisValue* v, Json::Value& data)
 {
     if (!v->isOk() || v->isNull() || !v->isString())
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilder::DeSerialization data is empty");
+        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilderMgr::DeSerialization data is empty");
         return false;
     }
 
     bool isReader = Reader.parse(v->toString().c_str(), data);
     if (!isReader)
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilder::DeSerialization parce json false");
+        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilderMgr::DeSerialization parce json false");
         return false;
     }
 
     return true;
 }
 
-bool RedisBuilder::LoadFromRedisArray(const RedisValue* v, std::vector<RedisValue>& data)
+bool RedisBuilderMgr::LoadFromRedisArray(const RedisValue* v, std::vector<RedisValue>& data)
 {
     if (!v->isOk() || v->isNull())
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilder::LoadFromRedisArray data is empty");
+        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilderMgr::LoadFromRedisArray data is empty");
         return false;
     }
 
     if (!v->isArray())
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilder::LoadFromRedisArray is not array");
+        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilderMgr::LoadFromRedisArray is not array");
         return false;
     }
 
@@ -54,25 +54,25 @@ bool RedisBuilder::LoadFromRedisArray(const RedisValue* v, std::vector<RedisValu
     return true;
 }
 
-bool RedisBuilder::CheckKey(char* _key)
+bool RedisBuilderMgr::CheckKey(char* _key)
 {
     RedisValue v = RedisDatabase.Execute("EXISTS", _key);
     if (!v.isOk() || v.isNull())
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilder::CheckKey data not found %s", _key);
+        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilderMgr::CheckKey data not found %s", _key);
         return false;
     }
 
     if (!v.toInt())
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilder::CheckKey key not exist %s", _key);
+        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilderMgr::CheckKey key not exist %s", _key);
         return false;
     }
 
     return true;
 }
 
-void RedisBuilder::InitRedisKey()
+void RedisBuilderMgr::InitRedisKey()
 {
     queryGuidKey = new char[18];
     petKey = new char[18];

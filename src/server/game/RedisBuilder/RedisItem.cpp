@@ -87,7 +87,7 @@ void Item::SaveItem()
     sLog->outInfo(LOG_FILTER_REDIS, "Item::SaveItem slot %u Entry %u Count %u guid %s itemKey %s",
     m_slot, GetEntry(), GetCount(), index.c_str(), itemKey);
 
-    RedisDatabase.AsyncExecuteHSet("HSET", itemKey, index.c_str(), sRedisBuilder->BuildString(ItemData).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", itemKey, index.c_str(), sRedisBuilderMgr->BuildString(ItemData).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Item::SaveItem guid %u%u", guid);
     });
 }

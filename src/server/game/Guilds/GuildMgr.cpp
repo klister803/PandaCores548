@@ -113,7 +113,7 @@ void GuildMgr::ResetReputationCaps()
 
 void GuildMgr::LoadGuilds()
 {
-    if (sRedisBuilder->CheckKey(sRedisBuilder->GetGuildKey()))
+    if (sRedisBuilderMgr->CheckKey(sRedisBuilderMgr->GetGuildKey()))
     {
         LoadGuildsRedis();
         return;

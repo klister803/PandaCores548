@@ -809,7 +809,7 @@ void WorldSession::LoadGlobalAccountData()
 {
     Json::Value AccountDataJson;
     RedisValue v = RedisDatabase.ExecuteH("HGET", GetAccountKey(), "accountdata");
-    if (sRedisBuilder->LoadFromRedis(&v, AccountDataJson))
+    if (sRedisBuilderMgr->LoadFromRedis(&v, AccountDataJson))
     {
         for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
             if (GLOBAL_CACHE_MASK & (1 << i))
@@ -924,7 +924,7 @@ void WorldSession::LoadTutorialsData()
 
     Json::Value TutorialsData;
     RedisValue v = RedisDatabase.ExecuteH("HGET", GetAccountKey(), "tutorials");
-    if (sRedisBuilder->LoadFromRedis(&v, TutorialsData))
+    if (sRedisBuilderMgr->LoadFromRedis(&v, TutorialsData))
     {
         for (auto iter = TutorialsData.begin(); iter != TutorialsData.end(); ++iter)
         {

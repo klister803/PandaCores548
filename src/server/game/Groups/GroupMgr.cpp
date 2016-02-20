@@ -103,7 +103,7 @@ void GroupMgr::RemoveGroup(Group* group)
 
 void GroupMgr::LoadGroups()
 {
-    if (sRedisBuilder->CheckKey(sRedisBuilder->GetGroupKey()))
+    if (sRedisBuilderMgr->CheckKey(sRedisBuilderMgr->GetGroupKey()))
     {
         LoadGroupsRedis();
         return;

@@ -31,7 +31,7 @@ GuildFinderMgr::~GuildFinderMgr()
 
 void GuildFinderMgr::LoadFromDB()
 {
-    if (sRedisBuilder->CheckKey(sRedisBuilder->GetGuildFKey()))
+    if (sRedisBuilderMgr->CheckKey(sRedisBuilderMgr->GetGuildFKey()))
     {
         LoadFromRedis();
         return;

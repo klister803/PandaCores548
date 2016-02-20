@@ -278,7 +278,7 @@ bool Pet::LoadPetFromRedis(Player* owner, uint32 petentry, uint32 petnumber, boo
         owner->ToPlayer()->SetLastPetNumber(pet_number);
 
     std::string petId = std::to_string(pet_number);
-    RedisDatabase.AsyncExecuteH("HGET", sRedisBuilder->GetPetKey(), petId.c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteH("HGET", sRedisBuilderMgr->GetPetKey(), petId.c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         if (Pet* pet = ObjectAccessor::GetObjectInWorld(guid, (Pet*)NULL))
             pet->LoadPetSpellRedis(&v);
     });
@@ -288,7 +288,7 @@ bool Pet::LoadPetFromRedis(Player* owner, uint32 petentry, uint32 petnumber, boo
 void Pet::LoadPetSpellRedis(const RedisValue* v)
 {
     bool _load = true;
-    if (!sRedisBuilder->LoadFromRedis(v, PetDataSpell))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, PetDataSpell))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Pet::LoadPetSpellRedis data is empty");
         _load = false;

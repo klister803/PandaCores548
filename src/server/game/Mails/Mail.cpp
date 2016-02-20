@@ -210,7 +210,7 @@ void MailDraft::SendMailTo(MailReceiver const& receiver, MailSender const& sende
     MailJson["stationery"] = int8(sender.GetStationery());
     MailJson["mailTemplateId"] = GetMailTemplateId();
 
-    RedisDatabase.AsyncExecuteHSet("HSET", mailKey, messageID.c_str(), sRedisBuilder->BuildString(MailJson).c_str(), mailId, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", mailKey, messageID.c_str(), sRedisBuilderMgr->BuildString(MailJson).c_str(), mailId, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "MailDraft::SendMailTo guid %u", guid);
     });
 

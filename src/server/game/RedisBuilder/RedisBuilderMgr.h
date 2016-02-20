@@ -5,16 +5,16 @@
 #ifndef __RedisSaveBuilder_H
 #define __RedisSaveBuilder_H
 
-class RedisBuilder
+class RedisBuilderMgr
 {
     private:
-        RedisBuilder();
-        ~RedisBuilder();
+        RedisBuilderMgr();
+        ~RedisBuilderMgr();
 
     public:
-        static RedisBuilder* instance()
+        static RedisBuilderMgr* instance()
         {
-            static RedisBuilder instance;
+            static RedisBuilderMgr instance;
             return &instance;
         }
         std::string BuildString(Json::Value& data);
@@ -60,7 +60,7 @@ class RedisBuilder
         char* ticketKey;
 };
 
-#define sRedisBuilder RedisBuilder::instance()
+#define sRedisBuilderMgr RedisBuilderMgr::instance()
 
 
 #endif

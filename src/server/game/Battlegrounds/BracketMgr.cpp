@@ -17,7 +17,7 @@ BracketMgr::~BracketMgr()
 
 void BracketMgr::LoadCharacterBrackets()
 {
-    if (sRedisBuilder->CheckKey(sRedisBuilder->GetBracketKey()))
+    if (sRedisBuilderMgr->CheckKey(sRedisBuilderMgr->GetBracketKey()))
     {
         sBracketMgr->LoadBrackets();
         return;

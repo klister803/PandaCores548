@@ -55,7 +55,7 @@ void Map::SaveCreatureRespawnTime(uint32 dbGuid, time_t respawnTime)
     CreatureRespawnData[index.c_str()] = respawnTime;
     _data = respawnTime;
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetCreatureRespawmKey(), index.c_str(), sRedisBuilder->BuildString(_data).c_str(), GetId(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetCreatureRespawmKey(), index.c_str(), sRedisBuilderMgr->BuildString(_data).c_str(), GetId(), [&](const RedisValue &v, uint64 guid) {
         //sLog->outInfo(LOG_FILTER_REDIS, "Map::SaveCreatureRespawnTime guid %u", guid);
     });
 }
@@ -90,7 +90,7 @@ void Map::SaveGORespawnTime(uint32 dbGuid, time_t respawnTime)
     GORespawnData[index.c_str()] = respawnTime;
     _data = respawnTime;
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetGoRespawmKey(), index.c_str(), sRedisBuilder->BuildString(_data).c_str(), GetId(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetGoRespawmKey(), index.c_str(), sRedisBuilderMgr->BuildString(_data).c_str(), GetId(), [&](const RedisValue &v, uint64 guid) {
         //sLog->outInfo(LOG_FILTER_REDIS, "Map::SaveGORespawnTime guid %u", guid);
     });
 }
@@ -111,7 +111,7 @@ void Map::RemoveGORespawnTime(uint32 dbGuid)
 void Map::LoadGoRespawnTimes(const RedisValue* v)
 {
     std::vector<RedisValue> respawnVector;
-    if (!sRedisBuilder->LoadFromRedisArray(v, respawnVector))
+    if (!sRedisBuilderMgr->LoadFromRedisArray(v, respawnVector))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Map::LoadGoRespawnTimes data is empty");
         return;
@@ -123,7 +123,7 @@ void Map::LoadGoRespawnTimes(const RedisValue* v)
         ++itr;
 
         Json::Value _data;
-        if (!sRedisBuilder->LoadFromRedis(&(*itr), _data))
+        if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), _data))
         {
             ++itr;
             sLog->outInfo(LOG_FILTER_REDIS, "Map::LoadGoRespawnTimes not parse Id %i", loguid);
@@ -139,7 +139,7 @@ void Map::LoadGoRespawnTimes(const RedisValue* v)
 void Map::LoadCreatureRespawnTimes(const RedisValue* v)
 {
     std::vector<RedisValue> respawnVector;
-    if (!sRedisBuilder->LoadFromRedisArray(v, respawnVector))
+    if (!sRedisBuilderMgr->LoadFromRedisArray(v, respawnVector))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "Map::LoadCreatureRespawnTimes data is empty");
         return;
@@ -151,7 +151,7 @@ void Map::LoadCreatureRespawnTimes(const RedisValue* v)
         ++itr;
 
         Json::Value _data;
-        if (!sRedisBuilder->LoadFromRedis(&(*itr), _data))
+        if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), _data))
         {
             ++itr;
             sLog->outInfo(LOG_FILTER_REDIS, "Map::LoadCreatureRespawnTimes not parse Id %i", loguid);

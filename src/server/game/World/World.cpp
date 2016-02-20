@@ -1444,7 +1444,7 @@ void World::SetInitialWorldSettings()
     LoadDBAllowedSecurityLevel();
 
     ///- Init highest guids before any table loading to prevent using not initialized guids in some code.
-    sRedisBuilder->InitRedisKey();
+    sRedisBuilderMgr->InitRedisKey();
     sObjectMgr->SetHighestGuids();
 
     ///- Check the existence of the map files for all races' startup areas.

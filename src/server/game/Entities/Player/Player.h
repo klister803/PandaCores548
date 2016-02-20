@@ -63,7 +63,6 @@ class UpdateMask;
 class PhaseMgr;
 class Bracket;
 class Guild;
-class RedisBuilder;
 
 typedef std::deque<Mail*> PlayerMails;
 

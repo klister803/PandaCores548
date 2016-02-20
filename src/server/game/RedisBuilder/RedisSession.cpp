@@ -27,14 +27,14 @@
 
 void WorldSession::SaveEnum()
 {
-    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "enumdata", sRedisBuilder->BuildString(EnumData).c_str(), GetAccountId(), [&](const RedisValue &v, uint64 _accountId) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "enumdata", sRedisBuilderMgr->BuildString(EnumData).c_str(), GetAccountId(), [&](const RedisValue &v, uint64 _accountId) {
         sLog->outInfo(LOG_FILTER_REDIS, "WorldSession::SaveEnum _accountId %u", _accountId);
     });
 }
 
 void WorldSession::LoadEnumData(const RedisValue* v, uint64 accountId)
 {
-    if (!sRedisBuilder->LoadFromRedis(v, EnumData))
+    if (!sRedisBuilderMgr->LoadFromRedis(v, EnumData))
     {
         // remove expired bans
         PreparedStatement* stmt = NULL;

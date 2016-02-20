@@ -253,9 +253,9 @@ void AuctionHouseMgr::SendAuctionCancelledToBidderMail(AuctionEntry* auction, It
 
 void AuctionHouseMgr::LoadAuctionItems()
 {
-    if (sRedisBuilder->CheckKey(sRedisBuilder->GetAucItemKey()))
+    if (sRedisBuilderMgr->CheckKey(sRedisBuilderMgr->GetAucItemKey()))
     {
-        RedisDatabase.AsyncExecute("HGETALL", sRedisBuilder->GetAucItemKey(), 0, [&](const RedisValue &v, uint64 aucId) {
+        RedisDatabase.AsyncExecute("HGETALL", sRedisBuilderMgr->GetAucItemKey(), 0, [&](const RedisValue &v, uint64 aucId) {
             sAuctionMgr->LoadAuctionItems(&v, aucId);
         });
         return;
@@ -310,9 +310,9 @@ void AuctionHouseMgr::LoadAuctionItems()
 
 void AuctionHouseMgr::LoadAuctions()
 {
-    if (sRedisBuilder->CheckKey(sRedisBuilder->GetAucKey()))
+    if (sRedisBuilderMgr->CheckKey(sRedisBuilderMgr->GetAucKey()))
     {
-        RedisDatabase.AsyncExecute("HGETALL", sRedisBuilder->GetAucKey(), 0, [&](const RedisValue &v, uint64 aucId) {
+        RedisDatabase.AsyncExecute("HGETALL", sRedisBuilderMgr->GetAucKey(), 0, [&](const RedisValue &v, uint64 aucId) {
             sAuctionMgr->LoadAuctions(&v, aucId);
         });
         return;

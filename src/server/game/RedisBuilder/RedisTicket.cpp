@@ -46,7 +46,7 @@ void GmTicket::SaveTicket()
 
     std::string index = std::to_string(_id);
 
-    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilder->GetTicketKey(), index.c_str(), sRedisBuilder->BuildString(TicketData).c_str(), _id, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetTicketKey(), index.c_str(), sRedisBuilderMgr->BuildString(TicketData).c_str(), _id, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "GmTicket::SaveTicket _id %u", guid);
     });
 }
@@ -55,10 +55,10 @@ void TicketMgr::LoadFromRedis()
 {
     uint32 oldMSTime = getMSTime();
 
-    RedisValue tickets = RedisDatabase.Execute("HGETALL", sRedisBuilder->GetTicketKey());
+    RedisValue tickets = RedisDatabase.Execute("HGETALL", sRedisBuilderMgr->GetTicketKey());
 
     std::vector<RedisValue> ticketsVector;
-    if (!sRedisBuilder->LoadFromRedisArray(&tickets, ticketsVector))
+    if (!sRedisBuilderMgr->LoadFromRedisArray(&tickets, ticketsVector))
     {
         sLog->outInfo(LOG_FILTER_REDIS, "TicketMgr::LoadFromRedis tickets not found");
         return;
@@ -76,7 +76,7 @@ void TicketMgr::LoadFromRedis()
         }
 
         Json::Value data;
-        if (!sRedisBuilder->LoadFromRedis(&(*itr), data))
+        if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), data))
         {
             ++itr;
             sLog->outInfo(LOG_FILTER_REDIS, "TicketMgr::LoadFromRedis not parse ticketId %i", ticketId);
@@ -130,7 +130,7 @@ void GmTicket::DeleteTicket()
     TicketData.clear();
     std::string index = std::to_string(_id);
 
-    RedisDatabase.AsyncExecuteH("HDEL", sRedisBuilder->GetTicketKey(), index.c_str(), _id, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteH("HDEL", sRedisBuilderMgr->GetTicketKey(), index.c_str(), _id, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "GmTicket::DeleteTicket _id %u", guid);
     });
 }
