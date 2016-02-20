@@ -157,6 +157,7 @@ class boss_tsulong : public CreatureScript
                         me->RemoveAurasDueToSpell(SPELL_SHA_ACTIVE);
                         me->setFaction(35);
                         me->SetDisplayId(DAY_ID);
+                        me->CastSpell(me, 34098, true); //Remove debuff
                         DoStopAttack();
                         me->GetMotionMaster()->MoveTargetedHome();
                         me->SetHealth(me->GetMaxHealth() - me->GetHealth());
@@ -457,12 +458,23 @@ class npc_tsulong_embodied_terror : public CreatureScript
                 me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
             }
 
+			EventMap events;
+
             void Reset() {}
 
             void IsSummonedBy(Unit* summoner)
             {
-                DoCast(me, SPELL_TERRORIZE, true);
+                if (summoner->getFaction() == 16 || !summoner->isInCombat())
+                {
+                    me->DespawnOrUnsummon();
+                    return;
+                }
                 DoZoneInCombat(me, 100.0f);
+            }
+
+            void EnterCombat(Unit* /*who*/)
+            {
+                events.ScheduleEvent(EVENT_1, 2000);
             }
 
             void JustDied(Unit* /*killer*/)
@@ -471,7 +483,28 @@ class npc_tsulong_embodied_terror : public CreatureScript
                     DoCast(me, SPELL_SUM_TINY_TERROR, true);
             }
 
-            void UpdateAI(uint32 diff) {}
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_1:
+                            DoCast(SPELL_TERRORIZE);
+                            events.ScheduleEvent(EVENT_1, 20000);
+                            break;
+                    }
+                }
+                DoMeleeAttackIfReady();
+            }
         };
 
         CreatureAI* GetAI(Creature* creature) const
@@ -507,6 +540,12 @@ class npc_tsulong_fright_spawn : public CreatureScript
 
             void IsSummonedBy(Unit* summoner)
             {
+                if (summoner->getFaction() == 16 || !summoner->isInCombat())
+                {
+                    me->DespawnOrUnsummon();
+                    return;
+                }
+
                 DoZoneInCombat(me, 100.0f);
             }
 
@@ -575,7 +614,7 @@ class npc_tsulong_unstable_sha : public CreatureScript
 
             void IsSummonedBy(Unit* summoner) 
             {
-                if (summoner->getFaction() == 16)
+                if (summoner->getFaction() == 16 || !summoner->isInCombat())
                 {
                     me->DespawnOrUnsummon();
                     return;
