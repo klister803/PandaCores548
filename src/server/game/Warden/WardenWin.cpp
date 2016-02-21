@@ -310,11 +310,11 @@ void WardenWin::RequestStaticData()
     // set string index
     uint8 index = 1;
 
-    // header
-    buff << uint8(MEM_CHECK ^ xorByte);
+    // header - temporary comment, because mem check have new format and don't work
+    /*buff << uint8(MEM_CHECK ^ xorByte);
     buff << uint8(0x00);
-    buff << uint32(0x00D87AA0);
-    buff << uint8(0x6);
+    buff << uint32(0x00987AA0);
+    buff << uint8(0x6);*/
 
     for (std::list<uint16>::iterator itr = _currentChecks.begin(); itr != _currentChecks.end(); ++itr)
     {
@@ -427,8 +427,10 @@ void WardenWin::HandleData(ByteBuffer &buff)
         return;
     }
 
+    HandleStaticData(buff);
+
     // read header
-    uint8 headerRes;
+    /*uint8 headerRes;
     buff >> headerRes;
 
     if (headerRes != 0)
@@ -473,7 +475,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
             }
 
             buff >> isDebuggerPresentFunc;
-        }*/
+        }
 
         HandleDynamicData(buff);
         return;
@@ -483,7 +485,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
     buff.rpos(buff.wpos());
     //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed check Warden packet header. Player kicked",
         //_session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId());
-    _session->KickPlayer();
+    _session->KickPlayer();*/
 }
 
 void WardenWin::HandleStaticData(ByteBuffer &buff)
@@ -546,7 +548,7 @@ void WardenWin::HandleStaticData(ByteBuffer &buff)
                     //sLog->outWarden("RESULT DRIVER_CHECK fail, CheckId %u, account Id %u", *itr, _session->GetAccountId());
 
                 buff.rpos(buff.wpos());
-                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
+                sLog->outWarn(LOG_FILTER_WARDEN, "%s failed Warden check %u. Action: %s", _session->GetPlayerName(false).c_str(), *itr, Penalty(rd).c_str());
                 return;
             }
 
@@ -623,7 +625,7 @@ void WardenWin::RequestDynamicData()
     // header
     buff << uint8(MEM_CHECK ^ xorByte);
     buff << uint8(0x00);
-    buff << uint32(0x00E76E50);
+    buff << uint32(0x00A76E50);
     buff << uint8(0x6);
 
     // system
