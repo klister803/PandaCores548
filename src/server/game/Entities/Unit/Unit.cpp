@@ -12793,11 +12793,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 DoneTotalMod *= (100.0f + spellProto->Effects[2].CalcValue()) / 100.0f;
         }
 
-        // Mastery: Master Demonologist
-        if (Player* modOwner = GetSpellModOwner())
-            if (AuraEffect const* aurEff = modOwner->GetAuraEffect(77219, EFFECT_0))
-                AddPct(DoneTotalMod, GetShapeshiftForm() == FORM_METAMORPHOSIS ? aurEff->GetAmount() * 3 : aurEff->GetAmount());
-
         tmpDamage = (int32(pdamage) + DoneTotal) * DoneTotalMod;
 
         // apply spellmod to Done damage (flat and pct)
