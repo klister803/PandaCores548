@@ -3045,7 +3045,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     if (missInfo == SPELL_MISS_REFLECT && target->timeDelay)
     {
         DamageInfo dmgInfoProc = DamageInfo(m_caster, unit, 1, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE, target->damageBeforeHit);
-        caster->ProcDamageAndSpell(unit, PROC_FLAG_NONE, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, PROC_EX_REFLECT, &dmgInfoProc, BASE_ATTACK, m_spellInfo);
+        caster->ProcDamageAndSpell(unit, procAttacker, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, procEx, &dmgInfoProc, BASE_ATTACK, m_spellInfo);
     }
 
     if (missInfo != SPELL_MISS_EVADE && m_caster->IsValidAttackTarget(unit) && (!m_spellInfo->IsPositive() || m_spellInfo->HasEffect(SPELL_EFFECT_DISPEL)))
