@@ -12766,6 +12766,10 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 float powerPct = 100.f * GetPower(POWER_MANA) / GetMaxPower(POWER_MANA);
                 for (Unit::AuraEffectList::const_iterator itr = doneFromManaPctAuras.begin(); itr != doneFromManaPctAuras.end(); ++itr)
                 {
+                    if (uint32 spellFamillyName = (*itr)->GetSpellInfo()->SpellFamilyName)
+                        if (spellFamillyName != spellProto->SpellFamilyName)
+                            continue;
+
                     if (spellProto->SchoolMask & (*itr)->GetMiscValue())
                         AddPct(DoneTotalMod, CalculatePct((*itr)->GetAmount(), powerPct));
                 }
