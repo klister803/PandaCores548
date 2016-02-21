@@ -5685,6 +5685,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Speed = 25.f;
                     break;
                 case 117954: // Materialize Protector
+                case 120729: // Demonic Gateway
+                case 113896: // Demonic Gateway
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
                     break;
                 case 113314: // Energizing Smash
