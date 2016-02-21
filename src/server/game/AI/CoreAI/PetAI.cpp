@@ -602,6 +602,9 @@ bool PetAI::CanAttack(Unit* target)
     if (me->GetCharmInfo()->IsReturning())
         return false;
 
+    if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE) || target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_CANT_CLICKABLE))
+        return false;
+
     // Passive - check now so we don't have to worry about passive in later checks
     if (me->HasReactState(REACT_PASSIVE))
         return me->GetCharmInfo()->IsCommandAttack();

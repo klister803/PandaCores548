@@ -23,3 +23,7 @@ INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry
 delete from spell_target_position where id = 123441;
 INSERT INTO `spell_target_position` (`id`, `target_map`, `target_position_x`, `target_position_y`, `target_position_z`, `target_orientation`) VALUES 
 (123441, 996, -1017.96, -2911.15, 19.8185, 4.71);
+
+delete from spell_target_filter where spellid in (123705);
+INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `option`, `param1`, `param2`, `param3`, `aura`, `chance`, `effectMask`, `resizeType`, `count`, `maxcount`, `addcount`, `addcaster`, `comments`) VALUES 
+(123705, 15, 2, -1, 15, 0, 0, 0, 1, 0, 0, 0, 0, 0, 'LeiShi - Scary Fog');

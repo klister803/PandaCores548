@@ -3978,6 +3978,7 @@ void AuraEffect::HandleAuraUntrackable(AuraApplication const* aurApp, uint8 mode
             return;
         target->RemoveByteFlag(UNIT_FIELD_BYTES_1, 2, UNIT_STAND_FLAGS_UNTRACKABLE);
     }
+    target->UpdateObjectVisibility();
 }
 
 /****************************/

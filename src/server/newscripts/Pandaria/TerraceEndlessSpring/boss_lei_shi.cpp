@@ -112,6 +112,7 @@ class boss_lei_shi : public CreatureScript
                 me->SetReactState(REACT_DEFENSIVE);
                 me->RemoveAllAuras();
                 me->RemoveAreaObject(SPELL_GETAWAY);
+                instance->DoRemoveAurasDueToSpellOnPlayers(123705);
                 DoCast(me, SPELL_AFRAID, true);
             }
 
@@ -216,8 +217,15 @@ class boss_lei_shi : public CreatureScript
 
                 events.Update(diff);
 
-                if (me->HasUnitState(UNIT_STATE_CASTING) || specEvent)
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
+
+                if (specEvent)
+                {
+                    if (me->HasAura(SPELL_PROTECT))
+                        DoSpellAttackIfReady(SPELL_SPRAY);
+                    return;
+                }
 
                 while (uint32 eventId = events.ExecuteEvent())
                 {
@@ -305,7 +313,7 @@ public:
             me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
             me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
             me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_IMMUNE_TO_NPC);
             SetCombatMovement(false);
         }
 
@@ -323,7 +331,7 @@ public:
                 AttackStart(summoner->getVictim());
 
             DoCast(me, SPELL_HIDE_PROC, true);
-            events.ScheduleEvent(EVENT_1, 1000);
+            events.ScheduleEvent(EVENT_1, 2000);
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)

@@ -15442,7 +15442,7 @@ bool Unit::IsAlwaysDetectableFor(WorldObject const* seer) const
     if (WorldObject::IsAlwaysDetectableFor(seer))
         return true;
 
-    if (HasAuraTypeWithCaster(SPELL_AURA_MOD_STALKED, seer->GetGUID()))
+    if (HasAuraTypeWithCaster(SPELL_AURA_MOD_STALKED, seer->GetGUID()) && !HasAuraType(SPELL_AURA_UNTRACKABLE))
         return true;
 
     return false;

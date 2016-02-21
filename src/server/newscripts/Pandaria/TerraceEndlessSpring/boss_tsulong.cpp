@@ -157,7 +157,9 @@ class boss_tsulong : public CreatureScript
                         me->RemoveAurasDueToSpell(SPELL_SHA_ACTIVE);
                         me->setFaction(35);
                         me->SetDisplayId(DAY_ID);
-                        me->CastSpell(me, 34098, true); //Remove debuff
+                        me->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
+                        me->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE_PERCENT);
+                        me->RemoveAurasByType(SPELL_AURA_PERIODIC_LEECH);
                         DoStopAttack();
                         me->GetMotionMaster()->MoveTargetedHome();
                         me->SetHealth(me->GetMaxHealth() - me->GetHealth());

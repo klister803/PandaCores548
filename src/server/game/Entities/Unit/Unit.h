@@ -684,6 +684,8 @@ enum UnitFlags2
     UNIT_FLAG2_UNK6                         = 0x00400000,
     UNIT_FLAG2_UNK7                         = 0x00800000,
     UNIT_FLAG2_UNK8                         = 0x01000000,
+    UNIT_FLAG2_UNK9                         = 0x02000000,
+    UNIT_FLAG2_CANT_CLICKABLE               = 0x04000000,
 };
 
 /// Non Player Character flags
