@@ -13362,7 +13362,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
             return owner->SpellHealingBonusDone(victim, spellProto, healamount, damagetype, effIndex, stack);
 
     // Some spells don't benefit from done mods
-    if ((spellProto->AttributesEx3 & SPELL_ATTR3_NO_DONE_BONUS) || (spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS))
+    if ((spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS))
         return healamount;
 
     // No bonus healing for potion spells
@@ -13573,7 +13573,7 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
     float TakenTotalMod = 1.0f;
 
     // Some spells don't benefit from done mods
-    if ((spellProto->AttributesEx3 & SPELL_ATTR3_NO_DONE_BONUS) || (spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS))
+    if ((spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS))
         return healamount;
 
     // No bonus

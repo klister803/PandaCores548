@@ -2450,6 +2450,11 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
 
         switch (m_spellInfo->Id)
         {
+            case 34299:  // Leader of the Pack
+            {
+                addhealth = CalculatePct(m_caster->GetMaxHealth(), m_spellInfo->Effects[effIndex].BasePoints);
+                break;
+            }
             case 115072: // Expel Harm
             case 147489: // Expel Harm
             {
@@ -2529,11 +2534,6 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
         
         switch (m_spellInfo->Id)
         {
-            case 34299:  // Leader of the Pack
-            {
-                addhealth = CalculatePct(m_caster->GetMaxHealth(), m_spellInfo->Effects[effIndex].BasePoints);
-                break;
-            }
             case 73921:  // Healing Rain
             {
                 if (m_UniqueTargetInfo.size() > 6)
