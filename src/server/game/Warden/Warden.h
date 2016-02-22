@@ -46,7 +46,7 @@ enum WardenOpcodes
 
 enum WardenCheckType
 {
-    MEM_CHECK               = 0x9F, // 243: byte moduleNameIndex + uint Offset + byte Len (check to ensure memory isn't modified)
+    MEM_CHECK               = 0x9F, // 243: byte moduleNameIndex + byte mask + byte[maskData] offsetArray + byte Len (check to ensure memory isn't modified)
     PAGE_CHECK_A            = 0xBA, // 178: uint Seed + byte[20] SHA1 + uint Addr + byte Len (scans all pages for specified hash)
     PAGE_CHECK_B            = 0x1B, // 191: uint Seed + byte[20] SHA1 + uint Addr + byte Len (scans only pages starts with MZ+PE headers for specified hash)
     MPQ_CHECK               = 0x59, // 152: byte fileNameIndex (check to ensure MPQ file isn't modified)

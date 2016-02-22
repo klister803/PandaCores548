@@ -311,10 +311,11 @@ void WardenWin::RequestStaticData()
     uint8 index = 1;
 
     // header - temporary comment, because mem check have new format and don't work
-    /*buff << uint8(MEM_CHECK ^ xorByte);
+    buff << uint8(MEM_CHECK ^ xorByte);
     buff << uint8(0x00);
-    buff << uint32(0x00987AA0);
-    buff << uint8(0x6);*/
+    buff << uint8(0xF);
+    buff << uint32(0xD87AA0);
+    buff << uint8(0x6);
 
     for (std::list<uint16>::iterator itr = _currentChecks.begin(); itr != _currentChecks.end(); ++itr)
     {
@@ -427,10 +428,8 @@ void WardenWin::HandleData(ByteBuffer &buff)
         return;
     }
 
-    HandleStaticData(buff);
-
     // read header
-    /*uint8 headerRes;
+    uint8 headerRes;
     buff >> headerRes;
 
     if (headerRes != 0)
@@ -475,7 +474,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
             }
 
             buff >> isDebuggerPresentFunc;
-        }
+        }*/
 
         HandleDynamicData(buff);
         return;
@@ -485,7 +484,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
     buff.rpos(buff.wpos());
     //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed check Warden packet header. Player kicked",
         //_session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId());
-    _session->KickPlayer();*/
+    _session->KickPlayer();
 }
 
 void WardenWin::HandleStaticData(ByteBuffer &buff)
