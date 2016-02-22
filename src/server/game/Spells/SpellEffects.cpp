@@ -813,6 +813,28 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                 }
                 break;
             }
+            case SPELLFAMILY_SHAMAN:
+            {
+                if (!m_caster)
+                    break;
+
+                switch (m_spellInfo->Id)
+                {
+                    case 10444:
+                    {
+                        SpellInfo const* _spellinfo = sSpellMgr->GetSpellInfo(8024);
+                        int32 dmg = _spellinfo->Effects[EFFECT_1].CalcValue(m_caster);
+                        float add_spellpower = m_caster->GetSpellPowerDamage(SPELL_SCHOOL_MASK_FIRE) * _spellinfo->Effects[EFFECT_1].BonusMultiplier;
+
+                        float BaseWeaponSpeed = m_caster->GetAttackTime(damage == 100 ? OFF_ATTACK : BASE_ATTACK) / 1000.0f;
+                        damage = dmg / (100 / BaseWeaponSpeed);
+                        damage += add_spellpower;
+                        AddPct(damage, 50);
+                        break;
+                    }
+                }
+                break;
+            }
         }
 
         if (m_originalCaster && damage > 0)

@@ -9203,26 +9203,16 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     || (attType == OFF_ATTACK && procFlag & PROC_FLAG_DONE_MAINHAND_ATTACK))
                     return false;
 
-                SpellInfo const* _spellinfo = sSpellMgr->GetSpellInfo(8024);
-                int32 dmg = 8625;
-                float add_spellpower = GetSpellPowerDamage(SPELL_SCHOOL_MASK_FIRE) * _spellinfo->Effects[EFFECT_1].BonusMultiplier;
-
                 // Enchant on Off-Hand and ready?
                 if (castItem->GetSlot() == EQUIPMENT_SLOT_OFFHAND && procFlag & PROC_FLAG_DONE_OFFHAND_ATTACK)
                 {
-                    float BaseWeaponSpeed = GetAttackTime(OFF_ATTACK) / 1000.0f;
-                    basepoints0 = dmg / (100 / BaseWeaponSpeed);
-                    basepoints0 += add_spellpower;
-                    AddPct(basepoints0, 50);
+                    basepoints0 = 100;
                     triggered_spell_id = 10444;
                 }
                 // Enchant on Main-Hand and ready?
                 else if (castItem->GetSlot() == EQUIPMENT_SLOT_MAINHAND && procFlag & PROC_FLAG_DONE_MAINHAND_ATTACK)
                 {
-                    float BaseWeaponSpeed = GetAttackTime(BASE_ATTACK) / 1000.0f;
-                    basepoints0 = dmg / (100 / BaseWeaponSpeed);
-                    basepoints0 += add_spellpower;
-                    AddPct(basepoints0, 50);
+                    basepoints0 = 1;
                     triggered_spell_id = 10444;
                 }
                 // If not ready, we should  return, shouldn't we?!
