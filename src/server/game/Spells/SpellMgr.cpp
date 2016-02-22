@@ -5233,6 +5233,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 149033: //Consumed Faith
                     spellInfo->Effects[0].TriggerSpell = 148992;
                     break;
+                case 149011: //Consumed Courage
+                    spellInfo->Effects[0].TriggerSpell = 148982;
+                    break;
 
 
                 //World Bosses

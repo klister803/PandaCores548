@@ -39,8 +39,9 @@ enum eSpells
     //Embodied despair
     SPELL_CONSUMED_HOPE              = 149032,
     SPELL_HOPE_AT                    = 149003,
-    SPELL_HOPE_BUFF                  = 149004,
+    SPELL_HOPE_BUFF                  = 149004,//buff
     SPELL_EMBODIED_DESPAIR           = 145276,
+    SPELL_COURAGE                    = 148983,//buff
 
     //Iron Star
     SPELL_IRON_STAR_IMPACT_AT        = 144645,
@@ -81,20 +82,21 @@ enum sEvents
     EVENT_SUMMON_ENGINEER            = 5,
     EVENT_PHASE_TWO                  = 6,
     EVENT_WHIRLING_CORRUPTION        = 7,
+    EVENT_GRIPPING_DESPAIR           = 8,
     //In Realm
-    EVENT_ANNIHILLATE                = 8,
+    EVENT_ANNIHILLATE                = 9,
     //Desecrated weapon
-    EVENT_REGENERATE                 = 9,
+    EVENT_REGENERATE                 = 10,
     //Summons
-    EVENT_LAUNCH_STAR                = 10,
-    EVENT_HAMSTRING                  = 11,
-    EVENT_CHAIN_HEAL                 = 12,
-    EVENT_CHAIN_LIGHTNING            = 13,
+    EVENT_LAUNCH_STAR                = 11,
+    EVENT_HAMSTRING                  = 12,
+    EVENT_CHAIN_HEAL                 = 13,
+    EVENT_CHAIN_LIGHTNING            = 14,
     //Iron Star
-    EVENT_ACTIVE                     = 14,
+    EVENT_ACTIVE                     = 15,
     EVENT_TP_YSHAARJ                 = 33,
     //Adds in realm
-    EVENT_EMBODIED_DESPAIR           = 15,
+    EVENT_EMBODIED_DESPAIR           = 16,
 };
 
 enum Phase
@@ -220,7 +222,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     phase = PHASE_ONE;
                     /*events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 1000);
                     events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
-                    events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 20000);
+                    events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 18000);
                     events.ScheduleEvent(EVENT_SUMMON_WOLF_RIDER, 30000);
                     events.ScheduleEvent(EVENT_SUMMON_ENGINEER, 20000);*/
                     events.ScheduleEvent(EVENT_TP_YSHAARJ, 5000); //Test event
@@ -409,6 +411,7 @@ class boss_garrosh_hellscream : public CreatureScript
                         }
                         break;
                     }
+                    //Phase Two
                     case EVENT_PHASE_TWO:
                         if (Creature* garroshrealm = me->GetCreature(*me, instance->GetData64(DATA_GARROSH_REALM)))
                         {
@@ -420,8 +423,15 @@ class boss_garrosh_hellscream : public CreatureScript
                             me->SetHealth(hp);
                             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                             me->ReAttackWithZone();
+                            events.ScheduleEvent(EVENT_GRIPPING_DESPAIR, 1000);
+                            events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
                             events.ScheduleEvent(EVENT_WHIRLING_CORRUPTION, 30000); 
                         }
+                        break;
+                    case EVENT_GRIPPING_DESPAIR:
+                        if (me->getVictim())
+                            DoCastVictim(SPELL_GRIPPING_DESPAIR);
+                        events.ScheduleEvent(EVENT_GRIPPING_DESPAIR, 15000);
                         break;
                     case EVENT_WHIRLING_CORRUPTION:
                         DoCast(me, me->GetPower(POWER_ENERGY) >= 25 ? SPELL_EM_WHIRLING_CORRUPTION : SPELL_WHIRLING_CORRUPTION);
@@ -946,6 +956,38 @@ public:
     }
 };
 
+//144989
+class spell_whirling_corruption : public SpellScriptLoader
+{
+public:
+    spell_whirling_corruption() : SpellScriptLoader("spell_whirling_corruption") { }
+
+    class spell_whirling_corruption_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_whirling_corruption_SpellScript);
+
+        void DealDamage()
+        {
+            if (GetCaster() && GetHitUnit())
+            {
+                float distance = GetCaster()->GetExactDist2d(GetHitUnit());
+                if (distance >= 0 && distance < 300)
+                    SetHitDamage(GetHitDamage() * (1 - (distance / 300)));
+            }
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_whirling_corruption_SpellScript::DealDamage);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_whirling_corruption_SpellScript();
+    }
+};
+
 //144616
 class spell_power_iron_star : public SpellScriptLoader
 {
@@ -1016,6 +1058,40 @@ public:
     }
 };
 
+//144954
+class spell_realm_of_yshaarj : public SpellScriptLoader
+{
+public:
+    spell_realm_of_yshaarj() : SpellScriptLoader("spell_realm_of_yshaarj") { }
+    
+    class spell_realm_of_yshaarj_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_realm_of_yshaarj_AuraScript);
+
+        void HandleEffectRemove(AuraEffect const * aurEff, AuraEffectHandleModes mode)
+        {
+            if (GetTarget() && GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+            {
+                GetTarget()->NearTeleportTo(realmtppos.GetPositionX(), realmtppos.GetPositionY(), realmtppos.GetPositionZ(), realmtppos.GetOrientation());
+                GetTarget()->RemoveAurasDueToSpell(SPELL_HOPE_BUFF);
+                GetTarget()->RemoveAurasDueToSpell(SPELL_COURAGE);
+                GetTarget()->RemoveAurasDueToSpell(SPELL_GARROSH_ENERGY);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_realm_of_yshaarj_AuraScript::HandleEffectRemove, EFFECT_1, SPELL_AURA_SCREEN_EFFECT, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_realm_of_yshaarj_AuraScript();
+
+    }
+};
+
 
 void AddSC_boss_garrosh_hellscream()
 {
@@ -1028,6 +1104,8 @@ void AddSC_boss_garrosh_hellscream()
     new npc_heart_of_yshaarj();
     new npc_heart_of_yshaarj_realm();
     new spell_exploding_iron_star();
+    new spell_whirling_corruption();
     new spell_power_iron_star();
     new spell_enter_realm_of_yshaarj();
+    new spell_realm_of_yshaarj();
 }

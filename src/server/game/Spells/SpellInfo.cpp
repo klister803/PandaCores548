@@ -1282,6 +1282,7 @@ SpellEffectInfo const* SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 144821: //Hellscream warsong
     case 149032: //Consumed Hope
     case 149033: //Consumed Faith
+    case 149011: //Consumed Courage
         return &Effects[effect];
     }
 

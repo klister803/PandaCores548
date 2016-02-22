@@ -380,7 +380,7 @@ enum eCreatures
     //Temple of the Jade Serpent
     NPC_EMBODIED_DOUBT              = 72236,
     //Terrace of Endless Spring
-    NPC_EMBODIED_FEAR               = 72237,
+    NPC_EMBODIED_FEAR               = 72237, //need update in DB(spawn)
 };
 
 enum eGameObjects
@@ -580,6 +580,7 @@ enum esSpells
     SPELL_YSHAARJ_PROTECTION           = 144945,
     SPELL_ULTIMATE_DESPAIR             = 147341,
     SPELL_CONSUMED_FAITH               = 149033,
+    SPELL_CONSUMED_COURAGE             = 149011,
 };
 
 
