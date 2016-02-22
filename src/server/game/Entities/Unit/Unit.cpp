@@ -10416,6 +10416,9 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
             if (procSpell->Id != 73510)
                 return false;
 
+            if (!GetCurrentSpellCastTime(73510))
+                return false;
+
             break;
         }
         // Revenge (aura proc)
