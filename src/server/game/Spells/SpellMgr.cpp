@@ -3784,10 +3784,10 @@ void SpellMgr::LoadSpellCustomAttr()
                             SpellItemEnchantmentEntry const* enchant = sSpellItemEnchantmentStore.LookupEntry(enchantId);
                             for (uint8 s = 0; s < MAX_ITEM_ENCHANTMENT_EFFECTS; ++s)
                             {
-                                if (enchant->type[s] != ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
+								if (enchant->Effect[s] != ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
                                     continue;
 
-                                SpellInfo* procInfo = (SpellInfo*)GetSpellInfo(enchant->spellid[s]);
+								SpellInfo* procInfo = (SpellInfo*)GetSpellInfo(enchant->EffectSpellID[s]);
                                 if (!procInfo)
                                     continue;
 

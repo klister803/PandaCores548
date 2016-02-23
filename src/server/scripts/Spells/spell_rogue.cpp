@@ -921,13 +921,13 @@ class spell_rog_deadly_poison : public SpellScriptLoader
 
                         for (uint8 s = 0; s < 3; ++s)
                         {
-                            if (enchant->type[s] != ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
+							if (enchant->Effect[s] != ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
                                 continue;
 
-                            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(enchant->spellid[s]);
+							SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(enchant->EffectSpellID[s]);
                             if (!spellInfo)
                             {
-                                sLog->outError(LOG_FILTER_SPELLS_AURAS, "Player::CastItemCombatSpell Enchant %i, player (Name: %s, GUID: %u) cast unknown spell %i", enchant->ID, player->GetName(), player->GetGUIDLow(), enchant->spellid[s]);
+								sLog->outError(LOG_FILTER_SPELLS_AURAS, "Player::CastItemCombatSpell Enchant %i, player (Name: %s, GUID: %u) cast unknown spell %i", enchant->ID, player->GetName(), player->GetGUIDLow(), enchant->EffectSpellID[s]);
                                 continue;
                             }
 
@@ -940,9 +940,9 @@ class spell_rog_deadly_poison : public SpellScriptLoader
                                 continue;
 
                             if (spellInfo->IsPositive())
-                                player->CastSpell(player, enchant->spellid[s], true, item);
+								player->CastSpell(player, enchant->EffectSpellID[s], true, item);
                             else
-                                player->CastSpell(target, enchant->spellid[s], true, item);
+								player->CastSpell(target, enchant->EffectSpellID[s], true, item);
                         }
                     }
                 }

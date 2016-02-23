@@ -566,7 +566,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                     if (pEnchant)
                     {
                         for (int t = 0; t < MAX_ITEM_ENCHANTMENT_EFFECTS; t++)
-                            if (pEnchant->spellid[t] == m_spellInfo->Id)
+							if (pEnchant->EffectSpellID[t] == m_spellInfo->Id)
                         {
                             amount = uint32((item_rand_suffix->prefix[k]*castItem->GetItemSuffixFactor()) / 10000);
                             break;
