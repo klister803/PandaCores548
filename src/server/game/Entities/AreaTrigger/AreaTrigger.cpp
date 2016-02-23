@@ -94,7 +94,6 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     {
         atInfo = *infoAt;
         _activationDelay = atInfo.activationDelay;
-        _updateDelay = atInfo.updateDelay;
 
         for (AreaTriggerActionList::const_iterator itr = atInfo.actions.begin(); itr != atInfo.actions.end(); ++itr)
             _actionInfo[itr->id] = ActionInfo(&*itr);
@@ -286,6 +285,18 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, AreaTriggerActionMoment acti
 
     if (actionM & AT_ACTION_MOMENT_ENTER)
     {
+        bool _updateUnit = true;
+
+        if (atInfo.updateDelay)
+        {
+            _updateDelay += p_time;
+
+            if (_updateDelay < atInfo.updateDelay)
+                _updateUnit = false;
+            else
+                _updateDelay = 0;
+        }
+
         for (std::list<uint64>::iterator itr = affectedPlayers.begin(), next; itr != affectedPlayers.end(); itr = next)
         {
             next = itr;
@@ -318,7 +329,7 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, AreaTriggerActionMoment acti
                 }
             }
 
-            UpdateOnUnit(unit, p_time);
+            UpdateOnUnit(unit);
         }
 
         std::list<Unit*> unitList;
@@ -448,19 +459,8 @@ void AreaTrigger::AffectOwner(AreaTriggerActionMoment actionM)
     }
 }
 
-void AreaTrigger::UpdateOnUnit(Unit* unit, uint32 p_time)
+void AreaTrigger::UpdateOnUnit(Unit* unit)
 {
-    if (atInfo.updateDelay)
-    {
-        if (_updateDelay > p_time)
-        {
-            _updateDelay -= p_time;
-            return;
-        }
-        else
-            _updateDelay = atInfo.updateDelay;
-    }
-
     for (ActionInfoMap::iterator itr =_actionInfo.begin(); itr != _actionInfo.end(); ++itr)
     {
         ActionInfo& info = itr->second;
