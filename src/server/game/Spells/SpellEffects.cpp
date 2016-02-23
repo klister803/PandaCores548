@@ -820,6 +820,13 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
 
                 switch (m_spellInfo->Id)
                 {
+                    case 88767:
+                    {
+                        if (Aura* aura = m_caster->GetAura(88766))
+                            if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
+                                damage = eff->GetAmount();
+                        break;
+                    }
                     case 10444:
                     {
                         SpellInfo const* _spellinfo = sSpellMgr->GetSpellInfo(8024);

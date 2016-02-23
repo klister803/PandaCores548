@@ -740,7 +740,7 @@ class spell_sha_fulmination : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_fulmination_SpellScript)
 
-            void HandleDamage(SpellEffIndex eff)
+            void HandleDamage(SpellEffIndex /*eff*/)
             {
                 // make caster cast a spell on a unit target of effect
                 Unit *target = GetHitUnit();
@@ -758,16 +758,19 @@ class spell_sha_fulmination : public SpellScriptLoader
 
                 uint8 usedCharges = lsCharges - 1;
 
-                if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SPELL_SHA_LIGHTNING_SHIELD_ORB_DAMAGE))
+                if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SPELL_SHA_LIGHTNING_SHIELD_ORB_DAMAGE))
                 {
                     int32 basePoints = caster->CalculateSpellDamage(target, spellInfo, 0);
-                    int32 damage = int32(usedCharges * caster->SpellDamageBonusDone(target, spellInfo, basePoints, SPELL_DIRECT_DAMAGE, EFFECT_0));
+
+                    if (Aura* aura = caster->GetAura(88766))
+                        if (AuraEffect* _eff = aura->GetEffect(EFFECT_0))
+                            _eff->SetAmount(basePoints * usedCharges);
+
                     if(Aura* aura = caster->GetAura(144998)) // Item - Shaman T16 Elemental 2P Bonus
                         aura->GetEffect(0)->SetAmount(4 * usedCharges);
 
-                    caster->CastCustomSpell(target, SPELL_SHA_FULMINATION_TRIGGERED, &damage, NULL, NULL, false);
+                    caster->CastSpell(target, SPELL_SHA_FULMINATION_TRIGGERED, true);
                     lightningShield->SetCharges(lsCharges - usedCharges);
-
                     caster->RemoveAura(SPELL_SHA_FULMINATION_INFO);
                 }
             }
