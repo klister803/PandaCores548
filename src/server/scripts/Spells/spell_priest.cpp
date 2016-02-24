@@ -520,6 +520,46 @@ class spell_pri_holy_word_sanctuary : public SpellScriptLoader
         }
 };
 
+// Vampiric Embrace - 15286
+class spell_pri_vampiric_embrace : public SpellScriptLoader
+{
+public:
+    spell_pri_vampiric_embrace() : SpellScriptLoader("spell_pri_vampiric_embrace") { }
+
+    class spell_pri_vampiric_embrace_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_pri_vampiric_embrace_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (Unit* caster = GetCaster())
+                if (AuraEffect* eff = GetEffect(EFFECT_0))
+                    if (int32 bp = eff->GetAmount())
+                    {
+                        caster->CastCustomSpell(caster, 15290, &bp, NULL, NULL, true, NULL, eff);
+                        eff->SetAmount(0);
+                    }
+        }
+
+        void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+        {
+            amount = 0;
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_pri_vampiric_embrace_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pri_vampiric_embrace_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_pri_vampiric_embrace_AuraScript();
+    }
+};
+
+
 // Called by Smite - 585
 // Chakra : Chastise - 81209
 class spell_pri_chakra_chastise : public SpellScriptLoader
@@ -2757,4 +2797,5 @@ void AddSC_priest_spell_scripts()
     new spell_pri_void_tendrils_grasp();
     new spell_pri_divine_star_filter();
     new spell_pri_devouring_plague_mastery();
+    new spell_pri_vampiric_embrace();
 }

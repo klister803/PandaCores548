@@ -7987,9 +7987,8 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     if (!victim || !victim->isAlive() || procSpell->SpellFamilyFlags[1] & 0x80000)
                         return false;
 
-                    // heal amount
-                    int32 amount = CalculatePct(int32(damage), triggerAmount);
-                    CastCustomSpell(this, 15290, &amount, &amount, NULL, true, castItem, triggeredByAura);
+                    int32 amount = CalculatePct(damage + dmgInfoProc->GetAbsorb(), triggeredByAura->GetBaseAmount());
+                    triggeredByAura->SetAmount(triggerAmount + amount);
                     return true;                                // no hidden cooldown
                 }
                 // Priest Tier 6 Trinket (Ashtongue Talisman of Acumen)

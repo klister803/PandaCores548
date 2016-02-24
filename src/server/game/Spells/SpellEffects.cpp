@@ -2576,6 +2576,7 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
                         AddPct(addhealth, eff->GetAmount());
                 break;
             }
+            case 15290:  // Vampiric Embrace
             case 148009: // Spirit of Chi-Ji
             {
                 addhealth /= m_UniqueTargetInfo.size();
