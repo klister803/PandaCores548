@@ -6644,7 +6644,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     basepoints0 = damage - (target->GetMaxHealth() - target->GetHealth());
 
                     triggeredByAura->SetAmount(triggerAmount + basepoints0);
-                    break;
+                    return true;
                 }
                 case 146136: // Cleave
                 {
