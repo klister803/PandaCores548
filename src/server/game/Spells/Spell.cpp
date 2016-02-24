@@ -9845,6 +9845,20 @@ void Spell::CustomTargetSelector(std::list<WorldObject*>& targets, SpellEffIndex
                         targets.remove_if(Trinity::UnitAttackableCheck(false, _caster));
                     break;
                 }
+                case SPELL_FILTER_REMOVE_HEALTHY_TARGET: // 16
+                {
+                    std::list<Unit*> removeList;
+
+                    for (auto i : targets)
+                        if (Unit* target = i->ToUnit())
+                            if (target->IsFullHealth())
+                                removeList.push_back(target);
+
+                    if (!removeList.empty())
+                        for (auto i : removeList)
+                            targets.remove(i);
+                    break;
+                }
             }
             switch(itr->addcaster)
             {
