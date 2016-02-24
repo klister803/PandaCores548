@@ -1317,12 +1317,6 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
                         maxSize = 5;
                         break;
                     }
-                    case 148009: // Spirit of Chi-Ji
-                    {
-                        maxSize = 5;
-                        power = POWER_HEALTH;
-                        break;
-                    }
                     case 113828: // Healing Touch
                     {
                         unitTargets.push_back(m_caster);

@@ -10,3 +10,8 @@ INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `resizeType`, `count`,
 INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('15286', 'spell_pri_vampiric_embrace');
 
 INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `option`, `comments`) VALUES ('15290', '56', '16', 'Объятия вампира');
+
+INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('146200', 'spell_gen_spirit_of_chi_ji');
+
+INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `resizeType`, `count`, `comments`) VALUES ('148009', '31', '1', '5', 'Spirit of Chi-Ji');
+INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `option`, `comments`) VALUES ('148009', '31', '16', 'Spirit of Chi-Ji');

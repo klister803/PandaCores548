@@ -6643,8 +6643,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
 
                     basepoints0 = damage - (target->GetMaxHealth() - target->GetHealth());
 
-                    if (basepoints0 > 0)
-                        triggered_spell_id = 148009;
+                    triggeredByAura->SetAmount(triggerAmount + basepoints0);
                     break;
                 }
                 case 146136: // Cleave

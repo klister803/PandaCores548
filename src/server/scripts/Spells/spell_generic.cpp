@@ -111,6 +111,45 @@ class spell_gen_battle_fatigue : public SpellScriptLoader
         }
 };
 
+// Spirit of Chi-Ji 146200
+class spell_gen_spirit_of_chi_ji : public SpellScriptLoader
+{
+public:
+    spell_gen_spirit_of_chi_ji() : SpellScriptLoader("spell_gen_spirit_of_chi_ji") { }
+
+    class spell_gen_spirit_of_chi_ji_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_gen_spirit_of_chi_ji_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (Unit* caster = GetCaster())
+                if (AuraEffect* eff = GetEffect(EFFECT_0))
+                    if (int32 bp = eff->GetAmount())
+                    {
+                        caster->CastCustomSpell(caster, 148009, &bp, NULL, NULL, true, NULL, eff);
+                        eff->SetAmount(0);
+                    }
+        }
+
+        void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+        {
+            amount = 0;
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_gen_spirit_of_chi_ji_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_gen_spirit_of_chi_ji_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_gen_spirit_of_chi_ji_AuraScript();
+    }
+};
+
 class spell_endurance_of_niuzao : public SpellScriptLoader
 {
     public:
@@ -4252,4 +4291,5 @@ void AddSC_generic_spell_scripts()
     new spell_gen_cooking_way();
     new spell_gen_bg_inactive();
     new spell_gen_bounce_achievement();
+    new spell_gen_spirit_of_chi_ji();
 }
