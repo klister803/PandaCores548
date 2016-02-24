@@ -8,3 +8,5 @@ UPDATE `areatrigger_actions` SET `aura`='-116014' WHERE (`entry`='304') AND (`id
 
 INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `resizeType`, `count`, `maxcount`, `comments`) VALUES ('15290', '56', '1', '6', '15', 'Объятия вампира');
 INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('15286', 'spell_pri_vampiric_embrace');
+
+INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `option`, `comments`) VALUES ('15290', '56', '16', 'Объятия вампира');
