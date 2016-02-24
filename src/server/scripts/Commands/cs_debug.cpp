@@ -39,6 +39,8 @@ EndScriptData */
 
 #include <json/json.h>
 #include <json/writer.h>
+#include <document.h>
+#include <prettywriter.h>
 
 class debug_commandscript : public CommandScript
 {
@@ -1842,7 +1844,7 @@ public:
 
         sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint Redis start");
 
-        RedisDatabase.AsyncExecute("HGETALL", player->GetItemKey(), player->GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        /*RedisDatabase.AsyncExecute("HGETALL", player->GetItemKey(), player->GetGUID(), [&](const RedisValue &v, uint64 guid) {
             Player* player = HashMapHolder<Player>::Find(guid);
             if (!player)
                 return;
@@ -1857,82 +1859,92 @@ public:
                     sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint result %s ", result.toString().c_str());
                 }
             }
-        });
+        });*/
 
-        /*
-        Json::Value testJson;
-        testJson["name"] = "Kysya";
-        testJson["Class"] = 11;
-        testJson["Power"]["0"] = 100;
-        testJson["Power"]["20000"] = 2000;
-        Json::FastWriter wbuilder;
-        std::string testJsonStr = wbuilder.write(testJson);
+        std::string testJsonStr;
+        std::string testRapidStr;
+
+        rapidjson::Document documentR;
+        rapidjson::StringBuffer sbR;
+        documentR["name"] = "Kysya";
+        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sbR);
+        documentR.Accept(writer);
+        testRapidStr = sbR.GetString();
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint test string %s testRapidStr %s", sbR.GetString(), testRapidStr.c_str());
+
+        rapidjson::Document documentR2;
+        rapidjson::StringBuffer sbR2;
+        documentR2["name"].SetString("Kysya");
+        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer2(sbR2);
+        documentR2.Accept(writer2);
+        testRapidStr = sbR2.GetString();
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint test 2 string %s testRapidStr %s", sbR2.GetString(), testRapidStr.c_str());
 
         int32 keyCount = 0;
         uint32 oldMSTime = getMSTime();
-        while (keyCount < 100000)
+        while (keyCount < 1000000)
         {
+            Json::Value testJson;
+            testJson["name"] = "Kysya";
+            testJson["Class"] = 11;
+            testJson["Power"]["0"] = 100;
+            testJson["Power"]["20000"] = 2000;
+            Json::FastWriter wbuilder;
+            testJsonStr = wbuilder.write(testJson);
             keyCount++;
-            char key[50];
-            sprintf(key, "%i", keyCount);
-
-            RedisDatabase.AsyncExecuteSet(key, testJsonStr.c_str());
         }
-        sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "HandleRedisPrint Redis keyCount %u in %u ms", keyCount, GetMSTimeDiffToNow(oldMSTime));*/
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint Json::Value in %u ms string %s", GetMSTimeDiffToNow(oldMSTime), testJsonStr.c_str());
 
-        /*keyCount = 0;
+        keyCount = 0;
         oldMSTime = getMSTime();
-        while (keyCount < 100000)
+        while (keyCount < 1000000)
         {
+            rapidjson::Document document;
+            document["name"] = "Kysya";
+            document["Class"] = 11;
+            document["Power"]["0"] = 100;
+            document["Power"]["20000"] = 2000;
+            rapidjson::StringBuffer sb;
+            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
+            document.Accept(writer);    // Accept() traverses the DOM and generates Handler events.
+            testRapidStr = sb.GetString();
             keyCount++;
-            char key[50];
-            sprintf(key, "%i", keyCount);
-            WorldDatabase.PQuery("replace into `test_query_table` (`id`, `value`) values('%u','%s')", keyCount, testJsonStr.c_str());
-            //WorldDatabase.PQuery("SELECT * FROM test_query_table WHERE id = '%u'", keyCount);
         }
-        sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "HandleRedisPrint Mysql keyCount %u in %u ms", keyCount, GetMSTimeDiffToNow(oldMSTime));*/
-
-        //char key[50];
-        //sprintf(key, "%i", keyCount);
-
-        /*boost::asio::ip::address address = boost::asio::ip::address::from_string("127.0.0.1");
-        const unsigned short port = 6379;
-
-        boost::asio::io_service ioService;
-        RedisAsyncClient client(ioService);
-
-        RedisWorker worker(ioService, client);
-        boost::asio::ip::tcp::endpoint endpoint(address, port);
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint rapidjson::Document in %u ms string %s", GetMSTimeDiffToNow(oldMSTime), testRapidStr.c_str());
 
         Json::Value testJson;
-        testJson["name"] = "Vasya";
-        testJson["Class"] = 2;
-        testJson["Power"][0] = 1000;
-        testJson["Power"][2] = 2000;
         Json::FastWriter wbuilder;
-        std::string testJsonStr = wbuilder.write(testJson);
+        keyCount = 0;
+        oldMSTime = getMSTime();
+        while (keyCount < 1000000)
+        {
+            testJson["name"] = "Kysya";
+            testJson["Class"] = 11;
+            testJson["Power"]["0"] = 100;
+            testJson["Power"]["20000"] = 2000;
+            testJsonStr = wbuilder.write(testJson);
+            keyCount++;
+        }
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint Json::Value in %u ms string %s", GetMSTimeDiffToNow(oldMSTime), testJsonStr.c_str());
 
-        worker.SetKey(cval);
-        worker.SetValue(testJsonStr);
+        rapidjson::Document document;
+        rapidjson::StringBuffer sb;
+        keyCount = 0;
+        oldMSTime = getMSTime();
+        while (keyCount < 1000000)
+        {
+            document["name"] = "Kysya";
+            document["Class"] = 11;
+            document["Power"]["0"] = 100;
+            document["Power"]["20000"] = 2000;
+            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
+            document.Accept(writer);    // Accept() traverses the DOM and generates Handler events.
+            testRapidStr = sb.GetString();
+            keyCount++;
+        }
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint rapidjson::Document in %u ms string %s", GetMSTimeDiffToNow(oldMSTime), testRapidStr.c_str());
 
-        client.asyncConnect(endpoint, boost::bind(&Worker::onConnect, &worker, _1, _2));
-
-        ioService.run();*/
-
-        /*
-        RedisValue result;
-
-        Json::Reader reader;
-        Json::Value testJsonFinish;
-        bool isReader = reader.parse(result.toString().c_str(), testJsonFinish);
-        sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "HandleRedisPrint isReader %u result %s name %s Class %s Power %i",
-            isReader, result.toString().c_str(),
-            testJsonFinish["name"].asString().c_str(),
-            testJsonFinish["Class"].asString().c_str(),
-            testJsonFinish["Power"][2].asInt());
-
-        if( result.isOk() )
-            handler->PSendSysMessage("HandleRedisPrint GET %s", result.toString().c_str());*/
+        handler->PSendSysMessage("HandleRedisPrint end");
 
         return true;
     }

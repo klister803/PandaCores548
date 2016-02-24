@@ -51,6 +51,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/dep/zlib
   ${CMAKE_SOURCE_DIR}/dep/jsoncpp
   ${CMAKE_SOURCE_DIR}/dep/redisclient
+  ${CMAKE_SOURCE_DIR}/dep/rapidjson
   ${CMAKE_SOURCE_DIR}/src/server/shared
   ${CMAKE_SOURCE_DIR}/src/server/shared/Configuration
   ${CMAKE_SOURCE_DIR}/src/server/shared/Cryptography
@@ -160,6 +161,7 @@ add_dependencies(scripts revision.h)
 target_link_libraries(scripts
   jsoncpp
   redisclient
+  rapidjson
 )
 
 # Generate precompiled header
