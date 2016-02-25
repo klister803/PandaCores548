@@ -32,10 +32,16 @@ enum eSpells
     SPELL_DESECRATED_WEAPON_AXE      = 145880,
     SPELL_WHIRLING_CORRUPTION        = 144985,
     SPELL_EM_WHIRLING_CORRUPTION     = 145037,
+    SPELL_EM_WHIRLING_CORRUPTION_S   = 145023,
     SPELL_GRIPPING_DESPAIR           = 145183,
     SPELL_EM_GRIPPING_DESPAIR        = 145195,
     //Garrosh Special
-    SPELL_TRANSITION_VISUAL          = 144852,
+    SPELL_TRANSITION_VISUAL_PHASE_2  = 144852,
+    SPELL_TRANSITION_VISUAL_BASE     = 146756,
+    SPELL_TRANSITION_VISUAL_ADVANCE  = 146845,
+    SPELL_TRANSITION_VISUAL_PHASE_3  = 145222,
+    SPELL_PHASE_TWO_TRANSFORM        = 144842,
+    SPELL_PHASE_THREE_TRANSFORM      = 145246,
     //Embodied despair
     SPELL_CONSUMED_HOPE              = 149032,
     SPELL_HOPE_AT                    = 149003,
@@ -83,34 +89,41 @@ enum sEvents
     EVENT_PHASE_TWO                  = 6,
     EVENT_WHIRLING_CORRUPTION        = 7,
     EVENT_GRIPPING_DESPAIR           = 8,
+    EVENT_ENTER_REALM_OF_YSHAARJ     = 9,
+    EVENT_RETURN_TO_REAL             = 10,
     //In Realm
-    EVENT_ANNIHILLATE                = 9,
+    EVENT_ANNIHILLATE                = 11,
     //Desecrated weapon
-    EVENT_REGENERATE                 = 10,
+    EVENT_REGENERATE                 = 12,
     //Summons
-    EVENT_LAUNCH_STAR                = 11,
-    EVENT_HAMSTRING                  = 12,
-    EVENT_CHAIN_HEAL                 = 13,
-    EVENT_CHAIN_LIGHTNING            = 14,
+    EVENT_LAUNCH_STAR                = 13,
+    EVENT_HAMSTRING                  = 14,
+    EVENT_CHAIN_HEAL                 = 15,
+    EVENT_CHAIN_LIGHTNING            = 16,
     //Iron Star
-    EVENT_ACTIVE                     = 15,
-    EVENT_TP_YSHAARJ                 = 33,
+    EVENT_ACTIVE                     = 17,
     //Adds in realm
-    EVENT_EMBODIED_DESPAIR           = 16,
+    EVENT_EMBODIED_DESPAIR           = 18,
 };
 
 enum Phase
 {
     PHASE_NULL,
     PHASE_ONE,
+    PHASE_PREPARE,
     PHASE_REALM_OF_YSHAARJ,
     PHASE_TWO,
+    PHASE_LAST_PREPARE,
+    PHASE_THREE,
 };
 
 enum sActions
 {
     ACTION_LAUNCH                    = 1,
-    ACTION_INTRO_REALM_OF_YSHAARJ    = 2,
+    ACTION_PHASE_PREPARE             = 2,
+    ACTION_INTRO_REALM_OF_YSHAARJ    = 3,
+    ACTION_INTRO_PHASE_THREE         = 4,
+    ACTION_PHASE_THREE               = 5,
 };
 
 Position ironstarspawnpos[2] =
@@ -164,6 +177,33 @@ Position realmtppos = {1073.14f, -5639.47f, -317.3893f, 3.0128f};
 
 //SpellVisualKit ID: 26114
 
+uint32 transformvisual[4] =
+{
+    SPELL_TRANSITION_VISUAL_PHASE_2,
+    SPELL_TRANSITION_VISUAL_PHASE_3,
+    SPELL_PHASE_TWO_TRANSFORM,
+    SPELL_PHASE_THREE_TRANSFORM,
+};
+
+enum CreatureText
+{
+    //Real
+    SAY_ENTERCOMBAT                 = 1,//Я, Гаррош, сын Грома, покажу вам, что значит быть Адским Криком! 38064
+    SAY_HELLSCREAM_WARSONG          = 2,//Умрите с честью! 38075
+    SAY_SUMMON_WOLF_RIDER           = 3,//Исцелите наши раны! 38072
+    SAY_START_LAUNCH_IRON_STAR      = 4,//Узрите силу оружия Истинной Орды! 38068
+    SAY_START_LAUNCH_IRON_STAR2     = 5,//Мы очистим этот мир сталью и пламенем! 38070
+    SAY_PHASE_PREPARE               = 6,//Злоба. Ненависть. Страх! Вот орудия войны, вот слуги Вождя! 38048
+    SAY_PHASE_REALM_OF_YSHAARJ      = 7,//Да... я вижу... вижу, какое будущее ждет этот мир... им будет править Орда... Моя Орда! 38051
+    SAY_WHIRLING_CORRUPTION         = 8,//Я полон силы! 38076
+    SAY_EM_WHIRLING_CORRUPTION      = 9,//Сила во мне уничтожит вас и весь ваш мир. 38077
+    SAY_LAST_PHASE                  = 10,//Начнется правление Истинной Орды. Я видел это. Он показал мне горы черепов и реки крови. Мир... будет... моим! 38056
+    SAY_KILL_PLAYER                 = 11,//Ничтожество! 38065
+    SAY_DIE                         = 12,//Это не может... кончиться... так... Нет... я же видел... 38046
+    //Realm of Yshaarj
+    SAY_ENTER_REALM_OF_YSHAARJ      = 13,//Вы окажетесь в ловушке навеки! 38055
+};
+
 class boss_garrosh_hellscream : public CreatureScript
 {
     public:
@@ -177,12 +217,14 @@ class boss_garrosh_hellscream : public CreatureScript
             }
 
             InstanceScript* instance;
+            uint32 realmofyshaarjtimer;
             uint32 updatepower;
             Phase phase;
 
             void Reset()
             {
                 updatepower = 0;
+                realmofyshaarjtimer = 0;
                 me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 100);
                 me->SetPower(POWER_ENERGY, 0);
@@ -196,6 +238,8 @@ class boss_garrosh_hellscream : public CreatureScript
                 else
                 {                       //Main
                     _Reset();
+                    for (uint8 n = 0; n < 4; n++)
+                        me->RemoveAurasDueToSpell(transformvisual[n]);
                     me->SetReactState(REACT_PASSIVE);//test only
                     phase = PHASE_NULL;
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROSH_ENERGY);
@@ -217,6 +261,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     EnterEvadeMode();
                     return;
                     }*/
+                    Talk(SAY_ENTERCOMBAT, 0);
                     _EnterCombat();
                     SpawnIronStar();
                     phase = PHASE_ONE;
@@ -225,45 +270,102 @@ class boss_garrosh_hellscream : public CreatureScript
                     events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 18000);
                     events.ScheduleEvent(EVENT_SUMMON_WOLF_RIDER, 30000);
                     events.ScheduleEvent(EVENT_SUMMON_ENGINEER, 20000);*/
-                    events.ScheduleEvent(EVENT_TP_YSHAARJ, 5000); //Test event
                 }
+            }
+
+            void OnUnitDeath(Unit* unit)
+            {
+                if (unit->ToPlayer())
+                    Talk(SAY_KILL_PLAYER);
             }
 
             void DamageTaken(Unit* attacker, uint32 &damage)
             {
+                //Garrosh in realm of yshaarj
+                if (me->ToTempSummon()) 
+                    if (damage >= me->GetHealth())
+                        damage = 0;
+
+                //Garrosh in real
                 if (HealthBelowPct(10) && phase == PHASE_ONE)
-                {
-                    phase = PHASE_REALM_OF_YSHAARJ;
-                    DoAction(ACTION_INTRO_REALM_OF_YSHAARJ);
+                {   //phase two
+                    phase = PHASE_PREPARE;
+                    DoAction(ACTION_PHASE_PREPARE);
                 }
+                else if (HealthBelowPct(10) && phase == PHASE_TWO)
+                {   //phase three
+                    phase = PHASE_LAST_PREPARE;
+                    realmofyshaarjtimer = 0;
+                    DoAction(ACTION_INTRO_PHASE_THREE);
+                }                                            //protect from exploit
+                else if (phase == PHASE_PREPARE || phase == PHASE_REALM_OF_YSHAARJ)
+                    if (damage >= me->GetHealth())
+                        damage = 0;
             }
 
             void DoAction(int32 const action)
             {
                 switch (action)
                 {
-                case ACTION_INTRO_REALM_OF_YSHAARJ:
+                case ACTION_PHASE_PREPARE:
+                    Talk(SAY_PHASE_PREPARE, 0);
                     events.Reset();
                     me->SetAttackStop(false);
                     me->GetMotionMaster()->MoveCharge(centerpos.GetPositionX(), centerpos.GetPositionY(), centerpos.GetPositionZ(), 15.0f, 1);
                     break;
+                case ACTION_INTRO_REALM_OF_YSHAARJ:
+                    Talk(SAY_PHASE_REALM_OF_YSHAARJ, 0);
+                    me->ReAttackWithZone();
+                    events.ScheduleEvent(EVENT_ENTER_REALM_OF_YSHAARJ, 12000);
+                    break;
                 case ACTION_LAUNCH_ANNIHILLATE:
                     updatepower = 0;
                     events.ScheduleEvent(EVENT_ANNIHILLATE, 4000);
+                    break;
+                case ACTION_INTRO_PHASE_THREE:
+                    events.Reset();
+                    me->SetAttackStop(false);
+                    me->GetMotionMaster()->MoveCharge(centerpos.GetPositionX(), centerpos.GetPositionY(), centerpos.GetPositionZ(), 15.0f, 2);
+                    break;
+                case ACTION_PHASE_THREE:
+                    phase = PHASE_THREE;
+                    me->SetHealth(me->CountPctFromMaxHealth(28));
+                    me->SetPower(POWER_ENERGY, 100);
+                    me->ReAttackWithZone();
+                    events.ScheduleEvent(EVENT_GRIPPING_DESPAIR, 2000);
+                    events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
+                    events.ScheduleEvent(EVENT_WHIRLING_CORRUPTION, 30000);
                     break;
                 }
             }
 
             void MovementInform(uint32 type, uint32 pointId)
             {
-                if (type == POINT_MOTION_TYPE && pointId == 1)
+                if (type == POINT_MOTION_TYPE)
                 {
-                    me->SetFullHealth();
+                    switch (pointId)
+                    {
+                    case 1:
+                        me->RemoveAurasDueToSpell(SPELL_TRANSITION_VISUAL_PHASE_2);
+                        DoCast(me, SPELL_TRANSITION_VISUAL_BASE);
+                        DoCast(me, SPELL_TRANSITION_VISUAL_PHASE_2);
+                        break;
+                    case 2:
+                        Talk(SAY_LAST_PHASE, 0);
+                        me->RemoveAurasDueToSpell(SPELL_TRANSITION_VISUAL_PHASE_2);
+                        DoCast(me, SPELL_TRANSITION_VISUAL_BASE);
+                        DoCast(me, SPELL_TRANSITION_VISUAL_ADVANCE);
+                        DoCast(me, SPELL_TRANSITION_VISUAL_PHASE_3);
+                        break;
+                    default:
+                        break;
+                    }
                 }
             }
 
             void JustDied(Unit* /*killer*/)
             {
+                Talk(SAY_DIE, 0);
                 _JustDied();
             }
 
@@ -279,6 +381,7 @@ class boss_garrosh_hellscream : public CreatureScript
 
             void UpdateAI(uint32 diff)
             {
+                //Garrosh from realm yshaarj(update power)
                 if (updatepower)
                 {
                     if (updatepower <= diff)
@@ -291,14 +394,30 @@ class boss_garrosh_hellscream : public CreatureScript
                             if (!PlayerList.isEmpty())
                                 for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
                                     if (Player* player = Itr->getSource())
-                                        if (player->HasAura(SPELL_GARROSH_ENERGY))
-                                            player->SetPower(POWER_ALTERNATE_POWER, power);
+                                        if (player->isAlive())
+                                            if (player->HasAura(SPELL_GARROSH_ENERGY))
+                                                player->SetPower(POWER_ALTERNATE_POWER, power);
                             updatepower = 1500;
                         }
                     }
                     else
                         updatepower -= diff;
                 }
+                //
+
+                //Garrosh real
+                if (realmofyshaarjtimer)
+                {
+                    if (realmofyshaarjtimer <= diff)
+                    {
+                        realmofyshaarjtimer = 0;
+                        phase = PHASE_PREPARE;
+                        DoAction(ACTION_PHASE_PREPARE);
+                    }
+                    else
+                        realmofyshaarjtimer -= diff;
+                }
+                //
 
                 if (!UpdateVictim())
                     return;
@@ -313,6 +432,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     switch (eventId)
                     {
                     //In Realm
+                    //Phase one
                     case EVENT_ANNIHILLATE:
                     {
                         float mod = urand(0, 6);
@@ -334,11 +454,13 @@ class boss_garrosh_hellscream : public CreatureScript
                         events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 40000);
                         break;
                     case EVENT_HELLSCREAM_WARSONG:
+                        Talk(SAY_HELLSCREAM_WARSONG, 0);
                         DoCast(me, SPELL_HELLSCREAM_WARSONG);
                         events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 38000);
                         break;
                     case EVENT_SUMMON_WOLF_RIDER:
                     {
+                        Talk(SAY_SUMMON_WOLF_RIDER, 0);
                         uint8 pos = urand(0, 1);
                         if (Creature* wrider = me->SummonCreature(NPC_WOLF_RIDER, wspos[pos]))
                             wrider->AI()->DoZoneInCombat(wrider, 200.0f);
@@ -348,6 +470,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     case EVENT_SUMMON_ENGINEER:
                         for (uint8 n = 0; n < 2; n++)
                             me->SummonCreature(NPC_SIEGE_ENGINEER, engeneerspawnpos[n]);
+                        Talk(urand(SAY_START_LAUNCH_IRON_STAR, SAY_START_LAUNCH_IRON_STAR2), 0);
                         events.ScheduleEvent(EVENT_SUMMON_ENGINEER, 40000);
                         break;
                     case EVENT_DESECRATED_WEAPON:
@@ -390,27 +513,45 @@ class boss_garrosh_hellscream : public CreatureScript
                         events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 40000);
                         break;
                     }
-                    case EVENT_TP_YSHAARJ: //Test event
+                    case EVENT_ENTER_REALM_OF_YSHAARJ:
                     {
+                        me->SetAttackStop(false);
                         uint8 mod = instance->GetData(DATA_GET_REALM_OF_YSHAARJ);
                         if (Creature* garroshrealm = me->SummonCreature(NPC_GARROSH, gspos[mod]))
                         {
                             uint32 hp = me->GetHealth();
+                            uint32 power = me->GetPower(POWER_ENERGY);
                             garroshrealm->SetHealth(hp);
-                        }
-                        std::list<Player*>pllist;
-                        GetPlayerListInGrid(pllist, me, 150.0f);
-                        if (!pllist.empty())
-                        {
-                            for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                            garroshrealm->SetPower(POWER_ENERGY, power);
+                            std::list<Player*>pllist;
+                            GetPlayerListInGrid(pllist, me, 150.0f);
+                            if (!pllist.empty())
                             {
-                                (*itr)->NearTeleportTo(tppos[mod].GetPositionX(), tppos[mod].GetPositionY(), tppos[mod].GetPositionZ(), tppos[mod].GetOrientation());
-                                (*itr)->AddAura(SPELL_REALM_OF_YSHAARJ, *itr);
-                                (*itr)->CastSpell(*itr, SPELL_GARROSH_ENERGY);
+                                for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                                {
+                                    (*itr)->NearTeleportTo(tppos[mod].GetPositionX(), tppos[mod].GetPositionY(), tppos[mod].GetPositionZ(), tppos[mod].GetOrientation());
+                                    (*itr)->AddAura(SPELL_REALM_OF_YSHAARJ, *itr);
+                                    (*itr)->CastSpell(*itr, SPELL_GARROSH_ENERGY);
+                                }
                             }
+                            garroshrealm->AI()->Talk(SAY_ENTER_REALM_OF_YSHAARJ, 0);
+                            phase = PHASE_REALM_OF_YSHAARJ;
+                            events.ScheduleEvent(EVENT_RETURN_TO_REAL, 60000);
                         }
                         break;
                     }
+                    case EVENT_RETURN_TO_REAL:
+                    {
+                        Map::PlayerList const &PlayerList = me->GetMap()->GetPlayers();
+                        if (!PlayerList.isEmpty())
+                            for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+                                if (Player* player = Itr->getSource())
+                                    if (player->isAlive())
+                                        if (player->HasAura(SPELL_REALM_OF_YSHAARJ))
+                                            player->RemoveAura(SPELL_REALM_OF_YSHAARJ, AURA_REMOVE_BY_EXPIRE);
+                        events.ScheduleEvent(EVENT_PHASE_TWO, 2000);
+                    }
+                    break;
                     //Phase Two
                     case EVENT_PHASE_TWO:
                         if (Creature* garroshrealm = me->GetCreature(*me, instance->GetData64(DATA_GARROSH_REALM)))
@@ -421,19 +562,22 @@ class boss_garrosh_hellscream : public CreatureScript
                             instance->SetData(DATA_UPDATE_GARROSH_REALM, 0);
                             me->SetPower(POWER_ENERGY, power);
                             me->SetHealth(hp);
+                            phase = PHASE_TWO;
                             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                             me->ReAttackWithZone();
-                            events.ScheduleEvent(EVENT_GRIPPING_DESPAIR, 1000);
+                            events.ScheduleEvent(EVENT_GRIPPING_DESPAIR, 2000);
                             events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
                             events.ScheduleEvent(EVENT_WHIRLING_CORRUPTION, 30000); 
+                            realmofyshaarjtimer = 150000;
                         }
                         break;
                     case EVENT_GRIPPING_DESPAIR:
                         if (me->getVictim())
                             DoCastVictim(SPELL_GRIPPING_DESPAIR);
-                        events.ScheduleEvent(EVENT_GRIPPING_DESPAIR, 15000);
+                        events.ScheduleEvent(EVENT_GRIPPING_DESPAIR, 4000);
                         break;
                     case EVENT_WHIRLING_CORRUPTION:
+                        Talk(me->GetPower(POWER_ENERGY) >= 25 ? SAY_WHIRLING_CORRUPTION : SAY_EM_WHIRLING_CORRUPTION, 0);
                         DoCast(me, me->GetPower(POWER_ENERGY) >= 25 ? SPELL_EM_WHIRLING_CORRUPTION : SPELL_WHIRLING_CORRUPTION);
                         events.ScheduleEvent(EVENT_WHIRLING_CORRUPTION, 40000);
                         break;
@@ -475,7 +619,7 @@ public:
             {
             case NPC_SIEGE_ENGINEER:
                 me->SetReactState(REACT_PASSIVE);
-                events.ScheduleEvent(EVENT_LAUNCH_STAR, urand(1000, 3000));
+                events.ScheduleEvent(EVENT_LAUNCH_STAR, 500);
                 break;
             case NPC_EMBODIED_DESPAIR:
                 me->SetReactState(REACT_AGGRESSIVE);
@@ -988,6 +1132,35 @@ public:
     }
 };
 
+//145037
+class spell_empovered_whirling_corruption : public SpellScriptLoader
+{
+public:
+    spell_empovered_whirling_corruption() : SpellScriptLoader("spell_empovered_whirling_corruption") { }
+
+    class spell_empovered_whirling_corruption_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_empovered_whirling_corruption_AuraScript);
+
+        void OnPeriodic(AuraEffect const*aurEff)
+        {
+            if (GetCaster())
+                GetCaster()->CastSpell(GetCaster(), SPELL_EM_WHIRLING_CORRUPTION_S, true);
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_empovered_whirling_corruption_AuraScript::OnPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_empovered_whirling_corruption_AuraScript();
+
+    }
+};
+
 //144616
 class spell_power_iron_star : public SpellScriptLoader
 {
@@ -1092,6 +1265,45 @@ public:
     }
 };
 
+//144852, 145222
+class spell_transition_visual : public SpellScriptLoader
+{
+public:
+    spell_transition_visual() : SpellScriptLoader("spell_transition_visual") { }
+
+    class spell_transition_visual_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_transition_visual_AuraScript);
+
+        void OnPeriodic(AuraEffect const*aurEff)
+        {
+            if (GetCaster() && GetCaster()->ToCreature())
+            {
+                switch (GetSpellInfo()->Id)
+                {
+                case SPELL_TRANSITION_VISUAL_PHASE_2:
+                    GetCaster()->ToCreature()->AI()->DoAction(ACTION_INTRO_REALM_OF_YSHAARJ);
+                    break;
+                case SPELL_TRANSITION_VISUAL_PHASE_3:
+                    GetCaster()->ToCreature()->AI()->DoAction(ACTION_PHASE_THREE);
+                    break;
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_transition_visual_AuraScript::OnPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_transition_visual_AuraScript();
+
+    }
+};
+
 
 void AddSC_boss_garrosh_hellscream()
 {
@@ -1105,7 +1317,9 @@ void AddSC_boss_garrosh_hellscream()
     new npc_heart_of_yshaarj_realm();
     new spell_exploding_iron_star();
     new spell_whirling_corruption();
+    new spell_empovered_whirling_corruption();
     new spell_power_iron_star();
     new spell_enter_realm_of_yshaarj();
     new spell_realm_of_yshaarj();
+    new spell_transition_visual();
 }

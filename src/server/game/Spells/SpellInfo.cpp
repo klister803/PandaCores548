@@ -1283,6 +1283,7 @@ SpellEffectInfo const* SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 149032: //Consumed Hope
     case 149033: //Consumed Faith
     case 149011: //Consumed Courage
+    case 145246: //Phase Three Transform
         return &Effects[effect];
     }
 
