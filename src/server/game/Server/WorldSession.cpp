@@ -661,6 +661,7 @@ void WorldSession::LogoutPlayer(bool Save)
             //_player->SaveToDB();
             _player->UpdateSavePlayer();
             _player->UpdatePlayerNameData();
+            _player->SaveJsonData();
         }
 
         ///- Leave all channels before player delete...

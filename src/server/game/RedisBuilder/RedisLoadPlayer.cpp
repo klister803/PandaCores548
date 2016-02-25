@@ -61,7 +61,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
 
             RedisDatabase.AsyncExecuteH("HGET", userKey, "homebind", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerHomeBind(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["homebind"]))
+                        loadingPlayer->LoadPlayerHomeBind();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_DATA); //Next step load
+                }
             });
             break;
         }
@@ -69,7 +74,18 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "userdata", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayer(&v, guid);
+                {
+                    if (!sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["data"]))
+                    {
+                        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayer data is empty");
+                        GetSession()->HandlePlayerLogin(GetSession()->GetAccountId(), guid, 2);
+                    }
+                    else
+                    {
+                        loadingPlayer->LoadPlayer(guid);
+                        loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_GOLD); //Next step load
+                    }
+                }
             });
             break;
         }
@@ -77,7 +93,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "money", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerGold(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["gold"]))
+                        loadingPlayer->LoadPlayerGold();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_ACCOUNT_ACHIEVEMENT); //Next step load
+                }
             });
             break;
         }
@@ -85,7 +106,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", GetAccountKey(), "achievement", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadAccountAchievements(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->AccountDatas["achievement"]))
+                        loadingPlayer->LoadAccountAchievements();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_ACHIEVEMENT); //Next step load
+                }
             });
             break;
         }
@@ -93,7 +119,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "achievement", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerAchievements(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["achievement"]))
+                        loadingPlayer->LoadPlayerAchievements();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_CRITERIA); //Next step load
+                }
             });
             break;
         }
@@ -101,7 +132,13 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecute("HGETALL", criteriaPlKey, guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerCriteriaProgress(&v, guid);
+                {
+                    std::vector<RedisValue> progressVector;
+                    if (sRedisBuilderMgr->LoadFromRedisArray(&v, progressVector))
+                        loadingPlayer->LoadPlayerCriteriaProgress(&progressVector);
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_ACCOUNT_CRITERIA); //Next step load
+                }
             });
             break;
         }
@@ -109,20 +146,32 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecute("HGETALL", criteriaAcKey, guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadAccountCriteriaProgress(&v, guid);
+                {
+                    std::vector<RedisValue> progressVector;
+                    if (sRedisBuilderMgr->LoadFromRedisArray(&v, progressVector))
+                        loadingPlayer->LoadAccountCriteriaProgress(&progressVector);
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_NEXT); //Next step load
+                }
             });
             break;
         }
         case LOAD_PLAYER_NEXT: //Load player data next
         {
             LoadPlayerNext(guid);
+            LoadFromRedis(guid, LOAD_PLAYER_GROUP); //Next step load
             break;
         }
         case LOAD_PLAYER_GROUP: //Load player group
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "group", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerGroup(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["group"]))
+                        loadingPlayer->LoadPlayerGroup();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_LOOTCOOLDOWN); //Next step load
+                }
             });
             break;
         }
@@ -130,7 +179,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "lootCooldown", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerLootCooldown(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["lootcooldown"]))
+                        loadingPlayer->LoadPlayerLootCooldown();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_CURRENCY); //Next step load
+                }
             });
             break;
         }
@@ -138,7 +192,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "currency", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerCurrency(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["currency"]))
+                        loadingPlayer->LoadPlayerCurrency();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_BOUNDINSTANCES); //Next step load
+                }
             });
             break;
         }
@@ -146,7 +205,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "boundinstances", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerBoundInstances(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["boundinstances"]))
+                        loadingPlayer->LoadPlayerBoundInstances();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_BGDATA); //Next step load
+                }
             });
             break;
         }
@@ -154,7 +218,13 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "BGdata", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerBG(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["bg"]))
+                        loadingPlayer->LoadPlayerBG();
+
+                    loadingPlayer->InitSecondPartDataPlayer();
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_BATTLEPETS); //Next step load
+                }
             });
             break;
         }
@@ -162,7 +232,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", GetAccountKey(), "battlepets", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerBattlePets(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->AccountDatas["battlepets"]))
+                        loadingPlayer->LoadPlayerBattlePets();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_BATTLEPETSLOTS); //Next step load
+                }
             });
             break;
         }
@@ -170,7 +245,17 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", GetAccountKey(), "battlepetslots", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerBattlePetSlots(&v, guid);
+                {
+                    if (!sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->AccountDatas["battlepetslots"]))
+                    {
+                        for (int i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
+                            loadingPlayer->GetBattlePetMgr()->InitBattleSlot(0, i);
+                    }
+                    else
+                        loadingPlayer->LoadPlayerBattlePetSlots();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_SKILLS); //Next step load
+                }
             });
             break;
         }
@@ -178,26 +263,50 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "skills", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerSkills(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["skills"]))
+                        loadingPlayer->LoadPlayerSkills();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_ARCHAEOLOGY); //Next step load
+                }
             });
             break;
         }
         case LOAD_PLAYER_ARCHAEOLOGY: //Load player archaeology
         {
+            for (uint8 i = 0; i < MAX_RESEARCH_SITES; ++i)
+                _digSites[i].count = 0;
+
+            if (!sWorld->getBoolConfig(CONFIG_ARCHAEOLOGY_ENABLED))
+            {
+                LoadFromRedis(guid, LOAD_PLAYER_TALENTS); //Next step load
+                return;
+            }
+
             RedisDatabase.AsyncExecuteH("HGET", userKey, "archaeology", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerArchaeology(&v, guid);
+                {
+                    if (!sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["archaeology"]))
+                    {
+                        loadingPlayer->GenerateResearchSites();
+                        loadingPlayer->GenerateResearchProjects();
+                    }
+                    else
+                        loadingPlayer->LoadPlayerArchaeology();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_TALENTS); //Next step load
+                }
             });
             break;
         }
         case LOAD_PLAYER_TALENTS: //Load player Spec and Talent
         {
-            uint8 specCount = PlayerJson["speccount"].asUInt();
+            uint8 specCount = PlayerData["data"]["speccount"].asUInt();
             SetSpecsCount(specCount == 0 ? 1 : specCount);
-            SetActiveSpec(specCount > 1 ? PlayerJson["activespec"].asUInt() : 0);
+            SetActiveSpec(specCount > 1 ? PlayerData["data"]["activespec"].asUInt() : 0);
 
-            SetSpecializationId(0, PlayerJson["specialization1"].asUInt());
-            SetSpecializationId(1, PlayerJson["specialization2"].asUInt());
+            SetSpecializationId(0, PlayerData["data"]["specialization1"].asUInt());
+            SetSpecializationId(1, PlayerData["data"]["specialization2"].asUInt());
 
             SetFreeTalentPoints(CalculateTalentsPoints());
 
@@ -210,7 +319,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
 
             RedisDatabase.AsyncExecuteH("HGET", userKey, "talents", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerTalents(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["talents"]))
+                        loadingPlayer->LoadPlayerTalents();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_SPELLS); //Next step load
+                }
             });
             break;
         }
@@ -218,7 +332,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "spells", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerSpells(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["spells"]))
+                        loadingPlayer->LoadPlayerSpells();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_MOUNTS); //Next step load
+                }
             });
             break;
         }
@@ -226,7 +345,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", GetAccountKey(), "mounts", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerMounts(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->AccountDatas["mounts"]))
+                        loadingPlayer->LoadPlayerMounts();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_GLYPHS); //Next step load
+                }
             });
             break;
         }
@@ -234,7 +358,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "glyphs", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerGlyphs(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["glyphs"]))
+                        loadingPlayer->LoadPlayerGlyphs();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_AURAS); //Next step load
+                }
             });
             break;
         }
@@ -242,7 +371,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "auras", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerAuras(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["auras"]))
+                        loadingPlayer->LoadPlayerAuras();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_QUESTSTATUS); //Next step load
+                }
             });
             break;
         }
@@ -258,7 +392,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
 
             RedisDatabase.AsyncExecuteH("HGET", userKey, "queststatus", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerQuestStatus(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["queststatus"]))
+                        loadingPlayer->LoadPlayerQuestStatus();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_ACCOUNT_QUESTSTATUS); //Next step load
+                }
             });
             break;
         }
@@ -266,7 +405,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", GetAccountKey(), "queststatus", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadAccountQuestStatus(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->AccountDatas["queststatus"]))
+                        loadingPlayer->LoadAccountQuestStatus();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_QUESTREWARDED); //Next step load
+                }
             });
             break;
         }
@@ -274,7 +418,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "questrewarded", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerQuestRewarded(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["questrewarded"]))
+                        loadingPlayer->LoadPlayerQuestRewarded();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_ACCOUNT_QUESTREWARDED); //Next step load
+                }
             });
             break;
         }
@@ -282,7 +431,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", GetAccountKey(), "questrewarded", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadAccountQuestRewarded(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->AccountDatas["questrewarded"]))
+                        loadingPlayer->LoadAccountQuestRewarded();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_QUESTDAILY); //Next step load
+                }
             });
             break;
         }
@@ -290,7 +444,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "questdaily", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerQuestDaily(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["questdaily"]))
+                        loadingPlayer->LoadPlayerQuestDaily();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_ACCOUNT_QUESTDAILY); //Next step load
+                }
             });
             break;
         }
@@ -298,7 +457,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", GetAccountKey(), "questdaily", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadAccountQuestDaily(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->AccountDatas["questdaily"]))
+                        loadingPlayer->LoadAccountQuestDaily();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_QUESTWEEKLY); //Next step load
+                }
             });
             break;
         }
@@ -306,7 +470,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "questweekly", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerQuestWeekly(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["questweekly"]))
+                        loadingPlayer->LoadPlayerQuestWeekly();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_ACCOUNT_QUESTWEEKLY); //Next step load
+                }
             });
             break;
         }
@@ -314,7 +483,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", GetAccountKey(), "questweekly", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadAccountQuestWeekly(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->AccountDatas["questweekly"]))
+                        loadingPlayer->LoadAccountQuestWeekly();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_QUESTSEASONAL); //Next step load
+                }
             });
             break;
         }
@@ -322,7 +496,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "questseasonal", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerQuestSeasonal(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["questseasonal"]))
+                        loadingPlayer->LoadPlayerQuestSeasonal();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_ACCOUNT_QUESTSEASONAL); //Next step load
+                }
             });
             break;
         }
@@ -330,7 +509,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", GetAccountKey(), "questseasonal", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadAccountQuestSeasonal(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->AccountDatas["questseasonal"]))
+                        loadingPlayer->LoadAccountQuestSeasonal();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_REPUTATION); //Next step load
+                }
             });
             break;
         }
@@ -345,7 +529,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
 
             RedisDatabase.AsyncExecuteH("HGET", userKey, "reputation", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->m_reputationMgr.LoadFromDB(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["reputation"]))
+                        loadingPlayer->m_reputationMgr.LoadFromDB();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_ITEMS); //Next step load
+                }
             });
             break;
         }
@@ -353,7 +542,13 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecute("HGETALL", itemKey, guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerLoadItems(&v, guid);
+                {
+                    std::vector<RedisValue> itemVector;
+                    if (sRedisBuilderMgr->LoadFromRedisArray(&v, itemVector))
+                        loadingPlayer->LoadPlayerLoadItems(&itemVector);
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_VOIDSTORAGE); //Next step load
+                }
             });
             break;
         }
@@ -361,7 +556,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "voidstorage", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerVoidStorage(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["voidstorage"]))
+                        loadingPlayer->LoadPlayerVoidStorage();
+
+                    LoadFromRedis(guid, LOAD_PLAYER_ACTIONS); //Next step load
+                }
             });
             break;
         }
@@ -369,7 +569,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "actions", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerActions(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["actions"]))
+                        loadingPlayer->LoadPlayerActions();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_SOCIAL); //Next step load
+                }
             });
             break;
         }
@@ -378,7 +583,8 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
             RedisDatabase.AsyncExecuteH("HGET", userKey, "social", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
                 {
-                    loadingPlayer->m_social = sSocialMgr->LoadFromDB(&v, loadingPlayer);
+                    sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["social"]);
+                    sSocialMgr->LoadFromDB(loadingPlayer);
                     loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_SPELLCOOLDOWNS); //Next step load
                 }
             });
@@ -388,7 +594,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "spellcooldowns", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerSpellCooldowns(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["spellcooldowns"]))
+                        loadingPlayer->LoadPlayerSpellCooldowns();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_KILLS); //Next step load
+                }
             });
             break;
         }
@@ -396,20 +607,31 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "kills", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerKills(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["spellcooldowns"]))
+                        loadingPlayer->LoadPlayerKills();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_INIT_THIRD); //Next step load
+                }
             });
             break;
         }
         case LOAD_PLAYER_INIT_THIRD: //Load player init third part data
         {
             InitThirdPartDataPlayer();
+            LoadFromRedis(guid, LOAD_PLAYER_DECLINEDNAME); //Next step load
             break;
         }
         case LOAD_PLAYER_DECLINEDNAME: //Load player Declined Name
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "declinedname", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerDeclinedName(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["declinedname"]))
+                        loadingPlayer->LoadPlayerDeclinedName();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_EQUIPMENTSETS); //Next step load
+                }
             });
             break;
         }
@@ -417,7 +639,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "equipmentsets", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerEquipmentSets(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["equipmentsets"]))
+                        loadingPlayer->LoadPlayerEquipmentSets();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_CUFPROFILES); //Next step load
+                }
             });
             break;
         }
@@ -425,7 +652,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "cufprofiles", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerCUFProfiles(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["cufprofiles"]))
+                        loadingPlayer->LoadPlayerCUFProfiles();
+
+                   loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_VISUALS); //Next step load
+                }
             });
             break;
         }
@@ -433,7 +665,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "visuals", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerVisuals(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["visuals"]))
+                        loadingPlayer->LoadPlayerVisuals();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_PLAYERACCOUNTDATA); //Next step load
+                }
             });
             break;
         }
@@ -441,7 +678,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "playeraccountdata", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerAccountData(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["accountdata"]))
+                        loadingPlayer->LoadPlayerAccountData();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_PETS); //Next step load
+                }
             });
             break;
         }
@@ -455,7 +697,11 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecute("HGETALL", mailKey, guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* player = HashMapHolder<Player>::Find(guid))
-                    player->LoadPlayerMails(&v, guid);
+                {
+                    std::vector<RedisValue> mailVector;
+                    if (sRedisBuilderMgr->LoadFromRedisArray(&v, mailVector))
+                        player->LoadPlayerMails(&mailVector);
+                }
             });
             break;
         }
@@ -465,7 +711,11 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
             sprintf(_key, "r{%u}m{%u}items", realmID, PAIR64_HIPART(guid));
             RedisDatabase.AsyncExecute("HGETALL", _key, guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* player = HashMapHolder<Player>::Find(PAIR64_LOPART(guid)))
-                    player->LoadPlayerMailItems(&v, guid);
+                {
+                    std::vector<RedisValue> itemVector;
+                    if (sRedisBuilderMgr->LoadFromRedisArray(&v, itemVector))
+                        player->LoadPlayerMailItems(&itemVector, guid);
+                }
             });
             break;
         }
@@ -473,7 +723,10 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "pets", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerPets(&v, guid);
+                {
+                    sRedisBuilderMgr->LoadFromRedis(&v, PlayerData["pets"]);
+                    LoadFromRedis(guid, LOAD_PLAYER_GUILD);
+                }
             });
             break;
         }
@@ -481,7 +734,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "guild", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerGuild(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["guild"]))
+                        loadingPlayer->LoadPlayerGuild();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_CORPSE); //Next step load
+                }
             });
             break;
         }
@@ -489,7 +747,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "corpse", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerCorpse(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["corpse"]))
+                        loadingPlayer->LoadPlayerCorpse();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_PETITION); //Next step load
+                }
             });
             break;
         }
@@ -497,7 +760,12 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
         {
             RedisDatabase.AsyncExecuteH("HGET", userKey, "petitions", guid, [&](const RedisValue &v, uint64 guid) {
                 if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                    loadingPlayer->LoadPlayerPetition(&v, guid);
+                {
+                    if (sRedisBuilderMgr->LoadFromRedis(&v, loadingPlayer->PlayerData["petitions"]))
+                        loadingPlayer->LoadPlayerPetition();
+
+                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_LOGIN); //Next step load
+                }
             });
             break;
         }
@@ -508,20 +776,20 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
     //sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadFromRedis end step %i get_id %i", step, boost::this_thread::get_id());
 }
 
-void Player::LoadPlayer(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayer(uint64 playerGuid)
 {
     uint32 guid = GUID_LOPART(playerGuid);
 
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerJson))
+    if (!PlayerData.isMember("data") || PlayerData["data"].empty())
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayer data is empty");
+        sLog->outError(LOG_FILTER_PLAYER, "Player (GUID: %u) loading from wrong account (is: %u)", guid, GetSession()->GetAccountId());
         GetSession()->HandlePlayerLogin(GetSession()->GetAccountId(), playerGuid, 2);
         return;
     }
 
-    uint8 m_realmID = PlayerJson["realm"].asInt();
+    uint8 m_realmID = PlayerData["data"]["realm"].asInt();
 
-    uint32 dbAccountId = PlayerJson["account"].asUInt();
+    uint32 dbAccountId = PlayerData["data"]["account"].asUInt();
 
     // check if the character's account in the db and the logged in account match.
     // player should be able to load/delete character only with correct account!
@@ -540,7 +808,7 @@ void Player::LoadPlayer(const RedisValue* v, uint64 playerGuid)
 
     Object::_Create(guid, 0, HIGHGUID_PLAYER);
 
-    m_name = PlayerJson["name"].asString();
+    m_name = PlayerData["data"]["name"].asString();
 
     // check name limitations
     // if (ObjectMgr::CheckPlayerName(m_name) != CHAR_NAME_SUCCESS ||
@@ -557,7 +825,7 @@ void Player::LoadPlayer(const RedisValue* v, uint64 playerGuid)
     // overwrite possible wrong/corrupted guid
     SetUInt64Value(OBJECT_FIELD_GUID, MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER));
 
-    uint8 Gender = PlayerJson["gender"].asInt();
+    uint8 Gender = PlayerData["data"]["gender"].asInt();
     if (!IsValidGender(Gender))
     {
         sLog->outError(LOG_FILTER_PLAYER, "Player (GUID: %u) has wrong gender (%hu), can't be loaded.", guid, Gender);
@@ -566,46 +834,52 @@ void Player::LoadPlayer(const RedisValue* v, uint64 playerGuid)
     }
 
     // overwrite some data fields
-    SetRace(PlayerJson["race"].asInt());
-    SetClass(PlayerJson["class"].asInt());
+    SetRace(PlayerData["data"]["race"].asInt());
+    SetClass(PlayerData["data"]["class"].asInt());
     SetGender(Gender);
 
 
-    SetUInt32Value(UNIT_FIELD_LEVEL, PlayerJson["level"].asInt());
-    SetUInt32Value(PLAYER_XP, PlayerJson["xp"].asInt());
+    SetUInt32Value(UNIT_FIELD_LEVEL, PlayerData["data"]["level"].asInt());
+    SetUInt32Value(PLAYER_XP, PlayerData["data"]["xp"].asInt());
 
-    _LoadIntoDataField(PlayerJson["exploredZones"].asCString(), PLAYER_EXPLORED_ZONES_1, PLAYER_EXPLORED_ZONES_SIZE);
-    _LoadIntoDataField(PlayerJson["knownTitles"].asCString(), PLAYER_FIELD_KNOWN_TITLES, KNOWN_TITLES_SIZE * 2);
+    _LoadIntoDataField(PlayerData["data"]["exploredZones"].asCString(), PLAYER_EXPLORED_ZONES_1, PLAYER_EXPLORED_ZONES_SIZE);
+    _LoadIntoDataField(PlayerData["data"]["knownTitles"].asCString(), PLAYER_FIELD_KNOWN_TITLES, KNOWN_TITLES_SIZE * 2);
 
     SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_WORLD_OBJECT_SIZE);
     SetFloatValue(UNIT_FIELD_COMBATREACH, 1.5f);
     SetFloatValue(UNIT_FIELD_HOVERHEIGHT, 1.0f);
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_GOLD); //Next step load
 }
 
 void Player::LoadPlayerNext(uint64 playerGuid)
 {
     uint32 guid = GUID_LOPART(playerGuid);
-    uint8 Gender = PlayerJson["gender"].asInt();
 
-    uint64 money = PlayerGoldJson.asUInt64();
+    if (!PlayerData.isMember("data") || PlayerData["data"].empty())
+    {
+        sLog->outError(LOG_FILTER_PLAYER, "Player (GUID: %u) loading from wrong account (is: %u)", guid, GetSession()->GetAccountId());
+        GetSession()->HandlePlayerLogin(GetSession()->GetAccountId(), playerGuid, 2);
+        return;
+    }
+
+    uint8 Gender = PlayerData["data"]["gender"].asInt();
+
+    uint64 money = PlayerData["gold"].asUInt64();
     if (money > MAX_MONEY_AMOUNT)
         money = MAX_MONEY_AMOUNT;
     SetMoney(money);
 
-    SetUInt32Value(PLAYER_BYTES, PlayerJson["playerBytes"].asUInt());
-    SetUInt32Value(PLAYER_BYTES_2, PlayerJson["playerBytes2"].asUInt());
+    SetUInt32Value(PLAYER_BYTES, PlayerData["data"]["playerBytes"].asUInt());
+    SetUInt32Value(PLAYER_BYTES_2, PlayerData["data"]["playerBytes2"].asUInt());
     SetByteValue(PLAYER_BYTES_3, 0, Gender);
-    SetByteValue(PLAYER_BYTES_3, 1, PlayerJson["drunk"].asUInt());
-    SetUInt32Value(PLAYER_FLAGS, PlayerJson["playerFlags"].asUInt());
-    SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, PlayerJson["watchedFaction"].asUInt());
+    SetByteValue(PLAYER_BYTES_3, 1, PlayerData["data"]["drunk"].asUInt());
+    SetUInt32Value(PLAYER_FLAGS, PlayerData["data"]["playerFlags"].asUInt());
+    SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, PlayerData["data"]["watchedFaction"].asUInt());
 
     // set which actionbars the client has active - DO NOT REMOVE EVER AGAIN (can be changed though, if it does change fieldwise)
-    SetByteValue(PLAYER_FIELD_BYTES, 2, PlayerJson["actionBars"].asUInt());
+    SetByteValue(PLAYER_FIELD_BYTES, 2, PlayerData["data"]["actionBars"].asUInt());
 
-    m_currentPetNumber = PlayerJson["currentpetnumber"].asUInt();
-    LoadPetSlot(PlayerJson["petslot"].asString());
+    m_currentPetNumber = PlayerData["data"]["currentpetnumber"].asUInt();
+    LoadPetSlot(PlayerData["data"]["petslot"].asString());
 
     InitDisplayIds();
 
@@ -633,15 +907,15 @@ void Player::LoadPlayerNext(uint64 playerGuid)
     InitPrimaryProfessions();                               // to max set before any spell loaded
 
     // init saved position, and fix it later if problematic
-    Relocate(PlayerJson["position_x"].asFloat(), PlayerJson["position_y"].asFloat(), PlayerJson["position_z"].asFloat(), PlayerJson["orientation"].asFloat());
+    Relocate(PlayerData["data"]["position_x"].asFloat(), PlayerData["data"]["position_y"].asFloat(), PlayerData["data"]["position_z"].asFloat(), PlayerData["data"]["orientation"].asFloat());
 
-    uint32 mapId = PlayerJson["map"].asUInt();
-    uint32 instanceId = PlayerJson["instance_id"].asUInt();
+    uint32 mapId = PlayerData["data"]["map"].asUInt();
+    uint32 instanceId = PlayerData["data"]["instance_id"].asUInt();
 
-    uint32 dungeonDiff = PlayerJson["instance_mode_mask"].asUInt() & 0xFFFF;
+    uint32 dungeonDiff = PlayerData["data"]["instance_mode_mask"].asUInt() & 0xFFFF;
     if (!IsValidDifficulty(dungeonDiff, false) || !dungeonDiff)
         dungeonDiff = REGULAR_DIFFICULTY;
-    uint32 raidDiff = (PlayerJson["instance_mode_mask"].asUInt() >> 16) & 0xFFFF;
+    uint32 raidDiff = (PlayerData["data"]["instance_mode_mask"].asUInt() >> 16) & 0xFFFF;
     if (!IsValidDifficulty(raidDiff, true) || !raidDiff)
         raidDiff = MAN10_DIFFICULTY;
     SetDungeonDifficulty(Difficulty(dungeonDiff));          // may be changed in _LoadGroup
@@ -649,23 +923,17 @@ void Player::LoadPlayerNext(uint64 playerGuid)
 
     InitBrackets();
 
-    SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, PlayerJson["totalKills"].asUInt());
-    SetUInt16Value(PLAYER_FIELD_KILLS, 0, PlayerJson["todayKills"].asUInt());
-    SetUInt16Value(PLAYER_FIELD_KILLS, 1, PlayerJson["yesterdayKills"].asUInt());
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_GROUP); //Next step load
+    SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, PlayerData["data"]["totalKills"].asUInt());
+    SetUInt16Value(PLAYER_FIELD_KILLS, 0, PlayerData["data"]["todayKills"].asUInt());
+    SetUInt16Value(PLAYER_FIELD_KILLS, 1, PlayerData["data"]["yesterdayKills"].asUInt());
 }
 
-void Player::LoadPlayerGroup(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerGroup()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerGroupJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerGroup data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_LOOTCOOLDOWN); //Next step load
+    if (!PlayerData.isMember("group") || PlayerData["group"].empty())
         return;
-    }
 
-    if (Group* group = sGroupMgr->GetGroupByDbStoreId(PlayerGroupJson.asUInt()))
+    if (Group* group = sGroupMgr->GetGroupByDbStoreId(PlayerData["group"].asUInt()))
     {
         uint8 subgroup = group->GetMemberGroup(GetGUID());
         SetGroup(group, subgroup);
@@ -676,20 +944,14 @@ void Player::LoadPlayerGroup(const RedisValue* v, uint64 playerGuid)
             SetRaidDifficulty(group->GetRaidDifficulty());
         }
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_LOOTCOOLDOWN); //Next step load
 }
 
-void Player::LoadPlayerLootCooldown(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerLootCooldown()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerLootCooldownJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerLootCooldown data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_CURRENCY); //Next step load
+    if (!PlayerData.isMember("lootcooldown") || PlayerData["lootcooldown"].empty())
         return;
-    }
 
-    for (auto iter = PlayerLootCooldownJson.begin(); iter != PlayerLootCooldownJson.end(); ++iter)
+    for (auto iter = PlayerData["lootcooldown"].begin(); iter != PlayerData["lootcooldown"].end(); ++iter)
     {
         auto LootCooldownJson = *iter;
         for (auto itr = LootCooldownJson.begin(); itr != LootCooldownJson.end(); ++itr)
@@ -704,20 +966,14 @@ void Player::LoadPlayerLootCooldown(const RedisValue* v, uint64 playerGuid)
             m_playerLootCooldown[lootCooldown.type][lootCooldown.entry] = lootCooldown;
         }
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_CURRENCY); //Next step load
 }
 
-void Player::LoadPlayerCurrency(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerCurrency()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerCurrencyJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerCurrency data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_BOUNDINSTANCES); //Next step load
+    if (!PlayerData.isMember("currency") || PlayerData["currency"].empty())
         return;
-    }
 
-    for (auto itr = PlayerCurrencyJson.begin(); itr != PlayerCurrencyJson.end(); ++itr)
+    for (auto itr = PlayerData["currency"].begin(); itr != PlayerData["currency"].end(); ++itr)
     {
         uint16 currencyID = atoi(itr.memberName());
 
@@ -739,22 +995,16 @@ void Player::LoadPlayerCurrency(const RedisValue* v, uint64 playerGuid)
 
         _currencyStorage.insert(PlayerCurrenciesMap::value_type(currencyID, cur));
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_BOUNDINSTANCES); //Next step load
 }
 
-void Player::LoadPlayerBoundInstances(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerBoundInstances()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerBoundInstancesJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerBoundInstances data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_BGDATA); //Next step load
+    if (!PlayerData.isMember("boundinstances") || PlayerData["boundinstances"].empty())
         return;
-    }
 
     Group* group = GetGroup();
 
-    for (auto itr = PlayerBoundInstancesJson.begin(); itr != PlayerBoundInstancesJson.end(); ++itr)
+    for (auto itr = PlayerData["boundinstances"].begin(); itr != PlayerData["boundinstances"].end(); ++itr)
     {
         uint32 instanceId = atoi(itr.memberName());
 
@@ -808,45 +1058,37 @@ void Player::LoadPlayerBoundInstances(const RedisValue* v, uint64 playerGuid)
             save->SetPerm(perm);
         }
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_BGDATA); //Next step load
 }
 
-void Player::LoadPlayerBG(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerBG()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerBGJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerBG data is empty");
-        InitSecondPartDataPlayer(); //Next step load
+    if (!PlayerData.isMember("bg") || PlayerData["bg"].empty())
         return;
-    }
 
-    m_bgData.bgInstanceID = PlayerBGJson["instanceId"].asInt();
-    m_bgData.bgTeam = PlayerBGJson["team"].asInt();
-    m_bgData.joinPos = WorldLocation(PlayerBGJson["joinMapId"].asInt(),    // Map
-                                          PlayerBGJson["joinX"].asFloat(),     // X
-                                          PlayerBGJson["joinY"].asFloat(),     // Y
-                                          PlayerBGJson["joinZ"].asFloat(),     // Z
-                                          PlayerBGJson["joinO"].asFloat());    // Orientation
-    m_bgData.taxiPath[0] = PlayerBGJson["taxiStart"].asInt();
-    m_bgData.taxiPath[1] = PlayerBGJson["taxiEnd"].asInt();
-    m_bgData.mountSpell = PlayerBGJson["mountSpell"].asInt();
-
-    InitSecondPartDataPlayer(); //Next step load
+    m_bgData.bgInstanceID = PlayerData["bg"]["instanceId"].asInt();
+    m_bgData.bgTeam = PlayerData["bg"]["team"].asInt();
+    m_bgData.joinPos = WorldLocation(PlayerData["bg"]["joinMapId"].asInt(),    // Map
+                                          PlayerData["bg"]["joinX"].asFloat(),     // X
+                                          PlayerData["bg"]["joinY"].asFloat(),     // Y
+                                          PlayerData["bg"]["joinZ"].asFloat(),     // Z
+                                          PlayerData["bg"]["joinO"].asFloat());    // Orientation
+    m_bgData.taxiPath[0] = PlayerData["bg"]["taxiStart"].asInt();
+    m_bgData.taxiPath[1] = PlayerData["bg"]["taxiEnd"].asInt();
+    m_bgData.mountSpell = PlayerData["bg"]["mountSpell"].asInt();
 }
 
 void Player::InitSecondPartDataPlayer()
 {
-    uint32 mapId = PlayerJson["map"].asUInt();
-    uint32 instanceId = PlayerJson["instance_id"].asUInt();
-    std::string taxi_nodes = PlayerJson["taxi_path"].asString();
+    uint32 mapId = PlayerData["data"]["map"].asUInt();
+    uint32 instanceId = PlayerData["data"]["instance_id"].asUInt();
+    std::string taxi_nodes = PlayerData["data"]["taxi_path"].asString();
 
 #define RelocateToHomebind(){ mapId = m_homebindMapId; instanceId = 0; Relocate(m_homebindX, m_homebindY, m_homebindZ); }
 
     GetSession()->SetPlayer(this);
     MapEntry const* mapEntry = sMapStore.LookupEntry(mapId);
 
-    m_atLoginFlags = PlayerJson["at_login"].asUInt();
+    m_atLoginFlags = PlayerData["data"]["at_login"].asUInt();
 
     if(m_atLoginFlags & AT_LOGIN_UNLOCK)
     {
@@ -1053,7 +1295,7 @@ void Player::InitSecondPartDataPlayer()
     SaveRecallPosition();
 
     time_t now = time(NULL);
-    time_t logoutTime = time_t(PlayerJson["logout_time"].asUInt());
+    time_t logoutTime = time_t(PlayerData["data"]["logout_time"].asUInt());
 
     // since last logout (in seconds)
     uint32 time_diff = uint32(now - logoutTime); //uint64 is excessive for a time_diff in seconds.. uint32 allows for 136~ year difference.
@@ -1066,21 +1308,21 @@ void Player::InitSecondPartDataPlayer()
 
     SetDrunkValue(newDrunkValue);
 
-    m_cinematic = PlayerJson["cinematic"].asUInt();
-    m_Played_time[PLAYED_TIME_TOTAL]= PlayerJson["totaltime"].asUInt();
-    m_Played_time[PLAYED_TIME_LEVEL]= PlayerJson["leveltime"].asUInt();
+    m_cinematic = PlayerData["data"]["cinematic"].asUInt();
+    m_Played_time[PLAYED_TIME_TOTAL]= PlayerData["data"]["totaltime"].asUInt();
+    m_Played_time[PLAYED_TIME_LEVEL]= PlayerData["data"]["leveltime"].asUInt();
 
-    SetTalentResetCost(PlayerJson["resettalents_cost"].asUInt());
-    SetTalentResetTime(PlayerJson["resettalents_time"].asUInt());
+    SetTalentResetCost(PlayerData["data"]["resettalents_cost"].asUInt());
+    SetTalentResetTime(PlayerData["data"]["resettalents_time"].asUInt());
 
-    SetSpecializationResetCost(PlayerJson["resetspecialization_cost"].asUInt());
-    SetSpecializationResetTime(time_t(PlayerJson["resetspecialization_time"].asUInt()));
+    SetSpecializationResetCost(PlayerData["data"]["resetspecialization_cost"].asUInt());
+    SetSpecializationResetTime(time_t(PlayerData["data"]["resetspecialization_time"].asUInt()));
 
-    m_taxi.LoadTaxiMask(PlayerJson["taximask"].asString());            // must be before InitTaxiNodesForLevel
+    m_taxi.LoadTaxiMask(PlayerData["data"]["taximask"].asString());            // must be before InitTaxiNodesForLevel
 
-    uint32 extraflags = PlayerJson["extra_flags"].asUInt();
+    uint32 extraflags = PlayerData["data"]["extra_flags"].asUInt();
 
-    m_stableSlots = PlayerJson["stable_slots"].asUInt();
+    m_stableSlots = PlayerData["data"]["stable_slots"].asUInt();
     if (m_stableSlots > MAX_PET_STABLES)
     {
         sLog->outError(LOG_FILTER_PLAYER, "Player can have not more %u stable slots, but have in DB %u", MAX_PET_STABLES, uint32(m_stableSlots));
@@ -1092,7 +1334,7 @@ void Player::InitSecondPartDataPlayer()
     m_lastHonorUpdateTime = logoutTime;
     UpdateHonorFields();
 
-    m_deathExpireTime = time_t(PlayerJson["death_expire_time"].asUInt());
+    m_deathExpireTime = time_t(PlayerData["data"]["death_expire_time"].asUInt());
     if (m_deathExpireTime > now+MAX_DEATH_COUNT*DEATH_EXPIRE_STEP)
         m_deathExpireTime = now+MAX_DEATH_COUNT*DEATH_EXPIRE_STEP-1;
 
@@ -1128,7 +1370,7 @@ void Player::InitSecondPartDataPlayer()
     InitRunes();
 
     // rest bonus can only be calculated after InitStatsForLevel()
-    m_rest_bonus = PlayerJson["rest_bonus"].asUInt();
+    m_rest_bonus = PlayerData["data"]["rest_bonus"].asUInt();
 
     if (time_diff > 0)
     {
@@ -1136,27 +1378,21 @@ void Player::InitSecondPartDataPlayer()
         float bubble0 = 0.031f;
         //speed collect rest bonus in offline, in logout, in tavern, city (section/in hour)
         float bubble1 = 0.125f;
-        float bubble = PlayerJson["is_logout_resting"].asUInt() > 0
+        float bubble = PlayerData["data"]["is_logout_resting"].asUInt() > 0
             ? bubble1*sWorld->getRate(RATE_REST_OFFLINE_IN_TAVERN_OR_CITY)
             : bubble0*sWorld->getRate(RATE_REST_OFFLINE_IN_WILDERNESS);
         bubble *= GetTotalAuraMultiplier(SPELL_AURA_MOD_REST_GAINED);
 
         SetRestBonus(GetRestBonus()+ time_diff*((float)GetUInt32Value(PLAYER_NEXT_LEVEL_XP)/72000)*bubble);
     }
-
-    LoadFromRedis(GetGUID(), LOAD_PLAYER_BATTLEPETS); //Next step load
 }
 
-void Player::LoadPlayerBattlePets(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerBattlePets()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, AccountBattlePetsJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerBattlePets data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_BATTLEPETSLOTS); //Next step load
+    if (!AccountDatas.isMember("battlepets") || AccountDatas["battlepets"].empty())
         return;
-    }
 
-    for (auto itr = AccountBattlePetsJson.begin(); itr != AccountBattlePetsJson.end(); ++itr)
+    for (auto itr = AccountDatas["battlepets"].begin(); itr != AccountDatas["battlepets"].end(); ++itr)
     {
         uint64 petGuid = atoi(itr.memberName());
         auto value = (*itr);
@@ -1205,42 +1441,32 @@ void Player::LoadPlayerBattlePets(const RedisValue* v, uint64 playerGuid)
         GetBattlePetMgr()->AddPetToList(petGuid, speciesID, creatureEntry, level, displayID, power, speed, health, maxHealth, quality, xp, flags, spell, customName, breedID, STATE_NORMAL);
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_ADD_BATTLE_PET_JOURNAL, creatureEntry);
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_BATTLEPETSLOTS); //Next step load
 }
 
-void Player::LoadPlayerBattlePetSlots(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerBattlePetSlots()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, AccountBattlePetSlotsJson))
+    if (!AccountDatas.isMember("battlepetslots") || AccountDatas["battlepetslots"].empty())
     {
         for (int i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
             GetBattlePetMgr()->InitBattleSlot(0, i);
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerBattlePetSlots data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_SKILLS); //Next step load
         return;
     }
 
-    for (auto itr = AccountBattlePetSlotsJson.begin(); itr != AccountBattlePetSlotsJson.end(); ++itr)
+    for (auto itr = AccountDatas["battlepetslots"].begin(); itr != AccountDatas["battlepetslots"].end(); ++itr)
     {
         uint8 index = atoi(itr.memberName());
         GetBattlePetMgr()->InitBattleSlot(itr->asInt(), index);
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_SKILLS); //Next step load
 }
 
-void Player::LoadPlayerSkills(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerSkills()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerSkillsJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerSkills data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_ARCHAEOLOGY); //Next step load
+    if (!PlayerData.isMember("skills") || PlayerData["skills"].empty())
         return;
-    }
 
     uint32 count = 0;
     uint8 professionCount = 0;
-    for (auto itr = PlayerSkillsJson.begin(); itr != PlayerSkillsJson.end(); ++itr)
+    for (auto itr = PlayerData["skills"].begin(); itr != PlayerData["skills"].end(); ++itr)
     {
         uint16 skill = atoi(itr.memberName());
         auto valueSkill = (*itr);
@@ -1345,32 +1571,19 @@ void Player::LoadPlayerSkills(const RedisValue* v, uint64 playerGuid)
         if (GetPureSkillValue(SKILL_UNARMED) < base_skill)
             SetSkill(SKILL_UNARMED, 0, base_skill, base_skill);
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_ARCHAEOLOGY); //Next step load
 }
 
-void Player::LoadPlayerArchaeology(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerArchaeology()
 {
-    for (uint8 i = 0; i < MAX_RESEARCH_SITES; ++i)
-        _digSites[i].count = 0;
-
-    if (!sWorld->getBoolConfig(CONFIG_ARCHAEOLOGY_ENABLED))
-    {
-        LoadFromRedis(playerGuid, LOAD_PLAYER_TALENTS); //Next step load
-        return;
-    }
-
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerArchaeologyJson))
+    if (!PlayerData.isMember("archaeology") || PlayerData["archaeology"].empty())
     {
         GenerateResearchSites();
         GenerateResearchProjects();
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerArchaeology data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_TALENTS); //Next step load
         return;
     }
 
     // Loading current zones
-    Tokenizer tokens(PlayerArchaeologyJson["sites"].asString(), ' ');
+    Tokenizer tokens(PlayerData["archaeology"]["sites"].asString(), ' ');
     if (tokens.size() == MAX_RESEARCH_SITES)
     {
         _researchSites.clear();
@@ -1382,7 +1595,7 @@ void Player::LoadPlayerArchaeology(const RedisValue* v, uint64 playerGuid)
         GenerateResearchSites();
 
     // Loading current zone info
-    Tokenizer tokens2(PlayerArchaeologyJson["counts"].asString(), ' ');
+    Tokenizer tokens2(PlayerData["archaeology"]["counts"].asString(), ' ');
     if (tokens2.size() == MAX_RESEARCH_SITES)
     {
         for (uint8 i = 0; i < MAX_RESEARCH_SITES; ++i)
@@ -1390,7 +1603,7 @@ void Player::LoadPlayerArchaeology(const RedisValue* v, uint64 playerGuid)
     }
 
     // Loading current projects
-    Tokenizer tokens3(PlayerArchaeologyJson["projects"].asString(), ' ');
+    Tokenizer tokens3(PlayerData["archaeology"]["projects"].asString(), ' ');
     if (tokens3.size() == MAX_RESEARCH_PROJECTS)
     {
         for (uint8 i = 0; i < MAX_RESEARCH_PROJECTS; ++i)
@@ -1401,7 +1614,7 @@ void Player::LoadPlayerArchaeology(const RedisValue* v, uint64 playerGuid)
     else
         GenerateResearchProjects();
 
-    for (auto itr = PlayerArchaeologyJson["finds"].begin(); itr != PlayerArchaeologyJson["finds"].end(); ++itr)
+    for (auto itr = PlayerData["archaeology"]["finds"].begin(); itr != PlayerData["archaeology"]["finds"].end(); ++itr)
     {
         uint32 id = atoi(itr.memberName());
         auto value = (*itr);
@@ -1419,20 +1632,14 @@ void Player::LoadPlayerArchaeology(const RedisValue* v, uint64 playerGuid)
 
         _completedProjects.push_back(cp);
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_TALENTS); //Next step load
 }
 
-void Player::LoadPlayerTalents(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerTalents()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerTalentsJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerTalents data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_SPELLS); //Next step load
+    if (!PlayerData.isMember("talents") || PlayerData["talents"].empty())
         return;
-    }
 
-    for (auto iter = PlayerTalentsJson.begin(); iter != PlayerTalentsJson.end(); ++iter)
+    for (auto iter = PlayerData["talents"].begin(); iter != PlayerData["talents"].end(); ++iter)
     {
         auto TalentsJson = *iter;
         uint8 spec = atoi(iter.memberName());
@@ -1448,23 +1655,17 @@ void Player::LoadPlayerTalents(const RedisValue* v, uint64 playerGuid)
                 continue;
 
             AddTalent(talent, spec, false);
-            sLog->outDebug(LOG_FILTER_REDIS, "Player::LoadPlayerTalents spec %u spellId %u talentId %u", spec, spellId, spell->talentId);
+            //sLog->outDebug(LOG_FILTER_REDIS, "Player::LoadPlayerTalents spec %u spellId %u talentId %u", spec, spellId, spell->talentId);
         }
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_SPELLS); //Next step load
 }
 
-void Player::LoadPlayerSpells(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerSpells()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerSpellsJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerSpells data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_MOUNTS); //Next step load
+    if (!PlayerData.isMember("spells") || PlayerData["spells"].empty())
         return;
-    }
 
-    for (auto itr = PlayerSpellsJson.begin(); itr != PlayerSpellsJson.end(); ++itr)
+    for (auto itr = PlayerData["spells"].begin(); itr != PlayerData["spells"].end(); ++itr)
     {
         uint32 spellId = atoi(itr.memberName());
         auto value = (*itr);
@@ -1473,40 +1674,28 @@ void Player::LoadPlayerSpells(const RedisValue* v, uint64 playerGuid)
 
         addSpell(spellId, active, false, false, disabled, true, true);
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_MOUNTS); //Next step load
 }
 
-void Player::LoadPlayerMounts(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerMounts()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerMountsJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerMounts data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_GLYPHS); //Next step load
+    if (!AccountDatas.isMember("mounts") || AccountDatas["mounts"].empty())
         return;
-    }
 
-    for (auto itr = PlayerMountsJson.begin(); itr != PlayerMountsJson.end(); ++itr)
+    for (auto itr = AccountDatas["mounts"].begin(); itr != AccountDatas["mounts"].end(); ++itr)
     {
         uint32 spellId = atoi(itr.memberName());
         bool active = (*itr)["active"].asInt();
 
         addSpell(spellId, active, false, false, false, true);
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_GLYPHS); //Next step load
 }
 
-void Player::LoadPlayerGlyphs(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerGlyphs()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerGlyphsJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerGlyphs data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_AURAS); //Next step load
+    if (!PlayerData.isMember("glyphs") || PlayerData["glyphs"].empty())
         return;
-    }
 
-    for (auto iter = PlayerGlyphsJson.begin(); iter != PlayerGlyphsJson.end(); ++iter)
+    for (auto iter = PlayerData["glyphs"].begin(); iter != PlayerData["glyphs"].end(); ++iter)
     {
         uint8 spec = atoi(iter.memberName());
         auto glyph = *iter;
@@ -1517,27 +1706,21 @@ void Player::LoadPlayerGlyphs(const RedisValue* v, uint64 playerGuid)
         _talentMgr->SpecInfo[spec].Glyphs[4] = glyph["glyph5"].asInt();
         _talentMgr->SpecInfo[spec].Glyphs[5] = glyph["glyph6"].asInt();
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_AURAS); //Next step load
 }
 
-void Player::LoadPlayerAuras(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerAuras()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerAurasJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerAuras data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTSTATUS); //Next step load
+    if (!PlayerData.isMember("auras") || PlayerData["auras"].empty())
         return;
-    }
 
     time_t now = time(NULL);
-    time_t logoutTime = time_t(PlayerJson["logout_time"].asUInt());
+    time_t logoutTime = time_t(PlayerData["data"]["logout_time"].asUInt());
 
     // since last logout (in seconds)
     uint32 time_diff = uint32(now - logoutTime);
 
     std::list<auraEffectData> auraEffectList;
-    for (auto itr = PlayerAurasJson["effect"].begin(); itr != PlayerAurasJson["effect"].end(); ++itr)
+    for (auto itr = PlayerData["auras"]["effect"].begin(); itr != PlayerData["auras"]["effect"].end(); ++itr)
     {
         auto auraEffect = (*itr);
         uint8 slot = atoi(itr.memberName());
@@ -1548,7 +1731,7 @@ void Player::LoadPlayerAuras(const RedisValue* v, uint64 playerGuid)
         auraEffectList.push_back(auraEffectData(slot, effect, amount, baseamount));
     }
 
-    for (auto itr = PlayerAurasJson["aura"].begin(); itr != PlayerAurasJson["aura"].end(); ++itr)
+    for (auto itr = PlayerData["auras"]["aura"].begin(); itr != PlayerData["auras"]["aura"].end(); ++itr)
     {
         auto auraValue = (*itr);
         uint8 slot = atoi(itr.memberName());
@@ -1621,21 +1804,15 @@ void Player::LoadPlayerAuras(const RedisValue* v, uint64 playerGuid)
             sLog->outInfo(LOG_FILTER_PLAYER, "Added aura spellid %u, effectmask %u", spellInfo->Id, effmask);
         }
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTSTATUS); //Next step load
 }
 
-void Player::LoadPlayerQuestStatus(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerQuestStatus()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerQuestStatusJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerQuestStatus data is empty");
-        LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTSTATUS); //Next step load
+    if (!PlayerData.isMember("queststatus") || PlayerData["queststatus"].empty())
         return;
-    }
 
     uint16 slot = FindQuestSlot(0);
-    for (auto itr = PlayerQuestStatusJson.begin(); itr != PlayerQuestStatusJson.end(); ++itr)
+    for (auto itr = PlayerData["queststatus"].begin(); itr != PlayerData["queststatus"].end(); ++itr)
     {
         uint32 quest_id = atoi(itr.memberName());
         auto value = (*itr);
@@ -1724,21 +1901,15 @@ void Player::LoadPlayerQuestStatus(const RedisValue* v, uint64 playerGuid)
     // clear quest log tail
     for (uint16 i = slot; i < MAX_QUEST_LOG_SIZE; ++i)
         SetQuestSlot(i, 0);
-
-    LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTSTATUS); //Next step load
 }
 
-void Player::LoadAccountQuestStatus(const RedisValue* v, uint64 playerGuid)
+void Player::LoadAccountQuestStatus()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, AccountQuestStatusJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountQuestStatus data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTREWARDED); //Next step load
+    if (!AccountDatas.isMember("queststatus") || AccountDatas["queststatus"].empty())
         return;
-    }
 
     uint16 slot = FindQuestSlot(0);
-    for (auto itr = AccountQuestStatusJson.begin(); itr != AccountQuestStatusJson.end(); ++itr)
+    for (auto itr = AccountDatas["queststatus"].begin(); itr != AccountDatas["queststatus"].end(); ++itr)
     {
         uint32 quest_id = atoi(itr.memberName());
         auto value = (*itr);
@@ -1827,20 +1998,14 @@ void Player::LoadAccountQuestStatus(const RedisValue* v, uint64 playerGuid)
     // clear quest log tail
     for (uint16 i = slot; i < MAX_QUEST_LOG_SIZE; ++i)
         SetQuestSlot(i, 0);
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTREWARDED); //Next step load
 }
 
-void Player::LoadPlayerQuestRewarded(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerQuestRewarded()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerQuestRewardedJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerQuestRewarded data is empty");
-        LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTREWARDED); //Next step load
+    if (!PlayerData.isMember("questrewarded") || PlayerData["questrewarded"].empty())
         return;
-    }
 
-    for (auto itr = PlayerQuestRewardedJson.begin(); itr != PlayerQuestRewardedJson.end(); ++itr)
+    for (auto itr = PlayerData["questrewarded"].begin(); itr != PlayerData["questrewarded"].end(); ++itr)
     {
         uint32 quest_id = atoi(itr.memberName());
 
@@ -1866,20 +2031,14 @@ void Player::LoadPlayerQuestRewarded(const RedisValue* v, uint64 playerGuid)
 
         m_RewardedQuests.insert(quest_id);
     }
-
-    LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTREWARDED); //Next step load
 }
 
-void Player::LoadAccountQuestRewarded(const RedisValue* v, uint64 playerGuid)
+void Player::LoadAccountQuestRewarded()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, AccountQuestRewardedJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountQuestRewarded data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTDAILY); //Next step load
+    if (!AccountDatas.isMember("questrewarded") || AccountDatas["questrewarded"].empty())
         return;
-    }
 
-    for (auto itr = AccountQuestRewardedJson.begin(); itr != AccountQuestRewardedJson.end(); ++itr)
+    for (auto itr = AccountDatas["questrewarded"].begin(); itr != AccountDatas["questrewarded"].end(); ++itr)
     {
         uint32 quest_id = atoi(itr.memberName());
 
@@ -1905,21 +2064,15 @@ void Player::LoadAccountQuestRewarded(const RedisValue* v, uint64 playerGuid)
 
         m_RewardedQuests.insert(quest_id);
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTDAILY); //Next step load
 }
 
-void Player::LoadPlayerQuestDaily(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerQuestDaily()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerQuestDailyJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerQuestDaily data is empty");
-        LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTDAILY); //Next step load
+    if (!PlayerData.isMember("questdaily") || PlayerData["questdaily"].empty())
         return;
-    }
 
     m_DFQuests.clear();
-    for (auto itr = PlayerQuestDailyJson.begin(); itr != PlayerQuestDailyJson.end(); ++itr)
+    for (auto itr = PlayerData["questdaily"].begin(); itr != PlayerData["questdaily"].end(); ++itr)
     {
         uint32 quest_id = atoi(itr.memberName());
         m_lastDailyQuestTime = time_t(itr->asUInt());
@@ -1937,20 +2090,14 @@ void Player::LoadPlayerQuestDaily(const RedisValue* v, uint64 playerGuid)
         if (m_dailyquests.find(quest_id) == m_dailyquests.end())
             m_dailyquests.insert(quest_id);
     }
-
-    LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTDAILY); //Next step load
 }
 
-void Player::LoadAccountQuestDaily(const RedisValue* v, uint64 playerGuid)
+void Player::LoadAccountQuestDaily()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, AccountQuestDailyJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountQuestDaily data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTWEEKLY); //Next step load
+    if (!AccountDatas.isMember("questdaily") || AccountDatas["questdaily"].empty())
         return;
-    }
 
-    for (auto itr = AccountQuestDailyJson.begin(); itr != AccountQuestDailyJson.end(); ++itr)
+    for (auto itr = AccountDatas["questdaily"].begin(); itr != AccountDatas["questdaily"].end(); ++itr)
     {
         uint32 quest_id = atoi(itr.memberName());
         m_lastDailyQuestTime = time_t(itr->asUInt());
@@ -1968,20 +2115,14 @@ void Player::LoadAccountQuestDaily(const RedisValue* v, uint64 playerGuid)
         if (m_dailyquests.find(quest_id) == m_dailyquests.end())
             m_dailyquests.insert(quest_id);
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTWEEKLY); //Next step load
 }
 
-void Player::LoadPlayerQuestWeekly(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerQuestWeekly()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerQuestWeeklyJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerQuestWeekly data is empty");
-        LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTWEEKLY); //Next step load
+    if (!PlayerData.isMember("questweekly") || PlayerData["questweekly"].empty())
         return;
-    }
 
-    for (auto itr = PlayerQuestWeeklyJson.begin(); itr != PlayerQuestWeeklyJson.end(); ++itr)
+    for (auto itr = PlayerData["questweekly"].begin(); itr != PlayerData["questweekly"].end(); ++itr)
     {
         uint32 quest_id = atoi(itr.memberName());
 
@@ -1994,22 +2135,16 @@ void Player::LoadPlayerQuestWeekly(const RedisValue* v, uint64 playerGuid)
 
         m_weeklyquests.insert(quest_id);
     }
-
-    LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTWEEKLY); //Next step load
 }
 
-void Player::LoadAccountQuestWeekly(const RedisValue* v, uint64 playerGuid)
+void Player::LoadAccountQuestWeekly()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, AccountQuestWeeklyJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountQuestWeekly data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTSEASONAL); //Next step load
+    if (!AccountDatas.isMember("questweekly") || AccountDatas["questweekly"].empty())
         return;
-    }
 
     m_weeklyquests.clear();
 
-    for (auto itr = AccountQuestWeeklyJson.begin(); itr != AccountQuestWeeklyJson.end(); ++itr)
+    for (auto itr = AccountDatas["questweekly"].begin(); itr != AccountDatas["questweekly"].end(); ++itr)
     {
         uint32 quest_id = atoi(itr.memberName());
 
@@ -2022,22 +2157,16 @@ void Player::LoadAccountQuestWeekly(const RedisValue* v, uint64 playerGuid)
 
         m_weeklyquests.insert(quest_id);
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_QUESTSEASONAL); //Next step load
 }
 
-void Player::LoadPlayerQuestSeasonal(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerQuestSeasonal()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerQuestSeasonalJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerQuestSeasonal data is empty");
-        LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTSEASONAL); //Next step load
+    if (!PlayerData.isMember("questseasonal") || PlayerData["questseasonal"].empty())
         return;
-    }
 
     m_seasonalquests.clear();
 
-    for (auto itr = PlayerQuestSeasonalJson.begin(); itr != PlayerQuestSeasonalJson.end(); ++itr)
+    for (auto itr = PlayerData["questseasonal"].begin(); itr != PlayerData["questseasonal"].end(); ++itr)
     {
         uint32 quest_id = atoi(itr.memberName());
         uint32 event_id = time_t(itr->asUInt());
@@ -2051,22 +2180,16 @@ void Player::LoadPlayerQuestSeasonal(const RedisValue* v, uint64 playerGuid)
 
         m_seasonalquests[event_id].insert(quest_id);
     }
-
-    LoadFromRedis(playerGuid, LOAD_ACCOUNT_QUESTSEASONAL); //Next step load
 }
 
-void Player::LoadAccountQuestSeasonal(const RedisValue* v, uint64 playerGuid)
+void Player::LoadAccountQuestSeasonal()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, AccountQuestSeasonalJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountQuestSeasonal data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_REPUTATION); //Next step load
+    if (!AccountDatas.isMember("questseasonal") || AccountDatas["questseasonal"].empty())
         return;
-    }
 
     m_seasonalquests.clear();
 
-    for (auto itr = AccountQuestSeasonalJson.begin(); itr != AccountQuestSeasonalJson.end(); ++itr)
+    for (auto itr = AccountDatas["questseasonal"].begin(); itr != AccountDatas["questseasonal"].end(); ++itr)
     {
         uint32 quest_id = atoi(itr.memberName());
         uint32 event_id = time_t(itr->asUInt());
@@ -2080,23 +2203,17 @@ void Player::LoadAccountQuestSeasonal(const RedisValue* v, uint64 playerGuid)
 
         m_seasonalquests[event_id].insert(quest_id);
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_REPUTATION); //Next step load
 }
 
-void ReputationMgr::LoadFromDB(const RedisValue* v, uint64 playerGuid)
+void ReputationMgr::LoadFromDB()
 {
     // Set initial reputations (so everything is nifty before DB data load)
     Initialize();
 
-    if (!sRedisBuilderMgr->LoadFromRedis(v, _player->PlayerReputationJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "ReputationMgr::LoadFromDB data is empty");
-        _player->LoadFromRedis(playerGuid, LOAD_PLAYER_ITEMS); //Next step load
+    if (!_player->PlayerData.isMember("reputation") || _player->PlayerData["reputation"].empty())
         return;
-    }
 
-    for (auto itr = _player->PlayerReputationJson.begin(); itr != _player->PlayerReputationJson.end(); ++itr)
+    for (auto itr = _player->PlayerData["reputation"].begin(); itr != _player->PlayerData["reputation"].end(); ++itr)
     {
         uint32 factiont_id = atoi(itr.memberName());
         auto value = (*itr);
@@ -2148,22 +2265,12 @@ void ReputationMgr::LoadFromDB(const RedisValue* v, uint64 playerGuid)
             }
         }
     }
-
-    _player->LoadFromRedis(playerGuid, LOAD_PLAYER_ITEMS); //Next step load
 }
 
-void Player::LoadPlayerLoadItems(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerLoadItems(std::vector<RedisValue>* itemVector)
 {
-    std::vector<RedisValue> itemVector;
-    if (!sRedisBuilderMgr->LoadFromRedisArray(v, itemVector))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerLoadItems data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_VOIDSTORAGE); //Next step load
-        return;
-    }
-
     time_t now = time(NULL);
-    time_t logoutTime = time_t(PlayerJson["logout_time"].asUInt());
+    time_t logoutTime = time_t(PlayerData["data"]["logout_time"].asUInt());
 
     // since last logout (in seconds)
     uint32 time_diff = uint32(now - logoutTime);
@@ -2175,7 +2282,7 @@ void Player::LoadPlayerLoadItems(const RedisValue* v, uint64 playerGuid)
     std::list<Item*> problematicItems;
     std::map<uint32, Json::Value> itemInBag;                        // Save item in bag, for next step loading
 
-    for (std::vector<RedisValue>::iterator itr = itemVector.begin(); itr != itemVector.end();)
+    for (std::vector<RedisValue>::iterator itr = itemVector->begin(); itr != itemVector->end();)
     {
         uint32 itemId = itr->toInt();
         ++itr;
@@ -2355,8 +2462,6 @@ void Player::LoadPlayerLoadItems(const RedisValue* v, uint64 playerGuid)
 
     //if (isAlive())
     _ApplyAllItemMods();
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_VOIDSTORAGE); //Next step load
 }
 
 Item* Player::_LoadItem(uint32 zoneId, uint32 timeDiff, Json::Value& itemValue)
@@ -2460,22 +2565,18 @@ Item* Player::_LoadItem(uint32 zoneId, uint32 timeDiff, Json::Value& itemValue)
     return item;
 }
 
-void Player::LoadPlayerVoidStorage(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerVoidStorage()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerVoidStorageJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerVoidStorage data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_ACTIONS); //Next step load
+    if (!PlayerData.isMember("voidstorage") || PlayerData["voidstorage"].empty())
         return;
-    }
 
     time_t now = time(NULL);
-    time_t logoutTime = time_t(PlayerJson["logout_time"].asUInt());
+    time_t logoutTime = time_t(PlayerData["data"]["logout_time"].asUInt());
 
     // since last logout (in seconds)
     uint32 time_diff = uint32(now - logoutTime);
 
-    for (auto iter = PlayerVoidStorageJson.begin(); iter != PlayerVoidStorageJson.end(); ++iter)
+    for (auto iter = PlayerData["voidstorage"].begin(); iter != PlayerData["voidstorage"].end(); ++iter)
     {
         auto voidValue = *iter;
         uint8 slot = atoi(iter.memberName());
@@ -2515,23 +2616,17 @@ void Player::LoadPlayerVoidStorage(const RedisValue* v, uint64 playerGuid)
 
     // update items with duration and realtime
     UpdateItemDuration(time_diff, true);
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_ACTIONS); //Next step load
 }
 
-void Player::LoadPlayerActions(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerActions()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerActionsJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerActions data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_SOCIAL); //Next step load
+    if (!PlayerData.isMember("actions") || PlayerData["actions"].empty())
         return;
-    }
 
     for (uint8 i = 0; i < MAX_SPEC_COUNT; ++i)
         m_actionButtons[i].clear();
 
-    for (auto iter = PlayerActionsJson.begin(); iter != PlayerActionsJson.end(); ++iter)
+    for (auto iter = PlayerData["actions"].begin(); iter != PlayerData["actions"].end(); ++iter)
     {
         uint8 spec = atoi(iter.memberName());
         auto infoData = *iter;
@@ -2549,54 +2644,45 @@ void Player::LoadPlayerActions(const RedisValue* v, uint64 playerGuid)
                 m_actionButtons[spec][button].uState = ACTIONBUTTON_DELETED;
         }
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_SOCIAL); //Next step load
 }
 
-PlayerSocial* SocialMgr::LoadFromDB(const RedisValue* v, Player* player)
+void SocialMgr::LoadFromDB(Player* player)
 {
     PlayerSocial *social = &m_socialMap[player->GetGUIDLow()];
     social->SetPlayerGUID(player->GetGUIDLow());
-
-    if (!sRedisBuilderMgr->LoadFromRedis(v, player->PlayerSocialJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "SocialMgr::LoadFromDB data is empty");
-        return social;
-    }
 
     uint32 friend_guid = 0;
     uint8 flags = 0;
     std::string note = "";
 
-    for (auto iter = player->PlayerSocialJson.begin(); iter != player->PlayerSocialJson.end(); ++iter)
+    if (player->PlayerData.isMember("social") && !player->PlayerData["social"].empty())
     {
-        auto socialValue = *iter;
-        friend_guid = atoi(iter.memberName());
-        flags = socialValue["Flags"].asInt();
-        note = socialValue["Note"].asString();
+        for (auto iter = player->PlayerData["social"].begin(); iter != player->PlayerData["social"].end(); ++iter)
+        {
+            auto socialValue = *iter;
+            friend_guid = atoi(iter.memberName());
+            flags = socialValue["Flags"].asInt();
+            note = socialValue["Note"].asString();
 
-        social->m_playerSocialMap[friend_guid] = FriendInfo(flags, note);
+            social->m_playerSocialMap[friend_guid] = FriendInfo(flags, note);
 
-        // client's friends list and ignore list limit
-        if (social->m_playerSocialMap.size() >= (SOCIALMGR_FRIEND_LIMIT + SOCIALMGR_IGNORE_LIMIT))
-            break;
+            // client's friends list and ignore list limit
+            if (social->m_playerSocialMap.size() >= (SOCIALMGR_FRIEND_LIMIT + SOCIALMGR_IGNORE_LIMIT))
+                break;
+        }
     }
 
-    return social;
+    player->m_social = social;
 }
 
-void Player::LoadPlayerSpellCooldowns(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerSpellCooldowns()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerSpellCooldownsJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerSpellCooldowns data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_KILLS); //Next step load
+    if (!PlayerData.isMember("spellcooldowns") || PlayerData["spellcooldowns"].empty())
         return;
-    }
 
     time_t curTime = time(NULL);
 
-    for (auto iter = PlayerSpellCooldownsJson.begin(); iter != PlayerSpellCooldownsJson.end(); ++iter)
+    for (auto iter = PlayerData["spellcooldowns"].begin(); iter != PlayerData["spellcooldowns"].end(); ++iter)
     {
         auto cooldownValue = *iter;
         uint32 spell_id = atoi(iter.memberName());
@@ -2615,20 +2701,14 @@ void Player::LoadPlayerSpellCooldowns(const RedisValue* v, uint64 playerGuid)
 
         AddSpellCooldown(spell_id, item_id, (double)db_time);
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_KILLS); //Next step load
 }
 
-void Player::LoadPlayerKills(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerKills()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerSpellCooldownsJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerKills data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_INIT_THIRD); //Next step load
+    if (!PlayerData.isMember("kills") || PlayerData["kills"].empty())
         return;
-    }
 
-    for (auto iter = PlayerKillsJson.begin(); iter != PlayerKillsJson.end(); ++iter)
+    for (auto iter = PlayerData["kills"].begin(); iter != PlayerData["kills"].end(); ++iter)
     {
         uint32 victim_guid = atoi(iter.memberName());
         uint32 count = iter->asInt();
@@ -2637,8 +2717,6 @@ void Player::LoadPlayerKills(const RedisValue* v, uint64 playerGuid)
         info.state = KILL_UNCHANGED;
         info.count = count;
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_INIT_THIRD); //Next step load
 }
 
 void Player::InitThirdPartDataPlayer()
@@ -2648,7 +2726,7 @@ void Player::InitThirdPartDataPlayer()
 
     // check PLAYER_CHOSEN_TITLE compatibility with PLAYER_FIELD_KNOWN_TITLES
     // note: PLAYER_FIELD_KNOWN_TITLES updated at quest status loaded
-    uint32 curTitle = PlayerJson["chosenTitle"].asUInt();
+    uint32 curTitle = PlayerData["data"]["chosenTitle"].asUInt();
     if (curTitle && !HasTitle(curTitle))
         curTitle = 0;
 
@@ -2671,23 +2749,23 @@ void Player::InitThirdPartDataPlayer()
     UpdateAllStats();
 
     // restore remembered power/health values (but not more max values)
-    uint32 savedHealth = PlayerJson["health"].asUInt();
+    uint32 savedHealth = PlayerData["data"]["health"].asUInt();
     SetHealth(savedHealth > GetMaxHealth() ? GetMaxHealth() : savedHealth);
 
     if (GetPowerIndexByClass(POWER_MANA, getClass()) != MAX_POWERS)
     {
-        uint32 savedPower = PlayerJson["power"].asUInt();
+        uint32 savedPower = PlayerData["data"]["power"].asUInt();
         uint32 maxPower = GetUInt32Value(UNIT_FIELD_MAXPOWER1 + 0);
         SetPower(POWER_MANA, (savedPower > maxPower) ? maxPower : savedPower);
     }
 
     // must be after loading spells and talents
-    Tokenizer talentTrees(PlayerJson["talentTree"].asString(), ' ', MAX_TALENT_SPECS);
+    Tokenizer talentTrees(PlayerData["data"]["talentTree"].asString(), ' ', MAX_TALENT_SPECS);
 
     sLog->outDebug(LOG_FILTER_REDIS, "The value of player %s after load item and aura is: ", m_name.c_str());
     outDebugValues();
 
-    uint32 extraflags = PlayerJson["extra_flags"].asUInt();
+    uint32 extraflags = PlayerData["data"]["extra_flags"].asUInt();
 
     // GM state
     if (!AccountMgr::IsPlayerAccount(GetSession()->GetSecurity()))
@@ -2738,8 +2816,8 @@ void Player::InitThirdPartDataPlayer()
     }
 
     // RaF stuff.
-    m_grantableLevels = PlayerJson["grantableLevels"].asUInt();
-    SetLfgBonusFaction(PlayerJson["lfgBonusFaction"].asUInt());
+    m_grantableLevels = PlayerData["data"]["grantableLevels"].asUInt();
+    SetLfgBonusFaction(PlayerData["data"]["lfgBonusFaction"].asUInt());
 
     if (GetSession()->IsARecruiter() || (GetSession()->GetRecruiterId() != 0))
         SetFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_REFER_A_FRIEND);
@@ -2812,42 +2890,30 @@ void Player::InitThirdPartDataPlayer()
 
     //if(PreparedQueryResult PersonnalRateResult = holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_PERSONAL_RATE))
         //m_PersonnalXpRate = (PersonnalRateResult->Fetch())[0].GetFloat();
-
-    LoadFromRedis(GetGUID(), LOAD_PLAYER_DECLINEDNAME); //Next step load
 }
 
-void Player::LoadPlayerDeclinedName(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerDeclinedName()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerDeclinedNameJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerDeclinedName data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_EQUIPMENTSETS); //Next step load
+    if (!PlayerData.isMember("declinedname") || PlayerData["declinedname"].empty())
         return;
-    }
 
     delete m_declinedname;
     m_declinedname = new DeclinedName;
 
-    for (auto iter = PlayerDeclinedNameJson.begin(); iter != PlayerDeclinedNameJson.end(); ++iter)
+    for (auto iter = PlayerData["declinedname"].begin(); iter != PlayerData["declinedname"].end(); ++iter)
     {
         uint32 index = atoi(iter.memberName());
         m_declinedname->name[index] = iter->asString();
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_EQUIPMENTSETS); //Next step load
 }
 
-void Player::LoadPlayerEquipmentSets(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerEquipmentSets()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerEquipmentSetsJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerEquipmentSets data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_CUFPROFILES); //Next step load
+    if (!PlayerData.isMember("equipmentsets") || PlayerData["equipmentsets"].empty())
         return;
-    }
 
     uint32 count = 0;
-    for (auto iter = PlayerEquipmentSetsJson.begin(); iter != PlayerEquipmentSetsJson.end(); ++iter)
+    for (auto iter = PlayerData["equipmentsets"].begin(); iter != PlayerData["equipmentsets"].end(); ++iter)
     {
         uint8 index = atoi(iter.memberName());
         auto equipmentValue = *iter;
@@ -2887,21 +2953,15 @@ void Player::LoadPlayerEquipmentSets(const RedisValue* v, uint64 playerGuid)
         if (count >= MAX_EQUIPMENT_SET_INDEX)                // client limit
             break;
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_CUFPROFILES); //Next step load
 }
 
-void Player::LoadPlayerCUFProfiles(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerCUFProfiles()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerCUFProfilesJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerCUFProfiles data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_VISUALS); //Next step load
+    if (!PlayerData.isMember("cufprofiles") || PlayerData["cufprofiles"].empty())
         return;
-    }
 
     uint32 count = 0;
-    for (auto iter = PlayerCUFProfilesJson.begin(); iter != PlayerCUFProfilesJson.end(); ++iter)
+    for (auto iter = PlayerData["cufprofiles"].begin(); iter != PlayerData["cufprofiles"].end(); ++iter)
     {
         uint8 id = atoi(iter.memberName());
         auto cufValue = *iter;
@@ -2927,58 +2987,42 @@ void Player::LoadPlayerCUFProfiles(const RedisValue* v, uint64 playerGuid)
 
         _CUFProfiles[id] = new CUFProfile(name, frameHeight, frameWidth, sortBy, healthText, options, unk146, unk147, unk148, unk150, unk152, unk154);
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_VISUALS); //Next step load
 }
 
-void Player::LoadPlayerVisuals(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerVisuals()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerVisualsJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerVisuals data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_PLAYERACCOUNTDATA); //Next step load
+    if (!PlayerData.isMember("visuals") || PlayerData["visuals"].empty())
         return;
-    }
 
     if (!m_vis)
         m_vis = new Visuals;
 
-    m_vis->m_visHead = PlayerVisualsJson["head"].asInt();
-    m_vis->m_visShoulders = PlayerVisualsJson["shoulders"].asInt();
-    m_vis->m_visChest = PlayerVisualsJson["chest"].asInt();
-    m_vis->m_visWaist = PlayerVisualsJson["waist"].asInt();
-    m_vis->m_visLegs = PlayerVisualsJson["legs"].asInt();
-    m_vis->m_visFeet = PlayerVisualsJson["feet"].asInt();
-    m_vis->m_visWrists = PlayerVisualsJson["wrists"].asInt();
-    m_vis->m_visHands = PlayerVisualsJson["hands"].asInt();
-    m_vis->m_visBack = PlayerVisualsJson["back"].asInt();
-    m_vis->m_visMainhand = PlayerVisualsJson["main"].asInt();
-    m_vis->m_visOffhand = PlayerVisualsJson["off"].asInt();
-    m_vis->m_visRanged = PlayerVisualsJson["ranged"].asInt();
-    m_vis->m_visTabard = PlayerVisualsJson["tabard"].asInt();
-    m_vis->m_visShirt = PlayerVisualsJson["shirt"].asInt();
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_PLAYERACCOUNTDATA); //Next step load
+    m_vis->m_visHead = PlayerData["visuals"]["head"].asInt();
+    m_vis->m_visShoulders = PlayerData["visuals"]["shoulders"].asInt();
+    m_vis->m_visChest = PlayerData["visuals"]["chest"].asInt();
+    m_vis->m_visWaist = PlayerData["visuals"]["waist"].asInt();
+    m_vis->m_visLegs = PlayerData["visuals"]["legs"].asInt();
+    m_vis->m_visFeet = PlayerData["visuals"]["feet"].asInt();
+    m_vis->m_visWrists = PlayerData["visuals"]["wrists"].asInt();
+    m_vis->m_visHands = PlayerData["visuals"]["hands"].asInt();
+    m_vis->m_visBack = PlayerData["visuals"]["back"].asInt();
+    m_vis->m_visMainhand = PlayerData["visuals"]["main"].asInt();
+    m_vis->m_visOffhand = PlayerData["visuals"]["off"].asInt();
+    m_vis->m_visRanged = PlayerData["visuals"]["ranged"].asInt();
+    m_vis->m_visTabard = PlayerData["visuals"]["tabard"].asInt();
+    m_vis->m_visShirt = PlayerData["visuals"]["shirt"].asInt();
 }
 
-void Player::LoadPlayerAccountData(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerAccountData()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerAccountDataJson))
-    {
-        for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
-            if (PER_CHARACTER_CACHE_MASK & (1 << i))
-                GetSession()->m_accountData[i] = AccountData();
-
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerAccountData data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_PETS); //Next step load
-        return;
-    }
-
     for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
         if (PER_CHARACTER_CACHE_MASK & (1 << i))
             GetSession()->m_accountData[i] = AccountData();
 
-    for (auto iter = PlayerAccountDataJson.begin(); iter != PlayerAccountDataJson.end(); ++iter)
+    if (!PlayerData.isMember("accountdata") || PlayerData["accountdata"].empty())
+        return;
+
+    for (auto iter = PlayerData["accountdata"].begin(); iter != PlayerData["accountdata"].end(); ++iter)
     {
         uint32 type = atoi(iter.memberName());
         auto dataValue = *iter;
@@ -2986,38 +3030,26 @@ void Player::LoadPlayerAccountData(const RedisValue* v, uint64 playerGuid)
         GetSession()->m_accountData[type].Time = time_t(dataValue["Time"].asUInt());
         GetSession()->m_accountData[type].Data = dataValue["Time"].asString();
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_PETS); //Next step load
 }
 
-void Player::LoadPlayerHomeBind(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerHomeBind()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerHomeBindJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerHomeBind data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_DATA); //Next step load
+    if (!PlayerData.isMember("homebind") || PlayerData["homebind"].empty())
         return;
-    }
 
-    m_homebindMapId = PlayerHomeBindJson["mapId"].asInt();
-    m_homebindAreaId = PlayerHomeBindJson["zoneId"].asInt();
-    m_homebindX = PlayerHomeBindJson["posX"].asFloat();
-    m_homebindY = PlayerHomeBindJson["posY"].asFloat();
-    m_homebindZ = PlayerHomeBindJson["posZ"].asFloat();
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_DATA); //Next step load
+    m_homebindMapId = PlayerData["homebind"]["mapId"].asInt();
+    m_homebindAreaId = PlayerData["homebind"]["zoneId"].asInt();
+    m_homebindX = PlayerData["homebind"]["posX"].asFloat();
+    m_homebindY = PlayerData["homebind"]["posY"].asFloat();
+    m_homebindZ = PlayerData["homebind"]["posZ"].asFloat();
 }
 
-void Player::LoadAccountAchievements(const RedisValue* v, uint64 playerGuid)
+void Player::LoadAccountAchievements()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, AccountAchievementJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountAchievements data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_ACHIEVEMENT); //Next step load
+    if (!AccountDatas.isMember("achievement") || AccountDatas["achievement"].empty())
         return;
-    }
 
-    for (auto iter = AccountAchievementJson.begin(); iter != AccountAchievementJson.end(); ++iter)
+    for (auto iter = AccountDatas["achievement"].begin(); iter != AccountDatas["achievement"].end(); ++iter)
     {
         uint32 achievementid = atoi(iter.memberName());
         auto dataValue = *iter;
@@ -3027,20 +3059,14 @@ void Player::LoadAccountAchievements(const RedisValue* v, uint64 playerGuid)
 
         m_achievementMgr.AddAccountAchievements(achievementid, first_guid, date);
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_ACHIEVEMENT); //Next step load
 }
 
-void Player::LoadPlayerAchievements(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerAchievements()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerAchievementJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerAchievements data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_CRITERIA); //Next step load
+    if (!PlayerData.isMember("achievement") || PlayerData["achievement"].empty())
         return;
-    }
 
-    for (auto iter = PlayerAchievementJson.begin(); iter != PlayerAchievementJson.end(); ++iter)
+    for (auto iter = PlayerData["achievement"].begin(); iter != PlayerData["achievement"].end(); ++iter)
     {
         uint32 achievementid = atoi(iter.memberName());
         auto dataValue = *iter;
@@ -3048,21 +3074,11 @@ void Player::LoadPlayerAchievements(const RedisValue* v, uint64 playerGuid)
 
         m_achievementMgr.AddAchievements(achievementid, date);
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_CRITERIA); //Next step load
 }
 
-void Player::LoadPlayerCriteriaProgress(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerCriteriaProgress(std::vector<RedisValue>* progressVector)
 {
-    std::vector<RedisValue> progressVector;
-    if (!sRedisBuilderMgr->LoadFromRedisArray(v, progressVector))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerCriteriaProgress data is empty");
-        LoadFromRedis(playerGuid, LOAD_ACCOUNT_CRITERIA); //Next step load
-        return;
-    }
-
-    for (auto itr = progressVector.begin(); itr != progressVector.end();)
+    for (auto itr = progressVector->begin(); itr != progressVector->end();)
     {
         uint32 achievementID = atoi(itr->toString().c_str());
         ++itr;
@@ -3072,8 +3088,8 @@ void Player::LoadPlayerCriteriaProgress(const RedisValue* v, uint64 playerGuid)
             continue;
         }
 
-        Json::Value CriteriaPl;
-        if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), CriteriaPl))
+        std::string achievID = std::to_string(achievementID);
+        if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), PlayerData["criteria"][achievID.c_str()]))
         {
             ++itr;
             sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerCriteriaProgress not parse achievementID %i", achievementID);
@@ -3081,38 +3097,14 @@ void Player::LoadPlayerCriteriaProgress(const RedisValue* v, uint64 playerGuid)
         }
         else
             ++itr;
-
-        time_t now = time(NULL);
-        for (auto iter = CriteriaPl.begin(); iter != CriteriaPl.end(); ++iter)
-        {
-            uint32 char_criteria_id = atoi(iter.memberName());
-            auto dataValue = *iter;
-
-            time_t date    = time_t(dataValue["date"].asUInt());
-            uint32 counter = dataValue["counter"].asUInt();
-            bool completed = dataValue["completed"].asBool();
-
-            m_achievementMgr.AddCriteriaProgress(achievementID, char_criteria_id, date, counter, completed);
-        }
-
-        std::string achievID = std::to_string(achievementID);
-        PlayerCriteriaJson[achievID.c_str()] = CriteriaPl;
     }
 
-    LoadFromRedis(playerGuid, LOAD_ACCOUNT_CRITERIA); //Next step load
+    LoadPlayerCriteriaProgress();
 }
 
-void Player::LoadAccountCriteriaProgress(const RedisValue* v, uint64 playerGuid)
+void Player::LoadAccountCriteriaProgress(std::vector<RedisValue>* progressVector)
 {
-    std::vector<RedisValue> progressVector;
-    if (!sRedisBuilderMgr->LoadFromRedisArray(v, progressVector))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountCriteriaProgress data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_NEXT); //Next step load
-        return;
-    }
-
-    for (auto itr = progressVector.begin(); itr != progressVector.end();)
+    for (auto itr = progressVector->begin(); itr != progressVector->end();)
     {
         uint32 achievementID = atoi(itr->toString().c_str());
         ++itr;
@@ -3122,8 +3114,8 @@ void Player::LoadAccountCriteriaProgress(const RedisValue* v, uint64 playerGuid)
             continue;
         }
 
-        Json::Value CriteriaAc;
-        if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), CriteriaAc))
+        std::string achievID = std::to_string(achievementID);
+        if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), AccountDatas["criteria"][achievID.c_str()]))
         {
             ++itr;
             sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountCriteriaProgress not parse achievementID %i", achievementID);
@@ -3131,61 +3123,31 @@ void Player::LoadAccountCriteriaProgress(const RedisValue* v, uint64 playerGuid)
         }
         else
             ++itr;
-
-        for (auto iter = CriteriaAc.begin(); iter != CriteriaAc.end(); ++iter)
-        {
-            uint32 char_criteria_id = atoi(iter.memberName());
-            auto dataValue = *iter;
-
-
-            time_t date    = time_t(dataValue["date"].asUInt());
-            uint32 counter = dataValue["counter"].asUInt();
-            bool completed = dataValue["completed"].asBool();
-
-            m_achievementMgr.AddAccountCriteriaProgress(achievementID, char_criteria_id, date, counter, completed);
-        }
-
-        std::string achievID = std::to_string(achievementID);
-        AccountCriteriaJson[achievID.c_str()] = CriteriaAc;
     }
 
+    LoadAccountCriteriaProgress();
     m_achievementMgr.GenerateProgressMap();
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_NEXT); //Next step load
 }
 
-void Player::LoadPlayerGold(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerGold()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerGoldJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerGold data is empty");
-        LoadFromRedis(playerGuid, LOAD_ACCOUNT_ACHIEVEMENT); //Next step load
+    if (!PlayerData.isMember("gold") || PlayerData["gold"].empty())
         return;
-    }
 
-    SetMoney(PlayerGoldJson.asUInt64());
-
-    LoadFromRedis(playerGuid, LOAD_ACCOUNT_ACHIEVEMENT); //Next step load
+    SetMoney(PlayerData["gold"].asUInt64());
 }
 
-void Player::LoadPlayerMails(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerMails(std::vector<RedisValue>* mailVector)
 {
-    std::vector<RedisValue> mailVector;
-    if (!sRedisBuilderMgr->LoadFromRedisArray(v, mailVector))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerMails data is empty");
-        return;
-    }
+    uint32 plGuid = GetGUIDLow();
 
-    uint32 plGuid = PAIR32_LOPART(playerGuid);
-
-    for (std::vector<RedisValue>::iterator itr = mailVector.begin(); itr != mailVector.end();)
+    for (std::vector<RedisValue>::iterator itr = mailVector->begin(); itr != mailVector->end();)
     {
         uint32 messageID = atoi(itr->toString().c_str());
+        std::string message = itr->toString();
         ++itr;
 
-        Json::Value loadMailJson;
-        if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), loadMailJson))
+        if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), PlayerMailData["mails"][message.c_str()]))
         {
             ++itr;
             sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerMails not parse messageID %i", messageID);
@@ -3194,130 +3156,43 @@ void Player::LoadPlayerMails(const RedisValue* v, uint64 playerGuid)
         else
             ++itr;
 
-        Mail* m = new Mail;
-
         uint64 mailGuid = MAKE_PAIR64(plGuid, messageID);
 
-        m->messageID      = messageID;
-        m->messageType    = loadMailJson["messageType"].asUInt();
-        m->sender         = loadMailJson["sender"].asUInt();
-        m->receiver       = loadMailJson["receiver"].asUInt();
-        m->subject        = loadMailJson["subject"].asString();
-        m->body           = loadMailJson["body"].asString();
-        bool has_items    = loadMailJson["has_items"].asBool();
-        m->expire_time    = time_t(loadMailJson["expire_time"].asUInt());
-        m->deliver_time   = time_t(loadMailJson["deliver_time"].asUInt());
-        m->money          = loadMailJson["money"].asUInt64();
-        m->COD            = loadMailJson["COD"].asUInt64();
-        m->checked        = loadMailJson["checked"].asUInt();
-        m->stationery     = loadMailJson["stationery"].asUInt();
-        m->mailTemplateId = loadMailJson["mailTemplateId"].asUInt();
-
-        if (m->mailTemplateId && !sMailTemplateStore.LookupEntry(m->mailTemplateId))
-        {
-            sLog->outError(LOG_FILTER_PLAYER, "Player::_LoadMail - Mail (%u) have not existed MailTemplateId (%u), remove at load", m->messageID, m->mailTemplateId);
-            m->mailTemplateId = 0;
-        }
-
-        m->state = MAIL_STATE_UNCHANGED;
-
-        m_mail.push_back(m);
-
-        if (has_items)
+        if (PlayerMailData["mails"][message.c_str()]["has_items"].asBool())
             LoadFromRedis(mailGuid, LOAD_PLAYER_MAIL_ITEMS);
     }
-    sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerMails end");
+    LoadPlayerMails();
 }
 
-void Player::LoadPlayerMailItems(const RedisValue* v, uint64 mailGuid)
+void Player::LoadPlayerMailItems(std::vector<RedisValue>* itemVector, uint64 mailGuid)
 {
-    std::vector<RedisValue> itemVector;
-    if (!sRedisBuilderMgr->LoadFromRedisArray(v, itemVector))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerMailItems data is empty");
-        return;
-    }
-
     uint32 messageID = PAIR64_HIPART(mailGuid);
+    std::string message = std::to_string(messageID);
     char* _key = new char[32];
     sprintf(_key, "r{%u}m{%u}items", realmID, messageID);
 
-    sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerMailItems _key %s messageID %u", _key, messageID);
-
-    Mail* mail = GetMail(messageID);
-    if (!mail)
+    for (std::vector<RedisValue>::iterator itr = itemVector->begin(); itr != itemVector->end();)
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerMailItems mail %u not found ", messageID);
-        return;
-    }
-
-    for (std::vector<RedisValue>::iterator itr = itemVector.begin(); itr != itemVector.end();)
-    {
-        uint32 itemId = atoi(itr->toString().c_str());
+        std::string itemGuid = itr->toString();
         ++itr;
 
-        Json::Value loadItemJson;
-        if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), loadItemJson))
+        if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), PlayerMailData["mitems"][message.c_str()][itemGuid.c_str()]))
         {
             ++itr;
-            sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerLoadItems not parse itemId %i", itemId);
+            sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerLoadItems not parse itemId %s", itemGuid.c_str());
             continue;
         }
         else
             ++itr;
-
-        uint32 itemGuid = loadItemJson["itemGuid"].asUInt();
-        uint32 itemEntry = loadItemJson["itemEntry"].asInt();
-        
-        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemEntry);
-        if (!proto)
-        {
-            std::string index = std::to_string(itemGuid);
-            RedisDatabase.AsyncExecuteH("HDEL", _key, index.c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
-                sLog->outInfo(LOG_FILTER_REDIS, "Item::LoadPlayerLoadItems delete guid %u", guid);
-            });
-            continue;
-        }
-
-        Item* item = NewItemOrBag(proto);
-        item->SetItemKey(ITEM_KEY_MAIL, messageID);
-
-        if (!item->LoadFromDB(itemGuid, 0, loadItemJson, itemEntry))
-        {
-            item->SetState(ITEM_REMOVED);
-            delete item;
-            continue;
-        }
-
-        mail->AddItem(itemGuid, itemEntry);
-        AddMItem(item);
     }
-
-    m_mailsLoaded = true;
 }
 
-void Player::LoadPlayerPets(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerGuild()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerPetsJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerPets data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_GUILD);
+    if (!PlayerData.isMember("guild") || PlayerData["guild"].empty())
         return;
-    }
 
-    LoadFromRedis(playerGuid, LOAD_PLAYER_GUILD);
-}
-
-void Player::LoadPlayerGuild(const RedisValue* v, uint64 playerGuid)
-{
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerGuildJson))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerGuild data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_CORPSE); //Next step load
-        return;
-    }
-
-    uint32 guildId = PlayerGuildJson.asUInt();
+    uint32 guildId = PlayerData["guild"].asUInt();
     if (guildId)
     {
         if (Guild* guild = sGuildMgr->GetGuildById(guildId))
@@ -3330,42 +3205,23 @@ void Player::LoadPlayerGuild(const RedisValue* v, uint64 playerGuid)
         else
             SavePlayerGuild();
     }
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_CORPSE); //Next step load
 }
 
-void Player::LoadPlayerCorpse(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerCorpse()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerCorpse))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerCorpse data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_PETITION); //Next step load
+    if (!PlayerData.isMember("corpse") || PlayerData["corpse"].empty())
         return;
-    }
 
-    Corpse* corpse = new Corpse(CorpseType(PlayerCorpse["corpseType"].asUInt()));
-    if (!corpse->LoadCorpseFromDB(PlayerCorpse, this))
+    Corpse* corpse = new Corpse(CorpseType(PlayerData["corpse"]["corpseType"].asUInt()));
+    if (!corpse->LoadCorpseFromDB(PlayerData["corpse"], this))
         delete corpse;
     else
         sObjectAccessor->AddCorpse(corpse);
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_PETITION); //Next step load
 }
 
-void Player::LoadPlayerPetition(const RedisValue* v, uint64 playerGuid)
+void Player::LoadPlayerPetition()
 {
-    if (!sRedisBuilderMgr->LoadFromRedis(v, PlayerPetitions))
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerPetition data is empty");
-        LoadFromRedis(playerGuid, LOAD_PLAYER_LOGIN); //Next step load
-        return;
-    }
-
-    sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerPetition PlayerPetitions %u", PlayerPetitions["guid"].asUInt64());
-
-    sObjectMgr->AddPlayerPetition(PlayerPetitions["guid"].asUInt(), this);
-
-    LoadFromRedis(playerGuid, LOAD_PLAYER_LOGIN); //Next step load
+    sObjectMgr->AddPlayerPetition(PlayerData["petitions"]["guid"].asUInt(), this);
 }
 
 void Player::BuildEnumData(uint32 gid, Json::Value dataValue, ByteBuffer* dataBuffer, ByteBuffer* bitBuffer)
@@ -3542,4 +3398,429 @@ void Player::BuildEnumData(uint32 gid, Json::Value dataValue, ByteBuffer* dataBu
     *dataBuffer << uint32(petLevel);                            // Pet level
 
     dataBuffer->WriteGuidBytes<4>(guildGuid);
+}
+
+void Player::LoadPlayerFromJson(uint64 guid)
+{
+    LoadPlayerHomeBind();
+    LoadPlayer(guid);
+    LoadPlayerGold();
+    LoadAccountAchievements();
+    LoadPlayerAchievements();
+    LoadPlayerCriteriaProgress();
+    LoadPlayerCriteriaProgress();
+    LoadPlayerNext(guid);
+    LoadPlayerGroup();
+    LoadPlayerLootCooldown();
+    LoadPlayerCurrency();
+    LoadPlayerBoundInstances();
+    LoadPlayerBG();
+    InitSecondPartDataPlayer();
+    LoadPlayerBattlePets();
+    LoadPlayerBattlePetSlots();
+    LoadPlayerSkills();
+
+    for (uint8 i = 0; i < MAX_RESEARCH_SITES; ++i)
+        _digSites[i].count = 0;
+
+    if (sWorld->getBoolConfig(CONFIG_ARCHAEOLOGY_ENABLED))
+        LoadPlayerArchaeology();
+
+    uint8 specCount = PlayerData["data"]["speccount"].asUInt();
+    SetSpecsCount(specCount == 0 ? 1 : specCount);
+    SetActiveSpec(specCount > 1 ? PlayerData["data"]["activespec"].asUInt() : 0);
+
+    SetSpecializationId(0, PlayerData["data"]["specialization1"].asUInt());
+    SetSpecializationId(1, PlayerData["data"]["specialization2"].asUInt());
+
+    SetFreeTalentPoints(CalculateTalentsPoints());
+
+    // sanity check
+    if (GetSpecsCount() > MAX_TALENT_SPECS || GetActiveSpec() > MAX_TALENT_SPEC || GetSpecsCount() < MIN_TALENT_SPECS)
+    {
+        SetActiveSpec(0);
+        sLog->outError(LOG_FILTER_PLAYER, "Player %s(GUID: %u) has SpecCount = %u and ActiveSpec = %u.", GetName(), GetGUIDLow(), GetSpecsCount(), GetActiveSpec());
+    }
+
+    LoadPlayerTalents();
+    LoadPlayerSpells();
+    LoadPlayerMounts();
+    LoadPlayerGlyphs();
+    LoadPlayerAuras();
+
+    _LoadGlyphAuras();
+    // add ghost flag (must be after aura load: PLAYER_FLAGS_GHOST set in aura)
+    if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
+        m_deathState = DEAD;
+
+    // after spell load, learn rewarded spell if need also - test on achievements
+    _LoadSpellRewards();
+
+    LoadPlayerQuestStatus();
+    LoadAccountQuestStatus();
+    LoadPlayerQuestRewarded();
+    LoadAccountQuestRewarded();
+    LoadPlayerQuestDaily();
+    LoadAccountQuestDaily();
+    LoadPlayerQuestWeekly();
+    LoadAccountQuestWeekly();
+    LoadPlayerQuestSeasonal();
+    LoadAccountQuestSeasonal();
+
+    // after spell and quest load
+    InitTalentForLevel();
+    InitSpellForLevel();
+    learnDefaultSpells();
+
+    m_reputationMgr.LoadFromDB();
+    LoadPlayerLoadItems();
+    LoadPlayerVoidStorage();
+    LoadPlayerActions();
+    sSocialMgr->LoadFromDB(this);
+    LoadPlayerSpellCooldowns();
+    LoadPlayerKills();
+    InitThirdPartDataPlayer();
+    LoadPlayerDeclinedName();
+    LoadPlayerEquipmentSets();
+    LoadPlayerCUFProfiles();
+    LoadPlayerVisuals();
+    LoadPlayerAccountData();
+    LoadPlayerGuild();
+    LoadPlayerCorpse();
+    LoadPlayerPetition();
+    LoadPlayerMails();
+}
+
+void Player::LoadPlayerCriteriaProgress()
+{
+    if (!PlayerData.isMember("criteria") || PlayerData["criteria"].empty())
+        return;
+
+    for (auto iter = PlayerData["criteria"].begin(); iter != PlayerData["criteria"].end(); ++iter)
+    {
+        std::string achievID = iter.memberName();
+        uint32 achievementid = atoi(iter.memberName());
+
+        time_t now = time(NULL);
+        for (auto iter = PlayerData["criteria"][achievID.c_str()].begin(); iter != PlayerData["criteria"][achievID.c_str()].end(); ++iter)
+        {
+            uint32 char_criteria_id = atoi(iter.memberName());
+            auto dataValue = *iter;
+
+            time_t date    = time_t(dataValue["date"].asUInt());
+            uint32 counter = dataValue["counter"].asUInt();
+            bool completed = dataValue["completed"].asBool();
+
+            m_achievementMgr.AddCriteriaProgress(achievementid, char_criteria_id, date, counter, completed);
+        }
+    }
+}
+
+void Player::LoadAccountCriteriaProgress()
+{
+    if (!AccountDatas.isMember("criteria") || AccountDatas["criteria"].empty())
+    {
+        m_achievementMgr.GenerateProgressMap();
+        return;
+    }
+
+    for (auto itr = AccountDatas["criteria"].begin(); itr != AccountDatas["criteria"].end(); ++itr)
+    {
+        uint32 achievementid = atoi(itr.memberName());
+        auto data = *itr;
+
+        for (auto iter = data.begin(); iter != data.end(); ++iter)
+        {
+            uint32 char_criteria_id = atoi(iter.memberName());
+            auto dataValue = *iter;
+
+            time_t date    = time_t(dataValue["date"].asUInt());
+            uint32 counter = dataValue["counter"].asUInt();
+            bool completed = dataValue["completed"].asBool();
+
+            m_achievementMgr.AddAccountCriteriaProgress(achievementid, char_criteria_id, date, counter, completed);
+        }
+    }
+
+    m_achievementMgr.GenerateProgressMap();
+}
+
+void Player::LoadPlayerMails()
+{
+    if (!PlayerMailData.isMember("mails") || PlayerMailData["mails"].empty())
+        return;
+
+    uint32 plGuid = GetGUIDLow();
+
+    for (auto itr = PlayerMailData["mails"].begin(); itr != PlayerMailData["mails"].end(); ++itr)
+    {
+        uint32 messageID = atoi(itr.memberName());
+        auto loadMailJson = *itr;
+
+        Mail* m = new Mail;
+
+        m->messageID      = messageID;
+        m->messageType    = loadMailJson["messageType"].asUInt();
+        m->sender         = loadMailJson["sender"].asUInt();
+        m->receiver       = loadMailJson["receiver"].asUInt();
+        m->subject        = loadMailJson["subject"].asString();
+        m->body           = loadMailJson["body"].asString();
+        bool has_items    = loadMailJson["has_items"].asBool();
+        m->expire_time    = time_t(loadMailJson["expire_time"].asUInt());
+        m->deliver_time   = time_t(loadMailJson["deliver_time"].asUInt());
+        m->money          = loadMailJson["money"].asUInt64();
+        m->COD            = loadMailJson["COD"].asUInt64();
+        m->checked        = loadMailJson["checked"].asUInt();
+        m->stationery     = loadMailJson["stationery"].asUInt();
+        m->mailTemplateId = loadMailJson["mailTemplateId"].asUInt();
+
+        if (m->mailTemplateId && !sMailTemplateStore.LookupEntry(m->mailTemplateId))
+        {
+            sLog->outError(LOG_FILTER_PLAYER, "Player::_LoadMail - Mail (%u) have not existed MailTemplateId (%u), remove at load", m->messageID, m->mailTemplateId);
+            m->mailTemplateId = 0;
+        }
+
+        m->state = MAIL_STATE_UNCHANGED;
+
+        m_mail.push_back(m);
+
+        if (has_items)
+            LoadPlayerMailItems(messageID);
+    }
+    m_mailsLoaded = true;
+    sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerMails end");
+}
+
+void Player::LoadPlayerMailItems(uint32 messageID)
+{
+    Mail* mail = GetMail(messageID);
+    if (!mail)
+    {
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerMailItems mail %u not found ", messageID);
+        return;
+    }
+
+    std::string message = std::to_string(messageID);
+
+    if (!PlayerMailData.isMember("mitems") || !PlayerMailData["mitems"].isMember(message.c_str()) || PlayerMailData["mitems"][message.c_str()].empty())
+        return;
+
+    for (auto itr = PlayerMailData["mitems"][message.c_str()].begin(); itr != PlayerMailData["mitems"][message.c_str()].end(); ++itr)
+    {
+        std::string index = itr.memberName();
+        uint32 itemGuid = atoi(itr.memberName());
+        auto loadItemJson = *itr;
+
+        uint32 itemEntry = loadItemJson["itemEntry"].asInt();
+        
+        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemEntry);
+        if (!proto)
+        {
+            char* _key = new char[32];
+            sprintf(_key, "r{%u}m{%u}items", realmID, messageID);
+            std::string index = std::to_string(itemGuid);
+            RedisDatabase.AsyncExecuteH("HDEL", _key, index.c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+                sLog->outInfo(LOG_FILTER_REDIS, "Item::LoadPlayerLoadItems delete guid %u", guid);
+            });
+            continue;
+        }
+
+        Item* item = NewItemOrBag(proto);
+        item->SetItemKey(ITEM_KEY_MAIL, messageID);
+
+        if (!item->LoadFromDB(itemGuid, 0, loadItemJson, itemEntry))
+        {
+            item->SetState(ITEM_REMOVED);
+            delete item;
+            continue;
+        }
+
+        mail->AddItem(itemGuid, itemEntry);
+        AddMItem(item);
+    }
+}
+
+void Player::LoadPlayerLoadItems()
+{
+    time_t now = time(NULL);
+    time_t logoutTime = time_t(PlayerData["data"]["logout_time"].asUInt());
+
+    // since last logout (in seconds)
+    uint32 time_diff = uint32(now - logoutTime);
+
+    uint32 zoneId = GetZoneId();
+
+    std::map<uint32, Bag*> bagMap;                                  // fast guid lookup for bags
+    std::map<uint32, Item*> invalidBagMap;                          // fast guid lookup for bags
+    std::list<Item*> problematicItems;
+    std::map<uint32, Json::Value> itemInBag;                        // Save item in bag, for next step loading
+
+    for (auto itr = PlayerData["items"].begin(); itr != PlayerData["items"].end(); ++itr)
+    {
+        uint32 itemGuid = atoi(itr.memberName());
+        auto loadItemJson = *itr;
+
+        uint32 bagGuid = loadItemJson["bagGuid"].asUInt();
+        if(bagGuid)
+        {
+            itemInBag[itemGuid] = loadItemJson;
+            continue;
+        }
+
+        if (Item* item = _LoadItem(zoneId, time_diff, loadItemJson))
+        {
+            uint8 slot = loadItemJson["slot"].asInt();
+
+            uint8 err = EQUIP_ERR_OK;
+            // Item is not in bag
+            item->SetContainer(NULL);
+            item->SetSlot(slot);
+
+            if (slot >= BUYBACK_SLOT_START && slot < BUYBACK_SLOT_END)
+            {
+                AddItemToBuyBackSlot(item);
+                continue;
+            }
+            // check for already equiped item
+            if (Item* item = GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+                err = EQUIP_ERR_ITEM_MAX_COUNT;
+
+            if (err == EQUIP_ERR_OK)
+            {
+                if (IsInventoryPos(INVENTORY_SLOT_BAG_0, slot))
+                {
+                    ItemPosCountVec dest;
+                    err = CanStoreItem(INVENTORY_SLOT_BAG_0, slot, dest, item, false);
+                    if (err == EQUIP_ERR_OK)
+                        item = StoreItem(dest, item, true);
+                }
+                else if (IsEquipmentPos(INVENTORY_SLOT_BAG_0, slot))
+                {
+                    uint16 dest;
+                    err = CanEquipItem(slot, dest, item, false, false);
+                    if (err == EQUIP_ERR_OK)
+                        QuickEquipItem(dest, item);
+                }
+                else if (IsBankPos(INVENTORY_SLOT_BAG_0, slot))
+                {
+                    ItemPosCountVec dest;
+                    err = CanBankItem(INVENTORY_SLOT_BAG_0, slot, dest, item, false, false);
+                    if (err == EQUIP_ERR_OK)
+                        item = BankItem(dest, item, true);
+                }
+            }
+
+            // Remember bags that may contain items in them
+            if (err == EQUIP_ERR_OK)
+            {
+                if (IsBagPos(item->GetPos()))
+                    if (Bag* pBag = item->ToBag())
+                        bagMap[item->GetGUIDLow()] = pBag;
+            }
+            else
+                if (IsBagPos(item->GetPos()))
+                    if (item->IsBag())
+                        invalidBagMap[item->GetGUIDLow()] = item;
+
+            // Item's state may have changed after storing
+            if (err == EQUIP_ERR_OK)
+                item->SetState(ITEM_UNCHANGED, this);
+            else
+            {
+                sLog->outInfo(LOG_FILTER_REDIS, "Player::_LoadInventory: player (GUID: %u, name: '%s') has item (GUID: %u, entry: %u) which can't be loaded into inventory (Bag GUID: %u, slot: %u) by reason %u. Item will be sent by mail.",
+                    GetGUIDLow(), GetName(), item->GetGUIDLow(), item->GetEntry(), bagGuid, slot, err);
+                //item->DeleteFromInventoryDB(trans);
+                RemoveItemDurations(item);
+                RemoveTradeableItem(item);
+                problematicItems.push_back(item);
+            }
+        }
+
+        // Send problematic items by mail
+        while (!problematicItems.empty())
+        {
+            std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
+
+            MailDraft draft(subject, "There were problems with equipping item(s).");
+            for (uint8 i = 0; !problematicItems.empty() && i < MAX_MAIL_ITEMS; ++i)
+            {
+                draft.AddItem(problematicItems.front());
+                problematicItems.pop_front();
+            }
+            draft.SendMailTo(this, MailSender(this, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED);
+        }
+    }
+
+    for (auto itr = itemInBag.begin(); itr != itemInBag.end(); ++itr)
+    {
+        uint32 itemId = itr->first;
+        Json::Value loadItemJson = itr->second;
+
+        uint32 itemGuid = loadItemJson["itemGuid"].asUInt();
+        uint32 bagGuid = loadItemJson["bagGuid"].asUInt();
+
+        if (Item* item = _LoadItem(zoneId, time_diff, loadItemJson))
+        {
+            uint8  slot = loadItemJson["slot"].asInt();
+
+            uint8 err = EQUIP_ERR_OK;
+
+            item->SetSlot(NULL_SLOT);
+            // Item is in the bag, find the bag
+            std::map<uint32, Bag*>::iterator itr = bagMap.find(bagGuid);
+            if (itr != bagMap.end())
+            {
+                ItemPosCountVec dest;
+                err = CanStoreItem(itr->second->GetSlot(), slot, dest, item);
+                if (err == EQUIP_ERR_OK)
+                    item = StoreItem(dest, item, true);
+            }
+            else if (invalidBagMap.find(bagGuid) != invalidBagMap.end())
+            {
+                std::map<uint32, Item*>::iterator itr = invalidBagMap.find(bagGuid);
+                if (std::find(problematicItems.begin(), problematicItems.end(), itr->second) != problematicItems.end())
+                    err = EQUIP_ERR_INTERNAL_BAG_ERROR;
+            }
+            else
+            {
+                sLog->outInfo(LOG_FILTER_REDIS, "Player::_LoadInventory: player (GUID: %u, name: '%s') has item (GUID: %u, entry: %u) which doesnt have a valid bag (Bag GUID: %u, slot: %u). Possible cheat?",
+                    GetGUIDLow(), GetName(), item->GetGUIDLow(), item->GetEntry(), bagGuid, slot);
+                RemoveItemDurations(item);
+                RemoveTradeableItem(item);
+                item->DeleteFromRedis();
+                delete item;
+                continue;
+            }
+
+            // Item's state may have changed after storing
+            if (err == EQUIP_ERR_OK)
+                item->SetState(ITEM_UNCHANGED, this);
+            else
+            {
+                sLog->outInfo(LOG_FILTER_REDIS, "Player::_LoadInventory: player (GUID: %u, name: '%s') has item (GUID: %u, entry: %u) which can't be loaded into inventory (Bag GUID: %u, slot: %u) by reason %u. Item will be sent by mail.",
+                    GetGUIDLow(), GetName(), item->GetGUIDLow(), item->GetEntry(), bagGuid, slot, err);
+                //item->DeleteFromInventoryDB(trans);
+                RemoveItemDurations(item);
+                RemoveTradeableItem(item);
+                problematicItems.push_back(item);
+            }
+        }
+
+        // Send problematic items by mail
+        while (!problematicItems.empty())
+        {
+            std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
+
+            MailDraft draft(subject, "There were problems with equipping item(s).");
+            for (uint8 i = 0; !problematicItems.empty() && i < MAX_MAIL_ITEMS; ++i)
+            {
+                draft.AddItem(problematicItems.front());
+                problematicItems.pop_front();
+            }
+            draft.SendMailTo(this, MailSender(this, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED);
+        }
+    }
+
+    //if (isAlive())
+    _ApplyAllItemMods();
 }

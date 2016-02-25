@@ -3,6 +3,7 @@
 */
 
 #include "RedisBuilderMgr.h"
+#include <time.h>
 
 RedisBuilderMgr::RedisBuilderMgr()
 {
@@ -102,3 +103,113 @@ void RedisBuilderMgr::InitRedisKey()
     sprintf(ticketKey, "r{%i}ticket", realmID);
 }
 
+void PlayerSave::SaveToDB()
+{
+    SaveItem();
+
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+
+    std::string guid = std::to_string(m_player->GetGUIDLow());
+    uint8 index = 0;
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_CHARACTER_JSON);
+    stmt->setUInt32(index++, m_player->GetGUIDLow());
+    stmt->setUInt32(index++, m_player->GetSession()->GetAccountId());
+    stmt->setString(index++, m_player->GetName());
+    stmt->setUInt8(index++, m_player->GetSession()->EnumData[guid.c_str()]["slot"].asInt());
+    stmt->setUInt8(index++, m_player->getRace());
+    stmt->setUInt8(index++, m_player->getClass());
+    stmt->setUInt8(index++, m_player->getGender());
+    stmt->setUInt8(index++, m_player->getLevel());
+    stmt->setUInt32(index++, m_player->GetUInt32Value(PLAYER_XP));
+    stmt->setUInt64(index++, m_player->GetMoney());
+    stmt->setUInt32(index++, m_player->GetUInt32Value(PLAYER_BYTES));
+    stmt->setUInt32(index++, m_player->GetUInt32Value(PLAYER_BYTES_2));
+    stmt->setUInt32(index++, m_player->GetUInt32Value(PLAYER_FLAGS));
+    stmt->setUInt16(index++, (uint16)m_player->GetMapId());
+    stmt->setFloat(index++, finiteAlways(m_player->GetPositionX()));
+    stmt->setFloat(index++, finiteAlways(m_player->GetPositionY()));
+    stmt->setFloat(index++, finiteAlways(m_player->GetPositionZ()));
+    stmt->setUInt32(index++, m_player->m_Played_time[PLAYED_TIME_TOTAL]);
+    stmt->setUInt32(index++, m_player->m_Played_time[PLAYED_TIME_LEVEL]);
+    stmt->setUInt32(index++, uint32(time(NULL)));
+    stmt->setUInt16(index++, (uint16)m_player->GetAtLoginFlag());
+    stmt->setUInt16(index++, m_player->getCurrentUpdateZoneID());
+    stmt->setUInt32(index++, m_player->GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS));
+    std::ostringstream ss;
+    // cache equipment...
+    for (uint32 i = 0; i < EQUIPMENT_SLOT_END * 2; ++i)
+        ss << m_player->GetUInt32Value(PLAYER_VISIBLE_ITEM_1_ENTRYID + i) << ' ';
+
+    // ...and bags for enum opcode
+    for (uint32 i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; ++i)
+    {
+        if (Item* item = m_player->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+            ss << item->GetEntry();
+        else
+            ss << '0';
+        ss << " 0 ";
+    }
+    stmt->setString(index++, ss.str());
+    stmt->setString(index++, sRedisBuilderMgr->BuildString(m_player->PlayerData));
+    stmt->setString(index++, sRedisBuilderMgr->BuildString(m_player->PlayerMailData));
+    trans->Append(stmt);
+
+    index = 0;
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_ACCOUNT_JSON);
+    stmt->setUInt32(index++, m_player->GetSession()->GetAccountId());
+    stmt->setString(index++, sRedisBuilderMgr->BuildString(m_player->AccountDatas));
+    trans->Append(stmt);
+
+    CharacterDatabase.CommitTransaction(trans);
+}
+
+void PlayerSave::SaveItem()
+{
+    for (uint8 i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_ITEM_END; i++)
+    {
+        if (Item* pItem = m_player->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+        {
+            std::string guid = std::to_string(pItem->GetGUIDLow());
+            m_player->PlayerData["items"][guid.c_str()] = pItem->ItemData;
+        }
+    }
+
+    for (uint8 i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; ++i)
+    {
+        if (Bag* pBag = m_player->GetBagByPos(i))
+        {
+            for (uint32 j = 0; j < pBag->GetBagSize(); ++j)
+            {
+                if (Item* pItem = m_player->GetItemByPos(i, j))
+                {
+                    std::string guid = std::to_string(pItem->GetGUIDLow());
+                    m_player->PlayerData["items"][guid.c_str()] = pItem->ItemData;
+                }
+            }
+        }
+    }
+
+    for (uint8 i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_ITEM_END; ++i)
+        if (Item* pItem = m_player->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+        {
+            std::string guid = std::to_string(pItem->GetGUIDLow());
+            m_player->PlayerData["items"][guid.c_str()] = pItem->ItemData;
+        }
+
+    // checking every item from 39 to 74 (including bank bags)
+    for (uint8 i = BANK_SLOT_ITEM_START; i < BANK_SLOT_BAG_END; ++i)
+        if (Item* pItem = m_player->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+        {
+            std::string guid = std::to_string(pItem->GetGUIDLow());
+            m_player->PlayerData["items"][guid.c_str()] = pItem->ItemData;
+        }
+
+    for (uint8 i = BANK_SLOT_BAG_START; i < BANK_SLOT_BAG_END; ++i)
+        if (Bag* pBag = m_player->GetBagByPos(i))
+            for (uint32 j = 0; j < pBag->GetBagSize(); ++j)
+                if (Item* pItem = pBag->GetItemByPos(j))
+                {
+                    std::string guid = std::to_string(pItem->GetGUIDLow());
+                    m_player->PlayerData["items"][guid.c_str()] = pItem->ItemData;
+                }
+}

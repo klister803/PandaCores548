@@ -106,24 +106,24 @@ void Corpse::SaveToDB()
     if (!m_owner)
         return;
 
-    m_owner->PlayerCorpse["corpseGuid"] = GetGUIDLow();
-    m_owner->PlayerCorpse["posX"] = GetPositionX();
-    m_owner->PlayerCorpse["posY"] = GetPositionY();
-    m_owner->PlayerCorpse["posZ"] = GetPositionZ();
-    m_owner->PlayerCorpse["orientation"] = GetOrientation();
-    m_owner->PlayerCorpse["mapId"] = GetMapId();
-    m_owner->PlayerCorpse["displayId"] = GetUInt32Value(CORPSE_FIELD_DISPLAY_ID);
-    m_owner->PlayerCorpse["itemCache"] = _ConcatFields(CORPSE_FIELD_ITEM, EQUIPMENT_SLOT_END);
-    m_owner->PlayerCorpse["bytes1"] = GetUInt32Value(CORPSE_FIELD_BYTES_1);
-    m_owner->PlayerCorpse["bytes2"] = GetUInt32Value(CORPSE_FIELD_BYTES_2);
-    m_owner->PlayerCorpse["flags"] = GetUInt32Value(CORPSE_FIELD_FLAGS);
-    m_owner->PlayerCorpse["dynFlags"] = GetUInt32Value(CORPSE_FIELD_DYNAMIC_FLAGS);
-    m_owner->PlayerCorpse["time"] = uint32(m_time);
-    m_owner->PlayerCorpse["corpseType"] = GetType();
-    m_owner->PlayerCorpse["instanceId"] = GetInstanceId();
-    m_owner->PlayerCorpse["phaseMask"] = GetPhaseMask();
+    m_owner->PlayerData["corpse"]["corpseGuid"] = GetGUIDLow();
+    m_owner->PlayerData["corpse"]["posX"] = GetPositionX();
+    m_owner->PlayerData["corpse"]["posY"] = GetPositionY();
+    m_owner->PlayerData["corpse"]["posZ"] = GetPositionZ();
+    m_owner->PlayerData["corpse"]["orientation"] = GetOrientation();
+    m_owner->PlayerData["corpse"]["mapId"] = GetMapId();
+    m_owner->PlayerData["corpse"]["displayId"] = GetUInt32Value(CORPSE_FIELD_DISPLAY_ID);
+    m_owner->PlayerData["corpse"]["itemCache"] = _ConcatFields(CORPSE_FIELD_ITEM, EQUIPMENT_SLOT_END);
+    m_owner->PlayerData["corpse"]["bytes1"] = GetUInt32Value(CORPSE_FIELD_BYTES_1);
+    m_owner->PlayerData["corpse"]["bytes2"] = GetUInt32Value(CORPSE_FIELD_BYTES_2);
+    m_owner->PlayerData["corpse"]["flags"] = GetUInt32Value(CORPSE_FIELD_FLAGS);
+    m_owner->PlayerData["corpse"]["dynFlags"] = GetUInt32Value(CORPSE_FIELD_DYNAMIC_FLAGS);
+    m_owner->PlayerData["corpse"]["time"] = uint32(m_time);
+    m_owner->PlayerData["corpse"]["corpseType"] = GetType();
+    m_owner->PlayerData["corpse"]["instanceId"] = GetInstanceId();
+    m_owner->PlayerData["corpse"]["phaseMask"] = GetPhaseMask();
 
-    RedisDatabase.AsyncExecuteHSet("HSET", m_owner->GetUserKey(), "corpse", sRedisBuilderMgr->BuildString(m_owner->PlayerCorpse).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", m_owner->GetUserKey(), "corpse", sRedisBuilderMgr->BuildString(m_owner->PlayerData["corpse"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Corpse::SaveToDB guid %u", guid);
     });
 }
@@ -147,7 +147,7 @@ void Corpse::DeleteFromDB()
     if (!m_owner)
         return;
 
-    m_owner->PlayerCorpse.clear();
+    m_owner->PlayerData["corpse"].clear();
 
     RedisDatabase.AsyncExecuteH("HDEL", m_owner->GetUserKey(), "corpse", GetGUIDLow(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Corpse::DeleteFromDB id %u", guid);

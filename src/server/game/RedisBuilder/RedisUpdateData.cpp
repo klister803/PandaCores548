@@ -50,14 +50,14 @@ void Player::DeleteCriteriaProgress(AchievementEntry const* achievement)
     std::string achievID = std::to_string(achievement->ID);
     if (achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
     {
-        AccountCriteriaJson.removeMember(achievID.c_str());
+        AccountDatas["criteria"].removeMember(achievID.c_str());
         RedisDatabase.AsyncExecuteH("HDEL", criteriaAcKey, achievID.c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Guild::DeleteCriteriaProgress guid %u", guid);
         });
     }
     else
     {
-        PlayerCriteriaJson.removeMember(achievID.c_str());
+        PlayerData["criteria"].removeMember(achievID.c_str());
         RedisDatabase.AsyncExecuteH("HDEL", criteriaPlKey, achievID.c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Guild::DeleteCriteriaProgress guid %u", guid);
         });
@@ -96,14 +96,14 @@ void Player::UpdateCriteriaProgress(AchievementEntry const* achievement, Criteri
 
     if (achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
     {
-        AccountCriteriaJson[achievID.c_str()] = CriteriaAc;
+        AccountDatas["criteria"][achievID.c_str()] = CriteriaAc;
         RedisDatabase.AsyncExecuteHSet("HSET", criteriaAcKey, achievID.c_str(), sRedisBuilderMgr->BuildString(CriteriaAc).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
             //sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerCriteria account guid %u", guid);
         });
     }
     else
     {
-        PlayerCriteriaJson[achievID.c_str()] = CriteriaPl;
+        PlayerData["criteria"][achievID.c_str()] = CriteriaPl;
         RedisDatabase.AsyncExecuteHSet("HSET", criteriaPlKey, achievID.c_str(), sRedisBuilderMgr->BuildString(CriteriaPl).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
             //sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerCriteria player guid %u", guid);
         });
@@ -133,20 +133,20 @@ void Player::UpdatePlayerAccountData(AccountDataType type, time_t tm, std::strin
     if ((1 << type) & GLOBAL_CACHE_MASK)
     {
         std::string index = std::to_string(type);
-        AccountDataJson[index.c_str()]["Time"] = tm;
-        AccountDataJson[index.c_str()]["Data"] = data.c_str();
+        AccountDatas["data"][index.c_str()]["Time"] = tm;
+        AccountDatas["data"][index.c_str()]["Data"] = data.c_str();
 
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "accountdata", sRedisBuilderMgr->BuildString(AccountDataJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "accountdata", sRedisBuilderMgr->BuildString(AccountDatas["data"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerAccountData player guid %u", guid);
         });
     }
     else
     {
         std::string index = std::to_string(type);
-        PlayerAccountDataJson[index.c_str()]["Time"] = tm;
-        PlayerAccountDataJson[index.c_str()]["Data"] = data.c_str();
+        PlayerData["accountdata"][index.c_str()]["Time"] = tm;
+        PlayerData["accountdata"][index.c_str()]["Data"] = data.c_str();
 
-        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "playeraccountdata", sRedisBuilderMgr->BuildString(PlayerAccountDataJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "playeraccountdata", sRedisBuilderMgr->BuildString(PlayerData["accountdata"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerAccountData player guid %u", guid);
         });
     }
@@ -155,9 +155,9 @@ void Player::UpdatePlayerAccountData(AccountDataType type, time_t tm, std::strin
 void Player::UpdateTutorials(uint8 index, uint32 value)
 {
     std::string indexStr = std::to_string(index);
-    AccountTutorialsJson[indexStr.c_str()] = value;
+    AccountDatas["tutorials"][indexStr.c_str()] = value;
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "tutorials", sRedisBuilderMgr->BuildString(AccountTutorialsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "tutorials", sRedisBuilderMgr->BuildString(AccountDatas["tutorials"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdateTutorials player guid %u", guid);
     });
 }
@@ -168,15 +168,15 @@ void Player::UpdatePlayerPet(Pet* pet)
         return;
 
     std::string id = std::to_string(pet->GetCharmInfo()->GetPetNumber());
-    PlayerPetsJson[id.c_str()]["entry"] = pet->GetEntry();
-    PlayerPetsJson[id.c_str()]["modelid"] = pet->GetNativeDisplayId();
-    PlayerPetsJson[id.c_str()]["level"] = pet->getLevel();
-    PlayerPetsJson[id.c_str()]["exp"] = pet->GetUInt32Value(UNIT_FIELD_PETEXPERIENCE);
-    PlayerPetsJson[id.c_str()]["Reactstate"] = pet->GetReactState();
-    PlayerPetsJson[id.c_str()]["name"] = pet->GetName();
-    PlayerPetsJson[id.c_str()]["renamed"] = pet->HasByteFlag(UNIT_FIELD_BYTES_2, 2, UNIT_CAN_BE_RENAMED) ? 0 : 1;
-    PlayerPetsJson[id.c_str()]["curhealth"] = pet->GetHealth();
-    PlayerPetsJson[id.c_str()]["curmana"] = pet->GetPower(POWER_MANA);
+    PlayerData["pets"][id.c_str()]["entry"] = pet->GetEntry();
+    PlayerData["pets"][id.c_str()]["modelid"] = pet->GetNativeDisplayId();
+    PlayerData["pets"][id.c_str()]["level"] = pet->getLevel();
+    PlayerData["pets"][id.c_str()]["exp"] = pet->GetUInt32Value(UNIT_FIELD_PETEXPERIENCE);
+    PlayerData["pets"][id.c_str()]["Reactstate"] = pet->GetReactState();
+    PlayerData["pets"][id.c_str()]["name"] = pet->GetName();
+    PlayerData["pets"][id.c_str()]["renamed"] = pet->HasByteFlag(UNIT_FIELD_BYTES_2, 2, UNIT_CAN_BE_RENAMED) ? 0 : 1;
+    PlayerData["pets"][id.c_str()]["curhealth"] = pet->GetHealth();
+    PlayerData["pets"][id.c_str()]["curmana"] = pet->GetPower(POWER_MANA);
 
     std::ostringstream ss;
     ss.str("");
@@ -185,13 +185,13 @@ void Player::UpdatePlayerPet(Pet* pet)
         ss << uint32(pet->GetCharmInfo()->GetActionBarEntry(i)->GetType()) << ' '
             << uint32(pet->GetCharmInfo()->GetActionBarEntry(i)->GetAction()) << ' ';
     };
-    PlayerPetsJson[id.c_str()]["abdata"] = ss.str();
-    PlayerPetsJson[id.c_str()]["savetime"] = time(NULL);
-    PlayerPetsJson[id.c_str()]["CreatedBySpell"] = pet->GetUInt32Value(UNIT_CREATED_BY_SPELL);
-    PlayerPetsJson[id.c_str()]["PetType"] = pet->getPetType();
-    PlayerPetsJson[id.c_str()]["specialization"] = pet->GetSpecializationId();
+    PlayerData["pets"][id.c_str()]["abdata"] = ss.str();
+    PlayerData["pets"][id.c_str()]["savetime"] = time(NULL);
+    PlayerData["pets"][id.c_str()]["CreatedBySpell"] = pet->GetUInt32Value(UNIT_CREATED_BY_SPELL);
+    PlayerData["pets"][id.c_str()]["PetType"] = pet->getPetType();
+    PlayerData["pets"][id.c_str()]["specialization"] = pet->GetSpecializationId();
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "pets", sRedisBuilderMgr->BuildString(PlayerPetsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "pets", sRedisBuilderMgr->BuildString(PlayerData["pets"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerPet player guid %u", guid);
     });
     RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetPetKey(), id.c_str(), sRedisBuilderMgr->BuildString(pet->PetDataSpell).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
@@ -205,9 +205,9 @@ void Player::RemovePlayerPet(Pet* pet)
         return;
 
     std::string petId = std::to_string(pet->GetCharmInfo()->GetPetNumber());
-    PlayerPetsJson.removeMember(petId.c_str());
+    PlayerData["pets"].removeMember(petId.c_str());
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "pets", sRedisBuilderMgr->BuildString(PlayerPetsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "pets", sRedisBuilderMgr->BuildString(PlayerData["pets"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::RemovePlayerPet player guid %u", guid);
     });
     RedisDatabase.AsyncExecuteH("HDEL", sRedisBuilderMgr->GetPetKey(), petId.c_str(), pet->GetCharmInfo()->GetPetNumber(), [&](const RedisValue &v, uint64 guid) {
@@ -250,38 +250,38 @@ void Player::DeleteFromRedis(uint64 playerguid, uint32 accountId)
 void Player::SavePlayerEquipmentSet(uint32 id, EquipmentSet eqset)
 {
     std::string index = std::to_string(id);
-    PlayerEquipmentSetsJson[index.c_str()]["setguid"] = eqset.Guid;
-    PlayerEquipmentSetsJson[index.c_str()]["name"] = eqset.Name.c_str();
-    PlayerEquipmentSetsJson[index.c_str()]["iconname"] = eqset.IconName.c_str();
-    PlayerEquipmentSetsJson[index.c_str()]["ignore_mask"] = eqset.IgnoreMask;
-    PlayerEquipmentSetsJson[index.c_str()]["item0"] = eqset.Items[0];
-    PlayerEquipmentSetsJson[index.c_str()]["item1"] = eqset.Items[1];
-    PlayerEquipmentSetsJson[index.c_str()]["item2"] = eqset.Items[2];
-    PlayerEquipmentSetsJson[index.c_str()]["item3"] = eqset.Items[3];
-    PlayerEquipmentSetsJson[index.c_str()]["item4"] = eqset.Items[4];
-    PlayerEquipmentSetsJson[index.c_str()]["item5"] = eqset.Items[5];
-    PlayerEquipmentSetsJson[index.c_str()]["item6"] = eqset.Items[6];
-    PlayerEquipmentSetsJson[index.c_str()]["item7"] = eqset.Items[7];
-    PlayerEquipmentSetsJson[index.c_str()]["item8"] = eqset.Items[8];
-    PlayerEquipmentSetsJson[index.c_str()]["item9"] = eqset.Items[9];
-    PlayerEquipmentSetsJson[index.c_str()]["item10"] = eqset.Items[10];
-    PlayerEquipmentSetsJson[index.c_str()]["item11"] = eqset.Items[11];
-    PlayerEquipmentSetsJson[index.c_str()]["item12"] = eqset.Items[12];
-    PlayerEquipmentSetsJson[index.c_str()]["item13"] = eqset.Items[13];
-    PlayerEquipmentSetsJson[index.c_str()]["item14"] = eqset.Items[14];
-    PlayerEquipmentSetsJson[index.c_str()]["item15"] = eqset.Items[15];
-    PlayerEquipmentSetsJson[index.c_str()]["item16"] = eqset.Items[16];
-    PlayerEquipmentSetsJson[index.c_str()]["item17"] = eqset.Items[17];
-    PlayerEquipmentSetsJson[index.c_str()]["item18"] = eqset.Items[18];
+    PlayerData["equipmentsets"][index.c_str()]["setguid"] = eqset.Guid;
+    PlayerData["equipmentsets"][index.c_str()]["name"] = eqset.Name.c_str();
+    PlayerData["equipmentsets"][index.c_str()]["iconname"] = eqset.IconName.c_str();
+    PlayerData["equipmentsets"][index.c_str()]["ignore_mask"] = eqset.IgnoreMask;
+    PlayerData["equipmentsets"][index.c_str()]["item0"] = eqset.Items[0];
+    PlayerData["equipmentsets"][index.c_str()]["item1"] = eqset.Items[1];
+    PlayerData["equipmentsets"][index.c_str()]["item2"] = eqset.Items[2];
+    PlayerData["equipmentsets"][index.c_str()]["item3"] = eqset.Items[3];
+    PlayerData["equipmentsets"][index.c_str()]["item4"] = eqset.Items[4];
+    PlayerData["equipmentsets"][index.c_str()]["item5"] = eqset.Items[5];
+    PlayerData["equipmentsets"][index.c_str()]["item6"] = eqset.Items[6];
+    PlayerData["equipmentsets"][index.c_str()]["item7"] = eqset.Items[7];
+    PlayerData["equipmentsets"][index.c_str()]["item8"] = eqset.Items[8];
+    PlayerData["equipmentsets"][index.c_str()]["item9"] = eqset.Items[9];
+    PlayerData["equipmentsets"][index.c_str()]["item10"] = eqset.Items[10];
+    PlayerData["equipmentsets"][index.c_str()]["item11"] = eqset.Items[11];
+    PlayerData["equipmentsets"][index.c_str()]["item12"] = eqset.Items[12];
+    PlayerData["equipmentsets"][index.c_str()]["item13"] = eqset.Items[13];
+    PlayerData["equipmentsets"][index.c_str()]["item14"] = eqset.Items[14];
+    PlayerData["equipmentsets"][index.c_str()]["item15"] = eqset.Items[15];
+    PlayerData["equipmentsets"][index.c_str()]["item16"] = eqset.Items[16];
+    PlayerData["equipmentsets"][index.c_str()]["item17"] = eqset.Items[17];
+    PlayerData["equipmentsets"][index.c_str()]["item18"] = eqset.Items[18];
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "equipmentsets", sRedisBuilderMgr->BuildString(PlayerEquipmentSetsJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "equipmentsets", sRedisBuilderMgr->BuildString(PlayerData["equipmentsets"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerEquipmentSets player guid %u", guid);
     });
 }
 
 void Player::DeletePetitions()
 {
-    PlayerPetitions.clear();
+    PlayerData["petitions"].clear();
 
     RedisDatabase.AsyncExecuteH("HDEL", userKey, "petitions", GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::DeletePetitions guid %u", guid);

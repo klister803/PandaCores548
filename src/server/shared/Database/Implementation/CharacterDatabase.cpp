@@ -634,4 +634,12 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     //Loot cooldown system
     PrepareStatement(CHAR_SEL_PLAYER_LOOTCOOLDOWN,       "SELECT entry, type, difficultyMask, respawnTime FROM character_loot_cooldown WHERE guid = ?",  CONNECTION_ASYNC);
     PrepareStatement(CHAR_INS_PLAYER_LOOTCOOLDOWN,       "INSERT IGNORE INTO character_loot_cooldown (`guid`, `entry`, `type`, `difficultyMask`, `respawnTime`) VALUES (?, ?, ?, ?, ?)",  CONNECTION_ASYNC);
+
+    // Player saving json
+    PrepareStatement(CHAR_REP_CHARACTER_JSON, "REPLACE INTO characters_json (guid, account, name, slot, race, class, gender, level, xp, money, playerBytes, playerBytes2, playerFlags, "
+    "map, position_x, position_y, position_z, totaltime, leveltime, logout_time, at_login, zone, totalKills, equipmentCache, data, mails"
+    ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", CONNECTION_ASYNC);
+
+    // Account saving json
+    PrepareStatement(CHAR_REP_ACCOUNT_JSON, "INSERT INTO account_json (account, data) VALUES (?,?)" , CONNECTION_ASYNC);
 }

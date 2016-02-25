@@ -34,6 +34,7 @@ EndScriptData */
 #include "MapManager.h"
 #include "Vehicle.h"
 #include "RedisEnv.h"
+#include "RedisBuilderMgr.h"
 
 #include <fstream>
 
@@ -1880,34 +1881,22 @@ public:
         testRapidStr = sbR2.GetString();
         sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint test 2 string %s testRapidStr %s", sbR2.GetString(), testRapidStr.c_str());
 
+        player->SaveJsonData();
         int32 keyCount = 0;
         uint32 oldMSTime = getMSTime();
-        while (keyCount < 1000000)
+        while (keyCount < 10000)
         {
-            Json::Value testJson;
-            testJson["name"] = "Kysya";
-            testJson["Class"] = 11;
-            testJson["Power"]["0"] = 100;
-            testJson["Power"]["20000"] = 2000;
-            Json::FastWriter wbuilder;
-            testJsonStr = wbuilder.write(testJson);
+            player->SavePlayer();
             keyCount++;
         }
         sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint Json::Value in %u ms string %s", GetMSTimeDiffToNow(oldMSTime), testJsonStr.c_str());
+        return true;
 
         keyCount = 0;
         oldMSTime = getMSTime();
-        while (keyCount < 1000000)
+        while (keyCount < 10000)
         {
-            rapidjson::Document document;
-            document["name"] = "Kysya";
-            document["Class"] = 11;
-            document["Power"]["0"] = 100;
-            document["Power"]["20000"] = 2000;
-            rapidjson::StringBuffer sb;
-            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
-            document.Accept(writer);    // Accept() traverses the DOM and generates Handler events.
-            testRapidStr = sb.GetString();
+            //player->GetPlayerSave()->SavePlayer();
             keyCount++;
         }
         sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint rapidjson::Document in %u ms string %s", GetMSTimeDiffToNow(oldMSTime), testRapidStr.c_str());

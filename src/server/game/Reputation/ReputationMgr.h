@@ -70,7 +70,7 @@ class ReputationMgr
 
         void SaveToDB(SQLTransaction& trans);
         void LoadFromDB(PreparedQueryResult result);
-        void LoadFromDB(const RedisValue* v, uint64 playerGuid);
+        void LoadFromDB();
     public:                                                 // statics
         static const int32 PointsInRank[MAX_REPUTATION_RANK];
         static const int32 Reputation_Cap    =  42999;

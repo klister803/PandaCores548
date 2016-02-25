@@ -1071,6 +1071,8 @@ class WorldSession
 
         AccountData m_accountData[NUM_ACCOUNT_DATA_TYPES];
 
+        Json::Value EnumData;
+
     private:
         void InitializeQueryCallbackParameters();
         void ProcessQueryCallbacks();
@@ -1138,7 +1140,6 @@ class WorldSession
         z_stream_s* _compressionStream;
 
         char* accountKey;
-        Json::Value EnumData;
 };
 
 class PacketSendEvent : public BasicEvent

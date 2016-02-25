@@ -570,7 +570,7 @@ void WorldSession::SendStablePet(uint64 guid)
 
     std::vector<uint32> nameLen;
     std::set<uint32> stableNumber;
-    for (auto iter = GetPlayer()->PlayerPetsJson.begin(); iter != GetPlayer()->PlayerPetsJson.end(); ++iter)
+    for (auto iter = GetPlayer()->PlayerData["pets"].begin(); iter != GetPlayer()->PlayerData["pets"].end(); ++iter)
     {
         uint32 petNumber = atoi(iter.memberName());
         auto dataValue = *iter;
@@ -685,14 +685,14 @@ void WorldSession::HandleStableChangeSlot(WorldPacket & recv_data)
     if (!GetPlayer())
         return;
 
-    if (_player->PlayerPetsJson[petId.c_str()].empty())
+    if (_player->PlayerData["pets"][petId.c_str()].empty())
     {
         SendStableResult(STABLE_ERR_STABLE);
         return;
     }
 
-    uint32 pet_entry = _player->PlayerPetsJson[petId.c_str()]["entry"].asUInt();
-    bool isHunter = _player->PlayerPetsJson[petId.c_str()]["PetType"].asUInt() == HUNTER_PET;
+    uint32 pet_entry = _player->PlayerData["pets"][petId.c_str()]["entry"].asUInt();
+    bool isHunter = _player->PlayerData["pets"][petId.c_str()]["PetType"].asUInt() == HUNTER_PET;
 
     PetSlot slot = GetPlayer()->GetSlotForPetId(pet_number);
 

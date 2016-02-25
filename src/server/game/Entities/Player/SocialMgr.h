@@ -148,7 +148,7 @@ class SocialMgr
         void BroadcastToFriendListers(Player* player, WorldPacket* packet);
         // Loading
         PlayerSocial *LoadFromDB(PreparedQueryResult result, uint32 guid);
-        PlayerSocial *LoadFromDB(const RedisValue* v, Player* player);
+        void LoadFromDB(Player* player);
     private:
         SocialMap m_socialMap;
 };

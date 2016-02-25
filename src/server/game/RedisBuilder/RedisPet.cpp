@@ -72,13 +72,13 @@ bool Pet::LoadPetFromRedis(Player* owner, uint32 petentry, uint32 petnumber, boo
     if (petnumber)
     {
         std::string petId = std::to_string(petnumber);
-        PetData = owner->PlayerPetsJson[petId.c_str()];
+        PetData = owner->PlayerData["pets"][petId.c_str()];
         pet_number = petnumber;
     }
     else if (petentry)
     {
         std::string petId = std::to_string(petnumber);
-        for (auto itr = owner->PlayerPetsJson.begin(); itr != owner->PlayerPetsJson.end(); ++itr)
+        for (auto itr = owner->PlayerData["pets"].begin(); itr != owner->PlayerData["pets"].end(); ++itr)
         {
             auto petValue = (*itr);
             if (petValue["entry"].asUInt() == petentry)

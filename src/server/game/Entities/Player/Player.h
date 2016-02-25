@@ -63,6 +63,7 @@ class UpdateMask;
 class PhaseMgr;
 class Bracket;
 class Guild;
+class PlayerSave;
 
 typedef std::deque<Mail*> PlayerMails;
 
@@ -1536,10 +1537,13 @@ class Player : public Unit, public GridObject<Player>
         std::string dndMsg;
 
         Visuals *m_vis;
+        PlayerSave* m_ps;
 
         uint32 GetBarberShopCost(uint8 newhairstyle, uint8 newhaircolor, uint8 newfacialhair, BarberShopStyleEntry const* newSkin=NULL);
 
         PlayerSocial *GetSocial() { return m_social; }
+
+        PlayerSave* GetPlayerSave() { return m_ps; }
 
         PlayerTaxi m_taxi;
         void InitTaxiNodesForLevel() { m_taxi.InitTaxiNodesForLevel(getRace(), getClass(), getLevel()); }
@@ -1559,6 +1563,7 @@ class Player : public Unit, public GridObject<Player>
         bool isGMVisible() const { return !(m_ExtraFlags & PLAYER_EXTRA_GM_INVISIBLE); }
         void SetGMVisible(bool on);
         void SetPvPDeath(bool on) { if (on) m_ExtraFlags |= PLAYER_EXTRA_PVP_DEATH; else m_ExtraFlags &= ~PLAYER_EXTRA_PVP_DEATH; }
+        uint32 GetExtraFlags() const { return m_ExtraFlags; }
 
         void GiveXP(uint32 xp, Unit* victim, float group_rate=1.0f);
         void GiveGatheringXP();
@@ -1632,54 +1637,9 @@ class Player : public Unit, public GridObject<Player>
         char* GetCriteriaPlKey() { return criteriaPlKey; }
         char* GetCriteriaAcKey() { return criteriaAcKey; }
 
-        Json::Value PlayerJson;
-        Json::Value PlayerBGJson;
-        Json::Value PlayerGroupJson;
-        Json::Value PlayerLootCooldownJson;
-        Json::Value PlayerCurrencyJson;
-        Json::Value PlayerBoundInstancesJson;
-        Json::Value PlayerSkillsJson;
-        Json::Value PlayerTalentsJson;
-        Json::Value PlayerSpellsJson;
-        Json::Value PlayerMountsJson;
-        Json::Value PlayerGlyphsJson;
-        Json::Value PlayerAurasJson;
-        Json::Value PlayerQuestStatusJson;
-        Json::Value AccountQuestStatusJson;
-        Json::Value PlayerQuestRewardedJson;
-        Json::Value AccountQuestRewardedJson;
-        Json::Value PlayerQuestDailyJson;
-        Json::Value AccountQuestDailyJson;
-        Json::Value PlayerQuestWeeklyJson;
-        Json::Value AccountQuestWeeklyJson;
-        Json::Value PlayerQuestSeasonalJson;
-        Json::Value AccountQuestSeasonalJson;
-        Json::Value AccountBattlePetsJson;
-        Json::Value AccountBattlePetSlotsJson;
-        Json::Value PlayerArchaeologyJson;
-        Json::Value PlayerReputationJson;
-        Json::Value PlayerVoidStorageJson;
-        Json::Value PlayerActionsJson;
-        Json::Value PlayerSocialJson;
-        Json::Value PlayerSpellCooldownsJson;
-        Json::Value PlayerKillsJson;
-        Json::Value PlayerDeclinedNameJson;
-        Json::Value PlayerEquipmentSetsJson;
-        Json::Value PlayerCUFProfilesJson;
-        Json::Value PlayerVisualsJson;
-        Json::Value PlayerAccountDataJson;
-        Json::Value AccountDataJson;
-        Json::Value PlayerHomeBindJson;
-        Json::Value PlayerAchievementJson;
-        Json::Value PlayerCriteriaJson;
-        Json::Value AccountAchievementJson;
-        Json::Value AccountCriteriaJson;
-        Json::Value PlayerPetsJson;
-        Json::Value PlayerGoldJson;
-        Json::Value AccountTutorialsJson;
-        Json::Value PlayerGuildJson;
-        Json::Value PlayerCorpse;
-        Json::Value PlayerPetitions;
+        Json::Value PlayerData;
+        Json::Value PlayerMailData;
+        Json::Value AccountDatas;
 
         //load data for serialize
         void InitSavePlayer();
@@ -1733,60 +1693,64 @@ class Player : public Unit, public GridObject<Player>
         void SavePlayerPetitions();
 
         //load data into player LoadPlayer
+        void LoadPlayerFromJson(uint64 guid);
         void LoadFromRedis(uint64 guid, uint8 step = 0, const RedisValue* v = NULL);
-        void LoadPlayer(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayer(uint64 playerGuid);
         void LoadPlayerNext(uint64 playerGuid);
-        void LoadPlayerGroup(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerLootCooldown(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerCurrency(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerBoundInstances(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerBG(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerGroup();
+        void LoadPlayerLootCooldown();
+        void LoadPlayerCurrency();
+        void LoadPlayerBoundInstances();
+        void LoadPlayerBG();
         void InitSecondPartDataPlayer();
-        void LoadPlayerBattlePets(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerBattlePetSlots(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerSkills(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerArchaeology(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerTalents(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerSpells(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerMounts(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerGlyphs(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerAuras(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerQuestStatus(const RedisValue* v, uint64 playerGuid);
-        void LoadAccountQuestStatus(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerQuestRewarded(const RedisValue* v, uint64 playerGuid);
-        void LoadAccountQuestRewarded(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerQuestDaily(const RedisValue* v, uint64 playerGuid);
-        void LoadAccountQuestDaily(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerQuestWeekly(const RedisValue* v, uint64 playerGuid);
-        void LoadAccountQuestWeekly(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerQuestSeasonal(const RedisValue* v, uint64 playerGuid);
-        void LoadAccountQuestSeasonal(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerReputation(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerLoadItems(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerVoidStorage(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerActions(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerSpellCooldowns(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerKills(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerBattlePets();
+        void LoadPlayerBattlePetSlots();
+        void LoadPlayerSkills();
+        void LoadPlayerArchaeology();
+        void LoadPlayerTalents();
+        void LoadPlayerSpells();
+        void LoadPlayerMounts();
+        void LoadPlayerGlyphs();
+        void LoadPlayerAuras();
+        void LoadPlayerQuestStatus();
+        void LoadAccountQuestStatus();
+        void LoadPlayerQuestRewarded();
+        void LoadAccountQuestRewarded();
+        void LoadPlayerQuestDaily();
+        void LoadAccountQuestDaily();
+        void LoadPlayerQuestWeekly();
+        void LoadAccountQuestWeekly();
+        void LoadPlayerQuestSeasonal();
+        void LoadAccountQuestSeasonal();
+        void LoadPlayerReputation();
+        void LoadPlayerLoadItems();
+        void LoadPlayerLoadItems(std::vector<RedisValue>* itemVector);
+        void LoadPlayerVoidStorage();
+        void LoadPlayerActions();
+        void LoadPlayerSpellCooldowns();
+        void LoadPlayerKills();
         void InitThirdPartDataPlayer();
-        void LoadPlayerDeclinedName(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerEquipmentSets(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerCUFProfiles(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerVisuals(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerAccountData(const RedisValue* v, uint64 playerGuid);
-        void LoadAccountData(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerHomeBind(const RedisValue* v, uint64 playerGuid);
-        void LoadAccountAchievements(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerAchievements(const RedisValue* v, uint64 playerGuid);
-        void LoadAccountCriteriaProgress(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerCriteriaProgress(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerGold(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerMails(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerMailItems(const RedisValue* v, uint64 mailGuid);
-        void LoadAccountTutorialsJson(const RedisValue* v, uint64 mailGuid);
-        void LoadPlayerPets(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerGuild(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerCorpse(const RedisValue* v, uint64 playerGuid);
-        void LoadPlayerPetition(const RedisValue* v, uint64 playerGuid);
+        void LoadPlayerDeclinedName();
+        void LoadPlayerEquipmentSets();
+        void LoadPlayerCUFProfiles();
+        void LoadPlayerVisuals();
+        void LoadPlayerAccountData();
+        void LoadAccountData();
+        void LoadPlayerHomeBind();
+        void LoadAccountAchievements();
+        void LoadPlayerAchievements();
+        void LoadAccountCriteriaProgress(std::vector<RedisValue>* progressVector);
+        void LoadPlayerCriteriaProgress(std::vector<RedisValue>* progressVector);
+        void LoadAccountCriteriaProgress();
+        void LoadPlayerCriteriaProgress();
+        void LoadPlayerGold();
+        void LoadPlayerMails(std::vector<RedisValue>* mailVector);
+        void LoadPlayerMailItems(std::vector<RedisValue>* itemVector, uint64 mailGuid);
+        void LoadPlayerMails();
+        void LoadPlayerMailItems(uint32 messageID);
+        void LoadPlayerGuild();
+        void LoadPlayerCorpse();
+        void LoadPlayerPetition();
 
         //Update data in database
         void DeleteCriteriaProgress(AchievementEntry const* achievement);
@@ -2212,6 +2176,7 @@ class Player : public Unit, public GridObject<Player>
         /*********************************************************/
 
         void SaveToDB(bool create = false);
+        void SaveJsonData();
 
         static void SetUInt32ValueInArray(Tokenizer& data, uint16 index, uint32 value);
         static void SetFloatValueInArray(Tokenizer& data, uint16 index, float value);
@@ -3747,6 +3712,10 @@ class Player : public Unit, public GridObject<Player>
          // end movement anticheat
 
         uint32 GetTimeSync() const { return m_timeSyncServer; }
+
+        // Social
+        PlayerSocial *m_social;
+
     protected:
         //kill honor sistem
         KillInfoMap m_killsPerPlayer;
@@ -3755,9 +3724,6 @@ class Player : public Unit, public GridObject<Player>
 
         //WorldFilter
         std::string m_sentMsgCache;
-
-        // Social
-        PlayerSocial *m_social;
 
         // Groups
         GroupReference m_group;

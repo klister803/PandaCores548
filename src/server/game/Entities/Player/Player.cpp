@@ -83,6 +83,7 @@
 #include "BracketMgr.h"
 #include "AuctionHouseMgr.h"
 #include "ScenarioMgr.h"
+#include "RedisBuilderMgr.h"
 
 // == PlayerTaxi ================================================
 
@@ -656,6 +657,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_vis = NULL;
     m_speakTime = 0;
     m_speakCount = 0;
+    m_ps = new PlayerSave(this);
 
     m_currentPetNumber = 0;
     m_currentSummonedSlot = PET_SLOT_HUNTER_FIRST;
@@ -30813,4 +30815,9 @@ SpellModifier* Player::ChangePriorityMods(SpellModifier* currentMod, SpellModifi
 void Player::UpdatePlayerNameData()
 {
     sWorld->UpdateCharacterNameDataZoneGuild(GetGUIDLow(), m_zoneUpdateId, GetGuildId(), GetRank());
+}
+
+void Player::SaveJsonData()
+{
+    m_ps->SaveToDB();
 }

@@ -97,7 +97,7 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recvData)
     }
 
     ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(charterid);
-    if (!pProto || !_player->PlayerPetitions.empty())
+    if (!pProto || !_player->PlayerData["petitions"].empty())
     {
         _player->SendBuyError(BUY_ERR_CANT_FIND_ITEM, NULL, charterid, 0);
         return;
@@ -133,12 +133,12 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recvData)
     // we checked above, if this player is in an arenateam, so this must be
     // datacorruption
 
-    _player->PlayerPetitions["guid"] = charter->GetGUIDLow();
-    _player->PlayerPetitions["name"] = name;
+    _player->PlayerData["petitions"]["guid"] = charter->GetGUIDLow();
+    _player->PlayerData["petitions"]["name"] = name;
 
     _player->SavePlayerPetitions();
 
-    sObjectMgr->AddPlayerPetition(_player->PlayerPetitions["guid"].asUInt(), _player);
+    sObjectMgr->AddPlayerPetition(_player->PlayerData["petitions"]["guid"].asUInt(), _player);
 }
 
 void WorldSession::HandlePetitionShowSignOpcode(WorldPacket& recvData)
@@ -153,7 +153,7 @@ void WorldSession::HandlePetitionShowSignOpcode(WorldPacket& recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Received opcode CMSG_PETITION_SHOW_SIGNATURES petitionGuidLow %u", petitionGuidLow);
 
     Player* player = sObjectMgr->GetPetitionPlayer(GUID_LOPART(petitionGuid));
-    if (!player || player->PlayerPetitions.empty())
+    if (!player || player->PlayerData["petitions"].empty())
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "Petition %u is not found for player %u %s", GUID_LOPART(petitionGuid), GetPlayer()->GetGUIDLow(), GetPlayer()->GetName());
         return;
@@ -164,7 +164,7 @@ void WorldSession::HandlePetitionShowSignOpcode(WorldPacket& recvData)
         return;
 
     // result == NULL also correct in case no sign yet
-    uint8 signs = player->PlayerPetitions["sign"].size();
+    uint8 signs = player->PlayerData["petitions"]["sign"].size();
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_PETITION_SHOW_SIGNATURES petition entry: '%u'", petitionGuidLow);
 
@@ -185,7 +185,7 @@ void WorldSession::HandlePetitionShowSignOpcode(WorldPacket& recvData)
 
     data.WriteBits(signs, 21);                              // sign's count
 
-    for (auto iter = player->PlayerPetitions["sign"].begin(); iter != player->PlayerPetitions["sign"].end(); ++iter)
+    for (auto iter = player->PlayerData["petitions"]["sign"].begin(); iter != player->PlayerData["petitions"]["sign"].end(); ++iter)
     {
         uint32 lowGuid = atoi(iter.memberName());
         ObjectGuid plSignGuid = MAKE_NEW_GUID(lowGuid, 0, HIGHGUID_PLAYER);
@@ -196,7 +196,7 @@ void WorldSession::HandlePetitionShowSignOpcode(WorldPacket& recvData)
     data.WriteGuidMask<4>(petitionGuid);
     data.WriteGuidMask<7>(playerGUID);
 
-    for (auto iter = player->PlayerPetitions["sign"].begin(); iter != player->PlayerPetitions["sign"].end(); ++iter)
+    for (auto iter = player->PlayerData["petitions"]["sign"].begin(); iter != player->PlayerData["petitions"]["sign"].end(); ++iter)
     {
         uint32 lowGuid = atoi(iter.memberName());
         ObjectGuid plSignGuid = MAKE_NEW_GUID(lowGuid, 0, HIGHGUID_PLAYER);
@@ -242,7 +242,7 @@ void WorldSession::SendPetitionQueryOpcode(uint64 petitionGuid)
     std::string name = "NO_NAME_FOR_GUID";
 
     Player* player = sObjectMgr->GetPetitionPlayer(GUID_LOPART(petitionGuid));
-    if (!player || player->PlayerPetitions.empty())
+    if (!player || player->PlayerData["petitions"].empty())
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_PETITION_QUERY failed for petition (GUID: %u) _player %u", GUID_LOPART(petitionGuid), _player->GetGUIDLow());
         return;
@@ -250,7 +250,7 @@ void WorldSession::SendPetitionQueryOpcode(uint64 petitionGuid)
     else
     {
         ownerguid = player->GetGUID();
-        name      = player->PlayerPetitions["name"].asString();
+        name      = player->PlayerData["petitions"]["name"].asString();
     }
 
     WorldPacket data(SMSG_PETITION_QUERY_RESPONSE);
@@ -316,7 +316,7 @@ void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recvData)
     recvData.ReadGuidBytes<4, 6, 3>(petitionGuid);
 
     Item* item = _player->GetItemByGuid(petitionGuid);
-    if (!item || _player->PlayerPetitions.empty())
+    if (!item || _player->PlayerData["petitions"].empty())
         return;
 
     if (sGuildMgr->GetGuildByName(newName))
@@ -331,7 +331,7 @@ void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recvData)
         return;
     }
 
-    _player->PlayerPetitions["name"] = newName;
+    _player->PlayerData["petitions"]["name"] = newName;
     _player->SavePlayerPetitions();
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Petition (GUID: %u) renamed to '%s'", GUID_LOPART(petitionGuid), newName.c_str());
@@ -357,14 +357,14 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recvData)
     recvData.ReadGuidBytes<4, 6, 7, 2, 5, 3, 1, 0>(petitionGuid);
 
     Player* player = sObjectMgr->GetPetitionPlayer(GUID_LOPART(petitionGuid));
-    if (!player || player->PlayerPetitions.empty())
+    if (!player || player->PlayerData["petitions"].empty())
     {
         sLog->outError(LOG_FILTER_NETWORKIO, "Petition %u is not found for player %u %s", GUID_LOPART(petitionGuid), GetPlayer()->GetGUIDLow(), GetPlayer()->GetName());
         return;
     }
 
     uint64 ownerGuid = player->GetGUID();
-    uint8 signs = player->PlayerPetitions["sign"].size();
+    uint8 signs = player->PlayerData["petitions"]["sign"].size();
 
     uint32 playerGuid = _player->GetGUIDLow();
     if (GUID_LOPART(ownerGuid) == playerGuid)
@@ -394,7 +394,7 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recvData)
 
     // Client doesn't allow to sign petition two times by one character, but not check sign by another character from same account
     // not allow sign another player from already sign player account
-    for (auto iter = player->PlayerPetitions["sign"].begin(); iter != player->PlayerPetitions["sign"].end(); ++iter)
+    for (auto iter = player->PlayerData["petitions"]["sign"].begin(); iter != player->PlayerData["petitions"]["sign"].end(); ++iter)
     {
         if (GetAccountId() == (*iter).asUInt())
         {
@@ -405,7 +405,7 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recvData)
     }
 
     std::string id = std::to_string(playerGuid);
-    player->PlayerPetitions["sign"][id.c_str()] = GetAccountId();
+    player->PlayerData["petitions"]["sign"][id.c_str()] = GetAccountId();
     player->SavePlayerPetitions();
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "PETITION SIGN: GUID %u by player: %s (GUID: %u Account: %u)", GUID_LOPART(petitionGuid), _player->GetName(), playerGuid, GetAccountId());
@@ -498,7 +498,7 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
     recvData.ReadGuidBytes<7>(petitionGuid);
 
     player = ObjectAccessor::FindPlayer(plguid);
-    if (!player || _player->PlayerPetitions.empty())
+    if (!player || _player->PlayerData["petitions"].empty())
         return;
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "OFFER PETITION: GUID1 %u, to player id: %u", GUID_LOPART(petitionGuid), GUID_LOPART(plguid));
@@ -521,7 +521,7 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
         return;
     }
 
-    for (auto iter = _player->PlayerPetitions["sign"].begin(); iter != _player->PlayerPetitions["sign"].end(); ++iter)
+    for (auto iter = _player->PlayerData["petitions"]["sign"].begin(); iter != _player->PlayerData["petitions"]["sign"].end(); ++iter)
     {
         uint32 lowGuid = atoi(iter.memberName());
 
@@ -533,7 +533,7 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
         }
     }
 
-    uint8 signs = _player->PlayerPetitions["sign"].size();
+    uint8 signs = _player->PlayerData["petitions"]["sign"].size();
     ObjectGuid playerGUID = _player->GetGUID();
 
     WorldPacket data(SMSG_PETITION_SHOW_SIGNATURES, (8+8+4+1+signs*12));
@@ -551,7 +551,7 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
 
     data.WriteBits(signs, 21);                              // sign's count
 
-    for (auto iter = _player->PlayerPetitions["sign"].begin(); iter != _player->PlayerPetitions["sign"].end(); ++iter)
+    for (auto iter = _player->PlayerData["petitions"]["sign"].begin(); iter != _player->PlayerData["petitions"]["sign"].end(); ++iter)
     {
         uint32 lowGuid = atoi(iter.memberName());
         ObjectGuid plSignGuid = MAKE_NEW_GUID(lowGuid, 0, HIGHGUID_PLAYER);
@@ -562,7 +562,7 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
     data.WriteGuidMask<4>(petitionGuid);
     data.WriteGuidMask<7>(playerGUID);
 
-    for (auto iter = _player->PlayerPetitions["sign"].begin(); iter != _player->PlayerPetitions["sign"].end(); ++iter)
+    for (auto iter = _player->PlayerData["petitions"]["sign"].begin(); iter != _player->PlayerData["petitions"]["sign"].end(); ++iter)
     {
         uint32 lowGuid = atoi(iter.memberName());
         ObjectGuid plSignGuid = MAKE_NEW_GUID(lowGuid, 0, HIGHGUID_PLAYER);
@@ -612,7 +612,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
     std::string name;
 
     Player* player = sObjectMgr->GetPetitionPlayer(GUID_LOPART(petitionGuid));
-    if (!player || player->PlayerPetitions.empty())
+    if (!player || player->PlayerData["petitions"].empty())
     {
         sLog->outError(LOG_FILTER_NETWORKIO, "Player %s (guid: %u) tried to turn in petition (guid: %u) that is not present in the database", _player->GetName(), _player->GetGUIDLow(), GUID_LOPART(petitionGuid));
         return;
@@ -620,7 +620,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
     else
     {
         ownerguid = player->GetGUIDLow();
-        name      = player->PlayerPetitions["name"].asString();
+        name      = player->PlayerData["petitions"]["name"].asString();
     }
 
     // Only the petition owner can turn in the petition
@@ -644,7 +644,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
     }
 
     // Notify player if signatures are missing
-    if (player->PlayerPetitions["sign"].size() < sWorld->getIntConfig(CONFIG_MIN_PETITION_SIGNS))
+    if (player->PlayerData["petitions"]["sign"].size() < sWorld->getIntConfig(CONFIG_MIN_PETITION_SIGNS))
     {
         data.Initialize(SMSG_TURN_IN_PETITION_RESULTS, 1);
         data.WriteBits(PETITION_TURN_NEED_MORE_SIGNATURES, 4);
@@ -671,7 +671,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
     sGuildMgr->AddGuild(guild);
 
     // Add members from signatures
-    for (auto iter = player->PlayerPetitions["sign"].begin(); iter != player->PlayerPetitions["sign"].end(); ++iter)
+    for (auto iter = player->PlayerData["petitions"]["sign"].begin(); iter != player->PlayerData["petitions"]["sign"].end(); ++iter)
     {
         uint32 lowGuid = atoi(iter.memberName());
         guild->AddMember(MAKE_NEW_GUID(lowGuid, 0, HIGHGUID_PLAYER));

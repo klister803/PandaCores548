@@ -755,7 +755,7 @@ void WorldSession::HandlePetRename(WorldPacket & recvData)
             for (uint8 i = 0; i < MAX_DECLINED_NAME_CASES; i++)
             {
                 std::string index = std::to_string(i);
-                _player->PlayerPetsJson[petId.c_str()]["declinedname"][index.c_str()] = declinedname.name[i];
+                _player->PlayerData["pets"][petId.c_str()]["declinedname"][index.c_str()] = declinedname.name[i];
             }
         }
     }

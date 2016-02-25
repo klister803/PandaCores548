@@ -5,6 +5,20 @@
 #ifndef __RedisSaveBuilder_H
 #define __RedisSaveBuilder_H
 
+class PlayerSave
+{
+    public:
+        PlayerSave(Player* player) : m_player(player) {}
+        ~PlayerSave() {}
+
+        void SaveToDB();
+        void SaveItem();
+
+    private:
+
+        Player* m_player;
+};
+
 class RedisBuilderMgr
 {
     private:
@@ -61,6 +75,4 @@ class RedisBuilderMgr
 };
 
 #define sRedisBuilderMgr RedisBuilderMgr::instance()
-
-
 #endif

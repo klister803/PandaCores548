@@ -84,11 +84,10 @@ void Item::SaveItem()
 
     std::string index = std::to_string(GetGUIDLow());
 
-    sLog->outInfo(LOG_FILTER_REDIS, "Item::SaveItem slot %u Entry %u Count %u guid %s itemKey %s",
-    m_slot, GetEntry(), GetCount(), index.c_str(), itemKey);
+    //sLog->outInfo(LOG_FILTER_REDIS, "Item::SaveItem slot %u Entry %u Count %u guid %s itemKey %s", m_slot, GetEntry(), GetCount(), index.c_str(), itemKey);
 
     RedisDatabase.AsyncExecuteHSet("HSET", itemKey, index.c_str(), sRedisBuilderMgr->BuildString(ItemData).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Item::SaveItem guid %u%u", guid);
+        //sLog->outInfo(LOG_FILTER_REDIS, "Item::SaveItem guid %u%u", guid);
     });
 }
 
