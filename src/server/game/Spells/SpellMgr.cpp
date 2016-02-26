@@ -4930,6 +4930,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 146325: // Cutter Laser Visual Target
                 case 144918: // Cutter Laser Dmg
                 case 123707: // CC: Eyes of the Empress
+                case 119775: // Sha of Fear - Reaching Attack
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
                 case 144396: //Vengeful Strikes. WTF. SPELL_AURA_MOD_POSSESS_PET
@@ -5705,6 +5706,17 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 121949: //Unsok - Parasitic Growth
                     spellInfo->ExcludeTargetAuraSpell = 122370;
+                    break;
+                case 117866: //Sha of Fear - Champion of the Light
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(36); //1s
+                    break;
+                case 117964: //Sha of Fear - Wall of Light
+                    spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
+                    spellInfo->ExcludeTargetAuraSpell = 0;
+                    break;
+                case 119414: //Sha of Fear - Breath of Fear
+                case 125786:
+                    spellInfo->ExcludeTargetAuraSpell = 117964;
                     break;
                 default:
                     break;

@@ -5205,6 +5205,9 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
 
             switch (m_spellInfo->Id)
             {
+                case 119787: //Sha of Fear - Teleport
+                    unitTarget->CastSpell(unitTarget, damage, true);
+                    break;
                 case 125390: //Shekzeer - Fixate
                     unitTarget->CastSpell(m_caster, damage, true);
                     break;

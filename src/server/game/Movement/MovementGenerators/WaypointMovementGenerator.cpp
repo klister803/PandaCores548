@@ -114,7 +114,7 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature &creature)
     creature.AddUnitState(UNIT_STATE_ROAMING_MOVE);
 
     Movement::MoveSplineInit init(creature);
-    init.MoveTo(node->x, node->y, node->z, true);
+    init.MoveTo(node->x, node->y, node->z, generatePath);
 
     //! Accepts angles such as 0.00001 and -0.00001, 0 must be ignored, default value in waypoint table
     if (node->orientation && node->delay)

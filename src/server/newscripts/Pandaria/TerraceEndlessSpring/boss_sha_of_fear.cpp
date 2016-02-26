@@ -22,31 +22,89 @@
 enum eSpells
 {
     //Sha
-    SPELL_EERIE_SKULL        = 119519,
-    SPELL_REACHING_ATTACK    = 119775,
-    //Dread spawn
-    SPELL_PENETRATING_BOLT   = 129077,
-};
+    SPELL_PLR_TELEPORT          = 119787,
+    SPELL_ZERO_REGEN            = 72242,
+    SPELL_CUSTOM_REGEN          = 119417,
+    SPELL_BREATH_OF_FEAR        = 119414,
+    SPELL_EERIE_SKULL           = 119519,
+    SPELL_REACHING_ATTACK       = 119775,
+    SPELL_THRASH_PROC           = 131993,
+    SPELL_OMINOUS_CACKLE_P_1    = 119593, //Platform 1
+    SPELL_OMINOUS_CACKLE_P_2    = 119692, //Platform 2
+    SPELL_OMINOUS_CACKLE_P_3    = 119693, //Platform 3
 
-enum sSummons
-{
-    NPC_DREAD_SPAWN          = 61003,
+    //Terror spawn
+    SPELL_PENETRATING_BOLT      = 129075,
+    SPELL_DARK_BULWARK          = 119083,
+    
+    //Defenders
+    SPELL_SHA_CORRUPTION_VIS    = 120000,
+    SPELL_SHOOT                 = 119862,
+    SPELL_SHA_GLOBE             = 129178,
+    SPELL_DREAD_SPRAY           = 120047,
+    SPELL_DEATH_BLOSSOM         = 119888,
 };
 
 enum eEvents
 {
     //Sha
-    EVENT_SKULL              = 1,
-    EVENT_R_ATTACK           = 2, //Use if no target for melee attack
-    EVENT_DREAD_SPAWN        = 3,
-    //Summon
-    EVENT_BOLT               = 4,
+    EVENT_CHECKPOWER            = 1,
+    EVENT_SKULL                 = 2,
+    EVENT_R_ATTACK              = 3, //Use if no target for melee attack
+    EVENT_DREAD_SPAWN           = 4,
+    EVENT_OMINOUS_CACKLE        = 5,
+
+    //Summons
+    EVENT_BOLT                  = 1,
 };
+
+enum sSummons
+{
+    NPC_PURE_LIGHT_TERRACE      = 60788,
+    NPC_TERROR_SPAWN            = 61034,
+    NPC_YANG_GUOSHI             = 61038,
+    NPC_CHENG_KANG              = 61042,
+    NPC_JINLUN_KUN              = 61046,
+    NPC_RETURN_TERRACE          = 65736,
+
+    NPC_DREAD_SPAWN             = 61003, //Heroic
+};
+
+enum ShaPlatform
+{
+    SHA_PLATFORM_1              = 6099900,
+    SHA_PLATFORM_2_1            = 6099901,
+    SHA_PLATFORM_2_2            = 6099902,
+    SHA_PLATFORM_3              = 6099903
+};
+
+uint32 platformSpell[3] =
+{
+    SPELL_OMINOUS_CACKLE_P_1,
+    SPELL_OMINOUS_CACKLE_P_2,
+    SPELL_OMINOUS_CACKLE_P_3
+};
+
+uint32 platformNpc[3] =
+{
+    NPC_YANG_GUOSHI,
+    NPC_CHENG_KANG,
+    NPC_JINLUN_KUN
+};
+
+Position const centrPos = {-1017.83f, -2771.98f, 38.65f, 4.70f};
 
 Position const dspos[2] = 
 {
     {-1054.36f, -2783.48f, 38.2692f},
     {-981.31f,  -2782.95f, 38.2682f},
+};
+
+Position const platNpcPos[3] =
+{
+    {-1214.79f, -2824.82f, 41.24f, 3.50f},
+    {-1075.20f, -2577.82f, 15.85f, 1.74f},
+    {-832.07f,  -2745.41f, 31.67f, 0.15f}
 };
 
 float const minpullpos = -2847.0258f;
@@ -82,32 +140,31 @@ class boss_sha_of_fear : public CreatureScript
                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                     }
                 }
+                SetCombatMovement(false);
             }
 
             InstanceScript* instance;
             uint32 checkvictim;
+            uint8 currentPlatform;
 
             void Reset()
             {
                 _Reset();
+                DoCast(me, SPELL_ZERO_REGEN, true);
+                DoCast(me, SPELL_PLR_TELEPORT, true);
                 me->SetReactState(REACT_DEFENSIVE);
                 me->setPowerType(POWER_ENERGY);
                 me->SetPower(POWER_ENERGY, 0);
                 checkvictim = 0;
+                currentPlatform = 0;
+
+                me->SummonCreature(NPC_PURE_LIGHT_TERRACE, centrPos);
             }
 
             void JustReachedHome()
             {
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                 me->SetReactState(REACT_DEFENSIVE);
-            }
-
-            void RegeneratePower(Powers power, float &value)
-            {
-                if (!me->isInCombat())
-                    value = 0;
-                else 
-                    value = 2;
             }
 
             void EnterCombat(Unit* who)
@@ -122,8 +179,13 @@ class boss_sha_of_fear : public CreatureScript
                 }
                 _EnterCombat();
                 checkvictim = 1500;
-                events.ScheduleEvent(EVENT_DREAD_SPAWN, urand(20000, 30000));
-                events.ScheduleEvent(EVENT_SKULL,       urand(10000, 15000));
+                DoCast(me, SPELL_THRASH_PROC, true);
+                DoCast(me, SPELL_CUSTOM_REGEN, true);
+                DoCast(me, SPELL_PLR_TELEPORT, true);
+                events.ScheduleEvent(EVENT_DREAD_SPAWN, 30000);
+                events.ScheduleEvent(EVENT_SKULL, 8000);
+                events.ScheduleEvent(EVENT_CHECKPOWER, 1000);
+                events.ScheduleEvent(EVENT_OMINOUS_CACKLE, 4000); //40s
             }
 
             bool CheckPullPlayerPos(Unit* who)
@@ -137,6 +199,13 @@ class boss_sha_of_fear : public CreatureScript
             void JustDied(Unit* /*killer*/)
             {
                 _JustDied();
+                DoCast(me, SPELL_PLR_TELEPORT, true);
+            }
+
+            void SummonedCreatureDies(Creature* summon, Unit* /*killer*/)
+            {
+                if (summon->GetEntry() == platformNpc[currentPlatform])
+                    me->SummonCreature(NPC_RETURN_TERRACE, summon->GetPositionX(), summon->GetPositionY(), summon->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 60000);
             }
 
             void UpdateAI(uint32 diff)
@@ -150,6 +219,10 @@ class boss_sha_of_fear : public CreatureScript
                     {
                         if (me->getVictim())
                         {
+                            if (!me->IsWithinMeleeRange(me->getVictim()))
+                                if (Unit* pTarget = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0.0f, true))
+                                    DoCast(pTarget, SPELL_REACHING_ATTACK);
+
                             if (!CheckPullPlayerPos(me->getVictim()))
                             {
                                 me->AttackStop();
@@ -168,23 +241,42 @@ class boss_sha_of_fear : public CreatureScript
 
                 events.Update(diff);
 
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
                 while (uint32 eventid = events.ExecuteEvent())
                 {
                     switch (eventid)
                     {
-                    case EVENT_SKULL:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 40.0f, true))
-                            DoCast(target, SPELL_EERIE_SKULL);
-                        events.ScheduleEvent(EVENT_SKULL, urand(10000, 15000));
-                        break;
-                    case EVENT_DREAD_SPAWN:
-                        for (uint8 n = 0; n < 2; n++)
+                        case EVENT_CHECKPOWER:
+                            if (me->GetPower(POWER_ENERGY) == 100 && !me->HasAura(SPELL_BREATH_OF_FEAR))
+                                DoCast(SPELL_BREATH_OF_FEAR);
+                            events.ScheduleEvent(EVENT_CHECKPOWER, 1000);
+                            break;
+                        case EVENT_SKULL:
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0f, true))
+                                DoCast(target, SPELL_EERIE_SKULL);
+                            events.ScheduleEvent(EVENT_SKULL, 6000);
+                            break;
+                        case EVENT_DREAD_SPAWN:
+                            for (uint8 n = 0; n < 2; n++)
+                            {
+                                if (Creature* ds = me->SummonCreature(NPC_TERROR_SPAWN, dspos[n]))
+                                    ds->AI()->DoZoneInCombat(ds, 100.0f);
+                            }
+                            events.ScheduleEvent(EVENT_DREAD_SPAWN, 60000);
+                            break;
+                        case EVENT_OMINOUS_CACKLE:
                         {
-                            if (Creature* ds = me->SummonCreature(NPC_DREAD_SPAWN, dspos[n]))
-                                ds->AI()->DoZoneInCombat(ds, 100.0f);
+                            summons.DespawnEntry(platformNpc[currentPlatform]);
+                            me->SummonCreature(platformNpc[currentPlatform], platNpcPos[currentPlatform]);
+                            DoCast(platformSpell[currentPlatform]);
+                            currentPlatform++;
+                            if (currentPlatform > 2)
+                                currentPlatform = 0;
+                            events.ScheduleEvent(EVENT_OMINOUS_CACKLE, 90000); //1.30
+                            break;
                         }
-                        events.ScheduleEvent(EVENT_DREAD_SPAWN, urand(20000, 30000));
-                        break;
                     }
                 }
                 DoMeleeAttackIfReady();
@@ -197,14 +289,75 @@ class boss_sha_of_fear : public CreatureScript
         }
 };
 
-class npc_dread_spawn : public CreatureScript
+//60788
+class npc_sha_of_fear_pure_light_terrace : public CreatureScript
 {
     public:
-        npc_dread_spawn() : CreatureScript("npc_dread_spawn") {}
+        npc_sha_of_fear_pure_light_terrace() : CreatureScript("npc_sha_of_fear_pure_light_terrace") {}
 
-        struct npc_dread_spawnAI : public ScriptedAI
+        struct npc_sha_of_fear_pure_light_terraceAI : public ScriptedAI
         {
-            npc_dread_spawnAI(Creature* creature) : ScriptedAI(creature)
+            npc_sha_of_fear_pure_light_terraceAI(Creature* creature) : ScriptedAI(creature)
+            {
+                me->SetReactState(REACT_PASSIVE);
+                me->setFaction(14);
+            }
+
+            EventMap events;
+
+            void Reset(){}
+
+            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+            {
+                damage = 0;
+            }
+
+            void IsSummonedBy(Unit* summoner)
+            {
+                DoCast(me, 117865, true); //Light Wall - Scale tank
+                DoCast(me, 117770, true); //Light Wall - Visual?
+                
+                events.ScheduleEvent(EVENT_1, 1000);
+            }
+
+            void UpdateAI(uint32 diff) 
+            {
+                events.Update(diff);
+
+                while (uint32 eventid = events.ExecuteEvent())
+                {
+                    switch (eventid)
+                    {
+                        case EVENT_1:
+                            if (Unit* player = me->SelectNearestPlayer(5.0f))
+                            {
+                                if (player->HasAura(117866) && !me->HasAura(107141))
+                                    DoCast(me, 107141, true); //Light Wall - Visual Wall + Damage mod raid
+                            }
+                            else
+                                me->RemoveAurasDueToSpell(107141);
+                            events.ScheduleEvent(EVENT_1, 1000);
+                            break;
+                    }
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_sha_of_fear_pure_light_terraceAI(creature);
+        }
+};
+
+//61034
+class npc_sha_of_fear_terror_spawn : public CreatureScript
+{
+    public:
+        npc_sha_of_fear_terror_spawn() : CreatureScript("npc_sha_of_fear_terror_spawn") {}
+
+        struct npc_sha_of_fear_terror_spawnAI : public ScriptedAI
+        {
+            npc_sha_of_fear_terror_spawnAI(Creature* creature) : ScriptedAI(creature)
             {
                 pInstance = creature->GetInstanceScript();
                 me->SetReactState(REACT_AGGRESSIVE);
@@ -214,8 +367,11 @@ class npc_dread_spawn : public CreatureScript
             InstanceScript* pInstance;
             EventMap events;
 
-            void Reset(){}
-            
+            void Reset()
+            {
+                DoCast(me, SPELL_DARK_BULWARK, true);
+            }
+
             void EnterCombat(Unit* attacker)
             {
                 events.ScheduleEvent(EVENT_BOLT, 3000);
@@ -234,12 +390,14 @@ class npc_dread_spawn : public CreatureScript
 
                 events.Update(diff);
 
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
                 while (uint32 eventId = events.ExecuteEvent())
                 {
                     if (eventId == EVENT_BOLT)
                     {
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
-                            DoCast(target, SPELL_PENETRATING_BOLT);
+                        DoCast(SPELL_PENETRATING_BOLT);
                         events.ScheduleEvent(EVENT_BOLT, 3000);
                     }
                 }
@@ -248,12 +406,472 @@ class npc_dread_spawn : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new npc_dread_spawnAI(creature);
+            return new npc_sha_of_fear_terror_spawnAI(creature);
+        }
+};
+
+//61003 - Heroic
+class npc_sha_of_fear_dread_spawn : public CreatureScript
+{
+    public:
+        npc_sha_of_fear_dread_spawn() : CreatureScript("npc_sha_of_fear_dread_spawn") {}
+
+        struct npc_sha_of_fear_dread_spawnAI : public ScriptedAI
+        {
+            npc_sha_of_fear_dread_spawnAI(Creature* creature) : ScriptedAI(creature)
+            {
+                pInstance = creature->GetInstanceScript();
+            }
+
+            InstanceScript* pInstance;
+            EventMap events;
+
+            void Reset(){}
+            
+            void EnterCombat(Unit* attacker) {}
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                DoMeleeAttackIfReady();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_sha_of_fear_dread_spawnAI(creature);
+        }
+};
+
+//61038, 61042, 61046
+class npc_sha_of_fear_platform_defenders : public CreatureScript
+{
+    public:
+        npc_sha_of_fear_platform_defenders() : CreatureScript("npc_sha_of_fear_platform_defenders") {}
+
+        struct npc_sha_of_fear_platform_defendersAI : public ScriptedAI
+        {
+            npc_sha_of_fear_platform_defendersAI(Creature* creature) : ScriptedAI(creature)
+            {
+                pInstance = creature->GetInstanceScript();
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+                SetCombatMovement(false);
+            }
+
+            InstanceScript* pInstance;
+            EventMap events;
+            uint8 healthPct;
+
+            void Reset()
+            {
+                DoCast(me, SPELL_SHA_CORRUPTION_VIS, true);
+                healthPct = 96;
+            }
+            
+            void EnterCombat(Unit* attacker) 
+            {
+                //events.ScheduleEvent(EVENT_1, 10000); //33:40
+                events.ScheduleEvent(EVENT_2, 30000);
+            }
+
+            void DamageTaken(Unit* /*who*/, uint32& damage)
+            {
+                if (me->HealthBelowPct(healthPct))
+                {
+                    healthPct -= 4;
+                    DoCast(me, SPELL_SHA_GLOBE, true);
+                }
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_1:
+                            DoCast(me, SPELL_DREAD_SPRAY, true);
+                            events.ScheduleEvent(EVENT_1, 10000);
+                            break;
+                        case EVENT_2:
+                            DoCast(SPELL_DEATH_BLOSSOM);
+                            events.ScheduleEvent(EVENT_2, 30000);
+                            break;
+                    }
+                }
+                DoSpellAttackIfReady(SPELL_SHOOT);
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_sha_of_fear_platform_defendersAI(creature);
+        }
+};
+
+//65691
+class npc_sha_of_fear_sha_globe : public CreatureScript
+{
+    public:
+        npc_sha_of_fear_sha_globe() : CreatureScript("npc_sha_of_fear_sha_globe") {}
+
+        struct npc_sha_of_fear_sha_globeAI : public ScriptedAI
+        {
+            npc_sha_of_fear_sha_globeAI(Creature* creature) : ScriptedAI(creature)
+            {
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+                me->SetReactState(REACT_PASSIVE);
+            }
+
+            EventMap events;
+            uint8 healthPct;
+
+            void Reset()
+            {
+                DoCast(me, 129187, true); //Sha Globe periodic
+                events.ScheduleEvent(EVENT_1, 8000);
+            }
+
+            void SpellHitTarget(Unit* target, const SpellInfo* spell)
+            {
+                if (spell->Id == 129189)
+                {
+                    events.Reset();
+                    me->RemoveAllAuras();
+                    me->DespawnOrUnsummon(500);
+                }
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    if (eventId == EVENT_1)
+                    {
+                        if (me->ToTempSummon())
+                            if (Unit* summoner = me->ToTempSummon()->GetSummoner())
+                            {
+                                DoCast(summoner, 129190, true);
+                                me->RemoveAllAuras();
+                                me->DespawnOrUnsummon(500);
+                            }
+                    }
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_sha_of_fear_sha_globeAI(creature);
+        }
+};
+
+//117866
+class ExactDistanceCheck
+{
+    public:
+        ExactDistanceCheck(Unit* source, float dist) : _source(source), _dist(dist) {}
+
+        bool operator()(WorldObject* unit)
+        {
+            return _source->GetExactDist2d(unit) > _dist;
+        }
+
+    private:
+        Unit* _source;
+        float _dist;
+};
+
+class spell_sha_of_fear_champion_light : public SpellScriptLoader
+{
+    public:
+        spell_sha_of_fear_champion_light() : SpellScriptLoader("spell_sha_of_fear_champion_light") { }
+
+        class spell_sha_of_fear_champion_light_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_of_fear_champion_light_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targetList)
+            {
+                targetList.remove_if(ExactDistanceCheck(GetCaster(), 5.0f * GetCaster()->GetFloatValue(OBJECT_FIELD_SCALE_X)));
+                if (targetList.empty())
+                    return;
+
+                for (std::list<WorldObject*>::iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
+                    if (Player* plr = (*itr)->ToPlayer())
+                        if (plr->HasAura(117866))
+                            targetList.push_front(plr);
+
+                if (targetList.size() > 1)
+                    targetList.resize(1);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_of_fear_champion_light_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_of_fear_champion_light_SpellScript();
+        }
+};
+
+//131993
+class spell_sha_of_fear_thrash : public SpellScriptLoader
+{
+    public:
+        spell_sha_of_fear_thrash() : SpellScriptLoader("spell_sha_of_fear_thrash") { }
+
+        class spell_sha_of_fear_thrash_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_sha_of_fear_thrash_AuraScript);
+
+            uint8 procCount;
+
+            bool Load()
+            {
+                procCount = 0;
+                return true;
+            }
+
+            void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+            {
+                PreventDefaultAction();
+
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                procCount++;
+
+                switch (procCount)
+                {
+                    case 3:
+                        caster->CastSpell(caster, 131996, true);  //THRASH_WARNING
+                        break;
+                    case 4:
+                        caster->CastSpell(caster, 131994, true);  //THRASH_EXTRA
+                        break;
+                    case 5:
+                        caster->RemoveAurasDueToSpell(131996);    //Remove THRASH_WARNING
+                        break;
+                }
+                if (procCount > 5)
+                    procCount = 0;
+            }
+
+            void Register()
+            {
+                OnEffectProc += AuraEffectProcFn(spell_sha_of_fear_thrash_AuraScript::OnProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sha_of_fear_thrash_AuraScript();
+        }
+};
+
+//119593, 119692, 119693
+class spell_sha_of_fear_ominous_cackle : public SpellScriptLoader
+{
+    public:
+        spell_sha_of_fear_ominous_cackle() : SpellScriptLoader("spell_sha_of_fear_ominous_cackle") { }
+
+        class spell_sha_of_fear_ominous_cackleSpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_of_fear_ominous_cackleSpellScript);
+
+            uint8 tankCount;
+            uint8 healerCount;
+            uint8 damagerCount;
+            uint8 hitCount;
+            
+            bool Load()
+            {
+                tankCount = 0;
+                healerCount = 0;
+                damagerCount = 0;
+                hitCount = 0;
+                return true;
+            }
+
+            void FilterTargets(std::list<WorldObject*>& targetList)
+            {
+                targetList.remove_if(ExactDistanceCheck(GetCaster(), 60.0f * GetCaster()->GetFloatValue(OBJECT_FIELD_SCALE_X)));
+                if (targetList.empty())
+                    return;
+
+                Creature* sha = GetCaster()->ToCreature();
+                if (!sha)
+                    return;
+
+                std::list<WorldObject*> tempPlr;
+                for (std::list<WorldObject*>::iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
+                {
+                    if (Player* plr = (*itr)->ToPlayer())
+                    {
+                        uint8 role = plr->GetRoleForGroup(plr->GetSpecializationId(plr->GetActiveSpec()));
+                        switch (role)
+                        {
+                            case ROLES_TANK:
+                                if (tankCount == 1)
+                                {
+                                    if (Unit* pTank = sha->AI()->SelectTarget(SELECT_TARGET_TOPAGGRO))
+                                        if (sha->GetDistance(pTank) < 80.0f)
+                                            tempPlr.push_front(pTank);
+                                }
+                                tankCount++;
+                                break;
+                            case ROLES_HEALER:
+                                if (healerCount == 0)
+                                    tempPlr.push_front(*itr);
+                                healerCount++;
+                                break;
+                            case ROLES_DPS:
+                                if (damagerCount < 3)
+                                    tempPlr.push_front(*itr);
+                                damagerCount++;
+                                break;
+                        }
+                    }
+                }
+                targetList.clear();
+
+                if (tempPlr.size() < 2)
+                    tempPlr.clear();
+
+                if (tempPlr.empty())
+                    return;
+
+                for (std::list<WorldObject*>::const_iterator itr = tempPlr.begin(); itr != tempPlr.end(); ++itr)
+                    targetList.push_back((*itr));
+            }
+
+            void HandleOnHit()
+            {
+                Unit* target = GetHitUnit();
+                if (!target)
+                    return;
+
+                switch (GetSpellInfo()->Id)
+                {
+                    case 119593:
+                        target->GetMotionMaster()->MovePath(SHA_PLATFORM_1, false, false);
+                        break;
+                    case 119692:
+                        target->GetMotionMaster()->MovePath(urand(SHA_PLATFORM_2_1, SHA_PLATFORM_2_2), false, false);
+                        break;
+                    case 119693:
+                        target->GetMotionMaster()->MovePath(SHA_PLATFORM_3, false, false);
+                        break;
+                }
+                target->CastSpell(target, 129147, true);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_of_fear_ominous_cackleSpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+                OnHit += SpellHitFn(spell_sha_of_fear_ominous_cackleSpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_of_fear_ominous_cackleSpellScript();
+        }
+};
+
+//129147
+class spell_sha_of_fear_ominous_cackle_controll : public SpellScriptLoader
+{
+    public:
+        spell_sha_of_fear_ominous_cackle_controll() : SpellScriptLoader("spell_sha_of_fear_ominous_cackle_controll") { }
+
+        class spell_sha_of_fear_ominous_cackle_controll_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_sha_of_fear_ominous_cackle_controll_AuraScript);
+
+            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (!GetTarget())
+                    return;
+
+                if (GetTarget()->GetTypeId() == TYPEID_PLAYER)
+                    GetTarget()->ToPlayer()->SetClientControl(GetTarget(), 0);
+            }
+
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (!GetTarget())
+                    return;
+
+                if (GetTarget()->GetTypeId() == TYPEID_PLAYER)
+                    GetTarget()->ToPlayer()->SetClientControl(GetTarget(), 1);
+            }
+            
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_sha_of_fear_ominous_cackle_controll_AuraScript::OnApply, EFFECT_3, SPELL_AURA_321, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_sha_of_fear_ominous_cackle_controll_AuraScript::OnRemove, EFFECT_3, SPELL_AURA_321, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sha_of_fear_ominous_cackle_controll_AuraScript();
         }
 };
 
 void AddSC_boss_sha_of_fear()
 {
     new boss_sha_of_fear();
-    new npc_dread_spawn();
+    new npc_sha_of_fear_pure_light_terrace();
+    new npc_sha_of_fear_terror_spawn();
+    new npc_sha_of_fear_dread_spawn();
+    new npc_sha_of_fear_platform_defenders();
+    new npc_sha_of_fear_sha_globe();
+    new spell_sha_of_fear_champion_light();
+    new spell_sha_of_fear_thrash();
+    new spell_sha_of_fear_ominous_cackle();
+    new spell_sha_of_fear_ominous_cackle_controll();
 }
