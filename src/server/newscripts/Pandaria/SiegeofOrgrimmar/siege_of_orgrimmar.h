@@ -366,6 +366,7 @@ enum eCreatures
     NPC_WARBRINGER                  = 71979,
     NPC_WOLF_RIDER                  = 71983,
     //
+    NPC_MINION_OF_YSHAARJ           = 72272,
     NPC_DESECRATED_WEAPON           = 72154,
     NPC_EMPOWERED_DESECRATED_WEAPON = 72198,
     NPC_HEART_OF_YSHAARJ            = 72215,

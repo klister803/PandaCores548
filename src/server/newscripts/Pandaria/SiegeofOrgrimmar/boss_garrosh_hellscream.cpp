@@ -64,6 +64,10 @@ enum eSpells
     SPELL_ANCESTRAL_FURY             = 144585,
     SPELL_ANCESTRAL_CHAIN_HEAL       = 144583,
     SPELL_CHAIN_LIGHTNING            = 144584,
+    //Embodied doubt
+    SPELL_EMBODIED_DOUBT             = 145275,
+    //Minion of Yshaarj
+    SPELL_EMPOWERED                  = 145050,
 
     //Realm of Yshaarj
     SPELL_GARROSH_ENERGY             = 145801, //aura bar
@@ -104,6 +108,7 @@ enum sEvents
     EVENT_ACTIVE                     = 17,
     //Adds in realm
     EVENT_EMBODIED_DESPAIR           = 18,
+    EVENT_EMBODIED_DOUBT             = 19,
 };
 
 enum Phase
@@ -503,12 +508,17 @@ class boss_garrosh_hellscream : public CreatureScript
                                     {
                                         if (IfTargetHavePlayersInRange(*itr, count))
                                         {
+                                            havetarget = true;
                                             DoCast(*itr, me->GetPower(POWER_ENERGY) >= 75 ? SPELL_EM_DESECRETE : SPELL_DESECRETE);
                                             break;
                                         }
                                     }
                                 }
                             }
+                            //If still no target, take random include tank
+                            if (!havetarget)
+                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
+                                    DoCast(target, me->GetPower(POWER_ENERGY) >= 75 ? SPELL_EM_DESECRETE : SPELL_DESECRETE);
                         }
                         events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 40000);
                         break;
@@ -625,6 +635,13 @@ public:
                 me->SetReactState(REACT_AGGRESSIVE);
                 DoCast(me, SPELL_CONSUMED_HOPE, true);
                 break;
+            case NPC_MINION_OF_YSHAARJ:
+                me->SetReactState(REACT_AGGRESSIVE);
+                DoCast(me, SPELL_EMPOWERED);
+                break;
+            case NPC_EMBODIED_DOUBT:
+                me->SetReactState(REACT_AGGRESSIVE);
+                break;
             default:
                 me->AddAura(SPELL_SUMMON_ADDS, me);
                 break;
@@ -649,6 +666,8 @@ public:
         {
             if (me->GetEntry() == NPC_SIEGE_ENGINEER)
                 instance->SetData(DATA_FIRST_ENGENEER_DIED, 1);
+            else if (me->GetEntry() == NPC_WARBRINGER || me->GetEntry() == NPC_WOLF_RIDER)
+                me->DespawnOrUnsummon();
         }
 
         void EnterCombat(Unit* who)
@@ -665,6 +684,10 @@ public:
                 break;
             case NPC_EMBODIED_DESPAIR:
                 events.ScheduleEvent(EVENT_EMBODIED_DESPAIR, 10000);
+                break;
+            case NPC_EMBODIED_DOUBT:
+                events.ScheduleEvent(EVENT_EMBODIED_DOUBT, urand(8000, 13000));
+                break;
             default:
                 break;
             }
@@ -731,6 +754,11 @@ public:
                 case EVENT_EMBODIED_DESPAIR:
                     DoCast(me, SPELL_EMBODIED_DESPAIR);
                     events.ScheduleEvent(EVENT_EMBODIED_DESPAIR, 20000);
+                    break;
+                //Embodied doubt
+                case EVENT_EMBODIED_DOUBT:
+                    DoCast(me, SPELL_EMBODIED_DOUBT);
+                    events.ScheduleEvent(EVENT_EMBODIED_DOUBT, urand(8000, 13000));
                     break;
                 }
             }
@@ -1304,6 +1332,48 @@ public:
     }
 };
 
+class EmpoweringCorruptionFilter
+{
+public:
+    bool operator()(WorldObject* unit) const
+    {
+        if (unit->ToCreature() && unit->GetEntry() == NPC_MINION_OF_YSHAARJ)
+            return false;
+        return true;
+    }
+};
+
+//145043,  149536
+class spell_empowering_corruption : public SpellScriptLoader
+{
+public:
+    spell_empowering_corruption() : SpellScriptLoader("spell_empowering_corruption") { }
+
+    class spell_empowering_corruption_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_empowering_corruption_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*>& targets)
+        {
+            if (!targets.empty())
+                targets.remove_if(EmpoweringCorruptionFilter());
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_empowering_corruption_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_empowering_corruption_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_SRC_AREA_ENTRY);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_empowering_corruption_SpellScript::FilterTargets, EFFECT_2, TARGET_UNIT_SRC_AREA_ENTRY);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_empowering_corruption_SpellScript::FilterTargets, EFFECT_3, TARGET_UNIT_SRC_AREA_ENTRY);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_empowering_corruption_SpellScript::FilterTargets, EFFECT_4, TARGET_UNIT_SRC_AREA_ENTRY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_empowering_corruption_SpellScript();
+    }
+};
 
 void AddSC_boss_garrosh_hellscream()
 {
@@ -1322,4 +1392,5 @@ void AddSC_boss_garrosh_hellscream()
     new spell_enter_realm_of_yshaarj();
     new spell_realm_of_yshaarj();
     new spell_transition_visual();
+    new spell_empowering_corruption();
 }
