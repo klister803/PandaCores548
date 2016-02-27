@@ -654,7 +654,14 @@ class spell_sha_of_fear_champion_light : public SpellScriptLoader
                 if (Unit* pTarget = GetHitUnit())
                     if (InstanceScript* pInstance = pTarget->GetInstanceScript())
                         if (Creature* sha = pInstance->instance->GetCreature(pInstance->GetData64(NPC_SHA_OF_FEAR)))
+                        {
+                            if (sha->getVictim())
+                                if (pTarget == sha->getVictim())
+                                    return;
+                            sha->getThreatManager().resetAllAggro();
                             sha->TauntApply(pTarget);
+                            sha->AddThreat(pTarget, 100000.0f);
+                        }
             }
 
             void Register()
