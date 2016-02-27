@@ -10,8 +10,7 @@ update creature_template set iconName = 'openhandglow', AIName = 'SmartAI' where
 
 delete from smart_scripts where entryorguid = 65736;
 INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_type`, `event_phase_mask`, `event_chance`, `event_flags`, `event_param1`, `event_param2`, `event_param3`, `event_param4`, `action_type`, `action_param1`, `action_param2`, `action_param3`, `action_param4`, `action_param5`, `action_param6`, `target_type`, `target_param1`, `target_param2`, `target_param3`, `target_x`, `target_y`, `target_z`, `target_o`, `comment`) VALUES 
-(65736, 0, 0, 1, 73, 0, 100, 0, 0, 0, 0, 0, 62, 996, 0, 0, 0, 0, 0, 7, 0, 0, 0, -1017.6, -2736.75, 38.27, 4.69, 'Gossip Hello - Teleport'),
-(65736, 0, 1, 0, 61, 0, 100, 0, 0, 0, 0, 0, 85, 118977, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 'Link - Cast Fearless');
+(65736, 0, 0, 0, 73, 0, 100, 0, 0, 0, 0, 0, 85, 118977, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 'Link - Cast Fearless');
 
 delete from spell_target_filter where spellId in (129075,119787);
 INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `option`, `param1`, `param2`, `param3`, `aura`, `chance`, `effectMask`, `resizeType`, `count`, `maxcount`, `addcount`, `addcaster`, `comments`) VALUES 
@@ -22,9 +21,10 @@ delete from spell_dummy_trigger where spell_id in (129075);
 INSERT INTO `spell_dummy_trigger` (`spell_id`, `spell_trigger`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `comment`) VALUES 
 (129075, 0, 4, 0, 0, 0, 0, 0, 0, 1, 0, 0, 'Sha - Penetrating Bolt');
 
-delete from spell_target_position where id = 119797;
+delete from spell_target_position where id in (119797,119841);
 INSERT INTO `spell_target_position` (`id`, `target_map`, `target_position_x`, `target_position_y`, `target_position_z`, `target_orientation`) VALUES 
-(119797, 996, -1018.21, -2837.03, 38.04, 1.57);
+(119797, 996, -1018.21, -2837.03, 38.04, 1.57),
+(119841, 996, -1017.6, -2736.75, 38.27, 4.69);
 
 delete from spell_script_names where spell_id in (117866,131993,119593,119692,119693,129147);
 INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES 

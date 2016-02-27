@@ -185,7 +185,7 @@ class boss_sha_of_fear : public CreatureScript
                 events.ScheduleEvent(EVENT_DREAD_SPAWN, 30000);
                 events.ScheduleEvent(EVENT_SKULL, 8000);
                 events.ScheduleEvent(EVENT_CHECKPOWER, 1000);
-                events.ScheduleEvent(EVENT_OMINOUS_CACKLE, 4000); //40s
+                events.ScheduleEvent(EVENT_OMINOUS_CACKLE, 40000);
             }
 
             bool CheckPullPlayerPos(Unit* who)
@@ -204,8 +204,14 @@ class boss_sha_of_fear : public CreatureScript
 
             void SummonedCreatureDies(Creature* summon, Unit* /*killer*/)
             {
-                if (summon->GetEntry() == platformNpc[currentPlatform])
-                    me->SummonCreature(NPC_RETURN_TERRACE, summon->GetPositionX(), summon->GetPositionY(), summon->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 60000);
+                switch (summon->GetEntry())
+                {
+                    case NPC_YANG_GUOSHI:
+                    case NPC_CHENG_KANG:
+                    case NPC_JINLUN_KUN:
+                        me->SummonCreature(NPC_RETURN_TERRACE, summon->GetPositionX(), summon->GetPositionY(), summon->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 60000);
+                        break;
+                }
             }
 
             void UpdateAI(uint32 diff)
@@ -631,7 +637,7 @@ class spell_sha_of_fear_champion_light : public SpellScriptLoader
             void FilterTargets(std::list<WorldObject*>& targetList)
             {
                 targetList.remove_if(ExactDistanceCheck(GetCaster(), 5.0f * GetCaster()->GetFloatValue(OBJECT_FIELD_SCALE_X)));
-                if (targetList.empty())
+                if (targetList.empty() || !GetCaster())
                     return;
 
                 for (std::list<WorldObject*>::iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
@@ -643,9 +649,18 @@ class spell_sha_of_fear_champion_light : public SpellScriptLoader
                     targetList.resize(1);
             }
 
+            void HandleOnHit()
+            {
+                if (Unit* pTarget = GetHitUnit())
+                    if (InstanceScript* pInstance = pTarget->GetInstanceScript())
+                        if (Creature* sha = pInstance->instance->GetCreature(pInstance->GetData64(NPC_SHA_OF_FEAR)))
+                            sha->TauntApply(pTarget);
+            }
+
             void Register()
             {
                 OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_of_fear_champion_light_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
+                OnHit += SpellHitFn(spell_sha_of_fear_champion_light_SpellScript::HandleOnHit);
             }
         };
 

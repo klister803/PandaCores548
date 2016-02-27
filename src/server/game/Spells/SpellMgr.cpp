@@ -5713,6 +5713,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 117964: //Sha of Fear - Wall of Light
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
                     spellInfo->ExcludeTargetAuraSpell = 0;
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(36); //1s
                     break;
                 case 119414: //Sha of Fear - Breath of Fear
                 case 125786:
