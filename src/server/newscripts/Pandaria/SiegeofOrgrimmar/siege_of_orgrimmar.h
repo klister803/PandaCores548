@@ -377,11 +377,11 @@ enum eCreatures
     //Adds in Tempels
     NPC_SHA_VORTEX                  = 72239,
     //Temple of the Red Crane
-    NPC_EMBODIED_DESPAIR            = 72238, //need update in DB(spawn)
+    NPC_EMBODIED_DESPAIR            = 72238,
     //Temple of the Jade Serpent
     NPC_EMBODIED_DOUBT              = 72236,
     //Terrace of Endless Spring
-    NPC_EMBODIED_FEAR               = 72237, //need update in DB(spawn)
+    NPC_EMBODIED_FEAR               = 72237,
 };
 
 enum eGameObjects

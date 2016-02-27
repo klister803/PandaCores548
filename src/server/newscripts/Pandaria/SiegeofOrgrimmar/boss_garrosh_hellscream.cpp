@@ -45,9 +45,9 @@ enum eSpells
     //Embodied despair
     SPELL_CONSUMED_HOPE              = 149032,
     SPELL_HOPE_AT                    = 149003,
-    SPELL_HOPE_BUFF                  = 149004,//buff
+    SPELL_HOPE_BUFF                  = 149004,
     SPELL_EMBODIED_DESPAIR           = 145276,
-    SPELL_COURAGE                    = 148983,//buff
+    SPELL_COURAGE                    = 148983,
 
     //Iron Star
     SPELL_IRON_STAR_IMPACT_AT        = 144645,
@@ -70,11 +70,11 @@ enum eSpells
     SPELL_EMPOWERED                  = 145050,
 
     //Realm of Yshaarj
-    SPELL_GARROSH_ENERGY             = 145801, //aura bar
+    SPELL_GARROSH_ENERGY             = 145801,
     SPELL_REMOVE_REALM_OF_YSHAARJ    = 145647,
     SPELL_REALM_OF_YSHAARJ           = 144954,
     SPELL_ANNIHILLATE                = 144969,
-    SPELL_COSMETIC_CHANNEL           = 145431, //caster 72228
+    SPELL_COSMETIC_CHANNEL           = 145431,
 
     //Special
     SPELL_SUMMON_ADDS                = 144489,
@@ -180,8 +180,6 @@ Position gspos[3] =
 Position centerpos = {1073.09f, -5639.70f, -317.3894f};
 Position realmtppos = {1073.14f, -5639.47f, -317.3893f, 3.0128f};
 
-//SpellVisualKit ID: 26114
-
 uint32 transformvisual[4] =
 {
     SPELL_TRANSITION_VISUAL_PHASE_2,
@@ -245,7 +243,8 @@ class boss_garrosh_hellscream : public CreatureScript
                     _Reset();
                     for (uint8 n = 0; n < 4; n++)
                         me->RemoveAurasDueToSpell(transformvisual[n]);
-                    me->SetReactState(REACT_PASSIVE);//test only
+                    //me->SetReactState(REACT_PASSIVE);//test only
+                    me->SetReactState(REACT_DEFENSIVE);
                     phase = PHASE_NULL;
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROSH_ENERGY);
                 }
@@ -270,11 +269,11 @@ class boss_garrosh_hellscream : public CreatureScript
                     _EnterCombat();
                     SpawnIronStar();
                     phase = PHASE_ONE;
-                    /*events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 1000);
+                    events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 1000);
                     events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
                     events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 18000);
                     events.ScheduleEvent(EVENT_SUMMON_WOLF_RIDER, 30000);
-                    events.ScheduleEvent(EVENT_SUMMON_ENGINEER, 20000);*/
+                    events.ScheduleEvent(EVENT_SUMMON_ENGINEER, 20000);
                 }
             }
 
