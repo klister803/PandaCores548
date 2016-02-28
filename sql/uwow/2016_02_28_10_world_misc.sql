@@ -1,0 +1,3 @@
+INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `count`, `comments`) VALUES ('117640', '30', '6', 'Spinning Crane Kick');
+INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `option`, `param1`, `comments`) VALUES ('117640', '30', '3', '16', 'Spinning Crane Kick');
+INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `option`, `comments`) VALUES ('117640', '30', '16', 'Spinning Crane Kick');
