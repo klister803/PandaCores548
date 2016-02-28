@@ -488,8 +488,12 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             delete packet;
     }
 
-    if (m_Socket && !m_Socket->IsClosed() && _warden)
-        _warden->Update();
+    if (m_Socket && _warden)
+    {
+        // check closed socket
+        if (!m_Socket->IsClosed())
+            _warden->Update(diff);
+    }
 
     ProcessQueryCallbacks();
 
@@ -503,7 +507,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             LogoutPlayer(true);
 
         if (m_Socket && GetPlayer() && _warden)
-            _warden->Update();
+            _warden->Update(diff);
 
         ///- Cleanup socket pointer if need
         if (m_Socket && m_Socket->IsClosed())

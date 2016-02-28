@@ -94,7 +94,12 @@ class boss_durumu : public CreatureScript
                 if (checkvictim <= diff)
                 {
                     if (me->getVictim() && !me->IsWithinMeleeRange(me->getVictim()))
-                        DoCastAOE(SPELL_GAZE);
+                    {
+                        if (me->GetDistance(me->getVictim()) < 60.0f)
+                            DoCastAOE(SPELL_GAZE);
+                        else
+                            EnterEvadeMode();
+                    }
                     checkvictim = 3000;
                 }
                 else checkvictim -= diff;

@@ -202,7 +202,7 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         bool IsUnitAffected(uint64 guid) const;
         void AffectUnit(Unit* unit, AreaTriggerActionMoment actionM);
         void AffectOwner(AreaTriggerActionMoment actionM);
-        void UpdateOnUnit(Unit* unit, uint32 p_time);
+        void UpdateOnUnit(Unit* unit);
         void DoAction(Unit* unit, ActionInfo& action);
         bool CheckActionConditions(AreaTriggerAction const& action, Unit* unit);
         void UpdateActionCharges(uint32 p_time);

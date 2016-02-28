@@ -4072,14 +4072,12 @@ void Unit::_RemoveNoStackAurasDueToAura(Aura* aura)
 
 void Unit::_RegisterAuraEffect(AuraEffect* aurEff, bool apply)
 {
+    m_auraEffectListLock.acquire();
     if (apply)
         m_modAuras[aurEff->GetAuraType()].emplace_back(aurEff);
     else
-    {
-        m_auraEffectListLock.acquire();
         m_modAuras[aurEff->GetAuraType()].remove(aurEff);
-        m_auraEffectListLock.release();
-    }
+    m_auraEffectListLock.release();
 }
 
 // All aura base removes should go threw this function!
@@ -6658,9 +6656,8 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
 
                     basepoints0 = damage - (target->GetMaxHealth() - target->GetHealth());
 
-                    if (basepoints0 > 0)
-                        triggered_spell_id = 148009;
-                    break;
+                    triggeredByAura->SetAmount(triggerAmount + basepoints0);
+                    return true;
                 }
                 case 146136: // Cleave
                 {
@@ -8002,9 +7999,8 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     if (!victim || !victim->isAlive() || procSpell->SpellFamilyFlags[1] & 0x80000)
                         return false;
 
-                    // heal amount
-                    int32 amount = CalculatePct(int32(damage), triggerAmount);
-                    CastCustomSpell(this, 15290, &amount, &amount, NULL, true, castItem, triggeredByAura);
+                    int32 amount = CalculatePct(damage + dmgInfoProc->GetAbsorb(), triggeredByAura->GetBaseAmount());
+                    triggeredByAura->SetAmount(triggerAmount + amount);
                     return true;                                // no hidden cooldown
                 }
                 // Priest Tier 6 Trinket (Ashtongue Talisman of Acumen)
@@ -9032,7 +9028,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     Item* addWeapon = player->GetWeaponForAttack(attType == BASE_ATTACK ? OFF_ATTACK : BASE_ATTACK, true);
                     uint32 enchant_id_add = addWeapon ? addWeapon->GetEnchantmentId(EnchantmentSlot(TEMP_ENCHANTMENT_SLOT)) : 0;
                     SpellItemEnchantmentEntry const* pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id_add);
-                    if (pEnchant && pEnchant->spellid[0] == dummySpell->Id)
+					if (pEnchant && pEnchant->EffectSpellID[0] == dummySpell->Id)
                         chance += 14;
 
                     if (!roll_chance_i(chance))
@@ -9218,26 +9214,16 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     || (attType == OFF_ATTACK && procFlag & PROC_FLAG_DONE_MAINHAND_ATTACK))
                     return false;
 
-                SpellInfo const* _spellinfo = sSpellMgr->GetSpellInfo(8024);
-                int32 dmg = 8625;
-                float add_spellpower = GetSpellPowerDamage(SPELL_SCHOOL_MASK_FIRE) * _spellinfo->Effects[EFFECT_1].BonusMultiplier;
-
                 // Enchant on Off-Hand and ready?
                 if (castItem->GetSlot() == EQUIPMENT_SLOT_OFFHAND && procFlag & PROC_FLAG_DONE_OFFHAND_ATTACK)
                 {
-                    float BaseWeaponSpeed = GetAttackTime(OFF_ATTACK) / 1000.0f;
-                    basepoints0 = dmg / (100 / BaseWeaponSpeed);
-                    basepoints0 += add_spellpower;
-                    AddPct(basepoints0, 50);
+                    basepoints0 = 100;
                     triggered_spell_id = 10444;
                 }
                 // Enchant on Main-Hand and ready?
                 else if (castItem->GetSlot() == EQUIPMENT_SLOT_MAINHAND && procFlag & PROC_FLAG_DONE_MAINHAND_ATTACK)
                 {
-                    float BaseWeaponSpeed = GetAttackTime(BASE_ATTACK) / 1000.0f;
-                    basepoints0 = dmg / (100 / BaseWeaponSpeed);
-                    basepoints0 += add_spellpower;
-                    AddPct(basepoints0, 50);
+                    basepoints0 = 1;
                     triggered_spell_id = 10444;
                 }
                 // If not ready, we should  return, shouldn't we?!
@@ -10431,6 +10417,9 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
             if (procSpell->Id != 73510)
                 return false;
 
+            if (!GetCurrentSpellCastTime(73510))
+                return false;
+
             break;
         }
         // Revenge (aura proc)
@@ -11111,7 +11100,7 @@ ReputationRank Unit::GetReactionTo(Unit const* target) const
                     return REP_HOSTILE;
 
                 // same group - checks dependant only on our faction - skip FFA_PVP for example
-                if (selfPlayerOwner->IsInRaidWith(targetPlayerOwner))
+                if (selfPlayerOwner->IsInRaidWith(targetPlayerOwner) && !HasAuraType(SPELL_AURA_MOD_FACTION))
                     return REP_FRIENDLY; // return true to allow config option AllowTwoSide.Interaction.Group to work
                     // however client seems to allow mixed group parties, because in 13850 client it works like:
                     // return GetFactionReactionTo(getFactionTemplateEntry(), target);
@@ -12689,6 +12678,11 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                     if (uint8 count = victim->GetDoTsByCaster(GetOwnerGUID()))
                         AddPct(DoneTotalMod, 30 * count);
 
+                // Mastery: Master Demonologist
+                if (Player* modOwner = GetSpellModOwner())
+                    if (AuraEffect const* aurEff = modOwner->GetAuraEffect(77219, EFFECT_0))
+                        AddPct(DoneTotalMod, GetShapeshiftForm() == FORM_METAMORPHOSIS ? aurEff->GetAmount() * 3 : aurEff->GetAmount());
+
                 // Mastery: Emberstorm
                 if (spellProto->Id == 17877 || spellProto->Id == 116858)
                 {
@@ -12776,6 +12770,10 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 float powerPct = 100.f * GetPower(POWER_MANA) / GetMaxPower(POWER_MANA);
                 for (Unit::AuraEffectList::const_iterator itr = doneFromManaPctAuras.begin(); itr != doneFromManaPctAuras.end(); ++itr)
                 {
+                    if (uint32 spellFamillyName = (*itr)->GetSpellInfo()->SpellFamilyName)
+                        if (spellFamillyName != spellProto->SpellFamilyName)
+                            continue;
+
                     if (spellProto->SchoolMask & (*itr)->GetMiscValue())
                         AddPct(DoneTotalMod, CalculatePct((*itr)->GetAmount(), powerPct));
                 }
@@ -12798,11 +12796,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             if (HasAura(48108))
                 DoneTotalMod *= (100.0f + spellProto->Effects[2].CalcValue()) / 100.0f;
         }
-
-        // Mastery: Master Demonologist
-        if (Player* modOwner = GetSpellModOwner())
-            if (AuraEffect const* aurEff = modOwner->GetAuraEffect(77219, EFFECT_0))
-                AddPct(DoneTotalMod, GetShapeshiftForm() == FORM_METAMORPHOSIS ? aurEff->GetAmount() * 3 : aurEff->GetAmount());
 
         tmpDamage = (int32(pdamage) + DoneTotal) * DoneTotalMod;
 
@@ -13373,7 +13366,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
             return owner->SpellHealingBonusDone(victim, spellProto, healamount, damagetype, effIndex, stack);
 
     // Some spells don't benefit from done mods
-    if ((spellProto->AttributesEx3 & SPELL_ATTR3_NO_DONE_BONUS) || (spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS))
+    if ((spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS))
         return healamount;
 
     // No bonus healing for potion spells
@@ -13584,7 +13577,7 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
     float TakenTotalMod = 1.0f;
 
     // Some spells don't benefit from done mods
-    if ((spellProto->AttributesEx3 & SPELL_ATTR3_NO_DONE_BONUS) || (spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS))
+    if ((spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS))
         return healamount;
 
     // No bonus
@@ -15446,7 +15439,7 @@ bool Unit::IsAlwaysDetectableFor(WorldObject const* seer) const
     if (WorldObject::IsAlwaysDetectableFor(seer))
         return true;
 
-    if (HasAuraTypeWithCaster(SPELL_AURA_MOD_STALKED, seer->GetGUID()))
+    if (HasAuraTypeWithCaster(SPELL_AURA_MOD_STALKED, seer->GetGUID()) && !HasAuraType(SPELL_AURA_UNTRACKABLE))
         return true;
 
     return false;
@@ -17753,34 +17746,33 @@ uint32 createProcExtendMask(SpellNonMeleeDamage* damageInfo, SpellMissInfo missC
     if (missCondition != SPELL_MISS_NONE)
         switch (missCondition)
         {
-            case SPELL_MISS_MISS:    procEx|=PROC_EX_MISS;   break;
-            case SPELL_MISS_RESIST:  procEx|=PROC_EX_RESIST; break;
-            case SPELL_MISS_DODGE:   procEx|=PROC_EX_DODGE;  break;
-            case SPELL_MISS_PARRY:   procEx|=PROC_EX_PARRY;  break;
-            case SPELL_MISS_BLOCK:   procEx|=PROC_EX_BLOCK;  break;
-            case SPELL_MISS_EVADE:   procEx|=PROC_EX_EVADE;  break;
-            case SPELL_MISS_IMMUNE:  procEx|=PROC_EX_IMMUNE; break;
-            case SPELL_MISS_IMMUNE2: procEx|=PROC_EX_IMMUNE; break;
-            case SPELL_MISS_DEFLECT: procEx|=PROC_EX_DEFLECT;break;
-            case SPELL_MISS_ABSORB:  procEx|=PROC_EX_ABSORB; break;
-            case SPELL_MISS_REFLECT: procEx|=PROC_EX_REFLECT;break;
+            case SPELL_MISS_MISS:    procEx |= PROC_EX_MISS;    return procEx;
+            case SPELL_MISS_RESIST:  procEx |= PROC_EX_RESIST;  return procEx;
+            case SPELL_MISS_DODGE:   procEx |= PROC_EX_DODGE;   return procEx;
+            case SPELL_MISS_PARRY:   procEx |= PROC_EX_PARRY;   return procEx;
+            case SPELL_MISS_BLOCK:   procEx |= PROC_EX_BLOCK;   return procEx;
+            case SPELL_MISS_EVADE:   procEx |= PROC_EX_EVADE;   return procEx;
+            case SPELL_MISS_IMMUNE:  procEx |= PROC_EX_IMMUNE;  return procEx;
+            case SPELL_MISS_IMMUNE2: procEx |= PROC_EX_IMMUNE;  return procEx;
+            case SPELL_MISS_DEFLECT: procEx |= PROC_EX_DEFLECT; return procEx;
+            case SPELL_MISS_ABSORB:  procEx |= PROC_EX_ABSORB;  return procEx;
+            case SPELL_MISS_REFLECT: procEx |= PROC_EX_REFLECT; break;
             default:
                 break;
         }
+
+    // On block
+    if (damageInfo->blocked)
+        procEx|=PROC_EX_BLOCK;
+    // On absorb
+    if (damageInfo->absorb)
+        procEx|=PROC_EX_ABSORB;
+    // On crit
+    if (damageInfo->HitInfo & SPELL_HIT_TYPE_CRIT)
+        procEx|=PROC_EX_CRITICAL_HIT;
     else
-    {
-        // On block
-        if (damageInfo->blocked)
-            procEx|=PROC_EX_BLOCK;
-        // On absorb
-        if (damageInfo->absorb)
-            procEx|=PROC_EX_ABSORB;
-        // On crit
-        if (damageInfo->HitInfo & SPELL_HIT_TYPE_CRIT)
-            procEx|=PROC_EX_CRITICAL_HIT;
-        else
-            procEx|=PROC_EX_NORMAL_HIT;
-    }
+        procEx|=PROC_EX_NORMAL_HIT;
+
     return procEx;
 }
 

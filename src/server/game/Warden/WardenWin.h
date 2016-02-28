@@ -31,6 +31,50 @@
 #pragma pack(push,1)
 #endif
 
+#define ZONE_DALARAN 4395
+
+enum MoveType
+{
+    MOVETYPE_WALK = 0,
+    MOVETYPE_RUN = 1,
+    MOVETYPE_RUN_BACK = 2,
+    MOVETYPE_SWIM = 3,
+    MOVETYPE_SWIM_BACK = 4,
+    MOVETYPE_TURN_RATE = 5,
+    MOVETYPE_FLIGHT = 6,
+    MOVETYPE_FLIGHT_BACK = 7,
+    MOVETYPE_PITCH_RATE = 8,
+    MOVETYPE_NONE = 255
+};
+
+enum ResponseMask
+{
+    RESP_NONE = 0x00,
+    RESP_FLYHACK = 0x01,
+    RESP_AIRSWIM_HACK = 0x02,
+    RESP_FREEZE_Z_HACK = 0x04,
+    RESP_WATERWALK_HACK = 0x08,
+    RESP_LEVITATE_HACK = 0x10
+};
+
+enum PlayerState
+{
+    PLAYER_NOT_FOUND = 0x00,
+    PLAYER_ON_TRANSPORT = 0x01,
+    PLAYER_ON_VEHICLE = 0x02,
+    PLAYER_FALLING = 0x04,
+    PLAYER_LAUNCHED = 0x08,
+    PLAYER_ON_TAXI = 0x10,
+    PLAYER_TELEPORTED = 0x20,
+    PLAYER_NOT_ACTIVE_MOVER = 0x40,
+};
+
+enum WardenTypeCheck
+{
+    STATIC_CHECK = 0,
+    DYNAMIC_CHECK = 1
+};
+
 struct WardenInitModuleRequest
 {
     uint8 Command1;
@@ -78,16 +122,58 @@ class WardenWin : public Warden
 
         void Init(WorldSession* session, BigNumber* K);
         ClientWardenModule* GetModuleForClient();
-        void InitializeModule();
+        void InitializeModule(bool recall);
         void RequestHash();
         void HandleHashResult(ByteBuffer &buff);
-        void RequestData();
+
+        void RequestStaticData();
+        void RequestDynamicData();
+
         void HandleData(ByteBuffer &buff);
+        void HandleStaticData(ByteBuffer &buff);
+        void HandleDynamicData(ByteBuffer &buff);
+
+        std::string ConvertPacketDataToString(const uint8 * packet_data, uint16 length);
+        bool HasAnticheatImmune();
+        void DecreaseAlertCount(WorldIntConfigs index, int8 &count, bool activate);
+
+        // for multi-module system
+        std::string GetSignature(uint8 * moduleId, WardenTypeCheck wtc);
+
+        // speed checks helper functions
+        MoveType SelectSpeedType(uint32 moveFlags);
+        float GetServerSpeed(Unit * obj, UnitMoveType mtype);
+
+        // movement flags checks helper functions
+        bool CheckMovementFlags(uint32 moveflags, std::string &reason, uint16 &banMask);
+        std::string GetMovementFlagInfo(uint32 moveFlags);
+        bool IsAllowFlyingOnVehicles(Unit * vb);
+        bool IsAllowPlayerFlying(Player * plr);
+
+        // misc checks helper functions
+        PlayerState GetPlayerState(Player * plr);
+
+        // controlling player movement helper functions
+        void SendControlMovementPacket(uint32 opcode, bool added, uint32 moveFlags);
+
+        // faction checks helper functions
+        bool IsPlayerFaction(uint32 faction);
+        bool IsNotAllowedFaction(uint32 faction);
+        bool IsNotTeamFaction(uint32 team, uint32 faction);
+
+        // some helper func in memory reading
+        template<class T>
+        bool ReadMemChunk(ByteBuffer &buff, T &data);
+        template<class T>
+        bool CheckCorrectBoundValues(T val);
+        bool CheckCorrectBoundValues(float val);
 
     private:
         uint32 _serverTicks;
         std::list<uint16> _otherChecksTodo;
         std::list<uint16> _memChecksTodo;
+        std::list<uint16> _impMemChecksTodo;
+        std::list<uint16> _impOtherChecksTodo;
         std::list<uint16> _currentChecks;
 };
 

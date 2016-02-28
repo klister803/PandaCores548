@@ -566,7 +566,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                     if (pEnchant)
                     {
                         for (int t = 0; t < MAX_ITEM_ENCHANTMENT_EFFECTS; t++)
-                            if (pEnchant->spellid[t] == m_spellInfo->Id)
+							if (pEnchant->EffectSpellID[t] == m_spellInfo->Id)
                         {
                             amount = uint32((item_rand_suffix->prefix[k]*castItem->GetItemSuffixFactor()) / 10000);
                             break;
@@ -3673,7 +3673,7 @@ void AuraEffect::HandleModUnattackable(AuraApplication const* aurApp, uint8 mode
     // call functions which may have additional effects after chainging state of unit
     if (apply && (mode & AURA_EFFECT_HANDLE_REAL))
     {
-        target->CombatStop();
+        //target->CombatStop(); //Тестировал на офе, спелл 40307 - из боя не выводило.
         target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION);
     }
 }
@@ -3771,7 +3771,7 @@ void AuraEffect::HandleAuraModSilence(AuraApplication const* aurApp, uint8 mode,
             // Stop cast only spells vs PreventionType == SPELL_PREVENTION_TYPE_SILENCE
             for (uint32 i = CURRENT_MELEE_SPELL; i < CURRENT_MAX_SPELL; ++i)
                 if (Spell* spell = target->GetCurrentSpell(CurrentSpellTypes(i)))
-                    if (spell->m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE)
+                    if (spell->m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE || spell->m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_UNK3)
                     {
                         if (interruptCast)
                             target->InterruptSpell(CurrentSpellTypes(i), false); // Stop spells on prepare or casting state
@@ -3978,6 +3978,7 @@ void AuraEffect::HandleAuraUntrackable(AuraApplication const* aurApp, uint8 mode
             return;
         target->RemoveByteFlag(UNIT_FIELD_BYTES_1, 2, UNIT_STAND_FLAGS_UNTRACKABLE);
     }
+    target->UpdateObjectVisibility();
 }
 
 /****************************/
@@ -7855,10 +7856,21 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
         // Spell exist but require custom code
         switch (auraId)
         {
-            case 122761:
-                caster->SetFacingToObject(target);
-                caster->CastSpell(target, triggerSpellId, true);
+            case 123011: //Tsulong - Terrorize
+                target->CastSpell(target, triggerSpellId, true);
                 return;
+            case 111850: //Elder Regail - Lightning Prison
+                target->CastSpell(target, triggerSpellId, true);
+                return;
+            case 122761:
+            {
+                if (caster)
+                {
+                    caster->SetFacingToObject(target);
+                    caster->CastSpell(target, triggerSpellId, true);
+                }
+                return;
+            }
             // Hour of Twilight, Ultraxion, Dragon Soul
             case 106371:
                 if (caster)
@@ -8075,9 +8087,9 @@ void AuraEffect::HandlePeriodicTriggerSpellWithValueAuraTick(Unit* target, Unit*
     {
         if (Unit* triggerCaster = triggeredSpellInfo->NeedsToBeTriggeredByCaster() ? caster : target)
         {
-            int32 basepoints0 = GetAmount();
-            GetBase()->CallScriptEffectChangeTickDamageHandlers(const_cast<AuraEffect const*>(this), basepoints0, target);
-            triggerCaster->CastCustomSpell(target, triggerSpellId, &basepoints0, 0, 0, true, 0, this);
+            int32 basepoints = GetAmount();
+            GetBase()->CallScriptEffectChangeTickDamageHandlers(const_cast<AuraEffect const*>(this), basepoints, target);
+            triggerCaster->CastCustomSpell(target, triggerSpellId, &basepoints, &basepoints, &basepoints, true, 0, this);
             sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AuraEffect::HandlePeriodicTriggerSpellWithValueAuraTick: Spell %u Trigger %u", GetId(), triggeredSpellInfo->Id);
         }
     }

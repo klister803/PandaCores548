@@ -159,8 +159,9 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             boss_thok_the_bloodthirstyAI(Creature* creature) : BossAI(creature, DATA_THOK)
             {
                 instance = creature->GetInstanceScript();
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_POWER_COST_SCHOOL_PCT, true);
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
                 me->ApplySpellImmune(0, IMMUNITY_ID, SPELL_CORROSIVE_BLOOD, true);
-                me->ApplySpellImmune(0, IMMUNITY_ID, 142657, true);
             }
             
             InstanceScript* instance;

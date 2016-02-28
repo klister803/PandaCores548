@@ -249,8 +249,8 @@ bool CheckSpecProp(uint32 ench, uint32 type, uint32 SpecID)
                 {
                     for (int s = 0; s < MAX_ITEM_ENCHANTMENT_EFFECTS; ++s)
                     {
-                        uint32 enchant_type = pEnchant->type[s];
-                        uint32 enchant_stat_id = pEnchant->spellid[s];
+						uint32 enchant_type = pEnchant->Effect[s];
+						uint32 enchant_stat_id = pEnchant->EffectSpellID[s];
                         if(enchant_type != ITEM_ENCHANTMENT_TYPE_STAT)
                             continue;
                         if(!CheckStatsSpec(enchant_stat_id, SpecID))
@@ -272,8 +272,8 @@ bool CheckSpecProp(uint32 ench, uint32 type, uint32 SpecID)
                 {
                     for (int s = 0; s < MAX_ITEM_ENCHANTMENT_EFFECTS; ++s)
                     {
-                        uint32 enchant_type = pEnchant->type[s];
-                        uint32 enchant_stat_id = pEnchant->spellid[s];
+						uint32 enchant_type = pEnchant->Effect[s];
+						uint32 enchant_stat_id = pEnchant->EffectSpellID[s];
                         if(enchant_type != ITEM_ENCHANTMENT_TYPE_STAT)
                             continue;
                         if(!CheckStatsSpec(enchant_stat_id, SpecID))

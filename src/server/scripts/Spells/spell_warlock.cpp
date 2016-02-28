@@ -2319,6 +2319,9 @@ class spell_warl_demonic_gateway_cast : public SpellScriptLoader
                     float delta_z = fabs(pos->GetPositionZ()) - fabs(caster->GetPositionZ());
                     if(delta_z > 2.7f || delta_z < -2.7f)
                         return SPELL_FAILED_NOT_HERE;
+
+                    if (!caster->IsWithinLOS(pos->GetPositionX(), pos->GetPositionY(), pos->GetPositionZ()))
+                        return SPELL_FAILED_NOT_HERE;
                 }
 
                 return SPELL_CAST_OK;

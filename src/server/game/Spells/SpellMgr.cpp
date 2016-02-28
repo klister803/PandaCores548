@@ -76,7 +76,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             // Gnaw
             else if (spellproto->Id == 47481)
                 return DIMINISHING_CONTROLLED_STUN;
-            else if (spellproto->Id == 143301 || spellproto->Id == 125500 || spellproto->Id == 112955)
+            else if (spellproto->Id == 143301 || spellproto->Id == 125500 || spellproto->Id == 112955 || spellproto->Id == 117436)
                 return DIMINISHING_NONE;
             break;
         }
@@ -3783,10 +3783,10 @@ void SpellMgr::LoadSpellCustomAttr()
                             SpellItemEnchantmentEntry const* enchant = sSpellItemEnchantmentStore.LookupEntry(enchantId);
                             for (uint8 s = 0; s < MAX_ITEM_ENCHANTMENT_EFFECTS; ++s)
                             {
-                                if (enchant->type[s] != ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
+								if (enchant->Effect[s] != ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
                                     continue;
 
-                                SpellInfo* procInfo = (SpellInfo*)GetSpellInfo(enchant->spellid[s]);
+								SpellInfo* procInfo = (SpellInfo*)GetSpellInfo(enchant->EffectSpellID[s]);
                                 if (!procInfo)
                                     continue;
 
@@ -4711,28 +4711,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].TargetA = 25;
                     spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(15);//3yards
                     break;
-                case 122532: //Explose
-                    spellInfo->Effects[EFFECT_0].TargetA = 22;
-                    spellInfo->Effects[EFFECT_0].TargetB = 15;
-                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);//8yards
-                    spellInfo->Effects[EFFECT_1].Effect = 0;
-                    break;
                 //
                 //Empress Shekzeer
-                case 123788: //Cry of terror
-                    spellInfo->Effects[EFFECT_0].TargetA = 1;
-                    spellInfo->Effects[EFFECT_0].TargetB = 0;
-                    spellInfo->Effects[EFFECT_1].TargetA = 1;
-                    break;
-                case 123735: //Dread screetch
-                    spellInfo->Effects[EFFECT_0].TargetA = 1;
-                    spellInfo->Effects[EFFECT_0].TargetB = 0;
-                    spellInfo->Effects[EFFECT_1].TargetA = 1;
-                    spellInfo->Effects[EFFECT_1].TargetB = 0;
-                    break;
-                case 123743: //Dread screetch trigger spell
-                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(8);//5yards
-                    break;
                 case 66289: // Glaive
                 case 67439: // Boulder
                     spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(10);//30yards
@@ -4943,11 +4923,13 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 148310: // Bombard Stun
                 case 148311: // Bombard Stun
                 case 82881:  // Mortality
-                case 136992: //Bitting cold
-                case 140023: //Ring of Peace
-                case 134916: //Decapitate tr ef
-                case 146325: //Cutter Laser Visual Target
-                case 144918: //Cutter Laser Dmg
+                case 136992: // Bitting cold
+                case 140023: // Ring of Peace
+                case 134916: // Decapitate tr ef
+                case 146325: // Cutter Laser Visual Target
+                case 144918: // Cutter Laser Dmg
+                case 123707: // CC: Eyes of the Empress
+                case 119775: // Sha of Fear - Reaching Attack
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
                 case 144396: //Vengeful Strikes. WTF. SPELL_AURA_MOD_POSSESS_PET
@@ -5239,13 +5221,27 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = 18;
                     break;
                 //Garrosh
-                case 144867:
-                    spellInfo->Effects[0].Effect = 0;
-                    spellInfo->Effects[0].TriggerSpell = 0;
-                    spellInfo->Effects[1].Effect = 0;
-                    spellInfo->Effects[1].TriggerSpell = 0;
+                case 144821: //Hellscream warsong
+                    spellInfo->Effects[0].TargetB = 30;
+                    spellInfo->Effects[1].TargetB = 30;
+                    spellInfo->Effects[2].TargetB = 30;
                     break;
-                    
+                case 149032: //Consumed Hope
+                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+                    spellInfo->Effects[0].TriggerSpell = 149003;
+                    break;
+                case 149033: //Consumed Faith
+                    spellInfo->Effects[0].TriggerSpell = 148992;
+                    break;
+                case 149011: //Consumed Courage
+                    spellInfo->Effects[0].TriggerSpell = 148982;
+                    break;
+                case 145246: //Phase Three Transform
+                    spellInfo->Effects[0].BasePoints = 0;
+                    spellInfo->Effects[4].BasePoints = 100;
+                    break;
+
+
                 //World Bosses
                 //Sha of Anger
                 case 119487: //Anger
@@ -5693,6 +5689,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Speed = 25.f;
                     break;
                 case 117954: // Materialize Protector
+                case 120729: // Demonic Gateway
+                case 113896: // Demonic Gateway
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
                     break;
                 case 113314: // Energizing Smash
@@ -5704,6 +5702,21 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 142910: // Iron Warhorse
                     spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(16);
+                    break;
+                case 121949: //Unsok - Parasitic Growth
+                    spellInfo->ExcludeTargetAuraSpell = 122370;
+                    break;
+                case 117866: //Sha of Fear - Champion of the Light
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(36); //1s
+                    break;
+                case 117964: //Sha of Fear - Wall of Light
+                    spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
+                    spellInfo->ExcludeTargetAuraSpell = 0;
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(36); //1s
+                    break;
+                case 119414: //Sha of Fear - Breath of Fear
+                case 125786:
+                    spellInfo->ExcludeTargetAuraSpell = 117964;
                     break;
                 default:
                     break;

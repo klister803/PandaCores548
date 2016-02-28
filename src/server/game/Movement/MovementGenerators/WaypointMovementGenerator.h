@@ -62,8 +62,8 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Crea
     public PathMovementBase<Creature, WaypointPath const*>
 {
     public:
-        WaypointMovementGenerator(uint32 _path_id = 0, bool _repeating = true)
-            : i_nextMoveTime(0), m_isArrivalDone(false), path_id(_path_id), repeating(_repeating)  {}
+        WaypointMovementGenerator(uint32 _path_id = 0, bool _repeating = true, bool _generatePath = true)
+            : i_nextMoveTime(0), m_isArrivalDone(false), path_id(_path_id), repeating(_repeating), generatePath(_generatePath)  {}
         ~WaypointMovementGenerator() { i_path = NULL; }
         void DoInitialize(Creature &);
         void DoFinalize(Creature &);
@@ -104,6 +104,7 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Crea
         bool m_isArrivalDone;
         uint32 path_id;
         bool repeating;
+        bool generatePath;
 };
 
 /** FlightPathMovementGenerator generates movement of the player for the paths

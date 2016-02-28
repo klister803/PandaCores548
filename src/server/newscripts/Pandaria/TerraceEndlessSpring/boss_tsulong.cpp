@@ -23,30 +23,44 @@ enum eSpells
 {
     //Tsulong
     //Night phase
-    SPELL_DREAD_SHADOWS       = 122767,
-    SPELL_DREAD_SHADOWS_TR_EF = 122768,
-    SPELL_NIGHTMARES          = 122770,
-    SPELL_SHADOW_BREATH       = 122752,
-    SPELL_SUNBEAM             = 122782,
-    SPELL_SUNBEAM_TR_EF       = 122789,
+    SPELL_SHA_ACTIVE            = 122438,
+    SPELL_DREAD_SHADOWS         = 122767,
+    SPELL_DREAD_SHADOWS_TR_EF   = 122768,
+    SPELL_NIGHTMARES            = 122770,
+    SPELL_SHADOW_BREATH         = 122752,
+    SPELL_SUNBEAM               = 122782,
+    SPELL_SUNBEAM_TR_EF         = 122789,
     //Day phase
-    SPELL_SUN_BREATH          = 122855,
-    SPELL_BATHED_INLIGHT      = 122858,
+    SPELL_SUN_BREATH            = 122855,
+    SPELL_BATHED_INLIGHT        = 122858,
+    SPELL_SUM_EMBODIED_TERROR   = 122995,
+    SPELL_SUM_UNSTABLE_SHA      = 122953,
+
+    SPELL_BERSERK               = 130008,
     //
     //Sha Summons
+    SPELL_TERRORIZE             = 123011,
+    SPELL_SUM_TINY_TERROR       = 123508,
+    SPELL_FRIGHT                = 123036,
+
+    SPELL_UNSTABLE_BOLT         = 122881,
+    SPELL_INSTABILITY           = 123697,
 };
 
 enum eSummons
 {
-    NPC_SUNBEAM               = 90740,
+    NPC_SUNBEAM                 = 90740,
 };
 
 enum eEvents
 {
-    EVENT_SHADOW_BREATH       = 1,
-    EVENT_NIGHTMARE           = 2,
-    EVENT_SUNBEAM             = 3,
-    EVENT_SUN_BREATH          = 4,
+    EVENT_SHADOW_BREATH         = 1,
+    EVENT_NIGHTMARE             = 2,
+    EVENT_SUNBEAM               = 3,
+    EVENT_SUN_BREATH            = 4,
+    EVENT_SUM_EMBODIED_TERROR   = 5,
+    EVENT_SUM_UNSTABLE_SHA      = 6,
+    EVENT_BERSERK               = 7,
 };
 
 enum Phase
@@ -69,6 +83,8 @@ Position const sunbeampos[4] =
     {-992.80f,  -3049.35f, 12.5840f},
     {-1044.39f, -3049.58f, 12.5793f},
 };
+
+Position const centrPos = {-1017.61f, -3049.10f, 12.82f};
 
 enum DisplayId
 {
@@ -99,8 +115,6 @@ class boss_tsulong : public CreatureScript
             boss_tsulongAI(Creature* creature) : BossAI(creature, DATA_TSULONG)
             {
                 instance = creature->GetInstanceScript();
-                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_ENERGIZE, true);
-                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_PERIODIC_ENERGIZE, true);
                 if (instance)
                 {
                     if (CheckProtectors(instance, me))
@@ -123,52 +137,55 @@ class boss_tsulong : public CreatureScript
                 done = false;
                 lowpower = 0;
                 checkpower = 0;
+                me->RemoveAurasDueToSpell(SPELL_DREAD_SHADOWS);
+                me->RemoveAurasDueToSpell(SPELL_SHA_ACTIVE);
                 me->setFaction(16);
                 me->SetDisplayId(NIGHT_ID);
                 me->SetReactState(REACT_DEFENSIVE);
                 me->setPowerType(POWER_ENERGY);
                 me->SetPower(POWER_ENERGY, 0);
-                me->RemoveAurasDueToSpell(SPELL_DREAD_SHADOWS);
-            }
-            
-            void RegeneratePower(Powers power, float &value)
-            {
-                if (phase == PHASE_NIGHT)
-                    value = 2;
-                else
-                    value = 0;
+                me->SetHealth(me->GetMaxHealth());
             }
 
             void DoAction(int32 const action)
             {
                 switch (action)
                 {
-                case ACTION_INTRO_DAY:
-                    me->RemoveAurasDueToSpell(SPELL_DREAD_SHADOWS);
-                    me->setFaction(35);
-                    me->SetDisplayId(DAY_ID);
-                    me->AttackStop();
-                    me->SetReactState(REACT_PASSIVE);
-                    me->GetMotionMaster()->MoveTargetedHome();
-                    me->SetHealth(me->GetMaxHealth() - me->GetHealth());
-                    lowpower = 1000;
-                    events.ScheduleEvent(EVENT_SUN_BREATH,    urand(10000, 15000));
-                    break;
-                case ACTION_INTRO_NIGHT:
-                    me->SetHealth(me->GetMaxHealth() - me->GetHealth());
-                    me->setFaction(16);
-                    me->SetDisplayId(NIGHT_ID);
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    if (!checkpower)
-                        checkpower = 1000;
-                    DoZoneInCombat(me, 150.0f);
-                    if (me->getVictim())
-                        me->GetMotionMaster()->MoveChase(me->getVictim());
-                    me->AddAura(SPELL_DREAD_SHADOWS, me);
-                    events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(25000, 35000));
-                    events.ScheduleEvent(EVENT_NIGHTMARE,     urand(15000, 25000));
-                    events.ScheduleEvent(EVENT_SUNBEAM,       urand(15000, 20000));
-                    break;
+                    case ACTION_INTRO_DAY:
+                        summons.DespawnEntry(NPC_SUNBEAM);
+                        me->RemoveAurasDueToSpell(SPELL_DREAD_SHADOWS);
+                        me->RemoveAurasDueToSpell(SPELL_SHA_ACTIVE);
+                        me->setFaction(35);
+                        me->SetDisplayId(DAY_ID);
+                        me->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
+                        me->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE_PERCENT);
+                        me->RemoveAurasByType(SPELL_AURA_PERIODIC_LEECH);
+                        DoStopAttack();
+                        me->GetMotionMaster()->MoveTargetedHome();
+                        me->SetHealth(me->GetMaxHealth() - me->GetHealth());
+                        lowpower = 1000;
+                        events.ScheduleEvent(EVENT_SUN_BREATH, 20000);
+                        events.ScheduleEvent(EVENT_SUM_EMBODIED_TERROR, 5000);
+                        events.ScheduleEvent(EVENT_SUM_UNSTABLE_SHA, 18000);
+                        break;
+                    case ACTION_INTRO_NIGHT:
+                        summons.DespawnAll();
+                        me->SetHealth(me->GetMaxHealth() - me->GetHealth());
+                        me->setFaction(16);
+                        me->SetDisplayId(NIGHT_ID);
+                        me->SetReactState(REACT_AGGRESSIVE);
+                        if (!checkpower)
+                            checkpower = 1000;
+                        DoZoneInCombat(me, 150.0f);
+                        if (me->getVictim())
+                            me->GetMotionMaster()->MoveChase(me->getVictim());
+                        me->AddAura(SPELL_DREAD_SHADOWS, me);
+                        me->RemoveAurasDueToSpell(123012);
+                        DoCast(me, SPELL_SHA_ACTIVE, true);
+                        events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(25000, 35000));
+                        events.ScheduleEvent(EVENT_NIGHTMARE,     urand(15000, 25000));
+                        events.ScheduleEvent(EVENT_SUNBEAM,       urand(15000, 20000));
+                        break;
                 }
             }
 
@@ -179,21 +196,37 @@ class boss_tsulong : public CreatureScript
                 phase = PHASE_NIGHT;
                 checkpower = 1000; 
                 me->AddAura(SPELL_DREAD_SHADOWS, me);
+                DoCast(me, SPELL_SHA_ACTIVE, true);
                 events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(25000, 35000));
                 events.ScheduleEvent(EVENT_NIGHTMARE,     urand(15000, 25000));
                 events.ScheduleEvent(EVENT_SUNBEAM,       urand(15000, 20000));
+                events.ScheduleEvent(EVENT_BERSERK, 8 * MINUTE * IN_MILLISECONDS);
             }
 
             void DamageTaken(Unit* attacker, uint32 &damage)
             {
-                if (phase == PHASE_NIGHT)
+                if (damage >= me->GetHealth())
                 {
-                    if (damage >= me->GetHealth() && !done)
+                    switch (phase)
                     {
-                        done = true;
-                        damage = 0;
-                        SendDone();
+                        case PHASE_NIGHT:
+                            if (!done)
+                            {
+                                done = true;
+                                SendDone();
+                            }
+                            break;
+                        case PHASE_DAY:
+                            if (me->isInCombat())
+                            {
+                                me->RemoveAllAuras();
+                                EnterEvadeMode();
+                            }
+                            break;
+                        default:
+                            break;
                     }
+                    damage = 0;
                 }
             }
 
@@ -219,7 +252,7 @@ class boss_tsulong : public CreatureScript
             {
                 me->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
             }
-            
+
             void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
@@ -278,37 +311,53 @@ class boss_tsulong : public CreatureScript
                         lowpower -= diff;
                 }
 
+                events.Update(diff);
+
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
-
-                events.Update(diff);
 
                 while (uint32 eventId = events.ExecuteEvent())
                 {
                     switch (eventId)
                     {
-                    case EVENT_SHADOW_BREATH:
-                        if (me->getVictim())
-                            DoCast(me->getVictim(), SPELL_SHADOW_BREATH);
-                        events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(25000, 35000));
-                        break;
-                    case EVENT_NIGHTMARE:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 40.0f, true))
-                            DoCast(target, SPELL_NIGHTMARES);
-                        events.ScheduleEvent(EVENT_NIGHTMARE, urand(15000, 25000));
-                        break;
-                    case EVENT_SUNBEAM:
-                        me->SummonCreature(NPC_SUNBEAM, sunbeampos[urand(0, 3)]);
-                        events.ScheduleEvent(EVENT_SUNBEAM, urand(15000, 20000));                      
-                        break;
-                    case EVENT_SUN_BREATH:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
-                        {
-                            me->SetFacingToObject(target);
+                        case EVENT_SHADOW_BREATH:
+                            if (me->getVictim())
+                                DoCast(me->getVictim(), SPELL_SHADOW_BREATH);
+                            events.ScheduleEvent(EVENT_SHADOW_BREATH, urand(25000, 35000));
+                            break;
+                        case EVENT_NIGHTMARE:
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 40.0f, true))
+                                DoCast(target, SPELL_NIGHTMARES);
+                            events.ScheduleEvent(EVENT_NIGHTMARE, urand(15000, 25000));
+                            break;
+                        case EVENT_SUNBEAM:
+                            summons.DespawnEntry(NPC_SUNBEAM);
+                            me->SummonCreature(NPC_SUNBEAM, sunbeampos[urand(0, 3)]);
+                            events.ScheduleEvent(EVENT_SUNBEAM, urand(15000, 20000));                      
+                            break;
+                        case EVENT_SUN_BREATH:
+                            me->SetFacingTo(urand(0, 5));
                             DoCastAOE(SPELL_SUN_BREATH);
+                            events.ScheduleEvent(EVENT_SUN_BREATH, 28000);
+                            break;
+                        case EVENT_SUM_EMBODIED_TERROR:
+                            DoCast(SPELL_SUM_EMBODIED_TERROR);
+                            events.ScheduleEvent(EVENT_SUM_EMBODIED_TERROR, 40000);
+                            break;
+                        case EVENT_SUM_UNSTABLE_SHA:
+                        {
+                            std::list<Creature*> creatures;
+                            GetCreatureListWithEntryInGrid(creatures, me, 62962, 100.0f);
+                            Trinity::Containers::RandomResizeList(creatures, 3);
+                            if (!creatures.empty())
+                                for (std::list<Creature*>::iterator itr = creatures.begin(); itr != creatures.end(); ++itr)
+                                    DoCast((*itr), SPELL_SUM_UNSTABLE_SHA, true);
+                            events.ScheduleEvent(EVENT_SUM_UNSTABLE_SHA, 16000);
+                            break;
                         }
-                        events.ScheduleEvent(EVENT_SUN_BREATH, urand(10000, 15000));
-                        break;
+                        case EVENT_BERSERK:
+                            DoCast(me, SPELL_BERSERK, true);
+                            break;
                     }
                 }
                 DoMeleeAttackIfReady();
@@ -390,6 +439,249 @@ class npc_sunbeam : public CreatureScript
         }
 };
 
+//62969
+class npc_tsulong_embodied_terror : public CreatureScript
+{
+    public:
+        npc_tsulong_embodied_terror() : CreatureScript("npc_tsulong_embodied_terror") { }
+
+        struct npc_tsulong_embodied_terrorAI : public ScriptedAI
+        {
+            npc_tsulong_embodied_terrorAI(Creature* creature) : ScriptedAI(creature) 
+            {
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+            }
+
+			EventMap events;
+
+            void Reset() {}
+
+            void IsSummonedBy(Unit* summoner)
+            {
+                if (summoner->getFaction() == 16 || !summoner->isInCombat())
+                {
+                    me->DespawnOrUnsummon();
+                    return;
+                }
+                DoZoneInCombat(me, 100.0f);
+            }
+
+            void EnterCombat(Unit* /*who*/)
+            {
+                events.ScheduleEvent(EVENT_1, 2000);
+            }
+
+            void JustDied(Unit* /*killer*/)
+            {
+                for (uint8 i = 0; i < 5; i++)
+                    DoCast(me, SPELL_SUM_TINY_TERROR, true);
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_1:
+                            DoCast(SPELL_TERRORIZE);
+                            events.ScheduleEvent(EVENT_1, 20000);
+                            break;
+                    }
+                }
+                DoMeleeAttackIfReady();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_tsulong_embodied_terrorAI (creature);
+        }
+};
+
+//62977
+class npc_tsulong_fright_spawn : public CreatureScript
+{
+    public:
+        npc_tsulong_fright_spawn() : CreatureScript("npc_tsulong_fright_spawn") { }
+
+        struct npc_tsulong_fright_spawnAI : public ScriptedAI
+        {
+            npc_tsulong_fright_spawnAI(Creature* creature) : ScriptedAI(creature) 
+            {
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+            }
+
+            EventMap events;
+
+            void Reset() {}
+
+            void IsSummonedBy(Unit* summoner)
+            {
+                if (summoner->getFaction() == 16 || !summoner->isInCombat())
+                {
+                    me->DespawnOrUnsummon();
+                    return;
+                }
+
+                DoZoneInCombat(me, 100.0f);
+            }
+
+            void EnterCombat(Unit* /*who*/)
+            {
+                events.ScheduleEvent(EVENT_1, urand(2000, 6000));
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_1:
+                            DoCast(SPELL_FRIGHT); //Fear
+                            events.ScheduleEvent(EVENT_1, 10000);
+                            break;
+                    }
+                }
+                DoMeleeAttackIfReady();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_tsulong_fright_spawnAI (creature);
+        }
+};
+
+//62919
+class npc_tsulong_unstable_sha : public CreatureScript
+{
+    public:
+        npc_tsulong_unstable_sha() : CreatureScript("npc_tsulong_unstable_sha") { }
+
+        struct npc_tsulong_unstable_shaAI : public ScriptedAI
+        {
+            npc_tsulong_unstable_shaAI(Creature* creature) : ScriptedAI(creature) 
+            {
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+                me->SetReactState(REACT_PASSIVE);
+                me->SetSpeed(MOVE_RUN, 0.6f);
+                me->SetSpeed(MOVE_WALK, 0.6f);
+            }
+
+            EventMap events;
+
+            void Reset() {}
+
+            void IsSummonedBy(Unit* summoner) 
+            {
+                if (summoner->getFaction() == 16 || !summoner->isInCombat())
+                {
+                    me->DespawnOrUnsummon();
+                    return;
+                }
+
+                DoZoneInCombat(me, 100.0f);
+                me->GetMotionMaster()->MovePoint(1, centrPos);
+            }
+
+            void EnterCombat(Unit* /*who*/)
+            {
+                events.ScheduleEvent(EVENT_1, urand(2000, 4000));
+            }
+
+            void MovementInform(uint32 type, uint32 id)
+            {
+                if (type != POINT_MOTION_TYPE)
+                    return;
+
+                if (me->GetDistance(centrPos) > 3.0f)
+                {
+                    me->GetMotionMaster()->Clear();
+                    events.ScheduleEvent(EVENT_2, 100);
+                    return;
+                }
+                DoCast(me, SPELL_INSTABILITY, true);
+                me->DespawnOrUnsummon(500);
+            }
+
+            void SpellHitTarget(Unit* target, const SpellInfo* spell)
+            {
+                if (spell->Id == SPELL_UNSTABLE_BOLT)
+                    DoCast(me, 122907, true); // -15% hp
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_1:
+                            if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
+                                DoCast(pTarget, SPELL_UNSTABLE_BOLT);
+                            events.ScheduleEvent(EVENT_1, 4000);
+                            break;
+                        case EVENT_2:
+                            me->GetMotionMaster()->MovePoint(1, centrPos);
+                        break;
+                    }
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_tsulong_unstable_shaAI (creature);
+        }
+};
+
 class spell_sunbeam : public SpellScriptLoader
 {
     public:
@@ -446,6 +738,9 @@ class spell_sun_breath : public SpellScriptLoader
                         SetHitDamage(0);
                         GetCaster()->CastSpell(GetHitUnit(), SPELL_BATHED_INLIGHT);
                     }
+                    if (GetHitUnit()->ToCreature())
+                        if (GetHitUnit()->ToCreature()->GetEntry() == 62962)
+                            SetHitDamage(0);
                 }
             }
 
@@ -465,6 +760,9 @@ void AddSC_boss_tsulong()
 {
     new boss_tsulong();
     new npc_sunbeam();
+    new npc_tsulong_embodied_terror();
+    new npc_tsulong_fright_spawn();
+    new npc_tsulong_unstable_sha();
     new spell_sunbeam();
     new spell_sun_breath();
 }

@@ -877,7 +877,11 @@ public:
                         me->SetFacingTo(4.709836f);
                         me->SetOrientation(4.709836f);
 
-                        Player* plr = me->GetMap()->GetPlayers().begin()->getSource();
+                        Map::PlayerList const& players = me->GetMap()->GetPlayers();
+                        if (players.isEmpty())
+                            break;
+
+                        Player* plr = players.begin()->getSource();
                         if (!plr)
                             break;
 
@@ -2506,12 +2510,16 @@ public:
 
         void JustDied(Unit* /*killer*/)
         {
-            if (Player* plr = me->GetMap()->GetPlayers().begin()->getSource())
+            Map::PlayerList const& players = me->GetMap()->GetPlayers();
+            if (!players.isEmpty())
             {
-                if (Group* group = plr->GetGroup())
-                    group->RemoveCreatureMember(instance->GetData64(DATA_CELESTIAL_BLACKSMITH));
+                if (Player* plr = players.begin()->getSource())
+                {
+                    if (Group* group = plr->GetGroup())
+                        group->RemoveCreatureMember(instance->GetData64(DATA_CELESTIAL_BLACKSMITH));
 
-                plr->RemoveAura(SPELL_THUNDER_FORGE_CHARGING);
+                    plr->RemoveAura(SPELL_THUNDER_FORGE_CHARGING);
+                }
             }
 
             instance->SetData(DATA_SECOND_STAGE_FIRST_STEP, FAIL);
@@ -3103,8 +3111,12 @@ public:
                     cre->AI()->DoAction(ACTION_2);
                     kill = true;
 
-                    if (Player* plr = me->GetMap()->GetPlayers().begin()->getSource())
-                        plr->AddAura(SPELL_THROW_LANCE_AURA, plr);
+                    Map::PlayerList const& players = me->GetMap()->GetPlayers();
+                    if (!players.isEmpty())
+                    {
+                        if (Player* plr = players.begin()->getSource())
+                            plr->AddAura(SPELL_THROW_LANCE_AURA, plr);
+                    }
                 }
             }
 

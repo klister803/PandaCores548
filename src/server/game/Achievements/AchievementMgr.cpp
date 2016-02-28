@@ -1642,18 +1642,10 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
         CriteriaProgressMap* progressMap = nullptr;
         CriteriaTreeProgress* progress = nullptr;
 
-        if (GetCriteriaSort() == GUILD_CRITERIA)
-        {
-            m_CompletedAchievementsLock.acquire();
-            progressMap = GetCriteriaProgressMap(achievement ? achievement->ID : 0);
-            progress = GetCriteriaProgress(criteriaTree->ID, achievement ? achievement->ID : 0, progressMap);
-            m_CompletedAchievementsLock.release();
-        }
-        else
-        {
-            progressMap = GetCriteriaProgressMap(achievement ? achievement->ID : 0);
-            progress = GetCriteriaProgress(criteriaTree->ID, achievement ? achievement->ID : 0, progressMap);
-        }
+        m_CompletedAchievementsLock.acquire();
+        progressMap = GetCriteriaProgressMap(achievement ? achievement->ID : 0);
+        progress = GetCriteriaProgress(criteriaTree->ID, achievement ? achievement->ID : 0, progressMap);
+        m_CompletedAchievementsLock.release();
 
         if (!CanUpdateCriteria(criteriaTree, criteria, achievement, miscValue1, miscValue2, miscValue3, unit, referencePlayer, progressMap, progress))
             continue;

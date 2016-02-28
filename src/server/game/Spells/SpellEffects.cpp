@@ -813,6 +813,35 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                 }
                 break;
             }
+            case SPELLFAMILY_SHAMAN:
+            {
+                if (!m_caster)
+                    break;
+
+                switch (m_spellInfo->Id)
+                {
+                    case 88767:
+                    {
+                        if (Aura* aura = m_caster->GetAura(88766))
+                            if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
+                                damage = eff->GetAmount();
+                        break;
+                    }
+                    case 10444:
+                    {
+                        SpellInfo const* _spellinfo = sSpellMgr->GetSpellInfo(8024);
+                        int32 dmg = _spellinfo->Effects[EFFECT_1].CalcValue(m_caster);
+                        float add_spellpower = m_caster->GetSpellPowerDamage(SPELL_SCHOOL_MASK_FIRE) * _spellinfo->Effects[EFFECT_1].BonusMultiplier;
+
+                        float BaseWeaponSpeed = m_caster->GetAttackTime(damage == 100 ? OFF_ATTACK : BASE_ATTACK) / 1000.0f;
+                        damage = dmg / (100 / BaseWeaponSpeed);
+                        damage += add_spellpower;
+                        AddPct(damage, 50);
+                        break;
+                    }
+                }
+                break;
+            }
         }
 
         if (m_originalCaster && damage > 0)
@@ -826,6 +855,18 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
 
         switch (m_spellInfo->Id)
         {
+            //Tsulong - Terrorize
+            case 123018:
+            {
+                m_damage = unitTarget->CountPctFromMaxHealth(m_spellInfo->Effects[0].BasePoints);
+                break;
+            }
+            //Tsulong - Unstable Bolt
+            case 122907:
+            {
+                m_damage = unitTarget->CountPctFromMaxHealth(15);
+                break;
+            }
             case 117418: // Fists of Fury (damage)
             {
                 m_damage /= m_UniqueTargetInfo.size();
@@ -2438,6 +2479,11 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
 
         switch (m_spellInfo->Id)
         {
+            case 34299:  // Leader of the Pack
+            {
+                addhealth = CalculatePct(m_caster->GetMaxHealth(), m_spellInfo->Effects[effIndex].BasePoints);
+                break;
+            }
             case 115072: // Expel Harm
             case 147489: // Expel Harm
             {
@@ -2517,11 +2563,6 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
         
         switch (m_spellInfo->Id)
         {
-            case 34299:  // Leader of the Pack
-            {
-                addhealth = CalculatePct(m_caster->GetMaxHealth(), m_spellInfo->Effects[effIndex].BasePoints);
-                break;
-            }
             case 73921:  // Healing Rain
             {
                 if (m_UniqueTargetInfo.size() > 6)
@@ -2535,6 +2576,7 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
                         AddPct(addhealth, eff->GetAmount());
                 break;
             }
+            case 15290:  // Vampiric Embrace
             case 148009: // Spirit of Chi-Ji
             {
                 addhealth /= m_UniqueTargetInfo.size();
@@ -4231,7 +4273,7 @@ void Spell::EffectEnchantItemPerm(SpellEffIndex effIndex)
                 item_owner->GetName(), item_owner->GetSession()->GetAccountId());
         }
 
-        EnchantmentSlot slot = pEnchant->requiredSkill == SKILL_ENGINEERING? ENGINEERING_ENCHANTMENT_SLOT: PERM_ENCHANTMENT_SLOT;
+		EnchantmentSlot slot = pEnchant->RequiredSkillID == SKILL_ENGINEERING ? ENGINEERING_ENCHANTMENT_SLOT : PERM_ENCHANTMENT_SLOT;
 
         // remove old enchanting before applying new if equipped
         item_owner->ApplyEnchantment(itemTarget, slot, false);
@@ -4271,7 +4313,7 @@ void Spell::EffectEnchantItemPrismatic(SpellEffIndex effIndex)
         bool add_socket = false;
         for (uint8 i = 0; i < MAX_ITEM_ENCHANTMENT_EFFECTS; ++i)
         {
-            if (pEnchant->type[i] == ITEM_ENCHANTMENT_TYPE_PRISMATIC_SOCKET)
+			if (pEnchant->Effect[i] == ITEM_ENCHANTMENT_TYPE_PRISMATIC_SOCKET)
             {
                 add_socket = true;
                 break;
@@ -5017,9 +5059,7 @@ void Spell::EffectInterruptCast(SpellEffIndex effIndex)
                     case 6552: // Pummel
                     {
                         if (m_caster->HasAura(58372)) // Glyph of Rude Interruption
-                        {
                             m_caster->CastSpell(m_caster, 86663, true);
-                        }
                         break;
                     }
                     default:
@@ -5165,6 +5205,23 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
 
             switch (m_spellInfo->Id)
             {
+                case 119787: //Sha of Fear - Teleport
+                    unitTarget->CastSpell(unitTarget, damage, true);
+                    break;
+                case 125390: //Shekzeer - Fixate
+                    unitTarget->CastSpell(m_caster, damage, true);
+                    break;
+                case 124843: //Shekzeer - Amassing Darkness
+                    m_caster->CastSpell(unitTarget, 124844, true);
+                    break;
+                case 123713: //Shekzeer - Servant of the Empress (MK)
+                {
+                    if (Player* plr = m_caster->ToPlayer())
+                        if (InstanceScript* pInstance = plr->GetInstanceScript())
+                            if (Creature* shekzeer = pInstance->instance->GetCreature(pInstance->GetData64(62837)))
+                                shekzeer->CastSpell(plr, damage, true);
+                    break;
+                }
                 case 122415: //Grab - Ride Me
                 case 124258: //Storm Unleashed Ride Me
                 {

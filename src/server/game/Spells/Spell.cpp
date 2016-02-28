@@ -1317,12 +1317,6 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
                         maxSize = 5;
                         break;
                     }
-                    case 148009: // Spirit of Chi-Ji
-                    {
-                        maxSize = 5;
-                        power = POWER_HEALTH;
-                        break;
-                    }
                     case 113828: // Healing Touch
                     {
                         unitTargets.push_back(m_caster);
@@ -3045,7 +3039,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     if (missInfo == SPELL_MISS_REFLECT && target->timeDelay)
     {
         DamageInfo dmgInfoProc = DamageInfo(m_caster, unit, 1, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE, target->damageBeforeHit);
-        caster->ProcDamageAndSpell(unit, PROC_FLAG_NONE, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, PROC_EX_REFLECT, &dmgInfoProc, BASE_ATTACK, m_spellInfo);
+        caster->ProcDamageAndSpell(unit, procAttacker, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, procEx, &dmgInfoProc, BASE_ATTACK, m_spellInfo);
     }
 
     if (missInfo != SPELL_MISS_EVADE && m_caster->IsValidAttackTarget(unit) && (!m_spellInfo->IsPositive() || m_spellInfo->HasEffect(SPELL_EFFECT_DISPEL)))
@@ -8584,7 +8578,7 @@ SpellCastResult Spell::CheckItems()
                 // do not allow adding usable enchantments to items that have use effect already
                 if (pEnchant && isItemUsable)
                     for (uint8 s = 0; s < MAX_ITEM_ENCHANTMENT_EFFECTS; ++s)
-                        if (pEnchant->type[s] == ITEM_ENCHANTMENT_TYPE_USE_SPELL)
+						if (pEnchant->Effect[s] == ITEM_ENCHANTMENT_TYPE_USE_SPELL)
                             return SPELL_FAILED_ON_USE_ENCHANT;
 
                 // Not allow enchant in trade slot for some enchant type
@@ -8592,7 +8586,7 @@ SpellCastResult Spell::CheckItems()
                 {
                     if (!pEnchant)
                         return SPELL_FAILED_ERROR;
-                    if (pEnchant->slot & ENCHANTMENT_CAN_SOULBOUND)
+					if (pEnchant->Flags & ENCHANTMENT_CAN_SOULBOUND)
                         return SPELL_FAILED_NOT_TRADEABLE;
                 }
                 break;
@@ -8609,7 +8603,7 @@ SpellCastResult Spell::CheckItems()
                     SpellItemEnchantmentEntry const* pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
                     if (!pEnchant)
                         return SPELL_FAILED_ERROR;
-                    if (pEnchant->slot & ENCHANTMENT_CAN_SOULBOUND)
+					if (pEnchant->Flags & ENCHANTMENT_CAN_SOULBOUND)
                         return SPELL_FAILED_NOT_TRADEABLE;
                 }
                 break;
@@ -9838,6 +9832,20 @@ void Spell::CustomTargetSelector(std::list<WorldObject*>& targets, SpellEffIndex
                         targets.remove_if(Trinity::UnitAttackableCheck(true, _caster));
                     else
                         targets.remove_if(Trinity::UnitAttackableCheck(false, _caster));
+                    break;
+                }
+                case SPELL_FILTER_REMOVE_HEALTHY_TARGET: // 16
+                {
+                    std::list<Unit*> removeList;
+
+                    for (auto i : targets)
+                        if (Unit* target = i->ToUnit())
+                            if (target->IsFullHealth())
+                                removeList.push_back(target);
+
+                    if (!removeList.empty())
+                        for (auto i : removeList)
+                            targets.remove(i);
                     break;
                 }
             }

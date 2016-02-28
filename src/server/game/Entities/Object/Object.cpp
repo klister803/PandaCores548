@@ -940,7 +940,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                 else if (index == UNIT_FIELD_BYTES_2 || index == UNIT_FIELD_FACTIONTEMPLATE)
                 {
                     Unit const* unit = ToUnit();
-                    if (!unit->HasAura(119626) && unit->IsControlledByPlayer() && target != this && sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GROUP) && unit->IsInRaidWith(target))
+                    if (!unit->HasAuraType(SPELL_AURA_MOD_FACTION) && !unit->HasAura(119626) && unit->IsControlledByPlayer() && target != this && sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GROUP) && unit->IsInRaidWith(target))
                     {
                         FactionTemplateEntry const* ft1 = unit->getFactionTemplateEntry();
                         FactionTemplateEntry const* ft2 = target->getFactionTemplateEntry();

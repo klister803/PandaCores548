@@ -207,6 +207,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              instance = creature->GetInstanceScript();
              me->ApplySpellImmune(0, IMMUNITY_ID, 348, true);
              me->ApplySpellImmune(0, IMMUNITY_ID, 108686, true);
+             me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
          }
          
          InstanceScript* instance;
@@ -385,6 +386,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                  {
                  case EVENT_SAWBLADE:
                  {
+                     bool havetarget = false;
                      std::list<Player*> pllist;
                      pllist.clear();
                      GetPlayerListInGrid(pllist, me, 150.0f);
@@ -394,9 +396,23 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                          {
                              if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && me->GetExactDist(*itr) >= 15.0f && !(*itr)->HasAura(SPELL_ON_CONVEYOR) && !(*itr)->HasAura(SPELL_PATTERN_RECOGNITION))
                              {
+                                 havetarget = true;
                                  Talk(SAY_SAWBLADE);
                                  DoCast(*itr, SPELL_LAUNCH_SAWBLADE);
                                  break;
+                             }
+                         }
+
+                         if (!havetarget)
+                         {
+                             for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                             {
+                                 if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && !(*itr)->HasAura(SPELL_ON_CONVEYOR) && !(*itr)->HasAura(SPELL_PATTERN_RECOGNITION))
+                                 {
+                                     Talk(SAY_SAWBLADE);
+                                     DoCast(*itr, SPELL_LAUNCH_SAWBLADE);
+                                     break;
+                                 }
                              }
                          }
                      }
@@ -497,6 +513,8 @@ public:
         {
             instance = creature->GetInstanceScript();
             me->ModifyAuraState(AURA_STATE_CONFLAGRATE, true);
+            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
             DoCast(me, SPELL_REACTIVE_ARMOR, true);
         }
@@ -562,6 +580,7 @@ public:
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, true);
             me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
             me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
             me->SetReactState(REACT_PASSIVE);
             me->SetCanFly(true);

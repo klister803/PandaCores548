@@ -23,7 +23,6 @@ SDCategory: Sholazar_Basin
 EndScriptData */
 
 /* ContentData
-npc_vekjik
 avatar_of_freya
 EndContentData */
 
@@ -33,66 +32,6 @@ EndContentData */
 #include "ScriptedEscortAI.h"
 #include "SpellScript.h"
 
-/*######
-## npc_vekjik
-######*/
-
-#define GOSSIP_VEKJIK_ITEM1 "Shaman Vekjik, I have spoken with the big-tongues and they desire peace. I have brought this offering on their behalf."
-#define GOSSIP_VEKJIK_ITEM2 "No no... I had no intentions of betraying your people. I was only defending myself. it was all a misunderstanding."
-
-enum eVekjik
-{
-    GOSSIP_TEXTID_VEKJIK1       = 13137,
-    GOSSIP_TEXTID_VEKJIK2       = 13138,
-
-    SAY_TEXTID_VEKJIK1          = -1000208,
-
-    SPELL_FREANZYHEARTS_FURY    = 51469,
-
-    QUEST_MAKING_PEACE          = 12573
-};
-
-class npc_vekjik : public CreatureScript
-{
-public:
-    npc_vekjik() : CreatureScript("npc_vekjik") { }
-
-    bool OnGossipHello(Player* player, Creature* creature)
-    {
-        if (creature->isQuestGiver())
-            player->PrepareQuestMenu(creature->GetGUID());
-
-        if (player->GetQuestStatus(QUEST_MAKING_PEACE) == QUEST_STATUS_INCOMPLETE)
-        {
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_VEKJIK_ITEM1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-            player->SEND_GOSSIP_MENU(GOSSIP_TEXTID_VEKJIK1, creature->GetGUID());
-            return true;
-        }
-
-        player->SEND_GOSSIP_MENU(player->GetGossipTextId(creature), creature->GetGUID());
-        return true;
-    }
-
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
-    {
-        player->PlayerTalkClass->ClearMenus();
-        switch (action)
-        {
-            case GOSSIP_ACTION_INFO_DEF+1:
-                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_VEKJIK_ITEM2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
-                player->SEND_GOSSIP_MENU(GOSSIP_TEXTID_VEKJIK2, creature->GetGUID());
-                break;
-            case GOSSIP_ACTION_INFO_DEF+2:
-                player->CLOSE_GOSSIP_MENU();
-                DoScriptText(SAY_TEXTID_VEKJIK1, creature, player);
-                player->AreaExploredOrEventHappens(QUEST_MAKING_PEACE);
-                creature->CastSpell(player, SPELL_FREANZYHEARTS_FURY, false);
-                break;
-        }
-
-        return true;
-    }
-};
 
 /*######
 ## avatar_of_freya
@@ -738,7 +677,6 @@ public:
 
 void AddSC_sholazar_basin()
 {
-    new npc_vekjik();
     new npc_avatar_of_freya();
     new npc_bushwhacker();
     new npc_engineer_helice();

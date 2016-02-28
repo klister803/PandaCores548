@@ -80,9 +80,17 @@ void WardenCheckMgr::LoadWardenChecks()
         std::string str         = fields[6].GetString();
         std::string comment     = fields[7].GetString();
 
+        // TODO: remove it after
         WardenCheck* wardenCheck = new WardenCheck();
         wardenCheck->Type = checkType;
         wardenCheck->CheckId = id;
+
+        /*WardenCheck* wardenCheck = new WardenCheck();
+        uint8 important = maskType & 1;
+        wardenCheck->important = important;
+        uint8 checkType = maskType >> 1;
+        wardenCheck->Type = checkType;
+        wardenCheck->CheckId = id;*/
 
         // Initialize action with default action from config
         wardenCheck->Action = WardenActions(sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_FAIL_ACTION));
@@ -102,10 +110,20 @@ void WardenCheckMgr::LoadWardenChecks()
             }
         }
 
-        if (checkType == MEM_CHECK || checkType == MODULE_CHECK)
-            MemChecksIdPool.push_back(id);
+        if (checkType == MEM_CHECK)
+        {
+            //if (important)
+                //ImportantMemChecksIdPool.push_back(id);
+            //else
+                MemChecksIdPool.push_back(id);
+        }
         else
-            OtherChecksIdPool.push_back(id);
+        {
+            //if (important)
+                //ImportantOtherChecksIdPool.push_back(id);
+            //else
+                OtherChecksIdPool.push_back(id);
+        }
 
         if (checkType == MEM_CHECK || checkType == PAGE_CHECK_A || checkType == PAGE_CHECK_B || checkType == PROC_CHECK)
         {
@@ -119,20 +137,12 @@ void WardenCheckMgr::LoadWardenChecks()
 
         CheckStore[id] = wardenCheck;
 
-        if (checkType == MPQ_CHECK || checkType == MEM_CHECK)
+        if (checkType == MPQ_CHECK || checkType == MEM_CHECK || checkType == PAGE_CHECK_A || checkType == PAGE_CHECK_B
+            || checkType == DRIVER_CHECK || checkType == MODULE_CHECK)
         {
-            WardenCheckResult* wr = new WardenCheckResult();
-            wr->Result.SetHexStr(checkResult.c_str());
-            int len = checkResult.size() / 2;
-            if (wr->Result.GetNumBytes() < len)
-            {
-                uint8 *temp = new uint8[len];
-                memset(temp, 0, len);
-                memcpy(temp, wr->Result.AsByteArray(), wr->Result.GetNumBytes());
-                std::reverse(temp, temp + len);
-                wr->Result.SetBinary((uint8*)temp, len);
-                delete [] temp;
-            }
+            WardenCheckResult *wr = new WardenCheckResult();
+            wr->Result = checkResult;
+
             CheckResultStore[id] = wr;
         }
 

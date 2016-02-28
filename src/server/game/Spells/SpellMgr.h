@@ -249,6 +249,7 @@ enum SpellTargetFilterType
     SPELL_FILTER_BY_AURA_OR                     = 13,           // Remove target by any aura
     SPELL_FILTER_BY_ENTRY                       = 14,           // Remove target by any entry
     SPELL_FILTER_TARGET_ATTACKABLE              = 15,           // Check Attackable
+    SPELL_FILTER_REMOVE_HEALTHY_TARGET          = 16,           // Remove healthy target
 };
 
 // Spell proc event related declarations (accessed using SpellMgr functions)
