@@ -9750,10 +9750,21 @@ void Spell::CustomTargetSelector(std::list<WorldObject*>& targets, SpellEffIndex
                 }
                 case SPELL_FILTER_TARGET_TYPE: //3
                 {
-                    if(itr->param1 < 0.0f)
-                        targets.remove_if(Trinity::UnitTypeCheck(true, uint32(itr->param2)));
-                    else
-                        targets.remove_if(Trinity::UnitTypeCheck(false, uint32(itr->param2)));
+                    if (itr->param1)  // can`t remove players
+                    {
+                        if (itr->param1 < 0.0f)
+                            targets.remove_if(Trinity::UnitTypeMaskCheck(true, uint32(abs(itr->param1))));
+                        else
+                            targets.remove_if(Trinity::UnitTypeMaskCheck(false, uint32(itr->param1)));
+                    }
+
+                    if (itr->param2)
+                    {
+                        if (itr->param2 < 0.0f)
+                            targets.remove_if(Trinity::UnitTypeIdCheck(true, uint32(abs(itr->param2))));
+                        else
+                            targets.remove_if(Trinity::UnitTypeIdCheck(false, uint32(itr->param2)));
+                    }
                     break;
                 }
                 case SPELL_FILTER_SORT_BY_DISTANCE: //4

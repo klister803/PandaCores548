@@ -1771,10 +1771,10 @@ namespace Trinity
             float _dist;
     };
 
-    class UnitTypeCheck
+    class UnitTypeIdCheck
     {
         public:
-            UnitTypeCheck(bool checkin, uint32 typeMask) : _checkin(checkin), _typeMask(typeMask) {}
+            UnitTypeIdCheck(bool checkin, uint32 typeMask) : _checkin(checkin), _typeMask(typeMask) {}
             bool operator()(Unit* unit) const
             {
                 return bool(_typeMask & (1 << unit->GetTypeId())) == _checkin;
@@ -1788,6 +1788,36 @@ namespace Trinity
         private:
             bool _checkin;
             uint32 _typeMask;
+    };
+
+    class UnitTypeMaskCheck
+    {
+    public:
+        UnitTypeMaskCheck(bool checkin, uint32 typeMask) : _checkin(checkin), _typeMask(typeMask) {}
+        bool operator()(Unit* unit) const
+        {
+            if (unit->GetTypeId() == TYPEID_PLAYER)
+                return false;
+
+            return bool(unit->HasUnitTypeMask(_typeMask)) == _checkin;
+        }
+
+        bool operator()(WorldObject* object) const
+        {
+            if (Unit* unit = object->ToUnit())
+            {
+                if (unit->GetTypeId() == TYPEID_PLAYER)
+                    return false;
+
+                return bool(unit->HasUnitTypeMask(_typeMask)) == _checkin;
+            }
+
+            return true;
+        }
+
+    private:
+        bool _checkin;
+        uint32 _typeMask;
     };
 
     class UnitSortDistance
