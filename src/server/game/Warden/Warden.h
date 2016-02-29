@@ -166,7 +166,7 @@ class Warden
 
         uint32 playerBase;
         uint32 offset;
-        uint32 playerMovementBase;
+        uint32 playerDynamicBase;
 
         uint32 isDebuggerPresentFunc;
 

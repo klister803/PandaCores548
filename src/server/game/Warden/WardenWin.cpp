@@ -645,81 +645,77 @@ void WardenWin::RequestDynamicData()
     bool dataCreate = false;
 
     // first packet in chain
-    if (playerBase == 0x00 && offset == 0x00 && playerMovementBase == 0x00)
+    if (playerBase == 0x00 && offset == 0x00 && playerDynamicBase == 0x00)
     {
-        buff << uint32(0x00CD87A8);
+        buff << uint32(0x0120F004);
         buff << uint8(0x04);
         dataCreate = true;
     }
     // second packet in chain
-    else if (playerBase != 0x00 && offset == 0x00 && playerMovementBase == 0x00)
+    else if (playerBase != 0x00 && offset == 0x00 && playerDynamicBase == 0x00)
     {
-        playerBase += 0x34;
+        playerBase += 0x44;
         buff << uint32(playerBase);
         buff << uint8(0x04);
         dataCreate = true;
     }
     // third packet in chain
-    else if (playerBase != 0x00 && offset != 0x00 && playerMovementBase == 0x00)
+    else if (playerBase != 0x00 && offset != 0x00 && playerDynamicBase == 0x00)
     {
-        offset += 0x24;
+        offset += 0x40;
         buff << uint32(offset);
         buff << uint8(0x04);
         dataCreate = true;
     }
-    // data from client, test packet - offset 81C - run speed
-    // C70 points to run(forward) 7 default value (float)
-    // data from client, test packet - offset 7CF - movement type
-    // C23 points to movement type 128 default value (4 bytes)
-    else if (playerBase != 0x00 && offset != 0x00 && playerMovementBase != 0x00)
+    else if (playerBase != 0x00 && offset != 0x00 && playerDynamicBase != 0x00)
     {
-        // sedned for correct select of base packet
-        buff << uint32(playerMovementBase);
+        // sended for correct selection of base packet
+        buff << uint32(playerDynamicBase);
         buff << uint8(0x04);
 
-        uint32 run_speed = playerMovementBase + 0x81C;
+        uint32 run_speed = playerDynamicBase + 0x8A8;//!checked
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
         buff << uint8(0xF);
         buff << uint32(run_speed);
         buff << uint8(0x04);
 
-        uint32 flight_speed = playerMovementBase + 0x82C;
+        uint32 flight_speed = playerDynamicBase + 0x8B8;//!checked
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
         buff << uint8(0xF);
         buff << uint32(flight_speed);
         buff << uint8(0x04);
 
-        uint32 swim_speed = playerMovementBase + 0x824;
+        uint32 swim_speed = playerDynamicBase + 0x8B0;//!checked
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
         buff << uint8(0xF);
         buff << uint32(swim_speed);
         buff << uint8(0x04);
 
-        uint32 mov_flags = playerMovementBase + 0x7CC;
+        uint32 mov_flags = playerDynamicBase + 0x858;//!checked
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
         buff << uint8(0xF);
         buff << uint32(mov_flags);
         buff << uint8(0x04);
 
-        uint32 cur_speed = playerMovementBase + 0x814;
+        uint32 cur_speed = playerDynamicBase + 0x8A4;//!checked
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
         buff << uint8(0xF);
         buff << uint32(cur_speed);
         buff << uint8(0x04);
 
-        uint32 vert_delta = playerMovementBase + 0x858;
+        uint32 vert_delta = playerDynamicBase + 0x858;//not found
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
         buff << uint8(0xF);
         buff << uint32(vert_delta);
         buff << uint8(0x04);
 
-        uint32 faction = playerMovementBase + 0x1A34;
+        uint32 faction = playerDynamicBase + 0x1A34;//not found
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
         buff << uint8(0xF);
@@ -733,19 +729,19 @@ void WardenWin::RequestDynamicData()
         buff << uint32(map_z);
         buff << uint8(0x04);
 
-        /*uint32 coord_x = playerMovementBase + 0x798;
+        /*uint32 coord_x = playerDynamicBase + 0x798;
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
         buff << uint32(coord_x);
         buff << uint8(0x04);
 
-        uint32 coord_y = playerMovementBase + 0x79C;
+        uint32 coord_y = playerDynamicBase + 0x79C;
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
         buff << uint32(coord_y);
         buff << uint8(0x04);*/
 
-        uint32 coord_z = playerMovementBase + 0x7A0;
+        uint32 coord_z = playerDynamicBase + 0x7A0;//not found
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
         buff << uint8(0xF);
@@ -802,7 +798,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
     }
 
     // first packet in chain
-    if (playerBase == 0x00 && offset == 0x00 && playerMovementBase == 0x00)
+    if (playerBase == 0x00 && offset == 0x00 && playerDynamicBase == 0x00)
     {
         buff >> playerBase;
         //_dynamicCheckTimer = 1000;
@@ -811,7 +807,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
     }
 
     // second packet in chain
-    if (playerBase != 0x00 && offset == 0x00 && playerMovementBase == 0x00)
+    if (playerBase != 0x00 && offset == 0x00 && playerDynamicBase == 0x00)
     {
         buff >> offset;
         //_dynamicCheckTimer = 1000;
@@ -820,16 +816,16 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
     }
 
     // third packet in chain
-    if (playerBase != 0x00 && offset != 0x00 && playerMovementBase == 0x00)
+    if (playerBase != 0x00 && offset != 0x00 && playerDynamicBase == 0x00)
     {
-        buff >> playerMovementBase;
+        buff >> playerDynamicBase;
         //_dynamicCheckTimer = 1000;
         _dynDataSent = false;
         return;
     }
 
     // data from client
-    if (playerBase != 0x00 && offset != 0x00 && playerMovementBase != 0x00)
+    if (playerBase != 0x00 && offset != 0x00 && playerDynamicBase != 0x00)
     {
         uint32 check_data;
         buff >> check_data;
@@ -853,7 +849,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
         // player not vehicle
         else
         {
-            if (check_data != 0xA326C8)
+            if (check_data != 0xD58490)
             {
                 buff.rpos(buff.wpos());
                 // for debug
