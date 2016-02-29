@@ -762,6 +762,8 @@ class spell_sha_fulmination : public SpellScriptLoader
                 {
                     int32 basePoints = caster->CalculateSpellDamage(target, spellInfo, 0);
 
+                    basePoints += caster->GetSpellPowerDamage(spellInfo->GetSchoolMask()) * spellInfo->GetEffect(EFFECT_0)->BonusMultiplier;
+
                     if (Aura* aura = caster->GetAura(88766))
                         if (AuraEffect* _eff = aura->GetEffect(EFFECT_0))
                             _eff->SetAmount(basePoints * usedCharges);
