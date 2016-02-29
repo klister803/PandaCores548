@@ -1175,7 +1175,7 @@ bool WardenWin::CheckMovementFlags(uint32 moveflags, std::string &reason, uint16
 
     bool correct = true;
 
-    /*if (moveflags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING))
+    if (moveflags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING))
     {
         if (plr->GetVehicle() && plr->GetVehicleBase())
         {
@@ -1183,7 +1183,7 @@ bool WardenWin::CheckMovementFlags(uint32 moveflags, std::string &reason, uint16
             {
                 if (!IsAllowFlyingOnVehicles(vb))
                 {
-                    if (moveflags & MOVEMENTFLAG_INTERNAL)
+                    if (moveflags & 0x80000000)
                         reason += "Vehicle flyhack detected (Hitchhiker's Hack type)";
                     else
                         reason += "Vehicle flyhack detected (WoWEmuHacker type)";
@@ -1197,7 +1197,7 @@ bool WardenWin::CheckMovementFlags(uint32 moveflags, std::string &reason, uint16
         {
             if (!IsAllowPlayerFlying(plr))
             {
-                if (moveflags & MOVEMENTFLAG_INTERNAL)
+                if (moveflags & 0x80000000)
                     reason += "Flyhack detected (Hitchhiker's Hack type)";
                 else
                     reason += "Flyhack detected (WoWEmuHacker type)";
@@ -1208,14 +1208,14 @@ bool WardenWin::CheckMovementFlags(uint32 moveflags, std::string &reason, uint16
         }
     }
 
-    /*if (moveflags & MOVEMENTFLAG_SWIMMING)
+    if (moveflags & MOVEMENTFLAG_SWIMMING)
     {
-    if (!plr->IsInWater())
-    {
-    reason += " + AirSwimHack detected";
-    banMask |= RESP_AIRSWIM_HACK;
-    correct = false;
-    }
+        if (!plr->IsInWater())
+        {
+            reason += " + AirSwimHack detected";
+            banMask |= RESP_AIRSWIM_HACK;
+            correct = false;
+        }
     }
 
     if (moveflags & MOVEMENTFLAG_DISABLE_GRAVITY && !plr->GetVehicle())
@@ -1225,7 +1225,7 @@ bool WardenWin::CheckMovementFlags(uint32 moveflags, std::string &reason, uint16
         correct = false;
     }
 
-    if (moveflags & MOVEMENTFLAG_WATERWALKING)
+    /*if (moveflags & MOVEMENTFLAG_WATERWALKING)
     {
         if (!plr->IsAllowWaterwalking() && !plr->IsAllowWaterwalkingOnServer() && !plr->GetVehicle())
         {
@@ -1255,7 +1255,7 @@ bool WardenWin::CheckMovementFlags(uint32 moveflags, std::string &reason, uint16
                 correct = false;
             }
         }
-    }
+    }*/
 
     // cut mistake begin
     std::string new_info = "";
@@ -1273,7 +1273,7 @@ bool WardenWin::CheckMovementFlags(uint32 moveflags, std::string &reason, uint16
     if (new_info == "")
         new_info = "none";
 
-    reason = new_info;*/
+    reason = new_info;
     return correct;
 }
 
@@ -1404,7 +1404,7 @@ MoveType WardenWin::SelectSpeedType(uint32 moveFlags)
 
 void WardenWin::SendControlMovementPacket(uint32 opcode, bool added, uint32 moveFlags)
 {
-    /*Player * plr = _session->GetPlayer();
+    Player * plr = _session->GetPlayer();
 
     if (!plr)
         return;
@@ -1417,11 +1417,11 @@ void WardenWin::SendControlMovementPacket(uint32 opcode, bool added, uint32 move
         else
             mInfo.RemoveMovementFlag(MovementFlags(moveFlags));
 
-        WorldPacket data(opcode, 200);
+        WorldPacket data((Opcodes)opcode, 200);
         mInfo.guid = plr->GetGUID();
-        _session->WriteMovementInfo(&data, &mInfo);
+        _session->WriteMovementInfo(data, &mInfo);
         plr->SendMessageToSet(&data, true);
-    }*/
+    }
 }
 
 bool WardenWin::IsPlayerFaction(uint32 faction)
@@ -1514,7 +1514,7 @@ bool WardenWin::HasAnticheatImmune()
 
 float WardenWin::GetServerSpeed(Unit * obj, UnitMoveType mtype)
 {
-    /*int32 main_speed_mod = 0;
+    int32 main_speed_mod = 0;
     float stack_bonus = 1.0f;
     float non_stack_bonus = 1.0f;
 
@@ -1586,14 +1586,14 @@ float WardenWin::GetServerSpeed(Unit * obj, UnitMoveType mtype)
         break;
     }
     default:
-        sLog->outError("Unit::UpdateSpeed: Unsupported move type (%d)", mtype);
+        //sLog->outError("Unit::UpdateSpeed: Unsupported move type (%d)", mtype);
         return 0.0f;
     }
 
     // now we ready for speed calculation
     float speed = std::max(non_stack_bonus, stack_bonus);
     if (main_speed_mod)
-        AddPctN(speed, main_speed_mod);
+        AddPct(speed, main_speed_mod);
 
     switch (mtype)
     {
@@ -1631,14 +1631,14 @@ float WardenWin::GetServerSpeed(Unit * obj, UnitMoveType mtype)
     int32 slow = obj->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_DECREASE_SPEED);
     if (slow)
     {
-        AddPctN(speed, slow);
+        AddPct(speed, slow);
         if (float minSpeedMod = (float)obj->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_MINIMUM_SPEED))
         {
             float min_speed = minSpeedMod / 100.0f;
             if (speed < min_speed)
                 speed = min_speed;
         }
-    }*/
+    }
 
     return obj->GetSpeedRate(mtype)*(obj->IsControlledByPlayer() ? playerBaseMoveSpeed[mtype] : baseMoveSpeed[mtype]);
 }
