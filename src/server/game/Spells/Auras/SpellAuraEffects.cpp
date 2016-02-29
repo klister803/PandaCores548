@@ -989,7 +989,10 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                         amount  = -100;
                         amount += paladin->GetFloatValue(UNIT_MOD_HASTE) * 100.0f;
 
-                        if (amount > 0) amount = 0;
+                        if (amount < -33)
+                            amount = -33;
+                        else if (amount > 0) 
+                            amount = 0;
                     }
                     break;
                 }
