@@ -366,7 +366,7 @@ class npc_sha_of_fear_terror_spawn : public CreatureScript
             npc_sha_of_fear_terror_spawnAI(Creature* creature) : ScriptedAI(creature)
             {
                 pInstance = creature->GetInstanceScript();
-                me->SetReactState(REACT_AGGRESSIVE);
+                me->SetReactState(REACT_PASSIVE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
             }
 
@@ -378,6 +378,11 @@ class npc_sha_of_fear_terror_spawn : public CreatureScript
                 DoCast(me, SPELL_DARK_BULWARK, true);
             }
 
+            void IsSummonedBy(Unit* summoner)
+            {
+                DoZoneInCombat(me, 100.0f);
+            }
+
             void EnterCombat(Unit* attacker)
             {
                 events.ScheduleEvent(EVENT_BOLT, 3000);
@@ -387,6 +392,12 @@ class npc_sha_of_fear_terror_spawn : public CreatureScript
             {
                 if (me->isInFront(attacker))
                     damage = 0; 
+            }
+
+            void SpellHitTarget(Unit* target, SpellInfo const* spell)
+            {
+                if (spell->Id == SPELL_PENETRATING_BOLT)
+                    me->SetFacingToObject(target);
             }
 
             void UpdateAI(uint32 diff)
@@ -815,6 +826,8 @@ class spell_sha_of_fear_ominous_cackle : public SpellScriptLoader
                 if (!target)
                     return;
 
+                target->CastSpell(target, 129147, true);
+
                 switch (GetSpellInfo()->Id)
                 {
                     case 119593:
@@ -827,7 +840,6 @@ class spell_sha_of_fear_ominous_cackle : public SpellScriptLoader
                         target->GetMotionMaster()->MovePath(SHA_PLATFORM_3, false, false);
                         break;
                 }
-                target->CastSpell(target, 129147, true);
             }
 
             void Register()
