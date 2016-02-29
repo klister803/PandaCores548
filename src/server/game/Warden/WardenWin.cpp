@@ -645,29 +645,13 @@ void WardenWin::RequestDynamicData()
     bool dataCreate = false;
 
     // first packet in chain
-    if (playerBase == 0x00 && offset == 0x00 && playerDynamicBase == 0x00)
+    if (playerDynamicBase == 0x00)
     {
-        buff << uint32(0x0120F004);
+        buff << uint32(0x011E45DC);
         buff << uint8(0x04);
         dataCreate = true;
     }
-    // second packet in chain
-    else if (playerBase != 0x00 && offset == 0x00 && playerDynamicBase == 0x00)
-    {
-        playerBase += 0x44;
-        buff << uint32(playerBase);
-        buff << uint8(0x04);
-        dataCreate = true;
-    }
-    // third packet in chain
-    else if (playerBase != 0x00 && offset != 0x00 && playerDynamicBase == 0x00)
-    {
-        offset += 0x40;
-        buff << uint32(offset);
-        buff << uint8(0x04);
-        dataCreate = true;
-    }
-    else if (playerBase != 0x00 && offset != 0x00 && playerDynamicBase != 0x00)
+    else if (playerDynamicBase != 0x00)
     {
         // sended for correct selection of base packet
         buff << uint32(playerDynamicBase);
@@ -708,7 +692,7 @@ void WardenWin::RequestDynamicData()
         buff << uint32(cur_speed);
         buff << uint8(0x04);
 
-        uint32 vert_delta = playerDynamicBase + 0x858;//not found
+        /*uint32 vert_delta = playerDynamicBase + 0x858;//not found
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
         buff << uint8(0xF);
@@ -739,14 +723,14 @@ void WardenWin::RequestDynamicData()
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
         buff << uint32(coord_y);
-        buff << uint8(0x04);*/
+        buff << uint8(0x04);
 
         uint32 coord_z = playerDynamicBase + 0x7A0;//not found
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
         buff << uint8(0xF);
         buff << uint32(coord_z);
-        buff << uint8(0x04);
+        buff << uint8(0x04);*/
 
         dataCreate = true;
     }
@@ -798,25 +782,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
     }
 
     // first packet in chain
-    if (playerBase == 0x00 && offset == 0x00 && playerDynamicBase == 0x00)
-    {
-        buff >> playerBase;
-        //_dynamicCheckTimer = 1000;
-        _dynDataSent = false;
-        return;
-    }
-
-    // second packet in chain
-    if (playerBase != 0x00 && offset == 0x00 && playerDynamicBase == 0x00)
-    {
-        buff >> offset;
-        //_dynamicCheckTimer = 1000;
-        _dynDataSent = false;
-        return;
-    }
-
-    // third packet in chain
-    if (playerBase != 0x00 && offset != 0x00 && playerDynamicBase == 0x00)
+    if (playerDynamicBase == 0x00)
     {
         buff >> playerDynamicBase;
         //_dynamicCheckTimer = 1000;
@@ -825,7 +791,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
     }
 
     // data from client
-    if (playerBase != 0x00 && offset != 0x00 && playerDynamicBase != 0x00)
+    if (playerDynamicBase != 0x00)
     {
         uint32 check_data;
         buff >> check_data;
@@ -888,7 +854,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
         if (!ReadMemChunk(buff, curClientSpeed))
             return;
 
-        float vDeltaConst = 0.0f;
+        /*float vDeltaConst = 0.0f;
         if (!ReadMemChunk(buff, vDeltaConst))
             return;
 

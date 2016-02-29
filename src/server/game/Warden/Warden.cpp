@@ -192,7 +192,7 @@ void Warden::ClearAddresses()
 {
     playerBase = 0;
     offset = 0;
-    playerMovementBase = 0;
+    playerDynamicBase = 0;
 
     if (_dynDataSent)
         _dynDataSent = false;
