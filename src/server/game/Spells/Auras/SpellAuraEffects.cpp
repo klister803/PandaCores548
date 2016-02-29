@@ -7494,13 +7494,19 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
                 // Camouflage
                 case 80326:
                 {
-                    if (!caster || (caster->isMoving() && !caster->HasAura(119449) && !caster->isPet()) || caster->HasAura(80325))
+                    if (!caster || !target)
                         return;
 
-                    if (caster->HasAura(119449) || (caster->GetOwner() && caster->GetOwner()->HasAura(119449)))
-                        caster->CastSpell(caster, 119450, true);
+                    if (caster->HasAura(119449))
+                    {
+                        if (!target->HasAura(119450))
+                            target->CastSpell(target, 119450, true);
+                    }
                     else
-                        caster->CastSpell(caster, 80325, true);
+                    {
+                        if (!target->isMoving() && !target->HasAura(80325))
+                            target->CastSpell(target, 80325, true);
+                    }
                     break;
                 }
                 default:
