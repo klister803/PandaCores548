@@ -3866,6 +3866,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 81751: // Atonement
                     spellInfo->AttributesEx2 &= ~SPELL_ATTR2_CANT_CRIT;
                     break;
+                case 53651: // Beacon of Light
                 case 90289: // Removing Death Grip cooldown
                 case 36563: // Shadowstep
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_HAVE_STABLE_FLYTIME;
@@ -5518,11 +5519,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 20066: // Repentance
                     spellInfo->InterruptFlags |= SPELL_INTERRUPT_FLAG_INTERRUPT;
                     break;
-                case 53651: // Beacon of Light Trigger
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
-                    break;
                 case 53563: // Beacon of Light
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_TRIGGER_SPELL;
+                    spellInfo->Effects[0].TriggerSpell = 0;
                     break;
                 case 23035: // Battle Standard (Horde)
                 case 23034: // Battle Standard (Alliance)
@@ -5745,6 +5743,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 145718:  // Gusting Bomb
                     spellInfo->Speed = 25.f;
                     break;
+                case 53652:  // Beacon of Light
                 case 117954: // Materialize Protector
                 case 120729: // Demonic Gateway
                 case 113896: // Demonic Gateway
