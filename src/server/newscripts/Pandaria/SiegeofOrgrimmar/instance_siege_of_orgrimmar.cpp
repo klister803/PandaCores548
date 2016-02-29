@@ -211,6 +211,7 @@ public:
         uint64 garroshGuid;
         uint64 garroshrealmGuid;
         std::vector<uint64> engeneerGuids;
+        std::vector<uint64> garroshsoldiersGuids;
 
         EventMap Events;
 
@@ -310,6 +311,7 @@ public:
             garroshGuid             = 0;
             garroshrealmGuid        = 0;
             engeneerGuids.clear();
+            garroshsoldiersGuids.clear();
 
             onInitEnterState = false;
             STowerFull = false;
@@ -669,6 +671,10 @@ public:
                     break;
                 case NPC_SIEGE_ENGINEER:
                     engeneerGuids.push_back(creature->GetGUID());
+                    break;
+                case NPC_WARBRINGER:
+                case NPC_WOLF_RIDER:
+                    garroshsoldiersGuids.push_back(creature->GetGUID());
                     break;
             }
         }
@@ -1313,6 +1319,7 @@ public:
                 {
                 case NOT_STARTED:
                     ResetRealmOfYshaarj(true);
+                    garroshsoldiersGuids.clear();
                     for (std::vector<uint64>::const_iterator itr = garroshfenchGuids.begin(); itr != garroshfenchGuids.end(); ++itr)
                         HandleGameObject(*itr, true);
                     HandleGameObject(garroshentdoorGuid, true);
@@ -1324,6 +1331,7 @@ public:
                     HandleGameObject(garroshentdoorGuid, false);
                     break;
                 case DONE:
+                    garroshsoldiersGuids.clear();
                     for (std::vector<uint64>::const_iterator itr = garroshfenchGuids.begin(); itr != garroshfenchGuids.end(); ++itr)
                         HandleGameObject(*itr, true);
                     HandleGameObject(garroshentdoorGuid, true);
@@ -1681,7 +1689,7 @@ public:
                 rycount = rycount >= 2 ? urand(0, 1) : ++rycount;
                 break;
             case DATA_FIRST_ENGENEER_DIED:
-                if (data)
+                if (data && !engeneerGuids.empty())
                 {
                     for (std::vector<uint64>::const_iterator itr = engeneerGuids.begin(); itr != engeneerGuids.end(); itr++)
                         if (Creature* eng = instance->GetCreature(*itr))
@@ -1689,6 +1697,26 @@ public:
                                 eng->AI()->DoAction(ACTION_FIRST_ENGENEER_DIED);
                 }
                 engeneerGuids.clear();
+                break;
+            case DATA_ACTION_SOLDIER:
+                if (!garroshsoldiersGuids.empty())
+                {
+                    switch (data)
+                    {
+                    case 0:
+                        for (std::vector<uint64>::const_iterator itr = garroshsoldiersGuids.begin(); itr != garroshsoldiersGuids.end(); itr++)
+                            if (Creature* soldier = instance->GetCreature(*itr))
+                                if (soldier->isAlive())
+                                    soldier->ReAttackWithZone();
+                        break;
+                    case 1:
+                        for (std::vector<uint64>::const_iterator itr = garroshsoldiersGuids.begin(); itr != garroshsoldiersGuids.end(); itr++)
+                            if (Creature* soldier = instance->GetCreature(*itr))
+                                if (soldier->isAlive())
+                                    soldier->SetAttackStop(true);
+                        break;
+                    }
+                }
                 break;
              }
         }

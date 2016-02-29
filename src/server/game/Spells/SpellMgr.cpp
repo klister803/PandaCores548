@@ -5222,11 +5222,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = 18;
                     break;
                 //Garrosh
-                case 144821: //Hellscream warsong
-                    spellInfo->Effects[0].TargetB = 30;
-                    spellInfo->Effects[1].TargetB = 30;
-                    spellInfo->Effects[2].TargetB = 30;
-                    break;
                 case 149032: //Consumed Hope
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
                     spellInfo->Effects[0].TriggerSpell = 149003;
@@ -5240,6 +5235,60 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 145246: //Phase Three Transform
                     spellInfo->Effects[0].BasePoints = 0;
                     spellInfo->Effects[4].BasePoints = 100;
+                    break;
+                case 145065: //Touch of Yshaarj
+                    spellInfo->Effects[0].TargetA = 25;
+                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[1].TargetA = 25;
+                    spellInfo->Effects[1].TargetB = 0;
+                    spellInfo->Effects[2].TargetA = 25;
+                    spellInfo->Effects[2].TargetB = 0;
+                    spellInfo->Effects[3].TargetA = 25;
+                    spellInfo->Effects[3].TargetB = 0;
+                    spellInfo->Effects[4].TargetA = 25;
+                    spellInfo->Effects[4].TargetB = 0;
+                    spellInfo->Effects[5].TargetA = 25;
+                    spellInfo->Effects[5].TargetB = 0;
+                    spellInfo->Effects[6].TargetA = 25;
+                    spellInfo->Effects[6].TargetB = 0;
+                    spellInfo->Effects[7].TargetA = 25;
+                    spellInfo->Effects[7].TargetB = 0;
+                    spellInfo->Effects[8].TargetA = 25;
+                    spellInfo->Effects[8].TargetB = 0;
+                    spellInfo->Effects[9].TargetA = 25;
+                    spellInfo->Effects[9].TargetB = 0;
+                    spellInfo->Effects[10].TargetA = 25;
+                    spellInfo->Effects[10].TargetB = 0;
+                    spellInfo->Effects[11].TargetA = 25;
+                    spellInfo->Effects[11].TargetB = 0;
+                    break;
+                case 145171: //Empovered Touch of Yshaarj
+                    spellInfo->Effects[0].TargetA = 25;
+                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[1].TargetA = 25;
+                    spellInfo->Effects[1].TargetB = 0;
+                    spellInfo->Effects[2].TargetA = 25;
+                    spellInfo->Effects[2].TargetB = 0;
+                    spellInfo->Effects[3].TargetA = 25;
+                    spellInfo->Effects[3].TargetB = 0;
+                    spellInfo->Effects[4].TargetA = 25;
+                    spellInfo->Effects[4].TargetB = 0;
+                    spellInfo->Effects[5].TargetA = 25;
+                    spellInfo->Effects[5].TargetB = 0;
+                    spellInfo->Effects[6].TargetA = 25;
+                    spellInfo->Effects[6].TargetB = 0;
+                    spellInfo->Effects[7].TargetA = 25;
+                    spellInfo->Effects[7].TargetB = 0;
+                    spellInfo->Effects[8].TargetA = 25;
+                    spellInfo->Effects[8].TargetB = 0;
+                    spellInfo->Effects[9].TargetA = 25;
+                    spellInfo->Effects[9].TargetB = 0;
+                    spellInfo->Effects[10].TargetA = 25;
+                    spellInfo->Effects[10].TargetB = 0;
+                    spellInfo->Effects[11].TargetA = 25;
+                    spellInfo->Effects[11].TargetB = 0;
+                    spellInfo->Effects[12].TargetA = 25;
+                    spellInfo->Effects[12].TargetB = 0;
                     break;
 
 

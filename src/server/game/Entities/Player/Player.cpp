@@ -27936,6 +27936,18 @@ void Player::UpdateCharmedAI()
         // 0 : Friendly, 1-2-3 : attack
         bool attack = urand(0 , 3);
 
+        //Mind control from Boss - custom ability
+        //SO - Garrosh
+        if (HasAura(145065) || HasAura(145171))
+        {
+            if (!HasSpellCooldown(145599))
+            {
+                CastSpell(target, 145599);
+                AddSpellCooldown(145599, 0, getPreciseTime() + 6.0);
+            }
+            return;
+        }
+
         switch (getClass())
         {
             case CLASS_WARRIOR:
