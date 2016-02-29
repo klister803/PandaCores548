@@ -10,3 +10,5 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `target`, `co
 DELETE FROM `spell_proc_event` WHERE (`entry`='53651') AND (`effectmask`='7');
 
 DELETE FROM `spell_script_names` WHERE (`spell_id`='51755') AND (`ScriptName`='spell_hun_camouflage_visual');
+
+INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `comment`) VALUES ('-80326', '-119450', 'Camouflage');
