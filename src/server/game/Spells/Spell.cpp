@@ -6982,7 +6982,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     if (!(AttributesCustomEx2 & SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS) && VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) && !m_caster->IsWithinLOSInMap(target))
                         return SPELL_FAILED_LINE_OF_SIGHT;
 
-                if (m_spellInfo->DmgClass != SPELL_DAMAGE_CLASS_MELEE && m_caster->IsVisionObscured(target))
+                if (m_spellInfo->RangeEntry->ID != 2 /*Combat Range*/ && m_caster->IsVisionObscured(target))
                 {
                     if (m_caster->ToCreature() && m_caster->GetEntry() == 71529) //fix exploit on Thok Bloodthirsty
                         m_caster->ToCreature()->AI()->EnterEvadeMode();
