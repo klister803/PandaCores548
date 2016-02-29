@@ -908,20 +908,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
             }
             break;
         }
-        case SPELL_AURA_MOD_DECREASE_SPEED:
-        {
-            if (!target)
-                break;
-
-            switch (GetId())
-            {
-                case 119450:
-                {
-                    if (target->isPet())
-                    amount = 0;
-                }
-            }
-        }
         case SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN:
         {
             if (!caster)

@@ -931,37 +931,6 @@ class spell_hun_improved_serpent_sting : public SpellScriptLoader
         }
 };
 
-// Camouflage - 51755
-class spell_hun_camouflage_visual : public SpellScriptLoader
-{
-    public:
-        spell_hun_camouflage_visual() : SpellScriptLoader("spell_hun_camouflage_visual") { }
-
-        class spell_hun_camouflage_visual_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_hun_camouflage_visual_AuraScript);
-
-            void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (GetCaster())
-                {
-                    GetCaster()->RemoveAura(HUNTER_SPELL_CAMOUFLAGE_VISUAL);
-                    GetCaster()->RemoveAura(HUNTER_SPELL_GLYPH_OF_CAMOUFLAGE_VISUAL);
-                }
-            }
-
-            void Register()
-            {
-                AfterEffectRemove += AuraEffectRemoveFn(spell_hun_camouflage_visual_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_INTERFERE_TARGETTING, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_hun_camouflage_visual_AuraScript();
-        }
-};
-
 // Called by Multi Shot - 2643
 // Serpent Spread - 87935
 class spell_hun_serpent_spread : public SpellScriptLoader
@@ -2204,7 +2173,6 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_binding_shot();
     new spell_hun_binding_shot_zone();
     new spell_hun_improved_serpent_sting();
-    new spell_hun_camouflage_visual();
     new spell_hun_serpent_spread();
     new spell_hun_ancient_hysteria();
     new spell_hun_kill_command();
