@@ -310,7 +310,6 @@ void WardenWin::RequestStaticData()
     // set string index
     uint8 index = 1;
 
-    // header - temporary comment, because mem check have new format and don't work
     buff << uint8(MEM_CHECK ^ xorByte);
     buff << uint8(0x00);
     buff << uint8(0xF);
@@ -328,6 +327,7 @@ void WardenWin::RequestStaticData()
         case MEM_CHECK:
         {
             buff << uint8(0x00);
+            buff << uint8(0xF);
             buff << uint32(wd->Address);
             buff << uint8(wd->Length);
             break;
@@ -624,7 +624,8 @@ void WardenWin::RequestDynamicData()
     // header
     buff << uint8(MEM_CHECK ^ xorByte);
     buff << uint8(0x00);
-    buff << uint32(0x00A76E50);
+    buff << uint8(0xF);
+    buff << uint32(0x00E76E50);
     buff << uint8(0x6);
 
     // system
@@ -636,8 +637,10 @@ void WardenWin::RequestDynamicData()
         buff << uint8(0x4);
     }*/
 
+    // construct dynamic part of packet
     buff << uint8(MEM_CHECK ^ xorByte);
     buff << uint8(0x00);
+    buff << uint8(0xF);
 
     bool dataCreate = false;
 
@@ -677,48 +680,56 @@ void WardenWin::RequestDynamicData()
         uint32 run_speed = playerMovementBase + 0x81C;
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
+        buff << uint8(0xF);
         buff << uint32(run_speed);
         buff << uint8(0x04);
 
         uint32 flight_speed = playerMovementBase + 0x82C;
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
+        buff << uint8(0xF);
         buff << uint32(flight_speed);
         buff << uint8(0x04);
 
         uint32 swim_speed = playerMovementBase + 0x824;
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
+        buff << uint8(0xF);
         buff << uint32(swim_speed);
         buff << uint8(0x04);
 
         uint32 mov_flags = playerMovementBase + 0x7CC;
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
+        buff << uint8(0xF);
         buff << uint32(mov_flags);
         buff << uint8(0x04);
 
         uint32 cur_speed = playerMovementBase + 0x814;
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
+        buff << uint8(0xF);
         buff << uint32(cur_speed);
         buff << uint8(0x04);
 
         uint32 vert_delta = playerMovementBase + 0x858;
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
+        buff << uint8(0xF);
         buff << uint32(vert_delta);
         buff << uint8(0x04);
 
         uint32 faction = playerMovementBase + 0x1A34;
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
+        buff << uint8(0xF);
         buff << uint32(faction);
         buff << uint8(0x04);
 
         uint32 map_z = 0x00D3945C;
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
+        buff << uint8(0xF);
         buff << uint32(map_z);
         buff << uint8(0x04);
 
@@ -737,6 +748,7 @@ void WardenWin::RequestDynamicData()
         uint32 coord_z = playerMovementBase + 0x7A0;
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
+        buff << uint8(0xF);
         buff << uint32(coord_z);
         buff << uint8(0x04);
 
