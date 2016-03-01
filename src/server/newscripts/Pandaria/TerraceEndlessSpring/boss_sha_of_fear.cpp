@@ -394,12 +394,6 @@ class npc_sha_of_fear_terror_spawn : public CreatureScript
                     damage = 0; 
             }
 
-            void SpellHitTarget(Unit* target, SpellInfo const* spell)
-            {
-                if (spell->Id == SPELL_PENETRATING_BOLT)
-                    me->SetFacingToObject(target);
-            }
-
             void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
