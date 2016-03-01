@@ -491,6 +491,8 @@ class boss_garrosh_hellscream : public CreatureScript
                     }
                     break;
                     case EVENT_SUMMON_ENGINEER:
+                        if (!summons.empty())
+                            summons.DespawnEntry(NPC_KORKRON_IRON_STAR);
                         SpawnIronStar();
                         for (uint8 n = 0; n < 2; n++)
                             me->SummonCreature(NPC_SIEGE_ENGINEER, engeneerspawnpos[n]);
@@ -712,7 +714,7 @@ public:
             {
                 if (damage >= me->GetHealth())
                 {
-                    me->RemoveAurasDueToSpell(SPELL_POWER_IRON_STAR);
+                    me->RemoveAurasDueToSpell(SPELL_POWER_IRON_STAR, 0, 0, AURA_REMOVE_BY_DEATH);
                     if (firstengeneerdied)
                         damage = 0;
                 }
