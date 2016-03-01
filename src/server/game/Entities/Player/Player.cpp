@@ -27892,50 +27892,73 @@ uint32 rand_number(uint32 value1, uint32 value2, uint32 value3 = 0, uint32 value
 void Player::UpdateCharmedAI()
 {
     //This should only called in Player::Update
-  Creature* charmer = GetCharmer()->ToCreature();
+    Creature* charmer = GetCharmer()->ToCreature();
 
     //kill self if charm aura has infinite duration
     if (charmer->IsInEvadeMode())
     {
         AuraEffectList const& auras = GetAuraEffectsByType(SPELL_AURA_MOD_CHARM);
         for (AuraEffectList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
+        {
             if ((*iter)->GetCasterGUID() == charmer->GetGUID() && (*iter)->GetBase()->IsPermanent())
             {
                 charmer->DealDamage(this, GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 return;
             }
+        }
     }
-
     if (!charmer->isInCombat())
         GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, charmer->GetFollowAngle());
-
-    Unit* target = getVictim();
-    if (!target || !charmer->IsValidAttackTarget(target))
+    else
     {
+        if (!getVictim())
+        {
+            std::list<Player*>pllist;
+            pllist.clear();
+            GetPlayerListInGrid(pllist, 60.0f);
+            if (!pllist.empty())
+            {
+                for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                {
+                    if (charmer->IsValidAttackTarget(*itr))
+                    {
+                        GetMotionMaster()->MoveChase(*itr);
+                        Attack(*itr, true);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    if (HasUnitState(UNIT_STATE_CASTING))
+        return;
+
+        /*Unit* target = getVictim();
+        if (!target || !charmer->IsValidAttackTarget(target))
+        {
         target = charmer->SelectNearestPlayerNotGM();
         if (!target)
-            return;
+        return;
 
         GetMotionMaster()->MoveChase(target);
         Attack(target, true);
-    }
-	else
-    {
+        }
+        else
+        {
         if (HasUnitState(UNIT_STATE_CASTING))
-            return;
+        return;
         else if (target && GetMotionMaster()->GetCurrentMovementGeneratorType() != CHASE_MOTION_TYPE)
-            GetMotionMaster()->MoveChase(target);
+        GetMotionMaster()->MoveChase(target);
 
         // On laisse quelques attaques en melée deux fois sur trois
         if (urand(0, 2))
-            return;
+        return;
 
         // On s'arrete pour cast le spell
-        GetMotionMaster()->MoveIdle();
+        GetMotionMaster()->MoveIdle();*/
 
-        // 0 : Friendly, 1-2-3 : attack
-        bool attack = urand(0 , 3);
-
+    if (Unit* target = getVictim())
+    {
         //Mind control from Boss - custom ability
         //SO - Garrosh
         if (HasAura(145065) || HasAura(145171))
@@ -27947,80 +27970,60 @@ void Player::UpdateCharmedAI()
             }
             return;
         }
+        // 0 : Friendly, 1-2-3 : attack
+        bool attack = urand(0, 3);
 
         switch (getClass())
         {
-            case CLASS_WARRIOR:
-            {
-                CastSpell(target, rand_number(SPELL_WAR_ATTACK_LIST));
-                break;
-            }
-            case CLASS_PALADIN:
-            {
-                if (attack)
-                    CastSpell(target, rand_number(SPELL_PAL_ATTACK_LIST));
-                else
-                    CastSpell(charmer, rand_number(SPELL_PAL_FRIEND_LIST));
-                break;
-            }
-            case CLASS_HUNTER:
-            {
-                CastSpell(target, rand_number(SPELL_HUNT_ATTACK_LIST));
-                break;
-            }
-            case CLASS_ROGUE:
-            {
-                CastSpell(target, rand_number(SPELL_ROG_ATTACK_LIST));
-                break;
-            }
-            case CLASS_PRIEST:
-            {
-                if (attack)
-                    CastSpell(target, rand_number(SPELL_PRI_ATTACK_LIST));
-                else
-                    CastSpell(charmer, rand_number(SPELL_PRI_FRIEND_LIST));
-                break;
-            }
-            case CLASS_DEATH_KNIGHT:
-            {
-                CastSpell(target, rand_number(SPELL_DK_ATTACK_LIST));
-                break;
-            }
-            case CLASS_SHAMAN:
-            {
-                if (attack)
-                    CastSpell(target, rand_number(SPELL_CHA_ATTACK_LIST));
-                else
-                    CastSpell(charmer, rand_number(SPELL_CHA_FRIEND_LIST));
-                break;
-            }
-            case CLASS_MAGE:
-            {
-                CastSpell(target, rand_number(SPELL_MAG_ATTACK_LIST));
-                break;
-            }
-            case CLASS_WARLOCK:
-            {
-                CastSpell(target, rand_number(SPELL_DEM_ATTACK_LIST));
-                break;
-            }
-            case CLASS_DRUID:
-            {
-                if (attack)
-                    CastSpell(target, rand_number(SPELL_DRU_ATTACK_LIST));
-                else
-                    CastSpell(charmer, rand_number(SPELL_DRU_FRIEND_LIST));
-                break;
-            }
-            case CLASS_MONK:
-            {
-                CastSpell(target, rand_number(SPELL_MONK_ATTACK_LIST));
-                break;
-            }
-            default:
-                break;
+        case CLASS_WARRIOR:
+            CastSpell(target, rand_number(SPELL_WAR_ATTACK_LIST));
+            break;
+        case CLASS_PALADIN:
+            if (attack)
+                CastSpell(target, rand_number(SPELL_PAL_ATTACK_LIST));
+            else
+                CastSpell(charmer, rand_number(SPELL_PAL_FRIEND_LIST));
+            break;
+        case CLASS_HUNTER:
+            CastSpell(target, rand_number(SPELL_HUNT_ATTACK_LIST));
+            break;
+        case CLASS_ROGUE:
+            CastSpell(target, rand_number(SPELL_ROG_ATTACK_LIST));
+            break;
+        case CLASS_PRIEST:
+            if (attack)
+                CastSpell(target, rand_number(SPELL_PRI_ATTACK_LIST));
+            else
+                CastSpell(charmer, rand_number(SPELL_PRI_FRIEND_LIST));
+            break;
+        case CLASS_DEATH_KNIGHT:
+            CastSpell(target, rand_number(SPELL_DK_ATTACK_LIST));
+            break;
+        case CLASS_SHAMAN:
+            if (attack)
+                CastSpell(target, rand_number(SPELL_CHA_ATTACK_LIST));
+            else
+                CastSpell(charmer, rand_number(SPELL_CHA_FRIEND_LIST));
+            break;
+        case CLASS_MAGE:
+            CastSpell(target, rand_number(SPELL_MAG_ATTACK_LIST));
+            break;
+        case CLASS_WARLOCK:
+            CastSpell(target, rand_number(SPELL_DEM_ATTACK_LIST));
+            break;
+        case CLASS_DRUID:
+            if (attack)
+                CastSpell(target, rand_number(SPELL_DRU_ATTACK_LIST));
+            else
+                CastSpell(charmer, rand_number(SPELL_DRU_FRIEND_LIST));
+            break;
+        case CLASS_MONK:
+            CastSpell(target, rand_number(SPELL_MONK_ATTACK_LIST));
+            break;
+        default:
+            break;
         }
-    }
+    }  
 }
 
 void Player::RestoreAllBaseRunes()
