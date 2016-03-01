@@ -6956,12 +6956,15 @@ float Player::GetMeleeCritFromAgility()
     if (level > GT_MAX_LEVEL)
         level = GT_MAX_LEVEL;
 
-    GtChanceToMeleeCritBaseEntry const* critBase  = sGtChanceToMeleeCritBaseStore.LookupEntry((pclass-1)*GT_MAX_LEVEL + level-1);
-    GtChanceToMeleeCritEntry     const* critRatio = sGtChanceToMeleeCritStore.LookupEntry((pclass-1)*GT_MAX_LEVEL + level-1);
+    GtChanceToMeleeCritBaseEntry const* critBase  = sGtChanceToMeleeCritBaseStore.LookupEntry((pclass-1) * GT_MAX_LEVEL + level-1);
+    GtChanceToMeleeCritEntry     const* critRatio = sGtChanceToMeleeCritStore.LookupEntry((pclass-1) * GT_MAX_LEVEL + level-1);
     if (critBase == NULL || critRatio == NULL)
         return 0.0f;
 
     float crit = ((GetStat(STAT_AGILITY) - 1) / (critRatio->ratio * 100) + critBase->base);
+    if (crit < 0.0f)
+        crit = 0.0f;
+
     return crit*100.0f;
 }
 
@@ -6970,17 +6973,17 @@ void Player::GetDodgeFromAgility(float &diminishing, float &nondiminishing)
     // Crit/agility to dodge/agility coefficient multipliers; 3.2.0 increased required agility by 15%
     const float crit_to_dodge[MAX_CLASSES] =
     {
-         0.85f/1.15f,    // Warrior
-         1.00f/1.15f,    // Paladin
-         1.11f/1.15f,    // Hunter
-         2.00f/1.15f,    // Rogue
-         1.00f/1.15f,    // Priest
-         0.85f/1.15f,    // DK
-         1.60f/1.15f,    // Shaman
-         1.00f/1.15f,    // Mage
-         0.97f/1.15f,    // Warlock (?)
-         2.00f/1.15f,    // Monk
-         2.00f/1.15f     // Druid
+        0.85f/1.15f,    // Warrior
+        1.00f/1.15f,    // Paladin
+        1.11f/1.15f,    // Hunter
+        2.00f/1.15f,    // Rogue
+        1.00f/1.15f,    // Priest
+        0.85f/1.15f,    // DK
+        1.60f/1.15f,    // Shaman
+        1.00f/1.15f,    // Mage
+        0.97f/1.15f,    // Warlock (?)
+        2.00f/1.15f,    // Monk
+        2.00f/1.15f     // Druid
     };
 
     uint8 level = getLevel();
