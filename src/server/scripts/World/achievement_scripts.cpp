@@ -360,6 +360,28 @@ class achievement_a_test_of_valor_kill : public AchievementScript
         }
 };
 
+enum TitleGender
+{
+    TITLE_FEMALE   = 137,
+    TITLE_MALE     = 138,
+};
+//1793
+class achievement_for_the_children : public AchievementRewardScript
+{
+public:
+    achievement_for_the_children() : AchievementRewardScript("achievement_for_the_children") {}
+
+    uint32 SelectTitle(Player* source, AchievementReward const* data)
+    {
+        if (source->getGender() == GENDER_MALE)
+            return TITLE_MALE;
+        else
+            return TITLE_FEMALE;
+
+        return 0;
+    }
+};
+
 void AddSC_achievement_scripts()
 {
     new achievement_resilient_victory();
@@ -381,4 +403,5 @@ void AddSC_achievement_scripts()
     new achievement_a_test_of_valor();
     new achievement_weighed_down();
     new achievement_a_test_of_valor_kill();
+    new achievement_for_the_children();
 }
