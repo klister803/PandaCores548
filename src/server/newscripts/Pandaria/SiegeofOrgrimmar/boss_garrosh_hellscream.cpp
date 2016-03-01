@@ -225,12 +225,14 @@ class boss_garrosh_hellscream : public CreatureScript
                 me->ApplySpellImmune(0, IMMUNITY_ID, SPELL_HELLSCREAM_WARSONG, true);
             }
             InstanceScript* instance;
+            bool phasetwo;
             uint32 realmofyshaarjtimer;
             uint32 updatepower;
             Phase phase;
 
             void Reset()
             {
+                phasetwo = false;
                 updatepower = 0;
                 realmofyshaarjtimer = 0;
                 me->setPowerType(POWER_ENERGY);
@@ -327,6 +329,11 @@ class boss_garrosh_hellscream : public CreatureScript
                     me->GetMotionMaster()->MoveCharge(centerpos.GetPositionX(), centerpos.GetPositionY(), centerpos.GetPositionZ(), 15.0f, 1);
                     break;
                 case ACTION_INTRO_REALM_OF_YSHAARJ:
+                    if (!phasetwo)
+                    {
+                        phasetwo = true;
+                        me->SetFullHealth();
+                    }
                     Talk(SAY_PHASE_REALM_OF_YSHAARJ, 0);
                     me->ReAttackWithZone();
                     events.ScheduleEvent(EVENT_ENTER_REALM_OF_YSHAARJ, 12000);
@@ -484,6 +491,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     }
                     break;
                     case EVENT_SUMMON_ENGINEER:
+                        SpawnIronStar();
                         for (uint8 n = 0; n < 2; n++)
                             me->SummonCreature(NPC_SIEGE_ENGINEER, engeneerspawnpos[n]);
                         Talk(urand(SAY_START_LAUNCH_IRON_STAR, SAY_START_LAUNCH_IRON_STAR2), 0);
@@ -701,8 +709,14 @@ public:
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
             if (me->GetEntry() == NPC_SIEGE_ENGINEER)
-                if (firstengeneerdied)
-                    damage = 0;
+            {
+                if (damage >= me->GetHealth())
+                {
+                    me->RemoveAurasDueToSpell(SPELL_POWER_IRON_STAR);
+                    if (firstengeneerdied)
+                        damage = 0;
+                }
+            }
         }
 
         void DoAction(int32 const action)
@@ -720,8 +734,6 @@ public:
             {
                 if (instance)
                     instance->SetData(DATA_FIRST_ENGENEER_DIED, 1);
-                else
-                    me->MonsterTextEmote("Instance not found", 0, true);
                 me->DespawnOrUnsummon();
             }
         }
@@ -731,7 +743,7 @@ public:
             switch (me->GetEntry())
             {
             case NPC_WARBRINGER:
-                events.ScheduleEvent(EVENT_HAMSTRING, 3000);
+                events.ScheduleEvent(EVENT_HAMSTRING, 5000);
                 break;
             case NPC_WOLF_RIDER:
                 DoCast(me, SPELL_ANCESTRAL_FURY);
@@ -777,7 +789,7 @@ public:
                 case EVENT_HAMSTRING:
                     if (me->getVictim())
                         DoCastVictim(SPELL_HAMSTRING);
-                    events.ScheduleEvent(EVENT_HAMSTRING, 3000);
+                    events.ScheduleEvent(EVENT_HAMSTRING, 15000);
                     break;
                     //Wolf Rider
                 case EVENT_CHAIN_LIGHTNING:
