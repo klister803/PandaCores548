@@ -5222,6 +5222,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = 18;
                     break;
                 //Garrosh
+                case 144585: //Ancestral Fury
+                    spellInfo->Effects[0].TriggerSpell = 0;
+                    break;
                 case 149032: //Consumed Hope
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
                     spellInfo->Effects[0].TriggerSpell = 149003;

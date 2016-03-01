@@ -65,6 +65,7 @@ enum eSpells
 
     //Wolf Rider
     SPELL_ANCESTRAL_FURY             = 144585,
+    SPELL_FURY                       = 144588,
     SPELL_ANCESTRAL_CHAIN_HEAL       = 144583,
     SPELL_CHAIN_LIGHTNING            = 144584,
     //Embodied doubt
@@ -331,6 +332,8 @@ class boss_garrosh_hellscream : public CreatureScript
                     events.ScheduleEvent(EVENT_ENTER_REALM_OF_YSHAARJ, 12000);
                     break;
                 case ACTION_LAUNCH_ANNIHILLATE:
+                    if (instance)
+                        instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
                     updatepower = 0;
                     events.ScheduleEvent(EVENT_ANNIHILLATE, 4000);
                     break;
@@ -535,6 +538,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     {
                         instance->SetData(DATA_ACTION_SOLDIER, 1);
                         me->SetAttackStop(true);
+                        instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
                         uint8 mod = instance->GetData(DATA_GET_REALM_OF_YSHAARJ);
                         if (Creature* garroshrealm = me->SummonCreature(NPC_GARROSH, gspos[mod]))
                         {
@@ -576,6 +580,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     case EVENT_PHASE_TWO:
                         if (Creature* garroshrealm = me->GetCreature(*me, instance->GetData64(DATA_GARROSH_REALM)))
                         {
+                            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, garroshrealm);
                             int32 power = garroshrealm->GetPower(POWER_ENERGY);
                             uint32 hp = garroshrealm->GetHealth();
                             garroshrealm->DespawnOrUnsummon();
@@ -583,6 +588,7 @@ class boss_garrosh_hellscream : public CreatureScript
                             me->SetPower(POWER_ENERGY, power);
                             me->SetHealth(hp);
                             phase = PHASE_TWO;
+                            instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
                             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                             me->ReAttackWithZone();
                             instance->SetData(DATA_ACTION_SOLDIER, 0);
@@ -684,6 +690,12 @@ public:
                 me->AddAura(SPELL_SUMMON_ADDS, me);
                 break;
             }
+        }
+
+        void OnInterruptCast(Unit* /*caster*/, uint32 /*spellId*/, uint32 /*curSpellID*/, uint32 /*schoolMask*/)
+        {
+            if (me->HasAura(SPELL_ANCESTRAL_FURY))
+                DoCast(me, SPELL_FURY, true);
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -910,18 +922,18 @@ public:
 
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
-            if (lastpct && HealthBelowPct(lastpct))
+            if (damage >= me->GetHealth())
+                me->DespawnOrUnsummon();
+            else
             {
-                float scale = float(lastpct)/100;
-                if (AreaTrigger* at = me->GetAreaObject(SPELL_DESECRATED_WEAPON_AT))
-                    at->SetFloatValue(AREATRIGGER_EXPLICIT_SCALE, scale);
-                lastpct = lastpct - 10;
+                if (lastpct && HealthBelowPct(lastpct))
+                {
+                    float scale = float(lastpct) / 100;
+                    if (AreaTrigger* at = me->GetAreaObject(SPELL_DESECRATED_WEAPON_AT))
+                        at->SetFloatValue(AREATRIGGER_EXPLICIT_SCALE, scale);
+                    lastpct = lastpct - 10;
+                }
             }
-        }
-
-        void JustDied(Unit* killer)
-        {
-            me->DespawnOrUnsummon();
         }
 
         void EnterCombat(Unit* who){}
