@@ -356,6 +356,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     me->ReAttackWithZone();
                     events.ScheduleEvent(EVENT_GRIPPING_DESPAIR, 2000);
                     events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
+                    events.ScheduleEvent(EVENT_TOUCH_OF_YSHAARJ, 16000);
                     events.ScheduleEvent(EVENT_WHIRLING_CORRUPTION, 30000);
                     break;
                 }
@@ -1141,6 +1142,7 @@ public:
         npc_sha_vortexAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
+            me->SetVisible(true);
             me->SetReactState(REACT_PASSIVE);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);

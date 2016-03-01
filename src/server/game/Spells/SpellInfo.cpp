@@ -1279,6 +1279,7 @@ SpellEffectInfo const* SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 143385: //Electrostatic charge
     case 143830: //Disentegration laser AT
     //Garrosh
+    case 145599:
     case 144585: //Ancestral Fury
     case 149032: //Consumed Hope
     case 149033: //Consumed Faith

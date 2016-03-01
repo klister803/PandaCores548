@@ -5222,6 +5222,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = 18;
                     break;
                 //Garrosh
+                case 145599:
+                    spellInfo->Effects[0].TargetA = 25;
+                    break;
+                    break;
                 case 144585: //Ancestral Fury
                     spellInfo->Effects[0].TriggerSpell = 0;
                     break;
