@@ -851,9 +851,12 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
             // title achievement rewards are retroactive
             if (AchievementReward const* reward = sAchievementMgr->GetAchievementReward(achievement))
             {
-                if (uint32 titleId = reward->titleId[Player::TeamForRace(GetOwner()->getRace()) == ALLIANCE ? 0 : 1])
-                    if (CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId))
-                        GetOwner()->SetTitle(titleEntry);
+                uint32 titleId = sScriptMgr->OnSelectTitleReward(reward, GetOwner());
+                if (!titleId)
+                    titleId = reward->titleId[Player::TeamForRace(GetOwner()->getRace()) == ALLIANCE ? 0 : 1]; //OnSelectTitleReward return 0 if no script
+
+                if (CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId))
+                    GetOwner()->SetTitle(titleEntry);
             }
 
         } 
@@ -892,9 +895,12 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
             // title achievement rewards are retroactive
             if (AchievementReward const* reward = sAchievementMgr->GetAchievementReward(achievement))
             {
-                if (uint32 titleId = reward->titleId[Player::TeamForRace(GetOwner()->getRace()) == ALLIANCE ? 0 : 1])
-                    if (CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId))
-                        GetOwner()->SetTitle(titleEntry);
+                uint32 titleId = sScriptMgr->OnSelectTitleReward(reward, GetOwner());
+                if (!titleId)
+                    titleId = reward->titleId[Player::TeamForRace(GetOwner()->getRace()) == ALLIANCE ? 0 : 1]; //OnSelectTitleReward return 0 if no script
+
+                if (CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId))
+                    GetOwner()->SetTitle(titleEntry);
             }
 
         }
@@ -3037,9 +3043,12 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
     //! Since no common attributes were found, (not even in titleRewardFlags field)
     //! we explicitly check by ID. Maybe in the future we could move the achievement_reward
     //! condition fields to the condition system.
-    if (uint32 titleId = reward->titleId[achievement->ID == 1793 ? GetOwner()->getGender() : (GetOwner()->GetTeam() == ALLIANCE ? 0 : 1)])
-        if (CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId))
-            GetOwner()->SetTitle(titleEntry);
+    uint32 titleId = sScriptMgr->OnSelectTitleReward(reward, GetOwner());
+    if (!titleId)
+        titleId = reward->titleId[(GetOwner()->GetTeam() == ALLIANCE ? 0 : 1)]; //OnSelectTitleReward return 0 if no script
+
+    if (CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId))
+        GetOwner()->SetTitle(titleEntry);
 
     // mail
     if (reward->sender)
