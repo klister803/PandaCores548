@@ -5222,9 +5222,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = 18;
                     break;
                 //Garrosh
-                case 145599:
+                case 145599: //Player Touch of Yshaarj
                     spellInfo->Effects[0].TargetA = 25;
-                    break;
+                    spellInfo->InterruptFlags = SPELL_INTERRUPT_FLAG_INTERRUPT;
                     break;
                 case 144585: //Ancestral Fury
                     spellInfo->Effects[0].TriggerSpell = 0;

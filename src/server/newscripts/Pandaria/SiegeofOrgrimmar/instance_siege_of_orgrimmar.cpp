@@ -1978,16 +1978,9 @@ public:
                 break;
             case NPC_EMBODIED_DESPAIR:
                 for (std::vector<uint64>::const_iterator itr = edespairGuids.begin(); itr != edespairGuids.end(); itr++)
-                {
                     if (Creature* add = instance->GetCreature(*itr))
-                    {
                         if (add->isAlive())
-                        {
-                            add->CastSpell(add, SPELL_ULTIMATE_DESPAIR, true);
                             return;
-                        }
-                    }
-                }
                 RemoveProtectFromGarrosh();
                 break;
             case NPC_EMBODIED_DOUBT:

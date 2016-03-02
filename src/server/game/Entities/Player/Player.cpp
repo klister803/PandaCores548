@@ -27933,30 +27933,6 @@ void Player::UpdateCharmedAI()
     if (HasUnitState(UNIT_STATE_CASTING))
         return;
 
-        /*Unit* target = getVictim();
-        if (!target || !charmer->IsValidAttackTarget(target))
-        {
-        target = charmer->SelectNearestPlayerNotGM();
-        if (!target)
-        return;
-
-        GetMotionMaster()->MoveChase(target);
-        Attack(target, true);
-        }
-        else
-        {
-        if (HasUnitState(UNIT_STATE_CASTING))
-        return;
-        else if (target && GetMotionMaster()->GetCurrentMovementGeneratorType() != CHASE_MOTION_TYPE)
-        GetMotionMaster()->MoveChase(target);
-
-        // On laisse quelques attaques en melée deux fois sur trois
-        if (urand(0, 2))
-        return;
-
-        // On s'arrete pour cast le spell
-        GetMotionMaster()->MoveIdle();*/
-
     if (Unit* target = getVictim())
     {
         //Mind control from Boss - custom ability

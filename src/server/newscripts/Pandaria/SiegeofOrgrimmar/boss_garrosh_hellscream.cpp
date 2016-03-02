@@ -670,7 +670,6 @@ public:
         npc_garrosh_soldierAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
         }
 
         InstanceScript* instance;
@@ -732,12 +731,12 @@ public:
         void JustDied(Unit* killer)
         {
             if (me->GetEntry() == NPC_WARBRINGER || me->GetEntry() == NPC_WOLF_RIDER)
-                me->DespawnOrUnsummon();
+                me->DespawnOrUnsummon(2000);
             else if (me->GetEntry() == NPC_SIEGE_ENGINEER)
             {
                 if (instance)
                     instance->SetData(DATA_FIRST_ENGENEER_DIED, 1);
-                me->DespawnOrUnsummon();
+                me->DespawnOrUnsummon(2000);
             }
         }
 
@@ -1142,7 +1141,7 @@ public:
         npc_sha_vortexAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
-            me->SetVisible(true);
+            me->SetDisplayId(11686);
             me->SetReactState(REACT_PASSIVE);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
