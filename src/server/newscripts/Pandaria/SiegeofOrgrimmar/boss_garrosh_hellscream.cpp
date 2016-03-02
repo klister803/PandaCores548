@@ -381,6 +381,7 @@ class boss_garrosh_hellscream : public CreatureScript
                         Talk(SAY_LAST_PHASE, 0);
                         DoCast(me, SPELL_TRANSITION_VISUAL_BASE);
                         DoCast(me, SPELL_TRANSITION_VISUAL_ADVANCE);
+                        me->RemoveAurasDueToSpell(SPELL_PHASE_TWO_TRANSFORM);
                         DoCast(me, SPELL_TRANSITION_VISUAL_PHASE_3);
                         break;
                     default:
