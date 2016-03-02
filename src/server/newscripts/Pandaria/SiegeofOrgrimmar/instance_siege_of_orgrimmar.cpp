@@ -59,6 +59,7 @@ uint32 removelist[29] =
 };
 
 Position const Sha_of_pride_Norushe  = {797.357f, 880.5637f, 371.1606f, 1.786108f };
+Position Garroshroomcenterpos = { 1073.09f, -5639.70f, -317.3894f, 3.0128f };
 
 //Active Weapon Point Positions(Blackfuse)
 Position spawnaweaponpos[3] =
@@ -1323,6 +1324,7 @@ public:
                     for (std::vector<uint64>::const_iterator itr = garroshfenchGuids.begin(); itr != garroshfenchGuids.end(); ++itr)
                         HandleGameObject(*itr, true);
                     HandleGameObject(garroshentdoorGuid, true);
+                    SomeActionsAfterGarroshEvade();
                     break;
                 case IN_PROGRESS:
                     rycount = urand(0, 2);
@@ -1766,6 +1768,33 @@ public:
                     return rycount;
             }
             return 0;
+        }
+
+        void SomeActionsAfterGarroshEvade()
+        {
+            Map::PlayerList const& PlayerList = instance->GetPlayers();
+            if (!PlayerList.isEmpty())
+            {
+                for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+                {
+                    if (Player* player = Itr->getSource())
+                    {
+                        if (player->isAlive())
+                        {
+                            if (player->HasAura(SPELL_TOUCH_OF_YSHAARJ) || player->HasAura(SPELL_EM_TOUCH_OF_YSHAARJ))
+                                player->Kill(player, true);
+                        }
+                        else
+                        {
+                            if (player->HasAura(SPELL_REALM_OF_YSHAARJ))
+                            {
+                                player->NearTeleportTo(Garroshroomcenterpos.GetPositionX(), Garroshroomcenterpos.GetPositionY(), Garroshroomcenterpos.GetPositionZ(), Garroshroomcenterpos.GetOrientation());
+                                player->RemoveAurasDueToSpell(SPELL_REALM_OF_YSHAARJ);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         void ResetBuffOnEmbodiedDoubts()

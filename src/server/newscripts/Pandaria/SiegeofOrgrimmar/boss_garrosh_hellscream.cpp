@@ -35,8 +35,6 @@ enum eSpells
     SPELL_EM_WHIRLING_CORRUPTION_S   = 145023,
     SPELL_GRIPPING_DESPAIR           = 145183,
     SPELL_EM_GRIPPING_DESPAIR        = 145195,
-    SPELL_TOUCH_OF_YSHAARJ           = 145065,
-    SPELL_EM_TOUCH_OF_YSHAARJ        = 145171,
     SPELL_PL_TOUCH_OF_YSHAARJ        = 145599,
     //Garrosh Special
     SPELL_TRANSITION_VISUAL_PHASE_2  = 144852,
@@ -76,7 +74,6 @@ enum eSpells
     //Realm of Yshaarj
     SPELL_GARROSH_ENERGY             = 145801,
     SPELL_REMOVE_REALM_OF_YSHAARJ    = 145647,
-    SPELL_REALM_OF_YSHAARJ           = 144954,
     SPELL_ANNIHILLATE                = 144969,
     SPELL_COSMETIC_CHANNEL           = 145431,
 
@@ -1565,40 +1562,14 @@ public:
                     {
                         for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
                         {
-                            if ((*itr)->GetGUID() != GetCaster()->GetGUID())
+                            if (!(*itr)->HasAura(SPELL_TOUCH_OF_YSHAARJ) && !(*itr)->HasAura(SPELL_EM_TOUCH_OF_YSHAARJ))
                             {
-                                if (!(*itr)->HasAura(SPELL_TOUCH_OF_YSHAARJ) && !(*itr)->HasAura(SPELL_EM_TOUCH_OF_YSHAARJ))
-                                {
-                                    garrosh->CastSpell(*itr, garrosh->GetPower(POWER_ENERGY) >= 50 ? SPELL_EM_TOUCH_OF_YSHAARJ : SPELL_TOUCH_OF_YSHAARJ, true);
-                                    break;
-                                }
+                                garrosh->CastSpell(*itr, garrosh->GetPower(POWER_ENERGY) >= 50 ? SPELL_EM_TOUCH_OF_YSHAARJ : SPELL_TOUCH_OF_YSHAARJ, true);
+                                break;
                             }
                         }
                     }
                 }
-                /*if (InstanceScript* instance = GetCaster()->GetInstanceScript())
-                {
-                    if (Creature* garrosh = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(DATA_GARROSH)))
-                    {
-                        std::list<Player*>pllist;
-                        pllist.clear();
-                        GetPlayerListInGrid(pllist, GetCaster(), 100.0f);
-                        if (!pllist.empty())
-                        {
-                            for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
-                            {
-                                if ((*itr)->GetGUID() != GetCaster()->GetGUID())
-                                {
-                                    if (!(*itr)->HasAura(SPELL_TOUCH_OF_YSHAARJ) && !(*itr)->HasAura(SPELL_EM_TOUCH_OF_YSHAARJ))
-                                    {
-                                        garrosh->CastSpell(*itr, garrosh->GetPower(POWER_ENERGY) >= 50 ? SPELL_EM_TOUCH_OF_YSHAARJ : SPELL_TOUCH_OF_YSHAARJ, true);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }*/
             }
         }
 
