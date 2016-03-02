@@ -325,6 +325,11 @@ class boss_garrosh_hellscream : public CreatureScript
                 case ACTION_PHASE_PREPARE:
                     Talk(SAY_PHASE_PREPARE, 0);
                     events.Reset();
+                    if (!summons.empty())
+                    {
+                        summons.DespawnEntry(NPC_SIEGE_ENGINEER);
+                        summons.DespawnEntry(NPC_KORKRON_IRON_STAR);
+                    }
                     me->SetAttackStop(true);
                     me->GetMotionMaster()->MoveCharge(centerpos.GetPositionX(), centerpos.GetPositionY(), centerpos.GetPositionZ(), 15.0f, 1);
                     break;
@@ -1510,15 +1515,23 @@ public:
                 uint32 entry = GetSpellInfo()->Id;
                 if (AuraEffect* aurEffb = GetTarget()->GetAura(entry)->GetEffect(0))
                 {
+                    GetTarget()->ApplySpellImmune(0, IMMUNITY_ID, SPELL_DESECRATED, true);
                     int32 newamount = int32(GetTarget()->CountPctFromMaxHealth(80));
                     aurEffb->SetAmount(newamount);
                 }
             }
         }
 
+        void HandleEffectRemove(AuraEffect const * aurEff, AuraEffectHandleModes mode)
+        {
+            if (GetTarget())
+                GetTarget()->ApplySpellImmune(0, IMMUNITY_ID, SPELL_DESECRATED, false);
+        }
+
         void Register()
         {
             AfterEffectApply += AuraEffectApplyFn(spell_touch_of_yshaarj_AuraScript::HandleOnApply, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB, AURA_EFFECT_HANDLE_REAL);
+            OnEffectRemove += AuraEffectRemoveFn(spell_touch_of_yshaarj_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB, AURA_EFFECT_HANDLE_REAL);
         }
     };
 
@@ -1542,7 +1555,27 @@ public:
         {
             if (GetCaster())
             {
-                if (InstanceScript* instance = GetCaster()->GetInstanceScript())
+                if (Creature* garrosh = GetCaster()->FindNearestCreature(NPC_GARROSH, 100.0f, true))
+                {
+                    std::list<Player*>pllist;
+                    pllist.clear();
+                    GetPlayerListInGrid(pllist, garrosh, 100.0f);
+                    if (!pllist.empty())
+                    {
+                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                        {
+                            if ((*itr)->GetGUID() != GetCaster()->GetGUID())
+                            {
+                                if (!(*itr)->HasAura(SPELL_TOUCH_OF_YSHAARJ) && !(*itr)->HasAura(SPELL_EM_TOUCH_OF_YSHAARJ))
+                                {
+                                    garrosh->CastSpell(*itr, garrosh->GetPower(POWER_ENERGY) >= 50 ? SPELL_EM_TOUCH_OF_YSHAARJ : SPELL_TOUCH_OF_YSHAARJ, true);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                /*if (InstanceScript* instance = GetCaster()->GetInstanceScript())
                 {
                     if (Creature* garrosh = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(DATA_GARROSH)))
                     {
@@ -1564,7 +1597,7 @@ public:
                             }
                         }
                     }
-                }
+                }*/
             }
         }
 

@@ -27927,7 +27927,8 @@ void Player::UpdateCharmedAI()
                     {
                         GetMotionMaster()->MoveChase(*itr);
                         Attack(*itr, true);
-                        AddSpellCooldown(145599, 0, getPreciseTime() + 6.0);
+                        if (HasAura(145065) || HasAura(145171))
+                            AddSpellCooldown(145599, 0, getPreciseTime() + 3.0);
                         break;
                     }
                 }
