@@ -731,12 +731,12 @@ public:
         void JustDied(Unit* killer)
         {
             if (me->GetEntry() == NPC_WARBRINGER || me->GetEntry() == NPC_WOLF_RIDER)
-                me->DespawnOrUnsummon(2000);
+                me->DespawnOrUnsummon();
             else if (me->GetEntry() == NPC_SIEGE_ENGINEER)
             {
                 if (instance)
                     instance->SetData(DATA_FIRST_ENGENEER_DIED, 1);
-                me->DespawnOrUnsummon(2000);
+                me->DespawnOrUnsummon();
             }
         }
 

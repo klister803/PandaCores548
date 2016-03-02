@@ -27927,6 +27927,7 @@ void Player::UpdateCharmedAI()
                     {
                         GetMotionMaster()->MoveChase(*itr);
                         Attack(*itr, true);
+                        AddSpellCooldown(145599, 0, getPreciseTime() + 6.0);
                         break;
                     }
                 }
