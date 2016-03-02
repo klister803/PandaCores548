@@ -214,6 +214,9 @@ void MailDraft::SendMailTo(MailReceiver const& receiver, MailSender const& sende
         sLog->outInfo(LOG_FILTER_REDIS, "MailDraft::SendMailTo guid %u", guid);
     });
 
+    std::string expireStr = std::to_string(expire_time);
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetMailsKey(), messageID.c_str(), expireStr.c_str(), mailId, [&](const RedisValue &v, uint64 guid) {});
+
     for (MailItemMap::const_iterator mailItemIter = m_items.begin(); mailItemIter != m_items.end(); ++mailItemIter)
     {
         Item* pItem = mailItemIter->second;
@@ -224,6 +227,8 @@ void MailDraft::SendMailTo(MailReceiver const& receiver, MailSender const& sende
     if (pReceiver)
     {
         pReceiver->AddNewMailDeliverTime(deliver_time);
+
+        pReceiver->PlayerMailData["mails"][messageID.c_str()] = MailJson;
 
         if (pReceiver->IsMailsLoaded())
         {
@@ -238,7 +243,9 @@ void MailDraft::SendMailTo(MailReceiver const& receiver, MailSender const& sende
             for (MailItemMap::const_iterator mailItemIter = m_items.begin(); mailItemIter != m_items.end(); ++mailItemIter)
             {
                 Item* item = mailItemIter->second;
+                std::string itemGuid = std::to_string(item->GetGUIDLow());
                 m->AddItem(item->GetGUIDLow(), item->GetEntry());
+                pReceiver->PlayerMailData["mitems"][messageID.c_str()][itemGuid.c_str()] = item->ItemData;
             }
 
             m->messageType = sender.GetMailMessageType();

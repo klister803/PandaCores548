@@ -258,7 +258,7 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
             continue;
         }
 
-        VoidStorageItem itemVS(sObjectMgr->GenerateVoidStorageItemId(), item->GetEntry(), item->GetUInt64Value(ITEM_FIELD_CREATOR), item->GetItemRandomPropertyId(), item->GetItemSuffixFactor(), true);
+        VoidStorageItem itemVS(sObjectMgr->GenerateVoidStorageItemId(), item->GetEntry(), item->GetUInt64Value(ITEM_FIELD_CREATOR), item->GetItemRandomPropertyId(), item->GetItemSuffixFactor());
 
         uint8 slot = player->AddVoidStorageItem(itemVS);
 
@@ -293,7 +293,7 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
             sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleVoidStorageTransfer - Player (GUID: %u, name: %s) tried to withdraw an invalid item (id: " UI64FMTD ")", player->GetGUIDLow(), player->GetName(), uint64(*itr));
             continue;
         }
-     
+
         dest.clear();
 
         msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemVS->ItemEntry, 1);
@@ -314,7 +314,7 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
         player->DeleteVoidStorageItem(slot);
     }
 
-    //player->SaveToDB();
+    player->PlayerVoidStorage();
 
     WorldPacket data(SMSG_VOID_STORAGE_TRANSFER_CHANGES, ((5 + 5 + (7 + 7) * depositCount +
         7 * withdrawCount) / 8) + 7 * withdrawCount + (7 + 7 + 4 * 4) * depositCount);

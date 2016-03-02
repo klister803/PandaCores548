@@ -52,6 +52,7 @@ class RedisBuilderMgr
         char* GetGroupInstanceKey() { return groupInstanceKey; }
         char* GetChallengeKey() { return challengeKey; }
         char* GetTicketKey() { return ticketKey; }
+        char* GetMailsKey() { return mailsKey; }
 
         Json::Reader Reader;
         Json::FastWriter Builder;
@@ -72,6 +73,7 @@ class RedisBuilderMgr
         char* groupInstanceKey;
         char* challengeKey;
         char* ticketKey;
+        char* mailsKey;
 };
 
 #define sRedisBuilderMgr RedisBuilderMgr::instance()

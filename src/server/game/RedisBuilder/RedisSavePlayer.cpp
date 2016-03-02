@@ -53,7 +53,7 @@ void Player::InitSavePlayer()
     SavePlayerBoundInstances();
     SavePlayerSkills();
     SavePlayerTalents();
-    SavePlayerSpells();
+    InitPlayerSpells();
     SavePlayerGlyphs();
     SavePlayerAuras();
     SavePlayerQuestStatus();
@@ -309,12 +309,11 @@ void Player::SavePlayerTalents()
     });
 }
 
-void Player::SavePlayerSpells()
+void Player::InitPlayerSpells()
 {
     if (isBeingLoaded())
         return;
 
-    PlayerData["spells"].clear();
     for (PlayerSpellMap::iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
     {
         if (!itr->second || itr->second->state == PLAYERSPELL_REMOVED)
@@ -798,13 +797,6 @@ void Player::SavePlayerVoidStorage()
     {
         if (_voidStorageItems[i]) // unused item
         {
-            if(_voidStorageItems[i]->deleted)
-            {
-                delete _voidStorageItems[i];
-                _voidStorageItems[i] = NULL;
-                continue;
-            }
-
             std::string index = std::to_string(i);
             PlayerData["voidstorage"][index.c_str()]["itemId"] = _voidStorageItems[i]->ItemId;
             PlayerData["voidstorage"][index.c_str()]["itemEntry"] = _voidStorageItems[i]->ItemEntry;
@@ -1453,6 +1445,9 @@ void Player::SavePlayerMails()
             RedisDatabase.AsyncExecuteHSet("HSET", mailKey, messageID.c_str(), sRedisBuilderMgr->BuildString(m->MailJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
                 sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerMails player guid %u", guid);
             });
+
+            std::string expireStr = std::to_string(m->expire_time);
+            RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetMailsKey(), messageID.c_str(), expireStr.c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {});
         }
     }
 }

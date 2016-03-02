@@ -794,34 +794,38 @@ void WorldSession::HandlePlayerLoginOpcode(WorldPacket& recvData)
 
     sLog->outInfo(LOG_FILTER_REDIS, "WorldSession::HandlePlayerLoginOpcode time %u get_id %i", getMSTime(), boost::this_thread::get_id());
 
-    bool playerInRedis = false;
+    _playerGuid = playerGuid;
+
     if (RedisDatabase.isConnected())
     {
         char* userKey = new char[18];
         sprintf(userKey, "r{%i}u{%i}", realmID, playerGuid);
-        RedisValue v = RedisDatabase.ExecuteH("HEXISTS", userKey, "userdata");
-        if (v.isOk())
-            playerInRedis = bool(v.toInt());
-        sLog->outInfo(LOG_FILTER_REDIS, "WorldSession::HandlePlayerLoginOpcode playerInRedis %u isOk %u", playerInRedis, v.isOk());
-    }
-
-    if (playerInRedis)
-    {
-        sLog->outInfo(LOG_FILTER_REDIS, "WorldSession::HandlePlayerLoginOpcode playerInRedis %u", playerInRedis);
-        HandlePlayerLogin(GetAccountId(), playerGuid);
+        RedisDatabase.AsyncExecute("HEXISTS", userKey, _accountId, [&](const RedisValue &v, uint64 accountId) {
+            if (WorldSession* sess = sWorld->FindSession(accountId))
+            {
+                if (v.isOk() && v.toInt())
+                    sess->HandlePlayerLogin(sess->GetAccountId(), sess->GetPlayerGuid());
+                else
+                    sess->HandlePlayerLoginHolder();
+            }
+            sLog->outInfo(LOG_FILTER_REDIS, "WorldSession::HandlePlayerLoginOpcode isOk %u", v.isOk());
+        });
     }
     else
-    {
-        LoginQueryHolder *holder = new LoginQueryHolder(GetAccountId(), playerGuid);
-        if (!holder->Initialize())
-        {
-            delete holder;                                      // delete all unprocessed queries
-            m_playerLoading = false;
-            return;
-        }
+        HandlePlayerLoginHolder();
+}
 
-        _charLoginCallback = CharacterDatabase.DelayQueryHolder((SQLQueryHolder*)holder);
+void WorldSession::HandlePlayerLoginHolder()
+{
+    LoginQueryHolder *holder = new LoginQueryHolder(GetAccountId(), _playerGuid);
+    if (!holder->Initialize())
+    {
+        delete holder;                                      // delete all unprocessed queries
+        m_playerLoading = false;
+        return;
     }
+
+    _charLoginCallback = CharacterDatabase.DelayQueryHolder((SQLQueryHolder*)holder);
 }
 
 void WorldSession::HandleLoadScreenOpcode(WorldPacket& recvPacket)
@@ -2860,4 +2864,5 @@ void WorldSession::HandlePlayerLogin(uint32 accountId, uint64 playerGuid, uint8 
     }
 
     sLog->outInfo(LOG_FILTER_REDIS, "HandlePlayerLogin end time %u get_id %u", getMSTime(), boost::this_thread::get_id());
+
 }

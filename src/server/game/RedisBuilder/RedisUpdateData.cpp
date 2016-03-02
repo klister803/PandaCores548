@@ -113,16 +113,21 @@ void Player::UpdateCriteriaProgress(AchievementEntry const* achievement, Criteri
 void Player::RemoveMailFromRedis(uint32 id)
 {
     std::string index = std::to_string(id);
+    PlayerMailData["mails"].removeMember(index.c_str());
     RedisDatabase.AsyncExecuteH("HDEL", mailKey, index.c_str(), id, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::RemoveMailFromRedis id %u", guid);
+    });
+    RedisDatabase.AsyncExecuteH("HDEL", sRedisBuilderMgr->GetMailsKey(), index.c_str(), id, [&](const RedisValue &v, uint64 guid) {
     });
 }
 
 void Player::RemoveMailItemsFromRedis(uint32 id)
 {
+    std::string index = std::to_string(id);
     char* _key = new char[32];
     sprintf(_key, "r{%u}m{%u}items", realmID, id);
 
+    PlayerMailData["mitems"].removeMember(index.c_str());
     RedisDatabase.AsyncExecute("DEL", _key, id, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::RemoveMailItemsFromRedis id %u", guid);
     });
@@ -285,5 +290,27 @@ void Player::DeletePetitions()
 
     RedisDatabase.AsyncExecuteH("HDEL", userKey, "petitions", GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::DeletePetitions guid %u", guid);
+    });
+}
+
+void Player::UpdatePlayerVoidStorage(uint8 slot)
+{
+    std::string index = std::to_string(slot);
+    if (_voidStorageItems[slot])
+    {
+        PlayerData["voidstorage"][index.c_str()]["itemId"] = _voidStorageItems[slot]->ItemId;
+        PlayerData["voidstorage"][index.c_str()]["itemEntry"] = _voidStorageItems[slot]->ItemEntry;
+        PlayerData["voidstorage"][index.c_str()]["creatorGuid"] = _voidStorageItems[slot]->CreatorGuid;
+        PlayerData["voidstorage"][index.c_str()]["randomProperty"] = _voidStorageItems[slot]->ItemRandomPropertyId;
+        PlayerData["voidstorage"][index.c_str()]["suffixFactor"] = _voidStorageItems[slot]->ItemSuffixFactor;
+    }
+    else
+        PlayerData["voidstorage"].removeMember(index.c_str());
+}
+
+void Player::PlayerVoidStorage()
+{
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "voidstorage", sRedisBuilderMgr->BuildString(PlayerData["voidstorage"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::PlayerVoidStorage player guid %u", guid);
     });
 }

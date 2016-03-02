@@ -776,7 +776,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
     //sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadFromRedis end step %i get_id %i", step, boost::this_thread::get_id());
 }
 
-void Player::LoadPlayer(uint64 playerGuid)
+bool Player::LoadPlayer(uint64 playerGuid)
 {
     uint32 guid = GUID_LOPART(playerGuid);
 
@@ -784,7 +784,7 @@ void Player::LoadPlayer(uint64 playerGuid)
     {
         sLog->outError(LOG_FILTER_PLAYER, "Player (GUID: %u) loading from wrong account (is: %u)", guid, GetSession()->GetAccountId());
         GetSession()->HandlePlayerLogin(GetSession()->GetAccountId(), playerGuid, 2);
-        return;
+        return false;
     }
 
     uint8 m_realmID = PlayerData["data"]["realm"].asInt();
@@ -797,7 +797,7 @@ void Player::LoadPlayer(uint64 playerGuid)
     {
         sLog->outError(LOG_FILTER_PLAYER, "Player (GUID: %u) loading from wrong account (is: %u, should be: %u)", guid, GetSession()->GetAccountId(), dbAccountId);
         GetSession()->HandlePlayerLogin(GetSession()->GetAccountId(), playerGuid, 2);
-        return;
+        return false;
     }
 
     // if (holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADBANNED))
@@ -830,7 +830,7 @@ void Player::LoadPlayer(uint64 playerGuid)
     {
         sLog->outError(LOG_FILTER_PLAYER, "Player (GUID: %u) has wrong gender (%hu), can't be loaded.", guid, Gender);
         GetSession()->HandlePlayerLogin(GetSession()->GetAccountId(), playerGuid, 2);
-        return;
+        return false;
     }
 
     // overwrite some data fields
@@ -848,9 +848,11 @@ void Player::LoadPlayer(uint64 playerGuid)
     SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_WORLD_OBJECT_SIZE);
     SetFloatValue(UNIT_FIELD_COMBATREACH, 1.5f);
     SetFloatValue(UNIT_FIELD_HOVERHEIGHT, 1.0f);
+
+    return true;
 }
 
-void Player::LoadPlayerNext(uint64 playerGuid)
+bool Player::LoadPlayerNext(uint64 playerGuid)
 {
     uint32 guid = GUID_LOPART(playerGuid);
 
@@ -858,7 +860,7 @@ void Player::LoadPlayerNext(uint64 playerGuid)
     {
         sLog->outError(LOG_FILTER_PLAYER, "Player (GUID: %u) loading from wrong account (is: %u)", guid, GetSession()->GetAccountId());
         GetSession()->HandlePlayerLogin(GetSession()->GetAccountId(), playerGuid, 2);
-        return;
+        return false;
     }
 
     uint8 Gender = PlayerData["data"]["gender"].asInt();
@@ -926,6 +928,8 @@ void Player::LoadPlayerNext(uint64 playerGuid)
     SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, PlayerData["data"]["totalKills"].asUInt());
     SetUInt16Value(PLAYER_FIELD_KILLS, 0, PlayerData["data"]["todayKills"].asUInt());
     SetUInt16Value(PLAYER_FIELD_KILLS, 1, PlayerData["data"]["yesterdayKills"].asUInt());
+
+    return true;
 }
 
 void Player::LoadPlayerGroup()
@@ -2581,11 +2585,11 @@ void Player::LoadPlayerVoidStorage()
         auto voidValue = *iter;
         uint8 slot = atoi(iter.memberName());
 
-        uint64 itemId = voidValue["itemId"].asInt64();
-        uint32 itemEntry = voidValue["itemEntry"].asInt();
-        uint32 creatorGuid = voidValue["creatorGuid"].asInt();
-        uint32 randomProperty = voidValue["randomProperty"].asInt();
-        uint32 suffixFactor = voidValue["suffixFactor"].asInt();
+        uint64 itemId = voidValue["itemId"].asUInt64();
+        uint32 itemEntry = voidValue["itemEntry"].asUInt();
+        uint32 creatorGuid = voidValue["creatorGuid"].asUInt();
+        uint32 randomProperty = voidValue["randomProperty"].asUInt();
+        uint32 suffixFactor = voidValue["suffixFactor"].asUInt();
 
         if (!itemId)
         {
@@ -2611,7 +2615,7 @@ void Player::LoadPlayerVoidStorage()
             creatorGuid = 0;
         }
 
-        _voidStorageItems[slot] = new VoidStorageItem(itemId, itemEntry, creatorGuid, randomProperty, suffixFactor, false);
+        _voidStorageItems[slot] = new VoidStorageItem(itemId, itemEntry, creatorGuid, randomProperty, suffixFactor);
     }
 
     // update items with duration and realtime
@@ -3400,16 +3404,22 @@ void Player::BuildEnumData(uint32 gid, Json::Value dataValue, ByteBuffer* dataBu
     dataBuffer->WriteGuidBytes<4>(guildGuid);
 }
 
-void Player::LoadPlayerFromJson(uint64 guid)
+bool Player::LoadPlayerFromJson(uint64 guid)
 {
     LoadPlayerHomeBind();
-    LoadPlayer(guid);
+
+    if(!LoadPlayer(guid))
+        return false;
+
     LoadPlayerGold();
     LoadAccountAchievements();
     LoadPlayerAchievements();
     LoadPlayerCriteriaProgress();
     LoadPlayerCriteriaProgress();
-    LoadPlayerNext(guid);
+
+    if(!LoadPlayerNext(guid))
+        return false;
+
     LoadPlayerGroup();
     LoadPlayerLootCooldown();
     LoadPlayerCurrency();
@@ -3489,6 +3499,8 @@ void Player::LoadPlayerFromJson(uint64 guid)
     LoadPlayerCorpse();
     LoadPlayerPetition();
     LoadPlayerMails();
+
+    return true;
 }
 
 void Player::LoadPlayerCriteriaProgress()

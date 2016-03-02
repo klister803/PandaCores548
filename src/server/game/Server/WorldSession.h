@@ -284,6 +284,7 @@ class WorldSession
 
         AccountTypes GetSecurity() const { return _security; }
         uint32 GetAccountId() const { return _accountId; }
+        uint64 GetPlayerGuid() const { return _playerGuid; }
         Player* GetPlayer() const { return _player; }
         std::string GetPlayerName(bool simple = true) const;
 
@@ -444,6 +445,7 @@ class WorldSession
         void HandleRandomizeCharNameOpcode(WorldPacket& recvData);
         void HandleReorderCharacters(WorldPacket& recvData);
         void HandlePlayerLogin(uint32 accountId, uint64 playerGuid, uint8 step = 0);
+        void HandlePlayerLoginHolder();
 
         //Redis
         void SaveEnumData(PreparedQueryResult result);
@@ -1107,6 +1109,7 @@ class WorldSession
 
         AccountTypes _security;
         uint32 _accountId;
+        uint64 _playerGuid;
         uint8 m_expansion;
 
         typedef std::list<AddonInfo> AddonsList;

@@ -1175,19 +1175,15 @@ struct VoidStorageItem
         CreatorGuid = 0;
         ItemRandomPropertyId = 0;
         ItemSuffixFactor = 0;
-        change = false;
-        deleted = false;
     }
 
-    VoidStorageItem(uint64 id, uint32 entry, uint32 creator, uint32 randomPropertyId, uint32 suffixFactor, bool _change)
+    VoidStorageItem(uint64 id, uint32 entry, uint32 creator, uint32 randomPropertyId, uint32 suffixFactor)
     {
         ItemId = id;
         ItemEntry = entry;
         CreatorGuid = creator;
         ItemRandomPropertyId = randomPropertyId;
         ItemSuffixFactor = suffixFactor;
-        change = _change;
-        deleted = false;
     }
 
     uint64 ItemId;
@@ -1195,8 +1191,6 @@ struct VoidStorageItem
     uint32 CreatorGuid;
     uint32 ItemRandomPropertyId;
     uint32 ItemSuffixFactor;
-    bool change;
-    bool deleted;
 };
 
 #define MAX_CUF_PROFILES 5
@@ -1653,6 +1647,7 @@ class Player : public Unit, public GridObject<Player>
         void SavePlayerSkills();
         void SavePlayerTalents();
         void SavePlayerSpells();
+        void InitPlayerSpells();
         void SavePlayerGlyphs();
         void SavePlayerAuras();
         void SavePlayerQuestStatus();
@@ -1691,12 +1686,14 @@ class Player : public Unit, public GridObject<Player>
         void UpdateSavePlayer();
         void UpdatePlayerNameData();
         void SavePlayerPetitions();
+        void UpdatePlayerVoidStorage(uint8 slot);
+        void PlayerVoidStorage();
 
         //load data into player LoadPlayer
-        void LoadPlayerFromJson(uint64 guid);
+        bool LoadPlayerFromJson(uint64 guid);
         void LoadFromRedis(uint64 guid, uint8 step = 0, const RedisValue* v = NULL);
-        void LoadPlayer(uint64 playerGuid);
-        void LoadPlayerNext(uint64 playerGuid);
+        bool LoadPlayer(uint64 playerGuid);
+        bool LoadPlayerNext(uint64 playerGuid);
         void LoadPlayerGroup();
         void LoadPlayerLootCooldown();
         void LoadPlayerCurrency();
@@ -3524,7 +3521,6 @@ class Player : public Unit, public GridObject<Player>
         void _SaveActions(SQLTransaction& trans);
         void _SaveAuras(SQLTransaction& trans);
         void _SaveInventory(SQLTransaction& trans);
-        void _SaveVoidStorage(SQLTransaction& trans);
         void _SaveMail(SQLTransaction& trans);
         void _SaveQuestStatus(SQLTransaction& trans);
         void _SaveDailyQuestStatus(SQLTransaction& trans);
