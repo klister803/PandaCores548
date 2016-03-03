@@ -25455,7 +25455,7 @@ Unit* Unit::GetLastCastTarget()
 {
     if (Unit* target = ObjectAccessor::GetUnit(*this, GetLastCastTargetGUID()))
     {
-        if (!target->isAlive() || !target->IsInWorld())
+        if (!target->isAlive() || !target->IsInWorld() || !canSeeOrDetect(target))
         {
             SetLastCastTargetGUID(0);
             return NULL;
