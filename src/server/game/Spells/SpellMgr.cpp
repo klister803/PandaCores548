@@ -3836,6 +3836,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 137639: // Storm, Earth, and Fire
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_PROC_ONLY_ON_CAST;
+                    spellInfo->Attributes |= SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY;
+                    break;
                 case 109161:
                 case 109162:
                     spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_LEAP_BACK;
@@ -3910,7 +3914,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 50034:  // Blood Rites
                 case 34487: // Master Marksman
                 case 76659: // Mastery: Wild Quiver
-                case 137639: // Storm, Earth, and Fire
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_PROC_ONLY_ON_CAST;
                     break;
                 case 101545: // Flying Serpent Kick
