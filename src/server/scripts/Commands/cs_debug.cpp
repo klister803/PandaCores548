@@ -1862,13 +1862,16 @@ public:
             }
         });*/
 
+        int32 keyCount = 0;
+        uint32 oldMSTime = getMSTime();
+
         std::string testJsonStr;
         std::string testRapidStr;
 
         rapidjson::Document documentR;
         rapidjson::StringBuffer sbR;
         documentR["name"] = "Kysya";
-        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sbR);
+        /*rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sbR);
         documentR.Accept(writer);
         testRapidStr = sbR.GetString();
         sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint test string %s testRapidStr %s", sbR.GetString(), testRapidStr.c_str());
@@ -1882,24 +1885,180 @@ public:
         sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint test 2 string %s testRapidStr %s", sbR2.GetString(), testRapidStr.c_str());
 
         player->SaveJsonData();
-        int32 keyCount = 0;
-        uint32 oldMSTime = getMSTime();
         while (keyCount < 10000)
         {
             player->SavePlayer();
             keyCount++;
         }
         sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint Json::Value in %u ms string %s", GetMSTimeDiffToNow(oldMSTime), testJsonStr.c_str());
-        return true;
+        return true;*/
+
+        typedef UNORDERED_MAP<uint32, PlayerSpell*> TestMap;
+        TestMap testMap;
+        Json::Value testJson;
+        Json::FastWriter wbuilder;
+        rapidjson::StringBuffer sb;
 
         keyCount = 0;
         oldMSTime = getMSTime();
-        while (keyCount < 10000)
+        while (keyCount < 100000)
         {
-            //player->GetPlayerSave()->SavePlayer();
+            PlayerSpell* newspell = new PlayerSpell;
+            newspell->state = PLAYERSPELL_REMOVED;
+            newspell->active = true;
+            newspell->dependent = true;
+            newspell->disabled = false;
+            newspell->mount = false;
+            newspell->mountReplace = 0;
+            testMap[keyCount] = newspell;
             keyCount++;
         }
-        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint rapidjson::Document in %u ms string %s", GetMSTimeDiffToNow(oldMSTime), testRapidStr.c_str());
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint TestMap insert in %u ms testMap %i", GetMSTimeDiffToNow(oldMSTime), testMap.size());
+
+        keyCount = 0;
+        oldMSTime = getMSTime();
+        while (keyCount < 100000)
+        {
+            std::string index = std::to_string(keyCount);
+            rapidjson::Value _data;
+
+            _data.AddMember("active", true, documentR.GetAllocator());
+            _data.AddMember("disabled", false, documentR.GetAllocator());
+            _data.AddMember("state", PLAYERSPELL_REMOVED, documentR.GetAllocator());
+
+            documentR.AddMember(rapidjson::StringRef(index.c_str()), _data, documentR.GetAllocator());
+
+            keyCount++;
+        }
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint rapidjson::value insert in %u ms documentR %i", GetMSTimeDiffToNow(oldMSTime), documentR.Size());
+
+        keyCount = 0;
+        oldMSTime = getMSTime();
+        while (keyCount < 100000)
+        {
+            std::string index = std::to_string(keyCount);
+            Json::Value temp;
+
+            temp["active"] = true;
+            temp["disabled"] = false;
+            temp["state"] = PLAYERSPELL_REMOVED;
+
+            testJson[index.c_str()] = temp;
+
+            keyCount++;
+        }
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint json::value insert in %u ms testJson %i", GetMSTimeDiffToNow(oldMSTime), testJson.size());
+
+        keyCount = 0;
+        oldMSTime = getMSTime();
+        while (keyCount < 100000)
+        {
+            int32 randKey = urand(1, 100000);
+            TestMap::iterator itr = testMap.find(randKey);
+            bool testBool = itr != testMap.end() ? itr->second->active : 0;
+            keyCount++;
+        }
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint TestMap rand find in %u ms testMap %i", GetMSTimeDiffToNow(oldMSTime), testMap.size());
+
+        keyCount = 0;
+        oldMSTime = getMSTime();
+        while (keyCount < 100000)
+        {
+            int32 randKey = urand(1, 100000);
+            std::string index = std::to_string(randKey);
+            rapidjson::Value::ConstMemberIterator itr = documentR.FindMember(index.c_str());
+            bool testBool = itr != documentR.MemberEnd() ? itr->value["active"].GetBool() : 0;
+
+            keyCount++;
+        }
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint rapidjson::Value rand find in %u ms documentR %i", GetMSTimeDiffToNow(oldMSTime), documentR.Size());
+
+        keyCount = 0;
+        oldMSTime = getMSTime();
+        while (keyCount < 100000)
+        {
+            int32 randKey = urand(1, 100000);
+            std::string index = std::to_string(randKey);
+            bool testBool = documentR[index.c_str()]["active"].GetBool();
+
+            keyCount++;
+        }
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint rapidjson::Value rand get in %u ms documentR %i", GetMSTimeDiffToNow(oldMSTime), documentR.Size());
+
+        keyCount = 0;
+        oldMSTime = getMSTime();
+        while (keyCount < 100000)
+        {
+            int32 randKey = urand(1, 100000);
+            std::string index = std::to_string(randKey);
+            bool testBool = testJson[index.c_str()]["active"].asBool();
+
+            keyCount++;
+        }
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint testJson rand find in %u ms testJson %i", GetMSTimeDiffToNow(oldMSTime), testJson.size());
+
+        keyCount = 0;
+        oldMSTime = getMSTime();
+        while (keyCount < 100000)
+        {
+            int32 randKey = urand(1, 100000);
+            std::string index = std::to_string(randKey);
+            bool testBool = testJson.isMember(index.c_str());
+
+            keyCount++;
+        }
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint testJson rand isMember in %u ms testJson %i", GetMSTimeDiffToNow(oldMSTime), testJson.size());
+
+        keyCount = 0;
+        oldMSTime = getMSTime();
+        while (keyCount < 100000)
+        {
+            int32 randKey = urand(1, 100000);
+            TestMap::iterator itr = testMap.find(randKey);
+            if (itr != testMap.end())
+            {
+                delete itr->second;
+                testMap.erase(itr);
+            }
+
+            keyCount++;
+        }
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint TestMap rand del in %u ms testMap %i", GetMSTimeDiffToNow(oldMSTime), testMap.size());
+
+        /*keyCount = 0;
+        oldMSTime = getMSTime();
+        while (keyCount < 100000)
+        {
+            int32 randKey = urand(1, 100000);
+            std::string index = std::to_string(randKey);
+            documentR.EraseMember(index.c_str());
+            keyCount++;
+        }
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint rapidjson::Value rand del in %u ms documentR %i", GetMSTimeDiffToNow(oldMSTime), documentR.Size());
+
+        keyCount = 0;
+        oldMSTime = getMSTime();
+        while (keyCount < 100000)
+        {
+            int32 randKey = urand(1, 100000);
+            std::string index = std::to_string(randKey);
+            testJson.removeMember(index.c_str());
+            keyCount++;
+        }
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint json::Value rand del in %u ms testJson %i", GetMSTimeDiffToNow(oldMSTime), testJson.size());*/
+
+        oldMSTime = getMSTime();
+        testJsonStr = wbuilder.write(testJson);
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint json::value wbuilder in %u ms testJsonStr %s", GetMSTimeDiffToNow(oldMSTime), testJsonStr.c_str());
+
+        oldMSTime = getMSTime();
+        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
+        documentR.Accept(writer);
+        testRapidStr = sb.GetString();
+        //documentR.RemoveAllMembers();
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint rapidjson::value PrettyWriter in %u ms testRapidStr %s", GetMSTimeDiffToNow(oldMSTime), testRapidStr.c_str());
+
+        /*sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint rapidjson::Document in %u ms string %s", GetMSTimeDiffToNow(oldMSTime), testRapidStr.c_str());
 
         Json::Value testJson;
         Json::FastWriter wbuilder;
@@ -1931,7 +2090,7 @@ public:
             testRapidStr = sb.GetString();
             keyCount++;
         }
-        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint rapidjson::Document in %u ms string %s", GetMSTimeDiffToNow(oldMSTime), testRapidStr.c_str());
+        sLog->outInfo(LOG_FILTER_REDIS, "HandleRedisPrint rapidjson::Document in %u ms string %s", GetMSTimeDiffToNow(oldMSTime), testRapidStr.c_str());*/
 
         handler->PSendSysMessage("HandleRedisPrint end");
 

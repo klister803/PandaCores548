@@ -31,8 +31,8 @@ RAPIDJSON_NAMESPACE_BEGIN
     \tparam TargetEncoding Encoding of output stream.
     \tparam StackAllocator Type of allocator for allocating memory of stack.
 */
-template<typename OutputStream, typename SourceEncoding = UTF8<>, typename TargetEncoding = UTF8<>, typename StackAllocator = CrtAllocator>
-class PrettyWriter : public Writer<OutputStream, SourceEncoding, TargetEncoding, StackAllocator> {
+template<typename OutputStream, typename SourceEncoding = UTF8<>, typename TargetEncoding = UTF8<>, typename StackAllocator = CrtAllocator, unsigned writeFlags = kWriteDefaultFlags>
+class PrettyWriter : public Writer<OutputStream, SourceEncoding, TargetEncoding, StackAllocator, writeFlags> {
 public:
     typedef Writer<OutputStream, SourceEncoding, TargetEncoding, StackAllocator> Base;
     typedef typename Base::Ch Ch;
@@ -42,8 +42,12 @@ public:
         \param allocator User supplied allocator. If it is null, it will create a private one.
         \param levelDepth Initial capacity of stack.
     */
-    PrettyWriter(OutputStream& os, StackAllocator* allocator = 0, size_t levelDepth = Base::kDefaultLevelDepth) : 
+    explicit PrettyWriter(OutputStream& os, StackAllocator* allocator = 0, size_t levelDepth = Base::kDefaultLevelDepth) : 
         Base(os, allocator, levelDepth), indentChar_(' '), indentCharCount_(4) {}
+
+
+    explicit PrettyWriter(StackAllocator* allocator = 0, size_t levelDepth = Base::kDefaultLevelDepth) : 
+        Base(allocator, levelDepth), indentChar_(' '), indentCharCount_(4) {}
 
     //! Set custom indentation.
     /*! \param indentChar       Character for indentation. Must be whitespace character (' ', '\\t', '\\n', '\\r').
@@ -69,6 +73,12 @@ public:
     bool Int64(int64_t i64)     { PrettyPrefix(kNumberType); return Base::WriteInt64(i64); }
     bool Uint64(uint64_t u64)   { PrettyPrefix(kNumberType); return Base::WriteUint64(u64);  }
     bool Double(double d)       { PrettyPrefix(kNumberType); return Base::WriteDouble(d); }
+
+    bool RawNumber(const Ch* str, SizeType length, bool copy = false) {
+        (void)copy;
+        PrettyPrefix(kNumberType);
+        return Base::WriteString(str, length);
+    }
 
     bool String(const Ch* str, SizeType length, bool copy = false) {
         (void)copy;
@@ -142,6 +152,18 @@ public:
     bool Key(const Ch* str) { return Key(str, internal::StrLen(str)); }
 
     //@}
+
+    //! Write a raw JSON value.
+    /*!
+        For user to write a stringified JSON as a value.
+
+        \param json A well-formed JSON value. It should not contain null character within [0, length - 1] range.
+        \param length Length of the json.
+        \param type Type of the root of json.
+        \note When using PrettyWriter::RawValue(), the result json may not be indented correctly.
+    */
+    bool RawValue(const Ch* json, size_t length, Type type) { PrettyPrefix(type); return Base::WriteRawValue(json, length); }
+
 protected:
     void PrettyPrefix(Type type) {
         (void)type;
