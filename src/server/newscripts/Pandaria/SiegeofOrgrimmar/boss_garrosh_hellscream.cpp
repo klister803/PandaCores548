@@ -225,11 +225,13 @@ class boss_garrosh_hellscream : public CreatureScript
             bool phasetwo;
             uint32 realmofyshaarjtimer;
             uint32 updatepower;
+            uint32 checkevade;
             Phase phase;
 
             void Reset()
             {
                 phasetwo = false;
+                checkevade = 0;
                 updatepower = 0;
                 realmofyshaarjtimer = 0;
                 me->setPowerType(POWER_ENERGY);
@@ -271,6 +273,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     }*/
                     Talk(SAY_ENTERCOMBAT, 0);
                     _EnterCombat();
+                    checkevade = 1000;
                     SpawnIronStar();
                     phase = PHASE_ONE;
                     events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 1000);
@@ -406,6 +409,22 @@ class boss_garrosh_hellscream : public CreatureScript
                 return false;
             }
 
+            bool CheckEvade()
+            {
+                if (Creature* stalker = me->FindNearestCreature(NPC_HEART_OF_YSHAARJ, 72.0f, true))
+                    return true;
+                return false;
+            }
+
+            void JustReachedHome()
+            {
+                if (!me->ToTempSummon())
+                {
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                    me->SetReactState(REACT_DEFENSIVE);
+                }
+            }
+
             void UpdateAI(uint32 diff)
             {
                 //Garrosh from realm yshaarj(update power)
@@ -443,6 +462,23 @@ class boss_garrosh_hellscream : public CreatureScript
                     }
                     else
                         realmofyshaarjtimer -= diff;
+                }
+
+                if (checkevade)
+                {
+                    if (checkevade <= diff)
+                    {
+                        if (!CheckEvade())
+                        {
+                            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                            EnterEvadeMode();
+                            return;
+                        }
+                        else
+                            checkevade = 1000;
+                    }
+                    else
+                        checkevade -= diff;
                 }
                 //
 
@@ -933,8 +969,19 @@ public:
 
         void Reset()
         {
-            DoCast(me, SPELL_DESECRATED_WEAPON_AXE);
-            DoCast(me, SPELL_DESECRATED_WEAPON_AT);
+            if (me->ToTempSummon())
+            {
+                if (Unit* summoner = me->ToTempSummon()->GetSummoner())
+                {
+                    if (!summoner->isInCombat())
+                        me->DespawnOrUnsummon();
+                    else
+                    {
+                        DoCast(me, SPELL_DESECRATED_WEAPON_AXE);
+                        DoCast(me, SPELL_DESECRATED_WEAPON_AT);
+                    }
+                }
+            }
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -992,9 +1039,20 @@ public:
         {
             events.Reset();
             hppctmod = me->CountPctFromMaxHealth(10);
-            DoCast(me, SPELL_DESECRATED_WEAPON_AXE);
-            DoCast(me, SPELL_EM_DESECRATED_WEAPON_AT);
-            events.ScheduleEvent(EVENT_REGENERATE, 10000);
+            if (me->ToTempSummon())
+            {
+                if (Unit* summoner = me->ToTempSummon()->GetSummoner())
+                {
+                    if (!summoner->isInCombat())
+                        me->DespawnOrUnsummon();
+                    else
+                    {
+                        DoCast(me, SPELL_DESECRATED_WEAPON_AXE);
+                        DoCast(me, SPELL_EM_DESECRATED_WEAPON_AT);
+                        events.ScheduleEvent(EVENT_REGENERATE, 10000);
+                    }
+                }
+            }
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
