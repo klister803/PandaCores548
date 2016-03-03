@@ -2504,7 +2504,6 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
             switch(m_spellInfo->Effects[0].Effect)
             {
                 case SPELL_EFFECT_INTERRUPT_CAST:
-                    break;
                 case SPELL_EFFECT_APPLY_AURA:
                 case SPELL_EFFECT_DISPEL:
                 case SPELL_EFFECT_SCHOOL_DAMAGE:
