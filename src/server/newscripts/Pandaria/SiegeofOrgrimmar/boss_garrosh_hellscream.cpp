@@ -814,6 +814,9 @@ public:
             if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
+            if (me->GetEntry() == NPC_WOLF_RIDER && IsInControl())
+                return;
+
             while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
