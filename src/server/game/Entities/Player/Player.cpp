@@ -27946,7 +27946,7 @@ void Player::UpdateCharmedAI()
         {
             if (!HasSpellCooldown(145599))
             {
-                CastSpell(target, 145599, true);
+                CastSpell(target, 145599);
                 AddSpellCooldown(145599, 0, getPreciseTime() + 6.0);
             }
             return;
