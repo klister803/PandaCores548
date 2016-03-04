@@ -1625,7 +1625,8 @@ public:
                         {
                             if (!(*itr)->HasAura(SPELL_TOUCH_OF_YSHAARJ) && !(*itr)->HasAura(SPELL_EM_TOUCH_OF_YSHAARJ))
                             {
-                                garrosh->CastSpell(*itr, garrosh->GetPower(POWER_ENERGY) >= 50 ? SPELL_EM_TOUCH_OF_YSHAARJ : SPELL_TOUCH_OF_YSHAARJ, true);
+                                GetCaster()->CastSpell((*itr), garrosh->GetPower(POWER_ENERGY) >= 50 ? SPELL_EM_TOUCH_OF_YSHAARJ : SPELL_TOUCH_OF_YSHAARJ, true, 0, 0, garrosh->GetGUID());
+                                //garrosh->CastSpell(*itr, garrosh->GetPower(POWER_ENERGY) >= 50 ? SPELL_EM_TOUCH_OF_YSHAARJ : SPELL_TOUCH_OF_YSHAARJ, true);
                                 break;
                             }
                         }
