@@ -776,68 +776,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     }
 }
 
-void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recvData)
-{
-    uint32 opcode = recvData.GetOpcode();
-
-    /* extract packet */
-    uint64 guid;
-    uint32 unk1;
-    float  newspeed;
-
-    recvData.readPackGUID(guid);
-
-    // now can skip not our packet
-    if (_player->GetGUID() != guid)
-    {
-        recvData.rfinish();                   // prevent warnings spam
-        return;
-    }
-
-    // continue parse packet
-
-    recvData >> unk1;                                      // counter or moveEvent
-
-    MovementInfo movementInfo;
-    movementInfo.guid = guid;
-    ReadMovementInfo(recvData, &movementInfo);
-
-    recvData >> newspeed;
-    /*----------------*/
-
-    // client ACK send one packet for mounted/run case and need skip all except last from its
-    // in other cases anti-cheat check can be fail in false case
-    UnitMoveType move_type       = MOVE_WALK;
-    UnitMoveType force_move_type = MOVE_WALK;
-
-    static char const* move_type_name[MAX_MOVE_TYPE] = {  "Walk", "Run", "RunBack", "Swim", "SwimBack", "TurnRate", "Flight", "FlightBack", "PitchRate" };
-
-    // skip all forced speed changes except last and unexpected
-    // in run/mounted case used one ACK and it must be skipped.m_forced_speed_changes[MOVE_RUN} store both.
-    if (_player->m_forced_speed_changes[force_move_type] > 0)
-    {
-        --_player->m_forced_speed_changes[force_move_type];
-        if (_player->m_forced_speed_changes[force_move_type] > 0)
-            return;
-    }
-
-    if (!_player->GetTransport() && fabs(_player->GetSpeed(move_type) - newspeed) > 0.01f)
-    {
-        if (_player->GetSpeed(move_type) > newspeed)         // must be greater - just correct
-        {
-            sLog->outError(LOG_FILTER_NETWORKIO, "%sSpeedChange player %s is NOT correct (must be %f instead %f), force set to correct value",
-                move_type_name[move_type], _player->GetName(), _player->GetSpeed(move_type), newspeed);
-            _player->SetSpeed(move_type, _player->GetSpeedRate(move_type), true);
-        }
-        else                                                // must be lesser - cheating
-        {
-            sLog->outDebug(LOG_FILTER_GENERAL, "Player %s from account id %u kicked for incorrect speed (must be %f instead %f)",
-                _player->GetName(), _player->GetSession()->GetAccountId(), _player->GetSpeed(move_type), newspeed);
-            _player->GetSession()->KickPlayer();
-        }
-    }
-}
-
 void WorldSession::HandleSetActiveMoverOpcode(WorldPacket& recvPacket)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd CMSG_SET_ACTIVE_MOVER");
@@ -881,11 +819,83 @@ void WorldSession::HandleMountSpecialAnimOpcode(WorldPacket& /*recvData*/)
     GetPlayer()->SendMessageToSet(&data, false);
 }
 
+// ACKS
+
+void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recvData)
+{
+    uint32 opcode = recvData.GetOpcode();
+
+    /* extract packet */
+    uint64 guid;
+    uint32 unk1;
+    float  newspeed;
+
+    recvData.readPackGUID(guid);
+
+    // now can skip not our packet
+    if (_player->GetGUID() != guid)
+    {
+        recvData.rfinish();                   // prevent warnings spam
+        return;
+    }
+
+    // continue parse packet
+
+    recvData >> unk1;                                      // counter or moveEvent
+
+    MovementInfo movementInfo;
+    movementInfo.guid = guid;
+    ReadMovementInfo(recvData, &movementInfo);
+
+    recvData >> newspeed;
+    /*----------------*/
+
+    // client ACK send one packet for mounted/run case and need skip all except last from its
+    // in other cases anti-cheat check can be fail in false case
+    UnitMoveType move_type = MOVE_WALK;
+    UnitMoveType force_move_type = MOVE_WALK;
+
+    static char const* move_type_name[MAX_MOVE_TYPE] = { "Walk", "Run", "RunBack", "Swim", "SwimBack", "TurnRate", "Flight", "FlightBack", "PitchRate" };
+
+    // skip all forced speed changes except last and unexpected
+    // in run/mounted case used one ACK and it must be skipped.m_forced_speed_changes[MOVE_RUN} store both.
+    if (_player->m_forced_speed_changes[force_move_type] > 0)
+    {
+        --_player->m_forced_speed_changes[force_move_type];
+        if (_player->m_forced_speed_changes[force_move_type] > 0)
+            return;
+    }
+
+    if (!_player->GetTransport() && fabs(_player->GetSpeed(move_type) - newspeed) > 0.01f)
+    {
+        if (_player->GetSpeed(move_type) > newspeed)         // must be greater - just correct
+        {
+            sLog->outError(LOG_FILTER_NETWORKIO, "%sSpeedChange player %s is NOT correct (must be %f instead %f), force set to correct value",
+                move_type_name[move_type], _player->GetName(), _player->GetSpeed(move_type), newspeed);
+            _player->SetSpeed(move_type, _player->GetSpeedRate(move_type), true);
+        }
+        else                                                // must be lesser - cheating
+        {
+            sLog->outDebug(LOG_FILTER_GENERAL, "Player %s from account id %u kicked for incorrect speed (must be %f instead %f)",
+                _player->GetName(), _player->GetSession()->GetAccountId(), _player->GetSpeed(move_type), newspeed);
+            _player->GetSession()->KickPlayer();
+        }
+    }
+}
+
+void WorldSession::HandleMoveFeatherFallAck(WorldPacket& recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_FEATHER_FALL_ACK");
+
+    // no used
+    recvData.rfinish();                       // prevent warnings spam
+}
+
 void WorldSession::HandleMoveKnockBackAck(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_KNOCK_BACK_ACK");
 
-    if(Unit* mover = _player->m_mover)
+    if (Unit* mover = _player->m_mover)
         mover->AddUnitState(UNIT_STATE_JUMPING);
 
     HandleMovementOpcodes(recvData);
@@ -894,7 +904,7 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket & recvData)
     ReadMovementInfo(recvData, &movementInfo);
 
     if (_player->m_mover->GetGUID() != movementInfo.guid)
-        return;
+    return;
 
     _player->m_movementInfo = movementInfo;
 
@@ -907,16 +917,21 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket & recvData)
 void WorldSession::HandleMoveHoverAck(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_HOVER_ACK");
+}
 
-    uint64 guid;                                            // guid - unused
-    recvData.readPackGUID(guid);
+void WorldSession::HandleMoveWaterwalkAck(WorldPacket& recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_WATER_WALK_ACK");
+}
 
-    recvData.read_skip<uint32>();                          // unk
+void WorldSession::HandleMoveSetCanFlyAck(WorldPacket& recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_SET_CAN_FLY_ACK");
+}
 
-    MovementInfo movementInfo;
-    ReadMovementInfo(recvData, &movementInfo);
-
-    recvData.read_skip<uint32>();                          // unk2
+void WorldSession::HandleMoveSetCanTransBtwSwimFlyAck(WorldPacket& recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_SET_CAN_TRANS_BETWEEN_SWIM_AND_FLY_ACK");
 }
 
 void WorldSession::HandleSummonResponseOpcode(WorldPacket& recvData)

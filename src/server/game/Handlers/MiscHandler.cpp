@@ -1340,14 +1340,6 @@ void WorldSession::HandleMoveTimeSkippedOpcode(WorldPacket& recvData)
     */
 }
 
-void WorldSession::HandleFeatherFallAck(WorldPacket& recvData)
-{
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_MOVE_FEATHER_FALL_ACK");
-
-    // no used
-    recvData.rfinish();                       // prevent warnings spam
-}
-
 void WorldSession::HandleMoveUnRootAck(WorldPacket& recvData)
 {
     // no used

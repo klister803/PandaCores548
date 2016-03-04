@@ -461,11 +461,6 @@ class WorldSession
 
         void HandleInspectRatedBGStats(WorldPacket& recvPacket);
 
-        void HandleMoveWaterWalkAck(WorldPacket& recvPacket);
-        void HandleFeatherFallAck(WorldPacket& recvData);
-
-        void HandleMoveHoverAck(WorldPacket& recvData);
-
         void HandleMountSpecialAnimOpcode(WorldPacket& recvdata);
 
         // character view
@@ -475,11 +470,15 @@ class WorldSession
         // repair
         void HandleRepairItemOpcode(WorldPacket& recvPacket);
 
-        // Knockback
+        // movement synchronization acks
+        void HandleForceSpeedChangeAck(WorldPacket &recvData);
         void HandleMoveKnockBackAck(WorldPacket& recvPacket);
-
         void HandleMoveTeleportAck(WorldPacket& recvPacket);
-        void HandleForceSpeedChangeAck(WorldPacket& recvData);
+        void HandleMoveHoverAck(WorldPacket& recvData);
+        void HandleMoveWaterwalkAck(WorldPacket& recvData);
+        void HandleMoveSetCanFlyAck(WorldPacket& recvData);
+        void HandleMoveSetCanTransBtwSwimFlyAck(WorldPacket& recvData);
+        void HandleMoveFeatherFallAck(WorldPacket& recvData);
 
         void HandlePingOpcode(WorldPacket& recvPacket);
         void HandleAuthSessionOpcode(WorldPacket& recvPacket);
