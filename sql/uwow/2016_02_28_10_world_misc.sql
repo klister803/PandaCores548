@@ -14,3 +14,5 @@ DELETE FROM `spell_script_names` WHERE (`spell_id`='51755') AND (`ScriptName`='s
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `comment`) VALUES ('-80326', '-119450', 'Camouflage');
 
 UPDATE `spell_linked_spell` SET `type`='0' WHERE (`spell_trigger`='107428') AND (`spell_effect`='130320') AND (`type`='1') AND (`hastalent`='0') AND (`actiontype`='0');
+
+INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `target`, `comment`) VALUES ('-137029', '-53563', '12', 'Beacon of Light');
