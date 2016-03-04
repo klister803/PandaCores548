@@ -16,3 +16,6 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `comment`) VA
 UPDATE `spell_linked_spell` SET `type`='0' WHERE (`spell_trigger`='107428') AND (`spell_effect`='130320') AND (`type`='1') AND (`hastalent`='0') AND (`actiontype`='0');
 
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `target`, `comment`) VALUES ('-137029', '-53563', '12', 'Beacon of Light');
+
+DELETE FROM `spell_proc_event` WHERE `entry` IN (53651);
+INSERT INTO `spell_proc_event` VALUES (53651, 0, 0x0A, 0, 0, 0, 0, 0x00044000, 0, 0, 0, 0, 7);
