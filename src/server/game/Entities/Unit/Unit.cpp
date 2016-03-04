@@ -25329,7 +25329,7 @@ void Unit::RemovePetAndOwnerAura(uint32 spellId, Unit* owner)
         RemoveAurasDueToSpell(spellId);
 }
 
-Unit* Unit::GetUnitForLinkedSpell(Unit* caster, Unit* target, uint8 type)
+Unit* Unit::GetUnitForLinkedSpell(Unit* caster, Unit* target, uint8 type, uint32 spellId)
 {
     switch (type)
     {
@@ -25368,6 +25368,17 @@ Unit* Unit::GetUnitForLinkedSpell(Unit* caster, Unit* target, uint8 type)
         case LINK_UNIT_TYPE_ORIGINALCASTER: //10
             return this;
             break;
+        case LINK_UNIT_TYPE_ANYONE_WHO_HAS_CASTER_AURA: // 12
+        {
+            if (!spellId)
+                break;
+
+            for (auto itr : m_unitsHasCasterAura)
+                if (Unit* _target = ObjectAccessor::GetUnit(*this, itr))
+                    if (_target->HasAura(spellId, GetGUID()))
+                        return _target;
+            break;
+        }
     }
     return NULL;
 }

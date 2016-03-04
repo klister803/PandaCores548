@@ -6353,10 +6353,10 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
             _caster = m_caster;
 
             if (i->target)
-                _target = (m_originalCaster ? m_originalCaster : m_caster)->GetUnitForLinkedSpell(_caster, _target, i->target);
+                _target = (m_originalCaster ? m_originalCaster : m_caster)->GetUnitForLinkedSpell(_caster, _target, i->target, abs(i->effect));
 
             if (i->caster)
-                _caster = (m_originalCaster ? m_originalCaster : m_caster)->GetUnitForLinkedSpell(_caster, _target, i->caster);
+                _caster = (m_originalCaster ? m_originalCaster : m_caster)->GetUnitForLinkedSpell(_caster, _target, i->caster, abs(i->effect));
 
             if(!_caster)
                 continue;

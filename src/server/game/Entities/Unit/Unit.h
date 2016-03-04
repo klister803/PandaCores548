@@ -2552,7 +2552,7 @@ class Unit : public WorldObject
         bool HasMyAura(Aura const* hasAura, bool check = false);
         void RemovePetAndOwnerAura(uint32 spellId, Unit* owner = NULL);
 
-        Unit* GetUnitForLinkedSpell(Unit* caster, Unit* target, uint8 type);
+        Unit* GetUnitForLinkedSpell(Unit* caster, Unit* target, uint8 type, uint32 spellId = NULL);
         bool HasAuraLinkedSpell(Unit* caster, Unit* target, uint8 type, int32 hastalent);
 
         void SendDispelFailed(uint64 targetGuid, uint32 spellId, std::list<uint32>& spellList);
