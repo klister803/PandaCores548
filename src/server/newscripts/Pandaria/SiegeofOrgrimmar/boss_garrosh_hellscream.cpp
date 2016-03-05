@@ -266,11 +266,11 @@ class boss_garrosh_hellscream : public CreatureScript
             {
                 if (!me->ToTempSummon())
                 {
-                    /*if (!instance->GetData(DATA_CHECK_INSTANCE_PROGRESS))
+                    if (!instance->GetData(DATA_CHECK_INSTANCE_PROGRESS))
                     {
-                    EnterEvadeMode();
-                    return;
-                    }*/
+                        EnterEvadeMode();
+                        return;
+                    }
                     Talk(SAY_ENTERCOMBAT, 0);
                     _EnterCombat();
                     checkevade = 1000;
@@ -623,7 +623,7 @@ class boss_garrosh_hellscream : public CreatureScript
                                     if (player->isAlive())
                                         if (player->HasAura(SPELL_REALM_OF_YSHAARJ))
                                             player->RemoveAura(SPELL_REALM_OF_YSHAARJ, AURA_REMOVE_BY_EXPIRE);
-                        events.ScheduleEvent(EVENT_PHASE_TWO, 2000);
+                        events.ScheduleEvent(EVENT_PHASE_TWO, 3000);
                     }
                     break;
                     //Phase Two
@@ -1626,7 +1626,6 @@ public:
                             if (!(*itr)->HasAura(SPELL_TOUCH_OF_YSHAARJ) && !(*itr)->HasAura(SPELL_EM_TOUCH_OF_YSHAARJ))
                             {
                                 GetCaster()->CastSpell((*itr), garrosh->GetPower(POWER_ENERGY) >= 50 ? SPELL_EM_TOUCH_OF_YSHAARJ : SPELL_TOUCH_OF_YSHAARJ, true, 0, 0, garrosh->GetGUID());
-                                //garrosh->CastSpell(*itr, garrosh->GetPower(POWER_ENERGY) >= 50 ? SPELL_EM_TOUCH_OF_YSHAARJ : SPELL_TOUCH_OF_YSHAARJ, true);
                                 break;
                             }
                         }
