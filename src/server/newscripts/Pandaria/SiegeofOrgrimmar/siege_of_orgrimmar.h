@@ -68,6 +68,7 @@ enum eData
     DATA_GARROSH_REALM,
     DATA_UPDATE_GARROSH_REALM,
     DATA_FIRST_ENGENEER_DIED,
+    DATA_ACTION_SOLDIER,
 
     //Galakras
     DATA_GALAKRAS_PRE_EVENT,
@@ -582,6 +583,9 @@ enum esSpells
     SPELL_ULTIMATE_DESPAIR             = 147341,
     SPELL_CONSUMED_FAITH               = 149033,
     SPELL_CONSUMED_COURAGE             = 149011,
+    SPELL_REALM_OF_YSHAARJ             = 144954,
+    SPELL_TOUCH_OF_YSHAARJ             = 145065,
+    SPELL_EM_TOUCH_OF_YSHAARJ          = 145171,
 };
 
 

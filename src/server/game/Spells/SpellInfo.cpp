@@ -1279,11 +1279,14 @@ SpellEffectInfo const* SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 143385: //Electrostatic charge
     case 143830: //Disentegration laser AT
     //Garrosh
-    case 144821: //Hellscream warsong
+    case 145599: //Player Touch of Yshaarj
+    case 144585: //Ancestral Fury
     case 149032: //Consumed Hope
     case 149033: //Consumed Faith
     case 149011: //Consumed Courage
     case 145246: //Phase Three Transform
+    case 145065: //Touch of Yshaarj
+    case 145171: //Empovered Touch of Yshaarj
         return &Effects[effect];
     }
 

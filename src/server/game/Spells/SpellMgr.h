@@ -108,18 +108,19 @@ enum SpellLinkedType
 
 enum SpellLinkedUnitType
 {
-    LINK_UNIT_TYPE_DEFAULT         = 0,
-    LINK_UNIT_TYPE_PET             = 1,
-    LINK_UNIT_TYPE_OWNER           = 2,
-    LINK_UNIT_TYPE_CASTER          = 3,
-    LINK_UNIT_TYPE_SELECTED        = 4,
-    LINK_UNIT_TYPE_TARGET          = 5,
-    LINK_UNIT_TYPE_VICTIM          = 6,
-    LINK_UNIT_TYPE_ATTACKER        = 7,
-    LINK_UNIT_TYPE_NEARBY          = 8,
-    LINK_UNIT_TYPE_NEARBY_ALLY     = 9,
-    LINK_UNIT_TYPE_ORIGINALCASTER  = 10,
-    LINK_UNIT_TYPE_CAST_DEST       = 11,
+    LINK_UNIT_TYPE_DEFAULT                    = 0,
+    LINK_UNIT_TYPE_PET                        = 1,
+    LINK_UNIT_TYPE_OWNER                      = 2,
+    LINK_UNIT_TYPE_CASTER                     = 3,
+    LINK_UNIT_TYPE_SELECTED                   = 4,
+    LINK_UNIT_TYPE_TARGET                     = 5,
+    LINK_UNIT_TYPE_VICTIM                     = 6,
+    LINK_UNIT_TYPE_ATTACKER                   = 7,
+    LINK_UNIT_TYPE_NEARBY                     = 8,
+    LINK_UNIT_TYPE_NEARBY_ALLY                = 9,
+    LINK_UNIT_TYPE_ORIGINALCASTER             = 10,
+    LINK_UNIT_TYPE_CAST_DEST                  = 11,
+    LINK_UNIT_TYPE_ANYONE_WHO_HAS_CASTER_AURA = 12,
 };
 
 enum SpellLinkedHasType

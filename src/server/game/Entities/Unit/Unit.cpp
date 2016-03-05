@@ -8652,39 +8652,41 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
             // Light's Beacon - Beacon of Light
             if (dummySpell->Id == 53651)
             {
-                // Get target of beacon of light
-                if (Unit* beaconTarget = triggeredByAura->GetBase()->GetCaster())
-                {
-                    // do not proc when target of beacon of light is healed
-                    if (!victim || beaconTarget->GetGUID() == GetGUID())
-                        return false;
+                Unit* beaconTarget = NULL;
 
-                    // check if it was heal by paladin which casted this beacon of light
-                    if (beaconTarget->GetAura(53563, victim->GetGUID()))
+                for (auto itr : m_unitsHasCasterAura)
+                    if (Unit* _target = ObjectAccessor::GetUnit(*this, itr))
+                        if (_target->HasAura(53563, GetGUID()))
+                            beaconTarget = _target;
+
+                if (!beaconTarget)
+                    if (HasAura(53563, GetGUID()))
+                        beaconTarget = this;
+
+                if (!beaconTarget || !victim || victim->GetGUID() == beaconTarget->GetGUID())
+                    return false;
+
+                if (beaconTarget->IsWithinLOSInMap(victim))
+                {
+                    int32 percent = 0;
+                    switch (procSpell->Id)
                     {
-                        if (beaconTarget->IsWithinLOSInMap(victim))
-                        {
-                            int32 percent = 0;
-                            switch (procSpell->Id)
-                            {
-                                case 82327: // Holy Radiance
-                                case 119952:// Light's Hammer
-                                case 114871:// Holy Prism
-                                case 85222: // Light of Dawn
-                                    percent = 15; // 15% heal from these spells
-                                    break;
-                                case 635:   // Holy Light
-                                    percent = triggerAmount * 2; // 100% heal from Holy Light
-                                    break;
-                                default:
-                                    percent = triggerAmount; // 50% heal from all other heals
-                                    break;
-                            }
-                            basepoints0 = CalculatePct(damage, percent);
-                            victim->CastCustomSpell(beaconTarget, 53652, &basepoints0, NULL, NULL, true);
-                            return true;
-                        }
+                        case 82327: // Holy Radiance
+                        case 119952:// Light's Hammer
+                        case 114871:// Holy Prism
+                        case 85222: // Light of Dawn
+                            percent = 15; // 15% heal from these spells
+                            break;
+                        case 635:   // Holy Light
+                            percent = triggerAmount * 2; // 100% heal from Holy Light
+                            break;
+                        default:
+                            percent = triggerAmount; // 50% heal from all other heals
+                            break;
                     }
+                    basepoints0 = CalculatePct(damage, percent);
+                    CastCustomSpell(beaconTarget, 53652, &basepoints0, NULL, NULL, true);
+                    return true;
                 }
                 return false;
             }
@@ -25332,7 +25334,7 @@ void Unit::RemovePetAndOwnerAura(uint32 spellId, Unit* owner)
         RemoveAurasDueToSpell(spellId);
 }
 
-Unit* Unit::GetUnitForLinkedSpell(Unit* caster, Unit* target, uint8 type)
+Unit* Unit::GetUnitForLinkedSpell(Unit* caster, Unit* target, uint8 type, uint32 spellId)
 {
     switch (type)
     {
@@ -25371,6 +25373,17 @@ Unit* Unit::GetUnitForLinkedSpell(Unit* caster, Unit* target, uint8 type)
         case LINK_UNIT_TYPE_ORIGINALCASTER: //10
             return this;
             break;
+        case LINK_UNIT_TYPE_ANYONE_WHO_HAS_CASTER_AURA: // 12
+        {
+            if (!spellId)
+                break;
+
+            for (auto itr : m_unitsHasCasterAura)
+                if (Unit* _target = ObjectAccessor::GetUnit(*this, itr))
+                    if (_target->HasAura(spellId, GetGUID()))
+                        return _target;
+            break;
+        }
     }
     return NULL;
 }
@@ -25458,7 +25471,7 @@ Unit* Unit::GetLastCastTarget()
 {
     if (Unit* target = ObjectAccessor::GetUnit(*this, GetLastCastTargetGUID()))
     {
-        if (!target->isAlive() || !target->IsInWorld())
+        if (!target->isAlive() || !target->IsInWorld() || !canSeeOrDetect(target))
         {
             SetLastCastTargetGUID(0);
             return NULL;

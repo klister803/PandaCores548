@@ -3835,6 +3835,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 137639: // Storm, Earth, and Fire
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_PROC_ONLY_ON_CAST;
+                    spellInfo->Attributes |= SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY;
+                    break;
                 case 109161:
                 case 109162:
                     spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_LEAP_BACK;
@@ -3865,6 +3869,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 81751: // Atonement
                     spellInfo->AttributesEx2 &= ~SPELL_ATTR2_CANT_CRIT;
                     break;
+                case 53651: // Beacon of Light
                 case 90289: // Removing Death Grip cooldown
                 case 36563: // Shadowstep
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_HAVE_STABLE_FLYTIME;
@@ -3908,7 +3913,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 50034:  // Blood Rites
                 case 34487: // Master Marksman
                 case 76659: // Mastery: Wild Quiver
-                case 137639: // Storm, Earth, and Fire
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_PROC_ONLY_ON_CAST;
                     break;
                 case 101545: // Flying Serpent Kick
@@ -5221,10 +5225,12 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = 18;
                     break;
                 //Garrosh
-                case 144821: //Hellscream warsong
-                    spellInfo->Effects[0].TargetB = 30;
-                    spellInfo->Effects[1].TargetB = 30;
-                    spellInfo->Effects[2].TargetB = 30;
+                case 145599: //Player Touch of Yshaarj
+                    spellInfo->Effects[0].TargetA = 25;
+                    spellInfo->InterruptFlags = SPELL_INTERRUPT_FLAG_INTERRUPT;
+                    break;
+                case 144585: //Ancestral Fury
+                    spellInfo->Effects[0].TriggerSpell = 0;
                     break;
                 case 149032: //Consumed Hope
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
@@ -5239,6 +5245,60 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 145246: //Phase Three Transform
                     spellInfo->Effects[0].BasePoints = 0;
                     spellInfo->Effects[4].BasePoints = 100;
+                    break;
+                case 145065: //Touch of Yshaarj
+                    spellInfo->Effects[0].TargetA = 25;
+                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[1].TargetA = 25;
+                    spellInfo->Effects[1].TargetB = 0;
+                    spellInfo->Effects[2].TargetA = 25;
+                    spellInfo->Effects[2].TargetB = 0;
+                    spellInfo->Effects[3].TargetA = 25;
+                    spellInfo->Effects[3].TargetB = 0;
+                    spellInfo->Effects[4].TargetA = 25;
+                    spellInfo->Effects[4].TargetB = 0;
+                    spellInfo->Effects[5].TargetA = 25;
+                    spellInfo->Effects[5].TargetB = 0;
+                    spellInfo->Effects[6].TargetA = 25;
+                    spellInfo->Effects[6].TargetB = 0;
+                    spellInfo->Effects[7].TargetA = 25;
+                    spellInfo->Effects[7].TargetB = 0;
+                    spellInfo->Effects[8].TargetA = 25;
+                    spellInfo->Effects[8].TargetB = 0;
+                    spellInfo->Effects[9].TargetA = 25;
+                    spellInfo->Effects[9].TargetB = 0;
+                    spellInfo->Effects[10].TargetA = 25;
+                    spellInfo->Effects[10].TargetB = 0;
+                    spellInfo->Effects[11].TargetA = 25;
+                    spellInfo->Effects[11].TargetB = 0;
+                    break;
+                case 145171: //Empovered Touch of Yshaarj
+                    spellInfo->Effects[0].TargetA = 25;
+                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[1].TargetA = 25;
+                    spellInfo->Effects[1].TargetB = 0;
+                    spellInfo->Effects[2].TargetA = 25;
+                    spellInfo->Effects[2].TargetB = 0;
+                    spellInfo->Effects[3].TargetA = 25;
+                    spellInfo->Effects[3].TargetB = 0;
+                    spellInfo->Effects[4].TargetA = 25;
+                    spellInfo->Effects[4].TargetB = 0;
+                    spellInfo->Effects[5].TargetA = 25;
+                    spellInfo->Effects[5].TargetB = 0;
+                    spellInfo->Effects[6].TargetA = 25;
+                    spellInfo->Effects[6].TargetB = 0;
+                    spellInfo->Effects[7].TargetA = 25;
+                    spellInfo->Effects[7].TargetB = 0;
+                    spellInfo->Effects[8].TargetA = 25;
+                    spellInfo->Effects[8].TargetB = 0;
+                    spellInfo->Effects[9].TargetA = 25;
+                    spellInfo->Effects[9].TargetB = 0;
+                    spellInfo->Effects[10].TargetA = 25;
+                    spellInfo->Effects[10].TargetB = 0;
+                    spellInfo->Effects[11].TargetA = 25;
+                    spellInfo->Effects[11].TargetB = 0;
+                    spellInfo->Effects[12].TargetA = 25;
+                    spellInfo->Effects[12].TargetB = 0;
                     break;
 
 
@@ -5461,11 +5521,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 20066: // Repentance
                     spellInfo->InterruptFlags |= SPELL_INTERRUPT_FLAG_INTERRUPT;
                     break;
-                case 53651: // Beacon of Light Trigger
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
-                    break;
                 case 53563: // Beacon of Light
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_TRIGGER_SPELL;
+                    spellInfo->Effects[0].TriggerSpell = 0;
                     break;
                 case 23035: // Battle Standard (Horde)
                 case 23034: // Battle Standard (Alliance)
@@ -5688,6 +5745,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 145718:  // Gusting Bomb
                     spellInfo->Speed = 25.f;
                     break;
+                case 53652:  // Beacon of Light
                 case 117954: // Materialize Protector
                 case 120729: // Demonic Gateway
                 case 113896: // Demonic Gateway

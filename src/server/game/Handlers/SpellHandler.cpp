@@ -1394,7 +1394,8 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
     if (!creator)
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_GET_MIRRORIMAGE_DATA displayId %u, creator not found", displayId);
-        creator = unit;
+        unit->RemoveAurasByType(SPELL_AURA_CLONE_CASTER);
+        return;
     }
 
     Player* player = creator->ToPlayer();

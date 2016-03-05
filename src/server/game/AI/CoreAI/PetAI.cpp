@@ -182,7 +182,10 @@ void PetAI::UpdateAI(uint32 diff)
             if (Unit* target = owner->GetLastCastTarget())
                 AttackStart(target);
             else
+            {
+                me->SetNeedToUpdatePetFollowPosition(true);
                 HandleReturnMovement();
+            }
         }
         else
             HandleReturnMovement();

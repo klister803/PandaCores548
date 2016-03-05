@@ -1703,10 +1703,10 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     Unit* _caster = caster;
 
                     if (itr->target)
-                        _target = target->GetUnitForLinkedSpell(caster, target, itr->target);
+                        _target = target->GetUnitForLinkedSpell(caster, target, itr->target, abs(itr->effect));
 
                     if (itr->caster && caster)
-                        _caster = caster->GetUnitForLinkedSpell(caster, target, itr->caster);
+                        _caster = caster->GetUnitForLinkedSpell(caster, target, itr->caster, abs(itr->effect));
 
                     if(itr->hastalent)
                         if(target->HasAuraLinkedSpell(_caster, _target, itr->hastype, itr->hastalent))
@@ -1773,10 +1773,10 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     Unit* _caster = caster;
 
                     if (itr->target)
-                        _target = target->GetUnitForLinkedSpell(caster, target, itr->target);
+                        _target = target->GetUnitForLinkedSpell(caster, target, itr->target, abs(itr->effect));
 
                     if (itr->caster && caster)
-                        _caster = caster->GetUnitForLinkedSpell(caster, target, itr->caster);
+                        _caster = caster->GetUnitForLinkedSpell(caster, target, itr->caster, abs(itr->effect));
 
                     if(itr->hastalent)
                         if(target->HasAuraLinkedSpell(_caster, _target, itr->hastype, itr->hastalent))
@@ -1853,10 +1853,10 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         Unit* _caster = target;
 
                         if (itr->target)
-                            _target = target->GetUnitForLinkedSpell(caster, target, itr->target);
+                            _target = target->GetUnitForLinkedSpell(caster, target, itr->target, abs(itr->effect));
 
                         if (itr->caster && caster)
-                            _caster = caster->GetUnitForLinkedSpell(caster, target, itr->caster);
+                            _caster = caster->GetUnitForLinkedSpell(caster, target, itr->caster, abs(itr->effect));
 
                         if(itr->hastalent)
                             if(target->HasAuraLinkedSpell(_caster, _target, itr->hastype, itr->hastalent))
@@ -1926,7 +1926,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         Unit* _target = target;
 
                         if (itr->target)
-                            _target = target->GetUnitForLinkedSpell(caster, target, itr->target);
+                            _target = target->GetUnitForLinkedSpell(caster, target, itr->target, abs(itr->effect));
 
                         if(!_target)
                             continue;

@@ -310,7 +310,6 @@ void WardenWin::RequestStaticData()
     // set string index
     uint8 index = 1;
 
-    // header - temporary comment, because mem check have new format and don't work
     buff << uint8(MEM_CHECK ^ xorByte);
     buff << uint8(0x00);
     buff << uint8(0xF);
@@ -328,6 +327,7 @@ void WardenWin::RequestStaticData()
         case MEM_CHECK:
         {
             buff << uint8(0x00);
+            buff << uint8(0xF);
             buff << uint32(wd->Address);
             buff << uint8(wd->Length);
             break;
@@ -624,7 +624,8 @@ void WardenWin::RequestDynamicData()
     // header
     buff << uint8(MEM_CHECK ^ xorByte);
     buff << uint8(0x00);
-    buff << uint32(0x00A76E50);
+    buff << uint8(0xF);
+    buff << uint32(0x00E76E50);
     buff << uint8(0x6);
 
     // system
@@ -636,109 +637,100 @@ void WardenWin::RequestDynamicData()
         buff << uint8(0x4);
     }*/
 
+    // construct dynamic part of packet
     buff << uint8(MEM_CHECK ^ xorByte);
     buff << uint8(0x00);
+    buff << uint8(0xF);
 
     bool dataCreate = false;
 
     // first packet in chain
-    if (playerBase == 0x00 && offset == 0x00 && playerMovementBase == 0x00)
+    if (playerDynamicBase == 0x00)
     {
-        buff << uint32(0x00CD87A8);
+        buff << uint32(0x011E45DC);
         buff << uint8(0x04);
         dataCreate = true;
     }
-    // second packet in chain
-    else if (playerBase != 0x00 && offset == 0x00 && playerMovementBase == 0x00)
+    else if (playerDynamicBase != 0x00)
     {
-        playerBase += 0x34;
-        buff << uint32(playerBase);
-        buff << uint8(0x04);
-        dataCreate = true;
-    }
-    // third packet in chain
-    else if (playerBase != 0x00 && offset != 0x00 && playerMovementBase == 0x00)
-    {
-        offset += 0x24;
-        buff << uint32(offset);
-        buff << uint8(0x04);
-        dataCreate = true;
-    }
-    // data from client, test packet - offset 81C - run speed
-    // C70 points to run(forward) 7 default value (float)
-    // data from client, test packet - offset 7CF - movement type
-    // C23 points to movement type 128 default value (4 bytes)
-    else if (playerBase != 0x00 && offset != 0x00 && playerMovementBase != 0x00)
-    {
-        // sedned for correct select of base packet
-        buff << uint32(playerMovementBase);
+        // sended for correct selection of base packet
+        buff << uint32(playerDynamicBase);
         buff << uint8(0x04);
 
-        uint32 run_speed = playerMovementBase + 0x81C;
+        uint32 run_speed = playerDynamicBase + 0x8A8;//!checked
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
+        buff << uint8(0xF);
         buff << uint32(run_speed);
         buff << uint8(0x04);
 
-        uint32 flight_speed = playerMovementBase + 0x82C;
+        uint32 flight_speed = playerDynamicBase + 0x8B8;//!checked
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
+        buff << uint8(0xF);
         buff << uint32(flight_speed);
         buff << uint8(0x04);
 
-        uint32 swim_speed = playerMovementBase + 0x824;
+        uint32 swim_speed = playerDynamicBase + 0x8B0;//!checked
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
+        buff << uint8(0xF);
         buff << uint32(swim_speed);
         buff << uint8(0x04);
 
-        uint32 mov_flags = playerMovementBase + 0x7CC;
+        uint32 mov_flags = playerDynamicBase + 0x858;//!checked
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
+        buff << uint8(0xF);
         buff << uint32(mov_flags);
         buff << uint8(0x04);
 
-        uint32 cur_speed = playerMovementBase + 0x814;
+        uint32 cur_speed = playerDynamicBase + 0x8A4;//!checked
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
+        buff << uint8(0xF);
         buff << uint32(cur_speed);
         buff << uint8(0x04);
 
-        uint32 vert_delta = playerMovementBase + 0x858;
+        /*uint32 vert_delta = playerDynamicBase + 0x858;//not found
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
+        buff << uint8(0xF);
         buff << uint32(vert_delta);
         buff << uint8(0x04);
 
-        uint32 faction = playerMovementBase + 0x1A34;
+        uint32 faction = playerDynamicBase + 0x1A34;//not found
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
+        buff << uint8(0xF);
         buff << uint32(faction);
         buff << uint8(0x04);
 
         uint32 map_z = 0x00D3945C;
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
+        buff << uint8(0xF);
         buff << uint32(map_z);
         buff << uint8(0x04);
 
-        /*uint32 coord_x = playerMovementBase + 0x798;
+        /*uint32 coord_x = playerDynamicBase + 0x798;
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
         buff << uint32(coord_x);
         buff << uint8(0x04);
 
-        uint32 coord_y = playerMovementBase + 0x79C;
+        uint32 coord_y = playerDynamicBase + 0x79C;
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
         buff << uint32(coord_y);
-        buff << uint8(0x04);*/
+        buff << uint8(0x04);
 
-        uint32 coord_z = playerMovementBase + 0x7A0;
+        uint32 coord_z = playerDynamicBase + 0x7A0;//not found
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
+        buff << uint8(0xF);
         buff << uint32(coord_z);
-        buff << uint8(0x04);
+        buff << uint8(0x04);*/
 
         dataCreate = true;
     }
@@ -790,34 +782,16 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
     }
 
     // first packet in chain
-    if (playerBase == 0x00 && offset == 0x00 && playerMovementBase == 0x00)
+    if (playerDynamicBase == 0x00)
     {
-        buff >> playerBase;
-        //_dynamicCheckTimer = 1000;
-        _dynDataSent = false;
-        return;
-    }
-
-    // second packet in chain
-    if (playerBase != 0x00 && offset == 0x00 && playerMovementBase == 0x00)
-    {
-        buff >> offset;
-        //_dynamicCheckTimer = 1000;
-        _dynDataSent = false;
-        return;
-    }
-
-    // third packet in chain
-    if (playerBase != 0x00 && offset != 0x00 && playerMovementBase == 0x00)
-    {
-        buff >> playerMovementBase;
+        buff >> playerDynamicBase;
         //_dynamicCheckTimer = 1000;
         _dynDataSent = false;
         return;
     }
 
     // data from client
-    if (playerBase != 0x00 && offset != 0x00 && playerMovementBase != 0x00)
+    if (playerDynamicBase != 0x00)
     {
         uint32 check_data;
         buff >> check_data;
@@ -841,7 +815,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
         // player not vehicle
         else
         {
-            if (check_data != 0xA326C8)
+            if (check_data != 0xD58490)
             {
                 buff.rpos(buff.wpos());
                 // for debug
@@ -880,7 +854,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
         if (!ReadMemChunk(buff, curClientSpeed))
             return;
 
-        float vDeltaConst = 0.0f;
+        /*float vDeltaConst = 0.0f;
         if (!ReadMemChunk(buff, vDeltaConst))
             return;
 
@@ -1163,7 +1137,7 @@ bool WardenWin::CheckMovementFlags(uint32 moveflags, std::string &reason, uint16
 
     bool correct = true;
 
-    /*if (moveflags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING))
+    if (moveflags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING))
     {
         if (plr->GetVehicle() && plr->GetVehicleBase())
         {
@@ -1171,7 +1145,7 @@ bool WardenWin::CheckMovementFlags(uint32 moveflags, std::string &reason, uint16
             {
                 if (!IsAllowFlyingOnVehicles(vb))
                 {
-                    if (moveflags & MOVEMENTFLAG_INTERNAL)
+                    if (moveflags & 0x80000000)
                         reason += "Vehicle flyhack detected (Hitchhiker's Hack type)";
                     else
                         reason += "Vehicle flyhack detected (WoWEmuHacker type)";
@@ -1185,7 +1159,7 @@ bool WardenWin::CheckMovementFlags(uint32 moveflags, std::string &reason, uint16
         {
             if (!IsAllowPlayerFlying(plr))
             {
-                if (moveflags & MOVEMENTFLAG_INTERNAL)
+                if (moveflags & 0x80000000)
                     reason += "Flyhack detected (Hitchhiker's Hack type)";
                 else
                     reason += "Flyhack detected (WoWEmuHacker type)";
@@ -1196,14 +1170,14 @@ bool WardenWin::CheckMovementFlags(uint32 moveflags, std::string &reason, uint16
         }
     }
 
-    /*if (moveflags & MOVEMENTFLAG_SWIMMING)
+    if (moveflags & MOVEMENTFLAG_SWIMMING)
     {
-    if (!plr->IsInWater())
-    {
-    reason += " + AirSwimHack detected";
-    banMask |= RESP_AIRSWIM_HACK;
-    correct = false;
-    }
+        if (!plr->IsInWater())
+        {
+            reason += " + AirSwimHack detected";
+            banMask |= RESP_AIRSWIM_HACK;
+            correct = false;
+        }
     }
 
     if (moveflags & MOVEMENTFLAG_DISABLE_GRAVITY && !plr->GetVehicle())
@@ -1213,7 +1187,7 @@ bool WardenWin::CheckMovementFlags(uint32 moveflags, std::string &reason, uint16
         correct = false;
     }
 
-    if (moveflags & MOVEMENTFLAG_WATERWALKING)
+    /*if (moveflags & MOVEMENTFLAG_WATERWALKING)
     {
         if (!plr->IsAllowWaterwalking() && !plr->IsAllowWaterwalkingOnServer() && !plr->GetVehicle())
         {
@@ -1243,7 +1217,7 @@ bool WardenWin::CheckMovementFlags(uint32 moveflags, std::string &reason, uint16
                 correct = false;
             }
         }
-    }
+    }*/
 
     // cut mistake begin
     std::string new_info = "";
@@ -1261,7 +1235,7 @@ bool WardenWin::CheckMovementFlags(uint32 moveflags, std::string &reason, uint16
     if (new_info == "")
         new_info = "none";
 
-    reason = new_info;*/
+    reason = new_info;
     return correct;
 }
 
@@ -1392,7 +1366,7 @@ MoveType WardenWin::SelectSpeedType(uint32 moveFlags)
 
 void WardenWin::SendControlMovementPacket(uint32 opcode, bool added, uint32 moveFlags)
 {
-    /*Player * plr = _session->GetPlayer();
+    Player * plr = _session->GetPlayer();
 
     if (!plr)
         return;
@@ -1405,11 +1379,11 @@ void WardenWin::SendControlMovementPacket(uint32 opcode, bool added, uint32 move
         else
             mInfo.RemoveMovementFlag(MovementFlags(moveFlags));
 
-        WorldPacket data(opcode, 200);
+        WorldPacket data((Opcodes)opcode, 200);
         mInfo.guid = plr->GetGUID();
-        _session->WriteMovementInfo(&data, &mInfo);
+        _session->WriteMovementInfo(data, &mInfo);
         plr->SendMessageToSet(&data, true);
-    }*/
+    }
 }
 
 bool WardenWin::IsPlayerFaction(uint32 faction)
@@ -1502,7 +1476,7 @@ bool WardenWin::HasAnticheatImmune()
 
 float WardenWin::GetServerSpeed(Unit * obj, UnitMoveType mtype)
 {
-    /*int32 main_speed_mod = 0;
+    int32 main_speed_mod = 0;
     float stack_bonus = 1.0f;
     float non_stack_bonus = 1.0f;
 
@@ -1574,14 +1548,14 @@ float WardenWin::GetServerSpeed(Unit * obj, UnitMoveType mtype)
         break;
     }
     default:
-        sLog->outError("Unit::UpdateSpeed: Unsupported move type (%d)", mtype);
+        //sLog->outError("Unit::UpdateSpeed: Unsupported move type (%d)", mtype);
         return 0.0f;
     }
 
     // now we ready for speed calculation
     float speed = std::max(non_stack_bonus, stack_bonus);
     if (main_speed_mod)
-        AddPctN(speed, main_speed_mod);
+        AddPct(speed, main_speed_mod);
 
     switch (mtype)
     {
@@ -1619,14 +1593,14 @@ float WardenWin::GetServerSpeed(Unit * obj, UnitMoveType mtype)
     int32 slow = obj->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_DECREASE_SPEED);
     if (slow)
     {
-        AddPctN(speed, slow);
+        AddPct(speed, slow);
         if (float minSpeedMod = (float)obj->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_MINIMUM_SPEED))
         {
             float min_speed = minSpeedMod / 100.0f;
             if (speed < min_speed)
                 speed = min_speed;
         }
-    }*/
+    }
 
     return obj->GetSpeedRate(mtype)*(obj->IsControlledByPlayer() ? playerBaseMoveSpeed[mtype] : baseMoveSpeed[mtype]);
 }

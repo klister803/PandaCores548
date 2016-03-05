@@ -908,20 +908,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
             }
             break;
         }
-        case SPELL_AURA_MOD_DECREASE_SPEED:
-        {
-            if (!target)
-                break;
-
-            switch (GetId())
-            {
-                case 119450:
-                {
-                    if (target->isPet())
-                    amount = 0;
-                }
-            }
-        }
         case SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN:
         {
             if (!caster)
@@ -989,7 +975,10 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                         amount  = -100;
                         amount += paladin->GetFloatValue(UNIT_MOD_HASTE) * 100.0f;
 
-                        if (amount > 0) amount = 0;
+                        if (amount < -33)
+                            amount = -33;
+                        else if (amount > 0) 
+                            amount = 0;
                     }
                     break;
                 }
@@ -6281,15 +6270,18 @@ void AuraEffect::HandleModPowerCostPCT(AuraApplication const* aurApp, uint8 mode
 
     Unit* target = aurApp->GetTarget();
 
-    float amount = CalculatePct(1.0f, GetAmount());
-    for (int i = 0; i < MAX_SPELL_SCHOOL; ++i)
-        if (GetMiscValue() & (1 << i))
-            target->ApplyModSignedFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER + i, amount, apply);
+    if (target->GetTypeId() == TYPEID_PLAYER || target->GetOwner() && target->GetOwner()->GetTypeId() == TYPEID_PLAYER)
+    {
+        float amount = CalculatePct(1.0f, GetAmount());
+        for (int i = 0; i < MAX_SPELL_SCHOOL; ++i)
+            if (GetMiscValue() & (1 << i))
+                target->ApplyModSignedFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER + i, amount, apply);
 
-    // Preparation
-    // This allows changind spec while in battleground
-    if (GetId() == 44521)
-        target->ModifyAuraState(AURA_STATE_UNKNOWN20, apply);
+        // Preparation
+        // This allows changind spec while in battleground
+        if (GetId() == 44521)
+            target->ModifyAuraState(AURA_STATE_UNKNOWN20, apply);
+    }
 }
 
 void AuraEffect::HandleModPowerCost(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -7488,13 +7480,19 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
                 // Camouflage
                 case 80326:
                 {
-                    if (!caster || (caster->isMoving() && !caster->HasAura(119449) && !caster->isPet()) || caster->HasAura(80325))
+                    if (!caster || !target)
                         return;
 
-                    if (caster->HasAura(119449) || (caster->GetOwner() && caster->GetOwner()->HasAura(119449)))
-                        caster->CastSpell(caster, 119450, true);
+                    if (caster->HasAura(119449))
+                    {
+                        if (!target->HasAura(119450))
+                            target->CastSpell(target, 119450, true);
+                    }
                     else
-                        caster->CastSpell(caster, 80325, true);
+                    {
+                        if (!target->isMoving() && !target->HasAura(80325))
+                            target->CastSpell(target, 80325, true);
+                    }
                     break;
                 }
                 default:
@@ -7990,13 +7988,6 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
             case 66882:
                 target->CastCustomSpell(triggerSpellId, SPELLVALUE_RADIUS_MOD, (int32)((((float)m_tickNumber / 60) * 0.9f + 0.1f) * 10000 * 2 / 3), NULL, true, NULL, this);
                 return;
-            // Beacon of Light
-            case 53563:
-            {
-                // area aura owner casts the spell
-                GetBase()->GetUnitOwner()->CastSpell(target, triggeredSpellInfo, true, 0, this, GetBase()->GetUnitOwner()->GetGUID());
-                return;
-            }
             // Slime Spray - temporary here until preventing default effect works again
             // added on 9.10.2010
             case 69508:

@@ -2504,7 +2504,6 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
             switch(m_spellInfo->Effects[0].Effect)
             {
                 case SPELL_EFFECT_INTERRUPT_CAST:
-                    break;
                 case SPELL_EFFECT_APPLY_AURA:
                 case SPELL_EFFECT_DISPEL:
                 case SPELL_EFFECT_SCHOOL_DAMAGE:
@@ -6354,10 +6353,10 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
             _caster = m_caster;
 
             if (i->target)
-                _target = (m_originalCaster ? m_originalCaster : m_caster)->GetUnitForLinkedSpell(_caster, _target, i->target);
+                _target = (m_originalCaster ? m_originalCaster : m_caster)->GetUnitForLinkedSpell(_caster, _target, i->target, abs(i->effect));
 
             if (i->caster)
-                _caster = (m_originalCaster ? m_originalCaster : m_caster)->GetUnitForLinkedSpell(_caster, _target, i->caster);
+                _caster = (m_originalCaster ? m_originalCaster : m_caster)->GetUnitForLinkedSpell(_caster, _target, i->caster, abs(i->effect));
 
             if(!_caster)
                 continue;
@@ -6980,7 +6979,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     if (!(AttributesCustomEx2 & SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS) && VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) && !m_caster->IsWithinLOSInMap(target))
                         return SPELL_FAILED_LINE_OF_SIGHT;
 
-                if (m_spellInfo->DmgClass != SPELL_DAMAGE_CLASS_MELEE && m_caster->IsVisionObscured(target))
+                if (m_spellInfo->RangeEntry->ID != 2 /*Combat Range*/ && m_caster->IsVisionObscured(target))
                 {
                     if (m_caster->ToCreature() && m_caster->GetEntry() == 71529) //fix exploit on Thok Bloodthirsty
                         m_caster->ToCreature()->AI()->EnterEvadeMode();
@@ -9745,10 +9744,21 @@ void Spell::CustomTargetSelector(std::list<WorldObject*>& targets, SpellEffIndex
                 }
                 case SPELL_FILTER_TARGET_TYPE: //3
                 {
-                    if(itr->param1 < 0.0f)
-                        targets.remove_if(Trinity::UnitTypeCheck(true, uint32(itr->param2)));
-                    else
-                        targets.remove_if(Trinity::UnitTypeCheck(false, uint32(itr->param2)));
+                    if (itr->param1)  // can`t remove players
+                    {
+                        if (itr->param1 < 0.0f)
+                            targets.remove_if(Trinity::UnitTypeMaskCheck(true, uint32(abs(itr->param1))));
+                        else
+                            targets.remove_if(Trinity::UnitTypeMaskCheck(false, uint32(itr->param1)));
+                    }
+
+                    if (itr->param2)
+                    {
+                        if (itr->param2 < 0.0f)
+                            targets.remove_if(Trinity::UnitTypeIdCheck(true, uint32(abs(itr->param2))));
+                        else
+                            targets.remove_if(Trinity::UnitTypeIdCheck(false, uint32(itr->param2)));
+                    }
                     break;
                 }
                 case SPELL_FILTER_SORT_BY_DISTANCE: //4

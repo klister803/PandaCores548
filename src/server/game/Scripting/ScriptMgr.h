@@ -685,6 +685,7 @@ class AchievementRewardScript : public ScriptObject
 
         // Called ow handling reward
         virtual bool OnGet(Player* /*source*/, AchievementReward const* /*data*/) {  return false; };
+        virtual uint32 SelectTitle(Player* /*source*/, AchievementReward const* /*data*/) { return 0; };
         virtual uint32 SelectItem(Player* /*source*/, AchievementReward const* /*data*/) { return 0; };
 };
 
@@ -1030,6 +1031,7 @@ class ScriptMgr
     public: /* AchievementRewardScript */
 
         bool OnRewardCheck(AchievementReward const* data, Player* source);
+        uint32 OnSelectTitleReward(AchievementReward const* data, Player* source);
         uint32 OnSelectItemReward(AchievementReward const* data, Player* source);
 
     public: /* AchievementScript */
