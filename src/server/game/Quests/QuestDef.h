@@ -448,6 +448,7 @@ struct QuestStatusData
     {
         memset(ItemCount, 0, QUEST_ITEM_OBJECTIVES_COUNT * sizeof(uint16));
         memset(CreatureOrGOCount, 0, QUEST_OBJECTIVES_COUNT * sizeof(uint16));
+        account = false;
     }
 
     QuestStatus Status;
@@ -456,6 +457,7 @@ struct QuestStatusData
     uint16 CreatureOrGOCount[QUEST_OBJECTIVES_COUNT];
     uint16 PlayerCount;
     bool Explored;
+    bool account;
 };
 
 enum QuestObjectives

@@ -800,15 +800,15 @@ void WorldSession::HandlePlayerLoginOpcode(WorldPacket& recvData)
     {
         char* userKey = new char[18];
         sprintf(userKey, "r{%i}u{%i}", realmID, playerGuid);
-        RedisDatabase.AsyncExecute("HEXISTS", userKey, _accountId, [&](const RedisValue &v, uint64 accountId) {
+        RedisDatabase.AsyncExecute("EXISTS", userKey, _accountId, [&](const RedisValue &v, uint64 accountId) {
             if (WorldSession* sess = sWorld->FindSession(accountId))
             {
-                if (v.isOk() && v.toInt())
+                if (v.isOk() && bool(v.toInt()))
                     sess->HandlePlayerLogin(sess->GetAccountId(), sess->GetPlayerGuid());
                 else
                     sess->HandlePlayerLoginHolder();
             }
-            sLog->outInfo(LOG_FILTER_REDIS, "WorldSession::HandlePlayerLoginOpcode isOk %u", v.isOk());
+            sLog->outInfo(LOG_FILTER_REDIS, "WorldSession::HandlePlayerLoginOpcode isOk %u toInt %u", v.isOk(), v.toInt());
         });
     }
     else
@@ -817,6 +817,8 @@ void WorldSession::HandlePlayerLoginOpcode(WorldPacket& recvData)
 
 void WorldSession::HandlePlayerLoginHolder()
 {
+    sLog->outInfo(LOG_FILTER_REDIS, "WorldSession::HandlePlayerLoginHolder");
+
     LoginQueryHolder *holder = new LoginQueryHolder(GetAccountId(), _playerGuid);
     if (!holder->Initialize())
     {

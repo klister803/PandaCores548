@@ -1640,18 +1640,32 @@ class Player : public Unit, public GridObject<Player>
         void SavePlayer();
         void SavePlayerBG();
         void SavePlayerGroup();
+        void InitPlayerLootCooldown();
         void SavePlayerLootCooldown();
+        void UpdatePlayerLootCooldown(playerLootCooldown* lootCooldown, uint32 entry, uint8 type, bool isDelete = false);
+        void InitPlayerCurrency();
         void SavePlayerCurrency();
+        void InitPlayerBoundInstances();
         void SavePlayerBoundInstances();
         void UpdateInstance(InstanceSave* save);
+        void RemoveInstance(uint32 instance);
+        void InitPlayerSkills();
         void SavePlayerSkills();
+        void UpdatePlayerSkill(uint32 skillId, uint16 value, uint16 max, uint16 pos bool isDelete = false);
+        void InitPlayerTalents();
         void SavePlayerTalents();
+        UpdatePlayerTalent(uint32 spellId, uint8 specId, bool deleteTal = false, bool deleteSpec = false)
         void SavePlayerSpells();
         void InitPlayerSpells();
+        void UpdatePlayerSpell(PlayerSpell* pSpell, uint32 spellId, bool isDelete = false);
+        void InitPlayerGlyphs();
         void SavePlayerGlyphs();
+        void UpdatePlayerGlyph(uint8 slot, uint32 glyph);
         void SavePlayerAuras();
-        void SavePlayerQuestStatus();
-        void SavePlayerQuestRewarded();
+        void InitPlayerQuestStatus();
+        void UpdatePlayerQuestStatus(uint32 questId, QuestStatusData* q_status, bool isDelete = false);
+        void InitPlayerQuestRewarded();
+        void UpdatePlayerQuestRewarded(uint32 questId, bool isDelete);
         void SavePlayerQuestDaily();
         void SavePlayerQuestWeekly();
         void SavePlayerQuestSeasonal();
@@ -2372,6 +2386,7 @@ class Player : public Unit, public GridObject<Player>
         {
             _talentMgr->SpecInfo[GetActiveSpec()].Glyphs[slot] = glyph;
             SetUInt32Value(PLAYER_FIELD_GLYPHS_1 + slot, glyph);
+            UpdatePlayerGlyph(slot, glyph);
         }
         uint32 GetGlyph(uint8 spec, uint8 slot) const { return _talentMgr->SpecInfo[spec].Glyphs[slot]; }
 

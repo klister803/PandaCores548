@@ -1749,7 +1749,7 @@ void Player::Update(uint32 p_time)
             {
                 q_status.Timer -= p_time;
 
-                SavePlayerQuestStatus();
+                UpdatePlayerQuestStatus(*iter, &q_status);
 
                 ++iter;
             }
@@ -4208,7 +4208,6 @@ bool Player::AddTalent(TalentEntry const* talent, uint8 spec, bool learning)
         itr->second->state = PLAYERSPELL_UNCHANGED;
     else 
     {
-
         PlayerSpellState state = learning ? PLAYERSPELL_NEW : PLAYERSPELL_UNCHANGED;
         PlayerTalent* newtalent = new PlayerTalent();
 
@@ -4217,6 +4216,7 @@ bool Player::AddTalent(TalentEntry const* talent, uint8 spec, bool learning)
         newtalent->talentEntry = talent;
 
         (*GetTalentMap(spec))[talent->spellId] = newtalent;
+        UpdatePlayerTalent(talent->spellId, spec);
         return true;
     }
     return false;
@@ -4387,6 +4387,8 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
 
         if (itr->second->disabled != disabled && itr->second->state != PLAYERSPELL_REMOVED)
         {
+            UpdatePlayerSpell(itr->second, spellId);
+
             if (itr->second->state != PLAYERSPELL_NEW)
                 itr->second->state = PLAYERSPELL_CHANGED;
             itr->second->disabled = disabled;
@@ -4402,6 +4404,7 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
                 return false;
             case PLAYERSPELL_REMOVED:                       // re-learning removed not saved spell
             {
+                UpdatePlayerSpell(itr->second, spellId, true);
                 delete itr->second;
                 m_spells.erase(itr);
                 state = PLAYERSPELL_CHANGED;
@@ -4569,6 +4572,8 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
         }
 
         m_spells[spellId] = newspell;
+
+        UpdatePlayerSpell(newspell, spellId);
 
         // return false if spell disabled
         if (newspell->disabled)
@@ -4909,9 +4914,13 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
         itr->second->disabled = disabled;
         if (itr->second->state != PLAYERSPELL_NEW)
             itr->second->state = PLAYERSPELL_CHANGED;
+
+        UpdatePlayerSpell(itr->second, spell_id);
     }
     else
     {
+        UpdatePlayerSpell(itr->second, spell_id, true);
+
         if (itr->second->state == PLAYERSPELL_NEW)
         {
             delete itr->second;
@@ -5476,6 +5485,7 @@ bool Player::ResetTalents(bool no_cost)
         if (plrTalent != GetTalentMap(GetActiveSpec())->end())
             plrTalent->second->state = PLAYERSPELL_REMOVED;
     }
+    UpdatePlayerTalent(0, GetActiveSpec(), false, true);
 
     SetFreeTalentPoints(talentPointsForLevel);
     SetUsedTalentCount(0);
@@ -7113,6 +7123,7 @@ bool Player::UpdateSkill(uint32 skill_id, uint32 step)
         if (itr->second.uState != SKILL_NEW)
             itr->second.uState = SKILL_CHANGED;
 
+        UpdatePlayerSkill(skill_id, value, max, itr->second.pos);
         SavePlayerSkills();
 
         UpdateSkillEnchantments(skill_id, value, new_value);
@@ -7289,6 +7300,7 @@ void Player::ModifySkillBonus(uint32 skillid, int32 val, bool talent)
 
     SetUInt16Value(field, offset, bonus + val);
 
+    UpdatePlayerSkill(skillid, bonus + val, 0, itr->second.pos);
     SavePlayerSkills();
 }
 
@@ -7338,6 +7350,8 @@ void Player::SetSkill(uint16 id, uint16 step, uint16 newVal, uint16 maxVal)
             if (newVal > currVal)
                 UpdateSkillEnchantments(id, currVal, newVal);
 
+            UpdatePlayerSkill(id, newVal, maxVal, itr->second.pos);
+
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_SKILL_LEVEL, id);
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LEARN_SKILL_LEVEL, id);
         }
@@ -7352,6 +7366,8 @@ void Player::SetSkill(uint16 id, uint16 step, uint16 newVal, uint16 maxVal)
             SetUInt16Value(PLAYER_SKILL_MAX_RANK_0 + field, offset, 0);
             SetUInt16Value(PLAYER_SKILL_MODIFIER_0 + field, offset, 0);
             SetUInt16Value(PLAYER_SKILL_TALENT_0 + field, offset, 0);
+
+            UpdatePlayerSkill(id, 0, 0, 0, true);
 
             // mark as deleted or simply remove from map if not saved yet
             if (itr->second.uState != SKILL_NEW)
@@ -7411,6 +7427,8 @@ void Player::SetSkill(uint16 id, uint16 step, uint16 newVal, uint16 maxVal)
                 // apply skill bonuses
                 SetUInt16Value(PLAYER_SKILL_MODIFIER_0 + field, offset, 0);
                 SetUInt16Value(PLAYER_SKILL_TALENT_0 + field, offset, 0);
+
+                UpdatePlayerSkill(id, newVal, maxVal, itr->second.pos);
 
                 // temporary bonuses
                 AuraEffectList const& mModSkill = GetAuraEffectsByType(SPELL_AURA_MOD_SKILL);
@@ -8725,7 +8743,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         }
     }
 
-    SavePlayerCurrency();
+    UpdatePlayerCurrency(&itr->second, id);
 }
 
 void Player::SetCurrency(uint32 id, uint32 count, bool printLog /*= true*/)
@@ -8749,6 +8767,8 @@ void Player::ResetCurrencyWeekCap()
         itr->second.weekCount = 0;
         itr->second.curentCap = 0;
         itr->second.state = PLAYERCURRENCY_CHANGED;
+        PlayerData["currency"][currencyID.c_str()]["weekCount"] = itr->second.weekCount;
+        PlayerData["currency"][currencyID.c_str()]["curentCap"] = itr->second.curentCap;
     }
 
     WorldPacket data(SMSG_WEEKLY_RESET_CURRENCY, 0);
@@ -16921,6 +16941,7 @@ void Player::AddQuest(Quest const* quest, Object* questGiver)
     // check for repeatable quests status reset
     questStatusData.Status = QUEST_STATUS_INCOMPLETE;
     questStatusData.Explored = false;
+    questStatusData.account = quest->GetType() == QUEST_TYPE_ACCOUNT;
 
     if (quest->HasSpecialFlag(QUEST_SPECIAL_FLAGS_DELIVER))
     {
@@ -16984,7 +17005,7 @@ void Player::AddQuest(Quest const* quest, Object* questGiver)
 
     UpdateForQuestWorldObjects();
 
-    SavePlayerQuestStatus();
+    UpdatePlayerQuestStatus(quest_id, &questStatusData);
 }
 
 void Player::CompleteQuest(uint32 quest_id)
@@ -17251,6 +17272,7 @@ void Player::FailQuest(uint32 questId)
             RemoveTimedQuest(questId);
             q_status.Timer = 0;
 
+            UpdatePlayerQuestStatus(questId, &q_status);
             SendQuestTimerFailed(questId);
         }
         else
@@ -17265,8 +17287,6 @@ void Player::FailQuest(uint32 questId)
             if (quest->RequiredSourceItemId[i] > 0 && quest->RequiredSourceItemCount[i] > 0)
                 // Destroy items received during the quest.
                 DestroyItemCount(quest->RequiredSourceItemId[i], quest->RequiredSourceItemCount[i], true, true);
-
-        SavePlayerQuestStatus();
     }
 }
 
@@ -17815,7 +17835,11 @@ bool Player::CanShareQuest(uint32 quest_id) const
 void Player::SetQuestStatus(uint32 quest_id, QuestStatus status)
 {
     if (sObjectMgr->GetQuestTemplate(quest_id))
-        m_QuestStatus[quest_id].Status = status;
+    {
+        QuestStatusData& q_status = m_QuestStatus[quest_id];
+        q_status.Status = status;
+        UpdatePlayerQuestStatus(quest_id, &q_status);
+    }
 
     uint32 zone = 0, area = 0;
 
@@ -17827,8 +17851,6 @@ void Player::SetQuestStatus(uint32 quest_id, QuestStatus status)
     phaseMgr.NotifyConditionChanged(phaseUdateData);
 
     UpdateForQuestWorldObjects();
-
-    SavePlayerQuestStatus();
 }
 
 void Player::RemoveActiveQuest(uint32 quest_id)
@@ -17836,6 +17858,8 @@ void Player::RemoveActiveQuest(uint32 quest_id)
     QuestStatusMap::iterator itr = m_QuestStatus.find(quest_id);
     if (itr != m_QuestStatus.end())
     {
+        UpdatePlayerQuestStatus(quest_id, &itr->second, true);
+
         m_QuestStatus.erase(itr);
 
         CheckSpellAreaOnQuestStatusChange(quest_id);
@@ -17844,8 +17868,6 @@ void Player::RemoveActiveQuest(uint32 quest_id)
         phaseUdateData.AddQuestUpdate(quest_id);
 
         phaseMgr.NotifyConditionChanged(phaseUdateData);
-
-        SavePlayerQuestStatus();
         return;
     }
 }
@@ -17892,7 +17914,7 @@ void Player::AdjustQuestReqItemCount(Quest const* quest, QuestStatusData& questS
                 uint32 curitemcount = GetItemCount(quest->RequiredItemId[i], true);
 
                 questStatusData.ItemCount[i] = std::min(curitemcount, reqitemcount);
-                SavePlayerQuestStatus();
+                UpdatePlayerQuestStatus(quest->GetQuestId(), &questStatusData);
             }
         }
     }
@@ -17919,7 +17941,7 @@ void Player::AreaExploredOrEventHappens(uint32 questId)
             if (!q_status.Explored)
             {
                 q_status.Explored = true;
-                SavePlayerQuestStatus();
+                UpdatePlayerQuestStatus(questId, &q_status);
             }
         }
         if (CanCompleteQuest(questId))
@@ -17974,7 +17996,7 @@ void Player::ItemAddedQuestCheck(uint32 entry, uint32 count)
                     uint16 additemcount = curitemcount + count <= reqitemcount ? count : reqitemcount - curitemcount;
                     q_status.ItemCount[j] += additemcount;
 
-                    SavePlayerQuestStatus();
+                    UpdatePlayerQuestStatus(questid, &q_status);
                     //SendQuestUpdateAddItem(qInfo, j, additemcount);
                     // FIXME: verify if there's any packet sent updating item
                 }
@@ -18020,7 +18042,7 @@ void Player::ItemRemovedQuestCheck(uint32 entry, uint32 count)
 
                     IncompleteQuest(questid);
 
-                    SavePlayerQuestStatus();
+                    UpdatePlayerQuestStatus(questid, &q_status);
                 }
                 return;
             }
@@ -18096,7 +18118,7 @@ void Player::KilledMonsterCredit(uint32 entry, uint64 guid)
                         {
                             q_status.CreatureOrGOCount[j] = curkillcount + addkillcount;
 
-                            SavePlayerQuestStatus();
+                            UpdatePlayerQuestStatus(questid, &q_status);
 
                             SendQuestUpdateAddCreatureOrGo(qInfo, guid, j, curkillcount, addkillcount);
                         }
@@ -18138,7 +18160,7 @@ void Player::KilledPlayerCredit()
                 {
                     q_status.PlayerCount = curkill + addkillcount;
 
-                    SavePlayerQuestStatus();
+                    UpdatePlayerQuestStatus(questid, &q_status);
 
                     SendQuestUpdateAddPlayer(qInfo, curkill, addkillcount);
                 }
@@ -18215,7 +18237,7 @@ void Player::CastedCreatureOrGO(uint32 entry, uint64 guid, uint32 spell_id)
                     {
                         q_status.CreatureOrGOCount[j] = curCastCount + addCastCount;
 
-                        SavePlayerQuestStatus();
+                        UpdatePlayerQuestStatus(questid, &q_status);
 
                         SendQuestUpdateAddCreatureOrGo(qInfo, guid, j, curCastCount, addCastCount);
                     }
@@ -18272,7 +18294,7 @@ void Player::TalkedToCreature(uint32 entry, uint64 guid)
                         {
                             q_status.CreatureOrGOCount[j] = curTalkCount + addTalkCount;
 
-                            SavePlayerQuestStatus();
+                            UpdatePlayerQuestStatus(questid, &q_status);
 
                             SendQuestUpdateAddCreatureOrGo(qInfo, guid, j, curTalkCount, addTalkCount);
                         }
@@ -20274,6 +20296,7 @@ void Player::_LoadQuestStatus(PreparedQueryResult result)
 
                 // find or create
                 QuestStatusData& questStatusData = m_QuestStatus[quest_id];
+                questStatusData.account = quest->GetType() == QUEST_TYPE_ACCOUNT;
 
                 uint8 qstatus = fields[1].GetUInt8();
                 if (qstatus < MAX_QUEST_STATUS)
@@ -20716,7 +20739,10 @@ void Player::ResetLootCooldown()
         for (PlayerLootCooldownMap::iterator itr = m_playerLootCooldown[i].begin(); itr != m_playerLootCooldown[i].end();)
         {
             if(itr->second.respawnTime)
+            {
+                UpdatePlayerLootCooldown(&itr->second, itr->second.entry, itr->second.type, true);
                 m_playerLootCooldown[i].erase(itr++);
+            }
             else
                 ++itr;
         }
@@ -20736,9 +20762,13 @@ void Player::AddPlayerLootCooldown(uint32 entry, uint8 type/* = 0*/, bool respaw
         lootCooldown.respawnTime = respawn ? time(NULL) + WEEK : 0;
         lootCooldown.state = true;
         m_playerLootCooldown[type][entry] = lootCooldown;
+        UpdatePlayerLootCooldown(&lootCooldown, entry, type);
     }
     else
+    {
         itr->second.difficultyMask |= (1 << (sObjectMgr->GetDiffFromSpawn(diff)));
+        UpdatePlayerLootCooldown(&itr->second, entry, type);
+    }
 
     SavePlayerLootCooldown();
 }
@@ -20877,6 +20907,7 @@ void Player::UnbindInstance(BoundInstancesMap::iterator &itr, Difficulty difficu
             GetSession()->SendCalendarRaidLockoutRemoved(itr->second.save);
 
         itr->second.save->RemovePlayer(this);               // save can become invalid
+        RemoveInstance(itr->second.save->GetInstanceId());
         m_boundInstances[difficulty].erase(itr++);
     }
 }
@@ -22731,6 +22762,7 @@ void Player::ResetInstances(uint8 method, bool isRaid)
             SendResetInstanceSuccess(p->GetMapId());
 
 //        p->DeleteFromDB();
+        RemoveInstance(p->GetInstanceId());
         m_boundInstances[diff].erase(itr++);
 
         // the following should remove the instance save from the manager and delete it as well

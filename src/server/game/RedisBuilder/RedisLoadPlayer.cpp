@@ -1702,13 +1702,13 @@ void Player::LoadPlayerGlyphs()
     for (auto iter = PlayerData["glyphs"].begin(); iter != PlayerData["glyphs"].end(); ++iter)
     {
         uint8 spec = atoi(iter.memberName());
-        auto glyph = *iter;
-        _talentMgr->SpecInfo[spec].Glyphs[0] = glyph["glyph1"].asInt();
-        _talentMgr->SpecInfo[spec].Glyphs[1] = glyph["glyph2"].asInt();
-        _talentMgr->SpecInfo[spec].Glyphs[2] = glyph["glyph3"].asInt();
-        _talentMgr->SpecInfo[spec].Glyphs[3] = glyph["glyph4"].asInt();
-        _talentMgr->SpecInfo[spec].Glyphs[4] = glyph["glyph5"].asInt();
-        _talentMgr->SpecInfo[spec].Glyphs[5] = glyph["glyph6"].asInt();
+        auto glyphs = *iter;
+        for (auto itr = glyphs.begin(); itr != glyphs.end(); ++itr)
+        {
+            uint8 slot = atoi(itr.memberName());
+            auto glyph = *itr;
+            _talentMgr->SpecInfo[spec].Glyphs[slot] = glyph.asInt();
+        }
     }
 }
 

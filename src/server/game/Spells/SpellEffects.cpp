@@ -8072,6 +8072,7 @@ void Spell::EffectUnlearnTalent(SpellEffIndex effIndex)
 
         plr->SetUsedTalentCount(plr->GetUsedTalentCount()-1);
         plr->SetFreeTalentPoints(plr->GetFreeTalentPoints()+1);
+        UpdatePlayerTalent(itr->first, plr->GetActiveSpec(), true);
         break;
     }
 

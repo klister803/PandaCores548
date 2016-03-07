@@ -314,3 +314,207 @@ void Player::PlayerVoidStorage()
         sLog->outInfo(LOG_FILTER_REDIS, "Player::PlayerVoidStorage player guid %u", guid);
     });
 }
+
+void Player::UpdatePlayerSpell(PlayerSpell* pSpell, uint32 spellId, bool isDelete)
+{
+    std::string spell = std::to_string(spellId);
+    if (isDelete)
+    {
+        if(pSpell->mount)
+            AccountDatas["spells"].removeMember(spell.c_str());
+        else
+            PlayerData["spells"].removeMember(spell.c_str());
+    }
+    else
+    {
+        if(pSpell->mount)
+            AccountDatas["mounts"][spell.c_str()]["active"] = pSpell->active;
+        else
+        {
+            PlayerData["spells"][spell.c_str()]["active"] = pSpell->active;
+            PlayerData["spells"][spell.c_str()]["disabled"] = pSpell->disabled;
+        }
+    }
+}
+
+void Player::UpdatePlayerLootCooldown(playerLootCooldown* lootCooldown, uint32 entry, uint8 type, bool isDelete)
+{
+    std::string typeS = std::to_string(type);
+    std::string entryS = std::to_string(entry);
+    if (isDelete)
+        PlayerData["lootcooldown"][typeS.c_str()].removeMember(entryS.c_str());
+    else
+    {
+        PlayerData["lootcooldown"][typeS.c_str()][entryS.c_str()]["type"] = lootCooldown->type;
+        PlayerData["lootcooldown"][typeS.c_str()][entryS.c_str()]["difficultyMask"] = lootCooldown->difficultyMask;
+        PlayerData["lootcooldown"][typeS.c_str()][entryS.c_str()]["respawnTime"] = lootCooldown->respawnTime;
+    }
+}
+
+void Player::UpdatePlayerCurrency(PlayerCurrency* currency, uint32 id)
+{
+    std::string currencyID = std::to_string(id);
+    PlayerData["currency"][currencyID.c_str()]["weekCount"] = currency->weekCount;
+    PlayerData["currency"][currencyID.c_str()]["totalCount"] = currency->totalCount;
+    PlayerData["currency"][currencyID.c_str()]["seasonTotal"] = currency->seasonTotal;
+    PlayerData["currency"][currencyID.c_str()]["flags"] = currency->flags;
+    PlayerData["currency"][currencyID.c_str()]["curentCap"] = currency->curentCap;
+
+    SavePlayerCurrency();
+}
+
+void Player::RemoveInstance(uint32 instance)
+{
+    std::string instanceID = std::to_string(instance);
+    PlayerData["boundinstances"].removeMember(instanceID.c_str());
+}
+
+void Player::UpdatePlayerSkill(uint32 skillId, uint16 value, uint16 max, uint16 pos, bool isDelete)
+{
+    std::string skill = std::to_string(skillId);
+    if (isDelete)
+        PlayerData["skills"].removeMember(skill.c_str());
+    else
+    {
+        PlayerData["skills"][skill.c_str()]["value"] = value;
+        PlayerData["skills"][skill.c_str()]["max"] = max;
+        PlayerData["skills"][skill.c_str()]["pos"] = pos;
+    }
+}
+
+void Player::UpdatePlayerTalent(uint32 spellId, uint8 specId, bool deleteTal, bool deleteSpec)
+{
+    std::string spell = std::to_string(spellId);
+    std::string spec = std::to_string(specId);
+    if (deleteTal)
+        PlayerData["talents"][spec.c_str()].removeMember(spell.c_str());
+    else if (deleteSpec)
+        PlayerData["talents"].removeMember(spec.c_str());
+    else
+        PlayerData["talents"][spec.c_str()][spell.c_str()] = specId;
+}
+
+void Player::UpdatePlayerGlyph(uint8 slot, uint32 glyph)
+{
+    std::string index = std::to_string(slot);
+    std::string spec = std::to_string(GetActiveSpec());
+    PlayerData["glyphs"][spec.c_str()][index.c_str()] = glyph;
+}
+
+void Player::UpdatePlayerQuestStatus(uint32 questId, QuestStatusData* q_status, bool isDelete)
+{
+    std::string quest_id = std::to_string(questId);
+    if(isDelete)
+    {
+        if (q_status->account)
+        {
+            AccountDatas["queststatus"].removeMember(quest_id.c_str());
+
+            RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "queststatus", sRedisBuilderMgr->BuildString(AccountDatas["queststatus"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+                sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerQuestStatus account guid %u", guid);
+            });
+        }
+        else
+        {
+            PlayerData["queststatus"].removeMember(quest_id.c_str());
+
+            RedisDatabase.AsyncExecuteHSet("HSET", userKey, "queststatus", sRedisBuilderMgr->BuildString(PlayerData["queststatus"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+                sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerQuestStatus player guid %u", guid);
+            });
+        }
+        return;
+    }
+
+    if (q_status->account)
+    {
+        AccountDatas["queststatus"][quest_id.c_str()]["status"] = int32(q_status->Status);
+        AccountDatas["queststatus"][quest_id.c_str()]["explored"] = q_status->Explored;
+        AccountDatas["queststatus"][quest_id.c_str()]["timer"] = q_status->Timer;
+        AccountDatas["queststatus"][quest_id.c_str()]["playercount"] = q_status->PlayerCount;
+        AccountDatas["queststatus"][quest_id.c_str()]["mobcount1"] = q_status->CreatureOrGOCount[0];
+        AccountDatas["queststatus"][quest_id.c_str()]["mobcount2"] = q_status->CreatureOrGOCount[1];
+        AccountDatas["queststatus"][quest_id.c_str()]["mobcount3"] = q_status->CreatureOrGOCount[2];
+        AccountDatas["queststatus"][quest_id.c_str()]["mobcount4"] = q_status->CreatureOrGOCount[3];
+        AccountDatas["queststatus"][quest_id.c_str()]["mobcount5"] = q_status->CreatureOrGOCount[4];
+        AccountDatas["queststatus"][quest_id.c_str()]["mobcount6"] = q_status->CreatureOrGOCount[5];
+        AccountDatas["queststatus"][quest_id.c_str()]["mobcount7"] = q_status->CreatureOrGOCount[6];
+        AccountDatas["queststatus"][quest_id.c_str()]["mobcount8"] = q_status->CreatureOrGOCount[7];
+        AccountDatas["queststatus"][quest_id.c_str()]["mobcount9"] = q_status->CreatureOrGOCount[8];
+        AccountDatas["queststatus"][quest_id.c_str()]["mobcount10"] = q_status->CreatureOrGOCount[9];
+        AccountDatas["queststatus"][quest_id.c_str()]["itemcount1"] = q_status->ItemCount[0];
+        AccountDatas["queststatus"][quest_id.c_str()]["itemcount2"] = q_status->ItemCount[1];
+        AccountDatas["queststatus"][quest_id.c_str()]["itemcount3"] = q_status->ItemCount[2];
+        AccountDatas["queststatus"][quest_id.c_str()]["itemcount4"] = q_status->ItemCount[3];
+        AccountDatas["queststatus"][quest_id.c_str()]["itemcount5"] = q_status->ItemCount[4];
+        AccountDatas["queststatus"][quest_id.c_str()]["itemcount6"] = q_status->ItemCount[5];
+        AccountDatas["queststatus"][quest_id.c_str()]["itemcount7"] = q_status->ItemCount[6];
+        AccountDatas["queststatus"][quest_id.c_str()]["itemcount8"] = q_status->ItemCount[7];
+        AccountDatas["queststatus"][quest_id.c_str()]["itemcount9"] = q_status->ItemCount[8];
+        AccountDatas["queststatus"][quest_id.c_str()]["itemcount10"] = q_status->ItemCount[9];
+
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "queststatus", sRedisBuilderMgr->BuildString(AccountDatas["queststatus"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+            sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerQuestStatus account guid %u", guid);
+        });
+    }
+    else
+    {
+        PlayerData["queststatus"][quest_id.c_str()]["status"] = int32(q_status->Status);
+        PlayerData["queststatus"][quest_id.c_str()]["explored"] = q_status->Explored;
+        PlayerData["queststatus"][quest_id.c_str()]["timer"] = q_status->Timer;
+        PlayerData["queststatus"][quest_id.c_str()]["playercount"] = q_status->PlayerCount;
+        PlayerData["queststatus"][quest_id.c_str()]["mobcount1"] = q_status->CreatureOrGOCount[0];
+        PlayerData["queststatus"][quest_id.c_str()]["mobcount2"] = q_status->CreatureOrGOCount[1];
+        PlayerData["queststatus"][quest_id.c_str()]["mobcount3"] = q_status->CreatureOrGOCount[2];
+        PlayerData["queststatus"][quest_id.c_str()]["mobcount4"] = q_status->CreatureOrGOCount[3];
+        PlayerData["queststatus"][quest_id.c_str()]["mobcount5"] = q_status->CreatureOrGOCount[4];
+        PlayerData["queststatus"][quest_id.c_str()]["mobcount6"] = q_status->CreatureOrGOCount[5];
+        PlayerData["queststatus"][quest_id.c_str()]["mobcount7"] = q_status->CreatureOrGOCount[6];
+        PlayerData["queststatus"][quest_id.c_str()]["mobcount8"] = q_status->CreatureOrGOCount[7];
+        PlayerData["queststatus"][quest_id.c_str()]["mobcount9"] = q_status->CreatureOrGOCount[8];
+        PlayerData["queststatus"][quest_id.c_str()]["mobcount10"] = q_status->CreatureOrGOCount[9];
+        PlayerData["queststatus"][quest_id.c_str()]["itemcount1"] = q_status->ItemCount[0];
+        PlayerData["queststatus"][quest_id.c_str()]["itemcount2"] = q_status->ItemCount[1];
+        PlayerData["queststatus"][quest_id.c_str()]["itemcount3"] = q_status->ItemCount[2];
+        PlayerData["queststatus"][quest_id.c_str()]["itemcount4"] = q_status->ItemCount[3];
+        PlayerData["queststatus"][quest_id.c_str()]["itemcount5"] = q_status->ItemCount[4];
+        PlayerData["queststatus"][quest_id.c_str()]["itemcount6"] = q_status->ItemCount[5];
+        PlayerData["queststatus"][quest_id.c_str()]["itemcount7"] = q_status->ItemCount[6];
+        PlayerData["queststatus"][quest_id.c_str()]["itemcount8"] = q_status->ItemCount[7];
+        PlayerData["queststatus"][quest_id.c_str()]["itemcount9"] = q_status->ItemCount[8];
+        PlayerData["queststatus"][quest_id.c_str()]["itemcount10"] = q_status->ItemCount[9];
+
+        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "queststatus", sRedisBuilderMgr->BuildString(PlayerData["queststatus"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+            sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerQuestStatus player guid %u", guid);
+        });
+    }
+}
+
+void Player::UpdatePlayerQuestRewarded(uint32 questId, bool isDelete)
+{
+    std::string quest_id = std::to_string(questId);
+    Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+    if (!quest)
+        return;
+    if (quest->GetType() == QUEST_TYPE_ACCOUNT)
+    {
+        if (isDelete)
+            AccountDatas["questrewarded"].removeMember(quest_id.c_str());
+        else
+            AccountDatas["questrewarded"][quest_id.c_str()] = quest_id;
+
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questrewarded", sRedisBuilderMgr->BuildString(AccountDatas["questrewarded"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+            sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerQuestRewarded account guid %u", guid);
+        });
+    }
+    else
+    {
+        if (isDelete)
+            PlayerData["questrewarded"].removeMember(quest_id.c_str());
+        else
+            PlayerData["questrewarded"][quest_id.c_str()] = quest_id;
+
+        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questrewarded", sRedisBuilderMgr->BuildString(PlayerData["questrewarded"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+            sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerQuestRewarded player guid %u", guid);
+        });
+    }
+}
