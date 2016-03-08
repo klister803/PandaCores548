@@ -1345,8 +1345,8 @@ public:
             if (state == DONE)
             {
                 DoSummoneEventCreatures();
-                /*if (id < DATA_GARROSH && CheckProgressForGarrosh())
-                    HandleGameObject(klaxxiexdoorGuid, true);*/
+                if (id < DATA_GARROSH && CheckProgressForGarrosh())
+                    HandleGameObject(klaxxiexdoorGuid, true);
             }
             return true;
         }

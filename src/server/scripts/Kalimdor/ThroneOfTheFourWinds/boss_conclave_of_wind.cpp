@@ -227,6 +227,8 @@ public:
         boss_anshalAI(Creature* creature) : ScriptedAI(creature), summons(me)
         {
             instance = creature->GetInstanceScript();
+            me->ApplySpellImmune(SPELL_NURTURE, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
 
             ASSERT(creature->GetVehicleKit()); // we dont actually use it, just check if exists - cause we check shit like that... you know? And if it does not exist?...
             creature->SetPower(POWER_ENERGY, 0);
@@ -241,6 +243,7 @@ public:
 
         void Reset()
         {
+            me->RemoveAllAuras();
             instance->SetData(DATA_CONCLAVE_OF_WIND_EVENT, NOT_STARTED);
             instance->SetBossState(DATA_CONCLAVE_OF_WIND_EVENT, NOT_STARTED);
 
@@ -253,9 +256,7 @@ public:
             me->RemoveAurasDueToSpell(SPELL_DEAD); // Dead Look
             me->RemoveAura(SPELL_SELF_ROOT);
             me->RemoveAura(SPELL_CANNOT_TURN);
-            me->ApplySpellImmune(SPELL_NURTURE, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
-            DoCast(me, SPELL_NO_REGEN);
+            DoCast(me, SPELL_NO_REGEN, true);
             me->SetPower(POWER_ENERGY,0);
         }
 
@@ -270,6 +271,7 @@ public:
                 instance->SetData(DATA_CONCLAVE_OF_WIND_EVENT, FAIL);
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me); // Remove
             }
+            ScriptedAI::EnterEvadeMode();
         }
 
         void EnterCombat(Unit* who)
@@ -284,7 +286,7 @@ public:
 
             gatherStormCast = false;
             DoStartNoMovement(me);
-            DoCast(me, SPELL_NO_REGEN);
+            DoCast(me, SPELL_NO_REGEN, true);
             events.ScheduleEvent(EVENT_SOOTHING_BREEZE,     urand(16500,19000));
             events.ScheduleEvent(EVENT_NURTURE,             urand(7000,11000));
             events.ScheduleEvent(EVENT_ULTIMATE_ANSHAL,     1000);
@@ -483,6 +485,7 @@ public:
 
         void Reset()
         {
+            me->RemoveAllAuras();
             gatherStormCast = false;
 
             if (instance)
@@ -496,7 +499,7 @@ public:
             me->RemoveAura(SPELL_SELF_ROOT);
             me->RemoveAura(SPELL_CANNOT_TURN);
             events.Reset();
-            DoCast(me, SPELL_NO_REGEN);
+            DoCast(me, SPELL_NO_REGEN, true);
 
             me->SetPower(POWER_ENERGY,0);
         }
@@ -509,6 +512,8 @@ public:
 
             if (instance)
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me); // Remove
+
+            ScriptedAI::EnterEvadeMode();
         }
 
         void EnterCombat(Unit* who)
@@ -517,7 +522,7 @@ public:
             if (instance)
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
 
-            DoCast(me, SPELL_NO_REGEN);
+            DoCast(me, SPELL_NO_REGEN, true);
             gatherStormCast = false;
             Talk(SAY_NEZIR_AGGRO);
 
@@ -706,12 +711,13 @@ public:
 
         void Reset()
         {		
+            me->RemoveAllAuras();
             me->AddAura(SPELL_PRE_COMBAT_EFFECT_ROHASH, me);
 
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
             DoStartNoMovement(me);
             gatherStormCast = false;
-            DoCast(me, SPELL_NO_REGEN);
+            DoCast(me, SPELL_NO_REGEN, true);
             me->RemoveAurasDueToSpell(SPELL_DEAD); // Dead Look
             me->RemoveAura(SPELL_SELF_ROOT);
             me->RemoveAura(SPELL_CANNOT_TURN);
@@ -728,6 +734,8 @@ public:
 
             if (instance)
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me); // Remove
+
+            ScriptedAI::EnterEvadeMode();
         }
 
         void EnterCombat(Unit* who)
@@ -736,7 +744,7 @@ public:
             if (instance)
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
 
-            DoCast(me, SPELL_NO_REGEN);
+            DoCast(me, SPELL_NO_REGEN, true);
             DoStartNoMovement(me);
             gatherStormCast = false;
             Talk(SAY_ROHASH_AGGRO);
