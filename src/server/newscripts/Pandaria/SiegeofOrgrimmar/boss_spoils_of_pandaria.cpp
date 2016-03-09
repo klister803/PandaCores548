@@ -92,6 +92,10 @@ enum eSpells
     SPELL_BLADE_OF_THE_HUNDRED_STEPS  = 146068, //tank 
     SPELL_STAFF_OF_RESONATING_WATER   = 146099, //healer
     SPELL_CLAW_OF_BURNING_ANGER       = 146141, //dd
+    //HM
+    SPELL_UNSTABLE_SPARK_DUMMY_SPAWN  = 146824,
+    SPELL_UNSTABLE_SPARK_SPAWN_VISUAL = 146696,
+    SPELL_SUPERNOVA                   = 146815,
 };
 
 enum Events
@@ -135,6 +139,7 @@ enum Events
     EVENT_START_3                     = 34,
     EVENT_START_SOP                   = 35,
     EVENT_OUTRO                       = 36,
+    EVENT_ACTIVE                      = 37,
 };
 
 enum Says
@@ -1257,8 +1262,39 @@ public:
                 }
 
                 if (data)
+                {
                     if (Unit* summoner = me->ToTempSummon()->GetSummoner())
+                    {
                         summoner->ToCreature()->AI()->SetData(DATA_UPDATE_POWER, data);
+                        if (me->GetMap()->IsHeroic())
+                            CreateUnstableSpark(summoner->GetEntry());
+                    }
+                }
+            }
+        }
+
+        void CreateUnstableSpark(uint32 entry)
+        {
+            uint32 switchentry = 0;
+            switch (entry)
+            {
+            case NPC_MOGU_SPOILS:
+            case NPC_MOGU_SPOILS2:
+                switchentry = GO_BIG_MANTIS_BOX;
+                break;
+            case NPC_MANTIS_SPOILS:
+            case NPC_MANTIS_SPOILS2:
+                switchentry = GO_BIG_MOGU_BOX;
+                break;
+            default:
+                break;
+            }
+            if (Creature* otherspoil = me->GetCreature(*me, instance->GetData64(switchentry)))
+            {
+                float x, y;
+                GetPosInRadiusWithRandomOrientation(otherspoil, float(urand(5, 20)), x, y);
+                if (Creature* us = otherspoil->SummonCreature(NPC_UNSTABLE_SPARK, x, y, otherspoil->GetPositionZ()))
+                    me->CastSpell(us, SPELL_UNSTABLE_SPARK_DUMMY_SPAWN);
             }
         }
 
@@ -1281,6 +1317,60 @@ public:
     CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_generic_sop_unitsAI(creature);
+    }
+};
+
+//73104
+class npc_unstable_spark : public CreatureScript
+{
+public:
+    npc_unstable_spark() : CreatureScript("npc_unstable_spark") {}
+
+    struct npc_unstable_sparkAI : public ScriptedAI
+    {
+        npc_unstable_sparkAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE);
+        }
+        EventMap events;
+
+        InstanceScript* instance;
+
+        void Reset()
+        {
+            events.ScheduleEvent(EVENT_ACTIVE, 4000);
+        }
+
+        void JustDied(Unit* killer)
+        {
+            me->DespawnOrUnsummon(2000);
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_ACTIVE)
+                {
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                    DoCast(me, SPELL_UNSTABLE_SPARK_SPAWN_VISUAL, true);
+                    DoCast(me, SPELL_SUPERNOVA);
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_unstable_sparkAI(creature);
     }
 };
 
@@ -2178,6 +2268,7 @@ void AddSC_boss_spoils_of_pandaria()
     new npc_lever();
     new npc_lift_hook();
     new npc_generic_sop_units();
+    new npc_unstable_spark();
     new go_ssop_spoils();
     new go_generic_lever();
     new go_generic_sop_box();

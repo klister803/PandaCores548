@@ -308,6 +308,7 @@ enum eCreatures
     //Special
     NPC_LEVER                       = 72281,
     NPC_LIFT_HOOK                   = 72972,
+    NPC_UNSTABLE_SPARK              = 73104,
     //
 
     NPC_THOK                        = 71529,

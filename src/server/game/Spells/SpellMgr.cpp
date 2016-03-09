@@ -5058,6 +5058,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 148583: //Jade Tempest Dmg
                     spellInfo->Effects[0].BasePoints = 105000;
                     break;
+                case 146824: //Unstable Spark Spawn Dummy
+                    spellInfo->Effects[0].TargetA = 25;
+                    spellInfo->Effects[0].TargetB = 0;
+                    break;
                 //Thok Bloodthirsty
                 case 147607: //Cannon Ball AT Dmg
                     spellInfo->Effects[0].TargetA = 25;
