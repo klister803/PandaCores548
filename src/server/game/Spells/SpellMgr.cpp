@@ -5016,9 +5016,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 144334: //Iron Tomb dmg
                     spellInfo->Effects[0].TargetA = TARGET_DEST_CASTER_FRONT;
                     break;
-                case 144331: //Iron Prison
+                case 144331: //Iron Prison tr ef
                 case 142906: //Ancient Miasma Dmg
-                case 29604:  // Jom Gabbar
+                case 29604:  //Jom Gabbar
                     spellInfo->AttributesEx6 |= SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
                     break;
                 //General Nazgrim

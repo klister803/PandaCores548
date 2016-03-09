@@ -1200,7 +1200,7 @@ SpellEffectInfo const* SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     //Korkron Dark Shaman
     case 144215: //Froststorm strike
     case 144334: //Iron Tomb dmg
-    case 144331: //Iron Prison
+    case 144331: //Iron Prison tr ef
     //General Nazgrim
     case 143494: //Sundering Blow
     case 143872: //Ravager SUmmon

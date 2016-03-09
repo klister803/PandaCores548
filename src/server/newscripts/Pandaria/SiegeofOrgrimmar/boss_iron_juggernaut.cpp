@@ -35,7 +35,8 @@ enum eSpells
     SPELL_BORER_DRILL_B_VISUAL    = 144296,
     SPELL_BORER_DRILL_DMG         = 144218,
     //HM
-    SPELL_MORTAR_BARRAGE          = 144555,
+    SPELL_MORTAR_BARRAGE          = 144553,
+    SPELL_MORTAR_BARRAGE_PERIODIC = 144554,
     SPELL_RICOCHET_TR_VISUAL      = 144375,
     SPELL_RICOCHET_DMG            = 144327,
     SPELL_RICOCHET_AT             = 144356,
@@ -51,7 +52,6 @@ enum eSpells
     SPELL_EXPLOSIVE_TAR_VISUAL    = 146191,
     SPELL_EXPLOSIVE_TAR_AT        = 144525,
     SPELL_TAR_EXPLOSION           = 144919,
-
     SPELL_BERSERK                 = 26662,
 };
 
@@ -135,7 +135,6 @@ class boss_iron_juggernaut : public CreatureScript
             {
                 if (who->GetPositionX() < 1258.00f)
                     return false;
-
                 return true;
             }
 
@@ -179,8 +178,7 @@ class boss_iron_juggernaut : public CreatureScript
                     phase = PHASE_ONE;
                     events.SetPhase(PHASE_ONE);
                     me->SetPower(POWER_ENERGY, 0);
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    DoZoneInCombat(me, 150.0f);
+                    me->ReAttackWithZone();
                     PowerTimer = 1100;
                     events.ScheduleEvent(EVENT_SUMMON_MINE, 30000);
                     events.ScheduleEvent(EVENT_DEMOLISHER_CANNON, 9000);
@@ -191,8 +189,7 @@ class boss_iron_juggernaut : public CreatureScript
                     break;
                 case ACTION_PHASE_TWO:
                     events.Reset();
-                    me->AttackStop();
-                    me->SetReactState(REACT_PASSIVE);
+                    me->SetAttackStop(true);
                     PowerTimer = 600;
                     DoCast(me, SPELL_SEISMIC_ACTIVITY_VISUAL, true);
                     DoCast(me, SPELL_SEISMIC_ACTIVITY);
@@ -252,8 +249,6 @@ class boss_iron_juggernaut : public CreatureScript
                         {
                             if (!CheckPullPlayerPos(me->getVictim()))
                             {
-                                me->AttackStop();
-                                me->SetReactState(REACT_PASSIVE);
                                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                                 EnterEvadeMode();
                                 checkvictim = 0;
@@ -277,7 +272,6 @@ class boss_iron_juggernaut : public CreatureScript
                         enrage -= diff;
                 }
 
-                EnterEvadeIfOutOfCombatArea(diff);
                 events.Update(diff);
 
                 if (me->HasUnitState(UNIT_STATE_CASTING))
@@ -390,7 +384,7 @@ class boss_iron_juggernaut : public CreatureScript
                         events.ScheduleEvent(EVENT_SHOCK_PULSE, 16500, 0, PHASE_TWO);
                         break;
                     case EVENT_MORTAR_BARRAGE:
-                        DoCast(me, SPELL_MORTAR_BARRAGE);
+                        DoCast(me, SPELL_MORTAR_BARRAGE_PERIODIC, true);
                         break;
                     default:
                         break;
@@ -709,6 +703,43 @@ public:
     }
 };
 
+//90002
+class npc_mortar_barrage : public CreatureScript
+{
+public:
+    npc_mortar_barrage() : CreatureScript("npc_mortar_barrage") {}
+
+    struct npc_mortar_barrageAI : public ScriptedAI
+    {
+        npc_mortar_barrageAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
+        }
+
+        InstanceScript* instance;
+
+        void Reset(){}
+
+        void EnterCombat(Unit* who){}
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            damage = 0;
+        }
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_mortar_barrageAI(creature);
+    }
+};
+
 //146325
 class spell_cutter_laser_target : public SpellScriptLoader
 {
@@ -787,8 +818,8 @@ public:
                 uint8 val = urand(3, 4);
                 for (uint8 n = 0; n < val; n++)
                 {
-                    GetPositionWithDistInOrientation(GetCaster(), urand(15, 30), urand(0, 6), x, y);
-                    if (Creature* mb = GetCaster()->SummonCreature(90002, x, y, GetCaster()->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 4000))
+                    GetPosInRadiusWithRandomOrientation(GetCaster(), float(urand(20, 60)), x, y);
+                    if (Creature* mb = GetCaster()->SummonCreature(NPC_MORTAR_BARRAGE, x, y, GetCaster()->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 4000))
                         GetCaster()->CastSpell(mb, SPELL_MORTAR_BLAST, true);
                 }
             }
@@ -815,6 +846,7 @@ void AddSC_boss_iron_juggernaut()
     new npc_cutter_laser();
     new npc_explosive_tar();
     new npc_borer_drill();
+    new npc_mortar_barrage();
     new spell_cutter_laser_target();
     new spell_seismic_activity();
     new spell_mortar_barrage();

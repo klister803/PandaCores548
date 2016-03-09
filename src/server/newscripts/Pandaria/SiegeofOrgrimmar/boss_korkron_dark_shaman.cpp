@@ -48,6 +48,7 @@ enum eSpells
     //Haromm
     SPELL_FROSTSTORM_STRIKE     = 144215,
     //95pct HM
+    SPELL_IRON_TOMB             = 144328,
     SPELL_IRON_TOMB_SUM         = 144329, 
     SPELL_IRON_TOMB_DMG         = 144334,
     //85pct
@@ -423,55 +424,18 @@ public:
                 //Extra Events 95 pct HM
                 //Kardris
                 case EVENT_IRON_PRISON:
-                {
-                    std::list<HostileReference*> tlist = me->getThreatManager().getThreatList();
-                    if (!tlist.empty())
-                    {
-                        uint8 num = 0;
-                        for (std::list<HostileReference*>::const_iterator itr = tlist.begin(); itr != tlist.end(); itr++)
-                        {
-                            if (itr != tlist.begin())
-                            {
-                                if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
-                                {
-                                    if (!pl->HasAura(SPELL_IRON_PRISON))
-                                    {
-                                        pl->AddAura(SPELL_IRON_PRISON, pl);
-                                        num++;
-                                        if (num == 2)
-                                            break;
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    //targets push and filter in script
+                    if (Player* pl = me->FindNearestPlayer(100.0f, true))
+                        DoCast(pl, SPELL_IRON_PRISON);
                     events.ScheduleEvent(EVENT_IRON_PRISON, 31500);
                     break;
-                }
                 //Haromm
                 case EVENT_IRON_TOMB:
-                {
-                    std::list<HostileReference*> tlist = me->getThreatManager().getThreatList();
-                    if (!tlist.empty())
-                    {
-                        uint8 num = 0;
-                        for (std::list<HostileReference*>::const_iterator itr = tlist.begin(); itr != tlist.end(); itr++)
-                        {
-                            if (itr != tlist.begin())
-                            {
-                                if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
-                                {
-                                    DoCast(pl, SPELL_IRON_TOMB_SUM);
-                                    num++;
-                                    if (num == 3)
-                                        break;
-                                }
-                            }
-                        }
-                    }
+                    //targets push and filter in script
+                    if (Player* pl = me->FindNearestPlayer(100.0f, true))
+                        DoCast(pl, SPELL_IRON_TOMB);
                     events.ScheduleEvent(EVENT_IRON_TOMB, 31500);
                     break;
-                }
                 //Extra Events 85 pct
                 //Kardris
                 case EVENT_TOXIC_STORM:
@@ -901,18 +865,16 @@ public:
 
         void Reset(){}
 
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
         void IsSummonedBy(Unit* summoner)
         {
             DoCast(me, SPELL_IRON_TOMB_DMG);
         }
 
-        void UpdateAI(uint32 diff)
-        {
-            if (!UpdateVictim())
-                return;
-
-            DoMeleeAttackIfReady();
-        }
+        void UpdateAI(uint32 diff){}
     };
 
     CreatureAI* GetAI(Creature* creature) const
@@ -949,6 +911,94 @@ public:
     }
 };
 
+//144328
+class spell_iron_tomb : public SpellScriptLoader
+{
+public:
+    spell_iron_tomb() : SpellScriptLoader("spell_iron_tomb") { }
+
+    class spell_iron_tomb_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_iron_tomb_SpellScript);
+
+        void HandleAfterCast()
+        {
+            if (GetCaster())
+            {
+                std::list<Player*> pllist;
+                pllist.clear();
+                GetPlayerListInGrid(pllist, GetCaster(), 100.0f);
+                if (!pllist.empty())
+                {
+                    uint8 maxcount = 3;
+                    uint8 count = 0;
+                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                    {
+                        if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
+                        {
+                            GetCaster()->CastSpell(*itr, SPELL_IRON_TOMB_SUM, true);
+                            count++;
+                            if (count >= maxcount)
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+
+        void Register()
+        {
+            AfterCast += SpellCastFn(spell_iron_tomb_SpellScript::HandleAfterCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_iron_tomb_SpellScript();
+    }
+};
+
+class IronPrisonFilter
+{
+public:
+    bool operator()(WorldObject* unit) const
+    {
+        if (Player* pl = unit->ToPlayer())
+            if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) != ROLES_TANK && !pl->HasAura(SPELL_IRON_PRISON))
+                return false;
+        return true;
+    }
+};
+
+//144330
+class spell_iron_prison : public SpellScriptLoader
+{
+public:
+    spell_iron_prison() : SpellScriptLoader("spell_iron_prison") { }
+
+    class spell_iron_prison_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_iron_prison_SpellScript);
+
+        void _FilterTarget(std::list<WorldObject*>&targets)
+        {
+            targets.remove_if(IronPrisonFilter());
+            if (targets.size() > 2)
+                targets.resize(2);
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_iron_prison_SpellScript::_FilterTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_iron_prison_SpellScript();
+    }
+};
+
 
 void AddSC_boss_korkron_dark_shaman()
 {
@@ -960,4 +1010,6 @@ void AddSC_boss_korkron_dark_shaman()
     new npc_ash_elemental();
     new npc_iron_tomb();
     new spell_asher_wall();
+    new spell_iron_tomb();
+    new spell_iron_prison();
 }

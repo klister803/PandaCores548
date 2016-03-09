@@ -441,8 +441,7 @@ class boss_immerseus : public CreatureScript
                     phase_two = true;
                     events.Reset();
                     me->InterruptNonMeleeSpells(true);
-                    me->AttackStop();
-                    me->SetReactState(REACT_PASSIVE);
+                    me->SetAttackStop(false);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                     me->RemoveAurasDueToSpell(SPELL_SWELLING_CORRUPTION);
                     me->AddAura(SPELL_SUBMERGE, me);
@@ -464,8 +463,7 @@ class boss_immerseus : public CreatureScript
                 switch (action)
                 {
                 case ACTION_RE_ATTACK:
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    DoZoneInCombat(me, 150.0f);
+                    me->ReAttackWithZone();
                     break;
                 case ACTION_INTRO_PHASE_ONE:
                     if (me->GetPower(POWER_ENERGY) == 0)
@@ -486,8 +484,7 @@ class boss_immerseus : public CreatureScript
                     me->RemoveAurasDueToSpell(SPELL_SHA_POOL);
                     me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    DoZoneInCombat(me, 150.0f);
+                    me->ReAttackWithZone();
                     phase_two = false;
                     if (me->GetMap()->IsHeroic())
                         events.ScheduleEvent(EVENT_SWELLING_CORRUPTION, 12000);
@@ -578,8 +575,7 @@ class boss_immerseus : public CreatureScript
                     case EVENT_SWIRL:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
                         {
-                            me->AttackStop();
-                            me->SetReactState(REACT_PASSIVE);
+                            me->SetAttackStop(false);
                             me->SetFacingToObject(target);
                             events.DelayEvents(10000);
                             DoCast(me, SPELL_SWIRL);
