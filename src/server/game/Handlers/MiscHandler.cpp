@@ -1224,6 +1224,7 @@ void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recvData)
     {
         sLog->outInfo(LOG_FILTER_NETWORKIO, "MISC: Remove action from button %u", button);
         GetPlayer()->removeActionButton(button);
+        GetPlayer()->UpdatePlayerAction(button, 0, 0, GetPlayer()->GetActiveSpec(), true);
     }
     else
     {
@@ -1253,8 +1254,8 @@ void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recvData)
             return;
         }
         GetPlayer()->addActionButton(button, action, type, GetPlayer()->GetActiveSpec());
+        GetPlayer()->UpdatePlayerAction(button, action, type, GetPlayer()->GetActiveSpec());
     }
-    GetPlayer()->SavePlayerActions();
 }
 
 void WorldSession::HandleCompleteCinematic(WorldPacket& /*recvData*/)

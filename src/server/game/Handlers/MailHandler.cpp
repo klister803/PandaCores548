@@ -332,6 +332,7 @@ void WorldSession::HandleMailMarkAsRead(WorldPacket & recvData)
         m->checked = m->checked | MAIL_CHECK_MASK_READ;
         player->m_mailsUpdated = true;
         m->state = MAIL_STATE_CHANGED;
+        player->UpdatePlayerMail(m);
     }
 }
 
@@ -506,7 +507,7 @@ void WorldSession::HandleMailTakeItem(WorldPacket& recvData)
         uint32 count = item->GetCount();                      // save counts before store and possible merge with deleting
         item->SetState(ITEM_UNCHANGED);                       // need to set this state, otherwise item cannot be removed later, if neccessary
         player->MoveItemToInventory(dest, item, true);
-        player->SavePlayerMails();
+        player->UpdatePlayerMail(m);
 
         player->SendMailResult(mailId, MAIL_ITEM_TAKEN, MAIL_OK, 0, itemId, count);
     }
@@ -546,7 +547,7 @@ void WorldSession::HandleMailTakeMoney(WorldPacket& recvData)
     player->m_mailsUpdated = true;
 
     // save money and mail to prevent cheating
-    player->SavePlayerMails();
+    player->UpdatePlayerMail(m);
 }
 
 //called when player lists his received mails

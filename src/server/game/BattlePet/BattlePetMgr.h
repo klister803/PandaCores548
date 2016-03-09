@@ -667,7 +667,7 @@ public:
         {
             PetJournalInfo * pi = pet.second;
 
-            if (!pi || pi->GetState() == STATE_DELETED)
+            if (!pi)
                 continue;
 
             if (pi->GetCreatureEntry() == creatureEntry)
@@ -683,7 +683,7 @@ public:
         if (pet == m_PetJournal.end())
             return;
 
-        pet->second->SetState(STATE_DELETED);
+        m_PetJournal.erase(pet);
     }
 
     uint64 GetPetGUIDBySpell(uint32 spell)
@@ -692,7 +692,7 @@ public:
         {
             PetJournalInfo * pi = pet.second;
 
-            if (!pi || pi->GetState() == STATE_DELETED)
+            if (!pi)
                 continue;
 
             if (pi->GetSummonSpell() == spell)

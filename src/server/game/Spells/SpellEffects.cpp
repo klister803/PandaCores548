@@ -8072,7 +8072,7 @@ void Spell::EffectUnlearnTalent(SpellEffIndex effIndex)
 
         plr->SetUsedTalentCount(plr->GetUsedTalentCount()-1);
         plr->SetFreeTalentPoints(plr->GetFreeTalentPoints()+1);
-        UpdatePlayerTalent(itr->first, plr->GetActiveSpec(), true);
+        plr->UpdatePlayerTalent(itr->first, plr->GetActiveSpec(), true);
         break;
     }
 
@@ -8497,6 +8497,7 @@ void Spell::EffectHealBattlePetPct(SpellEffIndex effIndex)
             petInfo->SetHealth(restoreHealth);
             petInfo->SetState(STATE_UPDATED);
             updates.push_back(j->first);
+            player->UpdatePlayerBattlePets(petInfo, j->first);
         }
     }
     player->SavePlayerBattlePets();

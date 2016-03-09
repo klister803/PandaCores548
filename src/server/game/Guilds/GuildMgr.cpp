@@ -430,8 +430,8 @@ void GuildMgr::LoadGuilds()
 
             itr->second->GetAchievementMgr().LoadFromDB(achievementResult, criteriaResult);
 
-            itr->second->SaveAchievement();
-            itr->second->SaveCriteria();
+            itr->second->InitAchievement();
+            itr->second->InitCriteria();
         }
     }
 

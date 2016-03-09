@@ -31,6 +31,7 @@ BattlePetMgr::BattlePetMgr(Player* owner) : m_player(owner), m_petBattleWild(NUL
 void BattlePetMgr::AddPetToList(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName, int16 breedID, uint8 state)
 {
     m_PetJournal[guid] = new PetJournalInfo(speciesID, creatureEntry, level, display, power, speed, health, maxHealth, quality, xp, flags, spellID, customName, breedID, state);
+    m_player->UpdatePlayerBattlePets(m_PetJournal[guid], guid);
 }
 
 void BattlePetMgr::InitBattleSlot(uint64 guid, uint8 index)
@@ -70,10 +71,6 @@ bool BattlePetMgr::BuildPetJournal(WorldPacket *data)
         // prevent crash
         if (!petInfo)
             return false;
-
-        // prevent loading deleted pet
-        if (petInfo->GetState() == STATE_DELETED)
-            continue;
 
         ObjectGuid guid = itr.first;
         uint8 len = petInfo->GetCustomName() == "" ? 0 : petInfo->GetCustomName().length();
@@ -191,7 +188,7 @@ void BattlePetMgr::SendUpdatePets(std::list<uint64> &updates, bool added)
     {
         PetJournalInfo* petInfo = GetPetInfoByPetGUID(i);
 
-        if (!petInfo || petInfo->GetState() == STATE_DELETED)
+        if (!petInfo)
         {
             --realCount;
 
@@ -438,7 +435,7 @@ bool PetBattleWild::PrepareBattleInfo(ObjectGuid creatureGuid)
                 if (PetJournalInfo* petInfo = m_player->GetBattlePetMgr()->GetPetInfoByPetGUID(_slot->GetPet()))
                 {
                     // dead or deleted pets are not valid
-                    if (petInfo->IsDead() || petInfo->GetState() == STATE_DELETED)
+                    if (petInfo->IsDead())
                         continue;
 
                     PetBattleInfo* pbInfo = new PetBattleInfo();

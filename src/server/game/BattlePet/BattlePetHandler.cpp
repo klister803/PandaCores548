@@ -33,7 +33,7 @@ void WorldSession::HandleBattlePetSummon(WorldPacket& recvData)
     // find pet
     PetJournalInfo* petInfo = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
 
-    if (!petInfo || petInfo->GetState() == STATE_DELETED)
+    if (!petInfo)
         return;
 
     uint32 spellId = petInfo->GetSummonSpell();
@@ -96,9 +96,6 @@ void WorldSession::HandleBattlePetNameQuery(WorldPacket& recvData)
         {
             if (PetJournalInfo* petInfo = owner->GetBattlePetMgr()->GetPetInfoByPetGUID(battlepetGuid))
             {
-                if (petInfo->GetState() == STATE_DELETED)
-                    return;
-
                 bool hasCustomName = petInfo->GetCustomName() == "" ? false : true;
                 WorldPacket data(SMSG_BATTLE_PET_NAME_QUERY_RESPONSE);
                 // creature entry
@@ -157,7 +154,7 @@ void WorldSession::HandleBattlePetModifyName(WorldPacket& recvData)
     // find pet
     PetJournalInfo* petInfo = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
 
-    if (!petInfo || petInfo->GetState() == STATE_DELETED)
+    if (!petInfo)
         return;
 
     // set custom name
@@ -177,7 +174,7 @@ void WorldSession::HandleBattlePetSetFlags(WorldPacket& recvData)
     // find pet
     PetJournalInfo* petInfo = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
 
-    if (!petInfo || petInfo->GetState() == STATE_DELETED)
+    if (!petInfo)
         return;
 
     if (!active)
@@ -206,9 +203,6 @@ void WorldSession::HandleCageBattlePet(WorldPacket& recvData)
         BattlePetSpeciesEntry const* bp = _player->GetBattlePetMgr()->GetBattlePetSpeciesEntry(petInfo->GetCreatureEntry());
 
         if (!bp || bp->flags & SPECIES_FLAG_CANT_TRADE)
-            return;
-
-        if (petInfo->GetState() == STATE_DELETED)
             return;
 
         // at first - all operations with check free space
@@ -253,6 +247,7 @@ void WorldSession::HandleCageBattlePet(WorldPacket& recvData)
         SendPacket(&data);
         SendPacket(&data);
 
+        _player->UpdatePlayerBattlePets(petInfo, guid);
         _player->SavePlayerBattlePets();
     }
 }
@@ -277,7 +272,7 @@ void WorldSession::HandleBattlePetSetSlot(WorldPacket& recvData)
     // find current pet
     PetJournalInfo* petInfo = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
 
-    if (!petInfo || petInfo->GetState() == STATE_DELETED)
+    if (!petInfo)
         return;
 
     // special handle switch slots
@@ -526,7 +521,7 @@ void WorldSession::HandleBattlePetDelete(WorldPacket& recvData)
     // find current pet
     PetJournalInfo* petInfo = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
 
-    if (!petInfo || petInfo->GetState() == STATE_DELETED)
+    if (!petInfo)
         return;
 
     if (petInfo->GetFlags() & 0xC)
@@ -535,6 +530,7 @@ void WorldSession::HandleBattlePetDelete(WorldPacket& recvData)
     if (_player->GetBattlePetMgr()->PetIsSlotted(guid))
         return;
 
+    _player->UpdatePlayerBattlePets(petInfo, guid, true);
     _player->GetBattlePetMgr()->DeletePetByPetGUID(guid);
     _player->SavePlayerBattlePets();
 }

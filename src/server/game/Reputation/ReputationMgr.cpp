@@ -281,7 +281,6 @@ void ReputationMgr::Initialize()
             newFaction.Standing = 0;
             newFaction.Flags = GetDefaultStateFlags(factionEntry);
             newFaction.needSend = true;
-            newFaction.needSave = true;
 
             if (newFaction.Flags & FACTION_FLAG_VISIBLE)
                 ++_visibleFactionCount;
@@ -292,7 +291,7 @@ void ReputationMgr::Initialize()
         }
     }
 
-    _player->SavePlayerReputation();
+    _player->InitPlayerReputation();
 }
 
 bool ReputationMgr::SetReputation(FactionEntry const* factionEntry, int32 standing, bool incremental)
@@ -390,7 +389,6 @@ bool ReputationMgr::SetOneFactionReputation(FactionEntry const* factionEntry, in
 
         itr->second.Standing = standing - BaseRep;
         itr->second.needSend = true;
-        itr->second.needSave = true;
 
         SetVisible(&itr->second);
 
@@ -409,7 +407,7 @@ bool ReputationMgr::SetOneFactionReputation(FactionEntry const* factionEntry, in
         _player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_GAIN_REVERED_REPUTATION, factionEntry->ID);
         _player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_GAIN_HONORED_REPUTATION, factionEntry->ID);
 
-        _player->SavePlayerReputation();
+        _player->UpdatePlayerReputation(&itr->second);
 
         return true;
     }
@@ -438,7 +436,7 @@ void ReputationMgr::SetVisible(FactionEntry const* factionEntry)
 
     SetVisible(&itr->second);
 
-    _player->SavePlayerReputation();
+    _player->UpdatePlayerReputation(&itr->second);
 }
 
 void ReputationMgr::SetVisible(FactionState* faction)
@@ -454,7 +452,6 @@ void ReputationMgr::SetVisible(FactionState* faction)
 
     faction->Flags |= FACTION_FLAG_VISIBLE;
     faction->needSend = true;
-    faction->needSave = true;
 
     ++_visibleFactionCount;
 
@@ -482,7 +479,7 @@ void ReputationMgr::SetAtWar(RepListID repListID, bool on)
 
     SetAtWar(&itr->second, on);
 
-    _player->SavePlayerReputation();
+    _player->UpdatePlayerReputation(&itr->second);
 }
 
 void ReputationMgr::SetAtWar(FactionState* faction, bool atWar) const
@@ -501,7 +498,6 @@ void ReputationMgr::SetAtWar(FactionState* faction, bool atWar) const
         faction->Flags &= ~FACTION_FLAG_AT_WAR;
 
     faction->needSend = true;
-    faction->needSave = true;
 }
 
 void ReputationMgr::SetInactive(RepListID repListID, bool on)
@@ -512,7 +508,7 @@ void ReputationMgr::SetInactive(RepListID repListID, bool on)
 
     SetInactive(&itr->second, on);
 
-    _player->SavePlayerReputation();
+    _player->UpdatePlayerReputation(&itr->second);
 }
 
 void ReputationMgr::SetInactive(FactionState* faction, bool inactive) const
@@ -531,7 +527,8 @@ void ReputationMgr::SetInactive(FactionState* faction, bool inactive) const
         faction->Flags &= ~FACTION_FLAG_INACTIVE;
 
     faction->needSend = true;
-    faction->needSave = true;
+
+    _player->UpdatePlayerReputation(faction);
 }
 
 void ReputationMgr::LoadFromDB(PreparedQueryResult result)
@@ -588,38 +585,10 @@ void ReputationMgr::LoadFromDB(PreparedQueryResult result)
 
                 // reset changed flag if values similar to saved in DB
                 if (faction->Flags == dbFactionFlags)
-                {
                     faction->needSend = false;
-                    faction->needSave = false;
-                }
             }
         }
         while (result->NextRow());
-    }
-}
-
-void ReputationMgr::SaveToDB(SQLTransaction& trans)
-{
-    for (FactionStateList::iterator itr = _factions.begin(), next; itr != _factions.end(); itr = next)
-    {
-        next = itr;
-        ++next;
-        if (itr->second.needSave)
-        {
-            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_REPUTATION_BY_FACTION);
-            stmt->setUInt32(0, _player->GetGUIDLow());
-            stmt->setUInt16(1, uint16(itr->second.ID));
-            trans->Append(stmt);
-
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_REPUTATION_BY_FACTION);
-            stmt->setUInt32(0, _player->GetGUIDLow());
-            stmt->setUInt16(1, uint16(itr->second.ID));
-            stmt->setInt32(2, itr->second.Standing);
-            stmt->setUInt16(3, uint16(itr->second.Flags));
-            trans->Append(stmt);
-
-            itr->second.needSave = false;
-        }
     }
 }
 

@@ -1856,26 +1856,13 @@ void Player::LoadPlayerQuestStatus()
             else
                 quest_time = 0;
 
-            questStatusData.CreatureOrGOCount[0] = value["mobcount1"].asInt();
-            questStatusData.CreatureOrGOCount[1] = value["mobcount2"].asInt();
-            questStatusData.CreatureOrGOCount[2] = value["mobcount3"].asInt();
-            questStatusData.CreatureOrGOCount[3] = value["mobcount4"].asInt();
-            questStatusData.CreatureOrGOCount[4] = value["mobcount5"].asInt();
-            questStatusData.CreatureOrGOCount[5] = value["mobcount6"].asInt();
-            questStatusData.CreatureOrGOCount[6] = value["mobcount7"].asInt();
-            questStatusData.CreatureOrGOCount[7] = value["mobcount8"].asInt();
-            questStatusData.CreatureOrGOCount[8] = value["mobcount9"].asInt();
-            questStatusData.CreatureOrGOCount[9] = value["mobcount10"].asInt();
-            questStatusData.ItemCount[0] = value["itemcount1"].asInt();
-            questStatusData.ItemCount[1] = value["itemcount2"].asInt();
-            questStatusData.ItemCount[2] = value["itemcount3"].asInt();
-            questStatusData.ItemCount[3] = value["itemcount4"].asInt();
-            questStatusData.ItemCount[4] = value["itemcount5"].asInt();
-            questStatusData.ItemCount[5] = value["itemcount6"].asInt();
-            questStatusData.ItemCount[6] = value["itemcount7"].asInt();
-            questStatusData.ItemCount[7] = value["itemcount8"].asInt();
-            questStatusData.ItemCount[8] = value["itemcount9"].asInt();
-            questStatusData.ItemCount[9] = value["itemcount10"].asInt();
+            for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
+            {
+                std::string index = std::to_string(i);
+                questStatusData.CreatureOrGOCount[i] = value["mobcount"][index.c_str()].asInt();
+                questStatusData.ItemCount[i] = value["itemcount"][index.c_str()].asInt();
+            }
+
             questStatusData.PlayerCount = value["playercount"].asInt();
 
             // add to quest log
@@ -1953,26 +1940,13 @@ void Player::LoadAccountQuestStatus()
             else
                 quest_time = 0;
 
-            questStatusData.CreatureOrGOCount[0] = value["mobcount1"].asInt();
-            questStatusData.CreatureOrGOCount[1] = value["mobcount2"].asInt();
-            questStatusData.CreatureOrGOCount[2] = value["mobcount3"].asInt();
-            questStatusData.CreatureOrGOCount[3] = value["mobcount4"].asInt();
-            questStatusData.CreatureOrGOCount[4] = value["mobcount5"].asInt();
-            questStatusData.CreatureOrGOCount[5] = value["mobcount6"].asInt();
-            questStatusData.CreatureOrGOCount[6] = value["mobcount7"].asInt();
-            questStatusData.CreatureOrGOCount[7] = value["mobcount8"].asInt();
-            questStatusData.CreatureOrGOCount[8] = value["mobcount9"].asInt();
-            questStatusData.CreatureOrGOCount[9] = value["mobcount10"].asInt();
-            questStatusData.ItemCount[0] = value["itemcount1"].asInt();
-            questStatusData.ItemCount[1] = value["itemcount2"].asInt();
-            questStatusData.ItemCount[2] = value["itemcount3"].asInt();
-            questStatusData.ItemCount[3] = value["itemcount4"].asInt();
-            questStatusData.ItemCount[4] = value["itemcount5"].asInt();
-            questStatusData.ItemCount[5] = value["itemcount6"].asInt();
-            questStatusData.ItemCount[6] = value["itemcount7"].asInt();
-            questStatusData.ItemCount[7] = value["itemcount8"].asInt();
-            questStatusData.ItemCount[8] = value["itemcount9"].asInt();
-            questStatusData.ItemCount[9] = value["itemcount10"].asInt();
+            for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
+            {
+                std::string index = std::to_string(i);
+                questStatusData.CreatureOrGOCount[i] = value["mobcount"][index.c_str()].asInt();
+                questStatusData.ItemCount[i] = value["itemcount"][index.c_str()].asInt();
+            }
+
             questStatusData.PlayerCount = value["playercount"].asInt();
 
             // add to quest log
@@ -2172,17 +2146,21 @@ void Player::LoadPlayerQuestSeasonal()
 
     for (auto itr = PlayerData["questseasonal"].begin(); itr != PlayerData["questseasonal"].end(); ++itr)
     {
-        uint32 quest_id = atoi(itr.memberName());
-        uint32 event_id = time_t(itr->asUInt());
+        uint32 event_id = atoi(itr.memberName());
+        auto data = (*itr);
+        for (auto iter = data.begin(); iter != data.end(); ++iter)
+        {
+            uint32 quest_id = atoi(iter.memberName());
 
-        Quest const* quest = sObjectMgr->GetQuestTemplate(quest_id);
-        if (quest)
-            continue;
+            Quest const* quest = sObjectMgr->GetQuestTemplate(quest_id);
+            if (quest)
+                continue;
 
-        if (m_seasonalquests.find(quest_id) != m_seasonalquests.end())
-            continue;
+            if (m_seasonalquests.find(quest_id) != m_seasonalquests.end())
+                continue;
 
-        m_seasonalquests[event_id].insert(quest_id);
+            m_seasonalquests[event_id].insert(quest_id);
+        }
     }
 }
 
@@ -2263,10 +2241,7 @@ void ReputationMgr::LoadFromDB()
 
             // reset changed flag if values similar to saved in DB
             if (faction->Flags == dbFactionFlags)
-            {
                 faction->needSend = false;
-                faction->needSave = false;
-            }
         }
     }
 }
@@ -2677,6 +2652,7 @@ void SocialMgr::LoadFromDB(Player* player)
     }
 
     player->m_social = social;
+    player->m_social->SetPlayer(player);
 }
 
 void Player::LoadPlayerSpellCooldowns()

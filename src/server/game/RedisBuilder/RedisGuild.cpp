@@ -819,7 +819,7 @@ bool Guild::Member::LoadFromDB(Json::Value memberData)
     return true;
 }
 
-void Guild::SaveAchievement()
+void Guild::InitAchievement()
 {
     for (auto iter = GetAchievementMgr().GetCompletedAchievementsList().begin(); iter != GetAchievementMgr().GetCompletedAchievementsList().end(); ++iter)
     {
@@ -828,7 +828,7 @@ void Guild::SaveAchievement()
     }
 
     RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "achievement", sRedisBuilderMgr->BuildString(GuildAchievementData).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Guild::SaveAchievement guid %u", guid);
+        sLog->outInfo(LOG_FILTER_REDIS, "Guild::InitAchievement guid %u", guid);
     });
 }
 
@@ -843,9 +843,8 @@ void Guild::DeleteCriteriaProgress(AchievementEntry const* achievement)
     });
 }
 
-void Guild::SaveCriteria()
+void Guild::InitCriteria()
 {
-    GuildCriteriaData.clear();
     for (auto itr = GetAchievementMgr().GetAchievementProgress().begin(); itr != GetAchievementMgr().GetAchievementProgress().end(); ++itr)
     {
         std::string achievID = std::to_string(itr->first);
@@ -880,7 +879,7 @@ void Guild::SaveCriteria()
 
         GuildCriteriaData[achievID.c_str()] = Criteria;
         RedisDatabase.AsyncExecuteHSet("HSET", criteriaKey, achievID.c_str(), sRedisBuilderMgr->BuildString(Criteria).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
-            sLog->outInfo(LOG_FILTER_REDIS, "Guild::SaveCriteria account guid %u", guid);
+            sLog->outInfo(LOG_FILTER_REDIS, "Guild::InitCriteria account guid %u", guid);
         });
     }
 }

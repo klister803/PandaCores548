@@ -53,7 +53,6 @@ struct FactionState
     int32  Standing;
     uint8 Flags;
     bool needSend;
-    bool needSave;
 };
 
 typedef std::map<RepListID, FactionState> FactionStateList;

@@ -122,10 +122,12 @@ class PlayerSocial
         uint32 GetPlayerGUID() const { return m_playerGUID; }
         void SetPlayerGUID(uint32 guid) { m_playerGUID = guid; }
         uint32 GetNumberOfSocialsWithFlag(SocialFlag flag);
+        void SetPlayer(Player* player) { _player = player; }
 
         PlayerSocialMap m_playerSocialMap;
     private:
         uint32 m_playerGUID;
+        Player* _player;
 };
 
 class SocialMgr

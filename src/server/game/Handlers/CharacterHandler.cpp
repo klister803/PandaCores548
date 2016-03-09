@@ -2511,6 +2511,8 @@ void WorldSession::HandleSaveCUFProfiles(WorldPacket& recvData)
     // clear other profiles
     for (uint8 i = profilesCount; i < MAX_CUF_PROFILES; ++i)
         _player->SaveCUFProfile(i, NULL);
+
+    _player->SavePlayerCUFProfiles();
 }
 
 void WorldSession::SendLoadCUFProfiles()

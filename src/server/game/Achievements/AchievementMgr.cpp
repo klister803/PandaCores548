@@ -3009,7 +3009,7 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
     ca.changed = true;
     m_CompletedAchievementsLock.release();
 
-    GetOwner()->SaveAchievement();
+    GetOwner()->UpdateAchievement(achievement, &ca);
     GetOwner()->DeleteCriteriaProgress(achievement);
 
     if (!progressMap)

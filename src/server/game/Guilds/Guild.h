@@ -980,8 +980,8 @@ public:
     void UpdateGuildNewsLog(GuildNewsEntry* log, uint32 id);
     void DeleteMembers();
     void SaveGuildMoney();
-    void SaveAchievement();
-    void SaveCriteria();
+    void InitAchievement();
+    void InitCriteria();
     void UpdateCriteriaProgress(AchievementEntry const* achievement, CriteriaProgressMap* progressMap);
     void LoadAchievement(Json::Value achievData);
     void DeleteCriteriaProgress(AchievementEntry const* achievement);

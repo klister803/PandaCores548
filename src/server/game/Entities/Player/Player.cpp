@@ -5106,6 +5106,8 @@ void Player::RemoveSpellCooldown(uint32 spell_id, bool update /* = false */)
     if(SpellInfo const* info = sSpellMgr->GetSpellInfo(spell_id))
         if (info->ChargeRecoveryCategory)
             RestoreSpellCategoryCharges(info->ChargeRecoveryCategory);
+
+    UpdatePlayerSpellCooldown(spell_id, 0, 0.0f, true);
 }
 
 // I am not sure which one is more efficient
@@ -5185,6 +5187,8 @@ void Player::RemoveAllSpellCooldown()
     }
 
     RestoreSpellCategoryCharges();
+
+    UpdatePlayerSpellCooldown(0, 0, 0.0f, false, true);
 }
 
 void Player::_LoadSpellCooldowns(PreparedQueryResult result)
@@ -8242,6 +8246,7 @@ void Player::UpdateHonorFields()
         // clear all of today's kills, they will be flushed from the DB on next save
         m_killsPerPlayer.clear();
         m_flushKills = true;
+        UpdatePlayerKill(0, 0, true);
     }
 
     m_lastHonorUpdateTime = now;
@@ -8381,7 +8386,10 @@ bool Player::RewardHonor(Unit* victim, uint32 groupsize, int32 honor, bool pvpto
 
         // count the number of times a certain player was killed in one day
         if(info.count < limit)
+        {
             ++info.count;
+            UpdatePlayerKill(victim->GetGUIDLow(), info.count);
+        }
     }
 
     if (victim)
@@ -8764,6 +8772,7 @@ void Player::ResetCurrencyWeekCap()
 {
     for (PlayerCurrenciesMap::iterator itr = _currencyStorage.begin(); itr != _currencyStorage.end(); ++itr)
     {
+        std::string currencyID = std::to_string(itr->first);
         itr->second.weekCount = 0;
         itr->second.curentCap = 0;
         itr->second.state = PLAYERCURRENCY_CHANGED;
@@ -17228,7 +17237,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
     // StoreNewItem, mail reward, etc. save data directly to the database
     // to prevent exploitable data desynchronisation we save the quest status to the database too
     // (to prevent rewarding this quest another time while rewards were already given out)
-    SavePlayerQuestRewarded();
+    UpdatePlayerQuestRewarded(quest_id);
 
     if (announce)
         SendQuestReward(quest, XP, questGiver);
@@ -17884,7 +17893,7 @@ void Player::RemoveRewardedQuest(uint32 quest_id)
 
         phaseMgr.NotifyConditionChanged(phaseUdateData);
 
-        SavePlayerQuestRewarded();
+        UpdatePlayerQuestRewarded(quest_id, true);
     }
 }
 
@@ -19351,6 +19360,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     _LoadMailInit(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADMAILCOUNT), holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADMAILDATE));
 
     m_social = sSocialMgr->LoadFromDB(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADSOCIALLIST), GetGUIDLow());
+    m_social->SetPlayer(this);
 
     // check PLAYER_CHOSEN_TITLE compatibility with PLAYER_FIELD_KNOWN_TITLES
     // note: PLAYER_FIELD_KNOWN_TITLES updated at quest status loaded
@@ -21574,7 +21584,7 @@ void Player::SaveToDB(bool create /*=false*/)
     _SaveAuras(trans);
     _SaveSkills(trans);
     m_achievementMgr.SaveToDB(trans);
-    m_reputationMgr.SaveToDB(trans);
+    //m_reputationMgr.SaveToDB(trans);
     _SaveEquipmentSets(trans);
     GetSession()->SaveTutorialsData(trans);                 // changed only while character in game
     _SaveGlyphs(trans);
@@ -24976,6 +24986,7 @@ void Player::AddSpellCooldown(uint32 spellid, uint32 itemid, double end_time)
     sc.end = end_time;
     sc.itemid = itemid;
     m_spellCooldowns[spellid] = sc;
+    UpdatePlayerSpellCooldown(spellid, itemid, end_time);
 }
 
 void Player::AddRPPMSpellCooldown(uint32 spellid, uint32 itemid, double end_time)
@@ -26342,7 +26353,7 @@ void Player::SetDailyQuestStatus(uint32 quest_id)
                 m_lastDailyQuestTime = time(NULL);              // last daily quest time
                 m_DailyQuestChanged = true;
 
-                SavePlayerQuestDaily();
+                UpdatePlayerQuestDaily(quest_id);
             }
         }
         else
@@ -26350,6 +26361,8 @@ void Player::SetDailyQuestStatus(uint32 quest_id)
             m_DFQuests.insert(quest_id);
             m_lastDailyQuestTime = time(NULL);
             m_DailyQuestChanged = true;
+
+            UpdatePlayerQuestDaily(quest_id);
         }
     }
 }
@@ -26359,7 +26372,7 @@ void Player::SetWeeklyQuestStatus(uint32 quest_id)
     m_weeklyquests.insert(quest_id);
     m_WeeklyQuestChanged = true;
 
-    SavePlayerQuestWeekly();
+    UpdatePlayerQuestWeekly(quest_id);
 }
 
 void Player::SetSeasonalQuestStatus(uint32 quest_id)
@@ -26368,10 +26381,11 @@ void Player::SetSeasonalQuestStatus(uint32 quest_id)
     if (!quest)
         return;
 
-    m_seasonalquests[sGameEventMgr->GetEventIdForQuest(quest)].insert(quest_id);
+    uint32 eventId = sGameEventMgr->GetEventIdForQuest(quest);
+    m_seasonalquests[eventId].insert(quest_id);
     m_SeasonalQuestChanged = true;
 
-    SavePlayerQuestSeasonal();
+    UpdatePlayerQuestSeasonal(quest_id, eventId);
 }
 
 void Player::ResetDailyQuestStatus()
@@ -26383,7 +26397,7 @@ void Player::ResetDailyQuestStatus()
     m_DailyQuestChanged = false;
     m_lastDailyQuestTime = 0;
 
-    SavePlayerQuestDaily();
+    UpdatePlayerQuestDaily(0, true);
 }
 
 void Player::ResetWeeklyQuestStatus()
@@ -26395,7 +26409,7 @@ void Player::ResetWeeklyQuestStatus()
     // DB data deleted in caller
     m_WeeklyQuestChanged = false;
 
-    SavePlayerQuestWeekly();
+    UpdatePlayerQuestWeekly(0, true);
 
 }
 
@@ -26408,7 +26422,7 @@ void Player::ResetSeasonalQuestStatus(uint16 event_id)
     // DB data deleted in caller
     m_SeasonalQuestChanged = false;
 
-    SavePlayerQuestSeasonal();
+    UpdatePlayerQuestSeasonal(0, event_id, true);
 }
 
 Battleground* Player::GetBattleground() const
@@ -28641,8 +28655,6 @@ void Player::SendEquipmentSetList()
     for (EquipmentSets::const_iterator itr = m_EquipmentSets.begin(); itr != m_EquipmentSets.end(); ++itr)
     {
         EquipmentSet const& set = itr->second;
-        if (set.state == EQUIPMENT_SET_DELETED)
-            continue;
 
         data.WriteGuidMask<2, 0>(set.Guid);
 
@@ -28718,7 +28730,7 @@ void Player::SetEquipmentSet(uint32 index, EquipmentSet eqset)
     }
 
     eqslot.state = old_state == EQUIPMENT_SET_NEW ? EQUIPMENT_SET_NEW : EQUIPMENT_SET_CHANGED;
-    SavePlayerEquipmentSet(index, eqslot);
+    UpdatePlayerEquipmentSet(index, eqslot);
 }
 
 void Player::_SaveEquipmentSets(SQLTransaction& trans)
@@ -28799,10 +28811,8 @@ void Player::DeleteEquipmentSet(uint64 setGuid)
     {
         if (itr->second.Guid == setGuid)
         {
-            if (itr->second.state == EQUIPMENT_SET_NEW)
-                m_EquipmentSets.erase(itr);
-            else
-                itr->second.state = EQUIPMENT_SET_DELETED;
+            UpdatePlayerEquipmentSet(setGuid, itr->second, true);
+            m_EquipmentSets.erase(itr);
             break;
         }
     }
@@ -29007,8 +29017,6 @@ void Player::ActivateSpec(uint8 spec)
 
     if (IsNonMeleeSpellCasted(false))
         InterruptNonMeleeSpells(false);
-
-    SavePlayerActions();
 
     // TO-DO: We need more research to know what happens with warlock's reagent
     if (Pet* pet = GetPet())
@@ -29554,7 +29562,7 @@ bool Player::SwapVoidStorageItem(uint8 oldSlot, uint8 newSlot)
 
     UpdatePlayerVoidStorage(newSlot);
     UpdatePlayerVoidStorage(oldSlot);
-    PlayerVoidStorage();
+    SavePlayerVoidStorage();
     return true;
 }
 
