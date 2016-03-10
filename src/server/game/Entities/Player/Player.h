@@ -1720,7 +1720,7 @@ class Player : public Unit, public GridObject<Player>
 
         //load data into player LoadPlayer
         bool LoadPlayerFromJson(uint64 guid);
-        void LoadFromRedis(uint64 guid, uint8 step = 0, const RedisValue* v = NULL);
+        void LoadFromRedis(uint64 guid, uint8 step = 0);
         bool LoadPlayer(uint64 playerGuid);
         bool LoadPlayerNext(uint64 playerGuid);
         void LoadPlayerGroup();

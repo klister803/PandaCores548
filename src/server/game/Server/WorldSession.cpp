@@ -1488,6 +1488,20 @@ void WorldSession::ProcessQueryCallbacks()
         _charEnumCallback.cancel();
     }
 
+    if (_charJsonCallback.ready())
+    {
+        _charJsonCallback.get(result);
+        HandlePlayerLoginCharJson(result);
+        _charJsonCallback.cancel();
+    }
+
+    if (_accountJsonCallback.ready())
+    {
+        _accountJsonCallback.get(result);
+        HandlePlayerLoginAccountJson(result);
+        _accountJsonCallback.cancel();
+    }
+
     if (_charCreateCallback.IsReady())
     {
         _charCreateCallback.GetResult(result);

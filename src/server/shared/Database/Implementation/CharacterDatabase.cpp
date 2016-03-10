@@ -639,7 +639,9 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PrepareStatement(CHAR_REP_CHARACTER_JSON, "REPLACE INTO characters_json (guid, account, name, slot, race, class, gender, level, xp, money, playerBytes, playerBytes2, playerFlags, "
     "map, position_x, position_y, position_z, totaltime, leveltime, logout_time, at_login, zone, totalKills, equipmentCache, data, mails"
     ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_SEL_CHARACTER_JSON, "SELECT data, mails FROM characters_json WHERE guid = ?", CONNECTION_ASYNC);
 
     // Account saving json
-    PrepareStatement(CHAR_REP_ACCOUNT_JSON, "INSERT INTO account_json (account, data) VALUES (?,?)" , CONNECTION_ASYNC);
+    PrepareStatement(CHAR_REP_ACCOUNT_JSON, "REPLACE INTO account_json (account, data) VALUES (?,?)" , CONNECTION_ASYNC);
+    PrepareStatement(CHAR_SEL_ACCOUNT_JSON, "SELECT data FROM account_json WHERE account = ?", CONNECTION_ASYNC);
 }

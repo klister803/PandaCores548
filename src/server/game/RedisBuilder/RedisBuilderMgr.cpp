@@ -22,14 +22,32 @@ bool RedisBuilderMgr::LoadFromRedis(const RedisValue* v, Json::Value& data)
 {
     if (!v->isOk() || v->isNull() || !v->isString())
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilderMgr::DeSerialization data is empty");
+        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilderMgr::LoadFromRedis data is empty");
         return false;
     }
 
     bool isReader = Reader.parse(v->toString().c_str(), data);
     if (!isReader)
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilderMgr::DeSerialization parce json false");
+        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilderMgr::LoadFromRedis parce json false");
+        return false;
+    }
+
+    return true;
+}
+
+bool RedisBuilderMgr::LoadFromString(std::string string_data, Json::Value& data)
+{
+    if (string_data.empty())
+    {
+        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilderMgr::LoadFromString data is empty");
+        return false;
+    }
+
+    bool isReader = Reader.parse(string_data.c_str(), data);
+    if (!isReader)
+    {
+        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilderMgr::LoadFromString parce json false");
         return false;
     }
 

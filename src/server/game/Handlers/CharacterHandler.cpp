@@ -43,6 +43,7 @@
 #include "AccountMgr.h"
 #include "DBCStores.h"
 #include "LFGMgr.h"
+#include "RedisBuilderMgr.h"
 
 class LoginQueryHolder : public SQLQueryHolder
 {
@@ -301,7 +302,7 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
 void WorldSession::HandleCharEnumOpcode(WorldPacket & recvData)
 {
     time_t now = time(NULL);
-    if (now - timeCharEnumOpcode < 5)
+    if (now - timeCharEnumOpcode < 1)
     {
         recvData.rfinish();
         return;
@@ -806,13 +807,13 @@ void WorldSession::HandlePlayerLoginOpcode(WorldPacket& recvData)
                 if (v.isOk() && bool(v.toInt()))
                     sess->HandlePlayerLogin(sess->GetAccountId(), sess->GetPlayerGuid());
                 else
-                    sess->HandlePlayerLoginHolder();
+                    sess->HandlePlayerLoginJson();
             }
             sLog->outInfo(LOG_FILTER_REDIS, "WorldSession::HandlePlayerLoginOpcode isOk %u toInt %u", v.isOk(), v.toInt());
         });
     }
     else
-        HandlePlayerLoginHolder();
+        HandlePlayerLoginJson();
 }
 
 void WorldSession::HandlePlayerLoginHolder()
@@ -828,6 +829,74 @@ void WorldSession::HandlePlayerLoginHolder()
     }
 
     _charLoginCallback = CharacterDatabase.DelayQueryHolder((SQLQueryHolder*)holder);
+}
+
+void WorldSession::HandlePlayerLoginJson()
+{
+    sLog->outInfo(LOG_FILTER_REDIS, "WorldSession::HandlePlayerLoginJson _playerGuid %u", GUID_LOPART(_playerGuid));
+
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_JSON);
+    stmt->setUInt32(0, GUID_LOPART(_playerGuid));
+    _charJsonCallback = CharacterDatabase.AsyncQuery(stmt);
+}
+
+void WorldSession::HandlePlayerLoginCharJson(PreparedQueryResult result)
+{
+    if (result)
+    {
+        if (sObjectMgr->GetPlayerLoad(_playerGuid))
+        {
+            SetPlayer(NULL);
+            KickPlayer(); // disconnect client, player no set to session and it will not deleted or saved at kick
+            m_playerLoading = false;
+            sLog->outError(LOG_FILTER_NETWORKIO, "Prevent double login, may be cheater? account %u guid %u", GetAccountId(), _playerGuid);
+            return;
+        }
+        Player* pCurrChar = new Player(this);
+        sObjectMgr->AddPlayerLoad(_playerGuid, pCurrChar);
+
+        Field* fields = result->Fetch();
+
+        std::string data = fields[0].GetString();
+        std::string mailData = fields[1].GetString();
+
+        if (sRedisBuilderMgr->LoadFromString(data, pCurrChar->PlayerData))
+        {
+            sRedisBuilderMgr->LoadFromString(mailData, pCurrChar->PlayerMailData);
+
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_ACCOUNT_JSON);
+            stmt->setUInt32(0, GetAccountId());
+            _accountJsonCallback = CharacterDatabase.AsyncQuery(stmt);
+        }
+        else
+            HandlePlayerLoginHolder();
+    }
+    else
+        HandlePlayerLoginHolder();
+}
+
+void WorldSession::HandlePlayerLoginAccountJson(PreparedQueryResult result)
+{
+    Player* pCurrChar = sObjectMgr->GetPlayerLoad(_playerGuid);
+    if (!pCurrChar) //Error load
+    {
+        SetPlayer(NULL);
+        KickPlayer();                                       // disconnect client, player no set to session and it will not deleted or saved at kick
+        m_playerLoading = false;
+        sLog->outError(LOG_FILTER_NETWORKIO, "Allready login, may be cheater? account %u guid %u", GetAccountId(), _playerGuid);
+        return;
+    }
+
+    if (result)
+    {
+        std::string data = (*result)[0].GetString();
+        sRedisBuilderMgr->LoadFromString(data, pCurrChar->AccountDatas);
+    }
+
+    if (pCurrChar->LoadPlayerFromJson(_playerGuid))
+        HandlePlayerLogin(GetAccountId(), _playerGuid, 1);
+    else
+        HandlePlayerLogin(GetAccountId(), _playerGuid, 2);
 }
 
 void WorldSession::HandleLoadScreenOpcode(WorldPacket& recvPacket)

@@ -42,7 +42,7 @@
 #include "RedisBuilderMgr.h"
 #include "GuildMgr.h"
 
-void Player::LoadFromRedis(uint64 guid, uint8 step, const RedisValue* v)
+void Player::LoadFromRedis(uint64 guid, uint8 step)
 {
     //sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadFromRedis player guid %u%u step %i get_id %i", guid, step, boost::this_thread::get_id());
 

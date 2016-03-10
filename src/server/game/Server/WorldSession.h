@@ -445,6 +445,9 @@ class WorldSession
         void HandleRandomizeCharNameOpcode(WorldPacket& recvData);
         void HandleReorderCharacters(WorldPacket& recvData);
         void HandlePlayerLogin(uint32 accountId, uint64 playerGuid, uint8 step = 0);
+        void HandlePlayerLoginJson();
+        void HandlePlayerLoginCharJson(PreparedQueryResult result);
+        void HandlePlayerLoginAccountJson(PreparedQueryResult result);
         void HandlePlayerLoginHolder();
 
         //Redis
@@ -1079,8 +1082,9 @@ class WorldSession
         void InitializeQueryCallbackParameters();
         void ProcessQueryCallbacks();
 
+        PreparedQueryResultFuture _accountJsonCallback;
+        PreparedQueryResultFuture _charJsonCallback;
         PreparedQueryResultFuture _charEnumCallback;
-        PreparedQueryResultFuture _stablePetCallback;
         QueryCallback<PreparedQueryResult, CharacterCreateInfo*, true> _charCreateCallback;
         QueryResultHolderFuture _charLoginCallback;
 
