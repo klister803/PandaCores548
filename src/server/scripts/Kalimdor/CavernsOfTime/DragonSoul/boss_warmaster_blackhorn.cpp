@@ -1700,7 +1700,7 @@ class spell_warmaster_blackhorn_twilight_barrage_dmg : public SpellScriptLoader
                     {
                         if (SpellInfo const* spellInfo = GetSpellInfo())
                         {
-                            int32 bp0 = GetSpellInfo()->Effects[EFFECT_0].BasePoints;
+                            float bp0 = GetSpellInfo()->Effects[EFFECT_0].BasePoints;
                             bp0 *= 1.5f;
                             GetCaster()->CastCustomSpell(pShip, SPELL_TWILIGHT_BARRAGE_DMG_2, &bp0, NULL, NULL, true);
                         }
@@ -1736,7 +1736,7 @@ class spell_warmaster_blackhorn_twilight_onslaught_dmg : public SpellScriptLoade
 
                 if (Creature* pShip = GetCaster()->FindNearestCreature(NPC_SKYFIRE, 300.0f))
                 {
-                    int32 bp0 = GetSpellInfo()->Effects[EFFECT_0].BasePoints;
+                    float bp0 = GetSpellInfo()->Effects[EFFECT_0].BasePoints;
                     bp0 /= targets.size() + 1;
                     GetCaster()->CastCustomSpell(pShip, SPELL_TWILIGHT_ONSLAUGHT_DMG_2, &bp0, NULL, NULL, true);
                 }
@@ -1851,7 +1851,7 @@ class spell_warmaster_blackhorn_consuming_shroud : public SpellScriptLoader
                 if (removeMode == AURA_REMOVE_BY_DEATH)
                     if (GetTarget()) 
                     {
-                        int32 bp0 = aurEff->GetAmount();
+                        float bp0 = aurEff->GetAmount();
                         GetTarget()->CastCustomSpell((Unit*)NULL, SPELL_CONSUMING_SHROUD_DMG, &bp0, NULL, NULL, true);
                     }
             }
@@ -1974,7 +1974,7 @@ class spell_warmaster_blackhorn_broadside : public SpellScriptLoader
 
                 if (Creature* pShip = GetCaster()->FindNearestCreature(NPC_SKYFIRE, 300.0f))
                 {
-                    int32 bp0 = pShip->CountPctFromCurHealth(20);
+                    float bp0 = pShip->CountPctFromCurHealth(20);
                     GetCaster()->CastCustomSpell(pShip, SPELL_BROADSIDE_DMG, &bp0, NULL, NULL, true);
                 }
             }

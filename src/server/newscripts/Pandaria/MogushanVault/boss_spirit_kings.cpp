@@ -516,7 +516,7 @@ class boss_spirit_kings : public CreatureScript
                     if (AuraEffect* effect = me->GetAuraEffect(SPELL_COWARDICE, EFFECT_1))
                     {
                         uint8 amount = effect->GetAmount();
-                        int32 bp1 = damage * amount / 100;
+                        float bp1 = damage * amount / 100;
                         me->CastCustomSpell(attacker, SPELL_COWARDICE_DMG, &bp1, NULL, NULL, true);
                     }
             }

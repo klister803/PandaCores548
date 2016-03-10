@@ -925,7 +925,7 @@ AuraScript::EffectCalcAmountHandler::EffectCalcAmountHandler(AuraEffectCalcAmoun
     pEffectHandlerScript = _pEffectHandlerScript;
 }
 
-void AuraScript::EffectCalcAmountHandler::Call(AuraScript* auraScript, AuraEffect const* aurEff, int32& amount, bool& canBeRecalculated)
+void AuraScript::EffectCalcAmountHandler::Call(AuraScript* auraScript, AuraEffect const* aurEff, float& amount, bool& canBeRecalculated)
 {
     (auraScript->*pEffectHandlerScript)(aurEff, amount, canBeRecalculated);
 }
@@ -936,7 +936,7 @@ AuraScript::EffectChangeTickDamageHandler::EffectChangeTickDamageHandler(AuraEff
     pEffectHandlerScript = _pEffectHandlerScript;
 }
 
-void AuraScript::EffectChangeTickDamageHandler::Call(AuraScript* auraScript, AuraEffect const* aurEff, int32& amount, Unit* target, bool crit)
+void AuraScript::EffectChangeTickDamageHandler::Call(AuraScript* auraScript, AuraEffect const* aurEff, float& amount, Unit* target, bool crit)
 {
     (auraScript->*pEffectHandlerScript)(aurEff, amount, target, crit);
 }

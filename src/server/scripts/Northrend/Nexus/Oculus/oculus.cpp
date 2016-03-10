@@ -651,7 +651,7 @@ class spell_oculus_dream_funnel : public SpellScriptLoader
         {
             PrepareAuraScript(spell_oculus_dream_funnel_AuraScript);
 
-            void HandleEffectCalcAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& canBeRecalculated)
+            void HandleEffectCalcAmount(AuraEffect const* /*aurEff*/, float& amount, bool& canBeRecalculated)
             {
                 if (Unit* caster = GetCaster())
                     amount = int32(caster->CountPctFromMaxHealth(5));

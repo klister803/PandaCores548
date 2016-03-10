@@ -450,10 +450,10 @@ bool SpellEffectInfo::IsUnitOwnedAuraEffect() const
     return IsAreaAuraEffect() || Effect == SPELL_EFFECT_APPLY_AURA;
 }
 
-int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const* target, Item* m_castItem, bool lockBasePoints) const
+float SpellEffectInfo::CalcValue(Unit const* caster, float const* bp, Unit const* target, Item* m_castItem, bool lockBasePoints) const
 {
     float basePointsPerLevel = RealPointsPerLevel;
-    int32 basePoints = bp ? *bp : BasePoints;
+    float basePoints = bp ? *bp : BasePoints;
     float comboDamage = PointsPerComboPoint;
 
     if (lockBasePoints)
@@ -499,7 +499,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
                     preciseBasePoints += frand(-delta, delta);
                 }
 
-                basePoints = RoundingFloatValue(preciseBasePoints);
+                basePoints = preciseBasePoints;
 
                 if (ComboScalingMultiplier)
                     comboDamage = ComboScalingMultiplier * multiplier;
@@ -541,7 +541,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
         }
     }
 
-    float value = float(basePoints);
+    float value = basePoints;
 
     // random damage
     if (caster)
@@ -572,10 +572,10 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
             value = float(basePoints);
     }
 
-    return int32(value);
+    return value;
 }
 
-int32 SpellEffectInfo::CalcBaseValue(int32 value) const
+float SpellEffectInfo::CalcBaseValue(float value) const
 {
     if (DieSides == 0)
         return value;

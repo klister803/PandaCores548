@@ -943,7 +943,7 @@ bool Spell::SpellDummyTriggered(SpellEffIndex effIndex)
         Unit* triggerTarget = unitTarget;
         Unit* triggerCaster = m_caster;
         Unit* targetAura = m_caster;
-        int32 basepoints0 = damage;
+        float basepoints0 = damage;
         uint32 cooldown_spell_id = 0;
 
         for (std::vector<SpellDummyTrigger>::const_iterator itr = spellTrigger->begin(); itr != spellTrigger->end(); ++itr)
@@ -979,9 +979,9 @@ bool Spell::SpellDummyTriggered(SpellEffIndex effIndex)
                 if (triggerCaster->ToCreature()->HasSpellCooldown(cooldown_spell_id) && itr->option != DUMMY_TRIGGER_COOLDOWN)
                     return true;
 
-            int32 bp0 = int32(itr->bp0);
-            int32 bp1 = int32(itr->bp1);
-            int32 bp2 = int32(itr->bp2);
+            float bp0 = itr->bp0;
+            float bp1 = itr->bp1;
+            float bp2 = itr->bp2;
             int32 spell_trigger = damage;
 
             if (itr->spell_trigger != 0)
@@ -1169,7 +1169,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
     #endif
 
     uint32 spell_id = 0;
-    int32 bp = 0;
+    float bp = 0;
     bool triggered = true;
 
     if(SpellDummyTriggered(effIndex))
@@ -1233,7 +1233,9 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                             else if (Int > Str && Int > Agi && Int > Spi) spellid = 92730;
                             else if (Spi > Str && Spi > Agi && Spi > Int) spellid = 94160;
                         }
-                        pPlayer->CastCustomSpell(pPlayer, spellid, &damage, 0, 0, true);
+
+                        float bp = damage;
+                        pPlayer->CastCustomSpell(pPlayer, spellid, &bp, 0, 0, true);
                     }
                     break;
                 }
@@ -1248,7 +1250,8 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     else if (Str > Agi && Str > Int) spellid = 96229;
                     else if (Int > Str && Int > Agi) spellid = 96230;
 
-                    m_caster->CastCustomSpell(m_caster, spellid, &damage, 0, 0, true);
+                    float bp = damage;
+                    m_caster->CastCustomSpell(m_caster, spellid, &bp, 0, 0, true);
                     break;
                 }
                 case 105617: // Alchemist's Flask
@@ -1260,12 +1263,14 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     uint32 Int = m_caster->GetStat(STAT_INTELLECT);
                     uint32 Str = m_caster->GetStat(STAT_STRENGTH);
 
+                    float bp = damage;
+
                     if (Agi > Int && Agi > Str)
-                        m_caster->CastCustomSpell(m_caster, 79639, &damage, 0, 0, true, m_CastItem);
+                        m_caster->CastCustomSpell(m_caster, 79639, &bp, 0, 0, true, m_CastItem);
                     else if (Int > Agi && Int > Str)
-                        m_caster->CastCustomSpell(m_caster, 79640, &damage, 0, 0, true, m_CastItem);
+                        m_caster->CastCustomSpell(m_caster, 79640, &bp, 0, 0, true, m_CastItem);
                     else if (Str > Agi && Str > Int)
-                        m_caster->CastCustomSpell(m_caster, 79638, &damage, 0, 0, true, m_CastItem);
+                        m_caster->CastCustomSpell(m_caster, 79638, &bp, 0, 0, true, m_CastItem);
                     break;
                 }
                 case 47484: // Ghoul: Huddle
@@ -1482,18 +1487,18 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 {
                     if(unitTarget != m_caster && m_caster->HasAura(63333) && unitTarget->GetCreatureType() != CREATURE_TYPE_UNDEAD) // Glyph of Death Coil
                     {
-                        int32 bp = damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f;
+                        float bp = damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f;
                         m_caster->CastCustomSpell(unitTarget, 115635, &bp, NULL, NULL, false);
                     }
                     else
                     {
-                        int32 bp = (damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f) * 3.5f;
+                        float bp = (damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f) * 3.5f;
                         m_caster->CastCustomSpell(unitTarget, 47633, &bp, NULL, NULL, false);
                     }
                 }
                 else
                 {
-                    int32 bp = damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f;
+                    float bp = damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f;
                     m_caster->CastCustomSpell(unitTarget, 47632, &bp, NULL, NULL, false);
                 }
                 return;
@@ -1573,18 +1578,18 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             {
                 if(unitTarget != m_caster && m_caster->HasAura(63333) && unitTarget->GetCreatureType() != CREATURE_TYPE_UNDEAD) // Glyph of Death Coil
                 {
-                    int32 bp = damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f;
+                    float bp = damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f;
                     m_caster->CastCustomSpell(unitTarget, 115635, &bp, NULL, NULL, false);
                 }
                 else
                 {
-                    int32 bp = (damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f) * 3.5f;
+                    float bp = (damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f) * 3.5f;
                     m_caster->CastCustomSpell(unitTarget, 47633, &bp, NULL, NULL, false);
                 }
             }
             else
             {
-                int32 bp = damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f;
+                float bp = damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f;
                 m_caster->CastCustomSpell(unitTarget, 47632, &bp, NULL, NULL, false);
             }
             return;
@@ -1923,8 +1928,11 @@ void Spell::EffectForceCast(SpellEffIndex effIndex)
                 break;
             case 52463: // Hide In Mine Car
             case 52349: // Overtake
-                unitTarget->CastCustomSpell(unitTarget, spellInfo->Id, &damage, NULL, NULL, true, NULL, NULL, m_originalCasterGUID);
+            {
+                float bp = damage;
+                unitTarget->CastCustomSpell(unitTarget, spellInfo->Id, &bp, NULL, NULL, true, NULL, NULL, m_originalCasterGUID);
                 return;
+            }
         }
     }
 
@@ -2493,7 +2501,7 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
 
                 if (target && m_caster->IsValidAttackTarget(target))
                 {
-                    int32 bp = CalculatePct(addhealth, _triggerInfo->Effects[1].BasePoints);
+                    float bp = CalculatePct(addhealth, _triggerInfo->Effects[1].BasePoints);
                     m_caster->CastCustomSpell(target, _triggerInfo->Id, &bp, NULL, NULL, true);
                 }
                 break;
@@ -2547,7 +2555,7 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
         if (m_spellInfo->Id == 45470 && m_caster->HasAura(48263))
             if (Aura* aur = m_caster->GetAura(77513))
             {    
-                int32 bp0 = int32(addhealth * float(aur->GetEffect(0)->GetAmount() / 100.0f));
+                float bp0 = int32(addhealth * float(aur->GetEffect(0)->GetAmount() / 100.0f));
                 if (Aura* aurShield = m_caster->GetAura(77535))
                     bp0 += aurShield->GetEffect(0)->GetAmount();
 
@@ -2652,19 +2660,19 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
             {
                 if (casterSpec == ROLES_HEALER)
                 {
-                    int32 bp1 = addhealth/2;
-                    int32 bp2 = 10;
+                    float bp1 = addhealth / 2;
+                    float bp2 = 10;
     
                     caster->CastCustomSpell(caster, 117543, &bp1, &bp2, NULL, NULL, NULL, NULL, true); // Mana regen bonus
 
                     if (targetSpec == ROLES_DPS)
                     {
-                        int32 bbp1 = 10;
-                        int32 bbp2 = 15;
-                        int32 bbp3 = 20;
-                        int32 bbp4 = 25;
-                        int32 bbp5 = 30;
-                        int32 bbp6 = 35;
+                        float bbp1 = 10;
+                        float bbp2 = 15;
+                        float bbp3 = 20;
+                        float bbp4 = 25;
+                        float bbp5 = 30;
+                        float bbp6 = 35;
         
                         caster->CastCustomSpell(unitTarget, 117549, &bbp1, &bbp2, &bbp3, &bbp4, &bbp5, &bbp6, true);
                     }
@@ -4552,7 +4560,7 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
             return;
     }
 
-    PetSlot slot = PetSlot(m_spellInfo->GetEffect(effIndex, m_diffMode)->BasePoints);
+    PetSlot slot = PetSlot(int32(m_spellInfo->GetEffect(effIndex, m_diffMode)->BasePoints));
     owner->m_currentSummonedSlot = slot;
 
     Position pos;
@@ -7146,7 +7154,7 @@ void Spell::EffectDestroyAllTotems(SpellEffIndex /*effIndex*/)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
         return;
 
-    int32 mana = 0;
+    float mana = 0;
     float manaCostPercentage = 0.00f;
     for (uint8 slot = SUMMON_SLOT_TOTEM; slot < MAX_TOTEM_SLOT; ++slot)
     {

@@ -149,7 +149,7 @@ class spell_asira_dawnslayer_blade_barrier : public SpellScriptLoader
         {
             PrepareAuraScript(spell_asira_dawnslayer_blade_barrier_AuraScript);
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool& /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool& /*canBeRecalculated*/)
             {
                 amount = -1;
             }

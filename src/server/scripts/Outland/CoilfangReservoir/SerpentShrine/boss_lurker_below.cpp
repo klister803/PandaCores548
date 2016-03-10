@@ -404,7 +404,7 @@ public:
 
             if (ShootBowTimer <= diff)
             {
-                int bp0 = 1100;
+                float bp0 = 1100;
                 if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     me->CastCustomSpell(target, SPELL_SHOOT, &bp0, NULL, NULL, true);
                 ShootBowTimer = 4000+rand()%5000;

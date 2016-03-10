@@ -366,7 +366,7 @@ class spell_pri_prayer_of_mending_divine_insight : public SpellScriptLoader
                     {
                         if (Aura* prayerOfMending = target->GetAura(PRIEST_PRAYER_OF_MENDING_RADIUS, _player->GetGUID()))
                         {
-                            int32 value = prayerOfMending->GetEffect(0)->GetAmount();
+                            float value = prayerOfMending->GetEffect(0)->GetAmount();
 
                             if (_player->HasAura(PRIEST_SPELL_DIVINE_INSIGHT_HOLY))
                                 _player->RemoveAura(PRIEST_SPELL_DIVINE_INSIGHT_HOLY);
@@ -534,14 +534,14 @@ public:
         {
             if (Unit* caster = GetCaster())
                 if (AuraEffect* eff = GetEffect(EFFECT_0))
-                    if (int32 bp = eff->GetAmount())
+                    if (float bp = eff->GetAmount())
                     {
                         caster->CastCustomSpell(caster, 15290, &bp, NULL, NULL, true, NULL, eff);
                         eff->SetAmount(0);
                     }
         }
 
-        void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+        void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
         {
             amount = 0;
         }
@@ -726,7 +726,7 @@ class spell_pri_rapture : public SpellScriptLoader
                     AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
                     if (removeMode == AURA_REMOVE_BY_ENEMY_SPELL)
                     {
-                        int32 bp = GetSpellInfo()->CalcPowerCost(caster, GetSpellInfo()->GetSchoolMask());
+                        float bp = GetSpellInfo()->CalcPowerCost(caster, GetSpellInfo()->GetSchoolMask());
                         if (caster->ToPlayer() && !caster->ToPlayer()->HasSpellCooldown(PRIEST_RAPTURE_ENERGIZE))
                         {
                             caster->CastCustomSpell(caster, PRIEST_RAPTURE_ENERGIZE, &bp, NULL, NULL, true);
@@ -736,7 +736,7 @@ class spell_pri_rapture : public SpellScriptLoader
                 }
             }
 
-            void CalculateAmount(AuraEffect const* , int32 & amount, bool & )
+            void CalculateAmount(AuraEffect const*, float & amount, bool &)
             {
                 Unit* caster = GetCaster();
                 if (!caster || !caster->ToPlayer())
@@ -745,7 +745,7 @@ class spell_pri_rapture : public SpellScriptLoader
                 if (Aura* aur = caster->GetAura(55672))// Glyph of Power Word: Shield
                 {
                     int32 percent = aur->GetEffect(EFFECT_0)->GetAmount();
-                    int32 bp = CalculatePct(amount, percent);
+                    float bp = CalculatePct(amount, percent);
                     amount -= bp;
                     caster->CastCustomSpell(caster, 56160, &bp, NULL, NULL,  true);
                 }
@@ -815,7 +815,7 @@ class spell_pri_spirit_shell : public SpellScriptLoader
                 if (caster->HasAura(PRIEST_SPIRIT_SHELL_AURA))
                 {
                     Unit* target = GetHitUnit();
-                    int32 bp = GetHitHeal();
+                    float bp = GetHitHeal();
                     if (AuraEffect* aurEff = target->GetAuraEffect(PRIEST_SPIRIT_SHELL_ABSORPTION, 0))
                     {
                         bp += aurEff->GetAmount();
@@ -895,7 +895,7 @@ class spell_pri_devouring_plague : public SpellScriptLoader
         {
             PrepareAuraScript(spell_pri_devouring_plague_AuraScript);
 
-            int32 orbCount;
+            float orbCount;
 
             bool Load()
             {
@@ -911,7 +911,7 @@ class spell_pri_devouring_plague : public SpellScriptLoader
                     caster->CastCustomSpell(caster, PRIEST_DEVOURING_PLAGUE_HEAL, &orbCount, 0, 0, true);
             }
 
-            void HandleTick(AuraEffect const* /*aurEff*/, int32& amount, Unit* /*target*/, bool /*crit*/)
+            void HandleTick(AuraEffect const* /*aurEff*/, float& amount, Unit* /*target*/, bool /*crit*/)
             {
                 amount *= orbCount;
             }
@@ -1453,8 +1453,8 @@ class spell_pri_void_shift : public SpellScriptLoader
                         float casterPct;
                         float targetPct;
                         float basePct = GetSpellInfo()->Effects[EFFECT_0].BasePoints;
-                        int32 casterHeal = 0, targetHeal = 0;
-                        int32 casterDamage = 0, targetDamage = 0;
+                        float casterHeal = 0, targetHeal = 0;
+                        float casterDamage = 0, targetDamage = 0;
 
                         casterPct = caster->GetHealthPct();
                         targetPct = target->GetHealthPct();
@@ -1710,7 +1710,7 @@ class spell_pri_guardian_spirit : public SpellScriptLoader
                 return true;
             }
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 // Set absorbtion amount to unlimited
                 amount = -1;
@@ -1722,7 +1722,7 @@ class spell_pri_guardian_spirit : public SpellScriptLoader
                 if (dmgInfo.GetDamage() < target->GetHealth())
                     return;
 
-                int32 healAmount = int32(target->CountPctFromMaxHealth(healPct));
+                float healAmount = int32(target->CountPctFromMaxHealth(healPct));
                 // remove the aura now, we don't want 40% healing bonus
                 Remove(AURA_REMOVE_BY_ENEMY_SPELL);
                 target->CastCustomSpell(target, PRIEST_SPELL_GUARDIAN_SPIRIT_HEAL, &healAmount, NULL, NULL, true);
@@ -1918,7 +1918,7 @@ class spell_priest_renew : public SpellScriptLoader
                     if (Aura* empoweredRenew = caster->GetAura(PRIEST_RAPID_RENEWAL_AURA))
                     {
                         uint32 heal = aurEff->GetAmount();
-                        int32 basepoints0 = empoweredRenew->GetEffect(EFFECT_2)->GetAmount() * aurEff->GetTotalTicks() * int32(heal) / 100;
+                        float basepoints0 = empoweredRenew->GetEffect(EFFECT_2)->GetAmount() * aurEff->GetTotalTicks() * int32(heal) / 100;
                         caster->CastCustomSpell(GetTarget(), PRIEST_SPELL_EMPOWERED_RENEW, &basepoints0, NULL, NULL, true, NULL, aurEff);
                     }
                 }
@@ -2333,7 +2333,7 @@ class spell_pri_mind_flay : public SpellScriptLoader
         {
             PrepareAuraScript(spell_pri_mind_flay_AuraScript);
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 if (Unit* caster = GetCaster())
                     if (caster->HasAura(120585))
@@ -2608,7 +2608,7 @@ class spell_pri_hymn_of_hope : public SpellScriptLoader
         {
             PrepareAuraScript(spell_pri_hymn_of_hope_AuraScript);
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 if (Unit* target = GetUnitOwner())
                     amount = target->CountPctFromMaxMana(amount);
@@ -2723,7 +2723,7 @@ class spell_pri_devouring_plague_mastery : public SpellScriptLoader
                     {
                         if(Aura* aura = target->GetAura(2944))
                         {
-                            int32 count = aura->GetCustomData();
+                            float count = aura->GetCustomData();
                             caster->CastCustomSpell(caster, PRIEST_DEVOURING_PLAGUE_HEAL, &count, 0, 0, true);
                         }
                     }

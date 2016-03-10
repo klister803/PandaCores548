@@ -667,7 +667,7 @@ class spell_dru_symbiosis : public SpellScriptLoader
                 }
             }
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
@@ -681,7 +681,7 @@ class spell_dru_symbiosis : public SpellScriptLoader
                         {
                             uint32 spellCaster = 0;
                             uint32 spellTarget = 0;
-                            int32 bpTarget = 0;
+                            float bpTarget = 0;
 
                             if (target->GetSpecializationId(target->GetActiveSpec()) == SPEC_NONE)
                                 return;
@@ -959,7 +959,7 @@ class spell_dru_natures_vigil : public SpellScriptLoader
                     {
                         if (AuraEffect* eff2 = aura->GetEffect(EFFECT_2))
                         {
-                            if (int32 bp = eff2->GetAmount())
+                            if (float bp = eff2->GetAmount())
                             {
                                 std::list<Unit*> partyList;
                                 caster->GetPartyMembers(partyList);
@@ -975,7 +975,7 @@ class spell_dru_natures_vigil : public SpellScriptLoader
                         }
                         if (AuraEffect* eff3 = aura->GetEffect(EFFECT_3))
                         {
-                            if (int32 bp = eff3->GetAmount())
+                            if (float bp = eff3->GetAmount())
                             {
                                 if (Unit* target = caster->GetNearbyVictim(caster, 40.0f, false, true))
                                     caster->CastCustomSpell(target, SPELL_DRUID_NATURES_VIGIL_DAMAGE, &bp, 0, 0, true);
@@ -1223,7 +1223,7 @@ class spell_dru_ferocious_bite : public SpellScriptLoader
 
                 int32 AP = player->GetTotalAttackPowerValue(BASE_ATTACK) * comboPoints;
                 float perc = 1.0f;
-                int32 bpHp = 5;
+                float bpHp = 5.0f;
                 int32 damageN = irand(((3.511 * caster->getLevel()) + (8.46 * caster->getLevel()) * comboPoints + 0.196 * AP), ((7.611 * caster->getLevel()) + (8.46 * caster->getLevel()) * comboPoints + 0.196 * AP));
                 int32 curValue = caster->GetPower(POWER_ENERGY);
 
@@ -1253,7 +1253,7 @@ class spell_dru_ferocious_bite : public SpellScriptLoader
                     // energize
                     if (SpellInfo const* info = sSpellMgr->GetSpellInfo(114113))
                     {
-                        int32 bp = info->Effects[EFFECT_0].CalcValue(player) * comboPoints;
+                        float bp = info->Effects[EFFECT_0].CalcValue(player) * comboPoints;
                         player->CastCustomSpell(player, info->Id, &bp, NULL, NULL, true);
                     }
                 }
@@ -1312,7 +1312,7 @@ class spell_dru_rip : public SpellScriptLoader
                     // energize
                     if (SpellInfo const* info = sSpellMgr->GetSpellInfo(114113))
                     {
-                        int32 bp = info->Effects[EFFECT_0].CalcValue(player) * comboPoints;
+                        float bp = info->Effects[EFFECT_0].CalcValue(player) * comboPoints;
                         player->CastCustomSpell(player, info->Id, &bp, NULL, NULL, true);
                     }
                 }
@@ -1358,7 +1358,7 @@ class spell_dru_bear_hug : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dru_bear_hug_AuraScript);
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 if (Unit* caster = GetCaster())
                     amount = caster->CountPctFromMaxHealth(10);
@@ -1405,7 +1405,7 @@ class spell_dru_lifebloom : public SpellScriptLoader
 
                 // final heal
                 int32 stack = GetStackAmount();
-                int32 healAmount = aurEff->GetAmount();
+                float healAmount = aurEff->GetAmount();
 
                 if (Player* _plr = GetCaster()->ToPlayer())
                 {
@@ -1433,7 +1433,7 @@ class spell_dru_lifebloom : public SpellScriptLoader
                     if (AuraEffect const* aurEff = GetEffect(EFFECT_1))
                     {
                         // final heal
-                        int32 healAmount = aurEff->GetAmount();
+                        float healAmount = aurEff->GetAmount();
 
                         if (Unit* caster = GetCaster())
                         {
@@ -1917,7 +1917,7 @@ class spell_dru_astral_communion : public SpellScriptLoader
 
                     if (Aura* aura = caster->GetAura(145138))
                     {
-                        int32 _amount = 100 * direction;
+                        float _amount = 100 * direction;
                         caster->CastCustomSpell(caster, 89265, &_amount, NULL, NULL, true);
                         aura->Remove(AURA_REMOVE_BY_DEFAULT);
                         GetAura()->Remove();
@@ -1934,7 +1934,7 @@ class spell_dru_astral_communion : public SpellScriptLoader
                 if (player->HasAura(112071))
                     return;
 
-                int32 mod = aurEff->GetAmount() * direction;
+                float mod = aurEff->GetAmount() * direction;
                 // energize
                 player->CastCustomSpell(player, 89265, &mod, NULL, NULL, true);
             }
@@ -2427,7 +2427,7 @@ class spell_dru_swift_flight_passive : public SpellScriptLoader
                 return GetCaster()->GetTypeId() == TYPEID_PLAYER;
             }
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 if (Player* caster = GetCaster()->ToPlayer())
                     if (caster->GetSkillValue(SKILL_RIDING) >= 375)
@@ -2595,7 +2595,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
             void AfterApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 Unit* target = GetTarget();
-                int32 bp0 = target->CountPctFromMaxHealth(aurEff->GetAmount());
+                float bp0 = target->CountPctFromMaxHealth(aurEff->GetAmount());
                 target->CastCustomSpell(target, DRUID_SURVIVAL_INSTINCTS, &bp0, NULL, NULL, true);
             }
 
@@ -2673,7 +2673,7 @@ class spell_druid_rejuvenation : public SpellScriptLoader
                 }
             }
 
-            void HandleTick(AuraEffect const* /*aurEff*/, int32& amount, Unit* target, bool /*crit*/)
+            void HandleTick(AuraEffect const* /*aurEff*/, float& amount, Unit* target, bool /*crit*/)
             {
                 Unit* caster = GetCaster();
                 if(!caster || !target)
@@ -2685,8 +2685,8 @@ class spell_druid_rejuvenation : public SpellScriptLoader
                 {
                     Creature* summon = _player->GetMap()->GetCreature(_player->m_SummonSlot[SUMMON_SLOT_TOTEM]);
                     int32 maxhealth = caster->GetMaxHealth();
-                    int32 health = int32(target->GetHealth() - target->GetMaxHealth()) + amount;
-                    int32 scale = int32(health * 100/maxhealth);
+                    float health = int32(target->GetHealth() - target->GetMaxHealth()) + amount;
+                    float scale = int32(health * 100 / maxhealth);
                     if(health > 0 && summon)
                     {
                         if (Aura* aura = summon->GetAura(138616))
@@ -2914,7 +2914,7 @@ class spell_druid_eclipse_buff : public SpellScriptLoader
                     // Astral Alignment
                     if (SpellInfo const* bonus = sSpellMgr->GetSpellInfo(90164))
                     {
-                        int32 bp = bonus->Effects[0].CalcValue(player) * 3;
+                        float bp = bonus->Effects[0].CalcValue(player) * 3;
                         player->CastCustomSpell(player, bonus->Id, &bp, NULL, NULL, true, NULL, aura);
                     }
                 }
@@ -3136,7 +3136,7 @@ class spell_dru_tooth_and_claw : public SpellScriptLoader
                     {
                         if(caster->HasAura(135286))
                         {
-                            int32 bp = int32(std::max((caster->GetTotalAttackPowerValue(BASE_ATTACK) - caster->GetTotalStatValue(STAT_AGILITY) * 2) * 0.88f, caster->GetTotalStatValue(STAT_STAMINA)));
+                            float bp = int32(std::max((caster->GetTotalAttackPowerValue(BASE_ATTACK) - caster->GetTotalStatValue(STAT_AGILITY) * 2) * 0.88f, caster->GetTotalStatValue(STAT_STAMINA)));
                             caster->CastCustomSpell(caster, 135597, &bp, NULL, NULL, true);
                             caster->CastCustomSpell(target, 135601, &bp, NULL, NULL, true);
                         }
@@ -3207,7 +3207,7 @@ class spell_dru_wild_mushroom_heal : public SpellScriptLoader
         {
             PrepareSpellScript(spell_dru_wild_mushroom_heal_SpellScript)
 
-            int32 savePoints;
+                float savePoints;
 
             bool Load()
             {
@@ -3239,7 +3239,7 @@ class spell_dru_wild_mushroom_heal : public SpellScriptLoader
                     if (savePoints != 0)
                     {
                         int32 maxhealth = caster->GetMaxHealth();
-                        int32 scale = int32(savePoints * 100/maxhealth);
+                        float scale = int32(savePoints * 100 / maxhealth);
                         summon->CastCustomSpell(summon, 138616, &scale, &savePoints, NULL, true);
                     }
                     if(caster->HasAura(145529))
@@ -3330,7 +3330,7 @@ class spell_dru_glyph_of_hurricane : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dru_glyph_of_hurricane_AuraScript);
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 if (Unit* caster = GetCaster())
                     if (caster->HasAura(54831))
@@ -3473,7 +3473,7 @@ class spell_dru_ursocs_vigor : public SpellScriptLoader
                 return GetCaster()->GetTypeId() == TYPEID_PLAYER;
             }
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 if (Player* caster = GetCaster()->ToPlayer())
                     if (AuraEffect const* aurEff = caster->GetAuraEffect(144887, EFFECT_0)) // Item - Druid T16 Guardian 4P Bonus
@@ -3632,7 +3632,7 @@ class spell_dru_anti_magic_shell : public SpellScriptLoader
                 absorbAmount = std::min(CalculatePct(dmgInfo.GetDamage(), absorbPct), uint32(aurEff->GetAmount()));
             }
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 Unit* caster = GetCaster();
                 if (!caster)
@@ -3665,7 +3665,7 @@ class spell_dru_fortifying_brew : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dru_fortifying_brew_AuraScript);
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 Unit* caster = GetCaster();
                 if (!caster)

@@ -138,7 +138,7 @@ class spell_warl_grimoire_of_sacrifice : public SpellScriptLoader
         {
             PrepareAuraScript(spell_warl_grimoire_of_sacrifice_AuraScript);
 
-            void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* aurEff, float & amount, bool & /*canBeRecalculated*/)
             {
                 if(GetCaster())
                 if (Player* player = GetCaster()->ToPlayer())
@@ -376,7 +376,7 @@ class spell_warl_archimondes_vengance : public SpellScriptLoader
                 {
                     if (target->HasAura(aurEff->GetSpellInfo()->Id, _player->GetGUID()))
                     {
-                        int32 bp = int32(eventInfo.GetDamageInfo()->GetDamage() / 4);
+                        float bp = int32(eventInfo.GetDamageInfo()->GetDamage() / 4);
 
                         if (!bp)
                             return;
@@ -619,7 +619,7 @@ class spell_warl_dark_bargain_on_absorb : public SpellScriptLoader
                 return true;
             }
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 amount = int32(100000000);
             }
@@ -1263,7 +1263,7 @@ public:
     {
         PrepareAuraScript(spell_warl_burning_embers2_AuraScript);
 
-        void HandleTick(AuraEffect const* aurEff, int32& amount, Unit* target, bool crit)
+        void HandleTick(AuraEffect const* aurEff, float& amount, Unit* target, bool crit)
         {
             if (Unit* caster = GetCaster())
                 if (Player* plr = caster->ToPlayer())
@@ -1370,7 +1370,7 @@ class spell_warl_drain_life : public SpellScriptLoader
                     if (GetSpellInfo()->Effects[2].IsAura(SPELL_AURA_DUMMY))
                         _player->EnergizeBySpell(_player, 689, GetSpellInfo()->Effects[2].BasePoints, POWER_DEMONIC_FURY);
 
-                    int32 basepoints = _player->CountPctFromMaxHealth(GetSpellInfo()->Effects[1].BasePoints);
+                    float basepoints = _player->CountPctFromMaxHealth(GetSpellInfo()->Effects[1].BasePoints);
                     _player->CastCustomSpell(_player, WARLOCK_DRAIN_LIFE_HEAL, &basepoints, NULL, NULL, true);
                 }
             }
@@ -1429,7 +1429,7 @@ class spell_warl_soul_harverst : public SpellScriptLoader
                 }
             }
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 amount = 0;
             }
@@ -1457,7 +1457,7 @@ class spell_warl_life_tap : public SpellScriptLoader
         {
             PrepareAuraScript(spell_warl_life_tap_AuraScript);
 
-            void CalculateAmount(AuraEffect const* aurEff, int32& amount, bool& /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* aurEff, float& amount, bool& /*canBeRecalculated*/)
             {
                 if(Unit* caster = GetCaster())
                 {
@@ -1530,7 +1530,7 @@ class spell_warl_harvest_life : public SpellScriptLoader
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     // Restoring 3-4.5% of the caster's total health every 1s - With 33% bonus
-                    int32 basepoints = int32(frand(0.03f, 0.045f) * _player->GetMaxHealth());
+                    float basepoints = int32(frand(0.03f, 0.045f) * _player->GetMaxHealth());
 
                     if (!_player->HasSpellCooldown(WARLOCK_HARVEST_LIFE_HEAL))
                     {
@@ -1867,7 +1867,7 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
                 {
                     if (AuraEffect const* aurEff = GetEffect(EFFECT_0))
                     {
-                        int32 damage = aurEff->GetAmount() * 16;
+                        float damage = aurEff->GetAmount() * 16;
                         Unit* dispeller = dispelInfo->GetDispeller();
 
                         if (dispeller->GetTypeId() == TYPEID_PLAYER)
@@ -1980,7 +1980,7 @@ class spell_warl_seed_of_corruption_dota : public SpellScriptLoader
                 return true;
             }
 
-            void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* aurEff, float & amount, bool & /*canBeRecalculated*/)
             {
                 damage = amount;
                 if (Unit* caster = GetCaster())
@@ -1995,7 +1995,7 @@ class spell_warl_seed_of_corruption_dota : public SpellScriptLoader
                 damage *= aurEff->GetTotalTicks();
             }
 
-            void CalculateAmountDummy(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmountDummy(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 amount = damage;
             }
@@ -2123,7 +2123,7 @@ class spell_warl_metamorphosis : public SpellScriptLoader
         {
             PrepareAuraScript(spell_warl_metamorphosis_AuraScript);
 
-            void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* aurEff, float & amount, bool & /*canBeRecalculated*/)
             {
                 if (Unit* caster = GetCaster())
                 {
@@ -2168,7 +2168,7 @@ class spell_warl_corruption : public SpellScriptLoader
         {
             PrepareAuraScript(spell_warl_corruption_AuraScript);
 
-            void HandleTick(AuraEffect const* aurEff, int32& /*amount*/, Unit* /*target*/, bool /*crit*/)
+            void HandleTick(AuraEffect const* aurEff, float& /*amount*/, Unit* /*target*/, bool /*crit*/)
             {
                 if (GetCaster())
                     GetCaster()->EnergizeBySpell(GetCaster(), aurEff->GetSpellInfo()->Id, 4, POWER_DEMONIC_FURY);
@@ -2213,7 +2213,7 @@ class spell_warl_healthstone : public SpellScriptLoader
         {
             PrepareAuraScript(spell_warl_healthstone_AuraScript);
 
-            void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* aurEff, float & amount, bool & /*canBeRecalculated*/)
             {
                 int32 percent = int32(GetSpellInfo()->Effects[aurEff->GetEffIndex()].BasePoints / 10);
                 if (Unit* caster = GetCaster())
@@ -2688,7 +2688,7 @@ class spell_warl_immolate : public SpellScriptLoader
         {
             PrepareAuraScript(spell_warl_immolate_AuraScript);
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 if (Unit* caster = GetCaster())
                 {

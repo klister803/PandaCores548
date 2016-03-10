@@ -125,14 +125,14 @@ public:
         {
             if (Unit* caster = GetCaster())
                 if (AuraEffect* eff = GetEffect(EFFECT_0))
-                    if (int32 bp = eff->GetAmount())
+                    if (float bp = eff->GetAmount())
                     {
                         caster->CastCustomSpell(caster, 148009, &bp, NULL, NULL, true, NULL, eff);
                         eff->SetAmount(0);
                     }
         }
 
-        void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+        void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
         {
             amount = 0;
         }
@@ -1482,7 +1482,7 @@ class spell_gen_vehicle_scaling : public SpellScriptLoader
                 return GetCaster() && GetCaster()->GetTypeId() == TYPEID_PLAYER;
             }
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float& amount, bool& /*canBeRecalculated*/)
             {
                 Unit* caster = GetCaster();
                 float factor;
@@ -1631,7 +1631,7 @@ class spell_gen_dummy_trigger : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                int32 damage = GetEffectValue();
+                float damage = GetEffectValue();
                 Unit* caster = GetCaster();
                 if (Unit* target = GetHitUnit())
                     if (SpellInfo const* triggeredByAuraSpell = GetTriggeringSpell())
@@ -2613,7 +2613,7 @@ class spell_gen_chaos_blast : public SpellScriptLoader
             }
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                int32 basepoints0 = 100;
+                float basepoints0 = 100;
                 Unit* caster = GetCaster();
                 if (Unit* target = GetHitUnit())
                     caster->CastCustomSpell(target, SPELL_CHAOS_BLAST, &basepoints0, NULL, NULL, true);
@@ -2766,7 +2766,7 @@ public:
     {
         PrepareAuraScript(spell_gen_dream_funnel_AuraScript);
 
-        void HandleEffectCalcAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& canBeRecalculated)
+        void HandleEffectCalcAmount(AuraEffect const* /*aurEff*/, float& amount, bool& canBeRecalculated)
         {
             if (GetCaster())
                 amount = GetCaster()->GetMaxHealth() * 0.05f;
@@ -3745,7 +3745,7 @@ class spell_gen_dampening : public SpellScriptLoader
                     return;
                 if (AuraEffect* aurEff0 = aurEff->GetBase()->GetEffect(EFFECT_0))
                     aurEff0->ChangeAmount(amount);
-                int32 bp0 = -amount;
+                float bp0 = -amount;
                 aurEff->SetAmount(amount);
                 if(Unit* caster = GetCaster())
                     caster->CastCustomSpell(caster, 74410, &bp0, &bp0, &bp0, true);
@@ -3964,8 +3964,8 @@ class spell_gen_battle_guild_standart : public SpellScriptLoader
             {
                 if (Unit* pStandart = GetCaster())
                 {                                 
-                    int32 bp0 = 0;
-                    int32 bp1 = 0;
+                    float bp0 = 0;
+                    float bp1 = 0;
                          
                     switch (pStandart->GetEntry())
                     {                        

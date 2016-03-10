@@ -263,7 +263,7 @@ public:
     uint32    Amplitude;
     int32     DieSides;
     float     RealPointsPerLevel;
-    int32     BasePoints;
+    float     BasePoints;
     float     PointsPerComboPoint;
     float     ValueMultiplier;
     float     DamageMultiplier;
@@ -297,8 +297,8 @@ public:
     bool IsFarDestTargetEffect() const;
     bool IsUnitOwnedAuraEffect() const;
 
-    int32 CalcValue(Unit const* caster = NULL, int32 const* basePoints = NULL, Unit const* target = NULL, Item* m_castitem = NULL, bool lockBasePoints = false) const;
-    int32 CalcBaseValue(int32 value) const;
+    float CalcValue(Unit const* caster = NULL, float const* basePoints = NULL, Unit const* target = NULL, Item* m_castitem = NULL, bool lockBasePoints = false) const;
+    float CalcBaseValue(float value) const;
     float CalcValueMultiplier(Unit* caster, Spell* spell = NULL) const;
     float CalcDamageMultiplier(Unit* caster, Spell* spell = NULL) const;
 

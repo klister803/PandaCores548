@@ -910,7 +910,7 @@ public:
             Unit* target = GetTarget();
             if (dmgInfo.GetAttacker() == target)
                 return;
-            int32 bp = absorbAmount / 2;
+            float bp = absorbAmount / 2;
             target->CastCustomSpell(dmgInfo.GetAttacker(), SPELL_REFLECTIVE_SHIELD_T, &bp, NULL, NULL, true, NULL, aurEff);
         }
 

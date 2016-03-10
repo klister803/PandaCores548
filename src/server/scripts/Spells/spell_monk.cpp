@@ -462,7 +462,7 @@ class spell_monk_guard : public SpellScriptLoader
         {
             PrepareAuraScript(spell_monk_guard_AuraScript);
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 if (!GetCaster())
                     return;
@@ -509,7 +509,7 @@ class spell_monk_bear_hug : public SpellScriptLoader
         {
             PrepareAuraScript(spell_monk_bear_hug_AuraScript);
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 if (Unit* caster = GetCaster())
                     amount = caster->CountPctFromMaxHealth(2);
@@ -720,7 +720,7 @@ class spell_monk_touch_of_karma : public SpellScriptLoader
                 }
             }
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 if (GetCaster())
                     amount = GetCaster()->GetMaxHealth();
@@ -734,7 +734,7 @@ class spell_monk_touch_of_karma : public SpellScriptLoader
                         return;
                     if (Unit* target = ObjectAccessor::GetUnit(*caster, caster->m_SpecialTarget))
                     {
-                        int32 bp = int32(dmgInfo.GetAbsorb() / 6);
+                        float bp = int32(dmgInfo.GetAbsorb() / 6);
 
                         if (bp)
                             caster->CastCustomSpell(target, SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, &bp, NULL, NULL, true);
@@ -1860,7 +1860,7 @@ class spell_monk_blackout_kick : public SpellScriptLoader
                             uint32 triggered_spell_id = 128531;
                             Unit* originalCaster = caster->GetOwner() ? caster->GetOwner(): caster;
                             int32 damsges = GetHitAbsorb() + GetHitDamage() + GetHitResist() + GetHitBlocked();
-                            int32 basepoints0 = CalculatePct(damsges, GetSpellInfo()->Effects[EFFECT_1].BasePoints);
+                            float basepoints0 = CalculatePct(damsges, GetSpellInfo()->Effects[EFFECT_1].BasePoints);
 
                             if (!originalCaster->HasAura(132005) && !target->isInBack(caster))
                                 triggered_spell_id = 128591;
@@ -1975,7 +1975,7 @@ class spell_monk_fortifying_brew : public SpellScriptLoader
         {
             PrepareAuraScript(spell_monk_fortifying_brew_AuraScript);
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 Unit* caster = GetCaster();
                 if (!caster)
@@ -2309,7 +2309,7 @@ public:
                 aura->SetStackAmount(aurEff->GetAmount());
         }
 
-        void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
+        void CalculateAmount(AuraEffect const* aurEff, float & amount, bool & /*canBeRecalculated*/)
         {
             amount = aurEff->GetBaseAmount();
         }
@@ -2323,8 +2323,8 @@ public:
 
                 if(GetAura()->GetStackAmount() > 1)
                 {
-                    int32 setstack = GetAura()->GetStackAmount() - 1;
-                    int32 amount = aurEff->GetAmount();
+                    float setstack = GetAura()->GetStackAmount() - 1;
+                    float amount = aurEff->GetAmount();
                     caster->CastCustomSpell(caster, SPELL_MONK_RENEWING_MIST_JUMP_AURA, &amount, &setstack, NULL, true, NULL, aurEff, caster->GetGUID());
                     GetAura()->SetStackAmount(1);
                 }
@@ -2375,8 +2375,8 @@ class spell_monk_renewing_mist_selector : public SpellScriptLoader
                 if(!caster || !spellValue || !target)
                     return;
 
-                int32 bp0 = spellValue->EffectBasePoints[0];
-                int32 bp1 = spellValue->EffectBasePoints[1];
+                float bp0 = spellValue->EffectBasePoints[0];
+                float bp1 = spellValue->EffectBasePoints[1];
                 caster->CastSpell(target, 119647, true);
                 caster->CastCustomSpell(target, SPELL_MONK_RENEWING_MIST_HOT, &bp0, &bp1, NULL, true, NULL, NULL, caster->GetGUID());
             }
@@ -2452,7 +2452,7 @@ class spell_monk_renewing_mist_start : public SpellScriptLoader
                 if(!caster || !target)
                     return;
 
-                int32 bp0 = GetHitHeal();
+                float bp0 = GetHitHeal();
                 caster->CastCustomSpell(target, SPELL_MONK_RENEWING_MIST_HOT, &bp0, NULL, NULL, true, NULL, NULL, caster->GetGUID());
             }
 
@@ -3083,7 +3083,7 @@ class spell_monk_chi_wave_filter : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                int32 bp1 = GetEffectValue();
+                float bp1 = GetEffectValue();
 
                 if(bp1 >= 7)
                     return;
@@ -3207,7 +3207,7 @@ class spell_monk_chi_wave_dummy : public SpellScriptLoader
                 Unit* target = GetTarget();
                 if (target && caster)
                 {
-                    int32 bp1 = aurEff->GetAmount();
+                    float bp1 = aurEff->GetAmount();
                     target->CastCustomSpell(target, 132466, NULL, &bp1, NULL, true, NULL, NULL, GetCasterGUID());
                     if (target->IsFriendlyTo(caster))
                         caster->CastCustomSpell(target, 132463, NULL, &bp1, NULL, true, NULL, NULL, GetCasterGUID());
@@ -3243,7 +3243,7 @@ class spell_monk_chi_wave : public SpellScriptLoader
                     if (Unit* target = GetExplTargetUnit())
                     {
                         uint32 spellId = 0;
-                        int32 bp = 1;
+                        float bp = 1;
 
                         if (target->IsFriendlyTo(caster))
                         {

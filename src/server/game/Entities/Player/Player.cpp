@@ -9869,61 +9869,61 @@ void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply,
             {
                 case 1:
                 {
-                    int32 bp = 100;
+                    float bp = 100;
                     CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
                     return;
                 }
                 case 2:
                 {
-                    int32 bp = 90;
+                    float bp = 90;
                     CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
                     return;
                 }
                 case 3:
                 {
-                    int32 bp = 80;
+                    float bp = 80;
                     CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
                     return;
                 }
                 case 4:
                 {
-                    int32 bp = 70;
+                    float bp = 70;
                     CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
                     return;
                 }
                 case 5:
                 {
-                    int32 bp = 60;
+                    float bp = 60;
                     CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
                     return;
                 }
                 case 6:
                 {
-                    int32 bp = 50;
+                    float bp = 50;
                     CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
                     return;
                 }
                 case 7:
                 {
-                    int32 bp = 40;
+                    float bp = 40;
                     CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
                     return;
                 }
                 case 8:
                 {
-                    int32 bp = 30;
+                    float bp = 30;
                     CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
                     return;
                 }
                 case 9:
                 {
-                    int32 bp = 20;
+                    float bp = 20;
                     CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
                     return;
                 }
                 case 10:
                 {
-                    int32 bp = 10;
+                    float bp = 10;
                     CastCustomSpell(this, spellInfo->Id, &bp, &bp, &bp, true, item);
                     return;
                 }
@@ -15834,7 +15834,7 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
                     {
                         if (apply)
                         {
-                            int32 basepoints = 0;
+                            float basepoints = 0;
                             // Random Property Exist - try found basepoints for spell (basepoints depends from item suffix factor)
                             if (item->GetItemRandomPropertyId() < 0)
                             {
@@ -19842,7 +19842,7 @@ void Player::_LoadAuras(PreparedQueryResult result, PreparedQueryResult resultEf
         {
             Field* fields = result->Fetch();
             int32 damage[32];
-            int32 baseDamage[32];
+            float baseDamage[32];
             uint64 caster_guid = fields[0].GetUInt64();
             uint8 slot = fields[1].GetUInt8();
             uint32 spellid = fields[2].GetUInt32();
@@ -30914,7 +30914,7 @@ void Player::HandleArenaDeserter()
         {
             if (AuraEffect* aRAuraEff = dRAura->GetEffect(EFFECT_0))
             {
-                switch (aRAuraEff->GetAmount())
+                switch (RoundingFloatValue(aRAuraEff->GetAmount()))
                 {
                     case 0:
                     {

@@ -981,7 +981,7 @@ class spell_sha_healing_rain : public SpellScriptLoader
                 }
             }
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float& amount, bool& /*canBeRecalculated*/)
             {
                 if (Unit* caster = GetCaster())
                 {
@@ -1244,7 +1244,7 @@ class spell_sha_ancestral_awakening_proc : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                int32 damage = GetEffectValue();
+                float damage = GetEffectValue();
                 if (GetCaster() && GetHitUnit())
                     GetCaster()->CastCustomSpell(GetHitUnit(), SPELL_ANCESTRAL_AWAKENING_PROC, &damage, NULL, NULL, true);
             }
@@ -1555,7 +1555,7 @@ class spell_sha_ancestral_vigor : public SpellScriptLoader
         {
             PrepareAuraScript(spell_sha_ancestral_vigor_AuraScript);
 
-            void CalculateAmount(AuraEffect const* aurEff, int32& amount, bool& /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* aurEff, float& amount, bool& /*canBeRecalculated*/)
             {
                 amount += aurEff->GetOldBaseAmount();
                 if (Unit* target = aurEff->GetSaveTarget())
@@ -1587,7 +1587,7 @@ class spell_sha_maelstrom_weapon : public SpellScriptLoader
         {
             PrepareAuraScript(spell_sha_maelstrom_weapon_AuraScript);
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float& amount, bool& /*canBeRecalculated*/)
             {
                 if (Unit* caster = GetCaster())
                 {
@@ -1624,7 +1624,7 @@ class spell_sha_earth_shield : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        int32 bp = GetHitHeal() * 3;
+                        float bp = GetHitHeal() * 3;
                         if (caster->HasAura(145378)) //Item - Shaman T16 Restoration 2P Bonus
                             target->CastCustomSpell(target, 145379, &bp, NULL, NULL, true);
                     }
@@ -1725,7 +1725,7 @@ class spell_sha_cleansing_waters : public SpellScriptLoader
                 {
                     if (AuraEffect const* aurEff = caster->GetAuraEffect(55445, EFFECT_0))
                     {
-                        int32 bp0 = CalculatePct(target->GetMaxHealth(), aurEff->GetAmount());
+                        float bp0 = CalculatePct(target->GetMaxHealth(), aurEff->GetAmount());
                         caster->CastCustomSpell(target, 86961, &bp0, NULL, NULL, true);
                     }
                 }
@@ -1864,7 +1864,7 @@ public:
     {
         PrepareAuraScript(spell_sha_unleashed_fury_rockbiter_AuraScript);
 
-        void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
+        void CalculateAmount(AuraEffect const* /*aurEff*/, float& amount, bool& /*canBeRecalculated*/)
         {
             amount = 0;
         }

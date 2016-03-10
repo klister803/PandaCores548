@@ -723,7 +723,7 @@ class npc_feng_soul_fragment : public CreatureScript
                 if (id == 1)
                     if (InstanceScript* pInstance = me->GetInstanceScript())
                     {
-                        int32 bp = pInstance->instance->GetDifficulty() == MAN10_HEROIC_DIFFICULTY ? 10 : 5;
+                        float bp = pInstance->instance->GetDifficulty() == MAN10_HEROIC_DIFFICULTY ? 10 : 5;
                         me->CastCustomSpell(me, SPELL_S_SHIELD_HEAL, &bp, NULL, NULL, true);
                         me->Kill(me);
                     }

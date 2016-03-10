@@ -50,7 +50,7 @@ class spell_mastery_shield_discipline : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mastery_shield_discipline_AuraScript);
 
-            void CalculateAmount(AuraEffect const* , int32 & amount, bool & )
+            void CalculateAmount(AuraEffect const*, float & amount, bool &)
             {
                 Unit* caster = GetCaster();
                 if (!caster)
@@ -78,7 +78,7 @@ class spell_mastery_shield_discipline : public SpellScriptLoader
                 if (!target || !caster || !caster->HasAura(33202, GetCasterGUID()) || (GetSpellInfo()->Id != 17 && GetSpellInfo()->Id != 123258))
                     return;
 
-                int32 reflectiveDamage = int32((dmgInfo.GetDamage() > absorbAmount ? absorbAmount : dmgInfo.GetDamage()) * 0.7f);
+                float reflectiveDamage = int32((dmgInfo.GetDamage() > absorbAmount ? absorbAmount : dmgInfo.GetDamage()) * 0.7f);
                 if(reflectiveDamage)
                     caster->CastCustomSpell(target, 33619, &reflectiveDamage, NULL, NULL, true);
             }

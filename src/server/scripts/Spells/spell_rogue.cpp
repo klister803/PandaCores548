@@ -106,7 +106,7 @@ class spell_rog_cheat_death : public SpellScriptLoader
         {
             PrepareAuraScript(spell_rog_cheat_death_AuraScript);
 
-            void CalculateAmount(AuraEffect const* /*AuraEffect**/, int32& amount, bool& /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*AuraEffect**/, float& amount, bool& /*canBeRecalculated*/)
             {
                 amount = -1;
             }
@@ -171,7 +171,7 @@ class spell_rog_blade_flurry : public SpellScriptLoader
 
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    int32 damage = eventInfo.GetDamageInfo()->GetDamage();
+                    float damage = eventInfo.GetDamageInfo()->GetDamage();
                     SpellInfo const* spellInfo = eventInfo.GetDamageInfo()->GetSpellInfo();
 
                     if (!damage || eventInfo.GetDamageInfo()->GetDamageType() == DOT)
@@ -452,7 +452,7 @@ class spell_rog_hemorrhage : public SpellScriptLoader
                             if(_player->HasAura(56807) && !target->HasAuraWithMechanic((1 << MECHANIC_BLEED))) //Glyph of Hemorrhage
                                 return;
 
-                            int32 bp = CalculatePct(GetHitDamage() + GetHitAbsorb(), GetSpellInfo()->Effects[EFFECT_3].BasePoints) / 8;
+                            float bp = CalculatePct(GetHitDamage() + GetHitAbsorb(), GetSpellInfo()->Effects[EFFECT_3].BasePoints) / 8;
                             _player->CastCustomSpell(target, ROGUE_SPELL_HEMORRHAGE_DOT, &bp, NULL, NULL, true);
                         }
             }
@@ -492,7 +492,7 @@ class spell_rog_venomous_wounds : public SpellScriptLoader
                             if (Aura* rupture = aurEff->GetBase())
                             {
                                 // If an enemy dies while afflicted by your Rupture, you regain energy proportional to the remaining Rupture duration
-                                int32 duration = int32(rupture->GetDuration() / 1000);
+                                float duration = float(rupture->GetDuration() / 1000.0f);
                                 caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &duration, NULL, NULL, true);
                             }
                         }
@@ -619,7 +619,7 @@ class spell_rog_crimson_tempest : public SpellScriptLoader
                             if(SpellInfo const* sinfo = sSpellMgr->GetSpellInfo(ROGUE_SPELL_CRIMSON_TEMPEST_DOT))
                                 percent = sinfo->Effects[0].BasePoints;
 
-                            int32 damage = int32((GetHitDamage() + GetHitAbsorb()) / 6);
+                            float damage = float((GetHitDamage() + GetHitAbsorb()) / 6);
                             AddPct(damage, percent);
                             _player->CastCustomSpell(target, ROGUE_SPELL_CRIMSON_TEMPEST_DOT, &damage, NULL, NULL, true);
                         }

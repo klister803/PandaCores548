@@ -29,11 +29,11 @@ typedef void(AuraEffect::*pAuraEffectHandler)(AuraApplication const* aurApp, uin
 
 class AuraEffect
 {
-    friend void Aura::_InitEffects(uint32 effMask, Unit* caster, int32 *baseAmount);
-    friend Aura* Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint32 effMask, Unit* caster, int32* baseAmount, Item* castItem, uint64 casterGUID);
+    friend void Aura::_InitEffects(uint32 effMask, Unit* caster, float *baseAmount);
+    friend Aura* Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint32 effMask, Unit* caster, float* baseAmount, Item* castItem, uint64 casterGUID);
     friend Aura::~Aura();
     private:
-        explicit AuraEffect(Aura* base, uint8 effIndex, int32 *baseAmount, Unit* caster);
+        explicit AuraEffect(Aura* base, uint8 effIndex, float *baseAmount, Unit* caster);
     public:
         ~AuraEffect();
         Unit* GetCaster() const { return GetBase()->GetCaster(); }
@@ -47,9 +47,9 @@ class AuraEffect
         SpellInfo const* GetSpellInfo() const { return m_spellInfo; }
         uint32 GetId() const { return m_spellInfo->Id; }
         uint32 GetEffIndex() const { return m_effIndex; }
-        int32 GetBaseAmount() const { return m_baseAmount; }
-        int32 GetBaseSendAmount() const { return m_send_baseAmount; }
-        int32 GetOldBaseAmount() const { return m_oldbaseAmount; }
+        float GetBaseAmount() const { return m_baseAmount; }
+        float GetBaseSendAmount() const { return m_send_baseAmount; }
+        float GetOldBaseAmount() const { return m_oldbaseAmount; }
         int32 GetAmplitude() const { return m_amplitude; }
         void SetAmplitude(int32 amplitude) { m_amplitude = amplitude; }
 
@@ -57,8 +57,8 @@ class AuraEffect
         int32 GetMiscValue() const { return m_spellInfo->GetEffect(m_effIndex, m_diffMode)->MiscValue; }
         uint32 GetTriggerSpell() const { return m_spellInfo->GetEffect(m_effIndex, m_diffMode)->TriggerSpell; }
         AuraType GetAuraType() const { return (AuraType)m_spellInfo->GetEffect(m_effIndex, m_diffMode)->ApplyAuraName; }
-        int32 GetAmount() const { return m_amount; }
-        void SetAmount(int32 amount)
+        float GetAmount() const { return m_amount; }
+        void SetAmount(float amount)
         {
             if (m_amount != amount)
             {
@@ -68,7 +68,7 @@ class AuraEffect
 
             m_canBeRecalculated = false;
         }
-        int32 GetCritAmount() const { return m_crit_amount; }
+        float GetCritAmount() const { return m_crit_amount; }
         void SetCritAmount(int32 amount) { m_crit_amount = amount;}
         float GetCritChance() const { return m_crit_chance; }
         void SetCritChance(float amount) { m_crit_chance = amount;}
@@ -76,11 +76,11 @@ class AuraEffect
         int32 GetPeriodicTimer() const { return m_periodicTimer; }
         void SetPeriodicTimer(int32 periodicTimer) { m_periodicTimer = periodicTimer; }
 
-        int32 CalculateAmount(Unit* caster, int32 &m_aura_amount);
-        void CalculateFromDummyAmount(Unit* caster, Unit* target, int32 &amount);
+        float CalculateAmount(Unit* caster, float &m_aura_amount);
+        void CalculateFromDummyAmount(Unit* caster, Unit* target, float &amount);
         void CalculatePeriodic(Unit* caster, bool resetPeriodicTimer = true, bool load = false);
         void CalculateSpellMod();
-        void ChangeAmount(int32 newAmount, bool mark = true, bool onStackOrReapply = false);
+        void ChangeAmount(float newAmount, bool mark = true, bool onStackOrReapply = false);
         void RecalculateAmount() { if (!CanBeRecalculated()) return; ChangeAmount(CalculateAmount(GetCaster(), GetBase()->m_aura_amount), false); }
         void RecalculateAmount(Unit* caster) { if (!CanBeRecalculated()) return; ChangeAmount(CalculateAmount(caster, GetBase()->m_aura_amount), false); }
         bool CanBeRecalculated() const { return m_canBeRecalculated; }
@@ -115,13 +115,13 @@ class AuraEffect
         Aura* const m_base;
 
         SpellInfo const* const m_spellInfo;
-        int32 const m_baseAmount;
+        float const m_baseAmount;
 
-        int32 m_amount;
+        float m_amount;
         int32 m_crit_amount;
         float m_crit_chance;
-        int32 m_oldbaseAmount;
-        int32 m_send_baseAmount;
+        float m_oldbaseAmount;
+        float m_send_baseAmount;
         Unit* saveTarget;
 
         SpellModifier* m_spellmod;

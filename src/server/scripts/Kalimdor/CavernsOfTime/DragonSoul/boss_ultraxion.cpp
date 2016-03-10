@@ -974,7 +974,7 @@ class spell_ultraxion_time_loop : public SpellScriptLoader
                 return GetUnitOwner()->GetTypeId() == TYPEID_PLAYER;
             }
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool& /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool& /*canBeRecalculated*/)
             {
                 amount = -1;
             }
@@ -987,7 +987,7 @@ class spell_ultraxion_time_loop : public SpellScriptLoader
                 if (remainingHealth <= 0)
                 {
                     absorbAmount = dmgInfo.GetDamage();
-                    int32 healAmount = int32(victim->GetMaxHealth());
+                    float healAmount = int32(victim->GetMaxHealth());
                     victim->CastCustomSpell(victim, SPELL_TIMELOOP_HEAL, &healAmount, NULL, NULL, true, NULL, aurEff);
                     aurEff->GetBase()->Remove();
                 }

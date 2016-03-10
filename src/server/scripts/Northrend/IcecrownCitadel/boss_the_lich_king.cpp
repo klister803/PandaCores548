@@ -3042,7 +3042,7 @@ class spell_the_lich_king_lights_favor : public SpellScriptLoader
                         effect->RecalculateAmount(caster);
             }
 
-            void CalculateBonus(AuraEffect const* /*aurEff*/, int32& amount, bool& canBeRecalculated)
+            void CalculateBonus(AuraEffect const* /*aurEff*/, float& amount, bool& canBeRecalculated)
             {
                 canBeRecalculated = true;
                 amount = 0;

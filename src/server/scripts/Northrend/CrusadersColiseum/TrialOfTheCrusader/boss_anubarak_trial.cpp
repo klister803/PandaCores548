@@ -884,7 +884,7 @@ class spell_anubarak_leeching_swarm : public SpellScriptLoader
                 Unit* caster = GetCaster();
                 if (Unit* target = GetTarget())
                 {
-                    int32 lifeLeeched = target->CountPctFromCurHealth(aurEff->GetAmount());
+                    float lifeLeeched = target->CountPctFromCurHealth(aurEff->GetAmount());
                     if (lifeLeeched < 250)
                         lifeLeeched = 250;
                     // Damage

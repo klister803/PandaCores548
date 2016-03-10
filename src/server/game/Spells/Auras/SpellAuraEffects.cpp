@@ -497,7 +497,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //437 SPELL_AURA_437
 };
 
-AuraEffect::AuraEffect(Aura* base, uint8 effIndex, int32 *baseAmount, Unit* caster):
+AuraEffect::AuraEffect(Aura* base, uint8 effIndex, float *baseAmount, Unit* caster) :
 m_base(base), m_spellInfo(base->GetSpellInfo()),
 m_baseAmount(baseAmount ? *baseAmount : m_spellInfo->GetEffect(effIndex, m_diffMode)->BasePoints),
 m_spellmod(NULL), m_periodicTimer(0), m_tickNumber(0), m_effIndex(effIndex),
@@ -534,9 +534,9 @@ void AuraEffect::GetApplicationList(std::list<AuraApplication*> & applicationLis
     }
 }
 
-int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
+float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
 {
-    int32 amount;
+    float amount;
     Item* castItem = NULL;
 
     if(caster)
@@ -585,7 +585,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
     if (caster && caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->AttributesEx8 & SPELL_ATTR8_MASTERY_SPECIALIZATION))
     {
         m_canBeRecalculated = false;
-        amount += int32(caster->GetFloatValue(PLAYER_MASTERY) * m_spellInfo->GetEffect(m_effIndex, m_diffMode)->BonusMultiplier + 0.5f);
+        amount += caster->GetFloatValue(PLAYER_MASTERY) * m_spellInfo->GetEffect(m_effIndex, m_diffMode)->BonusMultiplier + 0.5f;
     }
 
     GetBase()->CallScriptEffectBeforeCalcAmountHandlers(const_cast<AuraEffect const*>(this), amount, m_canBeRecalculated);
@@ -975,8 +975,8 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                         amount  = -100;
                         amount += paladin->GetFloatValue(UNIT_MOD_HASTE) * 100.0f;
 
-                        if (amount < -33)
-                            amount = -33;
+                        if (amount < -33.3333333f)
+                            amount = -33.3333333f;
                         else if (amount > 0) 
                             amount = 0;
                     }
@@ -1742,7 +1742,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
     return amount;
 }
 
-void AuraEffect::CalculateFromDummyAmount(Unit* caster, Unit* target, int32 &amount)
+void AuraEffect::CalculateFromDummyAmount(Unit* caster, Unit* target, float &amount)
 {
     if(!caster)
         return;
@@ -2078,7 +2078,7 @@ void AuraEffect::CalculateSpellMod()
     GetBase()->CallScriptEffectCalcSpellModHandlers(const_cast<AuraEffect const*>(this), m_spellmod);
 }
 
-void AuraEffect::ChangeAmount(int32 newAmount, bool mark, bool onStackOrReapply)
+void AuraEffect::ChangeAmount(float newAmount, bool mark, bool onStackOrReapply)
 {
     // Reapply if amount change
     uint8 handleMask = 0;
@@ -2654,7 +2654,7 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
                     // Master Shapeshifter - Cat
                     if (AuraEffect const* aurEff = target->GetDummyAuraEffect(SPELLFAMILY_GENERIC, 2851, 0))
                     {
-                        int32 bp = aurEff->GetAmount();
+                        float bp = aurEff->GetAmount();
                         target->CastCustomSpell(target, 48420, &bp, NULL, NULL, true);
                     }
 
@@ -2663,13 +2663,13 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
                     // Master Shapeshifter - Bear
                     if (AuraEffect const* aurEff = target->GetDummyAuraEffect(SPELLFAMILY_GENERIC, 2851, 0))
                     {
-                        int32 bp = aurEff->GetAmount();
+                        float bp = aurEff->GetAmount();
                         target->CastCustomSpell(target, 48418, &bp, NULL, NULL, true);
                     }
                     // Survival of the Fittest
                     if (AuraEffect const* aurEff = target->GetAuraEffect(SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE, SPELLFAMILY_DRUID, 961, 0))
                     {
-                        int32 bp = aurEff->GetSpellInfo()->Effects[EFFECT_2].CalcValue(GetCaster());
+                        float bp = aurEff->GetSpellInfo()->Effects[EFFECT_2].CalcValue(GetCaster());
                         target->CastCustomSpell(target, 62069, &bp, NULL, NULL, true, 0, this);
                     }
                 break;
@@ -2677,7 +2677,7 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
                     // Master Shapeshifter - Moonkin
                     if (AuraEffect const* aurEff = target->GetDummyAuraEffect(SPELLFAMILY_GENERIC, 2851, 0))
                     {
-                        int32 bp = aurEff->GetAmount();
+                        float bp = aurEff->GetAmount();
                         target->CastCustomSpell(target, 48421, &bp, NULL, NULL, true);
                     }
                 break;
@@ -7002,7 +7002,7 @@ void AuraEffect::HandleForceReaction(AuraApplication const* aurApp, uint8 mode, 
     Player* player = (Player*)target;
 
     uint32 faction_id = GetMiscValue();
-    ReputationRank faction_rank = ReputationRank(m_amount);
+    ReputationRank faction_rank = ReputationRank(int32(m_amount));
 
     player->GetReputationMgr().ApplyForceReaction(faction_id, faction_rank, apply);
     player->GetReputationMgr().SendForceReactions();
@@ -7365,7 +7365,7 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
                 case 145108: // Ysera's Gift
                 {
                     uint32 triggerSpell = caster->IsFullHealth() ? 145110: 145109;
-                    int32 heal = CalculatePct(caster->GetMaxHealth(), m_amount);
+                    float heal = CalculatePct(caster->GetMaxHealth(), m_amount);
 
                     caster->CastCustomSpell(target, triggerSpell, &heal, 0, 0, true);
                     break;
@@ -7939,7 +7939,7 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
                 if (Unit * shaman = caster->GetOwner())
                 {
                     int32 SPD    = shaman->GetSpellPowerDamage();
-                    int32 amount = SPD * 0.875f * (GetTickNumber() != 1 ? 1: 4);
+                    float amount = SPD * 0.875f * (GetTickNumber() != 1 ? 1 : 4);
                     caster->CastCustomSpell(shaman, triggerSpellId, &amount, NULL, NULL, true);
                 }
                 return;
@@ -8078,7 +8078,7 @@ void AuraEffect::HandlePeriodicTriggerSpellWithValueAuraTick(Unit* target, Unit*
     {
         if (Unit* triggerCaster = triggeredSpellInfo->NeedsToBeTriggeredByCaster() ? caster : target)
         {
-            int32 basepoints = GetAmount();
+            float basepoints = GetAmount();
             GetBase()->CallScriptEffectChangeTickDamageHandlers(const_cast<AuraEffect const*>(this), basepoints, target);
             triggerCaster->CastCustomSpell(target, triggerSpellId, &basepoints, &basepoints, &basepoints, true, 0, this);
             sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AuraEffect::HandlePeriodicTriggerSpellWithValueAuraTick: Spell %u Trigger %u", GetId(), triggeredSpellInfo->Id);
@@ -8137,7 +8137,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
     CleanDamage cleanDamage = CleanDamage(0, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
 
     // ignore non positive values (can be result apply spellmods to aura damage
-    uint32 damage = std::max(GetAmount(), 0);
+    uint32 damage = std::max(RoundingFloatValue(GetAmount()), 0);
     uint32 damageBeforeHit = 0;
 
     bool crit = roll_chance_f(GetCritChance());
@@ -8168,7 +8168,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
             }
             case 103103: // Malefic Grasp
             {
-                int32 afflictionDamage = 0;
+                float afflictionDamage = 0;
 
                 // Every tick, Malefic Grasp deals instantly 50% of tick-damage for each affliction effects on the target
                 // Corruption ...
@@ -8222,7 +8222,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
                         if (AuraEffect* eff5 = Soul_Drain->GetEffect(EFFECT_5))
                             AddPct(damage, eff5->GetAmount());
 
-                        int32 afflictionDamage = 0;
+                        float afflictionDamage = 0;
 
                         // ... and deals instantly 100% of tick-damage for each affliction effects on the target
                         // Corruption ...
@@ -8294,7 +8294,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
     if (m_spellInfo->Id == 603 && crit)
         caster->CastSpell(caster, 104317, true);
 
-    int32 dmg = damage;
+    float dmg = damage;
 
     GetBase()->CallScriptEffectChangeTickDamageHandlers(const_cast<AuraEffect const*>(this), dmg, target, crit);
 
@@ -8379,7 +8379,7 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster, S
     uint32 resist = 0;
     CleanDamage cleanDamage = CleanDamage(0, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
 
-    uint32 damage = std::max(GetAmount(), 0);
+    uint32 damage = std::max(RoundingFloatValue(GetAmount()), 0);
     uint32 damageBeforeHit = target->SpellDamageBonusForDamageBeforeHit(caster, GetSpellInfo(), damage);
     damage = target->SpellDamageBonusTaken(caster, GetSpellInfo(), damage);
 
@@ -8387,7 +8387,7 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster, S
     if (crit)
         damage = GetCritAmount();
 
-    int32 dmg = damage;
+    float dmg = damage;
 
     GetBase()->CallScriptEffectChangeTickDamageHandlers(const_cast<AuraEffect const*>(this), dmg, target, crit);
 
@@ -8453,7 +8453,7 @@ void AuraEffect::HandlePeriodicHealthFunnelAuraTick(Unit* target, Unit* caster, 
         return;
     }
 
-    int32 damage = std::max(GetAmount(), 0);
+    float damage = std::max(RoundingFloatValue(GetAmount()), 0);
     // do not kill health donator
     if ((int32)caster->GetHealth() < damage)
         damage = caster->GetHealth() - 1;
@@ -8492,7 +8492,7 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster, SpellEf
         return;
 
     // ignore negative values (can be result apply spellmods to aura damage
-    int32 damage = std::max(m_amount, 0);
+    float damage = std::max(RoundingFloatValue(m_amount), 0);
 
     bool crit = roll_chance_f(GetCritChance());
     if (crit)
@@ -8645,7 +8645,7 @@ void AuraEffect::HandlePeriodicManaLeechAuraTick(Unit* target, Unit* caster, Spe
         return;
 
     // ignore negative values (can be result apply spellmods to aura damage
-    int32 drainAmount = std::max(m_amount, 0);
+    float drainAmount = std::max(RoundingFloatValue(m_amount), 0);
 
     SpellPowerEntry power;
     if (!GetSpellInfo()->GetSpellPowerByCasterPower(GetCaster(), power))
@@ -8692,7 +8692,7 @@ void AuraEffect::HandlePeriodicManaLeechAuraTick(Unit* target, Unit* caster, Spe
         // Mana Feed - Drain Mana
         if (manaFeedVal > 0)
         {
-            int32 feedAmount = CalculatePct(gainedAmount, manaFeedVal);
+            float feedAmount = CalculatePct(gainedAmount, manaFeedVal);
             caster->CastCustomSpell(caster, 32554, &feedAmount, NULL, NULL, true, NULL, this);
         }
     }
@@ -8720,7 +8720,7 @@ void AuraEffect::HandleObsModPowerAuraTick(Unit* target, Unit* caster, SpellEffI
         return;
 
     // ignore negative values (can be result apply spellmods to aura damage
-    int32 amount = std::max(m_amount, 0) * target->GetMaxPower(powerType) /100;
+    float amount = std::max(RoundingFloatValue(m_amount), 0) * target->GetMaxPower(powerType) / 100;
 
     GetBase()->CallScriptEffectChangeTickDamageHandlers(const_cast<AuraEffect const*>(this), amount, target);
 
@@ -8757,7 +8757,7 @@ void AuraEffect::HandlePeriodicEnergizeAuraTick(Unit* target, Unit* caster, Spel
         return;
 
     // ignore negative values (can be result apply spellmods to aura damage
-    int32 amount = std::max(m_amount, 0);
+    float amount = std::max(RoundingFloatValue(m_amount), 0);
 
     GetBase()->CallScriptEffectChangeTickDamageHandlers(const_cast<AuraEffect const*>(this), amount, target);
 
@@ -8787,7 +8787,7 @@ void AuraEffect::HandlePeriodicPowerBurnAuraTick(Unit* target, Unit* caster, Spe
     }
 
     // ignore negative values (can be result apply spellmods to aura damage
-    int32 damage = std::max(m_amount, 0);
+    float damage = std::max(RoundingFloatValue(m_amount), 0);
 
     GetBase()->CallScriptEffectChangeTickDamageHandlers(const_cast<AuraEffect const*>(this), damage, target);
 
@@ -8842,7 +8842,7 @@ void AuraEffect::HandleProcTriggerSpellWithValueAuraProc(AuraApplication* aurApp
     uint32 triggerSpellId = GetSpellInfo()->GetEffect(m_effIndex, m_diffMode)->TriggerSpell;
     if (SpellInfo const* triggeredSpellInfo = sSpellMgr->GetSpellInfo(triggerSpellId))
     {
-        int32 basepoints0 = GetAmount();
+        float basepoints0 = GetAmount();
         sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AuraEffect::HandleProcTriggerSpellWithValueAuraProc: Triggering spell %u with value %d from aura %u proc", triggeredSpellInfo->Id, basepoints0, GetId());
         triggerCaster->CastCustomSpell(triggerTarget, triggerSpellId, &basepoints0, NULL, NULL, true, NULL, this);
     }
@@ -8926,7 +8926,7 @@ void AuraEffect::HandleRaidProcFromChargeWithValueAuraProc(AuraApplication* aurA
     }
     uint32 triggerSpellId = 33110;
 
-    int32 value = GetAmount();
+    float value = GetAmount();
 
     int32 jumps = GetBase()->GetCharges();
 

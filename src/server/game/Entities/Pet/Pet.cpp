@@ -1207,7 +1207,7 @@ void Pet::_LoadAuras(uint32 timediff)
         do
         {
             int32 damage[32];
-            int32 baseDamage[32];
+            float baseDamage[32];
             Field* fields = result->Fetch();
             uint8 slot = fields[0].GetUInt8();
             uint64 caster_guid = fields[1].GetUInt64();
@@ -1714,9 +1714,9 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
             if(itr->createdspell != 0 && itr->createdspell != createdSpellId)
                 continue;
 
-            int32 bp0 = int32(itr->bp0);
-            int32 bp1 = int32(itr->bp1);
-            int32 bp2 = int32(itr->bp2);
+            float bp0 = itr->bp0;
+            float bp1 = itr->bp1;
+            float bp2 = itr->bp2;
 
             //sLog->outDebug(LOG_FILTER_PETS, "Pet::CastPetAuras PetAura bp0 %i, bp1 %i, bp2 %i, target %i", bp0, bp1, bp2, itr->target);
 
@@ -1869,9 +1869,9 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
             if(itr->createdspell != 0 && itr->createdspell != createdSpellId)
                 continue;
 
-            int32 bp0 = int32(itr->bp0);
-            int32 bp1 = int32(itr->bp1);
-            int32 bp2 = int32(itr->bp2);
+            float bp0 = itr->bp0;
+            float bp1 = itr->bp1;
+            float bp2 = itr->bp2;
 
             //sLog->outDebug(LOG_FILTER_PETS, "Pet::CastPetAuras PetAura bp0 %i, bp1 %i, bp2 %i, target %i", bp0, bp1, bp2, itr->target);
 
