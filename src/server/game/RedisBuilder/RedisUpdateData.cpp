@@ -97,14 +97,14 @@ void Player::UpdateCriteriaProgress(AchievementEntry const* achievement, Criteri
     if (achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
     {
         AccountDatas["criteria"][achievID.c_str()] = CriteriaAc;
-        RedisDatabase.AsyncExecuteHSet("HSET", criteriaAcKey, achievID.c_str(), sRedisBuilderMgr->BuildString(CriteriaAc).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", criteriaAcKey, achievID.c_str(), CriteriaAc, GetGUID(), [&](const RedisValue &v, uint64 guid) {
             //sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerCriteria account guid %u", guid);
         });
     }
     else
     {
         PlayerData["criteria"][achievID.c_str()] = CriteriaPl;
-        RedisDatabase.AsyncExecuteHSet("HSET", criteriaPlKey, achievID.c_str(), sRedisBuilderMgr->BuildString(CriteriaPl).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", criteriaPlKey, achievID.c_str(), CriteriaPl, GetGUID(), [&](const RedisValue &v, uint64 guid) {
             //sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerCriteria player guid %u", guid);
         });
     }
@@ -141,7 +141,7 @@ void Player::UpdatePlayerAccountData(AccountDataType type, time_t tm, std::strin
         AccountDatas["data"][index.c_str()]["Time"] = tm;
         AccountDatas["data"][index.c_str()]["Data"] = data.c_str();
 
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "accountdata", sRedisBuilderMgr->BuildString(AccountDatas["data"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "accountdata", AccountDatas["data"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerAccountData player guid %u", guid);
         });
     }
@@ -151,7 +151,7 @@ void Player::UpdatePlayerAccountData(AccountDataType type, time_t tm, std::strin
         PlayerData["accountdata"][index.c_str()]["Time"] = tm;
         PlayerData["accountdata"][index.c_str()]["Data"] = data.c_str();
 
-        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "playeraccountdata", sRedisBuilderMgr->BuildString(PlayerData["accountdata"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "playeraccountdata", PlayerData["accountdata"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerAccountData player guid %u", guid);
         });
     }
@@ -162,7 +162,7 @@ void Player::UpdateTutorials(uint8 index, uint32 value)
     std::string indexStr = std::to_string(index);
     AccountDatas["tutorials"][indexStr.c_str()] = value;
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "tutorials", sRedisBuilderMgr->BuildString(AccountDatas["tutorials"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "tutorials", AccountDatas["tutorials"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdateTutorials player guid %u", guid);
     });
 }
@@ -196,10 +196,10 @@ void Player::UpdatePlayerPet(Pet* pet)
     PlayerData["pets"][id.c_str()]["PetType"] = pet->getPetType();
     PlayerData["pets"][id.c_str()]["specialization"] = pet->GetSpecializationId();
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "pets", sRedisBuilderMgr->BuildString(PlayerData["pets"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "pets", PlayerData["pets"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerPet player guid %u", guid);
     });
-    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetPetKey(), id.c_str(), sRedisBuilderMgr->BuildString(pet->PetDataSpell).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetPetKey(), id.c_str(), pet->PetDataSpell, GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerPet player guid %u", guid);
     });
 }
@@ -212,7 +212,7 @@ void Player::RemovePlayerPet(Pet* pet)
     std::string petId = std::to_string(pet->GetCharmInfo()->GetPetNumber());
     PlayerData["pets"].removeMember(petId.c_str());
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "pets", sRedisBuilderMgr->BuildString(PlayerData["pets"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "pets", PlayerData["pets"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::RemovePlayerPet player guid %u", guid);
     });
     RedisDatabase.AsyncExecuteH("HDEL", sRedisBuilderMgr->GetPetKey(), petId.c_str(), pet->GetCharmInfo()->GetPetNumber(), [&](const RedisValue &v, uint64 guid) {
@@ -284,7 +284,7 @@ void Player::UpdatePlayerEquipmentSet(uint32 id, EquipmentSet eqset, bool isRemo
         PlayerData["equipmentsets"][index.c_str()]["item18"] = eqset.Items[18];
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "equipmentsets", sRedisBuilderMgr->BuildString(PlayerData["equipmentsets"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "equipmentsets", PlayerData["equipmentsets"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerEquipmentSets player guid %u", guid);
     });
 }
@@ -315,7 +315,7 @@ void Player::UpdatePlayerVoidStorage(uint8 slot)
 
 void Player::SavePlayerVoidStorage()
 {
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "voidstorage", sRedisBuilderMgr->BuildString(PlayerData["voidstorage"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "voidstorage", PlayerData["voidstorage"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerVoidStorage player guid %u", guid);
     });
 }
@@ -415,7 +415,7 @@ void Player::UpdatePlayerQuestStatus(uint32 questId, QuestStatusData* q_status, 
         {
             AccountDatas["queststatus"].removeMember(quest_id.c_str());
 
-            RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "queststatus", sRedisBuilderMgr->BuildString(AccountDatas["queststatus"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+            RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "queststatus", AccountDatas["queststatus"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
                 sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerQuestStatus account guid %u", guid);
             });
         }
@@ -423,7 +423,7 @@ void Player::UpdatePlayerQuestStatus(uint32 questId, QuestStatusData* q_status, 
         {
             PlayerData["queststatus"].removeMember(quest_id.c_str());
 
-            RedisDatabase.AsyncExecuteHSet("HSET", userKey, "queststatus", sRedisBuilderMgr->BuildString(PlayerData["queststatus"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+            RedisDatabase.AsyncExecuteHSet("HSET", userKey, "queststatus", PlayerData["queststatus"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
                 sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerQuestStatus player guid %u", guid);
             });
         }
@@ -443,7 +443,7 @@ void Player::UpdatePlayerQuestStatus(uint32 questId, QuestStatusData* q_status, 
             AccountDatas["queststatus"][quest_id.c_str()]["itemcount"][index.c_str()] = q_status->ItemCount[i];
         }
 
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "queststatus", sRedisBuilderMgr->BuildString(AccountDatas["queststatus"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "queststatus", AccountDatas["queststatus"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerQuestStatus account guid %u", guid);
         });
     }
@@ -460,7 +460,7 @@ void Player::UpdatePlayerQuestStatus(uint32 questId, QuestStatusData* q_status, 
             PlayerData["queststatus"][quest_id.c_str()]["itemcount"][index.c_str()] = q_status->ItemCount[i];
         }
 
-        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "queststatus", sRedisBuilderMgr->BuildString(PlayerData["queststatus"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "queststatus", PlayerData["queststatus"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerQuestStatus player guid %u", guid);
         });
     }
@@ -479,7 +479,7 @@ void Player::UpdatePlayerQuestRewarded(uint32 questId, bool isDelete)
         else
             AccountDatas["questrewarded"][quest_id.c_str()] = quest_id;
 
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questrewarded", sRedisBuilderMgr->BuildString(AccountDatas["questrewarded"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questrewarded", AccountDatas["questrewarded"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerQuestRewarded account guid %u", guid);
         });
     }
@@ -490,7 +490,7 @@ void Player::UpdatePlayerQuestRewarded(uint32 questId, bool isDelete)
         else
             PlayerData["questrewarded"][quest_id.c_str()] = quest_id;
 
-        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questrewarded", sRedisBuilderMgr->BuildString(PlayerData["questrewarded"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questrewarded", PlayerData["questrewarded"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerQuestRewarded player guid %u", guid);
         });
     }
@@ -503,11 +503,11 @@ void Player::UpdatePlayerQuestDaily(uint32 questId, bool isClear)
         AccountDatas["questdaily"].clear();
         PlayerData["questdaily"].clear();
 
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questdaily", sRedisBuilderMgr->BuildString(AccountDatas["questdaily"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questdaily", AccountDatas["questdaily"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerQuestDaily account guid %u", guid);
         });
 
-        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questdaily", sRedisBuilderMgr->BuildString(PlayerData["questdaily"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questdaily", PlayerData["questdaily"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerQuestDaily player guid %u", guid);
         });
         return;
@@ -521,7 +521,7 @@ void Player::UpdatePlayerQuestDaily(uint32 questId, bool isClear)
     {
         AccountDatas["questdaily"][quest_id.c_str()] = uint64(m_lastDailyQuestTime);
 
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questdaily", sRedisBuilderMgr->BuildString(AccountDatas["questdaily"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questdaily", AccountDatas["questdaily"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerQuestDaily account guid %u", guid);
         });
     }
@@ -529,7 +529,7 @@ void Player::UpdatePlayerQuestDaily(uint32 questId, bool isClear)
     {
         PlayerData["questdaily"][quest_id.c_str()] = uint64(m_lastDailyQuestTime);
 
-        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questdaily", sRedisBuilderMgr->BuildString(PlayerData["questdaily"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questdaily", PlayerData["questdaily"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerQuestDaily player guid %u", guid);
         });
     }
@@ -542,11 +542,11 @@ void Player::UpdatePlayerQuestWeekly(uint32 questId, bool isClear)
         AccountDatas["questweekly"].clear();
         PlayerData["questweekly"].clear();
 
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questweekly", sRedisBuilderMgr->BuildString(AccountDatas["questweekly"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questweekly", AccountDatas["questweekly"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerQuestWeekly account guid %u", guid);
         });
 
-        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questweekly", sRedisBuilderMgr->BuildString(PlayerData["questweekly"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questweekly", PlayerData["questweekly"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerQuestWeekly player guid %u", guid);
         });
         return;
@@ -560,7 +560,7 @@ void Player::UpdatePlayerQuestWeekly(uint32 questId, bool isClear)
     {
         AccountDatas["questweekly"][quest_id.c_str()] = questId;
 
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questweekly", sRedisBuilderMgr->BuildString(AccountDatas["questweekly"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questweekly", AccountDatas["questweekly"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerQuestWeekly account guid %u", guid);
         });
     }
@@ -568,7 +568,7 @@ void Player::UpdatePlayerQuestWeekly(uint32 questId, bool isClear)
     {
         PlayerData["questweekly"][quest_id.c_str()] = questId;
 
-        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questweekly", sRedisBuilderMgr->BuildString(PlayerData["questweekly"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questweekly", PlayerData["questweekly"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerQuestWeekly player guid %u", guid);
         });
     }
@@ -583,11 +583,11 @@ void Player::UpdatePlayerQuestSeasonal(uint32 questId, uint32 eventId, bool isRe
         PlayerData["questseasonal"].removeMember(event.c_str());
         AccountDatas["questseasonal"].removeMember(event.c_str());
 
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questseasonal", sRedisBuilderMgr->BuildString(AccountDatas["questseasonal"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questseasonal", AccountDatas["questseasonal"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerQuestSeasonal account guid %u", guid);
         });
 
-        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questseasonal", sRedisBuilderMgr->BuildString(PlayerData["questseasonal"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questseasonal", PlayerData["questseasonal"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerQuestSeasonal player guid %u", guid);
         });
         return;
@@ -601,7 +601,7 @@ void Player::UpdatePlayerQuestSeasonal(uint32 questId, uint32 eventId, bool isRe
     {
         AccountDatas["questseasonal"][event.c_str()][quest_id.c_str()] = questId;
 
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questseasonal", sRedisBuilderMgr->BuildString(AccountDatas["questseasonal"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questseasonal", AccountDatas["questseasonal"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerQuestSeasonal account guid %u", guid);
         });
     }
@@ -609,7 +609,7 @@ void Player::UpdatePlayerQuestSeasonal(uint32 questId, uint32 eventId, bool isRe
     {
         PlayerData["questseasonal"][event.c_str()][quest_id.c_str()] = questId;
 
-        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questseasonal", sRedisBuilderMgr->BuildString(PlayerData["questseasonal"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questseasonal", PlayerData["questseasonal"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerQuestSeasonal player guid %u", guid);
         });
     }
@@ -679,7 +679,7 @@ void Player::UpdatePlayerSocial(uint32 friendGuid, std::string note, uint8 flag,
             PlayerData["social"][friend_guid.c_str()]["Flags"] = flag;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "social", sRedisBuilderMgr->BuildString(PlayerData["social"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "social", PlayerData["social"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerSocial player guid %u", guid);
     });
 }
@@ -697,7 +697,7 @@ void Player::UpdatePlayerSpellCooldown(uint32 spellId, uint32 itemId, double tim
         PlayerData["spellcooldowns"][spell.c_str()]["time"] = uint64(time);
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "spellcooldowns", sRedisBuilderMgr->BuildString(PlayerData["spellcooldowns"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "spellcooldowns", PlayerData["spellcooldowns"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerSpellCooldown player guid %u", guid);
     });
 }
@@ -712,7 +712,7 @@ void Player::UpdatePlayerKill(uint32 victimGuid, uint32 count, bool isClear)
         PlayerData["kills"][victim.c_str()] = count;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "kills", sRedisBuilderMgr->BuildString(PlayerData["kills"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "kills", PlayerData["kills"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerKill player guid %u", guid);
     });
 }
@@ -725,7 +725,7 @@ void Player::UpdateAchievement(AchievementEntry const* achievement, CompletedAch
         PlayerData["achievement"][achievementId.c_str()]["date"] = ca->date;
         PlayerData["achievement"][achievementId.c_str()]["changed"] = ca->changed;
 
-        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "achievement", sRedisBuilderMgr->BuildString(PlayerData["achievement"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "achievement", PlayerData["achievement"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::InitAchievement player guid %u", guid);
         });
     }
@@ -734,7 +734,7 @@ void Player::UpdateAchievement(AchievementEntry const* achievement, CompletedAch
     AccountDatas["achievement"][achievementId.c_str()]["date"] = ca->date;
     AccountDatas["achievement"][achievementId.c_str()]["changed"] = ca->changed;
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "achievement", sRedisBuilderMgr->BuildString(AccountDatas["achievement"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "achievement", AccountDatas["achievement"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::InitAchievement account guid %u", guid);
     });
 }
@@ -756,12 +756,12 @@ void Player::UpdatePlayerMail(Mail* m)
     m->MailJson["stationery"] = m->stationery;
     m->MailJson["mailTemplateId"] = m->mailTemplateId;
 
-    RedisDatabase.AsyncExecuteHSet("HSET", mailKey, messageID.c_str(), sRedisBuilderMgr->BuildString(m->MailJson).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", mailKey, messageID.c_str(), m->MailJson, GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerMails player guid %u", guid);
     });
 
-    std::string expireStr = std::to_string(m->expire_time);
-    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetMailsKey(), messageID.c_str(), expireStr.c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    Json::Value expireStr = m->expire_time;
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetMailsKey(), messageID.c_str(), expireStr, GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
 }
 

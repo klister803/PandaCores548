@@ -495,8 +495,8 @@ uint32 MapManager::GenerateInstanceId()
         }
     }
 
-    std::string id = std::to_string(_nextInstanceId);
-    RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "instance", id.c_str());
+    Json::Value id = _nextInstanceId;
+    RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "instance", id);
 
     if (newInstanceId == _nextInstanceId)
     {
@@ -528,8 +528,8 @@ void MapManager::FreeInstanceId(uint32 instanceId)
     {
         SetNextInstanceId(instanceId);
 
-        std::string id = std::to_string(instanceId);
-        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "instance", id.c_str());
+        Json::Value id = instanceId;
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "instance", id);
     }
 
     _instanceIds[instanceId] = false;

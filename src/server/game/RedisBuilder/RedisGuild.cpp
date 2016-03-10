@@ -49,7 +49,7 @@ void Guild::SaveGuild()
     SaveGuildMoney();
 
     std::string index = std::to_string(m_id);
-    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGuildKey(), index.c_str(), sRedisBuilderMgr->BuildString(GuildData).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGuildKey(), index.c_str(), GuildData, m_id, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Guild::SaveGuild guid %u", guid);
     });
 }
@@ -101,7 +101,7 @@ void Guild::Member::SaveGuildMember()
 
     std::string index = std::to_string(GUID_LOPART(m_guid));
 
-    RedisDatabase.AsyncExecuteHSet("HSET", m_guild->GetGuildMemberKey(), index.c_str(), sRedisBuilderMgr->BuildString(GuildMemberData).c_str(), m_guid, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", m_guild->GetGuildMemberKey(), index.c_str(), GuildMemberData, m_guid, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Guild::SaveGuildMember guid %u", guid);
     });
 }
@@ -121,7 +121,7 @@ void Guild::SaveGuildEventLog()
 
     std::string index = std::to_string(m_id);
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "eventlog", sRedisBuilderMgr->BuildString(GuildEventLogData).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "eventlog", GuildEventLogData, m_id, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Guild::SaveGuildEventLog guid %u", guid);
     });
 }
@@ -148,7 +148,7 @@ void Guild::SaveGuildBankEventLog()
         }
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "bankeventlog", sRedisBuilderMgr->BuildString(GuildBankEventLogData).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "bankeventlog", GuildBankEventLogData, m_id, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Guild::SaveGuildBankEventLog guid %u", guid);
     });
 }
@@ -163,7 +163,7 @@ void Guild::UpdateGuildEventLog(LogEntry* entry)
     GuildEventLogData[guid.c_str()]["m_playerGuid2"] = log->m_playerGuid2;
     GuildEventLogData[guid.c_str()]["m_newRank"] = log->m_newRank;
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "eventlog", sRedisBuilderMgr->BuildString(GuildBankEventLogData).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "eventlog", GuildBankEventLogData, m_id, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Guild::UpdateGuildEventLog guid %u", guid);
     });
 }
@@ -181,7 +181,7 @@ void Guild::UpdateGuildBankEventLog(LogEntry* entry)
     GuildBankEventLogData[tab.c_str()][guid.c_str()]["m_itemStackCount"] = log->m_itemStackCount;
     GuildBankEventLogData[tab.c_str()][guid.c_str()]["m_destTabId"] = log->m_destTabId;
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "bankeventlog", sRedisBuilderMgr->BuildString(GuildBankEventLogData).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "bankeventlog", GuildBankEventLogData, m_id, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Guild::UpdateGuildBankEventLog guid %u", guid);
     });
 }
@@ -196,7 +196,7 @@ void Guild::UpdateGuildEmblem()
 
     std::string index = std::to_string(m_id);
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "data", sRedisBuilderMgr->BuildString(GuildData).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "data", GuildData, m_id, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Guild::UpdateGuildEmblem guid %u", guid);
     });
 }
@@ -214,7 +214,7 @@ void Guild::UpdateGuildRank(RankInfo* info)
         GuildRankData[id.c_str()]["bank"][tab.c_str()]["slots"] = info->GetBankTabSlotsPerDay(j);
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "rank", sRedisBuilderMgr->BuildString(GuildRankData).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "rank", GuildRankData, m_id, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Guild::UpdateGuildRank guid %u", guid);
     });
 }
@@ -238,7 +238,7 @@ void Guild::RefreshGuildRank()
         }
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "rank", sRedisBuilderMgr->BuildString(GuildRankData).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "rank", GuildRankData, m_id, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Guild::RefreshGuildRank guid %u", guid);
     });
 }
@@ -256,7 +256,7 @@ void Guild::SaveGuildBankTab()
         GuildTabData[id.c_str()]["m_text"] = m_bankTabs[i]->GetText();
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "banktab", sRedisBuilderMgr->BuildString(GuildTabData).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "banktab", GuildTabData, m_id, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Guild::SaveGuildBankTab guid %u", guid);
     });
 }
@@ -268,7 +268,7 @@ void Guild::UpdateGuildBankTab(BankTab* pTab)
     GuildTabData[id.c_str()]["m_icon"] = pTab->GetIcon();
     GuildTabData[id.c_str()]["m_text"] = pTab->GetText();
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "banktab", sRedisBuilderMgr->BuildString(GuildTabData).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "banktab", GuildTabData, m_id, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Guild::UpdateGuildBankTab guid %u", guid);
     });
 }
@@ -277,7 +277,7 @@ void Guild::SaveGuildMoney()
 {
     GuildMoney = m_bankMoney;
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "money", sRedisBuilderMgr->BuildString(GuildMoney).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "money", GuildMoney, m_id, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Guild::SaveGuildMoney guid %u", guid);
     });
 }
@@ -311,7 +311,7 @@ void Guild::SaveGuildNewsLog()
         GuildNewsLogData[id.c_str()]["Date"] = it->second.Date;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "newslog", sRedisBuilderMgr->BuildString(GuildNewsLogData).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "newslog", GuildNewsLogData, m_id, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Guild::SaveGuildNewsLog guid %u", guid);
     });
 }
@@ -325,7 +325,7 @@ void Guild::UpdateGuildNewsLog(GuildNewsEntry* log, uint32 id)
     GuildNewsLogData[index.c_str()]["Flags"] = log->Flags;
     GuildNewsLogData[index.c_str()]["Date"] = log->Date;
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "newslog", sRedisBuilderMgr->BuildString(GuildNewsLogData).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "newslog", GuildNewsLogData, m_id, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Guild::UpdateGuildNewsLog guid %u", guid);
     });
 }
@@ -827,7 +827,7 @@ void Guild::InitAchievement()
         GuildAchievementData[achievementId.c_str()]["date"] = iter->second.date;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "achievement", sRedisBuilderMgr->BuildString(GuildAchievementData).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetGuildKey(), "achievement", GuildAchievementData, m_id, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Guild::InitAchievement guid %u", guid);
     });
 }
@@ -878,7 +878,7 @@ void Guild::InitCriteria()
         }
 
         GuildCriteriaData[achievID.c_str()] = Criteria;
-        RedisDatabase.AsyncExecuteHSet("HSET", criteriaKey, achievID.c_str(), sRedisBuilderMgr->BuildString(Criteria).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", criteriaKey, achievID.c_str(), Criteria, m_id, [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Guild::InitCriteria account guid %u", guid);
         });
     }
@@ -906,7 +906,7 @@ void Guild::UpdateCriteriaProgress(AchievementEntry const* achievement, Criteria
     }
 
     GuildCriteriaData[achievID.c_str()] = Criteria;
-    RedisDatabase.AsyncExecuteHSet("HSET", criteriaKey, achievID.c_str(), sRedisBuilderMgr->BuildString(Criteria).c_str(), m_id, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", criteriaKey, achievID.c_str(), Criteria, m_id, [&](const RedisValue &v, uint64 guid) {
         //sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerCriteria player guid %u", guid);
     });
 }
@@ -960,7 +960,7 @@ bool Guild::BankTab::LoadItemFromDB(Json::Value itemData)
 
 void GuildFinderMgr::GuildFinderSave(std::string index, Json::Value finderData)
 {
-    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGuildFKey(), index.c_str(), sRedisBuilderMgr->BuildString(finderData).c_str(), 0, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGuildFKey(), index.c_str(), finderData, 0, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "GuildFinderMgr::GuildFinderSave guid %u", guid);
     });
 }
@@ -969,7 +969,7 @@ void GuildFinderMgr::GuildFinderMemberSave()
 {
     for (auto itr = FinderMemberData.begin(); itr != FinderMemberData.end(); ++itr)
     {
-        RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGuildFMKey(), itr.memberName(), sRedisBuilderMgr->BuildString((*itr)).c_str(), 0, [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGuildFMKey(), itr.memberName(), (*itr), 0, [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "GuildFinderMgr::GuildFinderMemberSave guid %u", guid);
         });
     }
@@ -977,7 +977,7 @@ void GuildFinderMgr::GuildFinderMemberSave()
 
 void GuildFinderMgr::UpdateFinderMember(std::string index)
 {
-    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGuildFMKey(), index.c_str(), sRedisBuilderMgr->BuildString(FinderMemberData[index.c_str()]).c_str(), 0, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGuildFMKey(), index.c_str(), FinderMemberData[index.c_str()], 0, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "GuildFinderMgr::GuildFinderMemberSave guid %u", guid);
     });
 }

@@ -39,7 +39,7 @@ void Bracket::SaveBracket()
 
     std::string index = std::to_string(GUID_LOPART(m_owner));
 
-    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetBracketKey(), index.c_str(), sRedisBuilderMgr->BuildString(BracketData).c_str(), m_owner, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetBracketKey(), index.c_str(), BracketData, m_owner, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Bracket::SaveBracket guid %u", guid);
     });
 }

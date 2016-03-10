@@ -27,7 +27,7 @@
 
 void WorldSession::SaveEnum()
 {
-    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "enumdata", sRedisBuilderMgr->BuildString(EnumData).c_str(), GetAccountId(), [&](const RedisValue &v, uint64 _accountId) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "enumdata", EnumData, GetAccountId(), [&](const RedisValue &v, uint64 _accountId) {
         sLog->outInfo(LOG_FILTER_REDIS, "WorldSession::SaveEnum _accountId %u", _accountId);
     });
 }

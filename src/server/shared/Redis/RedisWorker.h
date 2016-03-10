@@ -19,6 +19,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include <json/json.h>
 
 class RedisConnection;
 class RedisOperation;
@@ -38,15 +39,15 @@ class RedisWorker
 
         // Execute
         const RedisValue GetKey(const char* cmd, const char* key);
-        const RedisValue SetKey(const char* cmd, const char* key, const char* value);
+        const RedisValue SetKey(const char* cmd, const char* key, Json::Value& value);
         const RedisValue GetKeyH(const char* cmd, const char* key, const char* field);
-        const RedisValue SetKeyH(const char* cmd, const char* key, const char* field, const char* value);
+        const RedisValue SetKeyH(const char* cmd, const char* key, const char* field, Json::Value& value);
 
         void GetKeyAsync(const char* cmd, const char* key, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
-        void SetKeyAsync(const char* cmd, const char* key, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
+        void SetKeyAsync(const char* cmd, const char* key, Json::Value& value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
 
         void HGetKeyAsync(const char* cmd, const char* key, const char* field, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
-        void HSetKeyAsync(const char* cmd, const char* key, const char* field, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
+        void HSetKeyAsync(const char* cmd, const char* key, const char* field, Json::Value& value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
 
         /// Get an io_service to use.
         boost::asio::io_service& get_io_service();
@@ -82,6 +83,7 @@ class RedisWorker
         RedisAsyncClient*     m_aclient;
         RedisSyncClient*      m_client;
         bool m_connected;
+        Json::FastWriter Builder;
 
         RedisWorker(RedisWorker const& right) = delete;
         RedisWorker& operator=(RedisWorker const& right) = delete;

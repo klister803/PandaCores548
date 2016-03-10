@@ -46,7 +46,7 @@ void GmTicket::SaveTicket()
 
     std::string index = std::to_string(_id);
 
-    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetTicketKey(), index.c_str(), sRedisBuilderMgr->BuildString(TicketData).c_str(), _id, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetTicketKey(), index.c_str(), TicketData, _id, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "GmTicket::SaveTicket _id %u", guid);
     });
 }

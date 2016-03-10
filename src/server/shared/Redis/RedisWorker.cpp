@@ -74,11 +74,11 @@ const RedisValue RedisWorker::GetKey(const char* cmd, const char* key)
     return v;
 }
 
-const RedisValue RedisWorker::SetKey(const char* cmd, const char* key, const char* value)
+const RedisValue RedisWorker::SetKey(const char* cmd, const char* key, Json::Value& value)
 {
     //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::SetKey key %s value %s %i", key, value, boost::this_thread::get_id());
 
-    const RedisValue v = m_client->command(cmd, key, value);
+    const RedisValue v = m_client->command(cmd, key, Builder.write(value).c_str());
     _connection->Unlock();
     return v;
 }
@@ -92,11 +92,11 @@ const RedisValue RedisWorker::GetKeyH(const char* cmd, const char* key, const ch
     return v;
 }
 
-const RedisValue RedisWorker::SetKeyH(const char* cmd, const char* key, const char* field, const char* value)
+const RedisValue RedisWorker::SetKeyH(const char* cmd, const char* key, const char* field, Json::Value& value)
 {
     //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::SetKey key %s value %s %i", key, value, boost::this_thread::get_id());
 
-    const RedisValue v = m_client->command(cmd, key, field, value);
+    const RedisValue v = m_client->command(cmd, key, field, Builder.write(value).c_str());
     _connection->Unlock();
     return v;
 }
@@ -109,11 +109,11 @@ void RedisWorker::GetKeyAsync(const char* cmd, const char* key, uint64 guid, con
     _connection->Unlock();
 }
 
-void RedisWorker::SetKeyAsync(const char* cmd, const char* key, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
+void RedisWorker::SetKeyAsync(const char* cmd, const char* key, Json::Value& value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
 {
     //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::SetKey cmd %s key %s value %s guid %i thread %i", cmd, key, value, guid, boost::this_thread::get_id());
 
-    m_aclient->command(guid, cmd, key, value, handler);
+    m_aclient->command(guid, cmd, key, Builder.write(value).c_str(), handler);
     _connection->Unlock();
 }
 
@@ -125,11 +125,11 @@ void RedisWorker::HGetKeyAsync(const char* cmd, const char* key, const char* fie
     _connection->Unlock();
 }
 
-void RedisWorker::HSetKeyAsync(const char* cmd, const char* key, const char* field, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
+void RedisWorker::HSetKeyAsync(const char* cmd, const char* key, const char* field, Json::Value& value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
 {
     //sLog->outInfo(LOG_FILTER_SQL_DRIVER, "RedisWorker::SetKey cmd %s key %s value %s guid %i thread %i", cmd, key, value, guid, boost::this_thread::get_id());
 
-    m_aclient->command(guid, cmd, key, field, value, handler);
+    m_aclient->command(guid, cmd, key, field, Builder.write(value).c_str(), handler);
     _connection->Unlock();
 }
 

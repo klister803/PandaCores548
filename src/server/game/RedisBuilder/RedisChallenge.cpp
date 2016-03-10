@@ -42,7 +42,7 @@ void ChallengeMgr::SaveChallenges()
                 СhallengeData[id.c_str()]["members"][guid.c_str()] = (*iter).specId;
             }
 
-            RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetChallengeKey(), id.c_str(), sRedisBuilderMgr->BuildString(СhallengeData[id.c_str()]).c_str(), itr->first, [&](const RedisValue &v, uint64 guid) {});
+            RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetChallengeKey(), id.c_str(), СhallengeData[id.c_str()], itr->first, [&](const RedisValue &v, uint64 guid) {});
         }
     }
 }
@@ -62,7 +62,7 @@ void ChallengeMgr::SaveChallengeToDB(Challenge* challenge)
         СhallengeData[id.c_str()]["members"][guid.c_str()] = (*itr).specId;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetChallengeKey(), id.c_str(), sRedisBuilderMgr->BuildString(СhallengeData[id.c_str()]).c_str(), challenge->Id, [&](const RedisValue &v, uint64 guid) {});
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetChallengeKey(), id.c_str(), СhallengeData[id.c_str()], challenge->Id, [&](const RedisValue &v, uint64 guid) {});
 }
 
 void ChallengeMgr::LoadChallenges()

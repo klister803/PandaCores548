@@ -210,12 +210,12 @@ void MailDraft::SendMailTo(MailReceiver const& receiver, MailSender const& sende
     MailJson["stationery"] = int8(sender.GetStationery());
     MailJson["mailTemplateId"] = GetMailTemplateId();
 
-    RedisDatabase.AsyncExecuteHSet("HSET", mailKey, messageID.c_str(), sRedisBuilderMgr->BuildString(MailJson).c_str(), mailId, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", mailKey, messageID.c_str(), MailJson, mailId, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "MailDraft::SendMailTo guid %u", guid);
     });
 
-    std::string expireStr = std::to_string(expire_time);
-    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetMailsKey(), messageID.c_str(), expireStr.c_str(), mailId, [&](const RedisValue &v, uint64 guid) {});
+    Json::Value expireStr = expire_time;
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetMailsKey(), messageID.c_str(), expireStr, mailId, [&](const RedisValue &v, uint64 guid) {});
 
     for (MailItemMap::const_iterator mailItemIter = m_items.begin(); mailItemIter != m_items.end(); ++mailItemIter)
     {

@@ -62,7 +62,7 @@ void Group::SaveGroup()
 
     std::string index = std::to_string(m_dbStoreId);
 
-    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGroupKey(), index.c_str(), sRedisBuilderMgr->BuildString(GroupData).c_str(), m_dbStoreId, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGroupKey(), index.c_str(), GroupData, m_dbStoreId, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Group::SaveGroup guid %u", guid);
     });
 }
@@ -82,7 +82,7 @@ void Group::SaveGroupMembers()
     }
 
     std::string index = std::to_string(m_dbStoreId);
-    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGroupMemberKey(), index.c_str(), sRedisBuilderMgr->BuildString(GroupMemberData).c_str(), m_dbStoreId, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGroupMemberKey(), index.c_str(), GroupMemberData, m_dbStoreId, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Group::SaveGroupMembers guid %u", guid);
     });
 }
@@ -93,7 +93,7 @@ void Group::DeleteMember(uint64 guid)
     GroupMemberData.removeMember(memberId.c_str());
 
     std::string index = std::to_string(m_dbStoreId);
-    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGroupMemberKey(), index.c_str(), sRedisBuilderMgr->BuildString(GroupMemberData).c_str(), m_dbStoreId, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGroupMemberKey(), index.c_str(), GroupMemberData, m_dbStoreId, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Group::SaveGroupMembers guid %u", guid);
     });
 }
@@ -108,7 +108,7 @@ void Group::UpdateMember(MemberSlot* member)
     GroupMemberData[memberId.c_str()]["roles"] = member->roles;
 
     std::string index = std::to_string(m_dbStoreId);
-    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGroupMemberKey(), index.c_str(), sRedisBuilderMgr->BuildString(GroupMemberData).c_str(), m_dbStoreId, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGroupMemberKey(), index.c_str(), GroupMemberData, m_dbStoreId, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Group::SaveGroupMembers guid %u", guid);
     });
 }
@@ -391,7 +391,7 @@ void Group::SaveGroupInstances()
     }
 
     std::string index = std::to_string(m_dbStoreId);
-    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGroupInstanceKey(), index.c_str(), sRedisBuilderMgr->BuildString(GroupInstanceData).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGroupInstanceKey(), index.c_str(), GroupInstanceData, GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Group::SaveGroupInstances guid %u", guid);
     });
 }
@@ -422,7 +422,7 @@ void Group::UpdateInstance(InstanceSave* save)
     sLog->outInfo(LOG_FILTER_REDIS, "Group::UpdateInstance GetSaveTime %u", save->GetSaveTime());
 
     std::string index = std::to_string(m_dbStoreId);
-    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGroupInstanceKey(), index.c_str(), sRedisBuilderMgr->BuildString(GroupInstanceData).c_str(), m_dbStoreId, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGroupInstanceKey(), index.c_str(), GroupInstanceData, m_dbStoreId, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Group::UpdateInstance guid %u", guid);
     });
 }
@@ -433,7 +433,7 @@ void Group::DeleteInstance(uint32 instance)
     GroupInstanceData.removeMember(instanceID.c_str());
 
     std::string index = std::to_string(m_dbStoreId);
-    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGroupInstanceKey(), index.c_str(), sRedisBuilderMgr->BuildString(GroupInstanceData).c_str(), m_dbStoreId, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGroupInstanceKey(), index.c_str(), GroupInstanceData, m_dbStoreId, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Group::DeleteInstance guid %u", guid);
     });
 }
@@ -443,7 +443,7 @@ void Group::RemoveAllInstance()
     GroupInstanceData.clear();
 
     std::string index = std::to_string(m_dbStoreId);
-    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGroupInstanceKey(), index.c_str(), sRedisBuilderMgr->BuildString(GroupInstanceData).c_str(), m_dbStoreId, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetGroupInstanceKey(), index.c_str(), GroupInstanceData, m_dbStoreId, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Group::DeleteInstance guid %u", guid);
     });
 }

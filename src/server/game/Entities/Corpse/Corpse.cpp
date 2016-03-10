@@ -123,7 +123,7 @@ void Corpse::SaveToDB()
     m_owner->PlayerData["corpse"]["instanceId"] = GetInstanceId();
     m_owner->PlayerData["corpse"]["phaseMask"] = GetPhaseMask();
 
-    RedisDatabase.AsyncExecuteHSet("HSET", m_owner->GetUserKey(), "corpse", sRedisBuilderMgr->BuildString(m_owner->PlayerData["corpse"]).c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", m_owner->GetUserKey(), "corpse", m_owner->PlayerData["corpse"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Corpse::SaveToDB guid %u", guid);
     });
 }

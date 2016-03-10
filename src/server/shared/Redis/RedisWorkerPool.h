@@ -166,7 +166,7 @@ class RedisWorkerPool
             return t->Execute(cmd, key);
         }
 
-        const RedisValue ExecuteSet(const char* cmd, const char* key, const char* value)
+        const RedisValue ExecuteSet(const char* cmd, const char* key, Json::Value& value)
         {
             //sLog->outInfo(LOG_FILTER_REDIS, "AsyncExecute");
 
@@ -188,7 +188,7 @@ class RedisWorkerPool
             return t->ExecuteH(cmd, key, field);
         }
 
-        const RedisValue ExecuteSetH(const char* cmd, const char* key, const char* field, const char* value)
+        const RedisValue ExecuteSetH(const char* cmd, const char* key, const char* field, Json::Value& value)
         {
             //sLog->outInfo(LOG_FILTER_REDIS, "AsyncExecute");
 
@@ -235,7 +235,7 @@ class RedisWorkerPool
             //Enqueue(task);
         }
 
-        void AsyncExecuteSet(const char* cmd, const char* key, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
+        void AsyncExecuteSet(const char* cmd, const char* key, Json::Value& value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
         {
             //sLog->outInfo(LOG_FILTER_REDIS, "AsyncExecuteSet");
 
@@ -251,7 +251,7 @@ class RedisWorkerPool
             //Enqueue(task);
         }
 
-        void AsyncExecuteHSet(const char* cmd, const char* key, const char* field, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
+        void AsyncExecuteHSet(const char* cmd, const char* key, const char* field, Json::Value& value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler)
         {
             //sLog->outInfo(LOG_FILTER_REDIS, "AsyncExecuteSet");
 

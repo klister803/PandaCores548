@@ -58,14 +58,14 @@ class RedisConnection
         void Close();
 
     public:
-        void ExecuteAsyncSet(const char* cmd, const char* key, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
+        void ExecuteAsyncSet(const char* cmd, const char* key, Json::Value& value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
         void ExecuteAsync(const char* cmd, const char* key, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
-        void ExecuteAsyncHSet(const char* cmd, const char* key, const char* field, const char* value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
+        void ExecuteAsyncHSet(const char* cmd, const char* key, const char* field, Json::Value& value, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
         void ExecuteAsyncH(const char* cmd, const char* key, const char* field, uint64 guid, const boost::function<void(const RedisValue &, uint64)> &handler);
 
-        const RedisValue ExecuteSet(const char* cmd, const char* key, const char* value);
+        const RedisValue ExecuteSet(const char* cmd, const char* key, Json::Value& value);
         const RedisValue Execute(const char* cmd, const char* key);
-        const RedisValue ExecuteSetH(const char* cmd, const char* key, const char* field, const char* value);
+        const RedisValue ExecuteSetH(const char* cmd, const char* key, const char* field, Json::Value& value);
         const RedisValue ExecuteH(const char* cmd, const char* key, const char* field);
 
         operator bool() const { return m_worker != NULL; }

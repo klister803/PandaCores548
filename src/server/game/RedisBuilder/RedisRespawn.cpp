@@ -55,7 +55,7 @@ void Map::SaveCreatureRespawnTime(uint32 dbGuid, time_t respawnTime)
     CreatureRespawnData[index.c_str()] = respawnTime;
     _data = respawnTime;
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetCreatureRespawmKey(), index.c_str(), sRedisBuilderMgr->BuildString(_data).c_str(), GetId(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetCreatureRespawmKey(), index.c_str(), _data, GetId(), [&](const RedisValue &v, uint64 guid) {
         //sLog->outInfo(LOG_FILTER_REDIS, "Map::SaveCreatureRespawnTime guid %u", guid);
     });
 }
@@ -90,7 +90,7 @@ void Map::SaveGORespawnTime(uint32 dbGuid, time_t respawnTime)
     GORespawnData[index.c_str()] = respawnTime;
     _data = respawnTime;
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetGoRespawmKey(), index.c_str(), sRedisBuilderMgr->BuildString(_data).c_str(), GetId(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetGoRespawmKey(), index.c_str(), _data, GetId(), [&](const RedisValue &v, uint64 guid) {
         //sLog->outInfo(LOG_FILTER_REDIS, "Map::SaveGORespawnTime guid %u", guid);
     });
 }

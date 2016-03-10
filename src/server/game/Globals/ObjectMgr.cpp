@@ -6182,8 +6182,8 @@ void ObjectMgr::SetHighestGuids()
         result = CharacterDatabase.Query("SELECT MAX(guid) FROM characters");
         if (result)
             _hiCharGuid = (*result)[0].GetUInt32() + 1;
-        std::string guid = std::to_string(_hiCharGuid);
-        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "characters", guid.c_str());
+        Json::Value guid = _hiCharGuid;
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "characters", guid);
     }
 
     result = WorldDatabase.Query("SELECT MAX(guid) FROM creature");
@@ -6198,8 +6198,8 @@ void ObjectMgr::SetHighestGuids()
         result = CharacterDatabase.Query("SELECT MAX(guid) FROM item_instance");
         if (result)
             _hiItemGuid = (*result)[0].GetUInt32() + 1;
-        std::string guid = std::to_string(_hiItemGuid);
-        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "item_instance", guid.c_str());
+        Json::Value guid = _hiItemGuid;
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "item_instance", guid);
     }
 
     // Cleanup other tables from not existed guids ( >= _hiItemGuid)
@@ -6224,8 +6224,8 @@ void ObjectMgr::SetHighestGuids()
         result = CharacterDatabase.Query("SELECT MAX(id) FROM auctionhouse");
         if (result)
             _auctionId = (*result)[0].GetUInt32() + 1;
-        std::string guid = std::to_string(_auctionId);
-        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "auctionhouse", guid.c_str());
+        Json::Value guid = _auctionId;
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "auctionhouse", guid);
     }
 
     v = RedisDatabase.ExecuteH("HGET", sRedisBuilderMgr->GetGuidKey(), "mail");
@@ -6236,8 +6236,8 @@ void ObjectMgr::SetHighestGuids()
         result = CharacterDatabase.Query("SELECT MAX(id) FROM mail");
         if (result)
             _mailId = (*result)[0].GetUInt32() + 1;
-        std::string guid = std::to_string(_mailId);
-        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "mail", guid.c_str());
+        Json::Value guid = _mailId;
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "mail", guid);
     }
 
     v = RedisDatabase.ExecuteH("HGET", sRedisBuilderMgr->GetGuidKey(), "corpse");
@@ -6247,9 +6247,9 @@ void ObjectMgr::SetHighestGuids()
     {
         result = CharacterDatabase.Query("SELECT MAX(corpseGuid) FROM corpse");
         if (result)
-            _hiCorpseGuid = (*result)[0].GetUInt32()+1;
-        std::string guid = std::to_string(_hiCorpseGuid);
-        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "corpse", guid.c_str());
+            _hiCorpseGuid = (*result)[0].GetUInt32() + 1;
+        Json::Value guid = _hiCorpseGuid;
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "corpse", guid);
     }
 
     v = RedisDatabase.ExecuteH("HGET", sRedisBuilderMgr->GetGuidKey(), "character_equipmentsets");
@@ -6260,8 +6260,8 @@ void ObjectMgr::SetHighestGuids()
         result = CharacterDatabase.Query("SELECT MAX(setguid) FROM character_equipmentsets");
         if (result)
             _equipmentSetGuid = (*result)[0].GetUInt64() + 1;
-        std::string guid = std::to_string(_equipmentSetGuid);
-        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "character_equipmentsets", guid.c_str());
+        Json::Value guid = _equipmentSetGuid;
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "character_equipmentsets", guid);
     }
 
     v = RedisDatabase.ExecuteH("HGET", sRedisBuilderMgr->GetGuidKey(), "guild");
@@ -6271,9 +6271,9 @@ void ObjectMgr::SetHighestGuids()
     {
         result = CharacterDatabase.Query("SELECT MAX(guildId) FROM guild");
         if (result)
-            _nextGuildId = (*result)[0].GetUInt32()+1;
-        std::string guid = std::to_string(_nextGuildId);
-        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "guild", guid.c_str());
+            _nextGuildId = (*result)[0].GetUInt32() + 1;
+        Json::Value guid = _nextGuildId;
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "guild", guid);
     }
 
     v = RedisDatabase.ExecuteH("HGET", sRedisBuilderMgr->GetGuidKey(), "group");
@@ -6283,9 +6283,9 @@ void ObjectMgr::SetHighestGuids()
     {
         result = CharacterDatabase.Query("SELECT MAX(guid) FROM groups");
         if (result)
-            _nextGroupId = (*result)[0].GetUInt32()+1;
-        std::string guid = std::to_string(_nextGroupId);
-        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "group", guid.c_str());
+            _nextGroupId = (*result)[0].GetUInt32() + 1;
+        Json::Value guid = _nextGroupId;
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "group", guid);
     }
     sGroupMgr->SetGroupDbStoreSize(_nextGroupId);
 
@@ -6297,15 +6297,15 @@ void ObjectMgr::SetHighestGuids()
         result = CharacterDatabase.Query("SELECT MAX(itemId) from character_void_storage");
         if (result)
             _voidItemId = (*result)[0].GetUInt64() + 1;
-        std::string guid = std::to_string(_voidItemId);
-        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "character_void_storage", guid.c_str());
+        Json::Value guid = _voidItemId;
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "character_void_storage", guid);
     }
 }
 
 void ObjectMgr::IncrementGuid(const char* field)
 {
-    std::string index = std::to_string(1);
-    RedisDatabase.AsyncExecuteHSet("HINCRBY", sRedisBuilderMgr->GetGuidKey(), field, index.c_str(), 0, [&](const RedisValue&, uint64){});
+    Json::Value index = 1;
+    RedisDatabase.AsyncExecuteHSet("HINCRBY", sRedisBuilderMgr->GetGuidKey(), field, index, 0, [&](const RedisValue&, uint64){});
 }
 
 uint32 ObjectMgr::GenerateGroupId()
@@ -6869,8 +6869,8 @@ void ObjectMgr::LoadPetNumber()
         QueryResult result = CharacterDatabase.Query("SELECT MAX(id) FROM character_pet");
         if (result)
             _hiPetNumber = (*result)[0].GetUInt32() + 1;
-        std::string guid = std::to_string(_hiPetNumber);
-        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "pets", guid.c_str());
+        Json::Value guid = _hiPetNumber;
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "pets", guid);
     }
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded the max pet number: %d in %u ms", _hiPetNumber-1, GetMSTimeDiffToNow(oldMSTime));
@@ -6888,8 +6888,8 @@ void ObjectMgr::LoadBattlePetGuid()
         QueryResult result = CharacterDatabase.Query("SELECT MAX(guid) FROM account_battle_pet_journal");
         if (result)
             _hiBattlePetGuid = (*result)[0].GetUInt64() + 1;
-        std::string guid = std::to_string(_hiBattlePetGuid);
-        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "battlepets", guid.c_str());
+        Json::Value guid = _hiBattlePetGuid;
+        RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "battlepets", guid);
     }
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded the max battle pet guid: %d in %u ms", _hiBattlePetGuid-1, GetMSTimeDiffToNow(oldMSTime));
