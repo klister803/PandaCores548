@@ -188,7 +188,7 @@ class spell_mage_incanters_ward : public SpellScriptLoader
                 return true;
             }
 
-            void CalculateAmount(AuraEffect const* , int32 & amount, bool & )
+            void CalculateAmount(AuraEffect const*, float & amount, bool &)
             {
                 if (Unit* caster = GetCaster())
                     amount += caster->GetSpellPowerDamage(SPELL_SCHOOL_MASK_ARCANE);
@@ -219,7 +219,7 @@ class spell_mage_incanters_ward : public SpellScriptLoader
                     if(absorbTotal > absorbtionAmount)
                         absorbTotal = absorbtionAmount;      
                         
-                    int32 damageGain = CalculatePct(sSpellMgr->GetSpellInfo(SPELL_MAGE_INCANTERS_ABSORBTION)->Effects[0].BasePoints, ((absorbTotal / absorbtionAmount) * 100.0f));
+                    float damageGain = CalculatePct(sSpellMgr->GetSpellInfo(SPELL_MAGE_INCANTERS_ABSORBTION)->Effects[0].BasePoints, ((absorbTotal / absorbtionAmount) * 100.0f));
                     if (!damageGain)
                         return;
 
@@ -317,7 +317,7 @@ class spell_mage_cauterize : public SpellScriptLoader
                 return GetUnitOwner()->ToPlayer();
             }
 
-            void CalculateAmount(AuraEffect const* /*AuraEffect**/, int32& amount, bool& /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*AuraEffect**/, float& amount, bool& /*canBeRecalculated*/)
             {
                 amount = -1;
             }
@@ -332,7 +332,7 @@ class spell_mage_cauterize : public SpellScriptLoader
                 if (target->ToPlayer()->HasSpellCooldown(SPELL_MAGE_CAUTERIZE))
                     return;
 
-                int32 bp1 = target->CountPctFromMaxHealth(healtPct);
+                float bp1 = target->CountPctFromMaxHealth(healtPct);
                 target->CastCustomSpell(target, SPELL_MAGE_CAUTERIZE, NULL, &bp1, NULL, true);
                 target->ToPlayer()->AddSpellCooldown(SPELL_MAGE_CAUTERIZE, 0, getPreciseTime() + 60);
 
@@ -911,7 +911,7 @@ class spell_mage_combustion : public SpellScriptLoader
                         _player->RemoveSpellCooldown(SPELL_MAGE_INFERNO_BLAST, true);
                         _player->RemoveSpellCooldown(SPELL_MAGE_INFERNO_BLAST_IMPACT, true);
 
-                        int32 combustionBp = 0;
+                        float combustionBp = 0;
                         int32 percent = 20;
                         if(_player->HasAura(56368))
                             percent += 20;
@@ -1008,7 +1008,7 @@ class spell_mage_inferno_blast : public SpellScriptLoader
                                 {
                                     if (target->HasAura(SPELL_MAGE_IGNITE, caster->GetGUID()))
                                     {
-                                        int32 bp = eff->GetAmount();
+                                        float bp = eff->GetAmount();
                                         caster->CastCustomSpell(target, SPELL_MAGE_IGNITE, &bp, NULL, NULL, true);
                                     }
                                     else
@@ -1503,7 +1503,7 @@ class spell_mage_incanters_absorbtion_base_AuraScript : public AuraScript
 
             if (AuraEffect* talentAurEff = target->GetAuraEffectOfRankedSpell(SPELL_MAGE_INCANTERS_ABSORBTION_R1, EFFECT_0))
             {
-                int32 bp = CalculatePct(absorbAmount, talentAurEff->GetAmount());
+                float bp = CalculatePct(absorbAmount, talentAurEff->GetAmount());
                 target->CastCustomSpell(target, SPELL_MAGE_INCANTERS_ABSORBTION_TRIGGERED, &bp, NULL, NULL, true, NULL, aurEff);
             }
         }
@@ -2004,7 +2004,7 @@ class spell_mage_icicle : public SpellScriptLoader
                         {
                             if (Aura* icicle = caster->GetAura(148012))
                             {
-                                int32 tickamount = icicle->GetEffect(EFFECT_0)->GetAmount();
+                                float tickamount = icicle->GetEffect(EFFECT_0)->GetAmount();
                                 caster->CastSpell(target, 148017, true);
                                 caster->CastCustomSpell(target, 148022, &tickamount, NULL, NULL, true);
                                 icicle->Remove();
@@ -2015,7 +2015,7 @@ class spell_mage_icicle : public SpellScriptLoader
                         {
                             if (Aura* icicle = caster->GetAura(148013))
                             {
-                                int32 tickamount = icicle->GetEffect(EFFECT_0)->GetAmount();
+                                float tickamount = icicle->GetEffect(EFFECT_0)->GetAmount();
                                 caster->CastSpell(target, 148018, true);
                                 caster->CastCustomSpell(target, 148022, &tickamount, NULL, NULL, true);
                                 icicle->Remove();
@@ -2026,7 +2026,7 @@ class spell_mage_icicle : public SpellScriptLoader
                         {
                             if (Aura* icicle = caster->GetAura(148014))
                             {
-                                int32 tickamount = icicle->GetEffect(EFFECT_0)->GetAmount();
+                                float tickamount = icicle->GetEffect(EFFECT_0)->GetAmount();
                                 caster->CastSpell(target, 148019, true);
                                 caster->CastCustomSpell(target, 148022, &tickamount, NULL, NULL, true);
                                 icicle->Remove();
@@ -2037,7 +2037,7 @@ class spell_mage_icicle : public SpellScriptLoader
                         {
                             if (Aura* icicle = caster->GetAura(148015))
                             {
-                                int32 tickamount = icicle->GetEffect(EFFECT_0)->GetAmount();
+                                float tickamount = icicle->GetEffect(EFFECT_0)->GetAmount();
                                 caster->CastSpell(target, 148020, true);
                                 caster->CastCustomSpell(target, 148022, &tickamount, NULL, NULL, true);
                                 icicle->Remove();
@@ -2048,7 +2048,7 @@ class spell_mage_icicle : public SpellScriptLoader
                         {
                             if (Aura* icicle = caster->GetAura(148016))
                             {
-                                int32 tickamount = icicle->GetEffect(EFFECT_0)->GetAmount();
+                                float tickamount = icicle->GetEffect(EFFECT_0)->GetAmount();
                                 caster->CastSpell(target, 148021, true);
                                 caster->CastCustomSpell(target, 148022, &tickamount, NULL, NULL, true);
                                 icicle->Remove();
@@ -2134,7 +2134,7 @@ class spell_mage_flameglow : public SpellScriptLoader
                 return true;
             }
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 amount = -1;                
             }
@@ -2243,7 +2243,7 @@ class spell_mage_glyph_of_icy_veins : public SpellScriptLoader
                                         visual = 148021;
                                     }
 
-                                    int32 tickamount = icicle->GetEffect(EFFECT_0)->GetAmount();
+                                    float tickamount = icicle->GetEffect(EFFECT_0)->GetAmount();
                                     caster->CastSpell(target, visual, true);
                                     caster->CastCustomSpell(target, 148022, &tickamount, NULL, NULL, true);
                                     icicle->Remove();

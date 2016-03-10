@@ -883,7 +883,8 @@ class boss_yoggsaron : public CreatureScript
                             {
                                 Map::PlayerList const &players = pInstance->instance->GetPlayers();
                                 for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                                    DoScriptText(EMOTE_EMPOWERING, me, itr->getSource());                                me->AddAura(SPELL_SHADOW_BEACON, pImmortal);
+                                    DoScriptText(EMOTE_EMPOWERING, me, itr->getSource());
+                                me->AddAura(SPELL_SHADOW_BEACON, pImmortal);
                             }
                             events.ScheduleEvent(EVENT_SHADOW_BEACON, 45000, 0, PHASE_3);
                             break;
@@ -2088,7 +2089,7 @@ class spell_hodir_protective_gaze : public SpellScriptLoader
                 return true;
             }
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 // Set absorbtion amount to unlimited
                 amount = -1;

@@ -517,7 +517,7 @@ public:
                     if (me->IsWithinDist(me->getVictim(), 30))
                     {
                         //DoCast(me->getVictim(), SPELL_CHAOS_BLAST, true);
-                        int damage = 100;
+                        float damage = 100;
                         me->CastCustomSpell(me->getVictim(), SPELL_CHAOS_BLAST, &damage, NULL, NULL, false, NULL, NULL, me->GetGUID());
                     }
                     ChaosBlast_Timer = 3000;
@@ -668,7 +668,7 @@ public:
                 if (me->IsWithinDist(me->getVictim(), 30))
                 {
                     //DoCast(me->getVictim(), SPELL_CHAOS_BLAST, true);
-                    int damage = 100;
+                    float damage = 100;
                     me->CastCustomSpell(me->getVictim(), SPELL_CHAOS_BLAST, &damage, NULL, NULL, false, NULL, NULL, me->GetGUID());
                     ChaosBlast_Timer = 3000;
                 }

@@ -870,7 +870,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         {
             if ((*itr)->IsAffectingSpell(spellInfo))
             {
-                if (SpellInfo const* newInfo = sSpellMgr->GetSpellInfo((*itr)->GetAmount()))
+                if (SpellInfo const* newInfo = sSpellMgr->GetSpellInfo(RoundingFloatValue((*itr)->GetAmount())))
                 {
                     spellInfo = newInfo;
                     spellId = newInfo->Id;

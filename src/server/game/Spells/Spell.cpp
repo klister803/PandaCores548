@@ -3206,7 +3206,7 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
         // Select rank for aura with level requirements only in specific cases
         // Unit has to be target only of aura effect, both caster and target have to be players, target has to be other than unit target
         SpellInfo const* aurSpellInfo = m_spellInfo;
-        int32 basePoints[32];
+        float basePoints[32];
         if (scaleAura)
         {
             aurSpellInfo = m_spellInfo->GetAuraRankForLevel(unitTarget->getLevel());
@@ -4342,7 +4342,7 @@ void Spell::_handle_finish_phase()
             {
                 if (_player->HasAura(115189))
                 {
-                    int32 basepoints0 = _player->GetAura(115189) ? _player->GetAura(115189)->GetStackAmount() : 0;
+                    float basepoints0 = _player->GetAura(115189) ? _player->GetAura(115189)->GetStackAmount() : 0;
                     _player->CastCustomSpell(m_caster->getVictim(), 115190, &basepoints0, NULL, NULL, true);
 
                     if (basepoints0)
@@ -9936,7 +9936,7 @@ void Spell::PrepareTriggersExecutedOnHit()
         {
             // calculate the chance using spell base amount, because aura amount is not updated on combo-points change
             // this possibly needs fixing
-            int32 auraBaseAmount = (*i)->GetBaseAmount();
+            float auraBaseAmount = (*i)->GetBaseAmount();
             // proc chance is stored in effect amount
             int32 chance = m_caster->CalculateSpellDamage(NULL, auraSpellInfo, auraSpellIdx, &auraBaseAmount);
             // build trigger and add to the list

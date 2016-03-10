@@ -233,7 +233,7 @@ class SpellCastTargets
 struct SpellValue
 {
     explicit  SpellValue(SpellInfo const* proto, uint8 diff);
-    int32     EffectBasePoints[MAX_SPELL_EFFECTS];
+    float     EffectBasePoints[MAX_SPELL_EFFECTS];
     bool      LockBasePoints[MAX_SPELL_EFFECTS];
     uint32    MaxAffectedTargets;
     float     RadiusMod;
@@ -486,7 +486,7 @@ class Spell
         SpellCastResult CheckCasterAuras() const;
         SpellCastResult CheckArenaAndRatedBattlegroundCastRules();
 
-        int32 CalculateDamage(uint8 i, Unit const* target) const { return m_caster->CalculateSpellDamage(target, m_spellInfo, i, &m_spellValue->EffectBasePoints[i], m_CastItem, m_spellValue->LockBasePoints[i]); }
+        float CalculateDamage(uint8 i, Unit const* target) const { return m_caster->CalculateSpellDamage(target, m_spellInfo, i, &m_spellValue->EffectBasePoints[i], m_CastItem, m_spellValue->LockBasePoints[i]); }
 
         bool HaveTargetsForEffect(uint8 effect) const;
         void Delayed();

@@ -226,6 +226,7 @@ enum eCreatures
     //
 
     NPC_IRON_JUGGERNAUT             = 71466,
+    NPC_MORTAR_BARRAGE              = 90002, //new trigger, need update in DB
     //Iron Juggernaut passenger              //Seat Id
     NPC_TOP_CANNON                  = 71484, //0
     NPC_SAWBLADE                    = 71469, //1
@@ -307,6 +308,7 @@ enum eCreatures
     //Special
     NPC_LEVER                       = 72281,
     NPC_LIFT_HOOK                   = 72972,
+    NPC_UNSTABLE_SPARK              = 73104,
     //
 
     NPC_THOK                        = 71529,

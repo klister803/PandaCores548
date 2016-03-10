@@ -293,7 +293,7 @@ class spell_dk_necrotic_strike : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dk_necrotic_strike_AuraScript);
 
-            void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* aurEff, float & amount, bool & /*canBeRecalculated*/)
             {
                 if(Unit* caster = GetCaster())
                 {
@@ -717,7 +717,7 @@ class spell_dk_death_siphon : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        int32 bp = CalculatePct(GetHitDamage(), GetSpellInfo()->Effects[EFFECT_1].CalcValue(_player));
+                        float bp = CalculatePct(GetHitDamage(), GetSpellInfo()->Effects[EFFECT_1].CalcValue(_player));
                         _player->CastCustomSpell(_player, DK_SPELL_DEATH_SIPHON_HEAL, &bp, NULL, NULL, true);
                     }
                 }
@@ -777,7 +777,7 @@ class spell_dk_purgatory_absorb : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dk_purgatory_absorb_AuraScript);
 
-            void CalculateAmount(AuraEffect const* /*AuraEffect**/, int32& amount, bool& /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*AuraEffect**/, float& amount, bool& /*canBeRecalculated*/)
             {
                 amount = -1;
             }
@@ -799,7 +799,7 @@ class spell_dk_purgatory_absorb : public SpellScriptLoader
                 if (target->ToPlayer()->HasAura(DK_SPELL_PERDITION))
                     return;
 
-                int32 bp = dmgInfo.GetDamage();
+                float bp = dmgInfo.GetDamage();
 
                 target->CastCustomSpell(target, DK_SPELL_SHROUD_OF_PURGATORY, &bp, NULL, NULL, true);
                 target->CastSpell(target, DK_SPELL_PERDITION, true);
@@ -1072,7 +1072,7 @@ class spell_dk_anti_magic_shell_raid : public SpellScriptLoader
                 return true;
             }
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 // TODO: this should absorb limited amount of damage, but no info on calculation formula
                 amount = -1;
@@ -1131,7 +1131,7 @@ class spell_dk_anti_magic_shell_self : public SpellScriptLoader
                 if (Unit* target = GetTarget()) // AMS generates 2 Runic Power for every percent of maximum health absorbed
                 {
                     uint32 RPCap = target->CountPctFromMaxHealth(1) / 2;
-                    int32 bp = int32((container + absorbAmount) / RPCap);
+                    float bp = int32((container + absorbAmount) / RPCap);
                     container = (container + absorbAmount) - (bp * RPCap);
                     bp *= 10;
 
@@ -1195,7 +1195,7 @@ class spell_dk_anti_magic_zone : public SpellScriptLoader
                 return true;
             }
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 SpellInfo const* talentSpell = sSpellMgr->GetSpellInfo(DK_SPELL_ANTI_MAGIC_SHELL_TALENT);
                 amount = 136800;
@@ -1440,7 +1440,7 @@ class spell_dk_scourge_strike : public SpellScriptLoader
                 Unit* caster = GetCaster();
                 if (Unit* unitTarget = GetHitUnit())
                 {
-                    int32 bp = GetHitDamage() * multiplier;
+                    float bp = GetHitDamage() * multiplier;
 
                     if (AuraEffect* aurEff = caster->GetAuraEffect(DK_SPELL_MASTERY_DREADBLADE, EFFECT_0)) // Mastery: Dreadblade
                         AddPct(bp, aurEff->GetAmount());
@@ -1707,7 +1707,7 @@ class spell_dk_unholy_frenzy : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dk_unholy_frenzy_AuraScript);
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 if(Unit* caster = GetCaster())
                 {
@@ -1770,7 +1770,7 @@ class spell_dk_soul_reaper_speed : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dk_soul_reaper_speed_AuraScript);
 
-            void CalculateAmount(AuraEffect const* /*AuraEffect**/, int32& amount, bool& /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*AuraEffect**/, float& amount, bool& /*canBeRecalculated*/)
             {
                 if(Unit* caster = GetCaster())
                 {
@@ -1916,7 +1916,7 @@ class spell_dk_death_shroud : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dk_death_shroud_AuraScript);
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 Unit* caster = GetCaster();
                 if(!caster)
@@ -1932,7 +1932,7 @@ class spell_dk_death_shroud : public SpellScriptLoader
                 }
             }
 
-            void CalculateAmount1(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount1(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 Unit* caster = GetCaster();
                 if(!caster)
@@ -2000,7 +2000,7 @@ public:
                 AddPct(stacks, masterPct);
                 if (roll_chance_i(stacks))
                 {
-                    int32 damage = GetStackAmount() * target->GetMaxHealth() * GetSpellInfo()->Effects[EFFECT_1].BasePoints / 100.0f;
+                    float damage = GetStackAmount() * target->GetMaxHealth() * GetSpellInfo()->Effects[EFFECT_1].BasePoints / 100.0f;
                     target->CastCustomSpell(target, 81280, &damage, NULL, NULL, true);
                 }
             }

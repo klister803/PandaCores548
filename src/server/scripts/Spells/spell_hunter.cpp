@@ -908,7 +908,7 @@ class spell_hun_improved_serpent_sting : public SpellScriptLoader
                             if (Aura* serpentSting = target->GetAura(HUNTER_SPELL_SERPENT_STING, _player->GetGUID()))
                                 if (AuraEffect* aeff = serpentSting->GetEffect(EFFECT_0))
                                 {
-                                    int32 bp = aeff->GetAmount();
+                                    float bp = aeff->GetAmount();
                                     bp *= aeff->GetTotalTicks();
                                     bp = CalculatePct(bp, pct);
 
@@ -1156,7 +1156,7 @@ class spell_hun_steady_shot : public SpellScriptLoader
             void HandleOnCast()
             {
                 SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(HUNTER_SPELL_STEADY_SHOT_ENERGIZE);
-                int32 basepoints0 = spellInfo->Effects[EFFECT_0].BasePoints;
+                float basepoints0 = spellInfo->Effects[EFFECT_0].BasePoints;
                 
                 if (Unit* caster = GetCaster())
                 {
@@ -1244,7 +1244,7 @@ class spell_hun_last_stand_pet : public SpellScriptLoader
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
                 Unit* caster = GetCaster();
-                int32 healthModSpellBasePoints0 = int32(caster->CountPctFromMaxHealth(30));
+                float healthModSpellBasePoints0 = int32(caster->CountPctFromMaxHealth(30));
                 caster->CastCustomSpell(caster, HUNTER_PET_SPELL_LAST_STAND_TRIGGERED, &healthModSpellBasePoints0, NULL, NULL, true, NULL);
             }
 
@@ -1368,7 +1368,7 @@ class spell_hun_sniper_training : public SpellScriptLoader
             {
                 if (Player* playerTarget = GetUnitOwner()->ToPlayer())
                 {
-                    int32 baseAmount = aurEff->GetBaseAmount();
+                    float baseAmount = aurEff->GetBaseAmount();
                     int32 amount = playerTarget->isMoving() ?
                     playerTarget->CalculateSpellDamage(playerTarget, GetSpellInfo(), aurEff->GetEffIndex(), &baseAmount) :
                     aurEff->GetAmount() - 1;
@@ -1906,7 +1906,7 @@ class spell_hun_glyph_of_direction : public SpellScriptLoader
         {
             PrepareAuraScript(spell_hun_glyph_of_direction_AuraScript);
 
-            void CalculateAmount(AuraEffect const* /*AuraEffect**/, int32& amount, bool& /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*AuraEffect**/, float& amount, bool& /*canBeRecalculated*/)
             {   
                 if (Unit* caster = GetCaster())
                 {

@@ -1093,7 +1093,7 @@ class spell_deathbringer_blood_power : public SpellScriptLoader
         {
             PrepareAuraScript(spell_deathbringer_blood_power_AuraScript);
 
-            void RecalculateHook(AuraEffect const* /*aurEffect*/, int32& amount, bool& canBeRecalculated)
+            void RecalculateHook(AuraEffect const* /*aurEffect*/, float& amount, bool& canBeRecalculated)
             {
                 amount = int32(GetUnitOwner()->GetPower(POWER_ENERGY));
                 canBeRecalculated = true;

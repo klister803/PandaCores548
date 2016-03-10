@@ -167,7 +167,7 @@ class boss_devourer_of_souls : public CreatureScript
                     {
                         if (player->GetAura(SPELL_MIRRORED_SOUL))
                         {
-                            int32 mirrorDamage = (uiDamage* 45)/100;
+                            float mirrorDamage = (uiDamage * 45) / 100;
                             me->CastCustomSpell(player, 69034, &mirrorDamage, 0, 0, true);
                         }
                         else

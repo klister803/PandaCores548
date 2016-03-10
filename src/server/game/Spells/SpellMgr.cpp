@@ -5015,9 +5015,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 144334: //Iron Tomb dmg
                     spellInfo->Effects[0].TargetA = TARGET_DEST_CASTER_FRONT;
                     break;
-                case 144331: //Iron Prison
+                case 144331: //Iron Prison tr ef
                 case 142906: //Ancient Miasma Dmg
-                case 29604:  // Jom Gabbar
+                case 29604:  //Jom Gabbar
                     spellInfo->AttributesEx6 |= SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
                     break;
                 //General Nazgrim
@@ -5056,6 +5056,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 148583: //Jade Tempest Dmg
                     spellInfo->Effects[0].BasePoints = 105000;
+                    break;
+                case 146824: //Unstable Spark Spawn Dummy
+                    spellInfo->Effects[0].TargetA = 25;
+                    spellInfo->Effects[0].TargetB = 0;
                     break;
                 //Thok Bloodthirsty
                 case 147607: //Cannon Ball AT Dmg

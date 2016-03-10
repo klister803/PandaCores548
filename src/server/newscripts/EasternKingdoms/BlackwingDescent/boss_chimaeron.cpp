@@ -520,7 +520,7 @@ public:
     {
         PrepareAuraScript(spell_chimaeron_finkles_mixture_AuraScript);
 
-        void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool& /*canBeRecalculated*/)
+        void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool& /*canBeRecalculated*/)
         {
             amount = -1;
         }

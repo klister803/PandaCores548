@@ -335,7 +335,7 @@ class boss_malkorok : public CreatureScript
                                 if (me->GetPower(POWER_ENERGY) == 100)
                                 {
                                     phase = PHASE_TWO;
-                                    powercheck = NULL;
+                                    powercheck = 0;
                                     DoAction(ACTION_PHASE_TWO);
                                 }
                             }
@@ -345,7 +345,7 @@ class boss_malkorok : public CreatureScript
                             if (me->GetPower(POWER_ENERGY) == 0)
                             {
                                 phase = PHASE_ONE;
-                                powercheck = NULL;
+                                powercheck = 0;
                                 displacedenergy = 0;
                                 events.CancelEvent(EVENT_BLOOD_RAGE);
                                 DoAction(ACTION_PHASE_ONE);
@@ -365,8 +365,6 @@ class boss_malkorok : public CreatureScript
                         {
                             if (!CheckPullPlayerPos(me->getVictim()))
                             {
-                                me->AttackStop();
-                                me->SetReactState(REACT_PASSIVE);
                                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                                 EnterEvadeMode();
                                 checkvictim = 0;
@@ -401,17 +399,11 @@ class boss_malkorok : public CreatureScript
                     {
                     case EVENT_PREPARE:
                         me->SetAiAnimKit(0);
-                        me->SetReactState(REACT_PASSIVE);
-                        me->AttackStop();
-                        me->StopMoving();
-                        me->GetMotionMaster()->Clear(false);
+                        me->SetAttackStop(true);
                         DoCast(me, SPELL_ARCING_SMASH_JUMP);
                         break;
                     case EVENT_BREATH_OF_YSHAARJ:
-                        me->SetReactState(REACT_PASSIVE);
-                        me->AttackStop();
-                        me->StopMoving();
-                        me->GetMotionMaster()->Clear(false);
+                        me->SetAttackStop(true);
                         Talk(SAY_BREATH_OF_YSHAARJ);
                         DoCast(me, SPELL_BREATH_OF_YSHAARJD);
                         break;
