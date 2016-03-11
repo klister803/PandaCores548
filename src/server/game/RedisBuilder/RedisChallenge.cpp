@@ -30,19 +30,19 @@ void ChallengeMgr::SaveChallenges()
         if (Challenge* challenge = itr->second)
         {
             std::string id = std::to_string(itr->first);
-            СhallengeData[id.c_str()]["guildId"] = challenge->guildId;
-            СhallengeData[id.c_str()]["mapID"] = challenge->mapID;
-            СhallengeData[id.c_str()]["recordTime"] = challenge->recordTime;
-            СhallengeData[id.c_str()]["date"] = challenge->date;
-            СhallengeData[id.c_str()]["medal"] = challenge->medal;
+            ChallengeData[id.c_str()]["guildId"] = challenge->guildId;
+            ChallengeData[id.c_str()]["mapID"] = challenge->mapID;
+            ChallengeData[id.c_str()]["recordTime"] = challenge->recordTime;
+            ChallengeData[id.c_str()]["date"] = challenge->date;
+            ChallengeData[id.c_str()]["medal"] = challenge->medal;
 
             for(ChallengeMemberList::const_iterator iter = challenge->member.begin(); iter != challenge->member.end(); ++iter)
             {
                 std::string guid = std::to_string((*iter).guid);
-                СhallengeData[id.c_str()]["members"][guid.c_str()] = (*iter).specId;
+                ChallengeData[id.c_str()]["members"][guid.c_str()] = (*iter).specId;
             }
 
-            RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetChallengeKey(), id.c_str(), СhallengeData[id.c_str()], itr->first, [&](const RedisValue &v, uint64 guid) {});
+            RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetChallengeKey(), id.c_str(), ChallengeData[id.c_str()], itr->first, [&](const RedisValue &v, uint64 guid) {});
         }
     }
 }
@@ -50,19 +50,19 @@ void ChallengeMgr::SaveChallenges()
 void ChallengeMgr::SaveChallengeToDB(Challenge* challenge)
 {
     std::string id = std::to_string(challenge->Id);
-    СhallengeData[id.c_str()]["guildId"] = challenge->guildId;
-    СhallengeData[id.c_str()]["mapID"] = challenge->mapID;
-    СhallengeData[id.c_str()]["recordTime"] = challenge->recordTime;
-    СhallengeData[id.c_str()]["date"] = challenge->date;
-    СhallengeData[id.c_str()]["medal"] = challenge->medal;
+    ChallengeData[id.c_str()]["guildId"] = challenge->guildId;
+    ChallengeData[id.c_str()]["mapID"] = challenge->mapID;
+    ChallengeData[id.c_str()]["recordTime"] = challenge->recordTime;
+    ChallengeData[id.c_str()]["date"] = challenge->date;
+    ChallengeData[id.c_str()]["medal"] = challenge->medal;
 
     for(ChallengeMemberList::const_iterator itr = challenge->member.begin(); itr != challenge->member.end(); ++itr)
     {
         std::string guid = std::to_string((*itr).guid);
-        СhallengeData[id.c_str()]["members"][guid.c_str()] = (*itr).specId;
+        ChallengeData[id.c_str()]["members"][guid.c_str()] = (*itr).specId;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetChallengeKey(), id.c_str(), СhallengeData[id.c_str()], challenge->Id, [&](const RedisValue &v, uint64 guid) {});
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetChallengeKey(), id.c_str(), ChallengeData[id.c_str()], challenge->Id, [&](const RedisValue &v, uint64 guid) {});
 }
 
 void ChallengeMgr::LoadChallenges()
