@@ -155,7 +155,7 @@ void GuildFinderMgr::AddMembershipRequest(uint32 guildGuid, MembershipRequest co
     FinderMemberData[index.c_str()][guid.c_str()]["classRoles"] = request.GetClassRoles();
     FinderMemberData[index.c_str()][guid.c_str()]["interests"] = request.GetInterests();
     FinderMemberData[index.c_str()][guid.c_str()]["comment"] = request.GetComment();
-    FinderMemberData[index.c_str()][guid.c_str()]["submitTime"] = request.GetSubmitTime();
+    FinderMemberData[index.c_str()][guid.c_str()]["submitTime"] = uint32(request.GetSubmitTime());
 
     UpdateFinderMember(index);
 
