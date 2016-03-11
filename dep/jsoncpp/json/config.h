@@ -113,6 +113,7 @@
 #define JSONCPP_DEPRECATED(message)
 #endif // if !defined(JSONCPP_DEPRECATED)
 
+#include <stdint.h>
 namespace Json {
 typedef int Int;
 typedef unsigned int UInt;
