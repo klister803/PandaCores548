@@ -1725,7 +1725,7 @@ class spell_sha_cleansing_waters : public SpellScriptLoader
                 {
                     if (AuraEffect const* aurEff = caster->GetAuraEffect(55445, EFFECT_0))
                     {
-                        float bp0 = CalculatePct(target->GetMaxHealth(), aurEff->GetAmount());
+                        float bp0 = CalculatePct(float(target->GetMaxHealth()), aurEff->GetAmount());
                         caster->CastCustomSpell(target, 86961, &bp0, NULL, NULL, true);
                     }
                 }

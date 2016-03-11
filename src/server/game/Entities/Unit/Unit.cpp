@@ -9643,7 +9643,7 @@ bool Unit::HandleAuraProc(Unit* victim, DamageInfo* /*dmgInfoProc*/, Aura* trigg
                 // Swift Hand of Justice
                 case 59906:
                 {
-                    float bp0 = CalculatePct(GetMaxHealth(), dummySpell->GetEffect(EFFECT_0, GetSpawnMode())->CalcValue());
+                    float bp0 = CalculatePct(float(GetMaxHealth()), dummySpell->GetEffect(EFFECT_0, GetSpawnMode())->CalcValue());
                     CastCustomSpell(this, 59913, &bp0, NULL, NULL, true);
                     *handled = true;
                     break;
@@ -9696,7 +9696,7 @@ bool Unit::HandleAuraProc(Unit* victim, DamageInfo* /*dmgInfoProc*/, Aura* trigg
                     if (!spInfo)
                         return false;
 
-                    float bp0 = int32(CalculatePct(GetCreateMana(), spInfo->GetEffect(0, GetSpawnMode())->CalcValue()));
+                    float bp0 = CalculatePct(float(GetCreateMana()), spInfo->GetEffect(0, GetSpawnMode())->CalcValue());
                     CastCustomSpell(this, 67545, &bp0, NULL, NULL, true, NULL, triggeredByAura->GetEffect(EFFECT_0), GetGUID());
                     return true;
                 }
@@ -9769,7 +9769,7 @@ bool Unit::HandleAuraProc(Unit* victim, DamageInfo* /*dmgInfoProc*/, Aura* trigg
                 // Item - Warrior T10 Protection 4P Bonus
                 case 70844:
                 {
-                    float basepoints0 = CalculatePct(GetMaxHealth(), dummySpell->GetEffect(EFFECT_1, GetSpawnMode())->CalcValue());
+                    float basepoints0 = CalculatePct(float(GetMaxHealth()), dummySpell->GetEffect(EFFECT_1, GetSpawnMode())->CalcValue());
                     CastCustomSpell(this, 70845, &basepoints0, NULL, NULL, true);
                     break;
                 }

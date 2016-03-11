@@ -987,7 +987,7 @@ class spell_ultraxion_time_loop : public SpellScriptLoader
                 if (remainingHealth <= 0)
                 {
                     absorbAmount = dmgInfo.GetDamage();
-                    float healAmount = int32(victim->GetMaxHealth());
+                    float healAmount = victim->GetMaxHealth();
                     victim->CastCustomSpell(victim, SPELL_TIMELOOP_HEAL, &healAmount, NULL, NULL, true, NULL, aurEff);
                     aurEff->GetBase()->Remove();
                 }

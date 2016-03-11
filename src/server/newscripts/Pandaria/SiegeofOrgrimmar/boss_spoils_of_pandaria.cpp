@@ -2084,7 +2084,7 @@ class spell_boss_torment : public SpellScriptLoader
                 if (!caster)
                     return;
 
-                float amount = aurEff->GetAmount() + int32(aurEff->GetAmount() * 0.1f * aurEff->GetTickNumber());
+                float amount = aurEff->GetAmount() + (aurEff->GetAmount() * 0.1f * aurEff->GetTickNumber());
                 caster->CastCustomSpell(target, 136885, &amount, 0, 0, true, 0, aurEff);
             }
 

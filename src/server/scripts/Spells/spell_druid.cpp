@@ -2685,8 +2685,8 @@ class spell_druid_rejuvenation : public SpellScriptLoader
                 {
                     Creature* summon = _player->GetMap()->GetCreature(_player->m_SummonSlot[SUMMON_SLOT_TOTEM]);
                     int32 maxhealth = caster->GetMaxHealth();
-                    float health = int32(target->GetHealth() - target->GetMaxHealth()) + amount;
-                    float scale = int32(health * 100 / maxhealth);
+                    float health = target->GetHealth() - target->GetMaxHealth() + amount;
+                    float scale = health * 100 / maxhealth;
                     if(health > 0 && summon)
                     {
                         if (Aura* aura = summon->GetAura(138616))
@@ -3207,7 +3207,7 @@ class spell_dru_wild_mushroom_heal : public SpellScriptLoader
         {
             PrepareSpellScript(spell_dru_wild_mushroom_heal_SpellScript)
 
-                float savePoints;
+            float savePoints;
 
             bool Load()
             {
@@ -3238,8 +3238,8 @@ class spell_dru_wild_mushroom_heal : public SpellScriptLoader
                 {
                     if (savePoints != 0)
                     {
-                        int32 maxhealth = caster->GetMaxHealth();
-                        float scale = int32(savePoints * 100 / maxhealth);
+                        float maxhealth = caster->GetMaxHealth();
+                        float scale = savePoints * 100 / maxhealth;
                         summon->CastCustomSpell(summon, 138616, &scale, &savePoints, NULL, true);
                     }
                     if(caster->HasAura(145529))

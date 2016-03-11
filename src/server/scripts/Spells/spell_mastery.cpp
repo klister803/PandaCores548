@@ -78,7 +78,7 @@ class spell_mastery_shield_discipline : public SpellScriptLoader
                 if (!target || !caster || !caster->HasAura(33202, GetCasterGUID()) || (GetSpellInfo()->Id != 17 && GetSpellInfo()->Id != 123258))
                     return;
 
-                float reflectiveDamage = int32((dmgInfo.GetDamage() > absorbAmount ? absorbAmount : dmgInfo.GetDamage()) * 0.7f);
+                float reflectiveDamage = (dmgInfo.GetDamage() > absorbAmount ? absorbAmount : dmgInfo.GetDamage()) * 0.7f;
                 if(reflectiveDamage)
                     caster->CastCustomSpell(target, 33619, &reflectiveDamage, NULL, NULL, true);
             }

@@ -1022,7 +1022,7 @@ class npc_simon_bunny : public CreatureScript
                 // so player gets damage equal to calculated damage  dbc basepoints for SPELL_BAD_PRESS_DAMAGE (~50)
                 if (spell->Id == SPELL_BAD_PRESS_TRIGGER)
                 {
-                    float bp = (int32)((float)(fails)*0.33f*target->GetMaxHealth());
+                    float bp = fails * 0.33f * target->GetMaxHealth();
                     target->CastCustomSpell(target, SPELL_BAD_PRESS_DAMAGE, &bp, NULL, NULL, true);
                 }
             }

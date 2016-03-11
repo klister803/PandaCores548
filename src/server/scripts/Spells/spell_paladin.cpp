@@ -822,7 +822,7 @@ class spell_pal_ardent_defender : public SpellScriptLoader
                     // Cast healing spell, completely avoid damage
                     absorbAmount = dmgInfo.GetDamage();
 
-                    float healAmount = int32(victim->CountPctFromMaxHealth(healPct));
+                    float healAmount = victim->CountPctFromMaxHealth(healPct);
                     victim->CastCustomSpell(victim, PALADIN_SPELL_ARDENT_DEFENDER_HEAL, &healAmount, NULL, NULL, true, NULL, aurEff);
                     victim->ToPlayer()->AddSpellCooldown(PALADIN_SPELL_ARDENT_DEFENDER_HEAL, 0, getPreciseTime() + 120.0);
                 }
@@ -1323,7 +1323,7 @@ class spell_pal_divine_protection : public SpellScriptLoader
                 {
                     if(Aura* aura = caster->GetAura(144580))
                     {
-                        float _heal = int32((aura->GetEffect(0)->GetAmount() * 0.75) / 10);
+                        float _heal = (aura->GetEffect(0)->GetAmount() * 0.75f) / 10.0f;
                         if(_heal)
                             caster->CastCustomSpell(caster, 144581, &_heal, NULL, NULL, true, NULL, aurEff);
                     }

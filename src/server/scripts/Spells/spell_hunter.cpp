@@ -1244,7 +1244,7 @@ class spell_hun_last_stand_pet : public SpellScriptLoader
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
                 Unit* caster = GetCaster();
-                float healthModSpellBasePoints0 = int32(caster->CountPctFromMaxHealth(30));
+                float healthModSpellBasePoints0 = caster->CountPctFromMaxHealth(30);
                 caster->CastCustomSpell(caster, HUNTER_PET_SPELL_LAST_STAND_TRIGGERED, &healthModSpellBasePoints0, NULL, NULL, true, NULL);
             }
 

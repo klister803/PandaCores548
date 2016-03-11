@@ -330,8 +330,8 @@ class spell_mandokir_bloodletting : public SpellScriptLoader
                 if (!GetCaster() || !GetTarget())
                     return;
 
-                float damage = int32(0.5f * GetTarget()->GetHealth());
-                float heal = int32(0.5f * damage);
+                float damage = 0.5f * GetTarget()->GetHealth();
+                float heal = 0.5f * damage;
                 GetCaster()->CastCustomSpell(GetTarget(), SPELL_BLOODLETTING_DMG, &damage, 0, 0, true);
                 GetCaster()->CastCustomSpell(GetCaster(), SPELL_BLOODLETTING_HEAL, &heal, 0, 0, true);
             }

@@ -452,7 +452,7 @@ class spell_rog_hemorrhage : public SpellScriptLoader
                             if(_player->HasAura(56807) && !target->HasAuraWithMechanic((1 << MECHANIC_BLEED))) //Glyph of Hemorrhage
                                 return;
 
-                            float bp = CalculatePct(GetHitDamage() + GetHitAbsorb(), GetSpellInfo()->Effects[EFFECT_3].BasePoints) / 8;
+                            float bp = CalculatePct(float(GetHitDamage()) + GetHitAbsorb(), GetSpellInfo()->Effects[EFFECT_3].BasePoints) / 8;
                             _player->CastCustomSpell(target, ROGUE_SPELL_HEMORRHAGE_DOT, &bp, NULL, NULL, true);
                         }
             }
