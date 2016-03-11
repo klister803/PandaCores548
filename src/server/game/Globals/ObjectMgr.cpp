@@ -6259,8 +6259,8 @@ void ObjectMgr::SetHighestGuids()
     {
         result = CharacterDatabase.Query("SELECT MAX(setguid) FROM character_equipmentsets");
         if (result)
-            _equipmentSetGuid = (*result)[0].GetUInt64() + 1;
-        Json::Value guid = std::to_string(_equipmentSetGuid);
+            _equipmentSetGuid = (*result)[0].GetUInt32() + 1;
+        Json::Value guid = _equipmentSetGuid;
         RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "character_equipmentsets", guid);
     }
 
@@ -6296,8 +6296,8 @@ void ObjectMgr::SetHighestGuids()
     {
         result = CharacterDatabase.Query("SELECT MAX(itemId) from character_void_storage");
         if (result)
-            _voidItemId = (*result)[0].GetUInt64() + 1;
-        Json::Value guid = std::to_string(_voidItemId);
+            _voidItemId = (*result)[0].GetUInt32() + 1;
+        Json::Value guid = _voidItemId;
         RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "character_void_storage", guid);
     }
 }
@@ -6887,8 +6887,8 @@ void ObjectMgr::LoadBattlePetGuid()
     {
         QueryResult result = CharacterDatabase.Query("SELECT MAX(guid) FROM account_battle_pet_journal");
         if (result)
-            _hiBattlePetGuid = (*result)[0].GetUInt64() + 1;
-        Json::Value guid = std::to_string(_hiBattlePetGuid);
+            _hiBattlePetGuid = (*result)[0].GetUInt32() + 1;
+        Json::Value guid = _hiBattlePetGuid;
         RedisDatabase.ExecuteSetH("HSET", sRedisBuilderMgr->GetGuidKey(), "battlepets", guid);
     }
 

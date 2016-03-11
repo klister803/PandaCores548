@@ -1674,11 +1674,11 @@ class ObjectMgr
     private:
         // first free id for selected id type
         uint32 _auctionId;
-        uint64 _equipmentSetGuid;
+        uint32 _equipmentSetGuid;
         uint32 _itemTextId;
         uint32 _mailId;
         uint32 _hiPetNumber;
-        uint64 _voidItemId;
+        uint32 _voidItemId;
 
         // first free low guid for selected guid type
         uint32 _hiCharGuid;
@@ -1695,7 +1695,7 @@ class ObjectMgr
         uint32 _nextGuildId;
         uint32 _nextGroupId;
 
-        uint64 _hiBattlePetGuid;
+        uint32 _hiBattlePetGuid;
 
         QuestMap _questTemplates;
 
