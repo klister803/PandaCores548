@@ -76,7 +76,7 @@ void Item::SaveItem()
     ItemData["paidExtendedCost"] = m_paidExtendedCost;
     ItemData["paidGuid"] = m_refundRecipient;
     std::ostringstream ss;
-    if (!allowedGUIDs.empry())
+    if (!allowedGUIDs.empty())
     {
         AllowedLooterSet::const_iterator itr = allowedGUIDs.begin();
         ss << *itr;
