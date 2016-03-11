@@ -36,7 +36,7 @@
 #include <bitset>
 #include <list>
 #include <json/json.h>
-#include <src\redisclient\redisvalue.h>
+#include <src/redisclient/redisvalue.h>
 
 class Unit;
 class WorldPacket;

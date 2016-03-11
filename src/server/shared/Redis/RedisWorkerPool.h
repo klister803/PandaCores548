@@ -73,7 +73,7 @@ class RedisWorkerPool
             else
                 sLog->outError(LOG_FILTER_REDIS, "RedisPool %s NOT opened. There were errors opening the Redis connections. Check your SQLDriverLogFile for specific errors.", GetDatabaseName());
 
-            Sleep(1000);
+            std::this_thread::sleep_for(std::chrono::seconds(2));
             return res;
         }
 
