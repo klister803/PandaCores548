@@ -1480,13 +1480,23 @@ public:
 
         void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            if (GetTarget()) //mind control not works, just kill target
+            if (GetTarget())
+            {
+                if (Creature* sha = GetTarget()->FindNearestCreature(NPC_SHA_OF_PRIDE, 150.0f, true))
+                    sha->CastSpell(GetTarget(), SPELL_OVERCOME_MIND_CONTROL, true);
+            }
+        }
+
+        void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
                 GetTarget()->Kill(GetTarget(), true);
         }
 
         void Register()
         {
             OnEffectApply += AuraEffectApplyFn(spell_sha_of_pride_overcome_AuraScript::OnApply, EFFECT_1, SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, AURA_EFFECT_HANDLE_REAL);
+            AfterEffectRemove += AuraEffectRemoveFn(spell_sha_of_pride_overcome_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, AURA_EFFECT_HANDLE_REAL);
         }
     };
 

@@ -3591,7 +3591,12 @@ class Player : public Unit, public GridObject<Player>
 
         MapReference m_mapRef;
 
+        //CharmedAi
         void UpdateCharmedAI();
+        uint32 GetMyNewSpell();
+        void SetMyNewSpellCooldown(uint32 spellentry);
+        void CharmedCastSpell();
+        //
 
         uint32 m_lastFallTime;
         float  m_lastFallZ;

@@ -111,6 +111,8 @@ enum sEvents
     //Adds in realm
     EVENT_EMBODIED_DESPAIR           = 19,
     EVENT_EMBODIED_DOUBT             = 20,
+    //Special events
+    EVENT_CHECK_PROGRESS             = 21,
 };
 
 enum Phase
@@ -266,17 +268,13 @@ class boss_garrosh_hellscream : public CreatureScript
             {
                 if (!me->ToTempSummon())
                 {
-                    if (!instance->GetData(DATA_CHECK_INSTANCE_PROGRESS))
-                    {
-                        EnterEvadeMode();
-                        return;
-                    }
-                    Talk(SAY_ENTERCOMBAT, 0);
                     _EnterCombat();
+                    Talk(SAY_ENTERCOMBAT, 0);
                     checkevade = 1000;
                     SpawnIronStar();
                     phase = PHASE_ONE;
                     events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 1000);
+                    events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
                     events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
                     events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 18000);
                     events.ScheduleEvent(EVENT_SUMMON_WOLF_RIDER, 30000);
@@ -496,6 +494,14 @@ class boss_garrosh_hellscream : public CreatureScript
                     {
                     //In Realm
                     //Phase one
+                    case EVENT_CHECK_PROGRESS:
+                        if (!instance->GetData(DATA_CHECK_INSTANCE_PROGRESS))
+                        {
+                            me->MonsterTextEmote("Not All Bosses Done, EnterEvadeMode", 0, true);
+                            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                            EnterEvadeMode();
+                        }
+                        break;
                     case EVENT_ANNIHILLATE:
                     {
                         float mod = urand(0, 6);
