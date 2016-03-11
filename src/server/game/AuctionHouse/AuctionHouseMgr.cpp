@@ -300,6 +300,7 @@ void AuctionHouseMgr::LoadAuctionItems()
         item->SaveItem();
         AddAItem(item);
 
+        sLog->outInfo(LOG_FILTER_REDIS, "AuctionHouseMgr::LoadAuctionItems item_guid %u", item_guid);
         ++count;
     }
     while (result->NextRow());

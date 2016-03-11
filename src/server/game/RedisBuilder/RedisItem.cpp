@@ -76,11 +76,16 @@ void Item::SaveItem()
     ItemData["paidExtendedCost"] = m_paidExtendedCost;
     ItemData["paidGuid"] = m_refundRecipient;
     std::ostringstream ss;
-    AllowedLooterSet::const_iterator itr = allowedGUIDs.begin();
-    ss << *itr;
-    for (++itr; itr != allowedGUIDs.end(); ++itr)
-        ss << ' ' << *itr;
-    ItemData["allowedGUIDs"] = ss.str().c_str();
+    if (!allowedGUIDs.empry())
+    {
+        AllowedLooterSet::const_iterator itr = allowedGUIDs.begin();
+        ss << *itr;
+        for (++itr; itr != allowedGUIDs.end(); ++itr)
+            ss << ' ' << *itr;
+        ItemData["allowedGUIDs"] = ss.str().c_str();
+    }
+    else
+        ItemData["allowedGUIDs"] = "";
     ItemData["m_mailId"] = m_mailId;
 
     std::string index = std::to_string(GetGUIDLow());
@@ -88,7 +93,7 @@ void Item::SaveItem()
     //sLog->outInfo(LOG_FILTER_REDIS, "Item::SaveItem slot %u Entry %u Count %u guid %s itemKey %s", m_slot, GetEntry(), GetCount(), index.c_str(), itemKey);
 
     RedisDatabase.AsyncExecuteHSet("HSET", itemKey, index.c_str(), ItemData, GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        //sLog->outInfo(LOG_FILTER_REDIS, "Item::SaveItem guid %u%u", guid);
+        sLog->outInfo(LOG_FILTER_REDIS, "Item::SaveItem guid %u%u", guid);
     });
 }
 
