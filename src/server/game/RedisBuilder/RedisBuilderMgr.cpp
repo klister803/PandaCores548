@@ -22,7 +22,7 @@ bool RedisBuilderMgr::LoadFromRedis(const RedisValue* v, Json::Value& data)
 {
     if (!v->isOk() || v->isNull() || !v->isString())
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilderMgr::LoadFromRedis data is empty");
+        //sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilderMgr::LoadFromRedis data is empty");
         return false;
     }
 
@@ -40,7 +40,7 @@ bool RedisBuilderMgr::LoadFromString(std::string string_data, Json::Value& data)
 {
     if (string_data.empty())
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilderMgr::LoadFromString data is empty");
+        //sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilderMgr::LoadFromString data is empty");
         return false;
     }
 
@@ -58,7 +58,7 @@ bool RedisBuilderMgr::LoadFromRedisArray(const RedisValue* v, std::vector<RedisV
 {
     if (!v->isOk() || v->isNull())
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilderMgr::LoadFromRedisArray data is empty");
+        //sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilderMgr::LoadFromRedisArray data is empty");
         return false;
     }
 
@@ -78,7 +78,7 @@ bool RedisBuilderMgr::CheckKey(char* _key)
     RedisValue v = RedisDatabase.Execute("EXISTS", _key);
     if (!v.isOk() || v.isNull())
     {
-        sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilderMgr::CheckKey data not found %s", _key);
+        //sLog->outInfo(LOG_FILTER_REDIS, "RedisBuilderMgr::CheckKey data not found %s", _key);
         return false;
     }
 
