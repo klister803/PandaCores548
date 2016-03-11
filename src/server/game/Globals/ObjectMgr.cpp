@@ -10014,7 +10014,7 @@ void ObjectMgr::DeleteAllItems(uint8 type, uint32 guid)
             sprintf(_key, "r{%i}u{%i}items", realmID, guid);
             break;
         case ITEM_KEY_MAIL:
-            sprintf(_key, "r{%i}m{%i}items", realmID, guid);
+            sprintf(_key, "r{%i}u{%i}mitems", realmID, guid);
             break;
         case ITEM_KEY_GUILD:
             sprintf(_key, "r{%i}g{%i}items", realmID, guid);

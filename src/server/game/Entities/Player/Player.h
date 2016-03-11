@@ -1625,17 +1625,20 @@ class Player : public Unit, public GridObject<Player>
         char* criteriaPlKey;
         char* criteriaAcKey;
         char* mailKey;
+        char* mailItemKey;
         char* GetItemKey() { return itemKey; }
         char* GetUserKey() { return userKey; }
         char* GetAccountKey() { return GetSession()->GetAccountKey(); }
         char* GetCriteriaPlKey() { return criteriaPlKey; }
         char* GetCriteriaAcKey() { return criteriaAcKey; }
+        char* GetMailItemKey() { return mailItemKey; }
 
         Json::Value PlayerData;
         Json::Value PlayerMailData;
         Json::Value AccountDatas;
 
         //load data for serialize
+        void InitCharKeys(uint32 guidlow);
         void InitSavePlayer();
         void SavePlayer();
         void SavePlayerBG();
@@ -1717,6 +1720,7 @@ class Player : public Unit, public GridObject<Player>
         void UpdateSavePlayer();
         void UpdatePlayerNameData();
         void SavePlayerPetitions();
+        void SavePlayerDataAll();
 
         //load data into player LoadPlayer
         bool LoadPlayerFromJson(uint64 guid);
@@ -1771,9 +1775,9 @@ class Player : public Unit, public GridObject<Player>
         void LoadPlayerCriteriaProgress();
         void LoadPlayerGold();
         void LoadPlayerMails(std::vector<RedisValue>* mailVector);
-        void LoadPlayerMailItems(std::vector<RedisValue>* itemVector, uint64 mailGuid);
+        void LoadPlayerMailItems(std::vector<RedisValue>* itemVector);
         void LoadPlayerMails();
-        void LoadPlayerMailItems(uint32 messageID);
+        void LoadPlayerMailItems(bool isSave = false);
         void LoadPlayerGuild();
         void LoadPlayerCorpse();
         void LoadPlayerPetition();
@@ -2277,8 +2281,9 @@ class Player : public Unit, public GridObject<Player>
         bool IsMailsLoaded() const { return m_mailsLoaded; }
 
         void RemoveMail(uint32 id);
-        void RemoveMailFromRedis(uint32 id);
-        void RemoveMailItemsFromRedis(uint32 id);
+        void RemoveMailFromRedis(Mail* m);
+        void RemoveMailItems(Mail* m);
+        void RemoveMailItem(uint32 item_guid, bool isDelete = false);
         void SafeRemoveMailFromIgnored(uint32 ignoredPlayerGuid);
 
         void AddMail(Mail* mail) { m_mail.push_front(mail);}// for call from WorldSession::SendMailTo

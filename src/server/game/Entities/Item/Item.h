@@ -419,6 +419,8 @@ class Item : public Object
         void UpdateItemKey(uint8 type, uint32 guid);
         void DeleteFromRedis();
         uint8 m_lastType;
+        void SetMailId(uint32 id) { m_mailId = id; }
+        uint32 GetMailId() { return m_mailId; }
 
     private:
         std::string m_text;
@@ -437,5 +439,6 @@ class Item : public Object
         uint32 ItemLevel;
         uint32 ItemLevelBeforeCap;
         uint32 giftEntry;
+        uint32 m_mailId;
 };
 #endif

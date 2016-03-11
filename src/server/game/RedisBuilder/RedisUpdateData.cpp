@@ -110,27 +110,43 @@ void Player::UpdateCriteriaProgress(AchievementEntry const* achievement, Criteri
     }
 }
 
-void Player::RemoveMailFromRedis(uint32 id)
+void Player::RemoveMailFromRedis(Mail* m)
 {
-    std::string index = std::to_string(id);
-    PlayerMailData["mails"].removeMember(index.c_str());
-    RedisDatabase.AsyncExecuteH("HDEL", mailKey, index.c_str(), id, [&](const RedisValue &v, uint64 guid) {
+    std::string index = std::to_string(m->messageID);
+    RedisDatabase.AsyncExecuteH("HDEL", mailKey, index.c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::RemoveMailFromRedis id %u", guid);
     });
-    RedisDatabase.AsyncExecuteH("HDEL", sRedisBuilderMgr->GetMailsKey(), index.c_str(), id, [&](const RedisValue &v, uint64 guid) {
-    });
+
+    PlayerMailData["mails"].removeMember(index.c_str());
+
+    RedisDatabase.AsyncExecuteH("HDEL", sRedisBuilderMgr->GetMailsKey(), index.c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    //Del items
+    for (MailItemInfoVec::iterator itr2 = m->items.begin(); itr2 != m->items.end(); ++itr2)
+    {
+        std::string guid = std::to_string(itr2->item_guid);
+        RedisDatabase.AsyncExecuteH("HDEL", GetMailItemKey(), guid.c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+            sLog->outInfo(LOG_FILTER_REDIS, "Player::RemoveMailFromRedis items id %u", guid);
+        });
+    }
 }
 
-void Player::RemoveMailItemsFromRedis(uint32 id)
+void Player::RemoveMailItems(Mail* m)
 {
-    std::string index = std::to_string(id);
-    char* _key = new char[32];
-    sprintf(_key, "r{%u}m{%u}items", realmID, id);
+    for (MailItemInfoVec::iterator itr2 = m->items.begin(); itr2 != m->items.end(); ++itr2)
+        RemoveMailItem(itr2->item_guid, true);
+}
 
-    PlayerMailData["mitems"].removeMember(index.c_str());
-    RedisDatabase.AsyncExecute("DEL", _key, id, [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::RemoveMailItemsFromRedis id %u", guid);
-    });
+void Player::RemoveMailItem(uint32 item_guid, bool isDelete)
+{
+    std::string guid = std::to_string(item_guid);
+    if (isDelete)
+    {
+        RedisDatabase.AsyncExecuteH("HDEL", GetMailItemKey(), guid.c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
+            sLog->outInfo(LOG_FILTER_REDIS, "Player::RemoveMailFromRedis items id %u", guid);
+        });
+    }
+    PlayerMailData["mitems"].removeMember(guid.c_str());
 }
 
 void Player::UpdatePlayerAccountData(AccountDataType type, time_t tm, std::string data)
@@ -220,7 +236,7 @@ void Player::RemovePlayerPet(Pet* pet)
     });
 }
 
-void Player::DeleteFromRedis(uint64 playerguid, uint32 accountId)
+void Player::DeleteFromRedis(uint64 playerguid, uint32 /*accountId*/)
 {
     uint32 guid = GUID_LOPART(playerguid);
     char* itemKey = new char[23];
@@ -228,27 +244,28 @@ void Player::DeleteFromRedis(uint64 playerguid, uint32 accountId)
     char* criteriaPlKey = new char[23];
     char* criteriaAcKey = new char[23];
     char* mailKey = new char[23];
+    char* mailItemKey = new char[23];
 
     sprintf(itemKey, "r{%u}u{%u}items", realmID, guid);
     sprintf(userKey, "r{%u}u{%u}", realmID, guid);
     sprintf(criteriaPlKey, "r{%u}u{%u}crit", realmID, guid);
-    sprintf(criteriaAcKey, "r{%u}a{%u}crit", realmID, accountId);
     sprintf(mailKey, "r{%u}u{%u}mails", realmID, guid);
+    sprintf(mailItemKey, "r{%i}u{%i}mitems", realmID, guid);
 
     RedisDatabase.AsyncExecute("DEL", itemKey, playerguid, [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeleteFromRedis id %u", guid);
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeleteFromRedis item id %u", guid);
     });
     RedisDatabase.AsyncExecute("DEL", userKey, playerguid, [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeleteFromRedis id %u", guid);
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeleteFromRedis user id %u", guid);
     });
     RedisDatabase.AsyncExecute("DEL", criteriaPlKey, playerguid, [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeleteFromRedis id %u", guid);
-    });
-    RedisDatabase.AsyncExecute("DEL", criteriaAcKey, playerguid, [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeleteFromRedis id %u", guid);
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeleteFromRedis criteria id %u", guid);
     });
     RedisDatabase.AsyncExecute("DEL", mailKey, playerguid, [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeleteFromRedis id %u", guid);
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeleteFromRedis mail id %u", guid);
+    });
+    RedisDatabase.AsyncExecute("DEL", mailItemKey, playerguid, [&](const RedisValue &v, uint64 guid) {
+        sLog->outInfo(LOG_FILTER_REDIS, "Player::DeleteFromRedis mail item id %u", guid);
     });
 }
 
@@ -741,7 +758,7 @@ void Player::UpdateAchievement(AchievementEntry const* achievement, CompletedAch
 
 void Player::UpdatePlayerMail(Mail* m)
 {
-    std::string messageID = std::to_string(m->messageID);
+    std::string message = std::to_string(m->messageID);
     m->MailJson["messageType"] = m->messageType;
     m->MailJson["sender"] = m->sender;
     m->MailJson["receiver"] = m->receiver;
@@ -756,12 +773,15 @@ void Player::UpdatePlayerMail(Mail* m)
     m->MailJson["stationery"] = m->stationery;
     m->MailJson["mailTemplateId"] = m->mailTemplateId;
 
-    RedisDatabase.AsyncExecuteHSet("HSET", mailKey, messageID.c_str(), m->MailJson, GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    PlayerMailData["mails"][message.c_str()] = m->MailJson;
+    PlayerMailData["mails"][message.c_str()]["items"] = m->MailItemJson;
+
+    RedisDatabase.AsyncExecuteHSet("HSET", mailKey, message.c_str(), m->MailJson, GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerMails player guid %u", guid);
     });
 
     Json::Value expireStr = m->expire_time;
-    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetMailsKey(), messageID.c_str(), expireStr, GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetMailsKey(), message.c_str(), expireStr, GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
 }
 

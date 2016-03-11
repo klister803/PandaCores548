@@ -264,6 +264,7 @@ Item::Item() : ItemLevelBeforeCap(0)
     m_paidExtendedCost = 0;
     giftEntry = 0;
     m_lastType = 0;
+    m_mailId = 0;
 
     m_dynamicTab.resize(ITEM_DYNAMIC_END);
     m_dynamicChange.resize(ITEM_DYNAMIC_END);
@@ -1760,7 +1761,7 @@ void Item::SetItemKey(uint8 type, uint32 guid, bool save)
             sprintf(itemKey, "r{%i}u{%i}items", realmID, guid);
             break;
         case ITEM_KEY_MAIL:
-            sprintf(itemKey, "r{%i}m{%i}items", realmID, guid);
+            sprintf(itemKey, "r{%i}u{%i}mitems", realmID, guid);
             break;
         case ITEM_KEY_GUILD:
             sprintf(itemKey, "r{%i}g{%i}items", realmID, guid);
@@ -1782,9 +1783,8 @@ void Item::UpdateItemKey(uint8 type, uint32 guid)
     std::string index = std::to_string(GetGUIDLow());
     if (m_lastType != type)
     {
-        RedisDatabase.AsyncExecuteH("HDEL", itemKey, index.c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {
-            sLog->outInfo(LOG_FILTER_REDIS, "Item::UpdateItemKey guid %u", guid);
-        });
+        RedisDatabase.AsyncExecuteH("HDEL", itemKey, index.c_str(), GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+        sLog->outInfo(LOG_FILTER_REDIS, "Item::UpdateItemKey guid %u type %u m_lastType %u itemKey %s", guid, type, m_lastType, itemKey);
     }
 
     switch (type)
@@ -1793,7 +1793,7 @@ void Item::UpdateItemKey(uint8 type, uint32 guid)
             sprintf(itemKey, "r{%i}u{%i}items", realmID, guid);
             break;
         case ITEM_KEY_MAIL:
-            sprintf(itemKey, "r{%i}m{%i}items", realmID, guid);
+            sprintf(itemKey, "r{%i}u{%i}mitems", realmID, guid);
             break;
         case ITEM_KEY_GUILD:
             sprintf(itemKey, "r{%i}g{%i}items", realmID, guid);

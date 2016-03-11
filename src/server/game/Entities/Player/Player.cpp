@@ -937,6 +937,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     criteriaPlKey = new char[23];
     criteriaAcKey = new char[23];
     mailKey = new char[23];
+    mailItemKey = new char[23];
 }
 
 Player::~Player()
@@ -1010,11 +1011,7 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
 
     Object::_Create(guidlow, 0, HIGHGUID_PLAYER);
 
-    sprintf(itemKey, "r{%i}u{%i}items", realmID, guidlow);
-    sprintf(userKey, "r{%i}u{%i}", realmID, guidlow);
-    sprintf(mailKey, "r{%i}u{%i}", realmID, guidlow);
-    sprintf(criteriaPlKey, "r{%i}u{%i}crit", realmID, guidlow);
-    sprintf(criteriaAcKey, "r{%i}a{%i}crit", realmID, GetSession()->GetAccountId());
+    InitCharKeys(guidlow);
 
     m_name = createInfo->Name;
 
@@ -4110,11 +4107,12 @@ void Player::SendKnownSpells()
 
 void Player::RemoveMail(uint32 id)
 {
-    RemoveMailFromRedis(id);
     for (PlayerMails::iterator itr = m_mail.begin(); itr != m_mail.end(); ++itr)
     {
         if ((*itr)->messageID == id)
         {
+            Mail* m = *itr;
+            RemoveMailFromRedis(m);
             //do not delete item, because Player::removeMail() is called when returning mail to sender.
             m_mail.erase(itr);
             return;
@@ -4124,10 +4122,16 @@ void Player::RemoveMail(uint32 id)
 
 void Player::SafeRemoveMailFromIgnored(uint32 ignoredPlayerGuid)
 {
-    for (PlayerMails::iterator itr = m_mail.begin(); itr != m_mail.end(); ++itr)
+    for (PlayerMails::iterator itr = m_mail.begin(); itr != m_mail.end();)
     {
         if ((*itr)->sender == ignoredPlayerGuid)
-            (*itr)->state = MAIL_STATE_DELETED;
+        {
+            Mail* m = *itr;
+            m_mail.erase(itr++);
+            delete m;
+        }
+        else
+             ++itr;
     }
 
     m_mailsUpdated = true;
@@ -5886,9 +5890,10 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
                                 }
 
                                 Item* pItem = NewItemOrBag(itemProto);
-                                pItem->SetItemKey(ITEM_KEY_MAIL, mail_id);
+                                pItem->SetMailId(mail_id);
+                                pItem->SetItemKey(ITEM_KEY_MAIL, guid);
 
-                                if (!pItem->LoadFromDB(item_guidlow, MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER), itemFields, item_template))
+                                if (!pItem->LoadFromDB(item_guidlow, playerguid, itemFields, item_template))
                                 {
                                     pItem->FSetState(ITEM_REMOVED);
                                     pItem->SaveToDB(trans);              // it also deletes item object!
@@ -13601,8 +13606,8 @@ Item* Player::_StoreItem(uint16 pos, Item* pItem, uint32 count, bool clone, bool
             pItem->SendUpdateToPlayer(this);
         }
 
-        pItem->SetItemKey(ITEM_KEY_USER, GetGUIDLow());
-        pItem->SetState(ITEM_CHANGED, this);
+        pItem->UpdateItemKey(ITEM_KEY_USER, GetGUIDLow());
+
         if (pBag)
             pBag->SetState(ITEM_CHANGED, this);
 
@@ -18798,11 +18803,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     uint32 dbAccountId = fields[1].GetUInt32();
 
-    sprintf(itemKey, "r{%i}u{%i}items", realmID, guid);
-    sprintf(userKey, "r{%i}u{%i}", realmID, guid);
-    sprintf(mailKey, "r{%i}u{%i}", realmID, guid);
-    sprintf(criteriaPlKey, "r{%i}u{%i}crit", realmID, guid);
-    sprintf(criteriaAcKey, "r{%i}a{%i}crit", realmID, dbAccountId);
+    InitCharKeys(guid);
 
     // check if the character's account in the db and the logged in account match.
     // player should be able to load/delete character only with correct account!
@@ -20180,9 +20181,8 @@ void Player::_LoadMailedItems(Mail* mail)
         }
 
         Item* item = NewItemOrBag(proto);
-        item->SetItemKey(ITEM_KEY_MAIL, mail->messageID);
 
-        if (!item->LoadFromDB(itemGuid, MAKE_NEW_GUID(fields[16].GetUInt32(), 0, HIGHGUID_PLAYER), fields, itemTemplate))
+        if (!item->LoadFromDB(itemGuid, GetGUID(), fields, itemTemplate))
         {
             sLog->outError(LOG_FILTER_PLAYER, "Player::_LoadMailedItems - Item in mail (%u) doesn't exist !!!! - item guid: %u, deleted from mail", mail->messageID, itemGuid);
 
@@ -20198,6 +20198,12 @@ void Player::_LoadMailedItems(Mail* mail)
         }
 
         AddMItem(item);
+
+        item->SetMailId(mail->messageID);
+        item->SetItemKey(ITEM_KEY_MAIL, GetGUIDLow(), true);
+
+        std::string itemStr = std::to_string(itemGuid);
+        PlayerMailData["mitems"][itemStr.c_str()] = item->ItemData;
     }
     while (result->NextRow());
 }
@@ -30825,4 +30831,15 @@ void Player::UpdatePlayerNameData()
 void Player::SaveJsonData()
 {
     m_ps->SaveToDB();
+}
+
+void Player::InitCharKeys(uint32 guidlow)
+{
+    sprintf(itemKey, "r{%i}u{%i}items", realmID, guidlow);
+    sprintf(userKey, "r{%i}u{%i}", realmID, guidlow);
+    sprintf(mailKey, "r{%u}u{%u}mails", realmID, guidlow);
+    sprintf(mailItemKey, "r{%i}u{%i}mitems", realmID, guidlow);
+    sprintf(criteriaPlKey, "r{%i}u{%i}crit", realmID, guidlow);
+    sprintf(criteriaAcKey, "r{%i}a{%i}crit", realmID, GetSession()->GetAccountId());
+
 }

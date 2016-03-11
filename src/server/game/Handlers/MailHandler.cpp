@@ -331,7 +331,6 @@ void WorldSession::HandleMailMarkAsRead(WorldPacket & recvData)
             --player->unReadMails;
         m->checked = m->checked | MAIL_CHECK_MASK_READ;
         player->m_mailsUpdated = true;
-        m->state = MAIL_STATE_CHANGED;
         player->UpdatePlayerMail(m);
     }
 }
@@ -358,10 +357,9 @@ void WorldSession::HandleMailDelete(WorldPacket & recvData)
             return;
         }
 
-        m->state = MAIL_STATE_DELETED;
-
         player->RemoveMail(mailId);
-        player->RemoveMailItemsFromRedis(mailId);
+        player->RemoveMailItems(m);
+        delete m;
     }
 
     player->SendMailResult(mailId, MAIL_DELETED, MAIL_OK);
@@ -381,7 +379,7 @@ void WorldSession::HandleMailReturnToSender(WorldPacket & recvData)
 
     Player* player = _player;
     Mail* m = player->GetMail(mailId);
-    if (!m || m->state == MAIL_STATE_DELETED || m->deliver_time > time(NULL))
+    if (!m || m->deliver_time > time(NULL))
     {
         player->SendMailResult(mailId, MAIL_RETURNED_TO_SENDER, MAIL_ERR_INTERNAL_ERROR);
         return;
@@ -405,6 +403,7 @@ void WorldSession::HandleMailReturnToSender(WorldPacket & recvData)
                     draft.AddItem(item);
 
                 player->RemoveMItem(itr2->item_guid);
+                player->RemoveMailItem(itr2->item_guid);
             }
         }
         draft.AddMoney(m->money).SendReturnToSender(GetAccountId(), m->receiver, m->sender);
@@ -432,7 +431,7 @@ void WorldSession::HandleMailTakeItem(WorldPacket& recvData)
     Player* player = _player;
 
     Mail* m = player->GetMail(mailId);
-    if (!m || m->state == MAIL_STATE_DELETED || m->deliver_time > time(NULL))
+    if (!m || m->deliver_time > time(NULL))
     {
         player->SendMailResult(mailId, MAIL_ITEM_TAKEN, MAIL_ERR_INTERNAL_ERROR);
         return;
@@ -500,12 +499,11 @@ void WorldSession::HandleMailTakeItem(WorldPacket& recvData)
             player->ModifyMoney(-int32(m->COD));
         }
         m->COD = 0;
-        m->state = MAIL_STATE_CHANGED;
         player->m_mailsUpdated = true;
         player->RemoveMItem(item->GetGUIDLow());
+        player->RemoveMailItem(item->GetGUIDLow());
 
         uint32 count = item->GetCount();                      // save counts before store and possible merge with deleting
-        item->SetState(ITEM_UNCHANGED);                       // need to set this state, otherwise item cannot be removed later, if neccessary
         player->MoveItemToInventory(dest, item, true);
         player->UpdatePlayerMail(m);
 
@@ -532,7 +530,7 @@ void WorldSession::HandleMailTakeMoney(WorldPacket& recvData)
     Player* player = _player;
 
     Mail* m = player->GetMail(mailId);
-    if ((!m || m->state == MAIL_STATE_DELETED || m->deliver_time > time(NULL)) ||
+    if ((!m || m->deliver_time > time(NULL)) ||
         (money > 0 && m->money != money))
     {
         player->SendMailResult(mailId, MAIL_MONEY_TAKEN, MAIL_ERR_INTERNAL_ERROR);
@@ -543,7 +541,6 @@ void WorldSession::HandleMailTakeMoney(WorldPacket& recvData)
 
     player->ModifyMoney(money);
     m->money = 0;
-    m->state = MAIL_STATE_CHANGED;
     player->m_mailsUpdated = true;
 
     // save money and mail to prevent cheating
@@ -592,7 +589,7 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
         }
 
         // skip deleted or not delivered (deliver delay not expired) mails
-        if ((*itr)->state == MAIL_STATE_DELETED || cur_time < (*itr)->deliver_time)
+        if (cur_time < (*itr)->deliver_time)
             continue;
 
         uint8 item_count = (*itr)->items.size();                 // max count is MAX_MAIL_ITEMS (12)
@@ -636,7 +633,7 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
         }
 
         // skip deleted or not delivered (deliver delay not expired) mails
-        if ((*itr)->state == MAIL_STATE_DELETED || cur_time < (*itr)->deliver_time)
+        if (cur_time < (*itr)->deliver_time)
             continue;
 
         uint8 item_count = mail->items.size();                 // max count is MAX_MAIL_ITEMS (12)
@@ -721,7 +718,7 @@ void WorldSession::HandleMailCreateTextItem(WorldPacket& recvData)
     Player* player = _player;
 
     Mail* m = player->GetMail(mailId);
-    if (!m || (m->body.empty() && !m->mailTemplateId) || m->state == MAIL_STATE_DELETED || m->deliver_time > time(NULL))
+    if (!m || (m->body.empty() && !m->mailTemplateId) || m->deliver_time > time(NULL))
     {
         player->SendMailResult(mailId, MAIL_MADE_PERMANENT, MAIL_ERR_INTERNAL_ERROR);
         return;
@@ -759,11 +756,11 @@ void WorldSession::HandleMailCreateTextItem(WorldPacket& recvData)
     if (msg == EQUIP_ERR_OK)
     {
         m->checked = m->checked | MAIL_CHECK_MASK_COPIED;
-        m->state = MAIL_STATE_CHANGED;
         player->m_mailsUpdated = true;
 
         player->StoreItem(dest, bodyItem, true);
         player->SendMailResult(mailId, MAIL_MADE_PERMANENT, MAIL_OK);
+        player->UpdatePlayerMail(m);
     }
     else
     {

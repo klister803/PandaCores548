@@ -113,6 +113,7 @@ void RedisBuilderMgr::InitRedisKey()
     sprintf(bracketKey, "r{%u}bracket", realmID);
     sprintf(aucItemKey, "r{%i}auc{%i}items", realmID, 0);
     sprintf(aucKey, "r{%i}auc", realmID);
+    sprintf(guildKey, "r{%u}guild", realmID);
     sprintf(guildFKey, "r{%u}finder", realmID);
     sprintf(guildFMKey, "r{%u}findermember", realmID);
     sprintf(groupKey, "r{%i}group", realmID);

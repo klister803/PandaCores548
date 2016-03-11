@@ -81,6 +81,7 @@ void Item::SaveItem()
     for (++itr; itr != allowedGUIDs.end(); ++itr)
         ss << ' ' << *itr;
     ItemData["allowedGUIDs"] = ss.str().c_str();
+    ItemData["m_mailId"] = m_mailId;
 
     std::string index = std::to_string(GetGUIDLow());
 
@@ -96,8 +97,6 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, Json::Value& itemValue, ui
     // create item before any checks for store correct guid
     // and allow use "FSetState(ITEM_REMOVED); SaveToDB();" for deleting item from DB
     Object::_Create(guid, 0, HIGHGUID_ITEM);
-
-    sprintf(itemKey, "r{%u}u{%u}items", realmID, owner_guid);
 
     // Set entry, MUST be before proto check
     SetEntry(entry);
@@ -209,6 +208,7 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, Json::Value& itemValue, ui
 
     SetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME, itemValue["playedTime"].asUInt());
     SetText(itemValue["text"].asCString());
+    m_mailId = itemValue["m_mailId"].asUInt();
 
     return true;
 }

@@ -178,6 +178,7 @@ struct Mail
     uint32 checked;
     MailState state;
     Json::Value MailJson;
+    Json::Value MailItemJson;
 
     void AddItem(uint32 itemGuidLow, uint32 item_template)
     {
@@ -185,6 +186,9 @@ struct Mail
         mii.item_guid = itemGuidLow;
         mii.item_template = item_template;
         items.push_back(mii);
+
+        std::string itemGuid = std::to_string(itemGuidLow);
+        MailItemJson[itemGuid.c_str()] = itemGuidLow;
     }
 
     bool RemoveItem(uint32 item_guid)
@@ -194,6 +198,8 @@ struct Mail
             if (itr->item_guid == item_guid)
             {
                 items.erase(itr);
+                std::string itemGuid = std::to_string(item_guid);
+                MailItemJson.removeMember(itemGuid.c_str());
                 return true;
             }
         }

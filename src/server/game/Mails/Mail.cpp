@@ -220,15 +220,14 @@ void MailDraft::SendMailTo(MailReceiver const& receiver, MailSender const& sende
     for (MailItemMap::const_iterator mailItemIter = m_items.begin(); mailItemIter != m_items.end(); ++mailItemIter)
     {
         Item* pItem = mailItemIter->second;
-        pItem->UpdateItemKey(ITEM_KEY_MAIL, mailId);
+        pItem->SetMailId(mailId);
+        pItem->UpdateItemKey(ITEM_KEY_MAIL, receiver.GetPlayerGUIDLow());
     }
 
     // For online receiver update in game mail status and data
     if (pReceiver)
     {
         pReceiver->AddNewMailDeliverTime(deliver_time);
-
-        pReceiver->PlayerMailData["mails"][messageID.c_str()] = MailJson;
 
         if (pReceiver->IsMailsLoaded())
         {
@@ -245,7 +244,7 @@ void MailDraft::SendMailTo(MailReceiver const& receiver, MailSender const& sende
                 Item* item = mailItemIter->second;
                 std::string itemGuid = std::to_string(item->GetGUIDLow());
                 m->AddItem(item->GetGUIDLow(), item->GetEntry());
-                pReceiver->PlayerMailData["mitems"][messageID.c_str()][itemGuid.c_str()] = item->ItemData;
+                pReceiver->PlayerMailData["mitems"][itemGuid.c_str()] = item->ItemData;
             }
 
             m->messageType = sender.GetMailMessageType();
@@ -264,6 +263,9 @@ void MailDraft::SendMailTo(MailReceiver const& receiver, MailSender const& sende
                 for (MailItemMap::iterator mailItemIter = m_items.begin(); mailItemIter != m_items.end(); ++mailItemIter)
                     pReceiver->AddMItem(mailItemIter->second);
             }
+
+            pReceiver->PlayerMailData["mails"][messageID.c_str()] = m->MailJson;
+            pReceiver->PlayerMailData["mails"][messageID.c_str()]["items"] = m->MailItemJson;
         }
         else if (!m_items.empty())
             deleteIncludedItems();

@@ -177,7 +177,7 @@ void Player::SavePlayer()
     PlayerData["data"]["grantableLevels"] = m_grantableLevels;
     PlayerData["data"]["lfgBonusFaction"] = GetLfgBonusFaction();
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "userdata", PlayerData["data"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "userdata", PlayerData["data"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         //sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayer guid %u", guid);
     });
 }
@@ -187,7 +187,7 @@ void Player::SavePlayerBG()
     if (m_bgData.joinPos.m_mapId == MAPID_INVALID)
         return;
 
-    sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerBG userKey %s", userKey);
+    sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerBG userKey %s", GetUserKey());
 
     PlayerData["bg"]["instanceId"] = m_bgData.bgInstanceID;
     PlayerData["bg"]["team"] = m_bgData.bgTeam;
@@ -200,7 +200,7 @@ void Player::SavePlayerBG()
     PlayerData["bg"]["taxiEnd"] = m_bgData.taxiPath[1];
     PlayerData["bg"]["mountSpell"] = m_bgData.mountSpell;
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "BGdata", PlayerData["bg"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "BGdata", PlayerData["bg"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerBG guid %u", guid);
     });
 }
@@ -209,7 +209,7 @@ void Player::SavePlayerGroup()
 {
     PlayerData["group"] = GetGroup() ? GetGroup()->GetLowGUID() : 0;
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "group", PlayerData["group"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "group", PlayerData["group"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         //sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerGroup guid %u", guid);
     });
 }
@@ -234,9 +234,8 @@ void Player::InitPlayerLootCooldown()
 
 void Player::SavePlayerLootCooldown()
 {
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "lootCooldown", PlayerData["lootcooldown"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerLootCooldown guid %u", guid);
-    });
+    if (!PlayerData["lootcooldown"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "lootCooldown", PlayerData["lootcooldown"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::InitPlayerCurrency()
@@ -256,9 +255,8 @@ void Player::InitPlayerCurrency()
 
 void Player::SavePlayerCurrency()
 {
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "currency", PlayerData["currency"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerCurrency guid %u", guid);
-    });
+    if (!PlayerData["currency"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "currency", PlayerData["currency"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::InitPlayerSkills()
@@ -282,9 +280,8 @@ void Player::InitPlayerSkills()
 
 void Player::SavePlayerSkills()
 {
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "skills", PlayerData["skills"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerSkills guid %u", guid);
-    });
+    if (!PlayerData["skills"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "skills", PlayerData["skills"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::InitPlayerTalents()
@@ -310,16 +307,14 @@ void Player::InitPlayerTalents()
         }
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "talents", PlayerData["talents"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerTalents guid %u", guid);
-    });
+    if (!PlayerData["talents"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "talents", PlayerData["talents"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::SavePlayerTalents()
 {
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "talents", PlayerData["talents"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerTalents guid %u", guid);
-    });
+    if (!PlayerData["talents"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "talents", PlayerData["talents"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::InitPlayerSpells()
@@ -346,13 +341,11 @@ void Player::InitPlayerSpells()
         }
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "spells", PlayerData["spells"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerSpells Spells guid %u", guid);
-    });
+    if (!PlayerData["spells"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "spells", PlayerData["spells"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "mounts", AccountDatas["mounts"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerSpells mounts guid %u", guid);
-    });
+    if (!AccountDatas["mounts"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "mounts", AccountDatas["mounts"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
     //Update data skill
     SavePlayerSkills();
@@ -371,14 +364,14 @@ void Player::InitPlayerGlyphs()
         }
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "glyphs", PlayerData["glyphs"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "glyphs", PlayerData["glyphs"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerGlyphs guid %u", guid);
     });
 }
 
 void Player::SavePlayerGlyphs()
 {
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "glyphs", PlayerData["glyphs"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "glyphs", PlayerData["glyphs"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerGlyphs guid %u", guid);
     });
 }
@@ -427,9 +420,8 @@ void Player::SavePlayerAuras()
         PlayerData["auras"]["aura"][slot.c_str()]["remaincharges"] = itr->second->GetCharges();
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "auras", PlayerData["auras"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        //sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerAuras auras guid %u", guid);
-    });
+    if (!PlayerData["auras"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "auras", PlayerData["auras"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::InitPlayerQuestStatus()
@@ -469,13 +461,11 @@ void Player::InitPlayerQuestStatus()
         }
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "queststatus", PlayerData["queststatus"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerQuestStatus player guid %u", guid);
-    });
+    if (!PlayerData["queststatus"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "queststatus", PlayerData["queststatus"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "queststatus", AccountDatas["queststatus"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerQuestStatus account guid %u", guid);
-    });
+    if (!AccountDatas["queststatus"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "queststatus", AccountDatas["queststatus"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::InitPlayerQuestRewarded()
@@ -493,13 +483,11 @@ void Player::InitPlayerQuestRewarded()
             PlayerData["questrewarded"][quest_id.c_str()] = quest_id;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questrewarded", PlayerData["questrewarded"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerQuestRewarded player guid %u", guid);
-    });
+    if (!PlayerData["questrewarded"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "questrewarded", PlayerData["questrewarded"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questrewarded", AccountDatas["questrewarded"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerQuestRewarded account guid %u", guid);
-    });
+    if (!AccountDatas["questrewarded"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questrewarded", AccountDatas["questrewarded"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::InitPlayerQuestDaily()
@@ -530,13 +518,11 @@ void Player::InitPlayerQuestDaily()
             PlayerData["questdaily"][quest_id.c_str()] = uint64(m_lastDailyQuestTime);
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questdaily", PlayerData["questdaily"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerQuestDaily player guid %u", guid);
-    });
+    if (!PlayerData["questdaily"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "questdaily", PlayerData["questdaily"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questdaily", AccountDatas["questdaily"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerQuestDaily account guid %u", guid);
-    });
+    if (!AccountDatas["questdaily"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questdaily", AccountDatas["questdaily"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::InitPlayerQuestWeekly()
@@ -554,13 +540,11 @@ void Player::InitPlayerQuestWeekly()
             PlayerData["questweekly"][quest_id.c_str()] = questId;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questweekly", PlayerData["questweekly"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerQuestWeekly player guid %u", guid);
-    });
+    if (!PlayerData["questweekly"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "questweekly", PlayerData["questweekly"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questweekly", AccountDatas["questweekly"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerQuestWeekly account guid %u", guid);
-    });
+    if (!AccountDatas["questweekly"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questweekly", AccountDatas["questweekly"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::InitPlayerQuestSeasonal()
@@ -582,20 +566,15 @@ void Player::InitPlayerQuestSeasonal()
         }
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "questseasonal", PlayerData["questseasonal"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerQuestSeasonal player guid %u", guid);
-    });
+    if (!PlayerData["questseasonal"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "questseasonal", PlayerData["questseasonal"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questseasonal", AccountDatas["questseasonal"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerQuestSeasonal account guid %u", guid);
-    });
+    if (!AccountDatas["questseasonal"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questseasonal", AccountDatas["questseasonal"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::InitPlayerBoundInstances()
 {
-    if (!isBeingLoaded())
-        PlayerData["boundinstances"].clear();
-
     for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
     {
         //std::string diff = std::to_string(i);
@@ -629,16 +608,14 @@ void Player::InitPlayerBoundInstances()
         }
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "boundinstances", PlayerData["boundinstances"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerBoundInstances guid %u", guid);
-    });
+    if (!PlayerData["boundinstances"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "boundinstances", PlayerData["boundinstances"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::SavePlayerBoundInstances()
 {
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "boundinstances", PlayerData["boundinstances"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerBoundInstances guid %u", guid);
-    });
+    if (!PlayerData["boundinstances"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "boundinstances", PlayerData["boundinstances"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::UpdateInstance(InstanceSave* save)
@@ -664,11 +641,7 @@ void Player::UpdateInstance(InstanceSave* save)
     PlayerData["boundinstances"][instanceID.c_str()]["completedEncounters"] = save->GetCompletedEncounterMask();
     PlayerData["boundinstances"][instanceID.c_str()]["saveTime"] = save->GetSaveTime();
 
-    sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdateInstance GetSaveTime %u", save->GetSaveTime());
-
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "boundinstances", PlayerData["boundinstances"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdateInstance guid %u", guid);
-    });
+    SavePlayerBoundInstances();
 }
 
 void Player::InitPlayerBattlePets()
@@ -701,16 +674,13 @@ void Player::InitPlayerBattlePets()
         AccountDatas["battlepets"][petGuid.c_str()]["breedID"] = pjInfo->GetBreedID();
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "battlepets", AccountDatas["battlepets"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerBattlePets guid %u", guid);
-    });
+    SavePlayerBattlePets();
 }
 
 void Player::SavePlayerBattlePets()
 {
-    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "battlepets", AccountDatas["battlepets"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerBattlePets guid %u", guid);
-    });
+    if (!AccountDatas["battlepets"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "battlepets", AccountDatas["battlepets"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::SavePlayerBattlePetSlots()
@@ -722,9 +692,8 @@ void Player::SavePlayerBattlePetSlots()
         AccountDatas["battlepetslots"][index.c_str()] = slot ? slot->GetPet() : 0;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "battlepetslots", AccountDatas["battlepetslots"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerBattlePetSlots guid %u", guid);
-    });
+    if (!PlayerData["battlepetslots"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "battlepetslots", AccountDatas["battlepetslots"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::SavePlayerArchaeology()
@@ -761,7 +730,7 @@ void Player::SavePlayerArchaeology()
         PlayerData["archaeology"]["finds"][ID.c_str()]["date"] = itr->date;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "archaeology", PlayerData["archaeology"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "archaeology", PlayerData["archaeology"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerArchaeology guid %u", guid);
     });
 }
@@ -775,14 +744,14 @@ void Player::InitPlayerReputation()
         PlayerData["reputation"][faction.c_str()]["flags"] = itr->second.Flags;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "reputation", PlayerData["reputation"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "reputation", PlayerData["reputation"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerReputation player guid %u", guid);
     });
 }
 
 void Player::SavePlayerReputation()
 {
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "reputation", PlayerData["reputation"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "reputation", PlayerData["reputation"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerReputation player guid %u", guid);
     });
 }
@@ -802,7 +771,7 @@ void Player::InitPlayerVoidStorage()
         }
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "voidstorage", PlayerData["voidstorage"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "voidstorage", PlayerData["voidstorage"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerVoidStorage player guid %u", guid);
     });
 }
@@ -820,16 +789,13 @@ void Player::InitPlayerActions()
         }
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "actions", PlayerData["actions"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerActions player guid %u", guid);
-    });
+    SavePlayerActions();
 }
 
 void Player::SavePlayerActions()
 {
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "actions", PlayerData["actions"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerActions player guid %u", guid);
-    });
+    if (!PlayerData["actions"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "actions", PlayerData["actions"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::InitPlayerSocial()
@@ -842,9 +808,8 @@ void Player::InitPlayerSocial()
         PlayerData["social"][friend_guid.c_str()]["Note"] = itr->second.Note.c_str();
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "social", PlayerData["social"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerSocial player guid %u", guid);
-    });
+    if (!PlayerData["social"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "social", PlayerData["social"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::InitPlayerSpellCooldowns()
@@ -869,9 +834,8 @@ void Player::InitPlayerSpellCooldowns()
             ++itr;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "spellcooldowns", PlayerData["spellcooldowns"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerSpellCooldowns player guid %u", guid);
-    });
+    if (!PlayerData["spellcooldowns"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "spellcooldowns", PlayerData["spellcooldowns"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::InitPlayerKills()
@@ -886,9 +850,8 @@ void Player::InitPlayerKills()
         PlayerData["kills"][victim.c_str()] = itr->second.count;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "kills", PlayerData["kills"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerKills player guid %u", guid);
-    });
+    if (!PlayerData["kills"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "kills", PlayerData["kills"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::SavePlayerDeclinedName()
@@ -902,9 +865,8 @@ void Player::SavePlayerDeclinedName()
         }
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "declinedname", PlayerData["declinedname"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerDeclinedName player guid %u", guid);
-    });
+    if (!PlayerData["declinedname"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "declinedname", PlayerData["declinedname"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::InitPlayerEquipmentSets()
@@ -938,9 +900,8 @@ void Player::InitPlayerEquipmentSets()
         PlayerData["equipmentsets"][index.c_str()]["item18"] = eqset.Items[18];
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "equipmentsets", PlayerData["equipmentsets"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerEquipmentSets player guid %u", guid);
-    });
+    if (!PlayerData["equipmentsets"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "equipmentsets", PlayerData["equipmentsets"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::SavePlayerCUFProfiles()
@@ -967,9 +928,8 @@ void Player::SavePlayerCUFProfiles()
             PlayerData["cufprofiles"].removeMember(index.c_str());
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "cufprofiles", PlayerData["cufprofiles"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerCUFProfiles player guid %u", guid);
-    });
+    if (!PlayerData["cufprofiles"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "cufprofiles", PlayerData["cufprofiles"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::SavePlayerVisuals()
@@ -992,9 +952,8 @@ void Player::SavePlayerVisuals()
         PlayerData["visuals"]["shirt"] = m_vis->m_visShirt;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "visuals", PlayerData["visuals"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerVisuals player guid %u", guid);
-    });
+    if (!PlayerData["visuals"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "visuals", PlayerData["visuals"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::InitPlayerAccountData()
@@ -1015,7 +974,7 @@ void Player::InitPlayerAccountData()
         }
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "playeraccountdata", PlayerData["accountdata"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "playeraccountdata", PlayerData["accountdata"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerAccountData player guid %u", guid);
     });
 
@@ -1032,7 +991,7 @@ void Player::SavePlayerHomeBind()
     PlayerData["homebind"]["posY"] = m_homebindY;
     PlayerData["homebind"]["posZ"] = m_homebindZ;
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "homebind", PlayerData["homebind"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "homebind", PlayerData["homebind"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerHomeBind player guid %u", guid);
     });
 }
@@ -1053,13 +1012,11 @@ void Player::InitAchievement()
         AccountDatas["achievement"][achievementId.c_str()]["changed"] = iter->second.changed;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "achievement", PlayerData["achievement"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::InitAchievement player guid %u", guid);
-    });
+    if (!PlayerData["achievement"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "achievement", PlayerData["achievement"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "achievement", AccountDatas["achievement"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::InitAchievement account guid %u", guid);
-    });
+    if (!AccountDatas["achievement"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "achievement", AccountDatas["achievement"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::InitCriteria()
@@ -1110,17 +1067,13 @@ void Player::InitCriteria()
         if (save_pl)
         {
             PlayerData["criteria"][achievID.c_str()] = CriteriaPl;
-            RedisDatabase.AsyncExecuteHSet("HSET", criteriaPlKey, achievID.c_str(), CriteriaPl, GetGUID(), [&](const RedisValue &v, uint64 guid) {
-                sLog->outInfo(LOG_FILTER_REDIS, "Player::InitCriteria player guid %u", guid);
-            });
+            RedisDatabase.AsyncExecuteHSet("HSET", GetCriteriaPlKey(), achievID.c_str(), CriteriaPl, GetGUID(), [&](const RedisValue &v, uint64 guid) {});
         }
 
         if (save_ac)
         {
             AccountDatas["criteria"][achievID.c_str()] = CriteriaAc;
-            RedisDatabase.AsyncExecuteHSet("HSET", criteriaAcKey, achievID.c_str(), CriteriaAc, GetGUID(), [&](const RedisValue &v, uint64 guid) {
-                sLog->outInfo(LOG_FILTER_REDIS, "Player::InitCriteria account guid %u", guid);
-            });
+            RedisDatabase.AsyncExecuteHSet("HSET", GetCriteriaAcKey(), achievID.c_str(), CriteriaAc, GetGUID(), [&](const RedisValue &v, uint64 guid) {});
         }
     }
 }
@@ -1152,9 +1105,8 @@ void Player::InitPlayerPets()
         while (result->NextRow());
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "pets", PlayerData["pets"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerPets player guid %u", guid);
-    });
+    if (!PlayerData["pets"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "pets", PlayerData["pets"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::CreatedPlayerPets()
@@ -1384,9 +1336,8 @@ void Player::CreatedPlayerPets()
         SetTemporaryUnsummonedPetNumber(m_currentPetNumber);
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "pets", PlayerData["pets"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::CreatedPlayerPets player guid %u", guid);
-    });
+    if (!PlayerData["pets"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "pets", PlayerData["pets"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::InitPlayerMails()
@@ -1398,30 +1349,30 @@ void Player::InitPlayerMails()
     for (PlayerMails::iterator itr = m_mail.begin(); itr != m_mail.end(); ++itr)
     {
         Mail* m = (*itr);
-        if (m->state != MAIL_STATE_DELETED)
-        {
-            std::string messageID = std::to_string(m->messageID);
-            m->MailJson["messageType"] = m->messageType;
-            m->MailJson["sender"] = m->sender;
-            m->MailJson["receiver"] = m->receiver;
-            m->MailJson["subject"] = m->subject;
-            m->MailJson["body"] = m->body;
-            m->MailJson["has_items"] = m->HasItems();
-            m->MailJson["expire_time"] = m->expire_time;
-            m->MailJson["deliver_time"] = m->deliver_time;
-            m->MailJson["money"] = m->money;
-            m->MailJson["COD"] = m->COD;
-            m->MailJson["checked"] = m->checked;
-            m->MailJson["stationery"] = m->stationery;
-            m->MailJson["mailTemplateId"] = m->mailTemplateId;
+        std::string messageID = std::to_string(m->messageID);
+        m->MailJson["messageType"] = m->messageType;
+        m->MailJson["sender"] = m->sender;
+        m->MailJson["receiver"] = m->receiver;
+        m->MailJson["subject"] = m->subject;
+        m->MailJson["body"] = m->body;
+        m->MailJson["has_items"] = m->HasItems();
+        m->MailJson["expire_time"] = m->expire_time;
+        m->MailJson["deliver_time"] = m->deliver_time;
+        m->MailJson["money"] = m->money;
+        m->MailJson["COD"] = m->COD;
+        m->MailJson["checked"] = m->checked;
+        m->MailJson["stationery"] = m->stationery;
+        m->MailJson["mailTemplateId"] = m->mailTemplateId;
 
-            RedisDatabase.AsyncExecuteHSet("HSET", mailKey, messageID.c_str(), m->MailJson, GetGUID(), [&](const RedisValue &v, uint64 guid) {
-                sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerMails player guid %u", guid);
-            });
+        PlayerMailData["mails"][messageID.c_str()] = m->MailJson;
+        PlayerMailData["mails"][messageID.c_str()]["items"] = m->MailItemJson;
 
-            Json::Value expireStr = m->expire_time;
-            RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetMailsKey(), messageID.c_str(), expireStr, GetGUID(), [&](const RedisValue &v, uint64 guid) {});
-        }
+        RedisDatabase.AsyncExecuteHSet("HSET", mailKey, messageID.c_str(), m->MailJson, GetGUID(), [&](const RedisValue &v, uint64 guid) {
+            sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerMails player guid %u", guid);
+        });
+
+        Json::Value expireStr = m->expire_time;
+        RedisDatabase.AsyncExecuteHSet("HSET", sRedisBuilderMgr->GetMailsKey(), messageID.c_str(), expireStr, GetGUID(), [&](const RedisValue &v, uint64 guid) {});
     }
 }
 
@@ -1429,7 +1380,7 @@ void Player::SavePlayerGold()
 {
     PlayerData["gold"] = GetMoney();
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "money", PlayerData["gold"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "money", PlayerData["gold"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerGold guid %u", guid);
     });
 }
@@ -1451,25 +1402,136 @@ void Player::SavePlayerGuild()
 {
     PlayerData["guild"] = GetGuildId();
 
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "guild", PlayerData["guild"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "guild", PlayerData["guild"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerGuild guid %u", guid);
     });
 }
 
 void Player::SavePlayerPetitions()
 {
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "petitions", PlayerData["petitions"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerPetitions guid %u", guid);
-    });
+    if (!PlayerData["petitions"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "petitions", PlayerData["petitions"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::SavePlayerSpells()
 {
-    RedisDatabase.AsyncExecuteHSet("HSET", userKey, "spells", PlayerData["spells"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerSpells Spells guid %u", guid);
-    });
+    if (!PlayerData["spells"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "spells", PlayerData["spells"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "mounts", AccountDatas["mounts"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerSpells mounts guid %u", guid);
-    });
+    if (!AccountDatas["mounts"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "mounts", AccountDatas["mounts"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+}
+
+void Player::SavePlayerDataAll()
+{
+    if (!PlayerData["data"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "userdata", PlayerData["data"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    if (!PlayerData["gold"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "money", PlayerData["gold"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    if (!PlayerData["bg"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "BGdata", PlayerData["bg"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    if (!PlayerData["group"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "group", PlayerData["group"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    SavePlayerLootCooldown();
+    SavePlayerCurrency();
+    SavePlayerSkills();
+    SavePlayerTalents();
+    SavePlayerSpells();
+    SavePlayerGlyphs();
+
+    if (!PlayerData["auras"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "auras", PlayerData["auras"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    if (!PlayerData["queststatus"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "queststatus", PlayerData["queststatus"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!AccountDatas["queststatus"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "queststatus", AccountDatas["queststatus"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    if (!PlayerData["questrewarded"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "questrewarded", PlayerData["questrewarded"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!AccountDatas["questrewarded"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questrewarded", AccountDatas["questrewarded"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    if (!PlayerData["questdaily"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "questdaily", PlayerData["questdaily"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!AccountDatas["questdaily"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questdaily", AccountDatas["questdaily"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    if (!PlayerData["questweekly"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "questweekly", PlayerData["questweekly"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!AccountDatas["questweekly"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questweekly", AccountDatas["questweekly"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    if (!PlayerData["questseasonal"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "questseasonal", PlayerData["questseasonal"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!AccountDatas["questseasonal"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questseasonal", AccountDatas["questseasonal"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    SavePlayerBoundInstances();
+    SavePlayerBattlePets();
+
+    if (!AccountDatas["battlepetslots"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "battlepetslots", AccountDatas["battlepetslots"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    if (!PlayerData["archaeology"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "archaeology", PlayerData["archaeology"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    SavePlayerReputation();
+
+    if (!PlayerData["voidstorage"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "voidstorage", PlayerData["voidstorage"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    SavePlayerActions();
+
+    if (!PlayerData["social"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "social", PlayerData["social"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    if (!PlayerData["spellcooldowns"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "spellcooldowns", PlayerData["spellcooldowns"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    if (!PlayerData["kills"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "kills", PlayerData["kills"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    if (!PlayerData["declinedname"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "declinedname", PlayerData["declinedname"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    if (!PlayerData["equipmentsets"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "equipmentsets", PlayerData["equipmentsets"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    if (!PlayerData["cufprofiles"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "cufprofiles", PlayerData["cufprofiles"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    if (!PlayerData["visuals"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "visuals", PlayerData["visuals"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    if (!PlayerData["accountdata"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "playeraccountdata", PlayerData["accountdata"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!AccountDatas["data"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "accountdata", AccountDatas["data"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    if (!PlayerData["homebind"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "homebind", PlayerData["homebind"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    if (!PlayerData["achievement"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "achievement", PlayerData["achievement"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!AccountDatas["achievement"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "achievement", AccountDatas["achievement"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    InitCriteria();
+
+    if (!PlayerData["pets"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "pets", PlayerData["pets"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    InitPlayerMails();
+    SavePlayerGold();
+
+    if (!PlayerData["tutorials"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "tutorials", AccountDatas["tutorials"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+
+    SavePlayerGuild();
+    SavePlayerPetitions();
 }

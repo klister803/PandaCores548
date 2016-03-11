@@ -301,7 +301,7 @@ bool Guild::BankTab::LoadItemFromDB(Field* fields)
     Item* pItem = NewItemOrBag(proto);
     pItem->SetItemKey(ITEM_KEY_GUILD, m_guildId);
 
-    if (!pItem->LoadFromDB(itemGuid, 0, fields, itemEntry))
+    if (!pItem->LoadFromDB(itemGuid, m_guildId, fields, itemEntry))
     {
         sLog->outError(LOG_FILTER_GUILD, "Item (GUID %u, id: %u) not found in item_instance, deleting from guild bank!", itemGuid, itemEntry);
 
