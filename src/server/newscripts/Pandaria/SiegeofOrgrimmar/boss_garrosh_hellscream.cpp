@@ -253,6 +253,7 @@ class boss_garrosh_hellscream : public CreatureScript
                         me->RemoveAurasDueToSpell(transformvisual[n]);
                     me->SetReactState(REACT_DEFENSIVE);
                     phase = PHASE_NULL;
+                    instance->SetData(DATA_RESET_REALM_OF_YSHAARJ, 0);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROSH_ENERGY);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_DESECRATED);
                 }
