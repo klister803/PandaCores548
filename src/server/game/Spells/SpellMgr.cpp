@@ -3870,6 +3870,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 81751: // Atonement
                     spellInfo->AttributesEx2 &= ~SPELL_ATTR2_CANT_CRIT;
                     break;
+                case 31117: // Unstable Affliction (Silence)
+                    spellInfo->AttributesEx3 |= SPELL_ATTR3_IGNORE_HIT_RESULT;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_HAVE_STABLE_FLYTIME;
+                    break;
                 case 53651: // Beacon of Light
                 case 90289: // Removing Death Grip cooldown
                 case 36563: // Shadowstep
