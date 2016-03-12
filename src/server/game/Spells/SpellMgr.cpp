@@ -5230,6 +5230,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = 18;
                     break;
                 //Garrosh
+                case 144842: //Phase Two Transform
+                    spellInfo->Effects[1].BasePoints = 0;
+                    break;
                 case 145599: //Player Touch of Yshaarj
                     spellInfo->Effects[0].TargetA = 25;
                     spellInfo->InterruptFlags = SPELL_INTERRUPT_FLAG_INTERRUPT;
