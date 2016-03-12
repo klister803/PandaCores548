@@ -538,7 +538,10 @@ class boss_garrosh_hellscream : public CreatureScript
                     break;
                     case EVENT_SUMMON_ENGINEER:
                         if (!summons.empty())
+                        {
                             summons.DespawnEntry(NPC_KORKRON_IRON_STAR);
+                            summons.DespawnEntry(NPC_SIEGE_ENGINEER);
+                        }
                         SpawnIronStar();
                         for (uint8 n = 0; n < 2; n++)
                             me->SummonCreature(NPC_SIEGE_ENGINEER, engeneerspawnpos[n]);
@@ -735,6 +738,17 @@ public:
                 DoCast(me, SPELL_CONSUMED_HOPE, true);
                 break;
             case NPC_MINION_OF_YSHAARJ:
+                if (me->ToTempSummon())
+                {
+                    if (Unit* summoner = me->ToTempSummon()->GetSummoner())
+                    {
+                        if (!summoner->isAlive() || !summoner->isInCombat())
+                        {
+                            me->DespawnOrUnsummon();
+                            return;
+                        }
+                    }
+                }
                 me->SetReactState(REACT_AGGRESSIVE);
                 DoCast(me, SPELL_EMPOWERED);
                 break;
@@ -1258,7 +1272,7 @@ public:
             {
                 float distance = GetCaster()->GetExactDist2d(GetHitUnit());
                 if (distance >= 0 && distance < 300)
-                    SetHitDamage(GetHitDamage() * (1 - (distance / 300)));
+                    SetHitDamage((GetHitDamage()/3) * (1 - (distance / 300)));
             }
         }
 
@@ -1289,8 +1303,8 @@ public:
             if (GetCaster() && GetHitUnit())
             {
                 float distance = GetCaster()->GetExactDist2d(GetHitUnit());
-                if (distance >= 0 && distance < 300)
-                    SetHitDamage(GetHitDamage() * (1 - (distance / 300)));
+                if (distance >= 0 && distance <= 100)
+                    SetHitDamage(GetHitDamage() * (1 - (distance / 100)));
             }
         }
 
