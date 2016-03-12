@@ -10183,7 +10183,19 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
-        case 45243: // Focused Will
+        case 109939: // Item - Dragon Soul 
+        {
+            if (!victim)
+                return false;
+
+            if (!HasAura(109949))
+                if (Aura* aura = GetAura(trigger_spell_id, GetGUID()))
+                    if (aura->GetStackAmount() > triggerAmount)
+                        if (roll_chance_i((aura->GetStackAmount() - triggerAmount) * 5))
+                            CastSpell(victim, 109949, true);
+            break;
+        }
+        case 45243:  // Focused Will
         {
             if ((damage < CountPctFromMaxHealth(10) && !(procEx & PROC_EX_CRITICAL_HIT)) || ((procEx & PROC_EX_CRITICAL_HIT) && dmgInfoProc->GetDamageType() == DOT))
                 return false;
