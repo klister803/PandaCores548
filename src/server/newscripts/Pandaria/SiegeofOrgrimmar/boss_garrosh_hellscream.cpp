@@ -274,7 +274,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     SpawnIronStar();
                     phase = PHASE_ONE;
                     events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 1000);
-                    events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
+                    //events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
                     events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
                     events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 18000);
                     events.ScheduleEvent(EVENT_SUMMON_WOLF_RIDER, 30000);
