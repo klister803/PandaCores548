@@ -14,3 +14,11 @@ UPDATE `spell_linked_spell` SET `hastalent2`='0', `chance`='32409' WHERE (`spell
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `hastalent`, `hastalent2`, `chance`, `hitmask`, `actiontype`, `comment`) VALUES ('2094', '-3', '91299', '-108216', '32409', '1', '2', 'Glyph of Blind');
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `hastalent`, `hitmask`, `actiontype`, `comment`) VALUES ('2094', '-89', '91299', '1', '2', 'Glyph of Blind');
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `hastalent`, `hitmask`, `actiontype`, `comment`) VALUES ('2094', '-53', '91299', '1', '2', 'Glyph of Blind');
+
+INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `hastalent`, `chance`, `hitmask`, `actiontype`, `comment`) VALUES ('19503', '-3', '119407', '32409', '1', '2', 'Glyph of Solace');
+INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `hastalent`, `hitmask`, `actiontype`, `comment`) VALUES ('19503', '-89', '119407', '1', '2', 'Glyph of Solace');
+INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `hastalent`, `hitmask`, `actiontype`, `comment`) VALUES ('19503', '-53', '119407', '1', '2', 'Glyph of Solace');
+
+INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `hastalent`, `chance`, `hitmask`, `actiontype`, `comment`) VALUES ('3355', '-3', '119407', '32409', '1', '2', 'Glyph of Solace');
+INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `hastalent`, `hitmask`, `actiontype`, `comment`) VALUES ('3355', '-89', '119407', '1', '2', 'Glyph of Solace');
+INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `hastalent`, `hitmask`, `actiontype`, `comment`) VALUES ('3355', '-53', '119407', '1', '2', 'Glyph of Solace');

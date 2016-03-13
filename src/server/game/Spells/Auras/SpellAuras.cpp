@@ -2155,25 +2155,6 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 }
                 break;
             }
-            case SPELLFAMILY_HUNTER:
-            {
-                switch (GetId())
-                {
-                    case 19503: // Scatter Shot
-                    case 3355: // Freezing Trap
-                    {
-                        // Glyph of Solace
-                        if (caster && caster->HasAura(119407))
-                        {
-                            target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE, 0, target->GetAura(32409));
-                            target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE_PERCENT);
-                            target->RemoveAurasByType(SPELL_AURA_PERIODIC_LEECH);
-                        }
-                        break;
-                    }
-                }
-                break;
-            }
         }
     }
     // mods at aura remove
