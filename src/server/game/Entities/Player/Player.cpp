@@ -7437,7 +7437,7 @@ void Player::SetSkill(uint16 id, uint16 step, uint16 newVal, uint16 maxVal)
                 SetUInt16Value(PLAYER_SKILL_MODIFIER_0 + field, offset, 0);
                 SetUInt16Value(PLAYER_SKILL_TALENT_0 + field, offset, 0);
 
-                UpdatePlayerSkill(id, newVal, maxVal, itr->second.pos);
+                UpdatePlayerSkill(id, newVal, maxVal, i);
 
                 // temporary bonuses
                 AuraEffectList const& mModSkill = GetAuraEffectsByType(SPELL_AURA_MOD_SKILL);

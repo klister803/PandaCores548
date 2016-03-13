@@ -744,9 +744,7 @@ void Player::InitPlayerReputation()
         PlayerData["reputation"][faction.c_str()]["flags"] = itr->second.Flags;
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "reputation", PlayerData["reputation"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerReputation player guid %u", guid);
-    });
+    SavePlayerReputation();
 }
 
 void Player::SavePlayerReputation()

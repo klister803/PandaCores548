@@ -290,8 +290,6 @@ void ReputationMgr::Initialize()
             _factions[newFaction.ReputationListID] = newFaction;
         }
     }
-
-    _player->InitPlayerReputation();
 }
 
 bool ReputationMgr::SetReputation(FactionEntry const* factionEntry, int32 standing, bool incremental)
