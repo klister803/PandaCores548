@@ -6,3 +6,5 @@ UPDATE `spell_linked_spell` SET `spell_effect`='-3', `hastalent`='56375', `hasta
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `hastalent`, `hitmask`, `actiontype`, `comment`) VALUES ('118', '-89', '56375', '1', '2', 'Glyph of Polymorph');
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `hastalent`, `hitmask`, `actiontype`, `comment`) VALUES ('118', '-53', '56375', '1', '2', 'Glyph of Polymorph');
 DELETE FROM `spell_proc_event` WHERE (`entry`='56375') AND (`effectmask`='7');
+
+UPDATE `spell_linked_spell` SET `hastalent2`='32409' WHERE (`spell_trigger`='118') AND (`spell_effect`='-3') AND (`type`='0') AND (`hastalent`='56375') AND (`actiontype`='2');
