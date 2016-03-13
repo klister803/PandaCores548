@@ -275,7 +275,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     SpawnIronStar();
                     phase = PHASE_ONE;
                     events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 1000);
-                    events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
+                    //events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
                     events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
                     events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 18000);
                     events.ScheduleEvent(EVENT_SUMMON_WOLF_RIDER, 30000);
@@ -607,6 +607,7 @@ class boss_garrosh_hellscream : public CreatureScript
                             uint32 power = me->GetPower(POWER_ENERGY);
                             garroshrealm->SetHealth(hp);
                             garroshrealm->SetPower(POWER_ENERGY, power);
+                            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_HAMSTRING);
                             std::list<Player*>pllist;
                             GetPlayerListInGrid(pllist, me, 150.0f);
                             if (!pllist.empty())
@@ -735,6 +736,7 @@ public:
                 events.ScheduleEvent(EVENT_LAUNCH_STAR, 500);
                 break;
             case NPC_EMBODIED_DESPAIR:
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                 me->SetReactState(REACT_AGGRESSIVE);
                 DoCast(me, SPELL_CONSUMED_HOPE, true);
                 break;
@@ -754,6 +756,7 @@ public:
                 DoCast(me, SPELL_EMPOWERED);
                 break;
             case NPC_EMBODIED_DOUBT:
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                 me->SetReactState(REACT_AGGRESSIVE);
                 break;
             default:
