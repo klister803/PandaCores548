@@ -4985,9 +4985,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[2].TargetA = TARGET_UNIT_CONE_ENEMY_24;
                     break;
                 //Sha of Pride
-                case 144359: //Gift of Titans
-                    spellInfo->Effects[0].TargetB = 15;
-                    spellInfo->Effects[1].TargetB = 15;
+                case 146818: //Aura of Pride
+                    spellInfo->Effects[0].TargetA = 22;
+                    spellInfo->Effects[0].TargetB = 30;
                     break;
                 case 144363: //Gift of Titans Dummy(checker)
                     spellInfo->Effects[0].TargetB = 30;
@@ -5229,6 +5229,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = 18;
                     break;
                 //Garrosh
+                case 144842: //Phase Two Transform
+                    spellInfo->Effects[1].BasePoints = 0;
+                    break;
                 case 145599: //Player Touch of Yshaarj
                     spellInfo->Effects[0].TargetA = 25;
                     spellInfo->InterruptFlags = SPELL_INTERRUPT_FLAG_INTERRUPT;

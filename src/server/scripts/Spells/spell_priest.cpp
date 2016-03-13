@@ -744,7 +744,7 @@ class spell_pri_rapture : public SpellScriptLoader
 
                 if (Aura* aur = caster->GetAura(55672))// Glyph of Power Word: Shield
                 {
-                    int32 percent = aur->GetEffect(EFFECT_0)->GetAmount();
+                    float percent = aur->GetEffect(EFFECT_0)->GetAmount();
                     float bp = CalculatePct(amount, percent);
                     amount -= bp;
                     caster->CastCustomSpell(caster, 56160, &bp, NULL, NULL,  true);
@@ -1722,7 +1722,7 @@ class spell_pri_guardian_spirit : public SpellScriptLoader
                 if (dmgInfo.GetDamage() < target->GetHealth())
                     return;
 
-                float healAmount = int32(target->CountPctFromMaxHealth(healPct));
+                float healAmount = target->CountPctFromMaxHealth(healPct);
                 // remove the aura now, we don't want 40% healing bonus
                 Remove(AURA_REMOVE_BY_ENEMY_SPELL);
                 target->CastCustomSpell(target, PRIEST_SPELL_GUARDIAN_SPIRIT_HEAL, &healAmount, NULL, NULL, true);
@@ -1917,8 +1917,8 @@ class spell_priest_renew : public SpellScriptLoader
                     // Empowered Renew
                     if (Aura* empoweredRenew = caster->GetAura(PRIEST_RAPID_RENEWAL_AURA))
                     {
-                        uint32 heal = aurEff->GetAmount();
-                        float basepoints0 = empoweredRenew->GetEffect(EFFECT_2)->GetAmount() * aurEff->GetTotalTicks() * int32(heal) / 100;
+                        float heal = aurEff->GetAmount();
+                        float basepoints0 = empoweredRenew->GetEffect(EFFECT_2)->GetAmount() * aurEff->GetTotalTicks() * heal / 100.0f;
                         caster->CastCustomSpell(GetTarget(), PRIEST_SPELL_EMPOWERED_RENEW, &basepoints0, NULL, NULL, true, NULL, aurEff);
                     }
                 }

@@ -111,6 +111,8 @@ enum sEvents
     //Adds in realm
     EVENT_EMBODIED_DESPAIR           = 19,
     EVENT_EMBODIED_DOUBT             = 20,
+    //Special events
+    EVENT_CHECK_PROGRESS             = 21,
 };
 
 enum Phase
@@ -251,6 +253,7 @@ class boss_garrosh_hellscream : public CreatureScript
                         me->RemoveAurasDueToSpell(transformvisual[n]);
                     me->SetReactState(REACT_DEFENSIVE);
                     phase = PHASE_NULL;
+                    instance->SetData(DATA_RESET_REALM_OF_YSHAARJ, 0);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROSH_ENERGY);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_DESECRATED);
                 }
@@ -266,17 +269,13 @@ class boss_garrosh_hellscream : public CreatureScript
             {
                 if (!me->ToTempSummon())
                 {
-                    if (!instance->GetData(DATA_CHECK_INSTANCE_PROGRESS))
-                    {
-                        EnterEvadeMode();
-                        return;
-                    }
-                    Talk(SAY_ENTERCOMBAT, 0);
                     _EnterCombat();
+                    Talk(SAY_ENTERCOMBAT, 0);
                     checkevade = 1000;
                     SpawnIronStar();
                     phase = PHASE_ONE;
                     events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 1000);
+                    events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
                     events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
                     events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 18000);
                     events.ScheduleEvent(EVENT_SUMMON_WOLF_RIDER, 30000);
@@ -496,6 +495,14 @@ class boss_garrosh_hellscream : public CreatureScript
                     {
                     //In Realm
                     //Phase one
+                    case EVENT_CHECK_PROGRESS:
+                        if (!instance->GetData(DATA_CHECK_INSTANCE_PROGRESS))
+                        {
+                            me->MonsterTextEmote("Not All Bosses Done, EnterEvadeMode", 0, true);
+                            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                            EnterEvadeMode();
+                        }
+                        break;
                     case EVENT_ANNIHILLATE:
                     {
                         float mod = urand(0, 6);
@@ -532,7 +539,10 @@ class boss_garrosh_hellscream : public CreatureScript
                     break;
                     case EVENT_SUMMON_ENGINEER:
                         if (!summons.empty())
+                        {
                             summons.DespawnEntry(NPC_KORKRON_IRON_STAR);
+                            summons.DespawnEntry(NPC_SIEGE_ENGINEER);
+                        }
                         SpawnIronStar();
                         for (uint8 n = 0; n < 2; n++)
                             me->SummonCreature(NPC_SIEGE_ENGINEER, engeneerspawnpos[n]);
@@ -729,6 +739,17 @@ public:
                 DoCast(me, SPELL_CONSUMED_HOPE, true);
                 break;
             case NPC_MINION_OF_YSHAARJ:
+                if (me->ToTempSummon())
+                {
+                    if (Unit* summoner = me->ToTempSummon()->GetSummoner())
+                    {
+                        if (!summoner->isAlive() || !summoner->isInCombat())
+                        {
+                            me->DespawnOrUnsummon();
+                            return;
+                        }
+                    }
+                }
                 me->SetReactState(REACT_AGGRESSIVE);
                 DoCast(me, SPELL_EMPOWERED);
                 break;
@@ -1252,7 +1273,7 @@ public:
             {
                 float distance = GetCaster()->GetExactDist2d(GetHitUnit());
                 if (distance >= 0 && distance < 300)
-                    SetHitDamage(GetHitDamage() * (1 - (distance / 300)));
+                    SetHitDamage((GetHitDamage()/3) * (1 - (distance / 300)));
             }
         }
 
@@ -1283,8 +1304,8 @@ public:
             if (GetCaster() && GetHitUnit())
             {
                 float distance = GetCaster()->GetExactDist2d(GetHitUnit());
-                if (distance >= 0 && distance < 300)
-                    SetHitDamage(GetHitDamage() * (1 - (distance / 300)));
+                if (distance >= 0 && distance <= 100)
+                    SetHitDamage(GetHitDamage() * (1 - (distance / 100)));
             }
         }
 

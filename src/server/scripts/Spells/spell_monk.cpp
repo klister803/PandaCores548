@@ -734,7 +734,7 @@ class spell_monk_touch_of_karma : public SpellScriptLoader
                         return;
                     if (Unit* target = ObjectAccessor::GetUnit(*caster, caster->m_SpecialTarget))
                     {
-                        float bp = int32(dmgInfo.GetAbsorb() / 6);
+                        float bp = dmgInfo.GetAbsorb() / 6;
 
                         if (bp)
                             caster->CastCustomSpell(target, SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, &bp, NULL, NULL, true);
@@ -1859,7 +1859,7 @@ class spell_monk_blackout_kick : public SpellScriptLoader
                         {
                             uint32 triggered_spell_id = 128531;
                             Unit* originalCaster = caster->GetOwner() ? caster->GetOwner(): caster;
-                            int32 damsges = GetHitAbsorb() + GetHitDamage() + GetHitResist() + GetHitBlocked();
+                            float damsges = GetHitAbsorb() + GetHitDamage() + GetHitResist() + GetHitBlocked();
                             float basepoints0 = CalculatePct(damsges, GetSpellInfo()->Effects[EFFECT_1].BasePoints);
 
                             if (!originalCaster->HasAura(132005) && !target->isInBack(caster))

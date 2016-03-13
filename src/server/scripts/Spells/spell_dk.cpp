@@ -717,7 +717,7 @@ class spell_dk_death_siphon : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        float bp = CalculatePct(GetHitDamage(), GetSpellInfo()->Effects[EFFECT_1].CalcValue(_player));
+                        float bp = CalculatePct(float(GetHitDamage()), GetSpellInfo()->Effects[EFFECT_1].CalcValue(_player));
                         _player->CastCustomSpell(_player, DK_SPELL_DEATH_SIPHON_HEAL, &bp, NULL, NULL, true);
                     }
                 }
@@ -1131,7 +1131,7 @@ class spell_dk_anti_magic_shell_self : public SpellScriptLoader
                 if (Unit* target = GetTarget()) // AMS generates 2 Runic Power for every percent of maximum health absorbed
                 {
                     uint32 RPCap = target->CountPctFromMaxHealth(1) / 2;
-                    float bp = int32((container + absorbAmount) / RPCap);
+                    float bp = (container + absorbAmount) / RPCap;
                     container = (container + absorbAmount) - (bp * RPCap);
                     bp *= 10;
 

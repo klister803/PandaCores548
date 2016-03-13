@@ -272,7 +272,7 @@ class boss_malkorok : public CreatureScript
                         else
                         {
                             events.ScheduleEvent(EVENT_SEISMIC_SLAM, 10000);
-                            events.ScheduleEvent(EVENT_PREPARE, 17000);
+                            events.ScheduleEvent(EVENT_PREPARE, 16000);
                         }
                         events.ScheduleEvent(EVENT_RE_ATTACK, 1000);               
                     break;
@@ -336,6 +336,7 @@ class boss_malkorok : public CreatureScript
                                 {
                                     phase = PHASE_TWO;
                                     powercheck = 0;
+                                    me->InterruptNonMeleeSpells(true);
                                     DoAction(ACTION_PHASE_TWO);
                                 }
                             }

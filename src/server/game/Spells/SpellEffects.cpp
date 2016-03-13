@@ -4560,7 +4560,7 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
             return;
     }
 
-    PetSlot slot = PetSlot(int32(m_spellInfo->GetEffect(effIndex, m_diffMode)->BasePoints));
+    PetSlot slot = PetSlot(RoundingFloatValue(m_spellInfo->GetEffect(effIndex, m_diffMode)->BasePoints));
     owner->m_currentSummonedSlot = slot;
 
     Position pos;

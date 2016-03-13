@@ -27841,38 +27841,45 @@ uint32 rand_number(uint32 value1, uint32 value2, uint32 value3 = 0, uint32 value
 {
     switch (rand() % 4)
     {
-        case 0:		return value1;
-        case 1:		return value2;
-        case 2:		return value3;
-        case 3:		return value4;
-        default:	return 0;
+        case 0:		
+            return value1;
+        case 1:		
+            return value2;
+        case 2:		
+            return value3;
+        case 3:		
+            return value4;
+        default:	
+            return 0;
     }
 }
 
-
+//CharmedAi for Players
 void Player::UpdateCharmedAI()
 {
-    //This should only called in Player::Update
-    Creature* charmer = GetCharmer()->ToCreature();
-
-    //kill self if charm aura has infinite duration
-    if (charmer->IsInEvadeMode())
+    if (Creature* charmer = GetCharmer()->ToCreature())
     {
-        AuraEffectList const& auras = GetAuraEffectsByType(SPELL_AURA_MOD_CHARM);
-        for (AuraEffectList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
+        if (charmer->IsInEvadeMode())
         {
-            if ((*iter)->GetCasterGUID() == charmer->GetGUID() && (*iter)->GetBase()->IsPermanent())
+            AuraEffectList const& auras = GetAuraEffectsByType(SPELL_AURA_MOD_CHARM);
+            for (AuraEffectList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
             {
-                charmer->DealDamage(this, GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                return;
+                if ((*iter)->GetCasterGUID() == charmer->GetGUID() && (*iter)->GetBase()->IsPermanent())
+                {
+                    charmer->DealDamage(this, GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    return;
+                }
             }
         }
-    }
-    if (!charmer->isInCombat())
-        GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, charmer->GetFollowAngle());
-    else
-    {
-        if (!getVictim())
+
+        if (!charmer->isInCombat())
+        {
+            GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, charmer->GetFollowAngle());
+            return;
+        }
+
+        uint32 mynewspell = GetMyNewSpell();
+        if (charmer->isInCombat() && !getVictim())
         {
             std::list<Player*>pllist;
             pllist.clear();
@@ -27885,85 +27892,109 @@ void Player::UpdateCharmedAI()
                     {
                         GetMotionMaster()->MoveChase(*itr);
                         Attack(*itr, true);
-                        if (HasAura(145065) || HasAura(145171))
-                            AddSpellCooldown(145599, 0, getPreciseTime() + 3.0);
+                        SetMyNewSpellCooldown(mynewspell);
                         break;
                     }
                 }
             }
         }
-    }
-    if (HasUnitState(UNIT_STATE_CASTING))
-        return;
 
-    if (Unit* target = getVictim())
-    {
-        //Mind control from Boss - custom ability
-        //SO - Garrosh
-        if (HasAura(145065) || HasAura(145171))
-        {
-            if (!HasSpellCooldown(145599))
-            {
-                CastSpell(target, 145599);
-                AddSpellCooldown(145599, 0, getPreciseTime() + 6.0);
-            }
+        if (HasUnitState(UNIT_STATE_CASTING))
             return;
-        }
-        // 0 : Friendly, 1-2-3 : attack
-        bool attack = urand(0, 3);
 
+        CharmedCastSpell();
+    }  
+}
+
+uint32 Player::GetMyNewSpell()
+{
+    uint32 newspell = 0;
+    if (HasAura(145065) || HasAura(145171)) //Garrosh Hellscream[SO]
+        newspell = 145599;
+    return newspell;
+}
+
+void Player::SetMyNewSpellCooldown(uint32 spellentry)
+{
+    if (spellentry)
+        AddSpellCooldown(spellentry, 0, getPreciseTime() + 3.0);
+}
+
+void Player::CharmedCastSpell()
+{
+    uint32 spell = GetMyNewSpell();
+    if (!spell)
+    {
+        bool attack = urand(0, 3);
         switch (getClass())
         {
         case CLASS_WARRIOR:
-            CastSpell(target, rand_number(SPELL_WAR_ATTACK_LIST));
+            spell = rand_number(SPELL_WAR_ATTACK_LIST);
             break;
         case CLASS_PALADIN:
             if (attack)
-                CastSpell(target, rand_number(SPELL_PAL_ATTACK_LIST));
+                spell = rand_number(SPELL_PAL_ATTACK_LIST);
             else
-                CastSpell(charmer, rand_number(SPELL_PAL_FRIEND_LIST));
+                spell = rand_number(SPELL_PAL_FRIEND_LIST);
             break;
         case CLASS_HUNTER:
-            CastSpell(target, rand_number(SPELL_HUNT_ATTACK_LIST));
+            spell = rand_number(SPELL_HUNT_ATTACK_LIST);
             break;
         case CLASS_ROGUE:
-            CastSpell(target, rand_number(SPELL_ROG_ATTACK_LIST));
+            spell = rand_number(SPELL_ROG_ATTACK_LIST);
             break;
         case CLASS_PRIEST:
             if (attack)
-                CastSpell(target, rand_number(SPELL_PRI_ATTACK_LIST));
+                spell = rand_number(SPELL_PRI_ATTACK_LIST);
             else
-                CastSpell(charmer, rand_number(SPELL_PRI_FRIEND_LIST));
+                spell = rand_number(SPELL_PRI_FRIEND_LIST);
             break;
         case CLASS_DEATH_KNIGHT:
-            CastSpell(target, rand_number(SPELL_DK_ATTACK_LIST));
+            spell = rand_number(SPELL_DK_ATTACK_LIST);
             break;
         case CLASS_SHAMAN:
             if (attack)
-                CastSpell(target, rand_number(SPELL_CHA_ATTACK_LIST));
+                spell = rand_number(SPELL_CHA_ATTACK_LIST);
             else
-                CastSpell(charmer, rand_number(SPELL_CHA_FRIEND_LIST));
+                spell = rand_number(SPELL_CHA_FRIEND_LIST);
             break;
         case CLASS_MAGE:
-            CastSpell(target, rand_number(SPELL_MAG_ATTACK_LIST));
+            spell = rand_number(SPELL_MAG_ATTACK_LIST);
             break;
         case CLASS_WARLOCK:
-            CastSpell(target, rand_number(SPELL_DEM_ATTACK_LIST));
+            spell = rand_number(SPELL_DEM_ATTACK_LIST);
             break;
         case CLASS_DRUID:
             if (attack)
-                CastSpell(target, rand_number(SPELL_DRU_ATTACK_LIST));
+                spell = rand_number(SPELL_DRU_ATTACK_LIST);
             else
-                CastSpell(charmer, rand_number(SPELL_DRU_FRIEND_LIST));
+                spell = rand_number(SPELL_DRU_FRIEND_LIST);
             break;
         case CLASS_MONK:
-            CastSpell(target, rand_number(SPELL_MONK_ATTACK_LIST));
-            break;
-        default:
+            spell = rand_number(SPELL_MONK_ATTACK_LIST);
             break;
         }
-    }  
+
+        if (getVictim())
+            CastSpell(getVictim(), spell);
+        else
+            if (Player* pl = FindNearestPlayer(50.0f, true))
+                CastSpell(pl, spell);
+    }
+    else
+    {
+        if (!HasSpellCooldown(spell))
+        {
+            if (getVictim())
+                CastSpell(getVictim(), spell);
+            else
+                if (Player* pl = FindNearestPlayer(20.0f, true))
+                    CastSpell(pl, spell);
+            AddSpellCooldown(spell, 0, getPreciseTime() + 6.0);
+        }
+    }
 }
+//
 
 void Player::RestoreAllBaseRunes()
 {

@@ -1319,7 +1319,6 @@ public:
                 switch (state)
                 {
                 case NOT_STARTED:
-                    ResetRealmOfYshaarj(true);
                     garroshsoldiersGuids.clear();
                     for (std::vector<uint64>::const_iterator itr = garroshfenchGuids.begin(); itr != garroshfenchGuids.end(); ++itr)
                         HandleGameObject(*itr, true);
@@ -1719,6 +1718,9 @@ public:
                         break;
                     }
                 }
+                break;
+            case DATA_RESET_REALM_OF_YSHAARJ:
+                ResetRealmOfYshaarj(true);
                 break;
              }
         }

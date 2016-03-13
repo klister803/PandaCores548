@@ -7002,7 +7002,7 @@ void AuraEffect::HandleForceReaction(AuraApplication const* aurApp, uint8 mode, 
     Player* player = (Player*)target;
 
     uint32 faction_id = GetMiscValue();
-    ReputationRank faction_rank = ReputationRank(int32(m_amount));
+    ReputationRank faction_rank = ReputationRank(RoundingFloatValue(m_amount));
 
     player->GetReputationMgr().ApplyForceReaction(faction_id, faction_rank, apply);
     player->GetReputationMgr().SendForceReactions();

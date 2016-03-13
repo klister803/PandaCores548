@@ -376,7 +376,7 @@ class spell_warl_archimondes_vengance : public SpellScriptLoader
                 {
                     if (target->HasAura(aurEff->GetSpellInfo()->Id, _player->GetGUID()))
                     {
-                        float bp = int32(eventInfo.GetDamageInfo()->GetDamage() / 4);
+                        float bp = eventInfo.GetDamageInfo()->GetDamage() / 4.0f;
 
                         if (!bp)
                             return;
@@ -1530,7 +1530,7 @@ class spell_warl_harvest_life : public SpellScriptLoader
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     // Restoring 3-4.5% of the caster's total health every 1s - With 33% bonus
-                    float basepoints = int32(frand(0.03f, 0.045f) * _player->GetMaxHealth());
+                    float basepoints = frand(0.03f, 0.045f) * _player->GetMaxHealth();
 
                     if (!_player->HasSpellCooldown(WARLOCK_HARVEST_LIFE_HEAL))
                     {
