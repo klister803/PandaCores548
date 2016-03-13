@@ -164,6 +164,7 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_DEL_IGNORE,                              STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleDelIgnoreOpcode           );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_DELETEEQUIPMENT_SET,                     STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleEquipmentSetDelete        );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_DESTROY_ITEM,                            STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleDestroyItemOpcode         );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_DISCARDED_TIME_SYNC_ACKS,                STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleDiscardedTimeSyncAcks     );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_DISMISS_CONTROLLED_VEHICLE,              STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleDismissControlledVehicle  );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_DISMISS_CRITTER,                         STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleDismissCritter            );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_DUEL_ACCEPT_RESULT,                      STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleDuelAcceptResultOpcode    );
@@ -303,6 +304,7 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_MINIMAP_PING,                            STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMinimapPingOpcode         );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_MOUNTSPECIAL_ANIM,                       STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMountSpecialAnimOpcode    );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_MOVE_FALL_LAND,                          STATUS_LOGGEDIN,  PROCESS_THREADSAFE,   &WorldSession::HandleMovementOpcodes           );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_MOVE_GRAVITY_ENABLE_ACK,                 STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMoveGravityEnableAck        );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_MOVE_FEATHER_FALL_ACK,                   STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMoveFeatherFallAck        );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_MOVE_HEARTBEAT,                          STATUS_LOGGEDIN,  PROCESS_THREADSAFE,   &WorldSession::HandleMovementOpcodes           );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_MOVE_HOVER_ACK,                          STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleMoveHoverAck              );
@@ -369,7 +371,6 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_PING,                                    STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_EarlyProccess            );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_PLAYED_TIME,                             STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandlePlayedTime                );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_PLAYER_LOGIN,                            STATUS_AUTHED,    PROCESS_THREADUNSAFE, &WorldSession::HandlePlayerLoginOpcode         );
-    DEFINE_OPCODE_HANDLER(CMSG, CMSG_PLAYER_LOGOUT,                           STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandlePlayerLogoutOpcode        );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_PLAYER_VEHICLE_ENTER,                    STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleEnterPlayerVehicle        );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_PURCHASE_GET_PRODUCT_LIST,               STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandlePurchaseGetProductList    );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_PURCHASE_GET_PURCHASE_LIST,              STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandlePurchaseGetPurchaseList   );

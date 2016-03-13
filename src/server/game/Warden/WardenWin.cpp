@@ -685,7 +685,7 @@ void WardenWin::RequestDynamicData()
         buff << uint32(mov_flags);
         buff << uint8(0x04);
 
-        uint32 cur_speed = playerDynamicBase + 0x8A4;//!checked
+        uint32 cur_speed = playerDynamicBase + 0x8A0;//!checked
         buff << uint8(MEM_CHECK ^ xorByte);
         buff << uint8(0x00);
         buff << uint8(0xF);

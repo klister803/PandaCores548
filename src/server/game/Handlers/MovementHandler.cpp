@@ -891,6 +891,14 @@ void WorldSession::HandleMoveFeatherFallAck(WorldPacket& recvData)
     recvData.rfinish();                       // prevent warnings spam
 }
 
+void WorldSession::HandleMoveGravityEnableAck(WorldPacket& recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_GRAVITY_ENABLE_ACK");
+
+    // no used
+    recvData.rfinish();                       // prevent warnings spam
+}
+
 void WorldSession::HandleMoveKnockBackAck(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_KNOCK_BACK_ACK");
@@ -917,6 +925,20 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket & recvData)
 void WorldSession::HandleMoveHoverAck(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_HOVER_ACK");
+
+    uint32 ackIndex;
+    recvData.read_skip<float>();
+    recvData.read_skip<float>();
+    recvData >> ackIndex;
+
+    std::unordered_map<uint32, uint32>::iterator itr = _player->syncQueue.find(ackIndex);
+
+    if (itr == _player->syncQueue.end())
+        KickPlayer();
+
+    uint32 opcodeNumber = itr->second;
+    _player->validHover = (opcodeNumber == uint32(SMSG_MOVE_SET_HOVER)) ? true : false;
+    _player->syncQueue.erase(itr);
 }
 
 void WorldSession::HandleMoveWaterwalkAck(WorldPacket& recvData)

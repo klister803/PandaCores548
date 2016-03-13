@@ -1774,7 +1774,7 @@ class Unit : public WorldObject
         bool UpdatePosition(const Position &pos, bool teleport = false) { return UpdatePosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), teleport); }
         void UpdateOrientation(float orientation);
         void UpdateHeight(float newZ);
-        void SendTeleportPacket(Position &oldPos);
+        void SendTeleportPacket(Position &oldPos, uint32 sequenceIndex = 0);
 
         void SendMoveKnockBack(Player* player, float speedXY, float speedZ, float vcos, float vsin);
         void KnockbackFrom(float x, float y, float speedXY, float speedZ);

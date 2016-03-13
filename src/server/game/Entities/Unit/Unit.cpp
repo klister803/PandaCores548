@@ -23504,6 +23504,7 @@ void Unit::BuildMovementPacket(ByteBuffer *data) const
 void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool casting /*= false*/)
 {
     DisableSpline();
+
     if (GetTypeId() == TYPEID_PLAYER)
     {
         m_anti_JupmTime = sWorld->GetUpdateTime() * 5;
@@ -24201,7 +24202,8 @@ void Unit::ApplySoulSwapDOT(Unit* target)
     _SoulSwapDOTList.clear();
 }
 
-void Unit::SendTeleportPacket(Position &destPos)
+// we need send SMSG_MOVE_TELEPORT to units???
+void Unit::SendTeleportPacket(Position &destPos, uint32 sequenceIndex)
 {
     ObjectGuid guid = GetGUID();
     ObjectGuid transGuid = GetTransGUID();
@@ -24219,7 +24221,7 @@ void Unit::SendTeleportPacket(Position &destPos)
     if (transGuid)
         data.WriteGuidBytes<7, 6, 0, 2, 3, 1, 5, 4>(transGuid);
     data.WriteGuidBytes<6, 1>(guid);
-    data << uint32(0);  // counter
+    data << uint32(sequenceIndex++);          // sync counter
     data.WriteGuidBytes<7, 5>(guid);
     data << float(destPos.GetPositionX());
     data.WriteGuidBytes<4, 3, 2>(guid);

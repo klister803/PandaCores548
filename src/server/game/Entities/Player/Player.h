@@ -843,6 +843,15 @@ enum PlayedTimeIndex
     PLAYED_TIME_LEVEL = 1
 };
 
+enum PlayerMoveEventsMask
+{
+    MOVE_EVENT_NONE       = 0x00,
+    MOVE_EVENT_WATER_WALK = 0x01,
+    MOVE_EVENT_GRAVITY    = 0x02,
+    MOVE_EVENT_FLYING     = 0x04,
+    MOVE_EVENT_HOVER      = 0x08,
+};
+
 #define MAX_PLAYED_TIME_INDEX 2
 
 // used at player loading query list preparing, and later result selection
@@ -3523,7 +3532,10 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_anti_GravityCount;           // AntiGravity chech count
          // end movement anticheat
 
-        uint32 GetTimeSync() const { return m_timeSyncServer; }
+        uint32 GetServerTime() const { return m_serverTime; }
+        uint32 GetSequenceIndex() { return m_sequenceIndex; }
+        std::unordered_map<uint32, uint32> syncQueue;
+        PlayerMoveEventsMask validMoveEvents;
     protected:
         //kill honor sistem
         KillInfoMap m_killsPerPlayer;
@@ -3633,10 +3645,11 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_ChampioningFaction;
         uint32 m_ChampioningFactionDungeonLevel;
 
-        uint32 m_timeSyncCounter;
-        uint32 m_timeSyncTimer;
-        uint32 m_timeSyncClient;
-        uint32 m_timeSyncServer;
+        // important part of synchronization server/client
+        uint32 m_sequenceIndex;
+        uint32 m_syncTimer;
+        uint32 m_clientTime;
+        uint32 m_serverTime;
 
         InstanceTimeMap _instanceResetTimes;
         uint32 _pendingBindId;

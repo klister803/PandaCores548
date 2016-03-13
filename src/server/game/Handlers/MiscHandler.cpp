@@ -577,14 +577,6 @@ void WorldSession::HandleLogoutRequestOpcode(WorldPacket& /*recvData*/)
     LogoutRequest(time(NULL));
 }
 
-void WorldSession::HandlePlayerLogoutOpcode(WorldPacket& recvData)
-{
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd CMSG_PLAYER_LOGOUT Message");
-    bool bit = !recvData.ReadBit();
-    if (bit)
-        recvData >> Unused<uint32>();
-}
-
 void WorldSession::HandleLogoutCancelOpcode(WorldPacket& /*recvData*/)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd CMSG_LOGOUT_CANCEL Message");
@@ -1871,26 +1863,37 @@ void WorldSession::HandleTimeSyncResp(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_TIME_SYNC_RESP");
 
-    uint32 counter, clientTicks;
-    recvData >> clientTicks >> counter;
+    uint32 sequenceIndex, clientTime;
+    recvData >> clientTime >> sequenceIndex;
 
-    if (counter != _player->m_timeSyncCounter - 1)
+    if (sequenceIndex != _player->m_sequenceIndex - 1)
         sLog->outDebug(LOG_FILTER_NETWORKIO, "Wrong time sync counter from player %s (cheater?)", _player->GetName());
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "Time sync received: counter %u, client ticks %u, time since last sync %u", counter, clientTicks, clientTicks - _player->m_timeSyncClient);
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "Time sync received: counter %u, client ticks %u, time since last sync %u", sequenceIndex, clientTime, clientTime - _player->m_clientTime);
 
-    uint32 ourTicks = clientTicks + (getMSTime() - _player->m_timeSyncServer);
+    uint32 ourTicks = clientTime + (getMSTime() - _player->m_serverTime);
 
     // diff should be small
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "Our ticks: %u, diff %u, latency %u", ourTicks, ourTicks - clientTicks, GetLatency());
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "Our ticks: %u, diff %u, latency %u", ourTicks, ourTicks - clientTime, GetLatency());
 
-    _player->m_timeSyncClient = clientTicks;
+    _player->m_clientTime = clientTime;
+}
+
+void WorldSession::HandleDiscardedTimeSyncAcks(WorldPacket& recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_TIME_SYNC_DISCARDED_ACKS");
+    uint32 maxSequenceIndex = 0;
+    bool bit = !recvData.ReadBit();
+    if (bit)
+        recvData >> maxSequenceIndex;
+
+    if (maxSequenceIndex)
+        _player->ResetTimeSync();
 }
 
 void WorldSession::HandleResetInstancesOpcode(WorldPacket& /*recvData*/)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_RESET_INSTANCES");
-
     if (Group* group = _player->GetGroup())
     {
         if (group->IsLeader(_player->GetGUID()))
