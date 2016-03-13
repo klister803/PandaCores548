@@ -1715,7 +1715,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         if(target->HasAuraLinkedSpell(_caster, _target, itr->hastype, itr->hastalent))
                             continue;
 
-                    if(itr->hastalent2)
+                    if (itr->hastalent2 && itr->actiontype != LINK_ACTION_AURATYPE)
                         if(target->HasAuraLinkedSpell(_caster, _target, itr->hastype2, itr->hastalent2))
                             continue;
 
@@ -1736,7 +1736,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                                 break;
                             }
                             case LINK_ACTION_AURATYPE:
-                                _target->RemoveAurasByType(AuraType(abs(itr->effect)));
+                                _target->RemoveAurasByType(AuraType(abs(itr->effect)), 0, _target->GetAura(itr->hastalent2));
                                 break;
                         }
                     }
@@ -1785,7 +1785,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         if(target->HasAuraLinkedSpell(_caster, _target, itr->hastype, itr->hastalent))
                             continue;
 
-                    if(itr->hastalent2)
+                    if (itr->hastalent2 && itr->actiontype != LINK_ACTION_AURATYPE)
                         if(target->HasAuraLinkedSpell(_caster, _target, itr->hastype2, itr->hastalent2))
                             continue;
                     if(!_target)
@@ -1805,7 +1805,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                                 break;
                             }
                             case LINK_ACTION_AURATYPE:
-                                _target->RemoveAurasByType(AuraType(abs(itr->effect)));
+                                _target->RemoveAurasByType(AuraType(abs(itr->effect)), 0, _target->GetAura(itr->hastalent2));
                                 break;
                         }
                     }
@@ -1865,7 +1865,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                             if(target->HasAuraLinkedSpell(_caster, _target, itr->hastype, itr->hastalent))
                                 continue;
 
-                        if(itr->hastalent2)
+                        if (itr->hastalent2 && itr->actiontype != LINK_ACTION_AURATYPE)
                             if(target->HasAuraLinkedSpell(_caster, _target, itr->hastype2, itr->hastalent2))
                                 continue;
 
@@ -1886,7 +1886,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                                     break;
                                 }
                                 case LINK_ACTION_AURATYPE:
-                                    _target->RemoveAurasByType(AuraType(abs(itr->effect)));
+                                    _target->RemoveAurasByType(AuraType(abs(itr->effect)), 0, _target->GetAura(itr->hastalent2));
                                     break;
                             }
                         }
@@ -1948,7 +1948,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                                     break;
                                 }
                                 case LINK_ACTION_AURATYPE:
-                                    _target->RemoveAurasByType(AuraType(abs(itr->effect)));
+                                    _target->RemoveAurasByType(AuraType(abs(itr->effect)), 0, _target->GetAura(itr->hastalent2));
                                     break;
                             }
                         }
@@ -1971,7 +1971,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         if(target->HasAuraLinkedSpell(caster, target, itr->hastype, itr->hastalent))
                             continue;
 
-                    if(itr->hastalent2)
+                    if (itr->hastalent2 && itr->actiontype != LINK_ACTION_AURATYPE)
                         if(target->HasAuraLinkedSpell(caster, target, itr->hastype2, itr->hastalent2))
                             continue;
 

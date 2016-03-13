@@ -6384,7 +6384,7 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
                 if(m_caster->HasAuraLinkedSpell(_caster, _target, i->hastype, i->hastalent))
                     continue;
 
-            if(i->hastalent2)
+            if (i->hastalent2 && i->actiontype != LINK_ACTION_AURATYPE)
                 if(m_caster->HasAuraLinkedSpell(_caster, _target, i->hastype2, i->hastalent2))
                     continue;
 
@@ -6403,7 +6403,7 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
                     }
                     case LINK_ACTION_AURATYPE:
                         if(_target)
-                            _target->RemoveAurasByType(AuraType(abs(i->effect)));
+                            _target->RemoveAurasByType(AuraType(abs(i->effect)), 0, _target->GetAura(i->hastalent2));
                         break;
                     case LINK_ACTION_CHANGE_STACK:
                         if (Aura* aura = (_target ? _target : _caster)->GetAura(abs(i->effect)))
