@@ -6572,6 +6572,19 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         {
             switch (dummySpell->Id)
             {
+                case 144358: //Wounded Pride - Sha of Pride[SO]
+                    if (Player* pl = ToPlayer())
+                    {
+                        if (pl->HasAura(144358))
+                        {
+                            if (pl->GetPower(POWER_ALTERNATE_POWER) <= 95)
+                            {
+                                pl->SetPower(POWER_ALTERNATE_POWER, pl->GetPower(POWER_ALTERNATE_POWER) + 5);
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
                 case 139116: // Item - Attacks Proc Highest Rating
                 {
                     if (Player* plr = ToPlayer())

@@ -123,6 +123,8 @@ class boss_iron_juggernaut : public CreatureScript
                 me->SetPower(POWER_ENERGY, 0);
                 me->RemoveAurasDueToSpell(SPELL_SEISMIC_ACTIVITY);
                 SendActionForAllPassenger(false);
+                if (instance)
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BORER_DRILL_DMG);
             }
 
             void JustReachedHome()
@@ -282,22 +284,36 @@ class boss_iron_juggernaut : public CreatureScript
                     switch (eventId)
                     {
                     case EVENT_BORER_DRILL:
+                    {
                         DoCast(me, SPELL_BORER_DRILL_B_VISUAL, true);
                         Position pos;
                         me->GetNearPosition(pos, 12.5f, 5.32f);
-                        for (uint8 n = 0; n < 3; n++)
+                        std::list<Player*> pllist;
+                        pllist.clear();
+                        GetPlayerListInGrid(pllist, me, 100.0f);
+                        uint8 count = 0;
+                        if (!pllist.empty())
                         {
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 80.0f, true))
+                            for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                             {
-                                if (Creature* drill = me->SummonCreature(NPC_BORER_DRILL, pos, TEMPSUMMON_TIMED_DESPAWN, 10000))
+                                if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
                                 {
-                                    drill->AddThreat(target, 50000000.0f);
-                                    drill->Attack(target, true);
+                                    if (Creature* drill = me->SummonCreature(NPC_BORER_DRILL, pos, TEMPSUMMON_TIMED_DESPAWN, 10000))
+                                    {
+                                        count++;
+                                        drill->AddThreat((*itr), 50000000.0f);
+                                        drill->SetReactState(REACT_AGGRESSIVE);
+                                        drill->Attack((*itr), true); 
+                                        drill->GetMotionMaster()->MoveChase(*itr);
+                                        if (count >= 3)
+                                            break;
+                                    }
                                 }
                             }
                         }
                         events.ScheduleEvent(EVENT_BORER_DRILL, 20000, 0, PHASE_ONE);
                         break;
+                    }
                     case EVENT_MORTAR_BLAST:
                         if (Unit* p = GetPassengerForCast(NPC_TOP_CANNON))
                         {
@@ -396,6 +412,8 @@ class boss_iron_juggernaut : public CreatureScript
             void JustDied(Unit* /*killer*/)
             {
                 _JustDied();
+                if (instance)
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BORER_DRILL_DMG);
             }
 
             void SendActionForAllPassenger(bool action)
@@ -469,7 +487,6 @@ public:
         npc_generic_iron_juggernaut_passengerAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
-            me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
         }
 
@@ -682,8 +699,10 @@ public:
         npc_borer_drillAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
+            me->SetFloatValue(OBJECT_FIELD_SCALE_X, 1.5f);
+            me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-            me->AddAura(SPELL_BORER_DRILL_TR_VISUAL, me);
+            DoCast(me, SPELL_BORER_DRILL_TR_VISUAL, true);
         }
 
         InstanceScript* instance;

@@ -48,6 +48,7 @@ enum eSpells
     //Pride
     SPELL_SWELLING_PRIDE            = 144400, //Swelling Pride
     SPELL_BURSTING_PRIDE            = 144910, //Bursting Pride  25-49
+    SPELL_BURSTING_PRIDE_DMG        = 144911,
     SPELL_PROJECTION                = 146822, //Projection      50-74
     SPELL_PROJECTION_MARKER         = 145066,
     SPELL_PROJECTION_DMG            = 145320,
@@ -56,8 +57,8 @@ enum eSpells
     SPELL_OVERCOME_MIND_CONTROL     = 144863,
     
     //Manifestation of Pride
-    SPELL_MOCKING_BLAST             = 144379, //Mocking Blast
-    SPELL_LAST_WORD                 = 144370, //Last Word
+    SPELL_MOCKING_BLAST             = 144379, //Mocking Blast + 5power
+    SPELL_LAST_WORD                 = 144370, //Last Word     + 5power 2 nearest players
 
     //Norushen
     SPELL_DOOR_CHANNEL              = 145979, //Door Channel
@@ -76,6 +77,7 @@ enum eSpells
     SPELL_UNSTABLE_CORRUPTION       = 147389, //Unstable Corruption
     SPELL_RIFT_OF_CORRUPTION_AT     = 147205,
     SPELL_RIFT_OF_CORRUPTION_DMG    = 147391,
+    SPELL_RIFT_OF_CORRUPTION_TR_DMG = 147198,
     SPELL_WEAKENED_RESOLVE          = 147207, //Weakened Resolve
 
     //
@@ -106,7 +108,6 @@ enum PhaseEvents
     EVENT_SUMMON_MANIFESTATION_OF_PRIDE = 3,
     EVENT_SPELL_SELF_REFLECTION         = 4,
     EVENT_SPELL_CORRUPTED_PRISON        = 5,
-    EVENT_SPELL_REACHING_ATTACK         = 6,
     EVENT_SPELL_GIFT_OF_THE_TITANS      = 7,
     EVENT_PRIDE_GENERATION              = 8,
     EVENT_SPELL_UNLEASHED               = 9,
@@ -118,35 +119,17 @@ enum Phases
     PHASE_BATTLE                    = 1,
 };
 
-void addPride(uint32 spellID, Unit* target)
+class TankFilter
 {
-    if (target->GetTypeId() != TYPEID_PLAYER)
-        return;
-
-    if (target->HasAura(SPELL_GIFT_OF_THE_TITANS))
-        return;
-
-    switch(spellID)
+public:
+    bool operator()(WorldObject* unit)
     {
-        case 0:
-        case SPELL_REACHING_ATTACK:
-        case SPELL_MOCKING_BLAST:
-        case SPELL_SELF_REFLECTION_CAST:
-        case SPELL_RIFT_OF_CORRUPTION_DMG:
-        case SPELL_MARK_OF_ARROGANCE:
-            break;
-        default:
-            return;
+        if (Player* target = unit->ToPlayer())
+            if (target->GetRoleForGroup(target->GetSpecializationId(target->GetActiveSpec())) != ROLES_TANK)
+                return false;
+        return true;
     }
-
-    uint32 incrasePride = 5;
-    uint32 power = target->GetPower(POWER_ALTERNATE_POWER);
-    if (power + incrasePride > 100)
-        incrasePride = 100 - power;
-
-    if (incrasePride && power < 100)
-        target->SetPower(POWER_ALTERNATE_POWER, power + incrasePride);
-}
+};
 
 class boss_sha_of_pride : public CreatureScript
 {
@@ -164,19 +147,20 @@ class boss_sha_of_pride : public CreatureScript
             }
 
             InstanceScript* instance;
+            uint32 checkvictim;
             bool bPhaseLowHp;
 
             void Reset()
             {
                 _Reset();
-                /*Debug
-                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                //Debug
+                /*me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->SetReactState(REACT_AGGRESSIVE);
                 SetCombatMovement(false);
                 me->AddAura(SPELL_SUBMERGE, me);
                 me->SetVisible(true);
-                DoCast(me, SPELL_SUBMERGE, false);
-                */
+                DoCast(me, SPELL_SUBMERGE, false);*/
+                checkvictim = 0;
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PRIDE);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_OVERCOME);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MARK_OF_ARROGANCE);
@@ -193,10 +177,8 @@ class boss_sha_of_pride : public CreatureScript
                     norushen->Respawn();
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
                 for (uint8 i = 0; i < 12; ++i)
-                {
                     if (GameObject* prisonGo = instance->instance->GetGameObject(instance->GetData64(prisonbutton[i])))
                         prisonGo->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
-                }
             }
 
             void SetData(uint32 id, uint32 value)
@@ -216,9 +198,11 @@ class boss_sha_of_pride : public CreatureScript
                     DoCast(me, SPELL_SUBMERGE, false);
                 }
             }
-            void KilledUnit(Unit* /*victim*/) 
+
+            void KilledUnit(Unit* who) 
             {
-                ZoneTalk(urand(TEXT_GENERIC_9, TEXT_GENERIC_10), 0);
+                if (who->ToPlayer())
+                    ZoneTalk(urand(TEXT_GENERIC_9, TEXT_GENERIC_10), 0);
             }
 
             void EnterCombat(Unit* who)
@@ -228,53 +212,37 @@ class boss_sha_of_pride : public CreatureScript
                 ZoneTalk(TEXT_GENERIC_1, 0);
                 events.SetPhase(PHASE_BATTLE);
                 uint32 t = 0;
+                checkvictim = 1500;
                 if (IsHeroic())
-                    events.RescheduleEvent(EVENT_RIFT_OF_CORRUPTION, t += 2000, 0, PHASE_BATTLE);             //19:02:02.000
-                events.RescheduleEvent(EVENT_SPELL_GIFT_OF_THE_TITANS, t += 1000, 0, PHASE_BATTLE);           //19:02:03.000
-                events.RescheduleEvent(EVENT_SPELL_WOUNDED_PRIDE, t += 3000, 0, PHASE_BATTLE);                //19:02:06.000
-                events.RescheduleEvent(EVENT_SPELL_MARK_OF_ARROGANCE, t += 2000, 0, PHASE_BATTLE);            //19:02:08.000
-                events.RescheduleEvent(EVENT_SPELL_SELF_REFLECTION, t += 13000, 0, PHASE_BATTLE);             //19:02:21.000
-                events.RescheduleEvent(EVENT_SPELL_CORRUPTED_PRISON, t += 27000, 0, PHASE_BATTLE);            //19:02:48.000
-                events.RescheduleEvent(EVENT_SUMMON_MANIFESTATION_OF_PRIDE, t += 9000, 0, PHASE_BATTLE);      //19:02:57.000
-                events.RescheduleEvent(EVENT_PRIDE_GENERATION, 4000);                                         //first SPELL_SWELLING_PRIDE at 19:03:11.000
-                events.RescheduleEvent(EVENT_SPELL_REACHING_ATTACK, 15000, 0, PHASE_BATTLE);                  //19:03:49.000. Cast only if no in attack range ppl.
-
+                    events.RescheduleEvent(EVENT_RIFT_OF_CORRUPTION, t += 2000, 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_SPELL_GIFT_OF_THE_TITANS, t += 1000, 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_SPELL_WOUNDED_PRIDE, t += 3000, 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_SPELL_MARK_OF_ARROGANCE, t += 2000, 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_SPELL_SELF_REFLECTION, t += 13000, 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_SPELL_CORRUPTED_PRISON, t += 27000, 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_SUMMON_MANIFESTATION_OF_PRIDE, t += 9000, 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_PRIDE_GENERATION, 4000);
                 Map::PlayerList const& PlayerList = instance->instance->GetPlayers();
+                if (!PlayerList.isEmpty())
+                    for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+                        if (Player* player = Itr->getSource())
+                            if (player->isAlive())
+                                DoCast(player, SPELL_PRIDE, true);        
+            }
 
-                if (PlayerList.isEmpty())
-                    return;
-
-                for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+            void DamageTaken(Unit* attacker, uint32 &damage)
+            {
+                if (me->HealthBelowPct(30) && !bPhaseLowHp)
                 {
-                    Player* player = Itr->getSource();
-
-                    if (!player)
-                        continue;
-
-                    DoCast(player, SPELL_PRIDE, true);
-                }                
-            }
-
-            void DamageDealt(Unit* victim, uint32& /*damage*/, DamageEffectType damageType)
-            {
-                if (damageType != DIRECT_DAMAGE)
-                    return;
-
-                if (victim->HasAura(SPELL_WOUNDED_PRIDE))
-                    addPride(0, victim);
-            }
-
-            void SpellHitTarget(Unit* target, SpellInfo const* spell)
-            {
-                if (target->GetTypeId() == TYPEID_PLAYER)
-                    addPride(spell->Id, target);
+                    bPhaseLowHp = true;
+                    events.ScheduleEvent(EVENT_SPELL_UNLEASHED, 1000);
+                }
             }
 
             void JustDied(Unit* /*killer*/)
             {
                 _JustDied();
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
-
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PRIDE);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_OVERCOME);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MARK_OF_ARROGANCE);
@@ -286,17 +254,27 @@ class boss_sha_of_pride : public CreatureScript
 
             void UpdateAI(uint32 diff)
             {
-                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                if (!UpdateVictim())
                     return;
 
-                if (me->HealthBelowPct(30) && !bPhaseLowHp)
+                if (checkvictim)
                 {
-                    events.ScheduleEvent(EVENT_SPELL_UNLEASHED, 1000);
-                    bPhaseLowHp = true;
+                    if (checkvictim <= diff)
+                    {
+                        if (me->getVictim() && !me->IsWithinMeleeRange(me->getVictim()))
+                            DoCastVictim(SPELL_REACHING_ATTACK);
+                        checkvictim = 1500;
+                    }
+                    else
+                        checkvictim -= diff;
                 }
                 
                 EnterEvadeIfOutOfCombatArea(diff);
                 events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
                 while (uint32 eventId = events.ExecuteEvent())
                 {
                     switch(eventId)
@@ -328,14 +306,13 @@ class boss_sha_of_pride : public CreatureScript
                         {
                             ZoneTalk(TEXT_GENERIC_11, 0);
                             ZoneTalk(TEXT_GENERIC_3, 0);
-                            //Should be done by casting this spell, but this half-hack better check targets and cast spells by order.
                             DoCast(me, SPELL_IMPRISON, true);
                             uint8 count = Is25ManRaid() ? 4 : 2;
                             uint8 i = 0;
                             std::list<Unit*> targetList;
                             SelectTargetList(targetList, count, SELECT_TARGET_RANDOM, 0.0f, true);
-                            targetList.remove_if(TankTargetSelector(me));
-                            for(std::list<Unit*>::iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
+                            targetList.remove_if(TankFilter());
+                            for (std::list<Unit*>::iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                             {
                                 if (GameObject* prisonGo = instance->instance->GetGameObject(instance->GetData64(prison[i])))
                                 {
@@ -348,60 +325,26 @@ class boss_sha_of_pride : public CreatureScript
                             events.RescheduleEvent(EVENT_SPELL_CORRUPTED_PRISON, 78*IN_MILLISECONDS, 0, PHASE_BATTLE);  //19:02:48.000
                             break;
                         }
-                        case EVENT_SPELL_REACHING_ATTACK:
-                            //Should be first
-                            events.RescheduleEvent(EVENT_SPELL_REACHING_ATTACK, (urand(15, 20))*IN_MILLISECONDS, 0, PHASE_BATTLE);           //19:03:49.000
-
-                            // only if in attack distance no target.
-                            if(!me->getVictim() || me->IsWithinMeleeRange(me->getVictim()))
-                                break;
-
-                            if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0.0f, true))
-                                DoCast(target, SPELL_REACHING_ATTACK, false);
-                            break;
                         case EVENT_SUMMON_MANIFESTATION_OF_PRIDE:
                         {
                             uint8 count = Is25ManRaid() ? 2 : 1;
                             for (uint8 i = 0; i < count; ++i)
                                 me->SummonCreature(NPC_MANIFEST_OF_PRIDE, Sha_of_pride_manifestation[i], TEMPSUMMON_DEAD_DESPAWN);
-
-                            events.RescheduleEvent(EVENT_SUMMON_MANIFESTATION_OF_PRIDE, 77*IN_MILLISECONDS, 0, PHASE_BATTLE);
+                            events.RescheduleEvent(EVENT_SUMMON_MANIFESTATION_OF_PRIDE, 77 * IN_MILLISECONDS, 0, PHASE_BATTLE);
                             break;
                         }
                         case EVENT_SPELL_UNLEASHED:
-                        {
                             if (Creature* nor = instance->instance->GetCreature(instance->GetData64(NPC_SHA_NORUSHEN)))
                             {
                                 ZoneTalk(TEXT_GENERIC_8, 0);
-                                DoCast(nor, SPELL_UNLEASHED, false);
+                                DoCast(nor, SPELL_UNLEASHED);
                                 events.CancelEvent(EVENT_SPELL_GIFT_OF_THE_TITANS);
                             }
                             break;
-                        }
                         case EVENT_SPELL_GIFT_OF_THE_TITANS:
-                        {
-                            std::list<Player*> pllist;
-                            pllist.clear();
-                            GetPlayerListInGrid(pllist, me, 150.0f);
-                            uint8 count = 0;
-                            uint8 maxcount = 0;
-                            maxcount = me->GetMap()->Is25ManRaid() ? 8 : 3;
-                            if (!pllist.empty())
-                            {
-                                for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
-                                {
-                                    if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && !(*itr)->HasAura(SPELL_GIFT_OF_THE_TITANS))
-                                    {
-                                        count++;
-                                        (*itr)->AddAura(SPELL_GIFT_OF_THE_TITANS, *itr);
-                                    }
-                                    if (count >= maxcount)
-                                        break;
-                                }
-                            }
+                            DoCast(me, SPELL_GIFT_OF_THE_TITANS);
                             events.RescheduleEvent(EVENT_SPELL_GIFT_OF_THE_TITANS, 25000, 0, PHASE_BATTLE);
                             break;
-                        }
                         case EVENT_RIFT_OF_CORRUPTION:
                         {
                             float x, y, z;
@@ -494,11 +437,13 @@ public:
                 instance->SetData(DATA_SHA_PRE_EVENT, DONE);
                 ZoneTalk(TEXT_GENERIC_2, 0);             //18:47:21.000 
                 events.ScheduleEvent(EVENT_2, 11000);    //18:47:32.000
-            }else if (id == SPELL_GIFT_OF_THE_TITANS)
+            }
+            else if (id == SPELL_GIFT_OF_THE_TITANS)
             {
                 ZoneTalk(TEXT_GENERIC_3, 0);
                 me->CastSpell(me, SPELL_GIFT_OF_THE_TITANS, true);
-            }else if (id == EVENT_SPELL_GIFT_OF_THE_TITANS)
+            }
+            else if (id == EVENT_SPELL_GIFT_OF_THE_TITANS)
             {
                 bool good = _gift.size() == value;
                 for(std::set<uint64>::iterator itr = _gift.begin(); itr != _gift.end(); ++itr)
@@ -593,10 +538,7 @@ public:
         FormationInfo* group_member;
         bool end;
 
-        void Reset()
-        {
-
-        }
+        void Reset(){}
 
         void DoAction(int32 const action)
         {
@@ -640,9 +582,6 @@ public:
             {
                 case 5:
                     SetEscortPaused(true);
-                    if (Creature * c = instance->instance->SummonCreature(NPC_SHA_TARAN_ZHU, Sha_of_pride_taranzhu))
-                    {
-                    }
                     break;
                 case 6:
                 {
@@ -987,6 +926,7 @@ class go_sha_of_pride_corupted_prison_button : public GameObjectScript
         }
 };
 
+//71946
 class npc_sha_of_pride_manifest_of_pride : public CreatureScript
 {
 public:
@@ -1006,6 +946,10 @@ public:
             onSpawn = true;
         }
 
+        bool onSpawn;
+        EventMap events;
+        InstanceScript* instance;
+
         void Reset()
         {
             events.RescheduleEvent(EVENT_SPAWN, 1000);
@@ -1013,18 +957,9 @@ public:
             me->AddAura(SPELL_MANIFESTATION_SPAWN, me);
         }
 
-        bool onSpawn;
-        EventMap events;
-        InstanceScript* instance;
-
-        void SpellHitTarget(Unit* target, SpellInfo const* spell)
-        {
-            addPride(spell->Id, target);
-        }
-
         void JustDied(Unit* /*killer*/)
         {
-            DoCast(me, SPELL_LAST_WORD, false);
+            DoCast(me, SPELL_LAST_WORD, true);
         }
 
         void UpdateAI(uint32 diff)
@@ -1061,6 +996,7 @@ public:
     }
 };
 
+//72172
 class npc_sha_of_pride_reflection : public CreatureScript
 {
 public:
@@ -1081,20 +1017,15 @@ public:
             SetCombatMovement(false);
         }
 
+        bool onSpawn;
+        EventMap events;
+        InstanceScript* instance;
+
         void Reset()
         {
             events.RescheduleEvent(EVENT_SPAWN, 3000);
             events.RescheduleEvent(EVENT_SPELL_SELF_REFLECTION_CAST, 6000);
             me->AddAura(SPELL_SELF_REFLECTION_SPAWN, me);
-        }
-
-        bool onSpawn;
-        EventMap events;
-        InstanceScript* instance;
-
-        void SpellHitTarget(Unit* target, SpellInfo const* spell)
-        {
-            addPride(spell->Id, target);
         }
 
         void UpdateAI(uint32 diff)
@@ -1107,20 +1038,15 @@ public:
 
             while (uint32 eventId = events.ExecuteEvent())
             {
-                switch(eventId)
+                if (eventId == EVENT_SPAWN)
                 {
-                    case EVENT_SPAWN:
-                        me->RemoveAurasDueToSpell(SPELL_SELF_REFLECTION_SPAWN);
-                        me->SetInCombatWithZone();
-                        DoCastVictim(SPELL_SELF_REFLECTION_CAST);
-                        onSpawn = false;
-                        SetCombatMovement(true);
-                        break;
-                    default:
-                        break;
+                    me->RemoveAurasDueToSpell(SPELL_SELF_REFLECTION_SPAWN);
+                    me->SetInCombatWithZone();
+                    DoCastVictim(SPELL_SELF_REFLECTION_CAST);
+                    onSpawn = false;
+                    SetCombatMovement(true);
                 }
             }
-
             if (!onSpawn)
                 DoMeleeAttackIfReady();
         }
@@ -1132,6 +1058,7 @@ public:
     }
 };
 
+//72846
 class npc_sha_of_pride_rift_of_corruption : public CreatureScript
 {
 public:
@@ -1163,11 +1090,6 @@ public:
         EventMap events;
         InstanceScript* instance;
 
-        void SpellHitTarget(Unit* target, SpellInfo const* spell)
-        {
-            addPride(spell->Id, target);
-        }
-
         void MoveInLineOfSight(Unit* who)
         {
             if (who->GetTypeId() != TYPEID_PLAYER)
@@ -1193,10 +1115,8 @@ public:
                         break;
                     case EVENT_SPELL_RIFT_OF_CORRUPTION_DMG:
                         if (Creature * sha = instance->instance->GetCreature(instance->GetData64(NPC_SHA_OF_PRIDE)))
-                        {
                             if (Unit* target = sha->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                                 me->CastSpell(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), SPELL_RIFT_OF_CORRUPTION_DMG);
-                        }
                         events.RescheduleEvent(EVENT_SPELL_RIFT_OF_CORRUPTION_DMG, 5000); //18:37:47.000
                         break;
                     default:
@@ -1212,36 +1132,7 @@ public:
     }
 };
 
-class spell_sha_of_pride_imprison : public SpellScriptLoader
-{
-    public:
-        spell_sha_of_pride_imprison() : SpellScriptLoader("spell_sha_of_pride_imprison") { }
-
-        class spell_sha_of_pride_imprison_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_sha_of_pride_imprison_SpellScript);
-
-            void HandleScriptEffect(SpellEffIndex /*effIndex*/)
-            {
-                Unit* caster = GetCaster();
-                if (!caster)
-                    return;
-
-                //Better work is on EVENT_SPELL_CORRUPTED_PRISON. No need use it.
-            }
-
-            void Register() override
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_sha_of_pride_imprison_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const override
-        {
-            return new spell_sha_of_pride_imprison_SpellScript();
-        }
-};
-
+//144800
 class spell_sha_of_pride_self_reflection : public SpellScriptLoader
 {
     public:
@@ -1299,6 +1190,7 @@ class spell_sha_of_pride_self_reflection : public SpellScriptLoader
         }
 };
 
+//146822
 class spell_sha_of_pride_projection : public SpellScriptLoader
 {
     public:
@@ -1309,6 +1201,7 @@ class spell_sha_of_pride_projection : public SpellScriptLoader
             PrepareAuraScript(spell_sha_of_pride_projection_AuraScript);
 
             float x, y ,z;
+
             void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetTarget()->GetTypeId() != TYPEID_PLAYER)
@@ -1321,7 +1214,7 @@ class spell_sha_of_pride_projection : public SpellScriptLoader
             void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetTarget()->GetDistance(x, y, z) > 2.0f)
-                    GetTarget()->CastSpell(GetTarget(), SPELL_PROJECTION_DMG, false);
+                    GetTarget()->CastSpell(x, y, z, SPELL_PROJECTION_DMG, false);
             }
 
             void Register()
@@ -1335,18 +1228,6 @@ class spell_sha_of_pride_projection : public SpellScriptLoader
         {
             return new spell_sha_of_pride_projection_AuraScript();
         }
-};
-
-/*class _ValidTargetCheck
-{
-public:
-    bool operator()(WorldObject* unit)
-    {
-        if (Player* pl = unit->ToPlayer())
-            if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) != ROLES_TANK)
-                return false;
-        return true;
-    }
 };
 
 //144359
@@ -1363,8 +1244,8 @@ public:
         {
             if (GetCaster())
             {
+                targets.remove_if(TankFilter());
                 uint8 maxcount = GetCaster()->GetMap()->Is25ManRaid() ? 8 : 3;
-                targets.remove_if(_ValidTargetCheck());
                 if (targets.size() > maxcount)
                     targets.resize(maxcount);
             }
@@ -1372,8 +1253,8 @@ public:
 
         void Register()
         {
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_of_pride_gift_of_titans_SpellScript::_FilterTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_of_pride_gift_of_titans_SpellScript::_FilterTarget, EFFECT_1, TARGET_UNIT_SRC_AREA_ENEMY);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_of_pride_gift_of_titans_SpellScript::_FilterTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_of_pride_gift_of_titans_SpellScript::_FilterTarget, EFFECT_1, TARGET_UNIT_SRC_AREA_ENTRY);
         }
     };
 
@@ -1381,7 +1262,8 @@ public:
     {
         return new spell_sha_of_pride_gift_of_titans_SpellScript();
     }
-};*/
+};
+
 
 class ValidTargetCheck
 {
@@ -1440,32 +1322,34 @@ public:
     }
 };
 
-//Mark of Arrogance
+//144351
 class spell_sha_of_pride_mark_of_arrogance : public SpellScriptLoader
 {
-    public:
-        spell_sha_of_pride_mark_of_arrogance() : SpellScriptLoader("spell_sha_of_pride_mark_of_arrogance") { }
+public:
+    spell_sha_of_pride_mark_of_arrogance() : SpellScriptLoader("spell_sha_of_pride_mark_of_arrogance") { }
+    
+    class spell_sha_of_pride_mark_of_arrogance_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_sha_of_pride_mark_of_arrogance_AuraScript);
 
-        class spell_sha_of_pride_mark_of_arrogance_AuraScript : public AuraScript
+        void HandleDispel(DispelInfo* dispelInfo)
         {
-            PrepareAuraScript(spell_sha_of_pride_mark_of_arrogance_AuraScript);
-
-            void HandleDispel(DispelInfo* dispelInfo)
-            {
-                if (Unit* dispeller = dispelInfo->GetDispeller())
-                    addPride(GetSpellInfo()->Id, dispeller);
-            }
-
-            void Register()
-            {
-                AfterDispel += AuraDispelFn(spell_sha_of_pride_mark_of_arrogance_AuraScript::HandleDispel);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_sha_of_pride_mark_of_arrogance_AuraScript();
+            if (Unit* dispeller = dispelInfo->GetDispeller())
+                if (!dispeller->HasAura(SPELL_GIFT_OF_THE_TITANS) && dispeller->HasAura(SPELL_PRIDE))
+                    if (dispeller->GetPower(POWER_ALTERNATE_POWER) <= 95)
+                        dispeller->SetPower(POWER_ALTERNATE_POWER, dispeller->GetPower(POWER_ALTERNATE_POWER) + 5);
         }
+
+        void Register()
+        {
+            AfterDispel += AuraDispelFn(spell_sha_of_pride_mark_of_arrogance_AuraScript::HandleDispel);
+        }
+    };
+    
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_sha_of_pride_mark_of_arrogance_AuraScript();
+    }
 };
 
 //144843
@@ -1520,7 +1404,7 @@ public:
         {
             if (GetCaster() && GetHitUnit()->ToPlayer())
             {
-                if (GetHitUnit()->GetPower(POWER_ALTERNATE_POWER))
+                if (GetHitUnit()->HasAura(SPELL_PRIDE))
                 {
                     uint32 power = GetHitUnit()->GetPower(POWER_ALTERNATE_POWER);
                     if (power >= 25 && power <= 49)
@@ -1547,6 +1431,125 @@ public:
     }
 };
 
+//144774, 144379, 144788, 147198, 144911, 146818, 144836
+class spell_generic_modifier_pride : public SpellScriptLoader
+{
+public:
+    spell_generic_modifier_pride() : SpellScriptLoader("spell_generic_modifier_pride") { }
+
+    class spell_generic_modifier_pride_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_generic_modifier_pride_SpellScript);
+
+        void HitHandler()
+        {
+            if (GetHitUnit()->ToPlayer())
+                if (!GetHitUnit()->HasAura(SPELL_GIFT_OF_THE_TITANS) && GetHitUnit()->HasAura(SPELL_PRIDE))
+                    if (GetHitUnit()->GetPower(POWER_ALTERNATE_POWER) <= 95)
+                        GetHitUnit()->SetPower(POWER_ALTERNATE_POWER, GetHitUnit()->GetPower(POWER_ALTERNATE_POWER) + 5);
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_generic_modifier_pride_SpellScript::HitHandler);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_generic_modifier_pride_SpellScript();
+    }
+};
+
+//144370
+class spell_last_word : public SpellScriptLoader
+{
+public:
+    spell_last_word() : SpellScriptLoader("spell_last_word") { }
+
+    class spell_last_word_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_last_word_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*>& targets)
+        {
+            if (!targets.empty() && GetCaster())
+            {
+                std::vector<uint64> pllist;
+                pllist.clear();
+                float dist = 5.0f;
+                for (std::list<WorldObject*>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
+                {
+                    if (Player* pl = (*itr)->ToPlayer())
+                    {
+                        if (GetCaster()->GetExactDist2d(pl) <= dist && !pl->HasAura(SPELL_GIFT_OF_THE_TITANS) && pl->HasAura(SPELL_PRIDE))
+                        {
+                            if (pllist.empty())
+                                pllist.push_back((*itr)->GetGUID());
+                            else
+                            {
+                                if (pllist[0] != pl->GetGUID())
+                                {
+                                    pllist.push_back(pl->GetGUID());
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                            dist = dist + 10;
+                    }
+                }
+                if (!pllist.empty())
+                    for (std::vector<uint64>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                        if (Player* pl = GetCaster()->GetPlayer(*GetCaster(), *itr))
+                            if (pl->GetPower(POWER_ALTERNATE_POWER) <= 95)
+                                pl->SetPower(POWER_ALTERNATE_POWER, pl->GetPower(POWER_ALTERNATE_POWER) + 5);
+            }
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_last_word_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_last_word_SpellScript();
+    }
+};
+
+//144574, 144636,  144683,  144684
+class spell_corrupted_prison : public SpellScriptLoader
+{
+public:
+    spell_corrupted_prison() : SpellScriptLoader("spell_corrupted_prison") { }
+
+    class spell_corrupted_prison_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_corrupted_prison_AuraScript);
+
+        void OnPeriodic(AuraEffect const*aurEff)
+        {
+            if (GetTarget())
+                if (GetTarget()->HasAura(SPELL_PRIDE))
+                    if (GetTarget()->GetPower(POWER_ALTERNATE_POWER) <= 95)
+                        GetTarget()->SetPower(POWER_ALTERNATE_POWER, GetTarget()->GetPower(POWER_ALTERNATE_POWER) + 5);
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_corrupted_prison_AuraScript::OnPeriodic, EFFECT_2, SPELL_AURA_PERIODIC_DAMAGE);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_corrupted_prison_AuraScript();
+
+    }
+};
+
 void AddSC_boss_sha_of_pride()
 {
     new boss_sha_of_pride();
@@ -1557,12 +1560,14 @@ void AddSC_boss_sha_of_pride()
     new npc_sha_of_pride_manifest_of_pride();
     new npc_sha_of_pride_reflection();
     new npc_sha_of_pride_rift_of_corruption();
-    new spell_sha_of_pride_imprison();
     new spell_sha_of_pride_self_reflection();
     new spell_sha_of_pride_projection();
-    //new spell_sha_of_pride_gift_of_titans();
+    new spell_sha_of_pride_gift_of_titans();
     new spell_sha_of_pride_gift_of_titans_dummy();
     new spell_sha_of_pride_mark_of_arrogance();
     new spell_sha_of_pride_overcome();
     new spell_swelling_pride();
+    new spell_generic_modifier_pride();
+    new spell_last_word();
+    new spell_corrupted_prison();
 }

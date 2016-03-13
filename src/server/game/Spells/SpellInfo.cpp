@@ -1187,7 +1187,7 @@ SpellEffectInfo const* SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 145073: //Residual Corruption
     case 144628: //Titanic Smash
     //Sha of Pride
-    case 144359: //Gift of Titans
+    case 146818: //Aura of Pride
     case 144363: //Gift of Titans Dummy(checker)
     //Iron Juggernaut
     case 144766: //Detonation sequence

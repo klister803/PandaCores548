@@ -4986,9 +4986,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[2].TargetA = TARGET_UNIT_CONE_ENEMY_24;
                     break;
                 //Sha of Pride
-                case 144359: //Gift of Titans
-                    spellInfo->Effects[0].TargetB = 15;
-                    spellInfo->Effects[1].TargetB = 15;
+                case 146818: //Aura of Pride
+                    spellInfo->Effects[0].TargetA = 22;
+                    spellInfo->Effects[0].TargetB = 30;
                     break;
                 case 144363: //Gift of Titans Dummy(checker)
                     spellInfo->Effects[0].TargetB = 30;
