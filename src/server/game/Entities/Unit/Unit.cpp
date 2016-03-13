@@ -18337,6 +18337,12 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                                     takeCharges = isVictim ? true: false;
                                     break;
                                 }
+
+                                if (procSpell->HasAura(SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED))
+                                {
+                                    takeCharges = true;
+                                    break;
+                                }
                             }
 
                             if (!HasAura(115192))
