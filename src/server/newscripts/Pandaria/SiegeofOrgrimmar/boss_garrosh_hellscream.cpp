@@ -1334,10 +1334,13 @@ public:
     {
         PrepareAuraScript(spell_empovered_whirling_corruption_AuraScript);
 
-        void OnPeriodic(AuraEffect const*aurEff)
+        void OnPeriodic(AuraEffect const* aurEff)
         {
-            if (GetCaster())
-                GetCaster()->CastSpell(GetCaster(), SPELL_EM_WHIRLING_CORRUPTION_S, true);
+            if (GetCaster() && GetCaster()->ToCreature())
+            {
+                if (Unit* target = GetCaster()->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
+                    GetCaster()->CastSpell(target, SPELL_EM_WHIRLING_CORRUPTION_S, true);
+            }
         }
 
         void Register()
@@ -1605,16 +1608,28 @@ public:
             }
         }
 
+        void AfterAbsorb(AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
+        {
+            if (GetTarget() && aurEff->GetAmount())
+            {
+                uint32 hpmod = GetTarget()->CountPctFromMaxHealth(20);
+                GetTarget()->SetHealth(uint32(aurEff->GetAmount()) + hpmod);
+            }
+        }
+
         void HandleEffectRemove(AuraEffect const * aurEff, AuraEffectHandleModes mode)
         {
             if (GetTarget())
                 GetTarget()->ApplySpellImmune(0, IMMUNITY_ID, SPELL_DESECRATED, false);
+            if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
+                GetTarget()->SetFullHealth();
         }
 
         void Register()
         {
             AfterEffectApply += AuraEffectApplyFn(spell_touch_of_yshaarj_AuraScript::HandleOnApply, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB, AURA_EFFECT_HANDLE_REAL);
             OnEffectRemove += AuraEffectRemoveFn(spell_touch_of_yshaarj_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB, AURA_EFFECT_HANDLE_REAL);
+            AfterEffectAbsorb += AuraEffectAbsorbFn(spell_touch_of_yshaarj_AuraScript::AfterAbsorb, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
         }
     };
 
