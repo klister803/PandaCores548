@@ -154,12 +154,12 @@ class boss_sha_of_pride : public CreatureScript
             {
                 _Reset();
                 //Debug
-                /*me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->SetReactState(REACT_AGGRESSIVE);
                 SetCombatMovement(false);
                 me->AddAura(SPELL_SUBMERGE, me);
                 me->SetVisible(true);
-                DoCast(me, SPELL_SUBMERGE, false);*/
+                DoCast(me, SPELL_SUBMERGE, false);
                 checkvictim = 0;
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PRIDE);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_OVERCOME);
