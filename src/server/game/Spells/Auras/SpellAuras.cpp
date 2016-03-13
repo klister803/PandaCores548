@@ -1736,7 +1736,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                                 break;
                             }
                             case LINK_ACTION_AURATYPE:
-                                _target->RemoveAurasByType(AuraType(itr->hastalent2));
+                                _target->RemoveAurasByType(AuraType(abs(itr->effect)));
                                 break;
                         }
                     }
@@ -1805,7 +1805,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                                 break;
                             }
                             case LINK_ACTION_AURATYPE:
-                                _target->RemoveAurasByType(AuraType(itr->hastalent2));
+                                _target->RemoveAurasByType(AuraType(abs(itr->effect)));
                                 break;
                         }
                     }
@@ -1886,7 +1886,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                                     break;
                                 }
                                 case LINK_ACTION_AURATYPE:
-                                    _target->RemoveAurasByType(AuraType(itr->hastalent2));
+                                    _target->RemoveAurasByType(AuraType(abs(itr->effect)));
                                     break;
                             }
                         }
@@ -1948,7 +1948,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                                     break;
                                 }
                                 case LINK_ACTION_AURATYPE:
-                                    _target->RemoveAurasByType(AuraType(itr->hastalent2));
+                                    _target->RemoveAurasByType(AuraType(abs(itr->effect)));
                                     break;
                             }
                         }

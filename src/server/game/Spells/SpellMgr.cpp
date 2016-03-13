@@ -2427,12 +2427,15 @@ void SpellMgr::LoadSpellLinked()
             WorldDatabase.PExecute("DELETE FROM `spell_linked_spell` WHERE spell_trigger = %i", trigger);
             continue;
         }
-        spellInfo = GetSpellInfo(abs(effect));
-        if (!spellInfo)
+        if (actiontype != LINK_ACTION_AURATYPE)
         {
-            sLog->outError(LOG_FILTER_SQL, "Spell %i listed in `spell_linked_spell` does not exist", effect);
-            WorldDatabase.PExecute("DELETE FROM `spell_linked_spell` WHERE spell_trigger = %i", trigger);
-            continue;
+            spellInfo = GetSpellInfo(abs(effect));
+            if (!spellInfo)
+            {
+                sLog->outError(LOG_FILTER_SQL, "Spell %i listed in `spell_linked_spell` does not exist", effect);
+                WorldDatabase.PExecute("DELETE FROM `spell_linked_spell` WHERE spell_trigger = %i", trigger);
+                continue;
+            }
         }
 
         if (type) //we will find a better way when more types are needed
