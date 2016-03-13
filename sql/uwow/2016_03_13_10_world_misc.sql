@@ -1,0 +1,3 @@
+DELETE FROM `spell_linked_spell` WHERE (`spell_trigger`='115752') AND (`spell_effect`='-115752') AND (`type`='1') AND (`hastalent`='-115191') AND (`actiontype`='2');
+DELETE FROM `spell_linked_spell` WHERE (`spell_trigger`='105421') AND (`spell_effect`='-105421') AND (`type`='1') AND (`hastalent`='-115191') AND (`actiontype`='2');
+DELETE FROM `spell_linked_spell` WHERE (`spell_trigger`='114871') AND (`spell_effect`='-114871') AND (`type`='1') AND (`hastalent`='-115191') AND (`actiontype`='2');
