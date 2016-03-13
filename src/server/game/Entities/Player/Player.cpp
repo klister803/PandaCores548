@@ -30066,6 +30066,29 @@ void Player::SendMovementSetCollisionHeight(float height, uint32 mountDisplayID/
     SendDirectMessage(&data);
 }
 
+void Player::SendMovementSetGlide(bool apply)
+{
+    ObjectGuid guid = GetObjectGuid();
+
+    if (apply)
+    {
+        WorldPacket data(SMSG_SET_MOVEFLAG2_0x1000, 8 + 1 + 4);
+        data << uint32(m_sequenceIndex++);
+        data.WriteGuidMask<5, 1, 3, 0, 2, 6, 7, 4>(guid);
+        data.WriteGuidBytes<3, 1, 2, 7, 6, 0, 5, 4>(guid);
+        SendDirectMessage(&data);
+    }
+    else
+    {
+        WorldPacket data(SMSG_UNSET_MOVEFLAG2_0x1000, 8 + 1 + 4);
+        data.WriteGuidMask<5, 0, 3, 4, 7, 1, 2, 6>(guid);
+        data.WriteGuidBytes<7>(guid);
+        data << uint32(m_sequenceIndex++);
+        data.WriteGuidBytes<3, 4, 2, 0, 1, 5, 6>(guid);
+        SendDirectMessage(&data);
+    }
+}
+
 void Player::SetMover(Unit* target)
 {
     m_mover->m_movedPlayer = NULL;

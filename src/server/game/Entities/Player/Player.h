@@ -3154,6 +3154,7 @@ class Player : public Unit, public GridObject<Player>
         void SendMovementSetWaterWalking(bool apply);
         void SendMovementSetFeatherFall(bool apply);
         void SendMovementSetCollisionHeight(float height, uint32 mountDisplayID = 0);
+        void SendMovementSetGlide(bool apply);
 
         bool CanFly() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_CAN_FLY); }
 

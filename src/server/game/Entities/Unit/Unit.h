@@ -2558,7 +2558,6 @@ class Unit : public WorldObject
         void SendDispelFailed(uint64 targetGuid, uint32 spellId, std::list<uint32>& spellList);
         void SendDispelLog(uint64 targetGuid, uint32 spellId, std::list<uint32>& spellList, bool broke, bool stolen);
 
-        void SendMoveflag2_0x1000_Update(bool on);
         void SetCasterPet(bool isCaster) { isCasterPet = isCaster; }
         bool GetCasterPet() { return isCasterPet; }
         void SetAttackDist(float dist) { m_attackDist = dist; }

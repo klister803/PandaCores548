@@ -937,7 +937,7 @@ void WorldSession::HandleMoveHoverAck(WorldPacket& recvData)
         KickPlayer();
 
     uint32 opcodeNumber = itr->second;
-    _player->validHover = (opcodeNumber == uint32(SMSG_MOVE_SET_HOVER)) ? true : false;
+    //_player->validHover = (opcodeNumber == uint32(SMSG_MOVE_SET_HOVER)) ? true : false;
     _player->syncQueue.erase(itr);
 }
 

@@ -4158,7 +4158,8 @@ void AuraEffect::HandleAuraGlide(AuraApplication const* aurApp, uint8 mode, bool
     else
         target->RemoveExtraUnitMovementFlag(MOVEMENTFLAG2_0x1000);
 
-    target->SendMoveflag2_0x1000_Update(apply);
+    if (target->GetTypeId == TYPEID_PLAYER)
+        target->ToPlayer()->SendMovementSetGlide(apply);
 }
 
 void AuraEffect::HandleAuraHover(AuraApplication const* aurApp, uint8 mode, bool apply) const
