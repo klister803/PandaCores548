@@ -258,6 +258,8 @@ class boss_garrosh_hellscream : public CreatureScript
                     instance->SetData(DATA_RESET_REALM_OF_YSHAARJ, 0);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROSH_ENERGY);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_DESECRATED);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EM_GRIPPING_DESPAIR);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EXPLOSIVE_DESPAIR_DOT);
                 }
             }
 
@@ -396,6 +398,8 @@ class boss_garrosh_hellscream : public CreatureScript
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TOUCH_OF_YSHAARJ);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EM_TOUCH_OF_YSHAARJ);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_DESECRATED);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EM_GRIPPING_DESPAIR);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EXPLOSIVE_DESPAIR_DOT);
                 instance->SetData(DATA_PLAY_FINAL_MOVIE, 0);
             }
 
