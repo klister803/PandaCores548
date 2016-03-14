@@ -157,7 +157,7 @@ void Player::UpdatePlayerAccountData(AccountDataType type, time_t tm, std::strin
         AccountDatas["data"][index.c_str()]["Time"] = tm;
         AccountDatas["data"][index.c_str()]["Data"] = data.c_str();
 
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "accountdata", AccountDatas["data"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "data", AccountDatas["data"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerAccountData player guid %u", guid);
         });
     }
@@ -167,7 +167,7 @@ void Player::UpdatePlayerAccountData(AccountDataType type, time_t tm, std::strin
         PlayerData["accountdata"][index.c_str()]["Time"] = tm;
         PlayerData["accountdata"][index.c_str()]["Data"] = data.c_str();
 
-        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "playeraccountdata", PlayerData["accountdata"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", userKey, "accountdata", PlayerData["accountdata"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::UpdatePlayerAccountData player guid %u", guid);
         });
     }

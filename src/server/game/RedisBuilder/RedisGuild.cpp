@@ -448,6 +448,7 @@ bool Guild::LoadFromDB(uint32 guildId, Json::Value guildData)
     CreateKey();
 
     //Load Guild data
+    uint32 oldMSTime = getMSTime();
     RedisValue g = RedisDatabase.Execute("HGETALL", guildKey);
     std::vector<RedisValue> data;
     if (sRedisBuilderMgr->LoadFromRedisArray(&g, data))
@@ -488,7 +489,6 @@ bool Guild::LoadFromDB(uint32 guildId, Json::Value guildData)
 
     //Load Member data
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading guild members...");
-    uint32 oldMSTime = getMSTime();
     uint32 count = 0;
     RedisValue m = RedisDatabase.Execute("HGETALL", GetGuildMemberKey());
     std::vector<RedisValue> memberVector;
@@ -512,7 +512,6 @@ bool Guild::LoadFromDB(uint32 guildId, Json::Value guildData)
             LoadMemberFromDB(memberId, memberData);
             ++count;
         }
-        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u guild members int %u ms", count, GetMSTimeDiffToNow(oldMSTime));
     }
     else
         return false;
@@ -525,10 +524,10 @@ bool Guild::LoadFromDB(uint32 guildId, Json::Value guildData)
         for (auto itr = criteriaVector.begin(); itr != criteriaVector.end();)
         {
             uint32 achievementID = atoi(itr->toString().c_str());
+            std::string achievID = std::to_string(achievementID);
             ++itr;
 
-            Json::Value CriteriaData;
-            if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), CriteriaData))
+            if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), GuildCriteriaData[achievID.c_str()]))
             {
                 ++itr;
                 sLog->outInfo(LOG_FILTER_REDIS, "Guild::LoadFromDB not parse achievementID %i", achievementID);
@@ -537,7 +536,7 @@ bool Guild::LoadFromDB(uint32 guildId, Json::Value guildData)
             else
                 ++itr;
 
-            for (auto iter = CriteriaData.begin(); iter != CriteriaData.end(); ++iter)
+            for (auto iter = GuildCriteriaData[achievID.c_str()].begin(); iter != GuildCriteriaData[achievID.c_str()].end(); ++iter)
             {
                 uint32 char_criteria_id = atoi(iter.memberName());
                 auto dataValue = *iter;
@@ -550,9 +549,6 @@ bool Guild::LoadFromDB(uint32 guildId, Json::Value guildData)
 
                 m_achievementMgr.AddGuildCriteriaProgress(achievementID, char_criteria_id, date, counter, completed, guid);
             }
-
-            std::string achievID = std::to_string(achievementID);
-            GuildCriteriaData[achievID.c_str()] = CriteriaData;
         }
 
         m_achievementMgr.GenerateProgressMap();
@@ -588,6 +584,8 @@ bool Guild::LoadFromDB(uint32 guildId, Json::Value guildData)
             m_bankTabs[tabId]->LoadItemFromDB(itemData);
         }
     }
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded  guild data init %u ms, members %u", GetMSTimeDiffToNow(oldMSTime), count);
 
     return true;
 }

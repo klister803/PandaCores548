@@ -1723,9 +1723,11 @@ class Player : public Unit, public GridObject<Player>
         void SavePlayerDataAll();
 
         //load data into player LoadPlayer
-        bool LoadPlayerFromJson(uint64 guid);
+        bool LoadPlayerFromJson(uint64 guid, bool needSave = true);
         void LoadFromRedis(uint64 guid, uint8 step = 0);
         bool LoadPlayer(uint64 playerGuid);
+        void LoadPlayerData(std::vector<RedisValue>* dataVector);
+        void LoadAccountData(std::vector<RedisValue>* dataVector);
         bool LoadPlayerNext(uint64 playerGuid);
         void LoadPlayerGroup();
         void LoadPlayerLootCooldown();

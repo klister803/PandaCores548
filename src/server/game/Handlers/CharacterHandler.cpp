@@ -893,6 +893,9 @@ void WorldSession::HandlePlayerLoginAccountJson(PreparedQueryResult result)
         sRedisBuilderMgr->LoadFromString(data, pCurrChar->AccountDatas);
     }
 
+    //Init key fo data load
+    pCurrChar->InitCharKeys(GUID_LOPART(_playerGuid));
+
     if (pCurrChar->LoadPlayerFromJson(_playerGuid))
         HandlePlayerLogin(GetAccountId(), _playerGuid, 1);
     else
@@ -1198,7 +1201,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
     //init json data for save in redis db
     pCurrChar->InitSavePlayer();
 
-    sLog->outInfo(LOG_FILTER_REDIS, "HandlePlayerLogin time %u", getMSTime());
+    sLog->outInfo(LOG_FILTER_REDIS, "HandlePlayerLogin holder time %u", getMSTime());
 
     delete holder;
 }
@@ -2915,7 +2918,7 @@ void WorldSession::HandlePlayerLogin(uint32 accountId, uint64 playerGuid, uint8 
 
             sScriptMgr->OnPlayerLogin(pCurrChar);
 
-            sLog->outInfo(LOG_FILTER_REDIS, "HandlePlayerLogin time %u", getMSTime());
+            sLog->outInfo(LOG_FILTER_REDIS, "HandlePlayerLogin step 1 time %u", getMSTime());
             break;
         }
         case 2:
@@ -2934,6 +2937,5 @@ void WorldSession::HandlePlayerLogin(uint32 accountId, uint64 playerGuid, uint8 
             sLog->outError(LOG_FILTER_NETWORKIO, "Error HandlePlayerLogin step %u not found. account %u guid %u", step, accountId, playerGuid);
     }
 
-    sLog->outInfo(LOG_FILTER_REDIS, "HandlePlayerLogin end time %u", getMSTime());
-
+    sLog->outInfo(LOG_FILTER_REDIS, "HandlePlayerLogin redis end time %u", getMSTime());
 }

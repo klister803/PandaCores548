@@ -126,6 +126,8 @@ void RedisBuilderMgr::InitRedisKey()
 
 void PlayerSave::SaveToDB()
 {
+    uint32 oldMSTime = getMSTime();
+
     SaveItem();
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
@@ -182,6 +184,8 @@ void PlayerSave::SaveToDB()
     trans->Append(stmt);
 
     CharacterDatabase.CommitTransaction(trans);
+
+    sLog->outInfo(LOG_FILTER_REDIS, "PlayerSave::SaveToDB %u ms", GetMSTimeDiffToNow(oldMSTime));
 }
 
 void PlayerSave::SaveItem()
