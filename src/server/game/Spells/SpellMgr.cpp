@@ -5260,7 +5260,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TriggerSpell = 148982;
                     break;
                 case 145246: //Phase Three Transform
-                    spellInfo->Effects[0].BasePoints = 0;
+                    spellInfo->Effects[2].BasePoints = 0;
                     spellInfo->Effects[4].BasePoints = 100;
                     break;
                 case 145065: //Touch of Yshaarj

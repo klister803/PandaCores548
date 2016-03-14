@@ -36,6 +36,8 @@ enum eSpells
     SPELL_GRIPPING_DESPAIR           = 145183,
     SPELL_EM_GRIPPING_DESPAIR        = 145195,
     SPELL_PL_TOUCH_OF_YSHAARJ        = 145599,
+    SPELL_EXPLOSIVE_DESPAIR_EXPLOSE  = 145199,
+    SPELL_EXPLOSIVE_DESPAIR_DOT      = 145213,
     //Garrosh Special
     SPELL_TRANSITION_VISUAL_PHASE_2  = 144852,
     SPELL_TRANSITION_VISUAL_BASE     = 146756,
@@ -274,7 +276,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     checkevade = 1000;
                     SpawnIronStar();
                     phase = PHASE_ONE;
-                    events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 1000);
+                    events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 4000);
                     //events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
                     events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
                     events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 18000);
@@ -355,7 +357,6 @@ class boss_garrosh_hellscream : public CreatureScript
                     break;
                 case ACTION_PHASE_THREE:
                     phase = PHASE_THREE;
-                    me->SetHealth(me->CountPctFromMaxHealth(28));
                     me->SetPower(POWER_ENERGY, 100);
                     me->ReAttackWithZone();
                     events.ScheduleEvent(EVENT_GRIPPING_DESPAIR, 2000);
@@ -380,7 +381,6 @@ class boss_garrosh_hellscream : public CreatureScript
                         Talk(SAY_LAST_PHASE, 0);
                         DoCast(me, SPELL_TRANSITION_VISUAL_BASE);
                         DoCast(me, SPELL_TRANSITION_VISUAL_ADVANCE);
-                        me->RemoveAurasDueToSpell(SPELL_PHASE_TWO_TRANSFORM);
                         DoCast(me, SPELL_TRANSITION_VISUAL_PHASE_3);
                         break;
                     default:
@@ -396,6 +396,7 @@ class boss_garrosh_hellscream : public CreatureScript
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TOUCH_OF_YSHAARJ);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EM_TOUCH_OF_YSHAARJ);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_DESECRATED);
+                instance->SetData(DATA_PLAY_FINAL_MOVIE, 0);
             }
 
             bool IfTargetHavePlayersInRange(Player* target, uint8 count)
@@ -410,7 +411,7 @@ class boss_garrosh_hellscream : public CreatureScript
 
             bool CheckEvade()
             {
-                if (Creature* stalker = me->FindNearestCreature(NPC_HEART_OF_YSHAARJ, 72.0f, true))
+                if (Creature* stalker = me->FindNearestCreature(NPC_HEART_OF_YSHAARJ, 80.0f, true))
                     return true;
                 return false;
             }
@@ -521,12 +522,12 @@ class boss_garrosh_hellscream : public CreatureScript
                         for (uint8 n = 0; n < 3; n++)
                             if (Creature* lsoldier = me->SummonCreature(NPC_WARBRINGER, lsspos[n]))
                                 lsoldier->AI()->DoZoneInCombat(lsoldier, 200.0f);
-                        events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 40000);
+                        events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 45000);
                         break;
                     case EVENT_HELLSCREAM_WARSONG:
                         Talk(SAY_HELLSCREAM_WARSONG, 0);
                         DoCast(me, SPELL_HELLSCREAM_WARSONG);
-                        events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 38000);
+                        events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 42000);
                         break;
                     case EVENT_SUMMON_WOLF_RIDER:
                     {
@@ -688,13 +689,13 @@ class boss_garrosh_hellscream : public CreatureScript
                     break;
                     case EVENT_GRIPPING_DESPAIR:
                         if (me->getVictim())
-                            DoCastVictim(SPELL_GRIPPING_DESPAIR);
+                            DoCastVictim(me->GetPower(POWER_ENERGY) == 100 ? SPELL_EM_GRIPPING_DESPAIR : SPELL_GRIPPING_DESPAIR);
                         events.ScheduleEvent(EVENT_GRIPPING_DESPAIR, 4000);
                         break;
                     case EVENT_WHIRLING_CORRUPTION:
                         Talk(me->GetPower(POWER_ENERGY) >= 25 ? SAY_WHIRLING_CORRUPTION : SAY_EM_WHIRLING_CORRUPTION, 0);
                         DoCast(me, me->GetPower(POWER_ENERGY) >= 25 ? SPELL_EM_WHIRLING_CORRUPTION : SPELL_WHIRLING_CORRUPTION);
-                        events.ScheduleEvent(EVENT_WHIRLING_CORRUPTION, 40000);
+                        events.ScheduleEvent(EVENT_WHIRLING_CORRUPTION, 49500);
                         break;
                     }
                 }
@@ -1685,6 +1686,40 @@ public:
     }
 };
 
+//145195
+class spell_empovered_gripping_despair : public SpellScriptLoader
+{
+public:
+    spell_empovered_gripping_despair() : SpellScriptLoader("spell_empovered_gripping_despair") { }
+
+    class spell_empovered_gripping_despair_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_empovered_gripping_despair_AuraScript);
+
+        void HandleEffectRemove(AuraEffect const * aurEff, AuraEffectHandleModes mode)
+        {
+            if (GetCaster() && GetTarget())
+            {
+                float dmg = GetSpellInfo()->GetEffect(0)->BasePoints;
+                uint8 stack = aurEff->GetBase()->GetStackAmount();
+                GetTarget()->CastCustomSpell(SPELL_EXPLOSIVE_DESPAIR_DOT, SPELLVALUE_AURA_STACK, stack, GetTarget(), true);
+                GetTarget()->CastCustomSpell(SPELL_EXPLOSIVE_DESPAIR_EXPLOSE, SPELLVALUE_BASE_POINT0, dmg, GetTarget(), true);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_empovered_gripping_despair_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_empovered_gripping_despair_AuraScript();
+    }
+};
+
+
 void AddSC_boss_garrosh_hellscream()
 {
     new boss_garrosh_hellscream();
@@ -1706,4 +1741,5 @@ void AddSC_boss_garrosh_hellscream()
     new spell_hellscream_warsong();
     new spell_touch_of_yshaarj();
     new spell_player_touch_of_yshaarj();
+    new spell_empovered_gripping_despair();
 }

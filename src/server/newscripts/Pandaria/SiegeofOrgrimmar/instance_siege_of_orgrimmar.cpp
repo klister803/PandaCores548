@@ -128,7 +128,6 @@ public:
         uint8 rycount;
         //Misc
         uint32 TeamInInstance;
-        uint32 _teamInInstance;
         uint32 EventfieldOfSha;
         uint32 lingering_corruption_count;
 
@@ -238,7 +237,6 @@ public:
             klaxxidiecount = 0;
             weaponsdone = 0;
             TeamInInstance = 0;
-            _teamInInstance = 0;
             lingering_corruption_count = 0;
             crawlerminenum = 0;
             rycount = 0;
@@ -461,14 +459,6 @@ public:
 
         void OnCreatureCreate(Creature* creature)
         {
-            if (!_teamInInstance)
-            {
-                Map::PlayerList const& players = instance->GetPlayers();
-                if (!players.isEmpty())
-                    if (Player* player = players.begin()->getSource())
-                        _teamInInstance = player->GetTeam();
-            }
-
             switch (creature->GetEntry())
             {
                 case NPC_IMMERSEUS:
@@ -1722,7 +1712,15 @@ public:
             case DATA_RESET_REALM_OF_YSHAARJ:
                 ResetRealmOfYshaarj(true);
                 break;
-             }
+            case DATA_PLAY_FINAL_MOVIE:
+                uint32 spell = GetData(DATA_TEAM_IN_INSTANCE) == HORDE ? SPELL_HORDE : SPELL_ALLIANCE;
+                Map::PlayerList const& PlayerList = instance->GetPlayers();
+                if (!PlayerList.isEmpty())
+                    for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+                        if (Player* player = Itr->getSource())
+                            player->CastSpell(player, spell, true);
+                break;
+            }
         }
 
         uint32 GetData(uint32 type)
@@ -1730,15 +1728,14 @@ public:
             switch (type)
             {
                 case DATA_TEAM_IN_INSTANCE:
-                    if (!_teamInInstance)
+                    if (!TeamInInstance)
                     {
-                        Map::PlayerList const& players = instance->GetPlayers();
+                        Map::PlayerList const &players = instance->GetPlayers();
                         if (!players.isEmpty())
                             if (Player* player = players.begin()->getSource())
-                                _teamInInstance = player->GetTeam();
+                                TeamInInstance = player->GetTeam();
                     }
-                    return _teamInInstance;
-
+                    return TeamInInstance;
                 case DATA_GALAKRAS_PRE_EVENT:
                     return ShowCannon;
                 case DATA_GALAKRAS_PRE_EVENT_COUNT:
