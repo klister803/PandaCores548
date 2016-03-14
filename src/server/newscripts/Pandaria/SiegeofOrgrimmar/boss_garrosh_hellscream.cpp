@@ -697,8 +697,10 @@ class boss_garrosh_hellscream : public CreatureScript
                         events.ScheduleEvent(EVENT_GRIPPING_DESPAIR, 4000);
                         break;
                     case EVENT_WHIRLING_CORRUPTION:
+                        events.CancelEvent(EVENT_GRIPPING_DESPAIR);
                         Talk(me->GetPower(POWER_ENERGY) >= 25 ? SAY_WHIRLING_CORRUPTION : SAY_EM_WHIRLING_CORRUPTION, 0);
                         DoCast(me, me->GetPower(POWER_ENERGY) >= 25 ? SPELL_EM_WHIRLING_CORRUPTION : SPELL_WHIRLING_CORRUPTION);
+                        events.ScheduleEvent(EVENT_GRIPPING_DESPAIR, 10000);
                         events.ScheduleEvent(EVENT_WHIRLING_CORRUPTION, 49500);
                         break;
                     }
@@ -1704,10 +1706,13 @@ public:
         {
             if (GetCaster() && GetTarget())
             {
-                float dmg = GetSpellInfo()->GetEffect(0)->BasePoints;
-                uint8 stack = aurEff->GetBase()->GetStackAmount();
-                GetTarget()->CastCustomSpell(SPELL_EXPLOSIVE_DESPAIR_DOT, SPELLVALUE_AURA_STACK, stack, GetTarget(), true, 0, 0, GetCaster()->GetGUID());
-                GetTarget()->CastCustomSpell(SPELL_EXPLOSIVE_DESPAIR_EXPLOSE, SPELLVALUE_BASE_POINT0, dmg, GetTarget(), true);
+                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+                {
+                    float dmg = GetSpellInfo()->GetEffect(0)->BasePoints;
+                    uint8 stack = aurEff->GetBase()->GetStackAmount();
+                    GetTarget()->CastCustomSpell(SPELL_EXPLOSIVE_DESPAIR_DOT, SPELLVALUE_AURA_STACK, stack, GetTarget(), true, 0, 0, GetCaster()->GetGUID());
+                    GetTarget()->CastCustomSpell(SPELL_EXPLOSIVE_DESPAIR_EXPLOSE, SPELLVALUE_BASE_POINT0, dmg, GetTarget(), true);
+                }
             }
         }
 
