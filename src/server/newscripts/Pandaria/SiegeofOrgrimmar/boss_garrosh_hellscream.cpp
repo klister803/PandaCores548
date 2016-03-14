@@ -1706,7 +1706,7 @@ public:
             {
                 float dmg = GetSpellInfo()->GetEffect(0)->BasePoints;
                 uint8 stack = aurEff->GetBase()->GetStackAmount();
-                GetTarget()->CastCustomSpell(SPELL_EXPLOSIVE_DESPAIR_DOT, SPELLVALUE_AURA_STACK, stack, GetTarget(), true);
+                GetTarget()->CastCustomSpell(SPELL_EXPLOSIVE_DESPAIR_DOT, SPELLVALUE_AURA_STACK, stack, GetTarget(), true, 0, 0, GetCaster()->GetGUID());
                 GetTarget()->CastCustomSpell(SPELL_EXPLOSIVE_DESPAIR_EXPLOSE, SPELLVALUE_BASE_POINT0, dmg, GetTarget(), true);
             }
         }
