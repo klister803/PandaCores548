@@ -25984,8 +25984,6 @@ void Player::SendInitialPacketsAfterAddToMap()
 {
     UpdateVisibilityForPlayer();
 
-    UpdateVmapInfo(GetMap(), GetPositionX(), GetPositionY(), GetPositionZ());
-
     InstanceMap* inst = GetMap()->ToInstanceMap();
     uint32 instancePlayers = inst ? inst->GetMaxPlayers() : 0;
 

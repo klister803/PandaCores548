@@ -1887,13 +1887,13 @@ VMAPSInfo Map::getVmapInfo(float x, float y, float z) const
         //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "getVmapInfo() GetLiquidLevel");
         AreaTableEntry const* atEntry = 0;
         WMOAreaTableEntry const* wmoEntry = GetWMOAreaTableEntryByTripple(rootId, adtId, groupId);
-        if(wmoEntry)
+        if (wmoEntry)
         {
             atEntry = GetAreaEntryByAreaID(wmoEntry->areaId);
-            if(atEntry)
+            if (atEntry)
             {
                 vmapInfo.areaFlag = atEntry->exploreFlag;
-                if(AreaTableEntry const* entry = GetAreaEntryByAreaFlagAndMap(atEntry->exploreFlag, GetId()))
+                if (AreaTableEntry const* entry = GetAreaEntryByAreaFlagAndMap(atEntry->exploreFlag, GetId()))
                 {
                     haveAreaInfo = true;
                     vmapInfo.atEntry = entry;
@@ -1966,12 +1966,12 @@ VMAPSInfo Map::getVmapInfo(float x, float y, float z) const
     {
         AreaTableEntry const* atEntry = 0;
         WMOAreaTableEntry const* wmoEntry = GetWMOAreaTableEntryByTripple(rootId, adtId, groupId);
-        if(wmoEntry)
+        if (wmoEntry)
         {
             atEntry = GetAreaEntryByAreaID(wmoEntry->areaId);
-            if(atEntry)
+            if (atEntry)
             {
-                if(AreaTableEntry const* entry = GetAreaEntryByAreaFlagAndMap(atEntry->exploreFlag, GetId()))
+                if (AreaTableEntry const* entry = GetAreaEntryByAreaFlagAndMap(atEntry->exploreFlag, GetId()))
                 {
                     haveAreaInfo = true;
                     vmapInfo.atEntry = entry;
@@ -1999,13 +1999,13 @@ VMAPSInfo Map::getVmapInfo(float x, float y, float z) const
             vmapInfo.liquid_status = map_data;
             vmapInfo.Zliquid_status = map_result;
         }
-        if(!haveAreaInfo)
+        if (!haveAreaInfo)
             vmapInfo.areaFlag = gmap->getArea(x, y);
     }
-    else if(!haveAreaInfo)
+    else if (!haveAreaInfo)
         vmapInfo.areaFlag = GetAreaFlagByMapId(GetId());
 
-    if(!haveAreaInfo)
+    if (!haveAreaInfo || (vmapInfo.areaid == 0 || vmapInfo.zoneid == 0))
     {
         AreaTableEntry const* entry = GetAreaEntryByAreaFlagAndMap(vmapInfo.areaFlag, GetId());
         vmapInfo.atEntry = entry;

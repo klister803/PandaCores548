@@ -611,6 +611,15 @@ struct Position
         }
         return fmod(o, 2.0f * static_cast<float>(M_PI));
     }
+
+    static float NormalizePitch(float o)
+    {
+        if (o > -M_PI && o < M_PI)
+            return o;
+
+        o = NormalizeOrientation(o + M_PI) - M_PI;
+        return o;
+    }
 };
 
 ByteBuffer& operator<<(ByteBuffer& buf, Position::PositionXYStreamer const& streamer);
@@ -675,6 +684,11 @@ struct MovementInfo
         t_seat = -1;
         hasFallData = false;
         hasFallDirection = false;
+        hasSpline = false;
+        byte95 = false;
+        byteAC = false;
+        hasUnkInt32 = false;
+        unkInt32 = 0;
     }
 
     uint32 GetMovementFlags() const { return flags; }

@@ -366,7 +366,12 @@ public:
         handler->PSendSysMessage("Diffyculty %i spawnmask %i", map->GetDifficulty(), map->GetSpawnMode());
 
         handler->PSendSysMessage("areaid %i zoneid %i isOutdoors %i areaid %i zoneid %i areaFlag %i ID %i",
-        object->GetAreaId(), object->GetZoneId(), object->vmapInfo.isOutdoors, object->vmapInfo.areaid, object->vmapInfo.zoneid, object->vmapInfo.areaFlag, object->vmapInfo.atEntry ? object->vmapInfo.atEntry->ID : 0);
+            object->GetAreaId(), object->GetZoneId(), object->vmapInfo.isOutdoors, object->vmapInfo.areaid, object->vmapInfo.zoneid, object->vmapInfo.areaFlag, object->vmapInfo.atEntry ? object->vmapInfo.atEntry->ID : 0);
+        auto vmapInfo = object->GetMap()->getVmapInfo(object->GetPositionX(), object->GetPositionY(), object->GetPositionZ());
+
+        handler->PSendSysMessage("VMAPINFO: areaid %i zoneid %i isOutdoors %i areaid %i zoneid %i areaFlag %i ID %i",
+                                 vmapInfo.atEntry->ID, vmapInfo.zoneid, vmapInfo.isOutdoors, vmapInfo.areaid, vmapInfo.zoneid, vmapInfo.areaFlag, vmapInfo.atEntry ? vmapInfo.atEntry->ID : 0);
+
 
         if (object->m_movementInfo.t_guid)
             handler->PSendSysMessage("Transport position X: %f Y: %f Z: %f O: %f", object->m_movementInfo.t_pos.GetPositionX(), object->m_movementInfo.t_pos.GetPositionY(),
