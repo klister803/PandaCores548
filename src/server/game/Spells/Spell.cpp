@@ -6687,6 +6687,13 @@ bool Spell::CheckEffFromDummy(Unit* /*target*/, uint32 eff)
 
 SpellCastResult Spell::CheckCast(bool strict)
 {
+    //Massive Ressurection(guild ability) : Can not use this ability then encounter in progress!!
+    if (m_spellInfo->Id == 83968)
+        if (m_caster->GetMap()->IsDungeon())
+            if (InstanceScript* instance = m_caster->GetInstanceScript())
+                if (instance->IsEncounterInProgress())
+                    return SPELL_FAILED_AFFECTING_COMBAT;
+
     // Gloves S12 - Druid
     if (m_spellInfo->Id == 33830 && m_caster->HasAura(33830))
         return SPELL_FAILED_DONT_REPORT;
@@ -6700,6 +6707,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         return SPELL_FAILED_CASTER_DEAD;
 
     if (m_spellInfo->Effects[EFFECT_0].Effect == SPELL_EFFECT_UNLEARN_TALENT)
+    {
         if (Player* plr = m_caster->ToPlayer())
         {
             PlayerTalentMap* Talents = plr->GetTalentMap(plr->GetActiveSpec());
@@ -6718,6 +6726,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     break;
             }
         }
+    }
 
     // check cooldowns to prevent cheating
     if (m_caster->GetTypeId() == TYPEID_PLAYER && !(AttributesCustom & SPELL_ATTR0_PASSIVE))

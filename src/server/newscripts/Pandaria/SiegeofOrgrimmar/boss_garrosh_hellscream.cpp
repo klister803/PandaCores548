@@ -258,6 +258,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     instance->SetData(DATA_RESET_REALM_OF_YSHAARJ, 0);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROSH_ENERGY);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_DESECRATED);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GRIPPING_DESPAIR);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EM_GRIPPING_DESPAIR);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EXPLOSIVE_DESPAIR_DOT);
                 }
@@ -279,7 +280,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     SpawnIronStar();
                     phase = PHASE_ONE;
                     events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 4000);
-                    //events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
+                    events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
                     events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
                     events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 18000);
                     events.ScheduleEvent(EVENT_SUMMON_WOLF_RIDER, 30000);
@@ -862,8 +863,9 @@ public:
                     break;
                     //Warbringer
                 case EVENT_HAMSTRING:
-                    if (me->getVictim())
-                        DoCastVictim(SPELL_HAMSTRING);
+                    if (me->getVictim() && me->ToTempSummon())
+                        if (Unit* garrosh = me->ToTempSummon()->GetSummoner())
+                            me->CastSpell(me->getVictim(), SPELL_HAMSTRING, false, 0, 0, garrosh->GetGUID());
                     events.ScheduleEvent(EVENT_HAMSTRING, 15000);
                     break;
                     //Wolf Rider
