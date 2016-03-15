@@ -982,7 +982,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_watching_movie = false;
     plrUpdate = false;
 
-    validMoveEvents = MOVE_EVENT_NONE;
+    validMoveEventsMask = MOVE_EVENT_NONE;
     m_sequenceIndex = 0;
 }
 
@@ -26510,6 +26510,7 @@ void Player::SendAurasForTarget(Unit* target)
     /*! Blizz sends certain movement packets sometimes even before CreateObject
         These movement packets are usually found in SMSG_COMPRESSED_MOVES
     */
+    // NOT SURE! in new target sniffs these packets are not found
     if (target->HasAuraType(SPELL_AURA_FEATHER_FALL))
         target->SetFeatherFall(true, true);
 
@@ -29958,8 +29959,6 @@ void Player::SendMovementSetHover(bool apply)
 
     if (apply)
     {
-        syncQueue[m_sequenceIndex] = uint32(SMSG_MOVE_SET_HOVER);
-
         //! 5.4.1
         WorldPacket data(SMSG_MOVE_SET_HOVER, 12);
     
@@ -29971,8 +29970,6 @@ void Player::SendMovementSetHover(bool apply)
     }
     else
     {
-        syncQueue[m_sequenceIndex] = uint32(SMSG_MOVE_UNSET_HOVER);
-
         //! 5.4.1
         WorldPacket data(SMSG_MOVE_UNSET_HOVER, 12);
         

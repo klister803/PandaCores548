@@ -883,22 +883,6 @@ void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recvData)
     }
 }
 
-void WorldSession::HandleMoveFeatherFallAck(WorldPacket& recvData)
-{
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_FEATHER_FALL_ACK");
-
-    // no used
-    recvData.rfinish();                       // prevent warnings spam
-}
-
-void WorldSession::HandleMoveGravityEnableAck(WorldPacket& recvData)
-{
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_GRAVITY_ENABLE_ACK");
-
-    // no used
-    recvData.rfinish();                       // prevent warnings spam
-}
-
 void WorldSession::HandleMoveKnockBackAck(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_KNOCK_BACK_ACK");
@@ -922,6 +906,29 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket & recvData)
     _player->SendMessageToSet(&data, false);*/
 }
 
+void WorldSession::HandleMoveFeatherFallAck(WorldPacket& recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_FEATHER_FALL_ACK");
+
+    // no used
+    recvData.rfinish();                       // prevent warnings spam
+}
+
+void WorldSession::HandleMoveGravityEnableAck(WorldPacket& recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_GRAVITY_ENABLE_ACK");
+
+    uint32 ackIndex;
+    recvData.read_skip<float>();
+    recvData.read_skip<float>();
+    recvData.read_skip<float>();
+    recvData >> ackIndex;
+
+    recvData.rfinish();
+
+    _player->ToggleMoveEventsMask(MOVE_EVENT_GRAVITY);
+}
+
 void WorldSession::HandleMoveHoverAck(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_HOVER_ACK");
@@ -930,21 +937,48 @@ void WorldSession::HandleMoveHoverAck(WorldPacket& recvData)
     recvData.read_skip<float>();
     recvData.read_skip<float>();
     recvData >> ackIndex;
+
+    recvData.rfinish();
+
+    _player->ToggleMoveEventsMask(MOVE_EVENT_HOVER);
 }
 
 void WorldSession::HandleMoveWaterwalkAck(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_WATER_WALK_ACK");
+
+    uint32 ackIndex;
+    recvData >> ackIndex;
+
+    recvData.rfinish();
+
+    _player->ToggleMoveEventsMask(MOVE_EVENT_WATER_WALK);
 }
 
 void WorldSession::HandleMoveSetCanFlyAck(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_SET_CAN_FLY_ACK");
+
+    uint32 ackIndex;
+    recvData.read_skip<float>();
+    recvData.read_skip<float>();
+    recvData >> ackIndex;
+
+    recvData.rfinish();
+
+    _player->ToggleMoveEventsMask(MOVE_EVENT_FLYING);
 }
 
 void WorldSession::HandleMoveSetCanTransBtwSwimFlyAck(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_SET_CAN_TRANS_BETWEEN_SWIM_AND_FLY_ACK");
+
+    uint32 ackIndex;
+    recvData.read_skip<float>();
+    recvData.read_skip<float>();
+    recvData >> ackIndex;
+
+    recvData.rfinish();
 }
 
 void WorldSession::HandleSummonResponseOpcode(WorldPacket& recvData)
