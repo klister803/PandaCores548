@@ -1759,7 +1759,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
             Probability = 40.0f;
 
         if (roll_chance_f(Probability))
-            CastSpell(victim, 1604, true);
+            CastSpell(victim, 1604, true, 0, 0, victim->GetGUID());
     }
 
     if (GetTypeId() == TYPEID_PLAYER)

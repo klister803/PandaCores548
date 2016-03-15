@@ -3839,6 +3839,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 1604: //Dazed
+                    spellInfo->Effects[0].TargetA = 25;
+                    spellInfo->Effects[1].TargetA = 25;
+                    break;
                 case 137639: // Storm, Earth, and Fire
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_PROC_ONLY_ON_CAST;
                     spellInfo->Attributes |= SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY;
