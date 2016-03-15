@@ -1677,7 +1677,7 @@ public:
                     DoUseDoorOrButton(*itr);
                 break;
             case DATA_UPDATE_GARROSH_REALM:
-                rycount = rycount >= 2 ? urand(0, 1) : ++rycount;
+                rycount = rycount == 2 ? 0 : ++rycount;
                 break;
             case DATA_FIRST_ENGENEER_DIED:
                 if (data && !engeneerGuids.empty())

@@ -310,11 +310,13 @@ class boss_garrosh_hellscream : public CreatureScript
 
                     if (HealthBelowPct(10) && phase == PHASE_ONE)
                     {   //phase two
+                        me->InterruptNonMeleeSpells(true);
                         phase = PHASE_PREPARE;
                         DoAction(ACTION_PHASE_PREPARE);
                     }
                     else if (HealthBelowPct(10) && phase == PHASE_TWO)
                     {   //phase three
+                        me->InterruptNonMeleeSpells(true);
                         phase = PHASE_LAST_PREPARE;
                         realmofyshaarjtimer = 0;
                         DoAction(ACTION_INTRO_PHASE_THREE);
@@ -462,6 +464,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     if (realmofyshaarjtimer <= diff)
                     {
                         realmofyshaarjtimer = 0;
+                        me->InterruptNonMeleeSpells(true);
                         phase = PHASE_PREPARE;
                         DoAction(ACTION_PHASE_PREPARE);
                     }
@@ -605,6 +608,7 @@ class boss_garrosh_hellscream : public CreatureScript
                         instance->SetData(DATA_ACTION_SOLDIER, 1);
                         me->SetAttackStop(true);
                         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+                        instance->SetData(DATA_RESET_REALM_OF_YSHAARJ, 0); //for safe
                         uint8 mod = instance->GetData(DATA_GET_REALM_OF_YSHAARJ);
                         if (Creature* garroshrealm = me->SummonCreature(NPC_GARROSH, gspos[mod]))
                         {
