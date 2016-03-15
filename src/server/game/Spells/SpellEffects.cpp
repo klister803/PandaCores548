@@ -3749,6 +3749,9 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                 }
                 case SUMMON_TYPE_MINIPET:
                 {
+                    if (!m_caster->ToPlayer() || !m_caster->ToPlayer()->GetBattlePetMgr())
+                        return;
+
                     uint64 guid = m_caster->GetUInt64Value(PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID);
                     if (PetJournalInfo * petInfo = m_caster->ToPlayer()->GetBattlePetMgr()->GetPetInfoByPetGUID(guid))
                     {
