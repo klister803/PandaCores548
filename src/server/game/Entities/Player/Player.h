@@ -3537,17 +3537,28 @@ class Player : public Unit, public GridObject<Player>
         uint32 GetSequenceIndex() { return m_sequenceIndex; }
         std::unordered_map<uint32, uint32> syncQueue;
         PlayerMoveEventsMask validMoveEventsMask;
-        void ToggleMoveEventsMask(uint8 newMask)
+        void AddMoveEventsMask(uint8 newMask)
+        {
+            uint8 mask = (uint8)validMoveEventsMask;
+            mask |= newMask;
+            validMoveEventsMask = (PlayerMoveEventsMask)mask;
+        }
+        void RemoveMoveEventsMask(uint8 oldMask)
+        {
+            uint8 mask = (uint8)validMoveEventsMask;
+            mask &= ~oldMask;
+            validMoveEventsMask = (PlayerMoveEventsMask)mask;
+        }
+        void ToggleMoveEventsMask(uint8 tMask)
         {
             uint8 mask = (uint8)validMoveEventsMask;
 
-            if (mask & newMask)
-                mask &= ~newMask;
+            if (mask & tMask)
+                RemoveMoveEventsMask(tMask);
             else
-                mask |= newMask;
-
-            validMoveEventsMask = (PlayerMoveEventsMask)mask;
+                AddMoveEventsMask(tMask);
         }
+        bool HasMoveEventsMask(PlayerMoveEventsMask mask) { return (validMoveEventsMask & mask) != 0; }
     protected:
         //kill honor sistem
         KillInfoMap m_killsPerPlayer;

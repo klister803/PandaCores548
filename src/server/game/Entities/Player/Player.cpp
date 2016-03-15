@@ -26510,15 +26510,47 @@ void Player::SendAurasForTarget(Unit* target)
     /*! Blizz sends certain movement packets sometimes even before CreateObject
         These movement packets are usually found in SMSG_COMPRESSED_MOVES
     */
-    // NOT SURE! in new target sniffs these packets are not found
+    // NOT SURE...but for mobs?
     if (target->HasAuraType(SPELL_AURA_FEATHER_FALL))
         target->SetFeatherFall(true, true);
 
     if (target->HasAuraType(SPELL_AURA_WATER_WALK))
+    {
+        if (target->GetTypeId() == TYPEID_PLAYER)
+        {
+            if (Player* plr = target->ToPlayer())
+                if (!plr->HasMoveEventsMask(MOVE_EVENT_WATER_WALK))
+                    plr->AddMoveEventsMask(MOVE_EVENT_WATER_WALK);
+        }
+
         target->SetWaterWalking(true, true);
+    }
 
     if (target->HasAuraType(SPELL_AURA_HOVER))
+    {
+        if (target->GetTypeId() == TYPEID_PLAYER)
+        {
+            if (Player* plr = target->ToPlayer())
+                if (!plr->HasMoveEventsMask(MOVE_EVENT_HOVER))
+                    plr->AddMoveEventsMask(MOVE_EVENT_HOVER);
+        }
+
         target->SetHover(true, true);
+    }
+
+    bool flyAuras = (target->HasAuraType(SPELL_AURA_FLY) || target->HasAuraType(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED)
+        || target->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || target->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED)
+        || target->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS));
+
+    if (flyAuras)
+    {
+        if (target->GetTypeId() == TYPEID_PLAYER)
+        {
+            if (Player* plr = target->ToPlayer())
+                if (!plr->HasMoveEventsMask(MOVE_EVENT_FLYING))
+                    plr->AddMoveEventsMask(MOVE_EVENT_FLYING);
+        }
+    }
 
     ObjectGuid targetGuid = target->GetObjectGuid();
     Unit::VisibleAuraMap const* visibleAuras = target->GetVisibleAuras();

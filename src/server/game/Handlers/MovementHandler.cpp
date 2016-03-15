@@ -419,6 +419,22 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
         movementInfo.t_seat = -1;
     }
 
+    // test checks
+    if (plrMover && !plrMover->GetVehicle())
+    {
+        // water walk
+        if (!plrMover->HasMoveEventsMask(MOVE_EVENT_WATER_WALK) && movementInfo.HasMovementFlag(MOVEMENTFLAG_WATERWALKING))
+            KickPlayer();
+
+        // hover
+        if (!plrMover->HasMoveEventsMask(MOVE_EVENT_HOVER) && movementInfo.HasMovementFlag(MOVEMENTFLAG_HOVER))
+            KickPlayer();
+
+        // fly
+        if (!plrMover->HasMoveEventsMask(MOVE_EVENT_FLYING) && movementInfo.HasMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING))
+            KickPlayer();
+    }
+
     // fall damage generation (ignore in flight case that can be triggered also at lags in moment teleportation to another map).
     if (plrMover && plrMover->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING_FAR) && !movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING_FAR) && plrMover && !plrMover->isInFlight())
     {
@@ -926,7 +942,7 @@ void WorldSession::HandleMoveGravityEnableAck(WorldPacket& recvData)
 
     recvData.rfinish();
 
-    _player->ToggleMoveEventsMask(MOVE_EVENT_GRAVITY);
+    //_player->ToggleMoveEventsMask(MOVE_EVENT_GRAVITY);
 }
 
 void WorldSession::HandleMoveHoverAck(WorldPacket& recvData)
