@@ -230,6 +230,7 @@ class boss_garrosh_hellscream : public CreatureScript
             uint32 realmofyshaarjtimer;
             uint32 updatepower;
             uint32 checkevade;
+            uint8 realmnum;
             Phase phase;
 
             void Reset()
@@ -279,6 +280,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     checkevade = 1000;
                     SpawnIronStar();
                     phase = PHASE_ONE;
+                    realmnum = 0;
                     events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 4000);
                     events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
                     events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
@@ -629,6 +631,7 @@ class boss_garrosh_hellscream : public CreatureScript
                                     (*itr)->CastSpell(*itr, SPELL_GARROSH_ENERGY);
                                 }
                             }
+                            realmnum++;
                             garroshrealm->AI()->Talk(SAY_ENTER_REALM_OF_YSHAARJ, 0);
                             phase = PHASE_REALM_OF_YSHAARJ;
                             events.ScheduleEvent(EVENT_RETURN_TO_REAL, 60000);
@@ -667,7 +670,8 @@ class boss_garrosh_hellscream : public CreatureScript
                             events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
                             events.ScheduleEvent(EVENT_TOUCH_OF_YSHAARJ, 16000);
                             events.ScheduleEvent(EVENT_WHIRLING_CORRUPTION, 30000); 
-                            realmofyshaarjtimer = 150000;
+                            if (realmnum != 3)
+                                realmofyshaarjtimer = 150000;
                         }
                         break;
                     case EVENT_TOUCH_OF_YSHAARJ:
