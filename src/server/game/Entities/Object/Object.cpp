@@ -118,6 +118,7 @@ Object::Object() : m_PackGUID(sizeof(uint64)+1),
     m_objectUpdated(false)
 {
     m_PackGUID.appendPackGUID(0);
+    vmapData = new VMAPData();
 }
 
 WorldObject::~WorldObject()

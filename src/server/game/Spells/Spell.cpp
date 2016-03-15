@@ -6780,10 +6780,10 @@ SpellCastResult Spell::CheckCast(bool strict)
 
     if (m_caster->GetTypeId() == TYPEID_PLAYER && VMAP::VMapFactory::createOrGetVMapManager()->isLineOfSightCalcEnabled())
     {
-        if (AttributesCustom & SPELL_ATTR0_OUTDOORS_ONLY && !m_caster->vmapInfo.isOutdoors)
+        if (AttributesCustom & SPELL_ATTR0_OUTDOORS_ONLY && !m_caster->vmapData->IsOutdoor())
             return SPELL_FAILED_ONLY_OUTDOORS;
 
-        if (AttributesCustom & SPELL_ATTR0_INDOORS_ONLY && m_caster->vmapInfo.isOutdoors)
+        if (AttributesCustom & SPELL_ATTR0_INDOORS_ONLY && m_caster->vmapData->IsOutdoor())
             return SPELL_FAILED_ONLY_INDOORS;
     }
 
@@ -7802,9 +7802,8 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (m_originalCaster && m_originalCaster->GetTypeId() == TYPEID_PLAYER && m_originalCaster->isAlive())
                 {
                     Battlefield* Bf = sBattlefieldMgr->GetBattlefieldToZoneId(m_originalCaster->GetZoneId());
-                    if (m_originalCaster->vmapInfo.atEntry)
-                        if (m_originalCaster->vmapInfo.atEntry->flags & AREA_FLAG_NO_FLY_ZONE || (Bf && !Bf->CanFlyIn()))
-                            return (_triggeredCastFlags & TRIGGERED_DONT_REPORT_CAST_ERROR) ? SPELL_FAILED_DONT_REPORT : SPELL_FAILED_NOT_HERE;
+                    if (m_originalCaster->vmapData->HasAreaTableFlags(AREA_FLAG_NO_FLY_ZONE) || (Bf && !Bf->CanFlyIn()))
+                        return (_triggeredCastFlags & TRIGGERED_DONT_REPORT_CAST_ERROR) ? SPELL_FAILED_DONT_REPORT : SPELL_FAILED_NOT_HERE;
                 }
                 break;
             }

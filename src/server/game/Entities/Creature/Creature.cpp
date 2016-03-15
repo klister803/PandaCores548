@@ -1285,9 +1285,9 @@ void Creature::SelectLevel(const CreatureTemplate* cinfo)
     if (cinfo->type == CREATURE_TYPE_WILD_PET)
     {
         // random level depends on zone data
-        if (vmapInfo.atEntry)
+        if (vmapData->HasAreaTableEntry())
         {
-            uint8 level_ = urand(vmapInfo.atEntry->m_wildBattlePetLevelMin, vmapInfo.atEntry->m_wildBattlePetLevelMax);
+            uint8 level_ = urand(vmapData->GetWildBattlePetLevelMin(), vmapData->GetWildBattlePetLevelMax());
             if (!level_)
                 level_ = level;
 

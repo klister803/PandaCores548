@@ -365,12 +365,14 @@ public:
 
         handler->PSendSysMessage("Diffyculty %i spawnmask %i", map->GetDifficulty(), map->GetSpawnMode());
 
+        auto vmapData = object->vmapData;
         handler->PSendSysMessage("areaid %i zoneid %i isOutdoors %i areaid %i zoneid %i areaFlag %i ID %i",
-            object->GetAreaId(), object->GetZoneId(), object->vmapInfo.isOutdoors, object->vmapInfo.areaid, object->vmapInfo.zoneid, object->vmapInfo.areaFlag, object->vmapInfo.atEntry ? object->vmapInfo.atEntry->ID : 0);
-        auto vmapInfo = object->GetMap()->getVmapInfo(object->GetPositionX(), object->GetPositionY(), object->GetPositionZ());
+                                 object->GetAreaId(), object->GetZoneId(), vmapData->IsOutdoor(), vmapData->GetAreaId(), vmapData->GetZoneId(), vmapData->GetAreaId(), vmapData->GetAreaTableEntryId());
+
+        vmapData = object->GetMap()->GetVMAPData(object->GetPositionX(), object->GetPositionY(), object->GetPositionZ());
 
         handler->PSendSysMessage("VMAPINFO: areaid %i zoneid %i isOutdoors %i areaid %i zoneid %i areaFlag %i ID %i",
-                                 vmapInfo.atEntry->ID, vmapInfo.zoneid, vmapInfo.isOutdoors, vmapInfo.areaid, vmapInfo.zoneid, vmapInfo.areaFlag, vmapInfo.atEntry ? vmapInfo.atEntry->ID : 0);
+                                 object->GetAreaId(), object->GetZoneId(), vmapData->IsOutdoor(), vmapData->GetAreaId(), vmapData->GetZoneId(), vmapData->GetAreaId(), vmapData->GetAreaTableEntryId());
 
 
         if (object->m_movementInfo.t_guid)
@@ -382,8 +384,9 @@ public:
 
         if (status)
         {
-            handler->PSendSysMessage(LANG_LIQUID_STATUS, liquidStatus.level, liquidStatus.depth_level, liquidStatus.entry, liquidStatus.type_flags, status);
-            handler->PSendSysMessage(LANG_LIQUID_STATUS, object->vmapInfo.liquid_status.level, object->vmapInfo.liquid_status.depth_level, object->vmapInfo.liquid_status.entry, object->vmapInfo.liquid_status.type_flags, object->vmapInfo.Zliquid_status);
+            handler->PSendSysMessage(LANG_LIQUID_STATUS, liquidStatus.Level, liquidStatus.DepthLevel, liquidStatus.Entry, liquidStatus.TypeFlags, status);
+            handler->PSendSysMessage(LANG_LIQUID_STATUS, object->vmapData->GetLiquidData().Level, object->vmapData->GetLiquidData().DepthLevel, 
+                                     object->vmapData->GetLiquidData().Entry, object->vmapData->GetLiquidData().TypeFlags, object->vmapData->GetZLiquidStatus());
         }
 
         return true;

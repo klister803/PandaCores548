@@ -6026,13 +6026,13 @@ void Spell::EffectDuel(SpellEffIndex effIndex)
         return;
 
     // Players can only fight a duel in zones with this flag
-    if (caster->vmapInfo.atEntry && !(caster->vmapInfo.atEntry->flags & AREA_FLAG_ALLOW_DUELS))
+    if (!caster->vmapData->HasAreaTableFlags(AREA_FLAG_ALLOW_DUELS))
     {
         SendCastResult(SPELL_FAILED_NO_DUELING);            // Dueling isn't allowed here
         return;
     }
 
-    if (target->vmapInfo.atEntry && !(target->vmapInfo.atEntry->flags & AREA_FLAG_ALLOW_DUELS))
+    if (!target->vmapData->HasAreaTableFlags(AREA_FLAG_ALLOW_DUELS))
     {
         SendCastResult(SPELL_FAILED_NO_DUELING);            // Dueling isn't allowed here
         return;
@@ -7293,7 +7293,7 @@ void Spell::EffectTransmitted(SpellEffIndex effIndex)
 
         // replace by water level in this case
         //fz = cMap->GetWaterLevel(fx, fy);
-        fz = liqData.level;
+        fz = liqData.Level;
     }
     // if gameobject is summoning object, it should be spawned right on caster's position
     else if (goinfo->type == GAMEOBJECT_TYPE_RITUAL)

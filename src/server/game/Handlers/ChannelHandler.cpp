@@ -43,10 +43,10 @@ void WorldSession::HandleJoinChannel(WorldPacket& recvPacket)
         if (!channel)
             return;
 
-        if (!_player->vmapInfo.atEntry)
+        if (!_player->vmapData->HasAreaTableEntry())
             return;
 
-        if (!_player->CanJoinConstantChannelInZone(channel, _player->vmapInfo.atEntry))
+        if (!_player->CanJoinConstantChannelInZone(channel, _player->vmapData->GetAreaTableEntry()))
             return;
     }
 

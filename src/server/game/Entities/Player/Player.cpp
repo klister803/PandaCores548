@@ -6655,7 +6655,7 @@ void Player::RepopAtGraveyard()
     // note: this can be called also when the player is alive
     // for example from WorldSession::HandleMovementOpcodes
 
-    if (!vmapInfo.atEntry)
+    if (!vmapData->HasAreaTableEntry())
     {
         sLog->outInfo(LOG_FILTER_PLAYER, "Joueur %u dans une zone nulle; area id : %u", GetGUIDLow(), GetAreaId());
         return;
@@ -6707,7 +6707,7 @@ void Player::RepopAtGraveyard()
     }
     // Do it only if where is no grave or transport!
     // Such zones are considered unreachable as a ghost and the player must be automatically revived
-    else if ((!isAlive() && vmapInfo.atEntry->flags & AREA_FLAG_NEED_FLY) || GetTransport() || GetPositionZ() < vmapInfo.atEntry->MaxDepth)
+    else if ((!isAlive() && vmapData->HasAreaTableFlags(AREA_FLAG_NEED_FLY)) || GetTransport() || GetPositionZ() < vmapData->GetMaxDepth())
     {
         ResurrectPlayer(0.5f);
         SpawnCorpseBones();
@@ -7895,21 +7895,24 @@ void Player::CheckAreaExploreAndOutdoor()
     if (isInFlight())
         return;
 
-    if (sWorld->getBoolConfig(CONFIG_VMAP_INDOOR_CHECK) && !vmapInfo.isOutdoors)
+    if (sWorld->getBoolConfig(CONFIG_VMAP_INDOOR_CHECK) && !vmapData->IsOutdoor())
         RemoveAurasWithAttribute(SPELL_ATTR0_OUTDOORS_ONLY);
 
-    if (vmapInfo.areaFlag == 0xffff)
+    if (vmapData->GetAreaFlag() == 0xffff)
         return;
-    int offset = vmapInfo.areaFlag / 32;
+
+    int offset = vmapData->GetAreaFlag() / 32;
 
     if (offset >= PLAYER_EXPLORED_ZONES_SIZE)
     {
-        sLog->outError(LOG_FILTER_PLAYER, "Wrong area flag %u in map data for (X: %f Y: %f) point to field PLAYER_EXPLORED_ZONES_1 + %u ( %u must be < %u ).", vmapInfo.areaFlag, GetPositionX(), GetPositionY(), offset, offset, PLAYER_EXPLORED_ZONES_SIZE);
+        sLog->outError(LOG_FILTER_PLAYER, "Wrong area flag %u in map data for (X: %f Y: %f) point to field PLAYER_EXPLORED_ZONES_1 + %u ( %u must be < %u ).", 
+                       vmapData->GetAreaFlag(), GetPositionX(), GetPositionY(), offset, offset, PLAYER_EXPLORED_ZONES_SIZE);
         return;
     }
 
-    uint32 val = (uint32)(1 << (vmapInfo.areaFlag % 32));
+    uint32 val = (uint32)(1 << (vmapData->GetAreaFlag() % 32));
     uint32 currFields = GetUInt32Value(PLAYER_EXPLORED_ZONES_1 + offset);
+    uint32 areaLevel = vmapData->GetAreaTableEntry()->area_level;
 
     if (!(currFields & val))
     {
@@ -7917,22 +7920,22 @@ void Player::CheckAreaExploreAndOutdoor()
 
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EXPLORE_AREA);
 
-        if (!vmapInfo.atEntry)
+        if (!vmapData->HasAreaTableEntry())
         {
             sLog->outError(LOG_FILTER_PLAYER, "Player %u discovered unknown area (x: %f y: %f z: %f map: %u", GetGUIDLow(), GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId());
             return;
         }
 
-        if (vmapInfo.atEntry->area_level > 0)
+        if (areaLevel > 0)
         {
-            uint32 area = vmapInfo.atEntry->ID;
+            uint32 area = vmapData->GetAreaTableEntry()->ID;
             if (getLevel() >= sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
             {
                 SendExplorationExperience(area, 0);
             }
             else
             {
-                int32 diff = int32(getLevel()) - vmapInfo.atEntry->area_level;
+                int32 diff = int32(getLevel()) - areaLevel;
                 uint32 XP = 0;
 
                 float ExploreXpRate = 1;
@@ -7953,11 +7956,11 @@ void Player::CheckAreaExploreAndOutdoor()
                     else if (exploration_percent < 0)
                         exploration_percent = 0;
 
-                    XP = uint32(sObjectMgr->GetBaseXP(vmapInfo.atEntry->area_level) * exploration_percent / 100 * ExploreXpRate);
+                    XP = uint32(sObjectMgr->GetBaseXP(areaLevel) * exploration_percent / 100 * ExploreXpRate);
                 }
                 else
                 {
-                    XP = uint32(sObjectMgr->GetBaseXP(vmapInfo.atEntry->area_level) * ExploreXpRate);
+                    XP = uint32(sObjectMgr->GetBaseXP(areaLevel) * ExploreXpRate);
                 }
 
                 GiveXP(XP, NULL);
@@ -8973,7 +8976,7 @@ void Player::UpdateArea()
 
     phaseMgr.AddUpdateFlag(PHASE_UPDATE_FLAG_AREA_UPDATE);
 
-    AreaTableEntry const* area = vmapInfo.atEntry;
+    AreaTableEntry const* area = vmapData->GetAreaTableEntry();
     pvpInfo.inFFAPvPArea = area && (area->flags & AREA_FLAG_ARENA);
     UpdatePvPState(true);
 
@@ -27459,9 +27462,9 @@ void Player::SetOriginalGroup(Group* group, int8 subgroup)
 
 void Player::UpdateVmapInfo(Map* m, float x, float y, float z)
 {
-    vmapInfo = m->getVmapInfo(x, y, z);
-    m_zoneUpdateId = vmapInfo.zoneid;
-    m_areaUpdateId = vmapInfo.areaid;
+    m->GetVMAPData(x, y, z, vmapData);
+    m_zoneUpdateId = vmapData->GetZoneId();
+    m_areaUpdateId = vmapData->GetAreaId();
 
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::UpdateVmapInfo m_zoneUpdateId %i m_areaUpdateId %i m_saveZoneUpdateId %i m_saveAreaUpdateId %i", m_zoneUpdateId, m_areaUpdateId, m_saveZoneUpdateId, m_saveAreaUpdateId);
 
@@ -27473,7 +27476,7 @@ void Player::UpdateVmapInfo(Map* m, float x, float y, float z)
             UpdateArea();
     }
 
-    if (!vmapInfo.Zliquid_status)
+    if (!vmapData->HasZLiquidStatus())
     {
         m_MirrorTimerFlags &= ~(UNDERWATER_INWATER | UNDERWATER_INLAVA | UNDERWATER_INSLIME | UNDERWARER_INDARKWATER);
         if (_lastLiquid && _lastLiquid->SpellId)
@@ -27483,7 +27486,7 @@ void Player::UpdateVmapInfo(Map* m, float x, float y, float z)
         return;
     }
 
-    if (uint32 liqEntry = vmapInfo.liquid_status.entry)
+    if (uint32 liqEntry = vmapData->GetLiquidData().Entry)
     {
         LiquidTypeEntry const* liquid = sLiquidTypeStore.LookupEntry(liqEntry);
         if (_lastLiquid && _lastLiquid->SpellId && _lastLiquid->Id != liqEntry)
@@ -27491,7 +27494,7 @@ void Player::UpdateVmapInfo(Map* m, float x, float y, float z)
 
         if (liquid && liquid->SpellId)
         {
-            if (vmapInfo.Zliquid_status & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER))
+            if (vmapData->HasZLiquidStatus(LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER))
             {
                 if (!HasAura(liquid->SpellId))
                     CastSpell(this, liquid->SpellId, true);
@@ -27509,32 +27512,32 @@ void Player::UpdateVmapInfo(Map* m, float x, float y, float z)
     }
 
     // All liquids type - check under water position
-    if (vmapInfo.liquid_status.type_flags & (MAP_LIQUID_TYPE_WATER | MAP_LIQUID_TYPE_OCEAN | MAP_LIQUID_TYPE_MAGMA | MAP_LIQUID_TYPE_SLIME))
+    if (vmapData->HasLiquidTypeFlags(MAP_LIQUID_TYPE_WATER | MAP_LIQUID_TYPE_OCEAN | MAP_LIQUID_TYPE_MAGMA | MAP_LIQUID_TYPE_SLIME))
     {
-        if (vmapInfo.Zliquid_status & LIQUID_MAP_UNDER_WATER)
+        if (vmapData->HasZLiquidStatus(LIQUID_MAP_UNDER_WATER))
             m_MirrorTimerFlags |= UNDERWATER_INWATER;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INWATER;
     }
 
     // Allow travel in dark water on taxi or transport
-    if ((vmapInfo.liquid_status.type_flags & MAP_LIQUID_TYPE_DARK_WATER) && !isInFlight() && !GetTransport())
+    if (vmapData->HasLiquidTypeFlags(MAP_LIQUID_TYPE_DARK_WATER) && !isInFlight() && !GetTransport())
         m_MirrorTimerFlags |= UNDERWARER_INDARKWATER;
     else
         m_MirrorTimerFlags &= ~UNDERWARER_INDARKWATER;
 
     // in lava check, anywhere in lava level
-    if (vmapInfo.liquid_status.type_flags & MAP_LIQUID_TYPE_MAGMA)
+    if (vmapData->HasLiquidTypeFlags(MAP_LIQUID_TYPE_MAGMA))
     {
-        if (vmapInfo.Zliquid_status & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER | LIQUID_MAP_WATER_WALK))
+        if (vmapData->HasZLiquidStatus(LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER | LIQUID_MAP_WATER_WALK))
             m_MirrorTimerFlags |= UNDERWATER_INLAVA;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INLAVA;
     }
     // in slime check, anywhere in slime level
-    if (vmapInfo.liquid_status.type_flags & MAP_LIQUID_TYPE_SLIME)
+    if (vmapData->HasLiquidTypeFlags(MAP_LIQUID_TYPE_SLIME))
     {
-        if (vmapInfo.Zliquid_status & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER | LIQUID_MAP_WATER_WALK))
+        if (vmapData->HasZLiquidStatus(LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER | LIQUID_MAP_WATER_WALK))
             m_MirrorTimerFlags |= UNDERWATER_INSLIME;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INSLIME;

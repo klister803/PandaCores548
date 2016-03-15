@@ -144,26 +144,61 @@ private:
     uint16 _dungeonId;
 };
 
-struct VMAPSInfo
+struct VMAPData
 {
-    VMAPSInfo()
-    {
-        isOutdoors = true;
-        areaFlag = 0;
-        liquid_type = 0;
-        mogpFlags = areaid = zoneid = 0;
-        adtId = rootId = groupId = 0;
-        Zliquid_status = LIQUID_MAP_NO_WATER;
-        atEntry = NULL;
-    }
-    bool isOutdoors;
-    uint16 areaFlag;
-    uint32 liquid_type;
-    uint32 mogpFlags, areaid, zoneid;
-    int32 adtId, rootId, groupId;
-    ZLiquidStatus Zliquid_status;
-    LiquidData liquid_status;
-    AreaTableEntry const* atEntry;
+    public:
+        VMAPData() : _isOutdoor(true), _areaFlag(0), _liquidType(0), _mogpFlags(0), _areaId(0), _zoneId(0),
+            _adtId(0), _rootId(0), _groupId(0), _zliquidStatus(LIQUID_MAP_NO_WATER), _atEntry(nullptr)
+        {
+        }
+
+        bool IsOutdoor() const { return _isOutdoor; }
+        bool HasAreaTableEntry() const { return _atEntry != nullptr; }
+        bool HasAreaTableFlags(uint32 flags) const { return _atEntry ? _atEntry->flags & flags : false; }
+        bool HasLiquidTypeFlags(uint32 flags) const { return _liquidData.TypeFlags & flags; }
+        bool HasZLiquidStatus() const { return _zliquidStatus != LIQUID_MAP_NO_WATER; }
+        bool HasZLiquidStatus(uint32 flag) const { return _zliquidStatus & flag; }
+
+        float GetMaxDepth() const { return _atEntry ? _atEntry->MaxDepth : 0.0f; }
+        uint32 GetAreaTableEntryId() const { return _atEntry ? _atEntry->ID : 0; }
+        uint32 GetAreaFlag() const { return _areaFlag; }
+        uint32 GetLiquidType() const { return _liquidType; }
+        uint32 GetAreaId() const { return _areaId; }
+        uint32 GetZoneId() const { return _zoneId; }
+        uint32 GetWildBattlePetLevelMin() const { return _atEntry ? _atEntry->m_wildBattlePetLevelMin : 0; }
+        uint32 GetWildBattlePetLevelMax() const { return _atEntry ? _atEntry->m_wildBattlePetLevelMax : 0; }
+
+        const ZLiquidStatus& GetZLiquidStatus() { return _zliquidStatus; }
+        const LiquidData& GetLiquidData() { return _liquidData; }
+        AreaTableEntry const* GetAreaTableEntry() { return _atEntry; }
+
+    public:
+        void SetAreaFlag(uint32 flag) { _areaFlag = flag; }
+        void SetAreaTableEntry(AreaTableEntry const* atEntry) 
+        { 
+            if (!atEntry)
+                return;
+
+            _atEntry = atEntry;
+            _areaId = _atEntry ? _atEntry->ID : 0;
+            _zoneId = _atEntry ? ((_atEntry->zone != 0) ? _atEntry->zone : _atEntry->ID) : 0;
+        }
+        void SetZoneId(uint32 zoneId) { _zoneId = zoneId; }
+        void SetAreaId(uint32 areaId) { _areaId = areaId; }
+        void SetOutdoor(bool val) { _isOutdoor = val; }
+        void SetLiquidType(uint32 liquidType) { _liquidType = liquidType; }
+        void SetZLiquidStatus(ZLiquidStatus zliquidStatus) { _zliquidStatus = zliquidStatus; }
+        void SetLiquidData(LiquidData liquidData) { _liquidData = liquidData; }
+
+    private:
+        bool _isOutdoor;
+        uint16 _areaFlag;
+        uint32 _liquidType;
+        uint32 _mogpFlags, _areaId, _zoneId;
+        int32 _adtId, _rootId, _groupId;
+        ZLiquidStatus _zliquidStatus;
+        LiquidData _liquidData;
+        AreaTableEntry const* _atEntry;
 };
 
 typedef std::map<Player*, UpdateData> UpdateDataMapType;
@@ -478,7 +513,7 @@ class Object
         static char const* GetTypeName(uint32 high);
         char const* GetTypeName() const { return m_valuesCount ? GetTypeName(GetGUIDHigh()) : "None"; }
         std::string GetString() const;
-        VMAPSInfo vmapInfo;
+        VMAPData* vmapData;
 };
 
 struct Position

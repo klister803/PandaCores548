@@ -1265,10 +1265,12 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
             if (!player)
                 return false;
 
-            if (!(player->vmapInfo.atEntry && player->vmapInfo.atEntry->flags & AREA_FLAG_NO_FLY_ZONE))
+            if (!player->vmapData->HasAreaTableFlags(AREA_FLAG_NO_FLY_ZONE))
                 return false;
+
             if (!player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY))
                 return false;
+
             break;
         }
         case 91604: // No fly Zone - Wintergrasp
