@@ -850,6 +850,7 @@ enum PlayerMoveEventsMask
     MOVE_EVENT_GRAVITY    = 0x02,
     MOVE_EVENT_FLYING     = 0x04,
     MOVE_EVENT_HOVER      = 0x08,
+    MOVE_EVENT_TELEPORT   = 0x10
 };
 
 #define MAX_PLAYED_TIME_INDEX 2

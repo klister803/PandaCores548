@@ -228,6 +228,7 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)
         return;
 
     plMover->SetSemaphoreTeleportNear(false);
+    plMover->AddMoveEventsMask(MOVE_EVENT_TELEPORT);
 
     uint32 old_zone = plMover->GetZoneId();
 
@@ -419,7 +420,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
         movementInfo.t_seat = -1;
     }
 
-    // test checks
+    // first...
     if (plrMover && !plrMover->GetVehicle())
     {
         // water walk
@@ -433,6 +434,21 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
         // fly
         if (!plrMover->HasMoveEventsMask(MOVE_EVENT_FLYING) && movementInfo.HasMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING))
             KickPlayer();
+    }
+
+    // second...
+    if (plrMover && !plrMover->GetTransport())
+    {
+        // teleport
+        // delta = 20 yards
+        float dist = plrMover->GetDistance(movementInfo.pos);
+        if (dist > 20.0f)
+        {
+            if (!plrMover->HasMoveEventsMask(MOVE_EVENT_TELEPORT) && !plrMover->HasUnitState(UNIT_STATE_JUMPING))
+                KickPlayer();
+            else if (plrMover->HasMoveEventsMask(MOVE_EVENT_TELEPORT))
+                plrMover->RemoveMoveEventsMask(MOVE_EVENT_TELEPORT);
+        }
     }
 
     // fall damage generation (ignore in flight case that can be triggered also at lags in moment teleportation to another map).
