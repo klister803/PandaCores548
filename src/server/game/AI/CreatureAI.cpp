@@ -169,13 +169,26 @@ void CreatureAI::DoAttackerGroupInCombat(Player* attacker)
 
 // scripts does not take care about MoveInLineOfSight loops
 // MoveInLineOfSight can be called inside another MoveInLineOfSight and cause stack overflow
-void CreatureAI::MoveInLineOfSight_Safe(Unit* who)
+void CreatureAI::SafeMoveInLineOfSight(Unit* who)
 {
     if (!me || !who || m_MoveInLineOfSight_locked == true)
         return;
+
     m_MoveInLineOfSight_locked = true;
-    MoveInLineOfSight(who);
+    DoMoveInLineOfSight(who);
     m_MoveInLineOfSight_locked = false;
+}
+
+void CreatureAI::DoMoveInLineOfSight(Unit* who)
+{
+    if (me->getVictim())
+        return;
+
+    if (me->GetCreatureType() == CREATURE_TYPE_NON_COMBAT_PET) // non-combat pets should just stand there and look good;)
+        return;
+
+    if (me->canStartAttack(who, false))
+        AttackStart(who);
 }
 
 void CreatureAI::MoveInLineOfSight(Unit* who)
@@ -188,6 +201,7 @@ void CreatureAI::MoveInLineOfSight(Unit* who)
 
     if (me->canStartAttack(who, false))
         AttackStart(who);
+
     //else if (who->getVictim() && me->IsFriendlyTo(who)
     //    && me->IsWithinDistInMap(who, sWorld->getIntConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS))
     //    && me->canStartAttack(who->getVictim(), true)) // TODO: if we use true, it will not attack it when it arrives

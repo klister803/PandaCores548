@@ -6790,12 +6790,10 @@ SpellCastResult Spell::CheckCast(bool strict)
 
     if (m_caster->GetTypeId() == TYPEID_PLAYER && VMAP::VMapFactory::createOrGetVMapManager()->isLineOfSightCalcEnabled())
     {
-        if (AttributesCustom & SPELL_ATTR0_OUTDOORS_ONLY &&
-                !m_caster->GetMap()->IsOutdoors(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ()))
+        if (AttributesCustom & SPELL_ATTR0_OUTDOORS_ONLY && !m_caster->vmapInfo.isOutdoors)
             return SPELL_FAILED_ONLY_OUTDOORS;
 
-        if (AttributesCustom & SPELL_ATTR0_INDOORS_ONLY &&
-                m_caster->GetMap()->IsOutdoors(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ()))
+        if (AttributesCustom & SPELL_ATTR0_INDOORS_ONLY && m_caster->vmapInfo.isOutdoors)
             return SPELL_FAILED_ONLY_INDOORS;
     }
 
@@ -7044,10 +7042,7 @@ SpellCastResult Spell::CheckCast(bool strict)
     // zone check
     if (m_caster->GetTypeId() == TYPEID_UNIT || !m_caster->ToPlayer()->isGameMaster())
     {
-        uint32 zone, area;
-        m_caster->GetZoneAndAreaId(zone, area);
-
-        SpellCastResult locRes= m_spellInfo->CheckLocation(m_caster->GetMapId(), zone, area,
+        SpellCastResult locRes= m_spellInfo->CheckLocation(m_caster->GetMapId(), m_caster->GetZoneId(), m_caster->GetAreaId(),
             m_caster->GetTypeId() == TYPEID_PLAYER ? m_caster->ToPlayer() : NULL);
         if (locRes != SPELL_CAST_OK)
             return locRes;
@@ -7817,8 +7812,8 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (m_originalCaster && m_originalCaster->GetTypeId() == TYPEID_PLAYER && m_originalCaster->isAlive())
                 {
                     Battlefield* Bf = sBattlefieldMgr->GetBattlefieldToZoneId(m_originalCaster->GetZoneId());
-                    if (AreaTableEntry const* area = GetAreaEntryByAreaID(m_originalCaster->GetAreaId()))
-                        if (area->flags & AREA_FLAG_NO_FLY_ZONE  || (Bf && !Bf->CanFlyIn()))
+                    if (m_originalCaster->vmapInfo.atEntry)
+                        if (m_originalCaster->vmapInfo.atEntry->flags & AREA_FLAG_NO_FLY_ZONE || (Bf && !Bf->CanFlyIn()))
                             return (_triggeredCastFlags & TRIGGERED_DONT_REPORT_CAST_ERROR) ? SPELL_FAILED_DONT_REPORT : SPELL_FAILED_NOT_HERE;
                 }
                 break;

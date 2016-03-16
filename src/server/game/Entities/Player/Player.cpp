@@ -83,7 +83,6 @@
 #include "AuctionHouseMgr.h"
 #include "ScenarioMgr.h"
 
-#define ZONE_UPDATE_INTERVAL (1*IN_MILLISECONDS)
 
 enum CharacterFlags
 {
@@ -765,12 +764,6 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_needUpdateRangeHastMod = false;
     m_needUpdateHastMod = false;
     m_duelLock = false;
-
-    m_zoneUpdateId = 0;
-    m_zoneUpdateTimer = 0;
-    m_zoneUpdateAllow = false;
-
-    m_areaUpdateId = 0;
 
     m_nextSave = sWorld->getIntConfig(CONFIG_INTERVAL_SAVE);
 
@@ -1978,31 +1971,6 @@ void Player::Update(uint32 p_time)
             m_weaponChangeTimer = 0;
         else
             m_weaponChangeTimer -= p_time;
-    }
-
-    if (m_zoneUpdateTimer > 0 && m_zoneUpdateAllow)
-    {
-        if (p_time >= m_zoneUpdateTimer)
-        {
-            m_zoneUpdateAllow = false;
-
-            uint32 newzone, newarea;
-            GetZoneAndAreaId(newzone, newarea);
-
-            if (m_zoneUpdateId != newzone)
-                UpdateZone(newzone, newarea);                // also update area
-            else
-            {
-                // use area updates as well
-                // needed for free far all arenas for example
-                if (m_areaUpdateId != newarea)
-                    UpdateArea(newarea);
-
-                m_zoneUpdateTimer = ZONE_UPDATE_INTERVAL;
-            }
-        }
-        else
-            m_zoneUpdateTimer -= p_time;
     }
 
     if (m_syncTimer > 0)
@@ -3501,7 +3469,7 @@ void Player::SetGameMaster(bool on)
             SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
 
         // restore FFA PvP area state, remove not allowed for GM mounts
-        UpdateArea(m_areaUpdateId);
+        UpdateArea();
 
         getHostileRefManager().setOnlineOfflineState(true);
         m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_PLAYER);
@@ -6319,10 +6287,7 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
     }
 
     // trigger update zone for alive state zone updates
-    uint32 newzone, newarea;
-    GetZoneAndAreaId(newzone, newarea);
-    UpdateZone(newzone, newarea);
-    sOutdoorPvPMgr->HandlePlayerResurrects(this, newzone);
+    sOutdoorPvPMgr->HandlePlayerResurrects(this, m_zoneUpdateId);
 
     if (InBattleground())
     {
@@ -6694,8 +6659,7 @@ void Player::RepopAtGraveyard()
     // note: this can be called also when the player is alive
     // for example from WorldSession::HandleMovementOpcodes
 
-    AreaTableEntry const* zone = GetAreaEntryByAreaID(GetAreaId());
-    if (!zone)
+    if (!vmapInfo.atEntry)
     {
         sLog->outInfo(LOG_FILTER_PLAYER, "Joueur %u dans une zone nulle; area id : %u", GetGUIDLow(), GetAreaId());
         return;
@@ -6747,12 +6711,12 @@ void Player::RepopAtGraveyard()
     }
     // Do it only if where is no grave or transport!
     // Such zones are considered unreachable as a ghost and the player must be automatically revived
-    else if ((!isAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY) || GetTransport() || GetPositionZ() < (zone ? zone->MaxDepth : -500.0f))
+    else if ((!isAlive() && vmapInfo.atEntry->flags & AREA_FLAG_NEED_FLY) || GetTransport() || GetPositionZ() < vmapInfo.atEntry->MaxDepth)
     {
         ResurrectPlayer(0.5f);
         SpawnCorpseBones();
     }
-    //else if (GetPositionZ() < zone->MaxDepth)
+    //else if (GetPositionZ() < vmapInfo.atEntry->MaxDepth)
         //TeleportTo(m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, GetOrientation());
 }
 
@@ -6800,7 +6764,7 @@ void Player::CleanupChannels()
 
 void Player::UpdateLocalChannels(uint32 newZone)
 {
-    if (GetSession()->PlayerLoading() && !IsBeingTeleportedFar())
+    if (!IsInWorld() || GetSession()->PlayerLoading() && !IsBeingTeleportedFar())
         return;                                              // The client handles it automatically after loading, but not after teleporting
 
     AreaTableEntry const* current_zone = GetAreaEntryByAreaID(newZone);
@@ -7829,12 +7793,6 @@ bool Player::UpdatePosition(float x, float y, float z, float orientation, bool t
 
     CheckAreaExploreAndOutdoor();
 
-    // Enable check for zone.
-    if (!m_zoneUpdateAllow && !m_lastZoneUpdPos.IsInDist(this, World::Visibility_RelocationLowerLimit))
-    {
-        m_zoneUpdateAllow = true;
-        m_lastZoneUpdPos = *this;
-    }
     return true;
 }
 
@@ -7941,23 +7899,20 @@ void Player::CheckAreaExploreAndOutdoor()
     if (isInFlight())
         return;
 
-    bool isOutdoor;
-    uint16 areaFlag = GetBaseMap()->GetAreaFlag(GetPositionX(), GetPositionY(), GetPositionZ(), &isOutdoor);
-
-    if (sWorld->getBoolConfig(CONFIG_VMAP_INDOOR_CHECK) && !isOutdoor)
+    if (sWorld->getBoolConfig(CONFIG_VMAP_INDOOR_CHECK) && !vmapInfo.isOutdoors)
         RemoveAurasWithAttribute(SPELL_ATTR0_OUTDOORS_ONLY);
 
-    if (areaFlag == 0xffff)
+    if (vmapInfo.areaFlag == 0xffff)
         return;
-    int offset = areaFlag / 32;
+    int offset = vmapInfo.areaFlag / 32;
 
     if (offset >= PLAYER_EXPLORED_ZONES_SIZE)
     {
-        sLog->outError(LOG_FILTER_PLAYER, "Wrong area flag %u in map data for (X: %f Y: %f) point to field PLAYER_EXPLORED_ZONES_1 + %u ( %u must be < %u ).", areaFlag, GetPositionX(), GetPositionY(), offset, offset, PLAYER_EXPLORED_ZONES_SIZE);
+        sLog->outError(LOG_FILTER_PLAYER, "Wrong area flag %u in map data for (X: %f Y: %f) point to field PLAYER_EXPLORED_ZONES_1 + %u ( %u must be < %u ).", vmapInfo.areaFlag, GetPositionX(), GetPositionY(), offset, offset, PLAYER_EXPLORED_ZONES_SIZE);
         return;
     }
 
-    uint32 val = (uint32)(1 << (areaFlag % 32));
+    uint32 val = (uint32)(1 << (vmapInfo.areaFlag % 32));
     uint32 currFields = GetUInt32Value(PLAYER_EXPLORED_ZONES_1 + offset);
 
     if (!(currFields & val))
@@ -7966,23 +7921,22 @@ void Player::CheckAreaExploreAndOutdoor()
 
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EXPLORE_AREA);
 
-        AreaTableEntry const* areaEntry = GetAreaEntryByAreaFlagAndMap(areaFlag, GetMapId());
-        if (!areaEntry)
+        if (!vmapInfo.atEntry)
         {
             sLog->outError(LOG_FILTER_PLAYER, "Player %u discovered unknown area (x: %f y: %f z: %f map: %u", GetGUIDLow(), GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId());
             return;
         }
 
-        if (areaEntry->area_level > 0)
+        if (vmapInfo.atEntry->area_level > 0)
         {
-            uint32 area = areaEntry->ID;
+            uint32 area = vmapInfo.atEntry->ID;
             if (getLevel() >= sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
             {
                 SendExplorationExperience(area, 0);
             }
             else
             {
-                int32 diff = int32(getLevel()) - areaEntry->area_level;
+                int32 diff = int32(getLevel()) - vmapInfo.atEntry->area_level;
                 uint32 XP = 0;
 
                 float ExploreXpRate = 1;
@@ -8003,11 +7957,11 @@ void Player::CheckAreaExploreAndOutdoor()
                     else if (exploration_percent < 0)
                         exploration_percent = 0;
 
-                    XP = uint32(sObjectMgr->GetBaseXP(areaEntry->area_level) * exploration_percent / 100 * ExploreXpRate);
+                    XP = uint32(sObjectMgr->GetBaseXP(vmapInfo.atEntry->area_level) * exploration_percent / 100 * ExploreXpRate);
                 }
                 else
                 {
-                    XP = uint32(sObjectMgr->GetBaseXP(areaEntry->area_level) * ExploreXpRate);
+                    XP = uint32(sObjectMgr->GetBaseXP(vmapInfo.atEntry->area_level) * ExploreXpRate);
                 }
 
                 GiveXP(XP, NULL);
@@ -9015,31 +8969,31 @@ uint32 Player::GetLevelFromDB(uint64 guid)
     return level;
 }
 
-void Player::UpdateArea(uint32 newArea)
+void Player::UpdateArea()
 {
     // FFA_PVP flags are area and not zone id dependent
     // so apply them accordingly
-    m_areaUpdateId    = newArea;
+    m_saveAreaUpdateId = m_areaUpdateId;
 
     phaseMgr.AddUpdateFlag(PHASE_UPDATE_FLAG_AREA_UPDATE);
 
-    AreaTableEntry const* area = GetAreaEntryByAreaID(newArea);
+    AreaTableEntry const* area = vmapInfo.atEntry;
     pvpInfo.inFFAPvPArea = area && (area->flags & AREA_FLAG_ARENA);
     UpdatePvPState(true);
 
     //Pandaria area update for monk level < 85
     if(area && getLevel() < 85 && getClass() == CLASS_MONK && GetMapId() == 870 && area->mapid == 870 &&
-        newArea != 6081 && newArea != 6526 && newArea != 6527 
+        m_areaUpdateId != 6081 && m_areaUpdateId != 6526 && m_areaUpdateId != 6527 
         && m_zoneUpdateId == 5841 && !isGameMaster())
         TeleportTo(870, 3818.55f, 1793.18f, 950.35f, GetOrientation());
     
     //Hack OO: Galakras. Fix me
     if (GetMapId() == 1136)
-        SendInitWorldStates(m_zoneUpdateId, newArea);
+        SendInitWorldStates(m_zoneUpdateId, m_areaUpdateId);
 
-    UpdateAreaDependentAuras(newArea);
+    UpdateAreaDependentAuras(m_areaUpdateId);
 
-    PrepareAreaQuest(newArea);
+    PrepareAreaQuest(m_areaUpdateId);
 
     // previously this was in UpdateZone (but after UpdateArea) so nothing will break
     pvpInfo.inNoPvPArea = false;
@@ -9055,7 +9009,7 @@ void Player::UpdateArea(uint32 newArea)
     //for FUN servers
     if(sWorld->getBoolConfig(CONFIG_FUN_OPTION_ENABLED))
     {
-        if(newArea == 6823 || m_zoneUpdateId == 6757)
+        if(m_areaUpdateId == 6823 || m_zoneUpdateId == 6757)
         {
             SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
             pvpInfo.inNoPvPArea = true;
@@ -9066,30 +9020,29 @@ void Player::UpdateArea(uint32 newArea)
     phaseMgr.RemoveUpdateFlag(PHASE_UPDATE_FLAG_AREA_UPDATE);
 }
 
-void Player::UpdateZone(uint32 newZone, uint32 newArea)
+void Player::UpdateZone()
 {
     phaseMgr.AddUpdateFlag(PHASE_UPDATE_FLAG_ZONE_UPDATE);
 
-    if (m_zoneUpdateId != newZone)
+    if (m_zoneUpdateId != m_saveZoneUpdateId)
     {
-        sOutdoorPvPMgr->HandlePlayerLeaveZone(this, m_zoneUpdateId);
-        sOutdoorPvPMgr->HandlePlayerEnterZone(this, newZone);
-        sBattlefieldMgr->HandlePlayerLeaveZone(this, m_zoneUpdateId);
-        sBattlefieldMgr->HandlePlayerEnterZone(this, newZone);
-        SendInitWorldStates(newZone, newArea);              // only if really enters to new zone, not just area change, works strange...
+        sOutdoorPvPMgr->HandlePlayerLeaveZone(this, m_saveZoneUpdateId);
+        sOutdoorPvPMgr->HandlePlayerEnterZone(this, m_zoneUpdateId);
+        sBattlefieldMgr->HandlePlayerLeaveZone(this, m_saveZoneUpdateId);
+        sBattlefieldMgr->HandlePlayerEnterZone(this, m_zoneUpdateId);
+        SendInitWorldStates(m_zoneUpdateId, m_areaUpdateId);              // only if really enters to new zone, not just area change, works strange...
     }
 
     // group update
     if (Group* group = GetGroup())
         SetGroupUpdateFlag(GROUP_UPDATE_FULL);
 
-    m_zoneUpdateId    = newZone;
-    m_zoneUpdateTimer = ZONE_UPDATE_INTERVAL;
+    m_saveZoneUpdateId = m_zoneUpdateId;
 
     // zone changed, so area changed as well, update it
-    UpdateArea(newArea);
+    UpdateArea();
 
-    AreaTableEntry const* zone = GetAreaEntryByAreaID(newZone);
+    AreaTableEntry const* zone = GetAreaEntryByAreaID(m_zoneUpdateId);
     if (!zone)
         return;
 
@@ -9107,7 +9060,7 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
         }
     }
 
-    sScriptMgr->OnPlayerUpdateZone(this, newZone, newArea);
+    sScriptMgr->OnPlayerUpdateZone(this, m_zoneUpdateId, m_areaUpdateId);
 
     // in PvP, any not controlled zone (except zone->team == 6, default case)
     // in PvE, only opposition team capital
@@ -9164,15 +9117,15 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
     // remove items with area/map limitations (delete only for alive player to allow back in ghost mode)
     // if player resurrected at teleport this will be applied in resurrect code
     if (isAlive())
-        DestroyZoneLimitedItem(true, newZone);
+        DestroyZoneLimitedItem(true, m_zoneUpdateId);
 
     // check some item equip limitations (in result lost CanTitanGrip at talent reset, for example)
     AutoUnequipOffhandIfNeed();
 
     // recent client version not send leave/join channel packets for built-in local channels
-    UpdateLocalChannels(newZone);
+    UpdateLocalChannels(m_zoneUpdateId);
 
-    UpdateZoneDependentAuras(newZone);
+    UpdateZoneDependentAuras(m_zoneUpdateId);
 
     phaseMgr.RemoveUpdateFlag(PHASE_UPDATE_FLAG_ZONE_UPDATE);
 }
@@ -26035,10 +25988,7 @@ void Player::SendInitialPacketsAfterAddToMap()
 {
     UpdateVisibilityForPlayer();
 
-    // update zone
-    uint32 newzone, newarea;
-    GetZoneAndAreaId(newzone, newarea);
-    UpdateZone(newzone, newarea);                            // also call SendInitWorldStates();
+    UpdateVmapInfo(GetMap(), GetPositionX(), GetPositionY(), GetPositionZ());
 
     InstanceMap* inst = GetMap()->ToInstanceMap();
     uint32 instancePlayers = inst ? inst->GetMaxPlayers() : 0;
@@ -27546,10 +27496,23 @@ void Player::SetOriginalGroup(Group* group, int8 subgroup)
     }
 }
 
-void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
+void Player::UpdateVmapInfo(Map* m, float x, float y, float z)
 {
-    Zliquid_status = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
-    if (!Zliquid_status)
+    vmapInfo = m->getVmapInfo(x, y, z);
+    m_zoneUpdateId = vmapInfo.zoneid;
+    m_areaUpdateId = vmapInfo.areaid;
+
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::UpdateVmapInfo m_zoneUpdateId %i m_areaUpdateId %i m_saveZoneUpdateId %i m_saveAreaUpdateId %i", m_zoneUpdateId, m_areaUpdateId, m_saveZoneUpdateId, m_saveAreaUpdateId);
+
+    if (IsInWorld())
+    {
+        if (m_zoneUpdateId != m_saveZoneUpdateId)
+            UpdateZone();
+        else if (m_areaUpdateId != m_saveAreaUpdateId)
+            UpdateArea();
+    }
+
+    if (!vmapInfo.Zliquid_status)
     {
         m_MirrorTimerFlags &= ~(UNDERWATER_INWATER | UNDERWATER_INLAVA | UNDERWATER_INSLIME | UNDERWARER_INDARKWATER);
         if (_lastLiquid && _lastLiquid->SpellId)
@@ -27559,7 +27522,7 @@ void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
         return;
     }
 
-    if (uint32 liqEntry = liquid_status.entry)
+    if (uint32 liqEntry = vmapInfo.liquid_status.entry)
     {
         LiquidTypeEntry const* liquid = sLiquidTypeStore.LookupEntry(liqEntry);
         if (_lastLiquid && _lastLiquid->SpellId && _lastLiquid->Id != liqEntry)
@@ -27567,7 +27530,7 @@ void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
 
         if (liquid && liquid->SpellId)
         {
-            if (Zliquid_status & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER))
+            if (vmapInfo.Zliquid_status & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER))
             {
                 if (!HasAura(liquid->SpellId))
                     CastSpell(this, liquid->SpellId, true);
@@ -27584,34 +27547,33 @@ void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
         _lastLiquid = NULL;
     }
 
-
     // All liquids type - check under water position
-    if (liquid_status.type_flags & (MAP_LIQUID_TYPE_WATER | MAP_LIQUID_TYPE_OCEAN | MAP_LIQUID_TYPE_MAGMA | MAP_LIQUID_TYPE_SLIME))
+    if (vmapInfo.liquid_status.type_flags & (MAP_LIQUID_TYPE_WATER | MAP_LIQUID_TYPE_OCEAN | MAP_LIQUID_TYPE_MAGMA | MAP_LIQUID_TYPE_SLIME))
     {
-        if (Zliquid_status & LIQUID_MAP_UNDER_WATER)
+        if (vmapInfo.Zliquid_status & LIQUID_MAP_UNDER_WATER)
             m_MirrorTimerFlags |= UNDERWATER_INWATER;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INWATER;
     }
 
     // Allow travel in dark water on taxi or transport
-    if ((liquid_status.type_flags & MAP_LIQUID_TYPE_DARK_WATER) && !isInFlight() && !GetTransport())
+    if ((vmapInfo.liquid_status.type_flags & MAP_LIQUID_TYPE_DARK_WATER) && !isInFlight() && !GetTransport())
         m_MirrorTimerFlags |= UNDERWARER_INDARKWATER;
     else
         m_MirrorTimerFlags &= ~UNDERWARER_INDARKWATER;
 
     // in lava check, anywhere in lava level
-    if (liquid_status.type_flags & MAP_LIQUID_TYPE_MAGMA)
+    if (vmapInfo.liquid_status.type_flags & MAP_LIQUID_TYPE_MAGMA)
     {
-        if (Zliquid_status & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER | LIQUID_MAP_WATER_WALK))
+        if (vmapInfo.Zliquid_status & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER | LIQUID_MAP_WATER_WALK))
             m_MirrorTimerFlags |= UNDERWATER_INLAVA;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INLAVA;
     }
     // in slime check, anywhere in slime level
-    if (liquid_status.type_flags & MAP_LIQUID_TYPE_SLIME)
+    if (vmapInfo.liquid_status.type_flags & MAP_LIQUID_TYPE_SLIME)
     {
-        if (Zliquid_status & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER | LIQUID_MAP_WATER_WALK))
+        if (vmapInfo.Zliquid_status & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER | LIQUID_MAP_WATER_WALK))
             m_MirrorTimerFlags |= UNDERWATER_INSLIME;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INSLIME;
@@ -30197,13 +30159,11 @@ void Player::SetPersonnalXpRate(float PersonnalXpRate)
 
 void Player::CheckSpellAreaOnQuestStatusChange(uint32 quest_id)
 {
-    uint32 zone = 0, area = 0;
+    uint32 zone = GetZoneId(), area = GetAreaId();
 
     SpellAreaForQuestMapBounds saBounds = sSpellMgr->GetSpellAreaForQuestMapBounds(quest_id);
     if (saBounds.first != saBounds.second)
     {
-        GetZoneAndAreaId(zone, area);
-
         for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
         {
             if (zone != itr->second->areaId && area != itr->second->areaId)
@@ -30223,9 +30183,6 @@ void Player::CheckSpellAreaOnQuestStatusChange(uint32 quest_id)
     saBounds = sSpellMgr->GetSpellAreaForQuestEndMapBounds(quest_id);
     if (saBounds.first != saBounds.second)
     {
-        if (!zone || !area)
-            GetZoneAndAreaId(zone, area);
-
         for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
         {
             if (zone != itr->second->areaId && area != itr->second->areaId)
