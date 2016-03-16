@@ -461,11 +461,6 @@ class WorldSession
 
         void HandleInspectRatedBGStats(WorldPacket& recvPacket);
 
-        void HandleMoveWaterWalkAck(WorldPacket& recvPacket);
-        void HandleFeatherFallAck(WorldPacket& recvData);
-
-        void HandleMoveHoverAck(WorldPacket& recvData);
-
         void HandleMountSpecialAnimOpcode(WorldPacket& recvdata);
 
         // character view
@@ -475,11 +470,16 @@ class WorldSession
         // repair
         void HandleRepairItemOpcode(WorldPacket& recvPacket);
 
-        // Knockback
+        // movement synchronization acks
+        void HandleForceSpeedChangeAck(WorldPacket &recvData);
         void HandleMoveKnockBackAck(WorldPacket& recvPacket);
-
         void HandleMoveTeleportAck(WorldPacket& recvPacket);
-        void HandleForceSpeedChangeAck(WorldPacket& recvData);
+        void HandleMoveHoverAck(WorldPacket& recvData);
+        void HandleMoveWaterwalkAck(WorldPacket& recvData);
+        void HandleMoveSetCanFlyAck(WorldPacket& recvData);
+        void HandleMoveSetCanTransBtwSwimFlyAck(WorldPacket& recvData);
+        void HandleMoveFeatherFallAck(WorldPacket& recvData);
+        void HandleMoveGravityEnableAck(WorldPacket& recvData);
 
         void HandlePingOpcode(WorldPacket& recvPacket);
         void HandleAuthSessionOpcode(WorldPacket& recvPacket);
@@ -492,7 +492,6 @@ class WorldSession
         void HandleLootMasterGiveOpcode(WorldPacket& recvPacket);
         void HandleWhoOpcode(WorldPacket& recvPacket);
         void HandleLogoutRequestOpcode(WorldPacket& recvPacket);
-        void HandlePlayerLogoutOpcode(WorldPacket& recvPacket);
         void HandleLogoutCancelOpcode(WorldPacket& recvPacket);
 
         // GM Ticket opcodes
@@ -856,6 +855,7 @@ class WorldSession
         void HandleRealmSplitOpcode(WorldPacket& recvData);
         void HandleRealmQueryNameOpcode(WorldPacket& recvData);
         void HandleTimeSyncResp(WorldPacket& recvData);
+        void HandleDiscardedTimeSyncAcks(WorldPacket& recvData);
         void HandleWhoisOpcode(WorldPacket& recvData);
         void HandleResetInstancesOpcode(WorldPacket& recvData);
         void HandleHearthAndResurrect(WorldPacket& recvData);

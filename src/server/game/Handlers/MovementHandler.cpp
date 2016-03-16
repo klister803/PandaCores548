@@ -224,6 +224,7 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)
         return;
 
     plMover->SetSemaphoreTeleportNear(false);
+    plMover->AddMoveEventsMask(MOVE_EVENT_TELEPORT);
 
     uint32 old_zone = plMover->GetZoneId();
 
@@ -409,6 +410,37 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
         movementInfo.t_pos.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
         movementInfo.t_time = 0;
         movementInfo.t_seat = -1;
+    }
+
+    // first...
+    if (plrMover && !plrMover->GetVehicle())
+    {
+        // water walk
+        if (!plrMover->HasMoveEventsMask(MOVE_EVENT_WATER_WALK) && movementInfo.HasMovementFlag(MOVEMENTFLAG_WATERWALKING))
+            KickPlayer();
+
+        // hover
+        if (!plrMover->HasMoveEventsMask(MOVE_EVENT_HOVER) && movementInfo.HasMovementFlag(MOVEMENTFLAG_HOVER))
+            KickPlayer();
+
+        // fly
+        if (!plrMover->HasMoveEventsMask(MOVE_EVENT_FLYING) && movementInfo.HasMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING))
+            KickPlayer();
+    }
+
+    // second...
+    if (plrMover && !plrMover->GetTransport())
+    {
+        // teleport
+        // delta = 20 yards
+        float dist = plrMover->GetDistance(movementInfo.pos);
+        if (dist > 20.0f)
+        {
+            if (!plrMover->HasMoveEventsMask(MOVE_EVENT_TELEPORT) && !plrMover->HasUnitState(UNIT_STATE_JUMPING))
+                KickPlayer();
+            else if (plrMover->HasMoveEventsMask(MOVE_EVENT_TELEPORT))
+                plrMover->RemoveMoveEventsMask(MOVE_EVENT_TELEPORT);
+        }
     }
 
     // fall damage generation (ignore in flight case that can be triggered also at lags in moment teleportation to another map).
@@ -768,68 +800,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     }
 }
 
-void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recvData)
-{
-    uint32 opcode = recvData.GetOpcode();
-
-    /* extract packet */
-    uint64 guid;
-    uint32 unk1;
-    float  newspeed;
-
-    recvData.readPackGUID(guid);
-
-    // now can skip not our packet
-    if (_player->GetGUID() != guid)
-    {
-        recvData.rfinish();                   // prevent warnings spam
-        return;
-    }
-
-    // continue parse packet
-
-    recvData >> unk1;                                      // counter or moveEvent
-
-    MovementInfo movementInfo;
-    movementInfo.guid = guid;
-    ReadMovementInfo(recvData, &movementInfo);
-
-    recvData >> newspeed;
-    /*----------------*/
-
-    // client ACK send one packet for mounted/run case and need skip all except last from its
-    // in other cases anti-cheat check can be fail in false case
-    UnitMoveType move_type       = MOVE_WALK;
-    UnitMoveType force_move_type = MOVE_WALK;
-
-    static char const* move_type_name[MAX_MOVE_TYPE] = {  "Walk", "Run", "RunBack", "Swim", "SwimBack", "TurnRate", "Flight", "FlightBack", "PitchRate" };
-
-    // skip all forced speed changes except last and unexpected
-    // in run/mounted case used one ACK and it must be skipped.m_forced_speed_changes[MOVE_RUN} store both.
-    if (_player->m_forced_speed_changes[force_move_type] > 0)
-    {
-        --_player->m_forced_speed_changes[force_move_type];
-        if (_player->m_forced_speed_changes[force_move_type] > 0)
-            return;
-    }
-
-    if (!_player->GetTransport() && fabs(_player->GetSpeed(move_type) - newspeed) > 0.01f)
-    {
-        if (_player->GetSpeed(move_type) > newspeed)         // must be greater - just correct
-        {
-            sLog->outError(LOG_FILTER_NETWORKIO, "%sSpeedChange player %s is NOT correct (must be %f instead %f), force set to correct value",
-                move_type_name[move_type], _player->GetName(), _player->GetSpeed(move_type), newspeed);
-            _player->SetSpeed(move_type, _player->GetSpeedRate(move_type), true);
-        }
-        else                                                // must be lesser - cheating
-        {
-            sLog->outDebug(LOG_FILTER_GENERAL, "Player %s from account id %u kicked for incorrect speed (must be %f instead %f)",
-                _player->GetName(), _player->GetSession()->GetAccountId(), _player->GetSpeed(move_type), newspeed);
-            _player->GetSession()->KickPlayer();
-        }
-    }
-}
-
 void WorldSession::HandleSetActiveMoverOpcode(WorldPacket& recvPacket)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd CMSG_SET_ACTIVE_MOVER");
@@ -873,11 +843,75 @@ void WorldSession::HandleMountSpecialAnimOpcode(WorldPacket& /*recvData*/)
     GetPlayer()->SendMessageToSet(&data, false);
 }
 
+// ACKS
+
+void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recvData)
+{
+    uint32 opcode = recvData.GetOpcode();
+
+    /* extract packet */
+    uint64 guid;
+    uint32 unk1;
+    float  newspeed;
+
+    recvData.readPackGUID(guid);
+
+    // now can skip not our packet
+    if (_player->GetGUID() != guid)
+    {
+        recvData.rfinish();                   // prevent warnings spam
+        return;
+    }
+
+    // continue parse packet
+
+    recvData >> unk1;                                      // counter or moveEvent
+
+    MovementInfo movementInfo;
+    movementInfo.guid = guid;
+    ReadMovementInfo(recvData, &movementInfo);
+
+    recvData >> newspeed;
+    /*----------------*/
+
+    // client ACK send one packet for mounted/run case and need skip all except last from its
+    // in other cases anti-cheat check can be fail in false case
+    UnitMoveType move_type = MOVE_WALK;
+    UnitMoveType force_move_type = MOVE_WALK;
+
+    static char const* move_type_name[MAX_MOVE_TYPE] = { "Walk", "Run", "RunBack", "Swim", "SwimBack", "TurnRate", "Flight", "FlightBack", "PitchRate" };
+
+    // skip all forced speed changes except last and unexpected
+    // in run/mounted case used one ACK and it must be skipped.m_forced_speed_changes[MOVE_RUN} store both.
+    if (_player->m_forced_speed_changes[force_move_type] > 0)
+    {
+        --_player->m_forced_speed_changes[force_move_type];
+        if (_player->m_forced_speed_changes[force_move_type] > 0)
+            return;
+    }
+
+    if (!_player->GetTransport() && fabs(_player->GetSpeed(move_type) - newspeed) > 0.01f)
+    {
+        if (_player->GetSpeed(move_type) > newspeed)         // must be greater - just correct
+        {
+            sLog->outError(LOG_FILTER_NETWORKIO, "%sSpeedChange player %s is NOT correct (must be %f instead %f), force set to correct value",
+                move_type_name[move_type], _player->GetName(), _player->GetSpeed(move_type), newspeed);
+            _player->SetSpeed(move_type, _player->GetSpeedRate(move_type), true);
+        }
+        else                                                // must be lesser - cheating
+        {
+            sLog->outDebug(LOG_FILTER_GENERAL, "Player %s from account id %u kicked for incorrect speed (must be %f instead %f)",
+                _player->GetName(), _player->GetSession()->GetAccountId(), _player->GetSpeed(move_type), newspeed);
+            _player->GetSession()->KickPlayer();
+        }
+    }
+}
+
 void WorldSession::HandleMoveKnockBackAck(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_KNOCK_BACK_ACK");
 
-    if(Unit* mover = _player->m_mover)
+    if (Unit* mover = _player->m_mover)
         mover->AddUnitState(UNIT_STATE_JUMPING);
 
     HandleMovementOpcodes(recvData);
@@ -886,7 +920,7 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket & recvData)
     ReadMovementInfo(recvData, &movementInfo);
 
     if (_player->m_mover->GetGUID() != movementInfo.guid)
-        return;
+    return;
 
     _player->m_movementInfo = movementInfo;
 
@@ -896,19 +930,79 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket & recvData)
     _player->SendMessageToSet(&data, false);*/
 }
 
+void WorldSession::HandleMoveFeatherFallAck(WorldPacket& recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_FEATHER_FALL_ACK");
+
+    // no used
+    recvData.rfinish();                       // prevent warnings spam
+}
+
+void WorldSession::HandleMoveGravityEnableAck(WorldPacket& recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_GRAVITY_ENABLE_ACK");
+
+    uint32 ackIndex;
+    recvData.read_skip<float>();
+    recvData.read_skip<float>();
+    recvData.read_skip<float>();
+    recvData >> ackIndex;
+
+    recvData.rfinish();
+
+    //_player->ToggleMoveEventsMask(MOVE_EVENT_GRAVITY);
+}
+
 void WorldSession::HandleMoveHoverAck(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_HOVER_ACK");
 
-    uint64 guid;                                            // guid - unused
-    recvData.readPackGUID(guid);
+    uint32 ackIndex;
+    recvData.read_skip<float>();
+    recvData.read_skip<float>();
+    recvData >> ackIndex;
 
-    recvData.read_skip<uint32>();                          // unk
+    recvData.rfinish();
 
-    MovementInfo movementInfo;
-    ReadMovementInfo(recvData, &movementInfo);
+    _player->ToggleMoveEventsMask(MOVE_EVENT_HOVER);
+}
 
-    recvData.read_skip<uint32>();                          // unk2
+void WorldSession::HandleMoveWaterwalkAck(WorldPacket& recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_WATER_WALK_ACK");
+
+    uint32 ackIndex;
+    recvData >> ackIndex;
+
+    recvData.rfinish();
+
+    _player->ToggleMoveEventsMask(MOVE_EVENT_WATER_WALK);
+}
+
+void WorldSession::HandleMoveSetCanFlyAck(WorldPacket& recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_SET_CAN_FLY_ACK");
+
+    uint32 ackIndex;
+    recvData.read_skip<float>();
+    recvData.read_skip<float>();
+    recvData >> ackIndex;
+
+    recvData.rfinish();
+
+    _player->ToggleMoveEventsMask(MOVE_EVENT_FLYING);
+}
+
+void WorldSession::HandleMoveSetCanTransBtwSwimFlyAck(WorldPacket& recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_SET_CAN_TRANS_BETWEEN_SWIM_AND_FLY_ACK");
+
+    uint32 ackIndex;
+    recvData.read_skip<float>();
+    recvData.read_skip<float>();
+    recvData >> ackIndex;
+
+    recvData.rfinish();
 }
 
 void WorldSession::HandleSummonResponseOpcode(WorldPacket& recvData)
@@ -1144,89 +1238,6 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
    if (hasTransportData && mi->pos.m_positionX != mi->t_pos.m_positionX)
        if (GetPlayer()->GetTransport())
            GetPlayer()->GetTransport()->UpdatePosition(mi);
-
-    //! Anti-cheat checks. Please keep them in seperate if() blocks to maintain a clear overview.
-    //! Might be subject to latency, so just remove improper flags.
-    #ifdef TRINITY_DEBUG
-    #define REMOVE_VIOLATING_FLAGS(check, maskToRemove) \
-    { \
-        if (check) \
-        { \
-            sLog->outDebug(LOG_FILTER_UNITS, "WorldSession::ReadMovementInfo: Violation of MovementFlags found (%s). " \
-                "MovementFlags: %u, MovementFlags2: %u for player GUID: %u. Mask %u will be removed.", \
-                STRINGIZE(check), mi->GetMovementFlags(), mi->GetExtraMovementFlags(), GetPlayer()->GetGUIDLow(), maskToRemove); \
-            mi->RemoveMovementFlag((maskToRemove)); \
-        } \
-    }
-    #else
-    #define REMOVE_VIOLATING_FLAGS(check, maskToRemove) \
-        if (check) \
-            mi->RemoveMovementFlag((maskToRemove));
-    #endif
-
-
-    /*! This must be a packet spoofing attempt. MOVEMENTFLAG_ROOT sent from the client is not valid
-        in conjunction with any of the moving movement flags such as MOVEMENTFLAG_FORWARD.
-        It will freeze clients that receive this player's movement info.*/
-    
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_ROOT),
-        MOVEMENTFLAG_ROOT);
-
-    //! Cannot hover without SPELL_AURA_HOVER
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_HOVER) && !GetPlayer()->HasAuraType(SPELL_AURA_HOVER),
-        MOVEMENTFLAG_HOVER);
-
-    //! Cannot ascend and descend at the same time
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_ASCENDING) && mi->HasMovementFlag(MOVEMENTFLAG_DESCENDING),
-        MOVEMENTFLAG_ASCENDING | MOVEMENTFLAG_DESCENDING);
-
-    //! Cannot move left and right at the same time
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_LEFT) && mi->HasMovementFlag(MOVEMENTFLAG_RIGHT),
-        MOVEMENTFLAG_LEFT | MOVEMENTFLAG_RIGHT);
-
-    //! Cannot strafe left and right at the same time
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_STRAFE_LEFT) && mi->HasMovementFlag(MOVEMENTFLAG_STRAFE_RIGHT),
-        MOVEMENTFLAG_STRAFE_LEFT | MOVEMENTFLAG_STRAFE_RIGHT);
-
-    //! Cannot pitch up and down at the same time
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_PITCH_UP) && mi->HasMovementFlag(MOVEMENTFLAG_PITCH_DOWN),
-        MOVEMENTFLAG_PITCH_UP | MOVEMENTFLAG_PITCH_DOWN);
-
-    //! Cannot move forwards and backwards at the same time
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_FORWARD) && mi->HasMovementFlag(MOVEMENTFLAG_BACKWARD),
-        MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_BACKWARD);
-
-    //! Cannot walk on water without SPELL_AURA_WATER_WALK
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_WATERWALKING) && !GetPlayer()->HasAuraType(SPELL_AURA_WATER_WALK),
-        MOVEMENTFLAG_WATERWALKING);
-
-    //! Cannot feather fall without SPELL_AURA_FEATHER_FALL
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_FALLING_SLOW) && !GetPlayer()->HasAuraType(SPELL_AURA_FEATHER_FALL),
-        MOVEMENTFLAG_FALLING_SLOW);
-
-    /*! Cannot fly if no fly auras present. Exception is being a GM.
-        Note that we check for account level instead of Player::IsGameMaster() because in some
-        situations it may be feasable to use .gm fly on as a GM without having .gm on,
-        e.g. aerial combat.
-    */
-
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_FLYING | MOVEMENTFLAG_CAN_FLY) && GetSecurity() == SEC_PLAYER &&
-        !GetPlayer()->m_mover->HasAuraType(SPELL_AURA_FLY) &&
-        !GetPlayer()->m_mover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED),
-        MOVEMENTFLAG_FLYING | MOVEMENTFLAG_CAN_FLY);
-
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY | MOVEMENTFLAG_CAN_FLY) && mi->HasMovementFlag(MOVEMENTFLAG_FALLING),
-        MOVEMENTFLAG_FALLING);
-
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_FALLING) && (!mi->hasFallData || !mi->hasFallDirection), MOVEMENTFLAG_FALLING);
-
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION) &&
-        (!mi->hasSplineElevation || G3D::fuzzyEq(mi->splineElevation, 0.0f)), MOVEMENTFLAG_SPLINE_ELEVATION);
-
-    if (mi->hasSplineElevation)
-        mi->AddMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION);
-
-    #undef REMOVE_VIOLATING_FLAGS
 }
 
 void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi, Unit* unit /* = NULL*/)

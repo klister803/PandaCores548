@@ -170,6 +170,7 @@ enum Opcodes
     CMSG_DEL_VOICE_IGNORE                             = 0x1569, // 5.4.1 17538
     CMSG_DELETEEQUIPMENT_SET                          = 0x0755, // 5.4.1 17538
     CMSG_DESTROY_ITEM                                 = 0x16CF, // 5.4.1 17538
+    CMSG_DISCARDED_TIME_SYNC_ACKS                     = 0x0EC1, // 5.4.1 17538
     CMSG_DISMISS_CONTROLLED_VEHICLE                   = 0x1261, // 5.4.1 17538
     CMSG_DISMISS_CRITTER                              = 0x0ACF, // 5.4.1 17538
     CMSG_DUEL_ACCEPT_RESULT                           = 0x0ADD, // 5.4.1 17538
@@ -183,6 +184,8 @@ enum Opcodes
     CMSG_FAR_SIGHT                                    = 0x0374, // 5.4.1 17538
     CMSG_FORCE_MOVE_ROOT_ACK                          = 0x13E8, // 5.4.1 17538
     CMSG_FORCE_MOVE_UNROOT_ACK                        = 0x0F49, // 5.4.1 17538
+    CMSG_FORCE_RUN_SPEED_CHANGE_ACK                   = 0x0768, // 5.4.1 17538
+    CMSG_FORCE_FLIGHT_SPEED_CHANGE_ACK                = 0x0741, // 5.4.1 17538
     CMSG_GAMEOBJ_REPORT_USE                           = 0x065F, // 5.4.1 17538
     CMSG_GAMEOBJ_USE                                  = 0x02E5, // 5.4.1 17538
     CMSG_GAMEOBJECT_QUERY                             = 0x1677, // 5.4.1 17538
@@ -327,13 +330,19 @@ enum Opcodes
     CMSG_MOUNTSPECIAL_ANIM                            = 0x12EC, // 5.4.1 17538
     CMSG_MOVE_CHNG_TRANSPORT                          = 0x1361, // 5.4.1 17538
     CMSG_MOVE_FALL_LAND                               = 0x17E9, // 5.4.1 17538
+    CMSG_MOVE_GRAVITY_ENABLE_ACK                      = 0x06E8, // 5.4.1 17538
+    CMSG_MOVE_FEATHER_FALL_ACK                        = 0x0260, // 5.4.1 17538
     CMSG_MOVE_HEARTBEAT                               = 0x0AC8, // 5.4.1 17538
+    CMSG_MOVE_HOVER_ACK                               = 0x06C9, // 5.4.1 17538
     CMSG_MOVE_JUMP                                    = 0x07C9, // 5.4.1 17538
     CMSG_MOVE_KNOCK_BACK_ACK                          = 0x13E9, // 5.4.1 17538
+    CMSG_MOVE_SET_CAN_FLY_ACK                         = 0x0BE8, // 5.4.1 17538
+    CMSG_MOVE_SET_CAN_TRANS_BETWEEN_SWIM_AND_FLY_ACK  = 0x17E1, // 5.4.1 17538
     CMSG_MOVE_SET_FACING                              = 0x1368, // 5.4.1 17538
     CMSG_MOVE_SET_PITCH                               = 0x0261, // 5.4.1 17538
     CMSG_MOVE_SET_RUN_MODE                            = 0x0748, // 5.4.1 17538
     CMSG_MOVE_SET_WALK_MODE                           = 0x0BE1, // 5.4.1 17538
+    CMSG_MOVE_WATER_WALK_ACK                          = 0x1649, // 5.4.1 17538
     CMSG_MOVE_SPLINE_DONE                             = 0x1A61, // 5.4.1 17538
     CMSG_MOVE_START_ASCEND                            = 0x16C1, // 5.4.1 17538
     CMSG_MOVE_START_BACKWARD                          = 0x12C0, // 5.4.1 17538
@@ -513,6 +522,7 @@ enum Opcodes
     CMSG_TEXT_EMOTE                                   = 0x0A4F, // 5.4.1 17538
     CMSG_TIME_ADJUSTMENT_RESPONSE                     = 0x1640, // 5.4.1 17538
     CMSG_TIME_SYNC_RESP                               = 0x0341, // 5.4.1 17538
+    CMSG_TIME_SYNC_RESP_DROP                          = 0x0A68, // 5.4.1 17538
     CMSG_TOGGLE_PVP                                   = 0x12C6, // 5.4.1 17538
     CMSG_TOTEM_DESTROYED                              = 0x0357, // 5.4.1 17538
     CMSG_TRAINER_BUY_SPELL                            = 0x0B5D, // 5.4.1 17538
@@ -1173,7 +1183,6 @@ enum Opcodes
     CMSG_SET_FACTION_CHEAT                            = 0x000,  // 5.0.5 16048
     CMSG_SET_PRIMARY_TALENT_TREE                      = 0x000,  // 5.0.5 16048 deprecated
     CMSG_SUSPEND_TOKEN                                = 0x000,  // 5.0.5 16048 Unused
-    CMSG_TIME_SYNC_RESP_FAILED                        = 0x751,  // 5.0.5 16048
     MSG_MOVE_TIME_SKIPPED                             = 0xA52,  // 5.0.5 16048 Used ?
     SMSG_AREA_TRIGGER_MOVEMENT_UPDATE                 = 0xFB8,  // 5.0.5 16048
     SMSG_AREA_TRIGGER_RESET                           = 0xB9B,  // 5.0.5 16048

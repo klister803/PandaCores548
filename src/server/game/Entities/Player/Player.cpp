@@ -973,6 +973,9 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_watching_movie = false;
     plrUpdate = false;
+
+    validMoveEventsMask = MOVE_EVENT_NONE;
+    m_sequenceIndex = 0;
 }
 
 Player::~Player()
@@ -1969,12 +1972,12 @@ void Player::Update(uint32 p_time)
             m_weaponChangeTimer -= p_time;
     }
 
-    if (m_timeSyncTimer > 0)
+    if (m_syncTimer > 0)
     {
-        if (p_time >= m_timeSyncTimer)
+        if (p_time >= m_syncTimer)
             SendTimeSync();
         else
-            m_timeSyncTimer -= p_time;
+            m_syncTimer -= p_time;
     }
 
     if (isAlive())
@@ -2530,7 +2533,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             if (HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
                 z += GetFloatValue(UNIT_FIELD_HOVERHEIGHT);
             newPos.Relocate(x, y, z, orientation);
-            SendTeleportPacket(newPos); // this automatically relocates to oldPos in order to broadcast the packet in the right place
+            SendTeleportPacket(newPos, m_sequenceIndex); // this automatically relocates to oldPos in order to broadcast the packet in the right place
         }
     }
     else
@@ -26457,14 +26460,47 @@ void Player::SendAurasForTarget(Unit* target)
     /*! Blizz sends certain movement packets sometimes even before CreateObject
         These movement packets are usually found in SMSG_COMPRESSED_MOVES
     */
+    // NOT SURE...but for mobs?
     if (target->HasAuraType(SPELL_AURA_FEATHER_FALL))
         target->SetFeatherFall(true, true);
 
     if (target->HasAuraType(SPELL_AURA_WATER_WALK))
+    {
+        if (target->GetTypeId() == TYPEID_PLAYER)
+        {
+            if (Player* plr = target->ToPlayer())
+                if (!plr->HasMoveEventsMask(MOVE_EVENT_WATER_WALK))
+                    plr->AddMoveEventsMask(MOVE_EVENT_WATER_WALK);
+        }
+
         target->SetWaterWalking(true, true);
+    }
 
     if (target->HasAuraType(SPELL_AURA_HOVER))
+    {
+        if (target->GetTypeId() == TYPEID_PLAYER)
+        {
+            if (Player* plr = target->ToPlayer())
+                if (!plr->HasMoveEventsMask(MOVE_EVENT_HOVER))
+                    plr->AddMoveEventsMask(MOVE_EVENT_HOVER);
+        }
+
         target->SetHover(true, true);
+    }
+
+    bool flyAuras = (target->HasAuraType(SPELL_AURA_FLY) || target->HasAuraType(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED)
+        || target->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || target->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED)
+        || target->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS));
+
+    if (flyAuras)
+    {
+        if (target->GetTypeId() == TYPEID_PLAYER)
+        {
+            if (Player* plr = target->ToPlayer())
+                if (!plr->HasMoveEventsMask(MOVE_EVENT_FLYING))
+                    plr->AddMoveEventsMask(MOVE_EVENT_FLYING);
+        }
+    }
 
     ObjectGuid targetGuid = target->GetObjectGuid();
     Unit::VisibleAuraMap const* visibleAuras = target->GetVisibleAuras();
@@ -29365,21 +29401,21 @@ void Player::ActivateSpec(uint8 spec)
 
 void Player::ResetTimeSync()
 {
-    m_timeSyncCounter = 0;
-    m_timeSyncTimer = 0;
-    m_timeSyncClient = 0;
-    m_timeSyncServer = getMSTime();
+    m_sequenceIndex = 0;
+    m_syncTimer = 0;
+    m_clientTime = 0;
+    m_serverTime = getMSTime();
 }
 
 void Player::SendTimeSync()
 {
     WorldPacket data(SMSG_TIME_SYNC_REQ, 4);
-    data << uint32(m_timeSyncCounter++);
+    data << uint32(m_sequenceIndex++);
     GetSession()->SendPacket(&data);
 
-    // Schedule next sync in 10 sec
-    m_timeSyncTimer = 10000;
-    m_timeSyncServer = getMSTime();
+    // Schedule next sync in 5 sec
+    m_syncTimer = 5000;
+    m_serverTime = getMSTime();
 }
 
 void Player::SetReputation(uint32 factionentry, uint32 value)
@@ -29859,6 +29895,7 @@ void Player::SendMovementSetCanFly(bool apply)
 {
     ObjectGuid guid = GetGUID();
     WorldPacket data;
+
     if (apply)
     {
         //! 5.4.1
@@ -29866,7 +29903,7 @@ void Player::SendMovementSetCanFly(bool apply)
 
         data.WriteGuidMask<6, 2, 4, 1, 0, 5, 7, 3>(guid);
         data.WriteGuidBytes<7, 6, 4>(guid);
-        data << uint32(0);          //! movement counter
+        data << uint32(m_sequenceIndex++);          // sync counter
         data.WriteGuidBytes<2, 3, 1, 0, 5>(guid);
     }
     else
@@ -29876,15 +29913,17 @@ void Player::SendMovementSetCanFly(bool apply)
 
         data.WriteGuidMask<7, 6, 5, 1, 2, 4, 3, 0>(guid);
         data.WriteGuidBytes<0, 6, 3, 7, 2, 1, 5>(guid);
-        data << uint32(0);          //! movement counter
+        data << uint32(m_sequenceIndex++);          // sync counter
         data.WriteGuidBytes<4>(guid);
     }
+
     SendDirectMessage(&data);
 }
 
 void Player::SendMovementSetCanTransitionBetweenSwimAndFly(bool apply)
 {
     ObjectGuid guid = GetGUID();
+
     if (apply)
     {
         //! 5.4.1
@@ -29892,7 +29931,7 @@ void Player::SendMovementSetCanTransitionBetweenSwimAndFly(bool apply)
     
         data.WriteGuidMask<3, 7, 5, 6, 2, 0, 4, 1>(guid);
         data.WriteGuidBytes< 4, 0, 2>(guid);
-        data << uint32(0);          //! movement counter
+        data << uint32(m_sequenceIndex++);          // sync counter
         data.WriteGuidBytes< 6, 1, 7, 5, 3 >(guid);
         SendDirectMessage(&data);
     }
@@ -29903,7 +29942,7 @@ void Player::SendMovementSetCanTransitionBetweenSwimAndFly(bool apply)
     
         data.WriteGuidMask<1, 4, 2, 7, 5, 0, 3, 6>(guid);
         data.WriteGuidBytes< 1, 4, 6, 7, 2, 6, 3, 0 >(guid);
-        data << uint32(0);          //! movement counter
+        data << uint32(m_sequenceIndex++);          // sync counter
         SendDirectMessage(&data);
     }
 }
@@ -29911,13 +29950,14 @@ void Player::SendMovementSetCanTransitionBetweenSwimAndFly(bool apply)
 void Player::SendMovementSetHover(bool apply)
 {
     ObjectGuid guid = GetGUID();
+
     if (apply)
     {
         //! 5.4.1
         WorldPacket data(SMSG_MOVE_SET_HOVER, 12);
     
         data.WriteGuidMask<5, 7, 2, 4, 6, 1, 0, 3>(guid);
-        data << uint32(0);          //! movement counter
+        data << uint32(m_sequenceIndex++);          // sync counter
         data.WriteGuidBytes<0, 6, 1, 2, 3, 4, 5, 7>(guid);
 
         SendDirectMessage(&data);
@@ -29929,7 +29969,7 @@ void Player::SendMovementSetHover(bool apply)
         
         data.WriteGuidMask<3, 7, 0, 2, 1, 4, 6, 5>(guid);
         data.WriteGuidBytes<2, 0, 1, 6, 4>(guid);
-        data << uint32(0);          //! movement counter
+        data << uint32(m_sequenceIndex++);          // sync counter
         data.WriteGuidBytes<3, 7, 5>(guid);
         SendDirectMessage(&data);
     }
@@ -29939,12 +29979,13 @@ void Player::SendMovementSetWaterWalking(bool apply)
 {
     ObjectGuid guid = GetGUID();
     WorldPacket data;
+
     if (apply)
     {
         //! 5.4.1
         data.Initialize(SMSG_MOVE_WATER_WALK, 1 + 4 + 8);
     
-        data << uint32(0);          //! movement counter
+        data << uint32(m_sequenceIndex++);          // sync counter
         data.WriteGuidMask<0, 7, 1, 5, 6, 2, 3, 4>(guid);
         data.WriteGuidBytes<4, 0, 5, 6, 3, 1, 2, 7>(guid);
     }
@@ -29955,9 +29996,10 @@ void Player::SendMovementSetWaterWalking(bool apply)
 
         data.WriteGuidMask<7, 5, 6, 1, 2, 3, 0, 4>(guid);
         data.WriteGuidBytes<3, 4, 7, 5, 2, 0, 6>(guid);
-        data << uint32(0);          //! movement counter
+        data << uint32(m_sequenceIndex++);          // sync counter
         data.WriteGuidBytes<1>(guid);
     }
+
     SendDirectMessage(&data);
 }
 
@@ -29973,7 +30015,7 @@ void Player::SendMovementSetFeatherFall(bool apply)
     
         data.WriteGuidMask<0, 7, 6, 5, 4, 1, 3, 2>(guid);
         data.WriteGuidBytes<2, 1, 0, 3, 4, 5, 7, 6>(guid);
-        data << uint32(0);          //! movement counter
+        data << uint32(m_sequenceIndex++);          // sync counter
     }
     else
     {
@@ -29982,7 +30024,7 @@ void Player::SendMovementSetFeatherFall(bool apply)
     
         data.WriteGuidMask<5, 1, 7, 6, 3, 0, 2, 4>(guid);
         data.WriteGuidBytes<3, 4, 1, 6, 7, 0, 5>(guid);
-        data << uint32(0);          //! movement counter
+        data << uint32(m_sequenceIndex++);          // sync counter
         data.WriteGuidBytes<2>(guid);
     }
 
@@ -30007,12 +30049,35 @@ void Player::SendMovementSetCollisionHeight(float height, uint32 mountDisplayID/
     if (mountDisplayID)
         data << uint32(mountDisplayID);
     data << float(height);
-    data << uint32(sWorld->GetGameTime());                  // Packet counter
+    data << uint32(m_sequenceIndex++);                      // sync counter
     data.WriteGuidBytes<6>(guid);
     data << float(GetFloatValue(OBJECT_FIELD_SCALE_X));     // scale
     data.WriteGuidBytes<3>(guid);
 
     SendDirectMessage(&data);
+}
+
+void Player::SendMovementSetGlide(bool apply)
+{
+    ObjectGuid guid = GetObjectGuid();
+
+    if (apply)
+    {
+        WorldPacket data(SMSG_SET_MOVEFLAG2_0x1000, 8 + 1 + 4);
+        data << uint32(m_sequenceIndex++);
+        data.WriteGuidMask<5, 1, 3, 0, 2, 6, 7, 4>(guid);
+        data.WriteGuidBytes<3, 1, 2, 7, 6, 0, 5, 4>(guid);
+        SendDirectMessage(&data);
+    }
+    else
+    {
+        WorldPacket data(SMSG_UNSET_MOVEFLAG2_0x1000, 8 + 1 + 4);
+        data.WriteGuidMask<5, 0, 3, 4, 7, 1, 2, 6>(guid);
+        data.WriteGuidBytes<7>(guid);
+        data << uint32(m_sequenceIndex++);
+        data.WriteGuidBytes<3, 4, 2, 0, 1, 5, 6>(guid);
+        SendDirectMessage(&data);
+    }
 }
 
 void Player::SetMover(Unit* target)

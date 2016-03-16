@@ -70,6 +70,7 @@ enum eData
     DATA_FIRST_ENGENEER_DIED,
     DATA_ACTION_SOLDIER,
     DATA_RESET_REALM_OF_YSHAARJ,
+    DATA_PLAY_FINAL_MOVIE,
 
     //Galakras
     DATA_GALAKRAS_PRE_EVENT,
@@ -589,6 +590,9 @@ enum esSpells
     SPELL_REALM_OF_YSHAARJ             = 144954,
     SPELL_TOUCH_OF_YSHAARJ             = 145065,
     SPELL_EM_TOUCH_OF_YSHAARJ          = 145171,
+    //Movie Garrosh
+    SPELL_HORDE                        = 149978,
+    SPELL_ALLIANCE                     = 149979,
 };
 
 

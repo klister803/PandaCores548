@@ -2428,12 +2428,15 @@ void SpellMgr::LoadSpellLinked()
             WorldDatabase.PExecute("DELETE FROM `spell_linked_spell` WHERE spell_trigger = %i", trigger);
             continue;
         }
-        spellInfo = GetSpellInfo(abs(effect));
-        if (!spellInfo)
+        if (actiontype != LINK_ACTION_AURATYPE)
         {
-            sLog->outError(LOG_FILTER_SQL, "Spell %i listed in `spell_linked_spell` does not exist", effect);
-            WorldDatabase.PExecute("DELETE FROM `spell_linked_spell` WHERE spell_trigger = %i", trigger);
-            continue;
+            spellInfo = GetSpellInfo(abs(effect));
+            if (!spellInfo)
+            {
+                sLog->outError(LOG_FILTER_SQL, "Spell %i listed in `spell_linked_spell` does not exist", effect);
+                WorldDatabase.PExecute("DELETE FROM `spell_linked_spell` WHERE spell_trigger = %i", trigger);
+                continue;
+            }
         }
 
         if (type) //we will find a better way when more types are needed
@@ -3837,6 +3840,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 1604: //Dazed
+                    spellInfo->Effects[0].TargetA = 25;
+                    spellInfo->Effects[1].TargetA = 25;
+                    break;
                 case 137639: // Storm, Earth, and Fire
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_PROC_ONLY_ON_CAST;
                     spellInfo->Attributes |= SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY;
@@ -3870,6 +3877,11 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 81751: // Atonement
                     spellInfo->AttributesEx2 &= ~SPELL_ATTR2_CANT_CRIT;
+                    break;
+                case 87204: // Sin and Punishment
+                case 31117: // Unstable Affliction (Silence)
+                    spellInfo->AttributesEx3 |= SPELL_ATTR3_IGNORE_HIT_RESULT;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_HAVE_STABLE_FLYTIME;
                     break;
                 case 53651: // Beacon of Light
                 case 90289: // Removing Death Grip cooldown
@@ -4376,6 +4388,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].BasePoints = -50;
                     spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
                     break;
+                case 68723:  // Quarry
                 case 1160:   // Demoralizing Shout
                 case 1966:   // Feint
                 case 50256:  // Demoralizing Roar
@@ -5252,7 +5265,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TriggerSpell = 148982;
                     break;
                 case 145246: //Phase Three Transform
-                    spellInfo->Effects[0].BasePoints = 0;
+                    spellInfo->Effects[2].BasePoints = 0;
                     spellInfo->Effects[4].BasePoints = 100;
                     break;
                 case 145065: //Touch of Yshaarj

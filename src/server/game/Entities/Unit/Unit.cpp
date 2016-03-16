@@ -1760,7 +1760,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
             Probability = 40.0f;
 
         if (roll_chance_f(Probability))
-            CastSpell(victim, 1604, true);
+            CastSpell(victim, 1604, true, 0, 0, victim->GetGUID());
     }
 
     if (GetTypeId() == TYPEID_PLAYER)
@@ -7619,16 +7619,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
 
                     return true;
                 }
-                // Glyph of Polymorph
-                case 56375:
-                {
-                    if (!target)
-                        return false;
-                    target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE, 0, target->GetAura(32409)); // SW:D shall not be removed.
-                    target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE_PERCENT);
-                    target->RemoveAurasByType(SPELL_AURA_PERIODIC_LEECH);
-                    return true;
-                }
                 // Glyph of Icy Veins
                 case 56374:
                 {
@@ -7943,16 +7933,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 {
                     triggered_spell_id = 37378;
                     break;
-                }
-                // Glyph of Succubus
-                case 56250:
-                {
-                    if (!target)
-                        return false;
-                    target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE, 0, target->GetAura(32409)); // SW:D shall not be removed.
-                    target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE_PERCENT);
-                    target->RemoveAurasByType(SPELL_AURA_PERIODIC_LEECH);
-                    return true;
                 }
             }
             break;
@@ -10196,7 +10176,19 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
-        case 45243: // Focused Will
+        case 109939: // Item - Dragon Soul 
+        {
+            if (!victim)
+                return false;
+
+            if (!HasAura(109949))
+                if (Aura* aura = GetAura(trigger_spell_id, GetGUID()))
+                    if (aura->GetStackAmount() > triggerAmount)
+                        if (roll_chance_i((aura->GetStackAmount() - triggerAmount) * 5))
+                            CastSpell(victim, 109949, true);
+            break;
+        }
+        case 45243:  // Focused Will
         {
             if ((damage < CountPctFromMaxHealth(10) && !(procEx & PROC_EX_CRITICAL_HIT)) || ((procEx & PROC_EX_CRITICAL_HIT) && dmgInfoProc->GetDamageType() == DOT))
                 return false;
@@ -18327,6 +18319,12 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                                     takeCharges = isVictim ? true: false;
                                     break;
                                 }
+
+                                if (procSpell->HasAura(SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED))
+                                {
+                                    takeCharges = true;
+                                    break;
+                                }
                             }
 
                             if (!HasAura(115192))
@@ -23508,6 +23506,7 @@ void Unit::BuildMovementPacket(ByteBuffer *data) const
 void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool casting /*= false*/)
 {
     DisableSpline();
+
     if (GetTypeId() == TYPEID_PLAYER)
     {
         m_anti_JupmTime = sWorld->GetUpdateTime() * 5;
@@ -24208,7 +24207,8 @@ void Unit::ApplySoulSwapDOT(Unit* target)
     _SoulSwapDOTList.clear();
 }
 
-void Unit::SendTeleportPacket(Position &destPos)
+// we need send SMSG_MOVE_TELEPORT to units???
+void Unit::SendTeleportPacket(Position &destPos, uint32 sequenceIndex)
 {
     ObjectGuid guid = GetGUID();
     ObjectGuid transGuid = GetTransGUID();
@@ -24226,7 +24226,7 @@ void Unit::SendTeleportPacket(Position &destPos)
     if (transGuid)
         data.WriteGuidBytes<7, 6, 0, 2, 3, 1, 5, 4>(transGuid);
     data.WriteGuidBytes<6, 1>(guid);
-    data << uint32(0);  // counter
+    data << uint32(sequenceIndex++);          // sync counter
     data.WriteGuidBytes<7, 5>(guid);
     data << float(destPos.GetPositionX());
     data.WriteGuidBytes<4, 3, 2>(guid);
@@ -24606,31 +24606,6 @@ void Unit::SendDispelLog(uint64 unitTargetGuid, uint32 spellId, std::list<uint32
     data.WriteGuidBytes<5>(casterGuid);
 
     SendMessageToSet(&data, true);
-}
-
-void Unit::SendMoveflag2_0x1000_Update(bool on)
-{
-    if (GetTypeId() != TYPEID_PLAYER)
-        return;
-
-    ObjectGuid guid = GetObjectGuid();
-    if (on)
-    {
-        WorldPacket data(SMSG_SET_MOVEFLAG2_0x1000, 8 + 1 + 4);
-        data << uint32(0);
-        data.WriteGuidMask<5, 1, 3, 0, 2, 6, 7, 4>(guid);
-        data.WriteGuidBytes<3, 1, 2, 7, 6, 0, 5, 4>(guid);
-        ToPlayer()->SendDirectMessage(&data);
-    }
-    else
-    {
-        WorldPacket data(SMSG_UNSET_MOVEFLAG2_0x1000, 8 + 1 + 4);
-        data.WriteGuidMask<5, 0, 3, 4, 7, 1, 2, 6>(guid);
-        data.WriteGuidBytes<7>(guid);
-        data << uint32(0);
-        data.WriteGuidBytes<3, 4, 2, 0, 1, 5, 6>(guid);
-        ToPlayer()->SendDirectMessage(&data);
-    }
 }
 
 uint32 Unit::GetDamageCounterInPastSecs(uint32 secs, int type)

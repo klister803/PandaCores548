@@ -4158,7 +4158,8 @@ void AuraEffect::HandleAuraGlide(AuraApplication const* aurApp, uint8 mode, bool
     else
         target->RemoveExtraUnitMovementFlag(MOVEMENTFLAG2_0x1000);
 
-    target->SendMoveflag2_0x1000_Update(apply);
+    if (target->GetTypeId() == TYPEID_PLAYER)
+        target->ToPlayer()->SendMovementSetGlide(apply);
 }
 
 void AuraEffect::HandleAuraHover(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -7266,7 +7267,7 @@ void AuraEffect::HandleAuraSetVehicle(AuraApplication const* aurApp, uint8 mode,
         data.WriteGuidBytes<7, 2, 5, 6, 4>(target->GetObjectGuid());
         data << uint32(vehicleId);
         data.WriteGuidBytes<3, 1, 0>(target->GetObjectGuid());
-        data << uint32(target->ToPlayer()->GetTimeSync()+1);          //CMSG_TIME_SYNC_RESP incremenet counter
+        data << uint32(target->ToPlayer()->GetSequenceIndex()+1);          // time sync counter
         target->ToPlayer()->GetSession()->SendPacket(&data);
 
         // Initialize vehicle

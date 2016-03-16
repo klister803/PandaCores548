@@ -36,6 +36,8 @@ enum eSpells
     SPELL_GRIPPING_DESPAIR           = 145183,
     SPELL_EM_GRIPPING_DESPAIR        = 145195,
     SPELL_PL_TOUCH_OF_YSHAARJ        = 145599,
+    SPELL_EXPLOSIVE_DESPAIR_EXPLOSE  = 145199,
+    SPELL_EXPLOSIVE_DESPAIR_DOT      = 145213,
     //Garrosh Special
     SPELL_TRANSITION_VISUAL_PHASE_2  = 144852,
     SPELL_TRANSITION_VISUAL_BASE     = 146756,
@@ -228,6 +230,7 @@ class boss_garrosh_hellscream : public CreatureScript
             uint32 realmofyshaarjtimer;
             uint32 updatepower;
             uint32 checkevade;
+            uint8 realmnum;
             Phase phase;
 
             void Reset()
@@ -256,6 +259,9 @@ class boss_garrosh_hellscream : public CreatureScript
                     instance->SetData(DATA_RESET_REALM_OF_YSHAARJ, 0);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROSH_ENERGY);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_DESECRATED);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GRIPPING_DESPAIR);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EM_GRIPPING_DESPAIR);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EXPLOSIVE_DESPAIR_DOT);
                 }
             }
 
@@ -274,7 +280,8 @@ class boss_garrosh_hellscream : public CreatureScript
                     checkevade = 1000;
                     SpawnIronStar();
                     phase = PHASE_ONE;
-                    events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 1000);
+                    realmnum = 0;
+                    events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 4000);
                     events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
                     events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
                     events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 18000);
@@ -305,11 +312,13 @@ class boss_garrosh_hellscream : public CreatureScript
 
                     if (HealthBelowPct(10) && phase == PHASE_ONE)
                     {   //phase two
+                        me->InterruptNonMeleeSpells(true);
                         phase = PHASE_PREPARE;
                         DoAction(ACTION_PHASE_PREPARE);
                     }
                     else if (HealthBelowPct(10) && phase == PHASE_TWO)
                     {   //phase three
+                        me->InterruptNonMeleeSpells(true);
                         phase = PHASE_LAST_PREPARE;
                         realmofyshaarjtimer = 0;
                         DoAction(ACTION_INTRO_PHASE_THREE);
@@ -355,7 +364,6 @@ class boss_garrosh_hellscream : public CreatureScript
                     break;
                 case ACTION_PHASE_THREE:
                     phase = PHASE_THREE;
-                    me->SetHealth(me->CountPctFromMaxHealth(28));
                     me->SetPower(POWER_ENERGY, 100);
                     me->ReAttackWithZone();
                     events.ScheduleEvent(EVENT_GRIPPING_DESPAIR, 2000);
@@ -380,7 +388,6 @@ class boss_garrosh_hellscream : public CreatureScript
                         Talk(SAY_LAST_PHASE, 0);
                         DoCast(me, SPELL_TRANSITION_VISUAL_BASE);
                         DoCast(me, SPELL_TRANSITION_VISUAL_ADVANCE);
-                        me->RemoveAurasDueToSpell(SPELL_PHASE_TWO_TRANSFORM);
                         DoCast(me, SPELL_TRANSITION_VISUAL_PHASE_3);
                         break;
                     default:
@@ -396,6 +403,9 @@ class boss_garrosh_hellscream : public CreatureScript
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TOUCH_OF_YSHAARJ);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EM_TOUCH_OF_YSHAARJ);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_DESECRATED);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EM_GRIPPING_DESPAIR);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EXPLOSIVE_DESPAIR_DOT);
+                instance->SetData(DATA_PLAY_FINAL_MOVIE, 0);
             }
 
             bool IfTargetHavePlayersInRange(Player* target, uint8 count)
@@ -410,7 +420,7 @@ class boss_garrosh_hellscream : public CreatureScript
 
             bool CheckEvade()
             {
-                if (Creature* stalker = me->FindNearestCreature(NPC_HEART_OF_YSHAARJ, 72.0f, true))
+                if (Creature* stalker = me->FindNearestCreature(NPC_HEART_OF_YSHAARJ, 80.0f, true))
                     return true;
                 return false;
             }
@@ -456,6 +466,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     if (realmofyshaarjtimer <= diff)
                     {
                         realmofyshaarjtimer = 0;
+                        me->InterruptNonMeleeSpells(true);
                         phase = PHASE_PREPARE;
                         DoAction(ACTION_PHASE_PREPARE);
                     }
@@ -521,12 +532,12 @@ class boss_garrosh_hellscream : public CreatureScript
                         for (uint8 n = 0; n < 3; n++)
                             if (Creature* lsoldier = me->SummonCreature(NPC_WARBRINGER, lsspos[n]))
                                 lsoldier->AI()->DoZoneInCombat(lsoldier, 200.0f);
-                        events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 40000);
+                        events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 45000);
                         break;
                     case EVENT_HELLSCREAM_WARSONG:
                         Talk(SAY_HELLSCREAM_WARSONG, 0);
                         DoCast(me, SPELL_HELLSCREAM_WARSONG);
-                        events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 38000);
+                        events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 42000);
                         break;
                     case EVENT_SUMMON_WOLF_RIDER:
                     {
@@ -599,6 +610,7 @@ class boss_garrosh_hellscream : public CreatureScript
                         instance->SetData(DATA_ACTION_SOLDIER, 1);
                         me->SetAttackStop(true);
                         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+                        instance->SetData(DATA_RESET_REALM_OF_YSHAARJ, 0); //for safe
                         uint8 mod = instance->GetData(DATA_GET_REALM_OF_YSHAARJ);
                         if (Creature* garroshrealm = me->SummonCreature(NPC_GARROSH, gspos[mod]))
                         {
@@ -607,6 +619,7 @@ class boss_garrosh_hellscream : public CreatureScript
                             uint32 power = me->GetPower(POWER_ENERGY);
                             garroshrealm->SetHealth(hp);
                             garroshrealm->SetPower(POWER_ENERGY, power);
+                            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_HAMSTRING);
                             std::list<Player*>pllist;
                             GetPlayerListInGrid(pllist, me, 150.0f);
                             if (!pllist.empty())
@@ -618,6 +631,7 @@ class boss_garrosh_hellscream : public CreatureScript
                                     (*itr)->CastSpell(*itr, SPELL_GARROSH_ENERGY);
                                 }
                             }
+                            realmnum++;
                             garroshrealm->AI()->Talk(SAY_ENTER_REALM_OF_YSHAARJ, 0);
                             phase = PHASE_REALM_OF_YSHAARJ;
                             events.ScheduleEvent(EVENT_RETURN_TO_REAL, 60000);
@@ -656,7 +670,8 @@ class boss_garrosh_hellscream : public CreatureScript
                             events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
                             events.ScheduleEvent(EVENT_TOUCH_OF_YSHAARJ, 16000);
                             events.ScheduleEvent(EVENT_WHIRLING_CORRUPTION, 30000); 
-                            realmofyshaarjtimer = 150000;
+                            if (realmnum != 3)
+                                realmofyshaarjtimer = 150000;
                         }
                         break;
                     case EVENT_TOUCH_OF_YSHAARJ:
@@ -687,13 +702,15 @@ class boss_garrosh_hellscream : public CreatureScript
                     break;
                     case EVENT_GRIPPING_DESPAIR:
                         if (me->getVictim())
-                            DoCastVictim(SPELL_GRIPPING_DESPAIR);
+                            DoCastVictim(me->GetPower(POWER_ENERGY) == 100 ? SPELL_EM_GRIPPING_DESPAIR : SPELL_GRIPPING_DESPAIR);
                         events.ScheduleEvent(EVENT_GRIPPING_DESPAIR, 4000);
                         break;
                     case EVENT_WHIRLING_CORRUPTION:
+                        events.CancelEvent(EVENT_GRIPPING_DESPAIR);
                         Talk(me->GetPower(POWER_ENERGY) >= 25 ? SAY_WHIRLING_CORRUPTION : SAY_EM_WHIRLING_CORRUPTION, 0);
                         DoCast(me, me->GetPower(POWER_ENERGY) >= 25 ? SPELL_EM_WHIRLING_CORRUPTION : SPELL_WHIRLING_CORRUPTION);
-                        events.ScheduleEvent(EVENT_WHIRLING_CORRUPTION, 40000);
+                        events.ScheduleEvent(EVENT_GRIPPING_DESPAIR, 10000);
+                        events.ScheduleEvent(EVENT_WHIRLING_CORRUPTION, 49500);
                         break;
                     }
                 }
@@ -735,6 +752,7 @@ public:
                 events.ScheduleEvent(EVENT_LAUNCH_STAR, 500);
                 break;
             case NPC_EMBODIED_DESPAIR:
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                 me->SetReactState(REACT_AGGRESSIVE);
                 DoCast(me, SPELL_CONSUMED_HOPE, true);
                 break;
@@ -754,6 +772,7 @@ public:
                 DoCast(me, SPELL_EMPOWERED);
                 break;
             case NPC_EMBODIED_DOUBT:
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                 me->SetReactState(REACT_AGGRESSIVE);
                 break;
             default:
@@ -852,8 +871,9 @@ public:
                     break;
                     //Warbringer
                 case EVENT_HAMSTRING:
-                    if (me->getVictim())
-                        DoCastVictim(SPELL_HAMSTRING);
+                    if (me->getVictim() && me->ToTempSummon())
+                        if (Unit* garrosh = me->ToTempSummon()->GetSummoner())
+                            me->CastSpell(me->getVictim(), SPELL_HAMSTRING, false, 0, 0, garrosh->GetGUID());
                     events.ScheduleEvent(EVENT_HAMSTRING, 15000);
                     break;
                     //Wolf Rider
@@ -1331,10 +1351,13 @@ public:
     {
         PrepareAuraScript(spell_empovered_whirling_corruption_AuraScript);
 
-        void OnPeriodic(AuraEffect const*aurEff)
+        void OnPeriodic(AuraEffect const* aurEff)
         {
-            if (GetCaster())
-                GetCaster()->CastSpell(GetCaster(), SPELL_EM_WHIRLING_CORRUPTION_S, true);
+            if (GetCaster() && GetCaster()->ToCreature())
+            {
+                if (Unit* target = GetCaster()->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
+                    GetCaster()->CastSpell(target, SPELL_EM_WHIRLING_CORRUPTION_S, true);
+            }
         }
 
         void Register()
@@ -1602,16 +1625,28 @@ public:
             }
         }
 
+        void AfterAbsorb(AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
+        {
+            if (GetTarget() && aurEff->GetAmount())
+            {
+                uint32 hpmod = GetTarget()->CountPctFromMaxHealth(20);
+                GetTarget()->SetHealth(uint32(aurEff->GetAmount()) + hpmod);
+            }
+        }
+
         void HandleEffectRemove(AuraEffect const * aurEff, AuraEffectHandleModes mode)
         {
             if (GetTarget())
                 GetTarget()->ApplySpellImmune(0, IMMUNITY_ID, SPELL_DESECRATED, false);
+            if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
+                GetTarget()->SetFullHealth();
         }
 
         void Register()
         {
             AfterEffectApply += AuraEffectApplyFn(spell_touch_of_yshaarj_AuraScript::HandleOnApply, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB, AURA_EFFECT_HANDLE_REAL);
             OnEffectRemove += AuraEffectRemoveFn(spell_touch_of_yshaarj_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB, AURA_EFFECT_HANDLE_REAL);
+            AfterEffectAbsorb += AuraEffectAbsorbFn(spell_touch_of_yshaarj_AuraScript::AfterAbsorb, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
         }
     };
 
@@ -1667,6 +1702,43 @@ public:
     }
 };
 
+//145195
+class spell_empovered_gripping_despair : public SpellScriptLoader
+{
+public:
+    spell_empovered_gripping_despair() : SpellScriptLoader("spell_empovered_gripping_despair") { }
+
+    class spell_empovered_gripping_despair_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_empovered_gripping_despair_AuraScript);
+
+        void HandleEffectRemove(AuraEffect const * aurEff, AuraEffectHandleModes mode)
+        {
+            if (GetCaster() && GetTarget())
+            {
+                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+                {
+                    float dmg = GetSpellInfo()->GetEffect(0)->BasePoints;
+                    uint8 stack = aurEff->GetBase()->GetStackAmount();
+                    GetTarget()->CastCustomSpell(SPELL_EXPLOSIVE_DESPAIR_DOT, SPELLVALUE_AURA_STACK, stack, GetTarget(), true, 0, 0, GetCaster()->GetGUID());
+                    GetTarget()->CastCustomSpell(SPELL_EXPLOSIVE_DESPAIR_EXPLOSE, SPELLVALUE_BASE_POINT0, dmg, GetTarget(), true);
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_empovered_gripping_despair_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_empovered_gripping_despair_AuraScript();
+    }
+};
+
+
 void AddSC_boss_garrosh_hellscream()
 {
     new boss_garrosh_hellscream();
@@ -1688,4 +1760,5 @@ void AddSC_boss_garrosh_hellscream()
     new spell_hellscream_warsong();
     new spell_touch_of_yshaarj();
     new spell_player_touch_of_yshaarj();
+    new spell_empovered_gripping_despair();
 }

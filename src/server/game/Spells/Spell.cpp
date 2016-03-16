@@ -3710,10 +3710,11 @@ void Spell::cancel()
             break;
 
         case SPELL_STATE_CASTING:
-            for (std::list<TargetInfo>::const_iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
-                if ((*ihit).missCondition == SPELL_MISS_NONE)
-                    if (Unit* unit = m_caster->GetGUID() == ihit->targetGUID ? m_caster : ObjectAccessor::GetUnit(*m_caster, ihit->targetGUID))
-                        unit->RemoveOwnedAura(m_spellInfo->Id, m_originalCasterGUID, 0, AURA_REMOVE_BY_CANCEL);
+            if (!m_UniqueTargetInfo.empty())
+                for (std::list<TargetInfo>::const_iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
+                    if ((*ihit).missCondition == SPELL_MISS_NONE)
+                        if (Unit* unit = m_caster->GetGUID() == ihit->targetGUID ? m_caster : ObjectAccessor::GetUnit(*m_caster, ihit->targetGUID))
+                            unit->RemoveOwnedAura(m_spellInfo->Id, m_originalCasterGUID, 0, AURA_REMOVE_BY_CANCEL);
 
             SendChannelUpdate(0);
             SendInterrupted(0);
@@ -6384,7 +6385,7 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
                 if(m_caster->HasAuraLinkedSpell(_caster, _target, i->hastype, i->hastalent))
                     continue;
 
-            if(i->hastalent2)
+            if (i->hastalent2)
                 if(m_caster->HasAuraLinkedSpell(_caster, _target, i->hastype2, i->hastalent2))
                     continue;
 
@@ -6403,7 +6404,7 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
                     }
                     case LINK_ACTION_AURATYPE:
                         if(_target)
-                            _target->RemoveAurasByType(AuraType(i->hastalent2));
+                            _target->RemoveAurasByType(AuraType(abs(i->effect)), 0, _target->GetAura(i->chance));
                         break;
                     case LINK_ACTION_CHANGE_STACK:
                         if (Aura* aura = (_target ? _target : _caster)->GetAura(abs(i->effect)))
@@ -6687,6 +6688,13 @@ bool Spell::CheckEffFromDummy(Unit* /*target*/, uint32 eff)
 
 SpellCastResult Spell::CheckCast(bool strict)
 {
+    //Massive Ressurection(guild ability) : Can not use this ability then encounter in progress!!
+    if (m_spellInfo->Id == 83968)
+        if (m_caster->GetMap()->IsDungeon())
+            if (InstanceScript* instance = m_caster->GetInstanceScript())
+                if (instance->IsEncounterInProgress())
+                    return SPELL_FAILED_AFFECTING_COMBAT;
+
     // Gloves S12 - Druid
     if (m_spellInfo->Id == 33830 && m_caster->HasAura(33830))
         return SPELL_FAILED_DONT_REPORT;
@@ -6700,6 +6708,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         return SPELL_FAILED_CASTER_DEAD;
 
     if (m_spellInfo->Effects[EFFECT_0].Effect == SPELL_EFFECT_UNLEARN_TALENT)
+    {
         if (Player* plr = m_caster->ToPlayer())
         {
             PlayerTalentMap* Talents = plr->GetTalentMap(plr->GetActiveSpec());
@@ -6718,6 +6727,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     break;
             }
         }
+    }
 
     // check cooldowns to prevent cheating
     if (m_caster->GetTypeId() == TYPEID_PLAYER && !(AttributesCustom & SPELL_ATTR0_PASSIVE))

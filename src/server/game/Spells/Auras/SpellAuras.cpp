@@ -1712,7 +1712,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         if(target->HasAuraLinkedSpell(_caster, _target, itr->hastype, itr->hastalent))
                             continue;
 
-                    if(itr->hastalent2)
+                    if (itr->hastalent2)
                         if(target->HasAuraLinkedSpell(_caster, _target, itr->hastype2, itr->hastalent2))
                             continue;
 
@@ -1733,7 +1733,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                                 break;
                             }
                             case LINK_ACTION_AURATYPE:
-                                _target->RemoveAurasByType(AuraType(itr->hastalent2));
+                                _target->RemoveAurasByType(AuraType(abs(itr->effect)), 0, _target->GetAura(itr->chance));
                                 break;
                         }
                     }
@@ -1782,7 +1782,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         if(target->HasAuraLinkedSpell(_caster, _target, itr->hastype, itr->hastalent))
                             continue;
 
-                    if(itr->hastalent2)
+                    if (itr->hastalent2)
                         if(target->HasAuraLinkedSpell(_caster, _target, itr->hastype2, itr->hastalent2))
                             continue;
                     if(!_target)
@@ -1802,7 +1802,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                                 break;
                             }
                             case LINK_ACTION_AURATYPE:
-                                _target->RemoveAurasByType(AuraType(itr->hastalent2));
+                                _target->RemoveAurasByType(AuraType(abs(itr->effect)), 0, _target->GetAura(itr->chance));
                                 break;
                         }
                     }
@@ -1862,7 +1862,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                             if(target->HasAuraLinkedSpell(_caster, _target, itr->hastype, itr->hastalent))
                                 continue;
 
-                        if(itr->hastalent2)
+                        if (itr->hastalent2)
                             if(target->HasAuraLinkedSpell(_caster, _target, itr->hastype2, itr->hastalent2))
                                 continue;
 
@@ -1883,7 +1883,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                                     break;
                                 }
                                 case LINK_ACTION_AURATYPE:
-                                    _target->RemoveAurasByType(AuraType(itr->hastalent2));
+                                    _target->RemoveAurasByType(AuraType(abs(itr->effect)), 0, _target->GetAura(itr->chance));
                                     break;
                             }
                         }
@@ -1945,7 +1945,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                                     break;
                                 }
                                 case LINK_ACTION_AURATYPE:
-                                    _target->RemoveAurasByType(AuraType(itr->hastalent2));
+                                    _target->RemoveAurasByType(AuraType(abs(itr->effect)), 0, _target->GetAura(itr->chance));
                                     break;
                             }
                         }
@@ -1968,7 +1968,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         if(target->HasAuraLinkedSpell(caster, target, itr->hastype, itr->hastalent))
                             continue;
 
-                    if(itr->hastalent2)
+                    if (itr->hastalent2 && itr->actiontype != LINK_ACTION_AURATYPE)
                         if(target->HasAuraLinkedSpell(caster, target, itr->hastype2, itr->hastalent2))
                             continue;
 
@@ -2146,36 +2146,6 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         {
                             uint32 bonustime = caster->HasAura(79096) ? 6000: 12000;
                             SetDuration(GetMaxDuration() + bonustime);
-                        }
-                        break;
-                    }
-                    case 2094: // Blind
-                    {
-                        // Glyph of Blind
-                        if (caster && caster->HasAura(91299) && !caster->HasAura(108216))
-                        {
-                            target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE, 0, target->GetAura(32409));
-                            target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE_PERCENT);
-                            target->RemoveAurasByType(SPELL_AURA_PERIODIC_LEECH);
-                        }
-                        break;
-                    }
-                }
-                break;
-            }
-            case SPELLFAMILY_HUNTER:
-            {
-                switch (GetId())
-                {
-                    case 19503: // Scatter Shot
-                    case 3355: // Freezing Trap
-                    {
-                        // Glyph of Solace
-                        if (caster && caster->HasAura(119407))
-                        {
-                            target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE, 0, target->GetAura(32409));
-                            target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE_PERCENT);
-                            target->RemoveAurasByType(SPELL_AURA_PERIODIC_LEECH);
                         }
                         break;
                     }
