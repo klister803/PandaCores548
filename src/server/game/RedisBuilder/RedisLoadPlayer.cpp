@@ -62,7 +62,7 @@ void Player::LoadFromRedis(uint64 guid, uint8 step)
                     if (sRedisBuilderMgr->LoadFromRedisArray(&v, dataVector))
                     {
                         loadingPlayer->LoadPlayerData(&dataVector);
-                        loadingPlayer->LoadFromRedis(guid, LOAD_ACCOUNT_DATA); //Next step load
+                        loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_CRITERIA); //Next step load
                     }
                     else
                     {
@@ -71,21 +71,6 @@ void Player::LoadFromRedis(uint64 guid, uint8 step)
                     }
 
                     sLog->outInfo(LOG_FILTER_REDIS, "LOAD_PLAYER_DATA");
-                }
-            });
-            break;
-        }
-        case LOAD_ACCOUNT_DATA: //Load account data
-        {
-            RedisDatabase.AsyncExecute("HGETALL", GetAccountKey(), guid, [&](const RedisValue &v, uint64 guid) {
-                if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                {
-                    std::vector<RedisValue> dataVector;
-                    if (sRedisBuilderMgr->LoadFromRedisArray(&v, dataVector))
-                        loadingPlayer->LoadAccountData(&dataVector);
-
-                    sLog->outInfo(LOG_FILTER_REDIS, "LOAD_ACCOUNT_DATA");
-                    loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_CRITERIA); //Next step load
                 }
             });
             break;
@@ -100,21 +85,6 @@ void Player::LoadFromRedis(uint64 guid, uint8 step)
                         loadingPlayer->LoadPlayerCriteriaProgress(&progressVector);
 
                     sLog->outInfo(LOG_FILTER_REDIS, "LOAD_PLAYER_CRITERIA");
-                    loadingPlayer->LoadFromRedis(guid, LOAD_ACCOUNT_CRITERIA); //Next step load
-                }
-            });
-            break;
-        }
-        case LOAD_ACCOUNT_CRITERIA: //Load account Criteria Progress
-        {
-            RedisDatabase.AsyncExecute("HGETALL", GetCriteriaAcKey(), guid, [&](const RedisValue &v, uint64 guid) {
-                if (Player* loadingPlayer = sObjectMgr->GetPlayerLoad(guid))
-                {
-                    std::vector<RedisValue> progressVector;
-                    if (sRedisBuilderMgr->LoadFromRedisArray(&v, progressVector))
-                        loadingPlayer->LoadAccountCriteriaProgress(&progressVector);
-
-                    sLog->outInfo(LOG_FILTER_REDIS, "LOAD_ACCOUNT_CRITERIA");
                     loadingPlayer->LoadFromRedis(guid, LOAD_PLAYER_ITEMS); //Next step load
                 }
             });
@@ -768,10 +738,10 @@ void Player::InitSecondPartDataPlayer()
 
 void Player::LoadPlayerBattlePets()
 {
-    if (!AccountDatas.isMember("battlepets") || AccountDatas["battlepets"].empty())
+    if (!GetSession()->AccountDatas.isMember("battlepets") || GetSession()->AccountDatas["battlepets"].empty())
         return;
 
-    for (auto itr = AccountDatas["battlepets"].begin(); itr != AccountDatas["battlepets"].end(); ++itr)
+    for (auto itr = GetSession()->AccountDatas["battlepets"].begin(); itr != GetSession()->AccountDatas["battlepets"].end(); ++itr)
     {
         uint64 petGuid = atoi(itr.memberName());
         auto value = (*itr);
@@ -824,14 +794,14 @@ void Player::LoadPlayerBattlePets()
 
 void Player::LoadPlayerBattlePetSlots()
 {
-    if (!AccountDatas.isMember("battlepetslots") || AccountDatas["battlepetslots"].empty())
+    if (!GetSession()->AccountDatas.isMember("battlepetslots") || GetSession()->AccountDatas["battlepetslots"].empty())
     {
         for (int i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
             GetBattlePetMgr()->InitBattleSlot(0, i);
         return;
     }
 
-    for (auto itr = AccountDatas["battlepetslots"].begin(); itr != AccountDatas["battlepetslots"].end(); ++itr)
+    for (auto itr = GetSession()->AccountDatas["battlepetslots"].begin(); itr != GetSession()->AccountDatas["battlepetslots"].end(); ++itr)
     {
         uint8 index = atoi(itr.memberName());
         GetBattlePetMgr()->InitBattleSlot(itr->asInt(), index);
@@ -1057,10 +1027,10 @@ void Player::LoadPlayerSpells()
 
 void Player::LoadPlayerMounts()
 {
-    if (!AccountDatas.isMember("mounts") || AccountDatas["mounts"].empty())
+    if (!GetSession()->AccountDatas.isMember("mounts") || GetSession()->AccountDatas["mounts"].empty())
         return;
 
-    for (auto itr = AccountDatas["mounts"].begin(); itr != AccountDatas["mounts"].end(); ++itr)
+    for (auto itr = GetSession()->AccountDatas["mounts"].begin(); itr != GetSession()->AccountDatas["mounts"].end(); ++itr)
     {
         uint32 spellId = atoi(itr.memberName());
         bool active = (*itr)["active"].asInt();
@@ -1271,11 +1241,11 @@ void Player::LoadPlayerQuestStatus()
 
 void Player::LoadAccountQuestStatus()
 {
-    if (!AccountDatas.isMember("queststatus") || AccountDatas["queststatus"].empty())
+    if (!GetSession()->AccountDatas.isMember("queststatus") || GetSession()->AccountDatas["queststatus"].empty())
         return;
 
     uint16 slot = FindQuestSlot(0);
-    for (auto itr = AccountDatas["queststatus"].begin(); itr != AccountDatas["queststatus"].end(); ++itr)
+    for (auto itr = GetSession()->AccountDatas["queststatus"].begin(); itr != GetSession()->AccountDatas["queststatus"].end(); ++itr)
     {
         uint32 quest_id = atoi(itr.memberName());
         auto value = (*itr);
@@ -1388,10 +1358,10 @@ void Player::LoadPlayerQuestRewarded()
 
 void Player::LoadAccountQuestRewarded()
 {
-    if (!AccountDatas.isMember("questrewarded") || AccountDatas["questrewarded"].empty())
+    if (!GetSession()->AccountDatas.isMember("questrewarded") || GetSession()->AccountDatas["questrewarded"].empty())
         return;
 
-    for (auto itr = AccountDatas["questrewarded"].begin(); itr != AccountDatas["questrewarded"].end(); ++itr)
+    for (auto itr = GetSession()->AccountDatas["questrewarded"].begin(); itr != GetSession()->AccountDatas["questrewarded"].end(); ++itr)
     {
         uint32 quest_id = atoi(itr.memberName());
 
@@ -1447,10 +1417,10 @@ void Player::LoadPlayerQuestDaily()
 
 void Player::LoadAccountQuestDaily()
 {
-    if (!AccountDatas.isMember("questdaily") || AccountDatas["questdaily"].empty())
+    if (!GetSession()->AccountDatas.isMember("questdaily") || GetSession()->AccountDatas["questdaily"].empty())
         return;
 
-    for (auto itr = AccountDatas["questdaily"].begin(); itr != AccountDatas["questdaily"].end(); ++itr)
+    for (auto itr = GetSession()->AccountDatas["questdaily"].begin(); itr != GetSession()->AccountDatas["questdaily"].end(); ++itr)
     {
         uint32 quest_id = atoi(itr.memberName());
         m_lastDailyQuestTime = time_t(itr->asUInt());
@@ -1492,12 +1462,12 @@ void Player::LoadPlayerQuestWeekly()
 
 void Player::LoadAccountQuestWeekly()
 {
-    if (!AccountDatas.isMember("questweekly") || AccountDatas["questweekly"].empty())
+    if (!GetSession()->AccountDatas.isMember("questweekly") || GetSession()->AccountDatas["questweekly"].empty())
         return;
 
     m_weeklyquests.clear();
 
-    for (auto itr = AccountDatas["questweekly"].begin(); itr != AccountDatas["questweekly"].end(); ++itr)
+    for (auto itr = GetSession()->AccountDatas["questweekly"].begin(); itr != GetSession()->AccountDatas["questweekly"].end(); ++itr)
     {
         uint32 quest_id = atoi(itr.memberName());
 
@@ -1541,12 +1511,12 @@ void Player::LoadPlayerQuestSeasonal()
 
 void Player::LoadAccountQuestSeasonal()
 {
-    if (!AccountDatas.isMember("questseasonal") || AccountDatas["questseasonal"].empty())
+    if (!GetSession()->AccountDatas.isMember("questseasonal") || GetSession()->AccountDatas["questseasonal"].empty())
         return;
 
     m_seasonalquests.clear();
 
-    for (auto itr = AccountDatas["questseasonal"].begin(); itr != AccountDatas["questseasonal"].end(); ++itr)
+    for (auto itr = GetSession()->AccountDatas["questseasonal"].begin(); itr != GetSession()->AccountDatas["questseasonal"].end(); ++itr)
     {
         uint32 quest_id = atoi(itr.memberName());
         uint32 event_id = time_t(itr->asUInt());
@@ -1625,14 +1595,13 @@ void Player::LoadPlayerLoadItems(std::vector<RedisValue>* itemVector)
 {
     for (std::vector<RedisValue>::iterator itr = itemVector->begin(); itr != itemVector->end();)
     {
-        uint32 itemId = itr->toInt();
+        std::string item = itr->toString();
         ++itr;
 
-        std::string item = std::to_string(itemId);
         if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), PlayerData["items"][item.c_str()]))
         {
             ++itr;
-            sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerLoadItems not parse itemId %i", itemId);
+            sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerLoadItems not parse itemId %i", item.c_str());
             continue;
         }
         else
@@ -1645,6 +1614,7 @@ Item* Player::_LoadItem(uint32 zoneId, uint32 timeDiff, Json::Value& itemValue)
     Item* item = NULL;
     uint32 itemGuid = itemValue["itemGuid"].asUInt();
     uint32 itemEntry = itemValue["itemEntry"].asInt();
+
     if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemEntry))
     {
         bool remove = false;
@@ -2223,10 +2193,10 @@ void Player::LoadPlayerHomeBind()
 
 void Player::LoadAccountAchievements()
 {
-    if (!AccountDatas.isMember("achievement") || AccountDatas["achievement"].empty())
+    if (!GetSession()->AccountDatas.isMember("achievement") || GetSession()->AccountDatas["achievement"].empty())
         return;
 
-    for (auto iter = AccountDatas["achievement"].begin(); iter != AccountDatas["achievement"].end(); ++iter)
+    for (auto iter = GetSession()->AccountDatas["achievement"].begin(); iter != GetSession()->AccountDatas["achievement"].end(); ++iter)
     {
         uint32 achievementid = atoi(iter.memberName());
         auto dataValue = *iter;
@@ -2257,7 +2227,7 @@ void Player::LoadPlayerCriteriaProgress(std::vector<RedisValue>* progressVector)
 {
     for (auto itr = progressVector->begin(); itr != progressVector->end();)
     {
-        uint32 achievementID = atoi(itr->toString().c_str());
+        std::string achievID = itr->toString();
         ++itr;
         if (itr->isInt())
         {
@@ -2265,35 +2235,10 @@ void Player::LoadPlayerCriteriaProgress(std::vector<RedisValue>* progressVector)
             continue;
         }
 
-        std::string achievID = std::to_string(achievementID);
         if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), PlayerData["criteria"][achievID.c_str()]))
         {
             ++itr;
-            sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerCriteriaProgress not parse achievementID %i", achievementID);
-            continue;
-        }
-        else
-            ++itr;
-    }
-}
-
-void Player::LoadAccountCriteriaProgress(std::vector<RedisValue>* progressVector)
-{
-    for (auto itr = progressVector->begin(); itr != progressVector->end();)
-    {
-        uint32 achievementID = atoi(itr->toString().c_str());
-        ++itr;
-        if (itr->isInt())
-        {
-            ++itr;
-            continue;
-        }
-
-        std::string achievID = std::to_string(achievementID);
-        if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), AccountDatas["criteria"][achievID.c_str()]))
-        {
-            ++itr;
-            sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountCriteriaProgress not parse achievementID %i", achievementID);
+            sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerCriteriaProgress not parse achievementID %s", achievID.c_str());
             continue;
         }
         else
@@ -2313,14 +2258,13 @@ void Player::LoadPlayerMails(std::vector<RedisValue>* mailVector)
 {
     for (std::vector<RedisValue>::iterator itr = mailVector->begin(); itr != mailVector->end();)
     {
-        uint32 messageID = atoi(itr->toString().c_str());
         std::string message = itr->toString();
         ++itr;
 
         if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), PlayerMailData["mails"][message.c_str()]))
         {
             ++itr;
-            sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerMails not parse messageID %i", messageID);
+            sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerMails not parse messageID %i", message.c_str());
             continue;
         }
         else
@@ -2333,7 +2277,6 @@ void Player::LoadPlayerMailItems(std::vector<RedisValue>* itemVector)
 {
     for (std::vector<RedisValue>::iterator itr = itemVector->begin(); itr != itemVector->end();)
     {
-        uint32 guid = atoi(itr->toString().c_str());
         std::string itemGuid = itr->toString();
         ++itr;
 
@@ -2701,13 +2644,13 @@ void Player::LoadPlayerCriteriaProgress()
 
 void Player::LoadAccountCriteriaProgress()
 {
-    if (!AccountDatas.isMember("criteria") || AccountDatas["criteria"].empty())
+    if (!GetSession()->AccountDatas.isMember("criteria") || GetSession()->AccountDatas["criteria"].empty())
     {
         m_achievementMgr.GenerateProgressMap();
         return;
     }
 
-    for (auto itr = AccountDatas["criteria"].begin(); itr != AccountDatas["criteria"].end(); ++itr)
+    for (auto itr = GetSession()->AccountDatas["criteria"].begin(); itr != GetSession()->AccountDatas["criteria"].end(); ++itr)
     {
         uint32 achievementid = atoi(itr.memberName());
         auto data = *itr;
@@ -2836,6 +2779,8 @@ void Player::LoadPlayerLoadItems()
     std::map<uint32, Item*> invalidBagMap;                          // fast guid lookup for bags
     std::list<Item*> problematicItems;
     std::map<uint32, Json::Value> itemInBag;                        // Save item in bag, for next step loading
+
+    sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerLoadItems count %i", PlayerData["items"].size());
 
     for (auto itr = PlayerData["items"].begin(); itr != PlayerData["items"].end(); ++itr)
     {
@@ -3026,27 +2971,5 @@ void Player::LoadPlayerData(std::vector<RedisValue>* dataVector)
             ++itr;
 
         sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadPlayerData fieldName %s", fieldName.c_str());
-    }
-}
-
-void Player::LoadAccountData(std::vector<RedisValue>* dataVector)
-{
-    sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountData dataVector %u", dataVector->size());
-
-    for (auto itr = dataVector->begin(); itr != dataVector->end();)
-    {
-        std::string fieldName = itr->toString();
-        ++itr;
-
-        if (!sRedisBuilderMgr->LoadFromRedis(&(*itr), AccountDatas[fieldName.c_str()]))
-        {
-            ++itr;
-            sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountData not parse fieldName %s", fieldName.c_str());
-            continue;
-        }
-        else
-            ++itr;
-
-        sLog->outInfo(LOG_FILTER_REDIS, "Player::LoadAccountData fieldName %s", fieldName.c_str());
     }
 }

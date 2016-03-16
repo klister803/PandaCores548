@@ -425,6 +425,7 @@ class WorldSession
         z_stream_s* GetCompressionStream() { return _compressionStream; }
 
         char* GetAccountKey() { return accountKey; }
+        char* GetCriteriaAcKey() { return criteriaAcKey; }
 
     public:                                                 // opcodes handlers
 
@@ -453,9 +454,12 @@ class WorldSession
         //Redis
         void SaveEnumData(PreparedQueryResult result);
         void SaveEnum();
-        void LoadEnumData(const RedisValue* v, uint64 accountId);
+        void LoadAccountData(const RedisValue* v);
+        void LoadEnumData();
         void UpdateEnumData(Player* player);
         void DeleteEnumData(uint32 guid);
+        void LoadAccountData(std::vector<RedisValue>* dataVector);
+        void LoadAccountCriteriaProgress(std::vector<RedisValue>* progressVector);
 
         // played time
         void HandlePlayedTime(WorldPacket& recvPacket);
@@ -1076,7 +1080,7 @@ class WorldSession
 
         AccountData m_accountData[NUM_ACCOUNT_DATA_TYPES];
 
-        Json::Value EnumData;
+        Json::Value AccountDatas;
 
     private:
         void InitializeQueryCallbackParameters();
@@ -1147,6 +1151,7 @@ class WorldSession
         z_stream_s* _compressionStream;
 
         char* accountKey;
+        char* criteriaAcKey;
 };
 
 class PacketSendEvent : public BasicEvent

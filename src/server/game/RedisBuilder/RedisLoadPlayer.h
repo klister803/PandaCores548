@@ -22,11 +22,9 @@
 enum LoadingStep
 {
     LOAD_PLAYER_DATA                = 0,
-    LOAD_ACCOUNT_DATA               = 1,
-    LOAD_PLAYER_LOGIN               = 2,
-    LOAD_PLAYER_CRITERIA            = 3,
-    LOAD_ACCOUNT_CRITERIA           = 4,
-    LOAD_PLAYER_ITEMS               = 5,
+    LOAD_PLAYER_LOGIN               = 1,
+    LOAD_PLAYER_CRITERIA            = 2,
+    LOAD_PLAYER_ITEMS               = 3,
 };
 
 #endif

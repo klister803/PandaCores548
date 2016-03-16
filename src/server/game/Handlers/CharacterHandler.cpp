@@ -310,10 +310,30 @@ void WorldSession::HandleCharEnumOpcode(WorldPacket & recvData)
     else
         timeCharEnumOpcode = now;
 
-    RedisDatabase.AsyncExecuteH("HGET", GetAccountKey(), "enumdata", _accountId, [&](const RedisValue &v, uint64 accountId) {
-        if (WorldSession* sess = sWorld->FindSession(accountId))
-            sess->LoadEnumData(&v, accountId);
-    });
+    if (AccountDatas.empty())
+    {
+        RedisDatabase.AsyncExecute("HGETALL", GetAccountKey(), _accountId, [&](const RedisValue &v, uint64 accountId) {
+            if (WorldSession* sess = sWorld->FindSession(accountId))
+            {
+                std::vector<RedisValue> dataVector;
+                if (sRedisBuilderMgr->LoadFromRedisArray(&v, dataVector))
+                    sess->LoadAccountData(&dataVector);
+
+                RedisDatabase.AsyncExecute("HGETALL", GetCriteriaAcKey(), accountId, [&](const RedisValue &v, uint64 accountId) {
+                    if (WorldSession* sess = sWorld->FindSession(accountId))
+                    {
+                        std::vector<RedisValue> progressVector;
+                        if (sRedisBuilderMgr->LoadFromRedisArray(&v, progressVector))
+                            sess->LoadAccountCriteriaProgress(&progressVector);
+
+                        sess->LoadEnumData();
+                    }
+                });
+            }
+        });
+    }
+    else
+        LoadEnumData();
 }
 
 void WorldSession::HandleCharCreateOpcode(WorldPacket & recvData)
@@ -887,10 +907,10 @@ void WorldSession::HandlePlayerLoginAccountJson(PreparedQueryResult result)
         return;
     }
 
-    if (result)
+    if (AccountDatas.empty() && result)
     {
         std::string data = (*result)[0].GetString();
-        sRedisBuilderMgr->LoadFromString(data, pCurrChar->AccountDatas);
+        sRedisBuilderMgr->LoadFromString(data, AccountDatas);
     }
 
     //Init key fo data load
@@ -2513,7 +2533,7 @@ void WorldSession::HandleReorderCharacters(WorldPacket& recvData)
         recvData.ReadGuidBytes<6, 4, 7, 1, 5, 3, 2>(guids[i]);
 
         std::string index = std::to_string(GUID_LOPART(guids[i]));
-        EnumData[index.c_str()]["slot"] = position;
+        AccountDatas["enumdata"][index.c_str()]["slot"] = position;
     }
     SaveEnum();
 }

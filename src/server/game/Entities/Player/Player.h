@@ -1623,19 +1623,19 @@ class Player : public Unit, public GridObject<Player>
         char* itemKey;
         char* userKey;
         char* criteriaPlKey;
-        char* criteriaAcKey;
         char* mailKey;
         char* mailItemKey;
         char* GetItemKey() { return itemKey; }
         char* GetUserKey() { return userKey; }
         char* GetAccountKey() { return GetSession()->GetAccountKey(); }
         char* GetCriteriaPlKey() { return criteriaPlKey; }
-        char* GetCriteriaAcKey() { return criteriaAcKey; }
+        char* GetCriteriaAcKey() { return GetSession()->GetCriteriaAcKey(); }
         char* GetMailItemKey() { return mailItemKey; }
 
         Json::Value PlayerData;
         Json::Value PlayerMailData;
-        Json::Value AccountDatas;
+
+        bool initAcData;
 
         //load data for serialize
         void InitCharKeys(uint32 guidlow);
@@ -1727,7 +1727,6 @@ class Player : public Unit, public GridObject<Player>
         void LoadFromRedis(uint64 guid, uint8 step = 0);
         bool LoadPlayer(uint64 playerGuid);
         void LoadPlayerData(std::vector<RedisValue>* dataVector);
-        void LoadAccountData(std::vector<RedisValue>* dataVector);
         bool LoadPlayerNext(uint64 playerGuid);
         void LoadPlayerGroup();
         void LoadPlayerLootCooldown();
@@ -1771,7 +1770,6 @@ class Player : public Unit, public GridObject<Player>
         void LoadPlayerHomeBind();
         void LoadAccountAchievements();
         void LoadPlayerAchievements();
-        void LoadAccountCriteriaProgress(std::vector<RedisValue>* progressVector);
         void LoadPlayerCriteriaProgress(std::vector<RedisValue>* progressVector);
         void LoadAccountCriteriaProgress();
         void LoadPlayerCriteriaProgress();

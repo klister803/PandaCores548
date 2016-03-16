@@ -935,9 +935,9 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     itemKey = new char[23];
     userKey = new char[18];
     criteriaPlKey = new char[23];
-    criteriaAcKey = new char[23];
     mailKey = new char[23];
     mailItemKey = new char[23];
+    initAcData = true;
 }
 
 Player::~Player()
@@ -30840,6 +30840,4 @@ void Player::InitCharKeys(uint32 guidlow)
     sprintf(mailKey, "r{%u}u{%u}mails", realmID, guidlow);
     sprintf(mailItemKey, "r{%i}u{%i}mitems", realmID, guidlow);
     sprintf(criteriaPlKey, "r{%i}u{%i}crit", realmID, guidlow);
-    sprintf(criteriaAcKey, "r{%i}a{%i}crit", realmID, GetSession()->GetAccountId());
-
 }

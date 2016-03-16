@@ -138,7 +138,7 @@ void PlayerSave::SaveToDB()
     stmt->setUInt32(index++, m_player->GetGUIDLow());
     stmt->setUInt32(index++, m_player->GetSession()->GetAccountId());
     stmt->setString(index++, m_player->GetName());
-    stmt->setUInt8(index++, m_player->GetSession()->EnumData[guid.c_str()]["slot"].asInt());
+    stmt->setUInt8(index++, m_player->GetSession()->AccountDatas["enumdata"][guid.c_str()]["slot"].asInt());
     stmt->setUInt8(index++, m_player->getRace());
     stmt->setUInt8(index++, m_player->getClass());
     stmt->setUInt8(index++, m_player->getGender());
@@ -180,7 +180,7 @@ void PlayerSave::SaveToDB()
     index = 0;
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_ACCOUNT_JSON);
     stmt->setUInt32(index++, m_player->GetSession()->GetAccountId());
-    stmt->setString(index++, sRedisBuilderMgr->BuildString(m_player->AccountDatas));
+    stmt->setString(index++, sRedisBuilderMgr->BuildString(m_player->GetSession()->AccountDatas));
     trans->Append(stmt);
 
     CharacterDatabase.CommitTransaction(trans);

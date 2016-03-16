@@ -44,6 +44,9 @@ void Player::InitSavePlayer()
     if (!RedisDatabase.isConnected())
         return;
 
+    if (!GetSession()->AccountDatas.empty())
+        initAcData = false;
+
     SavePlayer();
     SavePlayerGold();
     SavePlayerBG();
@@ -61,8 +64,6 @@ void Player::InitSavePlayer()
     InitPlayerQuestDaily();
     InitPlayerQuestWeekly();
     InitPlayerQuestSeasonal();
-    InitPlayerBattlePets();
-    SavePlayerBattlePetSlots();
     SavePlayerArchaeology();
     InitPlayerReputation();
     InitPlayerVoidStorage();
@@ -74,13 +75,18 @@ void Player::InitSavePlayer()
     InitPlayerEquipmentSets();
     SavePlayerCUFProfiles();
     SavePlayerVisuals();
-    InitPlayerAccountData();
     SavePlayerHomeBind();
     InitAchievement();
     InitCriteria();
     InitPlayerPets();
     InitPlayerMails();
-    SaveAccountTutorials();
+    if (initAcData)
+    {
+        InitPlayerBattlePets();
+        SavePlayerBattlePetSlots();
+        InitPlayerAccountData();
+        SaveAccountTutorials();
+    }
 }
 
 void Player::SavePlayer()
@@ -331,7 +337,10 @@ void Player::InitPlayerSpells()
         {
             std::string spell = std::to_string(itr->first);
             if(itr->second->mount)
-                AccountDatas["mounts"][spell.c_str()]["active"] = itr->second->active;
+            {
+                if (initAcData)
+                    GetSession()->AccountDatas["mounts"][spell.c_str()]["active"] = itr->second->active;
+            }
             else
             {
                 PlayerData["spells"][spell.c_str()]["active"] = itr->second->active;
@@ -343,8 +352,8 @@ void Player::InitPlayerSpells()
     if (!PlayerData["spells"].empty())
         RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "spells", PlayerData["spells"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
-    if (!AccountDatas["mounts"].empty())
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "mounts", AccountDatas["mounts"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!GetSession()->AccountDatas["mounts"].empty() && initAcData)
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "mounts", GetSession()->AccountDatas["mounts"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
     //Update data skill
     SavePlayerSkills();
@@ -434,15 +443,18 @@ void Player::InitPlayerQuestStatus()
             continue;
         if (quest->GetType() == QUEST_TYPE_ACCOUNT)
         {
-            AccountDatas["queststatus"][quest_id.c_str()]["status"] = int32(itr->second.Status);
-            AccountDatas["queststatus"][quest_id.c_str()]["explored"] = itr->second.Explored;
-            AccountDatas["queststatus"][quest_id.c_str()]["timer"] = itr->second.Timer;
-            AccountDatas["queststatus"][quest_id.c_str()]["playercount"] = itr->second.PlayerCount;
-            for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
+            if (initAcData)
             {
-                std::string index = std::to_string(i);
-                AccountDatas["queststatus"][quest_id.c_str()]["mobcount"][index.c_str()] = itr->second.CreatureOrGOCount[i];
-                AccountDatas["queststatus"][quest_id.c_str()]["itemcount"][index.c_str()] = itr->second.ItemCount[i];
+                GetSession()->AccountDatas["queststatus"][quest_id.c_str()]["status"] = int32(itr->second.Status);
+                GetSession()->AccountDatas["queststatus"][quest_id.c_str()]["explored"] = itr->second.Explored;
+                GetSession()->AccountDatas["queststatus"][quest_id.c_str()]["timer"] = itr->second.Timer;
+                GetSession()->AccountDatas["queststatus"][quest_id.c_str()]["playercount"] = itr->second.PlayerCount;
+                for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
+                {
+                    std::string index = std::to_string(i);
+                    GetSession()->AccountDatas["queststatus"][quest_id.c_str()]["mobcount"][index.c_str()] = itr->second.CreatureOrGOCount[i];
+                    GetSession()->AccountDatas["queststatus"][quest_id.c_str()]["itemcount"][index.c_str()] = itr->second.ItemCount[i];
+                }
             }
         }
         else
@@ -463,8 +475,8 @@ void Player::InitPlayerQuestStatus()
     if (!PlayerData["queststatus"].empty())
         RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "queststatus", PlayerData["queststatus"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
-    if (!AccountDatas["queststatus"].empty())
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "queststatus", AccountDatas["queststatus"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!GetSession()->AccountDatas["queststatus"].empty() && initAcData)
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "queststatus", GetSession()->AccountDatas["queststatus"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::InitPlayerQuestRewarded()
@@ -477,7 +489,10 @@ void Player::InitPlayerQuestRewarded()
         if (!quest)
             continue;
         if (quest->GetType() == QUEST_TYPE_ACCOUNT)
-            AccountDatas["questrewarded"][quest_id.c_str()] = quest_id;
+        {
+            if (initAcData)
+                GetSession()->AccountDatas["questrewarded"][quest_id.c_str()] = quest_id;
+        }
         else
             PlayerData["questrewarded"][quest_id.c_str()] = quest_id;
     }
@@ -485,8 +500,8 @@ void Player::InitPlayerQuestRewarded()
     if (!PlayerData["questrewarded"].empty())
         RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "questrewarded", PlayerData["questrewarded"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
-    if (!AccountDatas["questrewarded"].empty())
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questrewarded", AccountDatas["questrewarded"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!GetSession()->AccountDatas["questrewarded"].empty() && initAcData)
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questrewarded", GetSession()->AccountDatas["questrewarded"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::InitPlayerQuestDaily()
@@ -499,7 +514,10 @@ void Player::InitPlayerQuestDaily()
         if (!quest)
             continue;
         if (quest->GetType() == QUEST_TYPE_ACCOUNT)
-            AccountDatas["questdaily"][quest_id.c_str()] = uint64(m_lastDailyQuestTime);
+        {
+            if (initAcData)
+                GetSession()->AccountDatas["questdaily"][quest_id.c_str()] = uint64(m_lastDailyQuestTime);
+        }
         else
             PlayerData["questdaily"][quest_id.c_str()] = uint64(m_lastDailyQuestTime);
     }
@@ -512,7 +530,10 @@ void Player::InitPlayerQuestDaily()
         if (!quest)
             continue;
         if (quest->GetType() == QUEST_TYPE_ACCOUNT)
-            AccountDatas["questdaily"][quest_id.c_str()] = uint64(m_lastDailyQuestTime);
+        {
+            if (initAcData)
+                GetSession()->AccountDatas["questdaily"][quest_id.c_str()] = uint64(m_lastDailyQuestTime);
+        }
         else
             PlayerData["questdaily"][quest_id.c_str()] = uint64(m_lastDailyQuestTime);
     }
@@ -520,8 +541,8 @@ void Player::InitPlayerQuestDaily()
     if (!PlayerData["questdaily"].empty())
         RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "questdaily", PlayerData["questdaily"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
-    if (!AccountDatas["questdaily"].empty())
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questdaily", AccountDatas["questdaily"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!GetSession()->AccountDatas["questdaily"].empty() && initAcData)
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questdaily", GetSession()->AccountDatas["questdaily"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::InitPlayerQuestWeekly()
@@ -534,7 +555,10 @@ void Player::InitPlayerQuestWeekly()
         if (!quest)
             continue;
         if (quest->GetType() == QUEST_TYPE_ACCOUNT)
-            AccountDatas["questweekly"][quest_id.c_str()] = questId;
+        {
+            if (initAcData)
+                GetSession()->AccountDatas["questweekly"][quest_id.c_str()] = questId;
+        }
         else
             PlayerData["questweekly"][quest_id.c_str()] = questId;
     }
@@ -542,8 +566,8 @@ void Player::InitPlayerQuestWeekly()
     if (!PlayerData["questweekly"].empty())
         RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "questweekly", PlayerData["questweekly"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
-    if (!AccountDatas["questweekly"].empty())
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questweekly", AccountDatas["questweekly"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!GetSession()->AccountDatas["questweekly"].empty() && initAcData)
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questweekly", GetSession()->AccountDatas["questweekly"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::InitPlayerQuestSeasonal()
@@ -559,7 +583,10 @@ void Player::InitPlayerQuestSeasonal()
             if (!quest)
                 continue;
             if (quest->GetType() == QUEST_TYPE_ACCOUNT)
-                AccountDatas["questseasonal"][event_id.c_str()][quest_id.c_str()] = questId;
+            {
+                if (initAcData)
+                    GetSession()->AccountDatas["questseasonal"][event_id.c_str()][quest_id.c_str()] = questId;
+            }
             else
                 PlayerData["questseasonal"][event_id.c_str()][quest_id.c_str()] = questId;
         }
@@ -568,8 +595,8 @@ void Player::InitPlayerQuestSeasonal()
     if (!PlayerData["questseasonal"].empty())
         RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "questseasonal", PlayerData["questseasonal"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
-    if (!AccountDatas["questseasonal"].empty())
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questseasonal", AccountDatas["questseasonal"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!GetSession()->AccountDatas["questseasonal"].empty() && initAcData)
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questseasonal", GetSession()->AccountDatas["questseasonal"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::InitPlayerBoundInstances()
@@ -656,20 +683,20 @@ void Player::InitPlayerBattlePets()
             continue;
 
         std::string petGuid = std::to_string(pet->first);
-        AccountDatas["battlepets"][petGuid.c_str()]["customName"] = pjInfo->GetCustomName();
-        AccountDatas["battlepets"][petGuid.c_str()]["creatureEntry"] = pjInfo->GetCreatureEntry();
-        AccountDatas["battlepets"][petGuid.c_str()]["speciesID"] = pjInfo->GetSpeciesID();
-        AccountDatas["battlepets"][petGuid.c_str()]["spell"] = pjInfo->GetSummonSpell();
-        AccountDatas["battlepets"][petGuid.c_str()]["level"] = pjInfo->GetLevel();
-        AccountDatas["battlepets"][petGuid.c_str()]["displayID"] = pjInfo->GetDisplayID();
-        AccountDatas["battlepets"][petGuid.c_str()]["power"] = pjInfo->GetPower();
-        AccountDatas["battlepets"][petGuid.c_str()]["speed"] = pjInfo->GetSpeed();
-        AccountDatas["battlepets"][petGuid.c_str()]["health"] = pjInfo->GetHealth();
-        AccountDatas["battlepets"][petGuid.c_str()]["maxHealth"] = pjInfo->GetMaxHealth();
-        AccountDatas["battlepets"][petGuid.c_str()]["quality"] = pjInfo->GetQuality();
-        AccountDatas["battlepets"][petGuid.c_str()]["xp"] = pjInfo->GetXP();
-        AccountDatas["battlepets"][petGuid.c_str()]["flags"] = pjInfo->GetFlags();
-        AccountDatas["battlepets"][petGuid.c_str()]["breedID"] = pjInfo->GetBreedID();
+        GetSession()->AccountDatas["battlepets"][petGuid.c_str()]["customName"] = pjInfo->GetCustomName();
+        GetSession()->AccountDatas["battlepets"][petGuid.c_str()]["creatureEntry"] = pjInfo->GetCreatureEntry();
+        GetSession()->AccountDatas["battlepets"][petGuid.c_str()]["speciesID"] = pjInfo->GetSpeciesID();
+        GetSession()->AccountDatas["battlepets"][petGuid.c_str()]["spell"] = pjInfo->GetSummonSpell();
+        GetSession()->AccountDatas["battlepets"][petGuid.c_str()]["level"] = pjInfo->GetLevel();
+        GetSession()->AccountDatas["battlepets"][petGuid.c_str()]["displayID"] = pjInfo->GetDisplayID();
+        GetSession()->AccountDatas["battlepets"][petGuid.c_str()]["power"] = pjInfo->GetPower();
+        GetSession()->AccountDatas["battlepets"][petGuid.c_str()]["speed"] = pjInfo->GetSpeed();
+        GetSession()->AccountDatas["battlepets"][petGuid.c_str()]["health"] = pjInfo->GetHealth();
+        GetSession()->AccountDatas["battlepets"][petGuid.c_str()]["maxHealth"] = pjInfo->GetMaxHealth();
+        GetSession()->AccountDatas["battlepets"][petGuid.c_str()]["quality"] = pjInfo->GetQuality();
+        GetSession()->AccountDatas["battlepets"][petGuid.c_str()]["xp"] = pjInfo->GetXP();
+        GetSession()->AccountDatas["battlepets"][petGuid.c_str()]["flags"] = pjInfo->GetFlags();
+        GetSession()->AccountDatas["battlepets"][petGuid.c_str()]["breedID"] = pjInfo->GetBreedID();
     }
 
     SavePlayerBattlePets();
@@ -677,8 +704,8 @@ void Player::InitPlayerBattlePets()
 
 void Player::SavePlayerBattlePets()
 {
-    if (!AccountDatas["battlepets"].empty())
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "battlepets", AccountDatas["battlepets"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!GetSession()->AccountDatas["battlepets"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "battlepets", GetSession()->AccountDatas["battlepets"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::SavePlayerBattlePetSlots()
@@ -687,11 +714,11 @@ void Player::SavePlayerBattlePetSlots()
     {
         std::string index = std::to_string(i);
         PetBattleSlot* slot = GetBattlePetMgr()->GetPetBattleSlot(i);
-        AccountDatas["battlepetslots"][index.c_str()] = slot ? slot->GetPet() : 0;
+        GetSession()->AccountDatas["battlepetslots"][index.c_str()] = slot ? slot->GetPet() : 0;
     }
 
     if (!PlayerData["battlepetslots"].empty())
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "battlepetslots", AccountDatas["battlepetslots"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "battlepetslots", GetSession()->AccountDatas["battlepetslots"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::SavePlayerArchaeology()
@@ -965,8 +992,8 @@ void Player::InitPlayerAccountData()
         if (GLOBAL_CACHE_MASK & (1 << i))
         {
             std::string index = std::to_string(i);
-            AccountDatas["data"][index.c_str()]["Time"] = GetSession()->m_accountData[i].Time;
-            AccountDatas["data"][index.c_str()]["Data"] = GetSession()->m_accountData[i].Data.c_str();
+            GetSession()->AccountDatas["data"][index.c_str()]["Time"] = GetSession()->m_accountData[i].Time;
+            GetSession()->AccountDatas["data"][index.c_str()]["Data"] = GetSession()->m_accountData[i].Data.c_str();
         }
     }
 
@@ -974,7 +1001,7 @@ void Player::InitPlayerAccountData()
         sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerAccountData player guid %u", guid);
     });
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "accountdata", AccountDatas["data"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "accountdata", GetSession()->AccountDatas["data"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerAccountData player guid %u", guid);
     });
 }
@@ -1003,16 +1030,19 @@ void Player::InitAchievement()
             PlayerData["achievement"][achievementId.c_str()]["changed"] = iter->second.changed;
         }
 
-        AccountDatas["achievement"][achievementId.c_str()]["first_guid"] = iter->second.first_guid_real;
-        AccountDatas["achievement"][achievementId.c_str()]["date"] = iter->second.date;
-        AccountDatas["achievement"][achievementId.c_str()]["changed"] = iter->second.changed;
+        if (initAcData)
+        {
+            GetSession()->AccountDatas["achievement"][achievementId.c_str()]["first_guid"] = iter->second.first_guid_real;
+            GetSession()->AccountDatas["achievement"][achievementId.c_str()]["date"] = iter->second.date;
+            GetSession()->AccountDatas["achievement"][achievementId.c_str()]["changed"] = iter->second.changed;
+        }
     }
 
     if (!PlayerData["achievement"].empty())
         RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "achievement", PlayerData["achievement"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
-    if (!AccountDatas["achievement"].empty())
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "achievement", AccountDatas["achievement"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!GetSession()->AccountDatas["achievement"].empty() && initAcData)
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "achievement", GetSession()->AccountDatas["achievement"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::InitCriteria()
@@ -1044,10 +1074,13 @@ void Player::InitCriteria()
                     std::string criteriaId = std::to_string(iter->first);
                     if (achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
                     {
-                        save_ac = true;
-                        CriteriaAc[criteriaId.c_str()]["counter"] = iter->second.counter;
-                        CriteriaAc[criteriaId.c_str()]["date"] = iter->second.date;
-                        CriteriaAc[criteriaId.c_str()]["completed"] = iter->second.completed;
+                        if (initAcData)
+                        {
+                            save_ac = true;
+                            CriteriaAc[criteriaId.c_str()]["counter"] = iter->second.counter;
+                            CriteriaAc[criteriaId.c_str()]["date"] = iter->second.date;
+                            CriteriaAc[criteriaId.c_str()]["completed"] = iter->second.completed;
+                        }
                     }
                     else
                     {
@@ -1068,7 +1101,7 @@ void Player::InitCriteria()
 
         if (save_ac)
         {
-            AccountDatas["criteria"][achievID.c_str()] = CriteriaAc;
+            GetSession()->AccountDatas["criteria"][achievID.c_str()] = CriteriaAc;
             RedisDatabase.AsyncExecuteHSet("HSET", GetCriteriaAcKey(), achievID.c_str(), CriteriaAc, GetGUID(), [&](const RedisValue &v, uint64 guid) {});
         }
     }
@@ -1386,10 +1419,10 @@ void Player::SaveAccountTutorials()
     for (uint8 i = 0; i < MAX_ACCOUNT_TUTORIAL_VALUES; ++i)
     {
         std::string index = std::to_string(i);
-        AccountDatas["tutorials"][index.c_str()] = GetSession()->GetTutorialInt(i);
+        GetSession()->AccountDatas["tutorials"][index.c_str()] = GetSession()->GetTutorialInt(i);
     }
 
-    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "tutorials", AccountDatas["tutorials"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "tutorials", GetSession()->AccountDatas["tutorials"], GetGUID(), [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Player::SavePlayerGold guid %u", guid);
     });
 }
@@ -1414,8 +1447,8 @@ void Player::SavePlayerSpells()
     if (!PlayerData["spells"].empty())
         RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "spells", PlayerData["spells"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
-    if (!AccountDatas["mounts"].empty())
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "mounts", AccountDatas["mounts"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!GetSession()->AccountDatas["mounts"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "mounts", GetSession()->AccountDatas["mounts"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Player::SavePlayerDataAll()
@@ -1444,34 +1477,34 @@ void Player::SavePlayerDataAll()
 
     if (!PlayerData["queststatus"].empty())
         RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "queststatus", PlayerData["queststatus"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
-    if (!AccountDatas["queststatus"].empty())
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "queststatus", AccountDatas["queststatus"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!GetSession()->AccountDatas["queststatus"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "queststatus", GetSession()->AccountDatas["queststatus"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
     if (!PlayerData["questrewarded"].empty())
         RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "questrewarded", PlayerData["questrewarded"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
-    if (!AccountDatas["questrewarded"].empty())
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questrewarded", AccountDatas["questrewarded"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!GetSession()->AccountDatas["questrewarded"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questrewarded", GetSession()->AccountDatas["questrewarded"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
     if (!PlayerData["questdaily"].empty())
         RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "questdaily", PlayerData["questdaily"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
-    if (!AccountDatas["questdaily"].empty())
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questdaily", AccountDatas["questdaily"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!GetSession()->AccountDatas["questdaily"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questdaily", GetSession()->AccountDatas["questdaily"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
     if (!PlayerData["questweekly"].empty())
         RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "questweekly", PlayerData["questweekly"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
-    if (!AccountDatas["questweekly"].empty())
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questweekly", AccountDatas["questweekly"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!GetSession()->AccountDatas["questweekly"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questweekly", GetSession()->AccountDatas["questweekly"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
     if (!PlayerData["questseasonal"].empty())
         RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "questseasonal", PlayerData["questseasonal"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
-    if (!AccountDatas["questseasonal"].empty())
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questseasonal", AccountDatas["questseasonal"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!GetSession()->AccountDatas["questseasonal"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "questseasonal", GetSession()->AccountDatas["questseasonal"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
     SavePlayerBoundInstances();
     SavePlayerBattlePets();
 
-    if (!AccountDatas["battlepetslots"].empty())
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "battlepetslots", AccountDatas["battlepetslots"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!GetSession()->AccountDatas["battlepetslots"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "battlepetslots", GetSession()->AccountDatas["battlepetslots"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
     if (!PlayerData["archaeology"].empty())
         RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "archaeology", PlayerData["archaeology"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
@@ -1506,16 +1539,16 @@ void Player::SavePlayerDataAll()
 
     if (!PlayerData["accountdata"].empty())
         RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "accountdata", PlayerData["accountdata"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
-    if (!AccountDatas["data"].empty())
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "data", AccountDatas["data"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!GetSession()->AccountDatas["data"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "data", GetSession()->AccountDatas["data"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
     if (!PlayerData["homebind"].empty())
         RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "homebind", PlayerData["homebind"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
     if (!PlayerData["achievement"].empty())
         RedisDatabase.AsyncExecuteHSet("HSET", GetUserKey(), "achievement", PlayerData["achievement"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
-    if (!AccountDatas["achievement"].empty())
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "achievement", AccountDatas["achievement"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!GetSession()->AccountDatas["achievement"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "achievement", GetSession()->AccountDatas["achievement"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
     InitCriteria();
 
@@ -1525,8 +1558,8 @@ void Player::SavePlayerDataAll()
     InitPlayerMails();
     SavePlayerGold();
 
-    if (!PlayerData["tutorials"].empty())
-        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "tutorials", AccountDatas["tutorials"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
+    if (!GetSession()->AccountDatas["tutorials"].empty())
+        RedisDatabase.AsyncExecuteHSet("HSET", GetAccountKey(), "tutorials", GetSession()->AccountDatas["tutorials"], GetGUID(), [&](const RedisValue &v, uint64 guid) {});
 
     SavePlayerGuild();
     SavePlayerPetitions();

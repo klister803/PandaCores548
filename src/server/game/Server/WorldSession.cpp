@@ -106,7 +106,9 @@ isRecruiter(isARecruiter), timeCharEnumOpcode(0), playerLoginCounter(0)
     _filterAddonMessages = false;
 
     accountKey = new char[32];
+    criteriaAcKey = new char[23];
     sprintf(accountKey, "r{%u}a{%u}", realmID, _accountId);
+    sprintf(criteriaAcKey, "r{%i}a{%i}crit", realmID, _accountId);
 
     if (sock)
     {
