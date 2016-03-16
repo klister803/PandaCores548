@@ -416,16 +416,25 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     if (plrMover && !plrMover->GetVehicle())
     {
         // water walk
-        if (!plrMover->HasMoveEventsMask(MOVE_EVENT_WATER_WALK) && movementInfo.HasMovementFlag(MOVEMENTFLAG_WATERWALKING))
-            KickPlayer();
+        if (sWorld->getBoolConfig(CONFIG_ENABLE_WATERWALK_CHECK))
+        {
+            if (!plrMover->HasMoveEventsMask(MOVE_EVENT_WATER_WALK) && movementInfo.HasMovementFlag(MOVEMENTFLAG_WATERWALKING))
+                KickPlayer();
+        }
 
         // hover
-        if (!plrMover->HasMoveEventsMask(MOVE_EVENT_HOVER) && movementInfo.HasMovementFlag(MOVEMENTFLAG_HOVER))
-            KickPlayer();
+        if (sWorld->getBoolConfig(CONFIG_ENABLE_HOVER_CHECK))
+        {
+            if (!plrMover->HasMoveEventsMask(MOVE_EVENT_HOVER) && movementInfo.HasMovementFlag(MOVEMENTFLAG_HOVER))
+                KickPlayer();
+        }
 
         // fly
-        if (!plrMover->HasMoveEventsMask(MOVE_EVENT_FLYING) && movementInfo.HasMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING))
-            KickPlayer();
+        if (sWorld->getBoolConfig(CONFIG_ENABLE_FLYING_CHECK))
+        {
+            if (!plrMover->HasMoveEventsMask(MOVE_EVENT_FLYING) && movementInfo.HasMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING))
+                KickPlayer();
+        }
     }
 
     // second...
@@ -433,13 +442,16 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     {
         // teleport
         // delta = 20 yards
-        float dist = plrMover->GetDistance(movementInfo.pos);
-        if (dist > 20.0f)
+        if (sWorld->getBoolConfig(CONFIG_ENABLE_TELEPORT_CHECK))
         {
-            if (!plrMover->HasMoveEventsMask(MOVE_EVENT_TELEPORT) && !plrMover->HasUnitState(UNIT_STATE_JUMPING))
-                KickPlayer();
-            else if (plrMover->HasMoveEventsMask(MOVE_EVENT_TELEPORT))
-                plrMover->RemoveMoveEventsMask(MOVE_EVENT_TELEPORT);
+            float dist = plrMover->GetDistance(movementInfo.pos);
+            if (dist > 20.0f)
+            {
+                if (!plrMover->HasMoveEventsMask(MOVE_EVENT_TELEPORT) && !plrMover->HasUnitState(UNIT_STATE_JUMPING))
+                    KickPlayer();
+                else if (plrMover->HasMoveEventsMask(MOVE_EVENT_TELEPORT))
+                    plrMover->RemoveMoveEventsMask(MOVE_EVENT_TELEPORT);
+            }
         }
     }
 
