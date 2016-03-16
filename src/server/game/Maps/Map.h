@@ -54,8 +54,6 @@ class Battleground;
 class MapInstanced;
 class InstanceMap;
 class BattlegroundMap;
-struct VMAPData;
-
 namespace Trinity { struct ObjectUpdater; }
 
 struct ScriptAction
@@ -149,10 +147,10 @@ enum MMAP_LOAD_RESULT
 
 struct LiquidData
 {
-    uint32 TypeFlags;
-    uint32 Entry;
-    float  Level;
-    float  DepthLevel;
+    uint32 type_flags;
+    uint32 entry;
+    float  level;
+    float  depth_level;
 };
 
 class GridMap
@@ -325,10 +323,7 @@ class Map : public GridRefManager<NGridType>
 
         ZLiquidStatus getLiquidStatus(float x, float y, float z, uint8 ReqLiquidType, LiquidData* data = 0) const;
 
-        /// > vmapData will be allocated if null or updated if not
-        void GetVMAPData(float x, float y, float z, VMAPData *vmapData = nullptr);
-
-        uint16 GetAreaFlag(float x, float y, float z, bool *isOutdoors = 0) const;
+        uint16 GetAreaFlag(float x, float y, float z, bool *isOutdoors=0) const;
         bool GetAreaInfo(float x, float y, float z, uint32 &mogpflags, int32 &adtId, int32 &rootId, int32 &groupId) const;
 
         bool IsOutdoors(float x, float y, float z) const;

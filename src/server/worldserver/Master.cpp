@@ -281,8 +281,6 @@ int Master::Run()
     LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = flag & ~%u, population = 0 WHERE id = '%u'", REALM_FLAG_INVALID, realmID);
 
     sLog->outInfo(LOG_FILTER_WORLDSERVER, "%s (worldserver-daemon) ready...", _FULLVERSION);
-    if (sWorld->getBoolConfig(CONFIG_FASTER_LOADING))
-        sLog->outInfo(LOG_FILTER_WORLDSERVER, "Faster loading is enabled, some functions are disabled (GOs, locales, etc).");
 
     // when the main thread closes the singletons get unloaded
     // since worldrunnable uses them, it will crash if unloaded after master

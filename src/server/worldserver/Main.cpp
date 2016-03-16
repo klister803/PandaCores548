@@ -74,17 +74,6 @@ extern int main(int argc, char **argv)
 {
     ///- Command line parsing to get the configuration file name
     char const* cfg_file = _TRINITY_CORE_CONFIG;
-    std::string debug_cfg = "";
-
-#ifdef _WIN32
-    if (IsDebuggerPresent())
-    {
-        std::string path(argv[0]);
-        std::string::size_type pos = path.find_last_of("\\/");
-        debug_cfg = path.substr(0, pos + 1) + cfg_file;
-    }
-#endif
-
     int c = 1;
     while ( c < argc )
     {
@@ -140,14 +129,14 @@ extern int main(int argc, char **argv)
         ++c;
     }
 
-    if (!ConfigMgr::Load(debug_cfg.empty() ? cfg_file : debug_cfg.data()))
+    if (!ConfigMgr::Load(cfg_file))
     {
         printf("Invalid or missing configuration file : %s", cfg_file);
         printf("Verify that the file exists and has \'[worldserver]' written in the top of the file!");
         return 1;
     }
-
     sLog->outInfo(LOG_FILTER_WORLDSERVER, "Using configuration file %s.", cfg_file);
+
     sLog->outInfo(LOG_FILTER_WORLDSERVER, "Using SSL version: %s (library: %s)", OPENSSL_VERSION_TEXT, SSLeay_version(SSLEAY_VERSION));
     sLog->outInfo(LOG_FILTER_WORLDSERVER, "Using ACE version: %s", ACE_VERSION);
 

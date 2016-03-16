@@ -118,7 +118,6 @@ Object::Object() : m_PackGUID(sizeof(uint64)+1),
     m_objectUpdated(false)
 {
     m_PackGUID.appendPackGUID(0);
-    vmapData = new VMAPData();
 }
 
 WorldObject::~WorldObject()
@@ -1785,8 +1784,6 @@ m_phaseMask(PHASEMASK_NORMAL), m_phaseId(0), m_ignorePhaseIdCheck(false)
 {
     m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE | GHOST_VISIBILITY_GHOST);
     m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE);
-    m_zoneUpdateId = m_saveZoneUpdateId = 0;
-    m_areaUpdateId = m_saveAreaUpdateId = 0;
     m_deleted = false;
 }
 
@@ -1860,24 +1857,17 @@ void WorldObject::_Create(uint32 guidlow, HighGuid guidhigh, uint32 phaseMask)
 
 uint32 WorldObject::GetZoneId() const
 {
-    //return GetBaseMap()->GetZoneId(m_positionX, m_positionY, m_positionZ);
-    return m_zoneUpdateId;
+    return GetBaseMap()->GetZoneId(m_positionX, m_positionY, m_positionZ);
 }
 
 uint32 WorldObject::GetAreaId() const
 {
-    //return GetBaseMap()->GetAreaId(m_positionX, m_positionY, m_positionZ);
-    return m_areaUpdateId;
+    return GetBaseMap()->GetAreaId(m_positionX, m_positionY, m_positionZ);
 }
 
 void WorldObject::GetZoneAndAreaId(uint32& zoneid, uint32& areaid) const
 {
     GetBaseMap()->GetZoneAndAreaId(zoneid, areaid, m_positionX, m_positionY, m_positionZ);
-}
-
-void WorldObject::UpdateZoneAndAreaId()
-{
-    GetBaseMap()->GetZoneAndAreaId(m_zoneUpdateId, m_areaUpdateId, m_positionX, m_positionY, m_positionZ);
 }
 
 InstanceScript* WorldObject::GetInstanceScript()
@@ -2295,7 +2285,7 @@ bool Position::IsPositionValid() const
 float WorldObject::GetGridActivationRange() const
 {
     if (Player const* thisPlayer = ToPlayer())
-        return GetMap()->GetVisibilityRange(thisPlayer->GetZoneId(), thisPlayer->GetAreaId());
+        return GetMap()->GetVisibilityRange(thisPlayer->getCurrentUpdateZoneID(), thisPlayer->getCurrentUpdateAreaID());
     else if (ToCreature())
         return ToCreature()->m_SightDistance;
     else
@@ -2310,9 +2300,9 @@ float WorldObject::GetVisibilityRange() const
         if (GetMap())
         {
             if (Player const* thisPlayer = ToPlayer())
-                return GetMap()->GetVisibilityRange(thisPlayer->GetZoneId(), thisPlayer->GetAreaId());
+                return GetMap()->GetVisibilityRange(thisPlayer->getCurrentUpdateZoneID(), thisPlayer->getCurrentUpdateAreaID());
             else if (Creature const* creature = ToCreature())
-                return GetMap()->GetVisibilityRange(creature->GetZoneId(), creature->GetAreaId());
+                return GetMap()->GetVisibilityRange(creature->getCurrentUpdateZoneID(), creature->getCurrentUpdateAreaID());
             else
                 return GetMap()->GetVisibilityRange();
         }
@@ -2329,7 +2319,7 @@ float WorldObject::GetSightRange(const WorldObject* target) const
             if (target && target->isActiveObject() && !target->ToPlayer())
                 return MAX_VISIBILITY_DISTANCE;
             else
-                return GetMap()->GetVisibilityRange(thisPlayer->GetZoneId(), thisPlayer->GetAreaId());
+                return GetMap()->GetVisibilityRange(thisPlayer->getCurrentUpdateZoneID(), thisPlayer->getCurrentUpdateAreaID());
         }
         else if (ToCreature())
             return ToCreature()->m_SightDistance;

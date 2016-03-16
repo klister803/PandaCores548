@@ -141,11 +141,10 @@ inline void CreatureUnitRelocationWorker(Creature* c, Unit* u)
     if (!u->isAlive() || !c->isAlive() || c == u || u->isInFlight())
         return;
 
-    CreatureAI* ai = c->AI();
     if (!c->HasUnitState(UNIT_STATE_SIGHTLESS))
         if (c->IsAIEnabled && c->canSeeOrDetect(u, false, true))
-            if (c->HasReactState(REACT_AGGRESSIVE) || ai->CanSeeEvenInPassiveMode())
-                ai->SafeMoveInLineOfSight(u);
+            if (c->HasReactState(REACT_AGGRESSIVE) || c->AI()->CanSeeEvenInPassiveMode())
+                c->AI()->MoveInLineOfSight_Safe(u);
 }
 
 void AIRelocationNotifier::Visit(CreatureMapType &m)

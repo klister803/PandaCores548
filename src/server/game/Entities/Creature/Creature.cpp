@@ -186,6 +186,8 @@ m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_o
         m_powerRegenTimer[i] = 0;
 
     m_LOSCheckTimer = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
+    m_LOSCheck_player = false;
+    m_LOSCheck_creature = false;
 
     TriggerJustRespawned = false;
     m_isTempWorldObject = false;
@@ -521,16 +523,17 @@ void Creature::UpdateStat()
 void Creature::Update(uint32 diff)
 {
     volatile uint32 creatureEntry = GetEntry();
-
     m_petFollowPositionTimer += diff;
+
     if (m_petFollowPositionTimer > 500)
         m_petFollowPositionTimer = 500;
 
-    if (m_LOSCheckTimer <= diff)
-    {
-        m_vmapUpdateAllow = true;
-        m_LOSCheckTimer = DEFAULT_VISIBILITY_NOTIFY_PERIOD*2;
-    } else m_LOSCheckTimer -= diff;
+	if (m_LOSCheckTimer <= diff)
+	{
+		m_LOSCheck_player = true;
+		m_LOSCheck_creature = true;
+		m_LOSCheckTimer = DEFAULT_VISIBILITY_NOTIFY_PERIOD*2;
+	} else m_LOSCheckTimer -= diff;
 
     bool isPlayersPet = false;
     if (Unit * unit = ToUnit())
@@ -914,7 +917,8 @@ bool Creature::Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, 
     SetFloatValue(UNIT_FIELD_MOD_RANGED_HASTE, 1.0f);
     SetFloatValue(UNIT_FIELD_HOVERHEIGHT, 1.0f);
 
-    UpdateZoneAndAreaId();
+    m_areaUpdateId = GetMap()->GetAreaId(x, y, z);
+    m_zoneUpdateId = GetMap()->GetZoneId(x, y, z);
 
     return true;
 }
@@ -1185,11 +1189,15 @@ void Creature::SaveToDB(uint32 mapid, uint32 spawnMask, uint32 phaseMask)
             dynamicflags = 0;
     }
 
+    uint32 zoneId = 0;
+    uint32 areaId = 0;
+    sMapMgr->GetZoneAndAreaId(zoneId, areaId, mapid, GetPositionX(), GetPositionY(), GetPositionZ());
+
     // data->guid = guid must not be updated at save
     data.id = GetEntry();
     data.mapid = mapid;
-    data.zoneId = GetZoneId();
-    data.areaId = GetAreaId();
+    data.zoneId = zoneId;
+    data.areaId = areaId;
     data.phaseMask = phaseMask;
     data.displayid = displayId;
     data.equipmentId = GetEquipmentId();
@@ -1226,8 +1234,8 @@ void Creature::SaveToDB(uint32 mapid, uint32 spawnMask, uint32 phaseMask)
     stmt->setUInt32(index++, m_DBTableGuid);
     stmt->setUInt32(index++, GetEntry());
     stmt->setUInt16(index++, uint16(mapid));
-    stmt->setUInt32(index++, GetZoneId());
-    stmt->setUInt32(index++, GetAreaId());
+    stmt->setUInt32(index++, zoneId);
+    stmt->setUInt32(index++, areaId);
     stmt->setUInt8(index++,  spawnMask);
     stmt->setUInt16(index++, uint16(GetPhaseMask()));
     stmt->setUInt32(index++, displayId);
@@ -1285,9 +1293,9 @@ void Creature::SelectLevel(const CreatureTemplate* cinfo)
     if (cinfo->type == CREATURE_TYPE_WILD_PET)
     {
         // random level depends on zone data
-        if (vmapData->HasAreaTableEntry())
+        if (AreaTableEntry const * aEntry = GetAreaEntryByAreaID(GetZoneId()))
         {
-            uint8 level_ = urand(vmapData->GetWildBattlePetLevelMin(), vmapData->GetWildBattlePetLevelMax());
+            uint8 level_ = urand(aEntry->m_wildBattlePetLevelMin, aEntry->m_wildBattlePetLevelMax);
             if (!level_)
                 level_ = level;
 

@@ -68,7 +68,7 @@ namespace VMAP
             void setUnloaded() { iModel = 0; }
             bool intersectRay(const G3D::Ray& pRay, float& pMaxDist, bool pStopAtFirstHit) const;
             void intersectPoint(const G3D::Vector3& p, AreaInfo &info) const;
-            bool GetLocationInfo(const G3D::Vector3& p, LocationInfo &locInfo, AreaInfo &aInfo) const;
+            bool GetLocationInfo(const G3D::Vector3& p, LocationInfo &info) const;
             bool GetLiquidLevel(const G3D::Vector3& p, LocationInfo &info, float &liqHeight) const;
         protected:
             G3D::Matrix3 iInvRot;
