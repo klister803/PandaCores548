@@ -174,7 +174,7 @@ class boss_malkorok : public CreatureScript
                 _EnterCombat();
                 Talk(SAY_PULL);
                 SetGasStateAndBuffPlayers(true);
-                powercheck = 1600;
+                powercheck = 1400;
                 checkvictim = 1500;
                 DoCast(me, SPELL_FATAL_STRIKE, true);
                 events.ScheduleEvent(EVENT_SEISMIC_SLAM, 5000, 0, PHASE_ONE);
@@ -240,7 +240,7 @@ class boss_malkorok : public CreatureScript
                     asGuids.clear();
                     DoCast(me, SPELL_FATAL_STRIKE, true);
                     SetGasStateAndBuffPlayers(true);
-                    powercheck = 1600;
+                    powercheck = 1400;
                     events.ScheduleEvent(EVENT_PREPARE, 12000, 0, PHASE_ONE);
                     break;
                 case ACTION_PHASE_TWO:
@@ -331,7 +331,7 @@ class boss_malkorok : public CreatureScript
                             if (me->GetPower(POWER_ENERGY) <= 99)
                             {
                                 me->SetPower(POWER_ENERGY, me->GetPower(POWER_ENERGY) + 1);
-                                powercheck = 1600;
+                                powercheck = 1400;
                                 if (me->GetPower(POWER_ENERGY) == 100)
                                 {
                                     phase = PHASE_TWO;
