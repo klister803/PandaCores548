@@ -272,7 +272,7 @@ class boss_malkorok : public CreatureScript
                         else
                         {
                             //events.ScheduleEvent(EVENT_SEISMIC_SLAM, 10000);
-                            events.ScheduleEvent(EVENT_PREPARE, 10000);
+                            events.ScheduleEvent(EVENT_PREPARE, 11000);
                         }
                         events.ScheduleEvent(EVENT_RE_ATTACK, 1000);               
                     break;
