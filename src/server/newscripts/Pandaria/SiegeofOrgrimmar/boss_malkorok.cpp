@@ -174,11 +174,11 @@ class boss_malkorok : public CreatureScript
                 _EnterCombat();
                 Talk(SAY_PULL);
                 SetGasStateAndBuffPlayers(true);
-                //powercheck = 1600;
+                powercheck = 1600;
                 checkvictim = 1500;
                 DoCast(me, SPELL_FATAL_STRIKE, true);
-                events.ScheduleEvent(EVENT_SEISMIC_SLAM, 5000);
-                events.ScheduleEvent(EVENT_PREPARE, 12000);
+                events.ScheduleEvent(EVENT_SEISMIC_SLAM, 5000, 0, PHASE_ONE);
+                events.ScheduleEvent(EVENT_PREPARE, 12000, 0, PHASE_ONE);
                 events.ScheduleEvent(EVENT_ERADICATE, 360000);
             }
 
@@ -241,7 +241,7 @@ class boss_malkorok : public CreatureScript
                     DoCast(me, SPELL_FATAL_STRIKE, true);
                     SetGasStateAndBuffPlayers(true);
                     powercheck = 1600;
-                    events.ScheduleEvent(EVENT_PREPARE, 12000);
+                    events.ScheduleEvent(EVENT_PREPARE, 12000, 0, PHASE_ONE);
                     break;
                 case ACTION_PHASE_TWO:
                     me->RemoveAurasDueToSpell(SPELL_FATAL_STRIKE);
@@ -268,11 +268,11 @@ class boss_malkorok : public CreatureScript
                     }
                     if (!asGuids.empty())
                         if (asGuids.size() == 3)
-                            events.ScheduleEvent(EVENT_BREATH_OF_YSHAARJ, 13000);
+                            events.ScheduleEvent(EVENT_BREATH_OF_YSHAARJ, 13000, 0, PHASE_ONE);
                         else
                         {
-                            events.ScheduleEvent(EVENT_SEISMIC_SLAM, 16000);
-                            events.ScheduleEvent(EVENT_PREPARE, 11000);
+                            events.ScheduleEvent(EVENT_SEISMIC_SLAM, 16000, 0, PHASE_ONE);
+                            events.ScheduleEvent(EVENT_PREPARE, 11000, 0, PHASE_ONE);
                         }
                         events.ScheduleEvent(EVENT_RE_ATTACK, 1000);               
                     break;
@@ -281,7 +281,7 @@ class boss_malkorok : public CreatureScript
                         if (Creature* as = me->GetCreature(*me, *itr))
                             as->AI()->DoAction(ACTION_BREATH_OF_YSHAARJ);
                     asGuids.clear();
-                    events.ScheduleEvent(EVENT_PREPARE,  12000);
+                    events.ScheduleEvent(EVENT_PREPARE, 12000, 0, PHASE_ONE);
                     events.ScheduleEvent(EVENT_RE_ATTACK, 1500);
                     break;
                 }
