@@ -1866,7 +1866,7 @@ ZLiquidStatus Map::getLiquidStatus(float x, float y, float z, uint8 ReqLiquidTyp
     return result;
 }
 
-VMAPData* Map::GetVMAPData(float x, float y, float z, VMAPData *vmapData /* = nullptr */)
+void Map::GetVMAPData(float x, float y, float z, VMAPData *vmapData /* = nullptr */)
 {
     if (!vmapData)
         vmapData = new VMAPData();
@@ -1948,20 +1948,20 @@ VMAPData* Map::GetVMAPData(float x, float y, float z, VMAPData *vmapData /* = nu
             if (delta > 2.0f)                   // Under water
             {
                 vmapData->SetZLiquidStatus(LIQUID_MAP_UNDER_WATER);
-                return vmapData;
+                return;
             }
             if (delta > 0.0f)                   // In water
             {
                 vmapData->SetZLiquidStatus(LIQUID_MAP_IN_WATER);
-                return vmapData;
+                return;
             }
             if (delta > -0.1f)                   // Walk on water
             {
                 vmapData->SetZLiquidStatus(LIQUID_MAP_WATER_WALK);
-                return vmapData;
+                return;
             }
             vmapData->SetZLiquidStatus(LIQUID_MAP_ABOVE_WATER);
-            return vmapData;
+            return;
         }
     }
     else
@@ -2007,9 +2007,6 @@ VMAPData* Map::GetVMAPData(float x, float y, float z, VMAPData *vmapData /* = nu
 
     if (!haveAreaInfo || (!vmapData->GetAreaId() || !vmapData->GetZoneId()))
         vmapData->SetAreaTableEntry(GetAreaEntryByAreaFlagAndMap(vmapData->GetAreaFlag(), GetId()));
-
-    return vmapData;
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "getVmapInfo() GridMap areaid %i zoneid %i haveAreaInfo %i", vmapInfo.areaid, vmapInfo.zoneid, haveAreaInfo);
 }
 
 float Map::GetWaterLevel(float x, float y) const

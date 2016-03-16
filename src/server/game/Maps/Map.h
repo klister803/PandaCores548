@@ -324,7 +324,9 @@ class Map : public GridRefManager<NGridType>
         float GetVmapHeight(float x, float y, float z) const;
 
         ZLiquidStatus getLiquidStatus(float x, float y, float z, uint8 ReqLiquidType, LiquidData* data = 0) const;
-        VMAPData* GetVMAPData(float x, float y, float z, VMAPData *vmapData = nullptr);
+
+        /// > vmapData will be allocated if null or updated if not
+        void GetVMAPData(float x, float y, float z, VMAPData *vmapData = nullptr);
 
         uint16 GetAreaFlag(float x, float y, float z, bool *isOutdoors = 0) const;
         bool GetAreaInfo(float x, float y, float z, uint32 &mogpflags, int32 &adtId, int32 &rootId, int32 &groupId) const;

@@ -369,7 +369,7 @@ public:
         handler->PSendSysMessage("areaid %i zoneid %i isOutdoors %i areaid %i zoneid %i areaFlag %i ID %i",
                                  object->GetAreaId(), object->GetZoneId(), vmapData->IsOutdoor(), vmapData->GetAreaId(), vmapData->GetZoneId(), vmapData->GetAreaId(), vmapData->GetAreaTableEntryId());
 
-        vmapData = object->GetMap()->GetVMAPData(object->GetPositionX(), object->GetPositionY(), object->GetPositionZ());
+        object->GetMap()->GetVMAPData(object->GetPositionX(), object->GetPositionY(), object->GetPositionZ(), vmapData);
 
         handler->PSendSysMessage("VMAPINFO: areaid %i zoneid %i isOutdoors %i areaid %i zoneid %i areaFlag %i ID %i",
                                  object->GetAreaId(), object->GetZoneId(), vmapData->IsOutdoor(), vmapData->GetAreaId(), vmapData->GetZoneId(), vmapData->GetAreaId(), vmapData->GetAreaTableEntryId());
