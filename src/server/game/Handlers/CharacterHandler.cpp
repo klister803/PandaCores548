@@ -1051,6 +1051,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
         }
     }
 
+    pCurrChar->UpdateVmapInfo(pCurrChar->GetMap(), pCurrChar->GetPositionX(), pCurrChar->GetPositionY(), pCurrChar->GetPositionZ());
     pCurrChar->SendInitialPacketsAfterAddToMap();
 
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_ONLINE);

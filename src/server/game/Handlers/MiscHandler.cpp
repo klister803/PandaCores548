@@ -2174,9 +2174,9 @@ void WorldSession::HandleAreaSpiritHealerQueueOpcode(WorldPacket& recv_data)
 void WorldSession::HandleHearthAndResurrect(WorldPacket& /*recvData*/)
 {
     if (_player->isInFlight())
-        return;
+        return; 
 
-    if (!_player->vmapInfo.atEntry || !(_player->vmapInfo.atEntry->flags & AREA_FLAG_WINTERGRASP_2))
+    if (!_player->vmapData->HasAreaTableEntry() || !_player->vmapData->HasAreaTableFlags(AREA_FLAG_WINTERGRASP_2))
         return;
 
     Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(_player->GetZoneId());

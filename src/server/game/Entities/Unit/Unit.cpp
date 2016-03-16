@@ -3641,12 +3641,12 @@ bool Unit::isInAccessiblePlaceFor(Creature const* c) const
 
 bool Unit::IsInWater() const
 {
-    return vmapInfo.Zliquid_status & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER);
+    return vmapData->HasZLiquidStatus(LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER);
 }
 
 bool Unit::IsUnderWater() const
 {
-    return vmapInfo.Zliquid_status & LIQUID_MAP_UNDER_WATER;
+    return vmapData->HasZLiquidStatus(LIQUID_MAP_UNDER_WATER);
 }
 
 void Unit::UpdateVmapInfo(Map* m, float x, float y, float z)
@@ -3655,19 +3655,19 @@ void Unit::UpdateVmapInfo(Map* m, float x, float y, float z)
     {
         if (m_vmapUpdateAllow)
         {
-            vmapInfo = m->getVmapInfo(x, y, z);
-            m_zoneUpdateId = vmapInfo.zoneid;
-            m_areaUpdateId = vmapInfo.areaid;
+            m->GetVMAPData(x, y, z, vmapData);
+            m_zoneUpdateId = vmapData->GetZoneId();
+            m_areaUpdateId = vmapData->GetAreaId();
             m_vmapUpdateAllow = false;
         }
         return;
     }
 
-    vmapInfo = m->getVmapInfo(x, y, z);
-    m_zoneUpdateId = vmapInfo.zoneid;
-    m_areaUpdateId = vmapInfo.areaid;
+    m->GetVMAPData(x, y, z, vmapData);
+    m_zoneUpdateId = vmapData->GetZoneId();
+    m_areaUpdateId = vmapData->GetAreaId();
 
-    if (!vmapInfo.Zliquid_status)
+    if (!vmapData->HasZLiquidStatus())
     {
         if (_lastLiquid && _lastLiquid->SpellId)
             RemoveAurasDueToSpell(_lastLiquid->SpellId);
@@ -3677,7 +3677,7 @@ void Unit::UpdateVmapInfo(Map* m, float x, float y, float z)
         return;
     }
 
-    if (uint32 liqEntry = vmapInfo.liquid_status.entry)
+    if (uint32 liqEntry = vmapData->GetLiquidData().Entry)
     {
         LiquidTypeEntry const* liquid = sLiquidTypeStore.LookupEntry(liqEntry);
         if (_lastLiquid && _lastLiquid->SpellId && _lastLiquid->Id != liqEntry)
@@ -3685,7 +3685,7 @@ void Unit::UpdateVmapInfo(Map* m, float x, float y, float z)
 
         if (liquid && liquid->SpellId)
         {
-            if (vmapInfo.Zliquid_status & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER))
+            if (vmapData->HasZLiquidStatus(LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER))
             {
                 if (!HasAura(liquid->SpellId))
                     CastSpell(this, liquid->SpellId, true);
@@ -14495,8 +14495,8 @@ void Unit::UpdateMount()
             }
             else
             {
-                if (vmapInfo.atEntry)
-                    currentMountFlags = vmapInfo.atEntry->mountFlags;
+                if (vmapData->HasAreaTableEntry())
+                    currentMountFlags = vmapData->GetAreaTableEntry()->mountFlags;
             }
         }
 
