@@ -6444,6 +6444,9 @@ bool Unit::HandleAuraProcOnPowerAmount(Unit* victim, DamageInfo* /*dmgInfoProc*/
     {
         case 79577:         // Eclipse Mastery Driver Passive
         {
+            if (triggeredByAura->GetEffIndex() != EFFECT_0)
+                return false;
+
             if (!procSpell)
                 return false;
 
@@ -6523,11 +6526,6 @@ bool Unit::HandleAuraProcOnPowerAmount(Unit* victim, DamageInfo* /*dmgInfoProc*/
             //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "HandleAuraProcOnPowerAmount: powerMod %i direction %i, powerAmount %i", powerMod, direction, powerAmount);
             // proc failed if wrong spell or spell direction does not match marker direction
             if (!powerMod)
-                return false;
-
-            if (powerMod > 0 && triggeredByAura->GetEffIndex() != EFFECT_0)
-                return false;
-            else if (powerMod < 0 && triggeredByAura->GetEffIndex() != EFFECT_1)
                 return false;
 
             CastCustomSpell(this, 89265, &powerMod, NULL, NULL, true);
