@@ -65,6 +65,11 @@ bool SpellImplicitTargetInfo::IsArea() const
     return GetSelectionCategory() == TARGET_SELECT_CATEGORY_AREA || GetSelectionCategory() == TARGET_SELECT_CATEGORY_CONE;
 }
 
+bool SpellImplicitTargetInfo::IsTargetValidForVengeance() const
+{
+    return GetSelectionCategory() != TARGET_SELECT_CATEGORY_AREA;
+}
+
 SpellTargetSelectionCategories SpellImplicitTargetInfo::GetSelectionCategory() const
 {
     return _data[_target].SelectionCategory;
@@ -416,6 +421,11 @@ bool SpellEffectInfo::IsAura(AuraType aura) const
 bool SpellEffectInfo::IsTargetingArea() const
 {
     return TargetA.IsArea() || TargetB.IsArea();
+}
+
+bool SpellEffectInfo::_IsTargetingValidForVengeance() const
+{
+    return TargetA.IsTargetValidForVengeance() || TargetB.IsTargetValidForVengeance();
 }
 
 bool SpellEffectInfo::IsAreaAuraEffect() const
@@ -1530,6 +1540,15 @@ bool SpellInfo::IsTargetingArea() const
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         if (Effects[i].IsEffect() && Effects[i].IsTargetingArea())
             return true;
+    return false;
+}
+
+bool SpellInfo::IsTargetingValidForVengeance() const
+{
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        if (Effects[i].IsEffect())
+            if (Effects[i]._IsTargetingValidForVengeance() && !Effects[i].IsEffect(SPELL_EFFECT_PERSISTENT_AREA_AURA) && !Effects[i].IsAreaAuraEffect())
+                return true;
     return false;
 }
 

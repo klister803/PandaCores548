@@ -141,7 +141,6 @@ class spell_warr_shield_barrier : public SpellScriptLoader
                         amount = 2.5*Stamina + (AP - Strength * 2);
                     else if (rage >= 60)
                         amount = 2 * (AP - Strength * 2);
-                    //amount += std::max(int32(2 * (AP - 2 * (Strength - 10))), int32(Stamina * 2.5f)) * (std::min(60, rage) / 20);
                     caster->ModifyPower(POWER_RAGE, -(std::min(60, rage) * 10), true);
                     amount = caster->CalcAbsorb(caster, GetSpellInfo(), amount);
                 }

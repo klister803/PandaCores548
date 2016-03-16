@@ -19654,7 +19654,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 }
                 case SPELL_TRIGGER_VENGEANCE: // 24
                 {
-                    if (!target || target->GetCharmerOrOwnerPlayerOrPlayerItself() || (procSpell && procSpell->IsAffectingArea()))
+                    if (!target || target->GetCharmerOrOwnerPlayerOrPlayerItself() || (procSpell && !procSpell->IsTargetingValidForVengeance()))
                         return false;
 
                     if (!dmgInfoProc->GetDamageBeforeHit())
@@ -19666,8 +19666,8 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                         return false;
 
                     uint64 creatureGUID = creature->GetGUID();
-                     int32 alldamage = dmgInfoProc->GetDamageBeforeHit();
-                     uint32 count = 1;
+                    int32 alldamage = dmgInfoProc->GetDamageBeforeHit();
+                    uint32 count = 1;
                     float creatureThreat = 0.0f;
                     ThreatContainer& _threatContainer = getThreatManager().getOnlineContainer();
 

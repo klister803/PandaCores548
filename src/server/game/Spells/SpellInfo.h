@@ -231,6 +231,7 @@ public:
     SpellImplicitTargetInfo(uint32 target);
 
     bool IsArea() const;
+    bool IsTargetValidForVengeance() const;
     SpellTargetSelectionCategories GetSelectionCategory() const;
     SpellTargetReferenceTypes GetReferenceType() const;
     SpellTargetObjectTypes GetObjectType() const;
@@ -292,6 +293,7 @@ public:
     bool IsAura() const;
     bool IsAura(AuraType aura) const;
     bool IsTargetingArea() const;
+    bool _IsTargetingValidForVengeance() const;
     bool IsAreaAuraEffect() const;
     bool IsFarUnitTargetEffect() const;
     bool IsFarDestTargetEffect() const;
@@ -497,6 +499,7 @@ public:
 
     bool IsAffectingArea() const;
     bool IsTargetingArea() const;
+    bool IsTargetingValidForVengeance() const;
     bool IsTargetingAreaCast(uint8 effect = 0) const;
     bool NeedsExplicitUnitTarget() const;
     bool NeedsToBeTriggeredByCaster() const;
