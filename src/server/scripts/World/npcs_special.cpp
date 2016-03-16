@@ -433,7 +433,7 @@ public:
                 canSeeCheck += diff;
                 if (canSeeCheck >= 1000 && target)
                 {
-                    if (!me->canSeeOrDetect(target) && !comeonhome)
+                    if (!me->IsValidAttackTarget(target) && !comeonhome)
                     {
                         ComonOnHome();
                         return;
