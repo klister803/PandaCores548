@@ -174,7 +174,7 @@ class boss_malkorok : public CreatureScript
                 _EnterCombat();
                 Talk(SAY_PULL);
                 SetGasStateAndBuffPlayers(true);
-                //powercheck = 1600;
+                powercheck = 1600;
                 checkvictim = 1500;
                 DoCast(me, SPELL_FATAL_STRIKE, true);
                 events.ScheduleEvent(EVENT_SEISMIC_SLAM, 5000);
@@ -271,7 +271,7 @@ class boss_malkorok : public CreatureScript
                             events.ScheduleEvent(EVENT_BREATH_OF_YSHAARJ, 10000);
                         else
                         {
-                            //events.ScheduleEvent(EVENT_SEISMIC_SLAM, 10000);
+                            events.ScheduleEvent(EVENT_SEISMIC_SLAM, 16000);
                             events.ScheduleEvent(EVENT_PREPARE, 11000);
                         }
                         events.ScheduleEvent(EVENT_RE_ATTACK, 1000);               
