@@ -1420,6 +1420,11 @@ void World::LoadConfigSettings(bool reload)
     // only for debugging
     m_bool_configs[CONFIG_FASTER_LOADING] = ConfigMgr::GetBoolDefault("FasterLoading.Enabled", false);
 
+    m_bool_configs[CONFIG_ENABLE_FLYING_CHECK] = ConfigMgr::GetBoolDefault("MovementSync.FlyingCheckEnabled", false);
+    m_bool_configs[CONFIG_ENABLE_WATERWALK_CHECK] = ConfigMgr::GetBoolDefault("MovementSync.WaterwalkCheckEnabled", false);
+    m_bool_configs[CONFIG_ENABLE_HOVER_CHECK] = ConfigMgr::GetBoolDefault("MovementSync.HoverCheckEnabled", false);
+    m_bool_configs[CONFIG_ENABLE_TELEPORT_CHECK] = ConfigMgr::GetBoolDefault("MovementSync.TeleportCheckEnabled", false);
+
     if (reload)
         sScriptMgr->OnConfigLoad(reload);
 }
