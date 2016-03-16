@@ -268,7 +268,7 @@ class boss_malkorok : public CreatureScript
                     }
                     if (!asGuids.empty())
                         if (asGuids.size() == 3)
-                            events.ScheduleEvent(EVENT_BREATH_OF_YSHAARJ, 15000);
+                            events.ScheduleEvent(EVENT_BREATH_OF_YSHAARJ, 13000);
                         else
                         {
                             events.ScheduleEvent(EVENT_SEISMIC_SLAM, 16000);
