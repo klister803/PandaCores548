@@ -2696,7 +2696,7 @@ class spell_druid_rejuvenation : public SpellScriptLoader
                                 health += aura->GetEffect(1)->GetAmount();
                                 if(health > (maxhealth * 2))
                                     health = maxhealth * 2;
-                                aura->GetEffect(0)->SetAmount(int32(health * 100/maxhealth));
+                                aura->GetEffect(0)->SetAmount(health * 100.0f / float(maxhealth));
                                 aura->GetEffect(1)->SetAmount(health);
                             }
                         }
@@ -2708,7 +2708,7 @@ class spell_druid_rejuvenation : public SpellScriptLoader
                 {
                     float percent = (aurEffset->GetAmount() / 100.0f) + 1.0f;
                     if (AuraEffect* aurEff = GetAura()->GetEffect(2))
-                        aurEff->SetAmount(int32(aurEff->GetAmount() * percent));
+                        aurEff->SetAmount(aurEff->GetAmount() * percent);
                 }
             }
 
