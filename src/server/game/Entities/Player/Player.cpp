@@ -27954,7 +27954,6 @@ void Player::UpdateCharmedAI()
             return;
         }
 
-        uint32 mynewspell = GetMyNewSpell();
         if (charmer->isInCombat() && !getVictim())
         {
             std::list<Player*>pllist;
@@ -27968,7 +27967,6 @@ void Player::UpdateCharmedAI()
                     {
                         GetMotionMaster()->MoveChase(*itr);
                         Attack(*itr, true);
-                        SetMyNewSpellCooldown(mynewspell);
                         break;
                     }
                 }
@@ -27982,93 +27980,64 @@ void Player::UpdateCharmedAI()
     }  
 }
 
-uint32 Player::GetMyNewSpell()
-{
-    uint32 newspell = 0;
-    if (HasAura(145065) || HasAura(145171)) //Garrosh Hellscream[SO]
-        newspell = 145599;
-    return newspell;
-}
-
-void Player::SetMyNewSpellCooldown(uint32 spellentry)
-{
-    if (spellentry)
-        AddSpellCooldown(spellentry, 0, getPreciseTime() + 3.0);
-}
-
 void Player::CharmedCastSpell()
 {
-    uint32 spell = GetMyNewSpell();
-    if (!spell)
+    bool attack = urand(0, 3);
+    uint32 spell = 0;
+    switch (getClass())
     {
-        bool attack = urand(0, 3);
-        switch (getClass())
-        {
-        case CLASS_WARRIOR:
-            spell = rand_number(SPELL_WAR_ATTACK_LIST);
-            break;
-        case CLASS_PALADIN:
-            if (attack)
-                spell = rand_number(SPELL_PAL_ATTACK_LIST);
-            else
-                spell = rand_number(SPELL_PAL_FRIEND_LIST);
-            break;
-        case CLASS_HUNTER:
-            spell = rand_number(SPELL_HUNT_ATTACK_LIST);
-            break;
-        case CLASS_ROGUE:
-            spell = rand_number(SPELL_ROG_ATTACK_LIST);
-            break;
-        case CLASS_PRIEST:
-            if (attack)
-                spell = rand_number(SPELL_PRI_ATTACK_LIST);
-            else
-                spell = rand_number(SPELL_PRI_FRIEND_LIST);
-            break;
-        case CLASS_DEATH_KNIGHT:
-            spell = rand_number(SPELL_DK_ATTACK_LIST);
-            break;
-        case CLASS_SHAMAN:
-            if (attack)
-                spell = rand_number(SPELL_CHA_ATTACK_LIST);
-            else
-                spell = rand_number(SPELL_CHA_FRIEND_LIST);
-            break;
-        case CLASS_MAGE:
-            spell = rand_number(SPELL_MAG_ATTACK_LIST);
-            break;
-        case CLASS_WARLOCK:
-            spell = rand_number(SPELL_DEM_ATTACK_LIST);
-            break;
-        case CLASS_DRUID:
-            if (attack)
-                spell = rand_number(SPELL_DRU_ATTACK_LIST);
-            else
-                spell = rand_number(SPELL_DRU_FRIEND_LIST);
-            break;
-        case CLASS_MONK:
-            spell = rand_number(SPELL_MONK_ATTACK_LIST);
-            break;
-        }
-
-        if (getVictim())
-            CastSpell(getVictim(), spell);
+    case CLASS_WARRIOR:
+        spell = rand_number(SPELL_WAR_ATTACK_LIST);
+        break;
+    case CLASS_PALADIN:
+        if (attack)
+            spell = rand_number(SPELL_PAL_ATTACK_LIST);
         else
-            if (Player* pl = FindNearestPlayer(50.0f, true))
-                CastSpell(pl, spell);
+            spell = rand_number(SPELL_PAL_FRIEND_LIST);
+        break;
+    case CLASS_HUNTER:
+        spell = rand_number(SPELL_HUNT_ATTACK_LIST);
+        break;
+    case CLASS_ROGUE:
+        spell = rand_number(SPELL_ROG_ATTACK_LIST);
+        break;
+    case CLASS_PRIEST:
+        if (attack)
+            spell = rand_number(SPELL_PRI_ATTACK_LIST);
+        else
+            spell = rand_number(SPELL_PRI_FRIEND_LIST);
+        break;
+    case CLASS_DEATH_KNIGHT:
+        spell = rand_number(SPELL_DK_ATTACK_LIST);
+        break;
+    case CLASS_SHAMAN:
+        if (attack)
+            spell = rand_number(SPELL_CHA_ATTACK_LIST);
+        else
+            spell = rand_number(SPELL_CHA_FRIEND_LIST);
+        break;
+    case CLASS_MAGE:
+        spell = rand_number(SPELL_MAG_ATTACK_LIST);
+        break;
+    case CLASS_WARLOCK:
+        spell = rand_number(SPELL_DEM_ATTACK_LIST);
+        break;
+    case CLASS_DRUID:
+        if (attack)
+            spell = rand_number(SPELL_DRU_ATTACK_LIST);
+        else
+            spell = rand_number(SPELL_DRU_FRIEND_LIST);
+        break;
+    case CLASS_MONK:
+        spell = rand_number(SPELL_MONK_ATTACK_LIST);
+        break;
     }
+
+    if (getVictim())
+        CastSpell(getVictim(), spell);
     else
-    {
-        if (!HasSpellCooldown(spell))
-        {
-            if (getVictim())
-                CastSpell(getVictim(), spell);
-            else
-                if (Player* pl = FindNearestPlayer(20.0f, true))
-                    CastSpell(pl, spell);
-            AddSpellCooldown(spell, 0, getPreciseTime() + 6.0);
-        }
-    }
+        if (Player* pl = FindNearestPlayer(50.0f, true))
+            CastSpell(pl, spell);
 }
 //
 

@@ -3629,8 +3629,6 @@ class Player : public Unit, public GridObject<Player>
 
         //CharmedAi
         void UpdateCharmedAI();
-        uint32 GetMyNewSpell();
-        void SetMyNewSpellCooldown(uint32 spellentry);
         void CharmedCastSpell();
         //
 

@@ -357,6 +357,10 @@ class boss_garrosh_hellscream : public CreatureScript
                     updatepower = 0;
                     events.ScheduleEvent(EVENT_ANNIHILLATE, 4000);
                     break;
+                case ACTION_CANCEL_ANNIHILLATE:
+                    events.CancelEvent(EVENT_ANNIHILLATE);
+                    me->InterruptNonMeleeSpells(true);
+                    break;
                 case ACTION_INTRO_PHASE_THREE:
                     events.Reset();
                     me->SetAttackStop(true);
@@ -640,6 +644,8 @@ class boss_garrosh_hellscream : public CreatureScript
                     }
                     case EVENT_RETURN_TO_REAL:
                     {
+                        if (Creature* garroshrealm = me->GetCreature(*me, instance->GetData64(DATA_GARROSH_REALM)))
+                            garroshrealm->AI()->DoAction(ACTION_CANCEL_ANNIHILLATE);
                         Map::PlayerList const &PlayerList = me->GetMap()->GetPlayers();
                         if (!PlayerList.isEmpty())
                             for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)

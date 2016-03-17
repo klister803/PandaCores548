@@ -27,6 +27,7 @@ enum ssActions
     ACTION_KLAXXI_DONE              = 270,
     ACTION_LAUNCH_ANNIHILLATE       = 271,
     ACTION_FIRST_ENGENEER_DIED      = 272,
+    ACTION_CANCEL_ANNIHILLATE       = 273,
 };
 
 enum eData
