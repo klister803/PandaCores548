@@ -19652,7 +19652,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 }
                 case SPELL_TRIGGER_VENGEANCE: // 24
                 {
-                    if (!target || target->GetCharmerOrOwnerPlayerOrPlayerItself() || (procSpell && !procSpell->IsTargetingValidForVengeance()))
+                    if (!target || target->GetCharmerOrOwnerPlayerOrPlayerItself() || (procSpell && (procSpell->AttributesCu & SPELL_ATTR0_CU_CASTED_BY_AREATRIGGER || !procSpell->IsTargetingValidForVengeance())))
                         return false;
 
                     if (!dmgInfoProc->GetDamageBeforeHit())

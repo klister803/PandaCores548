@@ -3705,8 +3705,34 @@ void SpellMgr::UnloadSpellInfoImplicitTargetConditionLists()
 void SpellMgr::LoadSpellCustomAttr()
 {
     uint32 oldMSTime = getMSTime();
-
+    std::set<uint32> SpellListForAreatrigger;
     SpellInfo* spellInfo = NULL;
+
+    if (QueryResult result = WorldDatabase.Query("SELECT entry, id, moment, actionType, targetFlags, spellId, maxCharges, chargeRecoveryTime, aura, hasspell, scale, hitMaxCount, amount FROM areatrigger_actions"))
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+
+            switch ((AreaTriggerActionType)fields[3].GetUInt32())
+            {
+                case AT_ACTION_TYPE_CAST_SPELL:
+                {
+                    SpellListForAreatrigger.insert(fields[5].GetUInt32());
+                    break;
+                }
+                case AT_ACTION_TYPE_SHARE_DAMAGE:
+                {
+                    if ((AreaTriggerTargetFlags)fields[4].GetUInt32() & AT_TARGET_FLAG_CAST_AT_SRC)
+                        SpellListForAreatrigger.insert(fields[5].GetUInt32());
+                    break;
+                }
+                default:
+                    break;
+            }
+        } while (result->NextRow());
+    }
+
     for (uint32 i = 0; i < GetSpellInfoStoreSize(); ++i)
     {
         {
@@ -3815,6 +3841,11 @@ void SpellMgr::LoadSpellCustomAttr()
                         break;
                 }
             }
+
+            if (!SpellListForAreatrigger.empty())
+                for (auto itr : SpellListForAreatrigger)
+                    if (spellInfo->Id == itr)
+                        spellInfo->AttributesCu |= SPELL_ATTR0_CU_CASTED_BY_AREATRIGGER;
 
             if (!spellInfo->_IsPositiveEffect(EFFECT_0, false))
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
