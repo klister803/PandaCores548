@@ -19684,11 +19684,13 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     std::list<HostileReference*>& _threatList = getThreatManager().getThreatList();
 
                     for (std::list<HostileReference*>::const_iterator _iter = _threatList.begin(); _iter != _threatList.end(); ++_iter)
+                    {
                         if ((*_iter) && (*_iter)->getUnitGuid() == creatureGUID)
                         {
                             creatureThreat = (*_iter)->getThreat();
                             break;
                         }
+                    }
 
                     for (std::list<HostileReference*>::const_iterator _iter = _threatList.begin(); _iter != _threatList.end(); ++_iter)
                     {
@@ -19728,7 +19730,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     basepoints1 = bp;
 
                     _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints1, &basepoints2, true, castItem, triggeredByAura, originalCaster);
-                    if(itr->target == 6)
+                    if (itr->target == 6)
                     {
                         if (Guardian* pet = GetGuardianPet())
                             _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &basepoints1, &basepoints2, true);

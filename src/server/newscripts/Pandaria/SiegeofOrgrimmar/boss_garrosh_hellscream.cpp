@@ -115,6 +115,8 @@ enum sEvents
     EVENT_EMBODIED_DOUBT             = 20,
     //Special events
     EVENT_CHECK_PROGRESS             = 21,
+    EVENT_CAST                       = 22,
+    EVENT_RE_ATTACK                  = 23,
 };
 
 enum Phase
@@ -1179,10 +1181,22 @@ public:
         }
 
         InstanceScript* instance;
+        EventMap events;
+        uint64 charmedplGuid;
 
         void Reset()
         {
-            DoCast(me, SPELL_HEARTBEAT_SOUND, true);
+            if (!me->ToTempSummon())
+            {
+                charmedplGuid = 0;
+                DoCast(me, SPELL_HEARTBEAT_SOUND, true);
+            }
+        }
+
+        void SetGUID(uint64 guid, int32 /*id*/)
+        {
+            charmedplGuid = guid;
+            events.ScheduleEvent(EVENT_CAST, 6000);
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -1194,7 +1208,50 @@ public:
 
         void EnterEvadeMode(){}
 
-        void UpdateAI(uint32 diff){}
+        bool IsPlayerInMindControl(Player* pl)
+        {
+            if (pl->HasAura(SPELL_TOUCH_OF_YSHAARJ) || pl->HasAura(SPELL_EM_TOUCH_OF_YSHAARJ))
+                return true;
+            return false;
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                case EVENT_CAST:
+                    if (Player* pl = me->GetPlayer(*me, charmedplGuid))
+                    {
+                        if (pl->isAlive() && IsPlayerInMindControl(pl))
+                        {
+                            pl->GetMotionMaster()->MoveIdle();
+                            pl->CastSpell(pl, SPELL_PL_TOUCH_OF_YSHAARJ);
+                            events.ScheduleEvent(EVENT_RE_ATTACK, 3000);
+                            return;
+                        }
+                    }
+                    me->DespawnOrUnsummon();
+                    break;
+                case EVENT_RE_ATTACK:
+                    if (Player* pl = me->GetPlayer(*me, charmedplGuid))
+                    {
+                        if (pl->isAlive() && IsPlayerInMindControl(pl))
+                        {
+                            if (pl->getVictim())
+                                pl->GetMotionMaster()->MoveChase(pl->getVictim());
+                            events.ScheduleEvent(EVENT_CAST, 6000);
+                            return;
+                        }
+                    }
+                    me->DespawnOrUnsummon();
+                    break;
+                }
+            }
+        }
     };
 
     CreatureAI* GetAI(Creature* creature) const
@@ -1626,7 +1683,11 @@ public:
                 {
                     GetTarget()->ApplySpellImmune(0, IMMUNITY_ID, SPELL_DESECRATED, true);
                     int32 newamount = int32(GetTarget()->CountPctFromMaxHealth(80));
-                    aurEffb->SetAmount(newamount);
+                    aurEffb->SetAmount(newamount); 
+                    if (InstanceScript* instance = GetTarget()->GetInstanceScript())
+                        if (Creature* garrosh = GetTarget()->GetCreature(*GetTarget(), instance->GetData64(DATA_GARROSH)))
+                            if (Creature* heart = garrosh->SummonCreature(NPC_HEART_OF_YSHAARJ, centerpos, 0, TEMPSUMMON_TIMED_DESPAWN, 60000))
+                                heart->AI()->SetGUID(GetTarget()->GetGUID(), 1);
                 }
             }
         }

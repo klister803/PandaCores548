@@ -7749,7 +7749,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             case SPELL_AURA_MOD_CHARM:
             case SPELL_AURA_AOE_CHARM:
             {
-                if (m_caster->GetCharmerGUID())
+                if (m_caster->GetCharmerGUID() && !m_caster->HasAura(145065) && !m_caster->HasAura(145171))
                     return SPELL_FAILED_CHARMED;
 
                 if (m_spellInfo->GetEffect(i, m_diffMode)->ApplyAuraName == SPELL_AURA_MOD_CHARM
