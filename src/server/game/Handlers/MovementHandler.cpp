@@ -427,21 +427,30 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
         if (sWorld->getBoolConfig(CONFIG_ENABLE_WATERWALK_CHECK))
         {
             if (!plrMover->HasMoveEventsMask(MOVE_EVENT_WATER_WALK) && movementInfo.HasMovementFlag(MOVEMENTFLAG_WATERWALKING))
+            {
+                sLog->outDebug(LOG_FILTER_MOVESYNC, "Waterwalk sync failed, %s kicked", GetPlayerName().c_str());
                 KickPlayer();
+            }
         }
 
         // hover
         if (sWorld->getBoolConfig(CONFIG_ENABLE_HOVER_CHECK))
         {
             if (!plrMover->HasMoveEventsMask(MOVE_EVENT_HOVER) && movementInfo.HasMovementFlag(MOVEMENTFLAG_HOVER))
+            {
+                sLog->outDebug(LOG_FILTER_MOVESYNC, "Hover sync failed, %s kicked", GetPlayerName().c_str());
                 KickPlayer();
+            }
         }
 
         // fly
         if (sWorld->getBoolConfig(CONFIG_ENABLE_FLYING_CHECK))
         {
             if (!plrMover->HasMoveEventsMask(MOVE_EVENT_FLYING) && movementInfo.HasMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING))
+            {
+                sLog->outDebug(LOG_FILTER_MOVESYNC, "Fly sync failed, %s kicked", GetPlayerName().c_str());
                 KickPlayer();
+            }
         }
     }
 
@@ -456,7 +465,10 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
             if (dist > 20.0f)
             {
                 if (!plrMover->HasMoveEventsMask(MOVE_EVENT_TELEPORT) && !plrMover->HasUnitState(UNIT_STATE_JUMPING))
+                {
+                    sLog->outDebug(LOG_FILTER_MOVESYNC, "Teleport sync failed, delta - %f, %s kicked", dist, GetPlayerName().c_str());
                     KickPlayer();
+                }
                 else if (plrMover->HasMoveEventsMask(MOVE_EVENT_TELEPORT))
                     plrMover->RemoveMoveEventsMask(MOVE_EVENT_TELEPORT);
             }
@@ -984,7 +996,7 @@ void WorldSession::HandleMoveHoverAck(WorldPacket& recvData)
 
     recvData.rfinish();
 
-    _player->ToggleMoveEventsMask(MOVE_EVENT_HOVER);
+    //_player->ToggleMoveEventsMask(MOVE_EVENT_HOVER);
 }
 
 void WorldSession::HandleMoveWaterwalkAck(WorldPacket& recvData)
@@ -996,7 +1008,7 @@ void WorldSession::HandleMoveWaterwalkAck(WorldPacket& recvData)
 
     recvData.rfinish();
 
-    _player->ToggleMoveEventsMask(MOVE_EVENT_WATER_WALK);
+    //_player->ToggleMoveEventsMask(MOVE_EVENT_WATER_WALK);
 }
 
 void WorldSession::HandleMoveSetCanFlyAck(WorldPacket& recvData)
@@ -1010,7 +1022,7 @@ void WorldSession::HandleMoveSetCanFlyAck(WorldPacket& recvData)
 
     recvData.rfinish();
 
-    _player->ToggleMoveEventsMask(MOVE_EVENT_FLYING);
+    //_player->ToggleMoveEventsMask(MOVE_EVENT_FLYING);
 }
 
 void WorldSession::HandleMoveSetCanTransBtwSwimFlyAck(WorldPacket& recvData)

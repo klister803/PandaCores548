@@ -29957,6 +29957,8 @@ void Player::SendMovementSetCanFly(bool apply)
     }
 
     SendDirectMessage(&data);
+
+    ToggleMoveEventsMask(MOVE_EVENT_FLYING);
 }
 
 void Player::SendMovementSetCanTransitionBetweenSwimAndFly(bool apply)
@@ -30012,6 +30014,8 @@ void Player::SendMovementSetHover(bool apply)
         data.WriteGuidBytes<3, 7, 5>(guid);
         SendDirectMessage(&data);
     }
+
+    ToggleMoveEventsMask(MOVE_EVENT_HOVER);
 }
 
 void Player::SendMovementSetWaterWalking(bool apply)
@@ -30040,6 +30044,8 @@ void Player::SendMovementSetWaterWalking(bool apply)
     }
 
     SendDirectMessage(&data);
+
+    ToggleMoveEventsMask(MOVE_EVENT_WATER_WALK);
 }
 
 void Player::SendMovementSetFeatherFall(bool apply)
