@@ -2249,7 +2249,7 @@ class spell_item_ai_li_skymirror : public SpellScriptLoader
             {
                 Unit* caster = GetCaster();
                 if (Unit* target = GetHitUnit())
-                    target->CastSpell(caster, SKYMIRROR_IMAGE_CLONE_VISUAL, true);
+                    target->AddAura(SKYMIRROR_IMAGE_CLONE_VISUAL, caster);
             }
 
             void Register()
