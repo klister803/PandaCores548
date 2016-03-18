@@ -14076,6 +14076,13 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     Unit* owner = GetOwner() ? GetOwner() : this;
     // AuraEffectList mOverrideClassScript = owner->GetAuraEffectsByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
 
+    if (Player* modOwner = GetSpellModOwner())
+    {
+        // Mastery: Master Demonologist
+        if (AuraEffect const* aurEff = modOwner->GetAuraEffect(77219, EFFECT_0))
+            AddPct(DoneTotalMod, GetShapeshiftForm() == FORM_METAMORPHOSIS ? aurEff->GetAmount() * 3 : aurEff->GetAmount());
+    }
+
     float tmpDamage = float(int32(pdamage) + DoneFlatBenefit) * DoneTotalMod;
 
     // apply spellmod to Done damage
@@ -14084,13 +14091,6 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
         if (Player* modOwner = GetSpellModOwner())
             modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_DAMAGE, tmpDamage);
         CalculateFromDummy(victim, tmpDamage, spellProto, effectMask);
-    }
-
-    if (Player* modOwner = GetSpellModOwner())
-    {
-        // Mastery: Master Demonologist
-        if (AuraEffect const* aurEff = modOwner->GetAuraEffect(77219, EFFECT_0))
-            AddPct(DoneTotalMod, GetShapeshiftForm() == FORM_METAMORPHOSIS ? aurEff->GetAmount() * 3 : aurEff->GetAmount());
     }
 
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "MeleeDamageBonusDone spellid %u in tmpDamage %f, pdamage %i DoneTotalMod %f DoneFlatBenefit %i", spellProto ? spellProto->Id : 0, tmpDamage, pdamage, DoneTotalMod, DoneFlatBenefit);
