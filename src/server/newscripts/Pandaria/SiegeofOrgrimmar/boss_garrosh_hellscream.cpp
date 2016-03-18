@@ -295,7 +295,15 @@ class boss_garrosh_hellscream : public CreatureScript
             void OnUnitDeath(Unit* unit)
             {
                 if (unit->ToPlayer())
+                {
                     Talk(SAY_KILL_PLAYER);
+                    //Teleport player from realm of yshaarj
+                    if (unit->HasAura(SPELL_REALM_OF_YSHAARJ))
+                    {
+                        unit->NearTeleportTo(centerpos.GetPositionX(), centerpos.GetPositionY(), centerpos.GetPositionZ(), centerpos.GetOrientation());
+                        unit->RemoveAurasDueToSpell(SPELL_REALM_OF_YSHAARJ);
+                    }
+                }
             }
 
             void DamageTaken(Unit* attacker, uint32 &damage)
