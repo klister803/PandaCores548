@@ -1675,34 +1675,31 @@ void World::SetInitialWorldSettings()
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Creature Addon Data...");
         sObjectMgr->LoadCreatureAddons();                            // must be after LoadCreatureTemplates() and LoadCreatures()
-    }
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Treasure Data...");
-    sObjectMgr->LoadPersonalLootTemplate();
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Treasure Data...");
+        sObjectMgr->LoadPersonalLootTemplate();
 
-    if (!getBoolConfig(CONFIG_FASTER_LOADING))
-    {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Gameobject Data...");
         sObjectMgr->LoadGameobjects();
 
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Creature Linked Respawn...");
         sObjectMgr->LoadLinkedRespawn();                             // must be after LoadCreatures(), LoadGameObjects()
+
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Weather Data...");
+        WeatherMgr::LoadWeatherData();
+
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Quests...");
+        sObjectMgr->LoadQuests();                                    // must be loaded after DBCs, creature_template, item_template, gameobject tables
+
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Checking Quest Disables");
+        DisableMgr::CheckQuestDisables();                           // must be after loading quests
+
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Quest POI");
+        sObjectMgr->LoadQuestPOI();
+
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Quests Relations...");
+        sObjectMgr->LoadQuestRelations();                            // must be after quest load
     }
-
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Weather Data...");
-    WeatherMgr::LoadWeatherData();
-
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Quests...");
-    sObjectMgr->LoadQuests();                                    // must be loaded after DBCs, creature_template, item_template, gameobject tables
-
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Checking Quest Disables");
-    DisableMgr::CheckQuestDisables();                           // must be after loading quests
-
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Quest POI");
-    sObjectMgr->LoadQuestPOI();
-
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Quests Relations...");
-    sObjectMgr->LoadQuestRelations();                            // must be after quest load
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Scenario POI");
     sObjectMgr->LoadScenarioPOI();
@@ -1800,23 +1797,26 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading pet level stats...");
     sObjectMgr->LoadPetStats();
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Player Corpses...");
-    sObjectMgr->LoadCorpses();
+    if (!getBoolConfig(CONFIG_FASTER_LOADING)) 
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Player Corpses...");
+        sObjectMgr->LoadCorpses();
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Player level dependent mail rewards...");
-    sObjectMgr->LoadMailLevelRewards();
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Player level dependent mail rewards...");
+        sObjectMgr->LoadMailLevelRewards();
 
-    // Loot tables
-    LoadLootTables();
+        // Loot tables
+        LoadLootTables();
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Skill Discovery Table...");
-    LoadSkillDiscoveryTable();
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Skill Discovery Table...");
+        LoadSkillDiscoveryTable();
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Skill Extra Item Table...");
-    LoadSkillExtraItemTable();
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Skill Extra Item Table...");
+        LoadSkillExtraItemTable();
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Skill Fishing base level requirements...");
-    sObjectMgr->LoadFishingBaseSkillLevel();
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Skill Fishing base level requirements...");
+        sObjectMgr->LoadFishingBaseSkillLevel();
+    }
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Achievements...");
     sAchievementMgr->LoadAchievementReferenceList();

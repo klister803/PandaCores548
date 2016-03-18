@@ -867,13 +867,18 @@ struct ItemSpecStats
 class ObjectMgr
 {
     friend class PlayerDumpReader;
-    friend class ACE_Singleton<ObjectMgr, ACE_Null_Mutex>;
 
     private:
         ObjectMgr();
         ~ObjectMgr();
 
     public:
+        static ObjectMgr* Instance()
+        {
+            static ObjectMgr instance;
+            return &instance;
+        }
+
         typedef UNORDERED_MAP<uint32, Item*> ItemMap;
 
         typedef UNORDERED_MAP<uint32, Quest*> QuestMap;
@@ -1819,7 +1824,7 @@ class ObjectMgr
 uint32 GetItemArmor(uint32 itemlevel, uint32 itemClass, uint32 itemSubclass, uint32 quality, uint32 inventoryType);
 void FillItemDamageFields(float* minDamage, float* maxDamage, float* dps, uint32 itemLevel, uint32 itemClass, uint32 itemSubClass, uint32 quality, uint32 delay, float statScalingFactor, uint32 inventoryType, uint32 flags2);
 
-#define sObjectMgr ACE_Singleton<ObjectMgr, ACE_Null_Mutex>::instance()
+#define sObjectMgr ObjectMgr::Instance()
 
 // scripting access functions
 bool LoadTrinityStrings(char const* table, int32 start_value = MAX_CREATURE_AI_TEXT_STRING_ID, int32 end_value = std::numeric_limits<int32>::min());

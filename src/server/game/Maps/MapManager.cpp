@@ -294,8 +294,7 @@ void MapManager::Update(uint32 diff)
         if (assignItr != _assignedUpdaters.end())
         {
             auto updater = assignItr->second;
-            if (updater->activated())
-            {
+            if (updater->activated()) {
                 updater->schedule_specific(new AchievementCriteriaUpdateRequest(updater, playerTask.second));
             }
             else
@@ -397,14 +396,10 @@ void MapManager::UnloadAll()
     if (m_updater.activated())
         m_updater.deactivate();
 
-    for (auto itr = _achievementUpdaters.begin(); itr != _achievementUpdaters.end();)
+    for (std::vector<MapUpdater*>::const_iterator itr = _achievementUpdaters.begin(); itr != _achievementUpdaters.end(); ++itr)
     {
-        auto achievementUpdater = (*itr);
-        if (achievementUpdater->activated())
-            achievementUpdater->deactivate();
-
-        delete achievementUpdater;
-        _achievementUpdaters.erase(itr++);
+        if ((*itr)->activated())
+            (*itr)->deactivate();
     }
 
     Map::DeleteStateMachine();
