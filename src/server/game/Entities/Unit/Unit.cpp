@@ -12670,11 +12670,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                     if (uint8 count = victim->GetDoTsByCaster(GetOwnerGUID()))
                         AddPct(DoneTotalMod, 30 * count);
 
-                // Mastery: Master Demonologist
-                if (Player* modOwner = GetSpellModOwner())
-                    if (AuraEffect const* aurEff = modOwner->GetAuraEffect(77219, EFFECT_0))
-                        AddPct(DoneTotalMod, GetShapeshiftForm() == FORM_METAMORPHOSIS ? aurEff->GetAmount() * 3 : aurEff->GetAmount());
-
                 // Mastery: Emberstorm
                 if (spellProto->Id == 17877 || spellProto->Id == 116858)
                 {
@@ -12690,6 +12685,12 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                         DoneTotal += aurEff->GetAmount();
                 break;
         }
+
+        // Mastery: Master Demonologist
+        if (spellProto->SpellFamilyName == SPELLFAMILY_WARLOCK || spellProto->SpellFamilyName == SPELLFAMILY_PET_ABILITY)
+            if (Player* modOwner = GetSpellModOwner())
+                if (AuraEffect const* aurEff = modOwner->GetAuraEffect(77219, EFFECT_0))
+                    AddPct(DoneTotalMod, GetShapeshiftForm() == FORM_METAMORPHOSIS ? aurEff->GetAmount() * 3 : aurEff->GetAmount());
 
         // Done fixed damage bonus auras
         int32 DoneAdvertisedBenefit = GetSpellPowerDamage(spellProto->GetSchoolMask());
