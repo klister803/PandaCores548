@@ -127,7 +127,7 @@ class spell_warr_shield_barrier : public SpellScriptLoader
         {
             PrepareAuraScript(spell_warr_shield_barrier_AuraScript);
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* /*aurEff*/, float &amount, bool & /*canBeRecalculated*/)
             {
                 if (Unit* caster = GetCaster())
                 {
@@ -136,11 +136,11 @@ class spell_warr_shield_barrier : public SpellScriptLoader
                     int32 Strength = int32(caster->GetStat(STAT_STRENGTH));
                     int32 Stamina = int32(caster->GetStat(STAT_STAMINA));
                     if (rage >= 20 && rage < 40)
-                        amount = Stamina*4.5;
+                        amount += float(Stamina*2.5);
                     else if (rage >= 40 && rage < 60)
-                        amount = 2.5*Stamina + (AP - Strength * 2);
+                        amount += float((2.5*Stamina) + (AP - Strength * 2));
                     else if (rage >= 60)
-                        amount = 2 * (AP - Strength * 2);
+                        amount += float(std::max(int32(2 * (AP - (Strength * 2))), int32(2 * (Stamina * 2.5f))));
                     caster->ModifyPower(POWER_RAGE, -(std::min(60, rage) * 10), true);
                     amount = caster->CalcAbsorb(caster, GetSpellInfo(), amount);
                 }
