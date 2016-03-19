@@ -2684,8 +2684,8 @@ class spell_druid_rejuvenation : public SpellScriptLoader
                 if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_RESTORATION)
                 {
                     Creature* summon = _player->GetMap()->GetCreature(_player->m_SummonSlot[SUMMON_SLOT_TOTEM]);
-                    int32 maxhealth = caster->GetMaxHealth();
-                    float health = target->GetHealth() - target->GetMaxHealth() + amount;
+                    float maxhealth = caster->GetMaxHealth();
+                    float health = float(target->GetHealth()) - maxhealth + amount;
                     float scale = health * 100 / maxhealth;
                     if(health > 0 && summon)
                     {
