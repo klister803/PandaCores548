@@ -5891,6 +5891,10 @@ void AuraEffect::HandleModCastingSpeed(AuraApplication const* aurApp, uint8 mode
     }
     else
     {
+        if (Creature* cre = target->ToCreature())
+            if (cre->isWorldBoss() || cre->IsDungeonBoss())
+                return;
+
         target->UpdateHastMod();
         target->UpdateCastHastMods();
     }
