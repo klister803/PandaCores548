@@ -226,6 +226,7 @@ class boss_garrosh_hellscream : public CreatureScript
             {
                 instance = creature->GetInstanceScript();
                 me->ApplySpellImmune(0, IMMUNITY_ID, SPELL_HELLSCREAM_WARSONG, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
             }
             InstanceScript* instance;
             bool phasetwo;
@@ -295,15 +296,7 @@ class boss_garrosh_hellscream : public CreatureScript
             void OnUnitDeath(Unit* unit)
             {
                 if (unit->ToPlayer())
-                {
                     Talk(SAY_KILL_PLAYER);
-                    //Teleport player from realm of yshaarj
-                    if (unit->HasAura(SPELL_REALM_OF_YSHAARJ))
-                    {
-                        unit->NearTeleportTo(centerpos.GetPositionX(), centerpos.GetPositionY(), centerpos.GetPositionZ(), centerpos.GetOrientation());
-                        unit->RemoveAurasDueToSpell(SPELL_REALM_OF_YSHAARJ);
-                    }
-                }
             }
 
             void DamageTaken(Unit* attacker, uint32 &damage)
@@ -656,6 +649,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     {
                         if (Creature* garroshrealm = me->GetCreature(*me, instance->GetData64(DATA_GARROSH_REALM)))
                             garroshrealm->AI()->DoAction(ACTION_CANCEL_ANNIHILLATE);
+                        instance->SetData(DATA_CHECK_DIED_PLAYER_IN_REALM_OF_YSHARRJ, 0);
                         Map::PlayerList const &PlayerList = me->GetMap()->GetPlayers();
                         if (!PlayerList.isEmpty())
                             for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)

@@ -1713,12 +1713,17 @@ public:
                 ResetRealmOfYshaarj(true);
                 break;
             case DATA_PLAY_FINAL_MOVIE:
+            {
                 uint32 spell = GetData(DATA_TEAM_IN_INSTANCE) == HORDE ? SPELL_HORDE : SPELL_ALLIANCE;
                 Map::PlayerList const& PlayerList = instance->GetPlayers();
                 if (!PlayerList.isEmpty())
                     for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
                         if (Player* player = Itr->getSource())
                             player->CastSpell(player, spell, true);
+            }
+            break;
+            case DATA_CHECK_DIED_PLAYER_IN_REALM_OF_YSHARRJ:
+                CheckPlayersDiedInRealOfYshaarj();
                 break;
             }
         }
@@ -1784,6 +1789,28 @@ public:
                                 player->Kill(player, true);
                         }
                         else
+                        {
+                            if (player->HasAura(SPELL_REALM_OF_YSHAARJ))
+                            {
+                                player->NearTeleportTo(Garroshroomcenterpos.GetPositionX(), Garroshroomcenterpos.GetPositionY(), Garroshroomcenterpos.GetPositionZ(), Garroshroomcenterpos.GetOrientation());
+                                player->RemoveAurasDueToSpell(SPELL_REALM_OF_YSHAARJ);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        void CheckPlayersDiedInRealOfYshaarj()
+        {
+            Map::PlayerList const& PlayerList = instance->GetPlayers();
+            if (!PlayerList.isEmpty())
+            {
+                for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+                {
+                    if (Player* player = Itr->getSource())
+                    {
+                        if (!player->isAlive())
                         {
                             if (player->HasAura(SPELL_REALM_OF_YSHAARJ))
                             {
