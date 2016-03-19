@@ -3870,7 +3870,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
-                case 1604: //Dazed
+                case 144888: // Item - Druid T16 Guardian 4P Bonus (Ursoc's Vigor)
+                    spellInfo->AttributesEx10 &= ~SPELL_ATTR10_STACK_DAMAGE_OR_HEAL;
+                    break;
+                case 1604:   //Dazed
                     spellInfo->Effects[0].TargetA = 25;
                     spellInfo->Effects[1].TargetA = 25;
                     break;
