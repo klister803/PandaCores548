@@ -338,8 +338,8 @@ class boss_garrosh_hellscream : public CreatureScript
                     events.Reset();
                     if (!summons.empty())
                     {
-                        summons.DespawnEntry(NPC_SIEGE_ENGINEER);
                         summons.DespawnEntry(NPC_KORKRON_IRON_STAR);
+                        summons.DespawnEntry(NPC_SIEGE_ENGINEER);
                     }
                     me->SetAttackStop(true);
                     me->GetMotionMaster()->MoveCharge(centerpos.GetPositionX(), centerpos.GetPositionY(), centerpos.GetPositionZ(), 15.0f, 1);
