@@ -96,9 +96,87 @@ enum MovementStatusElements
     MSEFlushBits,   //FlushBits()
     MSEBit95,
     MSEBitAC,
-    MSECounter,
+    MSESequenceIndex,
     MSEEnd,     // marks end of parsing
     MSE_COUNT
+};
+
+MovementStatusElements MovementAckFeatherFallSequence[] =
+{
+    MSEPositionX,
+    MSEPositionZ,
+    MSESequenceIndex,
+    MSEPositionY,
+    MSEBitCounter,
+    MSEHasGuidByte2,
+    MSEHasGuidByte4,
+    MSEHasFallData,
+    MSEHasTransportData,
+    MSEHasOrientation,
+    MSEHasSpline,
+    MSEHasSplineElevation,
+    MSEHasGuidByte7,
+    MSEHasPitch,
+    MSEHasGuidByte3,
+    MSEBit95,
+    MSETimestamp,
+    MSEHasGuidByte6,
+    MSEHasGuidByte1,
+    MSEHasGuidByte7,
+    MSEHasGuidByte0,
+    MSEBitAC,
+    MSEHasMovementFlags,
+    MSEHasMovementFlags2,
+    MSEHasUnkInt32,
+    MSEMovementFlags,
+    MSEMovementFlags2,
+    MSEHasTransportTime2,
+    MSEHasTransportTime3,
+    MSEHasTransportGuidByte0,
+    MSEHasTransportGuidByte4,
+    MSEHasTransportGuidByte3,
+    MSEHasTransportGuidByte6,
+    MSEHasTransportGuidByte7,
+    MSEHasTransportGuidByte2,
+    MSEHasTransportGuidByte1,
+    MSEHasTransportGuidByte5,
+    MSEHasFallDirection,
+    MSEBitCounterValues,
+    MSEGuidByte0,
+    MSEGuidByte6,
+    MSEGuidByte3,
+    MSEGuidByte3,
+    MSEGuidByte7,
+    MSEGuidByte1,
+    MSEGuidByte4,
+    MSEGuidByte2,
+    MSETransportOrientation,
+    MSETransportPositionY,
+    MSETransportGuidByte5,
+    MSETransportGuidByte0,
+    MSETransportGuidByte4,
+    MSETransportTime,
+    MSETransportTime2,
+    MSETransportSeat,
+    MSETransportPositionZ,
+    MSETransportTime3,
+    MSETransportGuidByte1,
+    MSETransportGuidByte3,
+    MSETransportPositionX,
+    MSETransportGuidByte2,
+    MSETransportGuidByte7,
+    MSEFallVerticalSpeed,
+    MSEFallTime,
+    MSEFallHorizontalSpeed,
+    MSEFallSinAngle,
+    MSEFallCosAngle,
+    MSETimestamp,
+    MSEOrientation,
+    MSEPitch,
+    MSESplineElevation,
+    MSEUnkInt32,
+
+    MSEEnd,
 };
 
 MovementStatusElements MovementFallLandSequence[] =
@@ -2039,10 +2117,10 @@ MovementStatusElements PlayerMoveSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementKnockBackAckSequence[] =
+MovementStatusElements MovementAckKnockBackSequence[] =
 {
     MSEPositionX,
-    MSECounter,
+    MSESequenceIndex,
     MSEPositionZ,
     MSEPositionY,
 
@@ -2219,12 +2297,14 @@ MovementStatusElements* GetMovementStatusElementsSequence(Opcodes opcode)
     {
         case CMSG_CAST_SPELL:
             return NULL;
+        case CMSG_MOVE_FEATHER_FALL_ACK:
+            return MovementAckFeatherFallSequence;
         case CMSG_MOVE_FALL_LAND:
             return MovementFallLandSequence;
         case CMSG_MOVE_HEARTBEAT:
             return MovementHearbeatSequence;
         case CMSG_MOVE_KNOCK_BACK_ACK:
-            return MovementKnockBackAckSequence;
+            return MovementAckKnockBackSequence;
         case CMSG_MOVE_JUMP:
             return MovementJumpSequence;
         case CMSG_MOVE_SET_FACING:

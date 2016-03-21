@@ -966,8 +966,43 @@ void WorldSession::HandleMoveFeatherFallAck(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_FEATHER_FALL_ACK");
 
-    // no used
-    recvData.rfinish();                       // prevent warnings spam
+    Unit* mover = _player->m_mover;
+
+    if (!mover)                                  // there must always be a mover
+    {
+        recvData.rfinish();                     // prevent warnings spam
+        return;
+    }
+
+    Player* plrMover = mover->ToPlayer();
+
+    // ignore, waiting processing in WorldSession::HandleMoveWorldportAckOpcode and WorldSession::HandleMoveTeleportAck
+    if (plrMover && plrMover->IsBeingTeleported())
+    {
+        recvData.rfinish();                     // prevent warnings spam
+        return;
+    }
+
+    /* extract packet */
+    MovementInfo movementInfo;
+    ReadMovementInfo(recvData, &movementInfo);
+
+    // prevent tampered movement data
+    if (movementInfo.guid != mover->GetGUID() || !mover->IsInWorld())
+    {
+        //sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: guid error");
+        recvData.rfinish();                     // prevent warnings spam
+        return;
+    }
+
+    if (!movementInfo.pos.IsPositionValid())
+    {
+        sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: Invalid Position");
+        recvData.rfinish();                     // prevent warnings spam
+        return;
+    }
+
+    _player->m_movementInfo = movementInfo;
 }
 
 void WorldSession::HandleMoveGravityEnableAck(WorldPacket& recvData)
@@ -1071,6 +1106,7 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
     bool hasOrientation = false;
     bool hasTimeStamp = false;
     uint32 counter = 0;
+    uint32 sequenceIndex = 0;
 
     for (uint32 i = 0; i < MSE_COUNT; ++i)
     {
@@ -1255,8 +1291,8 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
                 if (mi->hasUnkInt32)
                     data >> mi->unkInt32;
                 break;
-            case MSECounter:
-                data.read_skip<uint32>();
+            case MSESequenceIndex:
+                data >> sequenceIndex;
                 break;
             default:
                 ASSERT(false && "Incorrect sequence element detected at ReadMovementInfo");
@@ -1289,6 +1325,7 @@ void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi, Unit* 
 
     ObjectGuid guid = mi->guid;
     ObjectGuid tguid = mi->t_guid;
+    uint32 sequenceIndex = 0;
 
     for(uint32 i = 0; i < MSE_COUNT; ++i)
     {
@@ -1473,8 +1510,8 @@ void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi, Unit* 
                 if (mi->hasUnkInt32)
                     data << mi->unkInt32;
                 break;
-            case MSECounter:
-                data << uint32(0);
+            case MSESequenceIndex:
+                data << uint32(sequenceIndex);
                 break;
             default:
                 ASSERT(false && "Incorrect sequence element detected at WriteMovementInfo");
