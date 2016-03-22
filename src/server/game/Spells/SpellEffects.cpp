@@ -2555,7 +2555,7 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
         if (m_spellInfo->Id == 45470 && m_caster->HasAura(48263))
             if (Aura* aur = m_caster->GetAura(77513))
             {    
-                float bp0 = int32(addhealth * float(aur->GetEffect(0)->GetAmount() / 100.0f));
+                float bp0 = addhealth * aur->GetEffect(0)->GetAmount() / 100.0f;
                 if (Aura* aurShield = m_caster->GetAura(77535))
                     bp0 += aurShield->GetEffect(0)->GetAmount();
 
@@ -2563,8 +2563,8 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
                 if (Aura* aurBoold = m_caster->GetAura(50421))
                     bp0 += CalculatePct(bp0, aurBoold->GetEffect(0)->GetAmount());
 
-                if (bp0 > int32(m_caster->GetMaxHealth()))
-                    bp0 = int32(m_caster->GetMaxHealth());
+                if (bp0 > m_caster->GetMaxHealth())
+                    bp0 = m_caster->GetMaxHealth();
 
                 m_caster->CastCustomSpell(m_caster, 77535, &bp0, NULL, NULL, true);
             }
