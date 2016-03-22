@@ -405,7 +405,7 @@ class spell_monk_diffuse_magic : public SpellScriptLoader
                         if (aura->GetSpellInfo()->IsPositive())
                             continue;
 
-                        if (!(aura->GetSpellInfo()->GetSchoolMask() & SPELL_SCHOOL_MASK_MAGIC))
+                        if (aura->GetSpellInfo()->Dispel != DISPEL_MAGIC)
                             continue;
 
                         bool isBoss = false;
