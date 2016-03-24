@@ -1024,12 +1024,43 @@ void WorldSession::HandleMoveHoverAck(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_HOVER_ACK");
 
-    uint32 ackIndex;
-    recvData.read_skip<float>();
-    recvData.read_skip<float>();
-    recvData >> ackIndex;
+    Unit* mover = _player->m_mover;
 
-    recvData.rfinish();
+    if (!mover)                                  // there must always be a mover
+    {
+        recvData.rfinish();                     // prevent warnings spam
+        return;
+    }
+
+    Player* plrMover = mover->ToPlayer();
+
+    // ignore, waiting processing in WorldSession::HandleMoveWorldportAckOpcode and WorldSession::HandleMoveTeleportAck
+    if (plrMover && plrMover->IsBeingTeleported())
+    {
+        recvData.rfinish();                     // prevent warnings spam
+        return;
+    }
+
+    /* extract packet */
+    MovementInfo movementInfo;
+    ReadMovementInfo(recvData, &movementInfo);
+
+    // prevent tampered movement data
+    if (movementInfo.guid != mover->GetGUID() || !mover->IsInWorld())
+    {
+        //sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: guid error");
+        recvData.rfinish();                     // prevent warnings spam
+        return;
+    }
+
+    if (!movementInfo.pos.IsPositionValid())
+    {
+        sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: Invalid Position");
+        recvData.rfinish();                     // prevent warnings spam
+        return;
+    }
+
+    _player->m_movementInfo = movementInfo;
 
     //_player->ToggleMoveEventsMask(MOVE_EVENT_HOVER);
 }
@@ -1038,10 +1069,43 @@ void WorldSession::HandleMoveWaterwalkAck(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_WATER_WALK_ACK");
 
-    uint32 ackIndex;
-    recvData >> ackIndex;
+    Unit* mover = _player->m_mover;
 
-    recvData.rfinish();
+    if (!mover)                                  // there must always be a mover
+    {
+        recvData.rfinish();                     // prevent warnings spam
+        return;
+    }
+
+    Player* plrMover = mover->ToPlayer();
+
+    // ignore, waiting processing in WorldSession::HandleMoveWorldportAckOpcode and WorldSession::HandleMoveTeleportAck
+    if (plrMover && plrMover->IsBeingTeleported())
+    {
+        recvData.rfinish();                     // prevent warnings spam
+        return;
+    }
+
+    /* extract packet */
+    MovementInfo movementInfo;
+    ReadMovementInfo(recvData, &movementInfo);
+
+    // prevent tampered movement data
+    if (movementInfo.guid != mover->GetGUID() || !mover->IsInWorld())
+    {
+        //sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: guid error");
+        recvData.rfinish();                     // prevent warnings spam
+        return;
+    }
+
+    if (!movementInfo.pos.IsPositionValid())
+    {
+        sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: Invalid Position");
+        recvData.rfinish();                     // prevent warnings spam
+        return;
+    }
+
+    _player->m_movementInfo = movementInfo;
 
     //_player->ToggleMoveEventsMask(MOVE_EVENT_WATER_WALK);
 }
@@ -1050,12 +1114,43 @@ void WorldSession::HandleMoveSetCanFlyAck(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_SET_CAN_FLY_ACK");
 
-    uint32 ackIndex;
-    recvData.read_skip<float>();
-    recvData.read_skip<float>();
-    recvData >> ackIndex;
+    Unit* mover = _player->m_mover;
 
-    recvData.rfinish();
+    if (!mover)                                  // there must always be a mover
+    {
+        recvData.rfinish();                     // prevent warnings spam
+        return;
+    }
+
+    Player* plrMover = mover->ToPlayer();
+
+    // ignore, waiting processing in WorldSession::HandleMoveWorldportAckOpcode and WorldSession::HandleMoveTeleportAck
+    if (plrMover && plrMover->IsBeingTeleported())
+    {
+        recvData.rfinish();                     // prevent warnings spam
+        return;
+    }
+
+    /* extract packet */
+    MovementInfo movementInfo;
+    ReadMovementInfo(recvData, &movementInfo);
+
+    // prevent tampered movement data
+    if (movementInfo.guid != mover->GetGUID() || !mover->IsInWorld())
+    {
+        //sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: guid error");
+        recvData.rfinish();                     // prevent warnings spam
+        return;
+    }
+
+    if (!movementInfo.pos.IsPositionValid())
+    {
+        sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: Invalid Position");
+        recvData.rfinish();                     // prevent warnings spam
+        return;
+    }
+
+    _player->m_movementInfo = movementInfo;
 
     //_player->ToggleMoveEventsMask(MOVE_EVENT_FLYING);
 }
