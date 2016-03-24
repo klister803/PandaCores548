@@ -902,25 +902,11 @@ void Player::InitPlayerEquipmentSets()
         PlayerData["equipmentsets"][index.c_str()]["name"] = eqset.Name.c_str();
         PlayerData["equipmentsets"][index.c_str()]["iconname"] = eqset.IconName.c_str();
         PlayerData["equipmentsets"][index.c_str()]["ignore_mask"] = eqset.IgnoreMask;
-        PlayerData["equipmentsets"][index.c_str()]["item0"] = eqset.Items[0];
-        PlayerData["equipmentsets"][index.c_str()]["item1"] = eqset.Items[1];
-        PlayerData["equipmentsets"][index.c_str()]["item2"] = eqset.Items[2];
-        PlayerData["equipmentsets"][index.c_str()]["item3"] = eqset.Items[3];
-        PlayerData["equipmentsets"][index.c_str()]["item4"] = eqset.Items[4];
-        PlayerData["equipmentsets"][index.c_str()]["item5"] = eqset.Items[5];
-        PlayerData["equipmentsets"][index.c_str()]["item6"] = eqset.Items[6];
-        PlayerData["equipmentsets"][index.c_str()]["item7"] = eqset.Items[7];
-        PlayerData["equipmentsets"][index.c_str()]["item8"] = eqset.Items[8];
-        PlayerData["equipmentsets"][index.c_str()]["item9"] = eqset.Items[9];
-        PlayerData["equipmentsets"][index.c_str()]["item10"] = eqset.Items[10];
-        PlayerData["equipmentsets"][index.c_str()]["item11"] = eqset.Items[11];
-        PlayerData["equipmentsets"][index.c_str()]["item12"] = eqset.Items[12];
-        PlayerData["equipmentsets"][index.c_str()]["item13"] = eqset.Items[13];
-        PlayerData["equipmentsets"][index.c_str()]["item14"] = eqset.Items[14];
-        PlayerData["equipmentsets"][index.c_str()]["item15"] = eqset.Items[15];
-        PlayerData["equipmentsets"][index.c_str()]["item16"] = eqset.Items[16];
-        PlayerData["equipmentsets"][index.c_str()]["item17"] = eqset.Items[17];
-        PlayerData["equipmentsets"][index.c_str()]["item18"] = eqset.Items[18];
+        for (uint32 i = 0; i < EQUIPMENT_SLOT_END; ++i)
+        {
+            std::string id = std::to_string(i);
+            PlayerData["equipmentsets"][index.c_str()]["items"][id.c_str()] = eqset.Items[i];
+        }
     }
 
     if (!PlayerData["equipmentsets"].empty())

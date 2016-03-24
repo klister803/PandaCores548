@@ -2072,27 +2072,11 @@ void Player::LoadPlayerEquipmentSets()
         eqSet.IconName  = equipmentValue["iconname"].asString();
         eqSet.IgnoreMask = equipmentValue["ignore_mask"].asInt();
         eqSet.state     = EQUIPMENT_SET_UNCHANGED;
-
-         eqSet.Items[0] = equipmentValue["item0"].asInt();
-         eqSet.Items[1] = equipmentValue["item1"].asInt();
-         eqSet.Items[2] = equipmentValue["item2"].asInt();
-         eqSet.Items[3] = equipmentValue["item3"].asInt();
-         eqSet.Items[4] = equipmentValue["item4"].asInt();
-         eqSet.Items[5] = equipmentValue["item5"].asInt();
-         eqSet.Items[6] = equipmentValue["item6"].asInt();
-         eqSet.Items[7] = equipmentValue["item7"].asInt();
-         eqSet.Items[8] = equipmentValue["item8"].asInt();
-         eqSet.Items[9] = equipmentValue["item9"].asInt();
-         eqSet.Items[10] = equipmentValue["item10"].asInt();
-         eqSet.Items[11] = equipmentValue["item11"].asInt();
-         eqSet.Items[12] = equipmentValue["item12"].asInt();
-         eqSet.Items[13] = equipmentValue["item13"].asInt();
-         eqSet.Items[14] = equipmentValue["item14"].asInt();
-         eqSet.Items[15] = equipmentValue["item15"].asInt();
-         eqSet.Items[16] = equipmentValue["item16"].asInt();
-         eqSet.Items[17] = equipmentValue["item17"].asInt();
-         eqSet.Items[18] = equipmentValue["item18"].asInt();
-
+        for (uint32 i = 0; i < EQUIPMENT_SLOT_END; ++i)
+        {
+            std::string id = std::to_string(i);
+            eqSet.Items[i] = equipmentValue["items"][id.c_str()].asInt();
+        }
         m_EquipmentSets[index] = eqSet;
 
         ++count;
