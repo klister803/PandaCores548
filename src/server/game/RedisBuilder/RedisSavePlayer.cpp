@@ -1396,7 +1396,7 @@ void Player::InitPlayerMails()
         PlayerMailData["mails"][messageID.c_str()] = m->MailJson;
         PlayerMailData["mails"][messageID.c_str()]["items"] = m->MailItemJson;
 
-        RedisDatabase.AsyncExecuteHSet("HSET", mailKey, messageID.c_str(), m->MailJson, GetGUID(), [&](const RedisValue &v, uint64 guid) {
+        RedisDatabase.AsyncExecuteHSet("HSET", mailKey.c_str(), messageID.c_str(), m->MailJson, GetGUID(), [&](const RedisValue &v, uint64 guid) {
             sLog->outInfo(LOG_FILTER_REDIS, "Player::InitPlayerMails player guid %u", guid);
         });
 

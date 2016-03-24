@@ -73,7 +73,7 @@ bool RedisBuilderMgr::LoadFromRedisArray(const RedisValue* v, std::vector<RedisV
     return true;
 }
 
-bool RedisBuilderMgr::CheckKey(char* _key)
+bool RedisBuilderMgr::CheckKey(const char* _key)
 {
     RedisValue v = RedisDatabase.Execute("EXISTS", _key);
     if (!v.isOk() || v.isNull())
@@ -93,35 +93,20 @@ bool RedisBuilderMgr::CheckKey(char* _key)
 
 void RedisBuilderMgr::InitRedisKey()
 {
-    queryGuidKey = new char[18];
-    petKey = new char[18];
-    bracketKey = new char[18];
-    aucItemKey = new char[18];
-    aucKey = new char[18];
-    guildKey = new char[18];
-    guildFKey = new char[15];
-    guildFMKey = new char[20];
-    groupKey = new char[12];
-    groupMemberKey = new char[20];
-    groupInstanceKey = new char[18];
-    challengeKey = new char[18];
-    ticketKey = new char[18];
-    mailsKey = new char[18];
-
-    sprintf(queryGuidKey, "r{%u}HIGHESTGUIDS", realmID);
-    sprintf(petKey, "r{%u}pets", realmID);
-    sprintf(bracketKey, "r{%u}bracket", realmID);
-    sprintf(aucItemKey, "r{%i}auc{%i}items", realmID, 0);
-    sprintf(aucKey, "r{%i}auc", realmID);
-    sprintf(guildKey, "r{%u}guild", realmID);
-    sprintf(guildFKey, "r{%u}finder", realmID);
-    sprintf(guildFMKey, "r{%u}findermember", realmID);
-    sprintf(groupKey, "r{%i}group", realmID);
-    sprintf(groupMemberKey, "r{%i}groupmember", realmID);
-    sprintf(groupInstanceKey, "r{%i}instance", realmID);
-    sprintf(challengeKey, "r{%i}challenge", realmID);
-    sprintf(ticketKey, "r{%i}ticket", realmID);
-    sprintf(mailsKey, "r{%i}mails", realmID);
+    queryGuidKey = "r{" + std::to_string(realmID) + "}HIGHESTGUIDS";
+    petKey = "r{" + std::to_string(realmID) + "}pets";
+    bracketKey = "r{" + std::to_string(realmID) + "}bracket";
+    aucItemKey = "r{" + std::to_string(realmID) + "}auc{0}items";
+    aucKey = "r{" + std::to_string(realmID) + "}auc";
+    guildKey = "r{" + std::to_string(realmID) + "}guild";
+    guildFKey = "r{" + std::to_string(realmID) + "}finder";
+    guildFMKey = "r{" + std::to_string(realmID) + "}findermember";
+    groupKey = "r{" + std::to_string(realmID) + "}group";
+    groupMemberKey = "r{" + std::to_string(realmID) + "}groupmember";
+    groupInstanceKey = "r{" + std::to_string(realmID) + "}instance";
+    challengeKey = "r{" + std::to_string(realmID) + "}challenge";
+    ticketKey = "r{" + std::to_string(realmID) + "}ticket";
+    mailsKey = "r{" + std::to_string(realmID) + "}mails";
 }
 
 void PlayerSave::SaveToDB()

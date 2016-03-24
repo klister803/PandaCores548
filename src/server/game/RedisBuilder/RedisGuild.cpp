@@ -284,19 +284,16 @@ void Guild::SaveGuildMoney()
 
 void Guild::DeleteMemberGuild(uint32 lowguid)
 {
-    char* userKey = new char[18];
-    sprintf(userKey, "r{%u}u{%u}", realmID, lowguid);
-
-    RedisDatabase.AsyncExecuteH("HDEL", userKey, "guild", lowguid, [&](const RedisValue &v, uint64 guid) {
+    std::string userKey = "r{" + std::to_string(realmID) + "}u{" + std::to_string(lowguid) + "}";
+    RedisDatabase.AsyncExecuteH("HDEL", userKey.c_str(), "guild", lowguid, [&](const RedisValue &v, uint64 guid) {
         sLog->outInfo(LOG_FILTER_REDIS, "Guild::DeleteMemberGuild guid %u", guid);
     });
 }
 
 void Guild::DeleteMembers()
 {
-    char* _key = new char[32];
-    sprintf(_key, "r{%u}g{%u}member", realmID, m_id);
-    RedisDatabase.AsyncExecute("DEL", _key, m_id, [&](const RedisValue &v, uint64 guid) {});
+    std::string _key = "r{" + std::to_string(realmID) + "}g{" + std::to_string(m_id) + "}member";
+    RedisDatabase.AsyncExecute("DEL", _key.c_str(), m_id, [&](const RedisValue &v, uint64 guid) {});
 }
 
 void Guild::SaveGuildNewsLog()

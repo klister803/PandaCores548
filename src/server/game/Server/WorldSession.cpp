@@ -105,10 +105,8 @@ isRecruiter(isARecruiter), timeCharEnumOpcode(0), playerLoginCounter(0)
     _warden = NULL;
     _filterAddonMessages = false;
 
-    accountKey = new char[32];
-    criteriaAcKey = new char[23];
-    sprintf(accountKey, "r{%u}a{%u}", realmID, _accountId);
-    sprintf(criteriaAcKey, "r{%i}a{%i}crit", realmID, _accountId);
+    accountKey = "r{" + std::to_string(realmID) + "}a{" + std::to_string(_accountId) + "}";
+    criteriaAcKey = "r{" + std::to_string(realmID) + "}a{" + std::to_string(_accountId) + "}crit";
 
     if (sock)
     {

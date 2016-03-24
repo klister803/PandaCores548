@@ -932,11 +932,6 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     plrUpdate = false;
     m_mustResurrectFromUnlock = false;
 
-    itemKey = new char[23];
-    userKey = new char[18];
-    criteriaPlKey = new char[23];
-    mailKey = new char[23];
-    mailItemKey = new char[23];
     initAcData = true;
 }
 
@@ -30835,9 +30830,9 @@ void Player::SaveJsonData()
 
 void Player::InitCharKeys(uint32 guidlow)
 {
-    sprintf(itemKey, "r{%i}u{%i}items", realmID, guidlow);
-    sprintf(userKey, "r{%i}u{%i}", realmID, guidlow);
-    sprintf(mailKey, "r{%u}u{%u}mails", realmID, guidlow);
-    sprintf(mailItemKey, "r{%i}u{%i}mitems", realmID, guidlow);
-    sprintf(criteriaPlKey, "r{%i}u{%i}crit", realmID, guidlow);
+    itemKey = "r{" + std::to_string(realmID) + "}u{" + std::to_string(guidlow) + "}items";
+    userKey = "r{" + std::to_string(realmID) + "}u{" + std::to_string(guidlow) + "}";
+    mailKey = "r{" + std::to_string(realmID) + "}u{" + std::to_string(guidlow) + "}mails";
+    mailItemKey = "r{" + std::to_string(realmID) + "}u{" + std::to_string(guidlow) + "}mitems";
+    criteriaPlKey = "r{" + std::to_string(realmID) + "}u{" + std::to_string(guidlow) + "}crit";
 }

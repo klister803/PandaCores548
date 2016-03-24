@@ -1620,17 +1620,18 @@ class Player : public Unit, public GridObject<Player>
         /***                    SERIALIZE SYSTEM               ***/
         /*********************************************************/
 
-        char* itemKey;
-        char* userKey;
-        char* criteriaPlKey;
-        char* mailKey;
-        char* mailItemKey;
-        char* GetItemKey() { return itemKey; }
-        char* GetUserKey() { return userKey; }
-        char* GetAccountKey() { return GetSession()->GetAccountKey(); }
-        char* GetCriteriaPlKey() { return criteriaPlKey; }
-        char* GetCriteriaAcKey() { return GetSession()->GetCriteriaAcKey(); }
-        char* GetMailItemKey() { return mailItemKey; }
+        std::string itemKey;
+        std::string userKey;
+        std::string criteriaPlKey;
+        std::string mailKey;
+        std::string mailItemKey;
+        const char* GetItemKey() { return itemKey.c_str(); }
+        const char* GetUserKey() { return userKey.c_str(); }
+        const char* GetAccountKey() { return GetSession()->GetAccountKey(); }
+        const char* GetCriteriaPlKey() { return criteriaPlKey.c_str(); }
+        const char* GetCriteriaAcKey() { return GetSession()->GetCriteriaAcKey(); }
+        const char* GetMailItemKey() { return mailItemKey.c_str(); }
+        const char* GetMailKey() { return mailKey.c_str(); }
 
         Json::Value PlayerData;
         Json::Value PlayerMailData;

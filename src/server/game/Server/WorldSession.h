@@ -424,8 +424,8 @@ class WorldSession
 
         z_stream_s* GetCompressionStream() { return _compressionStream; }
 
-        char* GetAccountKey() { return accountKey; }
-        char* GetCriteriaAcKey() { return criteriaAcKey; }
+        const char* GetAccountKey() { return accountKey.c_str(); }
+        const char* GetCriteriaAcKey() { return criteriaAcKey.c_str(); }
 
     public:                                                 // opcodes handlers
 
@@ -1150,8 +1150,8 @@ class WorldSession
 
         z_stream_s* _compressionStream;
 
-        char* accountKey;
-        char* criteriaAcKey;
+        std::string accountKey;
+        std::string criteriaAcKey;
 };
 
 class PacketSendEvent : public BasicEvent

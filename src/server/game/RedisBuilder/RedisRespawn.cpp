@@ -177,16 +177,14 @@ void Map::DeleteRespawnTimes()
 
 void Map::DeleteRespawnTimesInDB(uint16 mapId, uint32 instanceId)
 {
-    char* queryGoKey = new char[30];
-    char* queryCrKey = new char[30];
-    sprintf(queryGoKey, "r{%u}m{%u}i{%u}go", realmID, mapId, instanceId);
+    std::string queryGoKey = "r{" + std::to_string(realmID) + "}m{" + std::to_string(mapId) + "}i{" + std::to_string(instanceId) + "}go";
+    std::string queryCrKey = "r{" + std::to_string(realmID) + "}m{" + std::to_string(mapId) + "}i{" + std::to_string(instanceId) + "}cr";
 
-    RedisDatabase.AsyncExecute("DEL", queryGoKey, mapId, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecute("DEL", queryGoKey.c_str(), mapId, [&](const RedisValue &v, uint64 guid) {
         //sLog->outInfo(LOG_FILTER_REDIS, "Map::DeleteRespawnTimesInDB guid %u", guid);
     });
 
-    sprintf(queryCrKey, "r{%u}m{%u}i{%u}cr", realmID, mapId, instanceId);
-    RedisDatabase.AsyncExecute("DEL", queryCrKey, mapId, [&](const RedisValue &v, uint64 guid) {
+    RedisDatabase.AsyncExecute("DEL", queryCrKey.c_str(), mapId, [&](const RedisValue &v, uint64 guid) {
         //sLog->outInfo(LOG_FILTER_REDIS, "Map::DeleteRespawnTimesInDB guid %u", guid);
     });
 }

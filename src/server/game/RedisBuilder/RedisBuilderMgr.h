@@ -38,22 +38,22 @@ class RedisBuilderMgr
 
         void InitRedisKey();
 
-        bool CheckKey(char* _key);
+        bool CheckKey(const char* _key);
 
-        char* GetGuidKey() { return queryGuidKey; }
-        char* GetPetKey() { return petKey; }
-        char* GetBracketKey() { return bracketKey; }
-        char* GetAucItemKey() { return aucItemKey; }
-        char* GetAucKey() { return aucKey; }
-        char* GetGuildKey() { return guildKey; }
-        char* GetGuildFKey() { return guildFKey; }
-        char* GetGuildFMKey() { return guildFMKey; }
-        char* GetGroupKey() { return groupKey; }
-        char* GetGroupMemberKey() { return groupMemberKey; }
-        char* GetGroupInstanceKey() { return groupInstanceKey; }
-        char* GetChallengeKey() { return challengeKey; }
-        char* GetTicketKey() { return ticketKey; }
-        char* GetMailsKey() { return mailsKey; }
+        const char* GetGuidKey() { return queryGuidKey.c_str(); }
+        const char* GetPetKey() { return petKey.c_str(); }
+        const char* GetBracketKey() { return bracketKey.c_str(); }
+        const char* GetAucItemKey() { return aucItemKey.c_str(); }
+        const char* GetAucKey() { return aucKey.c_str(); }
+        const char* GetGuildKey() { return guildKey.c_str(); }
+        const char* GetGuildFKey() { return guildFKey.c_str(); }
+        const char* GetGuildFMKey() { return guildFMKey.c_str(); }
+        const char* GetGroupKey() { return groupKey.c_str(); }
+        const char* GetGroupMemberKey() { return groupMemberKey.c_str(); }
+        const char* GetGroupInstanceKey() { return groupInstanceKey.c_str(); }
+        const char* GetChallengeKey() { return challengeKey.c_str(); }
+        const char* GetTicketKey() { return ticketKey.c_str(); }
+        const char* GetMailsKey() { return mailsKey.c_str(); }
 
         Json::Reader Reader;
         Json::FastWriter Builder;
@@ -61,20 +61,20 @@ class RedisBuilderMgr
 
     private:
 
-        char* queryGuidKey;
-        char* petKey;
-        char* bracketKey;
-        char* aucItemKey;
-        char* aucKey;
-        char* guildKey;
-        char* guildFKey;
-        char* guildFMKey;
-        char* groupKey;
-        char* groupMemberKey;
-        char* groupInstanceKey;
-        char* challengeKey;
-        char* ticketKey;
-        char* mailsKey;
+        std::string queryGuidKey;
+        std::string petKey;
+        std::string bracketKey;
+        std::string aucItemKey;
+        std::string aucKey;
+        std::string guildKey;
+        std::string guildFKey;
+        std::string guildFMKey;
+        std::string groupKey;
+        std::string groupMemberKey;
+        std::string groupInstanceKey;
+        std::string challengeKey;
+        std::string ticketKey;
+        std::string mailsKey;
 };
 
 #define sRedisBuilderMgr RedisBuilderMgr::instance()
