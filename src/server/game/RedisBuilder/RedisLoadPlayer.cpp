@@ -2502,7 +2502,7 @@ bool Player::LoadPlayerFromJson(uint64 guid, bool needSave)
     LoadPlayerGold();
     LoadAccountAchievements();
     LoadPlayerAchievements();
-    LoadPlayerCriteriaProgress();
+    LoadAccountCriteriaProgress();
     LoadPlayerCriteriaProgress();
 
     if(!LoadPlayerNext(guid))
