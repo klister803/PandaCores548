@@ -5025,13 +5025,15 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 145073:    //Residual Corruption
                     spellInfo->TargetAuraSpell = 0;
+                    break;
                 case 144628:    //Titanic Smash
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENEMY_24;
                     spellInfo->Effects[2].TargetA = TARGET_UNIT_CONE_ENEMY_24;
                     break;
                 //Sha of Pride
-                case 144363: //Gift of Titans Dummy(checker)
-                    spellInfo->Effects[0].TargetB = 30;
+                case 146595: //Gift of Titans base spell
+                    spellInfo->Effects[0].TriggerSpell = 0;
+                    spellInfo->Effects[1].TriggerSpell = 0;
                     break;
                 //Iron Juggernaut
                 case 144218: //Borer Drill Dmg

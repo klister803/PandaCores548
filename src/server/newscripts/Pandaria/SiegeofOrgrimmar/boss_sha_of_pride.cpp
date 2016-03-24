@@ -63,6 +63,7 @@ enum eSpells
     //Norushen
     SPELL_DOOR_CHANNEL              = 145979, //Door Channel
     SPELL_FINAL_GIFT                = 144854, //Final Gift
+    SPELL_GIFT_OF_THE_TITANS_BASE   = 146595,
     SPELL_GIFT_OF_THE_TITANS        = 144359, //Gift of the Titans
     SPELL_POWER_OF_THE_TITANS       = 144364, //Power of the Titans
 
@@ -89,9 +90,11 @@ Position const Sha_of_pride_finish_jaina  = {765.6154f, 1050.112f, 357.0135f, 1.
 Position const Sha_of_pride_finish_teron  = {756.955f, 1048.71f, 357.0236f, 1.68638f };
 
 //Manifestation of Pride
-Position const Sha_of_pride_manifestation[2]  = {
-    {809.2969f, 1125.891f, 356.1557f, 3.349345f },
-    {686.1302f, 1099.786f, 356.1556f, 0.1931868f },
+Position const Sha_of_pride_manifestation[3]  =
+{
+    {735.12f, 1174.49f, 356.0720f, 4.8904f},
+    {686.34f, 1099.86f, 356.0709f, 0.1859f},
+    {809.97f, 1126.04f, 356.0724f, 3.3118f},
 };
 
 uint32 const prison[4] = { GO_CORRUPTED_PRISON_WEST, GO_CORRUPTED_PRISON_EAST, GO_CORRUPTED_PRISON_NORTH, GO_CORRUPTED_PRISON_SOUTH };
@@ -328,8 +331,11 @@ class boss_sha_of_pride : public CreatureScript
                         case EVENT_SUMMON_MANIFESTATION_OF_PRIDE:
                         {
                             uint8 count = Is25ManRaid() ? 2 : 1;
-                            for (uint8 i = 0; i < count; ++i)
-                                me->SummonCreature(NPC_MANIFEST_OF_PRIDE, Sha_of_pride_manifestation[i], TEMPSUMMON_DEAD_DESPAWN);
+                            if (count == 1)
+                                me->SummonCreature(NPC_MANIFEST_OF_PRIDE, Sha_of_pride_manifestation[0], TEMPSUMMON_DEAD_DESPAWN);
+                            else
+                                for (uint8 i = 1; i <= count; i++)
+                                    me->SummonCreature(NPC_MANIFEST_OF_PRIDE, Sha_of_pride_manifestation[i], TEMPSUMMON_DEAD_DESPAWN);
                             events.RescheduleEvent(EVENT_SUMMON_MANIFESTATION_OF_PRIDE, 77 * IN_MILLISECONDS, 0, PHASE_BATTLE);
                             break;
                         }
@@ -342,7 +348,7 @@ class boss_sha_of_pride : public CreatureScript
                             }
                             break;
                         case EVENT_SPELL_GIFT_OF_THE_TITANS:
-                            DoCast(me, SPELL_GIFT_OF_THE_TITANS);
+                            DoCast(me, SPELL_GIFT_OF_THE_TITANS_BASE);
                             events.RescheduleEvent(EVENT_SPELL_GIFT_OF_THE_TITANS, 25000, 0, PHASE_BATTLE);
                             break;
                         case EVENT_RIFT_OF_CORRUPTION:
@@ -498,16 +504,13 @@ public:
             {
                 switch (eventId)
                 {
-                    case EVENT_1:
-                        SetEscortPaused(false);
-                        break;
-                    case EVENT_2:
-                        if (Creature* sha = instance->instance->GetCreature(instance->GetData64(NPC_SHA_OF_PRIDE)))
-                        {
-                            
-                            sha->AI()->SetData(NPC_LINGERING_CORRUPTION, DONE); 
-                        }
-                        break;
+                case EVENT_1:
+                    SetEscortPaused(false);
+                    break;
+                case EVENT_2:
+                    if (Creature* sha = instance->instance->GetCreature(instance->GetData64(NPC_SHA_OF_PRIDE)))
+                        sha->AI()->SetData(NPC_LINGERING_CORRUPTION, DONE); 
+                    break;
                 }
             }
         }
@@ -732,23 +735,23 @@ class go_sha_of_pride_corupted_prison : public GameObjectScript
                 {
                     case GO_CORRUPTED_PRISON_WEST:
                         _key[0] = GO_CORRUPTED_BUTTON_WEST_1;
-                        _key[1] = GO_CORRUPTED_BUTTON_WEST_2;
                         _key[2] = GO_CORRUPTED_BUTTON_WEST_3;
+                        _key[1] = GO_CORRUPTED_BUTTON_WEST_2;
                         break;
                     case GO_CORRUPTED_PRISON_EAST:
                         _key[0] = GO_CORRUPTED_BUTTON_EAST_1;
-                        _key[1] = GO_CORRUPTED_BUTTON_EAST_2;
                         _key[2] = GO_CORRUPTED_BUTTON_EAST_3;
+                        _key[1] = GO_CORRUPTED_BUTTON_EAST_2;
                         break;
                     case GO_CORRUPTED_PRISON_NORTH:
                         _key[0] = GO_CORRUPTED_BUTTON_NORTH_1;
-                        _key[1] = GO_CORRUPTED_BUTTON_NORTH_2;
                         _key[2] = GO_CORRUPTED_BUTTON_NORTH_3;
+                        _key[1] = GO_CORRUPTED_BUTTON_NORTH_2;
                         break;
                     case GO_CORRUPTED_PRISON_SOUTH:
                         _key[0] = GO_CORRUPTED_BUTTON_SOUTH_1;
-                        _key[1] = GO_CORRUPTED_BUTTON_SOUTH_2;
                         _key[2] = GO_CORRUPTED_BUTTON_SOUTH_3;
+                        _key[1] = GO_CORRUPTED_BUTTON_SOUTH_2;
                         break;
                 }
             }
@@ -758,14 +761,21 @@ class go_sha_of_pride_corupted_prison : public GameObjectScript
                 _enableKeyCount = 0;
                 _plrPrisonerGUID =guid;
                 go->EnableOrDisableGo(true, false);
-                for(uint8 i = 0; i < 2; ++i)
+                if (go->GetMap()->Is25ManRaid())
                 {
-                    if (GameObject* buttons = instance->instance->GetGameObject(instance->GetData64(_key[i])))
-                        buttons->AI()->DoAction(ACTION_CORUPTED_PRISON_ACTIVATE_KEY);
+                    for (uint8 i = 0; i < 3; i++)
+                        if (GameObject* buttons = instance->instance->GetGameObject(instance->GetData64(_key[i])))
+                            buttons->AI()->DoAction(ACTION_CORUPTED_PRISON_ACTIVATE_KEY);
                 }
-                //last one should be activated
-                if (GameObject* buttons = instance->instance->GetGameObject(instance->GetData64(_key[2])))
-                    buttons->AI()->DoAction(ACTION_CORUPTED_PRISON_ENABLE);
+                else
+                {
+                    for (uint8 i = 0; i < 2; ++i)
+                        if (GameObject* buttons = instance->instance->GetGameObject(instance->GetData64(_key[i])))
+                            buttons->AI()->DoAction(ACTION_CORUPTED_PRISON_ACTIVATE_KEY);
+                    //last one should be activated
+                    if (GameObject* buttons = instance->instance->GetGameObject(instance->GetData64(_key[2])))
+                        buttons->AI()->DoAction(ACTION_CORUPTED_PRISON_ENABLE);
+                }
             }
 
             void DoAction(const int32 param)
@@ -905,7 +915,8 @@ class go_sha_of_pride_corupted_prison_button : public GameObjectScript
                             if (GameObject* pris = instance->instance->GetGameObject(instance->GetData64(ownerEntry)))
                                 pris->AI()->DoAction(ACTION_CORUPTED_PRISON_ACTIVATE_KEY);
                         }
-                    }else if (go->GetGoState() == GO_STATE_READY)
+                    }
+                    else if (go->GetGoState() == GO_STATE_READY)
                     {
                         go->EnableOrDisableGo(true, true);
                         if (GameObject* pris = instance->instance->GetGameObject(instance->GetData64(ownerEntry)))
@@ -943,6 +954,7 @@ public:
         npc_sha_of_pride_manifest_of_prideAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
             onSpawn = true;
         }
 
@@ -985,7 +997,6 @@ public:
                         break;
                 }
             }         
-
             DoMeleeAttackIfReady();
         }
     };
@@ -1230,40 +1241,51 @@ class spell_sha_of_pride_projection : public SpellScriptLoader
         }
 };
 
-//144359
-class spell_sha_of_pride_gift_of_titans : public SpellScriptLoader
+//146595
+class spell_gift_of_titans : public SpellScriptLoader
 {
 public:
-    spell_sha_of_pride_gift_of_titans() : SpellScriptLoader("spell_sha_of_pride_gift_of_titans") { }
+    spell_gift_of_titans() : SpellScriptLoader("spell_gift_of_titans") { }
 
-    class spell_sha_of_pride_gift_of_titans_SpellScript : public SpellScript
+    class spell_gift_of_titans_SpellScript : public SpellScript
     {
-        PrepareSpellScript(spell_sha_of_pride_gift_of_titans_SpellScript);
+        PrepareSpellScript(spell_gift_of_titans_SpellScript);
 
-        void _FilterTarget(std::list<WorldObject*>&targets)
+        void HandleAfterCast()
         {
             if (GetCaster())
             {
-                targets.remove_if(TankFilter());
+                std::list<Player*>pllist;
+                pllist.clear();
+                GetPlayerListInGrid(pllist, GetCaster(), 150.0f);
                 uint8 maxcount = GetCaster()->GetMap()->Is25ManRaid() ? 8 : 3;
-                if (targets.size() > maxcount)
-                    targets.resize(maxcount);
+                uint8 count = 0;
+                if (!pllist.empty())
+                {
+                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                    {
+                        if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
+                        {
+                            (*itr)->AddAura(SPELL_GIFT_OF_THE_TITANS, *itr);
+                            if (++count == maxcount)
+                                break;
+                        }
+                    }
+                }
             }
         }
 
         void Register()
         {
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_of_pride_gift_of_titans_SpellScript::_FilterTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_of_pride_gift_of_titans_SpellScript::_FilterTarget, EFFECT_1, TARGET_UNIT_SRC_AREA_ENTRY);
+            AfterCast += SpellCastFn(spell_gift_of_titans_SpellScript::HandleAfterCast);
         }
     };
 
     SpellScript* GetSpellScript() const
     {
-        return new spell_sha_of_pride_gift_of_titans_SpellScript();
+        return new spell_gift_of_titans_SpellScript();
     }
 };
-
 
 class ValidTargetCheck
 {
@@ -1277,26 +1299,28 @@ public:
     }
 };
 
-//144363
-class spell_sha_of_pride_gift_of_titans_dummy : public SpellScriptLoader
+//144359
+class spell_gift_of_titans_aura : public SpellScriptLoader
 {
 public:
-    spell_sha_of_pride_gift_of_titans_dummy() : SpellScriptLoader("spell_sha_of_pride_gift_of_titans_dummy") { }
+    spell_gift_of_titans_aura() : SpellScriptLoader("spell_gift_of_titans_aura") { }
 
-    class spell_sha_of_pride_gift_of_titans_dummy_SpellScript : public SpellScript
+    class spell_gift_of_titans_aura_AuraScript : public AuraScript
     {
-        PrepareSpellScript(spell_sha_of_pride_gift_of_titans_dummy_SpellScript);
+        PrepareAuraScript(spell_gift_of_titans_aura_AuraScript);
 
-        void _FilterTarget(std::list<WorldObject*>&targets)
+        void OnPeriodic(AuraEffect const*aurEff)
         {
             if (GetCaster())
             {
-                targets.remove_if(ValidTargetCheck());
+                std::list<Player*> pllist;
+                pllist.clear();
+                GetPlayerListInGrid(pllist, GetCaster(), 8.0f);
+                pllist.remove_if(ValidTargetCheck());
                 uint8 maxcount = GetCaster()->GetMap()->Is25ManRaid() ? 8 : 3;
-                if (targets.size() >= maxcount)
+                if (pllist.size() >= maxcount)
                 {
-                    targets.resize(maxcount);
-                    for (std::list<WorldObject*>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
+                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                     {
                         if (Player* pl = (*itr)->ToPlayer())
                         {
@@ -1312,13 +1336,13 @@ public:
 
         void Register()
         {
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_of_pride_gift_of_titans_dummy_SpellScript::_FilterTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ALLY);
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_gift_of_titans_aura_AuraScript::OnPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
         }
     };
 
-    SpellScript* GetSpellScript() const
+    AuraScript* GetAuraScript() const
     {
-        return new spell_sha_of_pride_gift_of_titans_dummy_SpellScript();
+        return new spell_gift_of_titans_aura_AuraScript();
     }
 };
 
@@ -1431,7 +1455,7 @@ public:
     }
 };
 
-//144774, 144379, 144788, 147198, 144911, 146818, 144836, 145320 //nedd update
+//144774, 144379, 144788, 147198, 144911, 146818, 144836, 145320 
 class spell_generic_modifier_pride : public SpellScriptLoader
 {
 public:
@@ -1546,7 +1570,6 @@ public:
     AuraScript* GetAuraScript() const
     {
         return new spell_corrupted_prison_AuraScript();
-
     }
 };
 
@@ -1562,8 +1585,8 @@ void AddSC_boss_sha_of_pride()
     new npc_sha_of_pride_rift_of_corruption();
     new spell_sha_of_pride_self_reflection();
     new spell_sha_of_pride_projection();
-    new spell_sha_of_pride_gift_of_titans();
-    new spell_sha_of_pride_gift_of_titans_dummy();
+    new spell_gift_of_titans();
+    new spell_gift_of_titans_aura();
     new spell_sha_of_pride_mark_of_arrogance();
     new spell_sha_of_pride_overcome();
     new spell_swelling_pride();
