@@ -489,7 +489,7 @@ void Unit::UpdateSplinePosition(bool stop/* = false*/)
     Movement::Location loc = movespline->ComputePosition();
     if (GetTransGUID())
     {
-        Position& pos = m_movementInfo.t_pos;
+        Position& pos = m_movementInfo.transportPosition;
         pos.m_positionX = loc.x;
         pos.m_positionY = loc.y;
         pos.m_positionZ = loc.z;
@@ -23426,7 +23426,7 @@ void Unit::BuildMovementPacket(ByteBuffer *data) const
     *data << GetPositionZMinusOffset();
     *data << GetOrientation();
 
-    bool onTransport = m_movementInfo.t_guid != 0;
+    bool onTransport = m_movementInfo.transportGUID != 0;
     bool hasInterpolatedMovement = m_movementInfo.flags2 & MOVEMENTFLAG2_INTERPOLATED_MOVEMENT;
     bool time3 = false;
     bool swimming = ((GetUnitMovementFlags() & (MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING))
@@ -23469,7 +23469,7 @@ void Unit::BuildMovementPacket(ByteBuffer *data) const
         else if (GetTransport())
             *data << uint64(GetTransport()->GetGUID());
         else // probably should never happen
-            *data << (uint64)0;
+            *data << uint64(0);
 
         *data << float (GetTransOffsetX());
         *data << float (GetTransOffsetY());
@@ -23489,17 +23489,17 @@ void Unit::BuildMovementPacket(ByteBuffer *data) const
     if (interPolatedTurning)
     {
         *data << (uint32)m_movementInfo.fallTime;
-        *data << (float)m_movementInfo.j_zspeed;
+        *data << (float)m_movementInfo.fallJumpVelocity;
         if (jumping)
         {
-            *data << (float)m_movementInfo.j_sinAngle;
-            *data << (float)m_movementInfo.j_cosAngle;
-            *data << (float)m_movementInfo.j_xyspeed;
+            *data << (float)m_movementInfo.fallSinAngle;
+            *data << (float)m_movementInfo.fallCosAngle;
+            *data << (float)m_movementInfo.fallSpeed;
         }
     }
 
     if (splineElevation)
-        *data << (float)m_movementInfo.splineElevation;
+        *data << (float)m_movementInfo.stepUpStartElevation;
 }
 
 void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool casting /*= false*/)

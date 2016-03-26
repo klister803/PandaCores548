@@ -609,58 +609,54 @@ ByteBuffer& operator>>(ByteBuffer& buf, Position::PositionXYZOStreamer const& st
 struct MovementInfo
 {
     // common
-    uint64 guid;
+    uint64 moverGUID;
     uint32 flags;
     uint16 flags2;
-    Position pos;
-    uint32 time;
+    Position position;
+    uint32 moveTime;
+    bool heightChangeFailed;
+    bool remoteTimeValid;
+    std::vector<uint32> removeForcesIDs;
+    uint32 moveIndex;
     // transport
-    bool hasTransportTime2;
-    bool hasTransportTime3;
-    uint64 t_guid;
-    Position t_pos;
-    int8 t_seat;
-    uint32 t_time;
-    uint32 t_time2;
-    uint32 t_time3;
+    uint64 transportGUID;
+    Position transportPosition;
+    int8 transportVehicleSeatIndex;
+    uint32 transportMoveTime;
+    uint32 transportPrevMoveTime;
+    uint32 transportVehicleRecID;
     // swimming/flying
     float pitch;
-    bool hasPitch;
-    // falling
+    // falling/jumping
     uint32 fallTime;
-    // jumping
-    float j_zspeed, j_cosAngle, j_sinAngle, j_xyspeed;
+    float fallJumpVelocity, fallSinAngle, fallCosAngle, fallSpeed;
     // spline
-    bool hasSplineElevation;
-    float splineElevation;
-    // BitClientData
+    float stepUpStartElevation;
+
+    // status bit flags
+    bool hasMoveTime;
+    bool hasPitch;
+    bool hasFacing;
+    bool hasTransportData;
+    bool hasTransportPrevMoveTime;
+    bool hasTransportVehicleRecID;
     bool hasFallData;
     bool hasFallDirection;
     bool hasSpline;
-    bool byte95;
-    bool byteAC;
-    bool hasUnkInt32;
-    uint32 unkInt32;
-    std::vector<uint32> unkCounter;
+    bool hasStepUpStartElevation;
 
     MovementInfo()
     {
-        pos.Relocate(0, 0, 0, 0);
-        guid = 0;
+        moverGUID = transportGUID = 0;
+        position.Relocate(0, 0, 0, 0);
+        transportPosition.Relocate(0, 0, 0, 0);
         flags = 0;
         flags2 = 0;
-        hasTransportTime2 = false;
-        hasTransportTime3 = false;
-        time = t_time = t_time2 = t_time3 = fallTime = 0;
-        splineElevation = 0;
-        hasSplineElevation = false;
-        hasPitch = false;
-        pitch = j_zspeed = j_sinAngle = j_cosAngle = j_xyspeed = 0.0f;
-        t_guid = 0;
-        t_pos.Relocate(0, 0, 0, 0);
-        t_seat = -1;
-        hasFallData = false;
-        hasFallDirection = false;
+        moveTime = transportMoveTime = transportPrevMoveTime = transportVehicleRecID = fallTime = moveIndex = 0;
+        pitch = stepUpStartElevation = fallJumpVelocity = fallSinAngle = fallCosAngle = fallSpeed = 0.0f;
+        transportGUID = 0;
+        transportVehicleSeatIndex = -1;
+        hasMoveTime = hasFacing = hasPitch = hasTransportData = hasTransportPrevMoveTime = hasTransportVehicleRecID = hasFallData = hasFallDirection = hasSpline = hasStepUpStartElevation = false;
     }
 
     uint32 GetMovementFlags() const { return flags; }

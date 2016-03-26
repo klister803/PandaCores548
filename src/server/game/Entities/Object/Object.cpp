@@ -445,7 +445,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             }
         }
 
-        ObjectGuid transGuid = self->m_movementInfo.t_guid;
+        ObjectGuid transGuid = self->m_movementInfo.transportGUID;
         //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "BuildMovement GUID %u, Entry %u, t_guid %u, Flags %i, FlagsExtra %i, flags %i, xyz (%f %f %f) Zofset %f, T(%f %f %f)", 
         //GetGUID(), GetEntry(), self->m_movementInfo.t_guid, movementFlags, movementFlagsExtra, flags, self->GetPositionX(), self->GetPositionY(), self->GetPositionZ(), self->GetPositionZMinusOffset(), self->GetTransOffsetX(), self->GetTransOffsetY(), self->GetTransOffsetZ());
 
@@ -478,9 +478,9 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         if (transGuid)
         {
             data->WriteGuidMask<4, 7, 3, 1, 6>(transGuid);
-            data->WriteBit(self->m_movementInfo.t_time2);   // Has transport time 2
+            data->WriteBit(self->m_movementInfo.transportPrevMoveTime);   // Has transport time 2
             data->WriteGuidMask<2, 0, 5>(transGuid);
-            data->WriteBit(self->m_movementInfo.t_time3);   // Has transport time 3
+            data->WriteBit(self->m_movementInfo.transportVehicleRecID);   // Has transport time 3
         }
 
         data->WriteGuidMask<6>(guid);
@@ -496,12 +496,12 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     if (flags & UPDATEFLAG_GO_TRANSPORT_POSITION)
     {
         WorldObject const* self = static_cast<WorldObject const*>(this);
-        ObjectGuid transGuid = self->m_movementInfo.t_guid;
+        ObjectGuid transGuid = self->m_movementInfo.transportGUID;
 
         data->WriteGuidMask<0, 7>(transGuid);
-        data->WriteBit(self->m_movementInfo.t_time3);   // has go transport time 3
+        data->WriteBit(self->m_movementInfo.transportVehicleRecID);   // has go transport time 3
         data->WriteGuidMask<1>(transGuid);
-        data->WriteBit(self->m_movementInfo.t_time2);   // has go transport time 2
+        data->WriteBit(self->m_movementInfo.transportPrevMoveTime);   // has go transport time 2
         data->WriteGuidMask<6, 5, 4, 3, 2>(transGuid);
     }
 
@@ -595,7 +595,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         uint16 movementFlagsExtra = self->m_movementInfo.GetExtraMovementFlags();
         if (GetTypeId() == TYPEID_UNIT)
             movementFlags &= MOVEMENTFLAG_MASK_CREATURE_ALLOWED;
-        ObjectGuid transGuid = self->m_movementInfo.t_guid;
+        ObjectGuid transGuid = self->m_movementInfo.transportGUID;
 
         *data << float(self->GetPositionY());
         if (self->IsSplineEnabled())
@@ -609,13 +609,13 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         {
             if (movementFlags & MOVEMENTFLAG_FALLING)
             {
-                *data << float(self->m_movementInfo.j_xyspeed);
-                *data << float(self->m_movementInfo.j_sinAngle);
-                *data << float(self->m_movementInfo.j_cosAngle);
+                *data << float(self->m_movementInfo.fallSpeed);
+                *data << float(self->m_movementInfo.fallSinAngle);
+                *data << float(self->m_movementInfo.fallCosAngle);
             }
 
             *data << uint32(self->m_movementInfo.fallTime);
-            *data << float(self->m_movementInfo.j_zspeed);
+            *data << float(self->m_movementInfo.fallJumpVelocity);
         }
 
         if (transGuid)
@@ -625,15 +625,15 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             data->WriteGuidBytes<2>(transGuid);
             *data << float(Position::NormalizeOrientation(self->GetTransOffsetO()));
             data->WriteGuidBytes<4, 7>(transGuid);
-            if (uint32 time2 = self->m_movementInfo.t_time2)
-                *data << uint32(time2);
+            if (uint32 prevMoveTime = self->m_movementInfo.transportPrevMoveTime)
+                *data << uint32(prevMoveTime);
             *data << uint32(self->GetTransTime());
             *data << float(self->GetTransOffsetY());
             data->WriteGuidBytes<3, 6>(transGuid);
             *data << float(self->GetTransOffsetX());
             data->WriteGuidBytes<0>(transGuid);
-            if (uint32 time3 = self->m_movementInfo.t_time3)
-                *data << uint32(time3);
+            if (uint32 vehicleRecID = self->m_movementInfo.transportVehicleRecID)
+                *data << uint32(vehicleRecID);
             data->WriteGuidBytes<1>(transGuid);
             *data << float(self->GetTransOffsetZ());
         }
@@ -655,7 +655,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             *data << float(Position::NormalizePitch(self->m_movementInfo.pitch));
         data->WriteGuidBytes<3>(guid);
         if (movementFlags & MOVEMENTFLAG_SPLINE_ELEVATION)
-            *data << float(self->m_movementInfo.splineElevation);
+            *data << float(self->m_movementInfo.stepUpStartElevation);
         *data << self->GetSpeed(MOVE_RUN_BACK);
         data->WriteGuidBytes<7, 2>(guid);
         *data << float(self->GetPositionZMinusOffset());
@@ -678,18 +678,18 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     if (flags & UPDATEFLAG_GO_TRANSPORT_POSITION)
     {
         WorldObject const* self = static_cast<WorldObject const*>(this);
-        ObjectGuid transGuid = self->m_movementInfo.t_guid;
+        ObjectGuid transGuid = self->m_movementInfo.transportGUID;
 
-        if (uint32 time2 = self->m_movementInfo.t_time2)
-            *data << uint32(time2);
+        if (uint32 prevMoveTime = self->m_movementInfo.transportPrevMoveTime)
+            *data << uint32(prevMoveTime);
         data->WriteGuidBytes<4, 2, 7, 3>(transGuid);
         *data << uint32(self->GetTransTime());
         *data << float(self->GetTransOffsetY());
         data->WriteGuidBytes<1>(transGuid);
         *data << float(self->GetTransOffsetZ());
         *data << int8(self->GetTransSeat());
-        if (uint32 time3 = self->m_movementInfo.t_time3)
-            *data << uint32(time3);
+        if (uint32 vehicleRecID = self->m_movementInfo.transportVehicleRecID)
+            *data << uint32(vehicleRecID);
         data->WriteGuidBytes<6>(transGuid);
         *data << float(Position::NormalizeOrientation(self->GetTransOffsetO()));
         data->WriteGuidBytes<5, 0>(transGuid);
@@ -1750,31 +1750,41 @@ ByteBuffer& operator<<(ByteBuffer& buf, Position::PositionXYZOStreamer const& st
 void MovementInfo::OutDebug()
 {
     sLog->outInfo(LOG_FILTER_NETWORKIO, "MOVEMENT INFO");
-    sLog->outInfo(LOG_FILTER_NETWORKIO, "guid " UI64FMTD, guid);
+    sLog->outInfo(LOG_FILTER_NETWORKIO, "moverGUID " UI64FMTD, moverGUID);
     sLog->outInfo(LOG_FILTER_NETWORKIO, "flags %u", flags);
     sLog->outInfo(LOG_FILTER_NETWORKIO, "flags2 %u", flags2);
     sLog->outInfo(LOG_FILTER_NETWORKIO, "time %u current time " UI64FMTD "", flags2, uint64(::time(NULL)));
-    sLog->outInfo(LOG_FILTER_NETWORKIO, "position: `%s`", pos.ToString().c_str());
-    if (t_guid)
+    sLog->outInfo(LOG_FILTER_NETWORKIO, "position: `%s`", position.ToString().c_str());
+
+    if (transportGUID)
     {
         sLog->outInfo(LOG_FILTER_NETWORKIO, "TRANSPORT:");
-        sLog->outInfo(LOG_FILTER_NETWORKIO, "guid: " UI64FMTD, t_guid);
-        sLog->outInfo(LOG_FILTER_NETWORKIO, "position: `%s`", t_pos.ToString().c_str());
-        sLog->outInfo(LOG_FILTER_NETWORKIO, "seat: %i", t_seat);
-        sLog->outInfo(LOG_FILTER_NETWORKIO, "time: %u", t_time);
-        if (flags2 & MOVEMENTFLAG2_INTERPOLATED_MOVEMENT)
-            sLog->outInfo(LOG_FILTER_NETWORKIO, "time2: %u", t_time2);
+        sLog->outInfo(LOG_FILTER_NETWORKIO, "guid: " UI64FMTD, transportGUID);
+        sLog->outInfo(LOG_FILTER_NETWORKIO, "position: `%s`", transportPosition.ToString().c_str());
+        sLog->outInfo(LOG_FILTER_NETWORKIO, "seatIndex: %i", transportVehicleSeatIndex);
+        sLog->outInfo(LOG_FILTER_NETWORKIO, "moveTime: %u", transportMoveTime);
+        if (hasTransportPrevMoveTime)
+            sLog->outInfo(LOG_FILTER_NETWORKIO, "prevMoveTime: %u", transportPrevMoveTime);
+        if (hasTransportVehicleRecID)
+            sLog->outInfo(LOG_FILTER_NETWORKIO, "vehicleRecID: %u", transportVehicleRecID);
     }
 
-    if ((flags & (MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING)) || (flags2 & MOVEMENTFLAG2_ALWAYS_ALLOW_PITCHING))
+    sLog->outInfo(LOG_FILTER_NETWORKIO, "SWIMMING/FLYING:");
+    if (hasPitch)
         sLog->outInfo(LOG_FILTER_NETWORKIO, "pitch: %f", pitch);
 
-    sLog->outInfo(LOG_FILTER_NETWORKIO, "fallTime: %u", fallTime);
-    if (flags & MOVEMENTFLAG_FALLING)
-        sLog->outInfo(LOG_FILTER_NETWORKIO, "j_zspeed: %f j_sinAngle: %f j_cosAngle: %f j_xyspeed: %f", j_zspeed, j_sinAngle, j_cosAngle, j_xyspeed);
+    if (hasFallData)
+    {
+        sLog->outInfo(LOG_FILTER_NETWORKIO, "FALLING/JUMPING:");
+        sLog->outInfo(LOG_FILTER_NETWORKIO, "fallTime: %u", fallTime);
+        sLog->outInfo(LOG_FILTER_NETWORKIO, "jumpVelocity: %f", fallJumpVelocity);
+        if (hasFallDirection)
+            sLog->outInfo(LOG_FILTER_NETWORKIO, "sinAngle: %f, cosAngle: %f, speed: %f", fallSinAngle, fallCosAngle, fallSpeed);
+    }
 
-    if (flags & MOVEMENTFLAG_SPLINE_ELEVATION)
-        sLog->outInfo(LOG_FILTER_NETWORKIO, "splineElevation: %f", splineElevation);
+    sLog->outInfo(LOG_FILTER_NETWORKIO, "ELEVATION:");
+    if (hasStepUpStartElevation)
+        sLog->outInfo(LOG_FILTER_NETWORKIO, "stepUpStartElevation: %f", stepUpStartElevation);
 }
 
 WorldObject::WorldObject(bool isWorldObject): WorldLocation(),
@@ -1891,12 +1901,12 @@ bool WorldObject::_IsWithinDist(WorldObject const* obj, float dist2compare, bool
 
     if (m_transport && obj->GetTransport() &&  obj->GetTransport()->GetGUIDLow() == m_transport->GetGUIDLow())
     {
-        float dtx = m_movementInfo.t_pos.m_positionX - obj->m_movementInfo.t_pos.m_positionX;
-        float dty = m_movementInfo.t_pos.m_positionY - obj->m_movementInfo.t_pos.m_positionY;
+        float dtx = m_movementInfo.transportPosition.m_positionX - obj->m_movementInfo.transportPosition.m_positionX;
+        float dty = m_movementInfo.transportPosition.m_positionY - obj->m_movementInfo.transportPosition.m_positionY;
         float disttsq = dtx * dtx + dty * dty;
         if (is3D)
         {
-            float dtz = m_movementInfo.t_pos.m_positionZ - obj->m_movementInfo.t_pos.m_positionZ;
+            float dtz = m_movementInfo.transportPosition.m_positionZ - obj->m_movementInfo.transportPosition.m_positionZ;
             disttsq += dtz * dtz;
         }
         return disttsq < (maxdist * maxdist);

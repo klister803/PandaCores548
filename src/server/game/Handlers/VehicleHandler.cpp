@@ -37,12 +37,12 @@ void WorldSession::HandleDismissControlledVehicle(WorldPacket &recvData)
 
     // Too lazy to parse all data, just read pos and forge pkt
     MovementInfo mi;
-    mi.guid = _player->GetGUID();
+    mi.moverGUID = _player->GetGUID();
     mi.flags2 = MOVEMENTFLAG2_INTERPOLATED_PITCHING;
-    mi.pos.m_positionY = recvData.read<float>();
-    mi.pos.m_positionZ = recvData.read<float>();
-    mi.pos.m_positionX = recvData.read<float>();
-    mi.time = getMSTime();
+    mi.position.m_positionY = recvData.read<float>();
+    mi.position.m_positionZ = recvData.read<float>();
+    mi.position.m_positionX = recvData.read<float>();
+    mi.moveTime = getMSTime();
 
     WorldPacket data(SMSG_PLAYER_MOVE);
     WorldSession::WriteMovementInfo(data, &mi);

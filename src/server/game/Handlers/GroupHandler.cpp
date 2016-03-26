@@ -1403,7 +1403,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
     if (mask & GROUP_UPDATE_FLAG_VEHICLE_SEAT)
     {
         if (Vehicle* veh = player->GetVehicle())
-            buffer << uint32(veh->GetVehicleInfo()->m_seatID[player->m_movementInfo.t_seat]);
+            buffer << uint32(veh->GetVehicleInfo()->m_seatID[player->m_movementInfo.transportVehicleSeatIndex]);
         else
             buffer << uint32(0);
     }

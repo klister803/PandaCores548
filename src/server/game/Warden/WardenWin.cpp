@@ -1380,7 +1380,7 @@ void WardenWin::SendControlMovementPacket(uint32 opcode, bool added, uint32 move
             mInfo.RemoveMovementFlag(MovementFlags(moveFlags));
 
         WorldPacket data((Opcodes)opcode, 200);
-        mInfo.guid = plr->GetGUID();
+        mInfo.moverGUID = plr->GetGUID();
         _session->WriteMovementInfo(data, &mInfo);
         plr->SendMessageToSet(&data, true);
     }
