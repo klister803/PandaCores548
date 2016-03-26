@@ -872,22 +872,6 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
     // client provided targets
     SpellCastTargets targets;
 
-    // Movement data
-    MovementInfo movementInfo;
-    ObjectGuid movementTransportGuid = 0;
-    ObjectGuid movementGuid = 0;
-    bool hasTransport = false;
-    bool hasTransportTime2 = false;
-    bool hasTransportTime3 = false;
-    bool hasFallData = false;
-    bool hasFallDirection = false;
-    bool hasTimestamp = false;
-    bool hasSplineElevation = false;
-    bool hasPitch = false;
-    bool hasOrientation = false;
-    bool hasUnkMovementField = false;
-    uint32 unkMovementLoopCounter = 0;
-
     recvPacket.ReadBit();
     CasterGUID[0] = recvPacket.ReadBit();
     bool hasGlyphIndex = !recvPacket.ReadBit();
@@ -921,50 +905,47 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
     uint8 bitsOrder2[8] = { 3, 7, 2, 1, 4, 0, 6, 5 };
     recvPacket.ReadBitInOrder(itemTargetGuid, bitsOrder2);
 
+    // Movement data
+    MovementInfo movementInfo;
+    bool hasMoveIndex = false;
+    uint32 removeForcesCount = 0;
+
     if (hasMovement)
     {
         bool hasMovementFlags2 = !recvPacket.ReadBit();
-        recvPacket.ReadBit();
+        movementInfo.remoteTimeValid = recvPacket.ReadBit();
         bool hasMovementFlags = !recvPacket.ReadBit();
-        movementGuid[4] = recvPacket.ReadBit();
-        unkMovementLoopCounter = recvPacket.ReadBits(22);
-        movementGuid[3] = recvPacket.ReadBit();
-        movementGuid[6] = recvPacket.ReadBit();
-        hasTransport = recvPacket.ReadBit();
-        movementGuid[1] = recvPacket.ReadBit();
+        recvPacket.ReadGuidMask<4>(movementInfo.moverGUID);
+        removeForcesCount = recvPacket.ReadBits(22);
+        recvPacket.ReadGuidMask<3, 6>(movementInfo.moverGUID);
+        movementInfo.hasTransportData = recvPacket.ReadBit();
+        recvPacket.ReadGuidMask<1>(movementInfo.moverGUID);
 
-        if (hasTransport)
+        if (movementInfo.hasTransportData)
         {
-            movementTransportGuid[1] = recvPacket.ReadBit();
-            movementTransportGuid[0] = recvPacket.ReadBit();
-            movementTransportGuid[5] = recvPacket.ReadBit();
-            movementTransportGuid[4] = recvPacket.ReadBit();
-            movementTransportGuid[6] = recvPacket.ReadBit();
-            hasTransportTime2 = recvPacket.ReadBit();
-            hasTransportTime3 = recvPacket.ReadBit();
-            movementTransportGuid[3] = recvPacket.ReadBit();
-            movementTransportGuid[2] = recvPacket.ReadBit();
-            movementTransportGuid[7] = recvPacket.ReadBit(); 
+            recvPacket.ReadGuidMask<1, 0, 5, 4, 6>(movementInfo.transportGUID);
+            movementInfo.hasTransportPrevMoveTime = recvPacket.ReadBit();
+            movementInfo.hasTransportVehicleRecID = recvPacket.ReadBit();
+            recvPacket.ReadGuidMask<3, 2, 7>(movementInfo.transportGUID);
         }
 
-        hasOrientation = !recvPacket.ReadBit();
-        hasUnkMovementField = !recvPacket.ReadBit();
-        hasTimestamp = !recvPacket.ReadBit();
+        movementInfo.hasFacing = !recvPacket.ReadBit();
+        hasMoveIndex = !recvPacket.ReadBit();
+        movementInfo.hasMoveTime = !recvPacket.ReadBit();
         if (hasMovementFlags)
             movementInfo.flags = recvPacket.ReadBits(30);
-        movementGuid[7] = recvPacket.ReadBit();
-        movementGuid[0] = recvPacket.ReadBit();
-        hasPitch = !recvPacket.ReadBit();
-        movementGuid[2] = recvPacket.ReadBit();
-        recvPacket.ReadBit();
-        movementGuid[5] = recvPacket.ReadBit();
-        hasSplineElevation = !recvPacket.ReadBit();
-        recvPacket.ReadBit();
+        recvPacket.ReadGuidMask<7, 0>(movementInfo.moverGUID);
+        movementInfo.hasPitch = !recvPacket.ReadBit();
+        recvPacket.ReadGuidMask<2>(movementInfo.moverGUID);
+        movementInfo.hasSpline = recvPacket.ReadBit();
+        recvPacket.ReadGuidMask<5>(movementInfo.moverGUID);
+        movementInfo.hasStepUpStartElevation = !recvPacket.ReadBit();
+        movementInfo.heightChangeFailed = recvPacket.ReadBit();
         if (hasMovementFlags2)
             movementInfo.flags2 = recvPacket.ReadBits(13);
-        hasFallData = recvPacket.ReadBit();
-        if (hasFallData)
-            hasFallDirection = recvPacket.ReadBit();
+        movementInfo.hasFallData = recvPacket.ReadBit();
+        if (movementInfo.hasFallData)
+            movementInfo.hasFallDirection = recvPacket.ReadBit();
     }
 
     if (hasDestLocation)
@@ -1007,37 +988,37 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
 
     if (hasMovement)
     {
-        if (hasTransport)
+        if (movementInfo.hasTransportData)
         {
-            if (hasTransportTime3)
+            if (movementInfo.hasTransportVehicleRecID)
                 recvPacket >> movementInfo.transportVehicleRecID;
 
             recvPacket >> movementInfo.transportPosition.m_positionX;
-            recvPacket.ReadByteSeq(movementTransportGuid[6]);
+            recvPacket.ReadGuidBytes<6>(movementInfo.transportGUID);
 
-            if (hasTransportTime2)
+            if (movementInfo.hasTransportPrevMoveTime)
                 recvPacket >> movementInfo.transportPrevMoveTime;
 
             movementInfo.transportPosition.SetOrientation(recvPacket.read<float>());
-            recvPacket.ReadByteSeq(movementTransportGuid[7]);
+            recvPacket.ReadGuidBytes<7>(movementInfo.transportGUID);
             recvPacket >> movementInfo.transportVehicleSeatIndex;
-            recvPacket.ReadByteSeq(movementTransportGuid[3]);
+            recvPacket.ReadGuidBytes<3>(movementInfo.transportGUID);
             recvPacket >> movementInfo.transportPosition.m_positionZ;
             recvPacket >> movementInfo.transportPosition.m_positionY;
-            recvPacket.ReadByteSeq(movementTransportGuid[1]);
-            recvPacket.ReadByteSeq(movementTransportGuid[2]);
-            recvPacket.ReadByteSeq(movementTransportGuid[0]);
+            recvPacket.ReadGuidBytes<1, 2, 0>(movementInfo.transportGUID);
             recvPacket >> movementInfo.transportMoveTime;
-            recvPacket.ReadByteSeq(movementTransportGuid[5]);
-            recvPacket.ReadByteSeq(movementTransportGuid[4]);
+            recvPacket.ReadGuidBytes<5, 4>(movementInfo.transportGUID);
         }
-        recvPacket.ReadByteSeq(movementGuid[4]);
+
+        recvPacket.ReadGuidBytes<4>(movementInfo.moverGUID);
         recvPacket >> movementInfo.position.m_positionZ;
-        for (uint32 i = 0; i < unkMovementLoopCounter; ++i)
-            recvPacket.read_skip<uint32>();
-        if (hasFallData)
+
+        for (uint32 i = 0; i < removeForcesCount; ++i)
+            movementInfo.removeForcesIDs.push_back(recvPacket.read<uint32>());
+
+        if (movementInfo.hasFallData)
         {
-            if (hasFallDirection)
+            if (movementInfo.hasFallDirection)
             {
                 recvPacket >> movementInfo.fallSpeed;
                 recvPacket >> movementInfo.fallSinAngle;
@@ -1046,34 +1027,31 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
             recvPacket >> movementInfo.fallTime;
             recvPacket >> movementInfo.fallJumpVelocity;
         }
-        recvPacket.ReadByteSeq(movementGuid[1]);
-        if (hasUnkMovementField)
-            recvPacket.read_skip<uint32>();
-        recvPacket >> movementInfo.position.m_positionX;
-        recvPacket.ReadByteSeq(movementGuid[3]);
-        recvPacket.ReadByteSeq(movementGuid[6]);
 
-        if (hasTimestamp)
+        recvPacket.ReadGuidBytes<1>(movementInfo.moverGUID);
+
+        if (hasMoveIndex)
+            recvPacket.read_skip<uint32>();
+
+        recvPacket >> movementInfo.position.m_positionX;
+        recvPacket.ReadGuidBytes<3, 6>(movementInfo.moverGUID);
+
+        if (movementInfo.hasMoveTime)
             recvPacket >> movementInfo.moveTime;
 
-        recvPacket.ReadByteSeq(movementGuid[5]);
+        recvPacket.ReadGuidBytes<5>(movementInfo.moverGUID);
         recvPacket >> movementInfo.position.m_positionY;
 
-        if (hasSplineElevation)
+        if (movementInfo.hasStepUpStartElevation)
             recvPacket >> movementInfo.stepUpStartElevation;
 
-        if (hasPitch)
+        if (movementInfo.hasPitch)
             movementInfo.pitch = G3D::wrap(recvPacket.read<float>(), float(-M_PI), float(M_PI));
 
-        recvPacket.ReadByteSeq(movementGuid[0]);
-        recvPacket.ReadByteSeq(movementGuid[7]);
-        recvPacket.ReadByteSeq(movementGuid[2]);
+        recvPacket.ReadGuidBytes<0, 7, 2>(movementInfo.moverGUID);
 
-        if (hasOrientation)
+        if (movementInfo.hasFacing)
             movementInfo.position.SetOrientation(recvPacket.read<float>());
-
-        movementInfo.moverGUID = movementGuid;
-        movementInfo.transportGUID = movementTransportGuid;
     }
 
     if (hasDestLocation)

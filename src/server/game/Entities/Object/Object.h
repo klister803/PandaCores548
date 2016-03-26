@@ -609,7 +609,7 @@ ByteBuffer& operator>>(ByteBuffer& buf, Position::PositionXYZOStreamer const& st
 struct MovementInfo
 {
     // common
-    uint64 moverGUID;
+    ObjectGuid moverGUID;
     uint32 flags;
     uint16 flags2;
     Position position;
@@ -619,7 +619,7 @@ struct MovementInfo
     std::vector<uint32> removeForcesIDs;
     uint32 moveIndex;
     // transport
-    uint64 transportGUID;
+    ObjectGuid transportGUID;
     Position transportPosition;
     int8 transportVehicleSeatIndex;
     uint32 transportMoveTime;
