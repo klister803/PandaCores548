@@ -44,7 +44,7 @@ void WorldSession::HandleDismissControlledVehicle(WorldPacket &recvData)
     mi.position.m_positionX = recvData.read<float>();
     mi.moveTime = getMSTime();
 
-    WorldPacket data(SMSG_PLAYER_MOVE);
+    WorldPacket data(SMSG_MOVE_UPDATE);
     WorldSession::WriteMovementInfo(data, &mi);
     _player->SendMessageToSet(&data, _player);
 
@@ -158,11 +158,11 @@ void WorldSession::HandleSetVehicleRecId(WorldPacket& recvData)
     for (Unit::AuraEffectList::const_iterator i = transforms.begin(); i != transforms.end(); ++i)
         vehicleId = (*i)->GetMiscValue();
 
-    WorldPacket data(SMSG_PLAYER_VEHICLE_DATA, 8 + 1 + 4);
+    WorldPacket data(SMSG_SET_VEHICLE_REC_ID, 8 + 1 + 4);
     data << uint32(vehicleId);
     data.WriteGuidMask<5, 3, 6, 2, 1, 4, 0, 7>(_player->GetObjectGuid());
     data.WriteGuidBytes<6, 0, 1, 3, 5, 7, 2, 4>(_player->GetObjectGuid());
-    SendPacket(&data);
+    _player->SendMessageToSet(&data, true);
 }
 
 void WorldSession::HandleEjectPassenger(WorldPacket& data)

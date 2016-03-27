@@ -127,7 +127,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     GetPlayer()->SendInitialPacketsAfterAddToMap();
 
     // Update position client-side to avoid undermap
-    WorldPacket data(SMSG_PLAYER_MOVE);
+    WorldPacket data(SMSG_MOVE_UPDATE);
     _player->m_movementInfo.moveTime = getMSTime();
     _player->m_movementInfo.position.m_positionX = loc.m_positionX;
     _player->m_movementInfo.position.m_positionY = loc.m_positionY;
@@ -210,14 +210,14 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_TELEPORT_ACK");
 
     ObjectGuid guid;
-    uint32 flags, time;
-    recvPacket >> flags >> time;
+    uint32 ackIndex, time;
+    recvPacket >> ackIndex >> time;
 
     recvPacket.ReadGuidMask<1, 7, 2, 5, 0, 6, 3, 4>(guid);
     recvPacket.ReadGuidBytes<1, 5, 4, 3, 0, 7, 6, 2>(guid);
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Guid " UI64FMTD, uint64(guid));
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "Flags %u, time %u", flags, time/IN_MILLISECONDS);
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "ackIndex %u, time %u", ackIndex, time / IN_MILLISECONDS);
 
     Player* plMover = _player->m_mover->ToPlayer();
 
@@ -260,7 +260,7 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)
 
     if(Unit* mover = _player->m_mover)
     {
-        WorldPacket data(SMSG_PLAYER_MOVE);
+        WorldPacket data(SMSG_MOVE_UPDATE);
         mover->m_movementInfo.moveTime = getMSTime();
         mover->m_movementInfo.position.m_positionX = mover->GetPositionX();
         mover->m_movementInfo.position.m_positionY = mover->GetPositionY();
@@ -748,7 +748,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     /* process position-change */
     if (check_passed)
     {
-        WorldPacket data(SMSG_PLAYER_MOVE, recvPacket.size());
+        WorldPacket data(SMSG_MOVE_UPDATE, recvPacket.size());
         movementInfo.moveTime = getMSTime();
         movementInfo.moverGUID = mover->GetGUID();
         WorldSession::WriteMovementInfo(data, &movementInfo);
@@ -819,13 +819,14 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
             plrMover->m_transport->RemovePassenger(plrMover);
             plrMover->m_transport = NULL;
         }
+
         plrMover->m_temp_transport = NULL;
         ++(plrMover->m_anti_AlarmCount);
-        WorldPacket data(SMSG_PLAYER_MOVE);
+        WorldPacket data(SMSG_MOVE_UPDATE);
         plrMover->SetUnitMovementFlags(0);
         //plrMover->SendTeleportPacket();
         plrMover->WriteMovementUpdate(data);
-        plrMover->SendMessageToSet(&data, true);
+        plrMover->SendMessageToSet(&data, false);
         plrMover->SendMovementSetCanFly(true);
         plrMover->SendMovementSetCanFly(false);
         plrMover->FallGroundAnt();
@@ -882,6 +883,8 @@ void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recvData)
 
     MovementInfo movementInfo;
     ReadMovementInfo(recvData, &movementInfo);
+
+    // SMSG_MOVE_UPDATE_*_SPEED to all in visibility range, fucking Unit::UpdateSpeed fully wrong and need rewritting after some researchung....
 }
 
 void WorldSession::HandleMoveKnockBackAck(WorldPacket & recvData)
@@ -948,6 +951,8 @@ void WorldSession::HandleMoveFeatherFallAck(WorldPacket& recvData)
     }
 
     _player->m_movementInfo = movementInfo;
+
+    // need send SMSG_MOVE_UPDATE?
 }
 
 void WorldSession::HandleMoveGravityEnableAck(WorldPacket& recvData)
@@ -1008,6 +1013,7 @@ void WorldSession::HandleMoveHoverAck(WorldPacket& recvData)
     _player->m_movementInfo = movementInfo;
 
     //_player->ToggleMoveEventsMask(MOVE_EVENT_HOVER);
+    // need send SMSG_MOVE_UPDATE?
 }
 
 void WorldSession::HandleMoveWaterwalkAck(WorldPacket& recvData)
@@ -1053,6 +1059,7 @@ void WorldSession::HandleMoveWaterwalkAck(WorldPacket& recvData)
     _player->m_movementInfo = movementInfo;
 
     //_player->ToggleMoveEventsMask(MOVE_EVENT_WATER_WALK);
+    // need send SMSG_MOVE_UPDATE?
 }
 
 void WorldSession::HandleMoveSetCanFlyAck(WorldPacket& recvData)
@@ -1098,6 +1105,7 @@ void WorldSession::HandleMoveSetCanFlyAck(WorldPacket& recvData)
     _player->m_movementInfo = movementInfo;
 
     //_player->ToggleMoveEventsMask(MOVE_EVENT_FLYING);
+    // need send SMSG_MOVE_UPDATE?
 }
 
 void WorldSession::HandleMoveSetCanTransBtwSwimFlyAck(WorldPacket& recvData)

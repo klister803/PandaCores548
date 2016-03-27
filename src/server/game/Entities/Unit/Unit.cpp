@@ -14372,7 +14372,7 @@ void Unit::Mount(uint32 mount, uint32 VehicleId, uint32 creatureEntry)
             if (CreateVehicleKit(VehicleId, creatureEntry))
             {
                 // Send others that we now have a vehicle
-                WorldPacket data(SMSG_PLAYER_VEHICLE_DATA, 8 + 1 + 4);
+                WorldPacket data(SMSG_SET_VEHICLE_REC_ID, 8 + 1 + 4);
                 data << uint32(VehicleId);
                 data.WriteGuidMask<5, 3, 6, 2, 1, 4, 0, 7>(GetObjectGuid());
                 data.WriteGuidBytes<6, 0, 1, 3, 5, 7, 2, 4>(GetObjectGuid());
@@ -14416,7 +14416,7 @@ void Unit::Dismount()
     if (GetTypeId() == TYPEID_PLAYER && GetVehicleKit())
     {
         // Send other players that we are no longer a vehicle
-        data.Initialize(SMSG_PLAYER_VEHICLE_DATA, 8 + 4 + 1);
+        data.Initialize(SMSG_SET_VEHICLE_REC_ID, 8 + 4 + 1);
         data << uint32(0);
         data.WriteGuidMask<5, 3, 6, 2, 1, 4, 0, 7>(GetObjectGuid());
         data.WriteGuidBytes<6, 0, 1, 3, 5, 7, 2, 4>(GetObjectGuid());
@@ -15633,6 +15633,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
 
     WorldPacket data;
     ObjectGuid guid = GetGUID();
+    // really? what forced? this fucking function are wrong
     if (!forced)
     {
         switch (mtype)
@@ -15862,6 +15863,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
                 sLog->outError(LOG_FILTER_UNITS, "Unit::SetSpeed: Unsupported move type (%d), data not sent to client.", mtype);
                 return;
         }
+
         SendMessageToSet(&data, true);
     }
 }
@@ -18607,7 +18609,7 @@ void Unit::SendMovementFlagUpdate(bool self /* = false */)
 {
     if (GetTypeId() == TYPEID_PLAYER)
     {
-        WorldPacket data(SMSG_PLAYER_MOVE);
+        WorldPacket data(SMSG_MOVE_UPDATE);
         WriteMovementUpdate(data);
         SendMessageToSet(&data, self);
         return;
@@ -24123,6 +24125,8 @@ void Unit::SendTeleportPacket(Position &destPos, uint32 sequenceIndex)
     ObjectGuid guid = GetGUID();
     ObjectGuid transGuid = GetTransGUID();
 
+    // maybe wrong packet, with ackIndex only local player packets
+    // need send SMSG_MOVE_UPDATE_TELEPORT?
     WorldPacket data(SMSG_MOVE_TELEPORT, 38);
     data.WriteGuidMask<7>(guid);
     data.WriteBit(0);       // byte33

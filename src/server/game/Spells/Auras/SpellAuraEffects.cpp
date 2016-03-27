@@ -7266,7 +7266,7 @@ void AuraEffect::HandleAuraSetVehicle(AuraApplication const* aurApp, uint8 mode,
     if (apply)
     {
         //send before init vehicle
-        WorldPacket data(SMSG_FORCE_SET_VEHICLE_REC_ID, 16);
+        WorldPacket data(SMSG_MOVE_SET_VEHICLE_REC_ID, 16);
         data.WriteGuidMask<1, 5, 0, 6, 4, 3, 7, 2>(target->GetObjectGuid());
         data.WriteGuidBytes<7, 2, 5, 6, 4>(target->GetObjectGuid());
         data << uint32(vehicleId);
