@@ -1945,7 +1945,7 @@ void Unit::CalcAbsorbResist(Unit* victim, SpellSchoolMask schoolMask, DamageEffe
     // Ignore spells that cant be resisted
     if ((schoolMask & SPELL_SCHOOL_MASK_NORMAL) == 0 && (!spellInfo || (spellInfo->AttributesEx4 & SPELL_ATTR4_IGNORE_RESISTANCES) == 0))
     {
-        float victimResistance = float(victim->GetResistance(schoolMask));
+        float victimResistance = 0.0f/*float(victim->GetResistance(schoolMask))*/;
         victimResistance += float(GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask));
 
         if (Player* player = ToPlayer())
