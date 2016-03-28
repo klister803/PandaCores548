@@ -547,8 +547,8 @@ class WorldSession
 
         void HandleGameObjectQueryOpcode(WorldPacket& recvPacket);
 
-        void HandleMoveWorldportAckOpcode(WorldPacket& recvPacket);
-        void HandleMoveWorldportAckOpcode();                // for server-side calls
+        void HandleMoveWorldportResponseOpcode(WorldPacket& recvPacket);
+        void HandleMoveWorldportResponseOpcode();                // for server-side calls
 
         void HandleMovementOpcodes(WorldPacket& recvPacket);
         void HandleSetActiveMoverOpcode(WorldPacket& recvData);

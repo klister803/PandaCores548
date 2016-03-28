@@ -34,13 +34,13 @@
 #include "VMapFactory.h"
 #include "Vehicle.h"
 
-void WorldSession::HandleMoveWorldportAckOpcode(WorldPacket& /*recvPacket*/)
+void WorldSession::HandleMoveWorldportResponseOpcode(WorldPacket& /*recvPacket*/)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: got MSG_MOVE_WORLDPORT_ACK.");
-    HandleMoveWorldportAckOpcode();
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: got CMSG_MOVE_WORLDPORT_RESPONSE");
+    HandleMoveWorldportResponseOpcode();
 }
 
-void WorldSession::HandleMoveWorldportAckOpcode()
+void WorldSession::HandleMoveWorldportResponseOpcode()
 {
     // ignore unexpected far teleports
     if (!GetPlayer()->IsBeingTeleportedFar())
@@ -126,7 +126,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
 
     GetPlayer()->SendInitialPacketsAfterAddToMap();
 
-    // Update position client-side to avoid undermap
+    // Update position client-side to avoid undermap - NOT VERIFIED
     WorldPacket data(SMSG_MOVE_UPDATE);
     _player->m_movementInfo.moveTime = getMSTime();
     _player->m_movementInfo.position.m_positionX = loc.m_positionX;
@@ -258,6 +258,7 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)
     //lets process all delayed operations on successful teleport
     GetPlayer()->ProcessDelayedOperations();
 
+    // maybe send SMSG_MOVE_UPDATE_TELEPORT?
     if(Unit* mover = _player->m_mover)
     {
         WorldPacket data(SMSG_MOVE_UPDATE);
@@ -894,20 +895,17 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket & recvData)
     if (Unit* mover = _player->m_mover)
         mover->AddUnitState(UNIT_STATE_JUMPING);
 
-    HandleMovementOpcodes(recvData);
-
-    /*MovementInfo movementInfo;
+    MovementInfo movementInfo;
     ReadMovementInfo(recvData, &movementInfo);
 
     if (_player->m_mover->GetGUID() != movementInfo.moverGUID)
-    return;
+        return;
 
     _player->m_movementInfo = movementInfo;
 
-    WorldPacket data(SMSG_MOVE_UPDATE_KNOCK_BACK, 66);
+    WorldPacket data(SMSG_MOVE_UPDATE_KNOCK_BACK);
     WriteMovementInfo(data, &movementInfo);
-
-    _player->SendMessageToSet(&data, false);*/
+    _player->SendMessageToSet(&data, false);
 }
 
 void WorldSession::HandleMoveFeatherFallAck(WorldPacket& recvData)
