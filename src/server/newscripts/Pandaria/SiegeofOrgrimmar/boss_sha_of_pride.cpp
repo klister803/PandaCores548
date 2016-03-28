@@ -230,7 +230,7 @@ class boss_sha_of_pride : public CreatureScript
                     for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
                         if (Player* player = Itr->getSource())
                             if (player->isAlive())
-                                DoCast(player, SPELL_PRIDE, true);        
+                                DoCast(player, SPELL_PRIDE, true);
             }
 
             void DamageTaken(Unit* attacker, uint32 &damage)
@@ -310,20 +310,22 @@ class boss_sha_of_pride : public CreatureScript
                             ZoneTalk(TEXT_GENERIC_11, 0);
                             ZoneTalk(TEXT_GENERIC_3, 0);
                             DoCast(me, SPELL_IMPRISON, true);
-                            uint8 count = Is25ManRaid() ? 4 : 2;
+                            uint8 maxcount = Is25ManRaid() ? 4 : 2;
                             uint8 i = 0;
-                            std::list<Unit*> targetList;
-                            SelectTargetList(targetList, count, SELECT_TARGET_RANDOM, 0.0f, true);
+                            std::list<Player*> targetList;
+                            targetList.clear();
+                            GetPlayerListInGrid(targetList, me, 80.0f);
                             targetList.remove_if(TankFilter());
-                            for (std::list<Unit*>::iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
+                            for (std::list<Player*>::iterator itr = targetList.begin(); itr != targetList.end(); itr++, i++)
                             {
                                 if (GameObject* prisonGo = instance->instance->GetGameObject(instance->GetData64(prison[i])))
                                 {
                                     me->CastSpell(prisonGo->GetPositionX(), prisonGo->GetPositionY(), prisonGo->GetPositionZ(), SPELL_CORRUPTED_PRISON_KNOCK);
                                     prisonGo->AI()->SetGUID((*itr)->GetGUID(), false);
                                     DoCast(*itr, prison_spell[i], true);
+                                    if (i == maxcount)
+                                        break;
                                 }
-                                ++i;
                             }
                             events.RescheduleEvent(EVENT_SPELL_CORRUPTED_PRISON, 78*IN_MILLISECONDS, 0, PHASE_BATTLE);  //19:02:48.000
                             break;
@@ -759,7 +761,7 @@ class go_sha_of_pride_corupted_prison : public GameObjectScript
             void SetGUID(const uint64& guid, int32 /*id = 0 */)
             {
                 _enableKeyCount = 0;
-                _plrPrisonerGUID =guid;
+                _plrPrisonerGUID = guid;
                 go->EnableOrDisableGo(true, false);
                 if (go->GetMap()->Is25ManRaid())
                 {
