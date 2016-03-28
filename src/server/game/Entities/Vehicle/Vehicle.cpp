@@ -946,7 +946,7 @@ bool VehicleJoinEvent::Execute(uint64, uint32)
     }
 
     Passenger->SendClearTarget();                            // SMSG_BREAK_TARGET
-    Passenger->SetControlled(true, UNIT_STATE_ROOT);         // SMSG_FORCE_ROOT - In some cases we send SMSG_SPLINE_MOVE_ROOT here (for creatures)
+    Passenger->SetControlled(true, UNIT_STATE_ROOT);         // SMSG_FORCE_ROOT - In some cases we send SMSG_MOVE_SPLINE_ROOT here (for creatures)
     // also adds MOVEMENTFLAG_ROOT
     
     Movement::MoveSplineInit init(*Passenger);

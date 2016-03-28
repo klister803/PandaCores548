@@ -2910,7 +2910,7 @@ bool Creature::SetWalk(bool enable)
     if (enable)
     {
         //! 5.4.1
-        WorldPacket data(SMSG_SPLINE_MOVE_SET_WALK_MODE, 9);
+        WorldPacket data(SMSG_MOVE_SPLINE_SET_WALK_MODE, 9);
     
         data.WriteGuidMask<7, 4, 0, 1, 5, 6, 2, 3>(guid);
         data.WriteGuidBytes<6, 5, 7, 3, 1, 0, 4, 2>(guid);
@@ -2919,7 +2919,7 @@ bool Creature::SetWalk(bool enable)
     else
     {
         //! 5.4.1
-        WorldPacket data(SMSG_SPLINE_MOVE_SET_RUN_MODE, 9);
+        WorldPacket data(SMSG_MOVE_SPLINE_SET_RUN_MODE, 9);
     
         data.WriteGuidMask<0, 7, 6, 2, 4, 3, 1, 5>(guid);
         data.WriteGuidBytes<0, 2, 1, 6, 3, 7, 5, 4>(guid);
@@ -2943,8 +2943,7 @@ bool Creature::SetDisableGravity(bool disable, bool packetOnly/*=false*/)
     if (disable)
     {
         //! 5.4.1
-        WorldPacket data(SMSG_SPLINE_MOVE_GRAVITY_DISABLE, 9);
-    
+        WorldPacket data(SMSG_MOVE_SPLINE_GRAVITY_DISABLE, 9);
         data.WriteGuidMask<5, 4, 3, 0, 1, 7, 6, 2>(guid);
         data.WriteGuidBytes<4, 6, 3, 5, 0, 1, 7, 2>(guid);
         SendMessageToSet(&data, false);
@@ -2952,8 +2951,7 @@ bool Creature::SetDisableGravity(bool disable, bool packetOnly/*=false*/)
     else
     {
         //! 5.4.1
-        WorldPacket data(SMSG_SPLINE_MOVE_GRAVITY_ENABLE, 9);
-    
+        WorldPacket data(SMSG_MOVE_SPLINE_GRAVITY_ENABLE, 9);
         data.WriteGuidMask<4, 0, 1, 5, 2, 3, 6, 7>(guid);
         data.WriteGuidBytes<4, 1, 7, 6, 2, 5, 0, 3>(guid);
         SendMessageToSet(&data, false);
@@ -2974,16 +2972,16 @@ bool Creature::SetSwim(bool enable)
     ObjectGuid guid = GetGUID();
     if (enable)
     {
-        WorldPacket data(SMSG_SPLINE_MOVE_START_SWIM, 9);
-        data.WriteGuidMask<1, 4, 3, 2, 0, 5, 6, 7>(guid);
-        data.WriteGuidBytes<0, 3, 2, 6, 7, 5, 4, 1>(guid);
+        WorldPacket data(SMSG_MOVE_SPLINE_START_SWIM, 9);
+        data.WriteGuidMask<7, 3, 2, 6, 5, 1, 4, 0>(guid);
+        data.WriteGuidBytes<5, 2, 4, 7, 0, 6, 3, 1>(guid);
         SendMessageToSet(&data, false);
     }
     else
     {
-        WorldPacket data(SMSG_SPLINE_MOVE_STOP_SWIM, 9);
-        data.WriteGuidMask<0, 1, 3, 6, 4, 5, 7, 2>(guid);
-        data.WriteGuidBytes<7, 3, 5, 4, 1, 2, 0, 6>(guid);
+        WorldPacket data(SMSG_MOVE_SPLINE_STOP_SWIM, 9);
+        data.WriteGuidMask<3, 2, 4, 6, 0, 5, 7, 1>(guid);
+        data.WriteGuidBytes<1, 5, 6, 0, 2, 3, 4, 7>(guid);
         SendMessageToSet(&data, false);
     }
     return true;
@@ -3001,16 +2999,16 @@ bool Creature::SetCanFly(bool enable)
     ObjectGuid guid = GetGUID();
     if (enable)
     {
-        WorldPacket data(SMSG_SPLINE_MOVE_SET_FLYING, 9);
-        data.WriteGuidMask<1, 4, 3, 2, 0, 5, 6, 7>(guid);
-        data.WriteGuidBytes<0, 3, 2, 6, 7, 5, 4, 1>(guid);
+        WorldPacket data(SMSG_MOVE_SPLINE_SET_FLYING, 9);
+        data.WriteGuidMask<3, 6, 5, 4, 1, 0, 2, 7>(guid);
+        data.WriteGuidBytes<1, 2, 3, 6, 7, 5, 4, 0>(guid);
         SendMessageToSet(&data, false);
     }
     else
     {
-        WorldPacket data(SMSG_SPLINE_MOVE_UNSET_FLYING, 9);
-        data.WriteGuidMask<0, 1, 3, 6, 4, 5, 7, 2>(guid);
-        data.WriteGuidBytes<7, 3, 5, 4, 1, 2, 0, 6>(guid);
+        WorldPacket data(SMSG_MOVE_SPLINE_UNSET_FLYING, 9);
+        data.WriteGuidMask<0, 6, 5, 3, 4, 7, 2, 1>(guid);
+        data.WriteGuidBytes<1, 2, 3, 5, 4, 0, 6, 7>(guid);
         SendMessageToSet(&data, false);
     }
     return true;
@@ -3028,16 +3026,16 @@ bool Creature::SetWaterWalking(bool enable, bool packetOnly/* = false*/)
     ObjectGuid guid = GetGUID();
     if (enable)
     {
-        WorldPacket data(SMSG_SPLINE_MOVE_SET_WATER_WALK, 9);
-        data.WriteGuidMask<1, 4, 3, 2, 0, 5, 6, 7>(guid);
-        data.WriteGuidBytes<0, 3, 2, 6, 7, 5, 4, 1>(guid);
+        WorldPacket data(SMSG_MOVE_SPLINE_SET_WATER_WALK, 9);
+        data.WriteGuidMask<3, 2, 0, 1, 5, 6, 7, 4>(guid);
+        data.WriteGuidBytes<7, 1, 4, 6, 2, 3, 5, 0>(guid);
         SendMessageToSet(&data, false);
     }
     else
     {
-        WorldPacket data(SMSG_SPLINE_MOVE_SET_LAND_WALK, 9);
-        data.WriteGuidMask<0, 1, 3, 6, 4, 5, 7, 2>(guid);
-        data.WriteGuidBytes<7, 3, 5, 4, 1, 2, 0, 6>(guid);
+        WorldPacket data(SMSG_MOVE_SPLINE_SET_LAND_WALK, 9);
+        data.WriteGuidMask<1, 2, 4, 7, 3, 5, 6, 0>(guid);
+        data.WriteGuidBytes<5, 2, 7, 3, 4, 0, 1, 6>(guid);
         SendMessageToSet(&data, false);
     }
     return true;
@@ -3054,16 +3052,16 @@ bool Creature::SetFeatherFall(bool enable, bool packetOnly/* = false*/)
     ObjectGuid guid = GetGUID();
     if (enable)
     {
-        WorldPacket data(SMSG_SPLINE_MOVE_SET_FEATHER_FALL, 9);
-        data.WriteGuidMask<1, 4, 3, 2, 0, 5, 6, 7>(guid);
-        data.WriteGuidBytes<0, 3, 2, 6, 7, 5, 4, 1>(guid);
+        WorldPacket data(SMSG_MOVE_SPLINE_SET_FEATHER_FALL, 9);
+        data.WriteGuidMask<3, 7, 0, 5, 4, 2, 6, 1>(guid);
+        data.WriteGuidBytes<4, 2, 0, 3, 7, 6, 1, 5>(guid);
         SendMessageToSet(&data, false);
     }
     else
     {
-        WorldPacket data(SMSG_SPLINE_MOVE_SET_NORMAL_FALL, 9);
-        data.WriteGuidMask<0, 1, 3, 6, 4, 5, 7, 2>(guid);
-        data.WriteGuidBytes<7, 3, 5, 4, 1, 2, 0, 6>(guid);
+        WorldPacket data(SMSG_MOVE_SPLINE_SET_NORMAL_FALL, 9);
+        data.WriteGuidMask<7, 6, 2, 1, 0, 3, 4, 5>(guid);
+        data.WriteGuidBytes<3, 7, 5, 0, 4, 6, 2, 1>(guid);
         SendMessageToSet(&data, false);
     }
     return true;
@@ -3087,14 +3085,14 @@ bool Creature::SetHover(bool enable, bool packetOnly)
     ObjectGuid guid = GetGUID();
     if (enable)
     {
-        WorldPacket data(SMSG_SPLINE_MOVE_SET_HOVER, 9);
+        WorldPacket data(SMSG_MOVE_SPLINE_SET_HOVER, 9);
         data.WriteGuidMask<1, 4, 3, 2, 0, 5, 6, 7>(guid);
         data.WriteGuidBytes<0, 3, 2, 6, 7, 5, 4, 1>(guid);
         SendMessageToSet(&data, false);
     }
     else
     {
-        WorldPacket data(SMSG_SPLINE_MOVE_UNSET_HOVER, 9);
+        WorldPacket data(SMSG_MOVE_SPLINE_UNSET_HOVER, 9);
         data.WriteGuidMask<0, 1, 3, 6, 4, 5, 7, 2>(guid);
         data.WriteGuidBytes<7, 3, 5, 4, 1, 2, 0, 6>(guid);
         SendMessageToSet(&data, false);

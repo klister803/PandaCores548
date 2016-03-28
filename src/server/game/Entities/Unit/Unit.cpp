@@ -15641,7 +15641,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
             case MOVE_WALK:
             {
                 //! 5.4.1
-                data.Initialize(SMSG_SPLINE_MOVE_SET_WALK_SPEED, 8+4+1);
+                data.Initialize(SMSG_MOVE_SPLINE_SET_WALK_SPEED, 8+4+1);
     
                 data.WriteGuidMask<2, 0, 6, 3, 7, 5, 1, 4>(guid);
                 data << float(GetSpeed(mtype));
@@ -15651,7 +15651,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
             case MOVE_RUN:
             {
                 //! 5.4.1
-                data.Initialize(SMSG_SPLINE_MOVE_SET_RUN_SPEED, 1 + 8 + 4);
+                data.Initialize(SMSG_MOVE_SPLINE_SET_RUN_SPEED, 1 + 8 + 4);
     
                 data.WriteGuidMask<7, 0, 4, 6, 1, 2, 3, 5>(guid);
                 data.WriteGuidBytes<2, 4, 6>(guid);
@@ -15662,7 +15662,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
             case MOVE_RUN_BACK:
             {
                 //! 5.4.1
-                data.Initialize(SMSG_SPLINE_MOVE_SET_RUN_BACK_SPEED, 1 + 8 + 4);
+                data.Initialize(SMSG_MOVE_SPLINE_SET_RUN_BACK_SPEED, 1 + 8 + 4);
     
                 data.WriteGuidMask<1, 7, 2, 5, 0, 6, 3, 4>(guid);               
                 data.WriteGuidBytes<4, 7, 6, 0, 2, 3>(guid);
@@ -15673,7 +15673,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
             case MOVE_SWIM:
             {
                 //! 5.4.1
-                data.Initialize(SMSG_SPLINE_MOVE_SET_SWIM_SPEED, 1 + 8 + 4);
+                data.Initialize(SMSG_MOVE_SPLINE_SET_SWIM_SPEED, 1 + 8 + 4);
     
                 data.WriteGuidMask<3, 2, 6, 1, 7, 0, 4, 5>(guid);                
                 data.WriteGuidBytes<3>(guid);
@@ -15684,7 +15684,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
             case MOVE_SWIM_BACK:
             {
                 //! 5.4.1
-                data.Initialize(SMSG_SPLINE_MOVE_SET_SWIM_BACK_SPEED, 1 + 8 + 4);
+                data.Initialize(SMSG_MOVE_SPLINE_SET_SWIM_BACK_SPEED, 1 + 8 + 4);
     
                 data.WriteGuidMask<6, 0, 1, 3, 7, 2, 4, 5>(guid);                
                 data.WriteGuidBytes<2, 5, 6, 4, 3, 1, 0>(guid);
@@ -15695,7 +15695,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
             case MOVE_TURN_RATE:
             {
                 //! 5.4.1
-                data.Initialize(SMSG_SPLINE_MOVE_SET_TURN_RATE, 1 + 8 + 4);
+                data.Initialize(SMSG_MOVE_SPLINE_SET_TURN_RATE, 1 + 8 + 4);
     
                 data.WriteGuidMask<5, 1, 7, 2, 0, 6, 3, 4>(guid);               
                 data.WriteGuidBytes<4, 0, 3, 7, 5, 2>(guid);
@@ -15706,7 +15706,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
             case MOVE_FLIGHT:
             {
                 //! 5.4.1
-                data.Initialize(SMSG_SPLINE_MOVE_SET_FLIGHT_SPEED, 1 + 8 + 4);
+                data.Initialize(SMSG_MOVE_SPLINE_SET_FLIGHT_SPEED, 1 + 8 + 4);
     
                 data.WriteGuidMask<2, 6, 0, 3, 4, 1, 5, 7>(guid);
                 data << float(GetSpeed(mtype));
@@ -15716,7 +15716,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
             case MOVE_FLIGHT_BACK:
             {
                 //! 5.4.1
-                data.Initialize(SMSG_SPLINE_MOVE_SET_FLIGHT_BACK_SPEED, 1 + 8 + 4);
+                data.Initialize(SMSG_MOVE_SPLINE_SET_FLIGHT_BACK_SPEED, 1 + 8 + 4);
     
                 data.WriteGuidMask<6, 7, 1, 5, 2, 4, 3, 0>(guid);
                 data << float(GetSpeed(mtype));
@@ -15726,7 +15726,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
             case MOVE_PITCH_RATE:
             {
                 //! 5.4.1
-                data.Initialize(SMSG_SPLINE_MOVE_SET_PITCH_RATE, 1 + 8 + 4);
+                data.Initialize(SMSG_MOVE_SPLINE_SET_PITCH_RATE, 1 + 8 + 4);
                 data << float(GetSpeed(mtype));
                 data.WriteGuidMask<4, 0, 5, 7, 2, 3, 6, 1>(guid);
                 data.WriteGuidBytes<0, 3, 7, 4, 1, 2, 6, 5>(guid);
@@ -21596,7 +21596,7 @@ void Unit::SetRooted(bool apply)
         {
             ObjectGuid guid = GetGUID();
             //! 5.4.1
-            WorldPacket data(SMSG_SPLINE_MOVE_ROOT, 8);
+            WorldPacket data(SMSG_MOVE_SPLINE_ROOT, 8);
    
             data.WriteGuidMask<0, 5, 2, 1, 4, 6, 3, 7>(guid);
             data.WriteGuidBytes<2, 7, 3, 0, 4, 6, 1, 5>(guid);
@@ -21614,7 +21614,7 @@ void Unit::SetRooted(bool apply)
             {
                 ObjectGuid guid = GetGUID();
                 //! 5.4.1
-                WorldPacket data(SMSG_SPLINE_MOVE_UNROOT, 8);
+                WorldPacket data(SMSG_MOVE_SPLINE_UNROOT, 8);
                     
                 data.WriteGuidMask<1, 0, 2, 6, 5, 4, 7>(guid);
                 data.WriteGuidBytes<2, 4, 7, 3, 6, 5, 1, 0>(guid);
@@ -23384,7 +23384,7 @@ void Unit::_ExitVehicle(Position const* exitPosition)
     else if (HasUnitMovementFlag(MOVEMENTFLAG_ROOT))
     {
         //! 5.4.1
-        WorldPacket data(SMSG_SPLINE_MOVE_UNROOT, 8);
+        WorldPacket data(SMSG_MOVE_SPLINE_UNROOT, 8);
         ObjectGuid guid = GetGUID();
     
         data.WriteGuidMask<1, 0, 2, 6, 5, 4, 7>(guid);
