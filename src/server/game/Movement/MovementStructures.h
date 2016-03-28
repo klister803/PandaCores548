@@ -2515,6 +2515,84 @@ MovementStatusElements ClientMovementStopTurnSequence[] =
     MSEEnd,
 };
 
+MovementStatusElements ClientMovementSplineDoneSequence[] =
+{
+    MSEPositionZ,
+    MSEAckIndex, // SplineID
+    MSEPositionY,
+    MSEPositionX,
+    MSEHasMoverGuidByte1,
+    MSEHasMoverGuidByte6,
+    MSEHasMoveIndex,
+    MSERemoveForcesCount,
+    MSEHasFallData,
+    MSEHasMoverGuidByte2,
+    MSEHasMoverGuidByte0,
+    MSEHasFacing,
+    MSEHasStepUpStartElevation,
+    MSEHasSpline,
+    MSEHasMoverGuidByte4,
+    MSEHasTransportData,
+    MSEHasMovementFlags2,
+    MSEHasPitch,
+    MSEHasMoverGuidByte3,
+    MSEHeightChangeFailed,
+    MSEHasMoverGuidByte5,
+    MSEHasMoverGuidByte7,
+    MSEHasMoveTime,
+    MSEHasMovementFlags,
+    MSERemoteTimeValid,
+    MSEMovementFlags2,
+    MSEHasTransportGuidByte3,
+    MSEHasTransportGuidByte4,
+    MSEHasTransportGuidByte0,
+    MSEHasTransportGuidByte5,
+    MSEHasTransportGuidByte6,
+    MSEHasVehicleRecID,
+    MSEHasTransportPrevMoveTime,
+    MSEHasTransportGuidByte1,
+    MSEHasTransportGuidByte2,
+    MSEHasTransportGuidByte7,
+    MSEHasFallDirection,
+    MSEMovementFlags,
+    MSEHasMoverGuidByte6,
+    MSEHasMoverGuidByte7,
+    MSEHasMoverGuidByte0,
+    MSEHasMoverGuidByte4,
+    MSERemoveForcesIDs,
+    MSEHasMoverGuidByte5,
+    MSEHasMoverGuidByte3,
+    MSEHasMoverGuidByte2,
+    MSEHasMoverGuidByte1,
+    MSEJumpVelocity,
+    MSEFallSpeed,
+    MSEFallSinAngle,
+    MSEFallCosAngle,
+    MSEFallTime,
+    MSETransportGuidByte5,
+    MSETransportGuidByte1,
+    MSETransportGuidByte6,
+    MSETransportPositionZ,
+    MSETransportPrevMoveTime,
+    MSETransportMoveTime,
+    MSETransportGuidByte4,
+    MSEVehicleSeatIndex,
+    MSEVehicleRecID,
+    MSETransportGuidByte2,
+    MSETransportGuidByte7,
+    MSETransportPositionX,
+    MSETransportGuidByte0,
+    MSETransportPositionY,
+    MSETransportGuidByte3,
+    MSETransportFacing,
+    MSEMoveIndex,
+    MSEStepUpStartElevation,
+    MSEMoveTime,
+    MSEPitch,
+    MSEFacing,
+    MSEEnd,
+};
+
 MovementStatusElements ServerMoveUpdateSequence[] =
 {
     MSEPositionY,
@@ -2854,6 +2932,8 @@ MovementStatusElements* GetMovementStatusElementsSequence(Opcodes opcode)
             return ClientMovementStopStrafeSequence;
         case CMSG_MOVE_STOP_SWIM:
             return ClientMovementStopSwimSequence;
+        case CMSG_MOVE_SPLINE_DONE:
+            return ClientMovementSplineDoneSequence;
         case CMSG_MOVE_STOP_TURN:
             return ClientMovementStopTurnSequence;
         case SMSG_MOVE_UPDATE_KNOCK_BACK:
