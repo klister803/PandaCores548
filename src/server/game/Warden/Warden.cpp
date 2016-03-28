@@ -128,12 +128,12 @@ void Warden::Update(uint32 diff)
 
         // dynamic checks - second thread of checks
         // requires player in world
-        /*if (!_dynDataSent)
+        if (!_dynDataSent && sWorld->getBoolConfig(CONFIG_WARDEN_ENABLED_DYN_MEM_CHECKS))
         {
             Player * plr = _session->GetPlayer();
-            if (plr && plr->IsInWorld() /*&& !plr->IsBlocked() && !plr->IsBeingTeleported())
+            if (plr && plr->IsInWorld() /*&& !plr->IsBlocked() && !plr->IsBeingTeleported()*/)
                 RequestDynamicData();
-        }*/
+        }
 
         /*if (!_recall && isDebuggerPresentFunc)
         {
