@@ -102,12 +102,15 @@ enum MovementStatusElements
     // Special
     MSEAckIndex,
     MSESpeed,
+    MSEScale,
+    MSEHeight,
+    MSEMountDisplayID,
 
     MSEEnd,     // marks end of parsing
     MSE_COUNT
 };
 
-MovementStatusElements MovementAckFeatherFallSequence[] =
+MovementStatusElements ClientMovementAckFeatherFallSequence[] =
 {
     MSEPositionX,
     MSEPositionZ,
@@ -185,7 +188,7 @@ MovementStatusElements MovementAckFeatherFallSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementAckSetCanFlySequence[] =
+MovementStatusElements ClientMovementAckSetCanFlySequence[] =
 {
     MSEPositionZ,
     MSEPositionX,
@@ -264,7 +267,7 @@ MovementStatusElements MovementAckSetCanFlySequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementAckWaterWalkSequence[] =
+MovementStatusElements ClientMovementAckWaterWalkSequence[] =
 {
     MSEAckIndex,
     MSEPositionX,
@@ -343,7 +346,7 @@ MovementStatusElements MovementAckWaterWalkSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementAckHoverSequence[] =
+MovementStatusElements ClientMovementAckHoverSequence[] =
 {
     MSEPositionY,
     MSEPositionZ,
@@ -422,7 +425,12 @@ MovementStatusElements MovementAckHoverSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementAckRunSpeedChangeSequence[] =
+MovementStatusElements ClientMovementAckSetCollisionHeightSequence[] = 
+{
+    MSEEnd,
+};
+
+MovementStatusElements ClientMovementAckRunSpeedChangeSequence[] =
 {
     MSEPositionY,
     MSEAckIndex,
@@ -502,7 +510,7 @@ MovementStatusElements MovementAckRunSpeedChangeSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementAckFlightSpeedChangeSequence[] =
+MovementStatusElements ClientMovementAckFlightSpeedChangeSequence[] =
 {
     MSESpeed,
     MSEAckIndex,
@@ -582,7 +590,7 @@ MovementStatusElements MovementAckFlightSpeedChangeSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementFallLandSequence[] =
+MovementStatusElements ClientMovementFallLandSequence[] =
 {
     MSEPositionZ,
     MSEPositionX,
@@ -659,7 +667,7 @@ MovementStatusElements MovementFallLandSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementHearbeatSequence[] =
+MovementStatusElements ClientMovementHearbeatSequence[] =
 {
     MSEPositionX,
     MSEPositionY,
@@ -736,7 +744,7 @@ MovementStatusElements MovementHearbeatSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementJumpSequence[] =
+MovementStatusElements ClientMovementJumpSequence[] =
 {
     MSEPositionZ,
     MSEPositionX,
@@ -813,7 +821,84 @@ MovementStatusElements MovementJumpSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementSetFacingSequence[] =
+MovementStatusElements ClientMovementSetFlySequence[] =
+{
+    MSEPositionY,
+    MSEPositionX,
+    MSEPositionZ,
+    MSEHasFallData,
+    MSEHasMoverGuidByte0,
+    MSEHasMovementFlags2,
+    MSEHasMoverGuidByte6,
+    MSEHasMovementFlags,
+    MSERemoteTimeValid,
+    MSEHasMoverGuidByte2,
+    MSEHasFacing,
+    MSEHasMoveIndex,
+    MSEHasStepUpStartElevation,
+    MSEHasTransportData,
+    MSEHasMoverGuidByte1,
+    MSEHasMoverGuidByte5,
+    MSEHasPitch,
+    MSEHasSpline,
+    MSEHasMoverGuidByte4,
+    MSEHasMoveTime,
+    MSERemoveForcesCount,
+    MSEHeightChangeFailed,
+    MSEHasMoverGuidByte7,
+    MSEHasMoverGuidByte3,
+    MSEHasTransportGuidByte2,
+    MSEHasVehicleRecID,
+    MSEHasTransportGuidByte7,
+    MSEHasTransportGuidByte5,
+    MSEHasTransportGuidByte3,
+    MSEHasTransportGuidByte1,
+    MSEHasTransportGuidByte4,
+    MSEHasTransportGuidByte0,
+    MSEHasTransportGuidByte6,
+    MSEHasTransportPrevMoveTime,
+    MSEHasFallDirection,
+    MSEMovementFlags,
+    MSEMovementFlags2,
+    MSERemoveForcesIDs,
+    MSEMoverGuidByte4,
+    MSEMoverGuidByte2,
+    MSEMoverGuidByte6,
+    MSEMoverGuidByte3,
+    MSEMoverGuidByte0,
+    MSEMoverGuidByte7,
+    MSEMoverGuidByte1,
+    MSEMoverGuidByte5,
+    MSEMoveIndex,
+    MSETransportGuidByte7,
+    MSETransportGuidByte4,
+    MSETransportMoveTime,
+    MSETransportGuidByte3,
+    MSETransportGuidByte6,
+    MSETransportFacing,
+    MSETransportGuidByte0,
+    MSETransportPositionZ,
+    MSETransportPositionX,
+    MSEVehicleSeatIndex,
+    MSETransportPositionY,
+    MSETransportPrevMoveTime,
+    MSETransportGuidByte1,
+    MSETransportGuidByte5,
+    MSETransportGuidByte2,
+    MSEVehicleRecID,
+    MSEFallCosAngle,
+    MSEFallSpeed,
+    MSEFallSinAngle,
+    MSEFallTime,
+    MSEJumpVelocity,
+    MSEStepUpStartElevation,
+    MSEFacing,
+    MSEMoveTime,
+    MSEPitch,
+    MSEEnd,
+};
+
+MovementStatusElements ClientMovementSetFacingSequence[] =
 {
     MSEPositionX,
     MSEPositionZ,
@@ -890,7 +975,7 @@ MovementStatusElements MovementSetFacingSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementSetPitchSequence[] =
+MovementStatusElements ClientMovementSetPitchSequence[] =
 {
     MSEPositionY,
     MSEPositionX,
@@ -967,7 +1052,7 @@ MovementStatusElements MovementSetPitchSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementSetRuneModeSequence[] =
+MovementStatusElements ClientMovementSetRuneModeSequence[] =
 {
     MSEPositionY,
     MSEPositionX,
@@ -1044,7 +1129,7 @@ MovementStatusElements MovementSetRuneModeSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementSetWalkModeSequence[] =
+MovementStatusElements ClientMovementSetWalkModeSequence[] =
 {
     MSEPositionZ,
     MSEPositionY,
@@ -1121,7 +1206,7 @@ MovementStatusElements MovementSetWalkModeSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementStartAscendSequence[] =
+MovementStatusElements ClientMovementStartAscendSequence[] =
 {
     MSEPositionY,
     MSEPositionX,
@@ -1198,7 +1283,7 @@ MovementStatusElements MovementStartAscendSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementStartBackwardSequence[] =
+MovementStatusElements ClientMovementStartBackwardSequence[] =
 {
     MSEPositionX,
     MSEPositionY,
@@ -1275,7 +1360,7 @@ MovementStatusElements MovementStartBackwardSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementStartDescendSequence[] =
+MovementStatusElements ClientMovementStartDescendSequence[] =
 {
     MSEPositionY,
     MSEPositionX,
@@ -1352,7 +1437,7 @@ MovementStatusElements MovementStartDescendSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementStartForwardSequence[] =
+MovementStatusElements ClientMovementStartForwardSequence[] =
 {
     MSEPositionX,
     MSEPositionZ,
@@ -1429,7 +1514,7 @@ MovementStatusElements MovementStartForwardSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementStartPitchDownSequence[] =
+MovementStatusElements ClientMovementStartPitchDownSequence[] =
 {
     MSEPositionZ,
     MSEPositionX,
@@ -1506,7 +1591,7 @@ MovementStatusElements MovementStartPitchDownSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementStartPitchUpSequence[] =
+MovementStatusElements ClientMovementStartPitchUpSequence[] =
 {
     MSEPositionZ,
     MSEPositionY,
@@ -1583,7 +1668,7 @@ MovementStatusElements MovementStartPitchUpSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementStartStrafeLeftSequence[] =
+MovementStatusElements ClientMovementStartStrafeLeftSequence[] =
 {
     MSEPositionX,
     MSEPositionZ,
@@ -1660,7 +1745,7 @@ MovementStatusElements MovementStartStrafeLeftSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementStartStrafeRightSequence[] =
+MovementStatusElements ClientMovementStartStrafeRightSequence[] =
 {
     MSEPositionZ,
     MSEPositionX,
@@ -1737,7 +1822,7 @@ MovementStatusElements MovementStartStrafeRightSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementStartSwimSequence[] =
+MovementStatusElements ClientMovementStartSwimSequence[] =
 {
     MSEPositionX,
     MSEPositionY,
@@ -1814,7 +1899,7 @@ MovementStatusElements MovementStartSwimSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementStartTurnLeftSequence[] =
+MovementStatusElements ClientMovementStartTurnLeftSequence[] =
 {
     MSEPositionX,
     MSEPositionY,
@@ -1891,7 +1976,7 @@ MovementStatusElements MovementStartTurnLeftSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementStartTurnRightSequence[] =
+MovementStatusElements ClientMovementStartTurnRightSequence[] =
 {
     MSEPositionX,
     MSEPositionY,
@@ -1968,7 +2053,7 @@ MovementStatusElements MovementStartTurnRightSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementStopSequence[] =
+MovementStatusElements ClientMovementStopSequence[] =
 {
     MSEPositionX,
     MSEPositionY,
@@ -2045,7 +2130,7 @@ MovementStatusElements MovementStopSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementStopAscendSequence[] =
+MovementStatusElements ClientMovementStopAscendSequence[] =
 {
     MSEPositionX,
     MSEPositionZ,
@@ -2122,7 +2207,7 @@ MovementStatusElements MovementStopAscendSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementStopPitchSequence[] =
+MovementStatusElements ClientMovementStopPitchSequence[] =
 {
     MSEPositionX,
     MSEPositionZ,
@@ -2199,7 +2284,7 @@ MovementStatusElements MovementStopPitchSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementStopStrafeSequence[] =
+MovementStatusElements ClientMovementStopStrafeSequence[] =
 {
     MSEPositionX,
     MSEPositionY,
@@ -2276,7 +2361,7 @@ MovementStatusElements MovementStopStrafeSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementStopSwimSequence[] =
+MovementStatusElements ClientMovementStopSwimSequence[] =
 {
     MSEPositionY,
     MSEPositionX,
@@ -2353,7 +2438,7 @@ MovementStatusElements MovementStopSwimSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementStopTurnSequence[] =
+MovementStatusElements ClientMovementStopTurnSequence[] =
 {
     MSEPositionX,
     MSEPositionZ,
@@ -2430,7 +2515,7 @@ MovementStatusElements MovementStopTurnSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements PlayerMoveSequence[] =
+MovementStatusElements ServerMoveUpdateSequence[] =
 {
     MSEPositionY,
     MSEPositionZ,
@@ -2520,7 +2605,7 @@ MovementStatusElements PlayerMoveSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementAckKnockBackSequence[] =
+MovementStatusElements ClientMovementAckKnockBackSequence[] =
 {
     MSEPositionX,
     MSEAckIndex,
@@ -2609,7 +2694,7 @@ MovementStatusElements MovementAckKnockBackSequence[] =
     MSEEnd,
 };
 
-MovementStatusElements MovementUpdateKnockBackSequence[] =
+MovementStatusElements ServerMovementUpdateKnockBackSequence[] =
 {
     MSEHasFacing,
     MSEHasFallData,
@@ -2691,6 +2776,11 @@ MovementStatusElements MovementUpdateKnockBackSequence[] =
     MSEMoverGuidByte1,
     MSEMoverGuidByte5,
 
+    MSEEnd,
+};
+
+MovementStatusElements ServerMovementUpdateCollisionHeightSequence[] =
+{
     MSEEnd,
 };
 
@@ -2701,71 +2791,77 @@ MovementStatusElements* GetMovementStatusElementsSequence(Opcodes opcode)
         case CMSG_CAST_SPELL:
             return NULL;
         case CMSG_FORCE_RUN_SPEED_CHANGE_ACK:
-            return MovementAckRunSpeedChangeSequence;
+            return ClientMovementAckRunSpeedChangeSequence;
         case CMSG_FORCE_FLIGHT_SPEED_CHANGE_ACK:
-            return MovementAckFlightSpeedChangeSequence;
+            return ClientMovementAckFlightSpeedChangeSequence;
         case CMSG_MOVE_FEATHER_FALL_ACK:
-            return MovementAckFeatherFallSequence;
+            return ClientMovementAckFeatherFallSequence;
         case CMSG_MOVE_SET_CAN_FLY_ACK:
-            return MovementAckSetCanFlySequence;
+            return ClientMovementAckSetCanFlySequence;
         case CMSG_MOVE_WATER_WALK_ACK:
-            return MovementAckWaterWalkSequence;
+            return ClientMovementAckWaterWalkSequence;
         case CMSG_MOVE_HOVER_ACK:
-            return MovementAckHoverSequence;
+            return ClientMovementAckHoverSequence;
+        case CMSG_MOVE_SET_COLLISION_HEIGHT_ACK:
+            return ClientMovementAckSetCollisionHeightSequence;
         case CMSG_MOVE_FALL_LAND:
-            return MovementFallLandSequence;
+            return ClientMovementFallLandSequence;
         case CMSG_MOVE_HEARTBEAT:
-            return MovementHearbeatSequence;
+            return ClientMovementHearbeatSequence;
         case CMSG_MOVE_KNOCK_BACK_ACK:
-            return MovementAckKnockBackSequence;
+            return ClientMovementAckKnockBackSequence;
         case CMSG_MOVE_JUMP:
-            return MovementJumpSequence;
+            return ClientMovementJumpSequence;
+        case CMSG_MOVE_SET_FLY:
+            return ClientMovementSetFlySequence;
         case CMSG_MOVE_SET_FACING:
-            return MovementSetFacingSequence;
+            return ClientMovementSetFacingSequence;
         case CMSG_MOVE_SET_PITCH:
-            return MovementSetPitchSequence;
+            return ClientMovementSetPitchSequence;
         case CMSG_MOVE_SET_RUN_MODE:
-            return MovementSetRuneModeSequence;
+            return ClientMovementSetRuneModeSequence;
         case CMSG_MOVE_SET_WALK_MODE:
-            return MovementSetWalkModeSequence;
+            return ClientMovementSetWalkModeSequence;
         case CMSG_MOVE_START_ASCEND:
-            return MovementStartAscendSequence;
+            return ClientMovementStartAscendSequence;
         case CMSG_MOVE_START_BACKWARD:
-            return MovementStartBackwardSequence;
+            return ClientMovementStartBackwardSequence;
         case CMSG_MOVE_START_DESCEND:
-            return MovementStartDescendSequence;
+            return ClientMovementStartDescendSequence;
         case CMSG_MOVE_START_FORWARD:
-            return MovementStartForwardSequence;
+            return ClientMovementStartForwardSequence;
         case CMSG_MOVE_START_PITCH_DOWN:
-            return MovementStartPitchDownSequence;
+            return ClientMovementStartPitchDownSequence;
         case CMSG_MOVE_START_PITCH_UP:
-            return MovementStartPitchUpSequence;
+            return ClientMovementStartPitchUpSequence;
         case CMSG_MOVE_START_STRAFE_LEFT:
-            return MovementStartStrafeLeftSequence;
+            return ClientMovementStartStrafeLeftSequence;
         case CMSG_MOVE_START_STRAFE_RIGHT:
-            return MovementStartStrafeRightSequence;
+            return ClientMovementStartStrafeRightSequence;
         case CMSG_MOVE_START_SWIM:
-            return MovementStartSwimSequence;
+            return ClientMovementStartSwimSequence;
         case CMSG_MOVE_START_TURN_LEFT:
-            return MovementStartTurnLeftSequence;
+            return ClientMovementStartTurnLeftSequence;
         case CMSG_MOVE_START_TURN_RIGHT:
-            return MovementStartTurnRightSequence;
+            return ClientMovementStartTurnRightSequence;
         case CMSG_MOVE_STOP:
-            return MovementStopSequence;
+            return ClientMovementStopSequence;
         case CMSG_MOVE_STOP_ASCEND:
-            return MovementStopAscendSequence;
+            return ClientMovementStopAscendSequence;
         case CMSG_MOVE_STOP_PITCH:
-            return MovementStopPitchSequence;
+            return ClientMovementStopPitchSequence;
         case CMSG_MOVE_STOP_STRAFE:
-            return MovementStopStrafeSequence;
+            return ClientMovementStopStrafeSequence;
         case CMSG_MOVE_STOP_SWIM:
-            return MovementStopSwimSequence;
+            return ClientMovementStopSwimSequence;
         case CMSG_MOVE_STOP_TURN:
-            return MovementStopTurnSequence;
+            return ClientMovementStopTurnSequence;
         case SMSG_MOVE_UPDATE_KNOCK_BACK:
-            return MovementUpdateKnockBackSequence;
+            return ServerMovementUpdateKnockBackSequence;
+        case SMSG_MOVE_UPDATE_COLLISION_HEIGHT:
+            return ServerMovementUpdateCollisionHeightSequence;
         case SMSG_MOVE_UPDATE:
-            return PlayerMoveSequence;
+            return ServerMoveUpdateSequence;
         default:
             sLog->outError(LOG_FILTER_OPCODES, "Unknown movement sequence for opcode %u", opcode);
             break;

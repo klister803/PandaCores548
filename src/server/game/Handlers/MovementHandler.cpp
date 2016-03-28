@@ -881,9 +881,10 @@ void WorldSession::HandleMountSpecialAnimOpcode(WorldPacket& /*recvData*/)
 void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recvData)
 {
     uint32 opcode = recvData.GetOpcode();
+    recvData.rfinish();
 
-    MovementInfo movementInfo;
-    ReadMovementInfo(recvData, &movementInfo);
+    //MovementInfo movementInfo;
+    //ReadMovementInfo(recvData, &movementInfo);
 
     // SMSG_MOVE_UPDATE_*_SPEED to all in visibility range, fucking Unit::UpdateSpeed fully wrong and need rewritting after some researchung....
 }
@@ -912,7 +913,7 @@ void WorldSession::HandleMoveFeatherFallAck(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_FEATHER_FALL_ACK");
 
-    Unit* mover = _player->m_mover;
+    /*Unit* mover = _player->m_mover;
 
     if (!mover)                                  // there must always be a mover
     {
@@ -929,7 +930,6 @@ void WorldSession::HandleMoveFeatherFallAck(WorldPacket& recvData)
         return;
     }
 
-    /* extract packet */
     MovementInfo movementInfo;
     ReadMovementInfo(recvData, &movementInfo);
 
@@ -948,9 +948,10 @@ void WorldSession::HandleMoveFeatherFallAck(WorldPacket& recvData)
         return;
     }
 
-    _player->m_movementInfo = movementInfo;
+    _player->m_movementInfo = movementInfo;*/
 
     // need send SMSG_MOVE_UPDATE?
+    recvData.rfinish();
 }
 
 void WorldSession::HandleMoveGravityEnableAck(WorldPacket& recvData)
@@ -972,7 +973,7 @@ void WorldSession::HandleMoveHoverAck(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_HOVER_ACK");
 
-    Unit* mover = _player->m_mover;
+    /*Unit* mover = _player->m_mover;
 
     if (!mover)                                  // there must always be a mover
     {
@@ -989,7 +990,6 @@ void WorldSession::HandleMoveHoverAck(WorldPacket& recvData)
         return;
     }
 
-    /* extract packet */
     MovementInfo movementInfo;
     ReadMovementInfo(recvData, &movementInfo);
 
@@ -1008,17 +1008,17 @@ void WorldSession::HandleMoveHoverAck(WorldPacket& recvData)
         return;
     }
 
-    _player->m_movementInfo = movementInfo;
+    _player->m_movementInfo = movementInfo;*/
 
-    //_player->ToggleMoveEventsMask(MOVE_EVENT_HOVER);
     // need send SMSG_MOVE_UPDATE?
+    recvData.rfinish();
 }
 
 void WorldSession::HandleMoveWaterwalkAck(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_WATER_WALK_ACK");
 
-    Unit* mover = _player->m_mover;
+    /*Unit* mover = _player->m_mover;
 
     if (!mover)                                  // there must always be a mover
     {
@@ -1035,7 +1035,6 @@ void WorldSession::HandleMoveWaterwalkAck(WorldPacket& recvData)
         return;
     }
 
-    /* extract packet */
     MovementInfo movementInfo;
     ReadMovementInfo(recvData, &movementInfo);
 
@@ -1054,17 +1053,17 @@ void WorldSession::HandleMoveWaterwalkAck(WorldPacket& recvData)
         return;
     }
 
-    _player->m_movementInfo = movementInfo;
+    _player->m_movementInfo = movementInfo;*/
 
-    //_player->ToggleMoveEventsMask(MOVE_EVENT_WATER_WALK);
     // need send SMSG_MOVE_UPDATE?
+    recvData.rfinish();
 }
 
 void WorldSession::HandleMoveSetCanFlyAck(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_SET_CAN_FLY_ACK");
 
-    Unit* mover = _player->m_mover;
+    /*Unit* mover = _player->m_mover;
 
     if (!mover)                                  // there must always be a mover
     {
@@ -1081,7 +1080,6 @@ void WorldSession::HandleMoveSetCanFlyAck(WorldPacket& recvData)
         return;
     }
 
-    /* extract packet */
     MovementInfo movementInfo;
     ReadMovementInfo(recvData, &movementInfo);
 
@@ -1100,10 +1098,10 @@ void WorldSession::HandleMoveSetCanFlyAck(WorldPacket& recvData)
         return;
     }
 
-    _player->m_movementInfo = movementInfo;
+    _player->m_movementInfo = movementInfo;*/
 
-    //_player->ToggleMoveEventsMask(MOVE_EVENT_FLYING);
     // need send SMSG_MOVE_UPDATE?
+    recvData.rfinish();
 }
 
 void WorldSession::HandleMoveSetCanTransBtwSwimFlyAck(WorldPacket& recvData)
@@ -1115,6 +1113,53 @@ void WorldSession::HandleMoveSetCanTransBtwSwimFlyAck(WorldPacket& recvData)
     recvData.read_skip<float>();
     recvData >> ackIndex;
 
+    recvData.rfinish();
+}
+
+void WorldSession::HandleMoveSetCollisionHeightAck(WorldPacket& recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_SET_COLLISION_HEIGHT_ACK");
+
+    /*Unit* mover = _player->m_mover;
+
+    if (!mover)                                  // there must always be a mover
+    {
+        recvData.rfinish();                     // prevent warnings spam
+        return;
+    }
+
+    Player* plrMover = mover->ToPlayer();
+
+    // ignore, waiting processing in WorldSession::HandleMoveWorldportAckOpcode and WorldSession::HandleMoveTeleportAck
+    if (plrMover && plrMover->IsBeingTeleported())
+    {
+        recvData.rfinish();                     // prevent warnings spam
+        return;
+    }
+
+    MovementInfo movementInfo;
+    ReadMovementInfo(recvData, &movementInfo);
+
+    // prevent tampered movement data
+    if (movementInfo.moverGUID != mover->GetGUID() || !mover->IsInWorld())
+    {
+        //sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: guid error");
+        recvData.rfinish();                     // prevent warnings spam
+        return;
+    }
+
+    if (!movementInfo.position.IsPositionValid())
+    {
+        sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: Invalid Position");
+        recvData.rfinish();                     // prevent warnings spam
+        return;
+    }
+
+    _player->m_movementInfo = movementInfo;
+
+    WorldPacket data(SMSG_MOVE_UPDATE_COLLISION_HEIGHT);
+    WriteMovementInfo(data, &movementInfo);
+    _player->SendMessageToSet(&data, false);*/
     recvData.rfinish();
 }
 
@@ -1548,6 +1593,8 @@ void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi, Unit* 
                 break;
             case MSEAckIndex:
                 data << uint32(ackIndex);
+            case MSEScale:
+                data << float(0.0f);
                 break;
             default:
                 ASSERT(false && "Incorrect sequence element detected at WriteMovementInfo");

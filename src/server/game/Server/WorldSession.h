@@ -478,6 +478,7 @@ class WorldSession
         void HandleMoveWaterwalkAck(WorldPacket& recvData);
         void HandleMoveSetCanFlyAck(WorldPacket& recvData);
         void HandleMoveSetCanTransBtwSwimFlyAck(WorldPacket& recvData);
+        void HandleMoveSetCollisionHeightAck(WorldPacket& recvData);
         void HandleMoveFeatherFallAck(WorldPacket& recvData);
         void HandleMoveGravityEnableAck(WorldPacket& recvData);
 
