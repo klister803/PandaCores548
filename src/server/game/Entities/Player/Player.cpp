@@ -30048,11 +30048,15 @@ void Player::SendMovementSetFeatherFall(bool apply)
 void Player::SendMovementSetCollisionHeight(float height, uint32 mountDisplayID/* = 0*/)
 {
     ObjectGuid guid = GetGUID();
+    // UPDATE_COLLISION_HEIGHT_FORCE = 0,
+    // UPDATE_COLLISION_HEIGHT_SCALE = 1,
+    // UPDATE_COLLISION_HEIGHT_MOUNT = 2
+    uint32 reason = mountDisplayID ? 2 : 0;
 
     //! 5.4.1
     WorldPacket data(SMSG_MOVE_SET_COLLISION_HEIGHT, 2 + 8 + 4 + 4);
     data.WriteGuidMask<7, 0, 6, 1>(guid);
-    data.WriteBits(0, 2);
+    data.WriteBits(reason, 2);
     data.WriteGuidMask<2, 5, 3>(guid);
     data.WriteBit(!mountDisplayID);
     data.WriteGuidMask<4>(guid);
