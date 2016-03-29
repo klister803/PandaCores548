@@ -365,9 +365,12 @@ public:
 
         handler->PSendSysMessage("Diffyculty %i spawnmask %i", map->GetDifficulty(), map->GetSpawnMode());
 
-        if (object->m_movementInfo.t_guid)
-            handler->PSendSysMessage("Transport position X: %f Y: %f Z: %f O: %f", object->m_movementInfo.t_pos.GetPositionX(), object->m_movementInfo.t_pos.GetPositionY(),
-            object->m_movementInfo.t_pos.GetPositionZ(), object->m_movementInfo.t_pos.GetOrientation());
+        if (object->m_movementInfo.transportGUID)
+            handler->PSendSysMessage("Transport position X: %f Y: %f Z: %f O: %f", 
+            object->m_movementInfo.transportPosition.GetPositionX(), 
+            object->m_movementInfo.transportPosition.GetPositionY(), 
+            object->m_movementInfo.transportPosition.GetPositionZ(), 
+            object->m_movementInfo.transportPosition.GetOrientation());
 
         LiquidData liquidStatus;
         ZLiquidStatus status = map->getLiquidStatus(object->GetPositionX(), object->GetPositionY(), object->GetPositionZ(), MAP_ALL_LIQUIDS, &liquidStatus);
