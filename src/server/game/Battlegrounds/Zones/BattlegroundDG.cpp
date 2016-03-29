@@ -71,7 +71,7 @@ void BattlegroundDG::StartingEventOpenDoors()
         DoorOpen(i);
 }
 
-void BattlegroundDG::UpdatePlayerScore(Player *player, uint32 type, uint32 addvalue, bool addHonor)
+void BattlegroundDG::UpdatePlayerScore(Player* player, uint32 type, uint32 addvalue, bool addHonor)
 {
     if (!player)
         return;
@@ -95,6 +95,9 @@ void BattlegroundDG::UpdatePlayerScore(Player *player, uint32 type, uint32 addva
         case SCORE_POINTS_DEFENDED:
             ((BattlegroundDGScore*)itr->second)->pointsCaptured += addvalue;
             player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, DG_OBJECTIVE_DEFENDED_FLAG, 1);
+            break;
+        default: /// else only count another kill
+            Battleground::UpdatePlayerScore(player, type, addvalue, addHonor);
             break;
     }
 }
@@ -322,16 +325,24 @@ bool BattlegroundDG::SetupBattleground()
 
     //gates
     if (!AddObject(BG_DG_DOOR_1, BG_DG_ENTRY_DOOR_1, -263.455f, 218.163f, 132.43f, 4.72984f, 0, 0, 1.43143f, 4.48416f, RESPAWN_IMMEDIATELY)
-            || !AddObject(BG_DG_DOOR_2, BG_DG_ENTRY_DOOR_2, -213.712f, 201.043f, 132.488f, 3.9619f, 0, 0, 1.43143f, 4.48416f, RESPAWN_IMMEDIATELY)
-            || !AddObject(BG_DG_DOOR_3, BG_DG_ENTRY_DOOR_3, -69.8785f, 781.837f, 132.43f, 1.58825f, 0, 0, 1.43143f, 4.48416f, RESPAWN_IMMEDIATELY)
-            || !AddObject(BG_DG_DOOR_4, BG_DG_ENTRY_DOOR_4, -119.621f, 798.957f, 132.488f, 0.820303f, 0, 0, 1.43143f, 4.48416f, RESPAWN_IMMEDIATELY)
+        || !AddObject(BG_DG_DOOR_2, BG_DG_ENTRY_DOOR_2, -213.712f, 201.043f, 132.488f, 3.9619f, 0, 0, 1.43143f, 4.48416f, RESPAWN_IMMEDIATELY)
+        || !AddObject(BG_DG_DOOR_3, BG_DG_ENTRY_DOOR_3, -69.8785f, 781.837f, 132.43f, 1.58825f, 0, 0, 1.43143f, 4.48416f, RESPAWN_IMMEDIATELY)
+        || !AddObject(BG_DG_DOOR_4, BG_DG_ENTRY_DOOR_4, -119.621f, 798.957f, 132.488f, 0.820303f, 0, 0, 1.43143f, 4.48416f, RESPAWN_IMMEDIATELY)
 
-            // carts
-            || !AddObject(BG_DG_CART_ALLIANCE, BG_DG_ENTRY_CART_ALLIANCE, -241.741f, 208.611f, 133.747f, 0.84278f, 0, 0, 1.93617f, 4.48416f, RESPAWN_IMMEDIATELY)
-            || !AddObject(BG_DG_CART_HORDE, BG_DG_ENTRY_CART_HORDE, -91.6163f, 791.361f, 133.747f, 4.02356f, 0, 0, 1.93617f, 4.48416f, RESPAWN_IMMEDIATELY)
+        // carts
+        || !AddObject(BG_DG_CART_ALLIANCE, BG_DG_ENTRY_CART_ALLIANCE, -241.741f, 208.611f, 133.747f, 0.84278f, 0, 0, 1.93617f, 4.48416f, RESPAWN_IMMEDIATELY)
+        || !AddObject(BG_DG_CART_HORDE, BG_DG_ENTRY_CART_HORDE, -91.6163f, 791.361f, 133.747f, 4.02356f, 0, 0, 1.93617f, 4.48416f, RESPAWN_IMMEDIATELY)
+        
+        //buff
+        || !AddObject(BG_DG_OBJECT_SPEEDBUFF_1, Buff_Entries[0],   -244.97f, 774.82f, 150.27f, 0.0f, 0, 0, 0.7313537f, -0.6819983f, BUFF_RESPAWN_TIME)
+        || !AddObject(BG_DG_OBJECT_SPEEDBUFF_2, Buff_Entries[0],    -88.58f, 223.96f, 150.28f, 0.0f, 0, 0, 0.7313537f, 0.6819984f, BUFF_RESPAWN_TIME)
+        || !AddObject(BG_DG_OBJECT_REGENBUFF_1, Buff_Entries[1],   -428.18f, 579.59f, 111.00f, 0.0f, 0, 0, 0.1305263f, -0.9914448f, BUFF_RESPAWN_TIME)
+        || !AddObject(BG_DG_OBJECT_REGENBUFF_2, Buff_Entries[1],     98.66f, 425.48f, 111.38f, 0.0f, 0, 0, 0.333807f, -0.9426414f, BUFF_RESPAWN_TIME)
+        || !AddObject(BG_DG_OBJECT_BERSERKBUFF_1, Buff_Entries[2], -125.43f, 324.64f, 152.19f, 0.0f, 0, 0, 0.5591929f, 0.8290376f, BUFF_RESPAWN_TIME)
+        || !AddObject(BG_DG_OBJECT_BERSERKBUFF_2, Buff_Entries[2], -207.94f, 677.31f, 149.41f, 0.0f, 0, 0, 0.9396926f, -0.3420201f, BUFF_RESPAWN_TIME)
+        )
 
-            )
-        return false;
+    return false;
 
     m_carts[0] = new Cart(this);
     m_carts[1] = new Cart(this);
