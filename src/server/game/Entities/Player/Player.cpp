@@ -23900,7 +23900,6 @@ void Player::DropModCharge(SpellModifier* mod, Spell* spell)
                 mod->charges = -1;
 
             spell->m_appliedMods.insert(mod->ownerAura);
-            ChatHandler(this).PSendSysMessage("2");
         }
     }
 }
