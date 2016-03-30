@@ -993,7 +993,6 @@ public:
         void DoAction(int32 const action)
         {
             npc_measure::DoAction(action);
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             me->CastSpell(me, SPELL_SHA_CORRUPTION_OF_SUN, true);
         }
         void JustSummoned(Creature* summon)

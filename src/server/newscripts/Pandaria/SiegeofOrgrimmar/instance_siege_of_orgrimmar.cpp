@@ -1157,7 +1157,6 @@ public:
 
                     HandleGameObject(spentdoorGuid, true);
                     HandleGameObject(spexdoorGuid, true);
-                    CheckProgressForKlaxxi();
                     //Remove all buffs
                     DoRemoveAurasDueToSpellOnPlayers(146068);
                     DoRemoveAurasDueToSpellOnPlayers(146099);
@@ -1280,7 +1279,6 @@ public:
                     if (Creature* thok = instance->GetCreature(thokGuid))
                         SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, thok);
                     HandleGameObject(thokentdoorGuid, true);
-                    CheckProgressForKlaxxi();
                     break;
                 }
                 break;
@@ -1299,7 +1297,6 @@ public:
                     break;
                 case DONE:
                     HandleGameObject(blackfuseentdoorGuid, true);
-                    CheckProgressForKlaxxi();
                     break;
                 }
             }
@@ -1331,9 +1328,12 @@ public:
             }
             break;
             }
+
             if (state == DONE)
             {
                 DoSummoneEventCreatures();
+                if (id == DATA_BLACKFUSE || id == DATA_SPOILS_OF_PANDARIA || id == DATA_THOK)
+                    CheckProgressForKlaxxi();
                 if (id < DATA_GARROSH && CheckProgressForGarrosh())
                     HandleGameObject(klaxxiexdoorGuid, true);
             }

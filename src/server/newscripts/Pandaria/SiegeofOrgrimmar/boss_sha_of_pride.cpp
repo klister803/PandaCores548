@@ -113,13 +113,12 @@ enum PhaseEvents
     EVENT_SPELL_CORRUPTED_PRISON        = 5,
     EVENT_SPELL_GIFT_OF_THE_TITANS      = 7,
     EVENT_PRIDE_GENERATION              = 8,
-    EVENT_SPELL_UNLEASHED               = 9,
-    EVENT_RIFT_OF_CORRUPTION            =10,
+    EVENT_RIFT_OF_CORRUPTION            = 10,
 };
 
 enum Phases
 {
-    PHASE_BATTLE                    = 1,
+    PHASE_BATTLE                        = 1,
 };
 
 class TankFilter
@@ -238,7 +237,13 @@ class boss_sha_of_pride : public CreatureScript
                 if (me->HealthBelowPct(30) && !bPhaseLowHp)
                 {
                     bPhaseLowHp = true;
-                    events.ScheduleEvent(EVENT_SPELL_UNLEASHED, 1000);
+                    me->InterruptNonMeleeSpells(true);
+                    events.CancelEvent(EVENT_SPELL_GIFT_OF_THE_TITANS);
+                    if (Creature* nor = me->GetCreature(*me, instance->GetData64(NPC_SHA_NORUSHEN)))
+                    {
+                        ZoneTalk(TEXT_GENERIC_8, 0);
+                        DoCast(nor, SPELL_UNLEASHED);
+                    }
                 }
             }
 
@@ -341,14 +346,6 @@ class boss_sha_of_pride : public CreatureScript
                             events.RescheduleEvent(EVENT_SUMMON_MANIFESTATION_OF_PRIDE, 77 * IN_MILLISECONDS, 0, PHASE_BATTLE);
                             break;
                         }
-                        case EVENT_SPELL_UNLEASHED:
-                            if (Creature* nor = instance->instance->GetCreature(instance->GetData64(NPC_SHA_NORUSHEN)))
-                            {
-                                ZoneTalk(TEXT_GENERIC_8, 0);
-                                DoCast(nor, SPELL_UNLEASHED);
-                                events.CancelEvent(EVENT_SPELL_GIFT_OF_THE_TITANS);
-                            }
-                            break;
                         case EVENT_SPELL_GIFT_OF_THE_TITANS:
                             DoCast(me, SPELL_GIFT_OF_THE_TITANS_BASE);
                             events.RescheduleEvent(EVENT_SPELL_GIFT_OF_THE_TITANS, 25000, 0, PHASE_BATTLE);

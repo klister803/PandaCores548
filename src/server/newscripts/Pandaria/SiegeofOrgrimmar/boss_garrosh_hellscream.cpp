@@ -83,6 +83,20 @@ enum eSpells
     SPELL_SUMMON_ADDS                = 144489,
     SPELL_HEARTBEAT_SOUND            = 148591,
     SPELL_ENTER_REALM_OF_YSHAARJ     = 144867,
+
+    //Remove this absorb aura when player on mind control
+    SPELL_SPIRIT_SHELL             = 114908,
+    SPELL_DIVINE_AEGIS             = 47753,
+    SPELL_POWER_WORD_SHIELD        = 17,
+    SPELL_SACRED_SHIELD            = 65148,
+};
+
+uint32 auraarray[4] = 
+{
+    SPELL_SPIRIT_SHELL,
+    SPELL_DIVINE_AEGIS,
+    SPELL_POWER_WORD_SHIELD,
+    SPELL_SACRED_SHIELD,
 };
 
 enum sEvents
@@ -337,10 +351,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     Talk(SAY_PHASE_PREPARE, 0);
                     events.Reset();
                     if (!summons.empty())
-                    {
-                        summons.DespawnEntry(NPC_KORKRON_IRON_STAR);
                         summons.DespawnEntry(NPC_SIEGE_ENGINEER);
-                    }
                     me->SetAttackStop(true);
                     me->GetMotionMaster()->MoveCharge(centerpos.GetPositionX(), centerpos.GetPositionY(), centerpos.GetPositionZ(), 15.0f, 1);
                     break;
@@ -1450,7 +1461,7 @@ public:
 
         void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
         {
-            if (GetCaster() && GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
+            if (GetCaster() && GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
             {
                 if (Creature* ironstar = GetCaster()->FindNearestCreature(NPC_KORKRON_IRON_STAR, 30.0f, true))
                 {
@@ -1680,6 +1691,9 @@ public:
         {
             if (GetTarget())
             {
+                for (uint8 n = 0; n < 4; n++)
+                    GetTarget()->RemoveAurasDueToSpell(auraarray[n]);
+
                 uint32 entry = GetSpellInfo()->Id;
                 if (AuraEffect* aurEffb = GetTarget()->GetAura(entry)->GetEffect(0))
                 {
@@ -1806,7 +1820,6 @@ public:
         return new spell_empovered_gripping_despair_AuraScript();
     }
 };
-
 
 void AddSC_boss_garrosh_hellscream()
 {

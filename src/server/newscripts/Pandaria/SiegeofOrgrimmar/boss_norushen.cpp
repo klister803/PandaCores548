@@ -507,10 +507,6 @@ class boss_amalgam_of_corruption : public CreatureScript
                 }
             }
 
-            void DoAction(int32 const action)
-            {
-            }
-
             void JustDied(Unit* /*killer*/)
             {
                 _JustDied();
@@ -1044,16 +1040,13 @@ public:
             
             while (uint32 eventId = events.ExecuteEvent())
             {   
-                switch (eventId)
+                if (eventId == EVENT_1)
                 {
-                    case EVENT_1:
-                        DoCastAOE(SPELL_BURST_OF_ANGER);
-                        events.ScheduleEvent(EVENT_1, 5000);
-                        break;
-                    default:
-                        break;
+                    DoCastAOE(SPELL_BURST_OF_ANGER);
+                    events.ScheduleEvent(EVENT_1, 1000);
                 }
             }
+
             if (!me->HasUnitState(UNIT_STATE_CASTING))
                 DoMeleeAttackIfReady();
         }
