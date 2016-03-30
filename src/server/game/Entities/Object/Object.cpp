@@ -1754,7 +1754,7 @@ ByteBuffer& operator<<(ByteBuffer& buf, Position::PositionXYZOStreamer const& st
 void MovementInfo::OutDebug()
 {
     sLog->outInfo(LOG_FILTER_NETWORKIO, "MOVEMENT INFO");
-    sLog->outInfo(LOG_FILTER_NETWORKIO, "moverGUID " UI64FMTD, moverGUID);
+    //sLog->outInfo(LOG_FILTER_NETWORKIO, "moverGUID " UI64FMTD, moverGUID);
     sLog->outInfo(LOG_FILTER_NETWORKIO, "flags %u", flags);
     sLog->outInfo(LOG_FILTER_NETWORKIO, "flags2 %u", flags2);
     sLog->outInfo(LOG_FILTER_NETWORKIO, "time %u current time " UI64FMTD "", flags2, uint64(::time(NULL)));
@@ -1763,7 +1763,7 @@ void MovementInfo::OutDebug()
     if (transportGUID)
     {
         sLog->outInfo(LOG_FILTER_NETWORKIO, "TRANSPORT:");
-        sLog->outInfo(LOG_FILTER_NETWORKIO, "guid: " UI64FMTD, transportGUID);
+        //sLog->outInfo(LOG_FILTER_NETWORKIO, "guid: " UI64FMTD, transportGUID);
         sLog->outInfo(LOG_FILTER_NETWORKIO, "position: `%s`", transportPosition.ToString().c_str());
         sLog->outInfo(LOG_FILTER_NETWORKIO, "seatIndex: %i", transportVehicleSeatIndex);
         sLog->outInfo(LOG_FILTER_NETWORKIO, "moveTime: %u", transportMoveTime);
