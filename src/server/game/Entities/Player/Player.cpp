@@ -23890,7 +23890,10 @@ void Player::DropModCharge(SpellModifier* mod, Spell* spell)
     if (spell)
     {
         if (GetGlobalCooldownMgr().HasGlobalCooldown(spell->GetSpellInfo()))
+        {
+            ChatHandler(this).PSendSysMessage("1");
             return;
+        }
 
         //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "DropModCharge spell %i, modId %i, charges %i, GetCharges %i, GetStackAmount %i, op %i", spell->GetSpellInfo()->Id, mod->spellId, mod->charges, mod->ownerAura->GetCharges(), mod->ownerAura->GetStackAmount(), mod->op);
 
@@ -23900,6 +23903,7 @@ void Player::DropModCharge(SpellModifier* mod, Spell* spell)
                 mod->charges = -1;
 
             spell->m_appliedMods.insert(mod->ownerAura);
+            ChatHandler(this).PSendSysMessage("2");
         }
     }
 }
