@@ -1007,11 +1007,11 @@ enum PlayerCommandStates
 
 struct auraEffectData
 {
-    auraEffectData(uint8 slot, uint8 effect, uint32 amount, uint32 baseamount) : _slot(slot), _effect(effect), _amount(amount), _baseamount(amount)  {}
+    auraEffectData(uint8 slot, uint8 effect, float amount, float baseamount) : _slot(slot), _effect(effect), _amount(amount), _baseamount(amount)  {}
     uint8 _slot;
     uint8 _effect;
-    uint32 _amount;
-    uint32 _baseamount;
+    float _amount;
+    float _baseamount;
 };
 
 struct playerLootCooldown

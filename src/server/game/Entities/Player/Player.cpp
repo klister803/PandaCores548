@@ -19826,8 +19826,8 @@ void Player::_LoadAuras(PreparedQueryResult result, PreparedQueryResult resultEf
             Field* fields = resultEffect->Fetch();
             uint8 slot = fields[0].GetUInt8();
             uint8 effect = fields[1].GetUInt8();
-            uint32 baseamount = fields[2].GetUInt32();
-            uint32 amount = fields[3].GetUInt32();
+            float baseamount = fields[2].GetInt32();
+            float amount = fields[3].GetInt32();
 
             auraEffectList.push_back(auraEffectData(slot, effect, amount, baseamount));
         }
@@ -21981,8 +21981,8 @@ void Player::_SaveAuras(SQLTransaction& trans)
             continue;
 
         uint8 index = 0;
-        int32 damage[MAX_SPELL_EFFECTS];
-        int32 baseDamage[MAX_SPELL_EFFECTS];
+        float damage[MAX_SPELL_EFFECTS];
+        float baseDamage[MAX_SPELL_EFFECTS];
         uint32 effMask = 0;
         uint32 recalculateMask = 0;
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
