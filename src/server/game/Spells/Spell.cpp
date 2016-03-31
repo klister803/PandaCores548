@@ -4137,7 +4137,7 @@ void Spell::handle_immediate()
     TakeCastItem();
 
     // handle ammo consumption for thrown weapons
-    if (m_spellInfo->IsRangedWeaponSpell() && m_spellInfo->IsChanneled())
+    if (m_spellInfo && m_spellInfo->IsRangedWeaponSpell() && m_spellInfo->IsChanneled())
         TakeAmmo();
 
     if (m_spellState != SPELL_STATE_CASTING)

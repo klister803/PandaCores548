@@ -317,12 +317,12 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
 bool GlobalCooldownMgr::HasGlobalCooldown(SpellInfo const* spellInfo) const
 {
     GlobalCooldownList::const_iterator itr = m_GlobalCooldowns.find(spellInfo->StartRecoveryCategory);
-    return itr != m_GlobalCooldowns.end() && itr->second.duration && getMSTimeDiff(itr->second.cast_time, getMSTime() + 120) < itr->second.duration;
+    return itr != m_GlobalCooldowns.end() && itr->second.duration && getMSTimeDiff(itr->second.cast_time, getPreciseTime()) < itr->second.duration / IN_MILLISECONDS;
 }
 
 void GlobalCooldownMgr::AddGlobalCooldown(SpellInfo const* spellInfo, uint32 gcd)
 {
-    m_GlobalCooldowns[spellInfo->StartRecoveryCategory] = GlobalCooldown(gcd, getMSTime());
+    m_GlobalCooldowns[spellInfo->StartRecoveryCategory] = GlobalCooldown(gcd, getPreciseTime());
 }
 
 void GlobalCooldownMgr::CancelGlobalCooldown(SpellInfo const* spellInfo)

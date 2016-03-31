@@ -336,8 +336,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     /* handle special cases */
     if (movementInfo.hasTransportData && movementInfo.transportGUID)
     {
-        if(World::GetEnableMvAnticheatDebug())
-            sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes t_guid %u, opcode[%s]", movementInfo.transportGUID, GetOpcodeNameForLogging(opcode).c_str());
+        // if(World::GetEnableMvAnticheatDebug())
+            // sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes t_guid %u, opcode[%s]", movementInfo.transportGUID, GetOpcodeNameForLogging(opcode).c_str());
 
         // transports size limited
         // (also received at zeppelin leave by some reason with t_* as absolute in continent coordinates, can be safely skipped)

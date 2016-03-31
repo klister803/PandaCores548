@@ -1121,10 +1121,10 @@ enum CurrentSpellTypes
 
 struct GlobalCooldown
 {
-    explicit GlobalCooldown(uint32 _dur = 0, uint32 _time = 0) : duration(_dur), cast_time(_time) {}
+    explicit GlobalCooldown(uint32 _dur = 0, double _time = 0) : duration(_dur), cast_time(_time) {}
 
     uint32 duration;
-    uint32 cast_time;
+    double cast_time;
 };
 
 typedef UNORDERED_MAP<uint32 /*category*/, GlobalCooldown> GlobalCooldownList;
