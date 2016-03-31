@@ -112,6 +112,11 @@ enum Data
     DATA_GET_PULL_STATE         = 1,
 };
 
+enum sActions
+{
+    ACTION_FREEDOM              = 1,
+};
+
 Position const spawnpos[4] =
 {
     {1668.15f, -4354.63f, 26.3788f, 2.87635f},
@@ -883,6 +888,51 @@ public:
     }
 };
 
+//72640
+class npc_wildhammer_shaman : public CreatureScript
+{
+public:
+    npc_wildhammer_shaman() : CreatureScript("npc_wildhammer_shaman") {}
+
+    struct npc_wildhammer_shamanAI : public ScriptedAI
+    {
+        npc_wildhammer_shamanAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+        }
+
+        InstanceScript* instance;
+
+        void Reset(){}
+
+        void DoAction(int32 const action)
+        {
+            if (action == ACTION_FREEDOM)
+                me->GetMotionMaster()->MoveCharge(1576.97f, -4352.48f, 21.0959f, 5.0f, 1);
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (type == POINT_MOTION_TYPE)
+            {
+            }
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_wildhammer_shamanAI(creature);
+    }
+};
+
 //144070
 class spell_asher_wall : public SpellScriptLoader
 {
@@ -999,6 +1049,35 @@ public:
     }
 };
 
+//145690
+class spell_kds_unlock : public SpellScriptLoader
+{
+public:
+    spell_kds_unlock() : SpellScriptLoader("spell_kds_unlock") { }
+
+    class spell_kds_unlock_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_kds_unlock_SpellScript);
+
+        void HandleAfterCast()
+        {
+            if (GetCaster())
+                if (GameObject* go = GetCaster()->FindNearestGameObject(GO_KORKRON_CAGE, 12.0f))
+                    if (Creature* wshaman = go->FindNearestCreature(NPC_WILDHAMMER_SHAMAN, 5.0f, true))
+                        wshaman->AI()->DoAction(ACTION_FREEDOM);
+        }
+
+        void Register()
+        {
+            AfterCast += SpellCastFn(spell_kds_unlock_SpellScript::HandleAfterCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_kds_unlock_SpellScript();
+    }
+};
 
 void AddSC_boss_korkron_dark_shaman()
 {
@@ -1009,7 +1088,9 @@ void AddSC_boss_korkron_dark_shaman()
     new npc_foul_slime();
     new npc_ash_elemental();
     new npc_iron_tomb();
+    new npc_wildhammer_shaman();
     new spell_asher_wall();
     new spell_iron_tomb();
     new spell_iron_prison();
+    new spell_kds_unlock();
 }

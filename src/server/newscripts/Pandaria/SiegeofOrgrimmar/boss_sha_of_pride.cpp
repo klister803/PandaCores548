@@ -315,7 +315,7 @@ class boss_sha_of_pride : public CreatureScript
                             ZoneTalk(TEXT_GENERIC_11, 0);
                             ZoneTalk(TEXT_GENERIC_3, 0);
                             DoCast(me, SPELL_IMPRISON, true);
-                            uint8 maxcount = Is25ManRaid() ? 4 : 2;
+                            uint8 maxcount = Is25ManRaid() ? 3 : 1;
                             uint8 i = 0;
                             std::list<Player*> targetList;
                             targetList.clear();

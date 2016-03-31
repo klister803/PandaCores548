@@ -254,6 +254,7 @@ enum eCreatures
     NPC_WARSHAMAN                   = 71773,
     NPC_SNIPER                      = 71656,
     //
+    NPC_WILDHAMMER_SHAMAN           = 72640,
 
     NPC_MALKOROK                    = 71454,
 
@@ -463,6 +464,9 @@ enum eGameObjects
     //Galakras
     GO_SOUTH_DOOR                   = 221916,
     GO_NORTH_DOOR                   = 223044,
+
+    //Korkron Dark Shaman
+    GO_KORKRON_CAGE                 = 221564,
 
     //Iron Juggernaut
     GO_WIND_DOOR                    = 223219,

@@ -1878,7 +1878,7 @@ class spell_essence_expel_corruption : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                 {
-                    if(Unit* ptarget = GetExplTargetUnit())
+                    if (Unit* ptarget = GetExplTargetUnit())
                     {    
                         caster->SetFacingToObject(ptarget);
                         caster->AttackStop();
@@ -1896,6 +1896,47 @@ class spell_essence_expel_corruption : public SpellScriptLoader
         {
             return new spell_essence_expel_corruption_SpellScript();
         }
+};
+
+class BurstOfAngerFilter
+{
+public:
+    bool operator()(WorldObject* unit) const
+    {
+        if (Player* pl = unit->ToPlayer())
+            if (!pl->HasAura(SPELL_TEST_OF_SERENITY) && !pl->HasAura(SPELL_TEST_OF_RELIANCE) && !pl->HasAura(SPELL_TEST_OF_CONFIDENCE))
+                return false;
+        return true;
+    }
+};
+
+//147082
+class spell_burst_of_anger : public SpellScriptLoader
+{
+public:
+    spell_burst_of_anger() : SpellScriptLoader("spell_burst_of_anger") { }
+
+    class spell_burst_of_anger_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_burst_of_anger_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*> &targets)
+        {
+            if (!targets.empty())
+                targets.remove_if(BurstOfAngerFilter());
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_burst_of_anger_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_burst_of_anger_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_SRC_AREA_ENTRY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_burst_of_anger_SpellScript();
+    }
 };
 
 void AddSC_boss_norushen()
@@ -1922,4 +1963,5 @@ void AddSC_boss_norushen()
     new spell_norushen_challenge();
     new spell_norushen_heal_test_dd();
     new spell_essence_expel_corruption();
+    new spell_burst_of_anger();
 }
