@@ -896,7 +896,7 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket & recvData)
     if (Unit* mover = _player->m_mover)
         mover->AddUnitState(UNIT_STATE_JUMPING);
 
-    MovementInfo movementInfo;
+    /*MovementInfo movementInfo;
     ReadMovementInfo(recvData, &movementInfo);
 
     if (_player->m_mover->GetGUID() != movementInfo.moverGUID)
@@ -906,7 +906,7 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket & recvData)
 
     WorldPacket data(SMSG_MOVE_UPDATE_KNOCK_BACK);
     WriteMovementInfo(data, &movementInfo);
-    _player->SendMessageToSet(&data, false);
+    _player->SendMessageToSet(&data, false);*/
 }
 
 void WorldSession::HandleMoveFeatherFallAck(WorldPacket& recvData)

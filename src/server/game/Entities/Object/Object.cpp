@@ -475,9 +475,9 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         data->WriteGuidMask<2>(guid);
         data->WriteBit(!self->m_movementInfo.hasMoveTime);                      // !hasMoveTime
         data->WriteGuidMask<0>(guid);
-        data->WriteBit(self->m_movementInfo.hasTransportData);                  // has transport data
+        data->WriteBit(transGuid);                  // has transport data
 
-        if (self->m_movementInfo.hasTransportData && transGuid)
+        if (transGuid)
         {
             data->WriteGuidMask<4, 7, 3, 1, 6>(transGuid);
             data->WriteBit(self->m_movementInfo.transportPrevMoveTime);
@@ -621,7 +621,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             *data << float(self->m_movementInfo.fallJumpVelocity);
         }
 
-        if (self->m_movementInfo.hasTransportData && transGuid)
+        if (transGuid)
         {
             data->WriteGuidBytes<5>(transGuid);
             *data << int8(self->GetTransSeat());
