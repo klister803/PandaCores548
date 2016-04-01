@@ -1043,7 +1043,7 @@ public:
                 if (eventId == EVENT_1)
                 {
                     DoCastAOE(SPELL_BURST_OF_ANGER);
-                    events.ScheduleEvent(EVENT_1, 1000);
+                    events.ScheduleEvent(EVENT_1, 5000);
                 }
             }
 
