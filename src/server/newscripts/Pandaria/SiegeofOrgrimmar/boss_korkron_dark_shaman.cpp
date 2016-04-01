@@ -65,6 +65,8 @@ enum eSpells
 
     //Other Creature
     SPELL_FOULNESS              = 144064,
+    SPELL_RESISTANCE_TOTEM      = 145730,
+    SPELL_RESISTANCE_TOTEM_SUM  = 145732,
 };
 
 enum CreatureText
@@ -105,6 +107,7 @@ enum sEvents
     EVENT_DESPAWN               = 15,
 
     EVENT_BERSERK               = 16,
+    EVENT_FREEDOM               = 17,
 };
 
 enum Data
@@ -904,27 +907,49 @@ public:
         }
 
         InstanceScript* instance;
-
+        EventMap events;
+        
         void Reset(){}
 
         void DoAction(int32 const action)
         {
             if (action == ACTION_FREEDOM)
-                me->GetMotionMaster()->MoveCharge(1576.97f, -4352.48f, 21.0959f, 5.0f, 1);
+                events.ScheduleEvent(EVENT_FREEDOM, 2000);
+        }
+
+        void JustSummoned(Creature* sum)
+        {
+            if (sum->GetEntry() == NPC_RESISTANCE_TOTEM)
+            {
+                sum->SetReactState(REACT_PASSIVE);
+                sum->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                sum->setFaction(190);
+                if (Player* pl = sum->FindNearestPlayer(80.0f, true))
+                    sum->CastSpell(pl, SPELL_RESISTANCE_TOTEM, true);
+                me->DespawnOrUnsummon();
+            }
         }
 
         void MovementInform(uint32 type, uint32 pointId)
         {
             if (type == POINT_MOTION_TYPE)
-            {
-            }
+                DoCast(me, SPELL_RESISTANCE_TOTEM_SUM);
         }
 
         void EnterCombat(Unit* who){}
 
         void EnterEvadeMode(){}
 
-        void UpdateAI(uint32 diff){}
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_FREEDOM)
+                    me->GetMotionMaster()->MoveCharge(1576.97f, -4352.48f, 21.0959f, 2.0f, 1);
+            }
+        }
     };
 
     CreatureAI* GetAI(Creature* creature) const

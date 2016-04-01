@@ -255,6 +255,7 @@ enum eCreatures
     NPC_SNIPER                      = 71656,
     //
     NPC_WILDHAMMER_SHAMAN           = 72640,
+    NPC_RESISTANCE_TOTEM            = 72644,
 
     NPC_MALKOROK                    = 71454,
 
