@@ -818,7 +818,9 @@ void AchievementMgr<T>::LoadFromDB(PreparedQueryResult achievementResult, Prepar
 template<>
 void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult achievementAccountResult, PreparedQueryResult criteriaAccountResult)
 {
-    if (achievementAccountResult)
+    if (!GetOwner()->initAcData)
+        GetOwner()->LoadAccountAchievements();
+    else if (achievementAccountResult)
     {
         do
         {
@@ -970,7 +972,9 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
         while (criteriaResult->NextRow());
     }
 
-    if (criteriaAccountResult)
+    if (!GetOwner()->initAcData)
+        GetOwner()->LoadAccountCriteriaProgress();
+    else if (criteriaAccountResult)
     {
         time_t now = time(NULL);
         do

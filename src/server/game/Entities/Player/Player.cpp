@@ -20287,6 +20287,9 @@ void Player::_LoadQuestStatus(PreparedQueryResult result)
     //                                                24            25
     //                                                playercount, guid FROM character_queststatus WHERE account = '%u'", GetSession()->GetAccountId());
 
+    if (!initAcData)
+        LoadAccountQuestStatus();
+
     if (result)
     {
         do
@@ -20302,6 +20305,9 @@ void Player::_LoadQuestStatus(PreparedQueryResult result)
             Quest const* quest = sObjectMgr->GetQuestTemplate(quest_id);
             if (quest)
             {
+                if (!initAcData && quest->GetType() == QUEST_TYPE_ACCOUNT)
+                    continue;
+
                 if(quest->GetType() != QUEST_TYPE_ACCOUNT && guid != GetGUIDLow()) //check account quest
                     continue;
 
@@ -20376,6 +20382,9 @@ void Player::_LoadQuestStatusRewarded(PreparedQueryResult result)
 {
     // SELECT quest, guid FROM character_queststatus_rewarded WHERE account = ?
 
+    if (!initAcData)
+        LoadAccountQuestRewarded();
+
     if (result)
     {
         do
@@ -20391,6 +20400,9 @@ void Player::_LoadQuestStatusRewarded(PreparedQueryResult result)
             Quest const* quest = sObjectMgr->GetQuestTemplate(quest_id);
             if (quest)
             {
+                if (!initAcData && quest->GetType() == QUEST_TYPE_ACCOUNT)
+                    continue;
+
                 if(quest->GetType() != QUEST_TYPE_ACCOUNT && guid != GetGUIDLow()) //check account quest
                     continue;
 
@@ -20420,6 +20432,9 @@ void Player::_LoadDailyQuestStatus(PreparedQueryResult result)
 
     //QueryResult* result = CharacterDatabase.PQuery("SELECT quest, time, guid FROM character_queststatus_daily WHERE account = '%u'", GetSession()->GetAccountId());
 
+    if (!initAcData)
+        LoadAccountQuestDaily();
+
     if (result)
     {
         do
@@ -20430,6 +20445,9 @@ void Player::_LoadDailyQuestStatus(PreparedQueryResult result)
 
             Quest const* quest = sObjectMgr->GetQuestTemplate(quest_id);
             if (!quest)
+                continue;
+
+            if (!initAcData && quest->GetType() == QUEST_TYPE_ACCOUNT)
                 continue;
 
             if(quest->GetType() != QUEST_TYPE_ACCOUNT && guid != GetGUIDLow()) //check account quest
@@ -20460,6 +20478,9 @@ void Player::_LoadWeeklyQuestStatus(PreparedQueryResult result)
 {
     m_weeklyquests.clear();
 
+    if (!initAcData)
+        LoadAccountQuestWeekly();
+
     if (result)
     {
         do
@@ -20470,6 +20491,9 @@ void Player::_LoadWeeklyQuestStatus(PreparedQueryResult result)
 
             Quest const* quest = sObjectMgr->GetQuestTemplate(quest_id);
             if (!quest)
+                continue;
+
+            if (!initAcData && quest->GetType() == QUEST_TYPE_ACCOUNT)
                 continue;
 
             if(quest->GetType() != QUEST_TYPE_ACCOUNT && guid != GetGUIDLow()) //check account quest
@@ -20491,6 +20515,9 @@ void Player::_LoadSeasonalQuestStatus(PreparedQueryResult result)
 {
     m_seasonalquests.clear();
 
+    if (!initAcData)
+        LoadAccountQuestSeasonal();
+
     if (result)
     {
         do
@@ -20502,6 +20529,9 @@ void Player::_LoadSeasonalQuestStatus(PreparedQueryResult result)
 
             Quest const* quest = sObjectMgr->GetQuestTemplate(quest_id);
             if (!quest)
+                continue;
+
+            if (!initAcData && quest->GetType() == QUEST_TYPE_ACCOUNT)
                 continue;
 
             if(quest->GetType() != QUEST_TYPE_ACCOUNT && guid != GetGUIDLow()) //check account quest
@@ -20533,6 +20563,11 @@ void Player::_LoadSpells(PreparedQueryResult result)
 
 void Player::_LoadAccountSpells(PreparedQueryResult result)
 {
+    if (!initAcData)
+    {
+        LoadPlayerMounts();
+        return;
+    }
     //QueryResult* result = CharacterDatabase.PQuery("SELECT spell, active, disabled FROM character_spell WHERE guid = '%u'", GetGUIDLow());
 
     if (result)
@@ -20602,6 +20637,11 @@ void Player::_LoadCUFProfiles(PreparedQueryResult result)
 
 void Player::_LoadBattlePets(PreparedQueryResult result)
 {
+    if (!initAcData)
+    {
+        LoadPlayerBattlePets();
+        return;
+    }
     if (!result)
         return;
 
@@ -20661,6 +20701,11 @@ void Player::_LoadBattlePets(PreparedQueryResult result)
 
 void Player::_LoadBattlePetSlots(PreparedQueryResult result)
 {
+    if (!initAcData)
+    {
+        LoadPlayerBattlePetSlots();
+        return;
+    }
     if (!result)
     {
         // initial first
@@ -30835,4 +30880,7 @@ void Player::InitCharKeys(uint32 guidlow)
     mailKey = "r{" + std::to_string(realmID) + "}u{" + std::to_string(guidlow) + "}mails";
     mailItemKey = "r{" + std::to_string(realmID) + "}u{" + std::to_string(guidlow) + "}mitems";
     criteriaPlKey = "r{" + std::to_string(realmID) + "}u{" + std::to_string(guidlow) + "}crit";
+
+    if (!GetSession()->AccountDatas.empty())
+        initAcData = false;
 }

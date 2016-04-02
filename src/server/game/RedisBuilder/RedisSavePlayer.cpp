@@ -44,9 +44,6 @@ void Player::InitSavePlayer()
     if (!RedisDatabase.isConnected())
         return;
 
-    if (!GetSession()->AccountDatas.empty())
-        initAcData = false;
-
     SavePlayer();
     SavePlayerGold();
     SavePlayerBG();
