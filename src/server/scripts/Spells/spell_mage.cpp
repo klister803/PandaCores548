@@ -1317,7 +1317,7 @@ class spell_mage_alter_time : public SpellScriptLoader
                         {
                             SpellInfo const* auraInfo = aura->GetSpellInfo();
 
-                            if ((auraInfo->Attributes & SPELL_ATTR0_HIDDEN_CLIENTSIDE) && auraInfo->Id != 126084)
+                            if ((auraInfo->Attributes & SPELL_ATTR0_HIDDEN_CLIENTSIDE) && auraInfo->Id != 126084 && auraInfo->Id == 144954)
                                 continue;
 
                             if (auraInfo->Attributes & SPELL_ATTR0_PASSIVE)
@@ -1370,7 +1370,8 @@ class spell_mage_alter_time : public SpellScriptLoader
 
                             _player->SetPower(POWER_MANA, mana);
                             _player->SetHealth(health);
-                            _player->TeleportTo(map, posX, posY, posZ, orientation);
+                            if (!_player->HasAura(144954))
+                                _player->TeleportTo(map, posX, posY, posZ, orientation);
                         }
                     }
             }
