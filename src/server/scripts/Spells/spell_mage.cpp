@@ -1317,7 +1317,7 @@ class spell_mage_alter_time : public SpellScriptLoader
                         {
                             SpellInfo const* auraInfo = aura->GetSpellInfo();
 
-                            if ((auraInfo->Attributes & SPELL_ATTR0_HIDDEN_CLIENTSIDE) && auraInfo->Id != 126084 && auraInfo->Id == 144954)
+                            if ((auraInfo->Attributes & SPELL_ATTR0_HIDDEN_CLIENTSIDE) && auraInfo->Id != 126084)
                                 continue;
 
                             if (auraInfo->Attributes & SPELL_ATTR0_PASSIVE)
@@ -1332,6 +1332,9 @@ class spell_mage_alter_time : public SpellScriptLoader
                             if (auraInfo->Id == SPELL_MAGE_ALTER_TIME)
                                 continue;
 
+                            if (auraInfo->Id == 144954)//Realm of Yshaarj - Garrosh[SO]
+                                continue;
+
                             auras.insert(new auraData(auraInfo->Id, aura->GetDuration(), aura->GetStackAmount()));
                         }
                     }
@@ -1343,6 +1346,7 @@ class spell_mage_alter_time : public SpellScriptLoader
             void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (AuraApplication const* appl = GetTargetApplication())
+                {
                     if (appl->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
                     {
                         if (map == uint32(-1))
@@ -1365,15 +1369,14 @@ class spell_mage_alter_time : public SpellScriptLoader
 
                                 delete itr;
                             }
-
                             auras.clear();
-
                             _player->SetPower(POWER_MANA, mana);
                             _player->SetHealth(health);
-                            if (!_player->HasAura(144954))
+                            if (!_player->HasAura(144954)) //Realm of Yshaarj - Garrosh[SO]
                                 _player->TeleportTo(map, posX, posY, posZ, orientation);
                         }
                     }
+                }
             }
 
             void Register()
