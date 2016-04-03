@@ -6873,6 +6873,10 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         if ((plr->InArena() || plr->InRBG()) && HasAura(134735))
                             return false;
 
+                    if (Map* onmap = GetMap())
+                        if (onmap->IsDungeon())
+                            return false;
+
                     if (Unit * owner = victim->GetOwner())
                         victim = owner;
 
