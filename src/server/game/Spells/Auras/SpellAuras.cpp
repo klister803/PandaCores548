@@ -1241,7 +1241,7 @@ bool Aura::ModCharges(int32 num, AuraRemoveMode removeMode)
                     if (aurEff->GetAuraType() == SPELL_AURA_ADD_FLAT_MODIFIER || aurEff->GetAuraType() == SPELL_AURA_ADD_PCT_MODIFIER)
                         _useStack = false;
 
-            if(_useStack || (m_spellInfo->ProcFlags & (PROC_FLAG_DONE_SPELL_DMG_POS_NEG)) || GetId() == 122355)
+            if(_useStack ||/* (m_spellInfo->ProcFlags & (PROC_FLAG_DONE_SPELL_DMG_POS_NEG)) ||*/ GetId() == 122355)
             {
                 ModStackAmount(num);
                 return false;
