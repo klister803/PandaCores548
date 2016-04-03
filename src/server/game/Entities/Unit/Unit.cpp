@@ -22212,6 +22212,10 @@ void Unit::ApplyResilience(Unit const* victim, float* damage, bool isCrit) const
     if (GetTypeId() != TYPEID_PLAYER && (GetOwner() && GetOwner()->GetTypeId() != TYPEID_PLAYER))
         return;
 
+    if (Map* map = victim->GetMap())
+        if (map->IsDungeon())
+            return;
+
     // Don't consider resilience if not in PvP - player or pet
     if (!GetCharmerOrOwnerPlayerOrPlayerItself())
         return;
