@@ -3919,6 +3919,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 53651: // Beacon of Light
                 case 90289: // Removing Death Grip cooldown
                 case 36563: // Shadowstep
+                case 144859: // Tiger's Fury
+                case 139546: // Combo Point
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_HAVE_STABLE_FLYTIME;
                     break;
                 case 147303: // Arena Deserter DR (Test Spell)

@@ -4350,12 +4350,6 @@ void Spell::_handle_finish_phase()
                         _player->RemoveAura(115189);
                 }
             }
-            if(uint8 count = m_caster->m_movedPlayer->GetSaveComboPoints())
-            {
-                if (Unit* target = m_targets.GetUnitTarget())
-                    m_caster->m_movedPlayer->AddComboPoints(target, count, this);
-                m_caster->m_movedPlayer->SaveAddComboPoints(-count);
-            }
         }
 
         // Real add combo points from effects

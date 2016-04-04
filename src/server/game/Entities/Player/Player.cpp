@@ -748,7 +748,6 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_comboTarget = 0;
     m_comboPoints = 0;
-    m_comboSavePoints = 0;
 
     m_regenTimer = 0;
     m_regenTimerCount = 0;

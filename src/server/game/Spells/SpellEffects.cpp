@@ -6005,10 +6005,7 @@ void Spell::EffectAddComboPoints(SpellEffIndex /*effIndex*/)
             return;
     }
 
-    if (m_spellInfo->Id == 139546 || m_spellInfo->Id == 144859) //Add CP after use old CP
-        m_caster->m_movedPlayer->SaveAddComboPoints(damage);
-    else
-        m_caster->m_movedPlayer->AddComboPoints(unitTarget, damage, this);
+    m_caster->m_movedPlayer->AddComboPoints(unitTarget, damage, this);
 
     sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectAddComboPoints damage %i, Id %i", damage, m_spellInfo->Id);
 }
