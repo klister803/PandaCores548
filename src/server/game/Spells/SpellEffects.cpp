@@ -5989,6 +5989,12 @@ void Spell::EffectAddComboPoints(SpellEffIndex /*effIndex*/)
             m_caster->CastSpell(m_caster, 115189, true);
         else
             damage += 1;
+
+        if (m_caster->HasAura(145185))
+        {
+            float bp = -15.0f;
+            m_caster->CastCustomSpell(m_caster, 145193, &bp, NULL, NULL, true);
+        }
     }
 
     if (damage <= 0)
