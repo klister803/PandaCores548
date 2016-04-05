@@ -40,8 +40,8 @@ EndScriptData */
 
 #include <json/json.h>
 #include <json/writer.h>
-#include <rapidjson/document.h>
-#include <rapidjson/prettywriter.h>
+#include <document.h>
+#include <prettywriter.h>
 
 class debug_commandscript : public CommandScript
 {
