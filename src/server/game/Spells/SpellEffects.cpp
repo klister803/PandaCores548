@@ -5985,10 +5985,7 @@ void Spell::EffectAddComboPoints(SpellEffIndex /*effIndex*/)
 
     if (m_spellInfo->Id == 1752 && unitTarget->HasAura(84617, m_caster->GetGUID()) && roll_chance_i(20)) //Debuff Revealing Strike add CP Sinister Strike
     {
-        if (m_caster->HasAura(114015) && m_caster->ToPlayer() && m_caster->ToPlayer()->GetComboPoints() >= 4)
-            m_caster->CastSpell(m_caster, 115189, true);
-        else
-            damage += 1;
+        damage += 1;
 
         if (m_caster->HasAura(145185))
         {

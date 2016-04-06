@@ -8349,12 +8349,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                             if (procSpell && procSpell->SpellFamilyName == SPELLFAMILY_GENERIC)
                                 return false;
 
-                            if (rogue->GetComboPoints() >= 5 && owner->HasAura(114015))
-                            {
-                                owner->CastSpell(owner, 115189, true);
-                                rogue->AddSpellCooldown(51699, NULL, getPreciseTime() + cooldown);
-                                break;
-                            }
                             if (rogue->GetComboTarget())
                             {
                                 Unit * getComdoTarget = ObjectAccessor::GetUnit(*rogue, rogue->GetComboTarget());
@@ -8380,26 +8374,19 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 }
                 case 114015: // Anticipation
                 {
-                    if (GetTypeId() != TYPEID_PLAYER)
-                        return false;
+                    if (Aura* aura = GetAura(115189))
+                    {
+                        if (Player* plr = ToPlayer())
+                        {
+                            if (Unit* cTarget = ObjectAccessor::GetUnit(*plr, plr->GetComboTarget()))
+                                target = cTarget;
 
-                    if (!procSpell)
-                        return false;
-
-                    if (procSpell->Id == 115190)
-                        return false;
-
-                    if(ToPlayer()->GetSelection() != target->GetGUID())
-                        break;
-
-                    if (ToPlayer()->GetComboPoints() < 5 && procSpell->Id != 27576) //Mutilate add 2 KP
-                        return false;
-
-                    if (ToPlayer()->GetComboPoints() < 4 && procSpell->Id == 27576) //Mutilate add 2 KP
-                        return false;
-
-                    CastSpell(this,115189,true);
-                    return false;
+                            basepoints0 = aura->GetStackAmount();
+                            triggered_spell_id = 115190;
+                            RemoveAura(115189);
+                        }
+                    }
+                    break;
                 }
                 // Cut to the Chase
                 case 51667:
@@ -10715,21 +10702,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
             stack_for_trigger = triggerEntry->StackAmount;
             break;
         }
-        // Finish movies that add combo
-        case 14189: // Seal Fate (Netherblade set)
-        {
-            if (!victim || victim == this)
-                return false;
-            if (HasAura(114015) && ToPlayer()->GetComboPoints() >= 5)
-            {
-                CastSpell(this,115189,true);
-                return false;
-            }
-            // Need add combopoint AFTER finish movie (or they dropped in finish phase)
-            break;
-        }
-        // Item - Druid T10 Balance 2P Bonus
-        case 16870:
+        case 16870: // Item - Druid T10 Balance 2P Bonus
         {
             if (HasAura(70718))
                 CastSpell(this, 70721, true);

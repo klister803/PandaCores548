@@ -3255,6 +3255,7 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_contestedPvPTimer;
         uint32 m_statsUpdateTimer;
         bool m_needToUpdateRunesRegen;
+        bool m_needToUpdateComboPoints;
         bool m_needToUpdateSpellHastDurationRecovery;
         bool m_needUpdateCastHastMods = false;
         bool m_needUpdateMeleeHastMod = false;
