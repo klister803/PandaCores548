@@ -327,11 +327,11 @@ public:
             berserk = 600000;
             if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
                 pp->CastSpell(pp, SPELL_SEEPING_SHA_AT, true);
-            /*events.ScheduleEvent(EVENT_SHA_BOLT, 6000);
+            events.ScheduleEvent(EVENT_SHA_BOLT, 6000);
             events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 9000);
             events.ScheduleEvent(EVENT_SWIRL, 14000);
             if (me->GetMap()->IsHeroic())
-                events.ScheduleEvent(EVENT_SWELLING_CORRUPTION, 12000);*/
+                events.ScheduleEvent(EVENT_SWELLING_CORRUPTION, 12000);
         }
 
         void SpawnWave()
