@@ -575,7 +575,8 @@ public:
                     break;
                 }
             }
-            DoMeleeAttackIfReady();
+            if (!phase_two)
+                DoMeleeAttackIfReady();
         }
     };
     
