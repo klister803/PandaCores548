@@ -28,7 +28,17 @@ enum eSpells
 
     //Rook
     SPELL_VENGEFUL_STRIKE                   = 144396, //Vengeful Strikes
-    SPELL_CORRUPTED_BREW                    = 143019, //Corrupted Brew
+    SPELL_CORRUPTED_BREW_BASE               = 143019, //Corrupted Brew
+
+    SPELL_CORRUPTED_BREW                    = 145617,
+    SPELL_CORRUPTED_BREW2                   = 145615,
+    SPELL_CORRUPTED_BREW3                   = 145612,
+    SPELL_CORRUPTED_BREW4                   = 145611,
+    SPELL_CORRUPTED_BREW5                   = 145610,
+    SPELL_CORRUPTED_BREW6                   = 145609,
+    SPELL_CORRUPTED_BREW7                   = 145608,
+    SPELL_CORRUPTED_BREW8                   = 143021,
+
     SPELL_CLASH                             = 143027, //Clash   cast 143028
     SPELL_CORRUPTION_KICK                   = 143007, //Corruption Kick
     SPELL_MISERY_SORROW_GLOOM               = 143955, //Misery, Sorrow, and Gloom
@@ -44,6 +54,7 @@ enum eSpells
     SPELL_SHA_SEAR                          = 143423, //Sha Sear
     SPELL_SHADOW_WORD_BANE                  = 143434, //Shadow Word: Bane
     SPELL_CALAMITY                          = 143491, //Calamity
+    SPELL_CALAMITY_DMG                      = 143493,
     SPELL_DARK_MEDITATION                   = 143546,
     SPELL_DARK_MEDITATION_JUMP              = 143730, //Prock after jump 143546
     SPELL_DARK_MEDITATION_SHARE_HEALTH_P    = 143745, //
@@ -97,10 +108,21 @@ enum PhaseEvents
 enum data
 {
     BATTLE_AREA                    = 6798,
-
     DATA_SHADOW_WORD_DAMAGE        = 1,
     DATA_SHADOW_WORD_REMOVED       = 2,
     DATA_CALAMITY_HIT              = 3,
+};
+
+uint32 corruptedbrew[8] =
+{
+    SPELL_CORRUPTED_BREW,
+    SPELL_CORRUPTED_BREW2,
+    SPELL_CORRUPTED_BREW3,
+    SPELL_CORRUPTED_BREW4,
+    SPELL_CORRUPTED_BREW5,
+    SPELL_CORRUPTED_BREW6,
+    SPELL_CORRUPTED_BREW7,
+    SPELL_CORRUPTED_BREW8,
 };
 
 uint32 const protectors[3] = { NPC_ROOK_STONETOE, NPC_SUN_TENDERHEART, NPC_HE_SOFTFOOT };
@@ -333,11 +355,24 @@ class boss_rook_stonetoe : public CreatureScript
             {
                 measureVeh = NPC_GOLD_LOTOS_ROOK;
             }
+            uint8 corruptedbrewcount;
+
+            void Reset()
+            {
+                corruptedbrewcount = 0;
+            }
+
+            uint32 GetData(uint32 type)
+            {
+                if (type == DATA_CORRUPTED_BREW_COUNT)
+                    return (uint32(corruptedbrewcount++));
+                return 0;
+            }
 
             void EnterEvadeMode() override
             {
+                corruptedbrewcount = 0;
                 me->CastSpell(me, SPELL_DESPAWN_AT, true);
-
                 if (Creature* sun = instance->instance->GetCreature(instance->GetData64(NPC_SUN_TENDERHEART)))
                     sun->AI()->EnterEvadeMode();
                 boss_fallen_protectors::EnterEvadeMode();
@@ -395,7 +430,7 @@ class boss_rook_stonetoe : public CreatureScript
                             break;
                         case EVENT_CORRUPTED_BREW:
                             if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0.0f, true))
-                                DoCast(target, SPELL_CORRUPTED_BREW, true);
+                                DoCast(target, SPELL_CORRUPTED_BREW_BASE, true);
                             events.RescheduleEvent(EVENT_CORRUPTED_BREW, urand(10*IN_MILLISECONDS, 15*IN_MILLISECONDS), 0, PHASE_BATTLE);
                             break;
                         case EVENT_CLASH:
@@ -577,13 +612,15 @@ class boss_sun_tenderheart : public CreatureScript
 
             SummonList summons;
             uint32 shadow_word_count;
+            uint8 calamitycount;
+
             void Reset()
             {
                 boss_fallen_protectors::Reset();
                 shadow_word_count = 0;
+                calamitycount = 0;
                 summons.DespawnAll();
                 me->SummonCreature(NPC_GOLD_LOTOS_MAIN, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0);
-
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WORD_BANE);
             }
 
@@ -597,7 +634,6 @@ class boss_sun_tenderheart : public CreatureScript
             void InitBattle()
             {
                 boss_fallen_protectors::InitBattle();
-
                 events.RescheduleEvent(EVENT_SHA_SEAR, IN_MILLISECONDS, 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(15*IN_MILLISECONDS, 25*IN_MILLISECONDS), 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_CALAMITY, urand(60*IN_MILLISECONDS, 70*IN_MILLISECONDS), 0, PHASE_BATTLE);
@@ -607,6 +643,14 @@ class boss_sun_tenderheart : public CreatureScript
             {
                 boss_fallen_protectors::EnterCombat(who);
                 sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, me->GetGUID());
+                calamitycount = 0;
+            }
+
+            uint32 GetData(uint32 type)
+            {
+                if (type == DATA_CALAMITY_COUNT)
+                    return (uint32(calamitycount));
+                return 0;
             }
 
             void DoAction(int32 const action)
@@ -1027,6 +1071,7 @@ public:
                             return;
                         }
                         for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                        {
                             if (Player* plr = i->getSource())
                             {
                                 if (plr->GetPositionX() < MIN_X || plr->GetPositionX() > MAX_X ||
@@ -1037,6 +1082,7 @@ public:
                                     return;
                                 }
                             }
+                        }
                         events.ScheduleEvent(EVENT_2, 4000);
                         break;
                     }
@@ -1123,7 +1169,6 @@ public:
                 DoCast(me, SPELL_SHADOW_WEAKNES_PROC, true);
                 DoCast(me, SPELL_MARK_OF_ANGUISH_SELECT_TARGET, true);
             }
-
             DoMeleeAttackIfReady();
         }
     };
@@ -1148,11 +1193,14 @@ public:
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
 
-            switch(creature->GetEntry())
+            switch (creature->GetEntry())
             {
-                case NPC_EMBODIED_MISERY_OF_ROOK: _spell = SPELL_DEFILED_GROUND; break;
-                case NPC_EMBODIED_GLOOM_OF_ROOK: _spell = SPELL_CORRUPTION_SHOCK; break;
-                case NPC_EMBODIED_SORROW_OF_ROOK: _spell = SPELL_INFERNO_STRIKE; break;
+                case NPC_EMBODIED_MISERY_OF_ROOK: 
+                    _spell = SPELL_DEFILED_GROUND; break;
+                case NPC_EMBODIED_GLOOM_OF_ROOK: 
+                    _spell = SPELL_CORRUPTION_SHOCK; break;
+                case NPC_EMBODIED_SORROW_OF_ROOK: 
+                    _spell = SPELL_INFERNO_STRIKE; break;
                 default:
                     break;
             }
@@ -1164,15 +1212,15 @@ public:
             npc_measure::DoAction(action);
             switch(me->GetEntry())
             {
-                case NPC_EMBODIED_MISERY_OF_ROOK:
-                    me->CastSpell(me, SPELL_SHA_CORRUPTION_MIS_OF_ROOK, true);
-                    break;
-                case NPC_EMBODIED_GLOOM_OF_ROOK:
-                    me->CastSpell(me, SPELL_SHA_CORRUPTION_GLOOM_OF_ROOK, true);
-                    break;
-                case NPC_EMBODIED_SORROW_OF_ROOK:
-                    me->CastSpell(me, SPELL_SHA_CORRUPTION_SOR_OF_ROOK, true);
-                    break;
+            case NPC_EMBODIED_MISERY_OF_ROOK:
+                me->CastSpell(me, SPELL_SHA_CORRUPTION_MIS_OF_ROOK, true);
+                break;
+            case NPC_EMBODIED_GLOOM_OF_ROOK:
+                me->CastSpell(me, SPELL_SHA_CORRUPTION_GLOOM_OF_ROOK, true);
+                break;
+            case NPC_EMBODIED_SORROW_OF_ROOK:
+                me->CastSpell(me, SPELL_SHA_CORRUPTION_SOR_OF_ROOK, true);
+                break;
             }
         }
 
@@ -1233,7 +1281,7 @@ class spell_clash : public SpellScriptLoader
         }
 };
 
-//Corrupted Brew
+//143019
 class spell_corrupted_brew : public SpellScriptLoader
 {
     public:
@@ -1243,17 +1291,18 @@ class spell_corrupted_brew : public SpellScriptLoader
         {
             PrepareSpellScript(spell_corrupted_brew_SpellScript);
 
-            enum proc
-            {
-                SPELL_PROCK     = 143021,
-            };
-
             void HandleScriptEffect(SpellEffIndex /*effIndex*/)
             {
-                if (Unit* caster = GetCaster())
+                if (GetCaster() && GetCaster()->ToCreature() && GetHitUnit())
                 {
-                    if (Unit* target = GetHitUnit())
-                        caster->CastSpell(target, SPELL_PROCK, true);
+                    if (!GetCaster()->GetMap()->IsHeroic())
+                        GetCaster()->CastSpell(GetHitUnit(), corruptedbrew[0], true);
+                    else
+                    {
+                        uint8 mod = GetCaster()->ToCreature()->AI()->GetData(DATA_CORRUPTED_BREW_COUNT);
+                        mod = mod > 8 ? 7 : mod--;
+                        GetCaster()->CastSpell(GetHitUnit(), corruptedbrew[mod], true);
+                    }
                 }
             }
 
@@ -1388,20 +1437,19 @@ class spell_fallen_protectors_calamity : public SpellScriptLoader
         {
             PrepareSpellScript(spell_fallen_protectors_calamity_SpellScript);
 
-            enum proc
-            {
-                SPELL_PROCK     = 143493,
-            };
-
             void HandleOnHit()
             {
-                if (Unit* caster = GetCaster())
+                if (GetCaster() && GetCaster()->ToCreature() && GetHitUnit())
                 {
-                    if (Unit* target = GetHitUnit())
-                        caster->CastSpell(target, SPELL_PROCK, false);
-
-                    if (caster->GetAI())
-                        caster->GetAI()->SetData(DATA_CALAMITY_HIT, true);
+                    if (!GetCaster()->GetMap()->IsHeroic())
+                        GetCaster()->CastSpell(GetHitUnit(), SPELL_CALAMITY_DMG, true);
+                    else
+                    {
+                        int32 bs = GetCaster()->ToCreature()->AI()->GetData(DATA_CALAMITY_COUNT);
+                        float mod = 30 + (float(bs) * 10);
+                        GetCaster()->CastCustomSpell(SPELL_CALAMITY_DMG, SPELLVALUE_BASE_POINT0, mod, GetCaster(), true);
+                        GetCaster()->ToCreature()->AI()->SetData(DATA_CALAMITY_HIT, true);
+                    }
                 }
             }
 

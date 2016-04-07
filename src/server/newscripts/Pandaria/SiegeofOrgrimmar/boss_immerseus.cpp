@@ -539,7 +539,7 @@ public:
                         me->SetFacingToObject(target);
                         me->CastSpell(target, SPELL_CORROSIVE_BLAST);
                     }
-                    events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 20000);
+                    events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 17000);
                     break;
                 case EVENT_SHA_BOLT:
                 {
