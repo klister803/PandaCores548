@@ -125,6 +125,7 @@ enum eCreatures
     NPC_SHOCK_COLLAR                = 71645, //dest dummy
     NPC_STARVED_YETI                = 73184,
     NPC_CAPTIVE_CAVE_BAT            = 73522,
+    NPC_SWIRL_TARGET                = 71550,
 
     NPC_IMMERSEUS                   = 71543,
 

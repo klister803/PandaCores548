@@ -7814,6 +7814,7 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
                                     break;
                                 case 71543: //boss_immerseus
                                     triggerSpellId = 143460; //Sha pool dmg
+                                    caster->SetFloatValue(OBJECT_FIELD_SCALE_X, caster->GetFloatValue(OBJECT_FIELD_SCALE_X) + 0.1f);
                                     break;
                                 default:
                                     break;

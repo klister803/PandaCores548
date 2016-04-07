@@ -4942,8 +4942,12 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 //Siege of Orgrimmar
                 //Immerseus
+                case 139832: //Submerge
+                    spellInfo->AuraInterruptFlags = 0;
+                    break;
                 case 143461: //Sha pool dummy
                     spellInfo->Effects[0].Effect = SPELL_EFFECT_DUMMY;
+                    spellInfo->Effects[0].TargetB = 15;
                     break;
                 case 143297: //Sha splash
                     spellInfo->Effects[0].TargetA = 22;

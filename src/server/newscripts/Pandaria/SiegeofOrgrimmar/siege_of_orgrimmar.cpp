@@ -101,7 +101,8 @@ public:
                         events.ScheduleEvent(EVENT_IMMEREUS_END_2, t += 7000); //07:04:21.000
                         events.ScheduleEvent(EVENT_IMMEREUS_END_3, t += 7000); //07:04:28.000
                         events.ScheduleEvent(EVENT_IMMEREUS_END_4, t += 6000); //07:04:34.000
-                    }else if (value == IN_PROGRESS)
+                    }
+                    else if (value == IN_PROGRESS)
                     {
                         events.ScheduleEvent(EVENT_IMMEREUS_3, t += 100);   //06:54:28.000
                         events.ScheduleEvent(EVENT_IMMEREUS_4, t += 10000); //06:54:38.000

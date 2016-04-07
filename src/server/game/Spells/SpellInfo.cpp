@@ -1164,6 +1164,7 @@ SpellEffectInfo const* SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 138334: //Fatal strike 
     case 138329: //Unleashed anime 
     //Immerseus
+    case 139832: //Submerge
     case 143297: //Sha splash
     case 130063: //Sha splash Dummy
     case 145377: //Erupting water

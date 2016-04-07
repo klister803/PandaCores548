@@ -267,492 +267,477 @@ uint32 const wave5[25] =
 
 class boss_immerseus : public CreatureScript
 {
-    public:
-        boss_immerseus() : CreatureScript("boss_immerseus") {}
-
-        struct boss_immerseusAI : public BossAI
+public:
+    boss_immerseus() : CreatureScript("boss_immerseus") {}
+    
+    struct boss_immerseusAI : public BossAI
+    {
+        boss_immerseusAI(Creature* creature) : BossAI(creature, DATA_IMMERSEUS)
         {
-            boss_immerseusAI(Creature* creature) : BossAI(creature, DATA_IMMERSEUS)
+            instance = creature->GetInstanceScript();
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+            SetCanSeeEvenInPassiveMode(true);
+            if (Creature* cho = instance->instance->GetCreature(instance->GetData64(NPC_LOREWALKER_CHO)))
+                cho->AI()->SetData(DATA_IMMERSEUS, IN_PROGRESS);
+        }
+
+        InstanceScript* instance;
+        uint32 lasthp, berserk;
+        uint8 donecp, donesp, maxpcount;
+        std::vector<uint64> shapoollist;
+        float lasthppct;
+        bool phase_two;
+
+        void Reset()
+        {
+            _Reset();
+            if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
+                pp->RemoveAurasDueToSpell(SPELL_SEEPING_SHA_AT);
+            me->SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
+            me->SetReactState(REACT_DEFENSIVE);
+            me->RemoveAurasDueToSpell(SPELL_SHA_POOL);
+            me->RemoveAurasDueToSpell(SPELL_BERSERK);
+            me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
+            me->RemoveAurasDueToSpell(SPELL_SUBMERGE_2);
+            me->RemoveAurasDueToSpell(SPELL_SWELLING_CORRUPTION);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+            me->setPowerType(POWER_ENERGY);
+            me->SetMaxPower(POWER_ENERGY, 100);
+            me->SetPower(POWER_ENERGY, 100);
+            lasthp = me->GetMaxHealth();
+            lasthppct = me->GetHealthPct();
+            shapoollist.clear();
+            phase_two = false;
+            berserk = 0;
+            donecp = 0;
+            donesp = 0;
+            maxpcount = 0;
+        }
+
+        void JustSummoned(Creature* sum)
+        {
+            if (sum->GetEntry() == NPC_SHA_POOL)
+                shapoollist.push_back(sum->GetGUID());
+            summons.Summon(sum);
+        }
+
+        void EnterCombat(Unit* who)
+        {
+            _EnterCombat();
+            berserk = 600000;
+            if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
+                pp->CastSpell(pp, SPELL_SEEPING_SHA_AT, true);
+            /*events.ScheduleEvent(EVENT_SHA_BOLT, 6000);
+            events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 9000);
+            events.ScheduleEvent(EVENT_SWIRL, 14000);
+            if (me->GetMap()->IsHeroic())
+                events.ScheduleEvent(EVENT_SWELLING_CORRUPTION, 12000);*/
+        }
+
+        void SpawnWave()
+        {
+            events.Reset();
+            if (lasthppct > 75)
             {
-                instance = creature->GetInstanceScript();
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-                intro = false;
-                SetCanSeeEvenInPassiveMode(true);
-            }
-
-            InstanceScript* instance;
-            uint32 lasthp, berserk;
-            uint8 donecp, donesp, maxpcount;
-            std::vector<uint64> shapoollist;
-            float lasthppct;
-            bool phase_two;
-            bool intro;
-
-            void Reset()
-            {
-                _Reset();
-                if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
-                    pp->RemoveAurasDueToSpell(SPELL_SEEPING_SHA_AT);
-                me->SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
-                me->SetReactState(REACT_DEFENSIVE);
-                me->RemoveAurasDueToSpell(SPELL_SHA_POOL);
-                me->RemoveAurasDueToSpell(SPELL_BERSERK);
-                me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
-                me->RemoveAurasDueToSpell(SPELL_SUBMERGE_2);
-                me->RemoveAurasDueToSpell(SPELL_SWELLING_CORRUPTION);
-                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                me->setPowerType(POWER_ENERGY);
-                me->SetMaxPower(POWER_ENERGY, 100);
-                me->SetPower(POWER_ENERGY, 100);
-                lasthp = me->GetMaxHealth();
-                lasthppct = me->GetHealthPct();
-                shapoollist.clear();
-                phase_two = false;
-                berserk = 0;
-                donecp = 0; 
-                donesp = 0;
-                maxpcount = 0;
-            }
-
-            void MoveInLineOfSight(Unit* who)
-            {
-                if (intro || who->GetTypeId() != TYPEID_PLAYER || !me->IsWithinDistInMap(who, 60.0f))
-                    return;
-                intro = true;
-                if (Creature* cho = instance->instance->GetCreature(instance->GetData64(NPC_LOREWALKER_CHO)))
-                    cho->AI()->SetData(DATA_IMMERSEUS, IN_PROGRESS);
-            }
-
-            void JustSummoned(Creature* sum)
-            {
-                if (sum->GetEntry() == NPC_SHA_POOL)
-                    shapoollist.push_back(sum->GetGUID());
-
-                summons.Summon(sum);
-            }
-
-            void SpellHitTarget(Unit* target, SpellInfo const *spell)
-            {
-                if (spell->Id == 143460 && target->ToPlayer())
+                for (uint8 n = 0; n < 25; n++)
                 {
-                    if (me->GetFloatValue(OBJECT_FIELD_SCALE_X) >= 1.3f)
-                        me->SetFloatValue(OBJECT_FIELD_SCALE_X, me->GetFloatValue(OBJECT_FIELD_SCALE_X) - 0.3f);
+                    if (Creature* p = me->SummonCreature(wave1[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
+                        p->AI()->SetData(DATA_SEND_INDEX, n);
                 }
             }
-
-            void EnterCombat(Unit* who)
+            else if (lasthppct < 75 && lasthppct > 50)
             {
-                _EnterCombat();
-                berserk = 600000;
-                if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
-                    pp->CastSpell(pp, SPELL_SEEPING_SHA_AT, true);
+                for (uint8 n = 0; n < 25; n++)
+                {
+                    if (Creature* p = me->SummonCreature(wave2[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
+                        p->AI()->SetData(DATA_SEND_INDEX, n);
+                }
+            }
+            else if (lasthppct < 50 && lasthppct > 30)
+            {
+                for (uint8 n = 0; n < 25; n++)
+                {
+                    if (Creature* p = me->SummonCreature(wave3[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
+                        p->AI()->SetData(DATA_SEND_INDEX, n);
+                }
+            }
+            else if (lasthppct < 30 && lasthppct > 15)
+            {
+                for (uint8 n = 0; n < 25; n++)
+                {
+                    if (Creature* p = me->SummonCreature(wave4[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
+                        p->AI()->SetData(DATA_SEND_INDEX, n);
+                }
+            }
+            else if (lasthppct <= 15)
+            {
+                for (uint8 n = 0; n < 25; n++)
+                {
+                    if (Creature* p = me->SummonCreature(wave5[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
+                        p->AI()->SetData(DATA_SEND_INDEX, n);
+                }
+            }
+            if (me->GetMap()->IsHeroic())
+                events.ScheduleEvent(EVENT_SHA_POOL, 3000);
+            maxpcount = 0;
+            donecp = 0;
+            donesp = 0;
+        }
+
+        void SetData(uint32 type, uint32 data)
+        {
+            switch (type)
+            {
+            case DATA_SP_DONE:
+                maxpcount++;
+                donesp++;
+                UpdatePower();
+                break;
+            case DATA_CP_DONE:
+                maxpcount++;
+                donecp++;
+                UpdatePower();
+                break;
+            case DATA_P_FINISH_MOVE:
+                maxpcount++;
+                break;
+            }
+        }
+
+        void UpdatePower()
+        {
+            if (me->GetPower(POWER_ENERGY) >= 1)
+                me->SetPower(POWER_ENERGY, me->GetPower(POWER_ENERGY) - 1);
+            if (me->GetMap()->IsHeroic())
+                me->SetFloatValue(OBJECT_FIELD_SCALE_X, me->GetFloatValue(OBJECT_FIELD_SCALE_X) + 0.5f);
+        }
+
+        uint32 GetData(uint32 type)
+        {
+            if (type == DATA_SEND_F_P_COUNT)
+                return maxpcount;
+            else
+                return 0;
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (damage >= me->GetHealth() && !phase_two)
+            {
+                me->InterruptNonMeleeSpells(true);
+                damage = 0;
+                phase_two = true;
+                SpawnWave();
+                me->SetAttackStop(false);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                me->RemoveAurasDueToSpell(SPELL_SWELLING_CORRUPTION);
+                me->AddAura(SPELL_SUBMERGE, me);
+                me->SetFullHealth();
+                if (!shapoollist.empty())
+                {
+                    for (std::vector<uint64>::const_iterator guid = shapoollist.begin(); guid != shapoollist.end(); guid++)
+                        if (Creature* sp = me->GetCreature(*me, *guid))
+                            sp->AI()->DoAction(ACTION_MOVE);
+                    shapoollist.clear();
+                }
+            }
+        }
+
+        void DoAction(int32 const action)
+        {
+            switch (action)
+            {
+            case ACTION_RE_ATTACK:
+                me->ReAttackWithZone();
+                break;
+            case ACTION_INTRO_PHASE_ONE:
+                if (me->GetPower(POWER_ENERGY) == 0)
+                {
+                    //Done
+                    me->Kill(me, true);
+                    return;
+                }
+
+                uint8 doneval = donesp + donecp;
+                if (doneval)
+                {
+                    uint32 modh = me->CountPctFromMaxHealth(float(doneval));
+                    if (lasthp - modh > 0)
+                        me->SetHealth(lasthp - modh);
+                    else
+                        me->SetHealth(me->CountPctFromMaxHealth(1));
+                }
+                else
+                    me->SetHealth(lasthp);
+
+                lasthp = me->GetHealth();
+                lasthppct = me->GetHealthPct();
+                me->RemoveAurasDueToSpell(SPELL_SHA_POOL);
+                me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                me->ReAttackWithZone();
+                phase_two = false;
                 if (me->GetMap()->IsHeroic())
                     events.ScheduleEvent(EVENT_SWELLING_CORRUPTION, 12000);
-                events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 9000);
-                events.ScheduleEvent(EVENT_SWIRL, 14000);
+                events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 10000);
+                events.ScheduleEvent(EVENT_SWIRL, 20000);
                 events.ScheduleEvent(EVENT_SHA_BOLT, 6000);
+                break;
             }
-
-            void SpawnWave()
-            {
-                if (lasthppct > 75)
-                {
-                    for (uint8 n = 0; n < 25; n++)
-                    {
-                        if (Creature* p = me->SummonCreature(wave1[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
-                            p->AI()->SetData(DATA_SEND_INDEX, n);
-                    }
-                }
-                else if (lasthppct < 75 && lasthppct > 50)
-                {
-                    for (uint8 n = 0; n < 25; n++)
-                    {
-                        if (Creature* p = me->SummonCreature(wave2[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
-                            p->AI()->SetData(DATA_SEND_INDEX, n);
-                    }
-                }
-                else if (lasthppct < 50 && lasthppct > 30)
-                {
-                    for (uint8 n = 0; n < 25; n++)
-                    {
-                        if (Creature* p = me->SummonCreature(wave3[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
-                            p->AI()->SetData(DATA_SEND_INDEX, n);
-                    }
-                }
-                else if (lasthppct < 30 && lasthppct > 15)
-                {
-                    for (uint8 n = 0; n < 25; n++)
-                    {
-                        if (Creature* p = me->SummonCreature(wave4[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
-                            p->AI()->SetData(DATA_SEND_INDEX, n);
-                    }
-                }
-                else if (lasthppct <= 15)
-                {
-                    for (uint8 n = 0; n < 25; n++)
-                    {
-                        if (Creature* p = me->SummonCreature(wave5[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
-                            p->AI()->SetData(DATA_SEND_INDEX, n);
-                    }
-                }
-                if (me->GetMap()->IsHeroic())
-                    events.ScheduleEvent(EVENT_SHA_POOL, 3000);
-                maxpcount = 0; 
-                donecp = 0; 
-                donesp = 0;
-            }
-
-            void SetData(uint32 type, uint32 data)
-            {
-                switch (type)
-                {
-                case DATA_SP_DONE:
-                    maxpcount++;
-                    donesp++;
-                    if (me->GetPower(POWER_ENERGY) >= 1)
-                        me->SetPower(POWER_ENERGY, me->GetPower(POWER_ENERGY) - 1);
-                    break;
-                case DATA_CP_DONE:
-                    maxpcount++;
-                    donecp++;
-                    if (me->GetPower(POWER_ENERGY) >= 1)
-                        me->SetPower(POWER_ENERGY, me->GetPower(POWER_ENERGY) - 1);
-                    break;
-                case DATA_P_FINISH_MOVE:
-                    maxpcount++;
-                    break;
-                }
-            }
-
-            uint32 GetData(uint32 type)
-            {
-                if (type == DATA_SEND_F_P_COUNT)
-                    return maxpcount;
-                else
-                    return 0;
-            }
-
-            void DamageTaken(Unit* attacker, uint32 &damage)
-            {
-                if (damage >= me->GetHealth() && !phase_two)
-                {
-                    SpawnWave();
-                    damage = 0;
-                    phase_two = true;
-                    events.Reset();
-                    me->InterruptNonMeleeSpells(true);
-                    me->SetAttackStop(false);
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                    me->RemoveAurasDueToSpell(SPELL_SWELLING_CORRUPTION);
-                    me->AddAura(SPELL_SUBMERGE, me);
-                    me->SetFullHealth();
-                    if (!shapoollist.empty())
-                    {
-                        for (std::vector<uint64>::const_iterator guid = shapoollist.begin(); guid != shapoollist.end(); guid++)
-                        {
-                            if (Creature* sp = me->GetCreature(*me, *guid))
-                                sp->AI()->DoAction(ACTION_MOVE);
-                        }
-                        shapoollist.clear();
-                    }
-                }
-            }
-
-            void DoAction(int32 const action)
-            {
-                switch (action)
-                {
-                case ACTION_RE_ATTACK:
-                    me->ReAttackWithZone();
-                    break;
-                case ACTION_INTRO_PHASE_ONE:
-                    if (me->GetPower(POWER_ENERGY) == 0)
-                    {
-                        //Done
-                        me->Kill(me, true);
-                        return;
-                    }
-
-                    uint8 doneval = donesp + donecp;
-                    if (doneval)
-                    {
-                        uint32 modh = ((me->GetMaxHealth()/100)*doneval);
-                        me->SetHealth(lasthp - modh);
-                    }
-                    lasthp = me->GetHealth();
-                    lasthppct = me->GetHealthPct();
-                    me->RemoveAurasDueToSpell(SPELL_SHA_POOL);
-                    me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                    me->ReAttackWithZone();
-                    phase_two = false;
-                    if (me->GetMap()->IsHeroic())
-                        events.ScheduleEvent(EVENT_SWELLING_CORRUPTION, 12000);
-                    events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 10000);
-                    events.ScheduleEvent(EVENT_SWIRL, 20000);
-                    events.ScheduleEvent(EVENT_SHA_BOLT, 6000);
-                    break;
-                }
-            }
-
-            void JustDied(Unit* killer)
-            {
-                me->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
-                if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
-                    pp->RemoveAurasDueToSpell(SPELL_SEEPING_SHA_AT);
-                instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ACHIEV_CREDIT, 0, 0, me);
-                if (killer == me)
-                {
-                    _JustDied();
-                    me->setFaction(35);
-                    if (!me->GetMap()->IsLfr())
-                    {
-                        me->SummonGameObject(221776, 1441.22f, 821.749f, 246.836f, 4.727f, 0.0f, 0.0f, 0.701922f, -0.712254f, 604800);
-                        /*if (GameObject* chest = me->SummonGameObject(221776, 1441.22f, 821.749f, 246.836f, 4.727f, 0.0f, 0.0f, 0.701922f, -0.712254f, 604800))
-                            if (!me->IsSaveThreatListEmpty())
-                                chest->AddThreatTargetLoot(me->GetSaveThreatListLoot());*/
-                    }
-                    Map::PlayerList const& players = me->GetMap()->GetPlayers();
-                    if (!players.isEmpty())
-                    {
-                        for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                        {
-                            if (Player* pPlayer = itr->getSource())
-                                me->GetMap()->ToInstanceMap()->PermBindAllPlayers(pPlayer);
-                        }
-                    }
-                }
-                BossAI::JustDied(killer);
-            }
-
-            void UpdateAI(uint32 diff)
-            {
-                if (!phase_two && !UpdateVictim()) 
-                    return;
-                
-                if (berserk)
-                {
-                    if (berserk <= diff)
-                    {
-                        berserk = 0;
-                        DoCast(me, SPELL_BERSERK, true);
-                    }
-                    else
-                        berserk -= diff;
-                }
-
-                if (me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
-
-                events.Update(diff);
-
-                while (uint32 eventId = events.ExecuteEvent())
-                {
-                    switch (eventId)
-                    {
-                    case EVENT_CORROSIVE_BLAST:
-                        if (Unit* target = me->getVictim())
-                        {
-                            me->SetFacingToObject(target);
-                            me->CastSpell(target, SPELL_CORROSIVE_BLAST);
-                        }
-                        events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 20000);
-                        break;
-                    case EVENT_SHA_BOLT:
-                        {
-                            std::list<HostileReference*> threatlist = me->getThreatManager().getThreatList();
-                            if (!threatlist.empty())
-                            {
-                                for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); itr++)
-                                {
-                                    if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
-                                        DoCast(pl, SPELL_SHA_BOLT);
-                                }
-                            }
-                        events.ScheduleEvent(EVENT_SHA_BOLT, 10000);
-                        break;
-                        }
-                    case EVENT_SWIRL:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
-                        {
-                            me->SetAttackStop(false);
-                            me->SetFacingToObject(target);
-                            events.DelayEvents(10000);
-                            DoCast(me, SPELL_SWIRL);
-                        }
-                        events.ScheduleEvent(EVENT_SWIRL, 48000);
-                        break;
-                    //HM
-                    case EVENT_SWELLING_CORRUPTION:
-                        {
-                            int32 mod = me->GetPower(POWER_ENERGY)/2;
-                            if (mod)
-                                me->CastCustomSpell(SPELL_SWELLING_CORRUPTION, SPELLVALUE_AURA_STACK, mod, me, true);
-                            events.ScheduleEvent(EVENT_SWELLING_CORRUPTION, 75000);
-                            break;
-                        }
-                    case EVENT_SHA_POOL:
-                        me->AddAura(SPELL_SHA_POOL, me);
-                        break;
-                    }
-                }
-                DoMeleeAttackIfReady();
-            }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new boss_immerseusAI(creature);
         }
+
+        void JustDied(Unit* killer)
+        {
+            me->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+            if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
+                pp->RemoveAurasDueToSpell(SPELL_SEEPING_SHA_AT);
+            instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ACHIEV_CREDIT, 0, 0, me);
+            if (killer == me)
+            {
+                _JustDied();
+                me->setFaction(35);
+                if (!me->GetMap()->IsLfr())
+                    me->SummonGameObject(221776, 1441.22f, 821.749f, 246.836f, 4.727f, 0.0f, 0.0f, 0.701922f, -0.712254f, 604800);
+
+                Map::PlayerList const& players = me->GetMap()->GetPlayers();
+                if (!players.isEmpty())
+                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                        if (Player* pPlayer = itr->getSource())
+                            me->GetMap()->ToInstanceMap()->PermBindAllPlayers(pPlayer);
+            }
+            BossAI::JustDied(killer);
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            if (!phase_two && !UpdateVictim())
+                return;
+
+            if (berserk)
+            {
+                if (berserk <= diff)
+                {
+                    berserk = 0;
+                    DoCast(me, SPELL_BERSERK, true);
+                }
+                else
+                    berserk -= diff;
+            }
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                case EVENT_CORROSIVE_BLAST:
+                    if (Unit* target = me->getVictim())
+                    {
+                        me->SetFacingToObject(target);
+                        me->CastSpell(target, SPELL_CORROSIVE_BLAST);
+                    }
+                    events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 20000);
+                    break;
+                case EVENT_SHA_BOLT:
+                {
+                    std::list<HostileReference*> threatlist = me->getThreatManager().getThreatList();
+                    if (!threatlist.empty())
+                        for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); itr++)
+                            if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
+                                DoCast(pl, SPELL_SHA_BOLT);
+                    events.ScheduleEvent(EVENT_SHA_BOLT, 10000);
+                    break;
+                }
+                case EVENT_SWIRL:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
+                    {
+                        me->SetAttackStop(false);
+                        me->SetFacingToObject(target);
+                        events.DelayEvents(10000);
+                        DoCast(me, SPELL_SWIRL);
+                    }
+                    events.ScheduleEvent(EVENT_SWIRL, 48000);
+                    break;
+                    //HM
+                case EVENT_SWELLING_CORRUPTION:
+                {
+                    int32 mod = me->GetPower(POWER_ENERGY) / 2;
+                    if (mod)
+                        me->CastCustomSpell(SPELL_SWELLING_CORRUPTION, SPELLVALUE_AURA_STACK, mod, me, true);
+                    events.ScheduleEvent(EVENT_SWELLING_CORRUPTION, 75000);
+                    break;
+                }
+                case EVENT_SHA_POOL:
+                    DoCast(me, SPELL_SHA_POOL, true);
+                    break;
+                }
+            }
+            DoMeleeAttackIfReady();
+        }
+    };
+    
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new boss_immerseusAI(creature);
+    }
 };
 
 //71544
 class npc_sha_pool : public CreatureScript
 {
-    public:
-        npc_sha_pool() : CreatureScript("npc_sha_pool") {}
-
-        struct npc_sha_poolAI : public ScriptedAI
+public:
+    npc_sha_pool() : CreatureScript("npc_sha_pool") {}
+    
+    struct npc_sha_poolAI : public ScriptedAI
+    {
+        npc_sha_poolAI(Creature* creature) : ScriptedAI(creature)
         {
-            npc_sha_poolAI(Creature* creature) : ScriptedAI(creature)
-            {
-                me->SetDisplayId(11686);
-                me->SetReactState(REACT_PASSIVE);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-            }
-
-            void Reset()
-            {
-                me->SetFloatValue(OBJECT_FIELD_SCALE_X, 2.0f);
-                me->AddAura(SPELL_SHA_POOL, me);
-            }
-
-            void DoAction(int32 const action)
-            {
-                if (action == ACTION_MOVE)
-                {
-                    if (me->ToTempSummon())
-                    {
-                        if (Unit* i = me->ToTempSummon()->GetSummoner())
-                            me->GetMotionMaster()->MoveCharge(i->GetPositionX(), i->GetPositionY(), i->GetPositionZ(), 4.0f, 0);
-                    }
-                }
-            }
-
-            void MovementInform(uint32 type, uint32 pointId)
-            {
-                if (type == POINT_MOTION_TYPE)
-                {
-                    if (pointId == 0)
-                        me->DespawnOrUnsummon();
-                }
-            }
-
-            void EnterEvadeMode(){}
-
-            void EnterCombat(Unit* who){}
-
-            void UpdateAI(uint32 diff){}
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new npc_sha_poolAI(creature);
+            me->SetDisplayId(11686);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
         }
+        
+        void Reset()
+        {
+            me->SetFloatValue(OBJECT_FIELD_SCALE_X, 2.0f);
+            me->AddAura(SPELL_SHA_POOL, me);
+        }
+
+        void DoAction(int32 const action)
+        {
+            if (action == ACTION_MOVE)
+            {
+                if (me->ToTempSummon())
+                {
+                    if (Unit* i = me->ToTempSummon()->GetSummoner())
+                        me->GetMotionMaster()->MoveCharge(i->GetPositionX(), i->GetPositionY(), i->GetPositionZ(), 4.0f, 0);
+                }
+            }
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (type == POINT_MOTION_TYPE)
+            {
+                if (pointId == 0)
+                    me->DespawnOrUnsummon();
+            }
+        }
+
+        void EnterEvadeMode(){}
+
+        void EnterCombat(Unit* who){}
+
+        void UpdateAI(uint32 diff){}
+    };
+    
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_sha_poolAI(creature);
+    }
+        
 };
 
-void CalcPuddle(InstanceScript* instance, Creature* caller, uint32 callerEntry, bool done)
+struct immerseus_puddleAI : public ScriptedAI
 {
-    if (caller && instance)
+    immerseus_puddleAI(Creature* creature) : ScriptedAI(creature){}
+
+    void CalcPuddle(InstanceScript* instance, Creature* caller, uint32 callerEntry, bool done)
     {
-        if (Creature* i = caller->GetCreature(*caller, instance->GetData64(NPC_IMMERSEUS)))
+        if (caller && instance)
         {
-            if (done)
+            if (Creature* i = caller->GetCreature(*caller, instance->GetData64(NPC_IMMERSEUS)))
             {
-                switch (callerEntry)
-                {    
-                case NPC_SHA_PUDDLE:
-                    i->AI()->SetData(DATA_SP_DONE, 0);
-                    break;
-                case NPC_CONTAMINATED_PUDDLE:
-                    i->AI()->SetData(DATA_CP_DONE, 0);
-                    break;
+                if (done)
+                {
+                    switch (callerEntry)
+                    {
+                    case NPC_SHA_PUDDLE:
+                        i->AI()->SetData(DATA_SP_DONE, 0);
+                        break;
+                    case NPC_CONTAMINATED_PUDDLE:
+                        i->AI()->SetData(DATA_CP_DONE, 0);
+                        break;
+                    }
                 }
-            }
-            else
-                i->AI()->SetData(DATA_P_FINISH_MOVE, 0);
+                else
+                    i->AI()->SetData(DATA_P_FINISH_MOVE, 0);
 
-            caller->DespawnOrUnsummon();
+                caller->DespawnOrUnsummon();
 
-            if (i->AI()->GetData(DATA_SEND_F_P_COUNT) >= 25)
-            {
-                i->SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
-                i->AI()->DoAction(ACTION_INTRO_PHASE_ONE);
+                if (i->AI()->GetData(DATA_SEND_F_P_COUNT) >= 25)
+                {
+                    i->SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
+                    i->AI()->DoAction(ACTION_INTRO_PHASE_ONE);
+                }
             }
         }
     }
-}
+};
 
 //71603
 class npc_sha_puddle : public CreatureScript
 {
-    public:
-        npc_sha_puddle() : CreatureScript("npc_sha_puddle") {}
-
-        struct npc_sha_puddleAI : public ScriptedAI
+public:
+    npc_sha_puddle() : CreatureScript("npc_sha_puddle") {}
+    
+    struct npc_sha_puddleAI : public immerseus_puddleAI
+    {
+        npc_sha_puddleAI(Creature* creature) : immerseus_puddleAI(creature)
         {
-            npc_sha_puddleAI(Creature* creature) : ScriptedAI(creature)
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+        }
+        
+        InstanceScript* instance;
+        EventMap events;
+        uint8 index;
+        bool finish;
+        
+        void Reset()
+        {
+            events.Reset();
+            finish = false;
+            index = 0;
+            me->ModifyAuraState(AURA_STATE_UNKNOWN22, true);
+        }
+        
+        void SetData(uint32 type, uint32 data)
+        {
+            if (type == DATA_SEND_INDEX)
             {
-                instance = creature->GetInstanceScript();
-                me->SetReactState(REACT_PASSIVE);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                index = data;
+                DoAction(ACTION_SPAWN);
             }
-
-            InstanceScript* instance;
-            EventMap events;
-            uint8 index;
-            bool finish;
-
-            void Reset()
+        }
+        
+        void DoAction(int32 const action)
+        {
+            if (action == ACTION_SPAWN)
+                me->GetMotionMaster()->MoveJump(psp[index].GetPositionX(), psp[index].GetPositionY(), psp[index].GetPositionZ(), 12.5f, 12.5f, 0);
+        }
+        
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (type == EFFECT_MOTION_TYPE)
             {
-                events.Reset();
-                finish = false;
-                index = 0;
-                me->ModifyAuraState(AURA_STATE_UNKNOWN22, true);
-            }
-
-            void SetData(uint32 type, uint32 data)
-            {
-                if (type == DATA_SEND_INDEX)
+                if (pointId == 0)
                 {
-                    index = data;
-                    DoAction(ACTION_SPAWN);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                    events.ScheduleEvent(EVENT_START_MOVING, 1500);
                 }
             }
-
-            void DoAction(int32 const action)
-            {
-                if (action == ACTION_SPAWN)
-                    me->GetMotionMaster()->MoveJump(psp[index].GetPositionX(), psp[index].GetPositionY(), psp[index].GetPositionZ(), 12.5f, 12.5f, 0);
-            }
-
-            void MovementInform(uint32 type, uint32 pointId)
-            {
-                if (type == EFFECT_MOTION_TYPE)
-                {
-                    if (pointId == 0)
-                    {
-                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                        events.ScheduleEvent(EVENT_START_MOVING, 1500);  
-                    }
-                }
-            }
-            
-            void DamageTaken(Unit* attacker, uint32 &damage)
-            {
-                if (damage >= me->GetHealth())
-                    DoCastAOE(SPELL_SHA_RESIDUE);
-            }
+        }
+        
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (damage >= me->GetHealth())
+                DoCastAOE(SPELL_SHA_RESIDUE);
+        }
 
             void JustDied(Unit* killer)
             {
@@ -813,68 +798,68 @@ class npc_sha_puddle : public CreatureScript
 //71604
 class npc_contaminated_puddle : public CreatureScript
 {
-    public:
-        npc_contaminated_puddle() : CreatureScript("npc_contaminated_puddle") {}
-
-        struct npc_contaminated_puddleAI : public ScriptedAI
+public:
+    npc_contaminated_puddle() : CreatureScript("npc_contaminated_puddle") {}
+    
+    struct npc_contaminated_puddleAI : public immerseus_puddleAI
+    {
+        npc_contaminated_puddleAI(Creature* creature) : immerseus_puddleAI(creature)
         {
-            npc_contaminated_puddleAI(Creature* creature) : ScriptedAI(creature)
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+        }
+
+        InstanceScript* instance;
+        EventMap events;
+        uint8 index;
+        bool done, finish;
+
+        void Reset()
+        {
+            events.Reset();
+            me->SetHealth(1);
+            finish = false;
+            done = false;
+            index = 0;
+        }
+
+        void EnterEvadeMode(){}
+
+        void EnterCombat(Unit* who){}
+
+        void SendSlow(uint8 val)
+        {
+            switch (val)
             {
-                instance = creature->GetInstanceScript();
-                me->SetReactState(REACT_PASSIVE);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+            case 1:
+            case 2:
+                me->SetSpeed(MOVE_RUN, 0.9f);
+                break;
+            case 3:
+            case 4:
+                me->SetSpeed(MOVE_RUN, 0.8f);
+                break;
+            case 5:
+            case 6:
+                me->SetSpeed(MOVE_RUN, 0.7f);
+                break;
+            case 7:
+                me->SetSpeed(MOVE_RUN, 0.6f);
+                break;
+            default:
+                break;
             }
+        }
 
-            InstanceScript* instance;
-            EventMap events;
-            uint8 index;
-            bool done, finish;
-
-            void Reset()
+        void SpellHit(Unit* caster, SpellInfo const *spell)
+        {
+            for (uint8 n = 0; n < MAX_SPELL_EFFECTS; n++)
             {
-                events.Reset();
-                me->SetHealth(1);
-                finish = false;
-                done = false;
-                index = 0; 
-            }
-
-            void EnterEvadeMode(){}
-
-            void EnterCombat(Unit* who){}
-
-            void SendSlow(uint8 val)
-            {
-                switch (val)
+                if (spell->GetEffect(n)->Effect == SPELL_EFFECT_HEAL || spell->GetEffect(n)->Effect == SPELL_EFFECT_HEAL_PCT)
                 {
-                case 1:
-                case 2:
-                    me->SetSpeed(MOVE_RUN, 0.9f);
-                    break;
-                case 3:
-                case 4:
-                    me->SetSpeed(MOVE_RUN, 0.8f);
-                    break;
-                case 5:
-                case 6:
-                    me->SetSpeed(MOVE_RUN, 0.7f);
-                    break;
-                case 7:
-                    me->SetSpeed(MOVE_RUN, 0.6f);
-                    break;
-                default:
-                    break;
-                }
-            }
-
-            void SpellHit(Unit* caster, SpellInfo const *spell)
-            {
-                for (uint8 n = 0; n < MAX_SPELL_EFFECTS; n++)
-                {
-                    if (spell->GetEffect(n)->Effect == SPELL_EFFECT_HEAL || spell->GetEffect(n)->Effect == SPELL_EFFECT_HEAL_PCT)
+                    uint8 mod = (uint8)floor(me->GetHealthPct() / 10);
                     {
-                        uint8 mod = (uint8)floor(me->GetHealthPct()/10);
-
                         if (!mod)
                             return;
 
@@ -896,89 +881,90 @@ class npc_contaminated_puddle : public CreatureScript
                                     SendSlow(mod);
                                 }
                             }
-                        }                        
-                    }
-                }
-
-                if (me->GetHealth() == me->GetMaxHealth() && !done)
-                {
-                    done = true;
-                    DoCast(me, SPELL_PURIFIED_RESIDUE);
-                }
-            }
-
-            void SetData(uint32 type, uint32 data)
-            {
-                if (type == DATA_SEND_INDEX)
-                {
-                    index = data;
-                    DoAction(ACTION_SPAWN);
-                }
-            }
-
-            void DoAction(int32 const action)
-            {
-                if (action == ACTION_SPAWN)
-                    me->GetMotionMaster()->MoveJump(psp[index].GetPositionX(), psp[index].GetPositionY(), psp[index].GetPositionZ(), 12.5f, 12.5f, 0);
-            }
-
-            void MovementInform(uint32 type, uint32 pointId)
-            {
-                if (type == EFFECT_MOTION_TYPE)
-                {
-                    if (pointId == 0)
-                    {
-                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                        events.ScheduleEvent(EVENT_START_MOVING, 1500);
-                    }
-                }
-            }
-
-            void UpdateAI(uint32 diff)
-            {
-                events.Update(diff);
-                
-                while (uint32 eventId = events.ExecuteEvent())
-                {
-                    switch (eventId)
-                    {
-                    case EVENT_START_MOVING:
-                        if (instance)
-                        {
-                            if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
-                            {
-                                me->GetMotionMaster()->MoveFollow(pp, 10.0f, 0.0f);
-                                events.ScheduleEvent(EVENT_CHECK_DIST, 1000);
-                            }
                         }
-                        break;
-                    case EVENT_CHECK_DIST:
-                        if (instance)
-                        {
-                            if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
-                            {
-                                if (me->GetDistance(pp) <= 18.0f && !finish)
-                                {
-                                    finish = true;
-                                    me->StopMoving();
-                                    me->GetMotionMaster()->Clear();
-                                    DoCast(me, SPELL_ERUPTING_WATER);
-                                    CalcPuddle(instance, me, me->GetEntry(), done ? true : false);
-                                }
-                                else if (me->GetDistance(pp) > 18.0f && !finish)
-                                    events.ScheduleEvent(EVENT_CHECK_DIST, 1000);
-                            }
-                        }
-                        break;
                     }
                 }
             }
-        };
 
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new npc_contaminated_puddleAI(creature);
+            if (me->GetHealth() == me->GetMaxHealth() && !done)
+            {
+                done = true;
+                DoCast(me, SPELL_PURIFIED_RESIDUE);
+            }
         }
+
+        void SetData(uint32 type, uint32 data)
+        {
+            if (type == DATA_SEND_INDEX)
+            {
+                index = data;
+                DoAction(ACTION_SPAWN);
+            }
+        }
+
+        void DoAction(int32 const action)
+        {
+            if (action == ACTION_SPAWN)
+                me->GetMotionMaster()->MoveJump(psp[index].GetPositionX(), psp[index].GetPositionY(), psp[index].GetPositionZ(), 12.5f, 12.5f, 0);
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (type == EFFECT_MOTION_TYPE)
+            {
+                if (pointId == 0)
+                {
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                    events.ScheduleEvent(EVENT_START_MOVING, 1500);
+                }
+            }
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                case EVENT_START_MOVING:
+                    if (instance)
+                    {
+                        if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
+                        {
+                            me->GetMotionMaster()->MoveFollow(pp, 10.0f, 0.0f);
+                            events.ScheduleEvent(EVENT_CHECK_DIST, 1000);
+                        }
+                    }
+                    break;
+                case EVENT_CHECK_DIST:
+                    if (instance)
+                    {
+                        if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
+                        {
+                            if (me->GetDistance(pp) <= 18.0f && !finish)
+                            {
+                                finish = true;
+                                me->StopMoving();
+                                me->GetMotionMaster()->Clear();
+                                DoCast(me, SPELL_ERUPTING_WATER);
+                                CalcPuddle(instance, me, me->GetEntry(), done ? true : false);
+                            }
+                            else if (me->GetDistance(pp) > 18.0f && !finish)
+                                events.ScheduleEvent(EVENT_CHECK_DIST, 1000);
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    };
+    
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_contaminated_puddleAI(creature);
+    }
 };
 
 //90000 new trigger, nedded for work SPELL_SEEPING_SHA_AT = 143281
@@ -1017,170 +1003,167 @@ public:
 //143309
 class spell_swirl : public SpellScriptLoader
 {
-    public:
-        spell_swirl() : SpellScriptLoader("spell_swirl") { }
-
-        class spell_swirl_AuraScript : public AuraScript
+public:
+    spell_swirl() : SpellScriptLoader("spell_swirl") { }
+    
+    class spell_swirl_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_swirl_AuraScript);
+           
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            PrepareAuraScript(spell_swirl_AuraScript);
-            
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            if (GetCaster() && GetCaster()->ToCreature())
             {
-                if (GetCaster() && GetCaster()->ToCreature())
-                {
-                    GetCaster()->ClearUnitState(UNIT_STATE_CASTING);
-                    GetCaster()->GetMotionMaster()->MoveRotate(20000, ROTATE_DIRECTION_RIGHT);
-                    GetCaster()->CastSpell(GetCaster(), SPELL_SWIRL_SEARCHER, true);
-                }
+                GetCaster()->ClearUnitState(UNIT_STATE_CASTING);
+                GetCaster()->GetMotionMaster()->MoveRotate(20000, ROTATE_DIRECTION_RIGHT);
+                GetCaster()->CastSpell(GetCaster(), SPELL_SWIRL_SEARCHER, true);
             }
-
-            void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (GetCaster() && GetCaster()->ToCreature())
-                {
-                    GetCaster()->RemoveAurasDueToSpell(SPELL_SWIRL_SEARCHER);
-                    GetCaster()->StopMoving();
-                    GetCaster()->GetMotionMaster()->Clear(false);
-                    GetCaster()->ToCreature()->AI()->DoAction(ACTION_RE_ATTACK);
-                }
-            }
-
-            void Register()
-            {
-                OnEffectApply += AuraEffectApplyFn(spell_swirl_AuraScript::OnApply, EFFECT_1, SPELL_AURA_CREATE_AREATRIGGER, AURA_EFFECT_HANDLE_REAL);
-                OnEffectRemove += AuraEffectRemoveFn(spell_swirl_AuraScript::HandleEffectRemove, EFFECT_1, SPELL_AURA_CREATE_AREATRIGGER, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_swirl_AuraScript();
         }
+        
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetCaster() && GetCaster()->ToCreature())
+            {
+                GetCaster()->RemoveAurasDueToSpell(SPELL_SWIRL_SEARCHER);
+                GetCaster()->StopMoving();
+                GetCaster()->GetMotionMaster()->Clear(false);
+                GetCaster()->ToCreature()->AI()->DoAction(ACTION_RE_ATTACK);
+            }
+        }
+        
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_swirl_AuraScript::OnApply, EFFECT_1, SPELL_AURA_CREATE_AREATRIGGER, AURA_EFFECT_HANDLE_REAL);
+            OnEffectRemove += AuraEffectRemoveFn(spell_swirl_AuraScript::HandleEffectRemove, EFFECT_1, SPELL_AURA_CREATE_AREATRIGGER, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+    
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_swirl_AuraScript();
+    }
 };
 
 //125925
 class spell_swirl_searcher : public SpellScriptLoader
 {
-    public:
-        spell_swirl_searcher() : SpellScriptLoader("spell_swirl_searcher") { }
-
-        class spell_swirl_searcher_SpellScript : public SpellScript
+public:
+    spell_swirl_searcher() : SpellScriptLoader("spell_swirl_searcher") { }
+    
+    class spell_swirl_searcher_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_swirl_searcher_SpellScript);
+        
+        void ApplyHit()
         {
-            PrepareSpellScript(spell_swirl_searcher_SpellScript);
-
-            void ApplyHit()
+            if (GetHitUnit() && GetCaster() && GetCaster()->ToCreature())
             {
-                if (GetHitUnit() && GetCaster() && GetCaster()->ToCreature())
+                switch (GetCaster()->GetEntry())
                 {
-                    switch (GetCaster()->GetEntry())
-                    {
-                    case NPC_IMMERSEUS:
-                        GetHitUnit()->CastSpell(GetHitUnit(), SPELL_SWIRL_DMG);
-                        break;
-                    case NPC_STARVED_YETI:
-                        if (GetCaster()->GetDistance(GetHitUnit()) <= 8.0f)
-                            GetCaster()->CastSpell(GetHitUnit(), 147607, true); //SPELL_CANNON_BALL_ATDMG
-                        break;
-                    default:
-                        break;
-                    }
+                case NPC_IMMERSEUS:
+                    GetHitUnit()->CastSpell(GetHitUnit(), SPELL_SWIRL_DMG);
+                    break;
+                case NPC_STARVED_YETI:
+                    if (GetCaster()->GetDistance(GetHitUnit()) <= 8.0f)
+                        GetCaster()->CastSpell(GetHitUnit(), 147607, true); //SPELL_CANNON_BALL_ATDMG
+                    break;
+                default:
+                    break;
                 }
             }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_swirl_searcher_SpellScript::ApplyHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_swirl_searcher_SpellScript();
         }
+        
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_swirl_searcher_SpellScript::ApplyHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_swirl_searcher_SpellScript();
+    }
 };
 
 class ExactDistanceCheck
 {
-    public:
-        ExactDistanceCheck(WorldObject* source, float dist) : _source(source), _dist(dist) {}
-
-        bool operator()(WorldObject* unit)
-        {
-            return _source->GetExactDist2d(unit) > _dist;
-        }
-
-    private:
-        WorldObject* _source;
-        float _dist;
+public:
+    ExactDistanceCheck(WorldObject* source, float dist) : _source(source), _dist(dist) {}
+    
+    bool operator()(WorldObject* unit)
+    {
+        return _source->GetExactDist2d(unit) > _dist;
+    }
+private:
+    WorldObject* _source;
+    float _dist;
 };
 
 //143460
 class spell_sha_pool : public SpellScriptLoader
 {
-    public:
-        spell_sha_pool() : SpellScriptLoader("spell_sha_pool") { }
-
-        class spell_sha_pool_SpellScript : public SpellScript
+public:
+    spell_sha_pool() : SpellScriptLoader("spell_sha_pool") { }
+    
+    class spell_sha_pool_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_sha_pool_SpellScript);
+        
+        void ScaleRange(std::list<WorldObject*>& targets)
         {
-            PrepareSpellScript(spell_sha_pool_SpellScript);
-
-            void ScaleRange(std::list<WorldObject*>& targets)
-            {
-                targets.remove_if(ExactDistanceCheck(GetCaster(), 20.0f * GetCaster()->GetFloatValue(OBJECT_FIELD_SCALE_X)));
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_pool_SpellScript::ScaleRange, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_sha_pool_SpellScript();
+            targets.remove_if(ExactDistanceCheck(GetCaster(), 20.0f * GetCaster()->GetFloatValue(OBJECT_FIELD_SCALE_X)));
         }
+
+        void HitHandler()
+        {
+            if (GetCaster() && GetHitUnit())
+            {
+                if ((GetCaster()->GetFloatValue(OBJECT_FIELD_SCALE_X) - 0.8f) < 1.0f)
+                    GetCaster()->SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
+                else
+                    GetCaster()->SetFloatValue(OBJECT_FIELD_SCALE_X, GetCaster()->GetFloatValue(OBJECT_FIELD_SCALE_X) - 0.8f);
+            }
+        }
+        
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_pool_SpellScript::ScaleRange, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+            OnHit += SpellHitFn(spell_sha_pool_SpellScript::HitHandler);
+        }
+    };
+    
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_sha_pool_SpellScript();
+    }
 };
 
-//143461 puddle searcher
+//143461
 class spell_sha_pool_p_s : public SpellScriptLoader
 {
-    public:
-        spell_sha_pool_p_s() : SpellScriptLoader("spell_sha_pool_p_s") { }
-
-        class spell_sha_pool_p_s_SpellScript : public SpellScript
+public:
+    spell_sha_pool_p_s() : SpellScriptLoader("spell_sha_pool_p_s") { }
+    
+    class spell_sha_pool_p_s_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_sha_pool_p_s_SpellScript);
+        
+        void ScaleRange(std::list<WorldObject*>& targets)
         {
-            PrepareSpellScript(spell_sha_pool_p_s_SpellScript);
-
-            void ScaleRange(std::list<WorldObject*>& targets)
-            {
-                targets.remove_if(ExactDistanceCheck(GetCaster(), 20.0f * GetCaster()->GetFloatValue(OBJECT_FIELD_SCALE_X)));
-            }
-
-            void HitHandler()
-            {
-                if (GetCaster() && GetHitUnit() && GetHitUnit()->ToCreature())
-                {
-                    if (GetHitUnit()->GetEntry() == NPC_SHA_PUDDLE || GetHitUnit()->GetEntry() == NPC_CONTAMINATED_PUDDLE)
-                    {
-                        GetHitUnit()->AddAura(SPELL_SHA_SPLASH_DUMMY, GetHitUnit());
-                        GetCaster()->SetFloatValue(OBJECT_FIELD_SCALE_X, GetCaster()->GetFloatValue(OBJECT_FIELD_SCALE_X) + 0.1f);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_pool_p_s_SpellScript::ScaleRange, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
-                OnHit += SpellHitFn(spell_sha_pool_p_s_SpellScript::HitHandler);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_sha_pool_p_s_SpellScript();
+            targets.remove_if(ExactDistanceCheck(GetCaster(), 20.0f * GetCaster()->GetFloatValue(OBJECT_FIELD_SCALE_X)));
         }
+        
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_pool_p_s_SpellScript::ScaleRange, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
+        }
+    };
+    
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_sha_pool_p_s_SpellScript();
+    }
 };
-
 
 void AddSC_boss_immerseus()
 {
