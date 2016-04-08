@@ -53,37 +53,42 @@ const uint32 twinEntry[2] =
     NPC_LULIN,
 };
 
-void TwinsReset(InstanceScript* instance, Creature* caller, uint32 callerEntry)
+struct generic_boss_twin_consortsAI : ScriptedAI
 {
-    if (instance && caller)
-    {
-         for (uint8 n = 0; n < 2; n++)
-         {
-             if (Creature* twin = caller->GetCreature(*caller, instance->GetData64(twinEntry[n])))
-             {
-                 if (callerEntry != twinEntry[n])
-                 {
-                     if (!twin->isAlive())
-                     {
-                         twin->Respawn();
-                         twin->GetMotionMaster()->MoveTargetedHome();
-                     }
-                     else if (twin->isAlive() && twin->isInCombat())
-                         twin->AI()->EnterEvadeMode();
-                 }
-             }
-         }
-         instance->SetBossState(DATA_TWIN_CONSORTS, NOT_STARTED);
-    }
-}
+public:
+    generic_boss_twin_consortsAI(Creature* creature) : ScriptedAI(creature){}
 
-void TwinsEnterCombat(InstanceScript* instance, Creature* caller, uint32 callerEntry)
-{
-    if (instance && caller)
+    void TwinsReset(InstanceScript* instance, Creature* caller, uint32 callerEntry)
     {
-        switch (callerEntry)
+        if (instance && caller)
         {
-        case NPC_SULIN:
+            for (uint8 n = 0; n < 2; n++)
+            {
+                if (Creature* twin = caller->GetCreature(*caller, instance->GetData64(twinEntry[n])))
+                {
+                    if (callerEntry != twinEntry[n])
+                    {
+                        if (!twin->isAlive())
+                        {
+                            twin->Respawn();
+                            twin->GetMotionMaster()->MoveTargetedHome();
+                        }
+                        else if (twin->isAlive() && twin->isInCombat())
+                            twin->AI()->EnterEvadeMode();
+                    }
+                }
+            }
+            instance->SetBossState(DATA_TWIN_CONSORTS, NOT_STARTED);
+        }
+    }
+
+    void TwinsEnterCombat(InstanceScript* instance, Creature* caller, uint32 callerEntry)
+    {
+        if (instance && caller)
+        {
+            switch (callerEntry)
+            {
+            case NPC_SULIN:
             {
                 caller->AI()->DoZoneInCombat(caller, 150.0f);
                 caller->AttackStop();
@@ -96,7 +101,7 @@ void TwinsEnterCombat(InstanceScript* instance, Creature* caller, uint32 callerE
                 }
             }
             break;
-        case NPC_LULIN:
+            case NPC_LULIN:
             {
                 if (Creature* s = caller->GetCreature(*caller, instance->GetData64(NPC_SULIN)))
                 {
@@ -110,39 +115,40 @@ void TwinsEnterCombat(InstanceScript* instance, Creature* caller, uint32 callerE
                 }
             }
             break;
-        }
-        instance->SetBossState(DATA_TWIN_CONSORTS, IN_PROGRESS);
-    }
-}
-
-void TwinsDoneCheck(InstanceScript* instance, Creature* caller, uint32 callerEntry)
-{
-    if (instance && caller)
-    {
-        uint8 donecount = 0;
-        for (uint8 n = 0; n < 2; n++)
-        {
-            if (Creature* twin = caller->GetCreature(*caller, instance->GetData64(twinEntry[n])))
-            {
-                if (!twin->isAlive())
-                    donecount++;
             }
+            instance->SetBossState(DATA_TWIN_CONSORTS, IN_PROGRESS);
         }
-        if (donecount == 2)
-            instance->SetBossState(DATA_TWIN_CONSORTS, DONE);
-        else
-            caller->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
     }
-}
+
+    void TwinsDoneCheck(InstanceScript* instance, Creature* caller, uint32 callerEntry)
+    {
+        if (instance && caller)
+        {
+            uint8 donecount = 0;
+            for (uint8 n = 0; n < 2; n++)
+            {
+                if (Creature* twin = caller->GetCreature(*caller, instance->GetData64(twinEntry[n])))
+                {
+                    if (!twin->isAlive())
+                        donecount++;
+                }
+            }
+            if (donecount == 2)
+                instance->SetBossState(DATA_TWIN_CONSORTS, DONE);
+            else
+                caller->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+        }
+    }
+};
 
 class boss_twin_consorts : public CreatureScript
 {
     public:
         boss_twin_consorts() : CreatureScript("boss_twin_consorts") {}
 
-        struct boss_twin_consortsAI : public ScriptedAI
+        struct boss_twin_consortsAI : public generic_boss_twin_consortsAI
         {
-            boss_twin_consortsAI(Creature* creature) : ScriptedAI(creature), summon(me)
+            boss_twin_consortsAI(Creature* creature) : generic_boss_twin_consortsAI(creature), summon(me)
             {
                 instance = creature->GetInstanceScript();
             }

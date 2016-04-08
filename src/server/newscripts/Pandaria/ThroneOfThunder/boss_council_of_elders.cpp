@@ -65,30 +65,6 @@ uint32 councilentry[4] =
     NPC_SUL_SANDCRAWLER,
 };
 
-void CheckDone(InstanceScript* instance, Creature* caller, uint32 callerEntry)
-{
-    if (!instance || !caller)
-        return;
-
-    if (Creature* council = caller->GetCreature(*caller, instance->GetData64(callerEntry)))
-        instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, council);
-
-    uint8 donecount = 0;
-    for (uint8 n = 0; n < 4; n++)
-    {
-        if (Creature* pcouncil = caller->GetCreature(*caller, instance->GetData64(councilentry[n])))
-        {
-            if (!pcouncil->isAlive())
-                donecount++;
-        }
-    }
-
-    if (donecount == 4)
-        instance->SetBossState(DATA_COUNCIL_OF_ELDERS, DONE);
-    else
-        caller->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
-}
-
 class boss_council_of_elders : public CreatureScript
 {
     public:
@@ -141,7 +117,20 @@ class boss_council_of_elders : public CreatureScript
             
             void JustDied(Unit* /*killer*/)
             {
-                CheckDone(instance, me, me->GetEntry());
+                if (instance)
+                {
+                    instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+                    uint8 donecount = 0;
+                    for (uint8 n = 0; n < 4; n++)
+                        if (Creature* pcouncil = me->GetCreature(*me, instance->GetData64(councilentry[n])))
+                            if (!pcouncil->isAlive())
+                                donecount++;
+
+                    if (donecount == 4)
+                        instance->SetBossState(DATA_COUNCIL_OF_ELDERS, DONE);
+                    else
+                        me->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+                }
             }
 
             void SpellHit(Unit* caster, SpellInfo const* spell)

@@ -72,96 +72,101 @@ uint32 protectorsEntry[3] =
     NPC_ELDER_ASANI,
 };
 
-void ResetBosses(InstanceScript* instance, Creature* caller, uint32 callerEntry)
+struct generic_boss_protectorsAI : ScriptedAI
 {
-    if (caller && instance)
+    generic_boss_protectorsAI(Creature* creature) : ScriptedAI(creature){}
+
+    void ResetBosses(InstanceScript* instance, Creature* caller, uint32 callerEntry)
     {
-        for (uint8 n = 0; n < 3; n++)
+        if (caller && instance)
         {
-            if (Creature* protector = caller->GetCreature(*caller, instance->GetData64(protectorsEntry[n])))
+            for (uint8 n = 0; n < 3; n++)
             {
-                if (protector->GetEntry() != callerEntry)
+                if (Creature* protector = caller->GetCreature(*caller, instance->GetData64(protectorsEntry[n])))
                 {
-                    if (!protector->isAlive())
+                    if (protector->GetEntry() != callerEntry)
                     {
-                        protector->Respawn();
-                        protector->GetMotionMaster()->MoveTargetedHome();
+                        if (!protector->isAlive())
+                        {
+                            protector->Respawn();
+                            protector->GetMotionMaster()->MoveTargetedHome();
+                        }
+                        else if (protector->isAlive() && protector->isInCombat())
+                            protector->AI()->EnterEvadeMode();
                     }
-                    else if (protector->isAlive() && protector->isInCombat())
-                        protector->AI()->EnterEvadeMode();
                 }
             }
         }
     }
-}
 
-void CallBosses(InstanceScript* instance, Creature* caller, uint32 callerEntry)
-{
-    if (caller && instance)
+    void CallBosses(InstanceScript* instance, Creature* caller, uint32 callerEntry)
     {
-        for (uint8 n = 0; n < 3; n++)
+        if (caller && instance)
         {
-            if (Creature* protector = caller->GetCreature(*caller, instance->GetData64(protectorsEntry[n])))
+            for (uint8 n = 0; n < 3; n++)
             {
-                if (protector->GetEntry() != callerEntry)
+                if (Creature* protector = caller->GetCreature(*caller, instance->GetData64(protectorsEntry[n])))
                 {
-                    if (protector->isAlive() && !protector->isInCombat())
-                        protector->AI()->DoZoneInCombat(protector, 150.0f);
+                    if (protector->GetEntry() != callerEntry)
+                    {
+                        if (protector->isAlive() && !protector->isInCombat())
+                            protector->AI()->DoZoneInCombat(protector, 150.0f);
+                    }
                 }
             }
         }
     }
-}
 
-void CallDieControl(InstanceScript* instance, Creature* caller, uint32 callerEntry)
-{
-    if (caller && instance)
+    void CallDieControl(InstanceScript* instance, Creature* caller, uint32 callerEntry)
     {
-        for (uint8 n = 0; n < 3; n++)
+        if (caller && instance)
         {
-            if (Creature* protector = caller->GetCreature(*caller, instance->GetData64(protectorsEntry[n])))
+            for (uint8 n = 0; n < 3; n++)
             {
-                if (protector->GetEntry() != callerEntry)
+                if (Creature* protector = caller->GetCreature(*caller, instance->GetData64(protectorsEntry[n])))
+                {
+                    if (protector->GetEntry() != callerEntry)
+                    {
+                        if (protector->isAlive())
+                        {
+                            protector->SetFullHealth();
+                            protector->CastSpell(protector, SPELL_SHA_CORRUPTION);
+                        }
+                    }
+                }
+            }
+            if (callerEntry == NPC_PROTECTOR_KAOLAN)
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TOUCH_OF_SHA);
+        }
+    }
+
+    uint8 CalcAliveBosses(InstanceScript* instance, Creature* caller)
+    {
+        uint8 abossval = 0;
+
+        if (caller && instance)
+        {
+            for (uint8 n = 0; n < 3; n++)
+            {
+                if (Creature* protector = caller->GetCreature(*caller, instance->GetData64(protectorsEntry[n])))
                 {
                     if (protector->isAlive())
-                    {
-                        protector->SetFullHealth();
-                        protector->CastSpell(protector, SPELL_SHA_CORRUPTION);
-                    }
+                        abossval++;
                 }
             }
         }
-        if (callerEntry == NPC_PROTECTOR_KAOLAN)
-            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TOUCH_OF_SHA);
+        return abossval;
     }
-}
-
-uint8 CalcAliveBosses(InstanceScript* instance, Creature* caller)
-{
-    uint8 abossval = 0;
-
-    if (caller && instance)
-    {
-        for (uint8 n = 0; n < 3; n++)
-        {
-            if (Creature* protector = caller->GetCreature(*caller, instance->GetData64(protectorsEntry[n])))
-            {
-                if (protector->isAlive())
-                    abossval++;
-            }
-        }
-    }
-    return abossval;
-}
+};
 
 class boss_protectors : public CreatureScript
 {
     public:
         boss_protectors() : CreatureScript("boss_protectors") {}
 
-        struct boss_protectorsAI : public ScriptedAI
+        struct boss_protectorsAI : public generic_boss_protectorsAI
         {
-            boss_protectorsAI(Creature* creature) : ScriptedAI(creature), summons(me)
+            boss_protectorsAI(Creature* creature) : generic_boss_protectorsAI(creature), summons(me)
             {
                 instance = creature->GetInstanceScript();
             }

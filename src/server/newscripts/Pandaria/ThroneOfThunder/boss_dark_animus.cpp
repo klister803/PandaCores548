@@ -46,25 +46,6 @@ enum Actions
     ACTION_FULL_POWER          = 1,
 };
 
-void SetGolemState(Creature* golem, bool state)
-{
-    if (golem)
-    {
-        if (state)
-        {
-            //online
-            golem->SetReactState(REACT_AGGRESSIVE);
-            golem->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-        }
-        else
-        {
-            //offline
-            golem->SetReactState(REACT_PASSIVE);
-            golem->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-        }
-    }
-}
-
 class boss_dark_animus : public CreatureScript
 {
     public:
@@ -263,7 +244,8 @@ class npc_large_anima_golem : public CreatureScript
             npc_large_anima_golemAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
-                SetGolemState(me, false);
+                me->SetReactState(REACT_PASSIVE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             }
 
             InstanceScript* instance;
@@ -299,7 +281,8 @@ class npc_anima_golem : public CreatureScript
             npc_anima_golemAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
-                SetGolemState(me, false);
+                me->SetReactState(REACT_PASSIVE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             }
 
             InstanceScript* instance;

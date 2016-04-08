@@ -121,85 +121,6 @@ class boss_iron_qon : public CreatureScript
         }
 };
 
-void FlyControl(Creature* maunt, bool state)
-{
-    if (maunt)
-    {
-        if (state)
-        {
-            maunt->SetCanFly(true);
-            maunt->SetDisableGravity(true);
-            maunt->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
-        }
-        else
-        {
-            maunt->SetCanFly(false);
-            maunt->SetDisableGravity(false);
-            maunt->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
-        }
-    }
-}
-
-void FindAndUseNextMaunt(InstanceScript* instance, Creature* caller, uint32 callerEntry)
-{
-    if (instance && caller)
-    {
-        if (Creature* iq = caller->GetCreature(*caller, instance->GetData64(NPC_IRON_QON)))
-        {
-            iq->RemoveAurasDueToSpell(SPELL_RIDE_VEHICLE);
-            
-            switch (callerEntry)
-            {
-            case NPC_ROSHAK:
-                if (Creature* q = caller->GetCreature(*caller, instance->GetData64(NPC_QUETZAL)))
-                {
-                    if (q->isAlive())
-                    {
-                        q->RemoveAurasDueToSpell(SPELL_ANIM_SIT);
-                        FlyControl(q, true);
-                        q->GetMotionMaster()->MoveCharge(caller->GetPositionX(), caller->GetPositionY(), caller->GetPositionZ(), 15.0f, 0);
-                    }
-                }
-                break;
-            case NPC_QUETZAL:
-                if (Creature* d = caller->GetCreature(*caller, instance->GetData64(NPC_DAMREN)))
-                {
-                    if (d->isAlive())
-                    {
-                        d->RemoveAurasDueToSpell(SPELL_ANIM_SIT);
-                        FlyControl(d, true);
-                        d->GetMotionMaster()->MoveCharge(caller->GetPositionX(), caller->GetPositionY(), caller->GetPositionZ(), 15.0f, 0);
-                    }
-                }
-                break;
-            case NPC_DAMREN:
-                iq->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                iq->SetReactState(REACT_AGGRESSIVE);
-                iq->AI()->DoZoneInCombat(iq, 100.0f);
-                break;
-            }
-        }
-    }
-}
-
-void CheckDiedMaunts(InstanceScript* instance, Creature* caller, uint32 callerEntry)
-{
-    if (instance && caller)
-    {
-        for (uint8 n = 0; n < 3; n++)
-        {
-            if (Creature* maunt = caller->GetCreature(*caller, instance->GetData64(mauntEntry[n])))
-            {
-                if (callerEntry != mauntEntry[n] && !maunt->isAlive())
-                {
-                    maunt->Respawn();
-                    maunt->GetMotionMaster()->MoveTargetedHome();
-                }
-            }
-        }
-    }
-}
-
 class npc_iron_qon_maunt : public CreatureScript
 {
     public:
@@ -227,7 +148,7 @@ class npc_iron_qon_maunt : public CreatureScript
                 events.Reset();
                 if (instance)
                 {
-                    CheckDiedMaunts(instance, me, me->GetEntry());
+                    CheckDiedMaunts();
                     if (me->HasAura(SPELL_RIDE_VEHICLE))
                         RemovePassenger();
                     if (me->GetEntry() == NPC_ROSHAK)
@@ -243,6 +164,43 @@ class npc_iron_qon_maunt : public CreatureScript
                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                     }
                     instance->SetBossState(DATA_IRON_QON, NOT_STARTED);
+                }
+            }
+
+            void FlyControl(Creature* maunt, bool state)
+            {
+                if (maunt)
+                {
+                    if (state)
+                    {
+                        maunt->SetCanFly(true);
+                        maunt->SetDisableGravity(true);
+                        maunt->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
+                    }
+                    else
+                    {
+                        maunt->SetCanFly(false);
+                        maunt->SetDisableGravity(false);
+                        maunt->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
+                    }
+                }
+            }
+
+            void CheckDiedMaunts()
+            {
+                if (instance)
+                {
+                    for (uint8 n = 0; n < 3; n++)
+                    {
+                        if (Creature* maunt = me->GetCreature(*me, instance->GetData64(mauntEntry[n])))
+                        {
+                            if (me->GetEntry() != mauntEntry[n] && !maunt->isAlive())
+                            {
+                                maunt->Respawn();
+                                maunt->GetMotionMaster()->MoveTargetedHome();
+                            }
+                        }
+                    }
                 }
             }
 
@@ -306,10 +264,49 @@ class npc_iron_qon_maunt : public CreatureScript
             {
                 if (damage >= me->GetHealth())
                 {
-                    if (instance)
+                    FlyControl(me, false);
+                    FindAndUseNextMaunt();
+                }
+            }
+
+            void FindAndUseNextMaunt()
+            {
+                if (instance)
+                {
+                    if (Creature* iq = me->GetCreature(*me, instance->GetData64(NPC_IRON_QON)))
                     {
-                        FlyControl(me, false);
-                        FindAndUseNextMaunt(instance, me, me->GetEntry());
+                        iq->RemoveAurasDueToSpell(SPELL_RIDE_VEHICLE);
+
+                        switch (me->GetEntry())
+                        {
+                        case NPC_ROSHAK:
+                            if (Creature* q = me->GetCreature(*me, instance->GetData64(NPC_QUETZAL)))
+                            {
+                                if (q->isAlive())
+                                {
+                                    q->RemoveAurasDueToSpell(SPELL_ANIM_SIT);
+                                    FlyControl(q, true);
+                                    q->GetMotionMaster()->MoveCharge(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 15.0f, 0);
+                                }
+                            }
+                            break;
+                        case NPC_QUETZAL:
+                            if (Creature* d = me->GetCreature(*me, instance->GetData64(NPC_DAMREN)))
+                            {
+                                if (d->isAlive())
+                                {
+                                    d->RemoveAurasDueToSpell(SPELL_ANIM_SIT);
+                                    FlyControl(d, true);
+                                    d->GetMotionMaster()->MoveCharge(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 15.0f, 0);
+                                }
+                            }
+                            break;
+                        case NPC_DAMREN:
+                            iq->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                            iq->SetReactState(REACT_AGGRESSIVE);
+                            iq->AI()->DoZoneInCombat(iq, 100.0f);
+                            break;
+                        }
                     }
                 }
             }

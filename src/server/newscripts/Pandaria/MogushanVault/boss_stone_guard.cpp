@@ -296,50 +296,51 @@ class boss_stone_guard_controler : public CreatureScript
         }
 };
 
-void DiedManager(InstanceScript* pInstance, Creature* caller, uint32 callerEntry) 
+struct boss_stone_guardianAI : ScriptedAI
 {
-    if (caller && pInstance)
+    boss_stone_guardianAI(Creature* creature) : ScriptedAI(creature){}
+
+    void DamageManager(InstanceScript* pInstance, Creature* caller, uint32 callerEntry, uint32 damage)
     {
-        for (uint8 n = 0; n < 4; n++)
+        if (caller && pInstance)
         {
-            if (Creature* guardian = caller->GetCreature(*caller, pInstance->GetData64(guardiansEntry[n])))
+            for (uint8 n = 0; n < 4; n++)
+                if (Creature* guardian = caller->GetCreature(*caller, pInstance->GetData64(guardiansEntry[n])))
+                    if (guardian->isAlive() && guardian->GetEntry() != callerEntry)
+                        guardian->SetHealth(guardian->GetHealth() - damage);
+        }
+    }
+
+    void DiedManager(InstanceScript* pInstance, Creature* caller, uint32 callerEntry)
+    {
+        if (caller && pInstance)
+        {
+            for (uint8 n = 0; n < 4; n++)
             {
-                if (guardian->isAlive() && guardian->GetEntry() != callerEntry)
+                if (Creature* guardian = caller->GetCreature(*caller, pInstance->GetData64(guardiansEntry[n])))
                 {
-                    guardian->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                    guardian->Kill(guardian, true);
-                    guardian->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+                    if (guardian->isAlive() && guardian->GetEntry() != callerEntry)
+                    {
+                        guardian->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                        guardian->Kill(guardian, true);
+                        guardian->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+                    }
                 }
             }
-        }
-        if (Creature* controller = caller->GetCreature(*caller, pInstance->GetData64(NPC_STONE_GUARD_CONTROLER)))
-            controller->AI()->DoAction(ACTION_GUARDIAN_DIED);
-    }
-}
-
-void DamageManager(InstanceScript* pInstance, Creature* caller, uint32 callerEntry, uint32 damage)
-{
-    if (caller && pInstance)
-    {
-        for (uint8 n = 0; n < 4; n++)
-        {
-            if (Creature* guardian = caller->GetCreature(*caller, pInstance->GetData64(guardiansEntry[n])))
-            {
-                if (guardian->isAlive() && guardian->GetEntry() != callerEntry)
-                    guardian->SetHealth(guardian->GetHealth() - damage);
-            }
+            if (Creature* controller = caller->GetCreature(*caller, pInstance->GetData64(NPC_STONE_GUARD_CONTROLER)))
+                controller->AI()->DoAction(ACTION_GUARDIAN_DIED);
         }
     }
-}
+};
 
 class boss_generic_guardian : public CreatureScript
 {
     public:
         boss_generic_guardian() : CreatureScript("boss_generic_guardian") {}
 
-        struct boss_generic_guardianAI : public ScriptedAI
+        struct boss_generic_guardianAI : public boss_stone_guardianAI
         {
-            boss_generic_guardianAI(Creature* creature) : ScriptedAI(creature), summons(creature)
+            boss_generic_guardianAI(Creature* creature) : boss_stone_guardianAI(creature), summons(creature)
             {
                 pInstance = creature->GetInstanceScript();
             }
@@ -356,7 +357,8 @@ class boss_generic_guardian : public CreatureScript
 
             Creature* GetController()
             {
-                if (pInstance) return me->GetMap()->GetCreature(pInstance->GetData64(NPC_STONE_GUARD_CONTROLER)); else return NULL;
+                if (pInstance)
+                    return me->GetMap()->GetCreature(pInstance->GetData64(NPC_STONE_GUARD_CONTROLER)); else return NULL;
             }
 
             void Reset()

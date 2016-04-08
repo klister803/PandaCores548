@@ -231,95 +231,96 @@ class boss_spirit_kings_controler : public CreatureScript
                         nspirit->AddAura(SPELL_NEXT_SPIRIT_VISUAL, nspirit);
             }
 
-            void DoAction(const int32 action)
+            void DoAction (const int32 action)
             {
                 if (!pInstance)
                     return;
 
                 switch (action)
                 {
-                    case ACTION_SPIRIT_KILLED:
-                        {
-                            uint32 nextspirit = 0;
-                            for (uint8 n = 0; n < 3; n++)
-                            {
-                                if (spiritkings[n] != 0)
-                                {
-                                    nextspirit = spiritkings[n];
-                                    if (nextspirit == spiritkings[2])
-                                    {
-                                        if (Creature* sp = me->GetCreature(*me, pInstance->GetData64(nextspirit)))
-                                            sp->AI()->DoAction(ACTION_SPIRIT_LOW_HEALTH);
-                                    }
-                                    else
-                                    {
-                                        if (Creature* nspirit = me->GetCreature(*me, pInstance->GetData64(spiritkings[n+1])))
-                                            nspirit->AddAura(SPELL_NEXT_SPIRIT_VISUAL, nspirit);
-                                    }
-                                    spiritkings[n] = 0;
-                                    break;
-                                }
-                            }
-                            if (nextspirit)
-                            {
-                                if (Creature* king = me->GetCreature(*me, pInstance->GetData64(nextspirit)))
-                                    king->AI()->DoAction(ACTION_START_FIGHT);
-                            }                   
-                        }
-                        break;
-                    case ACTION_SPIRIT_DONE:
-                        for (uint8 i = 0; i < 3; i++)
-                        {
-                            if (Creature* king = me->GetCreature(*me, pInstance->GetData64(spiritkingsvirtual[i])))
-                            {
-                                if (king->isAlive())
-                                {
-                                    me->Kill(king, true);
-                                    king->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
-                                }
-                            }
-                        }
-                        pInstance->SetBossState(DATA_SPIRIT_KINGS, DONE);
-                        me->Kill(me, true);
-                        break;
-                    case ACTION_FLANKING_MOGU:
+                case ACTION_SPIRIT_KILLED:
+                {
+                    uint32 nextspirit = 0;
+                    for (uint8 n = 0; n < 3; n++)
                     {
-                        float angle = frand(0.0f, 6.0f);
-                        float angleMinus = angle;
-                        float angleAlt = angle + 3.14f;
-                        float angleAltMinus = angle + 3.14f;
-
-                        Position posRand, posRandMinus, posRandAlt, posRandAltMinus;
-                        me->GetNearPosition(posRand, 30.0f, angle);
-                        me->GetNearPosition(posRandAlt, 30.0f, angleAlt);
-                        float orient = posRand.GetAngle(me);
-                        float orientAlt = posRandAlt.GetAngle(me);
-
-                        me->SummonCreature(NPC_FLANKING_MOGU, posRand.GetPositionX(), posRand.GetPositionY(), posRand.GetPositionZ(), orient);
-                        if (IsHeroic())
-                            me->SummonCreature(NPC_FLANKING_MOGU, posRandAlt.GetPositionX(), posRandAlt.GetPositionY(), posRandAlt.GetPositionZ(), orientAlt);
-                        for (int8 i = 0; i < 2; i++)
+                        if (spiritkings[n] != 0)
                         {
-                            angle += 0.15f;
-                            angleMinus -= 0.15f;
-                            me->GetNearPosition(posRand, 30.0f, angle);
-                            me->GetNearPosition(posRandMinus, 30.0f, angleMinus);
-                            me->SummonCreature(NPC_FLANKING_MOGU, posRand.GetPositionX(), posRand.GetPositionY(), posRand.GetPositionZ(), orient);
-                            me->SummonCreature(NPC_FLANKING_MOGU, posRandMinus.GetPositionX(), posRandMinus.GetPositionY(), posRandMinus.GetPositionZ(), orient);
-                            if (IsHeroic())
+                            nextspirit = spiritkings[n];
+                            if (nextspirit == spiritkings[2])
                             {
-                                angleAlt += 0.15f;
-                                angleAltMinus -= 0.15f;
-                                me->GetNearPosition(posRandAlt, 30.0f, angleAlt);
-                                me->GetNearPosition(posRandAltMinus, 30.0f, angleAltMinus);
-                                me->SummonCreature(NPC_FLANKING_MOGU, posRandAlt.GetPositionX(), posRandAlt.GetPositionY(), posRandAlt.GetPositionZ(), orientAlt);
-                                me->SummonCreature(NPC_FLANKING_MOGU, posRandAltMinus.GetPositionX(), posRandAltMinus.GetPositionY(), posRandAltMinus.GetPositionZ(), orientAlt);
+                                if (Creature* sp = me->GetCreature(*me, pInstance->GetData64(nextspirit)))
+                                    sp->AI()->DoAction(ACTION_SPIRIT_LOW_HEALTH);
                             }
+                            else
+                            {
+                                if (Creature* nspirit = me->GetCreature(*me, pInstance->GetData64(spiritkings[n + 1])))
+                                    nspirit->AddAura(SPELL_NEXT_SPIRIT_VISUAL, nspirit);
+                            }
+                            spiritkings[n] = 0;
+                            break;
                         }
-                        break;
+                    }
+                    if (nextspirit)
+                    {
+                        if (Creature* king = me->GetCreature(*me, pInstance->GetData64(nextspirit)))
+                            king->AI()->DoAction(ACTION_START_FIGHT);
                     }
                 }
+                break;
+                case ACTION_SPIRIT_DONE:
+                    for (uint8 i = 0; i < 3; i++)
+                    {
+                        if (Creature* king = me->GetCreature(*me, pInstance->GetData64(spiritkingsvirtual[i])))
+                        {
+                            if (king->isAlive())
+                            {
+                                me->Kill(king, true);
+                                king->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+                            }
+                        }
+                    }
+                    pInstance->SetBossState(DATA_SPIRIT_KINGS, DONE);
+                    me->Kill(me, true);
+                    break;
+                case ACTION_FLANKING_MOGU:
+                {
+                    float angle = frand(0.0f, 6.0f);
+                    float angleMinus = angle;
+                    float angleAlt = angle + 3.14f;
+                    float angleAltMinus = angle + 3.14f;
+
+                    Position posRand, posRandMinus, posRandAlt, posRandAltMinus;
+                    me->GetNearPosition(posRand, 30.0f, angle);
+                    me->GetNearPosition(posRandAlt, 30.0f, angleAlt);
+                    float orient = posRand.GetAngle(me);
+                    float orientAlt = posRandAlt.GetAngle(me);
+
+                    me->SummonCreature(NPC_FLANKING_MOGU, posRand.GetPositionX(), posRand.GetPositionY(), posRand.GetPositionZ(), orient);
+                    if (IsHeroic())
+                        me->SummonCreature(NPC_FLANKING_MOGU, posRandAlt.GetPositionX(), posRandAlt.GetPositionY(), posRandAlt.GetPositionZ(), orientAlt);
+                    for (int8 i = 0; i < 2; i++)
+                    {
+                        angle += 0.15f;
+                        angleMinus -= 0.15f;
+                        me->GetNearPosition(posRand, 30.0f, angle);
+                        me->GetNearPosition(posRandMinus, 30.0f, angleMinus);
+                        me->SummonCreature(NPC_FLANKING_MOGU, posRand.GetPositionX(), posRand.GetPositionY(), posRand.GetPositionZ(), orient);
+                        me->SummonCreature(NPC_FLANKING_MOGU, posRandMinus.GetPositionX(), posRandMinus.GetPositionY(), posRandMinus.GetPositionZ(), orient);
+                        if (IsHeroic())
+                        {
+                            angleAlt += 0.15f;
+                            angleAltMinus -= 0.15f;
+                            me->GetNearPosition(posRandAlt, 30.0f, angleAlt);
+                            me->GetNearPosition(posRandAltMinus, 30.0f, angleAltMinus);
+                            me->SummonCreature(NPC_FLANKING_MOGU, posRandAlt.GetPositionX(), posRandAlt.GetPositionY(), posRandAlt.GetPositionZ(), orientAlt);
+                            me->SummonCreature(NPC_FLANKING_MOGU, posRandAltMinus.GetPositionX(), posRandAltMinus.GetPositionY(), posRandAltMinus.GetPositionZ(), orientAlt);
+                        }
+                    }
+                }
+                break;
+                }
             }
+
             void UpdateAI(uint32 diff)
             {
                 if (!fightInProgress)
@@ -329,26 +330,18 @@ class boss_spirit_kings_controler : public CreatureScript
 
                 while (uint32 eventId = events.ExecuteEvent())
                 {
-                    switch(eventId)
+                    if (eventId ==  EVENT_CHECK_WIPE)
                     {
-                        case EVENT_CHECK_WIPE:
-                            {
-                                if (pInstance->IsWipe())
-                                {
-                                    for (uint8 n = 0; n < 4; n++)
-                                    {
-                                        if (Creature* king = me->GetCreature(*me, pInstance->GetData64(spiritKingsEntry[n])))
-                                        {
-                                            if (king->isAlive() && king->HasAura(SPELL_NEXT_SPIRIT_VISUAL))
-                                                king->RemoveAurasDueToSpell(SPELL_NEXT_SPIRIT_VISUAL);
-                                        }
-                                    }
-                                    EnterEvadeMode();
-                                }
-                                else
-                                    events.ScheduleEvent(EVENT_CHECK_WIPE, 1500);
-                            }
-                            break;
+                        if (pInstance->IsWipe())
+                        {
+                            for (uint8 n = 0; n < 4; n++)
+                                if (Creature* king = me->GetCreature(*me, pInstance->GetData64(spiritKingsEntry[n])))
+                                    if (king->isAlive() && king->HasAura(SPELL_NEXT_SPIRIT_VISUAL))
+                                        king->RemoveAurasDueToSpell(SPELL_NEXT_SPIRIT_VISUAL);
+                            EnterEvadeMode();
+                        }
+                        else
+                            events.ScheduleEvent(EVENT_CHECK_WIPE, 1500);
                     }
                 }
             }
@@ -406,7 +399,8 @@ class boss_spirit_kings : public CreatureScript
 
             Creature* GetControler()
             {
-                if (pInstance) return pInstance->instance->GetCreature(pInstance->GetData64(NPC_SPIRIT_GUID_CONTROLER)); else return NULL;
+                if (pInstance)
+                    return pInstance->instance->GetCreature(pInstance->GetData64(NPC_SPIRIT_GUID_CONTROLER)); else return NULL;
             }
 
             void EnterCombat(Unit* attacker)
@@ -513,12 +507,14 @@ class boss_spirit_kings : public CreatureScript
                 }
 
                 if (me->HasAura(SPELL_COWARDICE))
+                {
                     if (AuraEffect* effect = me->GetAuraEffect(SPELL_COWARDICE, EFFECT_1))
                     {
                         uint8 amount = effect->GetAmount();
                         float bp1 = damage * amount / 100;
                         me->CastCustomSpell(attacker, SPELL_COWARDICE_DMG, &bp1, NULL, NULL, true);
                     }
+                }
             }
 
             void SpellHit(Unit* caster, SpellInfo const* spell)
