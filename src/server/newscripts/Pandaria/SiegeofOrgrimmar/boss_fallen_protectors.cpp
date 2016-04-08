@@ -132,7 +132,6 @@ struct boss_fallen_protectors : public BossAI
     boss_fallen_protectors(Creature* creature) : BossAI(creature, DATA_F_PROTECTORS)
     {
         measureVeh = 0;
-        //measureSummonedCount = 0;
     }
 
     int8 _healthPhase;
@@ -145,12 +144,10 @@ struct boss_fallen_protectors : public BossAI
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
         _healthPhase = 0;
         me->CastSpell(me, SPELL_DESPAWN_AT, true);
-        //me->RemoveAllAreaObjects();
         instance->DoRemoveAurasDueToSpellOnPlayers(143239); // Remove AT dots
         instance->DoRemoveAurasDueToSpellOnPlayers(143959);
         instance->DoRemoveAurasDueToSpellOnPlayers(143564);
         measureSummonedCount = 0;
-
         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
     }
 
@@ -176,7 +173,8 @@ struct boss_fallen_protectors : public BossAI
             EnterEvadeMode();
     }
 
-    virtual void InitBattle() { 
+    virtual void InitBattle()
+    {
         events.SetPhase(PHASE_BATTLE);
         me->SetReactState(REACT_AGGRESSIVE);
     }
@@ -215,10 +213,10 @@ struct boss_fallen_protectors : public BossAI
             {
                 me->InterruptNonMeleeSpells(false);
                 DoCast(me, SPELL_BOUND_OF_GOLDEN_LOTUS, false);
-
                 events.SetPhase(PHASE_BOND_GOLDEN_LOTUS);
                 events.RescheduleEvent(EVENT_LOTUS, 1*IN_MILLISECONDS, 0, PHASE_BOND_GOLDEN_LOTUS);   //BreakIfAny
-            }else if (CheckLotus())
+            }
+            else if (CheckLotus())
             {
                 //END EVENT
                 damage = me->GetHealth();
@@ -258,7 +256,6 @@ struct boss_fallen_protectors : public BossAI
     {
         events.Reset();
         summons.DespawnAll();
-
         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         instance->DoRemoveAurasDueToSpellOnPlayers(143239); // Remove AT dots
         instance->DoRemoveAurasDueToSpellOnPlayers(143959);
@@ -267,42 +264,29 @@ struct boss_fallen_protectors : public BossAI
 
     void summonDesperation()
     {
-        Creature* lotos = instance->instance->GetCreature(instance->GetData64(measureVeh));
-        if (!lotos)
+        if (Creature* lotos = me->GetCreature(*me, instance->GetData64(measureVeh)))
         {
-            sLog->outError(LOG_FILTER_GENERAL, " >> Script boss_fallen_protectors::summonDesperation con't get %u for %u", measureVeh, me->GetEntry());
-            return;
-        }
-
-        Vehicle * vehicle = lotos->GetVehicleKit();
-        if (!vehicle)
-        {
-            sLog->outError(LOG_FILTER_GENERAL, " >> Script boss_fallen_protectors::summonDesperation unit %u of %u is not vehicle", measureVeh, me->GetEntry());
-            return;
-        }
-
-        //lotos->CastSpell(lotos, SPELL_EJECT_ALL_PASSANGERS, true);
-
-        SeatMap tempSeatMap = vehicle->Seats;
-        for (SeatMap::iterator itr = tempSeatMap.begin(); itr != tempSeatMap.end(); ++itr)
-        {
-            if (!itr->second.Passenger)
-                continue;
-
-            Unit* passenger = ObjectAccessor::FindUnit(itr->second.Passenger);
-            if (!passenger)
-                continue;
-
-            TempSummon* summon = passenger->ToTempSummon();
-            if (!summon)
+            if (Vehicle * vehicle = lotos->GetVehicleKit())
             {
-                sLog->outError(LOG_FILTER_GENERAL, " >> Script boss_fallen_protectors::summonDesperation unit %u has not tempSummon passanger entry %u", measureVeh, passenger->GetEntry());
-                continue;
-            }
+                SeatMap tempSeatMap = vehicle->Seats;
+                for (SeatMap::iterator itr = tempSeatMap.begin(); itr != tempSeatMap.end(); ++itr)
+                {
+                    if (!itr->second.Passenger)
+                        continue;
 
-            instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, summon);
-            summon->ExitVehicle();
-            ++measureSummonedCount;
+                    Unit* passenger = ObjectAccessor::FindUnit(itr->second.Passenger);
+                    if (!passenger)
+                        continue;
+
+                    TempSummon* summon = passenger->ToTempSummon();
+                    if (!summon)
+                        continue;
+
+                    instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, summon);
+                    summon->ExitVehicle();
+                    ++measureSummonedCount;
+                }
+            }
         }
     }
 
@@ -346,401 +330,392 @@ struct boss_fallen_protectors : public BossAI
 //Rook Stonetoe
 class boss_rook_stonetoe : public CreatureScript
 {
-    public:
-        boss_rook_stonetoe() : CreatureScript("boss_rook_stonetoe") {}
+public:
+    boss_rook_stonetoe() : CreatureScript("boss_rook_stonetoe") {}
 
-        struct boss_rook_stonetoeAI : public boss_fallen_protectors
+    struct boss_rook_stonetoeAI : public boss_fallen_protectors
+    {
+        boss_rook_stonetoeAI(Creature* creature) : boss_fallen_protectors(creature)
         {
-            boss_rook_stonetoeAI(Creature* creature) : boss_fallen_protectors(creature)
-            {
-                measureVeh = NPC_GOLD_LOTOS_ROOK;
-            }
-            uint8 corruptedbrewcount;
+            measureVeh = NPC_GOLD_LOTOS_ROOK;
+        }
+        uint8 corruptedbrewcount;
 
-            void Reset()
-            {
-                corruptedbrewcount = 0;
-            }
+        void Reset()
+        {
+            corruptedbrewcount = 0;
+        }
 
-            uint32 GetData(uint32 type)
-            {
-                if (type == DATA_CORRUPTED_BREW_COUNT)
-                    return (uint32(corruptedbrewcount++));
-                return 0;
-            }
+        uint32 GetData(uint32 type)
+        {
+            if (type == DATA_CORRUPTED_BREW_COUNT)
+                return (uint32(corruptedbrewcount++));
+            return 0;
+        }
 
-            void EnterEvadeMode() override
-            {
-                corruptedbrewcount = 0;
-                me->CastSpell(me, SPELL_DESPAWN_AT, true);
-                if (Creature* sun = instance->instance->GetCreature(instance->GetData64(NPC_SUN_TENDERHEART)))
-                    sun->AI()->EnterEvadeMode();
-                boss_fallen_protectors::EnterEvadeMode();
-            }
+        void EnterEvadeMode() override
+        {
+            corruptedbrewcount = 0;
+            me->CastSpell(me, SPELL_DESPAWN_AT, true);
+            if (Creature* sun = instance->instance->GetCreature(instance->GetData64(NPC_SUN_TENDERHEART)))
+                sun->AI()->EnterEvadeMode();
+            boss_fallen_protectors::EnterEvadeMode();
+        }
 
-            enum local
-            {
-                EVENT_VENGEFUL_STRIKE   = 5,
-                EVENT_CORRUPTED_BREW    = 6,
-                EVENT_CLASH             = 7,
-            };
-
-            void InitBattle()
-            {
-                boss_fallen_protectors::InitBattle();
-
-                events.RescheduleEvent(EVENT_VENGEFUL_STRIKE, urand(10*IN_MILLISECONDS, 20*IN_MILLISECONDS), 0, PHASE_BATTLE);
-                events.RescheduleEvent(EVENT_CORRUPTED_BREW, urand(IN_MILLISECONDS, 5*IN_MILLISECONDS), 0, PHASE_BATTLE);
-                events.RescheduleEvent(EVENT_CLASH, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
-            }
-
-            void EnterCombat(Unit* who)
-            {
-                boss_fallen_protectors::EnterCombat(who);
-                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, me->GetGUID());
-            }
-
-            void DoAction(int32 const action)
-            {
-                boss_fallen_protectors::DoAction(action);
-            }
-
-            void JustDied(Unit* /*killer*/)
-            {
-                boss_fallen_protectors::JustDied(NULL);
-            }
-
-            void UpdateAI(uint32 diff)
-            {
-                if (events.IsInPhase(PHASE_BATTLE) && !UpdateVictim() ||
-                    !events.IsInPhase(PHASE_BOND_GOLDEN_LOTUS) && me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
-
-                EnterEvadeIfOutOfCombatArea(diff);
-                events.Update(diff);
-
-                while (uint32 eventId = events.ExecuteEvent())
-                {
-                    boss_fallen_protectors::DoAction(eventId);
-                    switch (eventId)
-                    {
-                        case EVENT_VENGEFUL_STRIKE:
-                            DoCastVictim(SPELL_VENGEFUL_STRIKE);
-                            events.RescheduleEvent(EVENT_VENGEFUL_STRIKE, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
-                            break;
-                        case EVENT_CORRUPTED_BREW:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0.0f, true))
-                                DoCast(target, SPELL_CORRUPTED_BREW_BASE, true);
-                            events.RescheduleEvent(EVENT_CORRUPTED_BREW, urand(10*IN_MILLISECONDS, 15*IN_MILLISECONDS), 0, PHASE_BATTLE);
-                            break;
-                        case EVENT_CLASH:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
-                                DoCast(target, SPELL_CLASH);
-                            //DoCastVictim(SPELL_CLASH);
-                            events.RescheduleEvent(EVENT_CLASH, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
-                            break;
-                        case EVENT_DESPERATE_MEASURES:
-                            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_4, me->GetGUID());
-                            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_5, me->GetGUID());
-                            DoCast(me, SPELL_MISERY_SORROW_GLOOM, false);
-                            break;
-                        case EVENT_LOTUS:
-                            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_6, me->GetGUID());
-                            break;
-                        default:
-                            break;
-                    }
-                }
-
-                if (events.IsInPhase(PHASE_BATTLE))
-                    DoMeleeAttackIfReady();
-            }
+        enum local
+        {
+            EVENT_VENGEFUL_STRIKE = 5,
+            EVENT_CORRUPTED_BREW = 6,
+            EVENT_CLASH = 7,
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        void InitBattle()
         {
-            return new boss_rook_stonetoeAI(creature);
+            boss_fallen_protectors::InitBattle();
+
+            events.RescheduleEvent(EVENT_VENGEFUL_STRIKE, urand(10 * IN_MILLISECONDS, 20 * IN_MILLISECONDS), 0, PHASE_BATTLE);
+            events.RescheduleEvent(EVENT_CORRUPTED_BREW, urand(IN_MILLISECONDS, 5 * IN_MILLISECONDS), 0, PHASE_BATTLE);
+            events.RescheduleEvent(EVENT_CLASH, urand(20 * IN_MILLISECONDS, 30 * IN_MILLISECONDS), 0, PHASE_BATTLE);
         }
+
+        void EnterCombat(Unit* who)
+        {
+            boss_fallen_protectors::EnterCombat(who);
+            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, me->GetGUID());
+        }
+
+        void DoAction(int32 const action)
+        {
+            boss_fallen_protectors::DoAction(action);
+        }
+
+        void JustDied(Unit* /*killer*/)
+        {
+            boss_fallen_protectors::JustDied(NULL);
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            if (events.IsInPhase(PHASE_BATTLE) && !UpdateVictim() ||
+                !events.IsInPhase(PHASE_BOND_GOLDEN_LOTUS) && me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            EnterEvadeIfOutOfCombatArea(diff);
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                boss_fallen_protectors::DoAction(eventId);
+                switch (eventId)
+                {
+                case EVENT_VENGEFUL_STRIKE:
+                    DoCastVictim(SPELL_VENGEFUL_STRIKE);
+                    events.RescheduleEvent(EVENT_VENGEFUL_STRIKE, urand(20 * IN_MILLISECONDS, 30 * IN_MILLISECONDS), 0, PHASE_BATTLE);
+                    break;
+                case EVENT_CORRUPTED_BREW:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0.0f, true))
+                        DoCast(target, SPELL_CORRUPTED_BREW_BASE, true);
+                    events.RescheduleEvent(EVENT_CORRUPTED_BREW, urand(10 * IN_MILLISECONDS, 15 * IN_MILLISECONDS), 0, PHASE_BATTLE);
+                    break;
+                case EVENT_CLASH:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                        DoCast(target, SPELL_CLASH);
+                    events.RescheduleEvent(EVENT_CLASH, urand(20 * IN_MILLISECONDS, 30 * IN_MILLISECONDS), 0, PHASE_BATTLE);
+                    break;
+                case EVENT_DESPERATE_MEASURES:
+                    corruptedbrewcount = 0;
+                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_4, me->GetGUID());
+                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_5, me->GetGUID());
+                    DoCast(me, SPELL_MISERY_SORROW_GLOOM, false);
+                    break;
+                case EVENT_LOTUS:
+                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_6, me->GetGUID());
+                    break;
+                default:
+                    break;
+                }
+            }
+            if (events.IsInPhase(PHASE_BATTLE))
+                DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new boss_rook_stonetoeAI(creature);
+    }
 };
 
 //He Softfoot
 class boss_he_softfoot : public CreatureScript
 {
-    public:
-        boss_he_softfoot() : CreatureScript("boss_he_softfoot") {}
+public:
+    boss_he_softfoot() : CreatureScript("boss_he_softfoot") {}
 
-        struct boss_he_softfootAI : public boss_fallen_protectors
+    struct boss_he_softfootAI : public boss_fallen_protectors
+    {
+        boss_he_softfootAI(Creature* creature) : boss_fallen_protectors(creature)
         {
-            boss_he_softfootAI(Creature* creature) : boss_fallen_protectors(creature)
-            {
-                measureVeh = NPC_GOLD_LOTOS_HE;
-            }
+            measureVeh = NPC_GOLD_LOTOS_HE;
+        }
 
-            void EnterEvadeMode() override
-            {
-                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROTE);
+        void EnterEvadeMode() override
+        {
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROTE);
+            me->CastSpell(me, SPELL_DESPAWN_AT, true);
+            if (Creature* sun = instance->instance->GetCreature(instance->GetData64(NPC_SUN_TENDERHEART)))
+                sun->AI()->EnterEvadeMode();
+            boss_fallen_protectors::EnterEvadeMode();
+        }
 
-                me->CastSpell(me, SPELL_DESPAWN_AT, true);
-
-                if (Creature* sun = instance->instance->GetCreature(instance->GetData64(NPC_SUN_TENDERHEART)))
-                    sun->AI()->EnterEvadeMode();
-                boss_fallen_protectors::EnterEvadeMode();
-            }
-
-            enum local
-            {
-                EVENT_GARROTE                   = 5,
-                EVENT_GOUGE                     = 6,
-                EVENT_POISON_NOXIOUS            = 7,
-                EVENT_POISON_INSTANT            = 8,
-            };
-
-            void InitBattle()
-            {
-                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WEAKNESS);
-
-                boss_fallen_protectors::InitBattle();
-
-                events.RescheduleEvent(EVENT_GARROTE, 5*IN_MILLISECONDS, 0, PHASE_BATTLE);
-                events.RescheduleEvent(EVENT_GOUGE, urand(IN_MILLISECONDS, 5*IN_MILLISECONDS), 0, PHASE_BATTLE);
-                events.RescheduleEvent(EVENT_POISON_NOXIOUS, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
-            }
-
-            void EnterCombat(Unit* who)
-            {
-                boss_fallen_protectors::EnterCombat(who);
-                DoCast(who, SPELL_INSTANT_POISON, false);
-            }
-
-            void AttackStart(Unit* target)
-            {
-                if (!events.IsInPhase(PHASE_BATTLE))
-                    return;
-
-                BossAI::AttackStart(target);
-            }
-
-            void DoAction(int32 const action)
-            {
-                boss_fallen_protectors::DoAction(action);
-            }
-
-            void JustDied(Unit* /*killer*/)
-            {
-                boss_fallen_protectors::JustDied(NULL);
-                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROTE);
-            }
-
-            bool AllowSelectNextVictim(Unit* target)
-            {
-                // Go next raid member.
-                return !target->HasUnitState(UNIT_STATE_STUNNED);
-            }
-
-            //bool CanAIAttack(Unit const* target) const
-            //{
-            //    return const_cast<EventMap*>(&events)->IsInPhase(PHASE_BATTLE);
-            //}
-
-            void UpdateAI(uint32 diff)
-            {
-                if (events.IsInPhase(PHASE_BATTLE) && !UpdateVictim() ||
-                    !events.IsInPhase(PHASE_BOND_GOLDEN_LOTUS) && me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
-
-                events.Update(diff);
-                EnterEvadeIfOutOfCombatArea(diff);
-
-                while (uint32 eventId = events.ExecuteEvent())
-                {
-                    boss_fallen_protectors::DoAction(eventId);
-                    switch (eventId)
-                    {
-                        case EVENT_GARROTE:
-                            if (Unit* target = me->getVictim())
-                                if (!target->HasAura(SPELL_GARROTE))
-                                    DoCast(target, SPELL_GARROTE, false);
-                            events.RescheduleEvent(EVENT_GARROTE, 5*IN_MILLISECONDS, 0, PHASE_BATTLE);
-                            break;
-                        case EVENT_GOUGE:
-                            DoCastVictim(SPELL_GOUGE);
-                            events.RescheduleEvent(EVENT_GOUGE, urand(15*IN_MILLISECONDS, 20*IN_MILLISECONDS), 0, PHASE_BATTLE);
-                            break;
-                        case EVENT_POISON_NOXIOUS:
-                            events.RescheduleEvent(EVENT_POISON_INSTANT, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
-                            DoCastVictim(SPELL_NOXIOUS_POISON);
-                            break;
-                        case EVENT_POISON_INSTANT:
-                            DoCastVictim( SPELL_INSTANT_POISON);
-                            events.RescheduleEvent(EVENT_POISON_NOXIOUS, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
-                            me->RemoveAllAreaObjects();
-                            break;
-                        case EVENT_DESPERATE_MEASURES:
-                            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, me->GetGUID());
-                            DoCast(me, SPELL_MARK_OF_ANGUISH_MEDITATION, false);
-                            break;
-                        case EVENT_LOTUS:
-                            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2, me->GetGUID());
-                            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, me->GetGUID());
-                            break;
-                    }
-                }
-                if (events.IsInPhase(PHASE_BATTLE))
-                    DoMeleeAttackIfReady();
-            }
+        enum local
+        {
+            EVENT_GARROTE = 5,
+            EVENT_GOUGE = 6,
+            EVENT_POISON_NOXIOUS = 7,
+            EVENT_POISON_INSTANT = 8,
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        void InitBattle()
         {
-            return new boss_he_softfootAI(creature);
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WEAKNESS);
+            boss_fallen_protectors::InitBattle();
+            events.RescheduleEvent(EVENT_GARROTE, 5 * IN_MILLISECONDS, 0, PHASE_BATTLE);
+            events.RescheduleEvent(EVENT_GOUGE, urand(IN_MILLISECONDS, 5 * IN_MILLISECONDS), 0, PHASE_BATTLE);
+            events.RescheduleEvent(EVENT_POISON_NOXIOUS, urand(20 * IN_MILLISECONDS, 30 * IN_MILLISECONDS), 0, PHASE_BATTLE);
         }
+
+        void EnterCombat(Unit* who)
+        {
+            boss_fallen_protectors::EnterCombat(who);
+            DoCast(who, SPELL_INSTANT_POISON, false);
+        }
+
+        void AttackStart(Unit* target)
+        {
+            if (!events.IsInPhase(PHASE_BATTLE))
+                return;
+
+            BossAI::AttackStart(target);
+        }
+
+        void DoAction(int32 const action)
+        {
+            boss_fallen_protectors::DoAction(action);
+        }
+
+        void JustDied(Unit* /*killer*/)
+        {
+            boss_fallen_protectors::JustDied(NULL);
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROTE);
+        }
+
+        bool AllowSelectNextVictim(Unit* target)
+        {
+            // Go next raid member.
+            return !target->HasUnitState(UNIT_STATE_STUNNED);
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            if (events.IsInPhase(PHASE_BATTLE) && !UpdateVictim() ||
+                !events.IsInPhase(PHASE_BOND_GOLDEN_LOTUS) && me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            events.Update(diff);
+            EnterEvadeIfOutOfCombatArea(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                boss_fallen_protectors::DoAction(eventId);
+                switch (eventId)
+                {
+                case EVENT_GARROTE:
+                    if (Unit* target = me->getVictim())
+                        if (!target->HasAura(SPELL_GARROTE))
+                            DoCast(target, SPELL_GARROTE, false);
+                    events.RescheduleEvent(EVENT_GARROTE, 5 * IN_MILLISECONDS, 0, PHASE_BATTLE);
+                    break;
+                case EVENT_GOUGE:
+                    DoCastVictim(SPELL_GOUGE);
+                    events.RescheduleEvent(EVENT_GOUGE, urand(15 * IN_MILLISECONDS, 20 * IN_MILLISECONDS), 0, PHASE_BATTLE);
+                    break;
+                case EVENT_POISON_NOXIOUS:
+                    events.RescheduleEvent(EVENT_POISON_INSTANT, urand(20 * IN_MILLISECONDS, 30 * IN_MILLISECONDS), 0, PHASE_BATTLE);
+                    DoCastVictim(SPELL_NOXIOUS_POISON);
+                    break;
+                case EVENT_POISON_INSTANT:
+                    DoCastVictim(SPELL_INSTANT_POISON);
+                    events.RescheduleEvent(EVENT_POISON_NOXIOUS, urand(20 * IN_MILLISECONDS, 30 * IN_MILLISECONDS), 0, PHASE_BATTLE);
+                    me->RemoveAllAreaObjects();
+                    break;
+                case EVENT_DESPERATE_MEASURES:
+                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, me->GetGUID());
+                    DoCast(me, SPELL_MARK_OF_ANGUISH_MEDITATION, false);
+                    break;
+                case EVENT_LOTUS:
+                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2, me->GetGUID());
+                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, me->GetGUID());
+                    break;
+                }
+            }
+            if (events.IsInPhase(PHASE_BATTLE))
+                DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new boss_he_softfootAI(creature);
+    }
 };
 
 //Sun Tenderheart
 class boss_sun_tenderheart : public CreatureScript
 {
-    public:
-        boss_sun_tenderheart() : CreatureScript("boss_sun_tenderheart") {}
+public:
+    boss_sun_tenderheart() : CreatureScript("boss_sun_tenderheart") {}
 
-        struct boss_sun_tenderheartAI : public boss_fallen_protectors
+    struct boss_sun_tenderheartAI : public boss_fallen_protectors
+    {
+        boss_sun_tenderheartAI(Creature* creature) : boss_fallen_protectors(creature), summons(me)
         {
-            boss_sun_tenderheartAI(Creature* creature) : boss_fallen_protectors(creature), summons(me)
-            {
-                SetCombatMovement(false);
-                measureVeh = NPC_GOLD_LOTOS_SUN;
-            }
+            SetCombatMovement(false);
+            measureVeh = NPC_GOLD_LOTOS_SUN;
+        }
 
-            SummonList summons;
-            uint32 shadow_word_count;
-            uint8 calamitycount;
+        SummonList summons;
+        uint32 shadow_word_count;
+        uint8 calamitycount;
 
-            void Reset()
-            {
-                boss_fallen_protectors::Reset();
-                shadow_word_count = 0;
-                calamitycount = 0;
-                summons.DespawnAll();
-                me->SummonCreature(NPC_GOLD_LOTOS_MAIN, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0);
-                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WORD_BANE);
-            }
+        void Reset()
+        {
+            boss_fallen_protectors::Reset();
+            shadow_word_count = 0;
+            calamitycount = 0;
+            summons.DespawnAll();
+            me->SummonCreature(NPC_GOLD_LOTOS_MAIN, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0);
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WORD_BANE);
+        }
 
-            enum local
-            {
-                EVENT_SHA_SEAR            = 5,
-                EVENT_SHADOW_WORD_BANE    = 6,
-                EVENT_CALAMITY            = 7,
-            };
-
-            void InitBattle()
-            {
-                boss_fallen_protectors::InitBattle();
-                events.RescheduleEvent(EVENT_SHA_SEAR, IN_MILLISECONDS, 0, PHASE_BATTLE);
-                events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(15*IN_MILLISECONDS, 25*IN_MILLISECONDS), 0, PHASE_BATTLE);
-                events.RescheduleEvent(EVENT_CALAMITY, urand(60*IN_MILLISECONDS, 70*IN_MILLISECONDS), 0, PHASE_BATTLE);
-            }
-
-            void EnterCombat(Unit* who)
-            {
-                boss_fallen_protectors::EnterCombat(who);
-                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, me->GetGUID());
-                calamitycount = 0;
-            }
-
-            uint32 GetData(uint32 type)
-            {
-                if (type == DATA_CALAMITY_COUNT)
-                    return (uint32(calamitycount));
-                return 0;
-            }
-
-            void DoAction(int32 const action)
-            {
-                boss_fallen_protectors::DoAction(action);
-            }
-
-            void JustSummoned(Creature* summon)
-            {
-                summons.Summon(summon);
-            }
-
-            void JustDied(Unit* /*killer*/)
-            {
-                boss_fallen_protectors::JustDied(NULL);
-                summons.DespawnAll();
-                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_6, me->GetGUID());
-                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WORD_BANE);
-            }
-
-            void SetData(uint32 type, uint32 value)
-            {
-                switch(type)
-                {
-                    case DATA_SHADOW_WORD_DAMAGE:
-                        events.ScheduleEvent(EVENT_SHADOW_WORD_BANE, 1, 0, PHASE_BATTLE);
-                        break;
-                    case DATA_SHADOW_WORD_REMOVED:
-                        --shadow_word_count;
-                        break;
-                    // calamity hit caled every hit on target and it's right.
-                    case DATA_CALAMITY_HIT:
-                        //remove shadow word bane
-                        instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WORD_BANE);     //this call DATA_SHADOW_WORD_REMOVED
-                        events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE); //reschedal remove curent events.
-                        break;
-                }
-            }
-
-            void UpdateAI(uint32 diff)
-            {
-                if (events.IsInPhase(PHASE_BATTLE) && !UpdateVictim() ||
-                    !events.IsInPhase(PHASE_BOND_GOLDEN_LOTUS) && me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
-
-                events.Update(diff);
-                EnterEvadeIfOutOfCombatArea(diff);
-
-                while (uint32 eventId = events.ExecuteEvent())
-                {
-                    boss_fallen_protectors::DoAction(eventId);
-                    switch (eventId)
-                    {
-                        case EVENT_SHA_SEAR:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0.0f, true))
-                                DoCast(target, SPELL_SHA_SEAR, true);
-                            events.RescheduleEvent(EVENT_SHA_SEAR, urand(5*IN_MILLISECONDS, 10*IN_MILLISECONDS), 0, PHASE_BATTLE);
-                            break;
-                        case EVENT_SHADOW_WORD_BANE:
-                            if (shadow_word_count < 3){
-                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true, -SPELL_SHADOW_WORD_BANE))
-                                    DoCast(target, SPELL_SHADOW_WORD_BANE, true);
-                                ++shadow_word_count;
-                            }
-                            events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
-                            break;
-                        case EVENT_CALAMITY:
-                            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2, 0);
-                            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, 0);
-                            DoCastVictim(SPELL_CALAMITY);
-                            events.RescheduleEvent(EVENT_CALAMITY, urand(60*IN_MILLISECONDS, 70*IN_MILLISECONDS), 0, PHASE_BATTLE);
-                            break;
-                        case EVENT_DESPERATE_MEASURES:
-                            if (Creature* lotos = instance->instance->GetCreature(instance->GetData64(NPC_GOLD_LOTOS_MAIN)))
-                                DoCast(lotos, SPELL_DARK_MEDITATION_JUMP, true);
-                            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_4, me->GetGUID());
-                            break;
-                        case EVENT_LOTUS:
-                            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_5, me->GetGUID());
-                            break;
-                    }
-                }
-                //DoMeleeAttackIfReady();
-            }
+        enum local
+        {
+            EVENT_SHA_SEAR = 5,
+            EVENT_SHADOW_WORD_BANE = 6,
+            EVENT_CALAMITY = 7,
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        void InitBattle()
         {
-            return new boss_sun_tenderheartAI(creature);
+            boss_fallen_protectors::InitBattle();
+            events.RescheduleEvent(EVENT_SHA_SEAR, IN_MILLISECONDS, 0, PHASE_BATTLE);
+            events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(15 * IN_MILLISECONDS, 25 * IN_MILLISECONDS), 0, PHASE_BATTLE);
+            events.RescheduleEvent(EVENT_CALAMITY, urand(60 * IN_MILLISECONDS, 70 * IN_MILLISECONDS), 0, PHASE_BATTLE);
         }
+
+        void EnterCombat(Unit* who)
+        {
+            boss_fallen_protectors::EnterCombat(who);
+            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, me->GetGUID());
+            calamitycount = 0;
+        }
+
+        uint32 GetData(uint32 type)
+        {
+            if (type == DATA_CALAMITY_COUNT)
+                return (uint32(calamitycount));
+            return 0;
+        }
+
+        void DoAction(int32 const action)
+        {
+            boss_fallen_protectors::DoAction(action);
+        }
+
+        void JustSummoned(Creature* summon)
+        {
+            summons.Summon(summon);
+        }
+
+        void JustDied(Unit* /*killer*/)
+        {
+            boss_fallen_protectors::JustDied(NULL);
+            summons.DespawnAll();
+            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_6, me->GetGUID());
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WORD_BANE);
+        }
+
+        void SetData(uint32 type, uint32 value)
+        {
+            switch (type)
+            {
+            case DATA_SHADOW_WORD_DAMAGE:
+                events.ScheduleEvent(EVENT_SHADOW_WORD_BANE, 1, 0, PHASE_BATTLE);
+                break;
+            case DATA_SHADOW_WORD_REMOVED:
+                --shadow_word_count;
+                break;
+                // calamity hit caled every hit on target and it's right.
+            case DATA_CALAMITY_HIT:
+                //remove shadow word bane
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WORD_BANE);     //this call DATA_SHADOW_WORD_REMOVED
+                events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(20 * IN_MILLISECONDS, 30 * IN_MILLISECONDS), 0, PHASE_BATTLE); //reschedal remove curent events.
+                break;
+            }
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            if (events.IsInPhase(PHASE_BATTLE) && !UpdateVictim() ||
+                !events.IsInPhase(PHASE_BOND_GOLDEN_LOTUS) && me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            events.Update(diff);
+            EnterEvadeIfOutOfCombatArea(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                boss_fallen_protectors::DoAction(eventId);
+                switch (eventId)
+                {
+                case EVENT_SHA_SEAR:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0.0f, true))
+                        DoCast(target, SPELL_SHA_SEAR, true);
+                    events.RescheduleEvent(EVENT_SHA_SEAR, urand(5 * IN_MILLISECONDS, 10 * IN_MILLISECONDS), 0, PHASE_BATTLE);
+                    break;
+                case EVENT_SHADOW_WORD_BANE:
+                    if (shadow_word_count < 3)
+                    {
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true, -SPELL_SHADOW_WORD_BANE))
+                            DoCast(target, SPELL_SHADOW_WORD_BANE, true);
+                        ++shadow_word_count;
+                    }
+                    events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(20 * IN_MILLISECONDS, 30 * IN_MILLISECONDS), 0, PHASE_BATTLE);
+                    break;
+                case EVENT_CALAMITY:
+                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2, 0);
+                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, 0);
+                    DoCastVictim(SPELL_CALAMITY);
+                    events.RescheduleEvent(EVENT_CALAMITY, urand(60 * IN_MILLISECONDS, 70 * IN_MILLISECONDS), 0, PHASE_BATTLE);
+                    break;
+                case EVENT_DESPERATE_MEASURES:
+                    calamitycount = 0;
+                    if (Creature* lotos = instance->instance->GetCreature(instance->GetData64(NPC_GOLD_LOTOS_MAIN)))
+                        DoCast(lotos, SPELL_DARK_MEDITATION_JUMP, true);
+                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_4, me->GetGUID());
+                    break;
+                case EVENT_LOTUS:
+                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_5, me->GetGUID());
+                    break;
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new boss_sun_tenderheartAI(creature);
+    }
 };
 
 //Golden Lotus
@@ -765,32 +740,9 @@ public:
         InstanceScript* instance;
         EventMap events;
 
-        //void JustSummoned(Creature* creature)
-        //{
-        //    if (creature->GetEntry() == NPC_GOLD_LOTOS_MOVER)
-        //    {
-        //        creature->SetDisplayId(48920);
-        //        creature->GetMotionMaster()->MoveIdle();
-        //        creature->LoadPath(creature->GetEntry());
-        //        creature->SetDefaultMovementType(WAYPOINT_MOTION_TYPE);
-        //        creature->GetMotionMaster()->Initialize();
-        //        if (creature->isAlive())                            // dead creature will reset movement generator at respawn
-        //        {
-        //            creature->setDeathState(JUST_DIED);
-        //            creature->Respawn(true);
-        //        }
-        //    }
-        //};
-
         void Reset()
         {
-            //Use manual spawn.
-            //me->CastSpell(me, SUMMON_MOVER, true);
             events.RescheduleEvent(EVENT_1, 1000);
-        }
-        
-        void OnCharmed(bool /*apply*/)
-        {
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -811,15 +763,7 @@ public:
             }
         }
 
-        void UpdateAI(uint32 diff)
-        {
-            events.Update(diff);
-
-            while (uint32 eventId = events.ExecuteEvent())
-            {
-
-            }
-        }
+        void UpdateAI(uint32 diff){}
     };
     
     CreatureAI* GetAI(Creature* creature) const
@@ -840,59 +784,65 @@ Position const LotusJumpPosition[6]   =
 
 class ExitVexMeasure : public BasicEvent
 {
-    public:
-        explicit ExitVexMeasure(Creature *c) : creature(c) { }
+public:
+    explicit ExitVexMeasure(Creature *c) : creature(c) { }
 
-        bool Execute(uint64 /*currTime*/, uint32 /*diff*/)
+    bool Execute(uint64 /*currTime*/, uint32 /*diff*/)
+    {
+        uint8 _idx = 0;
+        switch (creature->GetEntry())
         {
-            uint8 _idx = 0;
-            switch (creature->GetEntry())
-            {
-            case NPC_EMBODIED_DESPIRE_OF_SUN:       _idx = 0; break;
-            case NPC_EMBODIED_DESPERATION_OF_SUN:   _idx = 1; break;
-            case NPC_EMBODIED_ANGUISH_OF_HE:        _idx = 2; break;
-            case NPC_EMBODIED_MISERY_OF_ROOK:       _idx = 3; break;
-            case NPC_EMBODIED_GLOOM_OF_ROOK:        _idx = 4; break;
-            case NPC_EMBODIED_SORROW_OF_ROOK:       _idx = 5; break;
-            default:
-                sLog->outError(LOG_FILTER_GENERAL, " >> Script: OO:ExitVexMeasure no position for fall down for entry %u", creature->GetEntry());
-                return true;
-            }
-            creature->GetMotionMaster()->MoveJump(LotusJumpPosition[_idx].m_positionX, LotusJumpPosition[_idx].m_positionY, LotusJumpPosition[_idx].m_positionZ, 20.0f, 20.0f);
-            creature->AI()->DoAction(EVENT_1);
+        case NPC_EMBODIED_DESPIRE_OF_SUN:
+            _idx = 0;
+            break;
+        case NPC_EMBODIED_DESPERATION_OF_SUN:
+            _idx = 1;
+            break;
+        case NPC_EMBODIED_ANGUISH_OF_HE:
+            _idx = 2;
+            break;
+        case NPC_EMBODIED_MISERY_OF_ROOK:
+            _idx = 3;
+            break;
+        case NPC_EMBODIED_GLOOM_OF_ROOK:
+            _idx = 4;
+            break;
+        case NPC_EMBODIED_SORROW_OF_ROOK:
+            _idx = 5;
+            break;
+        default:
             return true;
         }
-
-    private:
-        Creature *creature;
+        creature->GetMotionMaster()->MoveJump(LotusJumpPosition[_idx].m_positionX, LotusJumpPosition[_idx].m_positionY, LotusJumpPosition[_idx].m_positionZ, 20.0f, 20.0f);
+        creature->AI()->DoAction(EVENT_1);
+        return true;
+    }
+private:
+    Creature *creature;
 };
 
 class vehicle_golden_lotus_conteiner : public VehicleScript
 {
-    public:
-        vehicle_golden_lotus_conteiner() : VehicleScript("vehicle_golden_lotus_conteiner") {}
+public:
+    vehicle_golden_lotus_conteiner() : VehicleScript("vehicle_golden_lotus_conteiner") {}
 
-        void OnAddPassenger(Vehicle* veh, Unit* passenger, int8 /*seatId*/)
-        {
+    void OnRemovePassenger(Vehicle* veh, Unit* passenger)
+    {
+        Unit* own = veh->GetBase();
+        if (!own)
+            return;
 
-        }
+        InstanceScript* instance = own->GetInstanceScript();
+        if (!instance)
+            return;
 
-        void OnRemovePassenger(Vehicle* veh, Unit* passenger)
-        {
-            Unit* own = veh->GetBase();
-            if (!own)
-                return;
-            InstanceScript* instance = own->GetInstanceScript();
-            if (!instance)
-                return;
+        Creature* lotos = instance->instance->GetCreature(instance->GetData64(NPC_GOLD_LOTOS_MAIN));
+        if (!lotos)
+            return;
 
-            Creature* lotos = instance->instance->GetCreature(instance->GetData64(NPC_GOLD_LOTOS_MAIN));
-            if (!lotos)
-                return;
-
-            passenger->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-            passenger->m_Events.AddEvent(new ExitVexMeasure(passenger->ToCreature()), passenger->m_Events.CalculateTime(1000));
-        }
+        passenger->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+        passenger->m_Events.AddEvent(new ExitVexMeasure(passenger->ToCreature()), passenger->m_Events.CalculateTime(1000));
+    }
 };
 
 struct npc_measure : public ScriptedAI
@@ -992,10 +942,6 @@ struct npc_measure : public ScriptedAI
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             me->SetInCombatWithZone();
         }
-    }
-
-    void OnCharmed(bool /*apply*/)
-    {
     }
 
     void UpdateAI(uint32 diff)
@@ -1236,7 +1182,6 @@ public:
                 DoCastVictim(_spell);
                 events.ScheduleEvent(EVENT_1, urand(10000, 15000));
             }         
-
             DoMeleeAttackIfReady();
         }
     };
@@ -1249,485 +1194,440 @@ public:
 
 class spell_clash : public SpellScriptLoader
 {
-    public:
-        spell_clash() : SpellScriptLoader("spell_OO_clash") { }
+public:
+    spell_clash() : SpellScriptLoader("spell_OO_clash") { }
 
-        class spell_clash_SpellScript : public SpellScript
+    class spell_clash_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_clash_SpellScript);
+
+        enum proc
         {
-            PrepareSpellScript(spell_clash_SpellScript);
-
-            enum proc
-            {
-                SPELL_PROCK     = 143028,
-            };
-            void HandleOnHit()
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    if (Unit* target = GetHitUnit())
-                        caster->CastSpell(target, SPELL_PROCK, false);
-                }
-            }
-
-            void Register() override
-            {
-                OnHit += SpellHitFn(spell_clash_SpellScript::HandleOnHit);
-            }
+            SPELL_PROCK = 143028,
         };
 
-        SpellScript* GetSpellScript() const override
+        void HandleOnHit()
         {
-            return new spell_clash_SpellScript();
+            if (GetCaster() && GetHitUnit())
+                GetCaster()->CastSpell(GetHitUnit(), SPELL_PROCK, false);
         }
+
+        void Register() override
+        {
+            OnHit += SpellHitFn(spell_clash_SpellScript::HandleOnHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_clash_SpellScript();
+    }
 };
 
 //143019
 class spell_corrupted_brew : public SpellScriptLoader
 {
-    public:
-        spell_corrupted_brew() : SpellScriptLoader("spell_OO_corrupted_brew") { }
+public:
+    spell_corrupted_brew() : SpellScriptLoader("spell_OO_corrupted_brew") { }
 
-        class spell_corrupted_brew_SpellScript : public SpellScript
+    class spell_corrupted_brew_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_corrupted_brew_SpellScript);
+
+        void HandleScriptEffect(SpellEffIndex /*effIndex*/)
         {
-            PrepareSpellScript(spell_corrupted_brew_SpellScript);
-
-            void HandleScriptEffect(SpellEffIndex /*effIndex*/)
+            if (GetCaster() && GetCaster()->ToCreature() && GetHitUnit())
             {
-                if (GetCaster() && GetCaster()->ToCreature() && GetHitUnit())
+                if (!GetCaster()->GetMap()->IsHeroic())
+                    GetCaster()->CastSpell(GetHitUnit(), corruptedbrew[0], true);
+                else
                 {
-                    if (!GetCaster()->GetMap()->IsHeroic())
-                        GetCaster()->CastSpell(GetHitUnit(), corruptedbrew[0], true);
-                    else
-                    {
-                        uint8 mod = GetCaster()->ToCreature()->AI()->GetData(DATA_CORRUPTED_BREW_COUNT);
-                        mod = mod > 8 ? 7 : mod--;
-                        GetCaster()->CastSpell(GetHitUnit(), corruptedbrew[mod], true);
-                    }
+                    uint8 mod = GetCaster()->ToCreature()->AI()->GetData(DATA_CORRUPTED_BREW_COUNT);
+                    mod = mod > 8 ? 7 : mod--;
+                    GetCaster()->CastSpell(GetHitUnit(), corruptedbrew[mod], true);
                 }
             }
-
-            void Register() override
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_corrupted_brew_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const override
-        {
-            return new spell_corrupted_brew_SpellScript();
         }
+
+        void Register() override
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_corrupted_brew_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_DUMMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_corrupted_brew_SpellScript();
+    }
 };
 
 class spell_gouge : public SpellScriptLoader
 {
-    public:
-        spell_gouge() : SpellScriptLoader("spell_OO_gouge") { }
+public:
+    spell_gouge() : SpellScriptLoader("spell_OO_gouge") { }
 
-        class spell_gouge_SpellScript : public SpellScript
+    class spell_gouge_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_gouge_SpellScript);
+
+        void HandleEffect(SpellEffIndex effIndex)
         {
-            PrepareSpellScript(spell_gouge_SpellScript);
-
-            void HandleEffect(SpellEffIndex effIndex)
+            if (GetCaster() && GetHitUnit())
             {
-                Unit* target = GetHitUnit();
-                if (!target)
-                    return;
-
-                Unit* caster = GetCaster();
-                if (!caster)
-                    return;
-
-                if (target->HasInArc(static_cast<float>(M_PI), caster))
+                if (GetHitUnit()->HasInArc(static_cast<float>(M_PI), GetCaster()))
                 {
-                    caster->getThreatManager().modifyThreatPercent(target, -100);
-                    target->DeleteFromThreatList(caster);
-                }else
-                {
-                    PreventHitAura();
+                    GetCaster()->getThreatManager().modifyThreatPercent(GetHitUnit(), -100);
+                    GetCaster()->DeleteFromThreatList(GetCaster());
                 }
+                else
+                    PreventHitAura();
             }
-            
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_gouge_SpellScript::HandleEffect, EFFECT_1, SPELL_EFFECT_APPLY_AURA);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_gouge_SpellScript();
         }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_gouge_SpellScript::HandleEffect, EFFECT_1, SPELL_EFFECT_APPLY_AURA);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_gouge_SpellScript();
+    }
 };
 
 class spell_dark_meditation : public SpellScriptLoader
 {
-    public:
-        spell_dark_meditation() : SpellScriptLoader("spell_OO_dark_meditation") { }
+public:
+    spell_dark_meditation() : SpellScriptLoader("spell_OO_dark_meditation") { }
 
-        enum proc
+    enum proc
+    {
+        SPELL_PROCK = 143559,
+    };
+
+    class spell_dark_meditation_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_dark_meditation_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
         {
-            SPELL_PROCK     = 143559,
-        };
-
-        class spell_dark_meditation_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_dark_meditation_AuraScript);
-
-            void OnTick(AuraEffect const* aurEff)
-            {
-                if(Unit* caster = GetCaster())
-                    caster->CastSpell(caster, SPELL_PROCK, true);
-            }
-
-            void Register()
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_dark_meditation_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_dark_meditation_AuraScript();
+            if (GetCaster())
+                GetCaster()->CastSpell(GetCaster(), SPELL_PROCK, true);
         }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_dark_meditation_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_dark_meditation_AuraScript();
+    }
 };
 
 //Shadow Word: Bane
 class spell_fallen_protectors_shadow_word_bane : public SpellScriptLoader
 {
-    public:
-        spell_fallen_protectors_shadow_word_bane() :  SpellScriptLoader("spell_fallen_protectors_shadow_word_bane") { }
+public:
 
-        class spell_fallen_protectors_shadow_word_bane_AuraScript : public AuraScript
+    spell_fallen_protectors_shadow_word_bane() :  SpellScriptLoader("spell_fallen_protectors_shadow_word_bane") { }
+
+    class spell_fallen_protectors_shadow_word_bane_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_fallen_protectors_shadow_word_bane_AuraScript);
+
+        void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
         {
-            PrepareAuraScript(spell_fallen_protectors_shadow_word_bane_AuraScript);
-
-            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
-            {
-                if (Unit* caster = GetCaster())
-                    if(caster->GetAI())
-                        caster->GetAI()->SetData(DATA_SHADOW_WORD_REMOVED, true);
-            }
-
-            void OnPeriodic(AuraEffect const* /*aurEff*/)
-            {
-                if (Unit* caster = GetCaster())
-                    if(caster->GetAI())
-                        caster->GetAI()->SetData(DATA_SHADOW_WORD_DAMAGE, true);
-            }
-
-            void Register()
-            {
-                AfterEffectRemove += AuraEffectRemoveFn(spell_fallen_protectors_shadow_word_bane_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_fallen_protectors_shadow_word_bane_AuraScript::OnPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_fallen_protectors_shadow_word_bane_AuraScript();
+            if (GetCaster() && GetCaster()->ToCreature())
+                GetCaster()->ToCreature()->AI()->SetData(DATA_SHADOW_WORD_REMOVED, true);
         }
+
+        void OnPeriodic(AuraEffect const* /*aurEff*/)
+        {
+            if (GetCaster() && GetCaster()->ToCreature())
+                GetCaster()->ToCreature()->AI()->SetData(DATA_SHADOW_WORD_DAMAGE, true);
+        }
+
+        void Register()
+        {
+            AfterEffectRemove += AuraEffectRemoveFn(spell_fallen_protectors_shadow_word_bane_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_fallen_protectors_shadow_word_bane_AuraScript::OnPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_fallen_protectors_shadow_word_bane_AuraScript();
+    }
 };
 
 class spell_fallen_protectors_calamity : public SpellScriptLoader
 {
-    public:
-        spell_fallen_protectors_calamity() : SpellScriptLoader("spell_fallen_protectors_calamity") { }
+public:
+    spell_fallen_protectors_calamity() : SpellScriptLoader("spell_fallen_protectors_calamity") { }
 
-        class spell_fallen_protectors_calamity_SpellScript : public SpellScript
+    class spell_fallen_protectors_calamity_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_fallen_protectors_calamity_SpellScript);
+
+        void HandleOnHit()
         {
-            PrepareSpellScript(spell_fallen_protectors_calamity_SpellScript);
-
-            void HandleOnHit()
+            if (GetCaster() && GetCaster()->ToCreature() && GetHitUnit())
             {
-                if (GetCaster() && GetCaster()->ToCreature() && GetHitUnit())
+                if (!GetCaster()->GetMap()->IsHeroic())
+                    GetCaster()->CastSpell(GetHitUnit(), SPELL_CALAMITY_DMG, true);
+                else
                 {
-                    if (!GetCaster()->GetMap()->IsHeroic())
-                        GetCaster()->CastSpell(GetHitUnit(), SPELL_CALAMITY_DMG, true);
-                    else
-                    {
-                        int32 bs = GetCaster()->ToCreature()->AI()->GetData(DATA_CALAMITY_COUNT);
-                        float mod = 30 + (float(bs) * 10);
-                        GetCaster()->CastCustomSpell(SPELL_CALAMITY_DMG, SPELLVALUE_BASE_POINT0, mod, GetCaster(), true);
-                        GetCaster()->ToCreature()->AI()->SetData(DATA_CALAMITY_HIT, true);
-                    }
+                    int32 bs = GetCaster()->ToCreature()->AI()->GetData(DATA_CALAMITY_COUNT);
+                    float mod = 30 + (float(bs) * 10);
+                    GetCaster()->CastCustomSpell(SPELL_CALAMITY_DMG, SPELLVALUE_BASE_POINT0, mod, GetCaster(), true);
+                    GetCaster()->ToCreature()->AI()->SetData(DATA_CALAMITY_HIT, true);
                 }
             }
-
-            void Register() override
-            {
-                OnHit += SpellHitFn(spell_fallen_protectors_calamity_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const override
-        {
-            return new spell_fallen_protectors_calamity_SpellScript();
         }
+
+        void Register() override
+        {
+            OnHit += SpellHitFn(spell_fallen_protectors_calamity_SpellScript::HandleOnHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_fallen_protectors_calamity_SpellScript();
+    }
 };
 
 //Mark of Anguish select target.
 class spell_fallen_protectors_mark_of_anguish_select_first_target : public SpellScriptLoader
 {
-    public:
-        spell_fallen_protectors_mark_of_anguish_select_first_target() :  SpellScriptLoader("spell_fallen_protectors_mark_of_anguish_select_first_target") { }
+public:
+    spell_fallen_protectors_mark_of_anguish_select_first_target() :  SpellScriptLoader("spell_fallen_protectors_mark_of_anguish_select_first_target") { }
 
-        class spell_fallen_protectors_mark_of_anguish_select_first_target_SpellScript : public SpellScript
+    class spell_fallen_protectors_mark_of_anguish_select_first_target_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_fallen_protectors_mark_of_anguish_select_first_target_SpellScript);
+
+        void SelectTarget(std::list<WorldObject*>& unitList)
         {
-            PrepareSpellScript(spell_fallen_protectors_mark_of_anguish_select_first_target_SpellScript);
+            if (unitList.empty())
+                return;
 
-            void SelectTarget(std::list<WorldObject*>& unitList)
-            {
-                if (unitList.empty())
-                    return;
+            unitList.sort(Trinity::ObjectDistanceOrderPred(GetCaster()));
+            if (unitList.size() < 1)
+                return;
 
-                unitList.sort(Trinity::ObjectDistanceOrderPred(GetCaster()));
-                if (unitList.size() < 1)
-                    return;
-
-                unitList.resize(1);
-            }
-
-            void HandleOnHit()
-            {
-                Unit* caster = GetCaster();
-                if (!caster)
-                    return;
-
-                Unit* target = GetHitUnit();
-                if (!target)
-                    return;
-
-                if(caster->GetAI())
-                    caster->GetAI()->SetGUID(target->GetGUID(), true);
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_fallen_protectors_mark_of_anguish_select_first_target_SpellScript::SelectTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
-                OnHit += SpellHitFn(spell_fallen_protectors_mark_of_anguish_select_first_target_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_fallen_protectors_mark_of_anguish_select_first_target_SpellScript();
+            unitList.resize(1);
         }
 
+        void HandleOnHit()
+        {
+            if (GetCaster() && GetCaster()->ToCreature() && GetHitUnit())
+                GetCaster()->ToCreature()->AI()->SetGUID(GetHitUnit()->GetGUID(), true);
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_fallen_protectors_mark_of_anguish_select_first_target_SpellScript::SelectTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+            OnHit += SpellHitFn(spell_fallen_protectors_mark_of_anguish_select_first_target_SpellScript::HandleOnHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_fallen_protectors_mark_of_anguish_select_first_target_SpellScript();
+    }
 };
 
 //Shadow Weakness
 class spell_fallen_protectors_shadow_weakness_prock : public SpellScriptLoader
 {
-    public:
-        spell_fallen_protectors_shadow_weakness_prock() : SpellScriptLoader("spell_fallen_protectors_shadow_weakness_prock") { }
+public:
+    spell_fallen_protectors_shadow_weakness_prock() : SpellScriptLoader("spell_fallen_protectors_shadow_weakness_prock") { }
 
-        class spell_fallen_protectors_shadow_weakness_prock_AuraScript : public AuraScript
+    class spell_fallen_protectors_shadow_weakness_prock_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_fallen_protectors_shadow_weakness_prock_AuraScript);
+
+        void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
         {
-            PrepareAuraScript(spell_fallen_protectors_shadow_weakness_prock_AuraScript);
-
-            void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
-            {
-                PreventDefaultAction();
-
-                if (!aurEff)
-                    return;
-
-                Unit* _caster = GetCaster();
-                if (!_caster)
-                    return;
-
-                Unit* _target = eventInfo.GetProcTarget();
-                if (!_target)
-                    return;
-
-                _caster->CastSpell(_target, SPELL_SHADOW_WEAKNESS, false);
-            }
-
-            void Register()
-            {
-                OnEffectProc += AuraEffectProcFn(spell_fallen_protectors_shadow_weakness_prock_AuraScript::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_fallen_protectors_shadow_weakness_prock_AuraScript();
+            PreventDefaultAction();
+            if (GetCaster())
+                if (Unit* target = eventInfo.GetProcTarget())
+                    GetCaster()->CastSpell(target, SPELL_SHADOW_WEAKNESS, false);
         }
+
+        void Register()
+        {
+            OnEffectProc += AuraEffectProcFn(spell_fallen_protectors_shadow_weakness_prock_AuraScript::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_fallen_protectors_shadow_weakness_prock_AuraScript();
+    }
 };
 
 //Mark of Anguish
 class spell_fallen_protectors_mark_of_anguish : public SpellScriptLoader
 {
-    public:
-        spell_fallen_protectors_mark_of_anguish() : SpellScriptLoader("spell_fallen_protectors_mark_of_anguish") { }
+public:
+    spell_fallen_protectors_mark_of_anguish() : SpellScriptLoader("spell_fallen_protectors_mark_of_anguish") { }
 
-        class spell_fallen_protectors_mark_of_anguish_AuraScript : public AuraScript
+    class spell_fallen_protectors_mark_of_anguish_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_fallen_protectors_mark_of_anguish_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
         {
-            PrepareAuraScript(spell_fallen_protectors_mark_of_anguish_AuraScript);
-
-            void OnTick(AuraEffect const* aurEff)
+            if (GetTarget() && GetCaster())
             {
-                Unit* target = GetTarget();
-                if (!target)
-                    return;
-
-                if(Unit* caster = GetCaster())
+                GetTarget()->CastSpell(GetTarget(), SPELL_MARK_OF_ANGUISH_DAMAGE, true, NULL, NULL, GetCaster()->GetGUID());
+                //By normal way should prock from our proc system... but where is caster and target is channel target... so this is custom prock reason.
+                if (SpellInfo const* m_spellInfo = sSpellMgr->GetSpellInfo(SPELL_MARK_OF_ANGUISH_DAMAGE))
                 {
-                    target->CastSpell(target, SPELL_MARK_OF_ANGUISH_DAMAGE, true, NULL, NULL, caster->GetGUID());
-
-                    //By normal way should prock from our proc system... but where is caster and target is channel target... so this is custom prock reason.
-                    if (SpellInfo const* m_spellInfo = sSpellMgr->GetSpellInfo(SPELL_MARK_OF_ANGUISH_DAMAGE))
-                    {
-                        DamageInfo dmgInfoProc = DamageInfo(caster, target, 1, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE, 0);
-                        caster->ProcDamageAndSpell(target, PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG, 0, PROC_EX_NORMAL_HIT, &dmgInfoProc, BASE_ATTACK, m_spellInfo, aurEff->GetSpellInfo());
-                    }
+                    DamageInfo dmgInfoProc = DamageInfo(GetCaster(), GetTarget(), 1, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE, 0);
+                    GetCaster()->ProcDamageAndSpell(GetTarget(), PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG, 0, PROC_EX_NORMAL_HIT, &dmgInfoProc, BASE_ATTACK, m_spellInfo, aurEff->GetSpellInfo());
                 }
             }
-
-            void Register()
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_fallen_protectors_mark_of_anguish_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_fallen_protectors_mark_of_anguish_AuraScript();
         }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_fallen_protectors_mark_of_anguish_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_fallen_protectors_mark_of_anguish_AuraScript();
+    }
 };
 
 //SPELL_MARK_OF_ANGUISH_GIVE_A_FRIEND     = 143842,
 class spell_fallen_protectors_mark_of_anguish_transfer : public SpellScriptLoader
 {
-    public:
-        spell_fallen_protectors_mark_of_anguish_transfer() : SpellScriptLoader("spell_fallen_protectors_mark_of_anguish_transfer") { }
+public:
+    spell_fallen_protectors_mark_of_anguish_transfer() : SpellScriptLoader("spell_fallen_protectors_mark_of_anguish_transfer") { }
 
-        class spell_fallen_protectors_mark_of_anguish_transfer_SpellScript : public SpellScript
+    class spell_fallen_protectors_mark_of_anguish_transfer_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_fallen_protectors_mark_of_anguish_transfer_SpellScript);
+
+        void HandleScriptEffect(SpellEffIndex /*effIndex*/)
         {
-            PrepareSpellScript(spell_fallen_protectors_mark_of_anguish_transfer_SpellScript);
-
-            void HandleScriptEffect(SpellEffIndex /*effIndex*/)
+            if (GetCaster() && GetHitUnit())
             {
-                Unit* caster = GetCaster();
-                if (!caster)
-                    return;
-
-                InstanceScript* instance = caster->GetInstanceScript();
-                if (!instance)
-                    return;
-
-                Unit* target = GetHitUnit();
-                if (!target)
-                    return;
-
-                Creature* mesOfHe = instance->instance->GetCreature(instance->GetData64(NPC_EMBODIED_ANGUISH_OF_HE));
-                if (!mesOfHe)
-                    return;
-
-                mesOfHe->CastSpell(mesOfHe, SPELL_SHADOW_WEAKNES_MASS, true);
-                caster->RemoveAurasDueToSpell(SPELL_MARK_OF_ANGUISH_STAN);
-                mesOfHe->GetAI()->SetGUID(target->GetGUID(), true);
+                if (InstanceScript* instance = GetCaster()->GetInstanceScript())
+                {
+                    if (Creature* mesOfHe = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(NPC_EMBODIED_ANGUISH_OF_HE)))
+                    {
+                        mesOfHe->CastSpell(mesOfHe, SPELL_SHADOW_WEAKNES_MASS, true);
+                        GetCaster()->RemoveAurasDueToSpell(SPELL_MARK_OF_ANGUISH_STAN);
+                        mesOfHe->AI()->SetGUID(GetHitUnit()->GetGUID(), true);
+                    }
+                }
             }
-
-            void Register() override
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_fallen_protectors_mark_of_anguish_transfer_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const override
-        {
-            return new spell_fallen_protectors_mark_of_anguish_transfer_SpellScript();
         }
+
+        void Register() override
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_fallen_protectors_mark_of_anguish_transfer_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_DUMMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_fallen_protectors_mark_of_anguish_transfer_SpellScript();
+    }
 };
 
 //SPELL_INFERNO_STRIKE                    = 143962, //Inferno Strike
 class spell_fallen_protectors_inferno_strike : public SpellScriptLoader
 {
-    public:
-        spell_fallen_protectors_inferno_strike() :  SpellScriptLoader("spell_fallen_protectors_inferno_strike") { }
+public:
+    spell_fallen_protectors_inferno_strike() :  SpellScriptLoader("spell_fallen_protectors_inferno_strike") { }
 
-        class spell_fallen_protectors_inferno_strike_SpellScript : public SpellScript
+    class spell_fallen_protectors_inferno_strike_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_fallen_protectors_inferno_strike_SpellScript);
+
+        void SelectTarget(std::list<WorldObject*>& unitList)
         {
-            PrepareSpellScript(spell_fallen_protectors_inferno_strike_SpellScript);
+            SpellValue const* val = GetSpellValue();
+            if (!val || unitList.empty())
+                return;
 
-            void SelectTarget(std::list<WorldObject*>& unitList)
-            {
-                SpellValue const* val = GetSpellValue();
-                if (!val || unitList.empty())
-                    return;
+            uint32 count = val->EffectBasePoints[EFFECT_0];
+            unitList.sort(Trinity::ObjectDistanceOrderPred(GetCaster()));
+            if (unitList.size() < count)
+                return;
 
-                uint32 count = val->EffectBasePoints[EFFECT_0];
-                unitList.sort(Trinity::ObjectDistanceOrderPred(GetCaster()));
-                if (unitList.size() < count)
-                    return;
-
-                unitList.resize(count);
-            }
-            
-            void RecalculateDamage()
-            {
-                SetHitDamage(GetHitDamage() * GetSpellInfo()->Effects[EFFECT_0].BasePoints);
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_fallen_protectors_inferno_strike_SpellScript::SelectTarget, EFFECT_1, TARGET_UNIT_DEST_AREA_ENEMY);
-                OnHit += SpellHitFn(spell_fallen_protectors_inferno_strike_SpellScript::RecalculateDamage);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_fallen_protectors_inferno_strike_SpellScript();
+            unitList.resize(count);
         }
+
+        void RecalculateDamage()
+        {
+            SetHitDamage(GetHitDamage() * GetSpellInfo()->Effects[EFFECT_0].BasePoints);
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_fallen_protectors_inferno_strike_SpellScript::SelectTarget, EFFECT_1, TARGET_UNIT_DEST_AREA_ENEMY);
+            OnHit += SpellHitFn(spell_fallen_protectors_inferno_strike_SpellScript::RecalculateDamage);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_fallen_protectors_inferno_strike_SpellScript();
+    }
 };
 
 class spell_fallen_protectors_defile_ground : public SpellScriptLoader
 {
-    public:
-        spell_fallen_protectors_defile_ground() : SpellScriptLoader("spell_fallen_protectors_defile_ground") { }
+public:
+    spell_fallen_protectors_defile_ground() : SpellScriptLoader("spell_fallen_protectors_defile_ground") { }
 
-        class spell_fallen_protectors_defile_ground_SpellScript : public SpellScript
+    class spell_fallen_protectors_defile_ground_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_fallen_protectors_defile_ground_SpellScript);
+
+        enum data
         {
-            PrepareSpellScript(spell_fallen_protectors_defile_ground_SpellScript);
- 
-            enum data
+            AT_ENTRY = 4906,
+        };
+
+        void HandleTriggerEffect(SpellEffIndex effIndex)
+        {
+            PreventHitDefaultEffect(EFFECT_1);
+
+            if (GetCaster() && GetExplTargetUnit())
             {
-                AT_ENTRY    = 4906,
-            };
-            void HandleTriggerEffect(SpellEffIndex effIndex)
-            {
-                PreventHitDefaultEffect(EFFECT_1);
-
-                Unit* caster = GetCaster();
-                if (!caster)
-                    return;
-
-                Unit* target = GetExplTargetUnit();
-                if (!target)
-                    return;
-
                 AreaTrigger * areaTrigger = new AreaTrigger;
-                if (!areaTrigger->CreateAreaTrigger(sObjectMgr->GenerateLowGuid(HIGHGUID_AREATRIGGER), AT_ENTRY, caster, GetSpellInfo(), *target, *target, GetSpell()))
+                if (!areaTrigger->CreateAreaTrigger(sObjectMgr->GenerateLowGuid(HIGHGUID_AREATRIGGER), AT_ENTRY, GetCaster(), GetSpellInfo(), *GetExplTargetUnit(), *GetExplTargetUnit(), GetSpell()))
                 {
-
                     delete areaTrigger;
                     return;
                 }
                 areaTrigger->SetSpellId(GetSpellInfo()->Effects[EFFECT_1].TriggerSpell);
             }
-            
-            void Register()
-            {
-                OnEffectLaunch += SpellEffectFn(spell_fallen_protectors_defile_ground_SpellScript::HandleTriggerEffect, EFFECT_1, SPELL_EFFECT_TRIGGER_SPELL);
-            }
-        };
-        
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_fallen_protectors_defile_ground_SpellScript();
         }
+
+        void Register()
+        {
+            OnEffectLaunch += SpellEffectFn(spell_fallen_protectors_defile_ground_SpellScript::HandleTriggerEffect, EFFECT_1, SPELL_EFFECT_TRIGGER_SPELL);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_fallen_protectors_defile_ground_SpellScript();
+    }
 };
 
 void AddSC_boss_fallen_protectors()

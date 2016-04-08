@@ -1753,8 +1753,8 @@ public:
                     return ShowNorthTower;
                 case DATA_NORTH_COUNT:
                     return NorthTowerCount;
-                case DATA_SEND_KLAXXI_DIE_COUNT:
-                    return klaxxidiecount;
+                case DATA_IS_KLAXXI_DONE:
+                    return uint32(IsKlaxxiDone());
                 case DATA_CHECK_INSTANCE_PROGRESS:
                     return uint32(CheckProgressForGarrosh());
                 case DATA_GET_REALM_OF_YSHAARJ:
@@ -1772,6 +1772,15 @@ public:
                     return rycount;
             }
             return 0;
+        }
+
+        bool IsKlaxxiDone()
+        {
+            for (std::vector<uint64>::const_iterator itr = klaxxilist.begin(); itr != klaxxilist.end(); itr++)
+                if (Creature* klaxxi = instance->GetCreature(*itr))
+                    if (klaxxi->isAlive())
+                        return false;
+            return true;
         }
 
         void SomeActionsAfterGarroshEvade()

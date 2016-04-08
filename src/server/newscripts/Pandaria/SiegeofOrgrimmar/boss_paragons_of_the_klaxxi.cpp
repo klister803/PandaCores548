@@ -616,7 +616,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
             {
                 if (killer != me && instance)
                 {
-                    if (instance->GetData(DATA_SEND_KLAXXI_DIE_COUNT) < 8)
+                    if (!instance->GetData(DATA_IS_KLAXXI_DONE))
                     {
                         me->SetLootRecipient(NULL);
                         me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
@@ -627,11 +627,9 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     {
                         Map::PlayerList const& PlayerList = me->GetMap()->GetPlayers();
                         if (!PlayerList.isEmpty())
-                        {
                             for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
                                 if (Player* player = Itr->getSource())
                                     player->ModifyCurrency(CURRENCY_TYPE_VALOR_POINTS, 7000);
-                        }
                         instance->SetBossState(DATA_KLAXXI, DONE);
                     }
                     switch (me->GetEntry())
