@@ -25866,9 +25866,10 @@ void Player::AddComboPoints(Unit* target, int8 count, Spell* spell)
         target->AddComboPointHolder(GetGUIDLow());
     }
 
-    if (SpellInfo const* spellInfo = spell->GetSpellInfo())
-        if (spellInfo->HasAura(SPELL_AURA_RETAIN_COMBO_POINTS))
-            *comboPoints = int8(std::min(int8(5 - m_comboPoints), int8(count)));
+    if (spell)
+        if (SpellInfo const* spellInfo = spell->GetSpellInfo())
+            if (spellInfo->HasAura(SPELL_AURA_RETAIN_COMBO_POINTS))
+                *comboPoints = int8(std::min(int8(5 - m_comboPoints), int8(count)));
 
     if (*comboPoints > 5)
         *comboPoints = 5;
