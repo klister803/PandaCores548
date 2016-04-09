@@ -2797,18 +2797,6 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         }
     }
 
-    // Do not take combo points on dodge and miss
-    if (missInfo != SPELL_MISS_NONE && m_needComboPoints &&
-            m_targets.GetUnitTargetGUID() == target->targetGUID)
-    {
-        m_needComboPoints = false;
-        // Restore spell mods for a miss/dodge/parry Cold Blood
-        // TODO: check how broad this rule should be
-        if (m_caster->GetTypeId() == TYPEID_PLAYER && (missInfo == SPELL_MISS_MISS ||
-                missInfo == SPELL_MISS_DODGE || missInfo == SPELL_MISS_PARRY))
-            m_caster->ToPlayer()->RestoreSpellMods(this, 14177);
-    }
-
     // Trigger info was not filled in spell::preparedatafortriggersystem - we do it now
     bool positive = true;
     if (canEffectTrigger && !procAttacker && !procVictim)
@@ -4087,6 +4075,11 @@ void Spell::cast(bool skipCheck)
             }
         }
     }
+
+    if (infoTarget) // Do not take combo points on dodge and miss
+        if (infoTarget->missCondition != SPELL_MISS_NONE && m_needComboPoints && m_targets.GetUnitTargetGUID() == infoTarget->targetGUID)
+            m_needComboPoints = false;
+
     if (!hasDeley) // Immediate spell, no big deal
         handle_immediate();
 
@@ -4331,36 +4324,13 @@ void Spell::_handle_immediate_phase()
 
 void Spell::_handle_finish_phase()
 {
-    if (m_caster->m_movedPlayer)
+    if (Player* mPlr = m_caster->m_movedPlayer)
     {
-        // Take for real after all targets are processed
         if (m_needComboPoints)
-        {
-            m_caster->m_movedPlayer->ClearComboPoints();
+            mPlr->ClearComboPoints();
 
-            // Anticipation
-            if (Player* _player = m_caster->ToPlayer())
-            {
-                if (_player->HasAura(115189))
-                {
-                    float basepoints0 = _player->GetAura(115189) ? _player->GetAura(115189)->GetStackAmount() : 0;
-                    _player->CastCustomSpell(m_caster->getVictim(), 115190, &basepoints0, NULL, NULL, true);
-
-                    if (basepoints0)
-                        _player->RemoveAura(115189);
-                }
-            }
-            if(uint8 count = m_caster->m_movedPlayer->GetSaveComboPoints())
-            {
-                if (Unit* target = m_targets.GetUnitTarget())
-                    m_caster->m_movedPlayer->AddComboPoints(target, count, this);
-                m_caster->m_movedPlayer->SaveAddComboPoints(-count);
-            }
-        }
-
-        // Real add combo points from effects
         if (m_comboPointGain)
-            m_caster->m_movedPlayer->GainSpellComboPoints(m_comboPointGain);
+            mPlr->GainSpellComboPoints(m_comboPointGain);
     }
 
     if (m_caster->m_extraAttacks && GetSpellInfo()->HasEffect(SPELL_EFFECT_ADD_EXTRA_ATTACKS))

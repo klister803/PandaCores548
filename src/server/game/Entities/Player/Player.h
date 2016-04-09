@@ -2047,12 +2047,10 @@ class Player : public Unit, public GridObject<Player>
         uint8 GetComboPoints() const { return m_comboPoints; }
         uint8 GetComboPointsForDuration() const { if(HasAura(138148)) return m_comboPoints + 1; else return m_comboPoints; }
         uint64 GetComboTarget() const { return m_comboTarget; }
-        void SaveAddComboPoints(int8 count) { m_comboSavePoints += count; }
-        uint8 GetSaveComboPoints() const { return m_comboSavePoints; }
 
         void AddComboPoints(Unit* target, int8 count, Spell* spell = NULL);
         void GainSpellComboPoints(int8 count);
-        void ClearComboPoints();
+        void ClearComboPoints(bool clearComboTarget = false);
         void SendComboPoints();
 
         void SendMailResult(uint32 mailId, MailResponseType mailAction, MailResponseResult mailError, uint32 equipError = 0, uint32 item_guid = 0, uint32 item_count = 0);
@@ -3257,6 +3255,7 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_contestedPvPTimer;
         uint32 m_statsUpdateTimer;
         bool m_needToUpdateRunesRegen;
+        bool m_needToUpdateComboPoints;
         bool m_needToUpdateSpellHastDurationRecovery;
         bool m_needUpdateCastHastMods = false;
         bool m_needUpdateMeleeHastMod = false;
@@ -3416,7 +3415,6 @@ class Player : public Unit, public GridObject<Player>
 
         uint64 m_comboTarget;
         int8 m_comboPoints;
-        int8 m_comboSavePoints;
 
         QuestStatusMap m_QuestStatus;
         QuestStatusSaveMap m_QuestStatusSave;
