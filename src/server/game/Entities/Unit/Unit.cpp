@@ -18390,10 +18390,18 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             }
 
             i->aura->DropCharge();
-            if(isReflect) // reflect take only one aura
+            if (isReflect) // reflect take only one aura
+            {
+                if (!CanProc())
+                    SetCantProc(false);
                 return;
-            if(isModifier && (procExtra & PROC_EX_ON_CAST)) // same proc use charge on cast can take only one aura
+            }
+            if (isModifier && (procExtra & PROC_EX_ON_CAST)) // same proc use charge on cast can take only one aura
+            {
+                if (!CanProc())
+                    SetCantProc(false);
                 return;
+            }
         }
 
         //if (spellInfo->AttributesEx3 & SPELL_ATTR3_DISABLE_PROC)
