@@ -20831,10 +20831,10 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
                 str += " " + std::to_string(spellProcEvent->spellFamilyMask[1]);
                 str += " " + std::to_string(spellProcEvent->spellFamilyMask[2]);
                 str += " " + std::to_string(spellProcEvent->spellFamilyMask[3]);
-                plr->Whisper(str, 7, plr->GetGUID());
+                plr->Say(str, 7);
             }
             else
-                plr->Whisper("false", 7, plr->GetGUID());
+                plr->Say("false", 7);;
         }
 
     // Get EventProcFlag
