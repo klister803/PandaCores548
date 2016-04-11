@@ -8383,7 +8383,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
 
                             basepoints0 = aura->GetStackAmount();
                             triggered_spell_id = 115190;
-                            plr->Whisper("1", 7, plr->GetGUID());
                             RemoveAura(115189);
                         }
                     }
@@ -20821,21 +20820,6 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
             }
         }
     }
-
-    if (procSpell->Id == 53 && spellProto->Id == 114015)
-        if (Player* plr = ToPlayer())
-        {
-            if (spellProcEvent)
-            {
-                std::string str = std::to_string(spellProcEvent->spellFamilyMask[0]);
-                str += " " + std::to_string(spellProcEvent->spellFamilyMask[1]);
-                str += " " + std::to_string(spellProcEvent->spellFamilyMask[2]);
-                str += " " + std::to_string(spellProcEvent->spellFamilyMask[3]);
-                plr->Say(str, 7);
-            }
-            else
-                plr->Say("false", 7);
-        }
 
     // Get EventProcFlag
     uint32 EventProcFlag;
