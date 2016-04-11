@@ -20822,6 +20822,20 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
         }
     }
 
+    if (procSpell->Id == 53 && spellProto->Id == 114015)
+        if (Player* plr = ToPlayer())
+        {
+            char * str = new char[2048];
+            
+            if (spellProcEvent)
+            {
+                sprintf(str, " %u, %u, %u, %u,", spellProcEvent->spellFamilyMask[0], spellProcEvent->spellFamilyMask[1], spellProcEvent->spellFamilyMask[2], spellProcEvent->spellFamilyMask[3]);
+                plr->Whisper(str, 7, plr->GetGUID());
+            }
+            else
+                plr->Whisper("false", 7, plr->GetGUID());
+        }
+
     // Get EventProcFlag
     uint32 EventProcFlag;
     if (spellProcEvent && spellProcEvent->procFlags) // if exist get custom spellProcEvent->procFlags
