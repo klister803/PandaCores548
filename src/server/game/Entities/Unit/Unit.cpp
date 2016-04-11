@@ -20834,7 +20834,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
                 plr->Say(str, 7);
             }
             else
-                plr->Say("false", 7);;
+                plr->Say("false", 7);
         }
 
     // Get EventProcFlag
