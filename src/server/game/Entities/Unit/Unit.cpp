@@ -8383,6 +8383,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
 
                             basepoints0 = aura->GetStackAmount();
                             triggered_spell_id = 115190;
+                            plr->Whisper("1", 7, plr->GetGUID());
                             RemoveAura(115189);
                         }
                     }
