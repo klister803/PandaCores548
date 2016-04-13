@@ -524,13 +524,19 @@ class spell_rog_redirect : public SpellScriptLoader
 
             SpellCastResult CheckCast()
             {
-                if (GetCaster())
+                if (Unit* caster = GetCaster())
                 {
-                    if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
-                        return SPELL_FAILED_DONT_REPORT;
+                    Player* plr = caster->ToPlayer();
+                    Unit* target = GetExplTargetUnit();
 
-                    if (!GetCaster()->ToPlayer()->GetComboPoints())
+                    if (!plr || !target)
+                        return SPELL_FAILED_DONT_REPORT;
+                    
+                    if (!plr->GetComboPoints())
                         return SPELL_FAILED_NO_COMBO_POINTS;
+
+                    if (target->GetGUID() == plr->GetComboTarget())
+                        return SPELL_FAILED_BAD_TARGETS;
                 }
                 else
                     return SPELL_FAILED_DONT_REPORT;
