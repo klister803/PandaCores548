@@ -4745,16 +4745,6 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                 m_caster->CastSpell(m_caster, 38430, true, NULL, aurEff);
             break;
         }
-        case SPELLFAMILY_DRUID:
-        {
-            // Mangle (Cat): CP
-            if (m_spellInfo->SpellFamilyFlags[1] & 0x400)
-            {
-                if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                    m_caster->ToPlayer()->AddComboPoints(unitTarget, 1, this);
-            }
-            break;
-        }
         case SPELLFAMILY_HUNTER:
         {
             switch (m_spellInfo->Id)
