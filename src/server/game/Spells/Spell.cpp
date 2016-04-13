@@ -408,7 +408,7 @@ m_spellInfo(info),
 m_caster((info->AttributesEx6 & SPELL_ATTR6_CAST_BY_CHARMER && caster->GetCharmerOrOwner()) ? caster->GetCharmerOrOwner() : caster),
 m_customError(SPELL_CUSTOM_ERROR_NONE), m_skipCheck(skipCheck), m_spellMissMask(0), m_selfContainer(NULL), m_spellDynObjGuid(NULL),
 m_referencedFromCurrentSpell(false), m_executedCurrently(false), m_needComboPoints(info->NeedsComboPoints()), hasPredictedDispel(NULL),
-m_comboPointGain(0), m_delayStart(0), m_delayAtDamageCount(0), m_count_dispeling(0), m_applyMultiplierMask(0), m_auraScaleMask(0),
+m_delayStart(0), m_delayAtDamageCount(0), m_count_dispeling(0), m_applyMultiplierMask(0), m_auraScaleMask(0),
 m_CastItem(NULL), m_castItemGUID(0), unitTarget(NULL), m_originalTarget(NULL), itemTarget(NULL), gameObjTarget(NULL), focusObject(NULL),
 m_cast_count(0), m_glyphIndex(0), m_preCastSpell(0), m_triggeredByAuraSpell(NULL), m_spellAura(NULL), find_target(false), m_spellState(SPELL_STATE_NULL),
 m_runesState(0), m_powerCost(0), m_casttime(0), m_timer(0), m_channelTargetEffectMask(0), _triggeredCastFlags(triggerFlags), m_spellValue(NULL), m_currentExecutedEffect(SPELL_EFFECT_NONE),
@@ -3861,6 +3861,9 @@ void Spell::cast(bool skipCheck)
 
     SelectSpellTargets();
 
+    Unit* procTarget = m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : m_caster; 
+    TargetInfo* infoTarget = GetTargetInfo(procTarget ? procTarget->GetGUID() : 0);
+
     // Spell may be finished after target map check
     if (m_spellState == SPELL_STATE_FINISHED)
     {
@@ -3912,6 +3915,17 @@ void Spell::cast(bool skipCheck)
     if (!(_triggeredCastFlags & TRIGGERED_IGNORE_POWER_AND_REAGENT_COST))
         TakePower();
 
+    if (m_needComboPoints && infoTarget) // Do not take combo points on dodge and miss
+        if (infoTarget->missCondition != SPELL_MISS_NONE && m_targets.GetUnitTargetGUID() == infoTarget->targetGUID)
+            m_needComboPoints = false;
+
+    if (Player* mPlr = m_caster->m_movedPlayer)
+        if (m_needComboPoints)
+        {
+            mPlr->SetComboPointsMod(mPlr->GetComboPoints());
+            mPlr->ClearComboPoints();
+        }
+
     m_caster->SendSpellCreateVisual(m_spellInfo, &visualPos, m_targets.GetUnitTarget());
     // we must send smsg_spell_go packet before m_castItem delete in TakeCastItem()...
     SendSpellGo();
@@ -3940,10 +3954,8 @@ void Spell::cast(bool skipCheck)
     else
         hasDeley = false;
 
-    Unit* procTarget = m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : m_caster;
     uint32 procAttacker = PROC_EX_NONE;
     uint32 procVictim   = PROC_EX_NONE;
-    TargetInfo* infoTarget = GetTargetInfo(procTarget ? procTarget->GetGUID() : 0);
     //sLog->outDebug(LOG_FILTER_PROC, "Spell::cast Id %i, m_UniqueTargetInfo %i, procAttacker %i, target %u, infoTarget %u",
     //m_spellInfo->Id, m_UniqueTargetInfo.size(), procAttacker, procTarget ? procTarget->GetGUID() : 0, infoTarget ? infoTarget->targetGUID : 0);
 
@@ -4075,10 +4087,6 @@ void Spell::cast(bool skipCheck)
             }
         }
     }
-
-    if (infoTarget) // Do not take combo points on dodge and miss
-        if (infoTarget->missCondition != SPELL_MISS_NONE && m_needComboPoints && m_targets.GetUnitTargetGUID() == infoTarget->targetGUID)
-            m_needComboPoints = false;
 
     if (!hasDeley) // Immediate spell, no big deal
         handle_immediate();
@@ -4324,14 +4332,8 @@ void Spell::_handle_immediate_phase()
 
 void Spell::_handle_finish_phase()
 {
-    if (Player* mPlr = m_caster->m_movedPlayer)
-    {
-        if (m_needComboPoints)
-            mPlr->ClearComboPoints();
-
-        if (m_comboPointGain)
-            mPlr->GainSpellComboPoints(m_comboPointGain);
-    }
+    if (m_needComboPoints)
+        m_caster->SetComboPointsMod(0);
 
     if (m_caster->m_extraAttacks && GetSpellInfo()->HasEffect(SPELL_EFFECT_ADD_EXTRA_ATTACKS))
         m_caster->HandleProcExtraAttackFor(m_caster->getVictim());
@@ -7145,7 +7147,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                         
                             if (Player * player = m_caster->ToPlayer())
                             {
-                                if (aura->GetDuration() > player->GetComboPointsForDuration() * 6000 + bonusDuration)
+                                if (aura->GetDuration() > player->GetComboPointsForDuration(player->GetComboPoints()) * 6000 + bonusDuration)
                                     return SPELL_FAILED_TRY_AGAIN;
                             }
                         }

@@ -561,23 +561,8 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                     default:
                         break;
                 }
-                // Ferocious Bite
-                if (m_caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->SpellFamilyFlags[0] & 0x000800000) && m_spellInfo->SpellVisual[0] == 6587)
-                {
-                    // converts each extra point of energy ( up to 25 energy ) into additional damage
-                    int32 energy = -(m_caster->ModifyPower(POWER_ENERGY, -25));
-                    // 25 energy = 100% more damage
-                    AddPct(damage, energy * 4);
-
-                    damage += int32(0.196f * m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * m_caster->ToPlayer()->GetComboPoints());
-
-                    // if target is under 25% of life, also reset rake duration
-                    if (unitTarget->GetHealthPct() <= 25.0f)
-                        if (Aura* aura = unitTarget->GetAura(1822))
-                            aura->RefreshDuration();
-                }
                 // Maul - Deals 20% more damage if target is bleeding
-                else if (m_spellInfo->Id == 6807 && unitTarget->HasAuraState(AURA_STATE_BLEEDING))
+                if (m_spellInfo->Id == 6807 && unitTarget->HasAuraState(AURA_STATE_BLEEDING))
                     AddPct(damage, 20);
                 break;
             }
@@ -5974,7 +5959,7 @@ void Spell::EffectSanctuary(SpellEffIndex /*effIndex*/)
 
 void Spell::EffectAddComboPoints(SpellEffIndex /*effIndex*/)
 {
-    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_LAUNCH_TARGET)
         return;
 
     if (!unitTarget)

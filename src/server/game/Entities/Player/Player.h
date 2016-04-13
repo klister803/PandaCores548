@@ -2045,7 +2045,7 @@ class Player : public Unit, public GridObject<Player>
         void SetSelection(uint64 guid) { if(m_curSelection) m_lastSelection = m_curSelection; m_curSelection = guid; SetUInt64Value(UNIT_FIELD_TARGET, guid); }
 
         uint8 GetComboPoints() const { return m_comboPoints; }
-        uint8 GetComboPointsForDuration() const { if(HasAura(138148)) return m_comboPoints + 1; else return m_comboPoints; }
+        uint8 GetComboPointsForDuration(uint8 val) const { if (HasAura(138148)) return val + 1; else return val; }
         uint64 GetComboTarget() const { return m_comboTarget; }
 
         void AddComboPoints(Unit* target, int8 count, Spell* spell = NULL);
@@ -3254,8 +3254,8 @@ class Player : public Unit, public GridObject<Player>
         float m_powerFraction[MAX_POWERS_PER_CLASS];
         uint32 m_contestedPvPTimer;
         uint32 m_statsUpdateTimer;
+        int32 m_updateComboPointsTimer;
         bool m_needToUpdateRunesRegen;
-        bool m_needToUpdateComboPoints;
         bool m_needToUpdateSpellHastDurationRecovery;
         bool m_needUpdateCastHastMods = false;
         bool m_needUpdateMeleeHastMod = false;

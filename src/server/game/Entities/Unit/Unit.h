@@ -2125,7 +2125,8 @@ class Unit : public WorldObject
         bool CheckAndIncreaseCastCounter();
         bool RequiresCurrentSpellsToHolyPower(SpellInfo const* spellProto);
         uint8 HandleHolyPowerCost(uint8 cost, uint8 baseCost);
-        uint8 GetModForHolyPowerSpell() {return m_modForHolyPowerSpell;}
+        uint8 GetComboPointsMod() { return m_comboPointsMod; }
+        void SetComboPointsMod(uint8 val) { m_comboPointsMod = val; }
         void DecreaseCastCounter() { if (m_castCounter) --m_castCounter; }
 
         uint32 m_addDmgOnce;
@@ -2710,7 +2711,7 @@ class Unit : public WorldObject
         bool m_VisibilityUpdScheduled;
         bool m_VisibilityUpdateTask;
         uint32 m_rootTimes;
-        uint8 m_modForHolyPowerSpell;
+        uint8 m_comboPointsMod;
 
         uint32 m_state;                                     // Even derived shouldn't modify
         uint32 m_CombatTimer;

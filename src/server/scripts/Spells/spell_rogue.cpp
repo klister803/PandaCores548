@@ -549,7 +549,7 @@ class spell_rog_redirect : public SpellScriptLoader
                         if (cp > 5)
                             cp = 5;
 
-                        _player->ClearComboPoints();
+                        _player->ClearComboPoints(true);
                         _player->AddComboPoints(target, cp, GetSpell());
                     }
                 }
@@ -1016,7 +1016,7 @@ class spell_rog_eviscerate : public SpellScriptLoader
                         caster->ToPlayer()->KilledMonsterCredit(44175, 0);
                         caster->ToPlayer()->KilledMonsterCredit(44548, 0);
                     }
-                    if (target && caster->HasAura(14171) || caster->HasAura(14172))
+                    if (target && caster->HasAura(14172))
                     {
                         uint8 comboPoint = caster->m_movedPlayer ? caster->m_movedPlayer->GetComboPoints() : 1;
                         uint32 chance = 10 * comboPoint;

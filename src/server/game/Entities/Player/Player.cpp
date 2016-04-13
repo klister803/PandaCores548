@@ -758,8 +758,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_focusRegenTimerCount = 0;
     m_weaponChangeTimer = 0;
     m_statsUpdateTimer = 0;
+    m_updateComboPointsTimer = 0;
     m_needToUpdateRunesRegen = false;
-    m_needToUpdateComboPoints = false;
     m_needToUpdateSpellHastDurationRecovery = false;
     m_needUpdateCastHastMods = false;
     m_needUpdateMeleeHastMod = false;
@@ -2052,16 +2052,21 @@ void Player::Update(uint32 p_time)
                 UpdateAllRunesRegen();
                 m_needToUpdateRunesRegen = false;
             }
-            if (m_needToUpdateComboPoints)
-            {
-                SendComboPoints();
-                m_needToUpdateComboPoints = false;
-            }
             m_statsUpdateTimer = 0;
         }
 
         if (IsAIEnabled && GetAI())
             GetAI()->UpdateAI(p_time);
+    }
+
+    if (m_updateComboPointsTimer != 0)
+    {
+        m_updateComboPointsTimer -= p_time;
+        if (m_updateComboPointsTimer <= 0 || m_updateComboPointsTimer > 300)
+        {
+            SendComboPoints();
+            m_updateComboPointsTimer = 0;
+        }
     }
 
     if (m_deathState == JUST_DIED)
@@ -25843,13 +25848,18 @@ void Player::AddComboPoints(Unit* target, int8 count, Spell* spell)
     if (!count)
         return;
 
-    int8 * comboPoints = spell ? &spell->m_comboPointGain : &m_comboPoints;
+    int8 oldComboPoints = m_comboPoints;
 
     // without combo points lost (duration checked in aura)
     RemoveAurasByType(SPELL_AURA_RETAIN_COMBO_POINTS);
 
     if (target->GetGUID() == m_comboTarget)
-        *comboPoints += count;
+    {
+        if (spell)
+            if (SpellInfo const* spellInfo = spell->GetSpellInfo())
+                if (spellInfo->HasAura(SPELL_AURA_RETAIN_COMBO_POINTS))
+                    count = int8(std::min(int8(5 - m_comboPoints), int8(count)));
+    }
     else
     {
         if (m_comboTarget)
@@ -25861,31 +25871,8 @@ void Player::AddComboPoints(Unit* target, int8 count, Spell* spell)
             m_comboPoints = 0;
 
         m_comboTarget = target->GetGUID();
-        *comboPoints = count;
-
         target->AddComboPointHolder(GetGUIDLow());
     }
-
-    if (spell)
-        if (SpellInfo const* spellInfo = spell->GetSpellInfo())
-            if (spellInfo->HasAura(SPELL_AURA_RETAIN_COMBO_POINTS))
-                *comboPoints = int8(std::min(int8(5 - m_comboPoints), int8(count)));
-
-    if (*comboPoints > 5)
-        *comboPoints = 5;
-    else if (*comboPoints < 0)
-        *comboPoints = 0;
-
-    if (!spell)
-        SendComboPoints();
-}
-
-void Player::GainSpellComboPoints(int8 count)
-{
-    if (!count)
-        return;
-
-    int8 oldComboPoints = m_comboPoints;
 
     m_comboPoints += count;
 
@@ -25907,11 +25894,11 @@ void Player::GainSpellComboPoints(int8 count)
         }
         m_comboPoints = 5;
     }
-    else if (m_comboPoints < 0) 
+    else if (m_comboPoints < 0)
         m_comboPoints = 0;
 
-    if (oldComboPoints != m_comboPoints)
-        m_needToUpdateComboPoints = true;
+    if (oldComboPoints != m_comboPoints && !m_updateComboPointsTimer)
+        m_updateComboPointsTimer = 300;
 }
 
 void Player::ClearComboPoints(bool clearComboTarget)
@@ -25925,12 +25912,9 @@ void Player::ClearComboPoints(bool clearComboTarget)
     // omg hack
     int32 chancekd = 0;
     if (HasAura(79096))
-        chancekd = -2000 * GetComboPointsForDuration();
+        chancekd = -2000 * GetComboPointsForDuration(m_comboPoints);
 
     m_comboPoints = 0;
-
-    if (!clearComboTarget)
-        m_needToUpdateComboPoints = true;
 
     if (chancekd != 0)
     {
@@ -25945,6 +25929,8 @@ void Player::ClearComboPoints(bool clearComboTarget)
 
     if (clearComboTarget)
         SendComboPoints();
+    else
+        m_updateComboPointsTimer = 300;
 }
 
 void Player::SetGroup(Group* group, int8 subgroup)

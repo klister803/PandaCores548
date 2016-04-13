@@ -306,7 +306,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_baseRHastRatingPct = 1.0f;
     m_baseMHastRatingPct = 1.0f;
     m_baseHastRatingPct = 1.0f;
-    m_modForHolyPowerSpell = 0;
+    m_comboPointsMod = 0;
 
     for (uint8 i = 0; i < MAX_COMBAT_RATING; i++)
         m_baseRatingValue[i] = 0;
@@ -8508,7 +8508,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 }
                 case 54936: // Glyph of Word of Glory
                 {
-                    basepoints0 = triggerAmount * GetModForHolyPowerSpell();
+                    basepoints0 = triggerAmount * GetComboPointsMod();
                     triggered_spell_id = 115522;
                     break;
                 }
@@ -12777,7 +12777,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
         if (getClass() == CLASS_PALADIN)
             if (RequiresCurrentSpellsToHolyPower(spellProto))
-                tmpDamage *= GetModForHolyPowerSpell();
+                tmpDamage *= GetComboPointsMod();
     }
 
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellDamageBonusDone spellid %u in effIndex %u tmpDamage %f, pdamage %i DoneTotalMod %f DoneTotal %i", spellProto ? spellProto->Id : 0, effIndex, tmpDamage, pdamage, DoneTotalMod, DoneTotal);
@@ -13537,7 +13537,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
 
     if (getClass() == CLASS_PALADIN)
         if (RequiresCurrentSpellsToHolyPower(spellProto))
-            heal *= GetModForHolyPowerSpell();
+            heal *= GetComboPointsMod();
 
     return uint32(std::max(heal, 0.0f));
 }
@@ -16244,7 +16244,7 @@ float Unit::CalculateSpellDamage(Unit const* target, SpellInfo const* spellProto
 
 int32 Unit::CalcSpellDuration(SpellInfo const* spellProto)
 {
-    uint8 comboPoints = m_movedPlayer ? m_movedPlayer->GetComboPointsForDuration() : 0;
+    uint8 comboPoints = m_movedPlayer ? m_movedPlayer->GetComboPointsForDuration(m_movedPlayer->GetComboPointsMod()) : 0;
     uint8 holyPower   = 0;
 
     int32 minduration = spellProto->GetDuration();
@@ -16253,7 +16253,7 @@ int32 Unit::CalcSpellDuration(SpellInfo const* spellProto)
     int32 duration;
 
     if (spellProto->PowerType == POWER_HOLY_POWER)
-        holyPower = GetModForHolyPowerSpell();
+        holyPower = GetComboPointsMod();
 
     if (comboPoints && minduration != -1 && minduration != maxduration)
         duration = minduration + int32((maxduration - minduration) * comboPoints / 5);
@@ -20057,7 +20057,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     if(bp2)
                         percent *= bp2;
 
-                    basepoints0 = CalculatePct(int32(dmgInfoProc->GetDamage() + dmgInfoProc->GetAbsorb()), percent) / GetModForHolyPowerSpell();
+                    basepoints0 = CalculatePct(int32(dmgInfoProc->GetDamage() + dmgInfoProc->GetAbsorb()), percent) / GetComboPointsMod();
 
                     triggered_spell_id = abs(itr->spell_trigger);
                     _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true, castItem, triggeredByAura, originalCaster);
@@ -24568,7 +24568,7 @@ uint8 Unit::HandleHolyPowerCost(uint8 cost, uint8 baseCost)
 
     if (!cost)
     {
-        m_modForHolyPowerSpell = m_baseHolypower / baseCost;
+        m_comboPointsMod = m_baseHolypower / baseCost;
         return 0;
     }
 
@@ -24579,12 +24579,12 @@ uint8 Unit::HandleHolyPowerCost(uint8 cost, uint8 baseCost)
 
     if (m_holyPower < m_baseHolypower)
     {
-        m_modForHolyPowerSpell = m_holyPower / baseCost;
+        m_comboPointsMod = m_holyPower / baseCost;
         return m_holyPower;
     }
     else
     {
-        m_modForHolyPowerSpell = m_baseHolypower / baseCost;
+        m_comboPointsMod = m_baseHolypower / baseCost;
         return m_baseHolypower;
     }
 }

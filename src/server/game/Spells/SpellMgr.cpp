@@ -3916,15 +3916,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_IGNORE_HIT_RESULT;
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_HAVE_STABLE_FLYTIME;
                     break;
-                case 14189:  // Seal Fate
-                case 51699:  // Honor Among Thieves
-                case 115190: // Anticipation
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_DOESENT_INTERRUPT_CHANNELING;
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_HAVE_STABLE_FLYTIME;
-                    break;
                 case 32645:  // Envenom
-                case 144859: // Tiger's Fury
-                case 139546: // Combo Point
                 case 53651:  // Beacon of Light
                 case 90289:  // Removing Death Grip cooldown
                 case 36563:  // Shadowstep
@@ -3965,8 +3957,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx4 &= ~SPELL_ATTR4_TRIGGERED;
                     break;
                 case 14190:  // Seal Fate
-                case 51701:  // Honor Among Thieves
-                case 114015: // Anticipation
                 case 145193: // Silent Blades
                 case 79577:  // Eclipse
                 case 56835:  // Reaping

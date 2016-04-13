@@ -1012,7 +1012,7 @@ float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
                     if (caster->GetTypeId() != TYPEID_PLAYER)
                         break;
 
-                    uint8 cp = caster->ToPlayer()->GetComboPoints();
+                    uint8 cp = caster->GetComboPointsMod();
                     float ap = caster->GetTotalAttackPowerValue(BASE_ATTACK);
 
                     switch (cp)
@@ -1050,7 +1050,7 @@ float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
                     // Basepoint hotfix
                     amount *= 10;
 
-                    uint8 cp = caster->ToPlayer()->GetComboPoints();
+                    uint8 cp = caster->GetComboPointsMod();
                     int32 AP = caster->GetTotalAttackPowerValue(BASE_ATTACK);
 
                     // In feral spec : 0.484 * $AP * cp

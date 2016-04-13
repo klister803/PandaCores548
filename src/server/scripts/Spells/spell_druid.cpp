@@ -1192,20 +1192,6 @@ class spell_dru_ferocious_bite : public SpellScriptLoader
         {
             PrepareSpellScript(spell_dru_ferocious_bite_SpellScript);
 
-            uint8 comboPoints;
-
-            bool Validate(SpellInfo const* /*spellEntry*/)
-            {
-                comboPoints = 0;
-                return true;
-            }
-
-            void HandleBeforeCast()
-            {
-                if (GetCaster()->ToPlayer())
-                    comboPoints = GetCaster()->ToPlayer()->GetComboPoints();
-            }
-
             void HandleOnHit()
             {
                 Unit* caster = GetCaster();
@@ -1221,6 +1207,7 @@ class spell_dru_ferocious_bite : public SpellScriptLoader
                     if (Aura* rip = target->GetAura(SPELL_DRUID_RIP, player->GetGUID()))
                         rip->RefreshDuration();
 
+                uint8 comboPoints = caster->GetComboPointsMod();
                 int32 AP = player->GetTotalAttackPowerValue(BASE_ATTACK) * comboPoints;
                 float perc = 1.0f;
                 float bpHp = 5.0f;
@@ -1261,7 +1248,6 @@ class spell_dru_ferocious_bite : public SpellScriptLoader
 
             void Register()
             {
-                BeforeCast += SpellCastFn(spell_dru_ferocious_bite_SpellScript::HandleBeforeCast);
                 OnHit += SpellHitFn(spell_dru_ferocious_bite_SpellScript::HandleOnHit);
             }
         };
@@ -1282,20 +1268,6 @@ class spell_dru_rip : public SpellScriptLoader
         {
             PrepareSpellScript(spell_dru_rip_SpellScript);
 
-            uint8 comboPoints;
-
-            bool Validate(SpellInfo const* /*spellEntry*/)
-            {
-                comboPoints = 0;
-                return true;
-            }
-
-            void HandleBeforeCast()
-            {
-                if (GetCaster()->ToPlayer())
-                    comboPoints = GetCaster()->ToPlayer()->GetComboPoints();
-            }
-
             void HandleOnHit()
             {
                 Unit* caster = GetCaster();
@@ -1305,6 +1277,8 @@ class spell_dru_rip : public SpellScriptLoader
                 Player* player = caster->ToPlayer();
                 if (!player)
                     return;
+
+                uint8 comboPoints = caster->GetComboPointsMod();
 
                 // Soul of the Forest
                 if (player->HasAura(114107) && player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DRUID_CAT)
@@ -1320,7 +1294,6 @@ class spell_dru_rip : public SpellScriptLoader
 
             void Register()
             {
-                BeforeCast += SpellCastFn(spell_dru_rip_SpellScript::HandleBeforeCast);
                 OnHit += SpellHitFn(spell_dru_rip_SpellScript::HandleOnHit);
             }
         };
