@@ -4735,25 +4735,6 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                     if (Item* item = m_caster->ToPlayer()->GetWeaponForAttack(m_attackType, true))
                         if (item->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER)
                             totalDamagePercentMod *= 1.45f;
-            // Fan of Knives
-            else if (m_spellInfo->Id == 51723)
-            {
-                if (m_caster->GetTypeId() != TYPEID_PLAYER)
-                    break;
-
-                if (m_caster->ToPlayer()->GetComboTarget() == unitTarget->GetGUID())
-                    m_caster->ToPlayer()->AddComboPoints(unitTarget, 1);
-
-                // Fan of Knives - Vile Poisons
-                if (AuraEffect* aur = m_caster->GetDummyAuraEffect(SPELLFAMILY_ROGUE, 857, 2))
-                {
-                    if (roll_chance_i(aur->GetAmount()))
-                    {
-                        for (uint8 i = BASE_ATTACK; i < MAX_ATTACK; ++i)
-                            m_caster->ToPlayer()->CastItemCombatSpell(unitTarget, WeaponAttackType(i), PROC_FLAG_TAKEN_DAMAGE, PROC_EX_NORMAL_HIT);
-                    }
-                }
-            }
             break;
         }
         case SPELLFAMILY_SHAMAN:
