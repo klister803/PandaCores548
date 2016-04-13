@@ -10071,8 +10071,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
                         target = this;
                         break;
                     }
-                    case 30881: // Nature's Guardian Rank 1
-                    case 30883: // Nature's Guardian Rank 2
                     case 30884: // Nature's Guardian Rank 3
                     {
                         if (HealthBelowPctDamaged(30, damage))
