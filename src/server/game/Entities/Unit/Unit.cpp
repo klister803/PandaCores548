@@ -7592,11 +7592,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 }
                 case 44448: // Pyroblast Clearcasting Driver
                 {
-                    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-                        if (procSpell->Effects[i].Effect)
-                            if (procSpell->Effects[i].HasRadius())
-                                return false;
-
                     bool RemoveHeatingUp = HasAura(48107) ? true: false;
 
                     if (procEx & PROC_EX_CRITICAL_HIT)
