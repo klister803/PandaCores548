@@ -203,14 +203,10 @@ class spell_warr_storm_bolt : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* unitTarget = GetHitUnit())
-                    {
-                        if (unitTarget->IsImmunedToSpellEffect(sSpellMgr->GetSpellInfo(WARRIOR_SPELL_STORM_BOLT_STUN), 0))
+                if (Unit* unitTarget = GetHitUnit())
+                    if (Creature* crt = unitTarget->ToCreature())
+                        if (crt->HasMechanicImmuneMask(1 << (MECHANIC_STUN - 1)))
                             SetHitDamage(GetHitDamage() * 4);
-                    }
-                }
             }
 
             void Register()
