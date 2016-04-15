@@ -3870,6 +3870,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 110696: // Ice Block
+                case 27619:  // Ice Block
+                    spellInfo->AttributesEx3 |= SPELL_ATTR3_IGNORE_HIT_RESULT;
+                    break;
                 case 144888: // Item - Druid T16 Guardian 4P Bonus (Ursoc's Vigor)
                     spellInfo->AttributesEx10 &= ~SPELL_ATTR10_STACK_DAMAGE_OR_HEAL;
                     break;
