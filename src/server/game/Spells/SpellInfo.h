@@ -589,7 +589,6 @@ public:
     // helpers for breaking by damage spells
     bool IsBreakingCamouflage() const;
     bool IsBreakingCamouflageAfterHit() const;
-    bool CanTriggerBladeFlurry() const;
 
     // loading helpers
     uint32 _GetExplicitTargetMask() const;

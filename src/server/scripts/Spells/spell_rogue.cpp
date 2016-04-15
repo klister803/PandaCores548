@@ -177,9 +177,6 @@ class spell_rog_blade_flurry : public SpellScriptLoader
                     if (!damage || eventInfo.GetDamageInfo()->GetDamageType() == DOT)
                         return;
 
-                    if (spellInfo && !spellInfo->CanTriggerBladeFlurry())
-                        return;
-
                     int32 percent = GetSpellInfo()->Effects[2].BasePoints;
                     damage = int32((damage * percent) / 100);
 
