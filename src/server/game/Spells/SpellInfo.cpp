@@ -2846,8 +2846,9 @@ uint32 SpellInfo::CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask) 
     SpellPowerEntry power;
     if (GetSpellPowerByCasterPower(caster, power))
     {
+        int32 getCreatePowers = caster->GetCreatePowers(Powers(power.powerType));
         // Base powerCost
-        int32 powerCost = power.powerCost;
+        int32 powerCost = getCreatePowers ? power.powerCost : 0;
         // PCT cost from total amount
         if (power.powerCostPercentage)
         {
@@ -2862,7 +2863,7 @@ uint32 SpellInfo::CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask) 
                     sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalcPowerCost: Not implemented yet!");
                     break;
                 default:
-                    powerCost += int32(CalculatePct(caster->GetCreatePowers(Powers(power.powerType)), power.powerCostPercentage));
+                    powerCost += int32(CalculatePct(getCreatePowers, power.powerCostPercentage));
                     sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalcPowerCost: Power type '%i' in spell %d, powerCost %i, GetCreatePowers %i", power.powerType, Id, powerCost, caster->GetCreatePowers(Powers(power.powerType)));
                     //return powerCost;
             }
