@@ -92,17 +92,34 @@ enum eSpells
     SPELL_CORRUPTION_SHOCK                  = 143958, //Corruption Shock
 };
 
-enum Phases
+enum Phase
 {
+    PHASE_NULL                      = 0,
     PHASE_BATTLE                    = 1,
     PHASE_DESPERATE_MEASURES        = 2,
-    PHASE_BOND_GOLDEN_LOTUS         = 3
+    PHASE_DESPERATE_MEASURES2       = 3,
+    PHASE_BOND_GOLDEN_LOTUS         = 4,
 };
 
 enum PhaseEvents
 {
-    EVENT_LOTUS                     = 1,    
-    EVENT_DESPERATE_MEASURES        = 2,//Desperate Measures
+    EVENT_VENGEFUL_STRIKE           = 3,
+    EVENT_CORRUPTED_BREW            = 4,
+    EVENT_CLASH                     = 5,
+    EVENT_GARROTE                   = 6,
+    EVENT_GOUGE                     = 7,
+    EVENT_POISON_NOXIOUS            = 8,
+    EVENT_POISON_INSTANT            = 9,
+    EVENT_SHA_SEAR                  = 10,
+    EVENT_SHADOW_WORD_BANE          = 11,
+    EVENT_CALAMITY                  = 12,
+};
+
+enum Actions
+{
+    ACTION_DESPERATE_MEASURES      = 1,
+    ACTION_BOND_GOLDEN_LOTUS       = 2,
+    ACTION_BOND_GOLDEN_LOTUS_END   = 3,
 };
 
 enum data
@@ -125,205 +142,79 @@ uint32 corruptedbrew[8] =
     SPELL_CORRUPTED_BREW8,
 };
 
-uint32 const protectors[3] = { NPC_ROOK_STONETOE, NPC_SUN_TENDERHEART, NPC_HE_SOFTFOOT };
-
-struct boss_fallen_protectors : public BossAI
+uint32 const protectors[3] =
 {
-    boss_fallen_protectors(Creature* creature) : BossAI(creature, DATA_F_PROTECTORS)
+    NPC_ROOK_STONETOE,
+    NPC_SUN_TENDERHEART,
+    NPC_HE_SOFTFOOT,
+};
+
+uint32 const rookmeasure[3] =
+{
+    NPC_EMBODIED_MISERY_OF_ROOK,
+    NPC_EMBODIED_GLOOM_OF_ROOK,
+    NPC_EMBODIED_SORROW_OF_ROOK,
+};
+
+uint32 const sunmeasure[2] =
+{
+    NPC_EMBODIED_DESPERATION_OF_SUN,
+    NPC_EMBODIED_DESPIRE_OF_SUN ,
+};
+
+struct boss_fallen_protectors : public ScriptedAI
+{
+    boss_fallen_protectors(Creature* creature) : ScriptedAI(creature)
     {
-        measureVeh = 0;
+        instance = creature->GetInstanceScript();
     }
 
-    int8 _healthPhase;
-    uint32 measureVeh;      //inut on subclas.
-    uint32 measureSummonedCount;
+    InstanceScript* instance;
 
-    void Reset()
+    void CallOtherProtectors()
     {
-        _Reset();
-        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-        _healthPhase = 0;
-        me->CastSpell(me, SPELL_DESPAWN_AT, true);
-        instance->DoRemoveAurasDueToSpellOnPlayers(143239); // Remove AT dots
-        instance->DoRemoveAurasDueToSpellOnPlayers(143959);
-        instance->DoRemoveAurasDueToSpellOnPlayers(143564);
-        measureSummonedCount = 0;
-        instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+        for (int32 i = 0; i < 3; i++)
+            if (Creature* prot = me->GetCreature(*me, instance->GetData64(protectors[i])))
+                if (me->GetEntry() != prot->GetEntry())
+                    if (prot->isAlive() && !prot->isInCombat())
+                        DoZoneInCombat(prot, 150.0f);
+
+        if (instance->GetBossState(DATA_F_PROTECTORS) == NOT_STARTED)
+            instance->SetBossState(DATA_F_PROTECTORS, IN_PROGRESS);
     }
 
-    void EnterCombat(Unit* who)
+    void ResetProtectors()
     {
-        InitBattle();
-        instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
-        instance->SetBossState(DATA_F_PROTECTORS, IN_PROGRESS);
-        DoZoneInCombat(me, 150.0f);
-        
-        for (int32 i = 0; i < 3; ++i)
-        {
-            if (me->GetEntry() == protectors[i])
-                continue;
+        for (int32 i = 0; i < 3; i++)
+            if (Creature* prot = me->GetCreature(*me, instance->GetData64(protectors[i])))
+                if (me->GetEntry() != prot->GetEntry())
+                    if (prot->isAlive() && prot->isInCombat())
+                        prot->AI()->EnterEvadeMode();
 
-            if (Creature* prot = ObjectAccessor::GetCreature(*me, instance->GetData64(protectors[i])))
-            {
-                instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, prot);
-                DoZoneInCombat(prot, 150.0f);
-            }
-        }
-        if (!instance->CheckRequiredBosses(DATA_F_PROTECTORS, 0))
-            EnterEvadeMode();
+        if (instance->GetBossState(DATA_F_PROTECTORS) == IN_PROGRESS)
+            instance->SetBossState(DATA_F_PROTECTORS, NOT_STARTED);
     }
 
-    virtual void InitBattle()
+    void SendDone()
     {
-        events.SetPhase(PHASE_BATTLE);
-        me->SetReactState(REACT_AGGRESSIVE);
-    }
+        for (int32 i = 0; i < 3; i++)
+            if (Creature* prot = me->GetCreature(*me, instance->GetData64(protectors[i])))
+                if (me->GetEntry() != prot->GetEntry())
+                    if (prot->isAlive())
+                        prot->Kill(prot, true);
 
-    // remove from PHASE_BOND_GOLDEN_LOTUS
-    void HealReceived(Unit* /*done_by*/, uint32& addhealth)
-    {
-        float newpct = GetHealthPctWithHeal(addhealth);
-        if ((_healthPhase == 0 && newpct <= 66.0f) ||
-            (_healthPhase == 1 && newpct <= 33.0f))
-            --_healthPhase;
-
-        events.SetPhase(PHASE_BATTLE);
+        if (instance->GetBossState(DATA_F_PROTECTORS) != DONE)
+            instance->SetBossState(DATA_F_PROTECTORS, DONE);
     }
 
     bool CheckLotus()
     {
         for (int32 i = 0; i < 3; ++i)
-        {
             if (Creature* prot = ObjectAccessor::GetCreature(*me, instance->GetData64(protectors[i])))
-            {
-                if (prot->GetHealth() != 1)
-                    return false;
-            }
-        }
+                if (me->GetEntry() != prot->GetEntry())
+                    if (prot->GetHealth() != 1)
+                        return false;
         return true;
-    }
-
-    void DamageTaken(Unit* attacker, uint32 &damage)
-    {
-        if (me->GetHealth() <= damage)
-        {
-            damage = me->GetHealth() - 1;
-
-            if (!events.IsInPhase(PHASE_BOND_GOLDEN_LOTUS))
-            {
-                me->InterruptNonMeleeSpells(false);
-                DoCast(me, SPELL_BOUND_OF_GOLDEN_LOTUS, false);
-                events.SetPhase(PHASE_BOND_GOLDEN_LOTUS);
-                events.RescheduleEvent(EVENT_LOTUS, 1*IN_MILLISECONDS, 0, PHASE_BOND_GOLDEN_LOTUS);   //BreakIfAny
-            }
-            else if (CheckLotus())
-            {
-                //END EVENT
-                damage = me->GetHealth();
-                _JustDied();
-
-                for (int32 i = 0; i < 3; ++i)
-                {
-                    if (me->GetEntry() == protectors[i])
-                        continue;
-
-                    if (Creature* prot = ObjectAccessor::GetCreature(*me, instance->GetData64(protectors[i])))
-                        attacker->Kill(prot, true);
-                }
-            }
-            return;
-        }
-
-        if (!me->IsInEvadeMode())
-        {
-            if ((_healthPhase == 0 && GetHealthPct(damage) <= 66.0f) ||
-                (_healthPhase == 1 && GetHealthPct(damage) <= 33.0f))
-            {
-                ++_healthPhase;
-                me->SetInCombatWithZone();
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                me->SetReactState(REACT_PASSIVE);
-                me->AttackStop();
-                me->GetMotionMaster()->MovementExpired();
-                events.SetPhase(PHASE_DESPERATE_MEASURES);
-                events.RescheduleEvent(EVENT_DESPERATE_MEASURES, 1 * IN_MILLISECONDS, 0, PHASE_DESPERATE_MEASURES);   //BreakIfAny
-                me->InterruptNonMeleeSpells(false);
-            }
-        }
-    }
-
-    void JustDied(Unit* /*killer*/)
-    {
-        events.Reset();
-        summons.DespawnAll();
-        instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
-        instance->DoRemoveAurasDueToSpellOnPlayers(143239); // Remove AT dots
-        instance->DoRemoveAurasDueToSpellOnPlayers(143959);
-        instance->DoRemoveAurasDueToSpellOnPlayers(143564);
-    }
-
-    void summonDesperation()
-    {
-        if (Creature* lotos = me->GetCreature(*me, instance->GetData64(measureVeh)))
-        {
-            if (Vehicle * vehicle = lotos->GetVehicleKit())
-            {
-                SeatMap tempSeatMap = vehicle->Seats;
-                for (SeatMap::iterator itr = tempSeatMap.begin(); itr != tempSeatMap.end(); ++itr)
-                {
-                    if (!itr->second.Passenger)
-                        continue;
-
-                    Unit* passenger = ObjectAccessor::FindUnit(itr->second.Passenger);
-                    if (!passenger)
-                        continue;
-
-                    TempSummon* summon = passenger->ToTempSummon();
-                    if (!summon)
-                        continue;
-
-                    instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, summon);
-                    summon->ExitVehicle();
-                    ++measureSummonedCount;
-                }
-            }
-        }
-    }
-
-    void DoAction(int32 const action)
-    {
-        switch(action)
-        {
-            //Check if all boses have 1 pct. If == true -> setbossstate(DONE)
-            case EVENT_1:
-                events.RescheduleEvent(EVENT_1, 1*IN_MILLISECONDS, 0, PHASE_BOND_GOLDEN_LOTUS);   //BreakIfAny
-                break;
-            case EVENT_DESPERATE_MEASURES:
-                summonDesperation();
-                break;
-            // caled at measures die from instance::CreatureDies
-            case NPC_EMBODIED_ANGUISH_OF_HE:
-            case NPC_EMBODIED_DESPERATION_OF_SUN:
-            case NPC_EMBODIED_DESPIRE_OF_SUN:
-            case NPC_EMBODIED_MISERY_OF_ROOK:
-            case NPC_EMBODIED_GLOOM_OF_ROOK:
-            case NPC_EMBODIED_SORROW_OF_ROOK:
-            {
-                --measureSummonedCount;
-                // END EVENT_DESPERATE_MEASURES. Countinue attacking.
-                if (!measureSummonedCount)
-                {
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                    InitBattle();
-                    me->RemoveAllAreaObjects();
-                    me->RemoveAurasDueToSpell(SPELL_DARK_MEDITATION);   //sun
-                    me->RemoveAurasDueToSpell(SPELL_MARK_OF_ANGUISH_MEDITATION);   //he
-                    me->RemoveAurasDueToSpell(SPELL_MISERY_SORROW_GLOOM);   //rook                    
-                    me->SetInCombatWithZone();
-                }
-                break;
-            }
-        }
     }
 };
 
@@ -335,107 +226,151 @@ public:
 
     struct boss_rook_stonetoeAI : public boss_fallen_protectors
     {
-        boss_rook_stonetoeAI(Creature* creature) : boss_fallen_protectors(creature)
+        boss_rook_stonetoeAI(Creature* creature) : boss_fallen_protectors(creature), summon(me)
         {
-            measureVeh = NPC_GOLD_LOTOS_ROOK;
+            instance = creature->GetInstanceScript();
         }
+        InstanceScript* instance;
+        SummonList summon;
+        EventMap events;
+        Phase phase;
         uint8 corruptedbrewcount;
+        uint8 pctdone;
 
         void Reset()
         {
+            summon.DespawnAll();
+            events.Reset();
+            ResetProtectors();
+            me->SetReactState(REACT_DEFENSIVE);
+            pctdone = 0;
             corruptedbrewcount = 0;
-        }
-
-        uint32 GetData(uint32 type)
-        {
-            if (type == DATA_CORRUPTED_BREW_COUNT)
-                return (uint32(corruptedbrewcount++));
-            return 0;
-        }
-
-        void EnterEvadeMode() override
-        {
-            corruptedbrewcount = 0;
-            me->CastSpell(me, SPELL_DESPAWN_AT, true);
-            if (Creature* sun = instance->instance->GetCreature(instance->GetData64(NPC_SUN_TENDERHEART)))
-                sun->AI()->EnterEvadeMode();
-            boss_fallen_protectors::EnterEvadeMode();
-        }
-
-        enum local
-        {
-            EVENT_VENGEFUL_STRIKE = 5,
-            EVENT_CORRUPTED_BREW = 6,
-            EVENT_CLASH = 7,
-        };
-
-        void InitBattle()
-        {
-            boss_fallen_protectors::InitBattle();
-
-            events.RescheduleEvent(EVENT_VENGEFUL_STRIKE, urand(10 * IN_MILLISECONDS, 20 * IN_MILLISECONDS), 0, PHASE_BATTLE);
-            events.RescheduleEvent(EVENT_CORRUPTED_BREW, urand(IN_MILLISECONDS, 5 * IN_MILLISECONDS), 0, PHASE_BATTLE);
-            events.RescheduleEvent(EVENT_CLASH, urand(20 * IN_MILLISECONDS, 30 * IN_MILLISECONDS), 0, PHASE_BATTLE);
+            phase = PHASE_NULL;
+            DoCast(me, SPELL_DESPAWN_AT, true);
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         }
 
         void EnterCombat(Unit* who)
         {
-            boss_fallen_protectors::EnterCombat(who);
+            DoZoneInCombat(me, 150.0f);
+            CallOtherProtectors();
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
             sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, me->GetGUID());
+            phase = PHASE_BATTLE;
+            events.ScheduleEvent(EVENT_VENGEFUL_STRIKE, urand(10000, 20000), 0, PHASE_BATTLE);
+            events.ScheduleEvent(EVENT_CORRUPTED_BREW, urand(2000, 5000), 0, PHASE_BATTLE);
+            events.ScheduleEvent(EVENT_CLASH, urand(20000, 30000), 0, PHASE_BATTLE);
+        }
+
+        void JustSummoned(Creature* sum)
+        {
+            summon.Summon(sum);
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (!pctdone && HealthBelowPct(66) || pctdone == 1 && HealthBelowPct(33))
+            {
+                pctdone++;
+                DoAction(ACTION_DESPERATE_MEASURES);
+            }
+            else if (damage >= me->GetHealth() && phase != PHASE_BOND_GOLDEN_LOTUS)
+            {
+                damage = 0;
+                phase = PHASE_BOND_GOLDEN_LOTUS;
+                DoAction(ACTION_BOND_GOLDEN_LOTUS);
+            }
+            else if (damage >= me->GetHealth() && phase == PHASE_BOND_GOLDEN_LOTUS && !CheckLotus())
+                damage = 0;
         }
 
         void DoAction(int32 const action)
         {
-            boss_fallen_protectors::DoAction(action);
+            switch (action)
+            {
+            case ACTION_DESPERATE_MEASURES:
+                events.Reset();
+                me->InterruptNonMeleeSpells(true);
+                me->SetAttackStop(true);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                phase = PHASE_DESPERATE_MEASURES;
+                corruptedbrewcount = 0;
+                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_4, me->GetGUID());
+                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_5, me->GetGUID());
+                DoCast(me, SPELL_MISERY_SORROW_GLOOM);
+                float x, y;
+                GetPosInRadiusWithRandomOrientation(me, 15.0f, x, y);
+                for (uint32 n = 0; n < 3; n++)
+                    if (Creature* measure = me->SummonCreature(rookmeasure[n], x + n * 3, y + n * 3, me->GetPositionZ(), 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
+                        measure->AI()->DoZoneInCombat(measure, 150.0f);
+                break;
+            case ACTION_BOND_GOLDEN_LOTUS:
+                events.Reset();
+                me->InterruptNonMeleeSpells(true);
+                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_6, me->GetGUID());
+                DoCast(me, SPELL_BOUND_OF_GOLDEN_LOTUS);
+                break;
+            case ACTION_END_DESPERATE_MEASURES:
+                me->RemoveAurasDueToSpell(SPELL_MISERY_SORROW_GLOOM);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                me->RemoveAllAreaObjects();
+                me->ReAttackWithZone();
+                phase = PHASE_BATTLE;
+                events.ScheduleEvent(EVENT_VENGEFUL_STRIKE, urand(10000, 20000), 0, PHASE_BATTLE);
+                events.ScheduleEvent(EVENT_CORRUPTED_BREW, urand(2000, 5000), 0, PHASE_BATTLE);
+                events.ScheduleEvent(EVENT_CLASH, urand(20000, 30000), 0, PHASE_BATTLE);
+                break;
+            case ACTION_BOND_GOLDEN_LOTUS_END:
+                me->RemoveAurasDueToSpell(SPELL_BOUND_OF_GOLDEN_LOTUS);
+                me->ReAttackWithZone();
+                phase = PHASE_BATTLE;
+                events.ScheduleEvent(EVENT_VENGEFUL_STRIKE, urand(10000, 20000), 0, PHASE_BATTLE);
+                events.ScheduleEvent(EVENT_CORRUPTED_BREW, urand(2000, 5000), 0, PHASE_BATTLE);
+                events.ScheduleEvent(EVENT_CLASH, urand(20000, 30000), 0, PHASE_BATTLE);
+                break;
+            }
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(Unit* killer)
         {
-            boss_fallen_protectors::JustDied(NULL);
+            if (killer != me)
+                SendDone();
+            summon.DespawnAll();
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         }
-
+        
         void UpdateAI(uint32 diff)
         {
-            if (events.IsInPhase(PHASE_BATTLE) && !UpdateVictim() ||
-                !events.IsInPhase(PHASE_BOND_GOLDEN_LOTUS) && me->HasUnitState(UNIT_STATE_CASTING))
+            if (!UpdateVictim())
                 return;
 
             EnterEvadeIfOutOfCombatArea(diff);
             events.Update(diff);
 
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
             while (uint32 eventId = events.ExecuteEvent())
             {
-                boss_fallen_protectors::DoAction(eventId);
                 switch (eventId)
                 {
                 case EVENT_VENGEFUL_STRIKE:
                     DoCastVictim(SPELL_VENGEFUL_STRIKE);
-                    events.RescheduleEvent(EVENT_VENGEFUL_STRIKE, urand(20 * IN_MILLISECONDS, 30 * IN_MILLISECONDS), 0, PHASE_BATTLE);
+                    events.ScheduleEvent(EVENT_VENGEFUL_STRIKE, urand(20000, 30000), 0, PHASE_BATTLE);
                     break;
                 case EVENT_CORRUPTED_BREW:
                     if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0.0f, true))
                         DoCast(target, SPELL_CORRUPTED_BREW_BASE, true);
-                    events.RescheduleEvent(EVENT_CORRUPTED_BREW, urand(10 * IN_MILLISECONDS, 15 * IN_MILLISECONDS), 0, PHASE_BATTLE);
+                    events.ScheduleEvent(EVENT_CORRUPTED_BREW, urand(10000, 15000), 0, PHASE_BATTLE);
                     break;
                 case EVENT_CLASH:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                         DoCast(target, SPELL_CLASH);
-                    events.RescheduleEvent(EVENT_CLASH, urand(20 * IN_MILLISECONDS, 30 * IN_MILLISECONDS), 0, PHASE_BATTLE);
-                    break;
-                case EVENT_DESPERATE_MEASURES:
-                    corruptedbrewcount = 0;
-                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_4, me->GetGUID());
-                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_5, me->GetGUID());
-                    DoCast(me, SPELL_MISERY_SORROW_GLOOM, false);
-                    break;
-                case EVENT_LOTUS:
-                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_6, me->GetGUID());
-                    break;
-                default:
+                    events.ScheduleEvent(EVENT_CLASH, urand(20000, 30000), 0, PHASE_BATTLE);
                     break;
                 }
             }
-            if (events.IsInPhase(PHASE_BATTLE))
+            if (phase == PHASE_BATTLE)
                 DoMeleeAttackIfReady();
         }
     };
@@ -454,60 +389,114 @@ public:
 
     struct boss_he_softfootAI : public boss_fallen_protectors
     {
-        boss_he_softfootAI(Creature* creature) : boss_fallen_protectors(creature)
+        boss_he_softfootAI(Creature* creature) : boss_fallen_protectors(creature), summons(me)
         {
-            measureVeh = NPC_GOLD_LOTOS_HE;
+            instance = creature->GetInstanceScript();
         }
 
-        void EnterEvadeMode() override
+        InstanceScript* instance;
+        SummonList summons;
+        EventMap events;
+        Phase phase;
+        uint8 pctdone;
+
+        void Reset()
         {
+            summons.DespawnAll();
+            events.Reset();
+            ResetProtectors();
+            me->SetReactState(REACT_DEFENSIVE);
+            phase = PHASE_NULL;
+            pctdone = 0;
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROTE);
-            me->CastSpell(me, SPELL_DESPAWN_AT, true);
-            if (Creature* sun = instance->instance->GetCreature(instance->GetData64(NPC_SUN_TENDERHEART)))
-                sun->AI()->EnterEvadeMode();
-            boss_fallen_protectors::EnterEvadeMode();
-        }
-
-        enum local
-        {
-            EVENT_GARROTE = 5,
-            EVENT_GOUGE = 6,
-            EVENT_POISON_NOXIOUS = 7,
-            EVENT_POISON_INSTANT = 8,
-        };
-
-        void InitBattle()
-        {
-            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WEAKNESS);
-            boss_fallen_protectors::InitBattle();
-            events.RescheduleEvent(EVENT_GARROTE, 5 * IN_MILLISECONDS, 0, PHASE_BATTLE);
-            events.RescheduleEvent(EVENT_GOUGE, urand(IN_MILLISECONDS, 5 * IN_MILLISECONDS), 0, PHASE_BATTLE);
-            events.RescheduleEvent(EVENT_POISON_NOXIOUS, urand(20 * IN_MILLISECONDS, 30 * IN_MILLISECONDS), 0, PHASE_BATTLE);
+            DoCast(me, SPELL_DESPAWN_AT, true);
         }
 
         void EnterCombat(Unit* who)
         {
-            boss_fallen_protectors::EnterCombat(who);
-            DoCast(who, SPELL_INSTANT_POISON, false);
+            DoZoneInCombat(me, 150.0f);
+            CallOtherProtectors();
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
+            DoCast(who, SPELL_INSTANT_POISON);
+            phase = PHASE_BATTLE;
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WEAKNESS);
+            events.ScheduleEvent(EVENT_GARROTE, 5000, 0, PHASE_BATTLE);
+            events.ScheduleEvent(EVENT_GOUGE, urand(2000, 5000), 0, PHASE_BATTLE);
+            events.ScheduleEvent(EVENT_POISON_NOXIOUS, urand(20000, 30000), 0, PHASE_BATTLE);
         }
 
-        void AttackStart(Unit* target)
+        void DamageTaken(Unit* attacker, uint32 &damage)
         {
-            if (!events.IsInPhase(PHASE_BATTLE))
-                return;
+            if (!pctdone && HealthBelowPct(66) || pctdone == 1 && HealthBelowPct(33))
+            {
+                pctdone++;
+                DoAction(ACTION_DESPERATE_MEASURES);
+            }
+            else if (damage >= me->GetHealth() && phase != PHASE_BOND_GOLDEN_LOTUS)
+            {
+                damage = 0;
+                phase = PHASE_BOND_GOLDEN_LOTUS;
+                DoAction(ACTION_BOND_GOLDEN_LOTUS);
+            }
+            else if (damage >= me->GetHealth() && phase == PHASE_BOND_GOLDEN_LOTUS)
+                if (!CheckLotus())
+                    damage = 0;
+        }
 
-            BossAI::AttackStart(target);
+        void JustSummoned(Creature* summon)
+        {
+            summons.Summon(summon);
         }
 
         void DoAction(int32 const action)
         {
-            boss_fallen_protectors::DoAction(action);
+            switch (action)
+            {
+            case ACTION_DESPERATE_MEASURES:
+                events.Reset();
+                me->InterruptNonMeleeSpells(true);
+                me->SetAttackStop(true);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                phase = PHASE_DESPERATE_MEASURES;
+                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, me->GetGUID());
+                DoCast(me, SPELL_MARK_OF_ANGUISH_MEDITATION);
+                break;
+            case ACTION_BOND_GOLDEN_LOTUS:
+                events.Reset();
+                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2, me->GetGUID());
+                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, me->GetGUID());
+                me->InterruptNonMeleeSpells(true);
+                DoCast(me, SPELL_BOUND_OF_GOLDEN_LOTUS);
+                break;
+            case ACTION_END_DESPERATE_MEASURES:
+                me->RemoveAurasDueToSpell(SPELL_MARK_OF_ANGUISH_MEDITATION);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                me->RemoveAllAreaObjects();
+                me->ReAttackWithZone();
+                phase = PHASE_BATTLE;
+                events.ScheduleEvent(EVENT_GARROTE, 5000, 0, PHASE_BATTLE);
+                events.ScheduleEvent(EVENT_GOUGE, urand(2000, 5000), 0, PHASE_BATTLE);
+                events.ScheduleEvent(EVENT_POISON_NOXIOUS, urand(20000, 30000), 0, PHASE_BATTLE);
+                break;
+            case ACTION_BOND_GOLDEN_LOTUS_END:
+                me->RemoveAurasDueToSpell(SPELL_BOUND_OF_GOLDEN_LOTUS);
+                me->ReAttackWithZone();
+                phase = PHASE_BATTLE;
+                events.ScheduleEvent(EVENT_GARROTE, 5000, 0, PHASE_BATTLE);
+                events.ScheduleEvent(EVENT_GOUGE, urand(2000, 5000), 0, PHASE_BATTLE);
+                events.ScheduleEvent(EVENT_POISON_NOXIOUS, urand(20000, 30000), 0, PHASE_BATTLE);
+                break;
+            }
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(Unit* killer)
         {
-            boss_fallen_protectors::JustDied(NULL);
+            if (killer != me)
+                SendDone();
+            summons.DespawnAll();
             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROTE);
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         }
 
         bool AllowSelectNextVictim(Unit* target)
@@ -518,48 +507,44 @@ public:
 
         void UpdateAI(uint32 diff)
         {
-            if (events.IsInPhase(PHASE_BATTLE) && !UpdateVictim() ||
-                !events.IsInPhase(PHASE_BOND_GOLDEN_LOTUS) && me->HasUnitState(UNIT_STATE_CASTING))
+            if (!UpdateVictim())
                 return;
 
-            events.Update(diff);
             EnterEvadeIfOutOfCombatArea(diff);
+            events.Update(diff);
 
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+            
             while (uint32 eventId = events.ExecuteEvent())
             {
-                boss_fallen_protectors::DoAction(eventId);
                 switch (eventId)
                 {
                 case EVENT_GARROTE:
-                    if (Unit* target = me->getVictim())
-                        if (!target->HasAura(SPELL_GARROTE))
-                            DoCast(target, SPELL_GARROTE, false);
-                    events.RescheduleEvent(EVENT_GARROTE, 5 * IN_MILLISECONDS, 0, PHASE_BATTLE);
+                    if (me->getVictim())
+                        if (!me->getVictim()->HasAura(SPELL_GARROTE))
+                            DoCast(me->getVictim(), SPELL_GARROTE);
+                    events.ScheduleEvent(EVENT_GARROTE, 5000, 0, PHASE_BATTLE);
                     break;
                 case EVENT_GOUGE:
-                    DoCastVictim(SPELL_GOUGE);
-                    events.RescheduleEvent(EVENT_GOUGE, urand(15 * IN_MILLISECONDS, 20 * IN_MILLISECONDS), 0, PHASE_BATTLE);
+                    if (me->getVictim())
+                        DoCastVictim(SPELL_GOUGE);
+                    events.ScheduleEvent(EVENT_GOUGE, urand(15000, 20000), 0, PHASE_BATTLE);
                     break;
                 case EVENT_POISON_NOXIOUS:
-                    events.RescheduleEvent(EVENT_POISON_INSTANT, urand(20 * IN_MILLISECONDS, 30 * IN_MILLISECONDS), 0, PHASE_BATTLE);
-                    DoCastVictim(SPELL_NOXIOUS_POISON);
+                    if (me->getVictim())
+                        DoCastVictim(SPELL_NOXIOUS_POISON);
+                    events.ScheduleEvent(EVENT_POISON_INSTANT, urand(20000, 30000), 0, PHASE_BATTLE);
                     break;
                 case EVENT_POISON_INSTANT:
-                    DoCastVictim(SPELL_INSTANT_POISON);
-                    events.RescheduleEvent(EVENT_POISON_NOXIOUS, urand(20 * IN_MILLISECONDS, 30 * IN_MILLISECONDS), 0, PHASE_BATTLE);
+                    if (me->getVictim())
+                        DoCastVictim(SPELL_INSTANT_POISON);
                     me->RemoveAllAreaObjects();
-                    break;
-                case EVENT_DESPERATE_MEASURES:
-                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, me->GetGUID());
-                    DoCast(me, SPELL_MARK_OF_ANGUISH_MEDITATION, false);
-                    break;
-                case EVENT_LOTUS:
-                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2, me->GetGUID());
-                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, me->GetGUID());
+                    events.RescheduleEvent(EVENT_POISON_NOXIOUS, urand(20000, 30000), 0, PHASE_BATTLE);
                     break;
                 }
             }
-            if (events.IsInPhase(PHASE_BATTLE))
+            if (phase == PHASE_BATTLE)
                 DoMeleeAttackIfReady();
         }
     };
@@ -580,44 +565,44 @@ public:
     {
         boss_sun_tenderheartAI(Creature* creature) : boss_fallen_protectors(creature), summons(me)
         {
-            SetCombatMovement(false);
-            measureVeh = NPC_GOLD_LOTOS_SUN;
+            instance = creature->GetInstanceScript();
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
         }
 
+        InstanceScript* instance;
+        uint32 checkprogress;
         SummonList summons;
+        EventMap events;
+        Phase phase;
         uint32 shadow_word_count;
         uint8 calamitycount;
+        uint8 pctdone;
 
         void Reset()
         {
-            boss_fallen_protectors::Reset();
+            ResetProtectors();
+            me->SetReactState(REACT_DEFENSIVE);
             shadow_word_count = 0;
             calamitycount = 0;
+            checkprogress = 0;
+            pctdone = 0;
             summons.DespawnAll();
             me->SummonCreature(NPC_GOLD_LOTOS_MAIN, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0);
             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WORD_BANE);
-        }
-
-        enum local
-        {
-            EVENT_SHA_SEAR = 5,
-            EVENT_SHADOW_WORD_BANE = 6,
-            EVENT_CALAMITY = 7,
-        };
-
-        void InitBattle()
-        {
-            boss_fallen_protectors::InitBattle();
-            events.RescheduleEvent(EVENT_SHA_SEAR, IN_MILLISECONDS, 0, PHASE_BATTLE);
-            events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(15 * IN_MILLISECONDS, 25 * IN_MILLISECONDS), 0, PHASE_BATTLE);
-            events.RescheduleEvent(EVENT_CALAMITY, urand(60 * IN_MILLISECONDS, 70 * IN_MILLISECONDS), 0, PHASE_BATTLE);
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         }
 
         void EnterCombat(Unit* who)
         {
-            boss_fallen_protectors::EnterCombat(who);
+            DoZoneInCombat(me, 150.0f);
+            CallOtherProtectors();
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
             sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, me->GetGUID());
             calamitycount = 0;
+            //checkprogress = 5000;
+            events.RescheduleEvent(EVENT_SHA_SEAR, 2000, 0, PHASE_BATTLE);
+            events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(15000, 25000), 0, PHASE_BATTLE);
+            events.RescheduleEvent(EVENT_CALAMITY, urand(60000, 70000), 0, PHASE_BATTLE);
         }
 
         uint32 GetData(uint32 type)
@@ -627,22 +612,84 @@ public:
             return 0;
         }
 
-        void DoAction(int32 const action)
-        {
-            boss_fallen_protectors::DoAction(action);
-        }
-
         void JustSummoned(Creature* summon)
         {
             summons.Summon(summon);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void DamageTaken(Unit* attacker, uint32 &damage)
         {
-            boss_fallen_protectors::JustDied(NULL);
+            if (!pctdone && HealthBelowPct(66) || pctdone == 1 && HealthBelowPct(33))
+            {
+                pctdone++;
+                DoAction(ACTION_DESPERATE_MEASURES);
+            }
+            else if (damage >= me->GetHealth() && phase != PHASE_BOND_GOLDEN_LOTUS)
+            {
+                damage = 0;
+                phase = PHASE_BOND_GOLDEN_LOTUS;
+                DoAction(ACTION_BOND_GOLDEN_LOTUS);
+            }
+            else if (damage >= me->GetHealth() && phase == PHASE_BOND_GOLDEN_LOTUS)
+                if (!CheckLotus())
+                    damage = 0;
+        }
+
+        void DoAction(int32 const action)
+        {
+            switch (action)
+            {
+            case ACTION_DESPERATE_MEASURES:
+                events.Reset();
+                me->InterruptNonMeleeSpells(true);
+                me->SetAttackStop(true);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                phase = PHASE_DESPERATE_MEASURES;
+                calamitycount = 0;
+                if (Creature* lotos = me->GetCreature(*me, instance->GetData64(NPC_GOLD_LOTOS_MAIN)))
+                    DoCast(lotos, SPELL_DARK_MEDITATION_JUMP, true);
+                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_4, me->GetGUID());
+                float x, y;
+                GetPosInRadiusWithRandomOrientation(me, 15.0f, x, y);
+                for (uint32 n = 0; n < 2; n++)
+                    if (Creature* measure = me->SummonCreature(sunmeasure[n], x + n * 3, y + n * 3, me->GetPositionZ(), 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
+                        measure->AI()->DoZoneInCombat(measure, 150.0f);
+                break;
+            case ACTION_BOND_GOLDEN_LOTUS:
+                events.Reset();
+                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_5, me->GetGUID());
+                me->InterruptNonMeleeSpells(true);
+                DoCast(me, SPELL_BOUND_OF_GOLDEN_LOTUS);
+                break;
+            case ACTION_END_DESPERATE_MEASURES:
+                me->RemoveAurasDueToSpell(SPELL_DARK_MEDITATION);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                me->RemoveAllAreaObjects();
+                me->ReAttackWithZone();
+                phase = PHASE_BATTLE;
+                events.RescheduleEvent(EVENT_SHA_SEAR, 2000, 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(15000, 25000), 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_CALAMITY, urand(60000, 70000), 0, PHASE_BATTLE);
+                break;
+            case ACTION_BOND_GOLDEN_LOTUS_END:
+                me->RemoveAurasDueToSpell(SPELL_BOUND_OF_GOLDEN_LOTUS);
+                me->ReAttackWithZone();
+                phase = PHASE_BATTLE;
+                events.RescheduleEvent(EVENT_SHA_SEAR, 2000, 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(15000, 25000), 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_CALAMITY, urand(60000, 70000), 0, PHASE_BATTLE);
+                break;
+            }
+        }
+
+        void JustDied(Unit* killer)
+        {
+            if (killer != me)
+                SendDone();
             summons.DespawnAll();
             sCreatureTextMgr->SendChat(me, TEXT_GENERIC_6, me->GetGUID());
             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WORD_BANE);
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         }
 
         void SetData(uint32 type, uint32 value)
@@ -666,12 +713,25 @@ public:
 
         void UpdateAI(uint32 diff)
         {
-            if (events.IsInPhase(PHASE_BATTLE) && !UpdateVictim() ||
-                !events.IsInPhase(PHASE_BOND_GOLDEN_LOTUS) && me->HasUnitState(UNIT_STATE_CASTING))
+            if (!UpdateVictim())
                 return;
 
-            events.Update(diff);
+            if (checkprogress)
+            {
+                if (checkprogress <= diff)
+                {
+                    if (instance->GetBossState(DATA_IMMERSEUS) != DONE)
+                        EnterEvadeMode();
+                }
+                else
+                    checkprogress -= diff;
+            }
+
             EnterEvadeIfOutOfCombatArea(diff);
+            events.Update(diff);
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
 
             while (uint32 eventId = events.ExecuteEvent())
             {
@@ -681,7 +741,7 @@ public:
                 case EVENT_SHA_SEAR:
                     if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0.0f, true))
                         DoCast(target, SPELL_SHA_SEAR, true);
-                    events.RescheduleEvent(EVENT_SHA_SEAR, urand(5 * IN_MILLISECONDS, 10 * IN_MILLISECONDS), 0, PHASE_BATTLE);
+                    events.ScheduleEvent(EVENT_SHA_SEAR, urand(5000, 10000), 0, PHASE_BATTLE);
                     break;
                 case EVENT_SHADOW_WORD_BANE:
                     if (shadow_word_count < 3)
@@ -690,22 +750,14 @@ public:
                             DoCast(target, SPELL_SHADOW_WORD_BANE, true);
                         ++shadow_word_count;
                     }
-                    events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(20 * IN_MILLISECONDS, 30 * IN_MILLISECONDS), 0, PHASE_BATTLE);
+                    events.ScheduleEvent(EVENT_SHADOW_WORD_BANE, urand(20000, 30000), 0, PHASE_BATTLE);
                     break;
                 case EVENT_CALAMITY:
                     sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2, 0);
                     sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, 0);
-                    DoCastVictim(SPELL_CALAMITY);
-                    events.RescheduleEvent(EVENT_CALAMITY, urand(60 * IN_MILLISECONDS, 70 * IN_MILLISECONDS), 0, PHASE_BATTLE);
-                    break;
-                case EVENT_DESPERATE_MEASURES:
-                    calamitycount = 0;
-                    if (Creature* lotos = instance->instance->GetCreature(instance->GetData64(NPC_GOLD_LOTOS_MAIN)))
-                        DoCast(lotos, SPELL_DARK_MEDITATION_JUMP, true);
-                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_4, me->GetGUID());
-                    break;
-                case EVENT_LOTUS:
-                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_5, me->GetGUID());
+                    if (me->getVictim())
+                        DoCastVictim(SPELL_CALAMITY);
+                    events.ScheduleEvent(EVENT_CALAMITY, urand(60000, 70000), 0, PHASE_BATTLE);
                     break;
                 }
             }
@@ -828,7 +880,7 @@ public:
 
     void OnRemovePassenger(Vehicle* veh, Unit* passenger)
     {
-        Unit* own = veh->GetBase();
+        /*Unit* own = veh->GetBase();
         if (!own)
             return;
 
@@ -841,204 +893,61 @@ public:
             return;
 
         passenger->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-        passenger->m_Events.AddEvent(new ExitVexMeasure(passenger->ToCreature()), passenger->m_Events.CalculateTime(1000));
+        passenger->m_Events.AddEvent(new ExitVexMeasure(passenger->ToCreature()), passenger->m_Events.CalculateTime(1000));*/
     }
 };
-
-struct npc_measure : public ScriptedAI
-{
-    npc_measure(Creature* creature) : ScriptedAI(creature), summons(creature)
-    {
-        instance = creature->GetInstanceScript();
-        ownVehicle = 0;
-        ownSummoner = 0;
-    }
-
-    InstanceScript* instance;
-    SummonList summons;
-    EventMap events;
-    uint32 ownVehicle;
-    uint32 ownSummoner;
-
-    void Reset()
-    {
-        summons.DespawnAll();
-        events.Reset();
-    }
-
-    //return back
-    void EnterEvadeMode()
-    {    
-        instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MARK_OF_ANGUISH_STAN); //he
-        me->InterruptNonMeleeSpells(false);
-        goBack();
-        instance->SetData(DATA_FP_EVADE, true);
-    }
-
-    void goBack()
-    {
-        if (me->GetVehicle())
-            return;
-
-        instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
-        summons.DespawnAll();
-        events.Reset();
-        me->CastSpell(me, SPELL_DESPAWN_AT, true);
-
-        if (Creature* owner = instance->instance->GetCreature(instance->GetData64(ownSummoner)))
-            owner->AI()->DoAction(me->GetEntry());
-        else
-            sLog->outError(LOG_FILTER_GENERAL, " >> Script boss_fallen_protectors::npc_measure can't find owner %u", ownSummoner);
-
-        if (Creature* lotos = instance->instance->GetCreature(instance->GetData64(ownVehicle)))
-        {
-            me->CastSpell(me, SPELL_CLEAR_ALL_DEBUFS, true);
-            me->CastSpell(me, SPELL_FULL_HEALTH, true);
-            me->RemoveAura(SPELL_SHA_CORRUPTION_SUMMONED);          //he
-            me->RemoveAura(SPELL_SHA_CORRUPTION_MIS_OF_ROOK);       //rook
-            me->RemoveAura(SPELL_SHA_CORRUPTION_GLOOM_OF_ROOK);     //rook
-            me->RemoveAura(SPELL_SHA_CORRUPTION_SOR_OF_ROOK);       //rook
-            me->RemoveAura(SPELL_SHA_CORRUPTION_OF_SUN);            //sun
-
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-            me->EnterVehicle(lotos, vehSlotForMeasures(me->GetEntry()));
-            me->CastSpell(me, SPELL_SHA_CORRUPTION, true);
-        }
-        else
-            sLog->outError(LOG_FILTER_GENERAL, " >> Script boss_fallen_protectors::npc_measure can't find vehowner %u", ownVehicle);
-
-        me->CombatStop();
-    }
-
-    void DamageTaken(Unit* attacker, uint32 &damage)
-    {
-        if (damage >= me->GetHealth())
-        {
-            goBack();
-            damage = 0;
-        }
-
-        if (me->HasAura(46598))
-            damage = 0;
-    }
-
-    void JustSummoned(Creature* summon)
-    {
-        summons.Summon(summon);
-    }
-
-    void SummonedCreatureDespawn(Creature* summon)
-    {
-        summons.Despawn(summon);
-    }
-
-    void DoAction(int32 const action)
-    {
-        //Start measure event. onExit from veh.
-        if (action == EVENT_1)
-        {
-            me->RemoveAura(SPELL_SHA_CORRUPTION);
-            events.ScheduleEvent(EVENT_1, 4000);
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            me->SetInCombatWithZone();
-        }
-    }
-
-    void UpdateAI(uint32 diff)
-    {
-        events.Update(diff);
-        EnterEvadeIfOutOfCombatArea(diff);
-    }
-};
-
-#define MIN_X 1162.0f
-#define MAX_X 1258.0f
-#define MIN_Y 984.0f   
-#define MAX_Y 1080.0f
-#define MIN_Z 415.0f
-#define MAX_Z 425.0f
 
 class npc_measure_of_sun : public CreatureScript
 {
 public:
     npc_measure_of_sun() : CreatureScript("npc_measure_of_sun") { }
 
-    struct npc_measure_of_sunAI : public npc_measure
+    struct npc_measure_of_sunAI : public ScriptedAI
     {
-        npc_measure_of_sunAI(Creature* creature) : npc_measure(creature)
+        npc_measure_of_sunAI(Creature* creature) : ScriptedAI(creature), summons(me)
         {
-            SetCombatMovement(false);
-            ownVehicle = NPC_GOLD_LOTOS_SUN;
-            ownSummoner = NPC_SUN_TENDERHEART;
+            instance = creature->GetInstanceScript();
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+            me->SetReactState(REACT_PASSIVE);
+            _spell = me->GetEntry() == NPC_EMBODIED_DESPERATION_OF_SUN ? SPELL_MANIFEST_DESPERATION : SPELL_MANIFEST_DESPAIR;
         }
-
+        InstanceScript* instance;
+        SummonList summons;
         uint32 _spell;
 
-        void Reset()
+        void IsSummonedBy(Unit* summoner)
         {
-            _spell = 0;
-            npc_measure::Reset();
+            if (summoner->ToCreature() && summoner->GetEntry() == NPC_SUN_TENDERHEART)
+            {
+                me->RemoveAura(SPELL_SHA_CORRUPTION);
+                me->CastSpell(me, SPELL_SHA_CORRUPTION_OF_SUN, true);
+                DoZoneInCombat(me, 150.0f);
+                DoCast(me, _spell, true);
+                if (Creature* lotos = instance->instance->GetCreature(instance->GetData64(NPC_GOLD_LOTOS_MAIN)))
+                    me->SetFacingToObject(lotos);
+            }
         }
 
-        void DoAction(int32 const action)
-        {
-            npc_measure::DoAction(action);
-            me->CastSpell(me, SPELL_SHA_CORRUPTION_OF_SUN, true);
-        }
         void JustSummoned(Creature* summon)
         {
-            npc_measure::JustSummoned(summon);
+            summons.Summon(summon);
             DoCast(summon, SPELL_DARK_MEDITATION_SHARE_HEALTH, true);
             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                 summon->AI()->AttackStart(target);
         }
 
+        void JustDied(Unit* killer)
+        {
+            summons.DespawnAll();
+        }
+
         void UpdateAI(uint32 diff)
         {
-            npc_measure::UpdateAI(diff);
-
-            while (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                    case EVENT_1:
-                        _spell = me->GetEntry() == NPC_EMBODIED_DESPERATION_OF_SUN ? SPELL_MANIFEST_DESPERATION : SPELL_MANIFEST_DESPAIR;
-                        DoCast(me, _spell, true);
-                        if (Creature* lotos = instance->instance->GetCreature(instance->GetData64(NPC_GOLD_LOTOS_MAIN)))
-                            me->SetFacingToObject(lotos);
-                        events.ScheduleEvent(EVENT_2, 4000);
-                        break;
-                    case EVENT_2:
-                    {
-                        const Map::PlayerList &PlayerList = me->GetMap()->GetPlayers();
-                        if (PlayerList.isEmpty())
-                        {
-                            EnterEvadeMode();
-                            return;
-                        }
-                        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                        {
-                            if (Player* plr = i->getSource())
-                            {
-                                if (plr->GetPositionX() < MIN_X || plr->GetPositionX() > MAX_X ||
-                                    plr->GetPositionY() < MIN_Y || plr->GetPositionY() > MAX_Y ||
-                                    plr->GetPositionZ() < MIN_Z || plr->GetPositionZ() > MAX_Z)
-                                {
-                                    EnterEvadeMode();
-                                    return;
-                                }
-                            }
-                        }
-                        events.ScheduleEvent(EVENT_2, 4000);
-                        break;
-                    }
-                }
-            }
-
-            if (!_spell || !UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+            if (!UpdateVictim())
                 return;
 
-            DoCast(me, _spell, false);
+            DoCast(me, _spell);
         }
     };
     
@@ -1053,48 +962,55 @@ class npc_measure_of_he : public CreatureScript
 public:
     npc_measure_of_he() : CreatureScript("npc_measure_of_he") { }
 
-    struct npc_measure_of_heAI : public npc_measure
+    struct npc_measure_of_heAI : public ScriptedAI
     {
-        npc_measure_of_heAI(Creature* creature) : npc_measure(creature)
+        npc_measure_of_heAI(Creature* creature) : ScriptedAI(creature)
         {
-            ownVehicle = NPC_GOLD_LOTOS_HE;
-            ownSummoner = NPC_HE_SOFTFOOT;
+            instance = creature->GetInstanceScript();
             _target = 0;
+            events.Reset();
         }
 
+        InstanceScript* instance;
+        EventMap events;
         uint64 _target;
+
+        void IsSummonedBy(Unit* summoner)
+        {
+            if (summoner->ToCreature() && summoner->GetEntry() == NPC_HE_SOFTFOOT)
+                DoCast(me, SPELL_SHA_CORRUPTION_SUMMONED, true);
+        }
+
         void SetGUID(uint64 guid, int32 /*id*/ = 0)
         {
             _target = guid;
             if (Unit* target = ObjectAccessor::FindUnit(guid))
             {
-                if (Creature* owner = instance->instance->GetCreature(instance->GetData64(ownSummoner)))
-                    sCreatureTextMgr->SendChat(owner, TEXT_GENERIC_0, 0);
-
-                me->CastSpell(target, SPELL_MARK_OF_ANGUISH_JUMP, true);
-                target->CastSpell(target, SPELL_DEBILITATION, true);
-                me->CastSpell(target, SPELL_MARK_OF_ANGUISH_STAN, false);
-                AttackStart(target);
+                if (me->ToTempSummon())
+                {
+                    if (Unit* summoner = me->ToTempSummon()->GetSummoner())
+                    {
+                        if (summoner->ToCreature())
+                        {
+                            sCreatureTextMgr->SendChat(summoner->ToCreature(), TEXT_GENERIC_0, 0);
+                            me->CastSpell(target, SPELL_MARK_OF_ANGUISH_JUMP, true);
+                            target->CastSpell(target, SPELL_DEBILITATION, true);
+                            me->CastSpell(target, SPELL_MARK_OF_ANGUISH_STAN, false);
+                            AttackStart(target);
+                        }
+                    }
+                }
             }
         }
 
         void AttackStart(Unit* target)
         {
-            if (target->GetGUID() ==_target)
-                npc_measure::AttackStart(target);
-            else if (_target)
+            if (_target)
             {
-                //If player leave from game or isDead find new target.
                 Unit* target = ObjectAccessor::FindUnit(_target);
                 if (!target || !target->isAlive())
-                    events.ScheduleEvent(EVENT_1, 100);
+                    events.ScheduleEvent(EVENT_1, 1000);
             }
-        }
-
-        void DoAction(int32 const action)
-        {
-            npc_measure::DoAction(action);
-            me->CastSpell(me, SPELL_SHA_CORRUPTION_SUMMONED, true); //dark aura
         }
 
         bool AllowSelectNextVictim(Unit* target)
@@ -1107,13 +1023,14 @@ public:
         {
             UpdateVictim();
 
-            npc_measure::UpdateAI(diff);
-
             while (uint32 eventId = events.ExecuteEvent())
             {
-                me->InterruptNonMeleeSpells(false);
-                DoCast(me, SPELL_SHADOW_WEAKNES_PROC, true);
-                DoCast(me, SPELL_MARK_OF_ANGUISH_SELECT_TARGET, true);
+                if (eventId == EVENT_1)
+                {
+                    me->InterruptNonMeleeSpells(true);
+                    DoCast(me, SPELL_SHADOW_WEAKNES_PROC, true);
+                    DoCast(me, SPELL_MARK_OF_ANGUISH_SELECT_TARGET, true);
+                }
             }
             DoMeleeAttackIfReady();
         }
@@ -1125,38 +1042,83 @@ public:
     }
 };
 
+struct rook_measureAI : ScriptedAI
+{
+    rook_measureAI(Creature* creature) : ScriptedAI(creature)
+    {
+        instance = creature->GetInstanceScript();
+    }
+    InstanceScript* instance;
+
+    void SplitDmg(uint32 damage)
+    {
+        for (int32 n = 0; n < 3; n++)
+            if (me->GetEntry() != rookmeasure[n])
+                if (Creature* measure = me->GetCreature(*me, instance->GetData64(rookmeasure[n])))
+                    if (measure->isAlive())
+                        measure->SetHealth(measure->GetHealth() - damage);
+    }
+
+    void CallDied()
+    {
+        for (int32 n = 0; n < 3; n++)
+            if (me->GetEntry() != rookmeasure[n])
+                if (Creature* measure = me->GetCreature(*me, instance->GetData64(rookmeasure[n])))
+                    if (measure->isAlive())
+                        measure->Kill(measure, true);
+    }
+};
+
 class npc_measure_of_rook : public CreatureScript
 {
 public:
     npc_measure_of_rook() : CreatureScript("npc_measure_of_rook") { }
 
-    struct npc_measure_of_rookAI : public npc_measure
+    struct npc_measure_of_rookAI : public rook_measureAI
     {
-        npc_measure_of_rookAI(Creature* creature) : npc_measure(creature)
+        npc_measure_of_rookAI(Creature* creature) : rook_measureAI(creature)
         {
-            ownVehicle = NPC_GOLD_LOTOS_ROOK;
-            ownSummoner = NPC_ROOK_STONETOE;
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
-
-            switch (creature->GetEntry())
-            {
-                case NPC_EMBODIED_MISERY_OF_ROOK: 
-                    _spell = SPELL_DEFILED_GROUND; break;
-                case NPC_EMBODIED_GLOOM_OF_ROOK: 
-                    _spell = SPELL_CORRUPTION_SHOCK; break;
-                case NPC_EMBODIED_SORROW_OF_ROOK: 
-                    _spell = SPELL_INFERNO_STRIKE; break;
-                default:
-                    break;
-            }
+            _spell = 0;
         }
+
+        EventMap events;
         uint32 _spell;
 
-        void DoAction(int32 const action)
+        void Reset()
         {
-            npc_measure::DoAction(action);
-            switch(me->GetEntry())
+            switch (me->GetEntry())
+            {
+            case NPC_EMBODIED_MISERY_OF_ROOK:
+                _spell = SPELL_DEFILED_GROUND;
+                break;
+            case NPC_EMBODIED_GLOOM_OF_ROOK:
+                _spell = SPELL_CORRUPTION_SHOCK;
+                break;
+            case NPC_EMBODIED_SORROW_OF_ROOK:
+                _spell = SPELL_INFERNO_STRIKE;
+                break;
+            default:
+                break;
+            }
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (!me->GetMap()->IsHeroic())
+                return;
+
+            if (damage >= me->GetHealth())
+                CallDied();
+            else
+                SplitDmg(damage);
+        }
+
+        void EnterCombat(Unit* who)
+        {
+            switch (me->GetEntry())
             {
             case NPC_EMBODIED_MISERY_OF_ROOK:
                 me->CastSpell(me, SPELL_SHA_CORRUPTION_MIS_OF_ROOK, true);
@@ -1168,19 +1130,26 @@ public:
                 me->CastSpell(me, SPELL_SHA_CORRUPTION_SOR_OF_ROOK, true);
                 break;
             }
+            events.ScheduleEvent(EVENT_1, 5000);
         }
 
         void UpdateAI(uint32 diff)
         {
-            npc_measure::UpdateAI(diff);
+            if (!UpdateVictim())
+                return;
 
-            if (!_spell || !UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+            events.Update(diff);
+            
+            if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
             while (uint32 eventId = events.ExecuteEvent())
             {
-                DoCastVictim(_spell);
-                events.ScheduleEvent(EVENT_1, urand(10000, 15000));
+                if (eventId == EVENT_1)
+                {
+                    DoCastVictim(_spell);
+                    events.ScheduleEvent(EVENT_1, urand(10000, 15000));
+                }
             }         
             DoMeleeAttackIfReady();
         }
@@ -1630,6 +1599,34 @@ public:
     }
 };
 
+//143497
+class spell_bound_of_golden_lotus : public SpellScriptLoader
+{
+public:
+    spell_bound_of_golden_lotus() : SpellScriptLoader("spell_bound_of_golden_lotus") { }
+
+    class spell_bound_of_golden_lotus_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_bound_of_golden_lotus_SpellScript);
+
+        void HandleAfterCast()
+        {
+            if (GetCaster() && GetCaster()->ToCreature())
+                GetCaster()->ToCreature()->AI()->DoAction(ACTION_BOND_GOLDEN_LOTUS_END);
+        }
+
+        void Register()
+        {
+            AfterCast += SpellCastFn(spell_bound_of_golden_lotus_SpellScript::HandleAfterCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_bound_of_golden_lotus_SpellScript();
+    }
+};
+
 void AddSC_boss_fallen_protectors()
 {
     new boss_rook_stonetoe();
@@ -1652,4 +1649,5 @@ void AddSC_boss_fallen_protectors()
     new spell_fallen_protectors_mark_of_anguish_transfer();
     new spell_fallen_protectors_inferno_strike();
     new spell_fallen_protectors_defile_ground();
+    new spell_bound_of_golden_lotus();
 }

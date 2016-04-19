@@ -178,6 +178,9 @@ public:
         std::vector<uint64> MeasureGUID;
         uint64 LorewalkerChoGUIDtmp;
         uint64 fpGUID[3];
+        std::vector<uint64> rookmeasureGuids;
+        std::vector<uint64> sunmeasureGuids;
+        uint64 hemeasureGuid;
         uint64 WrynOrLorthemarGUID;
         uint64 JainaOrSylvanaGUID;
         uint64 VereesaOrAethasGUID;
@@ -275,6 +278,9 @@ public:
            
             //Creature
             LorewalkerChoGUIDtmp    = 0;
+            rookmeasureGuids.clear();
+            sunmeasureGuids.clear();
+            hemeasureGuid           = 0;
             memset(fpGUID, 0, 3 * sizeof(uint64));
             EventfieldOfSha     = 0;
             WrynOrLorthemarGUID     = 0;
@@ -422,7 +428,8 @@ public:
                     LorewalkerChoGUIDtmp = cho->GetGUID();
                     cho->AI()->SetData(DATA_IMMERSEUS, NOT_STARTED);
                 }
-            }else if (GetBossState(DATA_F_PROTECTORS) != DONE)
+            }
+            else if (GetBossState(DATA_F_PROTECTORS) != DONE)
             {
                 if (Creature* cho = instance->SummonCreature(NPC_LOREWALKER_CHO, LorewalkerChoSpawn[1]))
                 {
@@ -430,14 +437,16 @@ public:
                     LorewalkerChoGUIDtmp = cho->GetGUID();
                     cho->AI()->SetData(DATA_F_PROTECTORS, NOT_STARTED);
                 }
-            }else if (GetBossState(DATA_NORUSHEN) != DONE)
+            }
+            else if (GetBossState(DATA_NORUSHEN) != DONE)
             {
                 if (Creature* cho = instance->SummonCreature(NPC_LOREWALKER_CHO2, LorewalkerChoSpawn[2]))
                 {
                     cho->setActive(true);
                     LorewalkerChoGUIDtmp = cho->GetGUID();
                 }
-            }else if (GetBossState(DATA_SHA_OF_PRIDE) != DONE)
+            }
+            else if (GetBossState(DATA_SHA_OF_PRIDE) != DONE)
             {
                 if (Creature * c = instance->SummonCreature(NPC_SHA_NORUSHEN, Sha_of_pride_Norushe))
                     c->setActive(true);
@@ -446,7 +455,8 @@ public:
                     LorewalkerChoGUIDtmp = c->GetGUID();
                     c->setActive(true);
                 }
-            }else if (GetBossState(DATA_GALAKRAS) != DONE)
+            }
+            else if (GetBossState(DATA_GALAKRAS) != DONE)
             {
                 if (Creature * c = instance->SummonCreature(NPC_LOREWALKER_CHO3, LorewalkerChoSpawn[4]))
                 {
@@ -467,7 +477,6 @@ public:
                 case NPC_GOLD_LOTOS_MAIN:
                 case NPC_GOLD_LOTOS_HE:
                 case NPC_GOLD_LOTOS_SUN:
-                case NPC_GOLD_LOTOS_ROOK:
                 case NPC_SHA_NORUSHEN:
                 case NPC_SHA_TARAN_ZHU:
                 case NPC_SHA_OF_PRIDE_END_LADY_JAINA:
@@ -495,16 +504,24 @@ public:
                 case NPC_HE_SOFTFOOT:
                     fpGUID[2] = creature->GetGUID();
                     break;
-                case NPC_EMBODIED_ANGUISH_OF_HE:
-                case NPC_EMBODIED_DESPERATION_OF_SUN:
-                case NPC_EMBODIED_DESPIRE_OF_SUN:
                 case NPC_EMBODIED_MISERY_OF_ROOK:
                 case NPC_EMBODIED_GLOOM_OF_ROOK:
                 case NPC_EMBODIED_SORROW_OF_ROOK:
-                    MeasureGUID.push_back(creature->GetGUID());
-                    easyGUIDconteiner[creature->GetEntry()] =creature->GetGUID();
+                    if (creature->ToTempSummon())
+                        if (creature->ToTempSummon()->GetSummoner()->GetGUID() == fpGUID[0])
+                            rookmeasureGuids.push_back(creature->GetGUID());
                     break;
-
+                case NPC_EMBODIED_DESPERATION_OF_SUN:
+                case NPC_EMBODIED_DESPIRE_OF_SUN:
+                    if (creature->ToTempSummon())
+                        if (creature->ToTempSummon()->GetSummoner()->GetGUID() == fpGUID[1])
+                            sunmeasureGuids.push_back(creature->GetGUID());
+                    break;
+                case NPC_EMBODIED_ANGUISH_OF_HE:
+                    if (creature->ToTempSummon())
+                        if (creature->ToTempSummon()->GetSummoner()->GetGUID() == fpGUID[2])
+                            hemeasureGuid = creature->GetGUID();
+                    break;
                 //Sha
                 case NPC_SHA_OF_PRIDE:
                     easyGUIDconteiner[creature->GetEntry()] =creature->GetGUID();
@@ -888,28 +905,10 @@ public:
                         bq->AI()->SetData(DATA_IMMERSEUS, DONE);
                 break;
             case DATA_F_PROTECTORS:
-            {
-                switch (state)
-                {
-                case NOT_STARTED:
-                    for (std::vector<uint64>::iterator itr = MeasureGUID.begin(); itr != MeasureGUID.end(); ++itr)
-                        if (Creature* mes = instance->GetCreature(*itr))
-                            mes->DespawnOrUnsummon();
-                    SetData(DATA_FP_EVADE, true);
-                    break;
-                case DONE:
+                if (state == DONE)
                     if (Creature* bq = instance->GetCreature(LorewalkerChoGUIDtmp))
                         bq->AI()->SetData(DATA_F_PROTECTORS, DONE);
-
-                    for (std::vector<uint64>::iterator itr = MeasureGUID.begin(); itr != MeasureGUID.end(); ++itr)
-                        if (Creature* mes = instance->GetCreature(*itr))
-                            mes->DespawnOrUnsummon();
-                    break;
-                default:
-                    break;
-                }
                 break;
-            }
             case DATA_NORUSHEN:
             {
                 switch (state)
@@ -1351,11 +1350,6 @@ public:
                     HandleGameObject(GetData64(GO_SHA_ENERGY_WALL), true);
                     SaveToDB();
                 }
-                break;
-            case DATA_FP_EVADE:
-                for (uint32 i = 0; i < 3; ++i)
-                    if (Creature* me = instance->GetCreature(fpGUID[i]))
-                        me->AI()->EnterEvadeMode();
                 break;
             case DATA_SHA_PRE_EVENT:
                 for (std::set<uint64>::iterator itr = shaSlgGUID.begin(); itr != shaSlgGUID.end(); ++itr)
@@ -1867,6 +1861,14 @@ public:
                     return fpGUID[1];
                 case NPC_HE_SOFTFOOT:
                     return fpGUID[2];
+                case NPC_EMBODIED_MISERY_OF_ROOK:
+                case NPC_EMBODIED_GLOOM_OF_ROOK:
+                case NPC_EMBODIED_SORROW_OF_ROOK:
+                    if (!rookmeasureGuids.empty())
+                        for (std::vector<uint64>::const_iterator itr = rookmeasureGuids.begin(); itr != rookmeasureGuids.end(); itr++)
+                            if (Creature* measure = instance->GetCreature(*itr))
+                                if (measure->GetEntry() == type)
+                                    return measure->GetGUID();
                 //Galakras
                 case DATA_JAINA_OR_SYLVANA:
                     return JainaOrSylvanaGUID;
@@ -2027,6 +2029,41 @@ public:
         {
             switch (creature->GetEntry())
             {
+            case NPC_EMBODIED_MISERY_OF_ROOK:
+            case NPC_EMBODIED_GLOOM_OF_ROOK:
+            case NPC_EMBODIED_SORROW_OF_ROOK:
+                if (!rookmeasureGuids.empty())
+                {
+                    for (std::vector<uint64>::const_iterator itr = rookmeasureGuids.begin(); itr != rookmeasureGuids.end(); itr++)
+                        if (Creature* measure = instance->GetCreature(*itr))
+                            if (measure->isAlive())
+                                return;
+
+                    if (Creature* rook = instance->GetCreature(fpGUID[0]))
+                        if (rook->isAlive() && rook->isInCombat())
+                            rook->AI()->DoAction(ACTION_END_DESPERATE_MEASURES);
+                }
+                break;
+            case NPC_EMBODIED_DESPERATION_OF_SUN:
+            case NPC_EMBODIED_DESPIRE_OF_SUN:
+                if (!sunmeasureGuids.empty())
+                {
+                    for (std::vector<uint64>::const_iterator itr = sunmeasureGuids.begin(); itr != sunmeasureGuids.end(); itr++)
+                        if (Creature* measure = instance->GetCreature(*itr))
+                            if (measure->isAlive())
+                                return;
+
+                    if (Creature* sun = instance->GetCreature(fpGUID[1]))
+                        if (sun->isAlive() && sun->isInCombat())
+                            sun->AI()->DoAction(ACTION_END_DESPERATE_MEASURES);
+                }
+                break;
+            case NPC_EMBODIED_ANGUISH_OF_HE:
+                if (creature->GetGUID() == hemeasureGuid)
+                    if (Creature* he = instance->GetCreature(fpGUID[2]))
+                        if (he->isAlive() && he->isInCombat())
+                            he->AI()->DoAction(ACTION_END_DESPERATE_MEASURES);
+                break;
             case NPC_ZEAL:
             case NPC_ARROGANCE:
             case NPC_VANITY:
