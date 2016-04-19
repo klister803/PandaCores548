@@ -145,9 +145,9 @@ enum eCreatures
     NPC_EMBODIED_ANGUISH_OF_HE      = 71478,
     NPC_EMBODIED_DESPERATION_OF_SUN = 71482,
     NPC_EMBODIED_DESPIRE_OF_SUN     = 71474,
-    NPC_EMBODIED_MISERY_OF_ROOK     = 71476,//
-    NPC_EMBODIED_GLOOM_OF_ROOK      = 71477,//split dmg
-    NPC_EMBODIED_SORROW_OF_ROOK     = 71481,//
+    NPC_EMBODIED_MISERY_OF_ROOK     = 71476,//left
+    NPC_EMBODIED_GLOOM_OF_ROOK      = 71477,//center left
+    NPC_EMBODIED_SORROW_OF_ROOK     = 71481,//center
 
     //Field of Sha
     NPC_ZEAL                        = 72661, //Zeal

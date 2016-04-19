@@ -47,6 +47,7 @@ enum eSpells
     SPELL_GARROTE                           = 143198, //Garrote
     SPELL_GOUGE                             = 143301, //Gouge
     SPELL_NOXIOUS_POISON                    = 143225, //Noxious Poison
+    SPELL_NOXIOUS_POISON_AURA               = 143239,
     SPELL_INSTANT_POISON                    = 143210, //Instant Poison
     SPELL_MARK_OF_ANGUISH_MEDITATION        = 143812, //Mark of Anguish
 
@@ -113,6 +114,7 @@ enum PhaseEvents
     EVENT_SHA_SEAR                  = 10,
     EVENT_SHADOW_WORD_BANE          = 11,
     EVENT_CALAMITY                  = 12,
+    EVENT_ACTIVE                    = 13,
 };
 
 enum Actions
@@ -160,6 +162,19 @@ uint32 const sunmeasure[2] =
 {
     NPC_EMBODIED_DESPERATION_OF_SUN,
     NPC_EMBODIED_DESPIRE_OF_SUN ,
+};
+
+Position rookmeasurepos[3] =
+{
+    {1196.35f, 1013.02f, 418.0625f, 0.7143f},
+    {1211.83f, 1039.07f, 417.9586f, 4.7827f},
+    {1230.79f, 1015.51f, 418.0644f, 2.5954f},
+};
+
+Position sunmeasurepos[2] =
+{
+    {1212.45f, 1057.11f, 417.5685f, 4.7112f},
+    {1213.37f, 1005.80f, 418.0643f, 1.6277f},
 };
 
 struct boss_fallen_protectors : public ScriptedAI
@@ -242,6 +257,7 @@ public:
             summon.DespawnAll();
             events.Reset();
             ResetProtectors();
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             me->SetReactState(REACT_DEFENSIVE);
             pctdone = 0;
             corruptedbrewcount = 0;
@@ -301,7 +317,7 @@ public:
                 float x, y;
                 GetPosInRadiusWithRandomOrientation(me, 15.0f, x, y);
                 for (uint32 n = 0; n < 3; n++)
-                    if (Creature* measure = me->SummonCreature(rookmeasure[n], x + n * 3, y + n * 3, me->GetPositionZ(), 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
+                    if (Creature* measure = me->SummonCreature(rookmeasure[n], rookmeasurepos[n], 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
                         measure->AI()->DoZoneInCombat(measure, 150.0f);
                 break;
             case ACTION_BOND_GOLDEN_LOTUS:
@@ -405,12 +421,22 @@ public:
             summons.DespawnAll();
             events.Reset();
             ResetProtectors();
+            RemoveDebuffs();
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             me->SetReactState(REACT_DEFENSIVE);
             phase = PHASE_NULL;
             pctdone = 0;
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROTE);
             DoCast(me, SPELL_DESPAWN_AT, true);
+        }
+
+        void RemoveDebuffs()
+        {
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROTE);
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_NOXIOUS_POISON_AURA);
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WEAKNESS);
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_DEBILITATION);
         }
 
         void EnterCombat(Unit* who)
@@ -461,6 +487,7 @@ public:
                 phase = PHASE_DESPERATE_MEASURES;
                 sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, me->GetGUID());
                 DoCast(me, SPELL_MARK_OF_ANGUISH_MEDITATION);
+                me->SummonCreature(NPC_EMBODIED_ANGUISH_OF_HE, 1200.98f, 1044.95f, 417.9685f, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
                 break;
             case ACTION_BOND_GOLDEN_LOTUS:
                 events.Reset();
@@ -495,7 +522,7 @@ public:
             if (killer != me)
                 SendDone();
             summons.DespawnAll();
-            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROTE);
+            RemoveDebuffs();
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         }
 
@@ -581,7 +608,9 @@ public:
         void Reset()
         {
             ResetProtectors();
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             me->SetReactState(REACT_DEFENSIVE);
+            DespawnMeasure();
             shadow_word_count = 0;
             calamitycount = 0;
             checkprogress = 0;
@@ -590,6 +619,17 @@ public:
             me->SummonCreature(NPC_GOLD_LOTOS_MAIN, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0);
             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WORD_BANE);
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+        }
+
+        void DespawnMeasure()
+        {
+            std::list<Creature*> list;
+            list.clear();
+            GetCreatureListWithEntryInGrid(list, me, NPC_EMBODIED_DESPIRE_OF_SUN, 100.0f);
+            GetCreatureListWithEntryInGrid(list, me, NPC_EMBODIED_DESPERATION_OF_SUN, 100.0f);
+            if (!list.empty())
+                for (std::list<Creature*>::const_iterator itr = list.begin(); itr != list.end(); itr++)
+                    (*itr)->DespawnOrUnsummon();
         }
 
         void EnterCombat(Unit* who)
@@ -652,7 +692,7 @@ public:
                 float x, y;
                 GetPosInRadiusWithRandomOrientation(me, 15.0f, x, y);
                 for (uint32 n = 0; n < 2; n++)
-                    if (Creature* measure = me->SummonCreature(sunmeasure[n], x + n * 3, y + n * 3, me->GetPositionZ(), 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
+                    if (Creature* measure = me->SummonCreature(sunmeasure[n], sunmeasurepos[n], 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
                         measure->AI()->DoZoneInCombat(measure, 150.0f);
                 break;
             case ACTION_BOND_GOLDEN_LOTUS:
@@ -687,6 +727,7 @@ public:
             if (killer != me)
                 SendDone();
             summons.DespawnAll();
+            DespawnMeasure();
             sCreatureTextMgr->SendChat(me, TEXT_GENERIC_6, me->GetGUID());
             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WORD_BANE);
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
@@ -904,7 +945,7 @@ public:
 
     struct npc_measure_of_sunAI : public ScriptedAI
     {
-        npc_measure_of_sunAI(Creature* creature) : ScriptedAI(creature), summons(me)
+        npc_measure_of_sunAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
@@ -913,7 +954,6 @@ public:
             _spell = me->GetEntry() == NPC_EMBODIED_DESPERATION_OF_SUN ? SPELL_MANIFEST_DESPERATION : SPELL_MANIFEST_DESPAIR;
         }
         InstanceScript* instance;
-        SummonList summons;
         uint32 _spell;
 
         void IsSummonedBy(Unit* summoner)
@@ -931,15 +971,9 @@ public:
 
         void JustSummoned(Creature* summon)
         {
-            summons.Summon(summon);
             DoCast(summon, SPELL_DARK_MEDITATION_SHARE_HEALTH, true);
             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                 summon->AI()->AttackStart(target);
-        }
-
-        void JustDied(Unit* killer)
-        {
-            summons.DespawnAll();
         }
 
         void UpdateAI(uint32 diff)
@@ -967,6 +1001,7 @@ public:
         npc_measure_of_heAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
             _target = 0;
             events.Reset();
         }
@@ -978,7 +1013,10 @@ public:
         void IsSummonedBy(Unit* summoner)
         {
             if (summoner->ToCreature() && summoner->GetEntry() == NPC_HE_SOFTFOOT)
+            {
                 DoCast(me, SPELL_SHA_CORRUPTION_SUMMONED, true);
+                events.ScheduleEvent(EVENT_ACTIVE, 3000);
+            }
         }
 
         void SetGUID(uint64 guid, int32 /*id*/ = 0)
@@ -1025,11 +1063,17 @@ public:
 
             while (uint32 eventId = events.ExecuteEvent())
             {
-                if (eventId == EVENT_1)
+                switch (eventId)
                 {
+                case EVENT_ACTIVE:
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    DoZoneInCombat(me, 150.0f);
+                    break;
+                case EVENT_1:
                     me->InterruptNonMeleeSpells(true);
                     DoCast(me, SPELL_SHADOW_WEAKNES_PROC, true);
                     DoCast(me, SPELL_MARK_OF_ANGUISH_SELECT_TARGET, true);
+                    break;
                 }
             }
             DoMeleeAttackIfReady();
@@ -1078,9 +1122,9 @@ public:
     {
         npc_measure_of_rookAI(Creature* creature) : rook_measureAI(creature)
         {
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
+            me->SetReactState(REACT_PASSIVE);
             _spell = 0;
         }
 
@@ -1102,6 +1146,15 @@ public:
                 break;
             default:
                 break;
+            }
+        }
+
+        void IsSummonedBy(Unit* summoner)
+        {
+            if (summoner->ToCreature() && summoner->GetEntry() == NPC_ROOK_STONETOE)
+            {
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                events.ScheduleEvent(EVENT_ACTIVE, 3000);
             }
         }
 
@@ -1145,10 +1198,16 @@ public:
 
             while (uint32 eventId = events.ExecuteEvent())
             {
-                if (eventId == EVENT_1)
+                switch (eventId)
                 {
+                case EVENT_ACTIVE:
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    DoZoneInCombat(me, 150.0f);
+                    break;
+                case EVENT_1:
                     DoCastVictim(_spell);
                     events.ScheduleEvent(EVENT_1, urand(10000, 15000));
+                    break;
                 }
             }         
             DoMeleeAttackIfReady();
