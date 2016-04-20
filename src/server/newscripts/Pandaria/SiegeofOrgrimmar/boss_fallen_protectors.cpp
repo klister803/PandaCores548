@@ -1043,7 +1043,6 @@ public:
             instance = creature->GetInstanceScript();
             me->SetReactState(REACT_PASSIVE);
             _target = 0;
-            events.Reset();
         }
 
         InstanceScript* instance;
@@ -1437,6 +1436,7 @@ public:
     }
 };
 
+//143491
 class spell_fallen_protectors_calamity : public SpellScriptLoader
 {
 public:
@@ -1446,25 +1446,24 @@ public:
     {
         PrepareSpellScript(spell_fallen_protectors_calamity_SpellScript);
 
-        void HandleOnHit()
+        void HandleAfterCast()
         {
-            if (GetCaster() && GetCaster()->ToCreature() && GetHitUnit())
+            std::list<Player*> pllist;
+            pllist.clear();
+            GetPlayerListInGrid(pllist, GetCaster(), 150.0f);
+            int32 bs = GetCaster()->ToCreature()->AI()->GetData(DATA_CALAMITY_COUNT);
+            float dmg = !GetCaster()->GetMap()->IsHeroic() ? 30 : 30 + bs * 10;
+            if (!pllist.empty())
             {
-                if (!GetCaster()->GetMap()->IsHeroic())
-                    GetCaster()->CastSpell(GetHitUnit(), SPELL_CALAMITY_DMG, true);
-                else
-                {
-                    int32 bs = GetCaster()->ToCreature()->AI()->GetData(DATA_CALAMITY_COUNT);
-                    float mod = 30 + (float(bs) * 10);
-                    GetCaster()->CastCustomSpell(SPELL_CALAMITY_DMG, SPELLVALUE_BASE_POINT0, mod, GetCaster(), true);
-                    GetCaster()->ToCreature()->AI()->SetData(DATA_CALAMITY_HIT, true);
-                }
+                for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                    GetCaster()->CastCustomSpell(SPELL_CALAMITY_DMG, SPELLVALUE_BASE_POINT0, dmg, *itr, true);
             }
+            GetCaster()->ToCreature()->AI()->SetData(DATA_CALAMITY_HIT, true);
         }
 
-        void Register() override
+        void Register()
         {
-            OnHit += SpellHitFn(spell_fallen_protectors_calamity_SpellScript::HandleOnHit);
+            AfterCast += SpellCastFn(spell_fallen_protectors_calamity_SpellScript::HandleAfterCast);
         }
     };
 

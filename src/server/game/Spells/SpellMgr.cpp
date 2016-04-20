@@ -5007,6 +5007,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[3].Effect = 0;
                     spellInfo->Effects[3].ApplyAuraName = 0;
                     break;
+                case 143491: //Calamity
+                    spellInfo->Effects[0].BasePoints = 0;
+                    break;
                 //Norushen
                 case 144514:    //Lingering Corruption
                     spellInfo->CustomMaxAffectedTargets = 1; //used if empty on dbc SpellTargetRestrictionsEntry
