@@ -13993,7 +13993,7 @@ void Player::SetVisibleItemSlot(uint8 slot, Item* pItem)
     if (pItem)
     {
         SetUInt32Value(PLAYER_VISIBLE_ITEM_1_ENTRYID + (slot * 2), pItem->GetVisibleEntry());
-        SetUInt16Value(PLAYER_VISIBLE_ITEM_1_ENCHANTMENT + (slot * 2), 0, pItem->GetEnchantmentId(PERM_ENCHANTMENT_SLOT));
+        SetUInt16Value(PLAYER_VISIBLE_ITEM_1_ENCHANTMENT + (slot * 2), 0, GetEnchantmentVisual(pItem));
         SetUInt16Value(PLAYER_VISIBLE_ITEM_1_ENCHANTMENT + (slot * 2), 1, pItem->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT));
     }
     else
@@ -16130,7 +16130,7 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
 
     // visualize enchantment at player and equipped items
     if (slot == PERM_ENCHANTMENT_SLOT)
-        SetUInt16Value(PLAYER_VISIBLE_ITEM_1_ENCHANTMENT + (item->GetSlot() * 2), 0, apply ? item->GetEnchantmentId(slot) : 0);
+        SetUInt16Value(PLAYER_VISIBLE_ITEM_1_ENCHANTMENT + (item->GetSlot() * 2), 0, apply ? GetEnchantmentVisual(item) : 0);
 
     if (slot == TEMP_ENCHANTMENT_SLOT)
         SetUInt16Value(PLAYER_VISIBLE_ITEM_1_ENCHANTMENT + (item->GetSlot() * 2), 1, apply ? item->GetEnchantmentId(slot) : 0);
@@ -19500,6 +19500,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     // must be before inventory (some items required reputation check)
     m_reputationMgr.LoadFromDB(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADREPUTATION));
 
+    _LoadCustom();
     _LoadInventory(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADINVENTORY), time_diff);
 
     if (IsVoidStorageUnlocked())
@@ -30382,6 +30383,35 @@ void Player::_SaveHonor()
         m_saveKills = false;
     }
 }
+
+void Player::_LoadCustom()
+{
+    if (QueryResult result = CharacterDatabase.PQuery("SELECT item_guid, enchantId FROM character_visual_enchant WHERE guid = '%u'", GetGUIDLow()))
+    {
+        do
+        {
+            Field *fields  = result->Fetch();
+            uint32 item_guid = fields[0].GetUInt32();
+            uint32 enchantId = fields[1].GetUInt32();
+
+            m_customVisualEnchant[item_guid] = enchantId;
+        }
+        while( result->NextRow() );
+    }
+}
+
+uint32 Player::GetEnchantmentVisual(Item* item)
+{
+    if (!item)
+        return 0;
+
+    VisualEnchantMap::const_iterator itr = m_customVisualEnchant.find(item->GetGUIDLow());
+    if (itr != m_customVisualEnchant.end())
+        return itr->second;
+
+    return item->GetEnchantmentId(PERM_ENCHANTMENT_SLOT);
+}
+
 
 void Player::SendCemeteryList(bool onMap)
 {

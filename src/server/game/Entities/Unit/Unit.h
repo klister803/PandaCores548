@@ -2249,7 +2249,7 @@ class Unit : public WorldObject
         void UpdateInterruptMask();
 
         uint32 GetDisplayId() { return GetUInt32Value(UNIT_FIELD_DISPLAYID); }
-        void SetDisplayId(uint32 modelId);
+        void SetDisplayId(uint32 modelId, bool resize = false);
         uint32 GetNativeDisplayId() { return GetUInt32Value(UNIT_FIELD_NATIVEDISPLAYID); }
         void RestoreDisplayId();
         void SetNativeDisplayId(uint32 modelId) { SetUInt32Value(UNIT_FIELD_NATIVEDISPLAYID, modelId); }
@@ -2562,6 +2562,10 @@ class Unit : public WorldObject
         bool GetCasterPet() { return isCasterPet; }
         void SetAttackDist(float dist) { m_attackDist = dist; }
         float GetAttackDist() { return m_attackDist; }
+        
+        uint32 GetCustomDisplayId() const { return _customDisplayId; }
+        void SetCustomDisplayId(uint32 const &modelId) { _customDisplayId = modelId; }
+        void ResetCustomDisplayId() { _customDisplayId = 0; }
 
         void SendSpellCooldown(int32 spellId, int32 spell_cooldown, int32 cooldown = 0);
         void SetDynamicPassiveSpells(uint32 spellId, uint32 slot);
@@ -2735,6 +2739,8 @@ class Unit : public WorldObject
         Spell const* _focusSpell;   ///> Locks the target during spell cast for proper facing       
         bool _isWalkingBeforeCharm; // Are we walking before we were charmed? 
 
+        uint32 _customDisplayId;
+        
         // ccd system
         uint32 _delayInterruptFlag;
 

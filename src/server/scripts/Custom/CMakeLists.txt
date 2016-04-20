@@ -23,6 +23,8 @@ set(scripts_STAT_SRCS
 	Custom/npc_beastmaster.cpp
     Custom/custum_trainer.cpp
     Custom/teleguy.cpp
+    Custom/npc_visualweapon_mop.cpp
+    Custom/command_donate_mount.cpp
 )
 
 message("  -> Prepared: Custom")

@@ -289,6 +289,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
 
     _focusSpell = NULL;
     _lastLiquid = NULL;
+    _customDisplayId = 0;
     _isWalkingBeforeCharm = false;
     _mount = NULL;
 
@@ -18649,8 +18650,27 @@ bool Unit::IsPolymorphed() const
     return spellInfo->GetSpellSpecific() == SPELL_SPECIFIC_MAGE_POLYMORPH;
 }
 
-void Unit::SetDisplayId(uint32 modelId)
+void Unit::SetDisplayId(uint32 modelId, bool resize /* = false */)
 {
+       // this need for custom morph (donate)
+    if (resize && GetTypeId() == TYPEID_PLAYER)
+    {
+        if (auto cmodelData = sCreatureDisplayInfoStore.LookupEntry(modelId))
+        {
+            if (cmodelData->scale > 1.0f)
+            {
+                if (cmodelData->scale < 2.0f)
+                    SetObjectScale(1.0f / (cmodelData->scale + 0.2f));
+                else
+                    SetObjectScale(1.0f / cmodelData->scale);
+            }
+            else if (cmodelData->scale < 1.0f)
+                SetObjectScale(1.0f * cmodelData->scale);
+            else
+                SetObjectScale(1.0f);
+        }
+    }
+   
     SetUInt32Value(UNIT_FIELD_DISPLAYID, modelId);
 
     if (GetTypeId() == TYPEID_UNIT && ToCreature()->isPet())
@@ -18694,6 +18714,8 @@ void Unit::RestoreDisplayId()
     else if (uint32 modelId = GetModelForForm(GetShapeshiftForm()))
         SetDisplayId(modelId);
     // no auras found - set modelid to default
+    else if (GetCustomDisplayId())
+       SetDisplayId(GetCustomDisplayId());
     else
         SetDisplayId(GetNativeDisplayId());
 }

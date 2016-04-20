@@ -783,6 +783,7 @@ struct KillInfo
 };
 
 typedef std::map<uint32, KillInfo> KillInfoMap;
+typedef std::map<uint32, uint32> VisualEnchantMap;
 
 enum RestType
 {
@@ -1807,6 +1808,8 @@ class Player : public Unit, public GridObject<Player>
         void SendItemDurations();
         void LoadCorpse();
         void LoadPet();
+        void _LoadCustom();
+        uint32 GetEnchantmentVisual(Item* item);        
 
         bool AddItem(uint32 itemId, uint32 count, uint32* noSpaceForCount = NULL);
 
@@ -3536,6 +3539,9 @@ class Player : public Unit, public GridObject<Player>
         uint32 GetSequenceIndex() { return m_sequenceIndex; }
         std::unordered_map<uint32, uint32> syncQueue;
         PlayerMoveEventsMask validMoveEventsMask;
+        
+        VisualEnchantMap m_customVisualEnchant; // custom for custom enchant
+        
         void AddMoveEventsMask(uint8 newMask)
         {
             uint8 mask = (uint8)validMoveEventsMask;

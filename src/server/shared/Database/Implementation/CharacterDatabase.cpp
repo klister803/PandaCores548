@@ -644,4 +644,8 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     //Loot cooldown system
     PrepareStatement(CHAR_SEL_PLAYER_LOOTCOOLDOWN,       "SELECT entry, type, difficultyMask, respawnTime FROM character_loot_cooldown WHERE guid = ?",  CONNECTION_ASYNC);
     PrepareStatement(CHAR_INS_PLAYER_LOOTCOOLDOWN,       "INSERT IGNORE INTO character_loot_cooldown (`guid`, `entry`, `type`, `difficultyMask`, `respawnTime`) VALUES (?, ?, ?, ?, ?)",  CONNECTION_ASYNC);
+    
+    // Custom Enchant
+    PrepareStatement(CHAR_REP_CHAR_VISUAL_ENCHANT, "REPLACE INTO character_visual_enchant (guid, item_guid, enchantId, slot) VALUES (?, ?, ?, ?)", CONNECTION_ASYNC);
+
 }
