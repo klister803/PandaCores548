@@ -1296,6 +1296,60 @@ class spell_rog_blade_flurry_aoe : public SpellScriptLoader
         }
 };
 
+// Fan of Knives - 51723
+class spell_rog_fan_of_knives_cp : public SpellScriptLoader
+{
+public:
+    spell_rog_fan_of_knives_cp() : SpellScriptLoader("spell_rog_fan_of_knives_cp") { }
+
+    class spell_rog_fan_of_knives_cp_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_rog_fan_of_knives_cp_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*>& targets)
+        {
+            if (targets.empty())
+                return;
+
+            if (Unit* caster = GetCaster())
+                if (Player* plr = caster->ToPlayer())
+                {
+                    Unit* target = NULL;
+
+                    if (uint64 comboTargetGUID = plr->GetComboTarget())
+                        for (auto itr : targets)
+                            if (itr && itr->GetGUID() == comboTargetGUID)
+                                if (Unit * comdoTarget = ObjectAccessor::GetUnit(*plr, plr->GetComboTarget()))
+                                    target = comdoTarget;
+
+                    if (!target)
+                        if (Unit* selectedTarget = plr->GetSelectedUnit())
+                            for (auto itr : targets)
+                                if (itr && itr->GetGUID() == selectedTarget->GetGUID())
+                                    target = selectedTarget;
+
+                    if (target)
+                    {
+                        targets.clear();
+                        targets.push_back(target);
+                    }
+                    else
+                        targets.resize(1);
+                }
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_rog_fan_of_knives_cp_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_SRC_AREA_ENEMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_rog_fan_of_knives_cp_SpellScript();
+    }
+};
+
 void AddSC_rogue_spell_scripts()
 {
     new spell_rog_shuriken_toss();
@@ -1324,4 +1378,5 @@ void AddSC_rogue_spell_scripts()
     new spell_rog_pick_pocket();
     new spell_rog_killing_spree();
     new spell_rog_blade_flurry_aoe();
+    new spell_rog_fan_of_knives_cp();
 }

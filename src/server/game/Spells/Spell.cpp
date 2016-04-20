@@ -765,6 +765,10 @@ void Spell::SelectEffectImplicitTargets(SpellEffIndex effIndex, SpellImplicitTar
         case TARGET_SELECT_CATEGORY_NEARBY:
         case TARGET_SELECT_CATEGORY_CONE:
         case TARGET_SELECT_CATEGORY_AREA:
+        {
+            if (HasAreaTargetScripts())
+                break;
+
             // targets for effect already selected
             if (effectMask & processedEffectMask)
                 return;
@@ -774,12 +778,12 @@ void Spell::SelectEffectImplicitTargets(SpellEffIndex effIndex, SpellImplicitTar
                 if (GetSpellInfo()->GetEffect(effIndex, m_diffMode)->TargetA.GetTarget() == GetSpellInfo()->Effects[j].TargetA.GetTarget() &&
                     GetSpellInfo()->GetEffect(effIndex, m_diffMode)->TargetB.GetTarget() == GetSpellInfo()->Effects[j].TargetB.GetTarget() &&
                     GetSpellInfo()->Effects[effIndex].ImplicitTargetConditions == GetSpellInfo()->Effects[j].ImplicitTargetConditions &&
-                    GetSpellInfo()->GetEffect(effIndex, m_diffMode)->CalcRadius(m_caster) == GetSpellInfo()->Effects[j].CalcRadius(m_caster) &&
-                    GetSpellInfo()->Id != 119072)
+                    GetSpellInfo()->GetEffect(effIndex, m_diffMode)->CalcRadius(m_caster) == GetSpellInfo()->Effects[j].CalcRadius(m_caster))
                     effectMask |= 1 << j;
             }
             processedEffectMask |= effectMask;
             break;
+        }
         default:
             break;
     }
@@ -9547,6 +9551,15 @@ void Spell::PrepareScriptHitHandlers()
 {
     for (std::list<SpellScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
         (*scritr)->_InitHit();
+}
+
+bool Spell::HasAreaTargetScripts()
+{
+    for (auto scritr : m_loadedScripts)
+        if (scritr->OnObjectAreaTargetSelect.size() > 0)
+            return true;
+
+    return false;
 }
 
 bool Spell::CallScriptEffectHandlers(SpellEffIndex effIndex, SpellEffectHandleMode mode)
