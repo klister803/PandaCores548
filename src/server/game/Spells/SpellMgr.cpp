@@ -5007,6 +5007,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[3].Effect = 0;
                     spellInfo->Effects[3].ApplyAuraName = 0;
                     break;
+                //Fallen Protectors
                 case 143491: //Calamity
                     spellInfo->Effects[0].BasePoints = 0;
                     break;

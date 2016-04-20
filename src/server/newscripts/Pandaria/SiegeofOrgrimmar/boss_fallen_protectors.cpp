@@ -553,12 +553,6 @@ public:
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         }
 
-        bool AllowSelectNextVictim(Unit* target)
-        {
-            // Go next raid member.
-            return !target->HasUnitState(UNIT_STATE_STUNNED);
-        }
-
         void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
@@ -665,7 +659,7 @@ public:
             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
             sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, me->GetGUID());
             calamitycount = 0;
-            //checkprogress = 5000;
+            checkprogress = 5000;
             events.RescheduleEvent(EVENT_SHA_SEAR, 2000, 0, PHASE_BATTLE);
             events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(15000, 25000), 0, PHASE_BATTLE);
             events.RescheduleEvent(EVENT_CALAMITY, 30000, 0, PHASE_BATTLE);
@@ -776,11 +770,10 @@ public:
             case DATA_SHADOW_WORD_REMOVED:
                 --shadow_word_count;
                 break;
-                // calamity hit caled every hit on target and it's right.
             case DATA_CALAMITY_HIT:
                 calamitycount++;
-                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WORD_BANE);     //this call DATA_SHADOW_WORD_REMOVED
-                events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(20000, 30000), 0, PHASE_BATTLE); //reschedal remove curent events.
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WORD_BANE);
+                events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(20000, 30000), 0, PHASE_BATTLE);
                 break;
             }
         }
@@ -828,8 +821,7 @@ public:
                 case EVENT_CALAMITY:
                     sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2, 0);
                     sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, 0);
-                    if (me->getVictim())
-                        DoCastVictim(SPELL_CALAMITY);
+                    DoCast(me, SPELL_CALAMITY);
                     events.ScheduleEvent(EVENT_CALAMITY, 30000, 0, PHASE_BATTLE);
                     break;
                 case EVENT_MEDITATION_SPIKE:
@@ -1054,46 +1046,27 @@ public:
             {
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                 DoCast(me, SPELL_SHA_CORRUPTION_SUMMONED, true);
-                events.ScheduleEvent(EVENT_ACTIVE, 3000);
+                events.ScheduleEvent(EVENT_1, 3000);
             }
         }
 
         void SetGUID(uint64 guid, int32 /*id*/ = 0)
         {
             _target = guid;
-            if (Unit* target = ObjectAccessor::FindUnit(guid))
+            if (Unit* target = me->GetUnit(*me, guid))
             {
-                if (me->ToTempSummon())
+                if (Creature* he = me->GetCreature(*me, instance->GetData64(NPC_HE_SOFTFOOT)))
                 {
-                    if (Unit* summoner = me->ToTempSummon()->GetSummoner())
-                    {
-                        if (summoner->ToCreature())
-                        {
-                            sCreatureTextMgr->SendChat(summoner->ToCreature(), TEXT_GENERIC_0, 0);
-                            me->CastSpell(target, SPELL_MARK_OF_ANGUISH_JUMP, true);
-                            target->CastSpell(target, SPELL_DEBILITATION, true);
-                            me->CastSpell(target, SPELL_MARK_OF_ANGUISH_STAN, false);
-                            AttackStart(target);
-                        }
-                    }
+                    sCreatureTextMgr->SendChat(he, TEXT_GENERIC_0, 0);
+                    me->CastSpell(target, SPELL_MARK_OF_ANGUISH_JUMP, true);
+                    target->CastSpell(target, SPELL_DEBILITATION, true);
+                    me->CastSpell(target, SPELL_MARK_OF_ANGUISH_STAN, false);
+                    me->AddThreat(target, 50000000.0f);
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    me->Attack(target, true);
+                    events.ScheduleEvent(EVENT_ACTIVE, 1000);
                 }
             }
-        }
-
-        void AttackStart(Unit* target)
-        {
-            if (_target)
-            {
-                Unit* target = ObjectAccessor::FindUnit(_target);
-                if (!target || !target->isAlive())
-                    events.ScheduleEvent(EVENT_1, 1000);
-            }
-        }
-
-        bool AllowSelectNextVictim(Unit* target)
-        {
-            // Only our aura target could be.
-            return target->GetGUID() == _target;
         }
 
         void UpdateAI(uint32 diff)
@@ -1108,8 +1081,15 @@ public:
                 switch (eventId)
                 {
                 case EVENT_ACTIVE:
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    DoZoneInCombat(me, 150.0f);
+                    if (Unit* target = me->GetUnit(*me, _target))
+                    {
+                        if (!target->isAlive() || !target->HasAura(SPELL_MARK_OF_ANGUISH_STAN))
+                        {
+                            events.ScheduleEvent(EVENT_1, 1000);
+                            return;
+                        }
+                    }
+                    events.ScheduleEvent(EVENT_ACTIVE, 1000);
                     break;
                 case EVENT_1:
                     me->InterruptNonMeleeSpells(true);
@@ -1231,9 +1211,6 @@ public:
 
         void UpdateAI(uint32 diff)
         {
-            if (!UpdateVictim())
-                return;
-
             events.Update(diff);
             
             if (me->HasUnitState(UNIT_STATE_CASTING))
