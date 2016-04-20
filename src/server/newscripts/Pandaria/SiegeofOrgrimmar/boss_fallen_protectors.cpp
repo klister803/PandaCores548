@@ -778,9 +778,9 @@ public:
                 break;
                 // calamity hit caled every hit on target and it's right.
             case DATA_CALAMITY_HIT:
-                //remove shadow word bane
+                calamitycount++;
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WORD_BANE);     //this call DATA_SHADOW_WORD_REMOVED
-                events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(20 * IN_MILLISECONDS, 30 * IN_MILLISECONDS), 0, PHASE_BATTLE); //reschedal remove curent events.
+                events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(20000, 30000), 0, PHASE_BATTLE); //reschedal remove curent events.
                 break;
             }
         }
@@ -809,7 +809,6 @@ public:
 
             while (uint32 eventId = events.ExecuteEvent())
             {
-                boss_fallen_protectors::DoAction(eventId);
                 switch (eventId)
                 {
                 case EVENT_SHA_SEAR:
