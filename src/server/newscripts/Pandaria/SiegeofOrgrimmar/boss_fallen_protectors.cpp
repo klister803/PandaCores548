@@ -577,7 +577,7 @@ public:
                 case EVENT_GARROTE:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
                         DoCast(target, SPELL_SHADOWSTEP);
-                    events.ScheduleEvent(EVENT_GARROTE, 5000, 0, PHASE_BATTLE);
+                    events.ScheduleEvent(EVENT_GARROTE, 25000, 0, PHASE_BATTLE);
                     break;
                 case EVENT_GOUGE:
                     if (me->getVictim())
@@ -1100,9 +1100,6 @@ public:
 
         void UpdateAI(uint32 diff)
         {
-            if (!UpdateVictim())
-                return;
-
             events.Update(diff);
 
             if (me->HasUnitState(UNIT_STATE_CASTING))
