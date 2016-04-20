@@ -5953,17 +5953,6 @@ void Spell::EffectAddComboPoints(SpellEffIndex /*effIndex*/)
     if (damage <= 0)
         return;
 
-    if (m_spellInfo->IsTargetingArea())
-    {
-        if (Unit* target = m_caster->m_movedPlayer->GetSelectedUnit())
-        {
-            if (unitTarget->GetGUID() != target->GetGUID())
-                return;
-        }
-        else
-            return;
-    }
-
     m_caster->m_movedPlayer->AddComboPoints(unitTarget, damage, this);
 
     sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectAddComboPoints damage %i, Id %i", damage, m_spellInfo->Id);
