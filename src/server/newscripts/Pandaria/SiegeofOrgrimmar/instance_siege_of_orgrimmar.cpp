@@ -141,6 +141,7 @@ public:
 
         //GameObjects
         uint64 immerseusexdoorGUID;
+        uint64 fprotectorexdoorGUID;
         uint64 chestShaVaultOfForbiddenTreasures;
         std::vector<uint64> lightqGUIDs;
         uint64 winddoorGuid;
@@ -723,8 +724,11 @@ public:
                     break;
 
                 case GO_IMMERSEUS_EX_DOOR:
+                    AddDoor(go, true);
+                    break;
                 case GO_SHA_FIELD:
                     AddDoor(go, true);
+                    fprotectorexdoorGUID = go->GetGUID();
                     break;
                 case GO_LIGTH_QUARANTINE:
                 case GO_LIGTH_QUARANTINE_2:
@@ -906,8 +910,11 @@ public:
                 break;
             case DATA_F_PROTECTORS:
                 if (state == DONE)
+                {
+                    HandleGameObject(fprotectorexdoorGUID, true);
                     if (Creature* bq = instance->GetCreature(LorewalkerChoGUIDtmp))
                         bq->AI()->SetData(DATA_F_PROTECTORS, DONE);
+                }
                 break;
             case DATA_NORUSHEN:
             {
