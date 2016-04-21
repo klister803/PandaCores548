@@ -12,7 +12,11 @@ class check_mount_display : public PlayerScript
               if (player->HasAura(121805)) // Fly - fly
                {          
                   player->RemoveAurasDueToSpell(121805);
-               }             
+               }  
+              if (player->HasAura(58819))
+              {
+                 player->RemoveAurasDueToSpell(58819);
+              }
         }
 };   
 

@@ -321,7 +321,7 @@ public:
         QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 3 AND itemEntry = '%u';", accountId, mount);
         if (result)
         {
-           player->CastSpell(player, 121805);
+           player->CastSpell(player, 58819);
            
            CharacterDatabase.PQuery("UPDATE character_donate set itemguid = '0' WHERE account = %u AND `type` = 3;", accountId); //clear
            CharacterDatabase.PQuery("UPDATE character_donate set itemguid = '1' WHERE account = %u AND `type` = 3 AND itemEntry = '%u';", accountId, mount); //select active mount
@@ -422,7 +422,7 @@ class mount_set_display_fly : public BasicEvent
 
       bool Execute(uint64 /*time*/, uint32 /*diff*/)
          {
-            if (player->HasAura(121805))
+            if (player->HasAura(58819))
                {          
                           Player * pPlayer = player->GetSession()->GetPlayer();
                           uint32 accountId = pPlayer->GetSession()->GetAccountId();
