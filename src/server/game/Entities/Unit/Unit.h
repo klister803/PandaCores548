@@ -858,10 +858,11 @@ struct DiminishingReturn
 struct SoulSwapDOT
 {
     uint32 Id;
-    uint32 amount;
+    float  amount;
     uint32 duration;
     uint8  stackAmount;
     int32  periodicTimer;
+    float  critChance;
 };
 
 enum MeleeHitOutcome

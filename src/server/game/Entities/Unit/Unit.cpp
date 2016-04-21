@@ -24089,6 +24089,7 @@ void Unit::RemoveSoulSwapDOT(Unit* target)
             auraStatus.stackAmount = aura->GetStackAmount();
             auraStatus.amount = (*iter)->GetAmount();
             auraStatus.periodicTimer = (*iter)->GetPeriodicTimer();
+            auraStatus.critChance = (*iter)->GetCritChance();
             _SoulSwapDOTList.push_back(auraStatus);
         }
     }
@@ -24113,6 +24114,7 @@ void Unit::ApplySoulSwapDOT(Unit* target)
                 eff->SetPeriodicTimer((*iter).periodicTimer);
                 eff->SetCritAmount((*iter).amount * 2);
                 eff->SetAmount((*iter).amount);
+                eff->SetCritChance((*iter).critChance);
             }
             
             if (AuraEffect* eff = aura->GetEffect(EFFECT_1))
