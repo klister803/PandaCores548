@@ -3116,6 +3116,8 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
 
     LinkedSpell(unit, unit, SPELL_LINK_BEFORE_HIT);
 
+    bool calcDiminishingReturns = true;
+
     if (unit->GetTypeId() == TYPEID_PLAYER)
     {
         unit->ToPlayer()->GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET, m_spellInfo->Id);
@@ -3124,6 +3126,9 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
         unit->ToPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET2, m_spellInfo->Id);
 
         Map* map = unit->GetMap();
+
+        if (map && map->IsDungeon())
+            calcDiminishingReturns = false;
         // Update scenario/challenge criterias
         if (uint32 instanceId =  map ? map->GetInstanceId() : 0)
             if (ScenarioProgress* progress = sScenarioMgr->GetScenarioProgress(instanceId))
@@ -3176,7 +3181,9 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
     }
 
     // Get Data Needed for Diminishing Returns, some effects may have multiple auras, so this must be done on spell hit, not aura add
-    m_diminishGroup = GetDiminishingReturnsGroupForSpell(m_spellInfo, m_triggeredByAuraSpell);
+    if (calcDiminishingReturns)
+        m_diminishGroup = GetDiminishingReturnsGroupForSpell(m_spellInfo, m_triggeredByAuraSpell);
+
     if (m_diminishGroup)
     {
         m_diminishLevel = DIMINISHING_LEVEL_1;
