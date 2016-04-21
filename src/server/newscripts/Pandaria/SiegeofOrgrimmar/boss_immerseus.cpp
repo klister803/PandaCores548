@@ -427,6 +427,7 @@ public:
                 damage = 0;
                 phase_two = true;
                 SpawnWave();
+                me->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
                 me->SetAttackStop(false);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->RemoveAurasDueToSpell(SPELL_SWELLING_CORRUPTION);
@@ -440,6 +441,8 @@ public:
                     shapoollist.clear();
                 }
             }
+            else if (phase_two)
+                damage = 0;
         }
 
         void DoAction(int32 const action)

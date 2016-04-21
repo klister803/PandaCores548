@@ -131,17 +131,16 @@ class npc_iron_qon_maunt : public CreatureScript
             npc_iron_qon_mauntAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
+                spawnvehtimer = 0;
                 if (me->GetEntry() != NPC_ROSHAK)
                     DoCast(me, SPELL_ANIM_SIT, true);
                 else
-                {
-                    if (Creature* iq = me->GetCreature(*me, instance->GetData64(NPC_IRON_QON)))
-                        iq->CastSpell(me, SPELL_RIDE_VEHICLE);
-                }
+                    spawnvehtimer = 2000;
             }
 
             InstanceScript* instance;
             EventMap events;
+            uint32 spawnvehtimer;
 
             void Reset()
             {
@@ -313,6 +312,18 @@ class npc_iron_qon_maunt : public CreatureScript
 
             void UpdateAI(uint32 diff)
             {
+                if (spawnvehtimer)
+                {
+                    if (spawnvehtimer <= diff)
+                    {
+                        spawnvehtimer = 0;
+                        if (Creature* iq = me->FindNearestCreature(NPC_IRON_QON, 100.0f, true))
+                            iq->CastSpell(me, SPELL_RIDE_VEHICLE);
+                    }
+                    else
+                        spawnvehtimer -= diff;
+                }
+
                 if (!UpdateVictim())
                     return;
 
