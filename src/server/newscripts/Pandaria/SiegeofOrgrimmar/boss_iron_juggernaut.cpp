@@ -373,7 +373,7 @@ class boss_iron_juggernaut : public CreatureScript
                         break;
                     }
                     case EVENT_CUTTER_LASER:                  
-                        if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 80.0f, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 150.0f, true))
                         {
                             if (Creature* laser = me->SummonCreature(NPC_CUTTER_LASER, target->GetPositionX() + 10.0f, target->GetPositionY(), target->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 31000))
                             {
@@ -382,7 +382,9 @@ class boss_iron_juggernaut : public CreatureScript
                                     p->CastSpell(laser, SPELL_CUTTER_LASER_VISUAL);
                                     laser->AddAura(SPELL_CUTTER_LASER_TARGET_V, target);
                                     laser->AddThreat(target, 50000000.0f);
+                                    laser->SetReactState(REACT_AGGRESSIVE);
                                     laser->Attack(target, true);
+                                    laser->GetMotionMaster()->MoveChase(target);
                                 }
                             }
                         }
@@ -609,6 +611,8 @@ public:
         npc_cutter_laserAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
+            me->SetFloatValue(OBJECT_FIELD_SCALE_X, 1.5f);
+            me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
         }
 
