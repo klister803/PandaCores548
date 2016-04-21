@@ -485,9 +485,8 @@ public:
                 phase = PHASE_BOND_GOLDEN_LOTUS;
                 DoAction(ACTION_BOND_GOLDEN_LOTUS);
             }
-            else if (damage >= me->GetHealth() && phase == PHASE_BOND_GOLDEN_LOTUS)
-                if (!CheckLotus())
-                    damage = 0;
+            else if (damage >= me->GetHealth() && phase == PHASE_BOND_GOLDEN_LOTUS && !CheckLotus())
+                damage = 0;
         }
 
         void JustSummoned(Creature* summon)
@@ -690,9 +689,8 @@ public:
                 phase = PHASE_BOND_GOLDEN_LOTUS;
                 DoAction(ACTION_BOND_GOLDEN_LOTUS);
             }
-            else if (damage >= me->GetHealth() && phase == PHASE_BOND_GOLDEN_LOTUS)
-                if (!CheckLotus())
-                    damage = 0;
+            else if (damage >= me->GetHealth() && phase == PHASE_BOND_GOLDEN_LOTUS && !CheckLotus())
+                damage = 0;
         }
 
         void DoAction(int32 const action)
