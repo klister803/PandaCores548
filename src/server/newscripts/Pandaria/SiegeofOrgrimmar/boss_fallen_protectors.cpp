@@ -229,8 +229,8 @@ struct boss_fallen_protectors : public ScriptedAI
 
     bool CheckLotus()
     {
-        for (int32 i = 0; i < 3; ++i)
-            if (Creature* prot = ObjectAccessor::GetCreature(*me, instance->GetData64(protectors[i])))
+        for (int32 i = 0; i < 3; i++)
+            if (Creature* prot = me->GetCreature(*me, instance->GetData64(protectors[i])))
                 if (me->GetEntry() != prot->GetEntry())
                     if (prot->GetHealth() != 1)
                         return false;
@@ -308,6 +308,7 @@ public:
             {
                 damage = 0;
                 phase = PHASE_BOND_GOLDEN_LOTUS;
+                me->SetHealth(1);
                 DoAction(ACTION_BOND_GOLDEN_LOTUS);
             }
             else if (damage >= me->GetHealth() && phase == PHASE_BOND_GOLDEN_LOTUS && !CheckLotus())
@@ -483,6 +484,7 @@ public:
             {
                 damage = 0;
                 phase = PHASE_BOND_GOLDEN_LOTUS;
+                me->SetHealth(1);
                 DoAction(ACTION_BOND_GOLDEN_LOTUS);
             }
             else if (damage >= me->GetHealth() && phase == PHASE_BOND_GOLDEN_LOTUS && !CheckLotus())
@@ -687,6 +689,7 @@ public:
             {
                 damage = 0;
                 phase = PHASE_BOND_GOLDEN_LOTUS;
+                me->SetHealth(1);
                 DoAction(ACTION_BOND_GOLDEN_LOTUS);
             }
             else if (damage >= me->GetHealth() && phase == PHASE_BOND_GOLDEN_LOTUS && !CheckLotus())
