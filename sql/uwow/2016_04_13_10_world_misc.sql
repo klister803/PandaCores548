@@ -15,3 +15,6 @@ INSERT INTO `spell_radius` (`spell_id`, `effectradius0`, `effectradius1`, `comme
 INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `resizeType`, `count`, `maxcount`, `comments`) VALUES ('118605', '30', '1', '1', '1', 'Guard');
 
 INSERT INTO `spell_pet_auras` (`petEntry`, `spellId`, `option`, `target`, `comment`) VALUES ('61146', '126119', '5', '1', 'Святилище быка');
+
+UPDATE `spell_trigger` SET `target`='7' WHERE (`spell_id`='124502') AND (`spell_trigger`='124503') AND (`option`='0') AND (`effectmask`='7') AND (`aura`='0') AND (`check_spell_id`='0');
+UPDATE `spell_trigger` SET `target`='7' WHERE (`spell_id`='124502') AND (`spell_trigger`='124506') AND (`option`='0') AND (`effectmask`='7') AND (`aura`='0') AND (`check_spell_id`='0');
