@@ -288,7 +288,7 @@ public:
             sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, me->GetGUID());
             phase = PHASE_BATTLE;
             events.ScheduleEvent(EVENT_VENGEFUL_STRIKE, 7000);
-            events.ScheduleEvent(EVENT_CORRUPTED_BREW, 5000, 0);
+            events.ScheduleEvent(EVENT_CORRUPTED_BREW, 5000);
             events.ScheduleEvent(EVENT_CLASH, 27000);
         }
 
@@ -345,6 +345,7 @@ public:
                 break;
             case ACTION_BOND_GOLDEN_LOTUS:
                 events.Reset();
+                me->SetAttackStop(true);
                 me->InterruptNonMeleeSpells(true);
                 sCreatureTextMgr->SendChat(me, TEXT_GENERIC_6, me->GetGUID());
                 DoCast(me, SPELL_BOUND_OF_GOLDEN_LOTUS);
@@ -402,7 +403,7 @@ public:
                     break;
                 case EVENT_CORRUPTED_BREW:
                     if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0.0f, true))
-                        DoCast(target, SPELL_CORRUPTED_BREW_BASE, true);
+                        DoCast(target, SPELL_CORRUPTED_BREW_BASE);
                     events.ScheduleEvent(EVENT_CORRUPTED_BREW, 13000);
                     break;
                 case EVENT_CLASH:
@@ -523,6 +524,7 @@ public:
                 break;
             case ACTION_BOND_GOLDEN_LOTUS:
                 events.Reset();
+                me->SetAttackStop(true);
                 sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2, me->GetGUID());
                 sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, me->GetGUID());
                 me->InterruptNonMeleeSpells(true);
@@ -736,6 +738,7 @@ public:
                 break;
             case ACTION_BOND_GOLDEN_LOTUS:
                 events.Reset();
+                me->SetAttackStop(true);
                 sCreatureTextMgr->SendChat(me, TEXT_GENERIC_5, me->GetGUID());
                 me->InterruptNonMeleeSpells(true);
                 DoCast(me, SPELL_BOUND_OF_GOLDEN_LOTUS);
