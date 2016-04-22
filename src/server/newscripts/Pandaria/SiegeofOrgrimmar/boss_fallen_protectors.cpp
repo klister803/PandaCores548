@@ -449,7 +449,7 @@ public:
             pctdone = 0;
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROTE);
-            DoCast(me, SPELL_DESPAWN_AT, true);
+            //DoCast(me, SPELL_DESPAWN_AT, true);
         }
 
         void RemoveDebuffs()
@@ -628,10 +628,12 @@ public:
 
         void Reset()
         {
+            events.Reset();
             ResetProtectors();
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             me->SetReactState(REACT_DEFENSIVE);
             DespawnMeasure();
+            phase = PHASE_NULL;
             shadow_word_count = 0;
             calamitycount = 0;
             checkprogress = 0;
@@ -648,6 +650,8 @@ public:
             list.clear();
             GetCreatureListWithEntryInGrid(list, me, NPC_EMBODIED_DESPIRE_OF_SUN, 100.0f);
             GetCreatureListWithEntryInGrid(list, me, NPC_EMBODIED_DESPERATION_OF_SUN, 100.0f);
+            GetCreatureListWithEntryInGrid(list, me, NPC_DESPAIR_SPAWN, 100.0f);
+            GetCreatureListWithEntryInGrid(list, me, BPC_DESPERATION_SPAWN, 100.0f);
             if (!list.empty())
                 for (std::list<Creature*>::const_iterator itr = list.begin(); itr != list.end(); itr++)
                     (*itr)->DespawnOrUnsummon();
@@ -659,8 +663,9 @@ public:
             CallOtherProtectors();
             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
             sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, me->GetGUID());
+            phase = PHASE_BATTLE;
             calamitycount = 0;
-            checkprogress = 5000;
+            //checkprogress = 5000;
             events.RescheduleEvent(EVENT_SHA_SEAR, 2000, 0, PHASE_BATTLE);
             events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(15000, 25000), 0, PHASE_BATTLE);
             events.RescheduleEvent(EVENT_CALAMITY, 30000, 0, PHASE_BATTLE);
