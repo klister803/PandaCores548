@@ -152,6 +152,7 @@ uint32 corruptedbrew[8] =
     SPELL_CORRUPTED_BREW8,
 };
 
+
 uint32 const protectors[3] =
 {
     NPC_ROOK_STONETOE,
@@ -547,6 +548,7 @@ public:
                 DoCast(me, SPELL_BOUND_OF_GOLDEN_LOTUS);
                 break;
             case ACTION_END_DESPERATE_MEASURES:
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WEAKNESS);
                 me->RemoveAurasDueToSpell(SPELL_MARK_OF_ANGUISH_MEDITATION);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->RemoveAllAreaObjects();
@@ -1099,6 +1101,9 @@ public:
 
         void SetGUID(uint64 guid, int32 /*id*/ = 0)
         {
+            events.Reset();
+            me->SetAttackStop(true);
+            me->SetReactState(REACT_PASSIVE);
             _target = guid;
             if (Unit* target = me->GetUnit(*me, guid))
             {
@@ -1618,14 +1623,11 @@ public:
         {
             if (GetCaster() && GetHitUnit())
             {
-                if (InstanceScript* instance = GetCaster()->GetInstanceScript())
+                if (Creature* mesOfHe = GetCaster()->FindNearestCreature(NPC_EMBODIED_ANGUISH_OF_HE, 50.0f, true))
                 {
-                    if (Creature* mesOfHe = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(NPC_EMBODIED_ANGUISH_OF_HE)))
-                    {
-                        mesOfHe->CastSpell(mesOfHe, SPELL_SHADOW_WEAKNES_MASS, true);
-                        GetCaster()->RemoveAurasDueToSpell(SPELL_MARK_OF_ANGUISH_STAN);
-                        mesOfHe->AI()->SetGUID(GetHitUnit()->GetGUID(), true);
-                    }
+                    mesOfHe->CastSpell(mesOfHe, SPELL_SHADOW_WEAKNES_MASS, true);
+                    GetCaster()->RemoveAurasDueToSpell(SPELL_MARK_OF_ANGUISH_STAN);
+                    mesOfHe->AI()->SetGUID(GetHitUnit()->GetGUID(), true);
                 }
             }
         }
