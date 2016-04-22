@@ -1669,7 +1669,6 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
                 unitTarget->RemoveMovementImpairingAuras();
                 unitTarget->RemoveAurasByType(SPELL_AURA_MOD_STALKED);
                 unitTarget->CastSpell(unitTarget, 11327, true);
-                unitTarget->CombatStop();
                 return;
             }
             // Brittle Armor - (need add max stack of 24575 Brittle Armor)
@@ -5924,6 +5923,9 @@ void Spell::EffectSanctuary(SpellEffIndex /*effIndex*/)
         else
             ++itr;
     }
+
+    if (m_spellInfo->Attributes & SPELL_ATTR0_NOT_SHAPESHIFT)
+        unitTarget->CombatStop();
 
     //unitTarget->m_lastSanctuaryTime = getMSTime();
 }
