@@ -565,18 +565,6 @@ void BossAI::_JustDied()
     }
 }
 
-void BossAI::_DoAggroPulse(const uint32 diff)
-{
-    if (inFightAggroCheck_Timer < diff)
-    {
-        if (me->getVictim() && me->getVictim()->ToPlayer())
-            DoAttackerGroupInCombat(me->getVictim()->ToPlayer());
-
-        inFightAggroCheck_Timer = MAX_AGGRO_PULSE_TIMER;
-    }
-    else inFightAggroCheck_Timer -= diff;
-}
-
 void BossAI::_EnterCombat()
 {
     me->setActive(true);

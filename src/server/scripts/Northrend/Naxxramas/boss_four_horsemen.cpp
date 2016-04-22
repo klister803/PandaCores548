@@ -362,7 +362,6 @@ public:
             if (!UpdateVictim() || !CheckInRoom() || !movementCompleted)
                 return;
 
-            _DoAggroPulse(diff);
             events.Update(diff);
 
             if (me->HasUnitState(UNIT_STATE_CASTING))

@@ -100,8 +100,6 @@ public:
                 events.ScheduleEvent(EVENT_FRENZY, 0); // will be cast immediately
             }
 
-            _DoAggroPulse(diff);
-
             if (me->IsNonMeleeSpellCasted(false))
                 return;
 

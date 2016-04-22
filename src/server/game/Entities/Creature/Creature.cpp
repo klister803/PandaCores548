@@ -682,6 +682,9 @@ void Creature::Update(uint32 diff)
                 }
             }
 
+            if (AI() && IsDungeonBoss() && isInCombat())
+                AI()->DoAggroPulse(diff);
+
             if (m_regenTimer != 0)
                break;
 

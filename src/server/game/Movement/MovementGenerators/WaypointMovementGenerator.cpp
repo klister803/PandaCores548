@@ -120,7 +120,7 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature &creature)
     if (node->orientation && node->delay)
         init.SetFacing(node->orientation);
 
-    if (node->speed != 0)
+    if (node->speed > 0)
         init.SetVelocity(node->speed);
 
     init.SetWalk(!node->run);

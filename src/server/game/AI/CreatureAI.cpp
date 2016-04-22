@@ -167,6 +167,18 @@ void CreatureAI::DoAttackerGroupInCombat(Player* attacker)
     }
 }
 
+void CreatureAI::DoAggroPulse(const uint32 diff)
+{
+    if (inFightAggroCheck_Timer < diff)
+    {
+        if (me->getVictim() && me->getVictim()->ToPlayer())
+            DoAttackerGroupInCombat(me->getVictim()->ToPlayer());
+
+        inFightAggroCheck_Timer = TIME_INTERVAL_LOOK;
+    }
+    else inFightAggroCheck_Timer -= diff;
+}
+
 // scripts does not take care about MoveInLineOfSight loops
 // MoveInLineOfSight can be called inside another MoveInLineOfSight and cause stack overflow
 void CreatureAI::MoveInLineOfSight_Safe(Unit* who)
