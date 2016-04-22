@@ -13,3 +13,5 @@ INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('51723', 'sp
 INSERT INTO `spell_radius` (`spell_id`, `effectradius0`, `effectradius1`, `comments`) VALUES ('51723', '13', '13', '10 yards');
 
 INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `resizeType`, `count`, `maxcount`, `comments`) VALUES ('118605', '30', '1', '1', '1', 'Guard');
+
+INSERT INTO `spell_pet_auras` (`petEntry`, `spellId`, `option`, `target`, `comment`) VALUES ('61146', '126119', '5', '1', 'Святилище быка');
