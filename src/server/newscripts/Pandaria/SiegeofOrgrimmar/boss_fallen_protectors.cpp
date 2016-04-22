@@ -380,12 +380,9 @@ public:
                 events.ScheduleEvent(EVENT_CLASH, urand(20000, 30000));
                 break;
             case ACTION_RESET_EVENTS:
-                me->InterruptNonMeleeSpells(true);
-                events.Reset();
+                events.CancelEvent(EVENT_CLASH);
                 break;
             case ACTION_START_EVENTS:
-                events.ScheduleEvent(EVENT_VENGEFUL_STRIKE, urand(10000, 20000));
-                events.ScheduleEvent(EVENT_CORRUPTED_BREW, urand(2000, 5000));
                 events.ScheduleEvent(EVENT_CLASH, urand(20000, 30000));
                 break;
             }
@@ -465,6 +462,7 @@ public:
             events.Reset();
             ResetProtectors();
             RemoveDebuffs();
+            DespawnAllAT();
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             me->SetReactState(REACT_DEFENSIVE);
             phase = PHASE_NULL;
@@ -480,11 +478,22 @@ public:
             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_DEBILITATION);
         }
 
+        void DespawnAllAT()
+        {
+            std::list<AreaTrigger*> atlist;
+            atlist.clear();
+            me->GetAreaTriggersWithEntryInRange(atlist, 1013, me->GetGUID(), 100.0f);
+            if (!atlist.empty())
+                for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
+                    (*itr)->RemoveFromWorld();
+        }
+
         void EnterCombat(Unit* who)
         {
             DoZoneInCombat(me, 150.0f);
             CallOtherProtectors();
             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
+            DespawnAllAT();
             DoCast(who, SPELL_INSTANT_POISON);
             phase = PHASE_BATTLE;
             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WEAKNESS);
@@ -567,13 +576,11 @@ public:
                 events.ScheduleEvent(EVENT_POISON_NOXIOUS, urand(20000, 30000));
                 break;
             case ACTION_RESET_EVENTS:
-                me->InterruptNonMeleeSpells(true);
-                events.Reset();
+                events.CancelEvent(EVENT_POISON_NOXIOUS);
+                events.CancelEvent(EVENT_POISON_INSTANT);
                 break;
             case ACTION_START_EVENTS:
-                events.ScheduleEvent(EVENT_GARROTE, 5000);
-                events.ScheduleEvent(EVENT_GOUGE, urand(2000, 5000));
-                events.ScheduleEvent(EVENT_POISON_NOXIOUS, urand(20000, 30000));
+                events.ScheduleEvent(EVENT_POISON_NOXIOUS, 21000);
                 break;
             }
         }
@@ -584,6 +591,7 @@ public:
                 SendDone();
             summons.DespawnAll();
             RemoveDebuffs();
+            DespawnAllAT();
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         }
 
@@ -787,12 +795,9 @@ public:
                 events.RescheduleEvent(EVENT_CALAMITY, urand(60000, 70000));
                 break;
             case ACTION_RESET_EVENTS:
-                me->InterruptNonMeleeSpells(true);
-                events.Reset();
+                events.CancelEvent(EVENT_CALAMITY);
                 break;
             case ACTION_START_EVENTS:
-                events.RescheduleEvent(EVENT_SHA_SEAR, 2000);
-                events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(15000, 25000));
                 events.RescheduleEvent(EVENT_CALAMITY, urand(60000, 70000));
                 break;
             }
