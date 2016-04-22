@@ -301,11 +301,13 @@ public:
         {
             if (phase == PHASE_BATTLE && HealthBelowPct(66))
             {
+                damage = 0;
                 phase = PHASE_BATTLE_TWO;
                 DoAction(ACTION_DESPERATE_MEASURES);
             }
             else if (phase == PHASE_BATTLE_TWO && HealthBelowPct(33))
             {
+                damage = 0;
                 phase = PHASE_BATTLE_THREE;
                 DoAction(ACTION_DESPERATE_MEASURES);
             }
@@ -477,11 +479,13 @@ public:
         {
             if (phase == PHASE_BATTLE && HealthBelowPct(66))
             {
+                damage = 0;
                 phase = PHASE_BATTLE_TWO;
                 DoAction(ACTION_DESPERATE_MEASURES);
             }
             else if (phase == PHASE_BATTLE_TWO && HealthBelowPct(33))
             {
+                damage = 0;
                 phase = PHASE_BATTLE_THREE;
                 DoAction(ACTION_DESPERATE_MEASURES);
             }
@@ -688,11 +692,13 @@ public:
         {
             if (phase == PHASE_BATTLE && HealthBelowPct(66))
             {
+                damage = 0;
                 phase = PHASE_BATTLE_TWO;
                 DoAction(ACTION_DESPERATE_MEASURES);
             }
             else if (phase == PHASE_BATTLE_TWO && HealthBelowPct(33))
             {
+                damage = 0;
                 phase = PHASE_BATTLE_THREE;
                 DoAction(ACTION_DESPERATE_MEASURES);
             }
