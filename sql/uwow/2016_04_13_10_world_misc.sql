@@ -18,3 +18,5 @@ INSERT INTO `spell_pet_auras` (`petEntry`, `spellId`, `option`, `target`, `comme
 
 UPDATE `spell_trigger` SET `target`='7' WHERE (`spell_id`='124502') AND (`spell_trigger`='124503') AND (`option`='0') AND (`effectmask`='7') AND (`aura`='0') AND (`check_spell_id`='0');
 UPDATE `spell_trigger` SET `target`='7' WHERE (`spell_id`='124502') AND (`spell_trigger`='124506') AND (`option`='0') AND (`effectmask`='7') AND (`aura`='0') AND (`check_spell_id`='0');
+
+INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `target`, `removeMask`, `comment`) VALUES ('-66', '32612', '3', '16', 'Invisibility');

@@ -2183,20 +2183,6 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         break;
                 }
                 break;
-            case SPELLFAMILY_MAGE:
-                switch (GetId())
-                {
-                    case 66: // Invisibility
-                        if (removeMode != AURA_REMOVE_BY_EXPIRE)
-                            break;
-                        target->CastSpell(target, 32612, true, NULL, GetEffect(1));
-                        break;
-                    default:
-                        break;
-                }
-                if (!caster)
-                    break;
-                break;
             case SPELLFAMILY_WARLOCK:
                 if (!caster)
                     break;
