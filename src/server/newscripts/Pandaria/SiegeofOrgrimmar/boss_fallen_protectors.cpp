@@ -100,9 +100,11 @@ enum Phase
 {
     PHASE_NULL                      = 0,
     PHASE_BATTLE                    = 1,
-    PHASE_DESPERATE_MEASURES        = 2,
-    PHASE_DESPERATE_MEASURES2       = 3,
-    PHASE_BOND_GOLDEN_LOTUS         = 4,
+    PHASE_BATTLE_TWO                = 2,
+    PHASE_BATTLE_THREE              = 3,
+    PHASE_DESPERATE_MEASURES        = 4,
+    PHASE_DESPERATE_MEASURES2       = 5,
+    PHASE_BOND_GOLDEN_LOTUS         = 6,
 };
 
 enum PhaseEvents
@@ -223,7 +225,7 @@ struct boss_fallen_protectors : public ScriptedAI
                     if (prot->isAlive())
                         prot->Kill(prot, true);
 
-        if (instance->GetBossState(DATA_F_PROTECTORS) != DONE)
+        if (instance->GetBossState(DATA_F_PROTECTORS) == IN_PROGRESS)
             instance->SetBossState(DATA_F_PROTECTORS, DONE);
     }
 
@@ -264,7 +266,6 @@ public:
         EventMap events;
         Phase phase;
         uint8 corruptedbrewcount;
-        uint8 pctdone;
 
         void Reset()
         {
@@ -273,7 +274,6 @@ public:
             ResetProtectors();
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             me->SetReactState(REACT_DEFENSIVE);
-            pctdone = 0;
             corruptedbrewcount = 0;
             phase = PHASE_NULL;
             DoCast(me, SPELL_DESPAWN_AT, true);
@@ -287,9 +287,9 @@ public:
             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
             sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, me->GetGUID());
             phase = PHASE_BATTLE;
-            events.ScheduleEvent(EVENT_VENGEFUL_STRIKE, 7000, 0, PHASE_BATTLE);
-            events.ScheduleEvent(EVENT_CORRUPTED_BREW, 5000, 0, PHASE_BATTLE);
-            events.ScheduleEvent(EVENT_CLASH, 27000, 0, PHASE_BATTLE);
+            events.ScheduleEvent(EVENT_VENGEFUL_STRIKE, 7000);
+            events.ScheduleEvent(EVENT_CORRUPTED_BREW, 5000, 0);
+            events.ScheduleEvent(EVENT_CLASH, 27000);
         }
 
         void JustSummoned(Creature* sum)
@@ -299,12 +299,17 @@ public:
 
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
-            if (!pctdone && HealthBelowPct(66) || pctdone == 1 && HealthBelowPct(33))
+            if (phase == PHASE_BATTLE && HealthBelowPct(66))
             {
-                pctdone++;
+                phase = PHASE_BATTLE_TWO;
                 DoAction(ACTION_DESPERATE_MEASURES);
             }
-            else if (damage >= me->GetHealth() && phase != PHASE_BOND_GOLDEN_LOTUS)
+            else if (phase == PHASE_BATTLE_TWO && HealthBelowPct(33))
+            {
+                phase = PHASE_BATTLE_THREE;
+                DoAction(ACTION_DESPERATE_MEASURES);
+            }
+            else if (damage >= me->GetHealth() && phase == PHASE_BATTLE_THREE)
             {
                 damage = 0;
                 phase = PHASE_BOND_GOLDEN_LOTUS;
@@ -324,7 +329,6 @@ public:
                 me->InterruptNonMeleeSpells(true);
                 me->SetAttackStop(true);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                phase = PHASE_DESPERATE_MEASURES;
                 corruptedbrewcount = 0;
                 sCreatureTextMgr->SendChat(me, TEXT_GENERIC_4, me->GetGUID());
                 sCreatureTextMgr->SendChat(me, TEXT_GENERIC_5, me->GetGUID());
@@ -348,18 +352,17 @@ public:
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->RemoveAllAreaObjects();
                 me->ReAttackWithZone();
-                phase = PHASE_BATTLE;
-                events.ScheduleEvent(EVENT_VENGEFUL_STRIKE, urand(10000, 20000), 0, PHASE_BATTLE);
-                events.ScheduleEvent(EVENT_CORRUPTED_BREW, urand(2000, 5000), 0, PHASE_BATTLE);
-                events.ScheduleEvent(EVENT_CLASH, urand(20000, 30000), 0, PHASE_BATTLE);
+                events.ScheduleEvent(EVENT_VENGEFUL_STRIKE, urand(10000, 20000));
+                events.ScheduleEvent(EVENT_CORRUPTED_BREW, urand(2000, 5000));
+                events.ScheduleEvent(EVENT_CLASH, urand(20000, 30000));
                 break;
             case ACTION_BOND_GOLDEN_LOTUS_END:
                 me->RemoveAurasDueToSpell(SPELL_BOUND_OF_GOLDEN_LOTUS);
                 me->ReAttackWithZone();
-                phase = PHASE_BATTLE;
-                events.ScheduleEvent(EVENT_VENGEFUL_STRIKE, urand(10000, 20000), 0, PHASE_BATTLE);
-                events.ScheduleEvent(EVENT_CORRUPTED_BREW, urand(2000, 5000), 0, PHASE_BATTLE);
-                events.ScheduleEvent(EVENT_CLASH, urand(20000, 30000), 0, PHASE_BATTLE);
+                phase = PHASE_BATTLE_THREE;
+                events.ScheduleEvent(EVENT_VENGEFUL_STRIKE, urand(10000, 20000));
+                events.ScheduleEvent(EVENT_CORRUPTED_BREW, urand(2000, 5000));
+                events.ScheduleEvent(EVENT_CLASH, urand(20000, 30000));
                 break;
             case ACTION_RESET_EVENTS:
                 me->InterruptNonMeleeSpells(true);
@@ -393,21 +396,21 @@ public:
                 {
                 case EVENT_VENGEFUL_STRIKE:
                     DoCastVictim(SPELL_VENGEFUL_STRIKE);
-                    events.ScheduleEvent(EVENT_VENGEFUL_STRIKE, 33000, 0, PHASE_BATTLE);
+                    events.ScheduleEvent(EVENT_VENGEFUL_STRIKE, 33000);
                     break;
                 case EVENT_CORRUPTED_BREW:
                     if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0.0f, true))
                         DoCast(target, SPELL_CORRUPTED_BREW_BASE, true);
-                    events.ScheduleEvent(EVENT_CORRUPTED_BREW, 13000, 0, PHASE_BATTLE);
+                    events.ScheduleEvent(EVENT_CORRUPTED_BREW, 13000);
                     break;
                 case EVENT_CLASH:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                         DoCast(target, SPELL_CLASH);
-                    events.ScheduleEvent(EVENT_CLASH, 40000, 0, PHASE_BATTLE);
+                    events.ScheduleEvent(EVENT_CLASH, 40000);
                     break;
                 }
             }
-            if (phase == PHASE_BATTLE)
+            if (!me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE) && phase != PHASE_BOND_GOLDEN_LOTUS)
                 DoMeleeAttackIfReady();
         }
     };
@@ -435,7 +438,6 @@ public:
         SummonList summons;
         EventMap events;
         Phase phase;
-        uint8 pctdone;
 
         void Reset()
         {
@@ -446,10 +448,8 @@ public:
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             me->SetReactState(REACT_DEFENSIVE);
             phase = PHASE_NULL;
-            pctdone = 0;
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROTE);
-            //DoCast(me, SPELL_DESPAWN_AT, true);
         }
 
         void RemoveDebuffs()
@@ -468,19 +468,24 @@ public:
             DoCast(who, SPELL_INSTANT_POISON);
             phase = PHASE_BATTLE;
             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WEAKNESS);
-            events.ScheduleEvent(EVENT_GARROTE, 5000, 0, PHASE_BATTLE);
-            events.ScheduleEvent(EVENT_GOUGE, urand(2000, 5000), 0, PHASE_BATTLE);
-            events.ScheduleEvent(EVENT_POISON_NOXIOUS, 21000, 0, PHASE_BATTLE);
+            events.ScheduleEvent(EVENT_GARROTE, 5000);
+            events.ScheduleEvent(EVENT_GOUGE, urand(2000, 5000));
+            events.ScheduleEvent(EVENT_POISON_NOXIOUS, 21000);
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
-            if (!pctdone && HealthBelowPct(66) || pctdone == 1 && HealthBelowPct(33))
+            if (phase == PHASE_BATTLE && HealthBelowPct(66))
             {
-                pctdone++;
+                phase = PHASE_BATTLE_TWO;
                 DoAction(ACTION_DESPERATE_MEASURES);
             }
-            else if (damage >= me->GetHealth() && phase != PHASE_BOND_GOLDEN_LOTUS)
+            else if (phase == PHASE_BATTLE_TWO && HealthBelowPct(33))
+            {
+                phase = PHASE_BATTLE_THREE;
+                DoAction(ACTION_DESPERATE_MEASURES);
+            }
+            else if (damage >= me->GetHealth() && phase == PHASE_BATTLE_THREE)
             {
                 damage = 0;
                 phase = PHASE_BOND_GOLDEN_LOTUS;
@@ -506,7 +511,6 @@ public:
                 me->InterruptNonMeleeSpells(true);
                 me->SetAttackStop(true);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                phase = PHASE_DESPERATE_MEASURES;
                 sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, me->GetGUID());
                 DoCast(me, SPELL_MARK_OF_ANGUISH_MEDITATION);
                 me->SummonCreature(NPC_EMBODIED_ANGUISH_OF_HE, 1200.98f, 1044.95f, 417.9685f, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
@@ -525,18 +529,17 @@ public:
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->RemoveAllAreaObjects();
                 me->ReAttackWithZone();
-                phase = PHASE_BATTLE;
-                events.ScheduleEvent(EVENT_GARROTE, 5000, 0, PHASE_BATTLE);
-                events.ScheduleEvent(EVENT_GOUGE, urand(2000, 5000), 0, PHASE_BATTLE);
-                events.ScheduleEvent(EVENT_POISON_NOXIOUS, urand(20000, 30000), 0, PHASE_BATTLE);
+                events.ScheduleEvent(EVENT_GARROTE, 5000);
+                events.ScheduleEvent(EVENT_GOUGE, urand(2000, 5000));
+                events.ScheduleEvent(EVENT_POISON_NOXIOUS, urand(20000, 30000));
                 break;
             case ACTION_BOND_GOLDEN_LOTUS_END:
                 me->RemoveAurasDueToSpell(SPELL_BOUND_OF_GOLDEN_LOTUS);
                 me->ReAttackWithZone();
-                phase = PHASE_BATTLE;
-                events.ScheduleEvent(EVENT_GARROTE, 5000, 0, PHASE_BATTLE);
-                events.ScheduleEvent(EVENT_GOUGE, urand(2000, 5000), 0, PHASE_BATTLE);
-                events.ScheduleEvent(EVENT_POISON_NOXIOUS, urand(20000, 30000), 0, PHASE_BATTLE);
+                phase = PHASE_BATTLE_THREE;
+                events.ScheduleEvent(EVENT_GARROTE, 5000);
+                events.ScheduleEvent(EVENT_GOUGE, urand(2000, 5000));
+                events.ScheduleEvent(EVENT_POISON_NOXIOUS, urand(20000, 30000));
                 break;
             case ACTION_RESET_EVENTS:
                 me->InterruptNonMeleeSpells(true);
@@ -572,27 +575,27 @@ public:
                 case EVENT_GARROTE:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
                         DoCast(target, SPELL_SHADOWSTEP);
-                    events.ScheduleEvent(EVENT_GARROTE, 25000, 0, PHASE_BATTLE);
+                    events.ScheduleEvent(EVENT_GARROTE, 25000);
                     break;
                 case EVENT_GOUGE:
                     if (me->getVictim())
                         DoCastVictim(SPELL_GOUGE);
-                    events.ScheduleEvent(EVENT_GOUGE, 21000, 0, PHASE_BATTLE);
+                    events.ScheduleEvent(EVENT_GOUGE, 21000);
                     break;
                 case EVENT_POISON_NOXIOUS:
                     if (me->getVictim())
                         DoCastVictim(SPELL_NOXIOUS_POISON);
-                    events.ScheduleEvent(EVENT_POISON_INSTANT, urand(20000, 30000), 0, PHASE_BATTLE);
+                    events.ScheduleEvent(EVENT_POISON_INSTANT, urand(20000, 30000));
                     break;
                 case EVENT_POISON_INSTANT:
                     if (me->getVictim())
                         DoCastVictim(SPELL_INSTANT_POISON);
                     me->RemoveAllAreaObjects();
-                    events.RescheduleEvent(EVENT_POISON_NOXIOUS, urand(20000, 30000), 0, PHASE_BATTLE);
+                    events.RescheduleEvent(EVENT_POISON_NOXIOUS, urand(20000, 30000));
                     break;
                 }
             }
-            if (phase == PHASE_BATTLE)
+            if (!me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE) && phase != PHASE_BOND_GOLDEN_LOTUS)
                 DoMeleeAttackIfReady();
         }
     };
@@ -624,7 +627,6 @@ public:
         Phase phase;
         uint32 shadow_word_count;
         uint8 calamitycount;
-        uint8 pctdone;
 
         void Reset()
         {
@@ -637,7 +639,6 @@ public:
             shadow_word_count = 0;
             calamitycount = 0;
             checkprogress = 0;
-            pctdone = 0;
             summons.DespawnAll();
             me->SummonCreature(NPC_GOLD_LOTOS_MAIN, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0);
             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WORD_BANE);
@@ -666,9 +667,9 @@ public:
             phase = PHASE_BATTLE;
             calamitycount = 0;
             //checkprogress = 5000;
-            events.RescheduleEvent(EVENT_SHA_SEAR, 2000, 0, PHASE_BATTLE);
-            events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(15000, 25000), 0, PHASE_BATTLE);
-            events.RescheduleEvent(EVENT_CALAMITY, 30000, 0, PHASE_BATTLE);
+            events.RescheduleEvent(EVENT_SHA_SEAR, 2000);
+            events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(15000, 25000));
+            events.RescheduleEvent(EVENT_CALAMITY, 30000);
         }
 
         uint32 GetData(uint32 type)
@@ -685,12 +686,17 @@ public:
 
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
-            if (!pctdone && HealthBelowPct(66) || pctdone == 1 && HealthBelowPct(33))
+            if (phase == PHASE_BATTLE && HealthBelowPct(66))
             {
-                pctdone++;
+                phase = PHASE_BATTLE_TWO;
                 DoAction(ACTION_DESPERATE_MEASURES);
             }
-            else if (damage >= me->GetHealth() && phase != PHASE_BOND_GOLDEN_LOTUS)
+            else if (phase == PHASE_BATTLE_TWO && HealthBelowPct(33))
+            {
+                phase = PHASE_BATTLE_THREE;
+                DoAction(ACTION_DESPERATE_MEASURES);
+            }
+            else if (damage >= me->GetHealth() && phase == PHASE_BATTLE_THREE)
             {
                 damage = 0;
                 phase = PHASE_BOND_GOLDEN_LOTUS;
@@ -710,7 +716,6 @@ public:
                 me->InterruptNonMeleeSpells(true);
                 me->SetAttackStop(true);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                phase = PHASE_DESPERATE_MEASURES;
                 calamitycount = 0;
                 if (Creature* lotos = me->GetCreature(*me, instance->GetData64(NPC_GOLD_LOTOS_MAIN)))
                     DoCast(lotos, SPELL_DARK_MEDITATION_JUMP, true);
@@ -735,7 +740,6 @@ public:
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->RemoveAllAreaObjects();
                 me->ReAttackWithZone();
-                phase = PHASE_BATTLE;
                 events.RescheduleEvent(EVENT_SHA_SEAR, 2000, 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(15000, 25000), 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_CALAMITY, urand(60000, 70000), 0, PHASE_BATTLE);
@@ -743,10 +747,10 @@ public:
             case ACTION_BOND_GOLDEN_LOTUS_END:
                 me->RemoveAurasDueToSpell(SPELL_BOUND_OF_GOLDEN_LOTUS);
                 me->ReAttackWithZone();
-                phase = PHASE_BATTLE;
-                events.RescheduleEvent(EVENT_SHA_SEAR, 2000, 0, PHASE_BATTLE);
-                events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(15000, 25000), 0, PHASE_BATTLE);
-                events.RescheduleEvent(EVENT_CALAMITY, urand(60000, 70000), 0, PHASE_BATTLE);
+                phase = PHASE_BATTLE_THREE;
+                events.RescheduleEvent(EVENT_SHA_SEAR, 2000);
+                events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(15000, 25000));
+                events.RescheduleEvent(EVENT_CALAMITY, urand(60000, 70000));
                 break;
             case ACTION_RESET_EVENTS:
                 me->InterruptNonMeleeSpells(true);
@@ -771,7 +775,7 @@ public:
             switch (type)
             {
             case DATA_SHADOW_WORD_DAMAGE:
-                events.ScheduleEvent(EVENT_SHADOW_WORD_BANE, 1, 0, PHASE_BATTLE);
+                events.ScheduleEvent(EVENT_SHADOW_WORD_BANE, 1000);
                 break;
             case DATA_SHADOW_WORD_REMOVED:
                 --shadow_word_count;
@@ -779,7 +783,7 @@ public:
             case DATA_CALAMITY_HIT:
                 calamitycount++;
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WORD_BANE);
-                events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(20000, 30000), 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(20000, 30000));
                 break;
             }
         }
@@ -813,7 +817,7 @@ public:
                 case EVENT_SHA_SEAR:
                     if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0.0f, true))
                         DoCast(target, SPELL_SHA_SEAR, true);
-                    events.ScheduleEvent(EVENT_SHA_SEAR, urand(5000, 10000), 0, PHASE_BATTLE);
+                    events.ScheduleEvent(EVENT_SHA_SEAR, urand(5000, 10000));
                     break;
                 case EVENT_SHADOW_WORD_BANE:
                     if (shadow_word_count < 3)
@@ -822,18 +826,18 @@ public:
                             DoCast(target, SPELL_SHADOW_WORD_BANE, true);
                         ++shadow_word_count;
                     }
-                    events.ScheduleEvent(EVENT_SHADOW_WORD_BANE, urand(20000, 30000), 0, PHASE_BATTLE);
+                    events.ScheduleEvent(EVENT_SHADOW_WORD_BANE, urand(20000, 30000));
                     break;
                 case EVENT_CALAMITY:
                     sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2, 0);
                     sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, 0);
                     DoCast(me, SPELL_CALAMITY);
-                    events.ScheduleEvent(EVENT_CALAMITY, 30000, 0, PHASE_BATTLE);
+                    events.ScheduleEvent(EVENT_CALAMITY, 30000);
                     break;
                 case EVENT_MEDITATION_SPIKE:
                     if (me->getVictim())
                         DoCastVictim(SPELL_MEDITATION_SPIKE, true);
-                    events.ScheduleEvent(EVENT_MEDITATION_SPIKE, 6000, PHASE_DESPERATE_MEASURES);
+                    events.ScheduleEvent(EVENT_MEDITATION_SPIKE, 6000);
                     break;
                 }
             }
