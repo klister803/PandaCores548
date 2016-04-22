@@ -129,6 +129,7 @@ enum Actions
     ACTION_BOND_GOLDEN_LOTUS       = 2,
     ACTION_BOND_GOLDEN_LOTUS_END   = 3,
     ACTION_RESET_EVENTS            = 4,
+    ACTION_START_EVENTS            = 5,
 };
 
 enum data
@@ -247,6 +248,15 @@ struct boss_fallen_protectors : public ScriptedAI
                     if (prot->isAlive())
                         prot->AI()->DoAction(ACTION_RESET_EVENTS);
     }
+
+    void StartEvents()
+    {
+        for (int32 i = 0; i < 3; i++)
+            if (Creature* prot = me->GetCreature(*me, instance->GetData64(protectors[i])))
+                if (me->GetEntry() != prot->GetEntry())
+                    if (prot->isAlive() && !prot->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
+                        prot->AI()->DoAction(ACTION_START_EVENTS);
+    }
 };
 
 //Rook Stonetoe
@@ -355,6 +365,7 @@ public:
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->RemoveAllAreaObjects();
                 me->ReAttackWithZone();
+                StartEvents();
                 events.ScheduleEvent(EVENT_VENGEFUL_STRIKE, urand(10000, 20000));
                 events.ScheduleEvent(EVENT_CORRUPTED_BREW, urand(2000, 5000));
                 events.ScheduleEvent(EVENT_CLASH, urand(20000, 30000));
@@ -370,6 +381,11 @@ public:
             case ACTION_RESET_EVENTS:
                 me->InterruptNonMeleeSpells(true);
                 events.Reset();
+                break;
+            case ACTION_START_EVENTS:
+                events.ScheduleEvent(EVENT_VENGEFUL_STRIKE, urand(10000, 20000));
+                events.ScheduleEvent(EVENT_CORRUPTED_BREW, urand(2000, 5000));
+                events.ScheduleEvent(EVENT_CLASH, urand(20000, 30000));
                 break;
             }
         }
@@ -535,6 +551,7 @@ public:
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->RemoveAllAreaObjects();
                 me->ReAttackWithZone();
+                StartEvents();
                 events.ScheduleEvent(EVENT_GARROTE, 5000);
                 events.ScheduleEvent(EVENT_GOUGE, urand(2000, 5000));
                 events.ScheduleEvent(EVENT_POISON_NOXIOUS, urand(20000, 30000));
@@ -550,6 +567,11 @@ public:
             case ACTION_RESET_EVENTS:
                 me->InterruptNonMeleeSpells(true);
                 events.Reset();
+                break;
+            case ACTION_START_EVENTS:
+                events.ScheduleEvent(EVENT_GARROTE, 5000);
+                events.ScheduleEvent(EVENT_GOUGE, urand(2000, 5000));
+                events.ScheduleEvent(EVENT_POISON_NOXIOUS, urand(20000, 30000));
                 break;
             }
         }
@@ -749,6 +771,7 @@ public:
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->RemoveAllAreaObjects();
                 me->ReAttackWithZone();
+                StartEvents();
                 events.RescheduleEvent(EVENT_SHA_SEAR, 2000, 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(15000, 25000), 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_CALAMITY, urand(60000, 70000), 0, PHASE_BATTLE);
@@ -764,6 +787,11 @@ public:
             case ACTION_RESET_EVENTS:
                 me->InterruptNonMeleeSpells(true);
                 events.Reset();
+                break;
+            case ACTION_START_EVENTS:
+                events.RescheduleEvent(EVENT_SHA_SEAR, 2000);
+                events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(15000, 25000));
+                events.RescheduleEvent(EVENT_CALAMITY, urand(60000, 70000));
                 break;
             }
         }
@@ -1307,12 +1335,12 @@ public:
             if (GetCaster() && GetCaster()->ToCreature() && GetHitUnit())
             {
                 if (!GetCaster()->GetMap()->IsHeroic())
-                    GetCaster()->CastSpell(GetHitUnit(), corruptedbrew[0], true);
+                    GetCaster()->CastSpell(GetHitUnit(), corruptedbrew[0]);
                 else
                 {
                     uint8 mod = GetCaster()->ToCreature()->AI()->GetData(DATA_CORRUPTED_BREW_COUNT);
                     mod = mod > 8 ? 7 : mod--;
-                    GetCaster()->CastSpell(GetHitUnit(), corruptedbrew[mod], true);
+                    GetCaster()->CastSpell(GetHitUnit(), corruptedbrew[mod]);
                 }
             }
         }
