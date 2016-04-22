@@ -2601,17 +2601,6 @@ class spell_monk_guard_ox : public SpellScriptLoader
         {
             PrepareSpellScript(spell_monk_guard_ox_SpellScript);
 
-            void FilterTargets(std::list<WorldObject*>& targets)
-            {
-                targets.remove(GetCaster());
-                if (Unit* owner = GetCaster()->GetOwner())
-                    targets.remove(owner);
-                targets.remove_if(AuraCheck());
-                targets.remove_if(DistanceCheck(GetCaster(), 40.0f));
-                if (targets.size() > 1)
-                    targets.resize(1);
-            }
-
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
                 Unit* caster = GetCaster();
@@ -2628,7 +2617,6 @@ class spell_monk_guard_ox : public SpellScriptLoader
 
             void Register()
             {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_monk_guard_ox_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ALLY);
                 OnEffectHitTarget += SpellEffectFn(spell_monk_guard_ox_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
             }
 

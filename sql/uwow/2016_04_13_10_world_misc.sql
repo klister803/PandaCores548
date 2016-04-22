@@ -11,3 +11,5 @@ INSERT INTO `spell_proc_event` VALUES (13877, 0, 8, 2+131072+536870912+512, 1+83
 
 INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('51723', 'spell_rog_fan_of_knives_cp');
 INSERT INTO `spell_radius` (`spell_id`, `effectradius0`, `effectradius1`, `comments`) VALUES ('51723', '13', '13', '10 yards');
+
+INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `resizeType`, `count`, `maxcount`, `comments`) VALUES ('118605', '30', '1', '1', '1', 'Guard');
