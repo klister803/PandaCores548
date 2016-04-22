@@ -30,14 +30,14 @@ enum eSpells
     SPELL_VENGEFUL_STRIKE                   = 144396, //Vengeful Strikes
     SPELL_CORRUPTED_BREW_BASE               = 143019, //Corrupted Brew
 
-    SPELL_CORRUPTED_BREW                    = 145617,
-    SPELL_CORRUPTED_BREW2                   = 145615,
-    SPELL_CORRUPTED_BREW3                   = 145612,
-    SPELL_CORRUPTED_BREW4                   = 145611,
-    SPELL_CORRUPTED_BREW5                   = 145610,
-    SPELL_CORRUPTED_BREW6                   = 145609,
-    SPELL_CORRUPTED_BREW7                   = 145608,
-    SPELL_CORRUPTED_BREW8                   = 143021,
+    SPELL_CORRUPTED_BREW                    = 143021,
+    SPELL_CORRUPTED_BREW2                   = 145608,
+    SPELL_CORRUPTED_BREW3                   = 145609,
+    SPELL_CORRUPTED_BREW4                   = 145610,
+    SPELL_CORRUPTED_BREW5                   = 145611,
+    SPELL_CORRUPTED_BREW6                   = 145612,
+    SPELL_CORRUPTED_BREW7                   = 145615,
+    SPELL_CORRUPTED_BREW8                   = 145617,
 
     SPELL_CLASH                             = 143027, //Clash   cast 143028
     SPELL_CORRUPTION_KICK                   = 143007, //Corruption Kick
