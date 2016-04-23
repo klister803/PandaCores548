@@ -65,7 +65,7 @@ public:
         Player *player = handler->GetSession()->GetPlayer();
         uint32 accountId = handler->GetSession()->GetAccountId();
 
-        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 1;", accountId);
+        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 1 AND `state` = '0';", accountId);
         if(result)
         {
             do
@@ -94,7 +94,7 @@ public:
         if (!morph)
             return false;
 
-        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 1 AND itemEntry = '%u';", accountId, morph);
+        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 1 AND itemEntry = '%u' AND `state` = '0';", accountId, morph);
         if (player->isGameMaster() || result)
         {
             CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate(morph);
@@ -166,7 +166,7 @@ public:
         Player *player = handler->GetSession()->GetPlayer();
         uint32 accountId = handler->GetSession()->GetAccountId();
 
-        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 2;", accountId);
+        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 2 AND `state` = '0';", accountId);
         if(result)
         {
             do
@@ -209,13 +209,13 @@ public:
            return true;
         }
          
-        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 2 AND itemEntry = '%u';", accountId, mount);
+        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 2 AND itemEntry = '%u' AND `state` = '0';", accountId, mount);
         if (result)
         {
            player->CastSpell(player, 121805);
            
-           CharacterDatabase.PQuery("UPDATE character_donate set itemguid = '0' WHERE account = %u AND `type` = 2;", accountId); //clear
-           CharacterDatabase.PQuery("UPDATE character_donate set itemguid = '1' WHERE account = %u AND `type` = 2 AND itemEntry = '%u';", accountId, mount); //select active mount
+           CharacterDatabase.PQuery("UPDATE character_donate set itemguid = '0' WHERE account = %u AND `type` = 2 AND `state` = '0';", accountId); //clear
+           CharacterDatabase.PQuery("UPDATE character_donate set itemguid = '1' WHERE account = %u AND `type` = 2 AND itemEntry = '%u' AND `state` = '0';", accountId, mount); //select active mount
            //player->Mount(displayID, ci->VehicleId, mount);
            player->m_Events.AddEvent(new mount_set_display_fly(player), player->m_Events.CalculateTime(1600));
         }
@@ -275,7 +275,7 @@ public:
         Player *player = handler->GetSession()->GetPlayer();
         uint32 accountId = handler->GetSession()->GetAccountId();
 
-        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 3;", accountId);
+        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 3 AND `state` = '0';", accountId);
         if(result)
         {
             do
@@ -318,13 +318,13 @@ public:
            return true;
         }
          
-        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 3 AND itemEntry = '%u';", accountId, mount);
+        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 3 AND itemEntry = '%u' AND `state` = '0';", accountId, mount);
         if (result)
         {
            player->CastSpell(player, 58819);
            
-           CharacterDatabase.PQuery("UPDATE character_donate set itemguid = '0' WHERE account = %u AND `type` = 3;", accountId); //clear
-           CharacterDatabase.PQuery("UPDATE character_donate set itemguid = '1' WHERE account = %u AND `type` = 3 AND itemEntry = '%u';", accountId, mount); //select active mount
+           CharacterDatabase.PQuery("UPDATE character_donate set itemguid = '0' WHERE account = %u AND `type` = 3 AND `state` = '0';", accountId); //clear
+           CharacterDatabase.PQuery("UPDATE character_donate set itemguid = '1' WHERE account = %u AND `type` = 3 AND itemEntry = '%u' AND `state` = '0';", accountId, mount); //select active mount
 
            //player->Mount(displayID, ci->VehicleId, mount);
            player->m_Events.AddEvent(new mount_set_display_ground(player), player->m_Events.CalculateTime(1700));
@@ -390,7 +390,7 @@ class mount_set_display_fly : public BasicEvent
                {          
                           Player * pPlayer = player->GetSession()->GetPlayer();
                           uint32 accountId = pPlayer->GetSession()->GetAccountId();
-                          QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 2 AND itemguid = '1';", accountId);
+                          QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 2 AND itemguid = '1' AND `state` = '0';", accountId);
                           if (result)
                           {
                              do
@@ -426,7 +426,7 @@ class mount_set_display_fly : public BasicEvent
                {          
                           Player * pPlayer = player->GetSession()->GetPlayer();
                           uint32 accountId = pPlayer->GetSession()->GetAccountId();
-                          QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 3 AND itemguid = '1';", accountId);
+                          QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 3 AND itemguid = '1' AND `state` = '0';", accountId);
                           if (result)
                           {
                              do
