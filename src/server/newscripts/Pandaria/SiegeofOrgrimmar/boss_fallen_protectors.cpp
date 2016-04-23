@@ -203,7 +203,7 @@ struct boss_fallen_protectors : public ScriptedAI
                     if (prot->isAlive() && !prot->isInCombat())
                         DoZoneInCombat(prot, 150.0f);
 
-        if (instance->GetBossState(DATA_F_PROTECTORS) == NOT_STARTED)
+        if (instance->GetBossState(DATA_F_PROTECTORS) != IN_PROGRESS)
             instance->SetBossState(DATA_F_PROTECTORS, IN_PROGRESS);
     }
 
@@ -215,7 +215,7 @@ struct boss_fallen_protectors : public ScriptedAI
                     if (prot->isAlive() && prot->isInCombat())
                         prot->AI()->EnterEvadeMode();
 
-        if (instance->GetBossState(DATA_F_PROTECTORS) == IN_PROGRESS)
+        if (instance->GetBossState(DATA_F_PROTECTORS) != NOT_STARTED)
             instance->SetBossState(DATA_F_PROTECTORS, NOT_STARTED);
     }
 
@@ -227,7 +227,7 @@ struct boss_fallen_protectors : public ScriptedAI
                     if (prot->isAlive())
                         prot->Kill(prot, true);
 
-        if (instance->GetBossState(DATA_F_PROTECTORS) == IN_PROGRESS)
+        if (instance->GetBossState(DATA_F_PROTECTORS) != DONE)
             instance->SetBossState(DATA_F_PROTECTORS, DONE);
     }
 
