@@ -166,8 +166,6 @@ public:
     bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
-        uint32 menuData = vData[action].Submenu;
-        GetMenu(player, creature, menuData);
 
         switch (action)
         {
@@ -183,7 +181,9 @@ public:
                 return false;
                 break;
         }
- 
+        
+        uint32 menuData = vData[action].Submenu;
+        GetMenu(player, creature, menuData);
         uint8 slot = MainHand ? EQUIPMENT_SLOT_MAINHAND : EQUIPMENT_SLOT_OFFHAND;
         if (menuData == 0)
         {
