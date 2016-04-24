@@ -479,6 +479,7 @@ public:
     ~SpellInfo();
 
     SpellEffectInfo const* GetEffect(uint8 effect, uint8 difficulty = 0) const;
+    SpellEffectInfo * GetDifficultyEffectInfo(uint8 effect, uint8 difficulty);
     bool HasEffect(SpellEffects effect) const;
     bool HasAura(AuraType aura) const;
     bool HasAreaAuraEffect() const;

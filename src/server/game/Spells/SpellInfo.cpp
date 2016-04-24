@@ -1117,184 +1117,20 @@ SpellInfo::~SpellInfo()
     _UnloadImplicitTargetConditionLists();
 }
 
+SpellEffectInfo * SpellInfo::GetDifficultyEffectInfo(uint8 effect, uint8 difficulty)
+{
+    if (!difficulty)
+        return &Effects[effect];
+
+    SpellEffectInfoMap::iterator itr = EffectsMap.find(MAKE_PAIR16(effect, difficulty));
+    if (itr != EffectsMap.end())
+        return &itr->second;
+
+    return NULL;
+}
+
 SpellEffectInfo const* SpellInfo::GetEffect(uint8 effect, uint8 difficulty) const
 {
-    // custom spell effects (needed for rewrite targets, etc..)
-    switch (Id)
-    {
-    //Tsulong
-    case 122855: //Sun Breath
-    //StormBringer - ToT
-    case 139900: //Stormcloud 
-    case 139901: //Stormcloud dmg 
-    //Jinrokh
-    case 137261: //Lightning storm dmg 
-    case 140819: //Lightning storm dummy 
-    //Horridon
-    case 136740: //Double swipe 
-    case 136769: //Horridon charge
-    //Mallak
-    case 136992: //Bitting cold 
-    case 136991: //Bitting cold tr ef 
-    //Kazrajin
-    case 137122: //Reckless charge - point dmg 
-    //Tortos
-    case 134920: //Quake stomp 
-    case 133946: //Furios stone 
-    case 134011: //Spinning shell dmg 
-    case 135101: //Drain the weak dmg 
-    //Megaera
-    case 139822: //Cinders dot
-    case 139836: //Cinders void zone dmg
-    //Primordius
-    case 136220: //Acidic explosion 
-    //Iron Qon
-    case 134926: //Throw spear 
-    case 136324: //Rising Anger 
-    //Twin Consorts
-    case 137341: //Beast of Nightmares - target aura
-    case 137405: //Tears of Sun 
-    case 137419: //Ice Comet tr ef 
-    //Lei Shen
-    case 134912: //Decapitate base aura 
-    case 134916: //Decapitate tr ef dmg 
-    case 135695: //Static shock base aura 
-    case 135703: //Static shock tr ef dmg 
-    //Ra Den
-    case 138321: //Material of creation 
-    case 138334: //Fatal strike 
-    case 138329: //Unleashed anime 
-    //Immerseus
-    case 139832: //Submerge
-    case 143297: //Sha splash
-    case 130063: //Sha splash Dummy
-    case 145377: //Erupting water
-    case 143524: //Purified residue 
-    case 143462: //Sha pool
-    case 143461: //Sha pool dummy
-    case 113762: //Swirl 
-    case 143412: //Swirl dmg
-    case 125925: //Swirlr tr ef (Cone Searcher!)
-    case 143574: //Swelling corruption
-    case 143579: //Sha Corruption
-    //Fallen Protectors
-    case 143491: //Calamity
-    //Norushen
-    case 145212: //Unleashed Anger dmg
-    case 145214: //Unleashed Anger
-    case 145226: //Blind Hatred
-    case 145573: //Blind Hatred Dummy
-    case 145227: //Blind Hatred Dmg
-    case 145735: //Icy Fear Dmg
-    case 144421: //Corruption
-    case 144482: //Tear Reality
-    case 145073: //Residual Corruption
-    case 144628: //Titanic Smash
-    //Sha of Pride
-    case 146595: //Gift of Titans base spell
-    //Iron Juggernaut
-    case 144766: //Detonation sequence
-    case 144218: //Borer Drill Dmg
-    case 144458: //Scatter Laser
-    case 144776: //Ground Pound
-    case 146325: //Cutter Laser Visual Target
-    case 144918: //Cutter Laser Dmg
-    case 144555: //Mortar Barrage
-    //Korkron Dark Shaman
-    case 144215: //Froststorm strike
-    case 144334: //Iron Tomb dmg
-    case 144331: //Iron Prison tr ef
-    //General Nazgrim
-    case 143494: //Sundering Blow
-    case 143872: //Ravager SUmmon
-    case 144278: //Generate rage
-    case 143597: //Generate rage energize
-    case 143716: //Heroic Shockwave
-    case 143420: //Ironstorm
-    case 143882: //Hunter's Mark
-    //Malkorok
-    case 142890: //Blood Rage Dmg
-    case 142906: //Ancient Miasma Dmg
-    case 143848: //Essence of yshaarj
-    //Spoils of Pandaria
-    case 146257: //Path of Blossoms Dmg
-    case 146289: //Mass Paralyses
-    case 148515: //Shadow Volley Dummy
-    case 148582: //Jade Tempest AT
-    case 148583: //Jade Tempest Dmg
-    case 146824: //Unstable Spark Spawn Dummy
-    //Tok Bloodthirsty
-    case 147607: //Cannon Ball AT Dmg
-    case 147906: //Cannon Ball Dest Dmg
-    case 143428: //Tail lash
-    case 143430: //Clump Check
-    case 143445: //Fixate
-    case 144115: //Flame Coating
-    //Paragons of the Klaxxi
-    case 142638: //Devour
-    case 143339: //Injection
-    case 142948: //Aim Dummy
-    case 146982: //Enrage
-    case 143319: //Bloodletting
-    case 142598: //Apothecary: Volatile Poultice
-    case 142877: //Volatile Poultice
-    case 142228: //Reave
-    case 143337: //Mutate
-    case 143666: //Diminish
-    case 142735: //Reaction Blue
-    case 142950: //Fire
-    case 143362: //Feed
-    case 143709: //Store Kinetic Energy
-    case 142232: //Death From Above
-    case 142564: //Encase in Amber
-    case 143939: //Gouge
-    case 143941: //Mutilate
-    case 143974: //Shield Bash
-    case 144094: //Sonic Resonations Hisek
-    //Vicious Assaullt
-    case 143980:
-    case 143981:
-    case 143982:
-    case 143984:
-    case 143985:
-    //debuffs from klaxxi
-    case 142929:
-    case 142931:
-    case 143279:
-    case 143275:
-    case 142315:
-    case 143768:
-    //Heroic catalyst
-    case 142938: //Orange
-    case 142939: //Purple
-    case 142940: //Green
-    //Siegecrafter Blackfuse
-    case 143265: //Launch
-    case 143640: //Shockwave missile(trigger missile)
-    case 143641: //Shockwave missile
-    //Shockwave missile dmg
-    case 144658:
-    case 144660:
-    case 144661:
-    case 144662:
-    case 144663:
-    case 144664:
-    case 149146: //Explose crawler mine
-    case 143385: //Electrostatic charge
-    case 143830: //Disentegration laser AT
-    //Garrosh
-    case 144842: //Phase Two Transform
-    case 145599: //Player Touch of Yshaarj
-    case 144585: //Ancestral Fury
-    case 149032: //Consumed Hope
-    case 149033: //Consumed Faith
-    case 149011: //Consumed Courage
-    case 145246: //Phase Three Transform
-    case 145065: //Touch of Yshaarj
-    case 145171: //Empovered Touch of Yshaarj
-        return &Effects[effect];
-    }
-
     if (difficulty)
     {
         SpellEffectInfoMap::const_iterator itr = EffectsMap.find(MAKE_PAIR16(effect, difficulty));

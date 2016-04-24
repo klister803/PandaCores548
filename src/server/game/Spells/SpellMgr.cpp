@@ -4100,9 +4100,13 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
                     break;
                 case 108366: // Soul Leech
-                case 143597: //Generate rage energize
                 case 114714:// Grilled Plainshawk Leg
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_CASTER;
+                    break;
+                case 143597: //Generate rage energize
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                            eff->TargetA = TARGET_UNIT_CASTER;
                     break;
                 case 108942: // Phantasm
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_DISABLE_PROC;
@@ -4625,8 +4629,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 106613:
                 case 106624:
                 case 104855: // Overpacked Firework
-                case 145212: //Unleashed Anger dmg
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ANY;
+                    break;
+                case 145212: //Unleashed Anger dmg
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                            eff->TargetA = TARGET_UNIT_TARGET_ANY;
                     break;
                     // Wise Mari Wash Away
                 case 106334:
@@ -4796,10 +4804,17 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
                     break;
                 case 122855: //Sun Breath
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENTRY;
-                    spellInfo->Effects[0].TargetB = TARGET_UNIT_SRC_AREA_ENTRY;
+                {
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                        {
+                            eff->TargetA = TARGET_UNIT_CONE_ENTRY;
+                            eff->TargetB = TARGET_UNIT_SRC_AREA_ENTRY;
+                        }
+
                     spellInfo->Effects[1].Effect = 0;
                     break;
+                }
                 //Lei Shi
                 case 123121: //Spray
                     spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(7);//2yards
@@ -4821,11 +4836,18 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 139901: //Stormcloud tr ef - dmg
                     spellInfo->Effects[EFFECT_0].TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
                     break;
+                case 146257: //Path of Blossoms Dmg
                 case 137261: //Lightning storm tr ef - dmg
                 case 140819: //Lightning storm tr ef = dummy
-                    spellInfo->Effects[0].TargetA = 22;
-                    spellInfo->Effects[0].TargetB = 15;
+                {
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                        {
+                            eff->TargetA = TARGET_SRC_CASTER;
+                            eff->TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
+                        }
                     break;
+                }
                 //Minibosses
                 case 139900: //Stormcloud
                     spellInfo->Effects[0].TargetA = 1;
@@ -4846,48 +4868,83 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 136991: //Bitting cold tr ef 
                 case 144766: //Detonation sequence
                 case 136345: //Stormcloud tr ef
-                    spellInfo->Effects[EFFECT_0].TargetB = TARGET_UNIT_SRC_AREA_ALLY;
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                            eff->TargetB = TARGET_UNIT_SRC_AREA_ALLY;
                     break;
                 //Kazrajin
                 case 137122: //Reckless charge (point dmg)
-                    spellInfo->Effects[EFFECT_0].TargetA = 22;
-                    spellInfo->Effects[EFFECT_0].TargetB = 15;
-                    spellInfo->Effects[EFFECT_1].TargetA = 22;
-                    spellInfo->Effects[EFFECT_1].TargetB = 15;
-                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(8);//5yards
+                {
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                        {
+                            eff->TargetA = TARGET_SRC_CASTER;
+                            eff->TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
+                        }
+
+                    spellInfo->Effects[EFFECT_1].TargetA = TARGET_SRC_CASTER;
+                    spellInfo->Effects[EFFECT_1].TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
                     break;
+                }
                 //Tortos
                 case 134920: //Quake stomp
                     spellInfo->Effects[2].TriggerSpell = 0;
                     break;
                 case 134011: //Spinning shell dmg
-                    spellInfo->Effects[0].TargetA = 6;
-                    spellInfo->Effects[1].TargetA = 6;
-                    spellInfo->Effects[2].TargetA = 6;
+                {
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                    {
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                            eff->TargetA = TARGET_UNIT_TARGET_ENEMY;
+
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_1, d))
+                            eff->TargetA = TARGET_UNIT_TARGET_ENEMY;
+                    }
+
+                    spellInfo->Effects[EFFECT_2].TargetA = TARGET_UNIT_TARGET_ENEMY;
                     break;
-                case 133946: //Furios stone breath tr ef dmg(nerf)
-                    spellInfo->Effects[0].BasePoints = 34124;
-                    break;
+                }
                 case 135101: //Drain the weak tr ef dmg
-                    spellInfo->Effects[0].TargetA = 6;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ENEMY;
                     spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(2);
                     break;
                 //Megaera
                 case 139822: //Cinders dot
-                    spellInfo->Effects[0].TargetA = 6;
-                    spellInfo->Effects[0].TargetB = 0;
-                    spellInfo->Effects[1].TargetA = 6;
-                    spellInfo->Effects[1].TargetB = 0;
+                {
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                    {
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                        {
+                            eff->TargetA = TARGET_UNIT_TARGET_ENEMY;
+                            eff->TargetB = TARGET_NONE;
+                        }
+
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_1, d))
+                        {
+                            eff->TargetA = TARGET_UNIT_TARGET_ENEMY;
+                            eff->TargetB = TARGET_NONE;
+                        }
+                    }
                     break;
+                }
                 case 139836: //Cinders void zone dmg
-                    spellInfo->Effects[1].TargetB = 15;
+                {
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_1, d))
+                            eff->TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
                     break;
+                }
                 //Primordius
                 case 136220: //Acidic explosion tr ef dmg
-                    spellInfo->Effects[0].TargetB = 15;
+                {
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_1, d))
+                            eff->TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
+
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(8);
                     break;
+                }
                 //Dark Animus
                 case 138569: //Explosive slam
                     spellInfo->Effects[0].TargetB = 15;
@@ -4944,16 +5001,27 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetB = 15;
                     break;
                 case 143297: //Sha splash
-                    spellInfo->Effects[0].TargetA = 22;
-                    spellInfo->Effects[0].TargetB = 15;
+                {
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                        {
+                            eff->TargetA = TARGET_SRC_CASTER;
+                            eff->TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
+                            eff->RadiusEntry = sSpellRadiusStore.LookupEntry(7); //2yards
+                        }
+
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(65); // 1.5s
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(7); //2yards
                     break;
+                }
                 case 130063: //Sha splash Dummy
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21);
                     break;
                 case 145377: //Erupting water
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                            eff->TargetB = TARGET_UNIT_SRC_AREA_ALLY;
+                    break;
                 case 143524: //Purified residue
                     spellInfo->Effects[0].TargetB = TARGET_UNIT_SRC_AREA_ALLY;
                     break;
@@ -4963,11 +5031,18 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Attributes |= SPELL_ATTR0_HIDDEN_CLIENTSIDE;
                     break;
                 case 143412: //Swirl dmg
-                    spellInfo->Effects[0].TargetA = 1;
-                    spellInfo->Effects[1].TargetA = 1;
-                    spellInfo->Effects[0].Effect = 2;
-                    spellInfo->Effects[0].ApplyAuraName = 0;
+                {
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                        {
+                            eff->TargetA = TARGET_UNIT_CASTER;
+                            eff->Effect = SPELL_EFFECT_SCHOOL_DAMAGE;
+                            eff->ApplyAuraName = 0;
+                        }
+
+                    spellInfo->Effects[1].TargetA = TARGET_UNIT_CASTER;
                     break;
+                }
                 case 125925: //Swirlr tr ef (Cone Searcher)
                     spellInfo->Effects[0].BasePoints = 0;
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENEMY_110;
@@ -5033,20 +5108,25 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TriggerSpell = 145227;
                     break;
                 case 145227:    //Blind Hatred Dmg
-                    spellInfo->Effects[0].TargetB = 15;
-                    spellInfo->Effects[1].TargetB = 15;
+                {
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                            eff->TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
+
+                    spellInfo->Effects[EFFECT_1].TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
                     break;
+                }
                 case 145735:    //Icy Fear Dmg
+                case 145073:    //Residual Corruption
                     spellInfo->TargetAuraSpell = 0;
                     break;
                 case 144421:    //Corruption
-                    spellInfo->Effects[1].Effect = SPELL_EFFECT_APPLY_AURA;
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_1, d))
+                            eff->Effect = SPELL_EFFECT_APPLY_AURA;
                     break;
                 case 144482:    //Tear Reality
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENEMY_104;
-                    break;
-                case 145073:    //Residual Corruption
-                    spellInfo->TargetAuraSpell = 0;
                     break;
                 case 144628:    //Titanic Smash
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENEMY_24;
@@ -5059,9 +5139,15 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 //Iron Juggernaut
                 case 144218: //Borer Drill Dmg
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ANY;
+                {
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                        {
+                            eff->Effect = SPELL_EFFECT_APPLY_AURA;
+                            eff->TargetA = TARGET_UNIT_TARGET_ANY;
+                        }
                     break;
+                }
                 case 144458: //Scatter Laser
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
                     spellInfo->Effects[0].TargetB = NULL;
@@ -5105,7 +5191,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->ExcludeTargetAuraSpell = 0;
                     break;
                 //Spoils of Pandaria
-                case 146257: //Path of Blossoms Dmg
+                
                 case 146289: //Mass Paralyses
                     spellInfo->Effects[0].TargetA = 22;
                     spellInfo->Effects[0].TargetB = 15;
@@ -5128,11 +5214,18 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 //Thok Bloodthirsty
                 case 147607: //Cannon Ball AT Dmg
-                    spellInfo->Effects[0].TargetA = 25;
-                    spellInfo->Effects[0].TargetB = 0;
-                    spellInfo->Effects[1].TargetA = 25;
-                    spellInfo->Effects[1].TargetB = 0;
+                {
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                        {
+                            eff->TargetA = TARGET_UNIT_TARGET_ANY;
+                            eff->TargetB = TARGET_NONE;
+                        }
+
+                    spellInfo->Effects[EFFECT_1].TargetA = TARGET_UNIT_TARGET_ANY;
+                    spellInfo->Effects[EFFECT_1].TargetB = TARGET_NONE;
                     break;
+                }
                 case 147906: //Cannon Ball Dest Dmg
                     spellInfo->Effects[4].RadiusEntry = sSpellRadiusStore.LookupEntry(14);//8yards
                     break;
@@ -5140,12 +5233,18 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_CONE_BACK;
                     break;  
                 case 143430: //Clump Check
+                {
                     spellInfo->TargetAuraSpell = 0;
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(22); //200yards
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_DUMMY;
-                    spellInfo->Effects[0].TargetA = 22;
-                    spellInfo->Effects[0].TargetB = 15;
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                        {
+                            eff->RadiusEntry = sSpellRadiusStore.LookupEntry(22); //200yards
+                            eff->Effect = SPELL_EFFECT_DUMMY;
+                            eff->TargetA = TARGET_SRC_CASTER;
+                            eff->TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
+                        }
                     break;
+                }
                 case 143445: //Fixate
                     spellInfo->Effects[0].TargetA = 25;
                     spellInfo->Effects[0].TargetB = 0;
@@ -5187,10 +5286,14 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
                     break;
                 case 142228: //Reave
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(8); //5yards
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                            eff->RadiusEntry = sSpellRadiusStore.LookupEntry(8); //5yards
                     break;
                 case 143337: //Mutate
-                    spellInfo->Effects[4].Effect = 0;
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_4, d))
+                            eff->Effect = 0;
                     break;
                 case 143666: //Diminish
                     spellInfo->Effects[0].TargetA = 25;
@@ -5199,18 +5302,29 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].TargetB = 0;
                     break;
                 case 142735: //Reaction Blue
-                    spellInfo->Effects[0].TargetA = 25;
-                    spellInfo->Effects[0].TargetB = 0;
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                        {
+                            eff->TargetA = TARGET_UNIT_TARGET_ANY;
+                            eff->TargetB = TARGET_NONE;
+                        }
                     break;
                 case 142950: //Fire
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     break;
                 case 143362: //Feed
-                    spellInfo->Effects[0].TargetA = 25;
-                    spellInfo->Effects[0].TargetB = 0;
-                    spellInfo->Effects[1].TargetA = 25;
-                    spellInfo->Effects[1].TargetB = 0;
+                {
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                        {
+                            eff->TargetA = TARGET_UNIT_TARGET_ANY;
+                            eff->TargetB = TARGET_NONE;
+                        }
+
+                    spellInfo->Effects[EFFECT_1].TargetA = TARGET_UNIT_TARGET_ANY;
+                    spellInfo->Effects[EFFECT_1].TargetB = TARGET_NONE;
                     break;
+                }
                 case 143709: //Store Kinetic Energy
                     spellInfo->Effects[0].TargetA = 25;
                     spellInfo->Effects[0].TargetB = 0;
@@ -5232,8 +5346,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 144094: //Sonic Resonations Hisek
                     spellInfo->CastTimeMin = 0.7f;
                     spellInfo->CastTimeMax = 0.7f;
-                    spellInfo->Effects[0].TargetA = 22;
-                    spellInfo->Effects[0].TargetB = 30;
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                        {
+                            eff->TargetA = TARGET_SRC_CASTER;
+                            eff->TargetB = TARGET_UNIT_SRC_AREA_ALLY;
+                        }
                     break;
                 //Vicious Assaullt
                 case 143980:
@@ -5241,7 +5359,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 143982:
                 case 143984:
                 case 143985:
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENEMY_104;
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                            eff->TargetA = TARGET_UNIT_CONE_ENEMY_104;
                     break;
                 //debuffs from klaxxi
                 case 142929:
@@ -5281,10 +5401,14 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 144662:
                 case 144663:
                 case 144664:
-                    spellInfo->Effects[2].TargetB = 7;
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_2, d))
+                            eff->TargetB = TARGET_UNIT_SRC_AREA_ENTRY;
                     break;
                 case 149146: //Explose crawler mine
-                    spellInfo->Effects[0].TargetB = 7;
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                            eff->TargetB = TARGET_UNIT_SRC_AREA_ENTRY;
                     break;
                 case 143385: //Electrostatic charge
                     spellInfo->AuraInterruptFlags = 0;
@@ -5309,20 +5433,30 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TriggerSpell = 149003;
                     break;
                 case 149033: //Consumed Faith
-                    spellInfo->Effects[0].TriggerSpell = 148992;
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                            eff->TriggerSpell = 148992;
                     break;
                 case 149011: //Consumed Courage
                     spellInfo->Effects[0].TriggerSpell = 148982;
                     break;
                 case 145246: //Phase Three Transform
-                    spellInfo->Effects[2].BasePoints = 0;
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_2, d))
+                            eff->BasePoints = 0;
+
                     spellInfo->Effects[4].BasePoints = 100;
                     break;
                 case 145065: //Touch of Yshaarj
                     spellInfo->Effects[0].TargetA = 25;
                     spellInfo->Effects[0].TargetB = 0;
-                    spellInfo->Effects[1].TargetA = 25;
-                    spellInfo->Effects[1].TargetB = 0;
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_1, d))
+                        {
+                            eff->TargetA = TARGET_UNIT_TARGET_ANY;
+                            eff->TargetB = TARGET_NONE;
+                        }
+
                     spellInfo->Effects[2].TargetA = 25;
                     spellInfo->Effects[2].TargetB = 0;
                     spellInfo->Effects[3].TargetA = 25;
@@ -5345,10 +5479,23 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[11].TargetB = 0;
                     break;
                 case 145171: //Empovered Touch of Yshaarj
+                {
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                    {
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_1, d))
+                        {
+                            eff->TargetA = TARGET_UNIT_TARGET_ANY;
+                            eff->TargetB = TARGET_NONE;
+                        }
+
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_8, d))
+                        {
+                            eff->TargetA = TARGET_UNIT_TARGET_ANY;
+                            eff->TargetB = TARGET_NONE;
+                        }
+                    }
                     spellInfo->Effects[0].TargetA = 25;
                     spellInfo->Effects[0].TargetB = 0;
-                    spellInfo->Effects[1].TargetA = 25;
-                    spellInfo->Effects[1].TargetB = 0;
                     spellInfo->Effects[2].TargetA = 25;
                     spellInfo->Effects[2].TargetB = 0;
                     spellInfo->Effects[3].TargetA = 25;
@@ -5361,8 +5508,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[6].TargetB = 0;
                     spellInfo->Effects[7].TargetA = 25;
                     spellInfo->Effects[7].TargetB = 0;
-                    spellInfo->Effects[8].TargetA = 25;
-                    spellInfo->Effects[8].TargetB = 0;
                     spellInfo->Effects[9].TargetA = 25;
                     spellInfo->Effects[9].TargetB = 0;
                     spellInfo->Effects[10].TargetA = 25;
@@ -5372,8 +5517,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[12].TargetA = 25;
                     spellInfo->Effects[12].TargetB = 0;
                     break;
-
-
+                }
                 //World Bosses
                 //Sha of Anger
                 case 119487: //Anger
