@@ -19,6 +19,7 @@ public:
             { "use",            SEC_PLAYER,         false, &HandleUseMorphCommand,              "", NULL },
             { "remove",         SEC_PLAYER,         false, &HandleRemoveMorphCommand,           "", NULL },
             { "add",            SEC_GAMEMASTER,  false, &HandleAddMorphCommand,              "", NULL },
+            { "del",            SEC_GAMEMASTER,  false, &HandleDelMorphCommand,              "", NULL },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
         
@@ -27,6 +28,7 @@ public:
             { "list",           SEC_PLAYER,         false, &HandleListMountFlyCommand,             "", NULL },
             { "use",            SEC_PLAYER,         false, &HandleUseMountFlyCommand,              "", NULL },
             { "add",            SEC_GAMEMASTER,  false, &HandleAddMountFlyCommand,              "", NULL },
+            { "del",            SEC_GAMEMASTER,  false, &HandleDelMountFlyCommand,              "", NULL },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
         
@@ -35,6 +37,7 @@ public:
             { "list",           SEC_PLAYER,         false, &HandleListMountGroundCommand,             "", NULL },
             { "use",            SEC_PLAYER,         false, &HandleUseMountGroundCommand,              "", NULL },
             { "add",            SEC_GAMEMASTER,  false, &HandleAddMountGroundCommand,              "", NULL },
+            { "del",            SEC_GAMEMASTER,  false, &HandleDelMountGroundCommand,              "", NULL },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
         
@@ -65,7 +68,7 @@ public:
         Player *player = handler->GetSession()->GetPlayer();
         uint32 accountId = handler->GetSession()->GetAccountId();
 
-        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 1 AND `state` = '0';", accountId);
+        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = '%u' AND `type` = '1' AND `state` = '0';", accountId);
         if(result)
         {
             do
@@ -94,7 +97,7 @@ public:
         if (!morph)
             return false;
 
-        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 1 AND itemEntry = '%u' AND `state` = '0';", accountId, morph);
+        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = '%u' AND `type` = '1' AND itemEntry = '%u' AND `state` = '0';", accountId, morph);
         if (player->isGameMaster() || result)
         {
             CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate(morph);
@@ -158,6 +161,46 @@ public:
        handler->PSendSysMessage("Morph add %u for %u efirs", morphId, efirCount);
 
         return true;
+    }    
+    static bool HandleDelMorphCommand(ChatHandler* handler, const char* args)
+    {
+        char* nameStr;
+        char* morphStr;
+        handler->extractOptFirstArg((char*)args, &nameStr, &morphStr);
+
+        Player* player = handler->GetSession()->GetPlayer();
+        Player* target;
+        uint64 target_guid;
+        std::string target_name;
+        if (!handler->extractPlayerTarget(nameStr, &target, &target_guid, &target_name))
+            return false;
+        if (!target && target_guid)
+             target = sObjectMgr->GetPlayerByLowGUID(target_guid);
+        if (!target)
+            return false;
+        uint32 accountId = target->GetSession()->GetAccountId();
+
+        if (!morphStr)
+            return false;
+        uint32 morphId = atoi(morphStr);
+        
+        QueryResult result = CharacterDatabase.PQuery("SELECT efirCount FROM character_donate WHERE account = '%u' AND `type` = '1' AND itemEntry = '%u' AND `state` = '0';", accountId, morphId);
+        if (result)
+        {  
+            do
+            {
+                Field * fetch = result->Fetch();
+                uint32 efirCount = fetch[0].GetUInt32();
+
+                target->AddItem(38186, efirCount);
+                CharacterDatabase.PExecute("delete from `character_donate` WHERE account = '%u' AND `type` = '1' AND itemEntry = '%u' AND `state` = '0' and efirCount = '%u';", accountId, morphId, efirCount);
+                handler->PSendSysMessage("Morph %u delete and %u efirs give player", morphId, efirCount);
+            } while ( result->NextRow() );
+        }
+        else
+           handler->PSendSysMessage("Morph %u dont find", morphId);
+
+        return true;
     }
     
     /////////////// mounts 
@@ -166,7 +209,7 @@ public:
         Player *player = handler->GetSession()->GetPlayer();
         uint32 accountId = handler->GetSession()->GetAccountId();
 
-        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 2 AND `state` = '0';", accountId);
+        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = '%u' AND `type` = '2' AND `state` = '0';", accountId);
         if(result)
         {
             do
@@ -265,6 +308,47 @@ public:
         
        CharacterDatabase.PExecute("replace into `character_donate` (`owner_guid`, `itemguid`, `type`, `itemEntry`, `efircount`, `count`, `account`) value ('%u', '0', '2', '%u', '%u', '1', '%u');", target_guid, mountId, efirCount, accountId);
        handler->PSendSysMessage("Fly mount add %u for %u efirs", mountId, efirCount);
+
+        return true;
+    }
+    
+    static bool HandleDelMountFlyCommand(ChatHandler* handler, const char* args)
+    {
+        char* nameStr;
+        char* morphStr;
+        handler->extractOptFirstArg((char*)args, &nameStr, &morphStr);
+
+        Player* player = handler->GetSession()->GetPlayer();
+        Player* target;
+        uint64 target_guid;
+        std::string target_name;
+        if (!handler->extractPlayerTarget(nameStr, &target, &target_guid, &target_name))
+            return false;
+        if (!target && target_guid)
+             target = sObjectMgr->GetPlayerByLowGUID(target_guid);
+        if (!target)
+            return false;
+        uint32 accountId = target->GetSession()->GetAccountId();
+
+        if (!morphStr)
+            return false;
+        uint32 morphId = atoi(morphStr);
+        
+        QueryResult result = CharacterDatabase.PQuery("SELECT efirCount FROM character_donate WHERE account = %u AND `type` = 2 AND itemEntry = '%u' AND `state` = '0';", accountId, morphId);
+        if (result)
+        {  
+            do
+            {
+                Field * fetch = result->Fetch();
+                uint32 efirCount = fetch[0].GetUInt32();
+
+                target->AddItem(38186, efirCount);
+                CharacterDatabase.PExecute("delete from `character_donate` WHERE account = %u AND `type` = 2 AND itemEntry = '%u' AND `state` = '0' and efirCount = '%u';", accountId, morphId, efirCount);
+                handler->PSendSysMessage("Fly mount %u delete and %u efirs give player", morphId, efirCount);
+            } while ( result->NextRow() );
+        }
+        else
+           handler->PSendSysMessage("Fly mount %u dont find", morphId);
 
         return true;
     }
@@ -375,6 +459,47 @@ public:
         
        CharacterDatabase.PExecute("replace into `character_donate` (`owner_guid`, `itemguid`, `type`, `itemEntry`, `efircount`, `count`, `account`) value ('%u', '0', '3', '%u', '%u', '1', '%u');", target_guid, mountId, efirCount, accountId);
        handler->PSendSysMessage("Ground mount add %u for %u efirs", mountId, efirCount);
+
+        return true;
+    }
+    
+    static bool HandleDelMountGroundCommand(ChatHandler* handler, const char* args)
+    {
+        char* nameStr;
+        char* morphStr;
+        handler->extractOptFirstArg((char*)args, &nameStr, &morphStr);
+
+        Player* player = handler->GetSession()->GetPlayer();
+        Player* target;
+        uint64 target_guid;
+        std::string target_name;
+        if (!handler->extractPlayerTarget(nameStr, &target, &target_guid, &target_name))
+            return false;
+        if (!target && target_guid)
+             target = sObjectMgr->GetPlayerByLowGUID(target_guid);
+        if (!target)
+            return false;
+        uint32 accountId = target->GetSession()->GetAccountId();
+
+        if (!morphStr)
+            return false;
+        uint32 morphId = atoi(morphStr);
+        
+        QueryResult result = CharacterDatabase.PQuery("SELECT efirCount FROM character_donate WHERE account = %u AND `type` = 3 AND itemEntry = '%u' AND `state` = '0';", accountId, morphId);
+        if (result)
+        {  
+            do
+            {
+                Field * fetch = result->Fetch();
+                uint32 efirCount = fetch[0].GetUInt32();
+
+                target->AddItem(38186, efirCount);
+                CharacterDatabase.PExecute("delete from `character_donate` WHERE account = %u AND `type` = 3 AND itemEntry = '%u' AND `state` = '0' and efirCount = '%u';", accountId, morphId, efirCount);
+                handler->PSendSysMessage("Ground mount %u delete and %u efirs give player", morphId, efirCount);
+            } while ( result->NextRow() );
+        }
+        else
+           handler->PSendSysMessage("Ground mount %u don`t find", morphId);
 
         return true;
     }
