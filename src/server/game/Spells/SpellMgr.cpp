@@ -5890,6 +5890,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->ExplicitTargetMask = TARGET_FLAG_UNIT_MASK;
                     break;
             }
+
+            if (spellInfo->IsNotProcSpell())
+                spellInfo->AttributesEx6 |= SPELL_ATTR6_CANT_PROC;
         }
     }
 

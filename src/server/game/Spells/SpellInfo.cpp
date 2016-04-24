@@ -3728,8 +3728,6 @@ bool SpellInfo::CanSpellProc(Unit* target, uint32 mask, Item* m_CastItem) const
          return false;
     if (IsPassive())
          return false;
-    if (IsNotProcSpell())
-         return false;
     
     return true;
 }
