@@ -20,7 +20,7 @@
 #include "ScriptPCH.h"
 #include "Player.h"
 
-#define DEFAULT_MESSAGE 907
+#define DEFAULT_MESSAGE 100000
 
 struct VisualData
 {
@@ -132,7 +132,6 @@ public:
             itemTemplate->SubClass == ITEM_SUBCLASS_WEAPON_MISCELLANEOUS ||
             itemTemplate->SubClass == ITEM_SUBCLASS_WEAPON_THROWN ||
             itemTemplate->SubClass == ITEM_SUBCLASS_WEAPON_CROSSBOW ||
-            itemTemplate->SubClass == ITEM_SUBCLASS_WEAPON_WAND ||
             itemTemplate->SubClass == ITEM_SUBCLASS_WEAPON_FISHING_POLE ||
 			   itemTemplate->SubClass == ITEM_SUBCLASS_WEAPON_Obsolete)
             return;
