@@ -128,7 +128,6 @@ public:
             itemTemplate->SubClass == ITEM_SUBCLASS_WEAPON_EXOTIC ||
             itemTemplate->SubClass == ITEM_SUBCLASS_WEAPON_EXOTIC2 ||
             itemTemplate->SubClass == ITEM_SUBCLASS_WEAPON_MISCELLANEOUS ||
-            itemTemplate->SubClass == ITEM_SUBCLASS_WEAPON_THROWN ||
             itemTemplate->SubClass == ITEM_SUBCLASS_WEAPON_FISHING_POLE ||
 			   itemTemplate->SubClass == ITEM_SUBCLASS_WEAPON_Obsolete)
             return;
