@@ -177,14 +177,11 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 _Reset();
                 DespawnObjects();
                 me->SetReactState(REACT_DEFENSIVE);
-                me->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
-                me->RemoveAurasDueToSpell(SPELL_ACCELERATION);
-                me->RemoveAurasDueToSpell(SPELL_FIXATE_PL);
-                me->RemoveAurasDueToSpell(SPELL_BLOOD_FRENZY);
-                me->RemoveAurasDueToSpell(SPELL_BLOOD_FRENZY_TE);
-                me->setPowerType(POWER_ENERGY);
-                me->SetMaxPower(POWER_ENERGY, 100);
-                me->SetPower(POWER_ENERGY, 0);
+                me->RemoveAllAuras();
+                me->SetCreateMana(100);
+                me->setPowerType(POWER_MANA);
+                me->SetMaxPower(POWER_MANA, 100);
+                me->SetPower(POWER_MANA, 0);
                 findtargets = 0;
                 fplGuid = 0;  
                 jGuid = 0;   
@@ -1031,17 +1028,10 @@ public:
 
         void OnPeriodic(AuraEffect const* aurEff)
         {
-            if (GetCaster())
-            {
-                if (GetCaster()->GetPower(POWER_ENERGY) == 100)
-                {
-                    if (!GetCaster()->HasUnitState(UNIT_STATE_CASTING))
-                    {
-                        GetCaster()->SetPower(POWER_ENERGY, 0);
-                        GetCaster()->CastSpell(GetCaster(), SPELL_DEAFENING_SCREECH);
-                    }
-                }
-            }
+            if (Unit* caster = GetCaster())
+                if (caster->GetPower(POWER_MANA) == 100)
+                    if (!caster->HasUnitState(UNIT_STATE_CASTING))
+                        caster->CastSpell(GetCaster(), SPELL_DEAFENING_SCREECH);
         }
 
         void Register()
