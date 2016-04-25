@@ -914,6 +914,8 @@ public:
                     HandleGameObject(fprotectorexdoorGUID, true);
                     if (Creature* bq = instance->GetCreature(LorewalkerChoGUIDtmp))
                         bq->AI()->SetData(DATA_F_PROTECTORS, DONE);
+                    if (Creature* cho = instance->SummonCreature(NPC_LOREWALKER_CHO2, LorewalkerChoSpawn[2]))
+                        cho->setActive(true);
                 }
                 break;
             case DATA_NORUSHEN:
