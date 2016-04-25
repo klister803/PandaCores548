@@ -179,7 +179,6 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 me->SetReactState(REACT_DEFENSIVE);
                 me->RemoveAllAuras();
                 me->SetCreateMana(100);
-                me->setPowerType(POWER_MANA);
                 me->SetMaxPower(POWER_MANA, 100);
                 me->SetPower(POWER_MANA, 0);
                 findtargets = 0;
@@ -345,7 +344,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     me->getThreatManager().resetAllAggro();
                     me->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
                     me->RemoveAurasDueToSpell(SPELL_ACCELERATION);
-                    me->SetPower(POWER_ENERGY, 0);
+                    me->SetPower(POWER_MANA, 0);
                     DoCast(me, SPELL_BLOOD_FRENZY_KB, true);
                     DoCast(me, SPELL_BLOOD_FRENZY, true);
                     if (Creature* kj = me->SummonCreature(NPC_KORKRON_JAILER, kjspawnpos))
