@@ -114,11 +114,18 @@ enum PhaseEvents
     EVENT_SPELL_GIFT_OF_THE_TITANS      = 7,
     EVENT_PRIDE_GENERATION              = 8,
     EVENT_RIFT_OF_CORRUPTION            = 10,
+    EVENT_SPELL_RIFT_OF_CORRUPTION_AT   = 11,
+    EVENT_SPELL_RIFT_OF_CORRUPTION_DMG  = 12,
 };
 
 enum Phases
 {
     PHASE_BATTLE                        = 1,
+};
+
+enum SActions
+{
+    ACTION_CLOSE_RIFT_OF_CORRUPTION     = 1,
 };
 
 class TankFilter
@@ -352,9 +359,9 @@ class boss_sha_of_pride : public CreatureScript
                             break;
                         case EVENT_RIFT_OF_CORRUPTION:
                         {
-                            float x, y, z;
-                            me->GetRandomPoint(*me, 50.0f, x, y, z);
-                            me->SummonCreature(NPC_RIFT_OF_CORRUPTION, x, y, z, 0.0f);
+                            float x, y;
+                            GetPosInRadiusWithRandomOrientation(me, 55.0f, x, y);
+                            me->SummonCreature(NPC_RIFT_OF_CORRUPTION, x, y, me->GetPositionZ(), 0.0f);
                             events.RescheduleEvent(EVENT_RIFT_OF_CORRUPTION, urand(10000, 20000), 0, PHASE_BATTLE);
                             break;
                         }
@@ -1074,42 +1081,39 @@ class npc_sha_of_pride_rift_of_corruption : public CreatureScript
 public:
     npc_sha_of_pride_rift_of_corruption() : CreatureScript("npc_sha_of_pride_rift_of_corruption") { }
 
-    enum localEvent
-    {
-        EVENT_SPELL_RIFT_OF_CORRUPTION_AT   = 1,
-        EVENT_SPELL_RIFT_OF_CORRUPTION_DMG  = 2,
-    };
-
     struct npc_sha_of_pride_rift_of_corruptionAI : public ScriptedAI
     {
         npc_sha_of_pride_rift_of_corruptionAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
-            SetCombatMovement(false);
-        }
-
-        void Reset()    //18:37:42.000
-        {
-            me->CastSpell(me, SPELL_RIFT_OF_CORRUPTION, true);                //18:37:42.000
-            me->CastSpell(me, SPELL_UNSTABLE_CORRUPTION, true);               //18:37:42.000 /for check where is player.
-            events.RescheduleEvent(EVENT_SPELL_RIFT_OF_CORRUPTION_AT, 2000);  //18:37:44.000
-            events.RescheduleEvent(EVENT_SPELL_RIFT_OF_CORRUPTION_DMG, 5000); //18:37:47.000
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
         }
 
         bool onSpawn;
         EventMap events;
         InstanceScript* instance;
 
-        void MoveInLineOfSight(Unit* who)
+        void Reset()
         {
-            if (who->GetTypeId() != TYPEID_PLAYER)
-                return;
+            DoCast(me, SPELL_UNSTABLE_CORRUPTION, true);
+            events.ScheduleEvent(EVENT_SPELL_RIFT_OF_CORRUPTION_AT, 2000);
+        }
 
-            if (me->GetDistance(who) > 2.0f || who->HasAura(SPELL_WEAKENED_RESOLVE))
-                return;
+        void EnterCombat(Unit* who){}
 
-            who->CastSpell(who, SPELL_WEAKENED_RESOLVE, true);
-            me->DespawnOrUnsummon();
+        void EnterEvadeMode(){}
+
+        void DoAction(int32 const action)
+        {
+            if (action == ACTION_CLOSE_RIFT_OF_CORRUPTION)
+            {
+                events.Reset();
+                me->RemoveAurasDueToSpell(SPELL_RIFT_OF_CORRUPTION);
+                me->RemoveAurasDueToSpell(SPELL_UNSTABLE_CORRUPTION);
+                DoCast(me, SPELL_RIFT_OF_CORRUPTION, true);
+                me->DespawnOrUnsummon();
+            }
         }
 
         void UpdateAI(uint32 diff)
@@ -1120,17 +1124,29 @@ public:
             {
                 switch(eventId)
                 {
-                    case EVENT_SPELL_RIFT_OF_CORRUPTION_AT:
-                        me->CastSpell(me, SPELL_RIFT_OF_CORRUPTION_AT, true);
-                        break;
-                    case EVENT_SPELL_RIFT_OF_CORRUPTION_DMG:
-                        if (Creature * sha = instance->instance->GetCreature(instance->GetData64(NPC_SHA_OF_PRIDE)))
-                            if (Unit* target = sha->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
-                                me->CastSpell(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), SPELL_RIFT_OF_CORRUPTION_DMG);
-                        events.RescheduleEvent(EVENT_SPELL_RIFT_OF_CORRUPTION_DMG, 5000); //18:37:47.000
-                        break;
-                    default:
-                        break;
+                case EVENT_SPELL_RIFT_OF_CORRUPTION_AT:
+                    DoCast(me, SPELL_RIFT_OF_CORRUPTION_AT, true);
+                    events.ScheduleEvent(EVENT_SPELL_RIFT_OF_CORRUPTION_DMG, 3000);
+                    break;
+                case EVENT_SPELL_RIFT_OF_CORRUPTION_DMG:
+                {
+                    std::list<Player*> pllist;
+                    pllist.clear();
+                    GetPlayerListInGrid(pllist, me, 150.0f);
+                    if (!pllist.empty())
+                    {
+                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                        {
+                            if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
+                            {
+                                DoCast(*itr, SPELL_RIFT_OF_CORRUPTION_DMG);
+                                break;
+                            }
+                        }
+                    }
+                    events.ScheduleEvent(EVENT_SPELL_RIFT_OF_CORRUPTION_DMG, 8000);
+                }
+                break;
                 }
             }
         }
@@ -1572,6 +1588,37 @@ public:
     }
 };
 
+//147207
+class spell_weakened_resolve : public SpellScriptLoader
+{
+public:
+    spell_weakened_resolve() : SpellScriptLoader("spell_weakened_resolve") { }
+
+    class spell_weakened_resolve_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_weakened_resolve_AuraScript);
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetTarget())
+            {
+                if (Creature* roc = GetTarget()->FindNearestCreature(NPC_RIFT_OF_CORRUPTION, 5.0f, true))
+                    roc->AI()->DoAction(ACTION_CLOSE_RIFT_OF_CORRUPTION);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_weakened_resolve_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_weakened_resolve_AuraScript();
+    }
+};
+
 void AddSC_boss_sha_of_pride()
 {
     new boss_sha_of_pride();
@@ -1592,4 +1639,5 @@ void AddSC_boss_sha_of_pride()
     new spell_generic_modifier_pride();
     new spell_last_word();
     new spell_corrupted_prison();
+    new spell_weakened_resolve();
 }

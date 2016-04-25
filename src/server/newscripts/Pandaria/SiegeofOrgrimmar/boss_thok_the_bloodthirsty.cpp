@@ -1034,8 +1034,13 @@ public:
             if (GetCaster())
             {
                 if (GetCaster()->GetPower(POWER_ENERGY) == 100)
+                {
                     if (!GetCaster()->HasUnitState(UNIT_STATE_CASTING))
+                    {
+                        GetCaster()->SetPower(POWER_ENERGY, 0);
                         GetCaster()->CastSpell(GetCaster(), SPELL_DEAFENING_SCREECH);
+                    }
+                }
             }
         }
 
