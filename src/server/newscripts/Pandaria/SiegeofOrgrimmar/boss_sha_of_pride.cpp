@@ -162,6 +162,7 @@ class boss_sha_of_pride : public CreatureScript
             void Reset()
             {
                 _Reset();
+                me->SetReactState(REACT_DEFENSIVE);
                 //Debug
                 /*me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->SetReactState(REACT_AGGRESSIVE);
@@ -197,7 +198,7 @@ class boss_sha_of_pride : public CreatureScript
                 {
                     ZoneTalk(TEXT_GENERIC_0, 0);
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                    me->SetReactState(REACT_AGGRESSIVE);
+                    me->SetReactState(REACT_DEFENSIVE);
                     SetCombatMovement(false);
                     //me->SetUnitMovementFlags(1536);
                     //me->AddExtraUnitMovementFlag(15);
@@ -1470,7 +1471,7 @@ public:
     }
 };
 
-//144774, 144379, 144788, 147198, 144911, 146818, 144836, 145320 
+//144774, 144379, 144788, 147198, 144911, 146818, 144836, 145320, 147207
 class spell_generic_modifier_pride : public SpellScriptLoader
 {
 public:

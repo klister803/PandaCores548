@@ -352,6 +352,8 @@ public:
 
         void OnPlayerEnter(Player* player)
         {
+            DoSummoneEventCreatures();
+
             if (!TeamInInstance)
                 TeamInInstance = player->GetTeam();
             
@@ -368,8 +370,6 @@ public:
             if (onInitEnterState)
                 return;
             onInitEnterState = true;
-
-            DoSummoneEventCreatures();
 
             if (!transport)
                 transport = CreateTransport(TeamInInstance == HORDE ? GO_SHIP_HORDE : GO_SHIP_ALLIANCE, TRANSPORT_PERIOD);
@@ -426,7 +426,6 @@ public:
                 if (Creature* cho = instance->SummonCreature(NPC_LOREWALKER_CHO, LorewalkerChoSpawn[0]))
                 {
                     cho->setActive(true);
-                    LorewalkerChoGUIDtmp = cho->GetGUID();
                     cho->AI()->SetData(DATA_IMMERSEUS, NOT_STARTED);
                 }
             }
@@ -435,33 +434,25 @@ public:
                 if (Creature* cho = instance->SummonCreature(NPC_LOREWALKER_CHO, LorewalkerChoSpawn[1]))
                 {
                     cho->setActive(true);
-                    LorewalkerChoGUIDtmp = cho->GetGUID();
                     cho->AI()->SetData(DATA_F_PROTECTORS, NOT_STARTED);
                 }
             }
             else if (GetBossState(DATA_NORUSHEN) != DONE)
             {
                 if (Creature* cho = instance->SummonCreature(NPC_LOREWALKER_CHO2, LorewalkerChoSpawn[2]))
-                {
                     cho->setActive(true);
-                    LorewalkerChoGUIDtmp = cho->GetGUID();
-                }
             }
             else if (GetBossState(DATA_SHA_OF_PRIDE) != DONE)
             {
                 if (Creature * c = instance->SummonCreature(NPC_SHA_NORUSHEN, Sha_of_pride_Norushe))
                     c->setActive(true);
                 if (Creature * c = instance->SummonCreature(NPC_LOREWALKER_CHO3, LorewalkerChoSpawn[3]))
-                {
-                    LorewalkerChoGUIDtmp = c->GetGUID();
                     c->setActive(true);
-                }
             }
             else if (GetBossState(DATA_GALAKRAS) != DONE)
             {
                 if (Creature * c = instance->SummonCreature(NPC_LOREWALKER_CHO3, LorewalkerChoSpawn[4]))
                 {
-                    LorewalkerChoGUIDtmp = c->GetGUID();
                     c->setActive(true);
                     c->AI()->DoAction(EVENT_2);
                 }
@@ -472,6 +463,11 @@ public:
         {
             switch (creature->GetEntry())
             {
+                case NPC_LOREWALKER_CHO:
+                case NPC_LOREWALKER_CHO2:
+                case NPC_LOREWALKER_CHO3:
+                    LorewalkerChoGUIDtmp = creature->GetGUID();
+                    break;
                 case NPC_IMMERSEUS:
                 case NPC_PUDDLE_POINT:
                 case NPC_GOLD_LOTOS_MOVER:
@@ -914,8 +910,6 @@ public:
                     HandleGameObject(fprotectorexdoorGUID, true);
                     if (Creature* bq = instance->GetCreature(LorewalkerChoGUIDtmp))
                         bq->AI()->SetData(DATA_F_PROTECTORS, DONE);
-                    if (Creature* cho = instance->SummonCreature(NPC_LOREWALKER_CHO2, LorewalkerChoSpawn[2]))
-                        cho->setActive(true);
                 }
                 break;
             case DATA_NORUSHEN:
