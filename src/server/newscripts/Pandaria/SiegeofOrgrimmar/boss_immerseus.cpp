@@ -276,8 +276,9 @@ public:
         {
             instance = creature->GetInstanceScript();
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-            if (Creature* cho = instance->instance->GetCreature(instance->GetData64(NPC_LOREWALKER_CHO)))
-                cho->AI()->SetData(DATA_IMMERSEUS, IN_PROGRESS);
+            if (me->isAlive())
+                if (Creature* cho = instance->instance->GetCreature(instance->GetData64(NPC_LOREWALKER_CHO)))
+                    cho->AI()->SetData(DATA_IMMERSEUS, IN_PROGRESS);
         }
 
         InstanceScript* instance;
