@@ -352,8 +352,6 @@ public:
 
         void OnPlayerEnter(Player* player)
         {
-            DoSummoneEventCreatures();
-
             if (!TeamInInstance)
                 TeamInInstance = player->GetTeam();
             
@@ -370,6 +368,8 @@ public:
             if (onInitEnterState)
                 return;
             onInitEnterState = true;
+
+            DoSummoneEventCreatures();
 
             if (!transport)
                 transport = CreateTransport(TeamInInstance == HORDE ? GO_SHIP_HORDE : GO_SHIP_ALLIANCE, TRANSPORT_PERIOD);
