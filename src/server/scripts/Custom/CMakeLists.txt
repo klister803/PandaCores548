@@ -25,6 +25,7 @@ set(scripts_STAT_SRCS
     Custom/teleguy.cpp
     Custom/npc_visualweapon_mop.cpp
     Custom/command_donate_mount.cpp
+     Custom/custom_event.cpp
 )
 
 message("  -> Prepared: Custom")

@@ -36,6 +36,7 @@ void AddSC_npc_beastmaster();
 void AddSC_npc_teleguy();
 void AddSC_npc_visualweapon();
 void AddSC_donate_mount();
+void AddSC_custum_event();
 
 // spells
 void AddSC_deathknight_spell_scripts();
@@ -1910,5 +1911,6 @@ void AddCustomScripts()
     AddSC_traffic_commandscript();
     AddSC_npc_visualweapon();
     AddSC_donate_mount();
+    AddSC_custum_event();
 #endif
 }
