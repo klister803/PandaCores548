@@ -1,4 +1,9 @@
 #include "ScriptPCH.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "SpellMgr.h"
+#include "LFGMgr.h"
+#include "Group.h"
 
 class npc_custom_starter : public CreatureScript  //250025
 {
@@ -56,8 +61,8 @@ class npc_custom_starter : public CreatureScript  //250025
                 switch (phase) {
                 case 0:
                     if (timer < diff) {
-                        if (Player* player = me->SelectNearestPlayer(20.0f))
-                           player->Say("Ты нас понимаешь?", LANG_UNIVERSAL);
+                        Player* player = SelectRandomPlayer(80.0f, false);
+                           player->Say("Ты нас понимаешь?", 0);
                         phase++;
                         timer = 5000;
                     }
@@ -65,8 +70,8 @@ class npc_custom_starter : public CreatureScript  //250025
                     break;
                 case 1:
                     if (timer < diff) {
-                        if (Player* player = me->SelectNearestPlayer(20.0f))
-                           player->Yell("МЯУ!", LANG_UNIVERSAL);
+                        Player* player = SelectRandomPlayer(80.0f, false);
+                           player->Yell("МЯУ!", 0);
                         phase++;
                         timer = 1000;
                     }
@@ -90,8 +95,8 @@ class npc_custom_starter : public CreatureScript  //250025
                 case 0:
                     if (timer < diff) {
                         me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-                        if (Player* player = me->SelectNearestPlayer(20.0f))
-                           player->Say("Прости нас, пожалуйста, мы не хотели!", LANG_UNIVERSAL);
+                        Player* player = SelectRandomPlayer(80.0f, false);
+                           player->Say("Прости нас, пожалуйста, мы не хотели!", 0);
                         phase++;
                         timer = 5000;
                     }
@@ -108,8 +113,8 @@ class npc_custom_starter : public CreatureScript  //250025
                     break;                  
                 case 2:
                     if (timer < diff) {
-                        if (Player* player = me->SelectNearestPlayer(80.0f))
-                           player->Say("Послушай, а где мы?", LANG_UNIVERSAL);
+                        Player* player = SelectRandomPlayer(80.0f, false);
+                           player->Say("Послушай, а где мы?", 0);
                         phase++;
                         timer = 5000;
                     }
@@ -125,8 +130,8 @@ class npc_custom_starter : public CreatureScript  //250025
                     break;                
                 case 4:
                     if (timer < diff) {
-                        if (Player* player = me->SelectNearestPlayer(20.0f))
-                           player->Say("Пленники? Но чьи?", LANG_UNIVERSAL);
+                        Player* player = SelectRandomPlayer(80.0f, false);
+                           player->Say("Пленники? Но чьи?", 0);
                         phase++;
                         timer = 5000;
                     }
@@ -142,8 +147,8 @@ class npc_custom_starter : public CreatureScript  //250025
                     break;                
                 case 6:
                     if (timer < diff) {
-                        if (Player* player = me->SelectNearestPlayer(20.0f))
-                           player->Say("Алиса...? Это кто еще?", LANG_UNIVERSAL);
+                        Player* player = SelectRandomPlayer(80.0f, false);
+                           player->Say("Алиса...? Это кто еще?", 0);
                         phase++;
                         timer = 5000;
                     }
@@ -187,26 +192,26 @@ class npc_custom_starter : public CreatureScript  //250025
                               {
                                  rand = urand (1, 8);
                                  if (rand == 1)
-                                    plr->Yell("Как нам быть?", LANG_UNIVERSAL);
+                                    plr->Yell("Как нам быть?", 0);
                                  if (rand == 2)
-                                    plr->Yell("ЧТО!?", LANG_UNIVERSAL);
+                                    plr->Yell("ЧТО!?", 0);
                                  if (rand == 3)
-                                    plr->Yell("МЫ ВСЕ УМРЁМ!", LANG_UNIVERSAL);
+                                    plr->Yell("МЫ ВСЕ УМРЁМ!", 0);
                                  if (rand == 4)
-                                    plr->Yell("Мы даже понятия не имеем где мы, а вдруг эта мышь водит нас за нос в своих целях? Лучше доверять человеку, чем вредителю!", LANG_UNIVERSAL);
+                                    plr->Yell("Мы даже понятия не имеем где мы, а вдруг эта мышь водит нас за нос в своих целях? Лучше доверять человеку, чем вредителю!", 0);
                                  if (rand == 5)
-                                    plr->Yell("Приключения!!!", LANG_UNIVERSAL);
+                                    plr->Yell("Приключения!!!", 0);
                                  if (rand == 6)
-                                    plr->Yell("Что вообще происходит? Я слакал.", LANG_UNIVERSAL);
+                                    plr->Yell("Что вообще происходит? Я слакал.", 0);
                                  if (rand == 7)
-                                    plr->Yell("А лут точно будет?", LANG_UNIVERSAL);
+                                    plr->Yell("А лут точно будет?", 0);
                                  if (rand == 8)
-                                    plr->Yell("УРААА!", LANG_UNIVERSAL);     
+                                    plr->Yell("УРААА!", 0);     
                               }                        
                            }
                        }
-                        if (Player* player = me->SelectNearestPlayer(20.0f))
-                           player->Say("Мужики... а... тут... крыса говорящая...", LANG_UNIVERSAL);                       
+                        Player* player = SelectRandomPlayer(80.0f, false);
+                           player->Say("Мужики... а... тут... крыса говорящая...", 0);                       
                         phase++;
                         timer = 9000;
                     }
@@ -231,8 +236,8 @@ class npc_custom_starter : public CreatureScript  //250025
                     break;                
                 case 13:
                     if (timer < diff) {
-                        if (Player* player = me->SelectNearestPlayer(20.0f))
-                           player->Say("Растения... Отобрали? Ты не шутишь?", LANG_UNIVERSAL);
+                        Player* player = SelectRandomPlayer(80.0f, false);
+                           player->Say("Растения... Отобрали? Ты не шутишь?", 0);
                         phase++;
                         timer = 5000;
                     }
@@ -248,8 +253,8 @@ class npc_custom_starter : public CreatureScript  //250025
                     break;                
                 case 15:
                     if (timer < diff) {
-                        if (Player* player = me->SelectNearestPlayer(20.0f))
-                           player->Say("Прямо сказка какая-то, мышь говорит, растения живые...", LANG_UNIVERSAL);
+                        Player* player = SelectRandomPlayer(80.0f, false);
+                           player->Say("Прямо сказка какая-то, мышь говорит, растения живые...", 0);
                         phase++;
                         timer = 5000;
                     }
@@ -259,10 +264,10 @@ class npc_custom_starter : public CreatureScript  //250025
                     if (timer < diff) {
                      std::list<Player*> targets;
                      GetPlayerListInGrid(targets, me, 40);
-                     Trinity::Containers::RandomResizeList(targets, 2);
+                     Trinity::Containers::RandomResizeList(targets, 1);
                      for (std::list<Player*>::iterator itr = targets.begin(); itr != targets.end(); ++itr)
                         if (!targets.empty())
-                                 (*itr)->Say("Спокойно! Не важно, Рилари, веди нас, мы поможем тебе. Надеюсь ты нас не подведешь.", LANG_UNIVERSAL);
+                                 (*itr)->Say("Спокойно! Не важно, Рилари, веди нас, мы поможем тебе. Надеюсь ты нас не подведешь.", 0);
                         phase++;
                         timer = 5000;
                     }
@@ -314,7 +319,31 @@ class npc_custom_starter : public CreatureScript  //250025
                     break;  
                 }
             }
-        }            
+        }
+
+
+        Player* SelectRandomPlayer(float range = 0.0f, bool checkLoS = true)
+        {
+            Map* map = me->GetMap();
+
+            Map::PlayerList const &PlayerList = map->GetPlayers();
+            if (PlayerList.isEmpty())
+                return NULL;
+
+            std::list<Player*> temp;
+            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                if ((me->IsWithinLOSInMap(i->getSource()) || !checkLoS) && me->getVictim() != i->getSource() &&
+                    me->IsWithinDistInMap(i->getSource(), range) && i->getSource()->isAlive())
+                    temp.push_back(i->getSource());
+
+            if (!temp.empty())
+            {
+                std::list<Player*>::const_iterator j = temp.begin();
+                advance(j, rand32()%temp.size());
+                return (*j);
+            }
+            return NULL;
+        }        
         
         };            
       
