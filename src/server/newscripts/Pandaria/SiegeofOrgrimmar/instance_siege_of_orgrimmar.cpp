@@ -334,8 +334,6 @@ public:
             CannonCount     = 0;
             SouthTowerCount = 0;
             NorthTowerCount = 0;
-
-            DoSummoneEventCreatures();
         }
 
         void FillInitialWorldStates(WorldPacket& data)
@@ -354,6 +352,8 @@ public:
 
         void OnPlayerEnter(Player* player)
         {
+            DoSummoneEventCreatures();
+
             if (!TeamInInstance)
                 TeamInInstance = player->GetTeam();
             
@@ -2220,9 +2220,6 @@ public:
 
         void Load(const char* data)
         {
-            if (Creature* cho = instance->GetCreature(LorewalkerChoGUIDtmp))
-                cho->DespawnOrUnsummon();
-
             if (!data)
             {
                 OUT_LOAD_INST_DATA_FAIL;
@@ -2252,7 +2249,6 @@ public:
                 OUT_LOAD_INST_DATA_FAIL;
 
             OUT_LOAD_INST_DATA_COMPLETE;
-            DoSummoneEventCreatures();
         }
 
         
