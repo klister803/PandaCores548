@@ -4,6 +4,8 @@
 #include "SpellMgr.h"
 #include "LFGMgr.h"
 #include "Group.h"
+#include "Player.h"
+#include "CreatureTextMgr.h"
 
 class npc_custom_starter : public CreatureScript  //250025
 {
@@ -62,7 +64,7 @@ class npc_custom_starter : public CreatureScript  //250025
                 case 0:
                     if (timer < diff) {
                         Player* player = SelectRandomPlayer(80.0f, false);
-                           player->Say("Ты нас понимаешь?", 0);
+                           sCreatureTextMgr->SendChat(me, 0, 0,  CHAT_MSG_SAY, LANG_UNIVERSAL, TEXT_RANGE_NORMAL, 0, TEAM_OTHER, false, player);
                         phase++;
                         timer = 5000;
                     }
@@ -71,7 +73,7 @@ class npc_custom_starter : public CreatureScript  //250025
                 case 1:
                     if (timer < diff) {
                         Player* player = SelectRandomPlayer(80.0f, false);
-                           player->Yell("МЯУ!", 0);
+                           sCreatureTextMgr->SendChat(me, 1, 0,  CHAT_MSG_SAY, LANG_UNIVERSAL, TEXT_RANGE_NORMAL, 0, TEAM_OTHER, false, player);
                         phase++;
                         timer = 1000;
                     }
@@ -96,7 +98,7 @@ class npc_custom_starter : public CreatureScript  //250025
                     if (timer < diff) {
                         me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                         Player* player = SelectRandomPlayer(80.0f, false);
-                           player->Say("Прости нас, пожалуйста, мы не хотели!", 0);
+                           sCreatureTextMgr->SendChat(me, 19, 0,  CHAT_MSG_SAY, LANG_UNIVERSAL, TEXT_RANGE_NORMAL, 0, TEAM_OTHER, false, player);
                         phase++;
                         timer = 5000;
                     }
@@ -114,7 +116,7 @@ class npc_custom_starter : public CreatureScript  //250025
                 case 2:
                     if (timer < diff) {
                         Player* player = SelectRandomPlayer(80.0f, false);
-                           player->Say("Послушай, а где мы?", 0);
+                           sCreatureTextMgr->SendChat(me, 4, 0,  CHAT_MSG_SAY, LANG_UNIVERSAL, TEXT_RANGE_NORMAL, 0, TEAM_OTHER, false, player);
                         phase++;
                         timer = 5000;
                     }
@@ -131,7 +133,7 @@ class npc_custom_starter : public CreatureScript  //250025
                 case 4:
                     if (timer < diff) {
                         Player* player = SelectRandomPlayer(80.0f, false);
-                           player->Say("Пленники? Но чьи?", 0);
+                           sCreatureTextMgr->SendChat(me, 6, 0,  CHAT_MSG_SAY, LANG_UNIVERSAL, TEXT_RANGE_NORMAL, 0, TEAM_OTHER, false, player);
                         phase++;
                         timer = 5000;
                     }
@@ -148,7 +150,7 @@ class npc_custom_starter : public CreatureScript  //250025
                 case 6:
                     if (timer < diff) {
                         Player* player = SelectRandomPlayer(80.0f, false);
-                           player->Say("Алиса...? Это кто еще?", 0);
+                           sCreatureTextMgr->SendChat(me, 8, 0,  CHAT_MSG_SAY, LANG_UNIVERSAL, TEXT_RANGE_NORMAL, 0, TEAM_OTHER, false, player);
                         phase++;
                         timer = 5000;
                     }
@@ -190,28 +192,12 @@ class npc_custom_starter : public CreatureScript  //250025
                               check = urand (0, 2);  // много флуда иначе
                               if (check == 1)
                               {
-                                 rand = urand (1, 8);
-                                 if (rand == 1)
-                                    plr->Yell("Как нам быть?", 0);
-                                 if (rand == 2)
-                                    plr->Yell("ЧТО!?", 0);
-                                 if (rand == 3)
-                                    plr->Yell("МЫ ВСЕ УМРЁМ!", 0);
-                                 if (rand == 4)
-                                    plr->Yell("Мы даже понятия не имеем где мы, а вдруг эта мышь водит нас за нос в своих целях? Лучше доверять человеку, чем вредителю!", 0);
-                                 if (rand == 5)
-                                    plr->Yell("Приключения!!!", 0);
-                                 if (rand == 6)
-                                    plr->Yell("Что вообще происходит? Я слакал.", 0);
-                                 if (rand == 7)
-                                    plr->Yell("А лут точно будет?", 0);
-                                 if (rand == 8)
-                                    plr->Yell("УРААА!", 0);     
+                                 sCreatureTextMgr->SendChat(me, 20, 0,  CHAT_MSG_SAY, LANG_UNIVERSAL, TEXT_RANGE_NORMAL, 0, TEAM_OTHER, false, plr);    
                               }                        
                            }
                        }
                         Player* player = SelectRandomPlayer(80.0f, false);
-                           player->Say("Мужики... а... тут... крыса говорящая...", 0);                       
+                           sCreatureTextMgr->SendChat(me, 21, 0,  CHAT_MSG_SAY, LANG_UNIVERSAL, TEXT_RANGE_NORMAL, 0, TEAM_OTHER, false, player);                       
                         phase++;
                         timer = 9000;
                     }
@@ -237,7 +223,7 @@ class npc_custom_starter : public CreatureScript  //250025
                 case 13:
                     if (timer < diff) {
                         Player* player = SelectRandomPlayer(80.0f, false);
-                           player->Say("Растения... Отобрали? Ты не шутишь?", 0);
+                           sCreatureTextMgr->SendChat(me, 22, 0,  CHAT_MSG_SAY, LANG_UNIVERSAL, TEXT_RANGE_NORMAL, 0, TEAM_OTHER, false, player);
                         phase++;
                         timer = 5000;
                     }
@@ -254,7 +240,7 @@ class npc_custom_starter : public CreatureScript  //250025
                 case 15:
                     if (timer < diff) {
                         Player* player = SelectRandomPlayer(80.0f, false);
-                           player->Say("Прямо сказка какая-то, мышь говорит, растения живые...", 0);
+                           sCreatureTextMgr->SendChat(me, 23, 0,  CHAT_MSG_SAY, LANG_UNIVERSAL, TEXT_RANGE_NORMAL, 0, TEAM_OTHER, false, player);
                         phase++;
                         timer = 5000;
                     }
@@ -262,12 +248,8 @@ class npc_custom_starter : public CreatureScript  //250025
                     break;                 
                 case 16:
                     if (timer < diff) {
-                     std::list<Player*> targets;
-                     GetPlayerListInGrid(targets, me, 40);
-                     Trinity::Containers::RandomResizeList(targets, 1);
-                     for (std::list<Player*>::iterator itr = targets.begin(); itr != targets.end(); ++itr)
-                        if (!targets.empty())
-                                 (*itr)->Say("Спокойно! Не важно, Рилари, веди нас, мы поможем тебе. Надеюсь ты нас не подведешь.", 0);
+                        Player* player = SelectRandomPlayer(80.0f, false);
+                           sCreatureTextMgr->SendChat(me, 24, 0,  CHAT_MSG_SAY, LANG_UNIVERSAL, TEXT_RANGE_NORMAL, 0, TEAM_OTHER, false, player);
                         phase++;
                         timer = 5000;
                     }
