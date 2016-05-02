@@ -18658,7 +18658,7 @@ void Unit::SetDisplayId(uint32 modelId, bool resize /* = false */)
                     SetObjectScale(1.0f / cmodelData->scale);
             }
             else if (cmodelData->scale < 1.0f)
-                SetObjectScale(1.0f * cmodelData->scale);
+                SetObjectScale(1.0f / cmodelData->scale);
             else
                 SetObjectScale(1.0f);
         }
