@@ -116,6 +116,7 @@ public:
         Player *player = handler->GetSession()->GetPlayer();
         player->DeMorph();
         player->ResetCustomDisplayId();
+        player->SetObjectScale(1.0f);
         return true;
     }
 
