@@ -35,7 +35,7 @@ struct VisualData
  
 VisualData vData[] =
 {
-    { 1, 0, GOSSIP_ICON_BATTLE, 3789, "Берсерк" , 0, "Вы действительно хотите наложить это зачарование за |TInterface/ICONS/Inv_qiraj_jewelblessed:30|t Золотая Монета?" },
+    { 1, 0, GOSSIP_ICON_BATTLE, 3789, "Берсерк (Berserk)" , 0, "Вы действительно хотите наложить это зачарование за |TInterface/ICONS/Inv_qiraj_jewelblessed:30|t Золотая Монета? (Are you really want use it`s enchantment for 1 Gold Coint?" },
     { 1, 0, GOSSIP_ICON_BATTLE, 3854, "Сила заклинаний" , 0, "Вы действительно хотите наложить это зачарование за |TInterface/ICONS/Inv_qiraj_jewelblessed:30|t Золотая Монета?" },
     { 1, 0, GOSSIP_ICON_BATTLE, 3273, "Смертельный лёд" , 0, "Вы действительно хотите наложить это зачарование за |TInterface/ICONS/Inv_qiraj_jewelblessed:30|t Золотая Монета?" },
     { 1, 0, GOSSIP_ICON_BATTLE, 3225, "Палач" , 0, "Вы действительно хотите наложить это зачарование за |TInterface/ICONS/Inv_qiraj_jewelblessed:30|t Золотая Монета?" },
@@ -150,8 +150,8 @@ public:
 
     bool OnGossipHello(Player* player, Creature* creature)
     {
-        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "|TInterface/PaperDoll/UI-PaperDoll-Slot-MainHand:32:32:-32:0|tПравая рука", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "|TInterface/PaperDoll/UI-PaperDoll-Slot-SecondaryHand:32:32:-32:0|tЛевая рука", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "|TInterface/PaperDoll/UI-PaperDoll-Slot-MainHand:32:32:-32:0|tПравая рука (Main hand)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "|TInterface/PaperDoll/UI-PaperDoll-Slot-SecondaryHand:32:32:-32:0|tЛевая рука (Left hand)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
 
         player->SEND_GOSSIP_MENU(DEFAULT_MESSAGE, creature->GetGUID());
 
