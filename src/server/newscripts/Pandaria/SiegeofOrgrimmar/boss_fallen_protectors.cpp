@@ -1028,7 +1028,7 @@ public:
 
     struct npc_measure_of_sunAI : public ScriptedAI
     {
-        npc_measure_of_sunAI(Creature* creature) : ScriptedAI(creature)
+        npc_measure_of_sunAI(Creature* creature) : ScriptedAI(creature), summons(me)
         {
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
             instance = creature->GetInstanceScript();
@@ -1037,6 +1037,7 @@ public:
             _spell = me->GetEntry() == NPC_EMBODIED_DESPERATION_OF_SUN ? SPELL_MANIFEST_DESPERATION : SPELL_MANIFEST_DESPAIR;
         }
         InstanceScript* instance;
+        SummonList summons;
         uint32 _spell;
 
         void IsSummonedBy(Unit* summoner)
@@ -1055,9 +1056,15 @@ public:
 
         void JustSummoned(Creature* summon)
         {
+            summons.Summon(summon);
             DoCast(summon, SPELL_DARK_MEDITATION_SHARE_HEALTH, true);
             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                 summon->AI()->AttackStart(target);
+        }
+
+        void JustDied(Unit* killer)
+        {
+            summons.DespawnAll();
         }
 
         void UpdateAI(uint32 diff)

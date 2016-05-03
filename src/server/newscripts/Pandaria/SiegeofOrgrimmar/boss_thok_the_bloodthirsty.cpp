@@ -1066,6 +1066,12 @@ public:
                 }
                 else
                 {
+                    if (GetHitUnit()->HealthAbovePct(50))
+                    {
+                        GetHitUnit()->RemoveAurasDueToSpell(SPELL_BLOODIED);
+                        return;
+                    }
+
                     if (GetCaster()->HasAura(SPELL_POWER_REGEN)) //for safe
                     {
                         std::list<Player*> pllist;

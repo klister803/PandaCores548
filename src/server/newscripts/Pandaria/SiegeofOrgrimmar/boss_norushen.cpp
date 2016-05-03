@@ -231,13 +231,16 @@ class boss_norushen : public CreatureScript
 
             void DoAction(int32 const action)
             {
-                me->SetUInt32Value(UNIT_NPC_FLAGS, 0);
-                //continue from EVENT_13
-                uint32 t = 0;
-                events.ScheduleEvent(EVENT_1, t += 0);          //18:23:14.000
-                events.ScheduleEvent(EVENT_2, t += 8000);       //18:23:22.000
-                events.ScheduleEvent(EVENT_3, t += 11000);      //18:23:32.000
-                events.ScheduleEvent(EVENT_4, t += 2000);       //18:23:34.000
+                if (instance && instance->GetBossState(DATA_NORUSHEN) != DONE)
+                {
+                    me->SetUInt32Value(UNIT_NPC_FLAGS, 0);
+                    //continue from EVENT_13
+                    uint32 t = 0;
+                    events.ScheduleEvent(EVENT_1, t += 0);          //18:23:14.000
+                    events.ScheduleEvent(EVENT_2, t += 8000);       //18:23:22.000
+                    events.ScheduleEvent(EVENT_3, t += 11000);      //18:23:32.000
+                    events.ScheduleEvent(EVENT_4, t += 2000);       //18:23:34.000
+                }
             }
 
             void UpdateAI(uint32 diff)
