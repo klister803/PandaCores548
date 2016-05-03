@@ -18650,17 +18650,17 @@ void Unit::SetDisplayId(uint32 modelId, bool resize /* = false */)
     {
         if (auto cmodelData = sCreatureDisplayInfoStore.LookupEntry(modelId))
         {
-            if (cmodelData->scale > 1.0f)
+/*            if (cmodelData->scale > 1.0f)
             {
                 if (cmodelData->scale < 2.0f)
                     SetObjectScale(1.0f / (cmodelData->scale + 0.2f));
                 else
                     SetObjectScale(1.0f / cmodelData->scale);
             }
-            else if (cmodelData->scale < 1.0f)
+            else if (cmodelData->scale < 1.0f)    */
                 SetObjectScale(1.0f / cmodelData->scale);
-            else
-                SetObjectScale(1.0f);
+//            else
+//                SetObjectScale(1.0f);
         }
     }
    
