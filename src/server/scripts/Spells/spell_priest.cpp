@@ -1090,7 +1090,7 @@ class spell_pri_cascade_second : public SpellScriptLoader
 
                             // heal
                             if (GetSpellInfo()->Id == 120786)
-                                if (_player->IsValidAttackTarget(unit))
+                                if (_player->IsValidAttackTarget(unit) || !_player->IsFriendlyTo(unit))
                                     targetList.remove(unit);
                         }
 
@@ -1227,6 +1227,9 @@ class spell_pri_cascade_first : public SpellScriptLoader
                                     _player->CastSpell(target, PRIEST_CASCADE_SHADOW_DAMAGE, true, 0, NULL, _player->GetGUID());
                                 else
                                 {
+                                    if (!target->IsFriendlyTo(_player))
+                                        target = _player;
+
                                     _player->CastSpell(target, PRIEST_CASCADE_SHADOW_MISSILE, true, 0, NULL, _player->GetGUID());
                                     _player->CastSpell(target, PRIEST_CASCADE_SHADOW_HEAL, true, 0, NULL, _player->GetGUID());
                                 }
@@ -1240,6 +1243,9 @@ class spell_pri_cascade_first : public SpellScriptLoader
                                     _player->CastSpell(target, PRIEST_CASCADE_HOLY_DAMAGE, true, 0, NULL, _player->GetGUID());
                                 else
                                 {
+                                    if (!target->IsFriendlyTo(_player))
+                                        target = _player;
+
                                     _player->CastSpell(target, PRIEST_CASCADE_HOLY_MISSILE, true, 0, NULL, _player->GetGUID());
                                     _player->CastSpell(target, PRIEST_CASCADE_HOLY_HEAL, true, 0, NULL, _player->GetGUID());
                                 }
