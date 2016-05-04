@@ -133,9 +133,9 @@ class boss_general_nazgrim : public CreatureScript
                 for (uint8 n = 0; n < 3; n++)
                     me->RemoveAurasDueToSpell(stances[n]);
                 me->RemoveAurasDueToSpell(SPELL_BERSERK);
-                me->setPowerType(POWER_ENERGY);
-                me->SetMaxPower(POWER_ENERGY, 100);
-                me->SetPower(POWER_ENERGY, 0);
+                me->SetCreateMana(100);
+                me->SetMaxPower(POWER_MANA, 100);
+                me->SetPower(POWER_MANA, 0);
                 laststance = 4; //default
                 checkpower = 1000;
                 checkvictim = 0;
@@ -427,11 +427,11 @@ class boss_general_nazgrim : public CreatureScript
                 {
                     if (!me->HasAura(SPELL_COOLING_OFF))
                     {
-                        if (me->GetPower(POWER_ENERGY) >= 30) //need check or not
+                        if (me->GetPower(POWER_MANA) >= 30) //need check or not
                         {
                             checkpower = 15000; //for safe
                             events.DelayEvents(5000);
-                            CastExtraSpellsFromPower(me->GetPower(POWER_ENERGY));
+                            CastExtraSpellsFromPower(me->GetPower(POWER_MANA));
                             return;
                         }
                     }
@@ -1273,16 +1273,16 @@ public:
             {
                 if (!GetHitUnit()->HasAura(SPELL_SUNDERING_BLOW))
                 {
-                    if (GetCaster()->GetPower(POWER_ENERGY) <= 95)
-                        GetCaster()->SetPower(POWER_ENERGY, GetCaster()->GetPower(POWER_ENERGY) + 5);
+                    if (GetCaster()->GetPower(POWER_MANA) <= 95)
+                        GetCaster()->SetPower(POWER_MANA, GetCaster()->GetPower(POWER_MANA) + 5);
                 }
                 else
                 {
                     uint8 mod = (GetHitUnit()->GetAura(SPELL_SUNDERING_BLOW)->GetStackAmount()) * 5;
-                    if ((GetCaster()->GetPower(POWER_ENERGY) + mod) <= 100)
-                        GetCaster()->SetPower(POWER_ENERGY, GetCaster()->GetPower(POWER_ENERGY) + mod);
+                    if ((GetCaster()->GetPower(POWER_MANA) + mod) <= 100)
+                        GetCaster()->SetPower(POWER_MANA, GetCaster()->GetPower(POWER_MANA) + mod);
                     else
-                        GetCaster()->SetPower(POWER_ENERGY, 100);
+                        GetCaster()->SetPower(POWER_MANA, 100);
                 }
             }
         }
