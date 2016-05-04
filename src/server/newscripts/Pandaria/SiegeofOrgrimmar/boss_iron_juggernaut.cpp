@@ -53,6 +53,7 @@ enum eSpells
     SPELL_EXPLOSIVE_TAR_AT        = 144525,
     SPELL_TAR_EXPLOSION           = 144919,
     SPELL_BERSERK                 = 26662,
+    SPELL_BERSERK2                = 64112,
 };
 
 enum eEvents
@@ -72,7 +73,7 @@ enum eEvents
     EVENT_ACTIVE_DETONATE         = 11,
     EVENT_ENGULFED_EXPLOSE        = 12,
     //Cutter Laser
-    EVENT_FIND_CUTTER_LASER       = 13,
+    EVENT_ACTIVE_EXPLOSIVE_TAR    = 13,
 };
 
 Position const modpos[3] = 
@@ -122,6 +123,8 @@ class boss_iron_juggernaut : public CreatureScript
                 me->setPowerType(POWER_ENERGY);
                 me->SetPower(POWER_ENERGY, 0);
                 me->RemoveAurasDueToSpell(SPELL_SEISMIC_ACTIVITY);
+                me->RemoveAurasDueToSpell(SPELL_BERSERK);
+                me->RemoveAurasDueToSpell(SPELL_BERSERK2);
                 SendActionForAllPassenger(false);
                 if (instance)
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BORER_DRILL_DMG);
@@ -142,14 +145,11 @@ class boss_iron_juggernaut : public CreatureScript
 
             void EnterCombat(Unit* who)
             {
-                if (instance)
+                if (instance && instance->GetBossState(DATA_GALAKRAS) != DONE || !CheckPullPlayerPos(who))
                 {
-                    if (instance->GetBossState(DATA_GALAKRAS) != DONE || !CheckPullPlayerPos(who))
-                    {
-                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                        EnterEvadeMode();
-                        return;
-                    }
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                    EnterEvadeMode();
+                    return;
                 }
                 _EnterCombat();
                 SendActionForAllPassenger(true);
@@ -364,10 +364,11 @@ class boss_iron_juggernaut : public CreatureScript
                         break;
                     case EVENT_EXPLOSIVE_TAR:
                     {
+                        float x, y;
                         for (uint8 n = 0; n < 5; n++)
                         {
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 80.0f, true))
-                                DoCast(target, SPELL_EXPLOSIVE_TAR_SUMMON);
+                            GetPosInRadiusWithRandomOrientation(me, float(urand(20, 40)), x, y);
+                            me->CastSpell(x, y, me->GetPositionZ(), SPELL_EXPLOSIVE_TAR_SUMMON);
                         }
                         events.ScheduleEvent(EVENT_CUTTER_LASER, 10000, 0, PHASE_TWO);
                         break;
@@ -646,28 +647,13 @@ public:
             instance = creature->GetInstanceScript();
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-            me->AddAura(SPELL_EXPLOSIVE_TAR_AT, me);
-            me->AddAura(SPELL_EXPLOSIVE_TAR_VISUAL, me);
         }
-
         InstanceScript* instance;
         EventMap events;
 
         void Reset()
         {
-            events.ScheduleEvent(EVENT_FIND_CUTTER_LASER, 3000);
-        }
-
-        void FindCutterLaser()
-        {
-            if (Creature* laser = me->FindNearestCreature(NPC_CUTTER_LASER, 5.0f, true))
-            {
-                me->RemoveAurasDueToSpell(SPELL_EXPLOSIVE_TAR_VISUAL);
-                DoCastAOE(SPELL_TAR_EXPLOSION, true);
-                me->DespawnOrUnsummon(2000);
-            }
-            else
-                events.ScheduleEvent(EVENT_FIND_CUTTER_LASER, 1000);
+            events.ScheduleEvent(EVENT_ACTIVE_EXPLOSIVE_TAR, 2000);
         }
 
         void EnterCombat(Unit* who){}
@@ -680,8 +666,11 @@ public:
 
             while (uint32 eventId = events.ExecuteEvent())
             {
-                if (eventId == EVENT_FIND_CUTTER_LASER)
-                    FindCutterLaser();
+                if (eventId == EVENT_ACTIVE_EXPLOSIVE_TAR)
+                {
+                    DoCast(me, SPELL_EXPLOSIVE_TAR_AT, true);
+                    DoCast(me, SPELL_EXPLOSIVE_TAR_VISUAL);
+                }
             }
         }
     };
@@ -775,7 +764,6 @@ public:
 
         void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*handle*/)
         {
-
             if (GetCaster() && GetCaster()->ToCreature())
             {
                 GetCaster()->RemoveAurasDueToSpell(SPELL_CUTTER_LASER_VISUAL);
@@ -860,6 +848,34 @@ public:
     }
 };
 
+//144919
+class spell_explosive_tar : public SpellScriptLoader
+{
+public:
+    spell_explosive_tar() : SpellScriptLoader("spell_explosive_tar") { }
+
+    class spell_explosive_tar_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_explosive_tar_SpellScript);
+
+        void HandleAfterCast()
+        {
+            if (GetSpellInfo()->Id == SPELL_TAR_EXPLOSION)
+                if (GetCaster() && GetCaster()->ToCreature())
+                        GetCaster()->ToCreature()->DespawnOrUnsummon();
+        }
+
+        void Register()
+        {
+            AfterCast += SpellCastFn(spell_explosive_tar_SpellScript::HandleAfterCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_explosive_tar_SpellScript();
+    }
+};
 
 void AddSC_boss_iron_juggernaut()
 {
@@ -873,4 +889,5 @@ void AddSC_boss_iron_juggernaut()
     new spell_cutter_laser_target();
     new spell_seismic_activity();
     new spell_mortar_barrage();
+    new spell_explosive_tar();
 }

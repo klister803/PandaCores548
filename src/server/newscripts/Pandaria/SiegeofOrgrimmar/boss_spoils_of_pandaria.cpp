@@ -1098,7 +1098,7 @@ public:
                     break;
                 case EVENT_SET_TO_BLOW:
                     if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 50.0f, true))
-                        DoCast(target, SPELL_SET_TO_BLOW_AURA, true);
+                        me->CastSpell(target, SPELL_SET_TO_BLOW_AURA, true, 0, 0, target->GetGUID());
                     events.ScheduleEvent(EVENT_SET_TO_BLOW, 12000);
                     break;
                 //Medium
