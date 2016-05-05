@@ -52,6 +52,8 @@ enum HighGuid
     HIGHGUID_INSTANCE_SAVE      = 0x1F45,                      // new 5.x
     HIGHGUID_LOOT               = 0xF19,                       // new 5.x
     HIGHGUID_SCENARIO_CRITERIA  = 0xF08,                       // new 5.x
+
+    HIGHGUID_MAIL           = 0x0001                        // not blizzlike
 };
 
 #define IS_EMPTY_GUID(Guid)          (Guid == 0)

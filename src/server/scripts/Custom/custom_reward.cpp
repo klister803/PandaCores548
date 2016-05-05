@@ -41,6 +41,8 @@ public:
         // 7 spell
         // 8 Remove pvp items from sliver char
         // 9 Remove items from char from loot
+        // 11 Remove title
+        // 12 Add char to char enum
         bool rewarded = false;
         QueryResult result = CharacterDatabase.PQuery("SELECT guid, type, id, count FROM `character_reward` WHERE owner_guid = '%u'", owner_guid);
         if (result)
@@ -154,6 +156,12 @@ public:
                             chH.PSendSysMessage(LANG_TITLE_REMOVE_RES, id, titleNameStr, targetName);
                             rewarded = true;
                         }
+                    }
+                    break;
+                    case 12:
+                    {
+                        sWorld->AddCharacterNameData(guid, player->GetName(), player->getGender(), player->getRace(), player->getClass(), player->getLevel());
+                        rewarded = true;
                     }
                     break;
                     default:

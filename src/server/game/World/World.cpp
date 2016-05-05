@@ -2418,6 +2418,7 @@ void World::Update(uint32 diff)
         m_timers[WUPDATE_MAILBOXQUEUE].Reset();
         ProcessMailboxQueue();
         Transfer();
+        GetPoolGuids();
     }
 
     ///- Ping to keep MySQL connections alive
@@ -3902,5 +3903,23 @@ void World::Transfer()
             }
         }
         while (toLoad->NextRow());
+    }
+}
+
+void World::GetPoolGuids()
+{
+    if(QueryResult queryPool = LoginDatabase.Query("SELECT `id`, `type`, `count` FROM character_pool_guid WHERE `start` = 0"))
+    {
+        do
+        {
+            Field* field = queryPool->Fetch();
+            uint32 idPool = field[0].GetUInt32();
+            uint8 typePool = field[1].GetUInt8();
+            uint32 count = field[2].GetUInt32();
+
+            GuidDiapason diapason = sObjectMgr->GenerateNewDiapasonFor(typePool, count);
+            LoginDatabase.PQuery("UPDATE `character_pool_guid` SET `start` = %u, `end` = %u WHERE `id` = '%u' AND `type` = '%u'", diapason.m_begin, diapason.m_end, idPool, typePool);
+        }
+        while(queryPool->NextRow());
     }
 }

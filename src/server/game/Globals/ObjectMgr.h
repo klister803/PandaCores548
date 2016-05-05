@@ -56,6 +56,15 @@ class PhaseMgr;
 #pragma pack(push, 1)
 #endif
 
+struct GuidDiapason
+{
+    uint32 m_begin = 0;
+    uint32 m_end = 0;
+
+    bool IsActive() { return m_end != 0; }
+    void Change(uint32 begin, uint32 end) { m_begin = begin; m_end = end; }
+};
+
 struct PageText
 {
     std::string Text;
@@ -1290,6 +1299,7 @@ class ObjectMgr
 
         void SetHighestGuids();
         uint32 GenerateLowGuid(HighGuid guidhigh);
+        GuidDiapason GenerateNewDiapasonFor(uint32 type, uint32 count = 0);
         uint32 GenerateAuctionID();
         uint64 GenerateEquipmentSetGuid();
         uint32 GenerateMailID();

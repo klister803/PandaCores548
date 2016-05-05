@@ -6402,6 +6402,48 @@ uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh)
     }
 }
 
+GuidDiapason ObjectMgr::GenerateNewDiapasonFor(uint32 type, uint32 count)
+{
+    GuidDiapason _diapason;
+
+    switch (type)
+    {
+        case HIGHGUID_ITEM:
+        {
+            const uint32 diapason = count ? count : 2000;
+            _diapason.Change(_hiItemGuid + 1, _hiItemGuid + diapason);
+            _hiItemGuid += diapason + 1;
+            break;
+        }
+        case HIGHGUID_PLAYER:
+        {
+            const uint32 diapason = count ? count : 1;
+            _diapason.Change(_hiCharGuid + 1, _hiCharGuid + diapason);
+            _hiCharGuid += diapason + 1;
+            break;
+        }
+        case HIGHGUID_PET:
+        {
+            const uint32 diapason = count ? count : 200;
+            _diapason.Change(_hiPetGuid + 1, _hiPetGuid + diapason);
+            _hiPetGuid += diapason + 1;
+            break;
+        }
+        case HIGHGUID_MAIL:
+        {
+            const uint32 diapason = count ? count : 50;
+            _diapason.Change(_mailId + 1, _mailId + diapason);
+            _mailId += diapason + 1;
+            break;
+        }
+        default:
+            sLog->outError(LOG_FILTER_SQL, "Type not support.");
+            break;
+    }
+
+    return _diapason;
+}
+
 void ObjectMgr::LoadGameObjectLocales()
 {
     uint32 oldMSTime = getMSTime();

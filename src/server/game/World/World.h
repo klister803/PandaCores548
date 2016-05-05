@@ -667,6 +667,7 @@ class World
 
         void ProcessMailboxQueue();
         void Transfer();
+        void GetPoolGuids();
 
         /// Security level limitations
         AccountTypes GetPlayerSecurityLimit() const { return m_allowedSecurityLevel; }
