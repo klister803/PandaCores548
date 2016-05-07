@@ -3908,7 +3908,7 @@ void World::Transfer()
 
 void World::GetPoolGuids()
 {
-    if(QueryResult queryPool = LoginDatabase.Query("SELECT `id`, `type`, `count` FROM character_pool_guid WHERE `start` = 0"))
+    if(QueryResult queryPool = LoginDatabase.PQuery("SELECT `id`, `type`, `count` FROM character_pool_guid WHERE `start` = 0"))
     {
         do
         {
