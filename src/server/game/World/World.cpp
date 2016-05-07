@@ -3908,7 +3908,7 @@ void World::Transfer()
 
 void World::GetPoolGuids()
 {
-    if(QueryResult queryPool = LoginDatabase.PQuery("SELECT `id`, `type`, `count` FROM character_pool_guid WHERE `start` = 0"))
+    if(QueryResult queryPool = CharacterDatabase.Query("SELECT `id`, `type`, `count` FROM character_pool_guid WHERE `start` = 0;"))
     {
         do
         {
@@ -3918,7 +3918,7 @@ void World::GetPoolGuids()
             uint32 count = field[2].GetUInt32();
 
             GuidDiapason diapason = sObjectMgr->GenerateNewDiapasonFor(typePool, count);
-            LoginDatabase.PQuery("UPDATE `character_pool_guid` SET `start` = %u, `end` = %u WHERE `id` = '%u' AND `type` = '%u'", diapason.m_begin, diapason.m_end, idPool, typePool);
+            CharacterDatabase.PQuery("UPDATE `character_pool_guid` SET `start` = %u, `end` = %u WHERE `id` = '%u' AND `type` = '%u'", diapason.m_begin, diapason.m_end, idPool, typePool);
         }
         while(queryPool->NextRow());
     }
