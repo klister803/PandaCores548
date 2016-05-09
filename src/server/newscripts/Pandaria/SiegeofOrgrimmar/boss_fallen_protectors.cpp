@@ -1111,8 +1111,15 @@ public:
             }
         }
 
+        void RemoveShadowWeakness()
+        {
+            if (instance)
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WEAKNESS);
+        }
+
         void SetGUID(uint64 guid, int32 /*id*/ = 0)
         {
+            RemoveShadowWeakness();
             events.Reset();
             me->SetAttackStop(true);
             me->SetReactState(REACT_PASSIVE);
@@ -1128,9 +1135,15 @@ public:
                     me->AddThreat(target, 50000000.0f);
                     me->SetReactState(REACT_AGGRESSIVE);
                     me->Attack(target, true);
+                    DoCast(target, SPELL_SHADOW_WEAKNESS, true);
                     events.ScheduleEvent(EVENT_ACTIVE, 1000);
                 }
             }
+        }
+
+        void JustDied(Unit* killer)
+        {
+            RemoveShadowWeakness();
         }
 
         void UpdateAI(uint32 diff)
@@ -1150,6 +1163,7 @@ public:
                     {
                         if (!target->isAlive() || !target->HasAura(SPELL_MARK_OF_ANGUISH_STAN))
                         {
+                            RemoveShadowWeakness();
                             events.ScheduleEvent(EVENT_1, 1000);
                             return;
                         }
