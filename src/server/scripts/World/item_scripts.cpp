@@ -541,6 +541,28 @@ public:
     }
 };
 
+//custom
+class item_custom_event_bg : public ItemScript
+{
+public:
+    item_custom_event_bg() : ItemScript("item_custom_event_bg") { }
+
+    bool OnUse(Player* player, Item* item, SpellCastTargets const& /*targets*/)
+    {
+         if (!player->InBattleground())
+         {
+            player->DestroyItemCount(600000, 1, true);
+            player->DestroyItemCount(600001, 1, true);
+            player->DestroyItemCount(600002, 1, true);
+            player->DestroyItemCount(600003, 1, true);
+            return false;
+         }
+         
+        return true;
+    }
+};
+
+
 void AddSC_item_scripts()
 {
     new item_only_for_flight();
@@ -559,4 +581,6 @@ void AddSC_item_scripts()
     new item_brewfest_ram_reins;
     new item_primal_egg();
     new item_leyara_locket();
+    
+    new item_custom_event_bg();
 }

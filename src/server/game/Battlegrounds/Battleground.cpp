@@ -233,6 +233,7 @@ Battleground::Battleground()
     // for custom BG event
     spell_custom_2 = 46392;
     custom_exists = false;
+    CustomGUID = 0;
     switch(urand(1, 4))
     {
        case 1:
@@ -904,9 +905,8 @@ void Battleground::EndBattleground(uint32 winner)
            player->SetObjectScale(1.0f);
            player->DestroyItemCount(SPELL_CUSTOM, 1, true);
            player->RemoveAura(spell_custom_2);
-           if (custom_exists)
-               custom_exists = false;
-           if (player->GetTeamId() == winner)
+           custom_exists = false;
+           if (team = winner)
                player->AddItem(37711, 10); //за победу, тиме победителей 10-ку
         }
 
@@ -1120,6 +1120,17 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
     // should remove spirit of redemption
     if (player)
     {
+        if (isBattleground() && sWorld->getBoolConfig(CONFIG_CUSTOM_BATTLEGROUND))
+        {         
+            player->DeMorph(); 
+            player->ResetCustomDisplayId();
+            player->SetObjectScale(1.0f);
+            player->DestroyItemCount(SPELL_CUSTOM, 1, true);
+            player->RemoveAura(spell_custom_2);  
+            custom_exists = false;
+            CustomGUID = 0;
+        }       
+        
         if (player->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
             player->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);
 
@@ -1500,6 +1511,15 @@ void Battleground::EventPlayerLoggedOut(Player* player)
             if (GetAlivePlayersCountByTeam(player->GetTeam()) <= 1 && GetPlayersCountByTeam(GetOtherTeam(player->GetTeam())))
                 EndBattleground(GetOtherTeam(player->GetTeam()));
     }
+    if (isBattleground() && sWorld->getBoolConfig(CONFIG_CUSTOM_BATTLEGROUND))
+    {         
+        player->DeMorph(); 
+        player->ResetCustomDisplayId();
+        player->SetObjectScale(1.0f);
+        player->DestroyItemCount(SPELL_CUSTOM, 1, true);
+        player->RemoveAura(spell_custom_2);  
+    }
+        
 }
 
 // This method should be called only once ... it adds pointer to queue
@@ -2100,6 +2120,28 @@ if (isBattleground() && sWorld->getBoolConfig(CONFIG_CUSTOM_BATTLEGROUND))
            killer->AddAura(spell_custom_2, killer);
            CustomGUID = killer->GetGUID();           
        }  
+       if (!custom_exists && CustomGUID == 0)
+       {
+           killer->SetDisplayId(MORPH_CUSTOM, true);
+           killer->SetCustomDisplayId(MORPH_CUSTOM); 
+           killer->Yell(TEXT, LANG_UNIVERSAL);
+           if (killer->GetTeamId() == TEAM_ALLIANCE)
+           {
+               SendMessage2ToAll(LANG_SELECT_DEF, CHAT_MSG_BG_SYSTEM_ALLIANCE, killer);
+               SendMessage2ToAll(LANG_SELECT_ATTACK, CHAT_MSG_BG_SYSTEM_HORDE, killer);
+           }
+           else
+           {
+               SendMessage2ToAll(LANG_SELECT_ATTACK, CHAT_MSG_BG_SYSTEM_ALLIANCE, killer);
+               SendMessage2ToAll(LANG_SELECT_DEF, CHAT_MSG_BG_SYSTEM_HORDE, killer);              
+           }
+           killer->GetSession()->SendNotification(notification); //анонс
+           ChatHandler(killer->GetSession()).PSendSysMessage(notification); // в  чат
+           killer->AddItem(SPELL_CUSTOM, 1); //баф 
+           killer->AddAura(spell_custom_2, killer);
+           CustomGUID = killer->GetGUID(); 
+           custom_exists = true;           
+       }
  }       
 }
 
