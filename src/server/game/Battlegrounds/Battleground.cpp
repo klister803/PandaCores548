@@ -50,8 +50,7 @@
    std::string TEXT;
    const char* notification;
    std::string NewChar;
-   bool custom_exists = false;
-   uint32 random;
+   bool custom_exists;
    uint32 random_rew;
 
 
@@ -232,51 +231,50 @@ Battleground::Battleground()
     m_StartDelayTime = 0;
     
     // for custom BG event
-    random = urand(0, 3);
     spell_custom_2 = 46392;
-    if (random == 0) // гаррош
+    custom_exists = false;
+    switch(urand(1, 4))
     {
-       SPELL_CUSTOM = 600000;
-       MORPH_CUSTOM = 49585;
-       spell_end = 146756;
-       TEXT = "Я Гаррош, сын Грома, покажу вам, что значит быть АДСКИМ КРИКОМ!";
-       notification = "Вы стали новым Гаррошем! Осколок Кровавого Воя Вы можете найти в своем рюкзаке. За каждое убийство Вы будете получать валюту.";
-       LANG_SELECT_DEF = 30000;
-       LANG_SELECT_ATTACK = 30001;
-       NewChar = "%s стал новым Гаррошем!!";
-    }
-    else if (random == 1)  // Лэй
-    {
-       SPELL_CUSTOM = 600001;
-       MORPH_CUSTOM = 46770;
-       spell_end = 137557;
-       TEXT = "Отведайте электричества!!!";
-       notification = "Вы стали новым Лэй Шенем! Осколок Боевого Топора Властелина Грома Вы можете найти в своем рюкзаке. За каждое убийство Вы будете получать валюту.";
-       LANG_SELECT_DEF = 30002;
-       LANG_SELECT_ATTACK = 30003;       
-       NewChar = "%s стал новым Лэй Шенем!!";
-    }   
-    else if (random == 2)  //смертик
-    {
-       SPELL_CUSTOM = 600002;
-       MORPH_CUSTOM = 35435;
-       spell_end = 137204;
-       TEXT = "Наконец-то я могу поработатить этот мир! И начну я с Вас!";
-       notification = "Вы стали новым Смертокрылом! Фрагмент челюсти Смертокрыла Вы можете найти в своем рюкзаке. За каждое убийство Вы будете получать валюту.";
-       LANG_SELECT_DEF = 30004;
-       LANG_SELECT_ATTACK = 30005;   
-       NewChar = "%s стал новым Смертокрылом!!";
-    }
-    else if (random == 3)  //иллидан
-    {
-       SPELL_CUSTOM = 600003;
-       MORPH_CUSTOM = 39183;
-       spell_end = 137204;
-       TEXT = "Вам не устоять перед моей Демонической сущностью!";
-       notification = "Вы стали новым Иллиданом ! Осколок Боевого Клинка Аззинота Вы можете найти в своем рюкзаке. За каждое убийство Вы будете получать валюту.";
-       LANG_SELECT_DEF = 30006;
-       LANG_SELECT_ATTACK = 30007;  
-       NewChar = "%s стал новым Иллиданом!";
+       case 1:
+             SPELL_CUSTOM = 600000;
+             MORPH_CUSTOM = 49585;
+             spell_end = 146756;
+             TEXT = "Я Гаррош, сын Грома, покажу вам, что значит быть АДСКИМ КРИКОМ!";
+             notification = "Вы стали новым Гаррошем! Осколок Кровавого Воя Вы можете найти в своем рюкзаке. За каждое убийство Вы будете получать валюту.";
+             LANG_SELECT_DEF = 30000;
+             LANG_SELECT_ATTACK = 30001;
+             NewChar = "%s стал новым Гаррошем!!";
+             break;
+       case 2:
+             SPELL_CUSTOM = 600001;
+             MORPH_CUSTOM = 46770;
+             spell_end = 137557;
+             TEXT = "Отведайте электричества!!!";
+             notification = "Вы стали новым Лэй Шенем! Осколок Боевого Топора Властелина Грома Вы можете найти в своем рюкзаке. За каждое убийство Вы будете получать валюту.";
+             LANG_SELECT_DEF = 30002;
+             LANG_SELECT_ATTACK = 30003;       
+             NewChar = "%s стал новым Лэй Шенем!!";
+             break; 
+       case 3:
+             SPELL_CUSTOM = 600002;
+             MORPH_CUSTOM = 35435;
+             spell_end = 137204;
+             TEXT = "Наконец-то я могу поработатить этот мир! И начну я с Вас!";
+             notification = "Вы стали новым Смертокрылом! Фрагмент челюсти Смертокрыла Вы можете найти в своем рюкзаке. За каждое убийство Вы будете получать валюту.";
+             LANG_SELECT_DEF = 30004;
+             LANG_SELECT_ATTACK = 30005;   
+             NewChar = "%s стал новым Смертокрылом!!";
+             break;
+       case 4:
+             SPELL_CUSTOM = 600003;
+             MORPH_CUSTOM = 39183;
+             spell_end = 137204;
+             TEXT = "Вам не устоять перед моей Демонической сущностью!";
+             notification = "Вы стали новым Иллиданом ! Осколок Боевого Клинка Аззинота Вы можете найти в своем рюкзаке. За каждое убийство Вы будете получать валюту.";
+             LANG_SELECT_DEF = 30006;
+             LANG_SELECT_ATTACK = 30007;  
+             NewChar = "%s стал новым Иллиданом!";
+             break;
     }    
 }
 
