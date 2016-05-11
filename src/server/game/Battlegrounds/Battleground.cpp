@@ -16,6 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "Chat.h"
 #include "Player.h"
 #include "ObjectMgr.h"
 #include "World.h"
@@ -37,6 +38,22 @@
 #include "Bracket.h"
 #include "BracketMgr.h"
 #include "GroupMgr.h"
+
+
+   uint64 CustomGUID; 
+   uint32 MORPH_CUSTOM;
+   uint32 SPELL_CUSTOM;
+   uint32 spell_custom_2;
+   uint32 spell_end;
+   uint32 LANG_SELECT_ATTACK;
+   uint32 LANG_SELECT_DEF;
+   std::string TEXT;
+   const char* notification;
+   std::string NewChar;
+   bool custom_exists = false;
+   uint32 random;
+   uint32 random_rew;
+
 
 namespace Trinity
 {
@@ -213,6 +230,54 @@ Battleground::Battleground()
     m_flagCarrierTime = FLAGS_UPDATE;
 
     m_StartDelayTime = 0;
+    
+    // for custom BG event
+    random = urand(0, 3);
+    spell_custom_2 = 46392;
+    if (random == 0) // гаррош
+    {
+       SPELL_CUSTOM = 600000;
+       MORPH_CUSTOM = 49585;
+       spell_end = 146756;
+       TEXT = "Я Гаррош, сын Грома, покажу вам, что значит быть АДСКИМ КРИКОМ!";
+       notification = "Вы стали новым Гаррошем! Осколок Кровавого Воя Вы можете найти в своем рюкзаке. За каждое убийство Вы будете получать валюту.";
+       LANG_SELECT_DEF = 30000;
+       LANG_SELECT_ATTACK = 30001;
+       NewChar = "%s стал новым Гаррошем!!";
+    }
+    else if (random == 1)  // Лэй
+    {
+       SPELL_CUSTOM = 600001;
+       MORPH_CUSTOM = 46770;
+       spell_end = 137557;
+       TEXT = "Отведайте электричества!!!";
+       notification = "Вы стали новым Лэй Шенем! Осколок Боевого Топора Властелина Грома Вы можете найти в своем рюкзаке. За каждое убийство Вы будете получать валюту.";
+       LANG_SELECT_DEF = 30002;
+       LANG_SELECT_ATTACK = 30003;       
+       NewChar = "%s стал новым Лэй Шенем!!";
+    }   
+    else if (random == 2)  //смертик
+    {
+       SPELL_CUSTOM = 600002;
+       MORPH_CUSTOM = 35435;
+       spell_end = 137204;
+       TEXT = "Наконец-то я могу поработатить этот мир! И начну я с Вас!";
+       notification = "Вы стали новым Смертокрылом! Фрагмент челюсти Смертокрыла Вы можете найти в своем рюкзаке. За каждое убийство Вы будете получать валюту.";
+       LANG_SELECT_DEF = 30004;
+       LANG_SELECT_ATTACK = 30005;   
+       NewChar = "%s стал новым Смертокрылом!!";
+    }
+    else if (random == 3)  //иллидан
+    {
+       SPELL_CUSTOM = 600003;
+       MORPH_CUSTOM = 39183;
+       spell_end = 137204;
+       TEXT = "Вам не устоять перед моей Демонической сущностью!";
+       notification = "Вы стали новым Иллиданом ! Осколок Боевого Клинка Аззинота Вы можете найти в своем рюкзаке. За каждое убийство Вы будете получать валюту.";
+       LANG_SELECT_DEF = 30006;
+       LANG_SELECT_ATTACK = 30007;  
+       NewChar = "%s стал новым Иллиданом!";
+    }    
 }
 
 Battleground::~Battleground()
@@ -833,6 +898,19 @@ void Battleground::EndBattleground(uint32 winner)
         // should remove spirit of redemption
         if (player->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
             player->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);
+         
+        if (isBattleground() && sWorld->getBoolConfig(CONFIG_CUSTOM_BATTLEGROUND))
+        {         
+           player->DeMorph(); 
+           player->ResetCustomDisplayId();
+           player->SetObjectScale(1.0f);
+           player->DestroyItemCount(SPELL_CUSTOM, 1, true);
+           player->RemoveAura(spell_custom_2);
+           if (custom_exists)
+               custom_exists = false;
+           if (player->GetTeamId() == winner)
+               player->AddItem(37711, 10); //за победу, тиме победителей 10-ку
+        }
 
         // Last standing - Rated 5v5 arena & be solely alive player
         if (team == winner && isArena() && isRated() && GetJoinType() == ARENA_TYPE_5v5 && aliveWinners == 1 && player->isAlive())
@@ -1325,6 +1403,32 @@ void Battleground::AddPlayer(Player* player)
 
     // Log
     sLog->outInfo(LOG_FILTER_BATTLEGROUND, "BATTLEGROUND: Player %s joined the battle.", player->GetName());
+    
+    if (isBattleground() && sWorld->getBoolConfig(CONFIG_CUSTOM_BATTLEGROUND))
+    {   
+       if (!custom_exists) 
+       {   
+           player->SetDisplayId(MORPH_CUSTOM, true);
+           player->SetCustomDisplayId(MORPH_CUSTOM); 
+           player->Yell(TEXT, LANG_UNIVERSAL);
+           if (player->GetTeamId() == TEAM_ALLIANCE)
+           {
+               SendMessage2ToAll(LANG_SELECT_DEF, CHAT_MSG_BG_SYSTEM_ALLIANCE, player);
+               SendMessage2ToAll(LANG_SELECT_ATTACK, CHAT_MSG_BG_SYSTEM_HORDE, player);
+           }
+           else
+           {
+               SendMessage2ToAll(LANG_SELECT_ATTACK, CHAT_MSG_BG_SYSTEM_ALLIANCE, player);
+               SendMessage2ToAll(LANG_SELECT_DEF, CHAT_MSG_BG_SYSTEM_HORDE, player);              
+           }
+           player->GetSession()->SendNotification(notification); //анонс
+           ChatHandler(player->GetSession()).PSendSysMessage(notification); // в  чат
+           player->AddItem(SPELL_CUSTOM, 1); //баф 
+           player->AddAura(spell_custom_2, player);
+           CustomGUID = player->GetGUID(); 
+           custom_exists = true; 
+       } 
+    }
 }
 
 // this method adds player to his team's bg group, or sets his correct group if player is already in bg group
@@ -1960,6 +2064,45 @@ void Battleground::HandleKillPlayer(Player* victim, Player* killer)
         victim->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
         RewardXPAtKill(killer, victim);
     }
+    
+if (isBattleground() && sWorld->getBoolConfig(CONFIG_CUSTOM_BATTLEGROUND))   
+{
+       if (killer->GetGUID() == CustomGUID) 
+       {
+          killer->AddAura(spell_custom_2, killer);
+          killer->CastSpell(killer, spell_end, true);
+          random_rew = urand(1, 3);
+          killer->AddItem(37711, random_rew);
+          // выдача валюты 37711
+       }
+       
+       if (victim->GetGUID() == CustomGUID) 
+       {          
+           victim->ResetCustomDisplayId();
+           victim->DeMorph();
+           victim->DestroyItemCount(SPELL_CUSTOM, 1, true);
+           victim->RemoveAura(spell_custom_2);
+           victim->SetObjectScale(1.0f);
+           killer->Yell(TEXT, LANG_UNIVERSAL);
+           killer->GetSession()->SendNotification(notification);
+           ChatHandler(killer->GetSession()).PSendSysMessage(notification);
+           if (killer->GetTeamId() == TEAM_ALLIANCE)
+           {
+               SendMessage2ToAll(LANG_SELECT_DEF, CHAT_MSG_BG_SYSTEM_ALLIANCE, killer);
+               SendMessage2ToAll(LANG_SELECT_ATTACK, CHAT_MSG_BG_SYSTEM_HORDE, killer);
+           }
+           else
+           {
+               SendMessage2ToAll(LANG_SELECT_ATTACK, CHAT_MSG_BG_SYSTEM_ALLIANCE, killer);
+               SendMessage2ToAll(LANG_SELECT_DEF, CHAT_MSG_BG_SYSTEM_HORDE, killer);              
+           }
+           killer->SetCustomDisplayId(MORPH_CUSTOM);
+           killer->SetDisplayId(MORPH_CUSTOM, true);
+           killer->AddItem(SPELL_CUSTOM, 1); //баф 
+           killer->AddAura(spell_custom_2, killer);
+           CustomGUID = killer->GetGUID();           
+       }  
+ }       
 }
 
 // Return the player's team based on battlegroundplayer info

@@ -25,7 +25,12 @@ class npc_custom_starter : public CreatureScript  //250025
       
      struct npc_custom_starterAI : public ScriptedAI 
       { 
-         npc_custom_starterAI(Creature* creature) : ScriptedAI(creature) {}    
+         npc_custom_starterAI(Creature* creature) : ScriptedAI(creature)
+         {
+             _introDone = false;
+             _start_event = false;
+             _two_event = false;             
+         }    
             
          bool _introDone, _start_event, _two_event;
          uint32 timer;
@@ -47,11 +52,8 @@ class npc_custom_starter : public CreatureScript  //250025
           
          void Reset()
          {
-             _introDone = false;
-             _start_event = false;
              phase = 0;
              timer = 0;
-             _two_event = false;
              rand = 0;
              check = 0;
          }

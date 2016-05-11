@@ -1425,6 +1425,8 @@ void World::LoadConfigSettings(bool reload)
     m_bool_configs[CONFIG_ENABLE_WATERWALK_CHECK] = ConfigMgr::GetBoolDefault("MovementSync.WaterwalkCheckEnabled", false);
     m_bool_configs[CONFIG_ENABLE_HOVER_CHECK] = ConfigMgr::GetBoolDefault("MovementSync.HoverCheckEnabled", false);
     m_bool_configs[CONFIG_ENABLE_TELEPORT_CHECK] = ConfigMgr::GetBoolDefault("MovementSync.TeleportCheckEnabled", false);
+    
+    m_bool_configs[CONFIG_CUSTOM_BATTLEGROUND] = ConfigMgr::GetBoolDefault("Custom.BattleGround.event", false);
 
     if (reload)
         sScriptMgr->OnConfigLoad(reload);
