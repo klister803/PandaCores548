@@ -213,6 +213,8 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          InstanceScript* instance;
          uint32 checkvictim;
          uint8 weaponwavecount;
+         uint64 laserline[3][5];
+         bool createconveyer;
          
          void Reset()
          {
@@ -225,6 +227,15 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              me->RemoveAurasDueToSpell(SPELL_PROTECTIVE_FRENZY);
              me->RemoveAurasDueToSpell(SPELL_AUTOMATIC_REPAIR_BEAM_AT);
              me->SetReactState(REACT_DEFENSIVE);
+             ClearConveyerArray();
+         }
+
+         void ClearConveyerArray()
+         {
+             for (uint8 n = 0; n < 3; n++)
+                 for (uint8 m = 0; m < 5; m++)
+                     laserline[n][m] = 0;
+             createconveyer = false;
          }
 
          void RemoveDebuffs()
@@ -273,64 +284,48 @@ class boss_siegecrafter_blackfuse : public CreatureScript
 
          void CreateLaserWalls()
          {
-             uint8 mod = urand(0, 4);
-             switch (mod)
+             createconveyer = true;
+             for (uint8 n = 0; n < 5; n++)
+                 if (Creature* laser = me->SummonCreature(NPC_LASER_ARRAY, lapos[n]))
+                     laserline[0][n] = laser->GetGUID();
+             for (uint8 m = 0; m < 5; m++)
+                 if (Creature* laser2 = me->SummonCreature(NPC_LASER_ARRAY, lapos2[m]))
+                     laserline[1][m] = laser2->GetGUID();
+             for (uint8 b = 0; b < 5; b++)
+                 if (Creature* laser3 = me->SummonCreature(NPC_LASER_ARRAY, lapos3[b]))
+                     laserline[2][b] = laser3->GetGUID();
+             UpdateLaserWalls();
+         }
+
+         void UpdateLaserWalls()
+         {
+             uint8 mod;
+             for (uint8 n = 0; n < 3; n++)
              {
-             case 0:
-                 for (uint8 n = 0; n < 5; ++n) 
-                     if (n != 1 && n != 2)
-                         me->SummonCreature(NPC_LASER_ARRAY, lapos[n]);
-                 for (uint8 n = 0; n < 5; ++n) 
-                     if (n != 3 && n != 4)
-                         me->SummonCreature(NPC_LASER_ARRAY, lapos2[n]);
-                 for (uint8 n = 0; n < 5; ++n) 
-                     if (n != 0 && n != 1)
-                         me->SummonCreature(NPC_LASER_ARRAY, lapos3[n]);
-                 break;
-             case 1:
-                 for (uint8 n = 0; n < 5; ++n)
-                     if (n != 2 && n != 3)
-                         me->SummonCreature(NPC_LASER_ARRAY, lapos[n]);
-                 for (uint8 n = 0; n < 5; ++n)
-                     if (n != 0 && n != 1)
-                         me->SummonCreature(NPC_LASER_ARRAY, lapos2[n]);
-                 for (uint8 n = 0; n < 5; ++n)
-                     if (n != 3 && n != 4)
-                         me->SummonCreature(NPC_LASER_ARRAY, lapos3[n]);
-                 break;
-             case 2:
-                 for (uint8 n = 0; n < 5; ++n)
-                     if (n != 3 && n != 4)
-                         me->SummonCreature(NPC_LASER_ARRAY, lapos[n]);
-                 for (uint8 n = 0; n < 5; ++n)
-                     if (n != 2 && n != 3)
-                         me->SummonCreature(NPC_LASER_ARRAY, lapos2[n]);
-                 for (uint8 n = 0; n < 5; ++n)
-                     if (n != 0 && n != 1)
-                         me->SummonCreature(NPC_LASER_ARRAY, lapos3[n]);
-                 break;
-             case 3:
-                 for (uint8 n = 0; n < 5; ++n)
-                     if (n != 0 && n != 1)
-                         me->SummonCreature(NPC_LASER_ARRAY, lapos[n]);
-                 for (uint8 n = 0; n < 5; ++n)
-                     if (n != 3 && n != 4)
-                         me->SummonCreature(NPC_LASER_ARRAY, lapos2[n]);
-                 for (uint8 n = 0; n < 5; ++n)
-                     if (n != 2 && n != 3)
-                         me->SummonCreature(NPC_LASER_ARRAY, lapos3[n]);
-                 break;
-             case 4:
-                 for (uint8 n = 0; n < 5; ++n)
-                     if (n != 3 && n != 4)
-                         me->SummonCreature(NPC_LASER_ARRAY, lapos[n]);
-                 for (uint8 n = 0; n < 5; ++n)
-                     if (n != 0 && n != 1)
-                         me->SummonCreature(NPC_LASER_ARRAY, lapos2[n]);
-                 for (uint8 n = 0; n < 5; ++n)
-                     if (n != 2 && n != 3)
-                         me->SummonCreature(NPC_LASER_ARRAY, lapos3[n]);
-                 break;
+                 mod = urand(0, 4);
+                 for (uint8 m = 0; m < 5; m++)
+                 {
+                     if (Creature* laser = me->GetCreature(*me, laserline[n][m]))
+                     {
+                         if (m == mod)
+                         {
+                             if (laser->HasAura(SPELL_CONVEYOR_DEATH_BEAM_V))
+                             {
+                                 if (AreaTrigger* at = laser->GetAreaObject(SPELL_CONVEYOR_DEATH_BEAM_AT))
+                                     at->Despawn();
+                                 laser->RemoveAurasDueToSpell(SPELL_CONVEYOR_DEATH_BEAM_V);
+                             }
+                         }
+                         else
+                         {
+                             if (!laser->HasAura(SPELL_CONVEYOR_DEATH_BEAM_V))
+                             {
+                                 laser->AddAura(SPELL_CONVEYOR_DEATH_BEAM_V, laser);
+                                 laser->CastSpell(laser, SPELL_CONVEYOR_DEATH_BEAM_AT, true);
+                             }
+                         }
+                     }
+                 }
              }
          }
          
@@ -425,9 +420,10 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                      events.ScheduleEvent(EVENT_ELECTROSTATIC_CHARGE, 15000);
                      break;
                  case EVENT_ACTIVE_CONVEYER:
-                     if (!summons.empty())
-                         summons.DespawnEntry(NPC_LASER_ARRAY);
-                     CreateLaserWalls();
+                     if (!createconveyer)
+                         CreateLaserWalls();
+                     else
+                         UpdateLaserWalls();
                      events.ScheduleEvent(EVENT_START_CONVEYER, 10000);
                      break;
                  case EVENT_START_CONVEYER:
@@ -933,7 +929,7 @@ public:
             me->SetDisplayId(11686);
             me->SetReactState(REACT_PASSIVE);
             me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
-            if (me->GetEntry() == NPC_LASER_ARRAY)
+            if (me->GetEntry() == NPC_LASER_ARRAY && !me->ToTempSummon())
             {
                 me->AddAura(SPELL_CONVEYOR_DEATH_BEAM_V, me);
                 DoCast(me, SPELL_CONVEYOR_DEATH_BEAM_AT, true);
