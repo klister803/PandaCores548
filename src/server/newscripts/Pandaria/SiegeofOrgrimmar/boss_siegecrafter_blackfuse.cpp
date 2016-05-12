@@ -212,8 +212,10 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          
          InstanceScript* instance;
          uint32 checkvictim;
+         uint32 updatehmlaserwalls;
          uint8 weaponwavecount;
          uint64 laserline[3][5];
+         uint8 laserwallmod[3];
          bool createconveyer;
          
          void Reset()
@@ -223,6 +225,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
              checkvictim = 0;
              weaponwavecount = 0;
+             updatehmlaserwalls = 0;
              RemoveDebuffs();
              me->RemoveAurasDueToSpell(SPELL_PROTECTIVE_FRENZY);
              me->RemoveAurasDueToSpell(SPELL_AUTOMATIC_REPAIR_BEAM_AT);
@@ -235,6 +238,8 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              for (uint8 n = 0; n < 3; n++)
                  for (uint8 m = 0; m < 5; m++)
                      laserline[n][m] = 0;
+             for (uint8 b = 0; b < 3; b++)
+                 laserwallmod[b] = 0;
              createconveyer = false;
          }
 
@@ -294,7 +299,70 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              for (uint8 b = 0; b < 5; b++)
                  if (Creature* laser3 = me->SummonCreature(NPC_LASER_ARRAY, lapos3[b]))
                      laserline[2][b] = laser3->GetGUID();
-             UpdateLaserWalls();
+             if (me->GetMap()->IsHeroic())
+                 InitializeHMLaserWalls();
+             else
+                 UpdateLaserWalls();
+         }
+
+         void ResetHMLaserWalls()
+         {
+             updatehmlaserwalls = 0;
+             laserwallmod[0] = 1;
+             laserwallmod[1] = 2;
+             laserwallmod[2] = 3;
+             for (uint8 n = 0; n < 3; n++)
+             {
+                 for (uint8 m = 0; m < 5; m++)
+                 {
+                     if (Creature* laser = me->GetCreature(*me, laserline[n][m]))
+                     {
+                         if (m == laserwallmod[n])
+                         {
+                             if (laser->HasAura(SPELL_CONVEYOR_DEATH_BEAM_V))
+                             {
+                                 if (AreaTrigger* at = laser->GetAreaObject(SPELL_CONVEYOR_DEATH_BEAM_AT))
+                                     at->Despawn();
+                                 laser->RemoveAurasDueToSpell(SPELL_CONVEYOR_DEATH_BEAM_V);
+                             }
+                         }
+                         else
+                         {
+                             if (!laser->HasAura(SPELL_CONVEYOR_DEATH_BEAM_V))
+                             {
+                                 laser->AddAura(SPELL_CONVEYOR_DEATH_BEAM_V, laser);
+                                 laser->CastSpell(laser, SPELL_CONVEYOR_DEATH_BEAM_AT, true);
+                             }
+                         }
+                     }
+                 }
+             }
+             updatehmlaserwalls = 4000;
+         }
+
+         void InitializeHMLaserWalls()
+         {
+             uint8 mod = 1;
+             for (uint8 n = 0; n < 3; n++, mod++)
+             {
+                 for (uint8 m = 0; m < 5; m++)
+                 {
+                     if (Creature* laser = me->GetCreature(*me, laserline[n][m]))
+                     {
+                         if (m == mod)
+                             laser->CastSpell(laser, SPELL_CONVEYOR_DEATH_BEAM_V2);
+                         else
+                         {
+                             laser->AddAura(SPELL_CONVEYOR_DEATH_BEAM_V, laser);
+                             laser->CastSpell(laser, SPELL_CONVEYOR_DEATH_BEAM_AT, true);
+                         }
+                     }
+                 }
+             }
+             laserwallmod[0] = 1;
+             laserwallmod[1] = 2;
+             laserwallmod[2] = 3;
+             updatehmlaserwalls = 4000;
          }
 
          void UpdateLaserWalls()
@@ -327,6 +395,46 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                      }
                  }
              }
+         }
+
+         void UpdateHMLaserWalls()
+         {
+             for (uint8 b = 0; b < 3; b++)
+             {
+                 if (laserwallmod[b] + 1 > 4)
+                     laserwallmod[b] = 0;
+                 else
+                     laserwallmod[b] += 1;
+             }
+
+             for (uint8 n = 0; n < 3; n++)
+             {
+                 for (uint8 m = 0; m < 5; m++)
+                 {
+                     if (Creature* laser = me->GetCreature(*me, laserline[n][m]))
+                     {
+                         if (m == laserwallmod[n])
+                         {
+                             if (laser->HasAura(SPELL_CONVEYOR_DEATH_BEAM_V))
+                             {
+                                 if (AreaTrigger* at = laser->GetAreaObject(SPELL_CONVEYOR_DEATH_BEAM_AT))
+                                     at->Despawn();
+                                 laser->RemoveAurasDueToSpell(SPELL_CONVEYOR_DEATH_BEAM_V);
+                                 laser->CastSpell(laser, SPELL_CONVEYOR_DEATH_BEAM_V2);
+                             }
+                         }
+                         else
+                         {
+                             if (!laser->HasAura(SPELL_CONVEYOR_DEATH_BEAM_V))
+                             {
+                                 laser->AddAura(SPELL_CONVEYOR_DEATH_BEAM_V, laser);
+                                 laser->CastSpell(laser, SPELL_CONVEYOR_DEATH_BEAM_AT, true);
+                             }
+                         }
+                     }
+                 }
+             }
+             updatehmlaserwalls = 4000;
          }
          
          void JustDied(Unit* killer)
@@ -368,6 +476,17 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                  }
                  else
                      checkvictim -= diff;
+             }
+
+             if (updatehmlaserwalls)
+             {
+                 if (updatehmlaserwalls <= diff)
+                 {
+                     updatehmlaserwalls = 0;
+                     UpdateHMLaserWalls();
+                 }
+                 else
+                     updatehmlaserwalls -= diff;
              }
 
              events.Update(diff);
@@ -423,7 +542,12 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                      if (!createconveyer)
                          CreateLaserWalls();
                      else
-                         UpdateLaserWalls();
+                     {
+                         if (me->GetMap()->IsHeroic())
+                             ResetHMLaserWalls();
+                         else
+                             UpdateLaserWalls();
+                     }
                      events.ScheduleEvent(EVENT_START_CONVEYER, 10000);
                      break;
                  case EVENT_START_CONVEYER:
