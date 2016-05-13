@@ -47,6 +47,7 @@
    uint32 spell_end;
    uint32 LANG_SELECT_ATTACK;
    uint32 LANG_SELECT_DEF;
+   uint32 checktimer;
    std::string TEXT;
    const char* notification;
    std::string NewChar;
@@ -234,6 +235,7 @@ Battleground::Battleground()
     spell_custom_2 = 46392;
     custom_exists = false;
     CustomGUID = 0;
+    checktimer = 2000;
     switch(urand(1, 4))
     {
        case 1:
@@ -405,6 +407,24 @@ void Battleground::Update(uint32 diff)
     m_ValidStartPositionTimer += diff;
 
     PostUpdateImpl(diff);
+    
+    //customs update morph and scale, else can bug
+    if (isBattleground() && sWorld->getBoolConfig(CONFIG_CUSTOM_BATTLEGROUND))
+    { 
+      if (checktimer <= diff)
+      {
+         for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+             if (Player* player = sObjectAccessor->FindPlayer(itr->first))
+                if (player->GetGUID() == CustomGUID)
+                {
+                   player->SetDisplayId(MORPH_CUSTOM, true);
+                   player->SetCustomDisplayId(MORPH_CUSTOM); 
+                }
+         checktimer = 2000; //for small lags
+      }
+      else checktimer -= diff;
+                
+    }
 }
 
 inline void Battleground::_ProcessOfflineQueue()

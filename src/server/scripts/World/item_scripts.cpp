@@ -33,6 +33,8 @@ EndContentData */
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 #include "Spell.h"
+#include "WorldPacket.h"
+#include "WorldSession.h"
 
 /*#####
 # item_only_for_flight
@@ -547,7 +549,9 @@ class item_custom_event_bg : public ItemScript
 public:
     item_custom_event_bg() : ItemScript("item_custom_event_bg") { }
 
-    bool OnUse(Player* player, Item* item, SpellCastTargets const& /*targets*/)
+    uint32 spellid;
+    
+    bool OnUse(Player* player, Item* item, SpellCastTargets const& targets)
     {
          if (!player->InBattleground())
          {
@@ -557,8 +561,21 @@ public:
             player->DestroyItemCount(600003, 1, true);
             return false;
          }
+         if (item->GetEntry() == 600000)
+            spellid = 119513;
+         else if (item->GetEntry() == 600001)
+            spellid = 145547;
+         else if (item->GetEntry() == 600002)
+            spellid = 147702;
+         else if (item->GetEntry() == 600003)
+            spellid = 144638;
+         else
+            return false;
          
-        return true;
+         player->CastSpell(targets.GetUnitTarget(), spellid, false, item);
+         
+         
+         return true;
     }
 };
 

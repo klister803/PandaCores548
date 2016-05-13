@@ -3531,7 +3531,14 @@ void AuraEffect::HandleAuraCloneCaster(AuraApplication const* aurApp, uint8 mode
         Unit* caster = GetCaster();
         if (!caster || caster == target)
             return;
-
+         
+        // this need for donate morph
+        if (caster->GetTypeId() == TYPEID_PLAYER && caster->GetCustomDisplayId() && (caster->GetDisplayId() == caster->GetCustomDisplayId()))
+           if (target->GetTypeId() == TYPEID_PLAYER)
+              return;
+           else
+              target->SetObjectScale(caster->GetFloatValue(OBJECT_FIELD_SCALE_X));
+ 
         // Remove aura from invisible model
         target->RemoveAurasByType(SPELL_AURA_TRANSFORM);
 

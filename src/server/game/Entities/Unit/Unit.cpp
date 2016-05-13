@@ -18645,6 +18645,10 @@ bool Unit::IsPolymorphed() const
 
 void Unit::SetDisplayId(uint32 modelId, bool resize /* = false */)
 {
+       //for custom morph if reshift - need set scale normally
+    if (GetTypeId() == TYPEID_PLAYER && GetCustomDisplayId() && !(modelId == GetCustomDisplayId()))
+       SetObjectScale(1.0f);
+    
        // this need for custom morph (donate)
     if (resize && GetTypeId() == TYPEID_PLAYER)
     {
@@ -18663,7 +18667,7 @@ void Unit::SetDisplayId(uint32 modelId, bool resize /* = false */)
 //                SetObjectScale(1.0f);
         }
     }
-   
+  
     SetUInt32Value(UNIT_FIELD_DISPLAYID, modelId);
 
     if (GetTypeId() == TYPEID_UNIT && ToCreature()->isPet())
@@ -18708,7 +18712,7 @@ void Unit::RestoreDisplayId()
         SetDisplayId(modelId);
     // no auras found - set modelid to default
     else if (GetCustomDisplayId())
-       SetDisplayId(GetCustomDisplayId());
+       SetDisplayId(GetCustomDisplayId(), true);
     else
         SetDisplayId(GetNativeDisplayId());
 }
