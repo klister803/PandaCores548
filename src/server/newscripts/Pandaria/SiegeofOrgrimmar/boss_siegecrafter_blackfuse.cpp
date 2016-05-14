@@ -46,6 +46,7 @@ enum eSpells
     SPELL_MAGNETIC_CRASH_DMG        = 144466,
     //Shock Wave
     SPELL_SHOCKWAVE_VISUAL_SPAWN    = 144647,
+    SPELL_SHOCKWAVE_VISUAL_SPAWN_HM = 146155,
     SPELL_SHOCKWAVE_VISUAL_TURRET   = 143640, 
     SPELL_SHOCKWAVE_MISSILE_T_M     = 143641,
     SPELL_SHOCKWAVE_MISSILE         = 144658,
@@ -165,9 +166,9 @@ uint32 wavearray[6][4] =
 
 Position spawnweaponpos[3] =
 {
-    { 1973.65f, -5472.38f, -299.0f, 5.294743f },
-    { 1958.50f, -5450.76f, -299.0f, 5.294743f },
-    { 1941.65f, -5425.50f, -299.0f, 5.294743f },
+    { 1973.65f, -5472.38f, -302.8868f, 5.294743f }, //old z -299.0f
+    { 1958.50f, -5450.76f, -302.8868f, 5.294743f },
+    { 1941.65f, -5425.50f, -302.8868f, 5.294743f },
 };
 
 uint32 aweaponentry[3] =
@@ -229,6 +230,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              RemoveDebuffs();
              me->RemoveAurasDueToSpell(SPELL_PROTECTIVE_FRENZY);
              me->RemoveAurasDueToSpell(SPELL_AUTOMATIC_REPAIR_BEAM_AT);
+             me->RemoveAurasDueToSpell(SPELL_ENERGIZED_DEFENSIVE_MATRIX);
              me->SetReactState(REACT_DEFENSIVE);
              ClearConveyerArray();
          }
@@ -282,8 +284,8 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          void CreateWeaponWave(uint8 wavecount)
          {
              for (uint8 n = 1; n < 4; n++)
-                 if (Creature* weapon = me->SummonCreature(wavearray[wavecount][n], spawnweaponpos[n-1]))
-                     weapon->GetMotionMaster()->MoveCharge(destpos.GetPositionX(), destpos.GetPositionY(), destpos.GetPositionZ(), 8.0f, false);
+                 if (Creature* weapon = me->SummonCreature(wavearray[wavecount][n], spawnweaponpos[n - 1]))
+                     weapon->GetMotionMaster()->MoveJump(destpos.GetPositionX(), destpos.GetPositionY(), destpos.GetPositionZ(), 8.0f, 0.0f);
              weaponwavecount = weaponwavecount >= 5 ? 0 : ++weaponwavecount;
          }
 
@@ -562,7 +564,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                      break;
                  case EVENT_SUMMON_SHREDDER:
                      Talk(SAY_SPAWN_SHREDDER);
-                     if (Creature* shredder = me->SummonCreature(NPC_AUTOMATED_SHREDDER, sumshrederpos.GetPositionX(), sumshrederpos.GetPositionY(), sumshrederpos.GetPositionZ()))
+                     if (Creature* shredder = me->SummonCreature(NPC_AUTOMATED_SHREDDER, sumshrederpos.GetPositionX(), sumshrederpos.GetPositionY(), sumshrederpos.GetPositionZ(), 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
                          shredder->AI()->DoZoneInCombat(shredder, 100.0f);
                      events.ScheduleEvent(EVENT_SUMMON_SHREDDER, 60000);
                      break;
@@ -806,9 +808,7 @@ public:
 
         void MovementInform(uint32 type, uint32 pointId)
         {
-            switch (type)
-            {
-            case POINT_MOTION_TYPE:
+            if (type == EFFECT_MOTION_TYPE || type == POINT_MOTION_TYPE)
             {
                 switch (pointId)
                 {
@@ -836,16 +836,12 @@ public:
                         break;
                     }
                     break;
-                }
-                break;
-            }
-            case EFFECT_MOTION_TYPE:
-                if (pointId == 3)
-                {
+                //crawler mine in platform and ready start pursuit
+                case 3:
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                     events.ScheduleEvent(EVENT_PURSUE, 500);
+                    break;
                 }
-                break;
             }
         }
 
@@ -1053,6 +1049,7 @@ public:
             me->SetDisplayId(11686);
             me->SetReactState(REACT_PASSIVE);
             me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             if (me->GetEntry() == NPC_LASER_ARRAY && !me->ToTempSummon())
             {
                 me->AddAura(SPELL_CONVEYOR_DEATH_BEAM_V, me);
@@ -1076,7 +1073,10 @@ public:
 
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
-            damage = 0;
+            if (!me->GetMap()->IsHeroic())
+                damage = 0;
+            else if (me->GetMap()->IsHeroic() && me->GetEntry() != NPC_SHOCKWAVE_MISSILE)
+                damage = 0;
         }
 
         void SpellHit(Unit* caster, SpellInfo const *spell)
@@ -1091,7 +1091,13 @@ public:
             {
                 if (Unit* blackfuse = me->ToTempSummon()->GetSummoner())
                 {
-                    DoCast(me, SPELL_SHOCKWAVE_VISUAL_SPAWN, true);
+                    if (me->GetMap()->IsHeroic())
+                    {
+                        DoCast(me, SPELL_SHOCKWAVE_VISUAL_SPAWN_HM, true);
+                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                    }
+                    else
+                        DoCast(me, SPELL_SHOCKWAVE_VISUAL_SPAWN, true);
                     DoCast(me, shockwavemissilelist[num++]);
                     events.ScheduleEvent(EVENT_SHOCKWAVE_MISSILE, 3500);
                 }
@@ -1109,6 +1115,11 @@ public:
                     DoCast(me, shockwavemissilelist[num++]);
                     if (num < 6)
                         events.ScheduleEvent(EVENT_SHOCKWAVE_MISSILE, 3500);
+                    else if (num >= 6 && me->GetMap()->IsHeroic())
+                    {
+                        num = 0;
+                        events.ScheduleEvent(EVENT_SHOCKWAVE_MISSILE, 3500);
+                    }
                 }
             }
         }
@@ -1471,6 +1482,34 @@ public:
     }
 };
 
+//143641, 144658
+class spell_shockwave_missiles_tm : public SpellScriptLoader
+{
+public:
+    spell_shockwave_missiles_tm() : SpellScriptLoader("spell_shockwave_missiles_tm") { }
+
+    class spell_shockwave_missiles_tm_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_shockwave_missiles_tm_SpellScript);
+
+        void RecalculateDamage()
+        {
+            if (GetHitUnit() && GetHitUnit()->ToCreature())
+                SetHitDamage(0);
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_shockwave_missiles_tm_SpellScript::RecalculateDamage);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_shockwave_missiles_tm_SpellScript();
+    }
+};
+
 //9250, 9251, 9252, 9253, 9371, 9240, 9189, 9190, 9493, 9194, 9238, 9239, 
 class at_blackfuse_pipe : public AreaTriggerScript
 {
@@ -1553,5 +1592,6 @@ void AddSC_boss_siegecrafter_blackfuse()
     new spell_on_conveyor();
     new spell_blacksue_cm_explose();
     new spell_pattern_recognition();
+    new spell_shockwave_missiles_tm();
     new at_blackfuse_pipe();
 }
