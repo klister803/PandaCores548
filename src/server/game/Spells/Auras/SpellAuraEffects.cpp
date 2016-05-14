@@ -3533,7 +3533,9 @@ void AuraEffect::HandleAuraCloneCaster(AuraApplication const* aurApp, uint8 mode
             return;
          
         // this need for donate morph
-        if (caster->GetTypeId() == TYPEID_PLAYER && caster->GetCustomDisplayId() && (caster->GetDisplayId() == caster->GetCustomDisplayId()))
+        if (caster->GetTypeId() == TYPEID_PLAYER && 
+        ((caster->GetCustomDisplayId() && (caster->GetDisplayId() == caster->GetCustomDisplayId())) || 
+        caster->HasAura(92147) || caster->HasAura(33476) || caster->HasAura(98044) || caster->HasAura(33476) || caster->HasAura(33447) || caster->HasAura(33411)))
            if (target->GetTypeId() == TYPEID_PLAYER)
               return;
            else
