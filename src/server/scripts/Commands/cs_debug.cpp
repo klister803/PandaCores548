@@ -77,6 +77,7 @@ public:
             { "backward",       SEC_REALM_LEADER,   false, &HandleDebugMoveBackward,           "", NULL },
             { "bg",             SEC_REALM_LEADER,   false, &HandleDebugBattlegroundCommand,    "", NULL },
             { "crit",           SEC_REALM_LEADER,   false, &HandleDebugModifyCritChanceCommand,     "", NULL },
+            { "clientGUIDs",    SEC_GAMEMASTER,     false, &HandleDebugClientGUIDsCommand,     "", NULL },
             { "entervehicle",   SEC_ADMINISTRATOR,  false, &HandleDebugEnterVehicleCommand,    "", NULL },
             { "getdynamicvalue",SEC_ADMINISTRATOR,  false, &HandleDebugGetDynamicValueCommand, "", NULL },
             { "getitemstate",   SEC_ADMINISTRATOR,  false, &HandleDebugGetItemStateCommand,    "", NULL },
@@ -1724,6 +1725,31 @@ public:
         player->SetStatFloatValue(PLAYER_RANGED_CRIT_PERCENTAGE, Value);
         for (int school = SPELL_SCHOOL_NORMAL; school != MAX_SPELL_SCHOOL; ++school)
             player->SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1+school, Value);
+        return true;
+    }
+    static bool HandleDebugClientGUIDsCommand(ChatHandler* handler, const char* /*args*/)
+    {
+        Player* plr = handler->getSelectedPlayer();
+
+        if (!plr)
+            return false;
+
+        uint16 playerGUIDs = 0;
+        uint16 otherGUIDs  = 0;
+
+        for (auto itr : plr->m_clientGUIDs)
+        {
+            if (IS_PLAYER_GUID(itr))
+                playerGUIDs++;
+            else
+                otherGUIDs++;
+        }
+
+        handler->PSendSysMessage("===============");
+        handler->PSendSysMessage("ClientGUIDs: %u", plr->m_clientGUIDs.size());
+        handler->PSendSysMessage("PlayerGUIDs: %u", playerGUIDs);
+        handler->PSendSysMessage("OtherGUIDs: %u", otherGUIDs);
+
         return true;
     }
     static bool HandleDebugModifyHasteCommand(ChatHandler* handler, const char* args)
