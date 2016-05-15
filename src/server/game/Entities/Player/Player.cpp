@@ -25850,6 +25850,7 @@ void Player::AddComboPoints(Unit* target, int8 count, Spell* spell)
         return;
 
     int8 oldComboPoints = m_comboPoints;
+    bool needUpdateComboTarget = false;
 
     // without combo points lost (duration checked in aura)
     RemoveAurasByType(SPELL_AURA_RETAIN_COMBO_POINTS);
@@ -25873,6 +25874,7 @@ void Player::AddComboPoints(Unit* target, int8 count, Spell* spell)
 
         m_comboTarget = target->GetGUID();
         target->AddComboPointHolder(GetGUIDLow());
+        needUpdateComboTarget = true;
     }
 
     m_comboPoints += count;
@@ -25898,7 +25900,7 @@ void Player::AddComboPoints(Unit* target, int8 count, Spell* spell)
     else if (m_comboPoints < 0)
         m_comboPoints = 0;
 
-    if (oldComboPoints != m_comboPoints && !m_updateComboPointsTimer)
+    if ((oldComboPoints != m_comboPoints || needUpdateComboTarget) && !m_updateComboPointsTimer)
         m_updateComboPointsTimer = 300;
 }
 
