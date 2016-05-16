@@ -1608,6 +1608,11 @@ public:
                                 {
                                     if (Creature* aw = blackfuse->SummonCreature(aweaponentry[n], spawnaweaponpos[n].GetPositionX() + float(b + 2), spawnaweaponpos[n].GetPositionY() + float(b + 2), spawnaweaponpos[n].GetPositionZ(), 0.0f))
                                     {
+                                        if (instance->IsHeroic())
+                                        {
+                                            aw->CastSpell(aw, SPELL_SUPERHEATED_CRAWLER_MINE, true);
+                                            aw->SetFloatValue(OBJECT_FIELD_SCALE_X, 2.0f);
+                                        }
                                         aw->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                                         aw->GetMotionMaster()->MoveCharge(destapos[n].GetPositionX() + float(b + 2), destapos[n].GetPositionY() + float(b + 2), destapos[n].GetPositionZ(), 10.0f, 1, false);
                                     }
@@ -1639,6 +1644,11 @@ public:
                                 {
                                     if (Creature* weapon = blackfuse->SummonCreature(_wavearray[num][n], spawnaweaponpos[n - 1].GetPositionX() + float(b + 2), spawnaweaponpos[n - 1].GetPositionY() + float(b + 2), spawnaweaponpos[n - 1].GetPositionZ(), 0.0f))
                                     {
+                                        if (instance->IsHeroic())
+                                        {
+                                            weapon->CastSpell(weapon, SPELL_SUPERHEATED_CRAWLER_MINE, true);
+                                            weapon->SetFloatValue(OBJECT_FIELD_SCALE_X, 2.0f);
+                                        }
                                         weapon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                                         weapon->GetMotionMaster()->MoveCharge(destapos[n - 1].GetPositionX() + float(b + 2), destapos[n - 1].GetPositionY() + float(b + 2), destapos[n - 1].GetPositionZ(), 10.0f, 1, false);
                                     }
@@ -2183,7 +2193,7 @@ public:
                         if (player->isAlive() && player->HasAura(SPELL_ON_CONVEYOR))
                         {
                             player->RemoveAurasDueToSpell(SPELL_ON_CONVEYOR);
-                            player->GetMotionMaster()->MoveJump(2008.93f, -5600.63f, -309.3268f, 15.0f, 15.0f);
+                            player->GetMotionMaster()->MoveJump(2008.93f, -5600.63f, -309.3268f, 20.0f, 20.0f);
                         }
                     }
                 }

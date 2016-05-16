@@ -760,13 +760,16 @@ public:
                 break;
             case NPC_BLACKFUSE_CRAWLER_MINE:
                 if (Player* pl = me->GetPlayer(*me, targetGuid))
-                {
                     if (pl->isAlive())
-                    {
                         pl->RemoveAurasDueToSpell(SPELL_CRAWLER_MINE_FIXATE_PL);
-                        me->DespawnOrUnsummon(1000);
-                    }
-                }
+
+                if (me->HasAura(SPELL_SUPERHEATED_CRAWLER_MINE) && me->GetMap()->IsHeroic())
+                    if (me->ToTempSummon())
+                        if (Unit* blackfuse = me->ToTempSummon()->GetSummoner())
+                            for (uint8 n = 0; n < 2; n++)
+                                if (Creature* mine = blackfuse->SummonCreature(NPC_BLACKFUSE_CRAWLER_MINE, me->GetPositionX() + n * 2, me->GetPositionY(), me->GetPositionZ(), 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000))
+                                    mine->AI()->SetData(DATA_CRAWLER_MINE_ENTERCOMBAT, 0);
+                me->DespawnOrUnsummon(1000);
                 break;
             default:
                 break;
