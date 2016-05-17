@@ -37,6 +37,7 @@ void AddSC_npc_teleguy();
 void AddSC_npc_visualweapon();
 void AddSC_donate_mount();
 void AddSC_custum_event();
+void AddSC_custom_events_x20();
 
 // spells
 void AddSC_deathknight_spell_scripts();
@@ -1912,5 +1913,6 @@ void AddCustomScripts()
     AddSC_npc_visualweapon();
     AddSC_donate_mount();
     AddSC_custum_event();
+    AddSC_custom_events_x20();
 #endif
 }

@@ -26,6 +26,7 @@ set(scripts_STAT_SRCS
     Custom/npc_visualweapon_mop.cpp
     Custom/command_donate_mount.cpp
      Custom/custom_event.cpp
+    Custom/custom_events_x20.cpp
 )
 
 message("  -> Prepared: Custom")

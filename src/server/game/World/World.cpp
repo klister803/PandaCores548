@@ -1426,8 +1426,9 @@ void World::LoadConfigSettings(bool reload)
     m_bool_configs[CONFIG_ENABLE_HOVER_CHECK] = ConfigMgr::GetBoolDefault("MovementSync.HoverCheckEnabled", false);
     m_bool_configs[CONFIG_ENABLE_TELEPORT_CHECK] = ConfigMgr::GetBoolDefault("MovementSync.TeleportCheckEnabled", false);
     
+    // custom events
     m_bool_configs[CONFIG_CUSTOM_BATTLEGROUND] = ConfigMgr::GetBoolDefault("Custom.BattleGround.event", false);
-
+    m_bool_configs[CONFIG_CUSTOM_X20] = ConfigMgr::GetBoolDefault("Custom.Achievement.x20", false);
     if (reload)
         sScriptMgr->OnConfigLoad(reload);
 }

@@ -62,7 +62,7 @@ VisualData vData[] =
     { 2, 0, GOSSIP_ICON_BATTLE, 3846, "Сила заклинания 2" , 0, "Вы действительно хотите наложить это зачарование за |TInterface/ICONS/Inv_qiraj_jewelblessed:30|t Золотая Монета?" },
     { 2, 0, GOSSIP_ICON_BATTLE, 1606, "Сила Атаки" , 0, "Вы действительно хотите наложить это зачарование за |TInterface/ICONS/Inv_qiraj_jewelblessed:30|t Золотая Монета?" },
     { 2, 0, GOSSIP_ICON_BATTLE, 283, "Неистовство ветра" , 0, "Вы действительно хотите наложить это зачарование за |TInterface/ICONS/Inv_qiraj_jewelblessed:30|t Золотая Монета?" },
-    { 2, 0, GOSSIP_ICON_BATTLE, 1, "Камнедробитель" , 0, "Вы действительно хотите наложить это зачарование за |TInterface/ICONS/Inv_qiraj_jewelblessed:30|t Золотая Монета?" },
+    { 2, 0, GOSSIP_ICON_BATTLE, 3021, "Оружие Камнедробителя" , 0, "Вы действительно хотите наложить это зачарование за |TInterface/ICONS/Inv_qiraj_jewelblessed:30|t Золотая Монета?" },
     { 2, 3, GOSSIP_ICON_TALK, 0, "Следующая страница ->" , 0, "" },
     { 2, 1, GOSSIP_ICON_TALK, 0, "<- Предыдущая страница" , 0, "" },
  

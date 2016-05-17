@@ -3104,3 +3104,12 @@ DisableUpdateOnlineTable = 0
 #                     1 - Enabled
 
 FasterLoading.Enabled = 0
+
+
+
+#  Custom.Achievement.x20 = 1
+#     Description: Enable of disable custom event with achievements for x20
+#     Default: 1 - Enable
+#              0 - Disable
++#
+Custom.Achievement.x20 = 0
