@@ -1602,7 +1602,7 @@ void AddSC_boss_siegecrafter_blackfuse()
     new spell_disintegration_laser();
     new spell_death_from_above();
     new spell_shockwave_missile();
-    new spell_on_conveyor();
+    //new spell_on_conveyor();
     new spell_blacksue_cm_explose();
     new spell_pattern_recognition();
     new spell_shockwave_missiles_tm();
