@@ -101,6 +101,7 @@ enum eEvents
     EVENT_OVERLOAD                  = 11,
     //Special
     EVENT_LAUNCH_BACK               = 12,
+    EVENT_DESPAWN                   = 13,
 };
 
 enum _ATentry
@@ -285,7 +286,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          {
              for (uint8 n = 1; n < 4; n++)
                  if (Creature* weapon = me->SummonCreature(wavearray[wavecount][n], spawnweaponpos[n - 1]))
-                     weapon->GetMotionMaster()->MoveJump(destpos.GetPositionX(), destpos.GetPositionY(), destpos.GetPositionZ(), 8.0f, 0.0f);
+                     weapon->GetMotionMaster()->MoveJump(destpos.GetPositionX(), destpos.GetPositionY(), destpos.GetPositionZ(), 8.0f, 0.0f, 0);
              weaponwavecount = weaponwavecount >= 5 ? 0 : ++weaponwavecount;
          }
 
@@ -553,12 +554,6 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                      events.ScheduleEvent(EVENT_START_CONVEYER, 10000);
                      break;
                  case EVENT_START_CONVEYER:
-                     /*if (!summons.empty())
-                     {
-                         for (uint8 n = 0; n < 3; n++)
-                             summons.DespawnEntry(aweaponentry[n]);
-                         instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MAGNETIC_CRASH_DMG);
-                     }*/
                      CreateWeaponWave(weaponwavecount);
                      events.ScheduleEvent(EVENT_ACTIVE_CONVEYER, 30000);
                      break;
@@ -769,7 +764,7 @@ public:
                             for (uint8 n = 0; n < 2; n++)
                                 if (Creature* mine = blackfuse->SummonCreature(NPC_BLACKFUSE_CRAWLER_MINE, me->GetPositionX() + n * 2, me->GetPositionY(), me->GetPositionZ(), 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000))
                                     mine->AI()->SetData(DATA_CRAWLER_MINE_ENTERCOMBAT, 0);
-                me->DespawnOrUnsummon(1000);
+                me->DespawnOrUnsummon();
                 break;
             default:
                 break;
@@ -817,8 +812,11 @@ public:
                 {
                 //offline weapon in dest point
                 case 0:
-                    instance->SetData(DATA_D_WEAPON_IN_DEST_POINT, 0);
-                    me->DespawnOrUnsummon();
+                    if (me->GetEntry() != NPC_BLACKFUSE_CRAWLER_MINE)
+                    {
+                        instance->SetData(DATA_D_WEAPON_IN_DEST_POINT, 0);
+                        me->DespawnOrUnsummon();
+                    }
                     break;
                 //online weapon in dest point
                 case 1:
@@ -903,7 +901,6 @@ public:
                                         laser->AddThreat(*itr, 50000000.0f);
                                         laser->SetReactState(REACT_AGGRESSIVE);
                                         laser->TauntApply(*itr);
-                                        me->DespawnOrUnsummon(16000);
                                         break;
                                     }
                                 }
@@ -911,6 +908,7 @@ public:
                         }
                     }
                 }
+                events.ScheduleEvent(EVENT_DESPAWN, 16000);
             }
         }
 
@@ -927,6 +925,7 @@ public:
                     (*itr)->GetMotionMaster()->MoveCharge(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 15.0f, 4);
                 }
             }
+            events.ScheduleEvent(EVENT_DESPAWN, 30000);
         }
 
         void ActivateMissileTurret()
@@ -943,7 +942,7 @@ public:
                         {
                             mt->SetFacingToObject(me);
                             DoCast(mt, SPELL_SHOCKWAVE_VISUAL_TURRET);
-                            me->DespawnOrUnsummon(1000);
+                            mt->AI()->SetGUID(me->GetGUID(), 0);
                         }
                     }
                 }
@@ -1012,6 +1011,7 @@ public:
                 }
                 break;
                 case EVENT_CHECK_DISTANCE:
+                {
                     Player* pl = me->GetPlayer(*me, targetGuid);
                     if (pl && pl->isAlive() && !pl->HasAura(SPELL_ON_CONVEYOR))
                     {
@@ -1032,7 +1032,16 @@ public:
                         return;
                     }
                     events.ScheduleEvent(EVENT_CHECK_DISTANCE, 1000);
-                    break;
+                }
+                break;
+                case EVENT_DESPAWN:
+                {
+                    if (me->GetEntry() == NPC_ACTIVATED_ELECTROMAGNET)
+                        if (instance)
+                            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MAGNETIC_CRASH_DMG);
+                    me->DespawnOrUnsummon();
+                }
+                break;
                 }
             }
         }
@@ -1055,10 +1064,7 @@ public:
         npc_blackfuse_triggerAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
-            if (me->GetEntry() == NPC_SHOCKWAVE_MISSILE_STALKER)
-                me->SetDisplayId(1126); //test
-            else
-                me->SetDisplayId(11686);
+            me->SetDisplayId(11686);
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             if (me->GetEntry() == NPC_LASER_ARRAY && !me->ToTempSummon())
@@ -1071,6 +1077,7 @@ public:
         }
         InstanceScript* instance;
         EventMap events;
+        uint64 cannonGuid;
         uint8 num;
 
         void Reset()
@@ -1097,6 +1104,11 @@ public:
                 CreateShockWaveMissileEvent();
         }
 
+        void SetGUID(uint64 guid, int32 /*id*/)
+        {
+            cannonGuid = guid;
+        }
+
         void CreateShockWaveMissileEvent()
         {
             if (me->ToTempSummon())
@@ -1113,6 +1125,8 @@ public:
                     DoCast(me, shockwavemissilelist[num++]);
                     events.ScheduleEvent(EVENT_SHOCKWAVE_MISSILE, 3500);
                 }
+                if (Creature* cannon = me->GetCreature(*me, cannonGuid))
+                    cannon->DespawnOrUnsummon();
             }
         }
 
@@ -1377,8 +1391,9 @@ public:
         void HandleAfterCast()
         {
             if (GetSpellInfo()->Id == SPELL_SHOCKWAVE_MISSILE6)
-                if (GetCaster() && GetCaster()->ToCreature())
-                    GetCaster()->ToCreature()->DespawnOrUnsummon(1000);
+                if (!GetCaster()->GetMap()->IsHeroic())
+                    if (GetCaster() && GetCaster()->ToCreature())
+                        GetCaster()->ToCreature()->DespawnOrUnsummon(1000);
         }
 
         void Register()
@@ -1395,34 +1410,6 @@ public:
         return new spell_shockwave_missile_SpellScript();
     }
 };
-
-//144287
-/*class spell_on_conveyor : public SpellScriptLoader
-{
-public:
-    spell_on_conveyor() : SpellScriptLoader("spell_on_conveyor") { }
-
-    class spell_on_conveyor_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_on_conveyor_AuraScript);
-
-        void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes mode)
-        {
-            if (GetTarget() && !GetTarget()->HasAura(SPELL_PATTERN_RECOGNITION))
-                GetTarget()->CastSpell(GetTarget(), SPELL_PATTERN_RECOGNITION, true);
-        }
-
-        void Register()
-        {
-            OnEffectApply += AuraEffectApplyFn(spell_on_conveyor_AuraScript::OnApply, EFFECT_0, SPELL_AURA_INTERFERE_TARGETTING, AURA_EFFECT_HANDLE_REAL);
-        }
-    };
-
-    AuraScript* GetAuraScript() const
-    {
-        return new spell_on_conveyor_AuraScript();
-    }
-};*/
 
 class CMExploseFilterTarget
 {
@@ -1602,7 +1589,6 @@ void AddSC_boss_siegecrafter_blackfuse()
     new spell_disintegration_laser();
     new spell_death_from_above();
     new spell_shockwave_missile();
-    //new spell_on_conveyor();
     new spell_blacksue_cm_explose();
     new spell_pattern_recognition();
     new spell_shockwave_missiles_tm();

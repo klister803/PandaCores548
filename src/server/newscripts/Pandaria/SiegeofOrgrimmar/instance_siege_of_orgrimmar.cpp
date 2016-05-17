@@ -1600,6 +1600,7 @@ public:
                 {
                     if (weaponsdone == 2 && !aweaponentry.empty())
                     {
+                        weaponsdone = 0;
                         for (uint8 n = 0; n < 2; n++)
                         {
                             if (aweaponentry[n] == NPC_BLACKFUSE_CRAWLER_MINE)
@@ -1629,10 +1630,10 @@ public:
                         }
                         aweaponentry.clear();
                         EjectPlayersFromConveyor();
-                        weaponsdone = 0;
                     }
                     else if (weaponsdone == 3 && aweaponentry.empty())
                     {
+                        weaponsdone = 0;
                         blackfuse->CastSpell(blackfuse, SPELL_ENERGIZED_DEFENSIVE_MATRIX, true);
                         uint8 num = blackfuse->AI()->GetData(DATA_GET_WEAPON_WAVE_INDEX);
                         num = !num ? 5 : --num;
@@ -1664,7 +1665,6 @@ public:
                             }
                         }
                         EjectPlayersFromConveyor();
-                        weaponsdone = 0;
                     }
                 }
                 break;
