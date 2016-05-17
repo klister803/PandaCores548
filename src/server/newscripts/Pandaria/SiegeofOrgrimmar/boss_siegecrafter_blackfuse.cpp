@@ -553,14 +553,14 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                      events.ScheduleEvent(EVENT_START_CONVEYER, 10000);
                      break;
                  case EVENT_START_CONVEYER:
-                     if (!summons.empty())
+                     /*if (!summons.empty())
                      {
                          for (uint8 n = 0; n < 3; n++)
                              summons.DespawnEntry(aweaponentry[n]);
                          instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MAGNETIC_CRASH_DMG);
-                     }
+                     }*/
                      CreateWeaponWave(weaponwavecount);
-                     events.ScheduleEvent(EVENT_ACTIVE_CONVEYER, 50000);
+                     events.ScheduleEvent(EVENT_ACTIVE_CONVEYER, 30000);
                      break;
                  case EVENT_SUMMON_SHREDDER:
                      Talk(SAY_SPAWN_SHREDDER);
@@ -877,6 +877,10 @@ public:
 
         void StartDisentegrationLaser()
         {
+            //HM version
+            //54yards big radius
+            //33yards medium radius
+            //14yards small radius
             if (me->ToTempSummon())
             {
                 if (Unit* blackfuse = me->ToTempSummon()->GetSummoner())
@@ -899,6 +903,7 @@ public:
                                         laser->AddThreat(*itr, 50000000.0f);
                                         laser->SetReactState(REACT_AGGRESSIVE);
                                         laser->TauntApply(*itr);
+                                        me->DespawnOrUnsummon(16000);
                                         break;
                                     }
                                 }
@@ -938,6 +943,7 @@ public:
                         {
                             mt->SetFacingToObject(me);
                             DoCast(mt, SPELL_SHOCKWAVE_VISUAL_TURRET);
+                            me->DespawnOrUnsummon(1000);
                         }
                     }
                 }
@@ -1049,12 +1055,15 @@ public:
         npc_blackfuse_triggerAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
-            me->SetDisplayId(11686);
+            if (me->GetEntry() == NPC_SHOCKWAVE_MISSILE_STALKER)
+                me->SetDisplayId(1126); //test
+            else
+                me->SetDisplayId(11686);
             me->SetReactState(REACT_PASSIVE);
-            me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             if (me->GetEntry() == NPC_LASER_ARRAY && !me->ToTempSummon())
             {
+                me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                 me->AddAura(SPELL_CONVEYOR_DEATH_BEAM_V, me);
                 DoCast(me, SPELL_CONVEYOR_DEATH_BEAM_AT, true);
             }
@@ -1388,7 +1397,7 @@ public:
 };
 
 //144287
-class spell_on_conveyor : public SpellScriptLoader
+/*class spell_on_conveyor : public SpellScriptLoader
 {
 public:
     spell_on_conveyor() : SpellScriptLoader("spell_on_conveyor") { }
@@ -1397,7 +1406,7 @@ public:
     {
         PrepareAuraScript(spell_on_conveyor_AuraScript);
 
-        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes mode)
         {
             if (GetTarget() && !GetTarget()->HasAura(SPELL_PATTERN_RECOGNITION))
                 GetTarget()->CastSpell(GetTarget(), SPELL_PATTERN_RECOGNITION, true);
@@ -1413,7 +1422,7 @@ public:
     {
         return new spell_on_conveyor_AuraScript();
     }
-};
+};*/
 
 class CMExploseFilterTarget
 {
@@ -1551,9 +1560,10 @@ public:
                 case ENTER_CONVEYOR_2:
                     if (instance->GetBossState(DATA_BLACKFUSE) == IN_PROGRESS)
                     {
-                        if (!player->HasAura(SPELL_PURSUIT_LASER) && !player->HasAura(SPELL_ON_CONVEYOR) && !player->HasAura(SPELL_CRAWLER_MINE_FIXATE_PL) && !player->HasAura(SPELL_PATTERN_RECOGNITION))
+                        if (!player->HasAura(SPELL_PATTERN_RECOGNITION) && !player->HasAura(SPELL_PURSUIT_LASER) && !player->HasAura(SPELL_ON_CONVEYOR) && !player->HasAura(SPELL_CRAWLER_MINE_FIXATE_PL))
                         {
                             player->CastSpell(player, SPELL_ON_CONVEYOR, true);
+                            player->CastSpell(player, SPELL_PATTERN_RECOGNITION, true);
                             player->NearTeleportTo(atdestpos[2].GetPositionX(), atdestpos[2].GetPositionY(), atdestpos[2].GetPositionZ(), atdestpos[2].GetOrientation());
                         }
                         else
