@@ -52,8 +52,6 @@
    const char* notification;
    std::string NewChar;
    bool custom_exists;
-   uint32 random_rew;
-
 
 namespace Trinity
 {
@@ -417,8 +415,11 @@ void Battleground::Update(uint32 diff)
              if (Player* player = sObjectAccessor->FindPlayer(itr->first))
                 if (player->GetGUID() == CustomGUID)
                 {
-                   player->SetDisplayId(MORPH_CUSTOM, true);
-                   player->SetCustomDisplayId(MORPH_CUSTOM); 
+                   if (!player->IsMounted())
+                   {
+                     player->SetDisplayId(MORPH_CUSTOM, true);
+                     player->SetCustomDisplayId(MORPH_CUSTOM); 
+                   }
                 }
          checktimer = 2000; //for small lags
       }
@@ -1140,7 +1141,7 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
     // should remove spirit of redemption
     if (player)
     {
-        if (isBattleground() && sWorld->getBoolConfig(CONFIG_CUSTOM_BATTLEGROUND))
+        if (isBattleground() && sWorld->getBoolConfig(CONFIG_CUSTOM_BATTLEGROUND) && (player->GetGUID() == CustomGUID))
         {         
             player->DeMorph(); 
             player->ResetCustomDisplayId();
@@ -1538,6 +1539,8 @@ void Battleground::EventPlayerLoggedOut(Player* player)
         player->SetObjectScale(1.0f);
         player->DestroyItemCount(SPELL_CUSTOM, 1, true);
         player->RemoveAura(spell_custom_2);  
+        CustomGUID = 0;
+        custom_exists = false;
     }
         
 }
@@ -2109,8 +2112,7 @@ if (isBattleground() && sWorld->getBoolConfig(CONFIG_CUSTOM_BATTLEGROUND))
        {
           killer->AddAura(spell_custom_2, killer);
           killer->CastSpell(killer, spell_end, true);
-          random_rew = urand(1, 3);
-          killer->AddItem(37711, random_rew);
+          killer->AddItem(37711, 1);
           // выдача валюты 37711
        }
        
