@@ -958,7 +958,7 @@ public:
                             if (Creature* mt = blackfuse->SummonCreature(NPC_SHOCKWAVE_MISSILE, x, y, stalker->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
                             {
                                 DoCast(mt, SPELL_SHOCKWAVE_VISUAL_TURRET);
-                                modang += 0.5f;
+                                modang -= 0.5f;
                                 missilecount++;
                                 if (missilecount == 3)
                                     mt->AI()->SetGUID(me->GetGUID(), 0);
