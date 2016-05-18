@@ -945,12 +945,10 @@ public:
                             if (!missilecount)
                             {
                                 float ang1 = stalker->GetAngle(blackfuse);
-                                float ang;
                                 if (!ang1 || (ang1 - modang) < 0)
-                                    ang = 6.0f - modang;
+                                    modang = 6.0f - modang;
                                 else
-                                    ang = ang1 - modang;
-                                modang = ang;
+                                    modang = ang1 - modang;
                             }
                             stalker->SetFacingTo(modang);
                             float x, y;
@@ -1100,10 +1098,7 @@ public:
         npc_blackfuse_triggerAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
-            if (me->GetEntry() == NPC_SHOCKWAVE_MISSILE_STALKER)
-                me->SetDisplayId(1126); //test
-            else
-                me->SetDisplayId(11686);
+            me->SetDisplayId(11686);
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             if (me->GetEntry() == NPC_LASER_ARRAY && !me->ToTempSummon())
