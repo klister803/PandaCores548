@@ -704,11 +704,15 @@ public:
             me->SetDisableGravity(true);
             targetGuid = 0;
             done = false;
+            modang = 0.5;
+            missilecount = 0;
         }
 
         InstanceScript* instance;
         EventMap events;
         uint64 targetGuid;
+        float modang;
+        uint8 missilecount;
         bool done;
 
         void Reset(){}
@@ -936,13 +940,38 @@ public:
                 {
                     if (Creature* stalker = me->GetCreature(*me, instance->GetData64(NPC_SHOCKWAVE_MISSILE_STALKER)))
                     {
-                        float x, y;
-                        GetPosInRadiusWithRandomOrientation(stalker, 55.0f, x, y);
-                        if (Creature* mt = blackfuse->SummonCreature(NPC_SHOCKWAVE_MISSILE, x, y, stalker->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
+                        if (me->GetMap()->IsHeroic())
                         {
-                            mt->SetFacingToObject(me);
-                            DoCast(mt, SPELL_SHOCKWAVE_VISUAL_TURRET);
-                            mt->AI()->SetGUID(me->GetGUID(), 0);
+                            float ang1 = stalker->GetAngle(blackfuse);
+                            float ang;
+                            if (!ang1 || (ang1 - modang) < 0)
+                                ang = 6.0f - modang;
+                            else
+                                ang = ang1 - modang;
+                            stalker->SetFacingTo(ang);
+                            float x, y;
+                            GetPositionWithDistInOrientation(stalker, 53, ang, x, y);
+                            if (Creature* mt = blackfuse->SummonCreature(NPC_SHOCKWAVE_MISSILE, x, y, stalker->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
+                            {
+                                DoCast(mt, SPELL_SHOCKWAVE_VISUAL_TURRET);
+                                modang += 0.5f;
+                                missilecount++;
+                                if (missilecount == 3)
+                                    mt->AI()->SetGUID(me->GetGUID(), 0);
+                                else
+                                    events.ScheduleEvent(EVENT_SHOCKWAVE_MISSILE, 10000);
+                            }
+                        }
+                        else
+                        {
+                            float x, y;
+                            GetPosInRadiusWithRandomOrientation(stalker, 53.0f, x, y);
+                            if (Creature* mt = blackfuse->SummonCreature(NPC_SHOCKWAVE_MISSILE, x, y, stalker->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
+                            {
+                                mt->SetFacingToObject(me);
+                                DoCast(mt, SPELL_SHOCKWAVE_VISUAL_TURRET);
+                                mt->AI()->SetGUID(me->GetGUID(), 0);
+                            }
                         }
                     }
                 }
@@ -1042,6 +1071,9 @@ public:
                     me->DespawnOrUnsummon();
                 }
                 break;
+                case EVENT_SHOCKWAVE_MISSILE:
+                    ActivateMissileTurret();
+                    break;
                 }
             }
         }
@@ -1064,7 +1096,10 @@ public:
         npc_blackfuse_triggerAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
-            me->SetDisplayId(11686);
+            if (me->GetEntry() == NPC_SHOCKWAVE_MISSILE_STALKER)
+                me->SetDisplayId(1126); //test
+            else
+                me->SetDisplayId(11686);
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             if (me->GetEntry() == NPC_LASER_ARRAY && !me->ToTempSummon())
