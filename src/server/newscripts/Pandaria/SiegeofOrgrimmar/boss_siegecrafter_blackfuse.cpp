@@ -704,7 +704,7 @@ public:
             me->SetDisableGravity(true);
             targetGuid = 0;
             done = false;
-            modang = 0.5;
+            modang = 0.5f;
             missilecount = 0;
         }
 
@@ -942,15 +942,19 @@ public:
                     {
                         if (me->GetMap()->IsHeroic())
                         {
-                            float ang1 = stalker->GetAngle(blackfuse);
-                            float ang;
-                            if (!ang1 || (ang1 - modang) < 0)
-                                ang = 6.0f - modang;
-                            else
-                                ang = ang1 - modang;
-                            stalker->SetFacingTo(ang);
+                            if (!missilecount)
+                            {
+                                float ang1 = stalker->GetAngle(blackfuse);
+                                float ang;
+                                if (!ang1 || (ang1 - modang) < 0)
+                                    ang = 6.0f - modang;
+                                else
+                                    ang = ang1 - modang;
+                                modang = ang;
+                            }
+                            stalker->SetFacingTo(modang);
                             float x, y;
-                            GetPositionWithDistInOrientation(stalker, 53, ang, x, y);
+                            GetPositionWithDistInOrientation(stalker, 53, modang, x, y);
                             if (Creature* mt = blackfuse->SummonCreature(NPC_SHOCKWAVE_MISSILE, x, y, stalker->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
                             {
                                 DoCast(mt, SPELL_SHOCKWAVE_VISUAL_TURRET);
