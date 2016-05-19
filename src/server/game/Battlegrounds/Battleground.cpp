@@ -927,8 +927,6 @@ void Battleground::EndBattleground(uint32 winner)
            player->DestroyItemCount(SPELL_CUSTOM, 1, true);
            player->RemoveAura(spell_custom_2);
            custom_exists = false;
-           if (team = winner)
-               player->AddItem(37711, 10); //за победу, тиме победителей 10-ку
         }
 
         // Last standing - Rated 5v5 arena & be solely alive player
@@ -2083,7 +2081,19 @@ void Battleground::HandleKillPlayer(Player* victim, Player* killer)
     {
         // Don't reward credit for killing ourselves, like fall damage of hellfire (warlock)
         if (killer == victim)
+        {
+              if (isBattleground() && sWorld->getBoolConfig(CONFIG_CUSTOM_BATTLEGROUND))   //против магов
+              {
+                 killer->DeMorph(); 
+                 killer->ResetCustomDisplayId();
+                 killer->SetObjectScale(1.0f);
+                 killer->DestroyItemCount(SPELL_CUSTOM, 1, true);
+                 killer->RemoveAura(spell_custom_2);  
+                 CustomGUID = 0;
+                 custom_exists = false;
+               }
             return;
+        }
 
         UpdatePlayerScore(killer, SCORE_HONORABLE_KILLS, 1);
         UpdatePlayerScore(killer, SCORE_KILLING_BLOWS, 1);
@@ -2107,7 +2117,7 @@ void Battleground::HandleKillPlayer(Player* victim, Player* killer)
     }
     
 if (isBattleground() && sWorld->getBoolConfig(CONFIG_CUSTOM_BATTLEGROUND))   
-{
+{       
        if (killer->GetGUID() == CustomGUID) 
        {
           killer->AddAura(spell_custom_2, killer);
@@ -2141,7 +2151,8 @@ if (isBattleground() && sWorld->getBoolConfig(CONFIG_CUSTOM_BATTLEGROUND))
            killer->AddItem(SPELL_CUSTOM, 1); //баф 
            killer->AddAura(spell_custom_2, killer);
            CustomGUID = killer->GetGUID();           
-       }  
+       } 
+       
        if (!custom_exists && CustomGUID == 0)
        {
            killer->SetDisplayId(MORPH_CUSTOM, true);
