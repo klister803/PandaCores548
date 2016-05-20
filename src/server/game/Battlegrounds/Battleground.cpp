@@ -1530,7 +1530,7 @@ void Battleground::EventPlayerLoggedOut(Player* player)
             if (GetAlivePlayersCountByTeam(player->GetTeam()) <= 1 && GetPlayersCountByTeam(GetOtherTeam(player->GetTeam())))
                 EndBattleground(GetOtherTeam(player->GetTeam()));
     }
-    if (isBattleground() && sWorld->getBoolConfig(CONFIG_CUSTOM_BATTLEGROUND))
+    if (isBattleground() && sWorld->getBoolConfig(CONFIG_CUSTOM_BATTLEGROUND) && (player->GetGUID() == CustomGUID))
     {         
         player->DeMorph(); 
         player->ResetCustomDisplayId();
