@@ -5395,6 +5395,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].Effect = 0;
                     spellInfo->Effects[1].TargetA = 25;
                     break;
+                case 143867: //Disintegration Laser
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21);
+                    break;
                 //Shockwave missile dmg
                 case 144658:
                 case 144660:

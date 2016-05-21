@@ -102,6 +102,9 @@ enum eEvents
     //Special
     EVENT_LAUNCH_BACK               = 12,
     EVENT_DESPAWN                   = 13,
+    EVENT_START_ROTATE              = 14,
+    EVENT_LASER_ROTATE              = 15,
+    EVENT_LASER_ROTATE2             = 16,
 };
 
 enum _ATentry
@@ -184,6 +187,7 @@ Position destpos = {2073.01f, -5620.12f, -302.2553f};
 Position cmdestpos = {1905.39f, -5631.86f, -309.3265f};
 Position sumshrederpos = {1902.65f, -5625.15f, -309.3269f};
 Position sehsumpos = {2009.70f, -5549.21f, -302.8851f};
+Position _centerpos = {1956.0f, -5608.66f, -309.327f};
 
 enum CretureText
 {
@@ -879,40 +883,70 @@ public:
 
         void StartDisentegrationLaser()
         {
-            //HM version
-            //54yards big radius
-            //33yards medium radius
-            //14yards small radius
             if (me->ToTempSummon())
             {
                 if (Unit* blackfuse = me->ToTempSummon()->GetSummoner())
                 {
-                    std::list<Player*>pllist;
-                    GetPlayerListInGrid(pllist, me, 150.0f);
-                    if (!pllist.empty())
+                    if (me->GetMap()->IsHeroic())
                     {
-                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                        float x, y;
+                        float dist;
+                        for (uint8 n = 2; n < 5; n++)
                         {
-                            if (!(*itr)->HasAura(SPELL_PATTERN_RECOGNITION) && !(*itr)->HasAura(SPELL_ON_CONVEYOR) && !(*itr)->HasAura(SPELL_CRAWLER_MINE_FIXATE_PL))
+                            if (Creature* stalker = blackfuse->SummonCreature(NPC_SHOCKWAVE_MISSILE_STALKER, _centerpos, 0, TEMPSUMMON_TIMED_DESPAWN, 16000 + n*5000))
                             {
-                                if (IsPlayerRangeddOrHeal(*itr))
+                                switch (n)
                                 {
-                                    if (Creature* laser = blackfuse->SummonCreature(NPC_LASER_TARGET, (*itr)->GetPositionX() + 10.0f, (*itr)->GetPositionY(), blackfuse->GetPositionZ()))
+                                case 2:
+                                    dist = 14.0f;
+                                    break;
+                                case 3:
+                                    dist = 35.0f;
+                                    break;
+                                case 4:
+                                    dist = 55.0f;
+                                    break;
+                                }
+                                GetPosInRadiusWithRandomOrientation(stalker, dist, x, y);
+                                if (Creature* laser = blackfuse->SummonCreature(NPC_LASER_TARGET, x, y, stalker->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 120000))
+                                {
+                                    float ang = stalker->GetAngle(laser);
+                                    stalker->SetFacingTo(ang);
+                                    stalker->AI()->SetGUID(laser->GetGUID(), n);
+                                    laser->AI()->SetGUID(stalker->GetGUID(), n + 3);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        std::list<Player*>pllist;
+                        GetPlayerListInGrid(pllist, me, 150.0f);
+                        if (!pllist.empty())
+                        {
+                            for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                            {
+                                if (!(*itr)->HasAura(SPELL_PATTERN_RECOGNITION) && !(*itr)->HasAura(SPELL_ON_CONVEYOR) && !(*itr)->HasAura(SPELL_CRAWLER_MINE_FIXATE_PL))
+                                {
+                                    if (IsPlayerRangeddOrHeal(*itr))
                                     {
-                                        laser->CastSpell(*itr, SPELL_PURSUIT_LASER);
-                                        DoCast(laser, SPELL_DISINTEGRATION_LASER_V);
-                                        laser->CastSpell(laser, SPELL_LASER_GROUND_PERIODIC_AT);
-                                        laser->AddThreat(*itr, 50000000.0f);
-                                        laser->SetReactState(REACT_AGGRESSIVE);
-                                        laser->TauntApply(*itr);
-                                        break;
+                                        if (Creature* laser = blackfuse->SummonCreature(NPC_LASER_TARGET, (*itr)->GetPositionX() + 10.0f, (*itr)->GetPositionY(), blackfuse->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 120000))
+                                        {
+                                            laser->CastSpell(*itr, SPELL_PURSUIT_LASER);
+                                            DoCast(laser, SPELL_DISINTEGRATION_LASER_V, true);
+                                            laser->AI()->SetGUID(0, 8);
+                                            laser->CastSpell(laser, SPELL_LASER_GROUND_PERIODIC_AT);
+                                            laser->AddThreat(*itr, 50000000.0f);
+                                            laser->SetReactState(REACT_AGGRESSIVE);
+                                            laser->TauntApply(*itr);
+                                            break;
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-                events.ScheduleEvent(EVENT_DESPAWN, 16000);
             }
         }
 
@@ -959,7 +993,7 @@ public:
                                 modang -= 0.7f;
                                 missilecount++;
                                 if (missilecount == 3)
-                                    mt->AI()->SetGUID(me->GetGUID(), 0);
+                                    mt->AI()->SetGUID(me->GetGUID(), 1);
                                 else
                                     events.ScheduleEvent(EVENT_SHOCKWAVE_MISSILE, 10000);
                             }
@@ -1111,7 +1145,9 @@ public:
         }
         InstanceScript* instance;
         EventMap events;
-        uint64 cannonGuid;
+        uint64 cannonGuid, laserGuid, stalkerGuid;
+        uint32 rotatespeed;
+        float dist, speed;
         uint8 num;
 
         void Reset()
@@ -1138,9 +1174,68 @@ public:
                 CreateShockWaveMissileEvent();
         }
 
-        void SetGUID(uint64 guid, int32 /*id*/)
+        void SetGUID(uint64 guid, int32 id)
         {
-            cannonGuid = guid;
+            switch (id)
+            {
+            //HM ShockWave Missile
+            case 1:
+                cannonGuid = guid;
+                break;
+            //HM Disentegration Laser
+            //stalker proc
+            case 2:
+                dist = 14.0f;
+                speed = 6.0f;
+                rotatespeed = 14000;
+                laserGuid = guid;
+                events.ScheduleEvent(EVENT_START_ROTATE, 1000);
+                break;
+            case 3:
+                dist = 35.0f;
+                speed = 16.0f;
+                rotatespeed = 24000;
+                laserGuid = guid;
+                events.ScheduleEvent(EVENT_START_ROTATE, 1000);
+                break;
+            case 4:
+                dist = 55.0f;
+                speed = 26.0f;
+                rotatespeed = 34000;
+                laserGuid = guid;
+                events.ScheduleEvent(EVENT_START_ROTATE, 1000);
+                break;
+            //laser proc
+            case 5:
+                dist = 14.0f;
+                speed = 6.0f;
+                stalkerGuid = guid;
+                events.ScheduleEvent(EVENT_DESPAWN, 16000);
+                break;
+            case 6:
+                dist = 35.0f;
+                speed = 10.0f;
+                stalkerGuid = guid;
+                events.ScheduleEvent(EVENT_DESPAWN, 26000);
+                break;
+            case 7:
+                dist = 55.0f;
+                speed = 15.0f;
+                stalkerGuid = guid;
+                events.ScheduleEvent(EVENT_DESPAWN, 36000);
+                break;
+            //Normal Disentegration Laser
+            case 8:
+                events.ScheduleEvent(EVENT_DESPAWN, 15000);
+                break;
+            }
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (type == EFFECT_MOTION_TYPE || type == POINT_MOTION_TYPE)
+                if (pointId == 1)
+                    events.ScheduleEvent(EVENT_LASER_ROTATE2, 10);
         }
 
         void CreateShockWaveMissileEvent()
@@ -1170,8 +1265,9 @@ public:
 
             while (uint32 eventId = events.ExecuteEvent())
             {
-                if (eventId == EVENT_SHOCKWAVE_MISSILE)
+                switch (eventId)
                 {
+                case EVENT_SHOCKWAVE_MISSILE:
                     DoCast(me, shockwavemissilelist[num++]);
                     if (num < 6)
                         events.ScheduleEvent(EVENT_SHOCKWAVE_MISSILE, 3500);
@@ -1180,6 +1276,53 @@ public:
                         num = 0;
                         events.ScheduleEvent(EVENT_SHOCKWAVE_MISSILE, 3500);
                     }
+                    break;
+                case EVENT_START_ROTATE: //from stalker(start)
+                    if (Creature* lturret = me->FindNearestCreature(NPC_ACTIVATED_LASER_TURRET, 100.0f, true))
+                    {
+                        if (Creature* laser = me->GetCreature(*me, laserGuid))
+                        {
+                            if (dist != 14.0f)
+                            {
+                                Position pos;
+                                lturret->GetPosition(&pos);
+                                if (Creature* blackfuse = me->GetCreature(*me, instance->GetData64(NPC_BLACKFUSE_MAUNT)))
+                                {
+                                    if (Creature* _lturret = blackfuse->SummonCreature(NPC_ACTIVATED_LASER_TURRET, pos))
+                                    {
+                                        _lturret->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                                        _lturret->CastSpell(laser, SPELL_DISINTEGRATION_LASER_V, true);
+                                    }
+                                }
+                            }
+                            else
+                                lturret->CastSpell(laser, SPELL_DISINTEGRATION_LASER_V, true);
+                            laser->CastSpell(laser, SPELL_LASER_GROUND_PERIODIC_AT);
+                        }
+                    }
+                    me->GetMotionMaster()->MoveRotate(rotatespeed, ROTATE_DIRECTION_RIGHT);
+                    events.ScheduleEvent(EVENT_LASER_ROTATE, 500);
+                    break;
+                case EVENT_LASER_ROTATE: //from stalker(first point)
+                    if (Creature* laser = me->GetCreature(*me, laserGuid))
+                    {
+                        float x, y;
+                        GetPositionWithDistInOrientation(me, dist, me->GetOrientation(), x, y);
+                        laser->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), speed, 1);
+                    }
+                    break;
+                case EVENT_LASER_ROTATE2: //from laser(after finilize point)
+                    if (Creature* stalker = me->GetCreature(*me, stalkerGuid))
+                    {
+                        float x, y;
+                        GetPositionWithDistInOrientation(stalker, dist, stalker->GetOrientation(), x, y);
+                        me->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), speed, 1);
+                    }
+                    break;
+                case EVENT_DESPAWN: //from laser
+                    me->RemoveAurasDueToSpell(SPELL_DISINTEGRATION_LASER_V);
+                    me->RemoveAurasDueToSpell(SPELL_LASER_GROUND_PERIODIC_AT);
+                    break;
                 }
             }
         }
@@ -1281,7 +1424,8 @@ public:
                 if (GetTarget()->ToCreature())
                 {
                     GetTarget()->ToCreature()->SetAttackStop(true);
-                    GetTarget()->RemoveAurasDueToSpell(SPELL_LASER_GROUND_PERIODIC_AT);
+                    if (GetCaster() && GetCaster()->ToCreature())
+                        GetCaster()->ToCreature()->DespawnOrUnsummon();
                 }
             }
         }
