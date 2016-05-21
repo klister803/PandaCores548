@@ -814,6 +814,9 @@ public:
 
         void MovementInform(uint32 type, uint32 pointId)
         {
+            if (!me->isAlive())
+                return;
+
             if (type == EFFECT_MOTION_TYPE || type == POINT_MOTION_TYPE)
             {
                 switch (pointId)
