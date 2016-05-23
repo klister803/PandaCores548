@@ -51,6 +51,7 @@ class check_on_points : public PlayerScript
                   {
                       Field* fields = result_two->Fetch();
                       uint32 count1 = fields[1].GetUInt32();
+                      uint32 count_save = count1;
                       
                        //Adding items
                       uint32 noSpaceForCount = 0;
@@ -75,10 +76,10 @@ class check_on_points : public PlayerScript
                       if (noSpaceForCount > 0)
                       {
                           chH.PSendSysMessage(LANG_ITEM_CANNOT_CREATE, id, noSpaceForCount);
-                          CharacterDatabase.PExecute("UPDATE custom_account_checker SET count = count - %u WHERE account = '%u' and type = '2'", count1, player->GetSession()->GetAccountId());
+                          CharacterDatabase.PExecute("UPDATE custom_account_checker SET count = count - %u WHERE account = '%u' and type = '2' and count = '%u'", count1, player->GetSession()->GetAccountId(), count_save);
                       } 
                       else
-                         CharacterDatabase.PExecute("delete from custom_account_checker WHERE account = '%u' and type = '2'", player->GetSession()->GetAccountId());              
+                         CharacterDatabase.PExecute("delete from custom_account_checker WHERE account = '%u' and type = '2' and count = '%u'", player->GetSession()->GetAccountId(), count_save);              
                   }while (result_two->NextRow());                      
               }
            

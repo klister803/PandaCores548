@@ -647,7 +647,8 @@ public:
                     crawlermineGuids.push_back(creature->GetGUID());
                     break;
                 case NPC_SHOCKWAVE_MISSILE_STALKER:
-                    swmstalkerGuid = creature->GetGUID();
+                    if (!creature->ToTempSummon())
+                        swmstalkerGuid = creature->GetGUID();
                     break;
                 //Garrosh
                 case NPC_GARROSH:
