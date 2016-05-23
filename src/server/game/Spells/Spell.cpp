@@ -2993,17 +2993,22 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
 
         // Hunter's pet special attacks
         if (m_spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && m_spellInfo->SpellFamilyFlags[0] & 0x00080000)
+        {
             if (Unit * owner = caster->GetOwner())
             {
                 // Cobra Strikes
                 if (Aura* pAura = owner->GetAura(53257))
                     pAura->ModStackAmount(-1);
             }
+        }
     }
     // Passive spell hits/misses or active spells only misses (only triggers)
     else
     {
         // Fill base damage struct (unitTarget - is real spell target)
+        if (!target)
+            return;
+
         SpellNonMeleeDamage damageInfo(caster, unitTarget, m_spellInfo->Id, m_spellSchoolMask);
         damageInfo.damageBeforeHit = target->damageBeforeHit;
         procEx |= createProcExtendMask(&damageInfo, missInfo);
