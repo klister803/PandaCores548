@@ -20,7 +20,8 @@
  * Ordered alphabetically using scriptname.
  * Scriptnames of files in this file should be prefixed with "spell_pri_".
  */
-
+ 
+#include "CreatureTextMgr.h"
 #include "ScriptMgr.h"
 #include "SpellScript.h"
 #include "SpellAuraEffects.h"
@@ -2748,6 +2749,43 @@ class spell_pri_devouring_plague_mastery : public SpellScriptLoader
         }
 };
 
+// 126123
+class spell_pri_confession : public SpellScriptLoader
+{
+    public:
+        spell_pri_confession() : SpellScriptLoader("spell_pri_confession") { }
+
+        class spell_pri_confession_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_confession_SpellScript);
+
+            void HandleOnCast()
+            {
+                  Unit* caster = GetCaster();
+                  Unit* target = caster->ToPlayer()->GetSelectedUnit();
+                  if (!target)
+                     target = caster;
+                  
+                  if (target->GetTypeId() == TYPEID_PLAYER && (target->IsFriendlyTo(caster) || caster == target))
+                  {
+                     std::string text = sCreatureTextMgr->GetLocalizedChatString(126123, 0, urand(0, 55), DEFAULT_LOCALE);
+                     target->ToPlayer()->TextEmote(text);
+                  }                     
+
+            }
+
+            void Register()
+            {
+                OnCast += SpellCastFn(spell_pri_confession_SpellScript::HandleOnCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_confession_SpellScript();
+        }
+};
+
 void AddSC_priest_spell_scripts()
 {
     new spell_pri_glyph_of_mass_dispel();
@@ -2804,4 +2842,5 @@ void AddSC_priest_spell_scripts()
     new spell_pri_divine_star_filter();
     new spell_pri_devouring_plague_mastery();
     new spell_pri_vampiric_embrace();
+    new spell_pri_confession();
 }
