@@ -1,3 +1,11 @@
+
+INSERT ignore INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `type`, `caster`, `target`, `hastype`, `hastalent`, `hastype2`, `hastalent2`, `chance`, `cooldown`, `duration`, `hitmask`, `removeMask`, `targetCountType`, `targetCount`, `actiontype`, `group`, `comment`) VALUES 
+('126152', '126123', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '-1', '1', '0', ''),
+('-126152', '-126123', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '-1', '1', '0', '');
+
+INSERT ignore INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('126123', 'spell_pri_confession');
+
+
 delete from creature_text where entry in (126123);
 INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`) VALUES 
 (126123, 0, 1, 'признается: Я поджигаю все вокруг и кричу: "Очистимся огнем!", пока никто не видит. - Рагнарос', 12, 0, 0, 0, 0, 0), 
