@@ -214,11 +214,13 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              me->ApplySpellImmune(0, IMMUNITY_ID, 348, true);
              me->ApplySpellImmune(0, IMMUNITY_ID, 108686, true);
              me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+             reset = 0;
          }
          
          InstanceScript* instance;
          uint32 checkvictim;
          uint32 updatehmlaserwalls;
+         uint32 reset;
          uint8 weaponwavecount;
          uint64 laserline[3][5];
          uint8 laserwallmod[3];
@@ -228,7 +230,6 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          {
              _Reset();
              me->NearTeleportTo(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY(), me->GetHomePosition().GetPositionZ(), me->GetHomePosition().GetOrientation());
-             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
              checkvictim = 0;
              weaponwavecount = 0;
              updatehmlaserwalls = 0;
@@ -238,6 +239,11 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              me->RemoveAurasDueToSpell(SPELL_ENERGIZED_DEFENSIVE_MATRIX);
              me->SetReactState(REACT_DEFENSIVE);
              ClearConveyerArray();
+         }
+
+         void JustReachedHome()
+         {
+             reset = 5000;
          }
 
          void ClearConveyerArray()
@@ -466,6 +472,17 @@ class boss_siegecrafter_blackfuse : public CreatureScript
 
          void UpdateAI(uint32 diff)
          {
+             if (reset)
+             {
+                 if (reset <= diff)
+                 {
+                     reset = 0;
+                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                 }
+                 else
+                     reset -= diff;
+             }
+
              if (!UpdateVictim())
                  return;
 
@@ -475,6 +492,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                  {
                      if (!CheckEvade())
                      {
+                         me->SetReactState(REACT_PASSIVE);
                          me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                          EnterEvadeMode();
                          return;
@@ -1083,6 +1101,15 @@ public:
                     Player* pl = me->GetPlayer(*me, targetGuid);
                     if (pl && pl->isAlive() && !pl->HasAura(SPELL_ON_CONVEYOR))
                     {
+                        if (IsInControl())
+                        {
+                            events.ScheduleEvent(EVENT_CHECK_DISTANCE, 1000);
+                            return;
+                        }
+
+                        if (!pl->HasAura(SPELL_CRAWLER_MINE_FIXATE))
+                            DoCast(pl, SPELL_CRAWLER_MINE_FIXATE, true);
+
                         if (me->GetDistance(pl) <= 6.0f && !done)
                         {
                             done = true;
