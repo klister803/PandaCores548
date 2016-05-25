@@ -2057,6 +2057,12 @@ void Player::Update(uint32 p_time)
 
         if (IsAIEnabled && GetAI())
             GetAI()->UpdateAI(p_time);
+         
+          // for donate morph
+          if (!IsMounted() && GetCustomDisplayId()) //can mod scale and smalls bug
+          {
+            SetDisplayId(GetCustomDisplayId(), true);
+          }         
     }
 
     if (m_updateComboPointsTimer != 0)
