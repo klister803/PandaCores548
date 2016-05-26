@@ -188,6 +188,7 @@ Position cmdestpos = {1905.39f, -5631.86f, -309.3265f};
 Position sumshrederpos = {1902.65f, -5625.15f, -309.3269f};
 Position sehsumpos = {2009.70f, -5549.21f, -302.8851f};
 Position _centerpos = {1956.0f, -5608.66f, -309.327f};
+Position sbdestpos = {1900.41f, -5646.18f, -307.45f};
 
 enum CretureText
 {
@@ -612,6 +613,7 @@ public:
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
         }
         InstanceScript* instance;
+        EventMap events;
 
         void Reset(){}
 
@@ -622,8 +624,24 @@ public:
         void MovementInform(uint32 type, uint32 pointId)
         {
             if (type == POINT_MOTION_TYPE && me->GetEntry() == NPC_BLACKFUSE_SAWBLADE)
+            {
                 if (pointId == 4)
-                    me->DespawnOrUnsummon();
+                {
+                    if (me->GetMap()->IsHeroic())
+                    {
+                        if (Creature* electromagnet = me->GetCreature(*me, instance->GetData64(NPC_ACTIVATED_ELECTROMAGNET)))
+                            electromagnet->AI()->SetData(DATA_SAWBLADE_IN_POINT, 0);
+                    }
+                    else
+                        me->DespawnOrUnsummon();
+                }
+            }
+        }
+
+        void SetData(uint32 type, uint32 data)
+        {
+            if (type == DATA_SAWBLADE_CHANGE_POLARITY && me->GetEntry() == NPC_BLACKFUSE_SAWBLADE)
+                events.ScheduleEvent(EVENT_LAUNCH_BACK, 4000);
         }
         
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -631,7 +649,20 @@ public:
             damage = 0;
         }
 
-        void UpdateAI(uint32 diff){}
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_LAUNCH_BACK)
+                {
+                    float x, y;
+                    GetPositionWithDistInOrientation(me, 80.0f, me->GetOrientation(), x, y);
+                    me->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), 15.0f, 6);
+                }
+            }
+        }
     };
 
     CreatureAI* GetAI(Creature* creature) const
@@ -728,6 +759,8 @@ public:
             done = false;
             modang = 0.7f;
             missilecount = 0;
+            sawbladenum = 0;
+            _sawbladelist.clear();
         }
 
         InstanceScript* instance;
@@ -735,7 +768,9 @@ public:
         uint64 targetGuid;
         float modang;
         uint8 missilecount;
+        uint8 sawbladenum;
         bool done;
+        std::vector<uint64>_sawbladelist;
 
         void Reset(){}
 
@@ -799,7 +834,9 @@ public:
 
         void SetData(uint32 type, uint32 data)
         {
-            if (type == DATA_CRAWLER_MINE_ENTERCOMBAT)
+            switch (type)
+            {
+            case DATA_CRAWLER_MINE_ENTERCOMBAT:
             {
                 uint32 mod = 0;
                 switch (data)
@@ -827,6 +864,40 @@ public:
                     break;
                 }
                 events.ScheduleEvent(EVENT_ACTIVE, 500 + mod);
+            }
+            break;
+            case DATA_SAWBLADE_IN_POINT:
+                sawbladenum++;
+                if (sawbladenum >= _sawbladelist.size() - 1)
+                {
+                    float mod = 0;
+                    for (std::vector<uint64>::const_iterator itr = _sawbladelist.begin(); itr != _sawbladelist.end(); ++itr)
+                    {
+                        if (itr == _sawbladelist.begin())
+                        {
+                            if (Creature* sawblade = me->GetCreature(*me, *itr))
+                            {
+                                if (Creature* stalker = me->GetCreature(*me, instance->GetData64(NPC_SHOCKWAVE_MISSILE_STALKER)))
+                                {
+                                    sawblade->SetFacingToObject(stalker);
+                                    mod = sawblade->GetAngle(stalker) + 0.2f;
+                                    sawblade->AI()->SetData(DATA_SAWBLADE_CHANGE_POLARITY, 0);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            mod = mod < 0 ? mod - 0.2 : mod + 2;
+                            mod *= -1;
+                            if (Creature* sawblade = me->GetCreature(*me, *itr))
+                            {
+                                sawblade->SetFacingTo(mod);
+                                sawblade->AI()->SetData(DATA_SAWBLADE_CHANGE_POLARITY, 0);
+                            }
+                        }
+                    }
+                }
+                break;
             }
         }
 
@@ -965,6 +1036,7 @@ public:
                                     }
                                 }
                             }
+                            events.ScheduleEvent(EVENT_DESPAWN, 16000);//for safe
                         }
                     }
                 }
@@ -981,7 +1053,8 @@ public:
                 for (std::list<Creature*>::const_iterator itr = sawbladelist.begin(); itr != sawbladelist.end(); itr++)
                 {
                     (*itr)->GetMotionMaster()->Clear(false);
-                    (*itr)->GetMotionMaster()->MoveCharge(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 15.0f, 4);
+                    (*itr)->GetMotionMaster()->MoveCharge(sbdestpos.GetPositionX(), sbdestpos.GetPositionY(), me->GetPositionZ(), 15.0f, 4);
+                    _sawbladelist.push_back((*itr)->GetGUID());
                 }
             }
             events.ScheduleEvent(EVENT_DESPAWN, 30000);
@@ -1027,7 +1100,7 @@ public:
                             {
                                 mt->SetFacingToObject(me);
                                 DoCast(mt, SPELL_SHOCKWAVE_VISUAL_TURRET);
-                                mt->AI()->SetGUID(me->GetGUID(), 0);
+                                mt->AI()->SetGUID(me->GetGUID(), 1);
                             }
                         }
                     }
@@ -1308,7 +1381,7 @@ public:
                     }
                     break;
                 case EVENT_START_ROTATE: //from stalker(start)
-                    if (Creature* lturret = me->FindNearestCreature(NPC_ACTIVATED_LASER_TURRET, 100.0f, true))
+                    if (Creature* lturret = me->GetCreature(*me, instance->GetData64(NPC_ACTIVATED_LASER_TURRET)))
                     {
                         if (Creature* laser = me->GetCreature(*me, laserGuid))
                         {

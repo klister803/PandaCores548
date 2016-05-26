@@ -207,6 +207,8 @@ public:
         uint64 blackfuseGuid;
         std::vector<uint64> crawlermineGuids;
         uint64 swmstalkerGuid;
+        uint64 electromagnetGuid;
+        uint64 laserturretGuid;
         uint64 heartofyshaarjGuid;
         std::vector<uint64> shavortexGuids;
         std::vector<uint64> edespairGuids;
@@ -309,6 +311,8 @@ public:
             blackfuseGuid           = 0;
             crawlermineGuids.clear();
             swmstalkerGuid = 0;
+            electromagnetGuid = 0;
+            laserturretGuid = 0;
             heartofyshaarjGuid = 0;
             shavortexGuids.clear();
             edespairGuids.clear();
@@ -649,6 +653,9 @@ public:
                 case NPC_SHOCKWAVE_MISSILE_STALKER:
                     if (!creature->ToTempSummon())
                         swmstalkerGuid = creature->GetGUID();
+                    break;
+                case NPC_ACTIVATED_ELECTROMAGNET:
+                    electromagnetGuid = creature->GetGUID();
                     break;
                 //Garrosh
                 case NPC_GARROSH:
@@ -1626,6 +1633,8 @@ public:
                                 {
                                     aw->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                                     aw->GetMotionMaster()->MoveCharge(destapos[n].GetPositionX(), destapos[n].GetPositionY(), destapos[n].GetPositionZ(), 10.0f, 1, false);
+                                    if (aw->GetEntry() == NPC_ACTIVATED_LASER_TURRET)
+                                        laserturretGuid = aw->GetGUID();
                                 }
                             }
                         }
@@ -1662,6 +1671,8 @@ public:
                                 {
                                     weapon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                                     weapon->GetMotionMaster()->MoveCharge(destapos[n - 1].GetPositionX(), destapos[n - 1].GetPositionY(), destapos[n - 1].GetPositionZ(), 10.0f, 1, false);
+                                    if (weapon->GetEntry() == NPC_ACTIVATED_LASER_TURRET)
+                                        laserturretGuid = weapon->GetGUID();
                                 }
                             }
                         }
@@ -2025,6 +2036,10 @@ public:
                     return blackfuseGuid;
                 case NPC_SHOCKWAVE_MISSILE_STALKER:
                     return swmstalkerGuid;
+                case NPC_ACTIVATED_ELECTROMAGNET:
+                    return electromagnetGuid;
+                case NPC_ACTIVATED_LASER_TURRET:
+                    return laserturretGuid;
                 case NPC_HEART_OF_YSHAARJ:
                     return heartofyshaarjGuid;
                 case DATA_GARROSH:
