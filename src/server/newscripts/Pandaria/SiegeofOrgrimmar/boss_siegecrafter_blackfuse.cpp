@@ -658,8 +658,8 @@ public:
                 if (eventId == EVENT_LAUNCH_BACK)
                 {
                     float x, y;
-                    GetPositionWithDistInOrientation(me, 80.0f, me->GetOrientation(), x, y);
-                    me->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), 15.0f, 6);
+                    GetPositionWithDistInOrientation(me, 130.0f, me->GetOrientation(), x, y);
+                    me->GetMotionMaster()->MoveJump(x, y, me->GetPositionZ(), 15.0f, 0, 6);
                 }
             }
         }
@@ -870,7 +870,9 @@ public:
                 sawbladenum++;
                 if (sawbladenum >= _sawbladelist.size() - 1)
                 {
+                    float baseang = 0;
                     float mod = 0;
+                    int8 mod2 = 1;
                     for (std::vector<uint64>::const_iterator itr = _sawbladelist.begin(); itr != _sawbladelist.end(); ++itr)
                     {
                         if (itr == _sawbladelist.begin())
@@ -880,18 +882,33 @@ public:
                                 if (Creature* stalker = me->GetCreature(*me, instance->GetData64(NPC_SHOCKWAVE_MISSILE_STALKER)))
                                 {
                                     sawblade->SetFacingToObject(stalker);
-                                    mod = sawblade->GetAngle(stalker) + 0.2f;
+                                    baseang = sawblade->GetAngle(stalker);
                                     sawblade->AI()->SetData(DATA_SAWBLADE_CHANGE_POLARITY, 0);
+                                    mod += 0.2f;
                                 }
                             }
                         }
                         else
                         {
-                            mod = mod < 0 ? mod - 0.2 : mod + 2;
-                            mod *= -1;
                             if (Creature* sawblade = me->GetCreature(*me, *itr))
                             {
-                                sawblade->SetFacingTo(mod);
+                                float newang = 0;
+                                mod2 *= -1;
+                                if (mod2 < 0)
+                                {
+                                    if (mod == 0.6f)
+                                        newang = 6.27f;
+                                    else if (mod > 0.6f)
+                                        newang = 6.27f - (mod - 0.6f);
+                                    else
+                                        newang = baseang - mod;
+                                }
+                                else
+                                {
+                                    newang = baseang + mod;
+                                    mod += 0.2f;
+                                }
+                                sawblade->SetFacingTo(newang);
                                 sawblade->AI()->SetData(DATA_SAWBLADE_CHANGE_POLARITY, 0);
                             }
                         }
