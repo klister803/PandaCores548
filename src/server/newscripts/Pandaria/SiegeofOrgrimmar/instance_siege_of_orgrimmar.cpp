@@ -1298,7 +1298,6 @@ public:
                 switch (state)
                 {
                 case NOT_STARTED:
-                    dweaponGuids.clear();
                     weaponsdone = 0;
                     HandleGameObject(blackfuseentdoorGuid, true);
                     break;
