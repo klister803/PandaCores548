@@ -100,11 +100,12 @@ enum eEvents
     EVENT_DEATH_FROM_ABOVE          = 10,
     EVENT_OVERLOAD                  = 11,
     //Special
-    EVENT_LAUNCH_BACK               = 12,
-    EVENT_DESPAWN                   = 13,
-    EVENT_START_ROTATE              = 14,
-    EVENT_LASER_ROTATE              = 15,
-    EVENT_LASER_ROTATE2             = 16,
+    EVENT_DESPAWN                   = 12,
+    EVENT_START_ROTATE              = 13,
+    EVENT_LASER_ROTATE              = 14,
+    EVENT_LASER_ROTATE2             = 15,
+    EVENT_LAUNCH_FORWARD            = 16,
+    EVENT_LAUNCH_BACK               = 17,
 };
 
 enum _ATentry
@@ -189,6 +190,7 @@ Position sumshrederpos = {1902.65f, -5625.15f, -309.3269f};
 Position sehsumpos = {2009.70f, -5549.21f, -302.8851f};
 Position _centerpos = {1956.0f, -5608.66f, -309.327f};
 Position sbdestpos = {1900.41f, -5646.18f, -307.45f};
+float const sbspeed = 25.0f;//sawblade speed
 
 enum CretureText
 {
@@ -239,6 +241,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              me->RemoveAurasDueToSpell(SPELL_AUTOMATIC_REPAIR_BEAM_AT);
              me->RemoveAurasDueToSpell(SPELL_ENERGIZED_DEFENSIVE_MATRIX);
              me->SetReactState(REACT_DEFENSIVE);
+             //me->SetReactState(REACT_PASSIVE);
              ClearConveyerArray();
          }
 
@@ -280,7 +283,8 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              checkvictim = 1000;
              DoCast(me, SPELL_AUTOMATIC_REPAIR_BEAM_AT, true);
              events.ScheduleEvent(EVENT_ELECTROSTATIC_CHARGE, 1000);
-             events.ScheduleEvent(EVENT_SAWBLADE, 10000);
+             events.ScheduleEvent(EVENT_SAWBLADE, 5000);
+             //events.ScheduleEvent(EVENT_SAWBLADE, 10000);
              events.ScheduleEvent(EVENT_ACTIVE_CONVEYER, 2000);
              events.ScheduleEvent(EVENT_SUMMON_SHREDDER, 36000);
              if (Creature* seh = me->SummonCreature(NPC_SIEGE_ENGINEER_HELPER, sehsumpos))
@@ -623,25 +627,41 @@ public:
         
         void MovementInform(uint32 type, uint32 pointId)
         {
-            if (type == POINT_MOTION_TYPE && me->GetEntry() == NPC_BLACKFUSE_SAWBLADE)
+            if (type == POINT_MOTION_TYPE || type == EFFECT_MOTION_TYPE)
             {
-                if (pointId == 4)
+                switch (pointId)
                 {
+                case 4:
                     if (me->GetMap()->IsHeroic())
                     {
                         if (Creature* electromagnet = me->GetCreature(*me, instance->GetData64(NPC_ACTIVATED_ELECTROMAGNET)))
-                            electromagnet->AI()->SetData(DATA_SAWBLADE_IN_POINT, 0);
+                            electromagnet->AI()->SetData(DATA_SAWBLADE_IN_POINT_ELECTROMAGNET, 0);
                     }
                     else
                         me->DespawnOrUnsummon();
+                    break;
+                case 5:
+                    if (Creature* electromagnet = me->GetCreature(*me, instance->GetData64(NPC_ACTIVATED_ELECTROMAGNET)))
+                        electromagnet->AI()->SetData(DATA_SAWBLADE_IN_POINT_CONVEYER, 0);
+                    break;
                 }
             }
         }
 
         void SetData(uint32 type, uint32 data)
         {
-            if (type == DATA_SAWBLADE_CHANGE_POLARITY && me->GetEntry() == NPC_BLACKFUSE_SAWBLADE)
-                events.ScheduleEvent(EVENT_LAUNCH_BACK, 4000);
+            if (me->GetEntry() == NPC_BLACKFUSE_SAWBLADE)
+            {
+                switch (type)
+                {
+                case DATA_SAWBLADE_CHANGE_POLARITY_FORWARD:
+                    events.ScheduleEvent(EVENT_LAUNCH_FORWARD, 1000);
+                    break;
+                case DATA_SAWBLADE_CHANGE_POLARITY_BACK:
+                    events.ScheduleEvent(EVENT_LAUNCH_BACK, 1000);
+                    break;
+                }
+            }
         }
         
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -655,11 +675,18 @@ public:
 
             while (uint32 eventId = events.ExecuteEvent())
             {
-                if (eventId == EVENT_LAUNCH_BACK)
+                switch (eventId)
+                {
+                case EVENT_LAUNCH_FORWARD:
                 {
                     float x, y;
                     GetPositionWithDistInOrientation(me, 130.0f, me->GetOrientation(), x, y);
-                    me->GetMotionMaster()->MoveJump(x, y, me->GetPositionZ(), 15.0f, 0, 6);
+                    me->GetMotionMaster()->MoveJump(x, y, me->GetPositionZ(), sbspeed, 0, 5);
+                }
+                break;
+                case EVENT_LAUNCH_BACK:
+                    me->GetMotionMaster()->MoveCharge(sbdestpos.GetPositionX(), sbdestpos.GetPositionY(), me->GetPositionZ(), sbspeed, 4);
+                    break;
                 }
             }
         }
@@ -866,10 +893,11 @@ public:
                 events.ScheduleEvent(EVENT_ACTIVE, 500 + mod);
             }
             break;
-            case DATA_SAWBLADE_IN_POINT:
+            case DATA_SAWBLADE_IN_POINT_ELECTROMAGNET:
                 sawbladenum++;
                 if (sawbladenum >= _sawbladelist.size() - 1)
                 {
+                    sawbladenum = 0;
                     float baseang = 0;
                     float mod = 0;
                     int8 mod2 = 1;
@@ -883,7 +911,7 @@ public:
                                 {
                                     sawblade->SetFacingToObject(stalker);
                                     baseang = sawblade->GetAngle(stalker);
-                                    sawblade->AI()->SetData(DATA_SAWBLADE_CHANGE_POLARITY, 0);
+                                    sawblade->AI()->SetData(DATA_SAWBLADE_CHANGE_POLARITY_FORWARD, 0);
                                     mod += 0.2f;
                                 }
                             }
@@ -909,10 +937,20 @@ public:
                                     mod += 0.2f;
                                 }
                                 sawblade->SetFacingTo(newang);
-                                sawblade->AI()->SetData(DATA_SAWBLADE_CHANGE_POLARITY, 0);
+                                sawblade->AI()->SetData(DATA_SAWBLADE_CHANGE_POLARITY_FORWARD, 0);
                             }
                         }
                     }
+                }
+                break;
+            case DATA_SAWBLADE_IN_POINT_CONVEYER:
+                sawbladenum++;
+                if (sawbladenum >= _sawbladelist.size() - 1)
+                {
+                    sawbladenum = 0;
+                    for (std::vector<uint64>::const_iterator itr = _sawbladelist.begin(); itr != _sawbladelist.end(); ++itr)
+                        if (Creature* sawblade = me->GetCreature(*me, *itr))
+                            sawblade->AI()->SetData(DATA_SAWBLADE_CHANGE_POLARITY_BACK, 0);
                 }
                 break;
             }
@@ -941,16 +979,16 @@ public:
                     switch (me->GetEntry())
                     {
                     case NPC_BLACKFUSE_CRAWLER_MINE:
-                        instance->SetData(DATA_CRAWLER_MINE_READY, 0);
+                        //instance->SetData(DATA_CRAWLER_MINE_READY, 0);
                         break;
                     case NPC_ACTIVATED_LASER_TURRET:
-                        events.ScheduleEvent(EVENT_ACTIVE, 3000);
+                        //events.ScheduleEvent(EVENT_ACTIVE, 3000);
                         break;
                     case NPC_ACTIVATED_ELECTROMAGNET:
                         events.ScheduleEvent(EVENT_ACTIVE, 5000);
                         break;
                     case NPC_ACTIVATED_MISSILE_TURRET:
-                        events.ScheduleEvent(EVENT_ACTIVE, 4000);
+                        //events.ScheduleEvent(EVENT_ACTIVE, 4000);
                         break;
                     }
                     break;
@@ -1070,7 +1108,7 @@ public:
                 for (std::list<Creature*>::const_iterator itr = sawbladelist.begin(); itr != sawbladelist.end(); itr++)
                 {
                     (*itr)->GetMotionMaster()->Clear(false);
-                    (*itr)->GetMotionMaster()->MoveCharge(sbdestpos.GetPositionX(), sbdestpos.GetPositionY(), me->GetPositionZ(), 15.0f, 4);
+                    (*itr)->GetMotionMaster()->MoveCharge(sbdestpos.GetPositionX(), sbdestpos.GetPositionY(), me->GetPositionZ(), sbspeed, 4);
                     _sawbladelist.push_back((*itr)->GetGUID());
                 }
             }
@@ -1222,8 +1260,12 @@ public:
                 case EVENT_DESPAWN:
                 {
                     if (me->GetEntry() == NPC_ACTIVATED_ELECTROMAGNET)
-                        if (instance)
-                            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MAGNETIC_CRASH_DMG);
+                    {
+                        instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MAGNETIC_CRASH_DMG);
+                        for (std::vector<uint64>::const_iterator itr = _sawbladelist.begin(); itr != _sawbladelist.end(); ++itr)
+                            if (Creature* sawblade = me->GetCreature(*me, *itr))
+                                sawblade->DespawnOrUnsummon();
+                    }
                     me->DespawnOrUnsummon();
                 }
                 break;
