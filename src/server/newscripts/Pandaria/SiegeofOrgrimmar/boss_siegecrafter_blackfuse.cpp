@@ -241,7 +241,6 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              me->RemoveAurasDueToSpell(SPELL_AUTOMATIC_REPAIR_BEAM_AT);
              me->RemoveAurasDueToSpell(SPELL_ENERGIZED_DEFENSIVE_MATRIX);
              me->SetReactState(REACT_DEFENSIVE);
-             //me->SetReactState(REACT_PASSIVE);
              ClearConveyerArray();
          }
 
@@ -822,6 +821,9 @@ public:
             case NPC_DEACTIVATED_MISSILE_TURRET:
                 if (!attacker->HasAura(SPELL_ON_CONVEYOR))
                     damage = 0;
+                else
+                    if (damage >= me->GetHealth())
+                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 break;
             }
         }
@@ -957,20 +959,16 @@ public:
 
         void MovementInform(uint32 type, uint32 pointId)
         {
-            if (!me->isAlive())
-                return;
-
             if (type == EFFECT_MOTION_TYPE || type == POINT_MOTION_TYPE)
             {
                 switch (pointId)
                 {
                 //offline weapon in dest point
                 case 0:
-                    if (me->GetEntry() != NPC_BLACKFUSE_CRAWLER_MINE)
-                    {
-                        instance->SetData(DATA_D_WEAPON_IN_DEST_POINT, 0);
-                        me->DespawnOrUnsummon();
-                    }
+                    if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE) || me->GetEntry() == NPC_BLACKFUSE_CRAWLER_MINE)
+                        return;
+                    instance->SetData(DATA_D_WEAPON_IN_DEST_POINT, 0);
+                    me->DespawnOrUnsummon();
                     break;
                 //online weapon in dest point
                 case 1:
