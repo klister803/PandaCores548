@@ -334,9 +334,9 @@ class npc_profession_for_donate: public CreatureScript
 
                 bool OnGossipHello(Player *pPlayer, Creature* _creature)
                 {
-                        pPlayer->ADD_GOSSIP_ITEM(9, "Список профессий", GOSSIP_SENDER_MAIN, 196);
+                        pPlayer->ADD_GOSSIP_ITEM(9, "Хорошо, я понял. Покажите мне список профессий для покупки!", GOSSIP_SENDER_MAIN, 196);
                         pPlayer->ADD_GOSSIP_ITEM(7, "Прощайте", GOSSIP_SENDER_MAIN, 220);
-                        pPlayer->PlayerTalkClass->SendGossipMenu(20011, _creature->GetGUID());
+                        pPlayer->PlayerTalkClass->SendGossipMenu(100002, _creature->GetGUID());
                         return true;
                 }
                 
@@ -444,12 +444,18 @@ class npc_profession_for_donate: public CreatureScript
                         else
                         {
                               if (pPlayer->GetItemCount(38186) >= cost)
-                                if (LearnAllRecipesInProfession(pPlayer, skill))
-                                {
-                                        pPlayer->DestroyItemCount(38186, cost, true); 
-                                }
-                                else
-                                        pCreature->MonsterWhisper("Внутренняя ошибка или у Вас недостаточно Эфириальных Монет!", pPlayer->GetGUIDLow());
+                              {
+                                   if (LearnAllRecipesInProfession(pPlayer, skill))
+                                   {
+                                           pPlayer->DestroyItemCount(38186, cost, true); 
+                                           pPlayer->m_Events.AddEvent(new DelayedPlayerKickEvent(pPlayer), pPlayer->m_Events.CalculateTime(5000));
+                                           pCreature->MonsterWhisper("Вы приобрели указанную профессию, а теперь Вы будете кикнуты через 5 секунд для завершения покупки!", pPlayer->GetGUIDLow());
+                                   }
+                                   else
+                                           pCreature->MonsterWhisper("Внутренняя ошибка", pPlayer->GetGUIDLow());
+                              }
+                              else
+                                 pCreature->MonsterWhisper("Недостаточно Эфириальных монет для покупки!", pPlayer->GetGUIDLow());
                                 
                         }
                 }
@@ -461,9 +467,9 @@ class npc_profession_for_donate: public CreatureScript
                                 switch (uiAction)
                                 {
                                         case 200:
-                                        pPlayer->ADD_GOSSIP_ITEM(9, "Список профессий", GOSSIP_SENDER_MAIN, 196);
+                                        pPlayer->ADD_GOSSIP_ITEM(9, "Хорошо, я понял. Покажите мне список профессий для покупки!", GOSSIP_SENDER_MAIN, 196);
                                         pPlayer->ADD_GOSSIP_ITEM(7, "Прощайте", GOSSIP_SENDER_MAIN, 220);
-                                        pPlayer->PlayerTalkClass->SendGossipMenu(20011, _creature->GetGUID());                            
+                                        pPlayer->PlayerTalkClass->SendGossipMenu(100002, _creature->GetGUID());                            
                                         break;
                                         
                                         case 220:
@@ -625,7 +631,24 @@ class npc_profession_for_donate: public CreatureScript
                     
                     return true;
                 }
+                
+class DelayedPlayerKickEvent : public BasicEvent
+{
+public:
+    DelayedPlayerKickEvent(Player* player) : player(player) { }
+
+    bool Execute(uint64, uint32) override
+    {
+        player->GetSession()->KickPlayer();
+        return true;
+    }
+
+private:
+    Player* player;
 };
+                
+};
+
 
 void AddSC_npc_profession()
 {
