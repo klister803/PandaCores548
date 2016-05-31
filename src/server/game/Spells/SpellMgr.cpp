@@ -5421,6 +5421,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 143830: //Disentegration laser AT
                     spellInfo->Effects[0].TargetA = 18;
                     break;
+                case 143487: //Magnetic Crash AT
+                    spellInfo->Effects[1].TargetA = 1;
+                    break;
                 //Garrosh
                 case 144842: //Phase Two Transform
                     spellInfo->Effects[1].BasePoints = 0;

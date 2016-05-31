@@ -358,6 +358,7 @@ enum eCreatures
     NPC_ACTIVATED_ELECTROMAGNET     = 71696,
     NPC_ACTIVATED_MISSILE_TURRET    = 71638,
     //
+    NPC_OVERCHARGED_ELECTROMAGNET   = 73387,
 
     //Paragons of the Klaxxi                 
     NPC_KILRUK                      = 71161, //6
