@@ -450,6 +450,7 @@ class npc_profession_for_donate: public CreatureScript
                                            pPlayer->DestroyItemCount(38186, cost, true); 
                                            pPlayer->m_Events.AddEvent(new DelayedPlayerKickEvent(pPlayer), pPlayer->m_Events.CalculateTime(5000));
                                            pCreature->MonsterWhisper("Вы приобрели указанную профессию, а теперь Вы будете кикнуты через 5 секунд для завершения покупки!", pPlayer->GetGUIDLow());
+                                           pPlayer->SaveToDB();
                                    }
                                    else
                                            pCreature->MonsterWhisper("Внутренняя ошибка", pPlayer->GetGUIDLow());
