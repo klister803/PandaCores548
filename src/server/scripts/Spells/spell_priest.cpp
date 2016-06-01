@@ -2770,7 +2770,9 @@ class spell_pri_confession : public SpellScriptLoader
                   {
                      std::string text = sCreatureTextMgr->GetLocalizedChatString(126123, 0, urand(0, 55), DEFAULT_LOCALE);
                      target->ToPlayer()->TextEmote(text);
-                  }                     
+                  }  
+                  
+                  caster->ToPlayer()->AddSpellCooldown(126123, 0, getPreciseTime() + 6.0);                  
 
             }
 
