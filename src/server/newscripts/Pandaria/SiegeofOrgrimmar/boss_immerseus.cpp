@@ -336,7 +336,7 @@ public:
         void SpawnWave()
         {
             events.Reset();
-            if (lasthppct > 75)
+            if (lasthppct >= 75)
             {
                 for (uint8 n = 0; n < 25; n++)
                 {
@@ -352,7 +352,7 @@ public:
                         p->AI()->SetData(DATA_SEND_INDEX, n);
                 }
             }
-            else if (lasthppct < 50 && lasthppct > 30)
+            else if (lasthppct <= 50 && lasthppct > 30)
             {
                 for (uint8 n = 0; n < 25; n++)
                 {
@@ -360,7 +360,7 @@ public:
                         p->AI()->SetData(DATA_SEND_INDEX, n);
                 }
             }
-            else if (lasthppct < 30 && lasthppct > 15)
+            else if (lasthppct <= 30 && lasthppct > 15)
             {
                 for (uint8 n = 0; n < 25; n++)
                 {
