@@ -631,13 +631,13 @@ public:
                 switch (pointId)
                 {
                 case 4:
-                    if (me->GetMap()->IsHeroic())
+                    if (Creature* electromagnet = me->GetCreature(*me, instance->GetData64(NPC_ACTIVATED_ELECTROMAGNET)))
                     {
-                        if (Creature* electromagnet = me->GetCreature(*me, instance->GetData64(NPC_ACTIVATED_ELECTROMAGNET)))
+                        if (electromagnet->AI()->GetData(DATA_ACTIVE_SUPERHEAT))
                             electromagnet->AI()->SetData(DATA_SAWBLADE_IN_POINT_ELECTROMAGNET, 0);
+                        else
+                            me->DespawnOrUnsummon();
                     }
-                    else
-                        me->DespawnOrUnsummon();
                     break;
                 case 5:
                     if (Creature* electromagnet = me->GetCreature(*me, instance->GetData64(NPC_ACTIVATED_ELECTROMAGNET)))
@@ -788,6 +788,7 @@ public:
             sawbladenum = 0;
             oelectromagnetGuid = 0;
             _sawbladelist.clear();
+            superheat = false;
         }
 
         InstanceScript* instance;
@@ -796,7 +797,7 @@ public:
         float modang;
         uint8 missilecount;
         uint8 sawbladenum;
-        bool done;
+        bool done, superheat;
         std::vector<uint64>_sawbladelist;
 
         void Reset(){}
@@ -849,7 +850,7 @@ public:
                     if (pl->isAlive())
                         pl->RemoveAurasDueToSpell(SPELL_CRAWLER_MINE_FIXATE_PL);
 
-                if (me->HasAura(SPELL_SUPERHEATED_CRAWLER_MINE) && me->GetMap()->IsHeroic())
+                if (me->HasAura(SPELL_SUPERHEATED_CRAWLER_MINE))
                     if (me->ToTempSummon())
                         if (Unit* blackfuse = me->ToTempSummon()->GetSummoner())
                             for (uint8 n = 0; n < 2; n++)
@@ -958,7 +959,17 @@ public:
                     events.ScheduleEvent(EVENT_LAUNCH_BACK, 1500);
                 }
                 break;
+            case DATA_ACTIVE_SUPERHEAT:
+                superheat = true;
+                break;
             }
+        }
+
+        uint32 GetData(uint32 type)
+        {
+            if (type == DATA_ACTIVE_SUPERHEAT)
+                return uint32(superheat);
+            return 0;
         }
 
         void MovementInform(uint32 type, uint32 pointId)
@@ -980,7 +991,10 @@ public:
                     switch (me->GetEntry())
                     {
                     case NPC_BLACKFUSE_CRAWLER_MINE:
-                        instance->SetData(DATA_CRAWLER_MINE_READY, 0);
+                        if (!me->HasAura(SPELL_SUPERHEATED_CRAWLER_MINE))
+                            instance->SetData(DATA_CRAWLER_MINE_READY, 0);
+                        else
+                            events.ScheduleEvent(EVENT_ACTIVE, 1000);
                         break;
                     case NPC_ACTIVATED_LASER_TURRET:
                         events.ScheduleEvent(EVENT_ACTIVE, 3000);
@@ -1035,7 +1049,7 @@ public:
             {
                 if (Unit* blackfuse = me->ToTempSummon()->GetSummoner())
                 {
-                    if (me->GetMap()->IsHeroic())
+                    if (superheat)
                     {
                         float x, y;
                         float dist;
@@ -1127,7 +1141,7 @@ public:
                 {
                     if (Creature* stalker = me->GetCreature(*me, instance->GetData64(NPC_SHOCKWAVE_MISSILE_STALKER)))
                     {
-                        if (me->GetMap()->IsHeroic())
+                        if (superheat)
                         {
                             if (!missilecount)
                             {
@@ -1329,13 +1343,15 @@ public:
                 me->AddAura(SPELL_CONVEYOR_DEATH_BEAM_V, me);
                 DoCast(me, SPELL_CONVEYOR_DEATH_BEAM_AT, true);
             }
+            superheat = false;
             
         }
         InstanceScript* instance;
         EventMap events;
-        uint64 cannonGuid, laserGuid, stalkerGuid;
+        uint64 cannonGuid, laserGuid, stalkerGuid, turretGuid;
         uint32 rotatespeed;
         float dist, speed;
+        bool superheat;
         uint8 num;
 
         void Reset()
@@ -1359,7 +1375,17 @@ public:
         void SpellHit(Unit* caster, SpellInfo const *spell)
         {
             if (me->GetEntry() == NPC_SHOCKWAVE_MISSILE && spell->Id == SPELL_SHOCKWAVE_MISSILE_T_M)
+            {
+                turretGuid = caster->GetGUID();
                 CreateShockWaveMissileEvent();
+            }
+        }
+
+        void SetData(uint32 type, uint32 data)
+        {
+            if (type == DATA_DESPAWN)
+                if (!superheat)
+                    me->DespawnOrUnsummon(1000);
         }
 
         void SetGUID(uint64 guid, int32 id)
@@ -1432,15 +1458,19 @@ public:
             {
                 if (Unit* blackfuse = me->ToTempSummon()->GetSummoner())
                 {
-                    if (me->GetMap()->IsHeroic())
+                    if (Creature* turret = me->GetCreature(*me, turretGuid))
                     {
-                        DoCast(me, SPELL_SHOCKWAVE_VISUAL_SPAWN_HM, true);
-                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                        if (turret->AI()->GetData(DATA_ACTIVE_SUPERHEAT))
+                        {
+                            superheat = true;
+                            DoCast(me, SPELL_SHOCKWAVE_VISUAL_SPAWN_HM, true);
+                            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                        }
+                        else
+                            DoCast(me, SPELL_SHOCKWAVE_VISUAL_SPAWN, true);
+                        DoCast(me, shockwavemissilelist[num++]);
+                        events.ScheduleEvent(EVENT_SHOCKWAVE_MISSILE, 3500);
                     }
-                    else
-                        DoCast(me, SPELL_SHOCKWAVE_VISUAL_SPAWN, true);
-                    DoCast(me, shockwavemissilelist[num++]);
-                    events.ScheduleEvent(EVENT_SHOCKWAVE_MISSILE, 3500);
                 }
                 if (Creature* cannon = me->GetCreature(*me, cannonGuid))
                     cannon->DespawnOrUnsummon();
@@ -1459,7 +1489,7 @@ public:
                     DoCast(me, shockwavemissilelist[num++]);
                     if (num < 6)
                         events.ScheduleEvent(EVENT_SHOCKWAVE_MISSILE, 3500);
-                    else if (num >= 6 && me->GetMap()->IsHeroic())
+                    else if (num >= 6 && superheat)
                     {
                         num = 0;
                         events.ScheduleEvent(EVENT_SHOCKWAVE_MISSILE, 3500);
@@ -1757,9 +1787,8 @@ public:
         void HandleAfterCast()
         {
             if (GetSpellInfo()->Id == SPELL_SHOCKWAVE_MISSILE6)
-                if (!GetCaster()->GetMap()->IsHeroic())
-                    if (GetCaster() && GetCaster()->ToCreature())
-                        GetCaster()->ToCreature()->DespawnOrUnsummon(1000);
+                if (GetCaster() && GetCaster()->ToCreature())
+                    GetCaster()->ToCreature()->AI()->SetData(DATA_DESPAWN, 0);
         }
 
         void Register()

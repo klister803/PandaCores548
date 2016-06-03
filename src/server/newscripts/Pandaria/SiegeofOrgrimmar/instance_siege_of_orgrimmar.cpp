@@ -110,6 +110,14 @@ uint32 _toxinlist[6] =
     SPELL_TOXIN_GREEN,
 };
 
+uint32 weaponpriority[4] =
+{
+    NPC_ACTIVATED_ELECTROMAGNET,
+    NPC_BLACKFUSE_CRAWLER_MINE,
+    NPC_ACTIVATED_MISSILE_TURRET,
+    NPC_ACTIVATED_LASER_TURRET,
+};
+
 class instance_siege_of_orgrimmar : public InstanceMapScript
 {
 public:
@@ -126,6 +134,8 @@ public:
         uint8 weaponsdone;
         uint8 crawlerminenum;
         uint8 rycount;
+        uint32 lastsuperheatweapon;
+        uint32 newsuperheatweapon;
         //Misc
         uint32 TeamInInstance;
         uint32 EventfieldOfSha;
@@ -246,6 +256,7 @@ public:
             lingering_corruption_count = 0;
             crawlerminenum = 0;
             rycount = 0;
+            lastsuperheatweapon = 0;
 
             //GameObject
             immerseusexdoorGUID     = 0;
@@ -1299,6 +1310,7 @@ public:
                 {
                 case NOT_STARTED:
                     weaponsdone = 0;
+                    lastsuperheatweapon = 0;
                     HandleGameObject(blackfuseentdoorGuid, true);
                     break;
                 case IN_PROGRESS:
@@ -1598,6 +1610,40 @@ public:
                             }
                         }
                     }
+
+                    if (instance->IsHeroic()) //superheat mechanic
+                    {
+                        if (Creature* blackfuse = instance->GetCreature(blackfuseGuid))
+                        {
+                            uint8 numwave = blackfuse->AI()->GetData(DATA_GET_WEAPON_WAVE_INDEX);
+                            if (numwave == 5 && lastsuperheatweapon == NPC_BLACKFUSE_CRAWLER_MINE)
+                            {
+                                bool find = false;
+                                for (std::vector<uint32>::const_iterator itr = aweaponentry.begin(); itr != aweaponentry.end(); itr++)
+                                {
+                                    if (*itr == NPC_ACTIVATED_LASER_TURRET)
+                                    {
+                                        find = true;
+                                        newsuperheatweapon = NPC_ACTIVATED_LASER_TURRET;
+                                        break;
+                                    }
+                                }
+                                if (!find)
+                                    newsuperheatweapon = NPC_BLACKFUSE_CRAWLER_MINE;
+                            }
+                            else
+                            {
+                                uint8 num = 4;
+                                for (uint8 n = 0; n < 4; n++)
+                                    for (std::vector<uint32>::const_iterator itr = aweaponentry.begin(); itr != aweaponentry.end(); itr++)
+                                        if (weaponpriority[n] == (*itr) && (*itr) != lastsuperheatweapon)
+                                            if (n < num)
+                                                num = n;
+                                newsuperheatweapon = weaponpriority[num];
+                            }
+                        }
+                    }
+
                     if (Creature* blackfuse = instance->GetCreature(blackfuseGuid))
                         blackfuse->CastSpell(blackfuse, SPELL_PROTECTIVE_FRENZY, true);
                 }
@@ -1617,13 +1663,21 @@ public:
                                 {
                                     if (Creature* aw = blackfuse->SummonCreature(aweaponentry[n], spawnaweaponpos[n].GetPositionX() + float(b + 2), spawnaweaponpos[n].GetPositionY() + float(b + 2), spawnaweaponpos[n].GetPositionZ(), 0.0f))
                                     {
-                                        if (instance->IsHeroic())
+                                        aw->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                                        aw->GetMotionMaster()->MoveCharge(destapos[n].GetPositionX() + float(b + 2), destapos[n].GetPositionY() + float(b + 2), destapos[n].GetPositionZ(), 10.0f, 1, false);
+                                    }
+                                }
+                                if (newsuperheatweapon == NPC_BLACKFUSE_CRAWLER_MINE)
+                                {
+                                    for (uint8 m = 0; m < 2; m++)
+                                    {
+                                        if (Creature* aw = blackfuse->SummonCreature(aweaponentry[n], spawnaweaponpos[n].GetPositionX() + float(m + 8), spawnaweaponpos[n].GetPositionY() + float(m + 8), spawnaweaponpos[n].GetPositionZ(), 0.0f))
                                         {
                                             aw->CastSpell(aw, SPELL_SUPERHEATED_CRAWLER_MINE, true);
                                             aw->SetFloatValue(OBJECT_FIELD_SCALE_X, 2.0f);
+                                            aw->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                                            aw->GetMotionMaster()->MoveCharge(destapos[m].GetPositionX() + float(m + 8), destapos[m].GetPositionY() + float(m + 8), destapos[m].GetPositionZ(), 10.0f, 1, false);
                                         }
-                                        aw->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                                        aw->GetMotionMaster()->MoveCharge(destapos[n].GetPositionX() + float(b + 2), destapos[n].GetPositionY() + float(b + 2), destapos[n].GetPositionZ(), 10.0f, 1, false);
                                     }
                                 }
                             }
@@ -1631,6 +1685,8 @@ public:
                             {
                                 if (Creature* aw = blackfuse->SummonCreature(aweaponentry[n], spawnaweaponpos[n]))
                                 {
+                                    if (aw->GetEntry() == newsuperheatweapon)
+                                        aw->AI()->SetData(DATA_ACTIVE_SUPERHEAT, 0);
                                     aw->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                                     aw->GetMotionMaster()->MoveCharge(destapos[n].GetPositionX(), destapos[n].GetPositionY(), destapos[n].GetPositionZ(), 10.0f, 1, false);
                                     if (aw->GetEntry() == NPC_ACTIVATED_LASER_TURRET)
@@ -1638,6 +1694,7 @@ public:
                                 }
                             }
                         }
+                        lastsuperheatweapon = newsuperheatweapon;
                         aweaponentry.clear();
                         EjectPlayersFromConveyor();
                     }
@@ -1647,6 +1704,18 @@ public:
                         blackfuse->CastSpell(blackfuse, SPELL_ENERGIZED_DEFENSIVE_MATRIX, true);
                         uint8 num = blackfuse->AI()->GetData(DATA_GET_WEAPON_WAVE_INDEX);
                         num = !num ? 5 : --num;
+
+                        if (instance->IsHeroic()) //superheat mechanic
+                        {
+                            uint8 _num = 4;
+                            for (uint8 n = 0; n < 4; n++)
+                                for (uint8 b = 1; b < 6; b++)
+                                    if (weaponpriority[n] == _wavearray[num][b] && _wavearray[num][b] != lastsuperheatweapon)
+                                        if (n < _num)
+                                            _num = n;
+                            newsuperheatweapon = weaponpriority[_num];
+                        }
+
                         for (uint8 n = 1; n < 4; n++)
                         {
                             if (_wavearray[num][n] == NPC_BLACKFUSE_CRAWLER_MINE)
@@ -1655,13 +1724,21 @@ public:
                                 {
                                     if (Creature* weapon = blackfuse->SummonCreature(_wavearray[num][n], spawnaweaponpos[n - 1].GetPositionX() + float(b + 2), spawnaweaponpos[n - 1].GetPositionY() + float(b + 2), spawnaweaponpos[n - 1].GetPositionZ(), 0.0f))
                                     {
-                                        if (instance->IsHeroic())
-                                        {
-                                            weapon->CastSpell(weapon, SPELL_SUPERHEATED_CRAWLER_MINE, true);
-                                            weapon->SetFloatValue(OBJECT_FIELD_SCALE_X, 2.0f);
-                                        }
                                         weapon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                                         weapon->GetMotionMaster()->MoveCharge(destapos[n - 1].GetPositionX() + float(b + 2), destapos[n - 1].GetPositionY() + float(b + 2), destapos[n - 1].GetPositionZ(), 10.0f, 1, false);
+                                    }
+                                }
+                                if (newsuperheatweapon == NPC_BLACKFUSE_CRAWLER_MINE)
+                                {
+                                    for (uint8 m = 0; m < 2; m++)
+                                    {
+                                        if (Creature* aw = blackfuse->SummonCreature(_wavearray[num][n], spawnaweaponpos[n].GetPositionX() + float(m + 8), spawnaweaponpos[n].GetPositionY() + float(m + 8), spawnaweaponpos[n].GetPositionZ(), 0.0f))
+                                        {
+                                            aw->CastSpell(aw, SPELL_SUPERHEATED_CRAWLER_MINE, true);
+                                            aw->SetFloatValue(OBJECT_FIELD_SCALE_X, 2.0f);
+                                            aw->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                                            aw->GetMotionMaster()->MoveCharge(destapos[m].GetPositionX() + float(m + 8), destapos[m].GetPositionY() + float(m + 8), destapos[m].GetPositionZ(), 10.0f, 1, false);
+                                        }
                                     }
                                 }
                             }
@@ -1669,6 +1746,8 @@ public:
                             {
                                 if (Creature* weapon = blackfuse->SummonCreature(_wavearray[num][n], spawnaweaponpos[n - 1]))
                                 {
+                                    if (weapon->GetEntry() == newsuperheatweapon)
+                                        weapon->AI()->SetData(DATA_ACTIVE_SUPERHEAT, 0);
                                     weapon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                                     weapon->GetMotionMaster()->MoveCharge(destapos[n - 1].GetPositionX(), destapos[n - 1].GetPositionY(), destapos[n - 1].GetPositionZ(), 10.0f, 1, false);
                                     if (weapon->GetEntry() == NPC_ACTIVATED_LASER_TURRET)
@@ -1676,6 +1755,7 @@ public:
                                 }
                             }
                         }
+                        lastsuperheatweapon = newsuperheatweapon;
                         EjectPlayersFromConveyor();
                     }
                 }
