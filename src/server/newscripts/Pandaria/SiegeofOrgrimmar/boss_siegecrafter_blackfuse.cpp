@@ -1279,8 +1279,8 @@ public:
                 {
                     if (me->GetEntry() == NPC_ACTIVATED_ELECTROMAGNET)
                     {
-                        if (Creature* oelectromagnet = me->GetCreature(*me, oelectromagnetGuid))
-                            oelectromagnet->DespawnOrUnsummon();
+                        if (Creature* electromagnet = me->FindNearestCreature(NPC_OVERCHARGED_ELECTROMAGNET, 200.0f, true))
+                            electromagnet->DespawnOrUnsummon();
                         instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MAGNETIC_CRASH_DMG);
                         for (std::vector<uint64>::const_iterator itr = _sawbladelist.begin(); itr != _sawbladelist.end(); ++itr)
                             if (Creature* sawblade = me->GetCreature(*me, *itr))
@@ -1302,6 +1302,7 @@ public:
                         oelectromagnet->SetReactState(REACT_PASSIVE);
                         oelectromagnet->setFaction(16);
                         oelectromagnet->SetDisplayId(11686);
+                        oelectromagnet->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                         oelectromagnet->CastSpell(oelectromagnet, SPELL_MAGNETIC_CRASH_AT);
                         oelectromagnetGuid = oelectromagnet->GetGUID();
                     }
