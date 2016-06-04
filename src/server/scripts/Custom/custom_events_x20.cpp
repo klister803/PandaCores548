@@ -99,7 +99,7 @@ public:
               QueryResult result_three = CharacterDatabase.PQuery("SELECT * FROM custom_account_checker WHERE account = '%u' and type = '3';", player->GetSession()->GetAccountId()); 
               if (!result_three)
               {
-               player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Один бесплатный левел ап до 90-го уровня", GOSSIP_SENDER_MAIN, 1);
+            //   player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Один бесплатный левел ап до 90-го уровня", GOSSIP_SENDER_MAIN, 1);
               }
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Эксклюзивные предметы за Эпическую Валюту", GOSSIP_SENDER_MAIN, 2); 
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Рисованные маунты и морфы за Эпическую Валюту", GOSSIP_SENDER_MAIN, 3); 
