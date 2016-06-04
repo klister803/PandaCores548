@@ -1655,6 +1655,7 @@ public:
                     if (weaponsdone == 2 && !aweaponentry.empty())
                     {
                         weaponsdone = 0;
+                        bool superheatmine = false;
                         for (uint8 n = 0; n < 2; n++)
                         {
                             if (aweaponentry[n] == NPC_BLACKFUSE_CRAWLER_MINE)
@@ -1667,8 +1668,9 @@ public:
                                         aw->GetMotionMaster()->MoveCharge(destapos[n].GetPositionX() + float(b + 2), destapos[n].GetPositionY() + float(b + 2), destapos[n].GetPositionZ(), 10.0f, 1, false);
                                     }
                                 }
-                                if (newsuperheatweapon == NPC_BLACKFUSE_CRAWLER_MINE)
+                                if (newsuperheatweapon == NPC_BLACKFUSE_CRAWLER_MINE && !superheatmine)
                                 {
+                                    superheatmine = true;
                                     for (uint8 m = 0; m < 2; m++)
                                     {
                                         if (Creature* aw = blackfuse->SummonCreature(aweaponentry[n], spawnaweaponpos[n].GetPositionX() + float(m + 8), spawnaweaponpos[n].GetPositionY() + float(m + 8), spawnaweaponpos[n].GetPositionZ(), 0.0f))
@@ -1701,6 +1703,7 @@ public:
                     else if (weaponsdone == 3 && aweaponentry.empty())
                     {
                         weaponsdone = 0;
+                        bool superheatmine = false;
                         blackfuse->CastSpell(blackfuse, SPELL_ENERGIZED_DEFENSIVE_MATRIX, true);
                         uint8 num = blackfuse->AI()->GetData(DATA_GET_WEAPON_WAVE_INDEX);
                         num = !num ? 5 : --num;
@@ -1728,8 +1731,9 @@ public:
                                         weapon->GetMotionMaster()->MoveCharge(destapos[n - 1].GetPositionX() + float(b + 2), destapos[n - 1].GetPositionY() + float(b + 2), destapos[n - 1].GetPositionZ(), 10.0f, 1, false);
                                     }
                                 }
-                                if (newsuperheatweapon == NPC_BLACKFUSE_CRAWLER_MINE)
+                                if (newsuperheatweapon == NPC_BLACKFUSE_CRAWLER_MINE && !superheatmine)
                                 {
+                                    superheatmine = true;
                                     for (uint8 m = 0; m < 2; m++)
                                     {
                                         if (Creature* aw = blackfuse->SummonCreature(_wavearray[num][n], spawnaweaponpos[n].GetPositionX() + float(m + 8), spawnaweaponpos[n].GetPositionY() + float(m + 8), spawnaweaponpos[n].GetPositionZ(), 0.0f))
