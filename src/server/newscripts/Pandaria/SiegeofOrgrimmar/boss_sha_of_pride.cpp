@@ -221,16 +221,15 @@ class boss_sha_of_pride : public CreatureScript
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
                 ZoneTalk(TEXT_GENERIC_1, 0);
                 events.SetPhase(PHASE_BATTLE);
-                uint32 t = 0;
                 checkvictim = 1500;
                 if (IsHeroic())
-                    events.RescheduleEvent(EVENT_RIFT_OF_CORRUPTION, t += 2000, 0, PHASE_BATTLE);
-                events.RescheduleEvent(EVENT_SPELL_GIFT_OF_THE_TITANS, t += 1000, 0, PHASE_BATTLE);
-                events.RescheduleEvent(EVENT_SPELL_WOUNDED_PRIDE, t += 3000, 0, PHASE_BATTLE);
-                events.RescheduleEvent(EVENT_SPELL_MARK_OF_ARROGANCE, t += 2000, 0, PHASE_BATTLE);
-                events.RescheduleEvent(EVENT_SPELL_SELF_REFLECTION, t += 13000, 0, PHASE_BATTLE);
-                events.RescheduleEvent(EVENT_SPELL_CORRUPTED_PRISON, t += 27000, 0, PHASE_BATTLE);
-                events.RescheduleEvent(EVENT_SUMMON_MANIFESTATION_OF_PRIDE, t += 9000, 0, PHASE_BATTLE);
+                    events.RescheduleEvent(EVENT_RIFT_OF_CORRUPTION, 6000, 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_SPELL_GIFT_OF_THE_TITANS, 1000, 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_SPELL_WOUNDED_PRIDE, 3000, 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_SPELL_MARK_OF_ARROGANCE, 2000, 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_SPELL_SELF_REFLECTION, 20000, 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_SPELL_CORRUPTED_PRISON, 45000, 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_SUMMON_MANIFESTATION_OF_PRIDE, 60000, 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_PRIDE_GENERATION, 4000);
                 Map::PlayerList const& PlayerList = instance->instance->GetPlayers();
                 if (!PlayerList.isEmpty())
@@ -311,12 +310,12 @@ class boss_sha_of_pride : public CreatureScript
                             break;
                         case EVENT_SPELL_WOUNDED_PRIDE:
                             DoCastVictim(SPELL_WOUNDED_PRIDE);
-                            events.RescheduleEvent(EVENT_SPELL_WOUNDED_PRIDE, 30*IN_MILLISECONDS, 0, PHASE_BATTLE);
+                            events.RescheduleEvent(EVENT_SPELL_WOUNDED_PRIDE, 30000, 0, PHASE_BATTLE);
                             break;
                         case EVENT_SPELL_SELF_REFLECTION:
                             ZoneTalk(TEXT_GENERIC_4, 0);
                             DoCast(me, SPELL_SELF_REFLECTION, false);
-                            events.RescheduleEvent(EVENT_SPELL_SELF_REFLECTION, 78*IN_MILLISECONDS, 0, PHASE_BATTLE);
+                            events.RescheduleEvent(EVENT_SPELL_SELF_REFLECTION, 60000, 0, PHASE_BATTLE);
                             break;
                         case EVENT_SPELL_CORRUPTED_PRISON:
                         {
@@ -340,7 +339,7 @@ class boss_sha_of_pride : public CreatureScript
                                         break;
                                 }
                             }
-                            events.RescheduleEvent(EVENT_SPELL_CORRUPTED_PRISON, 78*IN_MILLISECONDS, 0, PHASE_BATTLE);  //19:02:48.000
+                            events.RescheduleEvent(EVENT_SPELL_CORRUPTED_PRISON, 60000, 0, PHASE_BATTLE);
                             break;
                         }
                         case EVENT_SUMMON_MANIFESTATION_OF_PRIDE:
@@ -351,7 +350,7 @@ class boss_sha_of_pride : public CreatureScript
                             else
                                 for (uint8 i = 1; i <= count; i++)
                                     me->SummonCreature(NPC_MANIFEST_OF_PRIDE, Sha_of_pride_manifestation[i], TEMPSUMMON_DEAD_DESPAWN);
-                            events.RescheduleEvent(EVENT_SUMMON_MANIFESTATION_OF_PRIDE, 77 * IN_MILLISECONDS, 0, PHASE_BATTLE);
+                            events.RescheduleEvent(EVENT_SUMMON_MANIFESTATION_OF_PRIDE, 60000, 0, PHASE_BATTLE);
                             break;
                         }
                         case EVENT_SPELL_GIFT_OF_THE_TITANS:
@@ -363,7 +362,7 @@ class boss_sha_of_pride : public CreatureScript
                             float x, y;
                             GetPosInRadiusWithRandomOrientation(me, 55.0f, x, y);
                             me->SummonCreature(NPC_RIFT_OF_CORRUPTION, x, y, me->GetPositionZ(), 0.0f);
-                            events.RescheduleEvent(EVENT_RIFT_OF_CORRUPTION, urand(10000, 20000), 0, PHASE_BATTLE);
+                            events.RescheduleEvent(EVENT_RIFT_OF_CORRUPTION, 6000, 0, PHASE_BATTLE);
                             break;
                         }
                     }
