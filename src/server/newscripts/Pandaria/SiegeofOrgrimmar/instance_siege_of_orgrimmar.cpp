@@ -1616,7 +1616,7 @@ public:
                         if (Creature* blackfuse = instance->GetCreature(blackfuseGuid))
                         {
                             uint8 numwave = blackfuse->AI()->GetData(DATA_GET_WEAPON_WAVE_INDEX);
-                            if (numwave == 5 && lastsuperheatweapon == NPC_BLACKFUSE_CRAWLER_MINE)
+                            if (!numwave && lastsuperheatweapon == NPC_BLACKFUSE_CRAWLER_MINE)
                             {
                                 bool find = false;
                                 for (std::vector<uint32>::const_iterator itr = aweaponentry.begin(); itr != aweaponentry.end(); itr++)
