@@ -9880,11 +9880,24 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
 
                         break;
                     }
+                    case 148714: //Empowered (Garrosh HM)
+                        if (ToCreature())
+                        {
+                            if (GetPower(POWER_ENERGY) <= 90)
+                                SetPower(POWER_ENERGY, GetPower(POWER_ENERGY) + 10);
+
+                            if (GetPower(POWER_ENERGY) == 100)
+                            {
+                                SetPower(POWER_ENERGY, 0);
+                                CastSpell(this, 149536); //Empowering Corruption
+                            }
+                        }
+                        break;
+                    case 142598: //Apothecary: Volatile Poultice
+                        if (victim && victim->isAlive() && this->IsFriendlyTo(victim))
+                            this->CastCustomSpell(142877, SPELLVALUE_BASE_POINT0, damage, victim, true); //Volatile Poultice
+                        break;
                 }
-            case 142598: //Apothecary: Volatile Poultice
-                if (victim && victim->isAlive() && this->IsFriendlyTo(victim))
-                    this->CastCustomSpell(142877, SPELLVALUE_BASE_POINT0, damage, victim, true); //Volatile Poultice
-                break;
             case SPELLFAMILY_PRIEST:
             {
                 switch (auraSpellInfo->Id)

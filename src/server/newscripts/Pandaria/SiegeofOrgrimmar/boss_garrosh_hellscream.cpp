@@ -70,6 +70,7 @@ enum eSpells
     SPELL_CHAIN_LIGHTNING            = 144584,
     //Embodied doubt
     SPELL_EMBODIED_DOUBT             = 145275,
+    SPELL_EMBODIED_DOUBT_HM          = 149347,
     //Minion of Yshaarj
     SPELL_EMPOWERED                  = 145050,
 
@@ -78,6 +79,8 @@ enum eSpells
     SPELL_REMOVE_REALM_OF_YSHAARJ    = 145647,
     SPELL_ANNIHILLATE                = 144969,
     SPELL_COSMETIC_CHANNEL           = 145431,
+    //HM
+    SPELL_CRUSHING_FEAR              = 147319,
 
     //Special
     SPELL_SUMMON_ADDS                = 144489,
@@ -186,10 +189,10 @@ Position wspos[2] =
 };
 
 Position tppos[3] =
-{   //1.1 scale sha vortex
-    {1092.66f, -5453.67f, -354.902802f, 1.4436f},//Temple of the Jade Serpent
-    {1084.72f, -5631.07f, -423.453369f, 3.0819f},//Terrace of Endless Spring
-    {1055.22f, -5844.58f, -318.864105f, 4.6069f},//Temple of the Red Crane 
+{   //1.1 scale sha vortex                                                      //HM
+    {1092.66f, -5453.67f, -354.902802f, 1.4436f},//Temple of the Jade Serpent   //1
+    {1084.72f, -5631.07f, -423.453369f, 3.0819f},//Terrace of Endless Spring    //2
+    {1055.22f, -5844.58f, -318.864105f, 4.6069f},//Temple of the Red Crane      //3
 };
 
 Position gspos[3] =
@@ -629,7 +632,11 @@ class boss_garrosh_hellscream : public CreatureScript
                         me->SetAttackStop(true);
                         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
                         instance->SetData(DATA_RESET_REALM_OF_YSHAARJ, 0); //for safe
-                        uint8 mod = instance->GetData(DATA_GET_REALM_OF_YSHAARJ);
+                        uint8 mod;
+                        if (me->GetMap()->IsHeroic())
+                            mod = realmnum;
+                        else
+                            mod = uint8(instance->GetData(DATA_GET_REALM_OF_YSHAARJ));
                         if (Creature* garroshrealm = me->SummonCreature(NPC_GARROSH, gspos[mod]))
                         {
                             garroshrealm->AddAura(SPELL_PHASE_TWO_TRANSFORM, garroshrealm);
@@ -778,6 +785,9 @@ public:
                 DoCast(me, SPELL_CONSUMED_HOPE, true);
                 break;
             case NPC_MINION_OF_YSHAARJ:
+                me->setPowerType(POWER_ENERGY);
+                me->SetMaxPower(POWER_ENERGY, 100);
+                me->SetPower(POWER_ENERGY, 0);
                 if (me->ToTempSummon())
                 {
                     if (Unit* summoner = me->ToTempSummon()->GetSummoner())
@@ -853,6 +863,8 @@ public:
                 events.ScheduleEvent(EVENT_CHAIN_HEAL, 21500);
                 break;
             case NPC_EMBODIED_DESPAIR:
+                if (me->GetMap()->IsHeroic())
+                    DoCast(me, SPELL_ULTIMATE_DESPAIR);
                 events.ScheduleEvent(EVENT_EMBODIED_DESPAIR, 10000);
                 break;
             case NPC_EMBODIED_DOUBT:
@@ -931,7 +943,10 @@ public:
                     break;
                 //Embodied doubt
                 case EVENT_EMBODIED_DOUBT:
-                    DoCast(me, SPELL_EMBODIED_DOUBT);
+                    if (me->GetMap()->IsHeroic())
+                        DoCast(me, SPELL_EMBODIED_DOUBT_HM);
+                    else
+                        DoCast(me, SPELL_EMBODIED_DOUBT);
                     events.ScheduleEvent(EVENT_EMBODIED_DOUBT, urand(8000, 13000));
                     break;
                 }

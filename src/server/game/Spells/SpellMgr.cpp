@@ -5525,6 +5525,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[12].TargetB = 0;
                     break;
                 }
+                case 148714: //Empowered
+                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+                    spellInfo->Effects[0].TriggerSpell = 0;
+                    break;
                 //World Bosses
                 //Sha of Anger
                 case 119487: //Anger
