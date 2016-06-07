@@ -3035,7 +3035,7 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
 
     if (sWorld->getBoolConfig(CONFIG_CUSTOM_X20))
       {
-       if (GetOwner()->getLevel() > 1) // on 1 level accounts achievment
+       if (GetOwner()->getLevel() > 1 && GetOwner()->getLevel() != 55) // on 1 level accounts achievment
        {
           uint32 id = 37711;
           ChatHandler chH = ChatHandler(GetOwner()); 
