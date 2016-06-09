@@ -216,17 +216,17 @@ class boss_iron_juggernaut : public CreatureScript
                         {
                         case PHASE_ONE:
                             if (me->GetPower(POWER_ENERGY) <= 99)
-                            {
                                 me->SetPower(POWER_ENERGY, me->GetPower(POWER_ENERGY) + 1, true);
-                                PowerTimer = 1100;
-                                if (me->GetPower(POWER_ENERGY) == 100 && phase == PHASE_ONE)
-                                {
-                                    phase = PHASE_TWO;
-                                    PowerTimer = 0;
-                                    events.SetPhase(PHASE_TWO);
-                                    DoAction(ACTION_PHASE_TWO);
-                                }
+
+                            if (me->GetPower(POWER_ENERGY) == 100)
+                            {
+                                phase = PHASE_TWO;
+                                PowerTimer = 0;
+                                events.SetPhase(PHASE_TWO);
+                                DoAction(ACTION_PHASE_TWO);
+                                return;
                             }
+                            PowerTimer = 1100;
                             break;
                         case PHASE_TWO:
                             if (me->GetPower(POWER_ENERGY) >= 1)

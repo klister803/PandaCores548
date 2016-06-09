@@ -404,6 +404,8 @@ enum eCreatures
     NPC_EMBODIED_DOUBT              = 72236,
     //Terrace of Endless Spring
     NPC_EMBODIED_FEAR               = 72237,
+    //HM, Last Phase
+    NPC_MANIFESTATION_OF_RAGE       = 73253,
 };
 
 enum eGameObjects

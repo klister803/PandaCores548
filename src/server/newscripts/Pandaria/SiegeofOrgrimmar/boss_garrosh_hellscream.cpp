@@ -81,6 +81,9 @@ enum eSpells
     SPELL_COSMETIC_CHANNEL           = 145431,
     //HM
     SPELL_CRUSHING_FEAR_T_M          = 147320,
+    SPELL_BOMBARTMENT                = 147133,
+    SPELL_BOMBARTMENT_AURA           = 147122,
+    SPELL_MANIFEST_RAGE              = 147011,
 
     //Special
     SPELL_SUMMON_ADDS                = 144489,
@@ -1932,6 +1935,39 @@ public:
     }
 };
 
+//147011
+class spell_manifest_rage : public SpellScriptLoader
+{
+public:
+    spell_manifest_rage() : SpellScriptLoader("spell_manifest_rage") { }
+
+    class spell_manifest_rage_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_manifest_rage_AuraScript);
+
+        void OnPeriodic(AuraEffect const*aurEff)
+        {
+            if (GetCaster() && GetCaster()->ToCreature())
+            {
+                float x, y;
+                GetPosInRadiusWithRandomOrientation(GetCaster(), float(urand(20, 30)), x, y);
+                if (Creature* mof = GetCaster()->SummonCreature(NPC_MANIFESTATION_OF_RAGE, x, y, GetCaster()->GetPositionZ()))
+                    mof->AI()->DoZoneInCombat(mof, 150.0f);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_manifest_rage_AuraScript::OnPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_manifest_rage_AuraScript();
+    }
+};
+
 void AddSC_boss_garrosh_hellscream()
 {
     new boss_garrosh_hellscream();
@@ -1955,4 +1991,5 @@ void AddSC_boss_garrosh_hellscream()
     new spell_player_touch_of_yshaarj();
     new spell_empovered_gripping_despair();
     new spell_crushing_fear();
+    new spell_manifest_rage();
 }
