@@ -80,7 +80,7 @@ enum eSpells
     SPELL_ANNIHILLATE                = 144969,
     SPELL_COSMETIC_CHANNEL           = 145431,
     //HM
-    SPELL_CRUSHING_FEAR              = 147319,
+    SPELL_CRUSHING_FEAR_T_M          = 147320,
 
     //Special
     SPELL_SUMMON_ADDS                = 144489,
@@ -200,6 +200,70 @@ Position gspos[3] =
     {1105.01f, -5344.21f, -349.7873f, 4.5881f},  //Temple of the Jade Serpent
     {820.47f,  -5601.41f, -397.7068f, 6.1840f},  //Terrace of Endless Spring
     {1056.55f, -5829.83f, -368.6667f, 4.6313f},  //Temple of the Red Crane
+};
+
+Position crushingfeardest[60] =
+{
+    { 945.09f, -5616.38f, -416.4596f },
+    { 943.80f, -5606.74f, -416.6546f },
+    { 941.56f, -5626.87f, -416.6546f },
+    { 941.50f, -5633.27f, -416.6546f },
+    { 929.23f, -5624.66f, -416.6546f },
+    { 927.09f, -5608.24f, -416.6545f },
+    { 920.46f, -5615.16f, -416.6439f },
+    { 909.92f, -5619.93f, -412.5998f },
+    { 908.04f, -5607.89f, -410.5522f },
+    { 903.76f, -5613.95f, -408.2687f },
+    { 898.88f, -5618.77f, -405.5613f },
+    { 900.51f, -5610.78f, -405.9869f },
+    { 895.42f, -5616.37f, -406.1470f },
+    { 887.50f, -5616.90f, -398.1998f },
+    { 890.99f, -5608.75f, -399.7753f },
+    { 884.20f, -5601.87f, -398.1624f },
+    { 877.93f, -5608.24f, -398.2571f },
+    { 875.95f, -5617.98f, -398.1881f },
+    { 868.91f, -5609.46f, -398.2189f },
+    { 857.37f, -5615.89f, -398.0228f },
+    { 866.14f, -5601.85f, -398.1347f },
+    { 852.62f, -5601.21f, -398.0230f },
+    { 846.85f, -5618.18f, -398.0201f },
+    { 843.52f, -5628.98f, -398.0222f },
+    { 834.25f, -5639.14f, -398.0222f },
+    { 820.12f, -5635.49f, -398.0016f },
+    { 810.24f, -5644.04f, -398.0219f },
+    { 807.55f, -5634.74f, -397.9928f },
+    { 796.34f, -5642.77f, -398.0228f },
+    { 801.46f, -5631.31f, -397.9842f },
+    { 779.44f, -5637.16f, -398.0232f },
+    { 784.98f, -5626.74f, -397.9983f },
+    { 789.00f, -5617.14f, -397.9674f },
+    { 769.92f, -5611.99f, -398.0152f },
+    { 777.22f, -5603.79f, -397.9869f },
+    { 788.07f, -5601.16f, -397.7069f },
+    { 777.39f, -5598.40f, -397.9869f },
+    { 781.84f, -5587.61f, -397.9838f },
+    { 790.38f, -5589.49f, -397.7062f },
+    { 772.27f, -5580.16f, -398.0230f },
+    { 781.06f, -5573.41f, -398.0181f },
+    { 789.79f, -5579.16f, -397.9833f },
+    { 794.53f, -5582.82f, -397.9600f },
+    { 790.67f, -5558.37f, -398.0228f },
+    { 795.20f, -5567.22f, -398.0073f },
+    { 801.34f, -5575.37f, -397.9735f },
+    { 813.43f, -5569.04f, -397.9918f },
+    { 811.53f, -5561.69f, -398.0173f },
+    { 815.39f, -5553.86f, -398.0230f },
+    { 827.26f, -5556.51f, -398.0230f },
+    { 825.22f, -5564.75f, -398.0197f },
+    { 819.54f, -5570.49f, -397.9948f },
+    { 833.32f, -5559.99f, -398.0224f },
+    { 842.52f, -5566.11f, -398.0224f },
+    { 843.62f, -5575.47f, -398.0224f },
+    { 852.16f, -5579.41f, -398.0224f },
+    { 844.53f, -5582.54f, -398.0202f },
+    { 854.53f, -5587.33f, -398.0223f },
+    { 850.03f, -5595.03f, -398.0222f },
+    { 858.35f, -5594.51f, -398.0222f },
 };
 
 Position centerpos = {1073.09f, -5639.70f, -317.3894f};
@@ -656,6 +720,8 @@ class boss_garrosh_hellscream : public CreatureScript
                                     (*itr)->CastSpell(*itr, SPELL_GARROSH_ENERGY);
                                 }
                             }
+                            if (me->GetMap()->IsHeroic() && mod == 1)
+                                garroshrealm->CastSpell(garroshrealm, SPELL_CRUSHING_FEAR, true);
                             realmnum++;
                             garroshrealm->AI()->Talk(SAY_ENTER_REALM_OF_YSHAARJ, 0);
                             phase = PHASE_REALM_OF_YSHAARJ;
@@ -1564,7 +1630,6 @@ public:
     AuraScript* GetAuraScript() const
     {
         return new spell_realm_of_yshaarj_AuraScript();
-
     }
 };
 
@@ -1836,6 +1901,37 @@ public:
     }
 };
 
+//147319
+class spell_crushing_fear : public SpellScriptLoader
+{
+public:
+    spell_crushing_fear() : SpellScriptLoader("spell_crushing_fear") { }
+
+    class spell_crushing_fear_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_crushing_fear_AuraScript);
+
+        void OnPeriodic(AuraEffect const*aurEff)
+        {
+            if (GetCaster() && GetCaster()->ToCreature())
+            {
+                uint8 mod = urand(0, 59);
+                GetCaster()->CastSpell(crushingfeardest[mod].GetPositionX(), crushingfeardest[mod].GetPositionY(), crushingfeardest[mod].GetPositionZ(), SPELL_CRUSHING_FEAR_T_M, true);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_crushing_fear_AuraScript::OnPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_crushing_fear_AuraScript();
+    }
+};
+
 void AddSC_boss_garrosh_hellscream()
 {
     new boss_garrosh_hellscream();
@@ -1858,4 +1954,5 @@ void AddSC_boss_garrosh_hellscream()
     new spell_touch_of_yshaarj();
     new spell_player_touch_of_yshaarj();
     new spell_empovered_gripping_despair();
+    new spell_crushing_fear();
 }

@@ -611,6 +611,7 @@ enum esSpells
     SPELL_REALM_OF_YSHAARJ             = 144954,
     SPELL_TOUCH_OF_YSHAARJ             = 145065,
     SPELL_EM_TOUCH_OF_YSHAARJ          = 145171,
+    SPELL_CRUSHING_FEAR                = 147319,
     //Movie Garrosh
     SPELL_HORDE                        = 149978,
     SPELL_ALLIANCE                     = 149979,

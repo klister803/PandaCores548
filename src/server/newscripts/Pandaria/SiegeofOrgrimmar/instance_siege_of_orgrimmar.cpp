@@ -2225,6 +2225,7 @@ public:
 
             if (Creature* garroshrealm = instance->GetCreature(garroshrealmGuid))
             {
+                garroshrealm->RemoveAurasDueToSpell(SPELL_CRUSHING_FEAR);
                 garroshrealm->RemoveAurasDueToSpell(SPELL_YSHAARJ_PROTECTION);
                 garroshrealm->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 garroshrealm->AI()->DoAction(ACTION_LAUNCH_ANNIHILLATE);

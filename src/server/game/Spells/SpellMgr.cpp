@@ -5529,6 +5529,13 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
                     spellInfo->Effects[0].TriggerSpell = 0;
                     break;
+                case 147319: //Crushing Fear
+                    spellInfo->Effects[0].TriggerSpell = 0;
+                    break;
+                case 147320: //Crushing Fear Trigger Missile
+                    spellInfo->Effects[0].TargetA = TARGET_DEST_DEST;
+                    spellInfo->Effects[0].TargetB = 0;
+                    break;
                 //World Bosses
                 //Sha of Anger
                 case 119487: //Anger
