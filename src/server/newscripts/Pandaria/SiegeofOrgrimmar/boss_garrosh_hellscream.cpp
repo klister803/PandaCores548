@@ -38,6 +38,13 @@ enum eSpells
     SPELL_PL_TOUCH_OF_YSHAARJ        = 145599,
     SPELL_EXPLOSIVE_DESPAIR_EXPLOSE  = 145199,
     SPELL_EXPLOSIVE_DESPAIR_DOT      = 145213,
+    //HM
+    SPELL_BOMBARTMENT                = 147133,
+    SPELL_BOMBARTMENT_AURA           = 147122,
+    SPELL_MANIFEST_RAGE              = 147011,
+    SPELL_MALICE                     = 147209,
+    SPELL_MALICIOUS_BLAST            = 147235,
+    SPELL_MALICIOUS_ENERGY           = 147236,
     //Garrosh Special
     SPELL_TRANSITION_VISUAL_PHASE_2  = 144852,
     SPELL_TRANSITION_VISUAL_BASE     = 146756,
@@ -56,6 +63,11 @@ enum eSpells
     SPELL_IRON_STAR_IMPACT_AT        = 144645,
     SPELL_IRON_STAR_IMPACT_DMG       = 144650,
     SPELL_EXPLODING_IRON_STAR        = 144798,
+    //HM
+    SPELL_FIRE_UNSTABLE_IRON_STAR    = 147047, //spawn
+    SPELL_fIXATE_IRON_STAR           = 147665,
+    SPELL_UNSTABLE_IRON_STAR         = 147173,
+    SPELL_UNSTABLE_IRON_STAR_STUN    = 147177,
 
     //Engeneer
     SPELL_POWER_IRON_STAR            = 144616,
@@ -81,9 +93,6 @@ enum eSpells
     SPELL_COSMETIC_CHANNEL           = 145431,
     //HM
     SPELL_CRUSHING_FEAR_T_M          = 147320,
-    SPELL_BOMBARTMENT                = 147133,
-    SPELL_BOMBARTMENT_AURA           = 147122,
-    SPELL_MANIFEST_RAGE              = 147011,
 
     //Special
     SPELL_SUMMON_ADDS                = 144489,
@@ -297,6 +306,7 @@ enum CreatureText
     SAY_DIE                         = 12,//Это не может... кончиться... так... Нет... я же видел... 38046
     //Realm of Yshaarj
     SAY_ENTER_REALM_OF_YSHAARJ      = 13,//Вы окажетесь в ловушке навеки! 38055
+    SAY_HM_LAST_PHASE               = 14,//(долго злобно смеется) Думаете вы победили? Слепцы. Я раскрою вам глаза! 38057
 };
 
 class boss_garrosh_hellscream : public CreatureScript
@@ -496,14 +506,15 @@ class boss_garrosh_hellscream : public CreatureScript
                 instance->SetData(DATA_PLAY_FINAL_MOVIE, 0);
             }
 
-            bool IfTargetHavePlayersInRange(Player* target, uint8 count)
+            bool IfTargetHavePlayersInRange(Player* target, uint8 count, float radius)
             {
                 count++;
                 std::list<Player*>pllist;
-                GetPlayerListInGrid(pllist, target, 15.0f);
+                GetPlayerListInGrid(pllist, target, radius);
                 if (pllist.size() >= count)
                     return true;
                 return false;
+                //HM Iron Star 10 - 4pl, 25 - 7pl, 8yard
             }
 
             bool CheckEvade()
@@ -661,7 +672,7 @@ class boss_garrosh_hellscream : public CreatureScript
                             {
                                 if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && me->GetExactDist(*itr) >= 15.0f)
                                 {
-                                    if (IfTargetHavePlayersInRange(*itr, count))
+                                    if (IfTargetHavePlayersInRange(*itr, count, 15.0f))
                                     {
                                         havetarget = true;
                                         DoCast(*itr, me->GetPower(POWER_ENERGY) >= 75 ? SPELL_EM_DESECRETE : SPELL_DESECRETE);
@@ -676,7 +687,7 @@ class boss_garrosh_hellscream : public CreatureScript
                                 {
                                     if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
                                     {
-                                        if (IfTargetHavePlayersInRange(*itr, count))
+                                        if (IfTargetHavePlayersInRange(*itr, count, 15.0f))
                                         {
                                             havetarget = true;
                                             DoCast(*itr, me->GetPower(POWER_ENERGY) >= 75 ? SPELL_EM_DESECRETE : SPELL_DESECRETE);
@@ -1968,6 +1979,54 @@ public:
     }
 };
 
+//147229
+class spell_malice_dummy : public SpellScriptLoader
+{
+public:
+    spell_malice_dummy() : SpellScriptLoader("spell_malice_dummy") { }
+
+    class spell_malice_dummy_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_malice_dummy_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*>& targets)
+        {
+            if (GetCaster())
+            {
+                uint8 mod = GetCaster()->GetMap()->Is25ManRaid() ? 5 : 2;
+                if (targets.size() < mod)
+                {
+                    uint8 _mod = 5 * (mod - targets.size());
+                    if (InstanceScript* instance = GetCaster()->GetInstanceScript())
+                        if (Creature* garrosh = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(DATA_GARROSH)))
+                            GetCaster()->CastCustomSpell(SPELL_MALICIOUS_ENERGY, SPELLVALUE_BASE_POINT0, _mod, garrosh, true);
+                }
+                else if (targets.size() > mod)
+                    targets.resize(mod);
+            }
+        }
+
+        void DealDamage()
+        {
+            if (GetCaster() && GetHitUnit())
+                if (InstanceScript* instance = GetCaster()->GetInstanceScript())
+                    if (Creature* garrosh = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(DATA_GARROSH)))
+                        garrosh->CastSpell(GetHitUnit(), SPELL_MALICIOUS_BLAST, true);
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_malice_dummy_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ALLY);
+            OnHit += SpellHitFn(spell_malice_dummy_SpellScript::DealDamage);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_malice_dummy_SpellScript();
+    }
+};
+
 void AddSC_boss_garrosh_hellscream()
 {
     new boss_garrosh_hellscream();
@@ -1992,4 +2051,5 @@ void AddSC_boss_garrosh_hellscream()
     new spell_empovered_gripping_despair();
     new spell_crushing_fear();
     new spell_manifest_rage();
+    new spell_malice_dummy();
 }

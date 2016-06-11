@@ -394,6 +394,7 @@ enum eCreatures
     NPC_HEART_OF_YSHAARJ            = 72215,
     NPC_HEART_OF_YSHAARJ_REALM      = 72228,
     NPC_KORKRON_IRON_STAR           = 71985,
+    NPC_KORKRON_IRON_STAR_HM        = 73059,
     NPC_THRALL                      = 73483,
     NPC_THE_LAST_GASP_OF_YSHAARJ    = 73335,
     //Adds in Tempels

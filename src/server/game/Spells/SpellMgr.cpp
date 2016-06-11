@@ -5536,6 +5536,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = TARGET_DEST_DEST;
                     spellInfo->Effects[0].TargetB = 0;
                     break;
+                case 147236: //Malicious Energy
+                    spellInfo->Effects[0].TargetA = 25;
+                    spellInfo->Effects[1].TargetA = 25;
+                    break;
                 //World Bosses
                 //Sha of Anger
                 case 119487: //Anger
