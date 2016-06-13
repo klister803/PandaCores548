@@ -405,28 +405,28 @@ class boss_amalgam_of_corruption : public CreatureScript
             {
                 instance = creature->GetInstanceScript();
                 SetCombatMovement(false);
+                startattack = 6000;
+                attack = false;
             }
 
             InstanceScript* instance;
             uint8 FrayedCounter;
+            uint32 startattack;
+            bool attack;
             std::map<uint32, uint32> challengeCounter;
 
             void Reset()
             {
                 _Reset();
-                
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PURIFIED);
-
                 me->RemoveAllAuras();
                 me->SetReactState(REACT_DEFENSIVE);
                 me->ModifyAuraState(AURA_STATE_UNKNOWN22, true);
                 ApplyOrRemoveBar(false);
                 FrayedCounter = 0;
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
-                
                 if (Creature* HealChGreater = me->FindNearestCreature(NPC_GREATER_CORRUPTION, 200.0f))
                     me->Kill(HealChGreater);
-
                 challengeCounter.clear();
             }
 
@@ -520,7 +520,21 @@ class boss_amalgam_of_corruption : public CreatureScript
 
             void UpdateAI(uint32 diff)
             {
+                if (startattack)
+                {
+                    if (startattack <= diff)
+                    {
+                        startattack = 0;
+                        attack = true;
+                    }
+                    else
+                        startattack -= diff;
+                }
+
                 if (!UpdateVictim())
+                    return;
+
+                if (!attack)
                     return;
 
                 events.Update(diff);

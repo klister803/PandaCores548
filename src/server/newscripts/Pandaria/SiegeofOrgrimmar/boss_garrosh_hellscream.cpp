@@ -74,6 +74,8 @@ enum eSpells
 
     //Warbringer
     SPELL_HAMSTRING                  = 144582,
+    //HM
+    SPELL_BLOOD_FRENZIED             = 147300,
 
     //Wolf Rider
     SPELL_ANCESTRAL_FURY             = 144585,
@@ -626,11 +628,9 @@ class boss_garrosh_hellscream : public CreatureScript
                     case EVENT_SUMMON_WARBRINGERS:
                         instance->SetData(DATA_OPEN_SOLDIER_FENCH, 0);
                         for (uint8 n = 0; n < 3; n++)
-                            if (Creature* rsoldier = me->SummonCreature(NPC_WARBRINGER, rsspos[n]))
-                                rsoldier->AI()->DoZoneInCombat(rsoldier, 200.0f);
+                            me->SummonCreature(NPC_WARBRINGER, rsspos[n]);
                         for (uint8 n = 0; n < 3; n++)
-                            if (Creature* lsoldier = me->SummonCreature(NPC_WARBRINGER, lsspos[n]))
-                                lsoldier->AI()->DoZoneInCombat(lsoldier, 200.0f);
+                            me->SummonCreature(NPC_WARBRINGER, lsspos[n]);
                         events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 45000);
                         break;
                     case EVENT_HELLSCREAM_WARSONG:
@@ -885,6 +885,23 @@ public:
             case NPC_EMBODIED_DOUBT:
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                 me->SetReactState(REACT_AGGRESSIVE);
+                break;
+            case NPC_WARBRINGER:
+                me->AddAura(SPELL_SUMMON_ADDS, me);
+                if (!me->GetMap()->IsHeroic())
+                    DoZoneInCombat(me, 200.0f);
+                else
+                {
+                    me->SetAttackStop(false);
+                    DoCast(me, SPELL_BLOOD_FRENZIED, true);
+                    if (Player* pl = me->FindNearestPlayer(200.0f, true))
+                    {
+                        me->AddThreat(pl, 50000000.0f);
+                        me->SetReactState(REACT_AGGRESSIVE);
+                        me->Attack(pl, true);
+                        me->GetMotionMaster()->MoveChase(pl);
+                    }
+                }
                 break;
             default:
                 me->AddAura(SPELL_SUMMON_ADDS, me);
