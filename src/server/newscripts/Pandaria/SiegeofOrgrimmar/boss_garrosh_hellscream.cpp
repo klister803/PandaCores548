@@ -65,9 +65,11 @@ enum eSpells
     SPELL_EXPLODING_IRON_STAR        = 144798,
     //HM
     SPELL_FIRE_UNSTABLE_IRON_STAR    = 147047, //spawn
-    SPELL_fIXATE_IRON_STAR           = 147665,
-    SPELL_UNSTABLE_IRON_STAR         = 147173,
+    SPELL_IRON_STAR_IMPACT_AT_HM     = 149468,
+    SPELL_FIXATE_IRON_STAR           = 147665,
+    SPELL_UNSTABLE_IRON_STAR_DMG     = 147173,
     SPELL_UNSTABLE_IRON_STAR_STUN    = 147177,
+    SPELL_UNSTABLE_IRON_STAR_DUMMY   = 148299,
 
     //Engeneer
     SPELL_POWER_IRON_STAR            = 144616,
@@ -148,6 +150,7 @@ enum sEvents
     EVENT_CHECK_PROGRESS             = 21,
     EVENT_CAST                       = 22,
     EVENT_RE_ATTACK                  = 23,
+    EVENT_CHANGE_TARGET              = 24,
 };
 
 enum Phase
@@ -505,6 +508,7 @@ class boss_garrosh_hellscream : public CreatureScript
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_DESECRATED);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EM_GRIPPING_DESPAIR);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EXPLOSIVE_DESPAIR_DOT);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_IRON_STAR);
                 instance->SetData(DATA_PLAY_FINAL_MOVIE, 0);
             }
 
@@ -1124,6 +1128,102 @@ public:
     }
 };
 
+//73059, need update in DB(faction, level)
+class npc_unstable_iron_star : public CreatureScript
+{
+public:
+    npc_unstable_iron_star() : CreatureScript("npc_unstable_iron_star") {}
+
+    struct npc_unstable_iron_starAI : public ScriptedAI
+    {
+        npc_unstable_iron_starAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+        }
+
+        InstanceScript* instance;
+        EventMap events;
+        uint64 fixatetargetGuid;
+
+        void Reset()
+        {
+            fixatetargetGuid = 0;
+            me->SetReactState(REACT_PASSIVE);
+            events.ScheduleEvent(EVENT_ACTIVE, 3000);
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        uint64 GetFixateTarget()
+        {
+            float range = 0;
+            std::list<Player*>pllist;
+            for (uint8 n = 1; n < 10; n++)
+            {
+                float range = n * 10;
+                pllist.clear();
+                GetPlayerListInGrid(pllist, me, range);
+                if (!pllist.empty())
+                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                        if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && !(*itr)->HasAura(SPELL_MALICE))
+                            return (*itr)->GetGUID();
+            }
+            return 0;
+        }
+
+        void FindAndFixateTarget()
+        {
+            if (Player* pl = me->GetPlayer(*me, GetFixateTarget()))
+            {
+                fixatetargetGuid = pl->GetGUID();
+                DoCast(me, SPELL_IRON_STAR_IMPACT_AT_HM, true);
+                DoCast(pl, SPELL_FIXATE_IRON_STAR, true);
+                me->AddThreat(pl, 50000000.0f);
+                me->SetReactState(REACT_AGGRESSIVE);
+                me->Attack(pl, true);
+                me->GetMotionMaster()->MoveChase(pl);
+                events.ScheduleEvent(EVENT_CHANGE_TARGET, 12000);
+            }
+            else
+                me->DespawnOrUnsummon();
+        }
+
+        void JustDied(Unit* killer)
+        {
+            if (instance)
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_IRON_STAR);
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                case EVENT_ACTIVE:
+                    FindAndFixateTarget();
+                    break;
+                case EVENT_CHANGE_TARGET:
+                    me->SetAttackStop(true);
+                    if (instance)
+                        instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_IRON_STAR);
+                    events.ScheduleEvent(EVENT_ACTIVE, 2000);
+                    break;
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_unstable_iron_starAI(creature);
+    }
+};
+
 //72154
 class npc_desecrated_weapon : public CreatureScript
 {
@@ -1598,6 +1698,39 @@ public:
     }
 };
 
+//148299
+class spell_unstable_iron_star_dummy : public SpellScriptLoader
+{
+public:
+    spell_unstable_iron_star_dummy() : SpellScriptLoader("spell_unstable_iron_star_dummy") { }
+
+    class spell_unstable_iron_star_dummy_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_unstable_iron_star_dummy_AuraScript);
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetTarget() && GetCaster())
+            {
+                if (GetTarget()->ToCreature()) //hit Garrosh
+                    GetTarget()->AddAura(SPELL_UNSTABLE_IRON_STAR_STUN, GetTarget());
+                GetCaster()->CastSpell(GetCaster(), SPELL_UNSTABLE_IRON_STAR_DMG, true);
+                GetCaster()->Kill(GetCaster(), true);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_unstable_iron_star_dummy_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_unstable_iron_star_dummy_AuraScript();
+    }
+};
+
 //144867
 class spell_enter_realm_of_yshaarj : public SpellScriptLoader
 {
@@ -2049,6 +2182,7 @@ void AddSC_boss_garrosh_hellscream()
     new boss_garrosh_hellscream();
     new npc_garrosh_soldier();
     new npc_iron_star();
+    new npc_unstable_iron_star();
     new npc_desecrated_weapon();
     new npc_empowered_desecrated_weapon();
     new npc_sha_vortex();
@@ -2058,6 +2192,7 @@ void AddSC_boss_garrosh_hellscream()
     new spell_whirling_corruption();
     new spell_empovered_whirling_corruption();
     new spell_power_iron_star();
+    new spell_unstable_iron_star_dummy();
     new spell_enter_realm_of_yshaarj();
     new spell_realm_of_yshaarj();
     new spell_transition_visual();
