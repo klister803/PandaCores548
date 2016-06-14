@@ -734,6 +734,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_divider = 0;
 
+    m_dynamicVisibleDistance = GetMaxPossibleVisibilityRange(true);
+
     m_ExtraFlags = 0;
 
     m_spellModTakingSpell = NULL;
@@ -1625,7 +1627,7 @@ void Player::HandleDrowning(uint32 time_diff)
     }
 
     // In dark water
-    if ((m_MirrorTimerFlags & UNDERWARER_INDARKWATER) && !GetVehicle())
+    if ((m_MirrorTimerFlags & UNDERWARER_INDARKWATER) && !GetVehicle() && !isGameMaster())
     {
         if (GetMapId() == 530 && GetZoneId() == 3455) // uwow event map
             return;
@@ -2171,7 +2173,7 @@ void Player::Update(uint32 p_time)
     UpdateSpellCharges(p_time);
 
     if (Pet* pet = GetPet())
-        if ((HasUnitMovementFlag(MOVEMENTFLAG_FLYING) || !pet->IsWithinDistInMap(this, GetMap()->GetVisibilityRange())) && !pet->isPossessed())
+        if ((HasUnitMovementFlag(MOVEMENTFLAG_FLYING) || !pet->IsWithinDistInMap(this, GetMap()->GetMapVisibleDistance())) && !pet->isPossessed())
             UnsummonPetTemporaryIfAny();
 
     //we should execute delayed teleports only for alive(!) players
@@ -2561,7 +2563,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         if (!(options & TELE_TO_NOT_UNSUMMON_PET))
         {
             //same map, only remove pet if out of range for new position
-            if (pet && !pet->IsWithinDist3d(x, y, z, GetMap()->GetVisibilityRange()))
+            if (pet && !pet->IsWithinDist3d(x, y, z, CalcVisibilityRange()))
                 UnsummonPetTemporaryIfAny();
         }
 
@@ -7916,8 +7918,17 @@ void Player::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
 
     // we use World::GetMaxVisibleDistance() because i cannot see why not use a distance
     // update: replaced by GetMap()->GetVisibilityDistance()
-    Trinity::MessageDistDeliverer notifier(this, data, GetVisibilityRange(), false, skipped_rcvr);
-    VisitNearbyWorldObject(GetVisibilityRange(), notifier);
+    float visRange = CalcVisibilityRange();
+    Trinity::MessageDistDeliverer notifier(this, data, visRange, false, skipped_rcvr);
+
+    if (Map* map = GetMap())
+        if (map->IsBattlegroundOrArena())
+        {
+            notifier.Visit(map->GetBGArenaObjList());
+            return;
+        }
+
+    VisitNearbyWorldObject(visRange, notifier);
 }
 
 void Player::SendDirectMessage(WorldPacket* data)
@@ -25650,9 +25661,15 @@ inline void BeforeVisibilityDestroy<Creature>(Creature* t, Player* p)
 
 void Player::UpdateVisibilityOf(WorldObject* target)
 {
+    bool distCheck = true;
+
+    if (Map* map = GetMap())
+        if (map->IsBattlegroundOrArena())
+            distCheck = false;
+
     if (HaveAtClient(target))
     {
-        if (!canSeeOrDetect(target, false, true))
+        if (!canSeeOrDetect(target, false, distCheck, true))
         {
             if (target->GetTypeId() == TYPEID_UNIT)
                 BeforeVisibilityDestroy<Creature>(target->ToCreature(), this);
@@ -25661,6 +25678,9 @@ void Player::UpdateVisibilityOf(WorldObject* target)
             target->DestroyForPlayer(this);
             m_clientGUIDs.erase(target->GetGUID());
 
+            if (Creature* cre = target->ToCreature())
+                cre->m_whoseeme.erase(GetGUID());
+
             #ifdef TRINITY_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "Object %u (Type: %u) out of range for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), GetGUIDLow(), GetDistance(target));
             #endif
@@ -25668,7 +25688,7 @@ void Player::UpdateVisibilityOf(WorldObject* target)
     }
     else
     {
-        if (canSeeOrDetect(target, false, true))
+        if (canSeeOrDetect(target, false, distCheck, true))
         {
             //if (target->isType(TYPEMASK_UNIT) && ((Unit*)target)->m_Vehicle)
             //    UpdateVisibilityOf(((Unit*)target)->m_Vehicle);
@@ -25676,6 +25696,9 @@ void Player::UpdateVisibilityOf(WorldObject* target)
             AddListner(target, true);
             target->SendUpdateToPlayer(this);
             m_clientGUIDs.insert(target->GetGUID());
+
+            if (Creature* cre = target->ToCreature())
+                cre->m_whoseeme.insert(GetGUID());
 
             #ifdef TRINITY_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "Object %u (Type: %u) is visible now for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), GetGUIDLow(), GetDistance(target));
@@ -25738,6 +25761,9 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
             m_clientGUIDs.erase(target->GetGUID());
             RemoveListner(target);
 
+            if (Creature* cre = target->ToCreature())
+                cre->m_whoseeme.erase(GetGUID());
+
             #ifdef TRINITY_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "Object %u (Type: %u, Entry: %u) is out of range for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), target->GetEntry(), GetGUIDLow(), GetDistance(target));
             #endif
@@ -25754,11 +25780,47 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
             target->BuildCreateUpdateBlockForPlayer(&data, this);
             UpdateVisibilityOf_helper(m_clientGUIDs, target, visibleNow);
 
+            if (Creature* cre = target->ToCreature())
+                cre->m_whoseeme.insert(GetGUID());
+
             #ifdef TRINITY_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "Object %u (Type: %u, Entry: %u) is visible now for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), target->GetEntry(), GetGUIDLow(), GetDistance(target));
             #endif
         }
     }
+}
+
+template<class T>
+void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& visibleNow, bool canSeeOrDetect)
+{
+    if (HaveAtClient(target))
+    {
+        if (!canSeeOrDetect)
+        {
+            BeforeVisibilityDestroy<T>(target, this);
+            target->BuildOutOfRangeUpdateBlock(&data);
+            m_clientGUIDs.erase(target->GetGUID());
+            RemoveListner(target);
+
+            if (Creature* cre = target->ToCreature())
+                cre->m_whoseeme.erase(GetGUID());
+        }
+    }
+    else
+    {
+        if (canSeeOrDetect)
+        {
+            AddListner(target);
+            target->BuildCreateUpdateBlockForPlayer(&data, this);
+            UpdateVisibilityOf_helper(m_clientGUIDs, target, visibleNow);
+
+            if (Creature* cre = target->ToCreature())
+                cre->m_whoseeme.insert(GetGUID());
+        }
+    }
+
+    if (Player* plr = target->ToPlayer())
+        plr->UpdateVisibilityOf(this);
 }
 
 template void Player::UpdateVisibilityOf(Player*        target, UpdateData& data, std::set<Unit*>& visibleNow);
@@ -25767,11 +25829,82 @@ template void Player::UpdateVisibilityOf(Corpse*        target, UpdateData& data
 template void Player::UpdateVisibilityOf(GameObject*    target, UpdateData& data, std::set<Unit*>& visibleNow);
 template void Player::UpdateVisibilityOf(DynamicObject* target, UpdateData& data, std::set<Unit*>& visibleNow);
 
+template void Player::UpdateVisibilityOf(Player*        target, UpdateData& data, std::set<Unit*>& visibleNow, bool canSeeOrDetect);
+template void Player::UpdateVisibilityOf(Creature*      target, UpdateData& data, std::set<Unit*>& visibleNow, bool canSeeOrDetect);
+template void Player::UpdateVisibilityOf(Corpse*        target, UpdateData& data, std::set<Unit*>& visibleNow, bool canSeeOrDetect);
+template void Player::UpdateVisibilityOf(GameObject*    target, UpdateData& data, std::set<Unit*>& visibleNow, bool canSeeOrDetect);
+template void Player::UpdateVisibilityOf(DynamicObject* target, UpdateData& data, std::set<Unit*>& visibleNow, bool canSeeOrDetect);
+
 void Player::UpdateVisibilityForPlayer()
 {
     // updates visibility of all objects around point of view for current player
     Trinity::VisibleNotifier notifier(*this);
-    m_seer->VisitNearbyObject(GetSightRange(), notifier, true);
+    if (IsInWorld())
+    {
+        float possibleVisibilityRange = GetMaxPossibleVisibilityRange(true);
+        m_dynamicVisibleDistance += 20.0f;
+        if (m_dynamicVisibleDistance > possibleVisibilityRange)
+            m_dynamicVisibleDistance = possibleVisibilityRange;
+
+        float dist = m_dynamicVisibleDistance;
+
+        //uint32 diff = getMSTime();
+
+        if (GetMap()->IsBattlegroundOrArena())
+            notifier.Visit(GetMap()->GetBGArenaObjList());
+        else
+        {
+            if (!GetZoneId() && !GetAreaId() && GetMapId() == 530) // event zone, guildhouse and etc.
+                dist *= 3;
+
+            m_seer->VisitNearbyObject(dist, notifier, true);
+
+            if (Map* getmap = GetMap())
+                for (auto itr : getmap->GetImportantCreatureList())
+                    if (Creature* cre = ObjectAccessor::GetCreature(*this, itr))
+                    {
+                        notifier.vis_guids.erase(cre->GetGUID());
+                        UpdateVisibilityOf(cre, notifier.i_data, notifier.i_visibleNow);
+                    }
+
+            //ChatHandler(this).PSendSysMessage("Server delay: %u ms", getMSTimeDiff(diff, getMSTime()));
+            notifier.i_distList.sort(Trinity::UnitSortDistance(true, this));
+            notifier.i_distList.remove(this);
+            uint8 targetsCount = 0;
+            bool updateDynDist = false;
+            float lastObjDist = 0.0f;
+            for (auto itr : notifier.i_distList)
+            {
+                if (targetsCount > 160)
+                {
+                    if (!updateDynDist)
+                    {
+                        m_dynamicVisibleDistance = lastObjDist;
+                        updateDynDist = true;
+                    }
+
+                    if (GetPetGUID() == itr->GetGUID())
+                        continue;
+
+                    UpdateVisibilityOf(itr, notifier.i_data, notifier.i_visibleNow, false);
+                    continue;
+                }
+
+                lastObjDist = GetExactDist2d(itr);
+
+                if (Player* plr = itr->ToPlayer())
+                {
+                    UpdateVisibilityOf(plr, notifier.i_data, notifier.i_visibleNow, true);
+                    targetsCount += 2;
+                    continue;
+                }
+
+                UpdateVisibilityOf(itr, notifier.i_data, notifier.i_visibleNow, true);
+                targetsCount++;
+            }
+        }
+    }
+    
     notifier.SendToSelf();   // send gathered data
 }
 
@@ -26066,6 +26199,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
 //! After send self obj. update 
 void Player::SendInitialPacketsAfterAddToMap()
 {
+    m_dynamicVisibleDistance = GetMaxPossibleVisibilityRange(true);
     UpdateVisibilityForPlayer();
 
     // update zone

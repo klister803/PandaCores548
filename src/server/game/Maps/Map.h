@@ -274,9 +274,17 @@ class Map : public GridRefManager<NGridType>
         void VisitNearbyCellsOf(WorldObject* obj, TypeContainerVisitor<Trinity::ObjectUpdater, GridTypeMapContainer> &gridVisitor, TypeContainerVisitor<Trinity::ObjectUpdater, WorldTypeMapContainer> &worldVisitor);
         virtual void Update(const uint32);
 
-        float GetVisibilityRange(uint32 zoneId = 0, uint32 areaId = 0) const;
+        float GetMapVisibleDistance() const { return m_VisibleDistance; }
+        void AddImportantCreature(uint64 guid) { m_importantForVisibilityCreatureList.insert(guid); }
+        void RemoveImportantCreature(uint64 guid) { m_importantForVisibilityCreatureList.erase(guid); }
+        std::set<uint64> GetImportantCreatureList() { return m_importantForVisibilityCreatureList; }
+
         //function for setting up visibility distance for maps on per-type/per-Id basis
         virtual void InitVisibilityDistance();
+
+        void AddBGArenaObj(uint64 obj) { m_BGArenaObjList.insert(obj); }
+        void RemoveBGArenaObj(uint64 obj) { m_BGArenaObjList.erase(obj); }
+        std::set<uint64> GetBGArenaObjList() { return m_BGArenaObjList; }
 
         void PlayerRelocation(Player*, float x, float y, float z, float orientation);
         void CreatureRelocation(Creature* creature, float x, float y, float z, float ang, bool respawnRelocationOnFail = true);
@@ -567,6 +575,9 @@ class Map : public GridRefManager<NGridType>
 
         MapRefManager m_mapRefManager;
         MapRefManager::iterator m_mapRefIter;
+
+        std::set<uint64> m_BGArenaObjList;
+        std::set<uint64> m_importantForVisibilityCreatureList;
 
         int32 m_VisibilityNotifyPeriod;
 

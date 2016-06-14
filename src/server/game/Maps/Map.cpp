@@ -241,7 +241,7 @@ void Map::DeleteStateMachine()
 
 Map::Map(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode, Map* _parent):
 _creatureToMoveLock(false), i_mapEntry (sMapStore.LookupEntry(id)), i_spawnMode(SpawnMode), i_difficulty(SpawnMode), i_InstanceId(InstanceId),
-m_unloadTimer(0), m_VisibleDistance(DEFAULT_VISIBILITY_DISTANCE),
+m_unloadTimer(0), m_VisibleDistance(NORMAL_VISIBILITY_DISTANCE),
 m_VisibilityNotifyPeriod(DEFAULT_VISIBILITY_NOTIFY_PERIOD),
 m_activeNonPlayersIter(m_activeNonPlayers.end()), i_gridExpiry(expiry),
 i_scriptLock(false)
@@ -271,22 +271,6 @@ void Map::InitVisibilityDistance()
     //init visibility for continents
     m_VisibleDistance = World::GetMaxVisibleDistanceOnContinents();
     m_VisibilityNotifyPeriod = World::GetVisibilityNotifyPeriodOnContinents();
-}
-
-float Map::GetVisibilityRange(uint32 zoneId, uint32 areaId) const
-{
-    if(areaId)
-    {
-        if(float _distArea = GetVisibleDistance(TYPE_VISIBLE_AREA, areaId))
-            return _distArea;
-    }
-    if(zoneId)
-    {
-        if(float _distZone = GetVisibleDistance(TYPE_VISIBLE_ZONE, zoneId))
-            return _distZone;
-    }
-
-    return m_VisibleDistance;
 }
 
 // Template specialization of utility methods
@@ -494,6 +478,9 @@ bool Map::AddToMap(T *obj)
         return true;
     }
 
+    if (IsBattlegroundOrArena())
+        AddBGArenaObj(obj->GetGUID());
+
     CellCoord cellCoord = Trinity::ComputeCellCoord(obj->GetPositionX(), obj->GetPositionY());
     //It will create many problems (including crashes) if an object is not added to grid after creation
     //The correct way to fix it is to make AddToMap return false and delete the object if it is not added to grid
@@ -542,7 +529,7 @@ void Map::VisitNearbyCellsOf(WorldObject* obj, TypeContainerVisitor<Trinity::Obj
         return;
 
     // Update mobs/objects in ALL visible cells around object!
-    CellArea area = Cell::CalculateCellArea(obj->GetPositionX(), obj->GetPositionY(), obj->GetGridActivationRange());
+    CellArea area = Cell::CalculateCellArea(obj->GetPositionX(), obj->GetPositionY(), obj->CalcVisibilityRange());
 
     for (uint32 x = area.low_bound.x_coord; x <= area.high_bound.x_coord; ++x)
     {
@@ -633,6 +620,9 @@ void Map::RemovePlayerFromMap(Player* player, bool remove)
     player->RemoveFromWorld();
     SendRemoveTransports(player);
 
+    if (IsBattlegroundOrArena())
+        RemoveBGArenaObj(player->GetGUID());
+
     player->UpdateObjectVisibility(true);
     if (player->IsInGrid())
         player->RemoveFromGrid();
@@ -653,6 +643,9 @@ void Map::RemoveFromMap(T *obj, bool remove)
     obj->RemoveFromWorld();
     if (obj->isActiveObject())
         RemoveFromActive(obj);
+
+    if (IsBattlegroundOrArena())
+        RemoveBGArenaObj(obj->GetGUID());
 
     obj->UpdateObjectVisibility(true);
     obj->RemoveFromGrid();
@@ -1976,7 +1969,7 @@ void Map::UpdateObjectVisibility(WorldObject* obj, Cell cell, CellCoord cellpair
     cell.SetNoCreate();
     Trinity::VisibleChangesNotifier notifier(*obj);
     TypeContainerVisitor<Trinity::VisibleChangesNotifier, WorldTypeMapContainer > player_notifier(notifier);
-    cell.Visit(cellpair, player_notifier, *this, *obj, obj->GetVisibilityRange());
+    cell.Visit(cellpair, player_notifier, *this, *obj, obj->CalcVisibilityRange());
 }
 
 void Map::UpdateObjectsVisibilityFor(Player* player, Cell cell, CellCoord cellpair)
@@ -1986,8 +1979,9 @@ void Map::UpdateObjectsVisibilityFor(Player* player, Cell cell, CellCoord cellpa
     cell.SetNoCreate();
     TypeContainerVisitor<Trinity::VisibleNotifier, WorldTypeMapContainer > world_notifier(notifier);
     TypeContainerVisitor<Trinity::VisibleNotifier, GridTypeMapContainer  > grid_notifier(notifier);
-    cell.Visit(cellpair, world_notifier, *this, *player, player->GetSightRange());
-    cell.Visit(cellpair, grid_notifier,  *this, *player, player->GetSightRange());
+    float visRange = player->CalcVisibilityRange();
+    cell.Visit(cellpair, world_notifier, *this, *player, visRange);
+    cell.Visit(cellpair, grid_notifier, *this, *player, visRange);
 
     // send data
     notifier.SendToSelf();
@@ -2214,7 +2208,7 @@ bool Map::ActiveObjectsNearGrid(NGridType const& ngrid) const
     CellCoord cell_max(cell_min.x_coord + MAX_NUMBER_OF_CELLS, cell_min.y_coord+MAX_NUMBER_OF_CELLS);
 
     //we must find visible range in cells so we unload only non-visible cells...
-    float viewDist = GetVisibilityRange();
+    float viewDist = m_VisibleDistance;
     int cell_range = (int)ceilf(viewDist / SIZE_OF_GRID_CELL) + 1;
 
     cell_min.dec_x(cell_range);
@@ -2810,6 +2804,8 @@ bool BattlegroundMap::CanEnter(Player* player)
 
 bool BattlegroundMap::AddPlayerToMap(Player* player)
 {
+    AddBGArenaObj(player->GetGUID());
+
     {
         TRINITY_GUARD(ACE_Thread_Mutex, Lock);
         //Check moved to void WorldSession::HandleMoveWorldportAckOpcode()

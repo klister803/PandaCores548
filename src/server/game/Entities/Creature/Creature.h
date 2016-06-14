@@ -873,7 +873,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         static float _GetDamageMod(int32 Rank);
         static float _GetDamageModMulti(int32 Rank);
 
-        float m_SightDistance, m_CombatDistance;
+        float m_CombatDistance;
 
         void SetGUIDTransport(uint32 guid) { guid_transport=guid; }
         uint32 GetGUIDTransport() { return guid_transport; }
@@ -902,6 +902,11 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         uint16 m_petFollowPositionTimer;
         float m_followOrientation;
         bool m_needToUpdatePetFollowPosition;
+
+        uint32 m_lastUpdateTime;
+
+        bool m_isImportantForVisibility;
+        std::set<uint64> m_whoseeme;
 
         bool onVehicleAccessoryInit() const { return m_onVehicleAccessory; }
         void SetVehicleAccessoryInit(bool r) { m_onVehicleAccessory = r; }

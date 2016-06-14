@@ -90,16 +90,16 @@ ACE_Atomic_Op<ACE_Thread_Mutex, bool> World::m_stopEvent = false;
 uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
 volatile uint32 World::m_worldLoopCounter = 0;
 
-float World::m_MaxVisibleDistanceOnContinents = DEFAULT_VISIBILITY_DISTANCE;
-float World::m_MaxVisibleDistanceInInstances  = DEFAULT_VISIBILITY_INSTANCE;
-float World::m_MaxVisibleDistanceInBGArenas   = DEFAULT_VISIBILITY_BGARENAS;
+float World::m_MaxVisibleDistanceOnContinents = NORMAL_VISIBILITY_DISTANCE;
+float World::m_MaxVisibleDistanceInInstances = NORMAL_VISIBILITY_DISTANCE;
+float World::m_MaxVisibleDistanceInBGArenas = MAX_VISIBILITY_DISTANCE;
 
 int32 World::m_visibility_notify_periodOnContinents = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
 int32 World::m_visibility_notify_periodInInstances  = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
 int32 World::m_visibility_notify_periodInBGArenas   = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
 
 float World::Visibility_RelocationLowerLimit = 20.0f;
-uint32 World::Visibility_AINotifyDelay = 1000;
+uint32 World::Visibility_AINotifyDelay = 2000;
 float World::ZoneUpdateDistanceRangeLimit = 5.0f;
 
 // movement anticheat
@@ -1194,11 +1194,11 @@ void World::LoadConfigSettings(bool reload)
         m_int_configs[CONFIG_GUILD_BANK_EVENT_LOG_COUNT] = GUILD_BANKLOG_MAX_RECORDS;
 
     //visibility on continents
-    m_MaxVisibleDistanceOnContinents = ConfigMgr::GetFloatDefault("Visibility.Distance.Continents", DEFAULT_VISIBILITY_DISTANCE);
-    if (m_MaxVisibleDistanceOnContinents < 45*sWorld->getRate(RATE_CREATURE_AGGRO))
+    m_MaxVisibleDistanceOnContinents = ConfigMgr::GetFloatDefault("Visibility.Distance.Continents", NORMAL_VISIBILITY_DISTANCE);
+    if (m_MaxVisibleDistanceOnContinents < NORMAL_VISIBILITY_DISTANCE*sWorld->getRate(RATE_CREATURE_AGGRO))
     {
-        sLog->outError(LOG_FILTER_SERVER_LOADING, "Visibility.Distance.Continents can't be less max aggro radius %f", 45*sWorld->getRate(RATE_CREATURE_AGGRO));
-        m_MaxVisibleDistanceOnContinents = 45*sWorld->getRate(RATE_CREATURE_AGGRO);
+        sLog->outError(LOG_FILTER_SERVER_LOADING, "Visibility.Distance.Continents can't be less max aggro radius %f", NORMAL_VISIBILITY_DISTANCE*sWorld->getRate(RATE_CREATURE_AGGRO));
+        m_MaxVisibleDistanceOnContinents = NORMAL_VISIBILITY_DISTANCE*sWorld->getRate(RATE_CREATURE_AGGRO);
     }
     else if (m_MaxVisibleDistanceOnContinents > MAX_VISIBILITY_DISTANCE)
     {
@@ -1207,14 +1207,14 @@ void World::LoadConfigSettings(bool reload)
     }
 
     Visibility_RelocationLowerLimit = ConfigMgr::GetFloatDefault("Visibility.RelocationLowerLimit", 20.f);
-    Visibility_AINotifyDelay = ConfigMgr::GetFloatDefault("Visibility.AINotifyDelay", 1000);
+    Visibility_AINotifyDelay = ConfigMgr::GetFloatDefault("Visibility.AINotifyDelay", 2000);
 
     //visibility in instances
-    m_MaxVisibleDistanceInInstances = ConfigMgr::GetFloatDefault("Visibility.Distance.Instances", DEFAULT_VISIBILITY_INSTANCE);
-    if (m_MaxVisibleDistanceInInstances < 45*sWorld->getRate(RATE_CREATURE_AGGRO))
+    m_MaxVisibleDistanceInInstances = ConfigMgr::GetFloatDefault("Visibility.Distance.Instances", NORMAL_VISIBILITY_DISTANCE);
+    if (m_MaxVisibleDistanceInInstances < NORMAL_VISIBILITY_DISTANCE*sWorld->getRate(RATE_CREATURE_AGGRO))
     {
-        sLog->outError(LOG_FILTER_SERVER_LOADING, "Visibility.Distance.Instances can't be less max aggro radius %f", 45*sWorld->getRate(RATE_CREATURE_AGGRO));
-        m_MaxVisibleDistanceInInstances = 45*sWorld->getRate(RATE_CREATURE_AGGRO);
+        sLog->outError(LOG_FILTER_SERVER_LOADING, "Visibility.Distance.Instances can't be less max aggro radius %f", NORMAL_VISIBILITY_DISTANCE*sWorld->getRate(RATE_CREATURE_AGGRO));
+        m_MaxVisibleDistanceInInstances = NORMAL_VISIBILITY_DISTANCE*sWorld->getRate(RATE_CREATURE_AGGRO);
     }
     else if (m_MaxVisibleDistanceInInstances > MAX_VISIBILITY_DISTANCE)
     {
@@ -1223,7 +1223,7 @@ void World::LoadConfigSettings(bool reload)
     }
 
     //visibility in BG/Arenas
-    m_MaxVisibleDistanceInBGArenas = ConfigMgr::GetFloatDefault("Visibility.Distance.BGArenas", DEFAULT_VISIBILITY_BGARENAS);
+    m_MaxVisibleDistanceInBGArenas = MAX_VISIBILITY_DISTANCE;//ConfigMgr::GetFloatDefault("Visibility.Distance.BGArenas", DEFAULT_VISIBILITY_BGS);
     if (m_MaxVisibleDistanceInBGArenas < 45*sWorld->getRate(RATE_CREATURE_AGGRO))
     {
         sLog->outError(LOG_FILTER_SERVER_LOADING, "Visibility.Distance.BGArenas can't be less max aggro radius %f", 45*sWorld->getRate(RATE_CREATURE_AGGRO));

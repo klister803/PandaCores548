@@ -8404,7 +8404,7 @@ SpellCastResult Spell::CheckItems()
 
         TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectFocusCheck>, GridTypeMapContainer > object_checker(checker);
         Map& map = *m_caster->GetMap();
-        cell.Visit(p, object_checker, map, *m_caster, m_caster->GetVisibilityRange());
+        cell.Visit(p, object_checker, map, *m_caster, m_caster->CalcVisibilityRange());
 
         if (!ok)
             return SPELL_FAILED_REQUIRES_SPELL_FOCUS;

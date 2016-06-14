@@ -1735,12 +1735,15 @@ public:
             return false;
 
         uint16 playerGUIDs = 0;
+        uint16 unitGUIDs   = 0;
         uint16 otherGUIDs  = 0;
 
         for (auto itr : plr->m_clientGUIDs)
         {
             if (IS_PLAYER_GUID(itr))
                 playerGUIDs++;
+            else if (IS_UNIT_GUID(itr))
+                unitGUIDs++;
             else
                 otherGUIDs++;
         }
@@ -1748,7 +1751,9 @@ public:
         handler->PSendSysMessage("===============");
         handler->PSendSysMessage("ClientGUIDs: %u", plr->m_clientGUIDs.size());
         handler->PSendSysMessage("PlayerGUIDs: %u", playerGUIDs);
+        handler->PSendSysMessage("unitGUIDs: %u", unitGUIDs);
         handler->PSendSysMessage("OtherGUIDs: %u", otherGUIDs);
+        handler->PSendSysMessage("dynamicVisibleDistance: %f", plr->m_dynamicVisibleDistance);
 
         return true;
     }

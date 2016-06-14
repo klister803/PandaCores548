@@ -160,7 +160,7 @@ m_PlayerDamageReq(0), m_lootRecipient(0), m_lootRecipientGroup(0), m_LootOtherRe
 m_respawnDelay(300), m_corpseDelay(60), m_respawnradius(0.0f), m_reactState(REACT_AGGRESSIVE),
 m_defaultMovementType(IDLE_MOTION_TYPE), m_DBTableGuid(0), m_equipmentId(0), m_AlreadyCallAssistance(false),
 m_AlreadySearchedAssistance(false), m_regenHealth(true), m_AI_locked(false), m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),
-m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_onVehicleAccessory(false)
+m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_onVehicleAccessory(false), m_isImportantForVisibility(false)
 {
     m_followAngle = PET_FOLLOW_ANGLE;
     m_regenTimer = CREATURE_REGEN_INTERVAL;
@@ -175,7 +175,8 @@ m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_o
     m_CreatureCategoryCooldowns.clear();
     DisableReputationGain = false;
 
-    m_SightDistance = sWorld->getFloatConfig(CONFIG_SIGHT_MONSTER);
+    m_whoseeme.clear();
+
     m_CombatDistance = 0;//MELEE_RANGE;
     m_regenTimerCount = 0;
 
@@ -201,6 +202,8 @@ m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_o
     m_needToUpdatePetFollowPosition = true;
     m_petFollowPositionTimer = 0;
     m_followOrientation = 0;
+
+    m_lastUpdateTime = 0;
 
     m_creatureDiffData = NULL;
 }
@@ -229,6 +232,16 @@ void Creature::AddToWorld()
         AIM_Initialize();
         if (IsVehicle())
             GetVehicleKit()->Install();
+
+        if (CreatureTemplate const* creInfo = GetCreatureTemplate())
+            if ((getLevel() > 91 && GetCombatReach() > 5.0f) || creInfo->type_flags & CREATURE_TYPEFLAGS_BOSS ||
+                creInfo->rank == CREATURE_ELITE_RAREELITE || creInfo->rank == CREATURE_ELITE_RARE)
+            {
+                m_isImportantForVisibility = true;
+
+                if (Map* mapInfo = GetMap())
+                    mapInfo->AddImportantCreature(GetGUID());
+            }
     }
 }
 
@@ -236,6 +249,10 @@ void Creature::RemoveFromWorld()
 {
     if (IsInWorld())
     {
+        if (m_isImportantForVisibility)
+            if (Map* mapInfo = GetMap())
+                mapInfo->RemoveImportantCreature(GetGUID());
+
         if (m_zoneScript)
             m_zoneScript->OnCreatureRemove(this);
         if (m_formation)
@@ -703,6 +720,7 @@ void Creature::Update(uint32 diff)
     }
 
     sScriptMgr->OnCreatureUpdate(this, diff);
+    m_lastUpdateTime = getMSTime();
 }
 
 void Creature::RegenerateHealth()
@@ -860,10 +878,6 @@ bool Creature::Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, 
             m_corpseDelay = sWorld->getIntConfig(CONFIG_CORPSE_DECAY_NORMAL);
             break;
     }
-
-    // All rare npc have max visibility distance.
-    if (GetCreatureTemplate()->rank)
-        m_SightDistance = MAX_VISIBILITY_DISTANCE;
 
     switch(GetMapId())
     {

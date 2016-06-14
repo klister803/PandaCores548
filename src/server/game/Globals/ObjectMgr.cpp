@@ -4570,17 +4570,17 @@ void ObjectMgr::LoadScripts(ScriptsType type)
                     // continue; - quest objective requirement set and command can be allowed
                 }
 
-                if (float(tmp.QuestExplored.Distance) > DEFAULT_VISIBILITY_DISTANCE)
+                if (float(tmp.QuestExplored.Distance) > QUEST_EXPLORED_DISTANCE)
                 {
                     sLog->outError(LOG_FILTER_SQL, "Table `%s` has too large distance (%u) for exploring objective complete in `datalong2` in SCRIPT_COMMAND_QUEST_EXPLORED in `datalong` for script id %u",
                         tableName.c_str(), tmp.QuestExplored.Distance, tmp.id);
                     continue;
                 }
 
-                if (tmp.QuestExplored.Distance && float(tmp.QuestExplored.Distance) > DEFAULT_VISIBILITY_DISTANCE)
+                if (tmp.QuestExplored.Distance && float(tmp.QuestExplored.Distance) > QUEST_EXPLORED_DISTANCE)
                 {
                     sLog->outError(LOG_FILTER_SQL, "Table `%s` has too large distance (%u) for exploring objective complete in `datalong2` in SCRIPT_COMMAND_QUEST_EXPLORED in `datalong` for script id %u, max distance is %f or 0 for disable distance check",
-                        tableName.c_str(), tmp.QuestExplored.Distance, tmp.id, DEFAULT_VISIBILITY_DISTANCE);
+                        tableName.c_str(), tmp.QuestExplored.Distance, tmp.id, QUEST_EXPLORED_DISTANCE);
                     continue;
                 }
 
