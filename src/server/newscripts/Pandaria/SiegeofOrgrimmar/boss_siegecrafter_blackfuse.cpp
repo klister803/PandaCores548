@@ -225,6 +225,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          uint32 checkvictim;
          uint32 updatehmlaserwalls;
          uint32 reset;
+         uint32 berserk;
          uint8 weaponwavecount;
          uint64 laserline[3][5];
          uint8 laserwallmod[3];
@@ -237,6 +238,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              checkvictim = 0;
              weaponwavecount = 0;
              updatehmlaserwalls = 0;
+             berserk = 0;
              RemoveDebuffs();
              me->RemoveAurasDueToSpell(SPELL_PROTECTIVE_FRENZY);
              me->RemoveAurasDueToSpell(SPELL_AUTOMATIC_REPAIR_BEAM_AT);
@@ -281,6 +283,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              _EnterCombat();
              Talk(SAY_PULL);
              checkvictim = 1000;
+             berserk = 600000;
              DoCast(me, SPELL_AUTOMATIC_REPAIR_BEAM_AT, true);
              events.ScheduleEvent(EVENT_ELECTROSTATIC_CHARGE, 1000);
              events.ScheduleEvent(EVENT_SAWBLADE, 10000);
@@ -518,6 +521,22 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                      updatehmlaserwalls -= diff;
              }
 
+             if (berserk)
+             {
+                 if (berserk <= diff)
+                 {
+                     berserk = 0;
+                     Map::PlayerList const &PlayerList = me->GetMap()->GetPlayers();
+                     if (!PlayerList.isEmpty())
+                         for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+                             if (Player* player = Itr->getSource())
+                                 if (player->isAlive())
+                                     me->Kill(player, true);
+                 }
+                 else
+                     berserk -= diff;
+             }
+
              events.Update(diff);
 
              if (me->HasUnitState(UNIT_STATE_CASTING))
@@ -725,7 +744,12 @@ public:
             events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 18000);
         }
 
-        void JustDied(Unit* killer){}
+        void JustDied(Unit* killer)
+        {
+            if (me->ToTempSummon())
+                if (Unit* blackfuse = me->ToTempSummon()->GetSummoner())
+                    blackfuse->CastSpell(blackfuse, SPELL_PROTECTIVE_FRENZY, true);
+        }
 
         void UpdateAI(uint32 diff)
         {

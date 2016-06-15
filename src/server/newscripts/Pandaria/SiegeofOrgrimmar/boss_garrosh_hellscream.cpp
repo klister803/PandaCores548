@@ -171,6 +171,8 @@ enum sActions
     ACTION_INTRO_REALM_OF_YSHAARJ    = 3,
     ACTION_INTRO_PHASE_THREE         = 4,
     ACTION_PHASE_THREE               = 5,
+    //Unstable Iron Star
+    ACTION_CHANGE_TARGET             = 6,
 };
 
 Position ironstarspawnpos[2] =
@@ -1143,11 +1145,9 @@ public:
 
         InstanceScript* instance;
         EventMap events;
-        uint64 fixatetargetGuid;
 
         void Reset()
         {
-            fixatetargetGuid = 0;
             me->SetReactState(REACT_PASSIVE);
             events.ScheduleEvent(EVENT_ACTIVE, 3000);
         }
@@ -1155,6 +1155,12 @@ public:
         void EnterCombat(Unit* who){}
 
         void EnterEvadeMode(){}
+
+        void DoAction(int32 const action)
+        {
+            if (action == ACTION_CHANGE_TARGET)
+                events.ScheduleEvent(EVENT_CHANGE_TARGET, 100);
+        }
 
         uint64 GetFixateTarget()
         {
@@ -1167,7 +1173,7 @@ public:
                 GetPlayerListInGrid(pllist, me, range);
                 if (!pllist.empty())
                     for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
-                        if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && !(*itr)->HasAura(SPELL_MALICE))
+                        if (!(*itr)->HasAura(SPELL_MALICE))
                             return (*itr)->GetGUID();
             }
             return 0;
@@ -1177,14 +1183,12 @@ public:
         {
             if (Player* pl = me->GetPlayer(*me, GetFixateTarget()))
             {
-                fixatetargetGuid = pl->GetGUID();
                 DoCast(me, SPELL_IRON_STAR_IMPACT_AT_HM, true);
                 DoCast(pl, SPELL_FIXATE_IRON_STAR, true);
                 me->AddThreat(pl, 50000000.0f);
                 me->SetReactState(REACT_AGGRESSIVE);
                 me->Attack(pl, true);
                 me->GetMotionMaster()->MoveChase(pl);
-                events.ScheduleEvent(EVENT_CHANGE_TARGET, 12000);
             }
             else
                 me->DespawnOrUnsummon();
@@ -2139,7 +2143,7 @@ public:
     {
         PrepareSpellScript(spell_malice_dummy_SpellScript);
 
-        void FilterTargets(std::list<WorldObject*>& targets)
+        void FilterTargets(std::list<WorldObject*> &targets)
         {
             if (GetCaster())
             {
@@ -2177,6 +2181,35 @@ public:
     }
 };
 
+//147665
+class spell_fixate_iron_star : public SpellScriptLoader
+{
+public:
+    spell_fixate_iron_star() : SpellScriptLoader("spell_fixate_iron_star") { }
+
+    class spell_fixate_iron_star_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_fixate_iron_star_AuraScript);
+
+        void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_DEATH || GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE) //end time pursuit or target died
+                if (GetCaster() && GetCaster()->isAlive() && GetCaster()->ToCreature())
+                    GetCaster()->ToCreature()->AI()->DoAction(ACTION_CHANGE_TARGET);
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_fixate_iron_star_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_MOD_POSSESS_PET, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_fixate_iron_star_AuraScript();
+    }
+};
+
 void AddSC_boss_garrosh_hellscream()
 {
     new boss_garrosh_hellscream();
@@ -2204,4 +2237,5 @@ void AddSC_boss_garrosh_hellscream()
     new spell_crushing_fear();
     new spell_manifest_rage();
     new spell_malice_dummy();
+    new spell_fixate_iron_star();
 }
