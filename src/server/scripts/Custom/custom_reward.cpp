@@ -305,9 +305,12 @@ public:
         for (int i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_BAG_END; ++i)
             if (Item* pItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
             {
-                count = ItemDel(pItem, player, count);
-                if(!count)
-                    return;
+                if(pItem->GetEntry() == entry)
+                  {
+                      count = ItemDel(pItem, player, count);
+                      if(!count)
+                          return;
+                  }
             }
 
         for (uint8 i = BANK_SLOT_ITEM_START; i < BANK_SLOT_ITEM_END; ++i)

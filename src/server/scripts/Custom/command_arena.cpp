@@ -34,6 +34,7 @@ public:
             { "recoveryitem",   SEC_ADMINISTRATOR,  false, &HandleRecoveryItemCommand,          "", NULL },
             { "unrecoveryitem", SEC_ADMINISTRATOR,  false, &HandleUnRecoveryItemCommand,        "", NULL },
             { "listname",       SEC_GAMEMASTER,     false, &HandleListChangeName,               "", NULL },
+            { "checkitem",       SEC_GAMEMASTER,     false, &HandleCharacterItemsCheckCommand,               "", NULL },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
 
@@ -629,6 +630,37 @@ public:
 
         return true;
     }
+    
+    static bool HandleCharacterItemsCheckCommand(ChatHandler* handler, const char* args) //проверяет, есть нужные итемы у игрока или нет
+    {         
+        Player* player = handler->GetSession()->GetPlayer();
+        Player* target;
+        uint64 target_guid;
+        std::string target_name;
+        if (!handler->extractPlayerTarget((char*)args, &target, &target_guid, &target_name))
+            return false;
+
+        char* ItemsStr = strtok(NULL, "\r");
+        
+        if (!ItemsStr)
+            return false;
+        uint32 itemId = atoi(ItemsStr);
+        
+        QueryResult result = CharacterDatabase.PQuery("SELECT SUM(`count`) FROM `item_instance` WHERE `itemEntry` = '%u' AND `owner_guid` = '%u';", itemId, target_guid);
+        if (result)
+        {  
+            do
+            {
+               Field * fetch = result->Fetch();
+               uint32 count = fetch[0].GetUInt32();
+
+               std::string nameLink = handler->playerLink(target_name);
+               handler->PSendSysMessage("Игрок %s имеет %u итемов с идом %u", nameLink.c_str(), count, itemId);
+            } while ( result->NextRow() );
+        }
+
+        return true;
+    }     
 };
 
 void AddSC_command_arena()
