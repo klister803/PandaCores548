@@ -132,25 +132,30 @@ enum sEvents
     EVENT_ENTER_REALM_OF_YSHAARJ     = 9,
     EVENT_RETURN_TO_REAL             = 10,
     EVENT_TOUCH_OF_YSHAARJ           = 11,
+    //HM
+    EVENT_PHASE_FOUR                 = 12,
+    EVENT_MALICE                     = 13,
+    EVENT_BOMBARTMENT                = 14,
+    EVENT_MANIFEST_RAGE              = 15,
     //In Realm
-    EVENT_ANNIHILLATE                = 12,
+    EVENT_ANNIHILLATE                = 16,
     //Desecrated weapon
-    EVENT_REGENERATE                 = 13,
+    EVENT_REGENERATE                 = 17,
     //Summons
-    EVENT_LAUNCH_STAR                = 14,
-    EVENT_HAMSTRING                  = 15,
-    EVENT_CHAIN_HEAL                 = 16,
-    EVENT_CHAIN_LIGHTNING            = 17,
+    EVENT_LAUNCH_STAR                = 18,
+    EVENT_HAMSTRING                  = 19,
+    EVENT_CHAIN_HEAL                 = 20,
+    EVENT_CHAIN_LIGHTNING            = 21,
     //Iron Star
-    EVENT_ACTIVE                     = 18,
+    EVENT_ACTIVE                     = 22,
     //Adds in realm
-    EVENT_EMBODIED_DESPAIR           = 19,
-    EVENT_EMBODIED_DOUBT             = 20,
+    EVENT_EMBODIED_DESPAIR           = 23,
+    EVENT_EMBODIED_DOUBT             = 24,
     //Special events
-    EVENT_CHECK_PROGRESS             = 21,
-    EVENT_CAST                       = 22,
-    EVENT_RE_ATTACK                  = 23,
-    EVENT_CHANGE_TARGET              = 24,
+    EVENT_CHECK_PROGRESS             = 25,
+    EVENT_CAST                       = 26,
+    EVENT_RE_ATTACK                  = 27,
+    EVENT_CHANGE_TARGET              = 28,
 };
 
 enum Phase
@@ -162,6 +167,8 @@ enum Phase
     PHASE_TWO,
     PHASE_LAST_PREPARE,
     PHASE_THREE,
+    PHASE_FOUR_PREPARE,
+    PHASE_FOUR,
 };
 
 enum sActions
@@ -171,8 +178,9 @@ enum sActions
     ACTION_INTRO_REALM_OF_YSHAARJ    = 3,
     ACTION_INTRO_PHASE_THREE         = 4,
     ACTION_PHASE_THREE               = 5,
+    ACTION_INTRO_PHASE_FOUR          = 6,
     //Unstable Iron Star
-    ACTION_CHANGE_TARGET             = 6,
+    ACTION_CHANGE_TARGET             = 7,
 };
 
 Position ironstarspawnpos[2] =
@@ -333,6 +341,7 @@ class boss_garrosh_hellscream : public CreatureScript
             bool phasetwo;
             uint32 realmofyshaarjtimer;
             uint32 updatepower;
+            uint32 _updatepower;
             uint32 checkevade;
             uint8 realmnum;
             Phase phase;
@@ -342,6 +351,7 @@ class boss_garrosh_hellscream : public CreatureScript
                 phasetwo = false;
                 checkevade = 0;
                 updatepower = 0;
+                _updatepower = 0;
                 realmofyshaarjtimer = 0;
                 me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 100);
@@ -410,9 +420,17 @@ class boss_garrosh_hellscream : public CreatureScript
                 }
                 else
                 {
-                    if (phase != PHASE_THREE)
-                        if (damage >= me->GetHealth())
-                            damage = 0;
+                    if (damage >= me->GetHealth())
+                    {
+                        if (!me->GetMap()->IsHeroic())
+                        {
+                            if (phase != PHASE_THREE)
+                                damage = 0;
+                        }
+                        else
+                            if (phase != PHASE_FOUR)
+                                damage = 0;
+                    }
 
                     if (HealthBelowPct(10) && phase == PHASE_ONE)
                     {   //phase two
@@ -426,6 +444,12 @@ class boss_garrosh_hellscream : public CreatureScript
                         phase = PHASE_LAST_PREPARE;
                         realmofyshaarjtimer = 0;
                         DoAction(ACTION_INTRO_PHASE_THREE);
+                    }
+                    else if (damage <= me->GetHealth() && phase == PHASE_THREE && me->GetMap()->IsHeroic())
+                    {   //phase four, only heroic
+                        me->InterruptNonMeleeSpells(true);
+                        phase = PHASE_FOUR_PREPARE;
+                        DoAction(ACTION_INTRO_PHASE_FOUR);
                     }
                 }
             }
@@ -475,6 +499,13 @@ class boss_garrosh_hellscream : public CreatureScript
                     events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
                     events.ScheduleEvent(EVENT_TOUCH_OF_YSHAARJ, 16000);
                     events.ScheduleEvent(EVENT_WHIRLING_CORRUPTION, 30000);
+                    break;
+                case ACTION_INTRO_PHASE_FOUR:
+                    Talk(SAY_HM_LAST_PHASE, 0);
+                    events.Reset();
+                    me->SetAttackStop(true);
+                    me->SetPower(POWER_ENERGY, 0);
+                    events.ScheduleEvent(EVENT_PHASE_FOUR, 10000);
                     break;
                 }
             }
@@ -543,7 +574,7 @@ class boss_garrosh_hellscream : public CreatureScript
 
             void UpdateAI(uint32 diff)
             {
-                //Garrosh from realm yshaarj(update power)
+                //Garrosh from realm yshaarj
                 if (updatepower)
                 {
                     if (updatepower <= diff)
@@ -568,6 +599,27 @@ class boss_garrosh_hellscream : public CreatureScript
                 //
 
                 //Garrosh real
+                //HM
+                if (_updatepower)
+                {
+                    if (_updatepower <= diff)
+                    {
+                        if (me->GetPower(POWER_ENERGY) <= 99)
+                            me->SetPower(POWER_ENERGY, me->GetPower(POWER_ENERGY) + 1);
+
+                        if (me->GetPower(POWER_ENERGY) == 100)
+                        {
+                            me->InterruptNonMeleeSpells(true);
+                            DoCast(me, SPELL_MANIFEST_RAGE);
+                            me->SetPower(POWER_ENERGY, 0);
+                        }
+                        _updatepower = 1000;
+                    }
+                    else
+                        _updatepower -= diff;
+                }
+                //
+
                 if (realmofyshaarjtimer)
                 {
                     if (realmofyshaarjtimer <= diff)
@@ -825,6 +877,42 @@ class boss_garrosh_hellscream : public CreatureScript
                         DoCast(me, me->GetPower(POWER_ENERGY) >= 25 ? SPELL_EM_WHIRLING_CORRUPTION : SPELL_WHIRLING_CORRUPTION);
                         events.ScheduleEvent(EVENT_GRIPPING_DESPAIR, 10000);
                         events.ScheduleEvent(EVENT_WHIRLING_CORRUPTION, 49500);
+                        break;
+                    //HM
+                    case EVENT_PHASE_FOUR:
+                    {
+                        //Need tp pos for Garrosh and players
+                        //Now test version
+                        uint32 hppct = me->CountPctFromMaxHealth(60);
+                        me->SetHealth(hppct);
+                        phase = PHASE_FOUR;
+                        me->ReAttackWithZone();
+                        _updatepower = 1000;
+                        events.ScheduleEvent(EVENT_MALICE, 30000);
+                        events.ScheduleEvent(EVENT_BOMBARTMENT, 60000);
+                    }
+                    break;
+                    case EVENT_MALICE:
+                    {
+                        std::list<Player*> pllist;
+                        pllist.clear();
+                        GetPlayerListInGrid(pllist, me, 150.0f);
+                        if (!pllist.empty())
+                        {
+                            for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                            {
+                                if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && !(*itr)->HasAura(SPELL_FIXATE_IRON_STAR))
+                                {
+                                    (*itr)->AddAura(SPELL_MALICE, *itr);
+                                    break;
+                                }
+                            }
+                        }
+                        events.ScheduleEvent(EVENT_MALICE, 40000);
+                    }
+                    break;
+                    case EVENT_BOMBARTMENT:
+                        //Not found visual prepare spell
                         break;
                     }
                 }
@@ -2114,10 +2202,13 @@ public:
         {
             if (GetCaster() && GetCaster()->ToCreature())
             {
-                float x, y;
-                GetPosInRadiusWithRandomOrientation(GetCaster(), float(urand(20, 30)), x, y);
-                if (Creature* mof = GetCaster()->SummonCreature(NPC_MANIFESTATION_OF_RAGE, x, y, GetCaster()->GetPositionZ()))
-                    mof->AI()->DoZoneInCombat(mof, 150.0f);
+                for (uint8 n = 0; n < 4; n++)
+                {
+                    float x, y;
+                    GetPosInRadiusWithRandomOrientation(GetCaster(), float(urand(20, 40)), x, y);
+                    if (Creature* mof = GetCaster()->SummonCreature(NPC_MANIFESTATION_OF_RAGE, x, y, GetCaster()->GetPositionZ()))
+                        mof->AI()->DoZoneInCombat(mof, 150.0f);
+                }
             }
         }
 
