@@ -35,6 +35,7 @@ public:
             { "unrecoveryitem", SEC_ADMINISTRATOR,  false, &HandleUnRecoveryItemCommand,        "", NULL },
             { "listname",       SEC_GAMEMASTER,     false, &HandleListChangeName,               "", NULL },
             { "checkitem",       SEC_GAMEMASTER,     false, &HandleCharacterItemsCheckCommand,               "", NULL },
+            { "checkitembag",       SEC_GAMEMASTER,     false, &HandleCharacterItemsCheckBagCommand,               "", NULL },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
 
@@ -660,7 +661,35 @@ public:
         }
 
         return true;
-    }     
+    }
+   
+    static bool HandleCharacterItemsCheckBagCommand(ChatHandler* handler, const char* args)
+    {
+        char* nameStr;
+        char* itemIdStr;
+        handler->extractOptFirstArg((char*)args, &nameStr, &itemIdStr);
+       
+        Player* player = handler->GetSession()->GetPlayer();
+        Player* target;
+        uint64 target_guid;
+        std::string target_name;
+        if (!handler->extractPlayerTarget(nameStr, &target, &target_guid, &target_name))
+            return false;
+        if (!target && target_guid)
+             target = sObjectMgr->GetPlayerByLowGUID(target_guid);
+        if (!target)
+            return false;
+        uint32 accountId = target->GetSession()->GetAccountId();
+        
+        if (!itemIdStr)
+            return false;
+        uint32 itemId = atoi(itemIdStr);
+        std::string nameLink = handler->playerLink(target_name);
+        handler->PSendSysMessage("%s имеет %u предметов с идом %u в сумке", nameLink.c_str(), target->GetItemCount(itemId, false), itemId);
+           
+        return true;
+
+    }
 };
 
 void AddSC_command_arena()
