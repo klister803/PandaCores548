@@ -6059,6 +6059,8 @@ void SpellMgr::LoadSpellCustomAttr()
 
             if (spellInfo->IsNotProcSpell())
                 spellInfo->AttributesEx6 |= SPELL_ATTR6_CANT_PROC;
+
+            spellInfo->SpecificType = spellInfo->GetSpellSpecific();
         }
     }
 

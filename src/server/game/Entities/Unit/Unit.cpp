@@ -8710,7 +8710,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         chance = 15.0f;
                     }
                     // Judgement (any)
-                    else if (procSpell->GetSpellSpecific() == SPELL_SPECIFIC_JUDGEMENT)
+                    else if (procSpell->SpecificType == SPELL_SPECIFIC_JUDGEMENT)
                     {
                         triggered_spell_id = 40472;
                         chance = 50.0f;
@@ -17910,7 +17910,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
 
         if (procSpell && !(procSpell->AuraInterruptFlags & (AURA_INTERRUPT_FLAG_TAKE_DAMAGE)))
             // time for hardcode! Some spells can proc on absorb
-            if (triggerData.aura && triggerData.aura->GetSpellInfo() && (triggerData.aura->GetSpellInfo()->Id == 33757 || triggerData.aura->GetSpellInfo()->GetSpellSpecific() == SPELL_SPECIFIC_SEAL ||
+            if (triggerData.aura && triggerData.aura->GetSpellInfo() && (triggerData.aura->GetSpellInfo()->Id == 33757 || triggerData.aura->GetSpellInfo()->SpecificType == SPELL_SPECIFIC_SEAL ||
                 triggerData.aura->GetSpellInfo()->HasAura(SPELL_AURA_MOD_STEALTH) || triggerData.aura->GetSpellInfo()->HasAura(SPELL_AURA_MOD_INVISIBILITY)))
                 active = true;
 
@@ -18676,7 +18676,7 @@ bool Unit::IsPolymorphed() const
     if (!spellInfo)
         return false;
 
-    return spellInfo->GetSpellSpecific() == SPELL_SPECIFIC_MAGE_POLYMORPH;
+    return spellInfo->SpecificType == SPELL_SPECIFIC_MAGE_POLYMORPH;
 }
 
 void Unit::SetDisplayId(uint32 modelId, bool resize /* = false */)

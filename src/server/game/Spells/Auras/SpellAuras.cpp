@@ -1507,13 +1507,13 @@ bool Aura::IsSingleTargetWith(Aura const* aura) const
     if (GetSpellInfo()->IsRankOf(aura->GetSpellInfo()))
         return true;
 
-    SpellSpecificType spec = GetSpellInfo()->GetSpellSpecific();
+    SpellSpecificType spec = GetSpellInfo()->SpecificType;
     // spell with single target specific types
     switch (spec)
     {
         case SPELL_SPECIFIC_JUDGEMENT:
         case SPELL_SPECIFIC_MAGE_POLYMORPH:
-            if (aura->GetSpellInfo()->GetSpellSpecific() == spec)
+            if (aura->GetSpellInfo()->SpecificType == spec)
                 return true;
             break;
         default:

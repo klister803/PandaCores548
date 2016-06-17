@@ -1110,6 +1110,8 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
 
     ExplicitTargetMask = _GetExplicitTargetMask();
     ChainEntry = NULL;
+
+    SpecificType = SPELL_SPECIFIC_NORMAL;
 }
 
 SpellInfo::~SpellInfo()
@@ -1669,7 +1671,7 @@ bool SpellInfo::IsSingleTarget(Unit const* caster) const
             break;
     }
 
-    switch (GetSpellSpecific())
+    switch (SpecificType)
     {
         case SPELL_SPECIFIC_JUDGEMENT:
             return true;
@@ -1682,8 +1684,8 @@ bool SpellInfo::IsSingleTarget(Unit const* caster) const
 
 bool SpellInfo::IsAuraExclusiveBySpecificWith(SpellInfo const* spellInfo, bool sameCaster) const
 {
-    SpellSpecificType spellSpec1 = GetSpellSpecific();
-    SpellSpecificType spellSpec2 = spellInfo->GetSpellSpecific();
+    SpellSpecificType spellSpec1 = SpecificType;
+    SpellSpecificType spellSpec2 = spellInfo->SpecificType;
     switch (spellSpec1)
     {
         case SPELL_SPECIFIC_TRACKER:
@@ -1716,7 +1718,7 @@ bool SpellInfo::IsAuraExclusiveBySpecificWith(SpellInfo const* spellInfo, bool s
 
 bool SpellInfo::IsAuraExclusiveBySpecificPerCasterWith(SpellInfo const* spellInfo) const
 {
-    SpellSpecificType spellSpec = GetSpellSpecific();
+    SpellSpecificType spellSpec = SpecificType;
     switch (spellSpec)
     {
         case SPELL_SPECIFIC_SEAL:
@@ -1728,7 +1730,7 @@ bool SpellInfo::IsAuraExclusiveBySpecificPerCasterWith(SpellInfo const* spellInf
         case SPELL_SPECIFIC_ASPECT:
         case SPELL_SPECIFIC_JUDGEMENT:
         case SPELL_SPECIFIC_CHAKRA:
-            return spellSpec == spellInfo->GetSpellSpecific();
+            return spellSpec == spellInfo->SpecificType;
         default:
             return false;
     }
@@ -2322,7 +2324,7 @@ uint32 SpellInfo::GetSpellTypeMask() const
 AuraStateType SpellInfo::GetAuraState() const
 {
     // Seals
-    if (GetSpellSpecific() == SPELL_SPECIFIC_SEAL)
+    if (SpecificType == SPELL_SPECIFIC_SEAL)
         return AURA_STATE_JUDGEMENT;
 
     // Conflagrate aura state on Immolate and Shadowflame
@@ -3364,7 +3366,7 @@ bool SpellInfo::IsBreakingCamouflage() const
     // This is bad but I dont't see another way
     // I cannot check spells using any mask
     // Use it only for hunter camouflage
-    switch (GetSpellSpecific())
+    switch (SpecificType)
     {
         case SPELL_SPECIFIC_FOOD:
         case SPELL_SPECIFIC_FOOD_AND_DRINK:

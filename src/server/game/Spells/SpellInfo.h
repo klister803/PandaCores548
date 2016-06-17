@@ -448,6 +448,7 @@ public:
     uint32 ExplicitTargetMask;
     SpellChainNode const* ChainEntry;
     SpellPowerEntry spellPower[MAX_POWERS_FOR_SPELL];
+    SpellSpecificType SpecificType;
 
     // SpecializationSpellEntry
     std::set<uint32> SpecializationIdList;
