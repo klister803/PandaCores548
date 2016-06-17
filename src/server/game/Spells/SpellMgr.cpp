@@ -4439,6 +4439,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].BasePoints = -50;
                     spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
                     break;
+                case 112974: //Leeching Poison
                 case 140197: // Wrathion's Wings
                 case 68722:  // Oil Refinery
                 case 68723:  // Quarry
