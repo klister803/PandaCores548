@@ -510,7 +510,7 @@ void SpellMgr::SetSpellDifficultyId(uint32 spellId, uint32 id)
 
 uint32 SpellMgr::GetSpellIdForDifficulty(uint32 spellId, Unit const* caster) const
 {
-    // Dbc supprimée au passage a MoP
+    // Dbc supprimï¿½e au passage a MoP
     return spellId;
     /*if (!GetSpellInfo(spellId))
     return spellId;
@@ -5896,6 +5896,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 109145: // Demonic Fury
                     spellInfo->Effects[0].BasePoints = 0;
                     break;
+                case 110914: //Dark Bargain
+                case 115611: // Temporal Ripples
                 case 77489: // Echo of Light
                 case 58068: // Glyph of Soul Consumption
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CANT_CRIT;
