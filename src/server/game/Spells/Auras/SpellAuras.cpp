@@ -3186,74 +3186,25 @@ void UnitAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* caster)
                     case SPELL_EFFECT_APPLY_AREA_AURA_RAID:
                     {
                         targetList.push_back(GetUnitOwner());
-                        if (Player* plr = GetUnitOwner()->ToPlayer())
-                        {
-                            for (auto itr : plr->m_clientGUIDs)
-                                if (IS_UNIT_GUID(itr))
-                                    if (Unit* unit = ObjectAccessor::GetUnit(*plr, itr))
-                                    {
-                                        if (GetSpellInfo()->Effects[effIndex].Effect == SPELL_EFFECT_APPLY_AREA_AURA_RAID)
-                                        {
-                                            if (!plr->IsInRaidWith(unit))
-                                                continue;
-                                        }
-                                        else if (!plr->IsInPartyWith(unit))
-                                            continue;
-
-                                        if (!plr->IsHostileTo(unit) && unit->isAlive() && plr->IsWithinDistInMap(unit, radius))
-                                            targetList.push_back(unit);
-                                    }
-                        }
-                        else
-                        {
-                            Trinity::AnyGroupedUnitInObjectRangeCheck u_check(GetUnitOwner(), GetUnitOwner(), radius, GetSpellInfo()->Effects[effIndex].Effect == SPELL_EFFECT_APPLY_AREA_AURA_RAID);
-                            Trinity::UnitListSearcher<Trinity::AnyGroupedUnitInObjectRangeCheck> searcher(GetUnitOwner(), targetList, u_check);
-                            GetUnitOwner()->VisitNearbyObject(radius, searcher);
-                        }
+                        Trinity::AnyGroupedUnitInObjectRangeCheck u_check(GetUnitOwner(), GetUnitOwner(), radius, GetSpellInfo()->Effects[effIndex].Effect == SPELL_EFFECT_APPLY_AREA_AURA_RAID);
+                        Trinity::UnitListSearcher<Trinity::AnyGroupedUnitInObjectRangeCheck> searcher(GetUnitOwner(), targetList, u_check);
+                        GetUnitOwner()->VisitNearbyObject(radius, searcher);
                         break;
                     }
                     case SPELL_EFFECT_APPLY_AREA_AURA_FRIEND:
                     {
                         targetList.push_back(GetUnitOwner());
-                        if (Player* plr = GetUnitOwner()->ToPlayer())
-                        {
-                            for (auto itr : plr->m_clientGUIDs)
-                                if (IS_UNIT_GUID(itr))
-                                    if (Unit* unit = ObjectAccessor::GetUnit(*plr, itr))
-                                        if (unit->isAlive() && plr->IsWithinDistInMap(unit, radius) && plr->IsFriendlyTo(unit))
-                                            targetList.push_back(unit);
-                        }
-                        else
-                        {
-                            Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(GetUnitOwner(), GetUnitOwner(), radius);
-                            Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(GetUnitOwner(), targetList, u_check);
-                            GetUnitOwner()->VisitNearbyObject(radius, searcher);
-                        }
+                        Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(GetUnitOwner(), GetUnitOwner(), radius);
+                        Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(GetUnitOwner(), targetList, u_check);
+                        GetUnitOwner()->VisitNearbyObject(radius, searcher);
                         break;
                     }
                     case SPELL_EFFECT_APPLY_AREA_AURA_ENEMY:
                     {
-                        if (Player* plr = GetUnitOwner()->ToPlayer())
-                        {
-                            if (plr->isAlive())
-                                for (auto itr : plr->m_clientGUIDs)
-                                    if (IS_UNIT_GUID(itr))
-                                        if (Unit* unit = ObjectAccessor::GetUnit(*plr, itr))
-                                        {
-                                            if (unit->isTotem())
-                                                continue;
-
-                                            if (plr->_IsValidAttackTarget(unit, m_spellInfo) && plr->IsWithinDistInMap(unit, radius))
-                                                targetList.push_back(unit);
-                                        }
-                        }
-                        else
-                        {
-                            Trinity::AnyAoETargetUnitInObjectRangeCheck u_check(GetUnitOwner(), GetUnitOwner(), radius); // No GetCharmer in searcher
-                            Trinity::UnitListSearcher<Trinity::AnyAoETargetUnitInObjectRangeCheck> searcher(GetUnitOwner(), targetList, u_check);
-                            if (GetUnitOwner()->isAlive())
-                                GetUnitOwner()->VisitNearbyObject(radius, searcher);
-                        }
+                        Trinity::AnyAoETargetUnitInObjectRangeCheck u_check(GetUnitOwner(), GetUnitOwner(), radius); // No GetCharmer in searcher
+                        Trinity::UnitListSearcher<Trinity::AnyAoETargetUnitInObjectRangeCheck> searcher(GetUnitOwner(), targetList, u_check);
+                        if (GetUnitOwner()->isAlive())
+                            GetUnitOwner()->VisitNearbyObject(radius, searcher);
                         break;
                     }
                     case SPELL_EFFECT_APPLY_AREA_AURA_PET:

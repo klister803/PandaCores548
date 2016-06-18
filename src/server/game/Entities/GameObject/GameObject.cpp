@@ -1209,7 +1209,7 @@ void GameObject::Use(Unit* user)
 
             // a chair may have n slots. we have to calculate their positions and teleport the player to the nearest one
 
-            float lowestDist = NORMAL_VISIBILITY_DISTANCE;
+            float lowestDist = DEFAULT_VISIBILITY_DISTANCE;
 
             uint32 nearest_slot = 0;
             float x_lowest = GetPositionX();

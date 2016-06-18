@@ -92,8 +92,6 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature &creature)
 {
     if (!i_path || i_path->empty())
         return false;
-    if (!&creature || !creature.IsInWorld())
-        return false;
     if (Stopped())
         return true;
 
@@ -129,8 +127,8 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature &creature)
     init.Launch();
 
     //Call for creature group update
-    // if (creature.GetFormation() && creature.GetFormation()->getLeader() == &creature)
-        // creature.GetFormation()->LeaderMoveTo(node->x, node->y, node->z);
+    if (creature.GetFormation() && creature.GetFormation()->getLeader() == &creature)
+        creature.GetFormation()->LeaderMoveTo(node->x, node->y, node->z);
 
     return true;
 }

@@ -768,7 +768,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
 
         if (opcode == CMSG_MOVE_KNOCK_BACK_ACK)
             mover->AddUnitState(UNIT_STATE_JUMPING);
-        else if (opcode == CMSG_MOVE_FALL_LAND)
+
+        if (opcode == CMSG_MOVE_FALL_LAND)
         {
             if (mover->HasAuraType(SPELL_AURA_MOD_CONFUSE) && mover->HasUnitState(UNIT_STATE_JUMPING))
             {

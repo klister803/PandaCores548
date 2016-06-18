@@ -838,27 +838,15 @@ VehicleJoinEvent::~VehicleJoinEvent()
 
 bool VehicleJoinEvent::Execute(uint64, uint32)
 {
-    _lock.lock();
     //ASSERT(Passenger->IsInWorld());
     if (!Passenger->IsInWorld())
-    {
-        _lock.unlock();
         return false;
-    }
-
     //ASSERT(Target && Target->GetBase()->IsInWorld());
-    if (!Target || !Target->GetBase() || !Target->GetBase()->IsInWorld())
-    {
-        _lock.unlock();
+    if (!Target || !Target->GetBase()->IsInWorld())
         return false;
-    }
-
     //ASSERT(Target->GetRecAura() || Target->GetBase()->HasAuraTypeWithCaster(SPELL_AURA_CONTROL_VEHICLE, Passenger->GetGUID()));
     if(!Target->GetRecAura() && !Target->GetBase()->HasAuraTypeWithCaster(SPELL_AURA_CONTROL_VEHICLE, Passenger->GetGUID()))
-    {
-        _lock.unlock();
         return false;
-    }
 
     Target->RemovePendingEventsForSeat(Seat->first);
     Target->RemovePendingEventsForPassenger(Passenger);
@@ -870,10 +858,7 @@ bool VehicleJoinEvent::Execute(uint64, uint32)
     {
         //ASSERT(Target->UsableSeatNum);
         if(!Target->UsableSeatNum)
-        {
-            _lock.unlock();
             return false;
-        }
         --(Target->UsableSeatNum);
         if (!Target->UsableSeatNum)
         {
@@ -948,7 +933,6 @@ bool VehicleJoinEvent::Execute(uint64, uint32)
         if (Seat->second.SeatInfo->m_flags & VEHICLE_SEAT_FLAG_CAN_CONTROL 
             && !Target->GetBase()->SetCharmedBy(Passenger, CHARM_TYPE_VEHICLE))     // SMSG_CLIENT_CONTROL
         {
-            _lock.unlock();
             return false;
             //ASSERT(false);
         }
@@ -998,8 +982,6 @@ bool VehicleJoinEvent::Execute(uint64, uint32)
         if (Passenger->HasUnitTypeMask(UNIT_MASK_ACCESSORY))
             sScriptMgr->OnInstallAccessory(Target, Passenger->ToCreature());
     }
-
-    _lock.unlock();
     return true;
 }
 

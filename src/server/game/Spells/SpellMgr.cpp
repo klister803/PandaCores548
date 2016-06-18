@@ -971,10 +971,6 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const* spellPr
         if (procEvent_procEx & procExtra)
             return true;
     }
-
-    if (procFlags & PROC_FLAG_ON_JUMP && EventProcFlag & PROC_FLAG_ON_JUMP)
-        return true;
-
     return false;
 }
 

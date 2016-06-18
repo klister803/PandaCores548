@@ -961,7 +961,7 @@ void hyjalAI::HideNearPos(float x, float y)
     Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid> creature_searcher(me, creatures, creature_check);
 
     TypeContainerVisitor <Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid>, GridTypeMapContainer> creature_visitor(creature_searcher);
-    cell.Visit(pair, creature_visitor, *(me->GetMap()), *me, me->CalcVisibilityRange());
+    cell.Visit(pair, creature_visitor, *(me->GetMap()), *me, me->GetGridActivationRange());
 
     if (!creatures.empty())
     {
@@ -982,7 +982,7 @@ void hyjalAI::RespawnNearPos(float x, float y)
     Trinity::RespawnDo u_do;
     Trinity::WorldObjectWorker<Trinity::RespawnDo> worker(me, u_do);
     TypeContainerVisitor<Trinity::WorldObjectWorker<Trinity::RespawnDo>, GridTypeMapContainer > obj_worker(worker);
-    cell.Visit(p, obj_worker, *me->GetMap(), *me, me->CalcVisibilityRange());
+    cell.Visit(p, obj_worker, *me->GetMap(), *me, me->GetGridActivationRange());
 }
 
 void hyjalAI::WaypointReached(uint32 waypointId)
@@ -1018,7 +1018,7 @@ void hyjalAI::WaypointReached(uint32 waypointId)
             <Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid>,
             GridTypeMapContainer> creature_visitor(creature_searcher);
 
-        cell.Visit(pair, creature_visitor, *(me->GetMap()), *me, me->CalcVisibilityRange());
+        cell.Visit(pair, creature_visitor, *(me->GetMap()), *me, me->GetGridActivationRange());
 
         if (!creatures.empty())
         {
@@ -1058,7 +1058,7 @@ void hyjalAI::DoOverrun(uint32 faction, const uint32 diff)
                 <Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid>,
                 GridTypeMapContainer> creature_visitor(creature_searcher);
 
-            cell.Visit(pair, creature_visitor, *(me->GetMap()), *me, me->CalcVisibilityRange());
+            cell.Visit(pair, creature_visitor, *(me->GetMap()), *me, me->GetGridActivationRange());
 
             if (!creatures.empty())
             {

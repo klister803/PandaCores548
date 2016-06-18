@@ -62,11 +62,6 @@ void VisibleNotifier::SendToSelf()
             if (player && player->IsInWorld() && !player->onVisibleUpdate())
                 player->UpdateVisibilityOf(&i_player);
         }
-        else if (IS_CREATURE_GUID(*it))
-        {
-            if (Creature* cre = ObjectAccessor::GetCreature(i_player, *it))
-                cre->m_whoseeme.erase(i_player.GetGUID());
-        }
     }
 
     if (!i_data.HasData())
@@ -81,54 +76,19 @@ void VisibleNotifier::SendToSelf()
         i_player.SendInitialVisiblePackets(*it);
 }
 
-void VisibleNotifier::Visit(CreatureMapType &m)
+void VisibleNotifier::Visit(PlayerMapType &m)
 {
-    for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
-        if (Creature* cre = iter->getSource())
-        {
-            vis_guids.erase(cre->GetGUID());
-
-            if (cre->m_isImportantForVisibility)
-                continue;
-
-            if (i_player.canSeeOrDetect(cre, false, true, true))
-                i_distList.push_back(cre);
-            else
-                i_player.UpdateVisibilityOf(cre, i_data, i_visibleNow, false);
-        }
-}
-
-void VisibleNotifier::Visit(std::set<uint64> objList)
-{
-    for (auto itr : objList)
+    for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        if (itr == i_player.GetGUID())
-            continue;
+        Player* player = iter->getSource();
 
-        vis_guids.erase(itr);
+        vis_guids.erase(player->GetGUID());
 
-        if (WorldObject* obj = ObjectAccessor::GetWorldObject(i_player, itr))
-        {
-            if (i_player.canSeeOrDetect(obj))
-                i_player.UpdateVisibilityOf(obj, i_data, i_visibleNow, true);
-            else
-                i_player.UpdateVisibilityOf(obj, i_data, i_visibleNow, false);
-        }
+        i_player.UpdateVisibilityOf(player, i_data, i_visibleNow);
+
+        if (!player->onVisibleUpdate())
+            player->UpdateVisibilityOf(&i_player);
     }
-}
-
-void VisibleNotifier::Visit(GameObjectMapType &m)
-{
-    for (GameObjectMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
-        if (GameObject* go = iter->getSource())
-        {
-            vis_guids.erase(go->GetGUID());
-
-            if (i_player.canSeeOrDetect(go, false, true, true))
-                i_player.UpdateVisibilityOf(go, i_data, i_visibleNow, true);
-            else
-                i_player.UpdateVisibilityOf(go, i_data, i_visibleNow, false);
-        }
 }
 
 void VisibleChangesNotifier::Visit(PlayerMapType &m)
@@ -145,54 +105,6 @@ void VisibleChangesNotifier::Visit(PlayerMapType &m)
                 i != iter->getSource()->GetSharedVisionList().end(); ++i)
                 if ((*i)->m_seer == iter->getSource())
                     (*i)->UpdateVisibilityOf(&i_object);
-    }
-}
-
-void VisibleChangesNotifier::Visit(std::set<uint64> objList)
-{
-    for (auto itr : objList)
-    {
-        if (IS_PLAYER_GUID(itr))
-        {
-            if (itr == i_object.GetGUID())
-                continue;
-
-            if (Player* plr = ObjectAccessor::FindPlayer(itr))
-            {
-                plr->UpdateVisibilityOf(&i_object);
-
-                if (!plr->GetSharedVisionList().empty())
-                    for (SharedVisionList::const_iterator i = plr->GetSharedVisionList().begin();
-                        i != plr->GetSharedVisionList().end(); ++i)
-                        if ((*i)->m_seer == plr)
-                            (*i)->UpdateVisibilityOf(&i_object);
-            }
-        }
-        else if (IS_CREATURE_GUID(itr))
-        {
-            if (Creature* cre = ObjectAccessor::GetCreature(i_object, itr))
-                if (!cre->GetSharedVisionList().empty())
-                    for (SharedVisionList::const_iterator i = cre->GetSharedVisionList().begin();
-                        i != cre->GetSharedVisionList().end(); ++i)
-                        if ((*i)->m_seer == cre)
-                            (*i)->UpdateVisibilityOf(&i_object);
-        }
-        else if (IS_AREATRIGGER_GUID(itr))
-        {
-            if (AreaTrigger* AT = ObjectAccessor::GetAreaTrigger(i_object, itr))
-                if (IS_PLAYER_GUID(AT->GetCasterGUID()))
-                    if (Player* caster = (Player*)AT->GetCaster())
-                        if (caster->m_seer == AT)
-                            caster->UpdateVisibilityOf(&i_object);
-        }
-        else if (IS_DYNAMICOBJECT_GUID(itr))
-        {
-            if (DynamicObject* DO = ObjectAccessor::GetDynamicObject(i_object, itr))
-                if (IS_PLAYER_GUID(DO->GetCasterGUID()))
-                    if (Player* caster = (Player*)DO->GetCaster())
-                        if (caster->m_seer == DO)
-                            caster->UpdateVisibilityOf(&i_object);
-        }
     }
 }
 
@@ -310,69 +222,6 @@ void MessageDistDeliverer::Visit(DynamicObjectMapType &m)
             Player* caster = (Player*)target->GetCaster();
             if (caster && caster->m_seer == target)
                 SendPacket(caster);
-        }
-    }
-}
-
-void MessageDistDeliverer::Visit(std::set<uint64> objList)
-{
-    for (auto itr : objList)
-    {
-        if (IS_PLAYER_GUID(itr))
-        {
-            if (itr == i_source->GetGUID())
-                continue;
-
-            if (Player* plr = ObjectAccessor::FindPlayer(itr))
-            {
-                if (!plr->InSamePhase(i_phaseMask))
-                    continue;
-
-                // Send packet to all who are sharing the player's vision
-                if (!plr->GetSharedVisionList().empty())
-                {
-                    SharedVisionList::const_iterator i = plr->GetSharedVisionList().begin();
-                    for (; i != plr->GetSharedVisionList().end(); ++i)
-                        if ((*i)->m_seer == plr)
-                            SendPacket(*i);
-                }
-
-                if (plr->m_seer == plr || plr->GetVehicle())
-                    SendPacket(plr);
-            }
-        }
-        else if (IS_CREATURE_GUID(itr))
-        {
-            if (Creature* cre = ObjectAccessor::GetCreature(*i_source, itr))
-            {
-                if (!cre->InSamePhase(i_phaseMask))
-                    continue;
-
-                // Send packet to all who are sharing the creature's vision
-                if (!cre->GetSharedVisionList().empty())
-                {
-                    SharedVisionList::const_iterator i = cre->GetSharedVisionList().begin();
-                    for (; i != cre->GetSharedVisionList().end(); ++i)
-                        if ((*i)->m_seer == cre)
-                            SendPacket(*i);
-                }
-            }
-        }
-        else if (IS_DYNAMICOBJECT_GUID(itr))
-        {
-            if (DynamicObject* DO = ObjectAccessor::GetDynamicObject(*i_source, itr))
-            {
-                if (!DO->InSamePhase(i_phaseMask))
-                    continue;
-
-                if (IS_PLAYER_GUID(DO->GetCasterGUID()))
-                {
-                    // Send packet back to the caster if the caster has vision of dynamic object
-                    Player* caster = (Player*)DO->GetCaster();
-                    if (caster && caster->m_seer == DO)
-                        SendPacket(caster);
-                }
-            }
         }
     }
 }

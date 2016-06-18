@@ -2539,7 +2539,7 @@ class Player : public Unit, public GridObject<Player>
         bool UpdatePosition(const Position &pos, bool teleport = false) { return UpdatePosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), teleport); }
         void UpdateUnderwaterState(Map* m, float x, float y, float z);
 
-        void SendMessageToSet(WorldPacket* data, bool self) {SendMessageToSetInRange(data, CalcVisibilityRange(), self); };// overwrite Object::SendMessageToSet
+        void SendMessageToSet(WorldPacket* data, bool self) {SendMessageToSetInRange(data, GetVisibilityRange(), self); };// overwrite Object::SendMessageToSet
         void SendMessageToSetInRange(WorldPacket* data, float fist, bool self);// overwrite Object::SendMessageToSetInRange
         void SendMessageToSetInRange(WorldPacket* data, float dist, bool self, bool own_team_only);
         void SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr);
@@ -2942,8 +2942,6 @@ class Player : public Unit, public GridObject<Player>
         PetSlot GetMaxCurentPetSlot() const;
 
         bool CanSummonPet(uint32 entry) const;
-
-        float m_dynamicVisibleDistance;
         // currently visible objects at player client
         typedef std::set<uint64> ClientGUIDs;
         ClientGUIDs m_clientGUIDs;
@@ -2973,8 +2971,6 @@ class Player : public Unit, public GridObject<Player>
 
         template<class T>
         void UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& visibleNow);
-        template<class T>
-        void UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& visibleNow, bool canSeeOrDetect);
 
         bool IsPlayerLootCooldown(uint32 entry, uint8 type = 0, uint8 diff = 0) const;
         void AddPlayerLootCooldown(uint32 entry, uint8 type = 0, bool respawn = true, uint8 diff = 0);

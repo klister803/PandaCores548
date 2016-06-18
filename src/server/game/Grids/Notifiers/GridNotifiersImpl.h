@@ -33,30 +33,15 @@ inline void Trinity::VisibleNotifier::Visit(GridRefManager<T> &m)
     for (typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
         vis_guids.erase(iter->getSource()->GetGUID());
-
-        if (i_player.canSeeOrDetect(iter->getSource(), false, true, true))
-            i_distList.push_back(iter->getSource());
-        else 
-            i_player.UpdateVisibilityOf(iter->getSource(), i_data, i_visibleNow, false);
+        i_player.UpdateVisibilityOf(iter->getSource(), i_data, i_visibleNow);
     }
 }
 
 inline void Trinity::ObjectUpdater::Visit(CreatureMapType &m)
 {
     for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
-    {
-        Creature* cre = iter->getSource();
-        if (cre->IsInWorld())
-        {
-            if (!cre->m_whoseeme.empty() || !cre->isAlive())
-            {
-                if (cre->m_lastUpdateTime)
-                    cre->Update(getMSTimeDiff(cre->m_lastUpdateTime, getMSTime()));
-                else
-                    cre->Update(i_timeDiff);
-            }
-        }
-    }
+        if (iter->getSource()->IsInWorld())
+            iter->getSource()->Update(i_timeDiff);
 }
 
 // SEARCHERS & LIST SEARCHERS & WORKERS

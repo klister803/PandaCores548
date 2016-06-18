@@ -38,9 +38,9 @@
 #define LOOT_DISTANCE               25.0f
 #define MAX_VISIBILITY_DISTANCE     SIZE_OF_GRIDS           // max distance for visible objects
 #define SIGHT_RANGE_UNIT            50.0f
-#define QUEST_EXPLORED_DISTANCE     90.0f                   // quest explored distance, 90 yards
-#define NORMAL_VISIBILITY_DISTANCE  100.0f                  // visible distance on continents
-#define MAX_VISIBILITY              400.0f                  // default visible distance in Arenas, roughly 400 yards
+#define DEFAULT_VISIBILITY_DISTANCE 90.0f                   // default visible distance, 90 yards on continents
+#define DEFAULT_VISIBILITY_INSTANCE 170.0f                  // default visible distance in instances, 170 yards
+#define DEFAULT_VISIBILITY_BGARENAS 533.0f                  // default visible distance in BG/Arenas, roughly 533 yards
 
 #define DEFAULT_WORLD_OBJECT_SIZE   0.388999998569489f      // player size, also currently used (correctly?) for any non Unit world objects
 #define DEFAULT_COMBAT_REACH        1.5f
@@ -952,9 +952,10 @@ class WorldObject : public Object, public WorldLocation
         virtual void SaveRespawnTime() {}
         void AddObjectToRemoveList();
 
-        float CalcVisibilityRange(const WorldObject* obj = NULL) const;
-        float GetMaxPossibleVisibilityRange(bool limit = false);
-        bool canSeeOrDetect(WorldObject const* obj, bool ignoreStealth = false, bool distanceCheck = false, bool isExactDist = false) const;
+        float GetGridActivationRange() const;
+        float GetVisibilityRange() const;
+        float GetSightRange(const WorldObject* target = NULL) const;
+        bool canSeeOrDetect(WorldObject const* obj, bool ignoreStealth = false, bool distanceCheck = false) const;
 
         void SetVisible(bool x);
 
@@ -1017,7 +1018,7 @@ class WorldObject : public Object, public WorldLocation
 
         void DestroyForNearbyPlayers();
         void DestroyVignetteForNearbyPlayers();
-        virtual void UpdateObjectVisibility(bool forced = true, float customVisRange = 0.0f);
+        virtual void UpdateObjectVisibility(bool forced = true);
         void BuildUpdate(UpdateDataMapType&);
 
         bool isActiveObject() const { return m_isActive; }
