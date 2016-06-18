@@ -1667,11 +1667,17 @@ void WorldSession::HandleCharCustomize(WorldPacket& recvData)
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_NAME);
     stmt->setUInt32(0, GUID_LOPART(guid));
     result = CharacterDatabase.Query(stmt);
+    
+    uint16 atLoginFlag;
 
     if (result)
     {
         std::string oldname = result->Fetch()[0].GetString();
         sLog->outInfo(LOG_FILTER_CHARACTER, "Account: %d (IP: %s), Character[%s] (guid:%u) Customized to: %s", GetAccountId(), GetRemoteAddress().c_str(), oldname.c_str(), GUID_LOPART(guid), newName.c_str());
+        if (newName != oldname)
+          atLoginFlag = uint16(AT_LOGIN_CUSTOMIZE)+AT_LOGIN_RENAME;
+        else 
+          atLoginFlag = uint16(AT_LOGIN_CUSTOMIZE);
     }
 
     Player::Customize(guid, gender, skin, face, hairStyle, hairColor, facialHair);
@@ -1679,7 +1685,7 @@ void WorldSession::HandleCharCustomize(WorldPacket& recvData)
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_NAME_AT_LOGIN);
 
     stmt->setString(0, newName);
-    stmt->setUInt16(1, uint16(AT_LOGIN_CUSTOMIZE));
+    stmt->setUInt16(1, atLoginFlag);
     stmt->setUInt32(2, GUID_LOPART(guid));
 
     CharacterDatabase.Execute(stmt);
@@ -2011,6 +2017,17 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
             SendPacket(&data);
             return;
         }
+    }
+    
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_NAME);
+    stmt->setUInt32(0, GUID_LOPART(guid));
+    result = CharacterDatabase.Query(stmt);
+
+    if (result)
+    {
+        std::string oldname = result->Fetch()[0].GetString();
+        if (newname != oldname)
+          used_loginFlag += AT_LOGIN_RENAME;
     }
 
     CharacterDatabase.EscapeString(newname);
