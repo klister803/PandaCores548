@@ -781,11 +781,11 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
             mover->ClearUnitState(UNIT_STATE_JUMPING);
             mover->m_TempSpeed = 0.0f;
         }
-        else if (opcode == CMSG_MOVE_JUMP)
-        {
-            DamageInfo dmgInfoProc = DamageInfo(mover, mover, 0, NULL, SPELL_SCHOOL_MASK_NORMAL, DIRECT_DAMAGE, 0);
-            mover->ProcDamageAndSpellFor(false, mover, PROC_FLAG_ON_JUMP, PROC_EX_NONE, BASE_ATTACK, NULL, &dmgInfoProc);
-        }
+        // else if (opcode == CMSG_MOVE_JUMP)
+        // {
+            // DamageInfo dmgInfoProc = DamageInfo(mover, mover, 0, NULL, SPELL_SCHOOL_MASK_NORMAL, DIRECT_DAMAGE, 0);
+            // mover->ProcDamageAndSpellFor(false, mover, PROC_FLAG_ON_JUMP, PROC_EX_NONE, BASE_ATTACK, NULL, &dmgInfoProc);
+        // }
 
         if (plrMover)                                            // nothing is charmed, or player charmed
         {
