@@ -92,6 +92,8 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature &creature)
 {
     if (!i_path || i_path->empty())
         return false;
+    if (!&creature)
+        return false;
     if (Stopped())
         return true;
 
