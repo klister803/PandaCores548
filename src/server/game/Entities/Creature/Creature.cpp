@@ -1996,7 +1996,7 @@ void Creature::Respawn(bool force)
         InitializeReactState();
     }
 
-    UpdateObjectVisibility();
+    UpdateObjectVisibility(true, m_isImportantForVisibility ? MAX_VISIBILITY : 0.0f);
 }
 
 void Creature::ForcedDespawn(uint32 timeMSToDespawn)

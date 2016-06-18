@@ -22490,7 +22490,7 @@ public:
         return true;
     }
 
-    static void UpdateVisibility(Unit* me)
+    static void UpdateVisibility(Unit* me, float customVisRange = 0.0f)
      {
         if (!me->m_sharedVision.empty())
             for (SharedVisionList::const_iterator it = me->m_sharedVision.begin();it!= me->m_sharedVision.end();)
@@ -22502,7 +22502,7 @@ public:
         if (me->isType(TYPEMASK_PLAYER))
             ((Player*)me)->UpdateVisibilityForPlayer();
         else
-            me->WorldObject::UpdateObjectVisibility(true);
+            me->WorldObject::UpdateObjectVisibility(true, customVisRange);
         me->m_VisibilityUpdateTask = false;
     }
 };
@@ -22521,13 +22521,13 @@ void Unit::OnRelocated()
     AINotifyTask::ScheduleAINotify(this);
 }
 
-void Unit::UpdateObjectVisibility(bool forced)
+void Unit::UpdateObjectVisibility(bool forced, float customRange)
 {
     if (m_VisibilityUpdateTask)
         return;
 
     if (forced)
-        VisibilityUpdateTask::UpdateVisibility(this);
+        VisibilityUpdateTask::UpdateVisibility(this, customRange);
     else
     {
         m_VisibilityUpdateTask = true;

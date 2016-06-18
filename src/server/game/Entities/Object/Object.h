@@ -1017,7 +1017,7 @@ class WorldObject : public Object, public WorldLocation
 
         void DestroyForNearbyPlayers();
         void DestroyVignetteForNearbyPlayers();
-        virtual void UpdateObjectVisibility(bool forced = true);
+        virtual void UpdateObjectVisibility(bool forced = true, float customVisRange = 0.0f);
         void BuildUpdate(UpdateDataMapType&);
 
         bool isActiveObject() const { return m_isActive; }

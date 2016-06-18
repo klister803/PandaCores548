@@ -3748,7 +3748,7 @@ void WorldObject::DestroyVignetteForNearbyPlayers()
     }
 }
 
-void WorldObject::UpdateObjectVisibility(bool /*forced*/)
+void WorldObject::UpdateObjectVisibility(bool /*forced*/, float customVisRange)
 {
     //updates object's visibility for nearby players
     Trinity::VisibleChangesNotifier notifier(*this);
@@ -3759,7 +3759,7 @@ void WorldObject::UpdateObjectVisibility(bool /*forced*/)
             return;
         }
 
-    VisitNearbyWorldObject(CalcVisibilityRange(), notifier);
+    VisitNearbyWorldObject(customVisRange ? customVisRange : CalcVisibilityRange(), notifier);
 }
 
 struct WorldObjectChangeAccumulator
@@ -3890,7 +3890,12 @@ void WorldObject::BuildUpdate(UpdateDataMapType& data_map)
     if (map.IsBattlegroundOrArena())
         notifier.Visit(map.GetBGArenaObjList());
     else
-        cell.Visit(p, player_notifier, map, *this, CalcVisibilityRange());
+    {
+        if (ToCreature() && ToCreature()->m_isImportantForVisibility)
+            notifier.Visit(ToCreature()->m_whoseeme);
+        else
+            cell.Visit(p, player_notifier, map, *this, CalcVisibilityRange());
+    }
 
     ClearUpdateMask(false);
 }
