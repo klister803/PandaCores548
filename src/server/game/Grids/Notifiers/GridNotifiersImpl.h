@@ -48,7 +48,7 @@ inline void Trinity::ObjectUpdater::Visit(CreatureMapType &m)
         Creature* cre = iter->getSource();
         if (cre->IsInWorld())
         {
-            if (!cre->m_whoseeme.empty())
+            if (!cre->m_whoseeme.empty() || !cre->isAlive())
             {
                 if (cre->m_lastUpdateTime)
                     cre->Update(getMSTimeDiff(cre->m_lastUpdateTime, getMSTime()));
