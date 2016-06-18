@@ -842,7 +842,7 @@ bool VehicleJoinEvent::Execute(uint64, uint32)
     if (!Passenger->IsInWorld())
         return false;
     //ASSERT(Target && Target->GetBase()->IsInWorld());
-    if (!Target || !Target->GetBase()->IsInWorld())
+    if (!Target || !Target->GetBase() || !Target->GetBase()->IsInWorld())
         return false;
     //ASSERT(Target->GetRecAura() || Target->GetBase()->HasAuraTypeWithCaster(SPELL_AURA_CONTROL_VEHICLE, Passenger->GetGUID()));
     if(!Target->GetRecAura() && !Target->GetBase()->HasAuraTypeWithCaster(SPELL_AURA_CONTROL_VEHICLE, Passenger->GetGUID()))
