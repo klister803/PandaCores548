@@ -34,6 +34,7 @@ Log::Log() : worker(NULL)
     arenaLogFile = NULL;
     diffLogFile = NULL;
     spammLogFile = NULL;
+    wardenLogFile = NULL;
     SetRealmID(0);
     m_logsTimestamp = "_" + GetTimestampStr();
     LoadFromConfig();
@@ -497,12 +498,18 @@ void Log::Close()
     if (arenaLogFile != NULL)
         fclose(arenaLogFile);
     arenaLogFile = NULL;
+
     if (spammLogFile != NULL)
         fclose(spammLogFile);
     spammLogFile = NULL;
+
     if (diffLogFile != NULL)
         fclose(diffLogFile);
     diffLogFile = NULL;
+
+    if (wardenLogFile != NULL)
+        fclose(wardenLogFile);
+    wardenLogFile = NULL;
 
     delete worker;
     worker = NULL;
@@ -531,6 +538,7 @@ void Log::LoadFromConfig()
     arenaLogFile = openLogFile("ArenaLogFile", NULL, "a");
     spammLogFile = openLogFile("SpammLogFile", NULL, "a");
     diffLogFile = openLogFile("diffLogFile", NULL, "a");
+    wardenLogFile = openLogFile("Warden.LogFile", NULL, "a");
 }
 
 void Log::outArena(const char * str, ...)
@@ -626,4 +634,21 @@ void Log::outU(const char* str, ...)
     vlog(LOG_FILTER_UWOW_CORE, LOG_LEVEL_ERROR, str, ap);
 
     va_end(ap);
+}
+
+void Log::outWarden(const char * str, ...)
+{
+    if (!str)
+        return;
+
+    if (wardenLogFile)
+    {
+        outTimestamp(wardenLogFile);
+        va_list ap;
+        va_start(ap, str);
+        vfprintf(wardenLogFile, str, ap);
+        fprintf(wardenLogFile, "\n");
+        fflush(wardenLogFile);
+        va_end(ap);
+    }
 }

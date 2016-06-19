@@ -16,6 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "AnticheatMgr.h"
 #include "Cryptography/HMACSHA1.h"
 #include "Cryptography/WardenKeyGeneration.h"
 #include "Common.h"
@@ -1017,7 +1018,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
                     {
                         buff.rpos(buff.wpos());
                         sLog->outWarden("CLIENT WARDEN: Player - %s must be banned - force change current speed(WoWEmuHacker, etc.), data : base_speed - %f, server_speed - %f, cur_speed - %f, on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, map name - %s, zone_name - %s, subzone_name - %s",
-                            _session->GetPlayerName(), baseClientSpeed, serverSpeed, curClientSpeed, plr->GetVehicle() ? "true" : "false", (plr->GetTransport() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT)) ? "true" : "false", plr->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plr->IsFalling() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false",
+                            _session->GetPlayerName(), baseClientSpeed, serverSpeed, curClientSpeed, plr->GetVehicle() ? "true" : "false", plr->GetTransport() ? "true" : "false", plr->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plr->IsFalling() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false",
                             plr->GetMap() ? plr->GetMap()->GetMapName() : "<unknown>", srcZoneEntry ? srcZoneEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", srcAreaEntry ? srcAreaEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>");
                         ClearAlerts();
                         _session->KickPlayer();
@@ -1160,7 +1161,7 @@ bool WardenWin::CheckMovementFlags(uint32 moveflags, std::string &reason, uint16
 
     if (moveflags & MOVEMENTFLAG_SWIMMING)
     {
-        if (!plr->IsInWater() && !plr->IsAllowSwim())
+        if (!plr->IsInWater() && !plr->GetAnticheatMgr()->HasState(PLAYER_STATE_SWIMMING))
         {
             reason += " + AirSwimHack detected";
             banMask |= RESP_AIRSWIM_HACK;
@@ -1177,7 +1178,8 @@ bool WardenWin::CheckMovementFlags(uint32 moveflags, std::string &reason, uint16
 
     if (moveflags & MOVEMENTFLAG_WATERWALKING)
     {
-        if (!plr->IsAllowWaterwalking() && !plr->IsAllowWaterwalkingOnServer() && !plr->GetVehicle())
+        bool auraWaterwalk = plr->HasAuraType(SPELL_AURA_WATER_WALK) || plr->HasAura(60068) || plr->HasAura(61081);
+        if (!plr->GetAnticheatMgr()->HasState(PLAYER_STATE_WATER_WALK) && !auraWaterwalk && !plr->GetVehicle())
         {
             reason += " + WaterwalkHack detected";
             banMask |= RESP_WATERWALK_HACK;
@@ -1198,7 +1200,7 @@ bool WardenWin::CheckMovementFlags(uint32 moveflags, std::string &reason, uint16
         }
         else
         {
-            if (!plr->IsAllowHover())
+            if (!plr->GetAnticheatMgr()->HasState(PLAYER_STATE_HOVER))
             {
                 reason += " + LevitateHack detected";
                 banMask |= RESP_LEVITATE_HACK;
@@ -1650,7 +1652,7 @@ bool WardenWin::IsAllowPlayerFlying(Player * plr)
         || plr->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED))
         return true;
 
-    if (plr->IsAllowFlying())
+    if (plr->GetAnticheatMgr()->HasState(PLAYER_STATE_CAN_FLY))
         return true;
 
     return false;

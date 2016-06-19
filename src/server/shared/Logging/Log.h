@@ -85,6 +85,7 @@ class Log
         FILE* arenaLogFile;
         FILE* spammLogFile;
         FILE* diffLogFile;
+        FILE* wardenLogFile;
 
         std::string m_logsDir;
         std::string m_logsTimestamp;

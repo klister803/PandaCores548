@@ -548,7 +548,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                 uint32 destZoneId = 0;
                 uint32 destAreaId = 0;
 
-                plrMover->GetMap()->GetZoneAndAreaId(destZoneId, destAreaId, movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ());
+                plrMover->GetMap()->GetZoneAndAreaId(destZoneId, destAreaId, movementInfo.position.GetPositionX(), movementInfo.position.GetPositionY(), movementInfo.position.GetPositionZ());
 
                 // get zone and area info
                 MapEntry const* mapEntry = sMapStore.LookupEntry(plrMover->GetMapId());
