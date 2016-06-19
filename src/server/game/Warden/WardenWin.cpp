@@ -983,7 +983,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
                         buff.rpos(buff.wpos());
                         sLog->outWarden("CLIENT WARDEN: Player - %s must be banned - force change base movespeed (Hithchiker's Hack, etc.), data : base_speed - %f, server_speed - %f, cur_speed - %f, on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, map name - %s, zone_name - %s, subzone_name - %s",
                             _session->GetPlayerName(), baseClientSpeed, serverSpeed, curClientSpeed, plr->GetVehicle() ? "true" : "false", plr->GetTransport() ? "true" : "false", plr->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plr->IsFalling() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false",
-                            plr->GetMap() ? plr->GetMap()->GetMapName() : "<unknown>", srcZoneEntry ? srcZoneEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", srcAreaEntry ? srcAreaEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>");
+                            plr->GetMap() ? plr->GetMap()->GetMapName() : "<unknown>", srcZoneEntry ? srcZoneEntry->area_name : "<unknown>", srcAreaEntry ? srcAreaEntry->area_name : "<unknown>");
                         _session->KickPlayer();
                         return;
                     }
@@ -1020,7 +1020,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
                         buff.rpos(buff.wpos());
                         sLog->outWarden("CLIENT WARDEN: Player - %s must be banned - force change current speed(WoWEmuHacker, etc.), data : base_speed - %f, server_speed - %f, cur_speed - %f, on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, map name - %s, zone_name - %s, subzone_name - %s",
                             _session->GetPlayerName(), baseClientSpeed, serverSpeed, curClientSpeed, plr->GetVehicle() ? "true" : "false", plr->GetTransport() ? "true" : "false", plr->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plr->IsFalling() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false",
-                            plr->GetMap() ? plr->GetMap()->GetMapName() : "<unknown>", srcZoneEntry ? srcZoneEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", srcAreaEntry ? srcAreaEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>");
+                            plr->GetMap() ? plr->GetMap()->GetMapName() : "<unknown>", srcZoneEntry ? srcZoneEntry->area_name : "<unknown>", srcAreaEntry ? srcAreaEntry->area_name : "<unknown>");
                         _session->KickPlayer();
                         return;
                     }
@@ -1038,7 +1038,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
                         buff.rpos(buff.wpos());
                         sLog->outWarden("CLIENT WARDEN: Player - %s has incorrect moveflags, reason - %s, moveflags - %X (%s), on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, map name - %s, zone_name - %s, subzone_name - %s", _session->GetPlayerName(), mflags_reason.c_str(), m_flags, GetMovementFlagInfo(m_flags).c_str(),
                             plr->GetVehicle() ? "true" : "false", plr->GetTransport() ? "true" : "false", plr->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plr->IsFalling() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false",
-                            plr->GetMap() ? plr->GetMap()->GetMapName() : "<unknown>", srcZoneEntry ? srcZoneEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", srcAreaEntry ? srcAreaEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>");
+                            plr->GetMap() ? plr->GetMap()->GetMapName() : "<unknown>", srcZoneEntry ? srcZoneEntry->area_name : "<unknown>", srcAreaEntry ? srcAreaEntry->area_name : "<unknown>");
 
                         //std::string reason = "Anticheat System : " + mflags_reason + ". You are disabled and kicked in 10 seconds";
                         //plr->SetBlocked(true, reason.c_str());
