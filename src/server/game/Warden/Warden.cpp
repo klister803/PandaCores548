@@ -30,8 +30,8 @@
 #include "Warden.h"
 #include "AccountMgr.h"
 
-Warden::Warden() : _inputCrypto(16), _outputCrypto(16), _checkTimer(10000), _dynamicCheckTimer(5000), isDebuggerPresentFunc(0),
-m_speedAlert(0), m_speedExtAlert(0), m_moveFlagsAlert(0), m_failedCoordsAlert(0), _dataSent(false), _dynDataSent(false), _initialized(false), _recall(false), pendingBan(false)
+Warden::Warden() : _inputCrypto(16), _outputCrypto(16), _checkTimer(15000), _dynamicCheckTimer(10000),
+m_speedAlert(0), m_speedExtAlert(0), m_moveFlagsAlert(0), m_failedCoordsAlert(0), _dataSent(false), _dynDataSent(false), _initialized(false)
 {
 }
 
@@ -96,51 +96,58 @@ void Warden::Update(uint32 diff)
 {
     if (_initialized)
     {
-        // static checks - first thread of checks
-        // not nessesary player in world
-        if (!_dataSent)
+        // first thread - static checks
+        if (_dataSent)
         {
-            if (_checkTimer <= diff)
-            {
-                RequestStaticData();
-                //sLog->outError("Packet of static checks sended to client");
-                _checkTimer = sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF) * IN_MILLISECONDS;
-            }
-            else
-                _checkTimer -= diff;
+            //if (_clientResponseTimer)
+                //ClientResponseTimerUpdate(diff);
         }
         else
         {
-            //uint32 maxClientResponseDelay = sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_RESPONSE_DELAY);
+            if (_checkTimer)
+                StaticCheatChecksTimerUpdate(diff);
+        }
 
-            /*if (maxClientResponseDelay > 0)
+        // independent second thread - dynamic checks
+        if (sWorld->getBoolConfig(CONFIG_WARDEN_ENABLED_DYNAMIC_CHECKS))
+        {
+            if (!_dynDataSent)
             {
-            // Kick player if client response delays more than set in config
-            if (_clientResponseTimer > maxClientResponseDelay * IN_MILLISECONDS)
+                if (_dynamicCheckTimer)
+                    DynamicCheatChecksTimerUpdate(diff);
+            }
+        }
+    }
+}
+
+void Warden::StaticCheatChecksTimerUpdate(uint32 diff)
+{
+    if (_checkTimer <= diff)
+    {
+        _checkTimer = 0;
+        RequestStaticData();
+    }
+    else
+        _checkTimer -= diff;
+}
+
+void Warden::DynamicCheatChecksTimerUpdate(uint32 diff)
+{
+    // dynamic checks must be separate thread
+    if (!_dynDataSent)
+    {
+        if (_dynamicCheckTimer <= diff)
+        {
+            if (_session->GetPlayer() && _session->GetPlayer()->IsInWorld() && !_session->GetPlayer()->IsBeingTeleported())
             {
-            sLog->outWarn(LOG_FILTER_WARDEN, "%s (latency: %u, IP: %s) exceeded Warden module response delay for more than %s - disconnecting client",
-            _session->GetPlayerName(false).c_str(), _session->GetLatency(), _session->GetRemoteAddress().c_str(), secsToTimeString(maxClientResponseDelay, true).c_str());
-            _session->KickPlayer();
+                _dynamicCheckTimer = 0;
+                RequestDynamicData();
             }
             else
-            _clientResponseTimer += diff;
-            }*/
+                _dynamicCheckTimer = 2000;
         }
-
-        // dynamic checks - second thread of checks
-        // requires player in world
-        if (!_dynDataSent && sWorld->getBoolConfig(CONFIG_WARDEN_ENABLED_DYN_MEM_CHECKS))
-        {
-            Player * plr = _session->GetPlayer();
-            if (plr && plr->IsInWorld() /*&& !plr->IsBlocked() && !plr->IsBeingTeleported()*/)
-                RequestDynamicData();
-        }
-
-        /*if (!_recall && isDebuggerPresentFunc)
-        {
-            InitializeModule(true);
-            _recall = true;
-        }*/
+        else
+            _dynamicCheckTimer -= diff;
     }
 }
 

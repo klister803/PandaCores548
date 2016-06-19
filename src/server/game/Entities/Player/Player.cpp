@@ -991,7 +991,6 @@ Player::Player(WorldSession* session) : Unit(true), m_achievementMgr(this), m_re
     m_watching_movie = false;
     plrUpdate = false;
 
-    validMoveEventsMask = MOVE_EVENT_NONE;
     m_sequenceIndex = 0;
 }
 
@@ -26754,8 +26753,8 @@ void Player::SendAurasForTarget(Unit* target)
         if (target->GetTypeId() == TYPEID_PLAYER)
         {
             if (Player* plr = target->ToPlayer())
-                if (!plr->HasMoveEventsMask(MOVE_EVENT_WATER_WALK))
-                    plr->AddMoveEventsMask(MOVE_EVENT_WATER_WALK);
+                if (!plr->GetAnticheatMgr()->HasState(PLAYER_STATE_WATER_WALK))
+                    plr->GetAnticheatMgr()->AddState(PLAYER_STATE_WATER_WALK);
         }
 
         target->SetWaterWalking(true, true);
@@ -26766,8 +26765,8 @@ void Player::SendAurasForTarget(Unit* target)
         if (target->GetTypeId() == TYPEID_PLAYER)
         {
             if (Player* plr = target->ToPlayer())
-                if (!plr->HasMoveEventsMask(MOVE_EVENT_HOVER))
-                    plr->AddMoveEventsMask(MOVE_EVENT_HOVER);
+                if (!plr->GetAnticheatMgr()->HasState(PLAYER_STATE_HOVER))
+                    plr->GetAnticheatMgr()->AddState(PLAYER_STATE_HOVER);
         }
 
         target->SetHover(true, true);
@@ -26782,8 +26781,8 @@ void Player::SendAurasForTarget(Unit* target)
         if (target->GetTypeId() == TYPEID_PLAYER)
         {
             if (Player* plr = target->ToPlayer())
-                if (!plr->HasMoveEventsMask(MOVE_EVENT_FLYING))
-                    plr->AddMoveEventsMask(MOVE_EVENT_FLYING);
+                if (!plr->GetAnticheatMgr()->HasState(PLAYER_STATE_CAN_FLY))
+                    plr->GetAnticheatMgr()->AddState(PLAYER_STATE_CAN_FLY);
         }
     }
 
@@ -30146,6 +30145,8 @@ void Player::SendMovementSetCanFly(bool apply)
         data.WriteGuidBytes<7, 6, 4>(guid);
         data << uint32(m_sequenceIndex++);          // sync counter
         data.WriteGuidBytes<2, 3, 1, 0, 5>(guid);
+
+        GetAnticheatMgr()->AddState(PLAYER_STATE_CAN_FLY);
     }
     else
     {
@@ -30156,11 +30157,11 @@ void Player::SendMovementSetCanFly(bool apply)
         data.WriteGuidBytes<0, 6, 3, 7, 2, 1, 5>(guid);
         data << uint32(m_sequenceIndex++);          // sync counter
         data.WriteGuidBytes<4>(guid);
+
+        GetAnticheatMgr()->RemoveState(PLAYER_STATE_CAN_FLY);
     }
 
     SendDirectMessage(&data);
-
-    ToggleMoveEventsMask(MOVE_EVENT_FLYING);
 }
 
 void Player::SendMovementSetCanTransitionBetweenSwimAndFly(bool apply)
@@ -30204,6 +30205,8 @@ void Player::SendMovementSetHover(bool apply)
         data.WriteGuidBytes<0, 6, 1, 2, 3, 4, 5, 7>(guid);
 
         SendDirectMessage(&data);
+
+        GetAnticheatMgr()->AddState(PLAYER_STATE_HOVER);
     }
     else
     {
@@ -30215,9 +30218,9 @@ void Player::SendMovementSetHover(bool apply)
         data << uint32(m_sequenceIndex++);          // sync counter
         data.WriteGuidBytes<3, 7, 5>(guid);
         SendDirectMessage(&data);
-    }
 
-    ToggleMoveEventsMask(MOVE_EVENT_HOVER);
+        GetAnticheatMgr()->RemoveState(PLAYER_STATE_HOVER);
+    }
 }
 
 void Player::SendMovementSetWaterWalking(bool apply)
@@ -30233,6 +30236,8 @@ void Player::SendMovementSetWaterWalking(bool apply)
         data << uint32(m_sequenceIndex++);          // sync counter
         data.WriteGuidMask<0, 7, 1, 5, 6, 2, 3, 4>(guid);
         data.WriteGuidBytes<4, 0, 5, 6, 3, 1, 2, 7>(guid);
+
+        GetAnticheatMgr()->AddState(PLAYER_STATE_WATER_WALK);
     }
     else
     {
@@ -30243,11 +30248,11 @@ void Player::SendMovementSetWaterWalking(bool apply)
         data.WriteGuidBytes<3, 4, 7, 5, 2, 0, 6>(guid);
         data << uint32(m_sequenceIndex++);          // sync counter
         data.WriteGuidBytes<1>(guid);
+
+        GetAnticheatMgr()->RemoveState(PLAYER_STATE_WATER_WALK);
     }
 
     SendDirectMessage(&data);
-
-    ToggleMoveEventsMask(MOVE_EVENT_WATER_WALK);
 }
 
 void Player::SendMovementSetFeatherFall(bool apply)
@@ -31551,7 +31556,7 @@ bool Player::OldMovementCheckPassed(uint32 opcode, float delta, MovementInfo con
         return true;
 
     // test value
-    if (delta <= 30.0f)
+    if (delta <= sWorld->getFloatConfig(CONFIG_WARDEN_MAX_TP_DIST))
         return true;
 
     return false;

@@ -3549,32 +3549,8 @@ class Player : public Unit, public GridObject<Player>
         uint32 GetServerTime() const { return m_serverTime; }
         uint32 GetSequenceIndex() { return m_sequenceIndex; }
         std::unordered_map<uint32, uint32> syncQueue;
-        PlayerMoveEventsMask validMoveEventsMask;
         
         VisualEnchantMap m_customVisualEnchant; // custom for custom enchant
-        
-        void AddMoveEventsMask(uint8 newMask)
-        {
-            uint8 mask = (uint8)validMoveEventsMask;
-            mask |= newMask;
-            validMoveEventsMask = (PlayerMoveEventsMask)mask;
-        }
-        void RemoveMoveEventsMask(uint8 oldMask)
-        {
-            uint8 mask = (uint8)validMoveEventsMask;
-            mask &= ~oldMask;
-            validMoveEventsMask = (PlayerMoveEventsMask)mask;
-        }
-        void ToggleMoveEventsMask(uint8 tMask)
-        {
-            uint8 mask = (uint8)validMoveEventsMask;
-
-            if (mask & tMask)
-                RemoveMoveEventsMask(tMask);
-            else
-                AddMoveEventsMask(tMask);
-        }
-        bool HasMoveEventsMask(PlayerMoveEventsMask mask) { return (validMoveEventsMask & mask) != 0; }
 
         // server anticheat control
         AnticheatMgr* GetAnticheatMgr() { return &m_anticheatMgr; }

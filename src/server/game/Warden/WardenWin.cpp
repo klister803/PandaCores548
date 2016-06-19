@@ -491,6 +491,9 @@ void WardenWin::HandleData(ByteBuffer &buff)
 void WardenWin::HandleStaticData(ByteBuffer &buff)
 {
     _dataSent = false;
+    //m_clientResponseAlert = 0;
+    _clientResponseTimer = sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_RESPONSE_DELAY);
+    _checkTimer = sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF);
     //sLog->outError("Packet of static checks answers has received by server");
 
     WardenCheckResult *rs;
@@ -981,9 +984,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
                         sLog->outWarden("CLIENT WARDEN: Player - %s must be banned - force change base movespeed (Hithchiker's Hack, etc.), data : base_speed - %f, server_speed - %f, cur_speed - %f, on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, map name - %s, zone_name - %s, subzone_name - %s",
                             _session->GetPlayerName(), baseClientSpeed, serverSpeed, curClientSpeed, plr->GetVehicle() ? "true" : "false", plr->GetTransport() ? "true" : "false", plr->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plr->IsFalling() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false",
                             plr->GetMap() ? plr->GetMap()->GetMapName() : "<unknown>", srcZoneEntry ? srcZoneEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", srcAreaEntry ? srcAreaEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>");
-                        ClearAlerts();
                         _session->KickPlayer();
-                        _dynDataSent = false;
                         return;
                     }
 
@@ -1020,9 +1021,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
                         sLog->outWarden("CLIENT WARDEN: Player - %s must be banned - force change current speed(WoWEmuHacker, etc.), data : base_speed - %f, server_speed - %f, cur_speed - %f, on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, map name - %s, zone_name - %s, subzone_name - %s",
                             _session->GetPlayerName(), baseClientSpeed, serverSpeed, curClientSpeed, plr->GetVehicle() ? "true" : "false", plr->GetTransport() ? "true" : "false", plr->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plr->IsFalling() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false",
                             plr->GetMap() ? plr->GetMap()->GetMapName() : "<unknown>", srcZoneEntry ? srcZoneEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", srcAreaEntry ? srcAreaEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>");
-                        ClearAlerts();
                         _session->KickPlayer();
-                        _dynDataSent = false;
                         return;
                     }
                 }
@@ -1113,6 +1112,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
         }
 
         _dynDataSent = false;
+        _dynamicCheckTimer = 2000;
     }
 }
 

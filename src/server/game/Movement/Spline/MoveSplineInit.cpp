@@ -105,6 +105,13 @@ namespace Movement
         unit.m_movementInfo.SetMovementFlags(moveFlags);
         move_spline.Initialize(args);
 
+        if (unit.GetTypeId() == TYPEID_PLAYER)
+        {
+            Player* plr = ((Player*)&unit);
+            plr->GetAnticheatMgr()->SetSpline(true);
+            plr->GetAnticheatMgr()->SetSplineDuration(move_spline.Duration() + 2000);
+        }
+
         WorldPacket data(SMSG_MONSTER_MOVE, 64);
         PacketBuilder::WriteMonsterMove(move_spline, data, unit);
         unit.SendMessageToSet(&data, true);

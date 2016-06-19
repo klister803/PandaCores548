@@ -228,7 +228,6 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)
         return;
 
     plMover->SetSemaphoreTeleportNear(false);
-    plMover->AddMoveEventsMask(MOVE_EVENT_TELEPORT);
 
     uint32 old_zone = plMover->getCurrentUpdateZoneID();
 
@@ -421,61 +420,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
         movementInfo.transportVehicleSeatIndex = -1;
     }
 
-    // first...
-    if (plrMover && !plrMover->GetVehicle())
-    {
-        // water walk
-        if (sWorld->getBoolConfig(CONFIG_ENABLE_WATERWALK_CHECK))
-        {
-            if (!plrMover->HasMoveEventsMask(MOVE_EVENT_WATER_WALK) && movementInfo.HasMovementFlag(MOVEMENTFLAG_WATERWALKING))
-            {
-                sLog->outDebug(LOG_FILTER_MOVESYNC, "Waterwalk sync failed, %s kicked", GetPlayerName().c_str());
-                KickPlayer();
-            }
-        }
-
-        // hover
-        if (sWorld->getBoolConfig(CONFIG_ENABLE_HOVER_CHECK))
-        {
-            if (!plrMover->HasMoveEventsMask(MOVE_EVENT_HOVER) && movementInfo.HasMovementFlag(MOVEMENTFLAG_HOVER))
-            {
-                sLog->outDebug(LOG_FILTER_MOVESYNC, "Hover sync failed, %s kicked", GetPlayerName().c_str());
-                KickPlayer();
-            }
-        }
-
-        // fly
-        if (sWorld->getBoolConfig(CONFIG_ENABLE_FLYING_CHECK))
-        {
-            if (!plrMover->HasMoveEventsMask(MOVE_EVENT_FLYING) && movementInfo.HasMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING))
-            {
-                sLog->outDebug(LOG_FILTER_MOVESYNC, "Fly sync failed, %s kicked", GetPlayerName().c_str());
-                KickPlayer();
-            }
-        }
-    }
-
-    // second...
-    if (plrMover && !plrMover->GetTransport())
-    {
-        // teleport
-        // delta = 20 yards
-        if (sWorld->getBoolConfig(CONFIG_ENABLE_TELEPORT_CHECK))
-        {
-            float dist = plrMover->GetDistance(movementInfo.position);
-            if (dist > 20.0f)
-            {
-                if (!plrMover->HasMoveEventsMask(MOVE_EVENT_TELEPORT) && !plrMover->HasUnitState(UNIT_STATE_JUMPING))
-                {
-                    sLog->outDebug(LOG_FILTER_MOVESYNC, "Teleport sync failed, delta - %f, %s kicked", dist, GetPlayerName().c_str());
-                    KickPlayer();
-                }
-                else if (plrMover->HasMoveEventsMask(MOVE_EVENT_TELEPORT))
-                    plrMover->RemoveMoveEventsMask(MOVE_EVENT_TELEPORT);
-            }
-        }
-    }
-
     // fall damage generation (ignore in flight case that can be triggered also at lags in moment teleportation to another map).
     if (plrMover && plrMover->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING_FAR) && !movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING_FAR) && !plrMover->isInFlight())
     {
@@ -539,12 +483,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
 
             if (!plrMover->MovementCheckPassed(opcode, curD, movementInfo))
             {
-                // get alert aura
-                uint8 am = 0;
-
-                if (Aura * aura = plrMover->GetAura(300002))
-                    am = aura->GetStackAmount();
-
                 uint32 destZoneId = 0;
                 uint32 destAreaId = 0;
 
@@ -582,15 +520,10 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
 
             if (!plrMover->OldMovementCheckPassed(opcode, curD, movementInfo))
             {
-                // get alert aura
-                //uint8 am = 0;
-                //if (Aura * aura = plrMover->GetAura(300002))
-                //am = aura->GetStackAmount();
-
                 uint32 destZoneId = 0;
                 uint32 destAreaId = 0;
 
-                plrMover->GetMap()->GetZoneAndAreaId(destZoneId, destAreaId, movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ());
+                plrMover->GetMap()->GetZoneAndAreaId(destZoneId, destAreaId, movementInfo.position.GetPositionX(), movementInfo.position.GetPositionY(), movementInfo.position.GetPositionZ());
 
                 // get zone and area info
                 MapEntry const* mapEntry = sMapStore.LookupEntry(plrMover->GetMapId());
@@ -601,8 +534,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
 
                 sLog->outWarden("CLIENT WARDEN: Teleport hack detected (map - %u (%s), source zone - %u (%s), source area - %u (%s), source X - %f, source Y - %f, source Z - %f, dest zone - %u (%s), dest area - %u (%s), dest X - %f, dest Y - %f, dest Z - %f, opcode - %s, on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, moving - %s, teleport distance - %f), player - %s",
                     plrMover->GetMapId(), mapEntry ? mapEntry->name[sWorld->GetDefaultDbcLocale()] : "<unknown>", plrMover->GetZoneId(), srcZoneEntry ? srcZoneEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", plrMover->GetAreaId(), srcAreaEntry ? srcAreaEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>",
-                    plrMover->GetPositionX(), plrMover->GetPositionY(), plrMover->GetPositionZ(), destZoneId, destZoneEntry ? destZoneEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", destAreaId, destAreaEntry ? destAreaEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ(), LookupOpcodeName(opcode),
-                    plrMover->GetVehicle() ? "true" : "false", (plrMover->GetTransport() || plrMover->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT)) ? "true" : "false", plrMover->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plrMover->IsFalling() || plrMover->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false", plrMover->isMoving() ? "true" : "false", curD, plrMover->GetName());
+                    plrMover->GetPositionX(), plrMover->GetPositionY(), plrMover->GetPositionZ(), destZoneId, destZoneEntry ? destZoneEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", destAreaId, destAreaEntry ? destAreaEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", movementInfo.position.GetPositionX(), movementInfo.position.GetPositionY(), movementInfo.position.GetPositionZ(), LookupOpcodeName(opcode),
+                    plrMover->GetVehicle() ? "true" : "false", plrMover->GetTransport() ? "true" : "false", plrMover->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plrMover->IsFalling() || plrMover->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false", plrMover->isMoving() ? "true" : "false", curD, plrMover->GetName());
                 KickPlayer();
                 return;
             }

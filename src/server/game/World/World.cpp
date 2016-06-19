@@ -1331,13 +1331,23 @@ void World::LoadConfigSettings(bool reload)
 
     // Warden
     m_bool_configs[CONFIG_WARDEN_ENABLED]              = ConfigMgr::GetBoolDefault("Warden.Enabled", false);
-    m_bool_configs[CONFIG_WARDEN_ENABLED_DYN_MEM_CHECKS] = ConfigMgr::GetBoolDefault("Warden.EnabledDynamicMemChecks", false);
-    m_int_configs[CONFIG_WARDEN_NUM_MEM_CHECKS]        = ConfigMgr::GetIntDefault("Warden.NumMemChecks", 3);
-    m_int_configs[CONFIG_WARDEN_NUM_OTHER_CHECKS]      = ConfigMgr::GetIntDefault("Warden.NumOtherChecks", 7);
-    m_int_configs[CONFIG_WARDEN_CLIENT_BAN_DURATION]   = ConfigMgr::GetIntDefault("Warden.BanDuration", 86400);
-    m_int_configs[CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF]  = ConfigMgr::GetIntDefault("Warden.ClientCheckHoldOff", 30);
-    m_int_configs[CONFIG_WARDEN_CLIENT_FAIL_ACTION]    = ConfigMgr::GetIntDefault("Warden.ClientCheckFailAction", 0);
-    m_int_configs[CONFIG_WARDEN_CLIENT_RESPONSE_DELAY] = ConfigMgr::GetIntDefault("Warden.ClientResponseDelay", 600);
+    m_bool_configs[CONFIG_WARDEN_ENABLED_DYNAMIC_CHECKS] = ConfigMgr::GetBoolDefault("Warden.EnabledDynamicChecks", false);
+    m_int_configs[CONFIG_WARDEN_NUM_MEM_CHECKS] = ConfigMgr::GetIntDefault("Warden.NumMemChecks", 7);
+    m_int_configs[CONFIG_WARDEN_NUM_OTHER_CHECKS] = ConfigMgr::GetIntDefault("Warden.NumOtherChecks", 7);
+    m_int_configs[CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF] = ConfigMgr::GetIntDefault("Warden.ClientCheckHoldOff", 30000);
+    m_int_configs[CONFIG_WARDEN_CLIENT_RESPONSE_DELAY] = ConfigMgr::GetIntDefault("Warden.ClientResponseDelay", 60000);
+    m_int_configs[CONFIG_WARDEN_CLIENT_BAN_DURATION] = ConfigMgr::GetIntDefault("Warden.BanDuration", 86400);
+    m_int_configs[CONFIG_WARDEN_CLIENT_FAIL_ACTION] = ConfigMgr::GetIntDefault("Warden.ClientCheckFailAction", 0);
+    m_int_configs[CONFIG_WARDEN_NUM_SPEED_ALERTS] = ConfigMgr::GetIntDefault("Warden.NumSpeedAlerts", 5);
+    m_int_configs[CONFIG_WARDEN_NUM_SPEED_EXT_ALERTS] = ConfigMgr::GetIntDefault("Warden.NumSpeedExtAlerts", 5);
+    m_int_configs[CONFIG_WARDEN_NUM_MOVEFLAGS_ALERTS] = ConfigMgr::GetIntDefault("Warden.NumMoveFlagsAlerts", 5);
+    m_int_configs[CONFIG_WARDEN_NUM_FALIED_COORDS_ALERTS] = ConfigMgr::GetIntDefault("Warden.NumFaliedCoordsAlerts", 10);
+
+    m_float_configs[CONFIG_WARDEN_Z_AXIS_DELTA] = ConfigMgr::GetFloatDefault("Warden.ZAxisDelta", 5.0f);
+    m_float_configs[CONFIG_WARDEN_MAX_TP_DIST] = ConfigMgr::GetFloatDefault("Warden.MaxTeleportDist", 30.0f);
+
+    m_bool_configs[CONFIG_WARDEN_USES_EXP_SYSTEM] = ConfigMgr::GetBoolDefault("Warden.UseExpSystemMovementChecks", false);
+    m_bool_configs[CONFIG_WARDEN_USES_Z_AXIS_CHECK] = ConfigMgr::GetBoolDefault("Warden.UseZAxisMovementChecks", false);
 
     // Dungeon finder
     m_int_configs[CONFIG_LFG_OPTIONSMASK] = ConfigMgr::GetIntDefault("DungeonFinder.OptionsMask", 1);
@@ -1433,15 +1443,16 @@ void World::LoadConfigSettings(bool reload)
     // only for debugging
     m_bool_configs[CONFIG_FASTER_LOADING] = ConfigMgr::GetBoolDefault("FasterLoading.Enabled", false);
 
-    m_bool_configs[CONFIG_ENABLE_FLYING_CHECK] = ConfigMgr::GetBoolDefault("MovementSync.FlyingCheckEnabled", false);
-    m_bool_configs[CONFIG_ENABLE_WATERWALK_CHECK] = ConfigMgr::GetBoolDefault("MovementSync.WaterwalkCheckEnabled", false);
-    m_bool_configs[CONFIG_ENABLE_HOVER_CHECK] = ConfigMgr::GetBoolDefault("MovementSync.HoverCheckEnabled", false);
-    m_bool_configs[CONFIG_ENABLE_TELEPORT_CHECK] = ConfigMgr::GetBoolDefault("MovementSync.TeleportCheckEnabled", false);
+    //m_bool_configs[CONFIG_ENABLE_FLYING_CHECK] = ConfigMgr::GetBoolDefault("MovementSync.FlyingCheckEnabled", false);
+    //m_bool_configs[CONFIG_ENABLE_WATERWALK_CHECK] = ConfigMgr::GetBoolDefault("MovementSync.WaterwalkCheckEnabled", false);
+    //m_bool_configs[CONFIG_ENABLE_HOVER_CHECK] = ConfigMgr::GetBoolDefault("MovementSync.HoverCheckEnabled", false);
+    //m_bool_configs[CONFIG_ENABLE_TELEPORT_CHECK] = ConfigMgr::GetBoolDefault("MovementSync.TeleportCheckEnabled", false);
     
     // custom events
     m_bool_configs[CONFIG_CUSTOM_BATTLEGROUND] = ConfigMgr::GetBoolDefault("Custom.BattleGround.event", false);
     m_bool_configs[CONFIG_CUSTOM_X20] = ConfigMgr::GetBoolDefault("Custom.Achievement.x20", false);
     m_bool_configs[CONFIG_CUSTOM_FOOTBALL] = ConfigMgr::GetBoolDefault("Custom.Football", false);
+
     if (reload)
         sScriptMgr->OnConfigLoad(reload);
 }

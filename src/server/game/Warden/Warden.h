@@ -139,11 +139,9 @@ class Warden
         void ClearAlerts();
         void ClearAddresses();
 
-        // pending ban for intercept auth packet
-        void SetPendingBan(bool apply) { pendingBan = apply; }
-        bool IsPendingBan() { return pendingBan; }
-
         void TestSendMemCheck();
+        void StaticCheatChecksTimerUpdate(uint32 diff);
+        void DynamicCheatChecksTimerUpdate(uint32 diff);
 
     private:
         WorldSession* _session;
@@ -161,14 +159,10 @@ class Warden
         uint32 _previousTimestamp;
         ClientWardenModule* _module;
         bool _initialized;
-        bool _recall;
-        bool pendingBan;
 
         uint32 playerBase;
         uint32 offset;
         uint32 playerDynamicBase;
-
-        uint32 isDebuggerPresentFunc;
 
         int8 m_speedAlert;
         int8 m_speedExtAlert;
