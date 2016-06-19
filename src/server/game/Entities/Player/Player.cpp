@@ -703,7 +703,7 @@ void KillRewarder::Reward()
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
 #endif
-Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_reputationMgr(this), phaseMgr(this), m_battlePetMgr(this)
+Player::Player(WorldSession* session) : Unit(true), m_achievementMgr(this), m_reputationMgr(this), phaseMgr(this), m_battlePetMgr(this), m_anticheatMgr(this)
 {
 #ifdef _MSC_VER
 #pragma warning(default:4355)
@@ -1775,6 +1775,9 @@ void Player::Update(uint32 p_time)
         return;
 
     plrUpdate = true;
+
+    // tick update server-side anticheat module - highest priority
+    GetAnticheatMgr()->Update(p_time);
 
     // undelivered mail
     if (m_nextMailDelivereTime && m_nextMailDelivereTime <= time(NULL))
@@ -31456,4 +31459,143 @@ SpellModifier* Player::ChangePriorityMods(SpellModifier* currentMod, SpellModifi
         return newMod;
 
     return currentMod;
+}
+
+bool Player::MovementCheckPassed(uint32 opcode, float delta, MovementInfo const& movementInfo)
+{
+    // get movement type
+    /*UnitMoveType mtype = GetMovementType(new_mflags);
+    float speed = GetSpeed(mtype);
+
+    // low speed - not used for TP hack
+    if (speed < 7.0f)
+    return true;
+
+    // distance of opcode = speed / 2
+    // exclude falling
+    if (IsFalling() || cur_mflags & (MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR) || new_mflags & (MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR))
+    return true;
+
+    // check valid source coordinates
+    if (GetPositionX() == 0.0f || GetPositionY() == 0.0f || GetPositionZ() == 0.0f)
+    return true;
+
+    // check valid destination coordinates
+    if (new_x == 0.0f || new_y == 0.0f || new_z == 0.0f)
+    return true;
+
+    // if taxi
+    if (m_taxi.GetCurrentTaxiPath())
+    return true;
+
+    // if teleported
+    if (IsBeingTeleported())
+    return true;
+
+    // ignore some opcodes that can not be used to TP hack - NEED RESEACH
+    if (opcode == CMSG_MOVE_CHNG_TRANSPORT || opcode == CMSG_MOVE_SET_FLY)
+    return true;
+
+    // ignore arenas - strange behavoir on some arenas - NEED RESEARCH
+    if (GetMap()->IsBattleArena())
+    return true;
+
+    // ignore launch auras - NEED RESEARCH
+    if (HasAura(66251))
+    return true;
+
+    if (delta <= speed)
+    return true;*/
+
+    //return false;
+
+    return true;
+}
+
+bool Player::OldMovementCheckPassed(uint32 opcode, float delta, MovementInfo const& movementInfo)
+{
+    // check valid source coordinates
+    if (GetPositionX() == 0.0f || GetPositionY() == 0.0f || GetPositionZ() == 0.0f)
+        return true;
+
+    // check valid destination coordinates
+    if (movementInfo.position.GetPositionX() == 0.0f || movementInfo.position.GetPositionY() == 0.0f || movementInfo.position.GetPositionZ() == 0.0f)
+        return true;
+
+    // exclude The Frozen Sea (3979)
+    uint32 zid = 0;
+    uint32 aid = 0;
+    GetMap()->GetZoneAndAreaId(zid, aid, movementInfo.position.GetPositionX(), movementInfo.position.GetPositionX(), movementInfo.position.GetPositionZ());
+    if (GetZoneId() == 3979 || zid == 3979)
+        return true;
+
+    // exclude unknown source/destination zones
+    if (GetZoneId() == 0 || zid == 0)
+        return true;
+
+    // temporary excludes recall zones
+    const WorldLocation& loc = GetBattlegroundEntryPoint();
+    if (GetMap()->Instanceable() && (loc.GetPositionX() == movementInfo.position.GetPositionX() || loc.GetPositionY() == movementInfo.position.GetPositionY() || loc.GetPositionZ() == movementInfo.position.GetPositionZ()))
+        return true;
+
+    // if falling/knockbacked(jumping)/taxi
+    if (IsFalling() || GetAnticheatMgr()->HasState(PLAYER_STATE_LAUNCHED) || m_taxi.GetCurrentTaxiPath())
+        return true;
+
+    // ignore some opcodes that can not be used to TP hack - NEED RESEACH
+    if (opcode == CMSG_MOVE_CHNG_TRANSPORT || opcode == CMSG_MOVE_SET_FLY || opcode == CMSG_MOVE_FALL_LAND)
+        return true;
+
+    // ignore arenas - strange behavoir on some arenas - NEED RESEARCH
+    if (GetMap()->IsBattleArena())
+        return true;
+
+    // test value
+    if (delta <= 30.0f)
+        return true;
+
+    return false;
+}
+
+bool Player::CheckZAxis(uint32 opcode, float delta, float new_x, float new_y, float new_z, uint32 cur_mflags, uint32 new_mflags)
+{
+    // if falling/knockbacked(jumping)/taxi/teleported
+    /*if (IsFalling() || isLaunched() || m_taxi.GetCurrentTaxiPath() || IsBeingTeleported())
+        return true;
+
+    // if flying
+    if (IsAllowFlying() || cur_mflags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING) || new_mflags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING))
+        return true;
+
+    float delta_z = new_z - GetMap()->GetHeight(new_x, new_y, new_z, true);
+
+    if (delta_z <= sWorld->getFloatConfig(CONFIG_WARDEN_Z_AXIS_DELTA))
+        return true;
+
+    return false;*/
+    return true;
+}
+
+UnitMoveType Player::GetMovementType(uint32 moveflags)
+{
+    if (moveflags & MOVEMENTFLAG_SWIMMING)
+    {
+        if (moveflags & MOVEMENTFLAG_BACKWARD)
+            return MOVE_SWIM_BACK;
+        else
+            return MOVE_SWIM;
+    }
+    else if (moveflags & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING))
+    {
+        if (moveflags & MOVEMENTFLAG_BACKWARD)
+            return MOVE_FLIGHT_BACK;
+        else
+            return MOVE_FLIGHT;
+    }
+    else if (moveflags & MOVEMENTFLAG_WALKING)
+        return MOVE_WALK;
+    else if (moveflags & MOVEMENTFLAG_BACKWARD)
+        return MOVE_RUN_BACK;
+
+    return MOVE_RUN;
 }

@@ -477,13 +477,29 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     }
 
     // fall damage generation (ignore in flight case that can be triggered also at lags in moment teleportation to another map).
-    if (plrMover && plrMover->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING_FAR) && !movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING_FAR) && plrMover && !plrMover->isInFlight())
+    if (plrMover && plrMover->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING_FAR) && !movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING_FAR) && !plrMover->isInFlight())
     {
+        if (plrMover->GetAnticheatMgr()->HasState(PLAYER_STATE_LAUNCHED))
+        {
+            plrMover->GetAnticheatMgr()->RemoveState(PLAYER_STATE_LAUNCHED);
+            plrMover->GetAnticheatMgr()->SetSpeedXY(0.0f);
+            plrMover->GetAnticheatMgr()->SetSpeedZ(0.0f);
+        }
+
         // movement anticheat
         plrMover->m_anti_JumpCount = 0;
         plrMover->m_anti_JumpBaseZ = 0;
         if(!plrMover->Zliquid_status)
             plrMover->HandleFall(movementInfo);
+    }
+
+    // switch swimming state
+    if (plrMover)
+    {
+        if (opcode == CMSG_MOVE_START_SWIM)
+            plrMover->GetAnticheatMgr()->AddState(PLAYER_STATE_SWIMMING);
+        else if (opcode == CMSG_MOVE_STOP_SWIM)
+            plrMover->GetAnticheatMgr()->RemoveState(PLAYER_STATE_SWIMMING);
     }
 
     if (plrMover && ((movementInfo.flags & MOVEMENTFLAG_SWIMMING) != 0) != plrMover->IsInWater())
@@ -503,6 +519,116 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                 if (!vehCreature->isInAccessiblePlaceFor(vehCreature))
                     plrMover->ExitVehicle();
             }
+        }
+    }
+
+    // exclude transport (not vehicles!)
+    if (!plrMover->GetTransport() && !plrMover->GetTransport())
+    {
+        // New system of movement checks - disabled
+        if (sWorld->getBoolConfig(CONFIG_WARDEN_USES_EXP_SYSTEM))
+        {
+            float deltaX = plrMover->GetPositionX() - movementInfo.position.GetPositionX();
+            float deltaY = plrMover->GetPositionY() - movementInfo.position.GetPositionY();
+            float deltaZ = plrMover->GetPositionZ() - movementInfo.position.GetPositionZ();
+
+            float curD = sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+
+            /*if (curD > plrMover->GetSpeed(plrMover->GetMovementType(movementInfo.flags)) && !plrMover->m_movementInfo.heartbeatCount)
+            sLog->outError("Possible teleport/XYZ hack");*/
+
+            if (!plrMover->MovementCheckPassed(opcode, curD, movementInfo))
+            {
+                // get alert aura
+                uint8 am = 0;
+
+                if (Aura * aura = plrMover->GetAura(300002))
+                    am = aura->GetStackAmount();
+
+                uint32 destZoneId = 0;
+                uint32 destAreaId = 0;
+
+                plrMover->GetMap()->GetZoneAndAreaId(destZoneId, destAreaId, movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ());
+
+                // get zone and area info
+                MapEntry const* mapEntry = sMapStore.LookupEntry(plrMover->GetMapId());
+                AreaTableEntry const* srcZoneEntry = GetAreaEntryByAreaID(plrMover->GetZoneId());
+                AreaTableEntry const* srcAreaEntry = GetAreaEntryByAreaID(plrMover->GetAreaId());
+                AreaTableEntry const* destZoneEntry = GetAreaEntryByAreaID(destZoneId);
+                AreaTableEntry const* destAreaEntry = GetAreaEntryByAreaID(destAreaId);
+
+                //plrMover->SetBlocked(true, "Anticheat System : teleport/XYZ hack detected. You are disabled and kicked in 10 seconds");
+                sLog->outWarden("CLIENT WARDEN: Teleport hack detected (map - %u (%s), source zone - %u (%s), source area - %u (%s), source X - %f, source Y - %f, source Z - %f, dest zone - %u (%s), dest area - %u (%s), dest X - %f, dest Y - %f, dest Z - %f, opcode - %s, teleport distance - %f), player - %s",
+                    plrMover->GetMapId(), mapEntry ? mapEntry->name[sWorld->GetDefaultDbcLocale()] : "<unknown>", plrMover->GetZoneId(), srcZoneEntry ? srcZoneEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", plrMover->GetAreaId(), srcAreaEntry ? srcAreaEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>",
+                    plrMover->GetPositionX(), plrMover->GetPositionY(), plrMover->GetPositionZ(), destZoneId, destZoneEntry ? destZoneEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", destAreaId, destAreaEntry ? destAreaEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", movementInfo.position.GetPositionX(), movementInfo.position.GetPositionY(), movementInfo.position.GetPositionZ(), LookupOpcodeName(opcode), curD, plrMover->GetName());
+                //KickPlayer();
+                return;
+            }
+        }
+        else
+        {
+            // Old system of movement checks
+            float deltaX = plrMover->GetPositionX() - movementInfo.position.GetPositionX();
+            float deltaY = plrMover->GetPositionY() - movementInfo.position.GetPositionY();
+            float deltaZ = plrMover->GetPositionZ() - movementInfo.position.GetPositionZ();
+
+            float curD = sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+
+            /*if (curD > plrMover->GetSpeed(plrMover->GetMovementType(plrMover->m_movementInfo.GetMovementFlags())) && !plrMover->m_movementInfo.heartbeatCount)
+            sLog->outError("Possible teleport/XYZ hack");*/
+
+            //if (GetAccountId() == 2656035)
+            //sLog->outWarden("Distance - %f, server speed - %f", curD, plrMover->GetSpeed(plrMover->GetMovementType(plrMover->m_movementInfo.GetMovementFlags())));
+
+            if (!plrMover->OldMovementCheckPassed(opcode, curD, movementInfo))
+            {
+                // get alert aura
+                //uint8 am = 0;
+                //if (Aura * aura = plrMover->GetAura(300002))
+                //am = aura->GetStackAmount();
+
+                uint32 destZoneId = 0;
+                uint32 destAreaId = 0;
+
+                plrMover->GetMap()->GetZoneAndAreaId(destZoneId, destAreaId, movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ());
+
+                // get zone and area info
+                MapEntry const* mapEntry = sMapStore.LookupEntry(plrMover->GetMapId());
+                AreaTableEntry const* srcZoneEntry = GetAreaEntryByAreaID(plrMover->GetZoneId());
+                AreaTableEntry const* srcAreaEntry = GetAreaEntryByAreaID(plrMover->GetAreaId());
+                AreaTableEntry const* destZoneEntry = GetAreaEntryByAreaID(destZoneId);
+                AreaTableEntry const* destAreaEntry = GetAreaEntryByAreaID(destAreaId);
+
+                sLog->outWarden("CLIENT WARDEN: Teleport hack detected (map - %u (%s), source zone - %u (%s), source area - %u (%s), source X - %f, source Y - %f, source Z - %f, dest zone - %u (%s), dest area - %u (%s), dest X - %f, dest Y - %f, dest Z - %f, opcode - %s, on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, moving - %s, teleport distance - %f), player - %s",
+                    plrMover->GetMapId(), mapEntry ? mapEntry->name[sWorld->GetDefaultDbcLocale()] : "<unknown>", plrMover->GetZoneId(), srcZoneEntry ? srcZoneEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", plrMover->GetAreaId(), srcAreaEntry ? srcAreaEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>",
+                    plrMover->GetPositionX(), plrMover->GetPositionY(), plrMover->GetPositionZ(), destZoneId, destZoneEntry ? destZoneEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", destAreaId, destAreaEntry ? destAreaEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ(), LookupOpcodeName(opcode),
+                    plrMover->GetVehicle() ? "true" : "false", (plrMover->GetTransport() || plrMover->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT)) ? "true" : "false", plrMover->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plrMover->IsFalling() || plrMover->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false", plrMover->isMoving() ? "true" : "false", curD, plrMover->GetName());
+                KickPlayer();
+                return;
+            }
+            /*else if (sWorld->getBoolConfig(CONFIG_WARDEN_USES_Z_AXIS_CHECK))
+            {
+                if (opcode == MSG_MOVE_SET_FACING && curD > plrMover->GetSpeed(plrMover->GetMovementType(plrMover->m_movementInfo.GetMovementFlags())))
+                {
+                    uint32 destZoneId = 0;
+                    uint32 destAreaId = 0;
+
+                    plrMover->GetMap()->GetZoneAndAreaId(destZoneId, destAreaId, plrMover->GetPositionX(), plrMover->GetPositionY(), plrMover->GetPositionZ());
+
+                    // get zone and area info
+                    MapEntry const* mapEntry = sMapStore.LookupEntry(plrMover->GetMapId());
+                    AreaTableEntry const* srcZoneEntry = GetAreaEntryByAreaID(plrMover->GetZoneId());
+                    AreaTableEntry const* srcAreaEntry = GetAreaEntryByAreaID(plrMover->GetAreaId());
+                    AreaTableEntry const* destZoneEntry = GetAreaEntryByAreaID(destZoneId);
+                    AreaTableEntry const* destAreaEntry = GetAreaEntryByAreaID(destAreaId);
+
+                    sLog->outWarden("CLIENT WARDEN: XYZ hack detected (map - %u (%s), source zone - %u (%s), source area - %u (%s), source X - %f, source Y - %f, source Z - %f, dest zone - %u (%s), dest area - %u (%s), dest X - %f, dest Y - %f, dest Z - %f, opcode - %s, on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, moving - %s, teleport distance - %f), player - %s",
+                        plrMover->GetMapId(), mapEntry ? mapEntry->name[sWorld->GetDefaultDbcLocale()] : "<unknown>", plrMover->GetZoneId(), srcZoneEntry ? srcZoneEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", plrMover->GetAreaId(), srcAreaEntry ? srcAreaEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>",
+                        plrMover->GetPositionX(), plrMover->GetPositionY(), plrMover->GetPositionZ(), destZoneId, destZoneEntry ? destZoneEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", destAreaId, destAreaEntry ? destAreaEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ(), LookupOpcodeName(opcode),
+                        plrMover->GetVehicle() ? "true" : "false", (plrMover->GetTransport() || plrMover->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT)) ? "true" : "false", plrMover->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plrMover->IsFalling() || plrMover->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false", plrMover->isMoving() ? "true" : "false", curD, plrMover->GetName());
+                    return;
+                }
+            }*/
         }
     }
 
@@ -777,6 +903,13 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
 
                  if (plrMover)
                     plrMover->SetClientControl(mover, false);
+            }
+
+            if (plrMover && plrMover->GetAnticheatMgr()->HasState(PLAYER_STATE_LAUNCHED))
+            {
+                plrMover->GetAnticheatMgr()->RemoveState(PLAYER_STATE_LAUNCHED);
+                plrMover->GetAnticheatMgr()->SetSpeedXY(0.0f);
+                plrMover->GetAnticheatMgr()->SetSpeedZ(0.0f);
             }
 
             mover->ClearUnitState(UNIT_STATE_JUMPING);

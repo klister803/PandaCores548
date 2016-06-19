@@ -62,10 +62,11 @@ void Warden::SendModuleToClient()
         sizeLeft -= burstSize;
         pos += burstSize;
 
-        EncryptData((uint8*)&packet, burstSize + 3);
-        WorldPacket pkt1(SMSG_WARDEN_DATA, burstSize + 3 + 4);
-        pkt1 << uint32(burstSize + 3);
-        pkt1.append((uint8*)&packet, burstSize + 3);
+        uint32 realChunkSize = sizeof(uint8) + sizeof(uint16) + burstSize;
+        EncryptData((uint8*)&packet, realChunkSize);
+        WorldPacket pkt1(SMSG_WARDEN_DATA, realChunkSize + sizeof(uint32));
+        pkt1 << uint32(realChunkSize);
+        pkt1.append((uint8*)&packet, realChunkSize);
         _session->SendPacket(&pkt1);
     }
 }
@@ -85,7 +86,7 @@ void Warden::RequestModule()
     // Encrypt with warden RC4 key.
     EncryptData((uint8*)&request, sizeof(WardenModuleUse));
 
-    WorldPacket pkt(SMSG_WARDEN_DATA, sizeof(WardenModuleUse) + 4);
+    WorldPacket pkt(SMSG_WARDEN_DATA, sizeof(WardenModuleUse) + sizeof(uint32));
     pkt << uint32(sizeof(WardenModuleUse));
     pkt.append((uint8*)&request, sizeof(WardenModuleUse));
     _session->SendPacket(&pkt);

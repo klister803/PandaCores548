@@ -20,6 +20,7 @@
 #define _PLAYER_H
 
 #include "AchievementMgr.h"
+#include "AnticheatMgr.h"
 #include "Battleground.h"
 #include "BattlePetMgr.h"
 #include "Bag.h"
@@ -3574,6 +3575,16 @@ class Player : public Unit, public GridObject<Player>
                 AddMoveEventsMask(tMask);
         }
         bool HasMoveEventsMask(PlayerMoveEventsMask mask) { return (validMoveEventsMask & mask) != 0; }
+
+        // server anticheat control
+        AnticheatMgr* GetAnticheatMgr() { return &m_anticheatMgr; }
+        const AnticheatMgr* GetAnticheatMgr() const { return &m_anticheatMgr; }
+
+        bool MovementCheckPassed(uint32 opcode, float delta, MovementInfo const& movementInfo);
+        bool OldMovementCheckPassed(uint32 opcode, float delta, MovementInfo const& movementInfo);
+        bool CheckZAxis(uint32 opcode, float delta, float new_x, float new_y, float new_z, uint32 cur_mflags, uint32 new_mflags);
+        UnitMoveType GetMovementType(uint32 moveFlags);
+
     protected:
         //kill honor sistem
         KillInfoMap m_killsPerPlayer;
@@ -3671,6 +3682,7 @@ class Player : public Unit, public GridObject<Player>
         AchievementMgr<Player> m_achievementMgr;
         ReputationMgr  m_reputationMgr;
         BattlePetMgr   m_battlePetMgr;
+        AnticheatMgr  m_anticheatMgr;
 
         RPPMLastChanceToProc m_rppmLastChanceToProc;
         RPPMLastSuccessfulProc m_rppmLastSuccessfulProc;

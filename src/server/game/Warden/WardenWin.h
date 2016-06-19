@@ -57,18 +57,6 @@ enum ResponseMask
     RESP_LEVITATE_HACK = 0x10
 };
 
-enum PlayerState
-{
-    PLAYER_NOT_FOUND = 0x00,
-    PLAYER_ON_TRANSPORT = 0x01,
-    PLAYER_ON_VEHICLE = 0x02,
-    PLAYER_FALLING = 0x04,
-    PLAYER_LAUNCHED = 0x08,
-    PLAYER_ON_TAXI = 0x10,
-    PLAYER_TELEPORTED = 0x20,
-    PLAYER_NOT_ACTIVE_MOVER = 0x40,
-};
-
 enum WardenTypeCheck
 {
     STATIC_CHECK = 0,
@@ -149,9 +137,6 @@ class WardenWin : public Warden
         std::string GetMovementFlagInfo(uint32 moveFlags);
         bool IsAllowFlyingOnVehicles(Unit * vb);
         bool IsAllowPlayerFlying(Player * plr);
-
-        // misc checks helper functions
-        PlayerState GetPlayerState(Player * plr);
 
         // controlling player movement helper functions
         void SendControlMovementPacket(uint32 opcode, bool added, uint32 moveFlags);

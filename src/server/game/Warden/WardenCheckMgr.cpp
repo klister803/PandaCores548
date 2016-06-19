@@ -44,7 +44,6 @@ void WardenCheckMgr::LoadWardenChecks()
     if (!sWorld->getBoolConfig(CONFIG_WARDEN_ENABLED))
     {
         sLog->outInfo(LOG_FILTER_WARDEN, ">> Warden disabled, loading checks skipped.");
-
         return;
     }
 
@@ -53,7 +52,6 @@ void WardenCheckMgr::LoadWardenChecks()
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 Warden checks. DB table `warden_checks` is empty!");
-
         return;
     }
 
@@ -165,7 +163,6 @@ void WardenCheckMgr::LoadWardenOverrides()
     if (!sWorld->getBoolConfig(CONFIG_WARDEN_ENABLED))
     {
         sLog->outInfo(LOG_FILTER_WARDEN, ">> Warden disabled, loading check overrides skipped.");
-
         return;
     }
 

@@ -22572,6 +22572,12 @@ void Unit::KnockbackFrom(float x, float y, float speedXY, float speedZ)
     {
         float vcos, vsin;
         GetSinCos(x, y, vsin, vcos);
+
+        // set immune anticheat and calculate speed
+        player->GetAnticheatMgr()->AddState(PLAYER_STATE_LAUNCHED);
+        player->GetAnticheatMgr()->SetSpeedXY(speedXY);
+        player->GetAnticheatMgr()->SetSpeedZ(speedZ);
+
         SendMoveKnockBack(player, speedXY, -speedZ, vcos, vsin);
     }
 }
@@ -23210,6 +23216,15 @@ void Unit::JumpTo(float speedXY, float speedZ, bool forward, float angle)
     {
         float vcos = std::cos(m_angle + GetOrientation());
         float vsin = std::sin(m_angle + GetOrientation());
+
+        // set immune anticheat and calculate speed
+        if (Player* player = ToPlayer())
+        {
+            player->GetAnticheatMgr()->AddState(PLAYER_STATE_LAUNCHED);
+            player->GetAnticheatMgr()->SetSpeedXY(speedXY);
+            player->GetAnticheatMgr()->SetSpeedZ(speedZ);
+        }
+
         SendMoveKnockBack(ToPlayer(), speedXY, -speedZ, vcos, vsin);
     }
 }
