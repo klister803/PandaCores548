@@ -1429,6 +1429,7 @@ void World::LoadConfigSettings(bool reload)
     // custom events
     m_bool_configs[CONFIG_CUSTOM_BATTLEGROUND] = ConfigMgr::GetBoolDefault("Custom.BattleGround.event", false);
     m_bool_configs[CONFIG_CUSTOM_X20] = ConfigMgr::GetBoolDefault("Custom.Achievement.x20", false);
+    m_bool_configs[CONFIG_CUSTOM_FOOTBALL] = ConfigMgr::GetBoolDefault("Custom.Football", false);
     if (reload)
         sScriptMgr->OnConfigLoad(reload);
 }

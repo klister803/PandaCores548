@@ -832,6 +832,8 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
 
         bg_template = GetBattlegroundTemplate(bgTypeId);
     }
+    if (oldbgTypeId == ARENA_TYPE_5v5 && sWorld->getBoolConfig(CONFIG_CUSTOM_FOOTBALL))
+       bgTypeId = BATTLEGROUND_DS;
 
     Battleground* bg = NULL;
     // create a copy of the BG template
@@ -1184,7 +1186,13 @@ void BattlegroundMgr::SendToBattleground(Player* player, uint32 instanceId, Batt
         bg->GetTeamStartLoc(team, x, y, z, O);
 
         sLog->outInfo(LOG_FILTER_BATTLEGROUND, "BATTLEGROUND: Sending %s to map %u, X %f, Y %f, Z %f, O %f", player->GetName(), mapid, x, y, z, O);
-        player->TeleportTo(mapid, x, y, z, O);
+        if (bg->GetJoinType() == 5 && sWorld->getBoolConfig(CONFIG_CUSTOM_FOOTBALL))
+            if (team == ALLIANCE)
+               player->TeleportTo(mapid, 941.9, 244.74, 0, 0);  //ALLIANCE //gold 
+            else 
+               player->TeleportTo(mapid, 1022, 247.21, 0, 3.1);  //HORDE //green
+        else
+         player->TeleportTo(mapid, x, y, z, O);
     }
     else
     {

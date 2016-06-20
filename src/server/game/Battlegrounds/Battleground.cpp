@@ -30,6 +30,7 @@
 #include "Language.h"
 #include "MapManager.h"
 #include "Object.h"
+#include "ScriptMgr.h"
 #include "SpellAuras.h"
 #include "SpellAuraEffects.h"
 #include "Util.h"
@@ -52,6 +53,7 @@
    const char* notification;
    std::string NewChar;
    bool custom_exists;
+   Creature* ball;
 
 namespace Trinity
 {
@@ -426,6 +428,13 @@ void Battleground::Update(uint32 diff)
       else checktimer -= diff;
                 
     }
+   if (GetJoinType() == 5 && sWorld->getBoolConfig(CONFIG_CUSTOM_FOOTBALL))  
+   {
+      if (ball->GetAuraCount(58169) >= 3)
+         EndBattleground(HORDE);
+      if (ball->GetAuraCount(65964) >= 3)
+         EndBattleground(ALLIANCE);
+   }
 }
 
 inline void Battleground::_ProcessOfflineQueue()
@@ -616,6 +625,9 @@ inline void Battleground::_ProcessJoin(uint32 diff)
         // Remove preparation
         if (isArena())
         {
+           if (GetJoinType() == 5 && sWorld->getBoolConfig(CONFIG_CUSTOM_FOOTBALL))
+            ball = AddCreature(250018, BgCreatures.size() - 1, 35, 984.65, 245.60, 0, 0);
+         
             // TODO : add arena sound PlaySoundToAll(SOUND_ARENA_START);
             for (BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
                 if (Player* player = ObjectAccessor::FindPlayer(itr->first))
@@ -630,7 +642,6 @@ inline void Battleground::_ProcessJoin(uint32 diff)
                     // After getting status plr should get updates for all players in any way
                     // Remove preparation send plr updates, but on some cases it not work
                     
-
                     player->RemoveAurasDueToSpell(SPELL_ARENA_PREPARATION);
                     player->ResetAllPowers();
 
@@ -690,7 +701,7 @@ inline void Battleground::_ProcessJoin(uint32 diff)
 
                     float dist = plr->GetDistance(x, y, z);
 
-                    if (dist >= maxDist)
+                    if (dist >= maxDist && !(GetJoinType() == 5 && sWorld->getBoolConfig(CONFIG_CUSTOM_FOOTBALL)))
                     {
                         sLog->outError(LOG_FILTER_BATTLEGROUND, "BATTLEGROUND: Sending %s back to start location (map: %u) (possible exploit)", plr->GetName(), GetMapId());
                         plr->TeleportTo(GetMapId(), x, y, z, o);
@@ -1456,6 +1467,23 @@ void Battleground::AddPlayer(Player* player)
            CustomGUID = player->GetGUID(); 
            custom_exists = true; 
        } 
+    }
+    if (GetJoinType() == 5 && sWorld->getBoolConfig(CONFIG_CUSTOM_FOOTBALL))
+    {
+       if (Creature* tank = player->SummonCreature(33060, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation()))
+       {
+          player->CastSpell(tank, 65031, true); //summon 33060 and cast on vehicle 65031
+          if (team == ALLIANCE)
+          {
+             tank->SetDisplayId(16841, true);
+             tank->AddAura(65964, tank);
+          }
+          else
+          {
+             tank->SetDisplayId(47695,true);
+             tank->AddAura(58169, tank);
+          }
+       }
     }
 }
 
@@ -2255,7 +2283,16 @@ void Battleground::HandleKillUnit(Creature* /*creature*/, Player* /*killer*/)
 
 void Battleground::CheckArenaAfterTimerConditions()
 {
+   if (GetJoinType() == 5 && sWorld->getBoolConfig(CONFIG_CUSTOM_FOOTBALL))  
+   {
+      if (ball->GetAuraCount(58169) > ball->GetAuraCount(65964))
+         EndBattleground(HORDE);
+      if (ball->GetAuraCount(65964) > ball->GetAuraCount(58169))
+         EndBattleground(ALLIANCE);
+   }
+       
     EndBattleground(WINNER_NONE);
+       
 }
 
 void Battleground::CheckArenaWinConditions()

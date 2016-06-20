@@ -264,9 +264,76 @@ public:
         }
 };        
 
+class npc_ball_for_football : public CreatureScript
+{
+public:
+    npc_ball_for_football() : CreatureScript("npc_ball_for_football") { }
+    
+      struct npc_ball_for_footballAI : public ScriptedAI 
+      { 
+         npc_ball_for_footballAI(Creature* creature) : ScriptedAI(creature) 
+         {
+            goal = false;
+            GoalTimer = 5000;
+            SetCombatMovement(false);
+         }
+         
+         bool goal;
+         uint32 GoalTimer;
+
+        void UpdateAI(uint32 diff)
+        {
+           if (me->GetPositionX() <= 844.5f && !goal)
+             if (me->GetPositionY() <= 253.0f && me->GetPositionY() >= 234.0f)
+             {
+                me->AddAura(58169, me);
+                goal = true;
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_NOT_SELECTABLE);
+                me->NearTeleportTo(984.65, 245.60, 0, 0);
+                GoalTimer = 15000;
+             } 
+             else
+                me->NearTeleportTo(848.5f, me->GetPositionY(), 0, 0);
+             
+             if (me->GetPositionX() >= 1124.5f && !goal)
+                if (me->GetPositionY() <= 256.0f && me->GetPositionY() >= 237.0f)
+                {
+                   me->AddAura(65964, me);
+                   goal = true;
+                   me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_NOT_SELECTABLE);
+                   me->NearTeleportTo(984.65, 245.60, 0, 0);
+                   GoalTimer = 15000;
+                }
+                else
+                   me->NearTeleportTo(1120.5f, me->GetPositionY(), 0, 0);
+                
+             if (me->GetPositionY() >= 294)
+                   me->NearTeleportTo(me->GetPositionX(), 291.9f, 0, 0);
+             
+             if (me->GetPositionY() <= 195.4)
+                   me->NearTeleportTo(me->GetPositionX(), 199.2f, 0, 0);
+                
+             if (goal)
+                if (GoalTimer <= diff)
+                {
+                   goal = false;
+                   me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_NOT_SELECTABLE);
+                   GoalTimer = 15000;
+                } else GoalTimer -= diff;           
+        }
+         
+      };           
+      
+      CreatureAI* GetAI(Creature* creature) const 
+      { 
+        return new npc_ball_for_footballAI (creature); 
+      } 
+};  
+
 
 void AddSC_custom_events_x20()
 {
    new check_on_points();
    new npc_custom_multi_x20();
+   new npc_ball_for_football();
 }
