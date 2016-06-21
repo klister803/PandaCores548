@@ -233,7 +233,6 @@ Battleground::Battleground()
     m_StartDelayTime = 0;
     
     // for custom BG event
-    end = false;
     spell_custom_2 = 46392;
     custom_exists = false;
     CustomGUID = 0;
@@ -637,7 +636,10 @@ inline void Battleground::_ProcessJoin(uint32 diff)
         if (isArena())
         {
            if (GetJoinType() == 5 && sWorld->getBoolConfig(CONFIG_CUSTOM_FOOTBALL))
+           {
             ball = AddCreature(250018, BgCreatures.size() - 1, 35, 984.65, 245.60, 0, 0);
+            end = false;
+           }
          
             // TODO : add arena sound PlaySoundToAll(SOUND_ARENA_START);
             for (BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
