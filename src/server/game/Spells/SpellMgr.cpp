@@ -5256,7 +5256,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 //Paragons of the Klaxxi
                 case 142638: //Devour
                     spellInfo->TargetAuraSpell = 0;
-                    spellInfo->Effects[0].TargetB = 15;
                     break;
                 case 143339: //Injection
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;

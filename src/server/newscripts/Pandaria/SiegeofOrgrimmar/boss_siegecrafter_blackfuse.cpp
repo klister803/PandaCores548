@@ -293,7 +293,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                  seh->CastSpell(seh, SPELL_CREATE_CONVEYOR_TRIGGER);
          }
 
-         void OnUnitDeath(Unit* unit)
+         void KilledUnit(Unit* unit)
          {
              if (unit->ToPlayer())
                  Talk(SAY_KILL_UNIT);

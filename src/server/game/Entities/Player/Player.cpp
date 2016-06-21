@@ -27965,6 +27965,10 @@ uint32 rand_number(uint32 value1, uint32 value2, uint32 value3 = 0, uint32 value
 //CharmedAi for Players
 void Player::UpdateCharmedAI()
 {
+    //Custom behavior
+    if (HasAura(142671))//Paragons of Klaxxi[SO](Hungry Kunchong - Mesmerize) process in spellscript
+        return;
+
     if (Creature* charmer = GetCharmer()->ToCreature())
     {
         if (charmer->IsInEvadeMode())

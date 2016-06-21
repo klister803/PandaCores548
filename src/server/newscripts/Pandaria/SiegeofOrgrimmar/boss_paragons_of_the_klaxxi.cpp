@@ -127,6 +127,11 @@ enum eSpells
     //Hungry Kunchong
     SPELL_THICK_SHELL                  = 142667,
     SPELL_HUNGRY                       = 142630,
+    SPELL_H_DEVOUR                     = 142638,
+    SPELL_MOLT                         = 142651,
+    SPELL_DEVOUR                       = 142649,
+    SPELL_MESMERIZE                    = 142671,
+    SPELL_SWIPE                        = 142655,
 
     //Buffs
     //Kaztik
@@ -180,6 +185,7 @@ enum sEvents
     EVENT_CHECK_DIST_TO_KLAXXI         = 26,
     EVENT_CHECK_PLAYER                 = 27,
     EVENT_RE_ATTACK                    = 28,
+    EVENT_PARAGONS_PURPOSE             = 29,
 };
 
 enum sActions
@@ -516,6 +522,8 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         events.ScheduleEvent(EVENT_RAPID_FIRE, 47000);
                     break;
                 }
+                if (me->GetMap()->IsHeroic())
+                    events.ScheduleEvent(EVENT_PARAGONS_PURPOSE, 50000);
             }
 
             void DoAction(int32 const action)
@@ -971,6 +979,11 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     //Special
                     case EVENT_RE_ATTACK:
                         me->GetMotionMaster()->MoveJump(1582.4f, -5684.9f, -313.635f, 15.0f, 15.0f, 3);
+                        break;
+                    //HM
+                    case EVENT_PARAGONS_PURPOSE:
+                        DoCast(me, SPELL_PARAGONS_PURPOSE_DMG);
+                        events.ScheduleEvent(EVENT_PARAGONS_PURPOSE, 50000);
                         break;
                     }
                 }
@@ -1463,23 +1476,62 @@ public:
         npc_kunchongAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
+        }
+
+        InstanceScript* instance;
+        uint64 targetGuid;
+        uint32 donepct;
+
+        void Reset()
+        {
+            targetGuid = 0;
+            donepct = 1;
             me->SetReactState(REACT_PASSIVE);
+            me->setPowerType(POWER_ENERGY);
+            me->SetMaxPower(POWER_ENERGY, 100);
+            me->SetPower(POWER_ENERGY, 0);
+            me->SetSpeed(MOVE_RUN, 0.5f);
             DoCast(me, SPELL_HUNGRY, true);
             DoCast(me, SPELL_THICK_SHELL, true);
         }
 
-        InstanceScript* instance;
-
-        void Reset()
+        void SetGUID(uint64 guid, int32 id)
         {
-            me->SetSpeed(MOVE_RUN, 0.5f);
-            me->GetMotionMaster()->MoveRandom(10.0f);
+            if (id == 1)
+            {
+                targetGuid = guid;
+                donepct = (me->GetHealthPct() - 25) > 0 ? floor(me->GetHealthPct() - 25) : 1;
+            }
         }
 
         void SpellHit(Unit* caster, SpellInfo const *spell)
         {
             if (spell->Id == SPELL_PLAYER_REAVE && me->HasAura(SPELL_THICK_SHELL))
                 me->RemoveAurasDueToSpell(SPELL_THICK_SHELL);
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (HealthBelowPct(donepct) && !me->HasAura(SPELL_THICK_SHELL))
+            {
+                DoCast(me, SPELL_THICK_SHELL, true);
+                if (Player* pl = me->GetPlayer(*me, targetGuid))
+                    if (pl->isAlive())
+                        pl->RemoveAurasDueToSpell(SPELL_DEVOUR);
+                me->RemoveAurasDueToSpell(SPELL_DEVOUR);
+                targetGuid = 0;
+                donepct = 1;
+            }
+        }
+
+        void KilledUnit(Unit* victim)
+        {
+            if (victim->GetGUID() == targetGuid)
+            {
+                targetGuid = 0;
+                me->RemoveAurasDueToSpell(SPELL_DEVOUR);
+                me->SetPower(POWER_ENERGY, 100);
+            }
         }
 
         void EnterCombat(Unit* who){}
@@ -2611,6 +2663,88 @@ public:
     }
 };
 
+//142649
+class spell_kunchong_devour : public SpellScriptLoader
+{
+public:
+    spell_kunchong_devour() : SpellScriptLoader("spell_kunchong_devour") { }
+
+    class spell_kunchong_devour_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_kunchong_devour_AuraScript);
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetCaster() && GetTarget())
+            {
+                if (GetCaster()->ToCreature())
+                    GetCaster()->ToCreature()->AI()->SetGUID(GetTarget()->GetGUID(), 1);
+                GetTarget()->CastSpell(GetTarget(), SPELL_MESMERIZE, true);
+                GetTarget()->SetCharmedBy(GetCaster(), CHARM_TYPE_CONVERT, NULL);
+                GetCaster()->RemoveAurasDueToSpell(SPELL_THICK_SHELL);
+                GetTarget()->GetMotionMaster()->MoveFollow(GetCaster(), PET_FOLLOW_DIST, GetCaster()->GetFollowAngle());
+            }
+        }
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+        {
+            if (GetCaster() && GetTarget())
+            {
+                GetTarget()->RemoveCharmedBy(GetCaster());
+                GetTarget()->RemoveAurasDueToSpell(SPELL_MESMERIZE);
+                GetTarget()->StopMoving();
+                GetTarget()->GetMotionMaster()->Clear(false);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_kunchong_devour_AuraScript::OnApply, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+            OnEffectRemove += AuraEffectRemoveFn(spell_kunchong_devour_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_kunchong_devour_AuraScript();
+    }
+};
+
+//142630
+class spell_hungry_periodic : public SpellScriptLoader
+{
+public:
+    spell_hungry_periodic() : SpellScriptLoader("spell_hungry_periodic") { }
+
+    class spell_hungry_periodic_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_hungry_periodic_AuraScript);
+
+        void OnPeriodic(AuraEffect const*aurEff)
+        {
+            if (GetCaster())
+            {
+                if (GetCaster()->GetPower(POWER_ENERGY) == 100)
+                {
+                    GetCaster()->InterruptNonMeleeSpells(true);
+                    GetCaster()->RemoveAurasDueToSpell(SPELL_HUNGRY);
+                    GetCaster()->CastSpell(GetCaster(), SPELL_MOLT, true);
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_hungry_periodic_AuraScript::OnPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_hungry_periodic_AuraScript();
+    }
+};
+
 void AddSC_boss_paragons_of_the_klaxxi()
 {
     new npc_amber_piece();
@@ -2651,4 +2785,6 @@ void AddSC_boss_paragons_of_the_klaxxi()
     new spell_vicious_assaullt_periodic();
     new spell_vicious_assaullt();
     new spell_hisek_fire();
+    new spell_kunchong_devour();
+    new spell_hungry_periodic();
 }

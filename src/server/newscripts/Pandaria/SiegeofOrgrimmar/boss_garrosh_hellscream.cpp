@@ -404,7 +404,7 @@ class boss_garrosh_hellscream : public CreatureScript
                 }
             }
 
-            void OnUnitDeath(Unit* unit)
+            void KilledUnit(Unit* unit)
             {
                 if (unit->ToPlayer())
                     Talk(SAY_KILL_PLAYER);

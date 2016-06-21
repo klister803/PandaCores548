@@ -21776,7 +21776,8 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* au
     // Set charmed
     Map* map = GetMap();
     if (!IsVehicle() || (IsVehicle() && map && !map->IsBattleground()))
-        setFaction(charmer->getFaction());
+        if (!HasAura(142671)) //Paragons of Klaxxi[SO](Hungry Kunchong - Mesmerize), player in mind control but him can heal...
+            setFaction(charmer->getFaction());
 
     charmer->SetCharm(this, true);
 
