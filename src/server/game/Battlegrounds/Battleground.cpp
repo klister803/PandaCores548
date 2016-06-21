@@ -54,6 +54,7 @@
    std::string NewChar;
    bool custom_exists;
    Creature* ball;
+   bool end;
 
 namespace Trinity
 {
@@ -232,6 +233,7 @@ Battleground::Battleground()
     m_StartDelayTime = 0;
     
     // for custom BG event
+    end = false;
     spell_custom_2 = 46392;
     custom_exists = false;
     CustomGUID = 0;
@@ -430,10 +432,19 @@ void Battleground::Update(uint32 diff)
     }
    if (GetJoinType() == 5 && sWorld->getBoolConfig(CONFIG_CUSTOM_FOOTBALL))  
    {
-      if (ball->GetAuraCount(58169) >= 3)
-         EndBattleground(HORDE);
-      if (ball->GetAuraCount(65964) >= 3)
-         EndBattleground(ALLIANCE);
+      if (ball && !end)
+      {
+         if (ball->GetAuraCount(58169) >= 3)
+         {
+            EndBattleground(HORDE);
+            end = true;
+         }
+         if (ball->GetAuraCount(65964) >= 3)
+         {
+            EndBattleground(ALLIANCE);
+            end = true;
+         }
+      }
    }
 }
 
@@ -1470,9 +1481,9 @@ void Battleground::AddPlayer(Player* player)
     }
     if (GetJoinType() == 5 && sWorld->getBoolConfig(CONFIG_CUSTOM_FOOTBALL))
     {
-       if (Creature* tank = player->SummonCreature(33060, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation()))
+       if (Creature* tank = player->SummonCreature(250017, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation()))
        {
-          player->CastSpell(tank, 65031, true); //summon 33060 and cast on vehicle 65031
+          player->CastSpell(tank, 65031, true); //summon 250017 and cast on vehicle 65031
           if (team == ALLIANCE)
           {
              tank->SetDisplayId(16841, true);
@@ -2285,10 +2296,13 @@ void Battleground::CheckArenaAfterTimerConditions()
 {
    if (GetJoinType() == 5 && sWorld->getBoolConfig(CONFIG_CUSTOM_FOOTBALL))  
    {
-      if (ball->GetAuraCount(58169) > ball->GetAuraCount(65964))
-         EndBattleground(HORDE);
-      if (ball->GetAuraCount(65964) > ball->GetAuraCount(58169))
-         EndBattleground(ALLIANCE);
+      if (ball)
+      {
+         if (ball->GetAuraCount(58169) > ball->GetAuraCount(65964))
+            EndBattleground(HORDE);
+         if (ball->GetAuraCount(65964) > ball->GetAuraCount(58169))
+            EndBattleground(ALLIANCE);
+      }
    }
        
     EndBattleground(WINNER_NONE);

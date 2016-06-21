@@ -832,8 +832,11 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
 
         bg_template = GetBattlegroundTemplate(bgTypeId);
     }
-    if (oldbgTypeId == ARENA_TYPE_5v5 && sWorld->getBoolConfig(CONFIG_CUSTOM_FOOTBALL))
+    if ((oldbgTypeId == ARENA_TYPE_5v5 || joinType == 5) && sWorld->getBoolConfig(CONFIG_CUSTOM_FOOTBALL))
+    {
        bgTypeId = BATTLEGROUND_DS;
+       bg_template = GetBattlegroundTemplate(bgTypeId);
+    }
 
     Battleground* bg = NULL;
     // create a copy of the BG template

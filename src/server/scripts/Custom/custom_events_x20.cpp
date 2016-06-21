@@ -330,10 +330,25 @@ public:
       } 
 };  
 
+class vehicle_football_vehicle : public VehicleScript
+{
+public:
+    vehicle_football_vehicle() : VehicleScript("vehicle_football_vehicle") {}
+    
+        void OnRemovePassenger(Vehicle* /*transport*/, Unit* player)
+        {
+            if (!player)
+                return;
+            if (player->GetTypeId() == TYPEID_PLAYER)
+                player->ToPlayer()->TeleportTo(870, 1324, 1116, 561, 4.4);
+            
+        }
+};
 
 void AddSC_custom_events_x20()
 {
    new check_on_points();
    new npc_custom_multi_x20();
    new npc_ball_for_football();
+   new vehicle_football_vehicle();
 }
