@@ -3037,37 +3037,42 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
       {
        if (GetOwner()->getLevel() > 1 && GetOwner()->getLevel() != 55) // on 1 level accounts achievment
        {
-          uint32 id = 37711;
-          ChatHandler chH = ChatHandler(GetOwner()); 
-          uint32 count = achievement->points;       
+          QueryResult result = CharacterDatabase.PQuery("SELECT * FROM account_achievement WHERE account = '%u' and achievement = '%u' ", GetOwner()->GetSession()->GetAccountId(), achievement->ID);
+          if (!result)
+             if (!HasAchieved(achievement->ID, referencePlayer->GetGUIDLow()))
+             {
+                uint32 id = 37711;
+                ChatHandler chH = ChatHandler(GetOwner()); 
+                uint32 count = achievement->points;       
 
-          //Adding items
-          uint32 noSpaceForCount = 0;
+                //Adding items
+                uint32 noSpaceForCount = 0;
 
-          // check space and find places
-          ItemPosCountVec dest;
-          InventoryResult msg = GetOwner()->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, id, count, &noSpaceForCount);
-          if (msg != EQUIP_ERR_OK)                               // convert to possible store amount
-              count -= noSpaceForCount;
+                // check space and find places
+                ItemPosCountVec dest;
+                InventoryResult msg = GetOwner()->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, id, count, &noSpaceForCount);
+                if (msg != EQUIP_ERR_OK)                               // convert to possible store amount
+                    count -= noSpaceForCount;
 
-          if (count == 0 || dest.empty())                         // can't add any
-          {
-              chH.PSendSysMessage(LANG_ITEM_CANNOT_CREATE, id, noSpaceForCount);
-              return;
-          }
+                if (count == 0 || dest.empty())                         // can't add any
+                {
+                    chH.PSendSysMessage(LANG_ITEM_CANNOT_CREATE, id, noSpaceForCount);
+                    return;
+                }
 
-          Item* item = GetOwner()->StoreNewItem(dest, id, true, Item::GenerateItemRandomPropertyId(id));
+                Item* item = GetOwner()->StoreNewItem(dest, id, true, Item::GenerateItemRandomPropertyId(id));
 
-          if (count > 0 && item)
-              GetOwner()->SendNewItem(item, count, false, true);
+                if (count > 0 && item)
+                    GetOwner()->SendNewItem(item, count, false, true);
 
-          if (noSpaceForCount > 0)
-          {
-              chH.PSendSysMessage(LANG_ITEM_CANNOT_CREATE, id, noSpaceForCount);
-              CharacterDatabase.PExecute("INSERT INTO `custom_account_checker` (`type`, `count`, `account`) VALUES ('2', '%u', '%u');", noSpaceForCount, GetOwner()->GetSession()->GetAccountId()); 
-          } 
+                if (noSpaceForCount > 0)
+                {
+                    chH.PSendSysMessage(LANG_ITEM_CANNOT_CREATE, id, noSpaceForCount);
+                    CharacterDatabase.PExecute("INSERT INTO `custom_account_checker` (`type`, `count`, `account`) VALUES ('2', '%u', '%u');", noSpaceForCount, GetOwner()->GetSession()->GetAccountId()); 
+                } 
+             }
+        }
        }
-      }
     // reward items and titles if any
     AchievementReward const* reward = sAchievementMgr->GetAchievementReward(achievement);
     // no rewards
