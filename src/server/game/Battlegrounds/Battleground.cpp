@@ -741,7 +741,11 @@ inline void Battleground::_ProcessLeave(uint32 diff)
             next = itr;
             ++next;
             //itr is erased here!
-            RemovePlayerAtLeave(itr->first, true, true);// remove player from BG
+            if (GetJoinType() == 5 && sWorld->getBoolConfig(CONFIG_CUSTOM_FOOTBALL))
+               if (Player* player = sObjectAccessor->FindPlayer(itr->first))
+                  player->ExitVehicle();
+            else
+               RemovePlayerAtLeave(itr->first, true, true);// remove player from BG
             // do not change any battleground's private variables
         }
     }
