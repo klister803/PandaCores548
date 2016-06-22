@@ -276,33 +276,52 @@ public:
             goal = false;
             GoalTimer = 5000;
             SetCombatMovement(false);
+            RedTeam = 0;
+            BlueTeam = 0;
          }
          
          bool goal;
          uint32 GoalTimer;
+         uint32 RedTeam;
+         uint32 BlueTeam;
 
         void UpdateAI(uint32 diff)
         {
-           if (me->GetPositionX() <= 844.5f && !goal)
-             if (me->GetPositionY() <= 253.0f && me->GetPositionY() >= 234.0f)
-             {
-                me->AddAura(58169, me);
-                goal = true;
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_NOT_SELECTABLE);
-                me->NearTeleportTo(984.65, 245.60, 0, 0);
-                GoalTimer = 15000;
-             } 
-             else
-                me->NearTeleportTo(848.5f, me->GetPositionY(), 0, 0);
+             if (me->GetPositionX() <= 844.5f && !goal)
+                if (me->GetPositionY() <= 253.0f && me->GetPositionY() >= 234.0f)
+                {
+                   RedTeam++;
+                   me->AddAura(58169, me);
+                   goal = true;
+                   me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_NOT_SELECTABLE);
+                   me->NearTeleportTo(984.65, 245.60, 0, 0);
+                   GoalTimer = 15000;
+                   Map::PlayerList const& players = me->GetMap()->GetPlayers();
+                   for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                   {
+                       if (Player* player = itr->getSource())                
+                        player->GetSession()->SendNotification(30010, RedTeam, BlueTeam); // Красные забивают гол! Счет Красные %u:%u Синие . Через 15 секунд матч возобновится!
+                   }                
+                } 
+                else
+                   me->NearTeleportTo(848.5f, me->GetPositionY(), 0, 0);
              
              if (me->GetPositionX() >= 1124.5f && !goal)
                 if (me->GetPositionY() <= 256.0f && me->GetPositionY() >= 237.0f)
                 {
+                   BlueTeam++;
                    me->AddAura(65964, me);
                    goal = true;
                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_NOT_SELECTABLE);
                    me->NearTeleportTo(984.65, 245.60, 0, 0);
                    GoalTimer = 15000;
+                   
+                   Map::PlayerList const& players = me->GetMap()->GetPlayers();
+                   for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                   {
+                       if (Player* player = itr->getSource())                
+                        player->GetSession()->SendNotification(30011, RedTeam, BlueTeam); // Синие забивают гол! Счет Красные %u:%u Синие . Через 15 секунд матч возобновится!
+                   }
                 }
                 else
                    me->NearTeleportTo(1120.5f, me->GetPositionY(), 0, 0);
@@ -318,7 +337,7 @@ public:
                 {
                    goal = false;
                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_NOT_SELECTABLE);
-                   GoalTimer = 15000;
+                   GoalTimer = 15000;      
                 } else GoalTimer -= diff;           
         }
          
@@ -340,7 +359,7 @@ public:
             if (!player)
                 return;
             if (player->GetTypeId() == TYPEID_PLAYER)
-                player->ToPlayer()->TeleportTo(870, 1324, 1116, 561, 4.4);
+                player->ToPlayer()->TeleportToBGEntryPoint();
             
         }
 };
