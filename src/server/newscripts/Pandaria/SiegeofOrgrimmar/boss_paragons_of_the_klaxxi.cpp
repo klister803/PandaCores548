@@ -1529,6 +1529,7 @@ public:
             me->SetSpeed(MOVE_RUN, 0.5f);
             DoCast(me, SPELL_HUNGRY, true);
             DoCast(me, SPELL_THICK_SHELL, true);
+            DoZoneInCombat(me, 150.0f);
         }
 
         void SetGUID(uint64 guid, int32 id)
