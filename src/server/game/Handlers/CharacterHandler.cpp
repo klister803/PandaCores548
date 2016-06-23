@@ -2019,17 +2019,6 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
         }
     }
     
-    stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_NAME);
-    stmt->setUInt32(0, GUID_LOPART(guid));
-    result = CharacterDatabase.Query(stmt);
-
-    if (result)
-    {
-        std::string oldname = result->Fetch()[0].GetString();
-        if (newname != oldname)
-          used_loginFlag += AT_LOGIN_RENAME;
-    }
-
     CharacterDatabase.EscapeString(newname);
     Player::Customize(guid, gender, skin, face, hairStyle, hairColor, facialHair);
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
