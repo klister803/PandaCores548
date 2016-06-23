@@ -67,7 +67,6 @@ enum eSpells
 
     //Kaztik
     SPELL_SONIC_PROJECTION_AT          = 143765,
-    SPELL_SUM_HUNGRY_KUNCHONG          = 146891,
 
     //Kilruk
     SPELL_DEATH_FROM_ABOVE             = 142264,
@@ -186,6 +185,9 @@ enum sEvents
     EVENT_CHECK_PLAYER                 = 27,
     EVENT_RE_ATTACK                    = 28,
     EVENT_PARAGONS_PURPOSE             = 29,
+    //Hungry Kunchong
+    EVENT_SWIPE                        = 30,
+    EVENT_DEVOUR                       = 31,
 };
 
 enum sActions
@@ -194,6 +196,8 @@ enum sActions
     ACTION_RE_ATTACK                   = 3,
     ACTION_MOVE_TO_CENTER              = 4,
     ACTION_RE_ATTACK_KILRUK            = 5,
+    ACTION_MELEE_PHASE                 = 6,
+    ACTION_DEVOUR                      = 7,
 };
 
 enum CreatureText
@@ -312,15 +316,15 @@ public:
 
         void OnSpellClick(Unit* clicker)
         {
-            if (instance->GetBossState(DATA_THOK) == DONE)
-            {
+            //if (instance->GetBossState(DATA_THOK) == DONE)
+            //{
                 if (me->HasAura(SPELL_AURA_VISUAL_FS))
                 {
                     me->RemoveAurasDueToSpell(SPELL_AURA_VISUAL_FS);
                     if (Creature* ck = me->GetCreature(*me, instance->GetData64(NPC_KLAXXI_CONTROLLER)))
                         ck->AI()->DoAction(ACTION_KLAXXI_START);
                 }
-            }
+            //}
         }
     };
 
@@ -498,8 +502,8 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                     events.ScheduleEvent(EVENT_INJECTION, 14000); 
                     break;
                 case NPC_KAZTIK:
-                    events.ScheduleEvent(EVENT_SONIC_PROJECTION, 2000);
-                    events.ScheduleEvent(EVENT_SUM_HUNGRY_KUNCHONG, 15000);
+                    events.ScheduleEvent(EVENT_SONIC_PROJECTION, 5000);
+                    events.ScheduleEvent(EVENT_SUM_HUNGRY_KUNCHONG, 2000);
                     break;
                 case NPC_KORVEN:
                     Talk(SAY_KORVEN_PULL, 0);
@@ -833,10 +837,40 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         if (me->getVictim())
                             DoCastVictim(SPELL_SONIC_PROJECTION_AT);
                         events.ScheduleEvent(EVENT_SONIC_PROJECTION, 4000);
-                    case EVENT_SUM_HUNGRY_KUNCHONG:
-                        DoCast(me, SPELL_SUM_HUNGRY_KUNCHONG);
-                        events.ScheduleEvent(EVENT_SUM_HUNGRY_KUNCHONG, 60000);
                         break;
+                    case EVENT_SUM_HUNGRY_KUNCHONG:
+                    {
+                        uint8 maxcount = me->GetMap()->Is25ManRaid() ? 4 : 3;
+                        for (uint8 n = 0; n < maxcount; n++)
+                        {
+                            if (Creature* ap = me->FindNearestCreature(NPC_AMBER_PIECE, 150.0f, true))
+                            {
+                                float x, y;
+                                GetPosInRadiusWithRandomOrientation(ap, 50.0f, x, y);
+                                me->SummonCreature(NPC_HUNGRY_KUNCHONG, x, y, ap->GetPositionZ());
+                            }
+                        }
+                        events.ScheduleEvent(EVENT_DEVOUR, 60000);
+                        break;
+                    }
+                    case EVENT_DEVOUR:
+                    {
+                        std::list<Creature*> hklist;
+                        GetCreatureListWithEntryInGrid(hklist, me, NPC_HUNGRY_KUNCHONG, 150.0f);
+                        if (!hklist.empty())
+                        {
+                            for (std::list<Creature*>::const_iterator itr = hklist.begin(); itr != hklist.end(); itr++)
+                            {
+                                if (!(*itr)->HasAura(SPELL_MOLT))
+                                {
+                                    (*itr)->AI()->DoAction(ACTION_DEVOUR);
+                                    break;
+                                }
+                            }
+                        }
+                        events.ScheduleEvent(EVENT_DEVOUR, 60000);
+                        break;
+                    }
                     //Iyyokyk
                     case EVENT_DIMINISH:
                         if (me->getVictim())
@@ -1479,11 +1513,13 @@ public:
         }
 
         InstanceScript* instance;
+        EventMap events;
         uint64 targetGuid;
         uint32 donepct;
 
         void Reset()
         {
+            events.Reset();
             targetGuid = 0;
             donepct = 1;
             me->SetReactState(REACT_PASSIVE);
@@ -1524,6 +1560,36 @@ public:
             }
         }
 
+        void DoAction(int32 const action)
+        {
+            switch (action)
+            {
+            case ACTION_MELEE_PHASE:
+                me->SetReactState(REACT_AGGRESSIVE);
+                DoZoneInCombat(me, 150.0f);
+                events.ScheduleEvent(EVENT_SWIPE, 5000);
+                break;
+            case ACTION_DEVOUR:
+            {
+                std::list<Player*> pllist;
+                pllist.clear();
+                GetPlayerListInGrid(pllist, me, 150.0f);
+                if (!pllist.empty())
+                {
+                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                    {
+                        if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && !(*itr)->HasAura(SPELL_MUTATE))
+                        {
+                            DoCast(*itr, SPELL_DEVOUR);
+                            break;
+                        }
+                    }
+                }
+            }
+            break;
+            }
+        }
+
         void KilledUnit(Unit* victim)
         {
             if (victim->GetGUID() == targetGuid)
@@ -1534,11 +1600,26 @@ public:
             }
         }
 
-        void EnterCombat(Unit* who){}
+        void UpdateAI(uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
 
-        void EnterEvadeMode(){}
+            events.Update(diff);
 
-        void UpdateAI(uint32 diff){}
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_SWIPE)
+                {
+                    DoCast(me, SPELL_SWIPE);
+                    events.ScheduleEvent(EVENT_SWIPE, 12000);
+                }
+            }
+            DoMeleeAttackIfReady();
+        }
     };
 
     CreatureAI* GetAI(Creature* creature) const
@@ -2729,6 +2810,8 @@ public:
                     GetCaster()->InterruptNonMeleeSpells(true);
                     GetCaster()->RemoveAurasDueToSpell(SPELL_HUNGRY);
                     GetCaster()->CastSpell(GetCaster(), SPELL_MOLT, true);
+                    if (GetCaster()->ToCreature())
+                        GetCaster()->ToCreature()->AI()->DoAction(ACTION_MELEE_PHASE);
                 }
             }
         }

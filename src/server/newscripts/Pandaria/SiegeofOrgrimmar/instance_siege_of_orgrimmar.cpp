@@ -2211,6 +2211,20 @@ public:
                             return;
                 RemoveProtectFromGarrosh();
                 break;
+            case NPC_HUNGRY_KUNCHONG:
+                if (Creature* kaztik = instance->GetCreature(GetData64(NPC_KAZTIK)))
+                {
+                    if (kaztik->isAlive() && kaztik->isInCombat())
+                    {
+                        if (Creature* ap = kaztik->FindNearestCreature(NPC_AMBER_PIECE, 150.0f, true))
+                        {
+                            float x, y;
+                            GetPosInRadiusWithRandomOrientation(ap, 50.0f, x, y);
+                            kaztik->SummonCreature(NPC_HUNGRY_KUNCHONG, x, y, ap->GetPositionZ());
+                        }
+                    }
+                }
+                break;
             }
         }
 

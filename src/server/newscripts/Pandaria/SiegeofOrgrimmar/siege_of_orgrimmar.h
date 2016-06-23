@@ -596,6 +596,7 @@ enum esSpells
     SPELL_AIM_PLAYER                   = 143216,
     SPELL_MASTER_OF_AMBER              = 141854,
     SPELL_MASTER_OF_AMBER2             = 142616,
+    SPELL_SUM_HUNGRY_KUNCHONG          = 146891,
 
     //Blackfuse
     SPELL_PROTECTIVE_FRENZY            = 145365,
