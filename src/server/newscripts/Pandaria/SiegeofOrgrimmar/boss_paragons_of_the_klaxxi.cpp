@@ -1550,7 +1550,8 @@ public:
         {
             if (HealthBelowPct(donepct) && !me->HasAura(SPELL_THICK_SHELL))
             {
-                DoCast(me, SPELL_THICK_SHELL, true);
+                if (me->GetPower(POWER_ENERGY) < 100)
+                    DoCast(me, SPELL_THICK_SHELL, true);
                 if (Player* pl = me->GetPlayer(*me, targetGuid))
                     if (pl->isAlive())
                         pl->RemoveAurasDueToSpell(SPELL_DEVOUR);
