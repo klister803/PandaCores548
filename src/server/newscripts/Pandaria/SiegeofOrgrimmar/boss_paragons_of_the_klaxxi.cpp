@@ -840,7 +840,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         break;
                     case EVENT_SUM_HUNGRY_KUNCHONG:
                     {
-                        uint8 maxcount = me->GetMap()->Is25ManRaid() ? 4 : 3;
+                        uint8 maxcount = me->GetMap()->Is25ManRaid() ? 4 : 2;
                         for (uint8 n = 0; n < maxcount; n++)
                         {
                             if (Creature* ap = me->FindNearestCreature(NPC_AMBER_PIECE, 150.0f, true))
