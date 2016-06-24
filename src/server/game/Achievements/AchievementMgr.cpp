@@ -3038,8 +3038,9 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
        if (GetOwner()->getLevel() > 1 && GetOwner()->getLevel() != 55) // on 1 level accounts achievment
        {
           QueryResult result = CharacterDatabase.PQuery("SELECT * FROM account_achievement WHERE account = '%u' and achievement = '%u' ", GetOwner()->GetSession()->GetAccountId(), achievement->ID);
-          if (!result)
-             if (!HasAchieved(achievement->ID, referencePlayer->GetGUIDLow()))
+          QueryResult result_1 = CharacterDatabase.PQuery("SELECT * FROM custom_account_checker WHERE account = '%u' and type = '4' and count = '%u';", GetOwner()->GetSession()->GetAccountId(), achievement->ID); 
+          if (!result) //if achiev was
+           if (!result_1) //if achiew was complete now
              {
                 uint32 id = 37711;
                 ChatHandler chH = ChatHandler(GetOwner()); 
@@ -3070,6 +3071,7 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
                     chH.PSendSysMessage(LANG_ITEM_CANNOT_CREATE, id, noSpaceForCount);
                     CharacterDatabase.PExecute("INSERT INTO `custom_account_checker` (`type`, `count`, `account`) VALUES ('2', '%u', '%u');", noSpaceForCount, GetOwner()->GetSession()->GetAccountId()); 
                 } 
+                CharacterDatabase.PExecute("INSERT INTO `custom_account_checker` (`type`, `count`, `account`) VALUES ('4', '%u', '%u');", achievement->ID, GetOwner()->GetSession()->GetAccountId()); 
              }
         }
        }

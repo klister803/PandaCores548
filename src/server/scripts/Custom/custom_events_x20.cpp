@@ -7,6 +7,7 @@
 //1 - первый вход
 //2 - остатки валюты
 //3 - лвл ап
+//4 - ачивы чек
 
 class check_on_points : public PlayerScript
 {
