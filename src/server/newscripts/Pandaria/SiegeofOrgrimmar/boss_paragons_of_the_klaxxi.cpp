@@ -427,7 +427,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
             InstanceScript* instance;
             SummonList summons;
             EventMap events;
-            uint64 jtGuid, dfatargetGuid, ftargetGuid;
+            uint64 jtGuid, dfatargetGuid, ftargetGuid, flashtargetGuid;
             uint32 checkklaxxi, healcooldown;
             uint8 flashcount;
             bool healready;
@@ -448,6 +448,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 healcooldown = 0;
                 flashcount = 0;
                 ftargetGuid = 0;
+                flashtargetGuid = 0;
                 healready = true;
                 switch (me->GetEntry())
                 {
@@ -459,6 +460,13 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 default:
                     break;
                 }
+            }
+
+            uint64 GetGUID(int32 id = 0)
+            {
+                if (id == DATA_GET_FLASH_TARGET)
+                    return flashtargetGuid;
+                return 0;
             }
 
             void JustSummoned(Creature* sum)
@@ -1008,7 +1016,10 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         if (!flashcount)
                             flashcount = urand(2, 3);
                         if (Player* pl = me->GetPlayer(*me, GetFlashTargetGuid()))
+                        {
+                            flashtargetGuid = pl->GetGUID();
                             DoCast(pl, SPELL_STORE_KINETIC_ENERGY);
+                        }
                         break;
                     //Special
                     case EVENT_RE_ATTACK:
@@ -2503,16 +2514,19 @@ public:
 class WhirlingTargetFilter
 {
 public:
-    WhirlingTargetFilter(WorldObject* caster) : _caster(caster){}
+    WhirlingTargetFilter(WorldObject* caster, Player* player) : _caster(caster), _player(player){}
 
     bool operator()(WorldObject* unit)
     {
-        if (_caster->isInFront(unit, 1.5f))
+        if (unit->IsInBetween(_caster, _player, 2.0f))
+            return false;
+        else if (_player->GetGUID() == unit->GetGUID())
             return false;
         return true;
     }
 private:
     WorldObject* _caster;
+    Player* _player;
 };
 
 //143701
@@ -2527,8 +2541,11 @@ public:
 
         void _FilterTarget(std::list<WorldObject*>&targets)
         {
-            if (GetCaster())
-                targets.remove_if(WhirlingTargetFilter(GetCaster()));
+            if (GetCaster() && GetCaster()->ToCreature())
+            {
+                if (Player* maintarget = GetCaster()->GetPlayer(*GetCaster(), GetCaster()->ToCreature()->AI()->GetGUID(DATA_GET_FLASH_TARGET)))
+                    targets.remove_if(WhirlingTargetFilter(GetCaster(), maintarget));
+            }
         }
 
         void Register()
