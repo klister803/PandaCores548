@@ -467,7 +467,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     }
 
     // exclude transport (not vehicles!)
-    if (!plrMover->GetTransport() && !plrMover->GetTransport())
+    if (!plrMover->GetTransport())
     {
         // New system of movement checks - disabled
         if (sWorld->getBoolConfig(CONFIG_WARDEN_USES_EXP_SYSTEM))

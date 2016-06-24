@@ -135,7 +135,7 @@ class WardenWin : public Warden
         // movement flags checks helper functions
         bool CheckMovementFlags(uint32 moveflags, std::string &reason, uint16 &banMask);
         std::string GetMovementFlagInfo(uint32 moveFlags);
-        bool IsAllowFlyingOnVehicles(Unit * vb);
+        bool IsAllowVehicleFlying(Unit * vb);
         bool IsAllowPlayerFlying(Player * plr);
 
         // controlling player movement helper functions

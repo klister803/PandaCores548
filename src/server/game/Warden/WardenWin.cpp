@@ -901,22 +901,16 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
             {
                 // SPEED - CHECK BLOCK
                 // 1000% speed - this value impossible get legal methods, only controlled by server (spline movement)
-                if (curClientSpeed >= 77.0f && plr && !plr->GetAnticheatMgr()->HasState(PLAYER_STATE_LAUNCHED) && curClientSpeed > plr->GetAnticheatMgr()->GetSpeedXY())
+                if (plr && !plr->GetAnticheatMgr()->HasState(PLAYER_STATE_LAUNCHED) && curClientSpeed >= 77.0f && curClientSpeed > plr->GetAnticheatMgr()->GetSpeedXY())
                 {
                     if (m_speedExtAlert == int8(sWorld->getIntConfig(CONFIG_WARDEN_NUM_SPEED_EXT_ALERTS)))
                     {
-                        buff.rpos(buff.wpos());
+                        // logs
                         sLog->outWarden("CLIENT WARDEN: Player - %s banned - over-speed speedhack, data : base_speed - %f, server_speed - %f, cur_speed - %f, on_vehicle - %s", _session->GetPlayerName(), baseClientSpeed, serverSpeed, curClientSpeed, plr->GetVehicle() ? "true" : "false");
                         ClearAlerts();
 
-                        // generate cryptostream
-                        /*std::stringstream c_data;
-                        int veh = plr->GetVehicle() ? 1 : 0;
-                        c_data << "OS" << baseClientSpeed << "|" << serverSpeed << "|" << curClientSpeed << "|" << veh;
-                        std::string cipherText = EncryptCustomData(c_data.str());*/
-
                         // test system - enable ban after
-                        _session->KickPlayer();
+                        //_session->KickPlayer();
                         return;
 
                         // ban
@@ -934,11 +928,10 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
                     speedExtAlertsActivate = true;
                 }
                 // heuristic Hitchhiker detect - banned
-                else if (baseSwimClientSpeed > GetServerSpeed(plr, MOVE_SWIM) && baseSwimClientSpeed == baseRunClientSpeed && baseSwimClientSpeed > playerBaseMoveSpeed[MOVE_RUN] && !plr->GetVehicle())
+                else if (plr && !plr->GetVehicle() && baseSwimClientSpeed > GetServerSpeed(plr, MOVE_SWIM) && baseSwimClientSpeed == baseRunClientSpeed && baseSwimClientSpeed > playerBaseMoveSpeed[MOVE_RUN])
                 {
                     if (m_speedExtAlert == int8(sWorld->getIntConfig(CONFIG_WARDEN_NUM_SPEED_EXT_ALERTS)))
                     {
-                        buff.rpos(buff.wpos());
                         bool correct = CheckCorrectBoundValues(baseSwimClientSpeed);
                         sLog->outWarden("CLIENT WARDEN: Player %s %s - detect Hitchhiker's Hack, base swim speed - %f, server swim speed - %f, on_vehicle - %s", _session->GetPlayerName(), correct ? "banned" : "kicked", baseSwimClientSpeed, GetServerSpeed(plr, MOVE_SWIM), plr->GetVehicle() ? "true" : "false");
                         ClearAlerts();
@@ -952,7 +945,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
                             std::string cipherText1 = EncryptCustomData(c_data1.str());*/
 
                             // test system - enable ban after
-                            _session->KickPlayer();
+                            //_session->KickPlayer();
                             return;
 
                             // ban
@@ -967,7 +960,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
                         }
                         else
                         {
-                            _session->KickPlayer();
+                            //_session->KickPlayer();
                             return;
                         }
                     }
@@ -976,15 +969,16 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
                     speedExtAlertsActivate = true;
                 }
 
-                if (baseClientSpeed >= 7.0f && serverSpeed >= 7.0f && baseClientSpeed > serverSpeed && baseClientSpeed - serverSpeed > 5.0f)
+                if (plr && !plr->GetAnticheatMgr()->HasState(PLAYER_STATE_LAUNCHED) && baseClientSpeed >= 7.0f && serverSpeed >= 7.0f && baseClientSpeed > serverSpeed && baseClientSpeed - serverSpeed > 5.0f)
                 {
                     if (m_speedAlert == int8(sWorld->getIntConfig(CONFIG_WARDEN_NUM_SPEED_ALERTS)))
                     {
-                        buff.rpos(buff.wpos());
+                        //buff.rpos(buff.wpos());
                         sLog->outWarden("CLIENT WARDEN: Player - %s must be banned - force change base movespeed (Hithchiker's Hack, etc.), data : base_speed - %f, server_speed - %f, cur_speed - %f, on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, map name - %s, zone_name - %s, subzone_name - %s",
                             _session->GetPlayerName(), baseClientSpeed, serverSpeed, curClientSpeed, plr->GetVehicle() ? "true" : "false", plr->GetTransport() ? "true" : "false", plr->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plr->IsFalling() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false",
                             plr->GetMap() ? plr->GetMap()->GetMapName() : "<unknown>", srcZoneEntry ? srcZoneEntry->area_name : "<unknown>", srcAreaEntry ? srcAreaEntry->area_name : "<unknown>");
-                        _session->KickPlayer();
+                        ClearAlerts();
+                        //_session->KickPlayer();
                         return;
                     }
 
@@ -999,7 +993,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
                     // check launched state, if speed is bigger launched XY speed - alert
                     if (plr && plr->GetAnticheatMgr()->HasState(PLAYER_STATE_LAUNCHED))
                     {
-                        if (curClientSpeed > plr->GetAnticheatMgr()->GetSpeedXY())
+                        if (plr->GetAnticheatMgr()->GetSpeedXY() > 0.0f && curClientSpeed > plr->GetAnticheatMgr()->GetSpeedXY())
                             correct = false;
                     }
                     else
@@ -1017,11 +1011,11 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
 
                     if (m_speedAlert == int8(sWorld->getIntConfig(CONFIG_WARDEN_NUM_SPEED_ALERTS)))
                     {
-                        buff.rpos(buff.wpos());
                         sLog->outWarden("CLIENT WARDEN: Player - %s must be banned - force change current speed(WoWEmuHacker, etc.), data : base_speed - %f, server_speed - %f, cur_speed - %f, on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, map name - %s, zone_name - %s, subzone_name - %s",
                             _session->GetPlayerName(), baseClientSpeed, serverSpeed, curClientSpeed, plr->GetVehicle() ? "true" : "false", plr->GetTransport() ? "true" : "false", plr->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plr->IsFalling() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false",
                             plr->GetMap() ? plr->GetMap()->GetMapName() : "<unknown>", srcZoneEntry ? srcZoneEntry->area_name : "<unknown>", srcAreaEntry ? srcAreaEntry->area_name : "<unknown>");
-                        _session->KickPlayer();
+                        ClearAlerts();
+                        //_session->KickPlayer();
                         return;
                     }
                 }
@@ -1035,14 +1029,11 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
                 {
                     if (m_moveFlagsAlert == int8(sWorld->getIntConfig(CONFIG_WARDEN_NUM_MOVEFLAGS_ALERTS)))
                     {
-                        buff.rpos(buff.wpos());
                         sLog->outWarden("CLIENT WARDEN: Player - %s has incorrect moveflags, reason - %s, moveflags - %X (%s), on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, map name - %s, zone_name - %s, subzone_name - %s", _session->GetPlayerName(), mflags_reason.c_str(), m_flags, GetMovementFlagInfo(m_flags).c_str(),
                             plr->GetVehicle() ? "true" : "false", plr->GetTransport() ? "true" : "false", plr->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plr->IsFalling() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false",
                             plr->GetMap() ? plr->GetMap()->GetMapName() : "<unknown>", srcZoneEntry ? srcZoneEntry->area_name : "<unknown>", srcAreaEntry ? srcAreaEntry->area_name : "<unknown>");
-
-                        //std::string reason = "Anticheat System : " + mflags_reason + ". You are disabled and kicked in 10 seconds";
-                        //plr->SetBlocked(true, reason.c_str());
-                        _session->KickPlayer();
+                        ClearAlerts();
+                        //_session->KickPlayer();
                         return;
                     }
 
@@ -1132,7 +1123,7 @@ bool WardenWin::CheckMovementFlags(uint32 moveflags, std::string &reason, uint16
         {
             if (Unit * vb = plr->GetVehicleBase())
             {
-                if (!IsAllowFlyingOnVehicles(vb))
+                if (!IsAllowVehicleFlying(vb))
                 {
                     if (moveflags & 0x80000000)
                         reason += "Vehicle flyhack detected (Hitchhiker's Hack type)";
@@ -1179,11 +1170,23 @@ bool WardenWin::CheckMovementFlags(uint32 moveflags, std::string &reason, uint16
     if (moveflags & MOVEMENTFLAG_WATERWALKING)
     {
         bool auraWaterwalk = plr->HasAuraType(SPELL_AURA_WATER_WALK) || plr->HasAura(60068) || plr->HasAura(61081);
-        if (!plr->GetAnticheatMgr()->HasState(PLAYER_STATE_WATER_WALK) && !auraWaterwalk && !plr->GetVehicle())
+        if (plr->GetVehicle() && plr->GetVehicleBase())
         {
-            reason += " + WaterwalkHack detected";
-            banMask |= RESP_WATERWALK_HACK;
-            correct = false;
+            if (plr->GetVehicleBase()->HasAuraType(SPELL_AURA_WATER_WALK))
+            {
+                reason += " + WaterwalkHack detected (vehicle)";
+                banMask |= RESP_WATERWALK_HACK;
+                correct = false;
+            }
+        }
+        else
+        {
+            if (!plr->GetAnticheatMgr()->HasState(PLAYER_STATE_WATER_WALK) && !auraWaterwalk)
+            {
+                reason += " + WaterwalkHack detected";
+                banMask |= RESP_WATERWALK_HACK;
+                correct = false;
+            }
         }
     }
 
@@ -1200,7 +1203,8 @@ bool WardenWin::CheckMovementFlags(uint32 moveflags, std::string &reason, uint16
         }
         else
         {
-            if (!plr->GetAnticheatMgr()->HasState(PLAYER_STATE_HOVER))
+            bool auraHover = plr->HasAuraType(SPELL_AURA_HOVER);
+            if (!plr->GetAnticheatMgr()->HasState(PLAYER_STATE_HOVER) && !auraHover)
             {
                 reason += " + LevitateHack detected";
                 banMask |= RESP_LEVITATE_HACK;
@@ -1454,9 +1458,6 @@ bool WardenWin::HasAnticheatImmune()
     if (plr->m_taxi.GetCurrentTaxiPath())
         return true;
 
-    if (plr->GetZoneId() == ZONE_DALARAN)
-        return true;
-
     // temp immune anticheat checks for gunship battle
     if (plr->GetMapId() == 631 && plr->GetTransport())
         return true;
@@ -1631,7 +1632,7 @@ float WardenWin::GetServerSpeed(Unit * obj, UnitMoveType mtype)
     return obj->GetSpeedRate(mtype)*(obj->IsControlledByPlayer() ? playerBaseMoveSpeed[mtype] : baseMoveSpeed[mtype]);
 }
 
-bool WardenWin::IsAllowFlyingOnVehicles(Unit * vb)
+bool WardenWin::IsAllowVehicleFlying(Unit * vb)
 {
     if (vb->HasAuraType(SPELL_AURA_FLY) || vb->HasAuraType(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED) || vb->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED)
         || vb->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED))
