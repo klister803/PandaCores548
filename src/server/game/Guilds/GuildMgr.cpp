@@ -454,8 +454,10 @@ void GuildMgr::LoadGuilds()
          }
     }
 
+    GuildContainer handleGuildStore = GuildStore;
+
     // 11. Update Guild Known Recipes
-    for (GuildContainer::iterator itr = GuildStore.begin(); itr != GuildStore.end(); ++itr)
+    for (GuildContainer::iterator itr = handleGuildStore.begin(); itr != handleGuildStore.end(); ++itr)
     {
         Guild* guild = itr->second;
         if (!guild)
@@ -464,12 +466,14 @@ void GuildMgr::LoadGuilds()
         guild->UpdateGuildRecipes();
     }
 
+    handleGuildStore = GuildStore;
+
     // 12. Validate loaded guild data
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Validating data of loaded guilds...");
     {
         uint32 oldMSTime = getMSTime();
 
-        for (GuildContainer::iterator itr = GuildStore.begin(); itr != GuildStore.end();)
+        for (GuildContainer::iterator itr = handleGuildStore.begin(); itr != handleGuildStore.end();)
         {
             Guild* guild = itr->second;
             if (guild)
