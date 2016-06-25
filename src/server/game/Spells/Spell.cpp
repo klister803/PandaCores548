@@ -3715,10 +3715,13 @@ void Spell::cancel()
 
         case SPELL_STATE_CASTING:
             if (!m_UniqueTargetInfo.empty())
-                for (std::list<TargetInfo>::const_iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
+            {
+                std::list<TargetInfo> handleUniqueTargetInfo = m_UniqueTargetInfo;
+                for (std::list<TargetInfo>::const_iterator ihit = handleUniqueTargetInfo.begin(); ihit != handleUniqueTargetInfo.end(); ++ihit)
                     if ((*ihit).missCondition == SPELL_MISS_NONE)
                         if (Unit* unit = m_caster->GetGUID() == ihit->targetGUID ? m_caster : ObjectAccessor::GetUnit(*m_caster, ihit->targetGUID))
                             unit->RemoveOwnedAura(m_spellInfo->Id, m_originalCasterGUID, 0, AURA_REMOVE_BY_CANCEL);
+            }
 
             SendChannelUpdate(0);
             SendInterrupted(0);
