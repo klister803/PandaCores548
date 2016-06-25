@@ -249,10 +249,12 @@ void DynamicObject::BindToCaster()
         return;
 
     ASSERT(!_caster);
-    _caster = ObjectAccessor::GetUnit(*this, GetCasterGUID());
-    ASSERT(_caster);
-    ASSERT(_caster->GetMap() == GetMap());
-    _caster->_RegisterDynObject(this);
+    if (_caster = ObjectAccessor::GetUnit(*this, GetCasterGUID()))
+    {
+        ASSERT(_caster);
+        ASSERT(_caster->GetMap() == GetMap());
+        _caster->_RegisterDynObject(this);
+    }
 }
 
 void DynamicObject::UnbindFromCaster()
