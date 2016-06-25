@@ -309,6 +309,8 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_baseHastRatingPct = 1.0f;
     m_comboPointsMod = 0;
 
+    m_whoseeme.clear();
+
     for (uint8 i = 0; i < MAX_COMBAT_RATING; i++)
         m_baseRatingValue[i] = 0;
 }
@@ -14809,8 +14811,30 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
             return false;
 
     // can't attack invisible (ignore stealth for aoe spells) also if the area being looked at is from a spell use the dynamic object created instead of the casting unit.
-    if ((!bySpell || !(bySpell->AttributesEx6 & SPELL_ATTR6_CAN_TARGET_INVISIBLE)) && (obj ? !obj->canSeeOrDetect(target, bySpell && bySpell->IsAffectingArea()) : !canSeeOrDetect(target, bySpell && bySpell->IsAffectingArea())))
-        return false;
+    if (!bySpell || !(bySpell->AttributesEx6 & SPELL_ATTR6_CAN_TARGET_INVISIBLE))
+    {
+        if (obj)
+        {
+            if (!obj->canSeeOrDetect(target, bySpell && bySpell->IsAffectingArea()))
+                return false;
+        }
+        else
+        {
+            if (Player const* plr = ToPlayer())
+            {
+                if (bySpell)
+                {
+                    if (!bySpell->IsAffectingArea())
+                        if (!plr->HaveAtClient(target))
+                            return false;
+                }
+                else if (!plr->HaveAtClient(target))
+                    return false;
+            }
+            else if (!canSeeOrDetect(target, bySpell && bySpell->IsAffectingArea()))
+                return false;
+        }
+    }
 
     // can't attack dead
     if ((!bySpell || !bySpell->IsAllowingDeadTarget()) && !target->isAlive())
@@ -15416,7 +15440,7 @@ bool Unit::IsAlwaysVisibleFor(WorldObject const* seer) const
     if (Player const* seerPlayer = seer->ToPlayer())
         if (Unit* owner =  GetOwner())
             if (Player* ownerPlayer = owner->ToPlayer())
-                if (ownerPlayer->IsGroupVisibleFor(seerPlayer))
+                if (ownerPlayer->IsGroupVisibleFor(seerPlayer) && seerPlayer->HaveAtClient(this))
                     return true;
 
     return false;
@@ -22436,8 +22460,13 @@ public:
 
     virtual bool Execute(uint64 , uint32)
     {
+        float dist = SIGHT_RANGE_UNIT;
+
+        if (Player* plr = m_owner.ToPlayer())
+            dist = plr->m_dynamicVisibleDistance < SIGHT_RANGE_UNIT ? plr->m_dynamicVisibleDistance : SIGHT_RANGE_UNIT;
+
         Trinity::AIRelocationNotifier notifier(m_owner);
-        m_owner.VisitNearbyObject(m_owner.GetVisibilityRange(), notifier);
+        m_owner.VisitNearbyObject(dist, notifier);
         m_owner.m_VisibilityUpdScheduled = false;
         return true;
     }
@@ -22464,7 +22493,7 @@ public:
         return true;
     }
 
-    static void UpdateVisibility(Unit* me)
+    static void UpdateVisibility(Unit* me, float customVisRange = 0.0f)
      {
         if (!me->m_sharedVision.empty())
             for (SharedVisionList::const_iterator it = me->m_sharedVision.begin();it!= me->m_sharedVision.end();)
@@ -22476,7 +22505,7 @@ public:
         if (me->isType(TYPEMASK_PLAYER))
             ((Player*)me)->UpdateVisibilityForPlayer();
         else
-            me->WorldObject::UpdateObjectVisibility(true);
+            me->WorldObject::UpdateObjectVisibility(true, customVisRange);
         me->m_VisibilityUpdateTask = false;
     }
 };
@@ -22490,22 +22519,22 @@ void Unit::OnRelocated()
     {
         m_lastVisibilityUpdPos = *this;
         m_VisibilityUpdateTask = true;
-        m_Events.AddEvent(new VisibilityUpdateTask(this), m_Events.CalculateTime(1));
+        m_Events.AddEvent(new VisibilityUpdateTask(this), m_Events.CalculateTime(2000));
     }
     AINotifyTask::ScheduleAINotify(this);
 }
 
-void Unit::UpdateObjectVisibility(bool forced)
+void Unit::UpdateObjectVisibility(bool forced, float customRange)
 {
     if (m_VisibilityUpdateTask)
         return;
 
     if (forced)
-        VisibilityUpdateTask::UpdateVisibility(this);
+        VisibilityUpdateTask::UpdateVisibility(this, customRange);
     else
     {
         m_VisibilityUpdateTask = true;
-        m_Events.AddEvent(new VisibilityUpdateTask(this), m_Events.CalculateTime(1));
+        m_Events.AddEvent(new VisibilityUpdateTask(this), m_Events.CalculateTime(2000));
     }
     AINotifyTask::ScheduleAINotify(this);
 }

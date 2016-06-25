@@ -2296,50 +2296,40 @@ bool Position::IsPositionValid() const
     return Trinity::IsValidMapCoord(m_positionX, m_positionY, m_positionZ, m_orientation);
 }
 
-float WorldObject::GetGridActivationRange() const
+float WorldObject::GetMaxPossibleVisibilityRange(bool limit)
 {
-    if (Player const* thisPlayer = ToPlayer())
-        return GetMap()->GetVisibilityRange(thisPlayer->getCurrentUpdateZoneID(), thisPlayer->getCurrentUpdateAreaID());
-    else if (ToCreature())
-        return ToCreature()->m_SightDistance;
-    else
-        return 0.0f;
+    if (Map* mapInfo = GetMap())
+        if (mapInfo->IsBattlegroundOrArena())
+            return MAX_VISIBILITY_DISTANCE;
+
+    return limit ? NORMAL_VISIBILITY_DISTANCE : MAX_VISIBILITY;
 }
 
-float WorldObject::GetVisibilityRange() const
+float WorldObject::CalcVisibilityRange(const WorldObject* obj) const
 {
-    if (isActiveObject() && !ToPlayer())
-        return MAX_VISIBILITY_DISTANCE;
-    else
-        if (GetMap())
-        {
-            if (Player const* thisPlayer = ToPlayer())
-                return GetMap()->GetVisibilityRange(thisPlayer->getCurrentUpdateZoneID(), thisPlayer->getCurrentUpdateAreaID());
-            else if (Creature const* creature = ToCreature())
-                return GetMap()->GetVisibilityRange(creature->getCurrentUpdateZoneID(), creature->getCurrentUpdateAreaID());
-            else
-                return GetMap()->GetVisibilityRange();
-        }
-
-    return MAX_VISIBILITY_DISTANCE;
-}
-
-float WorldObject::GetSightRange(const WorldObject* target) const
-{
-    if (ToUnit())
+    if (Player const* plr = ToPlayer())
     {
-        if (Player const* thisPlayer = ToPlayer())
+        if (obj)
         {
-            if (target && target->isActiveObject() && !target->ToPlayer())
-                return MAX_VISIBILITY_DISTANCE;
-            else
-                return GetMap()->GetVisibilityRange(thisPlayer->getCurrentUpdateZoneID(), thisPlayer->getCurrentUpdateAreaID());
+            if (Player const* objPlr = obj->ToPlayer())
+                return std::min(objPlr->m_dynamicVisibleDistance, plr->m_dynamicVisibleDistance);
+            else if (Creature const* cre = obj->ToCreature())
+            {
+                if (cre->m_isImportantForVisibility)
+                    return MAX_VISIBILITY;
+            }
         }
-        else if (ToCreature())
-            return ToCreature()->m_SightDistance;
-        else
-            return SIGHT_RANGE_UNIT;
+
+        return plr->m_dynamicVisibleDistance;
     }
+    else if (obj)
+    {
+        if (Player const* objPlr = obj->ToPlayer())
+            return objPlr->m_dynamicVisibleDistance;
+    }
+
+    if (Map* map = GetMap())
+        return map->GetMapVisibleDistance();
 
     return 0.0f;
 }
@@ -2354,7 +2344,7 @@ void WorldObject::SetVisible(bool x)
     UpdateObjectVisibility();
 }
 
-bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, bool distanceCheck) const
+bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, bool distanceCheck, bool isExactDist) const
 {
     if (this == obj)
         return true;
@@ -2410,21 +2400,29 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
                 if (Corpse* corpse = thisPlayer->GetCorpse())
                 {
                     corpseCheck = true;
-                    if (corpse->IsWithinDist(thisPlayer, GetSightRange(obj), false))
-                        if (corpse->IsWithinDist(obj, GetSightRange(obj), false))
+                    float visRange = CalcVisibilityRange(obj);
+                    if (isExactDist ? visRange > corpse->GetExactDist2d(thisPlayer) : corpse->IsWithinDist(thisPlayer, visRange, false))
+                        if (isExactDist ? visRange > corpse->GetExactDist2d(obj) : corpse->IsWithinDist(obj, visRange, false))
                             corpseVisibility = true;
                 }
             }
         }
 
         WorldObject const* viewpoint = this;
-        if (Player const* player = this->ToPlayer())
+        float dist = CalcVisibilityRange(obj);
+
+        if (Player const* player = ToPlayer())
+        {
             viewpoint = player->GetViewpoint();
+
+            if (obj->GetTypeName(HIGHGUID_GAMEOBJECT) && !GetZoneId())
+                dist = player->m_dynamicVisibleDistance * 3;
+        }
 
         if (!viewpoint)
             viewpoint = this;
-        
-        if (!corpseCheck && !onArena && !viewpoint->IsWithinDist(obj, GetSightRange(obj), false))
+
+        if (!corpseCheck && !onArena && (isExactDist ? viewpoint->GetExactDist2d(obj) > dist : !viewpoint->IsWithinDist(obj, dist, false)))
             return false;
     }
 
@@ -2819,19 +2817,42 @@ void WorldObject::BuildMonsterChat(WorldPacket* data, uint8 msgtype, char const*
 void WorldObject::SendMessageToSet(WorldPacket* data, bool self)
 {
     if (IsInWorld())
-        SendMessageToSetInRange(data, GetVisibilityRange(), self);
+        SendMessageToSetInRange(data, CalcVisibilityRange(), self);
 }
 
 void WorldObject::SendMessageToSetInRange(WorldPacket* data, float dist, bool /*self*/)
 {
-    Trinity::MessageDistDeliverer notifier(this, data, dist);
-    VisitNearbyWorldObject(dist, notifier);
+    if (Unit* unit = ToUnit())
+    {
+        std::set<uint64> removePlrList;
+
+        for (auto itr : unit->m_whoseeme)
+            if (Player* plr = ObjectAccessor::GetPlayer(*unit, itr))
+            {
+                if (!plr->HaveAtClient(unit))
+                {
+                    removePlrList.insert(plr->GetGUID());
+                    continue;
+                }
+
+                if (WorldSession* session = plr->GetSession())
+                    session->SendPacket(data);
+            }
+
+        for (auto itr : removePlrList)
+            unit->m_whoseeme.erase(itr);
+    }
+    else
+    {
+        Trinity::MessageDistDeliverer notifier(this, data, dist);
+        VisitNearbyWorldObject(dist, notifier);
+    }
 }
 
 void WorldObject::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
 {
-    Trinity::MessageDistDeliverer notifier(this, data, GetVisibilityRange(), false, skipped_rcvr);
-    VisitNearbyWorldObject(GetVisibilityRange(), notifier);
+    Trinity::MessageDistDeliverer notifier(this, data, CalcVisibilityRange(), false, skipped_rcvr);
+    VisitNearbyWorldObject(CalcVisibilityRange(), notifier);
 }
 
 void WorldObject::SendObjectDeSpawnAnim(uint64 guid)
@@ -3282,7 +3303,7 @@ GameObject* WorldObject::FindNearestGameObject(uint32 entry, float range) const
 Player* WorldObject::FindNearestPlayer(float range, bool alive)
 {
     Player* player = NULL;
-    Trinity::AnyPlayerInObjectRangeCheck check(this, GetVisibilityRange());
+    Trinity::AnyPlayerInObjectRangeCheck check(this, CalcVisibilityRange());
     Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, player, check);
     VisitNearbyWorldObject(range, searcher);
     return player;
@@ -3679,9 +3700,10 @@ void WorldObject::DestroyForNearbyPlayers()
         return;
 
     std::list<Player*> targets;
-    Trinity::AnyPlayerInObjectRangeCheck check(this, GetVisibilityRange(), false);
+    float radius = CalcVisibilityRange();
+    Trinity::AnyPlayerInObjectRangeCheck check(this, radius, false);
     Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, targets, check);
-    VisitNearbyWorldObject(GetVisibilityRange(), searcher);
+    VisitNearbyWorldObject(radius, searcher);
     for (std::list<Player*>::const_iterator iter = targets.begin(); iter != targets.end(); ++iter)
     {
         Player* player = (*iter);
@@ -3706,9 +3728,9 @@ void WorldObject::DestroyVignetteForNearbyPlayers()
         return;
 
     std::list<Player*> targets;
-    Trinity::AnyPlayerInObjectRangeCheck check(this, GetVisibilityRange(), false);
+    Trinity::AnyPlayerInObjectRangeCheck check(this, CalcVisibilityRange(), false);
     Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, targets, check);
-    VisitNearbyWorldObject(GetVisibilityRange(), searcher);
+    VisitNearbyWorldObject(CalcVisibilityRange(), searcher);
     for (std::list<Player*>::const_iterator iter = targets.begin(); iter != targets.end(); ++iter)
     {
         Player* player = (*iter);
@@ -3726,11 +3748,18 @@ void WorldObject::DestroyVignetteForNearbyPlayers()
     }
 }
 
-void WorldObject::UpdateObjectVisibility(bool /*forced*/)
+void WorldObject::UpdateObjectVisibility(bool /*forced*/, float customVisRange)
 {
     //updates object's visibility for nearby players
     Trinity::VisibleChangesNotifier notifier(*this);
-    VisitNearbyWorldObject(GetVisibilityRange(), notifier);
+    if (Map* map = GetMap())
+        if (GetMap()->IsBattlegroundOrArena())
+        {
+            notifier.Visit(GetMap()->GetBGArenaObjList());
+            return;
+        }
+
+    VisitNearbyWorldObject(customVisRange ? customVisRange : CalcVisibilityRange(), notifier);
 }
 
 struct WorldObjectChangeAccumulator
@@ -3790,6 +3819,52 @@ struct WorldObjectChangeAccumulator
         }
     }
 
+    void Visit(std::set<uint64> objList)
+    {
+        for (auto itr : objList)
+        {
+            if (IS_PLAYER_GUID(itr))
+            {
+                if (Player* plr = ObjectAccessor::FindPlayer(itr))
+                {
+                    BuildPacket(plr);
+
+                    if (!plr->GetSharedVisionList().empty())
+                    {
+                        SharedVisionList::const_iterator it = plr->GetSharedVisionList().begin();
+                        for (; it != plr->GetSharedVisionList().end(); ++it)
+                            BuildPacket(*it);
+                    }
+                }
+            }
+            else if (IS_CREATURE_GUID(itr))
+            {
+                if (Creature* cre = ObjectAccessor::GetCreature(i_object, itr))
+                    if (!cre->GetSharedVisionList().empty())
+                    {
+                        SharedVisionList::const_iterator it = cre->GetSharedVisionList().begin();
+                        for (; it != cre->GetSharedVisionList().end(); ++it)
+                            BuildPacket(*it);
+                    }
+            }
+            else if (IS_DYNAMICOBJECT_GUID(itr))
+            {
+                if (DynamicObject* DO = ObjectAccessor::GetDynamicObject(i_object, itr))
+                {
+                    uint64 guid = DO->GetCasterGUID();
+
+                    if (IS_PLAYER_GUID(guid))
+                    {
+                        //Caster may be NULL if DynObj is in removelist
+                        if (Player* caster = ObjectAccessor::FindPlayer(guid))
+                            if (caster->GetUInt64Value(PLAYER_FARSIGHT) == itr)
+                                BuildPacket(caster);
+                    }
+                }
+            }
+        }
+    }
+
     void BuildPacket(Player* player)
     {
         // Only send update once to a player
@@ -3812,7 +3887,15 @@ void WorldObject::BuildUpdate(UpdateDataMapType& data_map)
     TypeContainerVisitor<WorldObjectChangeAccumulator, WorldTypeMapContainer > player_notifier(notifier);
     Map& map = *GetMap();
     //we must build packets for all visible players
-    cell.Visit(p, player_notifier, map, *this, GetVisibilityRange());
+    if (map.IsBattlegroundOrArena())
+        notifier.Visit(map.GetBGArenaObjList());
+    else
+    {
+        if (ToCreature() && ToCreature()->m_isImportantForVisibility)
+            notifier.Visit(ToCreature()->m_whoseeme);
+        else
+            cell.Visit(p, player_notifier, map, *this, CalcVisibilityRange());
+    }
 
     ClearUpdateMask(false);
 }

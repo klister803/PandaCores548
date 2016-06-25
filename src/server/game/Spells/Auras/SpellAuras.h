@@ -39,7 +39,7 @@ class AuraScript;
 class ProcInfo;
 
 // update aura target map every 500 ms instead of every update - reduce amount of grid searcher calls
-#define UPDATE_TARGET_MAP_INTERVAL 500
+#define UPDATE_TARGET_MAP_INTERVAL 1000
 
 class AuraApplication
 {

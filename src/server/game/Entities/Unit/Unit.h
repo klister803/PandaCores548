@@ -2161,6 +2161,8 @@ class Unit : public WorldObject
         LiquidData liquid_status;
         ZLiquidStatus Zliquid_status;
 
+        std::set<uint64> m_whoseeme;
+
         float m_threatModifier[MAX_SPELL_SCHOOL];
         float m_modAttackSpeedPct[3];
 
@@ -2199,7 +2201,7 @@ class Unit : public WorldObject
         // common function for visibility checks for player/creatures with detection code
         void SetPhaseMask(uint32 newPhaseMask, bool update);// overwrite WorldObject::SetPhaseMask
         void SetPhaseId(uint32 newPhase, bool update);// overwrite WorldObject::SetPhaseId
-        void UpdateObjectVisibility(bool forced = true);
+        void UpdateObjectVisibility(bool forced = true, float customRange = 0.0f);
 
         SpellImmuneList m_spellImmune[MAX_SPELL_IMMUNITY];
         uint32 m_lastSanctuaryTime;
