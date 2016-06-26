@@ -151,7 +151,7 @@ class Object
     public:
         virtual ~Object();
 
-        bool IsInWorld() const { return m_inWorld; }
+        bool IsInWorld() const { return m_inWorld == 1; }
         virtual bool isLogingOut() const { return false; }
 
         virtual void AddToWorld();
