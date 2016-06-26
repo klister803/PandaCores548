@@ -903,8 +903,6 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         float m_followOrientation;
         bool m_needToUpdatePetFollowPosition;
 
-        uint32 m_lastUpdateTime;
-
         bool m_isImportantForVisibility;
 
         bool onVehicleAccessoryInit() const { return m_onVehicleAccessory; }

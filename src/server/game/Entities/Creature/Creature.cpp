@@ -201,8 +201,6 @@ m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_o
     m_petFollowPositionTimer = 0;
     m_followOrientation = 0;
 
-    m_lastUpdateTime = 0;
-
     m_creatureDiffData = NULL;
 }
 
@@ -718,7 +716,6 @@ void Creature::Update(uint32 diff)
     }
 
     sScriptMgr->OnCreatureUpdate(this, diff);
-    m_lastUpdateTime = getMSTime();
 }
 
 void Creature::RegenerateHealth()
