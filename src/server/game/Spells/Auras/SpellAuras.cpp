@@ -346,7 +346,7 @@ void AuraApplication::BuildByteUpdatePacket(ByteBuffer& data, bool remove, uint3
 
 void AuraApplication::ClientUpdate(bool remove)
 {
-    if (!GetTarget())
+    if (!GetTarget() || !GetTarget()->IsInWorld())
         return;
 
     _needClientUpdate = false;
