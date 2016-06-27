@@ -136,8 +136,8 @@ World::World()
     m_updateTimeSum = 0;
     m_updateTimeCount = 0;
 
-    for (uint8 i = 0; i < 10; i++)
-        m_averageLongUpdateTime[i] = 0;
+//     for (uint8 i = 0; i < 10; i++)
+//         m_averageLongUpdateTime[i] = 0;
 
     m_isClosed = false;
 
