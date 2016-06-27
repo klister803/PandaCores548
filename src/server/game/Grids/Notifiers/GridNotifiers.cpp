@@ -53,6 +53,9 @@ void VisibleNotifier::SendToSelf()
         if (i_player.HaveExtraLook(*it))
             continue;
 
+        if (i_player.GetPetGUID() == (*it))
+            continue;
+
         i_player.m_clientGUIDs.erase(*it);
         i_data.AddOutOfRangeGUID(*it);
 
@@ -88,11 +91,16 @@ void VisibleNotifier::Visit(CreatureMapType &m)
         {
             vis_guids.erase(cre->GetGUID());
 
-            if (cre->m_isImportantForVisibility)
+            if (cre->m_isImportantForVisibility && !i_player.m_staticVisibleDistance)
                 continue;
 
             if (i_player.canSeeOrDetect(cre, false, true, true))
-                i_distList.push_back(cre);
+            {
+                if (i_player.m_staticVisibleDistance)
+                    i_player.UpdateVisibilityOf(cre, i_data, i_visibleNow, true);
+                else
+                    i_distList.push_back(cre);
+            }
             else
                 i_player.UpdateVisibilityOf(cre, i_data, i_visibleNow, false);
         }

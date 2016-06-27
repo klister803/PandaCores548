@@ -275,6 +275,7 @@ class Map : public GridRefManager<NGridType>
         virtual void Update(const uint32);
 
         float GetMapVisibleDistance() const { return m_VisibleDistance; }
+        float GetMaxPossibleVisibilityRange() { return m_maxPossibleVisibilityRange; }
         void AddImportantCreature(uint64 guid) { m_importantForVisibilityCreatureList.insert(guid); }
         void RemoveImportantCreature(uint64 guid) { m_importantForVisibilityCreatureList.erase(guid); }
         std::set<uint64> GetImportantCreatureList() { return m_importantForVisibilityCreatureList; }
@@ -571,6 +572,7 @@ class Map : public GridRefManager<NGridType>
         uint32 i_InstanceId;
         uint32 m_unloadTimer;
         float m_VisibleDistance;
+        float m_maxPossibleVisibilityRange;
         DynamicMapTree _dynamicTree;
 
         MapRefManager m_mapRefManager;

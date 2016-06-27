@@ -734,7 +734,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_divider = 0;
 
-    m_dynamicVisibleDistance = GetMaxPossibleVisibilityRange(true);
+    m_dynamicVisibleDistance = NORMAL_VISIBILITY_DISTANCE;
+    m_staticVisibleDistance = 0.0f;
 
     m_ExtraFlags = 0;
 
@@ -2173,7 +2174,7 @@ void Player::Update(uint32 p_time)
     UpdateSpellCharges(p_time);
 
     if (Pet* pet = GetPet())
-        if ((HasUnitMovementFlag(MOVEMENTFLAG_FLYING) || !pet->IsWithinDistInMap(this, GetMap()->GetMapVisibleDistance())) && !pet->isPossessed())
+        if ((HasUnitMovementFlag(MOVEMENTFLAG_FLYING) || !pet->IsWithinDistInMap(this, GetMap()->GetMaxPossibleVisibilityRange())) && !pet->isPossessed())
             UnsummonPetTemporaryIfAny();
 
     //we should execute delayed teleports only for alive(!) players
@@ -9112,6 +9113,8 @@ void Player::UpdateArea(uint32 newArea)
             CombatStopWithPets();
         }
     }
+
+    CalcStaticVisibleDistance(m_zoneUpdateId, newArea);
 
     phaseMgr.RemoveUpdateFlag(PHASE_UPDATE_FLAG_AREA_UPDATE);
 }
@@ -25861,9 +25864,12 @@ void Player::UpdateVisibilityForPlayer()
 {
     // updates visibility of all objects around point of view for current player
     Trinity::VisibleNotifier notifier(*this);
-    if (IsInWorld())
+
+    if (m_staticVisibleDistance)
+        m_seer->VisitNearbyObject(m_staticVisibleDistance, notifier, true);
+    else if (IsInWorld())
     {
-        float possibleVisibilityRange = GetMaxPossibleVisibilityRange(true);
+        float possibleVisibilityRange = GetMap()->GetMaxPossibleVisibilityRange();
         m_dynamicVisibleDistance += 20.0f;
         if (m_dynamicVisibleDistance > possibleVisibilityRange)
             m_dynamicVisibleDistance = possibleVisibilityRange;
@@ -25895,9 +25901,13 @@ void Player::UpdateVisibilityForPlayer()
             uint8 targetsCount = 0;
             bool updateDynDist = false;
             float lastObjDist = 0.0f;
+            uint32 maxVisibleUnitsAmount = sWorld->getIntConfig(CONFIG_MAX_VISIBLE_UNITS_AMOUNT);
+            uint32 playerCostForVisibility = sWorld->getIntConfig(CONFIG_PLR_COST_FOR_VISIBILITY);
+            uint32 unitCostForVisibility = sWorld->getIntConfig(CONFIG_UNIT_COST_FOR_VISIBILITY);
+
             for (auto itr : notifier.i_distList)
             {
-                if (targetsCount > 80)
+                if (targetsCount >= maxVisibleUnitsAmount)
                 {
                     if (!updateDynDist)
                     {
@@ -25917,17 +25927,33 @@ void Player::UpdateVisibilityForPlayer()
                 if (Player* plr = itr->ToPlayer())
                 {
                     UpdateVisibilityOf(plr, notifier.i_data, notifier.i_visibleNow, true);
-                    targetsCount += 2;
+                    targetsCount += playerCostForVisibility;
                     continue;
                 }
 
                 UpdateVisibilityOf(itr, notifier.i_data, notifier.i_visibleNow, true);
-                targetsCount++;
+                targetsCount += unitCostForVisibility;
             }
         }
     }
     
     notifier.SendToSelf();   // send gathered data
+}
+
+void Player::CalcStaticVisibleDistance(uint32 zoneId, uint32 areaId)
+{
+    if (areaId)
+    {
+        if (m_staticVisibleDistance = GetVisibleDistance(TYPE_VISIBLE_AREA, areaId))
+            return;
+    }
+    if (zoneId)
+    {
+        if (m_staticVisibleDistance = GetVisibleDistance(TYPE_VISIBLE_ZONE, zoneId))
+            return;
+    }
+
+    m_staticVisibleDistance = 0;
 }
 
 void Player::InitPrimaryProfessions()
@@ -26221,7 +26247,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
 //! After send self obj. update 
 void Player::SendInitialPacketsAfterAddToMap()
 {
-    m_dynamicVisibleDistance = GetMaxPossibleVisibilityRange(true);
+    m_dynamicVisibleDistance = NORMAL_VISIBILITY_DISTANCE;
     UpdateVisibilityForPlayer();
 
     // update zone

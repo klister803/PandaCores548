@@ -264,6 +264,8 @@ i_scriptLock(false)
 
     if(float _distMap = GetVisibleDistance(TYPE_VISIBLE_MAP, id))
         m_VisibleDistance = _distMap;
+
+    m_maxPossibleVisibilityRange = IsBattlegroundOrArena() ? MAX_VISIBILITY_DISTANCE : NORMAL_VISIBILITY_DISTANCE;
 }
 
 void Map::InitVisibilityDistance()

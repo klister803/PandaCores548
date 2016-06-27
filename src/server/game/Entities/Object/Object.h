@@ -953,7 +953,6 @@ class WorldObject : public Object, public WorldLocation
         void AddObjectToRemoveList();
 
         float CalcVisibilityRange(const WorldObject* obj = NULL) const;
-        float GetMaxPossibleVisibilityRange(bool limit = false);
         bool canSeeOrDetect(WorldObject const* obj, bool ignoreStealth = false, bool distanceCheck = false, bool isExactDist = false) const;
 
         void SetVisible(bool x);

@@ -551,7 +551,7 @@ void Pet::Update(uint32 diff)
         {
             // unsummon pet that lost owner
             Unit* owner = GetOwner();
-            float visibilityRange = GetMap()->GetMapVisibleDistance();
+            float visibilityRange = GetMap()->GetMaxPossibleVisibilityRange();
 
             if (!owner || (!IsWithinDistInMap(owner, visibilityRange) && !isPossessed()) || (isControlled() && !owner->GetPetGUID() && !m_Stampeded))
             {

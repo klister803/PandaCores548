@@ -2943,6 +2943,7 @@ class Player : public Unit, public GridObject<Player>
 
         bool CanSummonPet(uint32 entry) const;
 
+        float m_staticVisibleDistance;
         float m_dynamicVisibleDistance;
         // currently visible objects at player client
         typedef std::set<uint64> ClientGUIDs;
@@ -2951,6 +2952,7 @@ class Player : public Unit, public GridObject<Player>
 
         bool HaveAtClient(WorldObject const* u) const { return u == this || m_clientGUIDs.find(u->GetGUID()) != m_clientGUIDs.end(); }
         void AddClient(WorldObject *u) { m_clientGUIDs.insert(u->GetGUID()); }
+        void CalcStaticVisibleDistance(uint32 zoneId = 0, uint32 areaId = 0);
 
         void AddVignette(WorldObject *u);
         bool CanSeeVignette(WorldObject *u);

@@ -2296,15 +2296,6 @@ bool Position::IsPositionValid() const
     return Trinity::IsValidMapCoord(m_positionX, m_positionY, m_positionZ, m_orientation);
 }
 
-float WorldObject::GetMaxPossibleVisibilityRange(bool limit)
-{
-    if (Map* mapInfo = GetMap())
-        if (mapInfo->IsBattlegroundOrArena())
-            return MAX_VISIBILITY_DISTANCE;
-
-    return limit ? NORMAL_VISIBILITY_DISTANCE : MAX_VISIBILITY;
-}
-
 float WorldObject::CalcVisibilityRange(const WorldObject* obj) const
 {
     if (Player const* plr = ToPlayer())
@@ -2312,7 +2303,7 @@ float WorldObject::CalcVisibilityRange(const WorldObject* obj) const
         if (obj)
         {
             if (Player const* objPlr = obj->ToPlayer())
-                return std::min(objPlr->m_dynamicVisibleDistance, plr->m_dynamicVisibleDistance);
+                return std::min(objPlr->m_staticVisibleDistance ? objPlr->m_staticVisibleDistance : objPlr->m_dynamicVisibleDistance, plr->m_staticVisibleDistance ? plr->m_staticVisibleDistance : plr->m_dynamicVisibleDistance);
             else if (Creature const* cre = obj->ToCreature())
             {
                 if (cre->m_isImportantForVisibility)
@@ -2320,12 +2311,12 @@ float WorldObject::CalcVisibilityRange(const WorldObject* obj) const
             }
         }
 
-        return plr->m_dynamicVisibleDistance;
+        return plr->m_staticVisibleDistance ? plr->m_staticVisibleDistance : plr->m_dynamicVisibleDistance;
     }
     else if (obj)
     {
         if (Player const* objPlr = obj->ToPlayer())
-            return objPlr->m_dynamicVisibleDistance;
+            return objPlr->m_staticVisibleDistance ? objPlr->m_staticVisibleDistance : objPlr->m_dynamicVisibleDistance;
     }
 
     if (Map* map = GetMap())

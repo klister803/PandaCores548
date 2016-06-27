@@ -35,7 +35,12 @@ inline void Trinity::VisibleNotifier::Visit(GridRefManager<T> &m)
         vis_guids.erase(iter->getSource()->GetGUID());
 
         if (i_player.canSeeOrDetect(iter->getSource(), false, true, true))
-            i_distList.push_back(iter->getSource());
+        {
+            if (i_player.m_staticVisibleDistance)
+                i_player.UpdateVisibilityOf(iter->getSource(), i_data, i_visibleNow, true);
+            else
+                i_distList.push_back(iter->getSource());
+        }
         else 
             i_player.UpdateVisibilityOf(iter->getSource(), i_data, i_visibleNow, false);
     }
