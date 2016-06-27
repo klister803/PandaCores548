@@ -2239,18 +2239,19 @@ void World::Update(uint32 diff)
     {
         if (m_updateTimeSum > m_int_configs[CONFIG_INTERVAL_LOG_UPDATE])
         {
-            uint32 averageDiff = 0;
-
-            for (uint8 i = 0; i < 9; i++)
-            {
-                m_averageLongUpdateTime[i] = m_averageLongUpdateTime[i + 1];
-                averageDiff += m_averageLongUpdateTime[i];
-            }
-            m_averageLongUpdateTime[9] = m_updateTimeSum / m_updateTimeCount;
-            averageDiff += m_averageLongUpdateTime[9];
-            averageDiff /= 10;
-
-            sLog->outDiff("Update time diff for 1min: %u. Average diff of last 10min: %u. Players online: %u.", m_averageLongUpdateTime[9], averageDiff, GetActiveSessionCount());
+//             uint32 averageDiff = 0;
+// 
+//             for (uint8 i = 0; i < 9; i++)
+//             {
+//                 m_averageLongUpdateTime[i] = m_averageLongUpdateTime[i + 1];
+//                 averageDiff += m_averageLongUpdateTime[i];
+//             }
+//             m_averageLongUpdateTime[9] = m_updateTimeSum / m_updateTimeCount;
+//             averageDiff += m_averageLongUpdateTime[9];
+//             averageDiff /= 10;
+// 
+//             sLog->outDiff("Update time diff for 1min: %u. Average diff of last 10min: %u. Players online: %u.", m_averageLongUpdateTime[9], averageDiff, GetActiveSessionCount());
+            sLog->outDiff("Update time diff: %u. Players online: %u.", m_updateTimeSum / m_updateTimeCount, GetActiveSessionCount());
             m_updateTimeSum = m_updateTime;
             m_updateTimeCount = 1;
         }

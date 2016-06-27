@@ -25897,7 +25897,7 @@ void Player::UpdateVisibilityForPlayer()
             float lastObjDist = 0.0f;
             for (auto itr : notifier.i_distList)
             {
-                if (targetsCount > 160)
+                if (targetsCount > 80)
                 {
                     if (!updateDynDist)
                     {

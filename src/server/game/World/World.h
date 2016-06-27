@@ -928,7 +928,7 @@ class World
         time_t mail_timer;
         time_t mail_timer_expires;
         uint32 m_updateTime, m_updateTimeSum;
-        uint16 m_averageLongUpdateTime[10]; // average update time of 10 m_updateTimeSum
+//        uint16 m_averageLongUpdateTime[10]; // average update time of 10 m_updateTimeSum
         uint16 m_updateTimeCount;
         uint32 m_currentTime;
 
