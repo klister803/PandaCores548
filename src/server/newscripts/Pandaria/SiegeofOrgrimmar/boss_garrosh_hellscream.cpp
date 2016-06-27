@@ -39,8 +39,11 @@ enum eSpells
     SPELL_EXPLOSIVE_DESPAIR_EXPLOSE  = 145199,
     SPELL_EXPLOSIVE_DESPAIR_DOT      = 145213,
     //HM
+    SPELL_GARROSH_ENERGY_4           = 146999,
     SPELL_BOMBARTMENT                = 147133,
     SPELL_BOMBARTMENT_AURA           = 147122,
+    SPELL_BOMBARTMENT_PERIODIC_DUMMY = 147088,
+    SPELL_COSMETIC_MISSILE           = 148364,
     SPELL_MANIFEST_RAGE              = 147011,
     SPELL_MALICE                     = 147209,
     SPELL_MALICIOUS_BLAST            = 147235,
@@ -133,29 +136,30 @@ enum sEvents
     EVENT_RETURN_TO_REAL             = 10,
     EVENT_TOUCH_OF_YSHAARJ           = 11,
     //HM
-    EVENT_PHASE_FOUR                 = 12,
-    EVENT_MALICE                     = 13,
-    EVENT_BOMBARTMENT                = 14,
-    EVENT_MANIFEST_RAGE              = 15,
+    EVENT_INTRO_PHASE_FOUR           = 12,
+    EVENT_PHASE_FOUR                 = 13,
+    EVENT_MALICE                     = 14,
+    EVENT_BOMBARTMENT                = 15,
+    EVENT_MANIFEST_RAGE              = 16,
     //In Realm
-    EVENT_ANNIHILLATE                = 16,
+    EVENT_ANNIHILLATE                = 17,
     //Desecrated weapon
-    EVENT_REGENERATE                 = 17,
+    EVENT_REGENERATE                 = 18,
     //Summons
-    EVENT_LAUNCH_STAR                = 18,
-    EVENT_HAMSTRING                  = 19,
-    EVENT_CHAIN_HEAL                 = 20,
-    EVENT_CHAIN_LIGHTNING            = 21,
+    EVENT_LAUNCH_STAR                = 19,
+    EVENT_HAMSTRING                  = 20,
+    EVENT_CHAIN_HEAL                 = 21,
+    EVENT_CHAIN_LIGHTNING            = 22,
     //Iron Star
-    EVENT_ACTIVE                     = 22,
+    EVENT_ACTIVE                     = 23,
     //Adds in realm
-    EVENT_EMBODIED_DESPAIR           = 23,
-    EVENT_EMBODIED_DOUBT             = 24,
+    EVENT_EMBODIED_DESPAIR           = 24,
+    EVENT_EMBODIED_DOUBT             = 25,
     //Special events
-    EVENT_CHECK_PROGRESS             = 25,
-    EVENT_CAST                       = 26,
-    EVENT_RE_ATTACK                  = 27,
-    EVENT_CHANGE_TARGET              = 28,
+    EVENT_CHECK_PROGRESS             = 26,
+    EVENT_CAST                       = 27,
+    EVENT_RE_ATTACK                  = 28,
+    EVENT_CHANGE_TARGET              = 29,
 };
 
 enum Phase
@@ -228,6 +232,9 @@ Position gspos[3] =
     {820.47f,  -5601.41f, -397.7068f, 6.1840f},  //Terrace of Endless Spring
     {1056.55f, -5829.83f, -368.6667f, 4.6313f},  //Temple of the Red Crane
 };
+
+Position lastpltppos = {-8485.50f, 1132.68f, 18.2643f, 4.4671f};
+Position lastgtppos  = {-8498.81f, 1079.69f, 17.9525f, 1.4708f};
 
 Position crushingfeardest[60] =
 {
@@ -341,7 +348,6 @@ class boss_garrosh_hellscream : public CreatureScript
             bool phasetwo;
             uint32 realmofyshaarjtimer;
             uint32 updatepower;
-            uint32 _updatepower;
             uint32 checkevade;
             uint8 realmnum;
             Phase phase;
@@ -351,8 +357,8 @@ class boss_garrosh_hellscream : public CreatureScript
                 phasetwo = false;
                 checkevade = 0;
                 updatepower = 0;
-                _updatepower = 0;
                 realmofyshaarjtimer = 0;
+                me->RemoveAurasDueToSpell(SPELL_GARROSH_ENERGY_4);
                 me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 100);
                 me->SetPower(POWER_ENERGY, 0);
@@ -504,8 +510,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     Talk(SAY_HM_LAST_PHASE, 0);
                     events.Reset();
                     me->SetAttackStop(true);
-                    me->SetPower(POWER_ENERGY, 0);
-                    events.ScheduleEvent(EVENT_PHASE_FOUR, 10000);
+                    events.ScheduleEvent(EVENT_INTRO_PHASE_FOUR, 20000);
                     break;
                 }
             }
@@ -595,28 +600,6 @@ class boss_garrosh_hellscream : public CreatureScript
                     }
                     else
                         updatepower -= diff;
-                }
-                //
-
-                //Garrosh real
-                //HM
-                if (_updatepower)
-                {
-                    if (_updatepower <= diff)
-                    {
-                        if (me->GetPower(POWER_ENERGY) <= 99)
-                            me->SetPower(POWER_ENERGY, me->GetPower(POWER_ENERGY) + 1);
-
-                        if (me->GetPower(POWER_ENERGY) == 100)
-                        {
-                            me->InterruptNonMeleeSpells(true);
-                            DoCast(me, SPELL_MANIFEST_RAGE);
-                            me->SetPower(POWER_ENERGY, 0);
-                        }
-                        _updatepower = 1000;
-                    }
-                    else
-                        _updatepower -= diff;
                 }
                 //
 
@@ -879,15 +862,25 @@ class boss_garrosh_hellscream : public CreatureScript
                         events.ScheduleEvent(EVENT_WHIRLING_CORRUPTION, 49500);
                         break;
                     //HM
-                    case EVENT_PHASE_FOUR:
+                    case EVENT_INTRO_PHASE_FOUR:
                     {
-                        //Need tp pos for Garrosh and players
-                        //Now test version
+                        std::list<Player*>pllist;
+                        GetPlayerListInGrid(pllist, me, 150.0f);
+                        if (!pllist.empty())
+                            for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                                (*itr)->NearTeleportTo(lastpltppos.GetPositionX(), lastpltppos.GetPositionY(), lastpltppos.GetPositionZ(), lastpltppos.GetOrientation());
+                        me->SetPower(POWER_ENERGY, 0);
                         uint32 hppct = me->CountPctFromMaxHealth(60);
                         me->SetHealth(hppct);
+                        me->NearTeleportTo(lastgtppos.GetPositionX(), lastgtppos.GetPositionY(), lastgtppos.GetPositionZ(), lastgtppos.GetOrientation());
+                        events.ScheduleEvent(EVENT_PHASE_FOUR, 10000);
+                    }
+                    break;
+                    case EVENT_PHASE_FOUR:
+                    {
                         phase = PHASE_FOUR;
                         me->ReAttackWithZone();
-                        _updatepower = 1000;
+                        DoCast(me, SPELL_GARROSH_ENERGY_4, true);
                         events.ScheduleEvent(EVENT_MALICE, 30000);
                         events.ScheduleEvent(EVENT_BOMBARTMENT, 60000);
                     }

@@ -741,7 +741,7 @@ public:
         void EnterCombat(Unit* who)
         {
             events.ScheduleEvent(EVENT_OVERLOAD, 6000);
-            events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 18000);
+            //events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 18000);
         }
 
         void JustDied(Unit* killer)

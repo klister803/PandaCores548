@@ -1,1 +1,0 @@
-DELETE FROM `spell_script_names` WHERE `spell_id`='144236' AND `ScriptName`='spell_pattern_recognition'; 
