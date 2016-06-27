@@ -18683,6 +18683,18 @@ bool Unit::IsPolymorphed() const
 
 void Unit::SetDisplayId(uint32 modelId, bool resize /* = false */)
 {
+    if (GetTypeId() == TYPEID_PLAYER && modelId == GetCustomDisplayId())  // если идет арена, проверяем на облики
+    { 
+       Battleground* bg = ToPlayer()->GetBattleground();
+       if (bg)
+       {
+          if (uint32 modelId1 = GetModelForForm(GetShapeshiftForm()))
+          {
+             SetDisplayId(modelId1);
+             return;
+          }
+       }
+    }
        //for custom morph if reshift - need set scale normally
     if (GetTypeId() == TYPEID_PLAYER && GetCustomDisplayId() && !(modelId == GetCustomDisplayId()))
        SetObjectScale(1.0f);
@@ -18692,17 +18704,7 @@ void Unit::SetDisplayId(uint32 modelId, bool resize /* = false */)
     {
         if (auto cmodelData = sCreatureDisplayInfoStore.LookupEntry(modelId))
         {
-/*            if (cmodelData->scale > 1.0f)
-            {
-                if (cmodelData->scale < 2.0f)
-                    SetObjectScale(1.0f / (cmodelData->scale + 0.2f));
-                else
-                    SetObjectScale(1.0f / cmodelData->scale);
-            }
-            else if (cmodelData->scale < 1.0f)    */
-                SetObjectScale(1.0f / cmodelData->scale);
-//            else
-//                SetObjectScale(1.0f);
+            SetObjectScale(1.0f / cmodelData->scale);
         }
     }
   

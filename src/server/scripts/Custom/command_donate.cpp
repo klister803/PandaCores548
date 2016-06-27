@@ -102,8 +102,8 @@ public:
         {
             CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate(morph);
             uint32 modelid = ci->GetRandomValidModelId();
-            player->SetDisplayId(modelid, true);
             player->SetCustomDisplayId(modelid);
+            player->SetDisplayId(modelid, true);
         }
         else
             handler->PSendSysMessage("Cant find morph to use.");
