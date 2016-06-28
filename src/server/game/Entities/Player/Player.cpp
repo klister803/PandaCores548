@@ -25930,8 +25930,11 @@ void Player::UpdateVisibilityForPlayer()
                     targetsCount += playerCostForVisibility;
                     continue;
                 }
+                else if (Creature* cre = itr->ToCreature())
+                    UpdateVisibilityOf(cre, notifier.i_data, notifier.i_visibleNow, true);
+                else
+                    UpdateVisibilityOf(itr, notifier.i_data, notifier.i_visibleNow, true);
 
-                UpdateVisibilityOf(itr, notifier.i_data, notifier.i_visibleNow, true);
                 targetsCount += unitCostForVisibility;
             }
         }
