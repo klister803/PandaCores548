@@ -33,6 +33,7 @@ enum eSpells
     SPELL_FROSTSTORM_BOLT       = 144214,
     //95pct HM
     SPELL_IRON_PRISON           = 144330, 
+    SPELL_IRON_PRISON_DMG       = 144331,
     //85pct
     SPELL_TOXIC_STORM_SUM       = 144005,
     SPELL_TOXIC_STORM_TR_AURA   = 144006,
@@ -300,7 +301,7 @@ public:
                     events.ScheduleEvent(EVENT_IRON_PRISON, 2000);
                     break;
                 case NPC_EARTHBREAKER_HAROMM:
-                    events.ScheduleEvent(EVENT_IRON_TOMB, 2000);
+                    events.ScheduleEvent(EVENT_IRON_TOMB, 4000);
                     break;
                 }
             }
@@ -435,14 +436,14 @@ public:
                     //targets push and filter in script
                     if (Player* pl = me->FindNearestPlayer(100.0f, true))
                         DoCast(pl, SPELL_IRON_PRISON);
-                    events.ScheduleEvent(EVENT_IRON_PRISON, 31500);
+                    events.ScheduleEvent(EVENT_IRON_PRISON, 30000);
                     break;
                 //Haromm
                 case EVENT_IRON_TOMB:
                     //targets push and filter in script
                     if (Player* pl = me->FindNearestPlayer(100.0f, true))
                         DoCast(pl, SPELL_IRON_TOMB);
-                    events.ScheduleEvent(EVENT_IRON_TOMB, 31500);
+                    events.ScheduleEvent(EVENT_IRON_TOMB, 30000);
                     break;
                 //Extra Events 85 pct
                 //Kardris
@@ -1068,9 +1069,30 @@ public:
         }
     };
 
+    class spell_iron_prison_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_iron_prison_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (GetTarget())
+                GetTarget()->CastSpell(GetTarget(), SPELL_IRON_PRISON_DMG, true);
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_iron_prison_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+        }
+    };
+
     SpellScript* GetSpellScript() const
     {
         return new spell_iron_prison_SpellScript();
+    }
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_iron_prison_AuraScript();
     }
 };
 
