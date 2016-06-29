@@ -25869,8 +25869,8 @@ void Player::UpdateVisibilityForPlayer()
         m_seer->VisitNearbyObject(m_staticVisibleDistance, notifier, true);
     else if (IsInWorld())
     {
-        float possibleVisibilityRange = GetMap()->GetMaxPossibleVisibilityRange();
-        m_dynamicVisibleDistance += 20.0f;
+        float possibleVisibilityRange = sWorld->getIntConfig(CONFIG_MAX_POSSIBLE_VISIBILITY_RANGE);
+        m_dynamicVisibleDistance += 10.0f;
         if (m_dynamicVisibleDistance > possibleVisibilityRange)
             m_dynamicVisibleDistance = possibleVisibilityRange;
 

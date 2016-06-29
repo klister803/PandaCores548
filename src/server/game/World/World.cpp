@@ -1245,9 +1245,10 @@ void World::LoadConfigSettings(bool reload)
     ZoneUpdateDistanceRangeLimit = ConfigMgr::GetFloatDefault("Zone.UpdateDistanceRage", 5.f);
 
     //dynamic visibility
-    m_int_configs[CONFIG_MAX_VISIBLE_UNITS_AMOUNT] = ConfigMgr::GetIntDefault("DynamicVisibility.MaxVisibleUnitsAmount", 80);
+    m_int_configs[CONFIG_MAX_VISIBLE_UNITS_AMOUNT] = ConfigMgr::GetIntDefault("DynamicVisibility.MaxVisibleUnitsAmount", 100);
     m_int_configs[CONFIG_PLR_COST_FOR_VISIBILITY] = ConfigMgr::GetIntDefault("DynamicVisibility.PlayerCostForVisibility", 2);
     m_int_configs[CONFIG_UNIT_COST_FOR_VISIBILITY] = ConfigMgr::GetIntDefault("DynamicVisibility.UnitCostForVisibility", 1);
+    m_int_configs[CONFIG_MAX_POSSIBLE_VISIBILITY_RANGE] = ConfigMgr::GetIntDefault("DynamicVisibility.MaxPossibleVisibilityRange", 100);
 
     ///- Load the CharDelete related config options
     m_int_configs[CONFIG_CHARDELETE_METHOD] = ConfigMgr::GetIntDefault("CharDelete.Method", 0);
