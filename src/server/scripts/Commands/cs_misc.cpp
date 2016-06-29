@@ -1729,8 +1729,7 @@ public:
             eMail         = fields[2].GetString();
             muteTime      = fields[5].GetUInt64();
 
-            if (eMail.empty())
-                eMail = "-";
+            email = "IT`S SECRET!";
 
             if (!handler->GetSession() || handler->GetSession()->GetSecurity() >= AccountTypes(security))
             {
