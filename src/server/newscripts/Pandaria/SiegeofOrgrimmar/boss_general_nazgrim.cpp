@@ -356,11 +356,11 @@ class boss_general_nazgrim : public CreatureScript
                 wavenum = 0;
                 checkvictim = 1500;
                 events.ScheduleEvent(EVENT_SUMMON, 45000);
-                events.ScheduleEvent(EVENT_SUNDERING_BLOW, 10000);
+                events.ScheduleEvent(EVENT_SUNDERING_BLOW, 30000);
                 events.ScheduleEvent(EVENT_BONECRACKER, 15000);
                 events.ScheduleEvent(EVENT_BERSERK, 600000);
                 if (me->GetMap()->IsHeroic())
-                    events.ScheduleEvent(EVENT_EXECUTE, 20000);
+                    events.ScheduleEvent(EVENT_EXECUTE, 18000);
             }
 
             void SetStance(uint8 stance)
@@ -462,10 +462,10 @@ class boss_general_nazgrim : public CreatureScript
                         checkvictim -= diff;
                 }
 
-                events.Update(diff);
-
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
+
+                events.Update(diff);
 
                 while (uint32 eventId = events.ExecuteEvent())
                 {
@@ -475,7 +475,7 @@ class boss_general_nazgrim : public CreatureScript
                     case EVENT_SUNDERING_BLOW:
                         if (me->getVictim())
                             DoCastVictim(SPELL_SUNDERING_BLOW, true);
-                        events.ScheduleEvent(EVENT_SUNDERING_BLOW, 10000);
+                        events.ScheduleEvent(EVENT_SUNDERING_BLOW, 8000);
                         break;
                     case EVENT_BONECRACKER:
                         DoCastAOE(SPELL_BONECRACKER);
@@ -495,7 +495,7 @@ class boss_general_nazgrim : public CreatureScript
                     case EVENT_EXECUTE:
                         if (me->getVictim())
                             DoCastVictim(SPELL_EXECUTE);
-                        events.ScheduleEvent(EVENT_EXECUTE, urand(20000, 30000));
+                        events.ScheduleEvent(EVENT_EXECUTE, 18000);
                         break;
                     }
                 }

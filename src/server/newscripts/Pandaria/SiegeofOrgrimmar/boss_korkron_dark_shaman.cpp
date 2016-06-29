@@ -434,21 +434,21 @@ public:
                 //Kardris
                 case EVENT_IRON_PRISON:
                     //targets push and filter in script
-                    if (Player* pl = me->FindNearestPlayer(100.0f, true))
+                    if (Player* pl = me->FindNearestPlayer(60.0f, true))
                         DoCast(pl, SPELL_IRON_PRISON);
                     events.ScheduleEvent(EVENT_IRON_PRISON, 30000);
                     break;
                 //Haromm
                 case EVENT_IRON_TOMB:
                     //targets push and filter in script
-                    if (Player* pl = me->FindNearestPlayer(100.0f, true))
+                    if (Player* pl = me->FindNearestPlayer(60.0f, true))
                         DoCast(pl, SPELL_IRON_TOMB);
                     events.ScheduleEvent(EVENT_IRON_TOMB, 30000);
                     break;
                 //Extra Events 85 pct
                 //Kardris
                 case EVENT_TOXIC_STORM:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 60.0f, true))
                         DoCast(target, SPELL_TOXIC_STORM_SUM);
                     events.ScheduleEvent(EVENT_TOXIC_STORM, 25000);
                     break;
@@ -489,7 +489,7 @@ public:
                     break;
                 //Haromm
                 case EVENT_FOUL_STREAM:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 50.0f, true))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 60.0f, true))
                         DoCast(target, SPELL_FOUL_STREAM);
                     events.ScheduleEvent(EVENT_FOUL_STREAM, 30000);
                     break;
@@ -1003,7 +1003,7 @@ public:
             {
                 std::list<Player*> pllist;
                 pllist.clear();
-                GetPlayerListInGrid(pllist, GetCaster(), 100.0f);
+                GetPlayerListInGrid(pllist, GetCaster(), 60.0f);
                 if (!pllist.empty())
                 {
                     uint8 maxcount = 3;
@@ -1126,6 +1126,35 @@ public:
     }
 };
 
+//144331
+class spell_iron_prison_dmg : public SpellScriptLoader
+{
+public:
+    spell_iron_prison_dmg() : SpellScriptLoader("spell_iron_prison_dmg") { }
+
+    class spell_iron_prison_dmg_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_iron_prison_dmg_SpellScript);
+
+        void _HandleHit()
+        {
+            if (GetHitUnit())
+                if (GetHitUnit()->HasAura(1022))//bubble
+                    SetHitDamage(0);
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_iron_prison_dmg_SpellScript::_HandleHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_iron_prison_dmg_SpellScript();
+    }
+};
+
 void AddSC_boss_korkron_dark_shaman()
 {
     new boss_korkron_dark_shaman();
@@ -1140,4 +1169,5 @@ void AddSC_boss_korkron_dark_shaman()
     new spell_iron_tomb();
     new spell_iron_prison();
     new spell_kds_unlock();
+    new spell_iron_prison_dmg();
 }
