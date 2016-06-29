@@ -30,8 +30,8 @@
 #include "Warden.h"
 #include "AccountMgr.h"
 
-Warden::Warden() : _inputCrypto(16), _outputCrypto(16), _checkTimer(15000), _dynamicCheckTimer(10000),
-m_speedAlert(0), m_speedExtAlert(0), m_moveFlagsAlert(0), m_failedCoordsAlert(0), _dataSent(false), _dynDataSent(false), _initialized(false)
+Warden::Warden() : _inputCrypto(16), _outputCrypto(16), _checkTimer(15000), _dynamicCheckTimer(10000), _dataSent(false), _dynDataSent(false), _initialized(false),
+m_speedAlert(0), m_speedExtAlert(0), m_moveFlagsAlert(0), m_failedCoordsAlert(0), m_clientResponseAlert(0)
 {
 }
 
@@ -99,8 +99,8 @@ void Warden::Update(uint32 diff)
         // first thread - static checks
         if (_dataSent)
         {
-            //if (_clientResponseTimer)
-                //ClientResponseTimerUpdate(diff);
+            if (_clientResponseTimer)
+                ClientResponseTimerUpdate(diff);
         }
         else
         {
@@ -120,6 +120,28 @@ void Warden::Update(uint32 diff)
     }
 }
 
+void Warden::ClientResponseTimerUpdate(uint32 diff)
+{
+    // TODO: Kick player if client response delays more than set in config
+    if (_clientResponseTimer <= diff)
+    {
+        if (m_clientResponseAlert >= sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_RESPONSE_DELAY_ALERTS))
+        {
+            sLog->outWarden("Player %s (guid: %u, account: %u, latency: %u, IP: %s) exceeded Warden module response delay for more than 60s after %u tries - disconnecting client",
+                _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId(), _session->GetLatency(), _session->GetRemoteAddress().c_str(), sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_RESPONSE_DELAY_ALERTS));
+            _session->KickPlayer();
+            return;
+        }
+
+        //sLog->outWarden("Player %s (guid: %u, account: %u, latency: %u, IP: %s) exceeded Warden module response delay for more than 60s - disconnecting client",
+        //_session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId(), _session->GetLatency(), _session->GetRemoteAddress().c_str());
+        _clientResponseTimer = 0;
+        m_clientResponseAlert++;
+    }
+    else
+        _clientResponseTimer -= diff;
+}
+
 void Warden::StaticCheatChecksTimerUpdate(uint32 diff)
 {
     if (_checkTimer <= diff)
@@ -134,21 +156,19 @@ void Warden::StaticCheatChecksTimerUpdate(uint32 diff)
 void Warden::DynamicCheatChecksTimerUpdate(uint32 diff)
 {
     // dynamic checks must be separate thread
-    if (!_dynDataSent)
+    if (_dynamicCheckTimer <= diff)
     {
-        if (_dynamicCheckTimer <= diff)
+        if (_session->GetPlayer() && _session->GetPlayer()->IsInWorld() && !_session->GetPlayer()->IsBeingTeleported())
         {
-            if (_session->GetPlayer() && _session->GetPlayer()->IsInWorld() && !_session->GetPlayer()->IsBeingTeleported())
-            {
-                _dynamicCheckTimer = 0;
-                RequestDynamicData();
-            }
-            else
-                _dynamicCheckTimer = 2000;
+            _dynamicCheckTimer = 0;
+            RequestDynamicData();
         }
         else
-            _dynamicCheckTimer -= diff;
+            // forced request after teleport or other - new timer latency because with high latency low timer useless
+            _dynamicCheckTimer = _session->GetLatency() ? _session->GetLatency() : 1;
     }
+    else
+        _dynamicCheckTimer -= diff;
 }
 
 void Warden::DecryptData(uint8* buffer, uint32 length)

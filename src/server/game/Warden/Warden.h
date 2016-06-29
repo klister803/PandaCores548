@@ -142,6 +142,7 @@ class Warden
         void TestSendMemCheck();
         void StaticCheatChecksTimerUpdate(uint32 diff);
         void DynamicCheatChecksTimerUpdate(uint32 diff);
+        void ClientResponseTimerUpdate(uint32 diff);
 
     private:
         WorldSession* _session;
@@ -168,6 +169,7 @@ class Warden
         int8 m_speedExtAlert;
         int8 m_moveFlagsAlert;
         int8 m_failedCoordsAlert;
+        int8 m_clientResponseAlert;
 };
 
 #endif

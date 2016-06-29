@@ -491,7 +491,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
 void WardenWin::HandleStaticData(ByteBuffer &buff)
 {
     _dataSent = false;
-    //m_clientResponseAlert = 0;
+    m_clientResponseAlert = 0;
     _clientResponseTimer = sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_RESPONSE_DELAY);
     _checkTimer = sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF);
     //sLog->outError("Packet of static checks answers has received by server");
@@ -750,10 +750,10 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
 {
     Player * plr = _session->GetPlayer();
 
-    if (!plr || !plr->IsInWorld())
+    if (!plr || !plr->IsInWorld() || plr->IsBeingTeleported())
     {
         buff.rpos(buff.wpos());
-        _dynamicCheckTimer = 2000;
+        _dynamicCheckTimer = _session->GetLatency() ? _session->GetLatency() : 1;
         _dynDataSent = false;
         return;
     }
@@ -772,8 +772,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
         // nulled
         ClearAddresses();
         // restart timer
-        //_dynamicCheckTimer = 1000;
-        _dynDataSent = false;
+        _dynamicCheckTimer = _session->GetLatency() ? _session->GetLatency() : 1;
         return;
     }
 
@@ -803,8 +802,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
                 //sLog->outWarden("Check Data - %X on account %u", check_data, _session->GetAccountId());
                 ClearAddresses();
                 // restart timer
-                _dynamicCheckTimer = 1;
-                _dynDataSent = false;
+                _dynamicCheckTimer = _session->GetLatency() ? _session->GetLatency() : 1;
                 return;
             }
         }
@@ -818,8 +816,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
                 //sLog->outWarden("Check Data - %X on account %u", check_data, _session->GetAccountId());
                 ClearAddresses();
                 // restart timer
-                _dynamicCheckTimer = 1;
-                _dynDataSent = false;
+                _dynamicCheckTimer = _session->GetLatency() ? _session->GetLatency() : 1;
                 return;
             }
         }
@@ -869,8 +866,8 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
         MoveType mtype = SelectSpeedType(m_flags);
         bool cheat_check = true;
 
-        if (_session->GetSecurity() >= SEC_GAMEMASTER)
-            cheat_check = false;
+        //if (_session->GetSecurity() >= SEC_GAMEMASTER)
+            //cheat_check = false;
 
         if (cheat_check)
         {
