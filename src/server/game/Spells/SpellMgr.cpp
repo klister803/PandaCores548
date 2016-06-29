@@ -5167,6 +5167,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 144334: //Iron Tomb dmg
                     spellInfo->Effects[0].TargetA = TARGET_DEST_CASTER_FRONT;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
                     break;
                 case 144330: //Iron Prison
                     spellInfo->Effects[0].TriggerSpell = 0;
