@@ -366,6 +366,12 @@ bool AuthSocket::_HandleLogonChallenge()
             }
             else
                 sLog->outDebug(LOG_FILTER_AUTHSERVER, "[AuthChallenge] Account '%s' is not locked to ip", _login.c_str());
+             
+            if (fields[7].GetUInt8() == 0) //not activate
+            {
+                pkt << (uint8) WOW_FAIL_TRIAL_ENDED;
+                locked = true;
+            }
 
             if (!locked)
             {
