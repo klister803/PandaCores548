@@ -223,7 +223,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 }
             }
 
-            /*Debug (for testing)
+            //Debug (for testing)
             void SpellHit(Unit* caster, SpellInfo const *spell)
             {
                 if (spell->Id == SPELL_BLOODIED && me->HasAura(SPELL_POWER_REGEN))
@@ -232,7 +232,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     me->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
                     me->ToCreature()->AI()->DoAction(ACTION_PHASE_TWO);
                 }
-            }*/
+            }
 
             void EnterCombat(Unit* who)
             {
