@@ -55,7 +55,7 @@ enum eSpells
 
     SPELL_ENRAGE             = 26662,
 
-    SPELL_VAMPIRIC_FRENZY    = 147978,
+    SPELL_VAMPIRIC_FRENZY    = 147980,
 
     SPELL_CANNON_BALL        = 147906,
     SPELL_CANNON_BALL_ATDMG  = 147607,
@@ -99,13 +99,15 @@ enum Events
 
 enum Action
 {
-    ACTION_PHASE_TWO         = 1,
-    ACTION_PHASE_ONE_ACID    = 2,
-    ACTION_PHASE_ONE_FROST   = 3,
-    ACTION_PHASE_ONE_FIRE    = 4,
-    ACTION_FIXATE            = 5,
-    ACTION_START_FIXATE      = 6,
-    ACTION_FREEDOM           = 7,
+    ACTION_PHASE_TWO           = 1,
+    ACTION_PHASE_ONE_ACID      = 2,
+    ACTION_PHASE_ONE_FROST     = 3,
+    ACTION_PHASE_ONE_FIRE      = 4,
+    ACTION_FIXATE              = 5,
+    ACTION_START_FIXATE        = 6,
+    ACTION_FREEDOM             = 7,
+    ACTION_SUMMON_CAPTIVE_BAT  = 8,
+    ACTION_SUMMON_STARVED_EYTI = 9,
 };
 
 uint32 prisonersentry[3] =
@@ -168,7 +170,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             InstanceScript* instance;
             uint64 fplGuid, jGuid, pGuid;
             uint32 enrage;
-            uint32 findtargets;
+            uint32 findtargets; //find and kill player in front of boss
             uint8 phasecount;
             bool phasetwo;
 
@@ -223,7 +225,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 }
             }
 
-            /*Debug (for testing)
+            //Debug (for testing)
             void SpellHit(Unit* caster, SpellInfo const *spell)
             {
                 if (spell->Id == SPELL_BLOODIED && me->HasAura(SPELL_POWER_REGEN))
@@ -232,7 +234,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     me->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
                     me->ToCreature()->AI()->DoAction(ACTION_PHASE_TWO);
                 }
-            }*/
+            }
 
             void EnterCombat(Unit* who)
             {
@@ -247,7 +249,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             void SetGUID(uint64 Guid, int32 type)
             {
                 if (type == 2 && instance)
-                {
+                {   //End phase two, go to kill prisoner
                     findtargets = 0;
                     pGuid = Guid;
                     me->InterruptNonMeleeSpells(true);
@@ -255,13 +257,17 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);
                     if (Creature* prisoner = me->GetCreature(*me, pGuid))
                         DoCast(prisoner, SPELL_FIXATE_PR, true);
-                    me->SetReactState(REACT_PASSIVE);
-                    me->AttackStop();
-                    me->StopMoving();
-                    me->GetMotionMaster()->Clear(false);
+                    me->SetAttackStop(true);
                     me->getThreatManager().resetAllAggro();
                     me->GetMotionMaster()->MoveCharge(cpos.GetPositionX(), cpos.GetPositionY(), cpos.GetPositionZ(), 15.0f, 0);
                 }
+            }
+
+            uint32 GetData(uint32 type)
+            {
+                if (type == DATA_GET_THOK_PHASE_COUNT)
+                    return phasecount;
+                return 0;
             }
 
             void DoAction(int32 const action)
@@ -314,19 +320,6 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     {
                         phasecount++;
                         me->SetHealth(me->GetHealth() + me->CountPctFromMaxHealth(8));
-                        switch (phasecount)
-                        {
-                        case 1:
-                            for (uint8 n = 0; n < 7; n++)
-                                if (Creature* bat = me->SummonCreature(NPC_CAPTIVE_CAVE_BAT, ccbatspawnpos[n]))
-                                    bat->AI()->DoZoneInCombat(bat, 200.0f);
-                            break;
-                        case 2:
-                            me->SummonCreature(NPC_STARVED_YETI, sumyetipos[urand(0, 3)]);
-                            break;
-                        default:
-                            break;
-                        }
                     }
                     break;
                 case ACTION_PHASE_TWO:
@@ -337,10 +330,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     events.ScheduleEvent(EVENT_SHOCK_BLAST, 3000);
                     if (instance)
                         instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BLOODIED);
-                    me->SetReactState(REACT_PASSIVE);
-                    me->AttackStop();
-                    me->StopMoving();
-                    me->GetMotionMaster()->Clear(false);
+                    me->SetAttackStop(true);
                     me->getThreatManager().resetAllAggro();
                     me->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
                     me->RemoveAurasDueToSpell(SPELL_ACCELERATION);
@@ -356,11 +346,30 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     break;
                 //Special actions
                 case ACTION_FIXATE:
+                    me->SetAttackStop(true);
+                    me->getThreatManager().resetAllAggro();
                     findtargets = 0;
                     events.ScheduleEvent(EVENT_FIXATE, 1000);
                     break;
                 case ACTION_START_FIXATE:
                     events.ScheduleEvent(EVENT_MOVING, 2000);
+                    break;
+                case ACTION_SUMMON_CAPTIVE_BAT:
+                {
+                    uint8 mod = urand(0, 5);
+                    for (uint8 n = 0; n < 6; n++)
+                    {
+                        if (Creature* bat = me->SummonCreature(NPC_CAPTIVE_CAVE_BAT, ccbatspawnpos[n]))
+                        {
+                            if (mod == n)
+                                bat->AddAura(SPELL_VAMPIRIC_FRENZY, bat);
+                            bat->AI()->DoZoneInCombat(bat, 200.0f);
+                        }
+                    }
+                }
+                break;
+                case ACTION_SUMMON_STARVED_EYTI:
+                    me->SummonCreature(NPC_STARVED_YETI, sumyetipos[urand(0, 3)]);
                     break;
                 }
             }
@@ -375,10 +384,18 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         events.ScheduleEvent(EVENT_GO_TO_PRISONER, 500);
                         break;
                     case 1:
-                        events.ScheduleEvent(EVENT_KILL_PRISONER, 3000);
+                        events.ScheduleEvent(EVENT_KILL_PRISONER, 2000);
                         break;
                     }       
                 }
+            }
+
+            void KilledUnit(Unit* unit)
+            {
+                if (phasetwo)
+                    if (unit->ToPlayer())
+                        if (unit->GetGUID() == fplGuid)
+                            DoAction(ACTION_FIXATE);
             }
 
             void UpdateAI(uint32 diff)
@@ -397,7 +414,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         {
                             for (std::list<Player*>::const_iterator itr = plist.begin(); itr != plist.end(); itr++)
                                 if (me->isInFront(*itr, 2.0f) && me->GetDistance(*itr) <= 8.0f)
-                                    (*itr)->Kill(*itr, true);
+                                    me->Kill(*itr, true);
                         }
                         findtargets = 700;
                     }
@@ -524,7 +541,10 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                             fplGuid = pl->GetGUID();
                         }
                         else
+                        {
+                            me->MonsterTextEmote("Not found new fixate target, EnterEvadeMode", 0, true);
                             EnterEvadeMode();
+                        }
                         break;
                     case EVENT_MOVING:
                         if (Player* pl = me->GetPlayer(*me, fplGuid))
@@ -536,7 +556,10 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                             findtargets = 700;
                         }
                         else
+                        {
+                            me->MonsterTextEmote("Not found my fixate target, EnterEvadeMode", 0, true);
                             EnterEvadeMode();
+                        }
                         break;
                     }
                 }
@@ -549,7 +572,6 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 if (Creature* kj = me->GetCreature(*me, jGuid))
                     if (kj->isAlive() && kj->isInCombat())
                         return kj->getVictim() ? kj->getVictim()->GetGUID() : 0;
-
                 return 0;
             }
 
@@ -669,16 +691,18 @@ public:
         npc_generic_prisonerAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
-            if (me->GetEntry() == NPC_WATERSPEAKER_GORAI)
-                me->setFaction(35);
-            me->SetReactState(REACT_PASSIVE);
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
         }
 
         InstanceScript* instance;
         EventMap events;
 
-        void Reset(){}
+        void Reset()
+        {
+            if (me->GetEntry() == NPC_WATERSPEAKER_GORAI)
+                me->setFaction(35);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+        }
 
         void DoAction(int32 const action)
         {
@@ -820,13 +844,8 @@ public:
 
         void Reset(){}
 
-        void EnterCombat(Unit* who)
-        {
-            events.ScheduleEvent(EVENT_VAMPIRIC_FRENZY, urand(10000, 20000));
-        }
-
-        void EnterEvadeMode(){}
-
+        void EnterCombat(Unit* who){}
+        
         void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
@@ -834,14 +853,6 @@ public:
 
             events.Update(diff);
 
-            while (uint32 eventId = events.ExecuteEvent())
-            {
-                if (eventId == EVENT_VAMPIRIC_FRENZY)
-                {
-                    DoCastAOE(SPELL_VAMPIRIC_FRENZY, true);
-                    events.ScheduleEvent(EVENT_VAMPIRIC_FRENZY, urand(10000, 20000));
-                }
-            }
             DoMeleeAttackIfReady();
         }
     };
@@ -1027,10 +1038,10 @@ public:
 
         void OnPeriodic(AuraEffect const* aurEff)
         {
-            if (Unit* caster = GetCaster())
-                if (caster->GetPower(POWER_MANA) == 100)
-                    if (!caster->HasUnitState(UNIT_STATE_CASTING))
-                        caster->CastSpell(GetCaster(), SPELL_DEAFENING_SCREECH);
+            if (GetCaster() && GetCaster()->ToCreature())
+                if (GetCaster()->GetPower(POWER_MANA) == 100)
+                    if (!GetCaster()->HasUnitState(UNIT_STATE_CASTING))
+                        GetCaster()->CastSpell(GetCaster(), SPELL_DEAFENING_SCREECH);
         }
 
         void Register()
@@ -1136,21 +1147,9 @@ public:
 
         void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
         {
-            if (GetTarget() && GetCaster())
-            {
-                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
-                { 
-                    if (GetCaster()->isAlive() && GetCaster()->HasAura(SPELL_BLOOD_FRENZY) && !GetCaster()->HasAura(SPELL_FIXATE_PR))
-                    {
-                        GetCaster()->ToCreature()->SetReactState(REACT_PASSIVE);
-                        GetCaster()->AttackStop();
-                        GetCaster()->StopMoving();
-                        GetCaster()->GetMotionMaster()->Clear(false);
-                        GetCaster()->getThreatManager().resetAllAggro();
-                        GetCaster()->ToCreature()->AI()->DoAction(ACTION_FIXATE);
-                    }
-                }
-            }
+            if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+                if (GetCaster() && GetCaster()->ToCreature() && GetCaster()->isAlive() && GetCaster()->HasAura(SPELL_BLOOD_FRENZY))
+                    GetCaster()->ToCreature()->AI()->DoAction(ACTION_FIXATE);
         }
 
         void Register()
@@ -1274,6 +1273,61 @@ public:
     }
 };
 
+//143343
+class spell_thok_deafening_screech : public SpellScriptLoader
+{
+public:
+    spell_thok_deafening_screech() : SpellScriptLoader("spell_thok_deafening_screech") { }
+
+    class spell_thok_deafening_screech_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_thok_deafening_screech_SpellScript);
+
+        void HandleAfterCast()
+        {
+            if (GetCaster() && GetCaster()->ToCreature())
+            {
+                if (GetCaster()->GetMap()->IsHeroic())
+                {
+                    if (Aura* aura = GetCaster()->GetAura(SPELL_ACCELERATION))
+                    {
+                        switch (aura->GetStackAmount())
+                        {
+                        case 2:
+                            if (GetCaster()->ToCreature()->AI()->GetData(DATA_GET_THOK_PHASE_COUNT) == 1)
+                                GetCaster()->ToCreature()->AI()->DoAction(ACTION_SUMMON_CAPTIVE_BAT);
+                            else if (GetCaster()->ToCreature()->AI()->GetData(DATA_GET_THOK_PHASE_COUNT) == 2)
+                                GetCaster()->ToCreature()->AI()->DoAction(ACTION_SUMMON_STARVED_EYTI);
+                            break;
+                        case 30:
+                        {
+                            Map::PlayerList const &PlayerList = GetCaster()->GetMap()->GetPlayers();
+                            if (!PlayerList.isEmpty())
+                                for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+                                    if (Player* player = Itr->getSource())
+                                        if (player->isAlive())
+                                            player->Kill(player, true);
+                        }
+                        break;
+                        default:
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        void Register()
+        {
+            AfterCast += SpellCastFn(spell_thok_deafening_screech_SpellScript::HandleAfterCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_thok_deafening_screech_SpellScript();
+    }
+};
 
 void AddSC_boss_thok_the_bloodthirsty()
 {
@@ -1291,4 +1345,5 @@ void AddSC_boss_thok_the_bloodthirsty()
     new spell_unlocking();
     new spell_icy_blood();
     new spell_freezing_breath();
+    new spell_thok_deafening_screech();
 }
