@@ -2376,6 +2376,39 @@ public:
             OUT_LOAD_INST_DATA_COMPLETE;
         }
 
+        bool _IsBoss(uint32 creature_entry)
+        {
+            switch (creature_entry)
+            {
+            case NPC_IMMERSEUS:
+            case NPC_ROOK_STONETOE:
+            case NPC_SUN_TENDERHEART:
+            case NPC_HE_SOFTFOOT:
+            case NPC_AMALGAM_OF_CORRUPTION:
+            case NPC_SHA_OF_PRIDE:
+            case NPC_GALAKRAS:
+            case NPC_IRON_JUGGERNAUT:
+            case NPC_WAVEBINDER_KARDRIS:
+            case NPC_EARTHBREAKER_HAROMM:
+            case NPC_GENERAL_NAZGRIM:
+            case NPC_MALKOROK:
+            case NPC_THOK:
+            case NPC_BLACKFUSE_MAUNT:
+            case NPC_KILRUK:
+            case NPC_XARIL:
+            case NPC_KAZTIK:
+            case NPC_KORVEN:
+            case NPC_IYYOKYK:
+            case NPC_KAROZ:
+            case NPC_SKEER:
+            case NPC_RIKKAL:
+            case NPC_HISEK:
+            case NPC_GARROSH:
+                return true;
+            }
+            return false;
+        }
+
         
         bool CheckRequiredBosses(uint32 bossId, uint32 entry, Player const* player = NULL) const
         {
