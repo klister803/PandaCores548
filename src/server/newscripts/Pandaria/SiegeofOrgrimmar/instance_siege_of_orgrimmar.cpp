@@ -2375,40 +2375,6 @@ public:
 
             OUT_LOAD_INST_DATA_COMPLETE;
         }
-
-        bool _IsBoss(uint32 creature_entry)
-        {
-            switch (creature_entry)
-            {
-            case NPC_IMMERSEUS:
-            case NPC_ROOK_STONETOE:
-            case NPC_SUN_TENDERHEART:
-            case NPC_HE_SOFTFOOT:
-            case NPC_AMALGAM_OF_CORRUPTION:
-            case NPC_SHA_OF_PRIDE:
-            case NPC_GALAKRAS:
-            case NPC_IRON_JUGGERNAUT:
-            case NPC_WAVEBINDER_KARDRIS:
-            case NPC_EARTHBREAKER_HAROMM:
-            case NPC_GENERAL_NAZGRIM:
-            case NPC_MALKOROK:
-            case NPC_THOK:
-            case NPC_BLACKFUSE_MAUNT:
-            case NPC_KILRUK:
-            case NPC_XARIL:
-            case NPC_KAZTIK:
-            case NPC_KORVEN:
-            case NPC_IYYOKYK:
-            case NPC_KAROZ:
-            case NPC_SKEER:
-            case NPC_RIKKAL:
-            case NPC_HISEK:
-            case NPC_GARROSH:
-                return true;
-            }
-            return false;
-        }
-
         
         bool CheckRequiredBosses(uint32 bossId, uint32 entry, Player const* player = NULL) const
         {
@@ -2427,106 +2393,105 @@ public:
             return true;
         }
 
-            void Update(uint32 diff)
-            {
-                Events.Update(diff);
+        void Update(uint32 diff)
+        {
+            Events.Update(diff);
 
-                while (uint32 eventId = Events.ExecuteEvent())
+            while (uint32 eventId = Events.ExecuteEvent())
+            {
+                switch (eventId)
                 {
-                    switch (eventId)
-                    {
-                        // Galakras finish event. Horde
-                        case EVENT_FINISH_1_H:
-                            if (Creature* Lorthemar = instance->GetCreature(GetData64(NPC_LORTHEMAR_THERON_H)))
-                                Lorthemar->AI()->Talk(7);
-                            Events.ScheduleEvent(EVENT_FINISH_2_H, 2000);
-                            break;
-                        case EVENT_FINISH_2_H:
-                            if (Creature* Sylvana = instance->GetCreature(GetData64(NPC_LADY_SYLVANAS_WINDRUNNER_H)))
-                                Sylvana->AI()->Talk(5);
-                            Events.ScheduleEvent(EVENT_FINISH_3_H, 4000);
-                            break;
-                        case EVENT_FINISH_3_H:
-                            if (Creature* Lorthemar = instance->GetCreature(GetData64(NPC_LORTHEMAR_THERON_H)))
-                                Lorthemar->AI()->Talk(8);
-                            break;
-                        // Galakras finish event. Alliance
-                        case EVENT_FINISH_1_A:
-                            if (Creature* Jaina = instance->GetCreature(GetData64(NPC_LADY_JAINA_PROUDMOORE_A)))
-                                Jaina->AI()->Talk(5);
-                            Events.ScheduleEvent(EVENT_FINISH_2_A, 2000);
-                            break;
-                        case EVENT_FINISH_2_A:
-                            if (Creature* Varian = instance->GetCreature(GetData64(NPC_KING_VARIAN_WRYNN_A)))
-                                Varian->AI()->Talk(7);
-                            Events.ScheduleEvent(EVENT_FINISH_3_A, 4000);
-                            break;
-                        case EVENT_FINISH_3_A:
-                            if (Creature* Jaina = instance->GetCreature(GetData64(NPC_LADY_JAINA_PROUDMOORE_A)))
-                                Jaina->AI()->Talk(6);
-                            break;
-                    }
+                // Galakras finish event. Horde
+                case EVENT_FINISH_1_H:
+                    if (Creature* Lorthemar = instance->GetCreature(GetData64(NPC_LORTHEMAR_THERON_H)))
+                        Lorthemar->AI()->Talk(7);
+                    Events.ScheduleEvent(EVENT_FINISH_2_H, 2000);
+                    break;
+                case EVENT_FINISH_2_H:
+                    if (Creature* Sylvana = instance->GetCreature(GetData64(NPC_LADY_SYLVANAS_WINDRUNNER_H)))
+                        Sylvana->AI()->Talk(5);
+                    Events.ScheduleEvent(EVENT_FINISH_3_H, 4000);
+                    break;
+                case EVENT_FINISH_3_H:
+                    if (Creature* Lorthemar = instance->GetCreature(GetData64(NPC_LORTHEMAR_THERON_H)))
+                        Lorthemar->AI()->Talk(8);
+                    break;
+                    // Galakras finish event. Alliance
+                case EVENT_FINISH_1_A:
+                    if (Creature* Jaina = instance->GetCreature(GetData64(NPC_LADY_JAINA_PROUDMOORE_A)))
+                        Jaina->AI()->Talk(5);
+                    Events.ScheduleEvent(EVENT_FINISH_2_A, 2000);
+                    break;
+                case EVENT_FINISH_2_A:
+                    if (Creature* Varian = instance->GetCreature(GetData64(NPC_KING_VARIAN_WRYNN_A)))
+                        Varian->AI()->Talk(7);
+                    Events.ScheduleEvent(EVENT_FINISH_3_A, 4000);
+                    break;
+                case EVENT_FINISH_3_A:
+                    if (Creature* Jaina = instance->GetCreature(GetData64(NPC_LADY_JAINA_PROUDMOORE_A)))
+                        Jaina->AI()->Talk(6);
+                    break;
                 }
             }
+        }
 
-            Transport* CreateTransport(uint32 goEntry, uint32 period)
+        Transport* CreateTransport(uint32 goEntry, uint32 period)
+        {
+            Transport* t = new Transport(period, 0);
+
+            GameObjectTemplate const* goinfo = sObjectMgr->GetGameObjectTemplate(goEntry);
+            if (!goinfo)
             {
-                Transport* t = new Transport(period, 0);
-
-                GameObjectTemplate const* goinfo = sObjectMgr->GetGameObjectTemplate(goEntry);
-                if (!goinfo)
-                {
-                    sLog->outError(LOG_FILTER_SQL, "Transport ID: %u will not be loaded, gameobject_template missing", goEntry);
-                    delete t;
-                    return NULL;
-                }
-
-                std::set<uint32> mapsUsed;
-                if (!t->GenerateWaypoints(goinfo->moTransport.taxiPathID, mapsUsed))
-                    // skip transports with empty waypoints list
-                {
-                    sLog->outError(LOG_FILTER_SQL, "Transport (path id %u) path size = 0. Transport ignored, check DBC files or transport GO data0 field.", goinfo->moTransport.taxiPathID);
-                    delete t;
-                    return NULL;
-                }
-
-                uint32 mapid = t->m_WayPoints[0].mapid;
-                float x = t->m_WayPoints[0].x;
-                float y = t->m_WayPoints[0].y;
-                float z = t->m_WayPoints[0].z;
-                float o = 1;
-
-                // creates the Gameobject
-                if (!t->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_MO_TRANSPORT), goEntry, mapid, x, y, z, o, 255, 0))
-                {
-                    delete t;
-                    return NULL;
-                }
-
-                //If we someday decide to use the grid to track transports, here:
-                t->SetMap(instance);
-
-                //for (uint8 i = 0; i < 5; ++i)
-                //    t->AddNPCPassenger(0, (goEntry == GO_HORDE_GUNSHIP ? NPC_HORDE_GUNSHIP_CANNON : NPC_ALLIANCE_GUNSHIP_CANNON), (goEntry == GO_HORDE_GUNSHIP ? hordeGunshipPassengers[i].GetPositionX() : allianceGunshipPassengers[i].GetPositionX()), (goEntry == GO_HORDE_GUNSHIP ? hordeGunshipPassengers[i].GetPositionY() : allianceGunshipPassengers[i].GetPositionY()), (goEntry == GO_HORDE_GUNSHIP ? hordeGunshipPassengers[i].GetPositionZ() : allianceGunshipPassengers[i].GetPositionZ()), (goEntry == GO_HORDE_GUNSHIP ? hordeGunshipPassengers[i].GetOrientation() : allianceGunshipPassengers[i].GetOrientation()));
-
-                return t;
+                sLog->outError(LOG_FILTER_SQL, "Transport ID: %u will not be loaded, gameobject_template missing", goEntry);
+                delete t;
+                return NULL;
             }
 
-            void SendTransportInit(Player* player)
+            std::set<uint32> mapsUsed;
+            if (!t->GenerateWaypoints(goinfo->moTransport.taxiPathID, mapsUsed))
+                // skip transports with empty waypoints list
             {
-                if (!transport)
-                    return;
-
-                UpdateData transData(player->GetMapId());
-                transport->BuildCreateUpdateBlockForPlayer(&transData, player);
-
-                WorldPacket packet;
-
-                transData.BuildPacket(&packet);
-                player->GetSession()->SendPacket(&packet);
+                sLog->outError(LOG_FILTER_SQL, "Transport (path id %u) path size = 0. Transport ignored, check DBC files or transport GO data0 field.", goinfo->moTransport.taxiPathID);
+                delete t;
+                return NULL;
             }
+
+            uint32 mapid = t->m_WayPoints[0].mapid;
+            float x = t->m_WayPoints[0].x;
+            float y = t->m_WayPoints[0].y;
+            float z = t->m_WayPoints[0].z;
+            float o = 1;
+
+            // creates the Gameobject
+            if (!t->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_MO_TRANSPORT), goEntry, mapid, x, y, z, o, 255, 0))
+            {
+                delete t;
+                return NULL;
+            }
+
+            //If we someday decide to use the grid to track transports, here:
+            t->SetMap(instance);
+
+            //for (uint8 i = 0; i < 5; ++i)
+            //    t->AddNPCPassenger(0, (goEntry == GO_HORDE_GUNSHIP ? NPC_HORDE_GUNSHIP_CANNON : NPC_ALLIANCE_GUNSHIP_CANNON), (goEntry == GO_HORDE_GUNSHIP ? hordeGunshipPassengers[i].GetPositionX() : allianceGunshipPassengers[i].GetPositionX()), (goEntry == GO_HORDE_GUNSHIP ? hordeGunshipPassengers[i].GetPositionY() : allianceGunshipPassengers[i].GetPositionY()), (goEntry == GO_HORDE_GUNSHIP ? hordeGunshipPassengers[i].GetPositionZ() : allianceGunshipPassengers[i].GetPositionZ()), (goEntry == GO_HORDE_GUNSHIP ? hordeGunshipPassengers[i].GetOrientation() : allianceGunshipPassengers[i].GetOrientation()));
+
+            return t;
+        }
+
+        void SendTransportInit(Player* player)
+        {
+            if (!transport)
+                return;
+
+            UpdateData transData(player->GetMapId());
+            transport->BuildCreateUpdateBlockForPlayer(&transData, player);
+
+            WorldPacket packet;
+
+            transData.BuildPacket(&packet);
+            player->GetSession()->SendPacket(&packet);
+        }
     };
-
 
     InstanceScript* GetInstanceScript(InstanceMap* map) const
     {

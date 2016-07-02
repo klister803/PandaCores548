@@ -216,11 +216,6 @@ class InstanceScript : public ZoneScript
             return true;
         }
 
-        virtual bool _IsBoss(uint32 creature_entry)
-        {
-            return false;
-        }
-
         // Checks encounter state at kill/spellcast
         //void UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* source);
 

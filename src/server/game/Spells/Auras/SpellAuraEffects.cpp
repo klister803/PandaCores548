@@ -4595,9 +4595,8 @@ void AuraEffect::HandleAuraModDecreaseSpeed(AuraApplication const* aurApp, uint8
 
     if (target->GetMap()->IsDungeon())
         if (caster->ToPlayer() && target->ToCreature())
-            if (InstanceScript* instance = target->GetInstanceScript())
-                if (instance->_IsBoss(target->GetEntry()))
-                    return;
+            if (target->ToCreature()->IsDungeonBoss())
+                return;
 
     target->UpdateSpeed(MOVE_RUN, true);
     target->UpdateSpeed(MOVE_SWIM, true);
