@@ -481,7 +481,7 @@ bool Map::AddToMap(T *obj)
     }
 
     if (IsBattlegroundOrArena())
-        AddBGArenaObj(obj->GetGUID());
+        AddBGArenaObj(obj);
 
     CellCoord cellCoord = Trinity::ComputeCellCoord(obj->GetPositionX(), obj->GetPositionY());
     //It will create many problems (including crashes) if an object is not added to grid after creation
@@ -512,6 +512,8 @@ bool Map::AddToMap(T *obj)
 
     if (obj->isActiveObject())
         AddToActive(obj);
+
+    obj->SetCurrentZoneId();
 
     //something, such as vehicle, needs to be update immediately
     //also, trigger needs to cast spell, if not update, cannot see visual
@@ -555,6 +557,9 @@ void Map::VisitNearbyCellsOf(WorldObject* obj, TypeContainerVisitor<Trinity::Obj
 
 void Map::Update(const uint32 t_diff)
 {
+    uint32 msTime = getMSTime();
+    uint16 tempZoneDiff[6864] = {0};
+
     //_dynamicTree.update(t_diff);
     /// update worldsessions for existing players
     for (m_mapRefIter = m_mapRefManager.begin(); m_mapRefIter != m_mapRefManager.end(); ++m_mapRefIter)
@@ -566,6 +571,10 @@ void Map::Update(const uint32 t_diff)
             WorldSession* session = player->GetSession();
             MapSessionFilter updater(session);
             session->Update(t_diff, updater);
+
+            uint32 diff = getMSTime() - msTime;
+            tempZoneDiff[player->getCurrentUpdateZoneID()] += diff;
+            msTime += diff;
         }
     }
     /// update active cells around players and active objects
@@ -577,6 +586,7 @@ void Map::Update(const uint32 t_diff)
     // for pets
     TypeContainerVisitor<Trinity::ObjectUpdater, WorldTypeMapContainer > world_object_update(updater);
 
+    msTime = getMSTime();
     // the player iterator is stored in the map object
     // to make sure calls to Map::Remove don't invalidate it
     for (m_mapRefIter = m_mapRefManager.begin(); m_mapRefIter != m_mapRefManager.end(); ++m_mapRefIter)
@@ -588,10 +598,14 @@ void Map::Update(const uint32 t_diff)
 
         // update players at tick
         player->Update(t_diff);
-
         VisitNearbyCellsOf(player, grid_object_update, world_object_update);
+
+        uint32 diff = getMSTime() - msTime;
+        tempZoneDiff[player->getCurrentUpdateZoneID()] += diff;
+        msTime += diff;
     }
 
+    msTime = getMSTime();
     // non-player active objects, increasing iterator in the loop in case of object removal
     for (m_activeNonPlayersIter = m_activeNonPlayers.begin(); m_activeNonPlayersIter != m_activeNonPlayers.end();)
     {
@@ -602,7 +616,13 @@ void Map::Update(const uint32 t_diff)
             continue;
 
         VisitNearbyCellsOf(obj, grid_object_update, world_object_update);
+
+        uint32 diff = getMSTime() - msTime;
+        tempZoneDiff[obj->GetCurrentZoneId()] += diff;
+        msTime += diff;
     }
+
+    sWorld->AddZoneDiff(tempZoneDiff);
 
     ///- Process necessary scripts
     if (!m_scriptSchedule.empty())
@@ -611,9 +631,9 @@ void Map::Update(const uint32 t_diff)
         ScriptsProcess();
         i_scriptLock = false;
     }
-
+    
     MoveAllCreaturesInMoveList();
-
+    
     sScriptMgr->OnMapUpdate(this, t_diff);
 }
 
@@ -623,7 +643,7 @@ void Map::RemovePlayerFromMap(Player* player, bool remove)
     SendRemoveTransports(player);
 
     if (IsBattlegroundOrArena())
-        RemoveBGArenaObj(player->GetGUID());
+        RemoveBGArenaObj(player);
 
     player->UpdateObjectVisibility(true);
     if (player->IsInGrid())
@@ -647,7 +667,7 @@ void Map::RemoveFromMap(T *obj, bool remove)
         RemoveFromActive(obj);
 
     if (IsBattlegroundOrArena())
-        RemoveBGArenaObj(obj->GetGUID());
+        RemoveBGArenaObj(obj);
 
     obj->UpdateObjectVisibility(true);
     obj->RemoveFromGrid();
@@ -2806,7 +2826,7 @@ bool BattlegroundMap::CanEnter(Player* player)
 
 bool BattlegroundMap::AddPlayerToMap(Player* player)
 {
-    AddBGArenaObj(player->GetGUID());
+    AddBGArenaObj(player);
 
     {
         TRINITY_GUARD(ACE_Thread_Mutex, Lock);

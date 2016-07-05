@@ -402,10 +402,10 @@ enum WorldIntConfigs
     CONFIG_MAX_SKILL_VALUE,
     CONFIG_TRANSFER_GOLD_LIMIT,
     CONFIG_CUSTOM_CONTENT_VERSION,
-    CONFIG_MAX_VISIBLE_UNITS_AMOUNT,
-    CONFIG_PLR_COST_FOR_VISIBILITY,
-    CONFIG_UNIT_COST_FOR_VISIBILITY,
+    CONFIG_MAX_ZONES_DIFF,
+    CONFIG_CRITICAL_ZONES_DIFF,
     CONFIG_MAX_POSSIBLE_VISIBILITY_RANGE,
+    CONFIG_HANDLE_VISIBILITY_TIMER,
     INT_CONFIG_VALUE_COUNT
 };
 
@@ -698,6 +698,10 @@ class World
         /// Allow/Disallow object movements
         void SetAllowMovement(bool allow) { m_allowMovement = allow; }
 
+        void AddZoneDiff(uint16 *zoneDiffs);
+        void HandleZoneDiff();
+        uint16 GetZoneVisibilityRange(uint16 zoneId) { return m_zonesDiff[zoneId][2]; }
+
         /// Set a new Message of the Day
         void SetMotd(const std::string& motd);
         /// Get the current Message of the Day
@@ -935,6 +939,9 @@ class World
 //        uint16 m_averageLongUpdateTime[10]; // average update time of 10 m_updateTimeSum
         uint16 m_updateTimeCount;
         uint32 m_currentTime;
+
+        uint16 m_zonesDiff[6864][3];
+        uint32 m_zoneDiffTimer;
 
         SessionMap m_sessions;
         typedef UNORDERED_MAP<uint32, time_t> DisconnectMap;

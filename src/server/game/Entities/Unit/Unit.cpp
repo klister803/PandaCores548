@@ -21433,7 +21433,7 @@ void Unit::Kill(Unit* victim, bool durabilityLoss, SpellInfo const* spellProto)
         if (OutdoorPvP* pvp = player->GetOutdoorPvP())
             pvp->HandleKill(player, victim);
 
-        if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(player->GetZoneId()))
+        if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(player->getCurrentUpdateZoneID()))
             bf->HandleKill(player, victim);
     }
 
@@ -25154,7 +25154,7 @@ void Unit::GeneratePersonalLoot(Creature* creature, Player* anyLooter)
     {
         if (Player* looter = ObjectAccessor::GetPlayer(*creature, (*itr)))
         {
-            if(looter->IsPlayerLootCooldown(cooldownid, cooldowntype, creature->GetMap()->GetDifficulty()) || creature->GetZoneId() != looter->GetZoneId())
+            if(looter->IsPlayerLootCooldown(cooldownid, cooldowntype, creature->GetMap()->GetDifficulty()) || creature->GetCurrentZoneId() != looter->getCurrentUpdateZoneID())
             {
                 --cLoot->unlootedCount;
                 continue;
