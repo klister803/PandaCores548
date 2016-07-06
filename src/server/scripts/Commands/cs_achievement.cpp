@@ -25,6 +25,8 @@ EndScriptData */
 #include "ScriptMgr.h"
 #include "Chat.h"
 #include "AchievementMgr.h"
+#include "Guild.h"
+#include "GuildMgr.h"
 
 class achievement_commandscript : public CommandScript
 {
@@ -38,6 +40,7 @@ public:
             { "add",            SEC_ADMINISTRATOR,  false,  &HandleAchievementAddCommand,      "", NULL },
             { "criteria",       SEC_ADMINISTRATOR,  false,  &HandleAchievementCriteriaCommand, "", NULL },
             { "info",           SEC_ADMINISTRATOR,  false,  &HandleAchievementInfoCommand,     "", NULL },
+            { "guildadd",       SEC_ADMINISTRATOR,  false,  &HandleAchievementGuildAddCommand,     "", NULL },
             { NULL,             0,                  false,  NULL,                              "", NULL }
         };
         static ChatCommand commandTable[] =
@@ -153,6 +156,34 @@ public:
         }
         else
             sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementInfo error achievement %u not found", achievementId);
+
+        return true;
+    }
+    
+    static bool HandleAchievementGuildAddCommand(ChatHandler* handler, char const* args)
+    {
+        if (!*args)
+            return false;
+
+        uint32 achievementId = atoi((char*)args);
+        if (!achievementId)
+        {
+            if (char* id = handler->extractKeyFromLink((char*)args, "Hachievement"))
+                achievementId = atoi(id);
+            if (!achievementId)
+                return false;
+        }
+
+        Player* target = handler->getSelectedPlayer();
+        if (!target)
+        {
+            handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+        if (Guild* guild = sGuildMgr->GetGuildById(target->GetGuildId()))
+            if (AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(achievementId))
+                guild->GetAchievementMgr().CompletedAchievement(achievementEntry, target);
 
         return true;
     }

@@ -18,7 +18,7 @@ public:
             { "list",           SEC_PLAYER,         false, &HandleListMorphCommand,             "", NULL },
             { "use",            SEC_PLAYER,         false, &HandleUseMorphCommand,              "", NULL },
             { "remove",         SEC_PLAYER,         false, &HandleRemoveMorphCommand,           "", NULL },
-            { "add",            SEC_GAMEMASTER,  false, &HandleAddMorphCommand,              "", NULL },
+            { "add",            SEC_CONFIRMED_GAMEMASTER,  false, &HandleAddMorphCommand,              "", NULL },
             { "del",            SEC_GAMEMASTER,  false, &HandleDelMorphCommand,              "", NULL },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
@@ -27,7 +27,7 @@ public:
         {
             { "list",           SEC_PLAYER,         false, &HandleListMountFlyCommand,             "", NULL },
             { "use",            SEC_PLAYER,         false, &HandleUseMountFlyCommand,              "", NULL },
-            { "add",            SEC_GAMEMASTER,  false, &HandleAddMountFlyCommand,              "", NULL },
+            { "add",            SEC_CONFIRMED_GAMEMASTER,  false, &HandleAddMountFlyCommand,              "", NULL },
             { "del",            SEC_GAMEMASTER,  false, &HandleDelMountFlyCommand,              "", NULL },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
@@ -36,7 +36,7 @@ public:
         {
             { "list",           SEC_PLAYER,         false, &HandleListMountGroundCommand,             "", NULL },
             { "use",            SEC_PLAYER,         false, &HandleUseMountGroundCommand,              "", NULL },
-            { "add",            SEC_GAMEMASTER,  false, &HandleAddMountGroundCommand,              "", NULL },
+            { "add",            SEC_CONFIRMED_GAMEMASTER,  false, &HandleAddMountGroundCommand,              "", NULL },
             { "del",            SEC_GAMEMASTER,  false, &HandleDelMountGroundCommand,              "", NULL },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
