@@ -57,7 +57,7 @@ void PhaseMgr::RemoveUpdateFlag(PhaseUpdateFlag updateFlag)
             _UpdateFlags |= (PHASE_UPDATE_FLAG_CLIENTSIDE_CHANGED | PHASE_UPDATE_FLAG_SERVERSIDE_CHANGED);
         }
 
-        if (_PhaseDefinitionStore->find(player->getCurrentUpdateZoneID()) != _PhaseDefinitionStore->end())
+        if (_PhaseDefinitionStore->find(player->GetZoneId()) != _PhaseDefinitionStore->end())
             Recalculate();
     }
 
@@ -87,7 +87,7 @@ void PhaseMgr::Recalculate()
         _UpdateFlags |= (PHASE_UPDATE_FLAG_CLIENTSIDE_CHANGED | PHASE_UPDATE_FLAG_SERVERSIDE_CHANGED);
     }
 
-    PhaseDefinitionStore::const_iterator itr = _PhaseDefinitionStore->find(player->getCurrentUpdateZoneID());
+    PhaseDefinitionStore::const_iterator itr = _PhaseDefinitionStore->find(player->GetZoneId());
     if (itr != _PhaseDefinitionStore->end())
         for (PhaseDefinitionContainer::const_iterator phase = itr->second.begin(); phase != itr->second.end(); ++phase)
             if (CheckDefinition(&(*phase)))
@@ -112,7 +112,7 @@ inline bool PhaseMgr::CheckDefinition(PhaseDefinition const* phaseDefinition)
 
 bool PhaseMgr::NeedsPhaseUpdateWithData(PhaseUpdateData const updateData) const
 {
-    PhaseDefinitionStore::const_iterator itr = _PhaseDefinitionStore->find(player->getCurrentUpdateZoneID());
+    PhaseDefinitionStore::const_iterator itr = _PhaseDefinitionStore->find(player->GetZoneId());
     if (itr != _PhaseDefinitionStore->end())
     {
         for (PhaseDefinitionContainer::const_iterator phase = itr->second.begin(); phase != itr->second.end(); ++phase)
@@ -208,11 +208,11 @@ void PhaseMgr::UnRegisterPhasingAura(uint32 spellId, Unit* target)
 
 void PhaseMgr::SendDebugReportToPlayer(Player* const debugger)
 {
-    ChatHandler(debugger).PSendSysMessage(LANG_PHASING_REPORT_STATUS, player->GetName(), player->getCurrentUpdateZoneID(), player->getLevel(), player->GetTeamId(), _UpdateFlags);
+    ChatHandler(debugger).PSendSysMessage(LANG_PHASING_REPORT_STATUS, player->GetName(), player->GetZoneId(), player->getLevel(), player->GetTeamId(), _UpdateFlags);
 
-    PhaseDefinitionStore::const_iterator itr = _PhaseDefinitionStore->find(player->getCurrentUpdateZoneID());
+    PhaseDefinitionStore::const_iterator itr = _PhaseDefinitionStore->find(player->GetZoneId());
     if (itr == _PhaseDefinitionStore->end())
-        ChatHandler(debugger).PSendSysMessage(LANG_PHASING_NO_DEFINITIONS, player->getCurrentUpdateZoneID());
+        ChatHandler(debugger).PSendSysMessage(LANG_PHASING_NO_DEFINITIONS, player->GetZoneId());
     else
     {
         for (PhaseDefinitionContainer::const_iterator phase = itr->second.begin(); phase != itr->second.end(); ++phase)

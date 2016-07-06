@@ -235,7 +235,7 @@ void BattlefieldTB::OnPlayerJoinWar(Player* player)
     player->RemoveAurasDueToSpell(SPELL_PHASE_HORDE_CONTROL);
     player->RemoveAurasDueToSpell(SPELL_PHASE_ALLIANCE_CONTROL);
 
-    bool onTb = player->getCurrentUpdateZoneID() == m_ZoneId; 
+    bool onTb = player->GetZoneId() == m_ZoneId; 
     // resurect dead plr
     if(!player->isAlive())
         player->ResurrectPlayer(1.0f);

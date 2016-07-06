@@ -139,8 +139,6 @@ World::World()
 //     for (uint8 i = 0; i < 10; i++)
 //         m_averageLongUpdateTime[i] = 0;
 
-    m_zoneDiffTimer = 0;
-
     m_isClosed = false;
 
     m_CleaningFlags = 0;
@@ -181,7 +179,7 @@ Player* World::FindPlayerInZone(uint32 zone)
         if (!player)
             continue;
 
-        if (player->IsInWorld() && player->getCurrentUpdateZoneID() == zone)
+        if (player->IsInWorld() && player->GetZoneId() == zone)
         {
             // Used by the weather system. We return the player to broadcast the change weather message to him and all players in the zone.
             return player;
@@ -1247,10 +1245,10 @@ void World::LoadConfigSettings(bool reload)
     ZoneUpdateDistanceRangeLimit = ConfigMgr::GetFloatDefault("Zone.UpdateDistanceRage", 5.f);
 
     //dynamic visibility
-    m_int_configs[CONFIG_MAX_ZONES_DIFF] = ConfigMgr::GetIntDefault("DynamicVisibility.MaxZonesDiff", 30);
-    m_int_configs[CONFIG_CRITICAL_ZONES_DIFF] = ConfigMgr::GetIntDefault("DynamicVisibility.CriticalZonesDiff", 150);
+    m_int_configs[CONFIG_MAX_VISIBLE_UNITS_AMOUNT] = ConfigMgr::GetIntDefault("DynamicVisibility.MaxVisibleUnitsAmount", 100);
+    m_int_configs[CONFIG_PLR_COST_FOR_VISIBILITY] = ConfigMgr::GetIntDefault("DynamicVisibility.PlayerCostForVisibility", 2);
+    m_int_configs[CONFIG_UNIT_COST_FOR_VISIBILITY] = ConfigMgr::GetIntDefault("DynamicVisibility.UnitCostForVisibility", 1);
     m_int_configs[CONFIG_MAX_POSSIBLE_VISIBILITY_RANGE] = ConfigMgr::GetIntDefault("DynamicVisibility.MaxPossibleVisibilityRange", 100);
-    m_int_configs[CONFIG_HANDLE_VISIBILITY_TIMER] = ConfigMgr::GetIntDefault("DynamicVisibility.HandleVisibilityTimer", 20000);
 
     ///- Load the CharDelete related config options
     m_int_configs[CONFIG_CHARDELETE_METHOD] = ConfigMgr::GetIntDefault("CharDelete.Method", 0);
@@ -2131,13 +2129,6 @@ void World::SetInitialWorldSettings()
         if (m_realmName[i] != ' ')
             m_trimmedRealmName += m_realmName[i];
 
-    for (uint16 i = 0; i < 6864; i++)
-    {
-        m_zonesDiff[i][0] = 0;
-        m_zonesDiff[i][1] = 0;
-        m_zonesDiff[i][2] = m_int_configs[CONFIG_MAX_POSSIBLE_VISIBILITY_RANGE];
-    }
-
     uint32 startupDuration = GetMSTimeDiffToNow(startupBegin);
 
     sLog->outInfo(LOG_FILTER_WORLDSERVER, "World initialized in %u minutes %u seconds", (startupDuration / 60000), ((startupDuration % 60000) / 1000));
@@ -2275,13 +2266,6 @@ void World::Update(uint32 diff)
             m_updateTimeSum += m_updateTime;
             ++m_updateTimeCount;
         }
-    }
-
-    m_zoneDiffTimer += diff;
-    if (m_zoneDiffTimer > m_int_configs[CONFIG_HANDLE_VISIBILITY_TIMER])
-    {
-        HandleZoneDiff();
-        m_zoneDiffTimer = 0;
     }
 
     ///- Update the different timers
@@ -2648,7 +2632,7 @@ void World::SendZoneMessage(uint32 zone, WorldPacket* packet, WorldSession* self
         if (itr->second &&
             itr->second->GetPlayer() &&
             itr->second->GetPlayer()->IsInWorld() &&
-            itr->second->GetPlayer()->getCurrentUpdateZoneID() == zone &&
+            itr->second->GetPlayer()->GetZoneId() == zone &&
             itr->second != self &&
             (team == 0 || itr->second->GetPlayer()->GetTeam() == team))
         {
@@ -3477,7 +3461,7 @@ void World::UpdateAreaDependentAuras()
         if (itr->second && itr->second->GetPlayer() && itr->second->GetPlayer()->IsInWorld())
         {
             itr->second->GetPlayer()->UpdateAreaDependentAuras(itr->second->GetPlayer()->GetAreaId());
-            itr->second->GetPlayer()->UpdateZoneDependentAuras(itr->second->GetPlayer()->getCurrentUpdateZoneID());
+            itr->second->GetPlayer()->UpdateZoneDependentAuras(itr->second->GetPlayer()->GetZoneId());
         }
 }
 
@@ -3963,45 +3947,4 @@ void World::GetPoolGuids()
         }
         while(queryPool->NextRow());
     }
-}
-
-void World::AddZoneDiff(uint16 *zoneDiffs)
-{
-    for (uint16 i = 0; i < 6864; i++)
-        if (zoneDiffs[i])
-        {
-            m_zonesDiff[i][0] += zoneDiffs[i];
-            m_zonesDiff[i][1] += 1;
-        }
-}
-
-void World::HandleZoneDiff()
-{
-    uint16 dist = m_int_configs[CONFIG_MAX_POSSIBLE_VISIBILITY_RANGE];
-    uint16 maxDiff = m_int_configs[CONFIG_MAX_ZONES_DIFF];
-    uint16 critDiff = m_int_configs[CONFIG_CRITICAL_ZONES_DIFF];
-
-    for (uint16 i = 0; i < 6864; i++)
-        if (uint16 diff = m_zonesDiff[i][0])
-        {
-            uint16 count = m_zonesDiff[i][1];
-
-            diff /= count;
-
-            if (diff > maxDiff)
-            {
-                if (diff < critDiff)
-                {
-                    diff -= maxDiff;
-                    m_zonesDiff[i][2] = (dist * (dist - ((diff * 100) / critDiff))) / 100;
-                }
-                else
-                    m_zonesDiff[i][2] = 10;
-            }
-            else
-                m_zonesDiff[i][2] = dist;
-
-            m_zonesDiff[i][0] = 0;
-            m_zonesDiff[i][1] = 0;
-        }
 }

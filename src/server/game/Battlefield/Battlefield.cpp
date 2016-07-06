@@ -335,7 +335,7 @@ void Battlefield::KickPlayerFromBattlefield(uint64 guid)
 {
     if (Player* player = ObjectAccessor::FindPlayer(guid))
     {
-        if (player->getCurrentUpdateZoneID() == GetZoneId())
+        if (player->GetZoneId() == GetZoneId())
         {
             player->TeleportToHomeBind();
             //player->DelayTeleportToGomeBind();

@@ -186,7 +186,7 @@ void WorldSession::HandleBfQueueInviteResponse(WorldPacket & recvData)
         bf->PlayerAcceptInviteToQueue(_player);
     else if (bf->IsWarTime() || bf->IsOnStartGrouping())
     {
-        if (_player->getCurrentUpdateZoneID() == bf->GetZoneId())
+        if (_player->GetZoneId() == bf->GetZoneId())
             bf->KickPlayerFromBattlefield(_player->GetGUID());
     }
 }
@@ -212,7 +212,7 @@ void WorldSession::HandleBfEntryInviteResponse(WorldPacket & recvData)
     if (accepted)
         bf->PlayerAcceptInviteToWar(_player);
     else
-        if (_player->getCurrentUpdateZoneID() == bf->GetZoneId())
+        if (_player->GetZoneId() == bf->GetZoneId())
             bf->KickPlayerFromBattlefield(_player->GetGUID());
 }
 
@@ -258,7 +258,7 @@ void WorldSession::HandleBfExitQueueRequest(WorldPacket & recvData)
 void WorldSession::HandleBfExitRequest(WorldPacket& recv_data)
 {
     sLog->outError(LOG_FILTER_GENERAL, "HandleBfExitRequest");
-    Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(_player->getCurrentUpdateZoneID());
+    Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(_player->GetZoneId());
 
     if (!bf)
         return;

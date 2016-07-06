@@ -182,7 +182,7 @@ void WorldSession::HandleMoveWorldportResponseOpcode()
     }
 
     // mount allow check
-    if (!allowMount || (GetPlayer()->GetMapId() == 530 && GetPlayer()->getCurrentUpdateZoneID() == 0)) //530 - uwow event map
+    if (!allowMount || (GetPlayer()->GetMapId() == 530 && GetPlayer()->GetZoneId() == 0)) //530 - uwow event map
         _player->RemoveAurasByType(SPELL_AURA_MOUNTED);
 
     // update zone immediately, otherwise leave channel will cause crash in mtmap
@@ -230,7 +230,7 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)
     plMover->SetSemaphoreTeleportNear(false);
     plMover->AddMoveEventsMask(MOVE_EVENT_TELEPORT);
 
-    uint32 old_zone = plMover->getCurrentUpdateZoneID();
+    uint32 old_zone = plMover->GetZoneId();
 
     WorldLocation const& dest = plMover->GetTeleportDest();
 
