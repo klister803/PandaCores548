@@ -4594,7 +4594,7 @@ void AuraEffect::HandleAuraModDecreaseSpeed(AuraApplication const* aurApp, uint8
     Unit* caster = aurApp->GetBase()->GetCaster();
 
     if (target->GetMap()->IsDungeon())
-        if (caster->ToPlayer() && target->ToCreature())
+        if (caster && caster->ToPlayer() && target->ToCreature())
             if (target->ToCreature()->IsDungeonBoss())
                 return;
 
