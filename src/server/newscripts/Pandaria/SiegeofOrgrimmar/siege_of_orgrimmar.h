@@ -84,6 +84,7 @@ enum eData
     DATA_DESPAWN,
     DATA_GET_FLASH_TARGET,
     DATA_GET_THOK_PHASE_COUNT,
+    DATA_CLOSE_ZONE_NORUSHEN,
 
     //Galakras
     DATA_GALAKRAS_PRE_EVENT,
@@ -118,6 +119,7 @@ enum eCreatures
     NPC_SHA_PUDDLE                  = 71603,
     NPC_B_H_CONTROLLER              = 90008,
     NPC_BLIND_HATRED                = 72565,
+    NPC_BLIND_HATRED_BASE           = 72595,
     NPC_CRAWLER_MINE                = 72050,
     NPC_CUTTER_LASER                = 72026,
     NPC_EXPLOSIVE_TAR               = 71950,

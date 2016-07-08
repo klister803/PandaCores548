@@ -5104,20 +5104,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->CasterAuraSpell = 0;
                     spellInfo->Effects[2].TargetA = 25;
                     break;
-                case 145573:    //Blind Hatred Dummy
-                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_TRIGGER_SPELL;
-                    spellInfo->Effects[0].Amplitude = 500;
-                    spellInfo->Effects[0].TriggerSpell = 145227;
-                    break;
-                case 145227:    //Blind Hatred Dmg
-                {
-                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
-                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
-                            eff->TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
-
-                    spellInfo->Effects[EFFECT_1].TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
-                    break;
-                }
                 case 145735:    //Icy Fear Dmg
                 case 145073:    //Residual Corruption
                     spellInfo->TargetAuraSpell = 0;
@@ -5133,6 +5119,20 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 144628:    //Titanic Smash
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENEMY_24;
                     spellInfo->Effects[2].TargetA = TARGET_UNIT_CONE_ENEMY_24;
+                    break;
+                case 145052: //Corrupt
+                    spellInfo->Effects[0].BasePoints = 0;
+                    spellInfo->Effects[1].Effect = 0;
+                    break;
+                case 145128: //Unchecked Corruption
+                    spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(1); //0
+                    spellInfo->Effects[0].TargetA = 25;
+                    break;
+                case 145226: //Blind Hatred Dummy
+                    spellInfo->Effects[1].TriggerSpell = 0;
+                    break;
+                case 145227: //Blind Hatred Dmg
+                    spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(1); //0
                     break;
                 //Sha of Pride
                 case 146595: //Gift of Titans base spell

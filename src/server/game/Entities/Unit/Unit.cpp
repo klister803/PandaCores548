@@ -16911,7 +16911,7 @@ uint32 Unit::GetPowerIndexByClass(uint32 powerId, uint32 classId) const
     ChrClassesEntry const* classEntry = sChrClassesStore.LookupEntry(classId);
 
     //ASSERT(classEntry && "Class not found");
-    if(!classEntry)
+    if (!classEntry)
         return 0;
 
     uint32 index = 0;
@@ -16929,6 +16929,9 @@ uint32 Unit::GetPowerIndexByClass(uint32 powerId, uint32 classId) const
 
         ++index;
     }
+    //Norushen - Corruption aura bar
+    if (HasAura(144421) && powerId == POWER_ALTERNATE_POWER)
+        return 5;
 
     // return invalid value - this class doesn't use this power
     return MAX_POWERS;

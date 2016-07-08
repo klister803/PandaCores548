@@ -1828,6 +1828,10 @@ public:
             case DATA_CHECK_DIED_PLAYER_IN_REALM_OF_YSHARRJ:
                 CheckPlayersDiedInRealOfYshaarj();
                 break;
+            case DATA_CLOSE_ZONE_NORUSHEN:
+                for (std::vector<uint64>::const_iterator guid = lightqGUIDs.begin(); guid != lightqGUIDs.end(); guid++)
+                    HandleGameObject(*guid, false);
+                break;
             }
         }
 

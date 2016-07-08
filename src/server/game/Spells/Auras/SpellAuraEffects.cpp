@@ -40,7 +40,6 @@
 #include "BattlefieldMgr.h"
 #include "WeatherMgr.h"
 #include "AreaTrigger.h"
-#include "InstanceScript.h"
 
 class Aura;
 //
@@ -4591,12 +4590,6 @@ void AuraEffect::HandleAuraModDecreaseSpeed(AuraApplication const* aurApp, uint8
         return;
 
     Unit* target = aurApp->GetTarget();
-    Unit* caster = aurApp->GetBase()->GetCaster();
-
-    if (target->GetMap()->IsDungeon())
-        if (caster && caster->ToPlayer() && target->ToCreature())
-            if (target->ToCreature()->IsDungeonBoss())
-                return;
 
     target->UpdateSpeed(MOVE_RUN, true);
     target->UpdateSpeed(MOVE_SWIM, true);
@@ -9037,10 +9030,6 @@ void AuraEffect::HandleProgressBar(AuraApplication const* aurApp, uint8 mode, bo
 
     uint32 startPower = entry->startPower;
     uint32 maxPower = entry->maxPower;
-
-    // unique strange behavoir - with value 100 bar is lost
-    if (GetMiscValue() == 258)
-        maxPower = 101;
 
     target->SetMaxPower(POWER_ALTERNATE_POWER, maxPower);
     target->SetPower(POWER_ALTERNATE_POWER, startPower);
