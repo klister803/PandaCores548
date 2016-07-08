@@ -501,7 +501,7 @@ public:
     {
         npc_blind_hatred_baseAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
             me->SetReactState(REACT_PASSIVE);
             me->SetDisplayId(11686);
         }
@@ -1838,6 +1838,7 @@ public:
                 if (GetHitUnit()->GetPower(POWER_ALTERNATE_POWER) + 25 <= 100)
                 {
                     GetHitUnit()->SetPower(POWER_ALTERNATE_POWER, GetHitUnit()->GetPower(POWER_ALTERNATE_POWER) + 25);
+                    GetHitUnit()->RemoveAurasDueToSpell(SPELL_PURIFIED);
                     GetCaster()->ToCreature()->AI()->DoAction(ACTION_DESPAWN);
                 }
             }
