@@ -1710,12 +1710,19 @@ public:
                     switch (spec)
                     {
                     case ROLES_HEALER:
+                        pl->RemoveAllMinionsByEntry(NPC_GREATER_CORRUPTION);
+                        pl->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_1);
+                        pl->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_2);
+                        pl->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_3);
                         pl->CastCustomSpell(SPELL_PURIFIED, SPELLVALUE_BASE_POINT0, 25.0f, pl, true);
                         break;
                     case ROLES_TANK:
+                        pl->RemoveAllMinionsByEntry(NPC_TITANIC_CORRUPTION);
                         pl->CastCustomSpell(SPELL_PURIFIED, SPELLVALUE_BASE_POINT1, -25.0f, pl, true);
                         break;
                     case ROLES_DPS:
+                        pl->RemoveAllMinionsByEntry(NPC_MANIFESTATION_OF_CORRUPTION_C);
+                        pl->RemoveAllMinionsByEntry(NPC_ESSENCE_OF_CORRUPTION_C);
                         pl->CastCustomSpell(SPELL_PURIFIED, SPELLVALUE_BASE_POINT3, 25.0f, pl, true);
                         break;
                     default:
