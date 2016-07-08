@@ -150,8 +150,8 @@ Creature* BattlegroundSSM::AddCart(uint32 type, Location loc)
         creature->CastSpell(creature, BG_SSM_SPELL_CART_MOVE);
         creature->CastSpell(creature, BG_SSM_SPELL_CONTROL_NEUTRAL);
 
-        creature->SetSpeed(MOVE_WALK, 0.2f);
-        creature->SetSpeed(MOVE_RUN,  0.2f);
+        creature->SetSpeed(MOVE_WALK, 0.4f);
+        creature->SetSpeed(MOVE_RUN,  0.4f);
 
         creature->SetUInt32Value(UNIT_FIELD_FLAGS, 0);
         creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
