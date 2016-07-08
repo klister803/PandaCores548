@@ -204,7 +204,7 @@ public:
                 //continue from EVENT_13
                 uint32 t = 0;
                 events.ScheduleEvent(EVENT_1, t += 0);          //18:23:14.000
-                events.ScheduleEvent(EVENT_2, t += 8000);       //18:23:22.000
+                events.ScheduleEvent(EVENT_2, t += 3000);       //18:23:22.000
                 events.ScheduleEvent(EVENT_3, t += 11000);      //18:23:32.000
                 events.ScheduleEvent(EVENT_4, t += 2000);       //18:23:34.000
             }
@@ -222,12 +222,12 @@ public:
                     me->CastSpell(me, SPELL_VISUAL_TELEPORT, false);
                     me->CastSpell(me, SPELL_VISUAL_TELEPORT_AC, true);
                     ZoneTalk(eventId + 6, me->GetGUID());
+                    instance->SetData(DATA_CLOSE_ZONE_NORUSHEN, 0);
                     break;
                 case EVENT_2:
                     me->SetFacingTo(1.791488f);
                     ZoneTalk(eventId + 6, me->GetGUID());
                     DoCast(me, SPELL_EXTRACT_CORRUPTION);
-                    instance->SetData(DATA_CLOSE_ZONE_NORUSHEN, 0);
                     break;
                 case EVENT_3:
                     DoCast(me, SPELL_EXTRACT_CORRUPTION_S);
@@ -388,6 +388,11 @@ public:
             FrayedCounter = 0;
             if (Creature* HealChGreater = me->FindNearestCreature(NPC_GREATER_CORRUPTION, 200.0f))
                 me->Kill(HealChGreater);
+        }
+
+        void IsSummonedBy(Unit* summoner)
+        {
+            DoZoneInCombat(me, 150.0f);
         }
 
         void ApplyOrRemoveBar(bool state)
@@ -795,6 +800,7 @@ public:
         InstanceScript* instance;
         EventMap events;
         uint64 targetGuid;
+        uint32 attack;
 
         enum spells
         {
@@ -815,8 +821,12 @@ public:
 
         void IsSummonedBy(Unit* summoner)
         {
+            me->SetReactState(REACT_PASSIVE);
             targetGuid = summoner->ToPlayer() ? summoner->GetGUID() : 0;
             me->CastSpell(me, SPELL_STEALTH_AND_INVISIBILITY_DETECT, true);
+            me->SetPhaseId(summoner->GetGUID(), true);
+            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+            attack = 5000;
         }
 
         void JustDied(Unit* killer)
@@ -828,6 +838,18 @@ public:
 
         void UpdateAI(uint32 diff)
         {
+            if (attack)
+            {
+                if (attack <= diff)
+                {
+                    attack = 0;
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    DoZoneInCombat(me, 150.0f);
+                }
+                else
+                    attack -= diff;
+            }
+
             if (!UpdateVictim())
                 return;
 
@@ -933,6 +955,7 @@ public:
     }
 };
 
+//72263
 class npc_essence_of_corruption_released : public CreatureScript
 {
 public:
@@ -1020,6 +1043,7 @@ public:
         InstanceScript* instance;
         EventMap events;
         uint64 targetGuid;
+        uint32 attack;
 
         void Reset()
         {
@@ -1028,14 +1052,13 @@ public:
 
         void IsSummonedBy(Unit* summoner)
         {
-            if (!instance)
-                return;
-
+            me->SetReactState(REACT_PASSIVE);
             targetGuid = summoner->ToPlayer() ? summoner->GetGUID() : 0;
             me->SetPhaseId(summoner->GetGUID(), true);
             me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             me->DespawnOrUnsummon(60000);
             me->SetInCombatWithZone();
+            attack = 5000;
         }
 
         void EnterCombat(Unit* who)
@@ -1056,6 +1079,18 @@ public:
         
         void UpdateAI(uint32 diff)
         {
+            if (attack)
+            {
+                if (attack <= diff)
+                {
+                    attack = 0;
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    DoZoneInCombat(me, 150.0f);
+                }
+                else
+                    attack -= diff;
+            }
+
             if (!UpdateVictim())
                 return;
 
