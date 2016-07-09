@@ -5095,6 +5095,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 //Norushen
                 case 144848: //Titanic Corruption Summon
                 case 144739: //Manofestation of Corruption Summon
+                case 144980: //Greater Corruption
+                case 144975: //Melee fighter
+                case 144973: //Summon Guardian
                     spellInfo->Effects[0].TargetA = TARGET_DEST_DEST;
                     break;
                 case 144514:    //Lingering Corruption
@@ -5131,9 +5134,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 145128: //Unchecked Corruption
                     spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(1); //0
                     spellInfo->Effects[0].TargetA = 25;
-                    break;
-                case 145226: //Blind Hatred Dummy
-                    spellInfo->Effects[1].TriggerSpell = 0;
                     break;
                 case 145227: //Blind Hatred Dmg
                     spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(1); //0

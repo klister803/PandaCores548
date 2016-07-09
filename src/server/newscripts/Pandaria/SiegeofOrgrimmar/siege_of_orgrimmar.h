@@ -192,9 +192,9 @@ enum eCreatures
     NPC_GREATER_CORRUPTION              = 72001,
     NPC_PURIFYING_LIGHT                 = 72065,
     NPC_RESIDUAL_CORRUPTION             = 72550, // by spell 145522
-    NPC_NN_HEAL_EVENT_PROTECTOR_1       = 71996,
-    NPC_NN_HEAL_EVENT_PROTECTOR_2       = 72000,
-    NPC_NN_HEAL_EVENT_PROTECTOR_3       = 71995,
+    NPC_NN_HEAL_EVENT_PROTECTOR_1       = 71996,//Rook(meleedmg)
+    NPC_NN_HEAL_EVENT_PROTECTOR_2       = 72000,//Sun(caster)
+    NPC_NN_HEAL_EVENT_PROTECTOR_3       = 71995,//Leven(tank)
 
     //Galakras
     NPC_GALAKRAS                    = 72249,
