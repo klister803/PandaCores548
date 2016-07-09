@@ -1303,7 +1303,7 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
             if (!player)
                 return false;
 
-            Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(player->GetZoneId());
+            Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(player->getCurrentUpdateZoneID());
 
             if (!bf || bf->GetTypeId() != BATTLEFIELD_WG)
                 return false;
@@ -1332,7 +1332,7 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
             if (!player)
                 return false;
 
-            if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(player->GetZoneId()))
+            if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(player->getCurrentUpdateZoneID()))
                 return bf->IsWarTime();
             break;
         }
@@ -6073,6 +6073,18 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesEx6 |= SPELL_ATTR6_CANT_PROC;
 
             spellInfo->SpecificType = spellInfo->GetSpellSpecific();
+
+            spellInfo->m_auraCount = 0;
+
+            for (uint16 i = 0; i < TOTAL_AURAS; i++)
+                if (spellInfo->InitHasAura(AuraType(i)))
+                {
+                    spellInfo->m_hasAura[spellInfo->m_auraCount] = i;
+                    spellInfo->m_auraCount++;
+                }
+
+            for (uint8 i = spellInfo->m_auraCount; i < MAX_SPELL_EFFECTS; i++)
+                spellInfo->m_hasAura[i] = 0;
         }
     }
 

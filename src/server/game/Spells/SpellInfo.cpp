@@ -1151,7 +1151,15 @@ bool SpellInfo::HasEffect(SpellEffects effect) const
     return false;
 }
 
-bool SpellInfo::HasAura(AuraType aura) const
+bool SpellInfo::HasAura(uint16 aura) const
+{
+    for (uint8 i = 0; i < m_auraCount; ++i)
+        if (m_hasAura[i] == aura)
+            return true;
+    return false;
+}
+
+bool SpellInfo::InitHasAura(AuraType aura) const
 {
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         if (Effects[i].IsAura(aura))

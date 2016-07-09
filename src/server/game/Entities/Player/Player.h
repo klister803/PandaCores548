@@ -2945,6 +2945,8 @@ class Player : public Unit, public GridObject<Player>
 
         float m_staticVisibleDistance;
         float m_dynamicVisibleDistance;
+        bool m_inEventZone;
+        Position m_eventZonePointForVisUpdate;
         // currently visible objects at player client
         typedef std::set<uint64> ClientGUIDs;
         ClientGUIDs m_clientGUIDs;
