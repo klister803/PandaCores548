@@ -1045,7 +1045,7 @@ void Spell::SelectImplicitTargetsFromThreadList(SpellEffIndex effIndex, SpellImp
             if(target->IsPlayerLootCooldown(m_spellInfo->Id, TYPE_SPELL, target->GetMap()->GetDifficulty())) //Don`t add player if exist CD
                 continue;
 
-            if (m_caster->GetZoneId() == target->getCurrentUpdateZoneID()) //Check target if this zone
+            if(m_caster->GetZoneId() == target->GetZoneId()) //Check target if this zone
             {
                 AddUnitTarget((Unit*)target, effMask, false, false);
                 m_targets.SetUnitTarget((Unit*)target);
@@ -5830,9 +5830,6 @@ void Spell::ExecuteLogEffectFeedPet(uint8 effIndex, uint32 entry)
 
 void Spell::SendInterrupted(uint8 result)
 {
-    if (!m_spellInfo)
-        return;
-
     ObjectGuid guid = m_caster->GetGUID();
 
     //! 5.4.1

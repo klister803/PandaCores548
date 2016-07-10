@@ -846,14 +846,6 @@ class WorldObject : public Object, public WorldLocation
         bool IgnorePhaseId() const { return m_ignorePhaseIdCheck; }
 
         uint32 GetZoneId() const;
-        uint32 GetCurrentZoneId()
-        {
-            if (m_currentZoneId > 6863)
-                SetCurrentZoneId();
-
-            return m_currentZoneId; 
-        }
-        void SetCurrentZoneId() { m_currentZoneId = GetZoneId(); }
         uint32 GetAreaId() const;
         void GetZoneAndAreaId(uint32& zoneid, uint32& areaid) const;
 
@@ -1100,8 +1092,6 @@ class WorldObject : public Object, public WorldLocation
         uint32 m_phaseMask;                                 // in area phase state
         uint32 m_phaseId;                                   // special phase. It's new generation phase, when we should check id.
         bool m_ignorePhaseIdCheck;                          // like gm mode.
-
-        uint32 m_currentZoneId;
 
         std::list<uint64/* guid*/> _visibilityPlayerList;
 

@@ -736,10 +736,6 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_dynamicVisibleDistance = NORMAL_VISIBILITY_DISTANCE;
     m_staticVisibleDistance = 0.0f;
-    m_inEventZone = false;
-    m_eventZonePointForVisUpdate.m_positionX = 0.0f;
-    m_eventZonePointForVisUpdate.m_positionY = 0.0f;
-    m_eventZonePointForVisUpdate.m_positionZ = 0.0f;
 
     m_ExtraFlags = 0;
 
@@ -1634,7 +1630,7 @@ void Player::HandleDrowning(uint32 time_diff)
     // In dark water
     if ((m_MirrorTimerFlags & UNDERWARER_INDARKWATER) && !GetVehicle() && !isGameMaster())
     {
-        if (GetMapId() == 530 && GetCurrentZoneId() == 3455) // uwow event map
+        if (GetMapId() == 530 && GetZoneId() == 3455) // uwow event map
             return;
 
         // Fatigue timer not activated - activate it
@@ -6743,7 +6739,7 @@ void Player::RepopAtGraveyard()
                 return;
             }
         }*/
-        if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(GetCurrentZoneId()))
+        if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(GetZoneId()))
             ClosestGrave = bf->GetClosestGraveYard(this);
         else
             ClosestGrave = sObjectMgr->GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId(), GetTeam());
@@ -7883,12 +7879,12 @@ void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self)
 
     Trinity::MessageDistDeliverer notifier(this, data, dist);
 
-//     if (Map* map = GetMap())
-//         if (map->IsBattlegroundOrArena())
-//         {
-//             notifier.Visit(map->GetBGArenaObjList());
-//             return;
-//         }
+    if (Map* map = GetMap())
+        if (map->IsBattlegroundOrArena())
+        {
+            notifier.Visit(map->GetBGArenaObjList());
+            return;
+        }
 
     notifier.Visit(m_whoseeme);
 
@@ -7946,12 +7942,12 @@ void Player::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
     float visRange = CalcVisibilityRange();
     Trinity::MessageDistDeliverer notifier(this, data, visRange, false, skipped_rcvr);
 
-//     if (Map* map = GetMap())
-//         if (map->IsBattlegroundOrArena())
-//         {
-//             notifier.Visit(map->GetBGArenaObjList());
-//             return;
-//         }
+    if (Map* map = GetMap())
+        if (map->IsBattlegroundOrArena())
+        {
+            notifier.Visit(map->GetBGArenaObjList());
+            return;
+        }
 
     notifier.Visit(m_whoseeme);
 
@@ -9119,16 +9115,6 @@ void Player::UpdateArea(uint32 newArea)
     }
 
     CalcStaticVisibleDistance(m_zoneUpdateId, newArea);
-
-    if (m_zoneUpdateId == 0 && newArea == 0 && GetMapId() == 530) // event zone
-    {
-        m_inEventZone = true;
-    }
-    else if (m_inEventZone)
-    {
-        m_inEventZone = false;
-        m_eventZonePointForVisUpdate.Relocate(0, 0, 0);
-    }
 
     phaseMgr.RemoveUpdateFlag(PHASE_UPDATE_FLAG_AREA_UPDATE);
 }
@@ -20039,7 +20025,7 @@ void Player::_LoadInventory(PreparedQueryResult result, uint32 timeDiff)
 
     if (result)
     {
-        uint32 zoneId = GetCurrentZoneId();
+        uint32 zoneId = GetZoneId();
 
         std::map<uint32, Bag*> bagMap;                                  // fast guid lookup for bags
         std::map<uint32, Item*> invalidBagMap;                          // fast guid lookup for bags
@@ -25718,7 +25704,7 @@ void Player::UpdateVisibilityOf(WorldObject* target)
             m_clientGUIDs.erase(target->GetGUID());
 
             if (Unit* unit = target->ToUnit())
-                unit->m_whoseeme.remove(this);
+                unit->m_whoseeme.erase(GetGUID());
 
             #ifdef TRINITY_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "Object %u (Type: %u) out of range for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), GetGUIDLow(), GetDistance(target));
@@ -25737,7 +25723,7 @@ void Player::UpdateVisibilityOf(WorldObject* target)
             m_clientGUIDs.insert(target->GetGUID());
 
             if (Unit* unit = target->ToUnit())
-                unit->m_whoseeme.push_back(this);
+                unit->m_whoseeme.insert(GetGUID());
 
             #ifdef TRINITY_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "Object %u (Type: %u) is visible now for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), GetGUIDLow(), GetDistance(target));
@@ -25801,7 +25787,7 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
             RemoveListner(target);
 
             if (Unit* unit = target->ToUnit())
-                unit->m_whoseeme.remove(this);
+                unit->m_whoseeme.erase(GetGUID());
 
             #ifdef TRINITY_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "Object %u (Type: %u, Entry: %u) is out of range for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), target->GetEntry(), GetGUIDLow(), GetDistance(target));
@@ -25820,7 +25806,7 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
             UpdateVisibilityOf_helper(m_clientGUIDs, target, visibleNow);
 
             if (Unit* unit = target->ToUnit())
-                unit->m_whoseeme.push_back(this);
+                unit->m_whoseeme.insert(GetGUID());
 
             #ifdef TRINITY_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "Object %u (Type: %u, Entry: %u) is visible now for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), target->GetEntry(), GetGUIDLow(), GetDistance(target));
@@ -25842,7 +25828,7 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
             RemoveListner(target);
 
             if (Unit* unit = target->ToUnit())
-                unit->m_whoseeme.remove(this);
+                unit->m_whoseeme.erase(GetGUID());
         }
     }
     else
@@ -25854,7 +25840,7 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
             UpdateVisibilityOf_helper(m_clientGUIDs, target, visibleNow);
 
             if (Unit* unit = target->ToUnit())
-                unit->m_whoseeme.push_back(this);
+                unit->m_whoseeme.insert(GetGUID());
         }
     }
 
@@ -25867,66 +25853,89 @@ template void Player::UpdateVisibilityOf(Creature*      target, UpdateData& data
 template void Player::UpdateVisibilityOf(Corpse*        target, UpdateData& data, std::set<Unit*>& visibleNow);
 template void Player::UpdateVisibilityOf(GameObject*    target, UpdateData& data, std::set<Unit*>& visibleNow);
 template void Player::UpdateVisibilityOf(DynamicObject* target, UpdateData& data, std::set<Unit*>& visibleNow);
-template void Player::UpdateVisibilityOf(WorldObject* target, UpdateData& data, std::set<Unit*>& visibleNow);
 
 template void Player::UpdateVisibilityOf(Player*        target, UpdateData& data, std::set<Unit*>& visibleNow, bool canSeeOrDetect);
 template void Player::UpdateVisibilityOf(Creature*      target, UpdateData& data, std::set<Unit*>& visibleNow, bool canSeeOrDetect);
 template void Player::UpdateVisibilityOf(Corpse*        target, UpdateData& data, std::set<Unit*>& visibleNow, bool canSeeOrDetect);
 template void Player::UpdateVisibilityOf(GameObject*    target, UpdateData& data, std::set<Unit*>& visibleNow, bool canSeeOrDetect);
 template void Player::UpdateVisibilityOf(DynamicObject* target, UpdateData& data, std::set<Unit*>& visibleNow, bool canSeeOrDetect);
-template void Player::UpdateVisibilityOf(WorldObject* target, UpdateData& data, std::set<Unit*>& visibleNow, bool canSeeOrDetect);
 
 void Player::UpdateVisibilityForPlayer()
 {
     // updates visibility of all objects around point of view for current player
     Trinity::VisibleNotifier notifier(*this);
-    
-    if (m_inEventZone)
+
+    if (m_staticVisibleDistance)
+        m_seer->VisitNearbyObject(m_staticVisibleDistance, notifier, true);
+    else if (IsInWorld())
     {
-        if (m_eventZonePointForVisUpdate.m_positionX && m_eventZonePointForVisUpdate.m_positionY)
-        {
-            if (GetExactDist2d(m_eventZonePointForVisUpdate.m_positionX, m_eventZonePointForVisUpdate.m_positionY) > 300.0f)
-            {
-                for (auto itr : m_clientGUIDs)
-                    m_extraLookList.erase(itr);
+        float possibleVisibilityRange = sWorld->getIntConfig(CONFIG_MAX_POSSIBLE_VISIBILITY_RANGE);
+        m_dynamicVisibleDistance += 10.0f;
+        if (m_dynamicVisibleDistance > possibleVisibilityRange)
+            m_dynamicVisibleDistance = possibleVisibilityRange;
 
-                m_seer->VisitNearbyGridObject(MAX_VISIBILITY, notifier, true);
-                m_eventZonePointForVisUpdate.Relocate(GetPositionX(), GetPositionY());
-            }
+        float dist = m_dynamicVisibleDistance;
 
-            m_seer->VisitNearbyWorldObject(m_dynamicVisibleDistance, notifier, true);
-        }
+        //uint32 diff = getMSTime();
+
+        if (GetMap()->IsBattlegroundOrArena())
+            notifier.Visit(GetMap()->GetBGArenaObjList());
         else
         {
-            m_seer->VisitNearbyGridObject(MAX_VISIBILITY, notifier, true);
-            m_seer->VisitNearbyWorldObject(m_dynamicVisibleDistance, notifier, true);
-            m_eventZonePointForVisUpdate.Relocate(GetPositionX(), GetPositionY());
-        }
-    }
-    else
-    {
-        if (m_staticVisibleDistance)
-            m_seer->VisitNearbyObject(m_staticVisibleDistance, notifier, true);
-        else if (IsInWorld())
-        {
+            if (!GetZoneId() && !GetAreaId() && GetMapId() == 530) // event zone, guildhouse and etc.
+                dist *= 3;
+
+            m_seer->VisitNearbyObject(dist, notifier, true);
+
             if (Map* getmap = GetMap())
-            {
-                if (getmap->IsBattlegroundOrArena())
-                    notifier.Visit(GetMap()->GetBGArenaObjList());
-                else
-                {
-                    m_dynamicVisibleDistance = sWorld->GetZoneVisibilityRange(getCurrentUpdateZoneID());
-                    m_seer->VisitNearbyObject(m_dynamicVisibleDistance, notifier, true);
-
-                    for (auto itr : getmap->GetImportantCreatureList())
+                for (auto itr : getmap->GetImportantCreatureList())
+                    if (Creature* cre = ObjectAccessor::GetCreature(*this, itr))
                     {
-                        if (!itr->IsInWorld())
-                            continue;
-
-                        notifier.vis_guids.erase(itr->GetGUID());
-                        UpdateVisibilityOf(itr, notifier.i_data, notifier.i_visibleNow);
+                        notifier.vis_guids.erase(cre->GetGUID());
+                        UpdateVisibilityOf(cre, notifier.i_data, notifier.i_visibleNow);
                     }
+
+            //ChatHandler(this).PSendSysMessage("Server delay: %u ms", getMSTimeDiff(diff, getMSTime()));
+            notifier.i_distList.sort(Trinity::UnitSortDistance(true, this));
+            notifier.i_distList.remove(this);
+            uint8 targetsCount = 0;
+            bool updateDynDist = false;
+            float lastObjDist = 0.0f;
+            uint32 maxVisibleUnitsAmount = sWorld->getIntConfig(CONFIG_MAX_VISIBLE_UNITS_AMOUNT);
+            uint32 playerCostForVisibility = sWorld->getIntConfig(CONFIG_PLR_COST_FOR_VISIBILITY);
+            uint32 unitCostForVisibility = sWorld->getIntConfig(CONFIG_UNIT_COST_FOR_VISIBILITY);
+
+            for (auto itr : notifier.i_distList)
+            {
+                if (targetsCount >= maxVisibleUnitsAmount)
+                {
+                    if (!updateDynDist)
+                    {
+                        m_dynamicVisibleDistance = lastObjDist;
+                        updateDynDist = true;
+                    }
+
+                    if (GetPetGUID() == itr->GetGUID())
+                        continue;
+
+                    UpdateVisibilityOf(itr, notifier.i_data, notifier.i_visibleNow, false);
+                    continue;
                 }
+
+                lastObjDist = GetExactDist2d(itr);
+
+                if (Player* plr = itr->ToPlayer())
+                {
+                    UpdateVisibilityOf(plr, notifier.i_data, notifier.i_visibleNow, true);
+                    targetsCount += playerCostForVisibility;
+                    continue;
+                }
+                else if (Creature* cre = itr->ToCreature())
+                    UpdateVisibilityOf(cre, notifier.i_data, notifier.i_visibleNow, true);
+                else
+                    UpdateVisibilityOf(itr, notifier.i_data, notifier.i_visibleNow, true);
+
+                targetsCount += unitCostForVisibility;
             }
         }
     }
@@ -27140,7 +27149,7 @@ void Player::AutoUnequipOffhandIfNeed(bool force /*= false*/)
 
 OutdoorPvP* Player::GetOutdoorPvP() const
 {
-    return sOutdoorPvPMgr->GetOutdoorPvPToZoneId(getCurrentUpdateZoneID());
+    return sOutdoorPvPMgr->GetOutdoorPvPToZoneId(GetZoneId());
 }
 
 bool Player::HasItemFitToSpellRequirements(SpellInfo const* spellInfo, Item const* ignoreItem)
@@ -31310,7 +31319,7 @@ void Player::AddVignette(WorldObject *o)
     PlayerVignette vignette;
     vignette.guid = o->GetVignetteGUID();
     vignette.vignetteId = o->GetVignetteId();
-    vignette.zoneId = o->GetCurrentZoneId();
+    vignette.zoneId = o->GetZoneId();
     vignette.add = true;
     vignette.remove = false;
     vignette.update = false;
