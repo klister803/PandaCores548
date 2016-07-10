@@ -1143,6 +1143,12 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
 
     sScriptMgr->OnPlayerLogin(pCurrChar);
 
+    // this part of code needs for handle restored characters via web
+    if (!sWorld->GetCharacterNameData(pCurrChar->GetGUIDLow()))
+        sWorld->AddCharacterNameData(pCurrChar->GetGUIDLow(), pCurrChar->GetName(), pCurrChar->getGender(), pCurrChar->getRace(), pCurrChar->getClass(), pCurrChar->getLevel());
+    else
+        sWorld->UpdateCharacterNameData(pCurrChar->GetGUIDLow(), pCurrChar->GetName());
+
     delete holder;
 }
 
@@ -1584,6 +1590,7 @@ void WorldSession::HandleCharCustomize(WorldPacket& recvData)
 {
     ObjectGuid guid;
     std::string newName;
+    std::string oldName;
 
     uint8 gender, skin, face, hairStyle, hairColor, facialHair;
     recvData >> skin >> face >> gender >> facialHair >> hairStyle >> hairColor;
@@ -1599,7 +1606,6 @@ void WorldSession::HandleCharCustomize(WorldPacket& recvData)
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_AT_LOGIN);
     stmt->setUInt32(0, GUID_LOPART(guid));
     PreparedQueryResult result = CharacterDatabase.Query(stmt);
-
     if (!result)
     {
         WorldPacket data(SMSG_CHAR_CUSTOMIZE, 1);
@@ -1611,6 +1617,7 @@ void WorldSession::HandleCharCustomize(WorldPacket& recvData)
 
     Field* fields = result->Fetch();
     uint32 at_loginFlags = fields[0].GetUInt16();
+    oldName = fields[1].GetString();
 
     if (!(at_loginFlags & AT_LOGIN_CUSTOMIZE))
     {
@@ -1664,36 +1671,14 @@ void WorldSession::HandleCharCustomize(WorldPacket& recvData)
         }
     }
 
-    stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_NAME);
-    stmt->setUInt32(0, GUID_LOPART(guid));
-    result = CharacterDatabase.Query(stmt);
-    
-    uint16 atLoginFlag;
-
-    if (result)
-    {
-        std::string oldname = result->Fetch()[0].GetString();
-        sLog->outInfo(LOG_FILTER_CHARACTER, "Account: %d (IP: %s), Character[%s] (guid:%u) Customized to: %s", GetAccountId(), GetRemoteAddress().c_str(), oldname.c_str(), GUID_LOPART(guid), newName.c_str());
-        if (newName != oldname)
-          atLoginFlag = uint16(AT_LOGIN_CUSTOMIZE)+AT_LOGIN_RENAME;
-        else 
-          atLoginFlag = uint16(AT_LOGIN_CUSTOMIZE);
-    }
-
+    uint16 atLoginFlag = oldName.compare(newName) != 0 ? AT_LOGIN_CUSTOMIZE | AT_LOGIN_RENAME : AT_LOGIN_CUSTOMIZE;
     Player::Customize(guid, gender, skin, face, hairStyle, hairColor, facialHair);
 
-    stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_NAME_AT_LOGIN);
-
-    stmt->setString(0, newName);
-    stmt->setUInt16(1, atLoginFlag);
-    stmt->setUInt32(2, GUID_LOPART(guid));
-
-    CharacterDatabase.Execute(stmt);
+    // we need direct pexecute we need update data before charenum
+    CharacterDatabase.DirectPExecute("UPDATE `characters` set `name` = '%s', at_login = at_login & ~ %u WHERE `guid` = '%u'", newName.c_str(), atLoginFlag, GUID_LOPART(guid));
 
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_DECLINED_NAME);
-
     stmt->setUInt32(0, GUID_LOPART(guid));
-
     CharacterDatabase.Execute(stmt);
 
     sWorld->UpdateCharacterNameData(GUID_LOPART(guid), newName, gender);
@@ -1866,7 +1851,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
 {
     // TODO: Move queries to prepared statements
     ObjectGuid guid;
-    std::string newname;
+    std::string newName;
     uint8 gender, skin, face, hairStyle, hairColor, facialHair, race = 0;
 
     recvData >> race >> gender;
@@ -1883,7 +1868,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     recvData.ReadGuidMask<7>(guid);
 
     recvData.ReadGuidBytes<2, 4, 6, 7, 3>(guid);
-    newname = recvData.ReadString(len);
+    newName = recvData.ReadString(len);
     recvData.ReadGuidBytes<0, 1, 5>(guid);
 
     facialHair = byte56 ? recvData.read<uint8>() : 0;
@@ -1916,6 +1901,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     uint32 at_loginFlags    = fields[3].GetUInt16();
     uint32 used_loginFlag   = isFactionChange ? AT_LOGIN_CHANGE_FACTION : AT_LOGIN_CHANGE_RACE;
     char const* knownTitlesStr = fields[4].GetCString();
+    std::string oldName = fields[5].GetString();
 
     BattlegroundTeamId oldTeam = BG_TEAM_ALLIANCE;
 
@@ -1977,7 +1963,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     }
 
     // prevent character rename to invalid name
-    if (!normalizePlayerName(newname))
+    if (!normalizePlayerName(newName))
     {
         WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 5);
         data << uint8(CHAR_NAME_NO_NAME);
@@ -1986,7 +1972,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
         return;
     }
 
-    uint8 res = ObjectMgr::CheckPlayerName(newname, true);
+    uint8 res = ObjectMgr::CheckPlayerName(newName, true);
     if (res != CHAR_NAME_SUCCESS)
     {
         WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 5);
@@ -1997,7 +1983,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     }
 
     // check name limitations
-    if (AccountMgr::IsPlayerAccount(GetSecurity()) && sObjectMgr->IsReservedName(newname))
+    if (AccountMgr::IsPlayerAccount(GetSecurity()) && sObjectMgr->IsReservedName(newName))
     {
         WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 5);
         data << uint8(CHAR_NAME_RESERVED);
@@ -2007,7 +1993,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     }
 
     // character with this name already exist
-    if (uint64 newguid = ObjectMgr::GetPlayerGUIDByName(newname))
+    if (uint64 newguid = ObjectMgr::GetPlayerGUIDByName(newName))
     {
         if (newguid != guid)
         {
@@ -2019,16 +2005,16 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
         }
     }
     
-    CharacterDatabase.EscapeString(newname);
+    CharacterDatabase.EscapeString(newName);
+
+    if (newName.compare(oldName) != 0)
+        used_loginFlag |= AT_LOGIN_RENAME;
+
     Player::Customize(guid, gender, skin, face, hairStyle, hairColor, facialHair);
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
-
-    stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_FACTION_OR_RACE);
-    stmt->setString(0, newname);
-    stmt->setUInt8 (1, race);
-    stmt->setUInt16(2, used_loginFlag);
-    stmt->setUInt32(3, lowGuid);
-    trans->Append(stmt);
+   
+    // here's need directpexecute because need update data before charenum opcode
+    CharacterDatabase.DirectPExecute("UPDATE characters SET `name` = '%s', `race` = '%u', `at_login` = at_login & ~ %u WHERE `guid` = '%u'", newName.c_str(), race, used_loginFlag, lowGuid);
 
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_FACTION_OR_RACE_LOG);
     stmt->setUInt32(0, lowGuid);
@@ -2041,7 +2027,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     stmt->setUInt32(0, lowGuid);
     trans->Append(stmt);
 
-    sWorld->UpdateCharacterNameData(GUID_LOPART(guid), newname, gender, race);
+    sWorld->UpdateCharacterNameData(GUID_LOPART(guid), newName, gender, race);
 
     BattlegroundTeamId team = BG_TEAM_ALLIANCE;
 
@@ -2412,12 +2398,12 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     CharacterDatabase.CommitTransaction(trans);
 
     std::string IP_str = GetRemoteAddress();
-    sLog->outDebug(LOG_FILTER_UNITS, "Account: %d (IP: %s), Character guid: %u Change Race/Faction to: %s", GetAccountId(), IP_str.c_str(), lowGuid, newname.c_str());
+    sLog->outDebug(LOG_FILTER_UNITS, "Account: %d (IP: %s), Character guid: %u Change Race/Faction to: %s", GetAccountId(), IP_str.c_str(), lowGuid, newName.c_str());
 
-    WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 1 + 8 + (newname.size() + 1) + 1 + 1 + 1 + 1 + 1 + 1 + 1);
+    WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 1 + 8 + (newName.size() + 1) + 1 + 1 + 1 + 1 + 1 + 1 + 1);
     data << uint8(RESPONSE_SUCCESS);
     data << uint64(guid);
-    data << newname;
+    data << newName;
     data << uint8(gender);
     data << uint8(skin);
     data << uint8(face);
