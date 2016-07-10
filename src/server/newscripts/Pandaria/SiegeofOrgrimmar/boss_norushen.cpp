@@ -425,7 +425,7 @@ public:
             _EnterCombat();
             me->AddAura(SPELL_ICY_FEAR, me);
             ApplyOrRemoveBar(true);
-            //events.ScheduleEvent(EVENT_CHECK_VICTIM, 2000); //for debug
+            events.ScheduleEvent(EVENT_CHECK_VICTIM, 2000);
             events.ScheduleEvent(EVENT_UNLEASHED_ANGER, 11000);
             events.ScheduleEvent(EVENT_QUARANTINE_SAFETY, 420000);
             events.ScheduleEvent(EVENT_BLIND_HATRED, 12000);
@@ -464,8 +464,8 @@ public:
 
         void UpdateAI(uint32 diff)
         {
-            //if (!UpdateVictim()) //for debug
-                //return;
+            if (!UpdateVictim())
+                return;
 
             events.Update(diff);
 
@@ -831,12 +831,12 @@ public:
 
         void IsSummonedBy(Unit* summoner)
         {
-            me->SetReactState(REACT_PASSIVE);
+            me->SetReactState(REACT_DEFENSIVE);
             targetGuid = summoner->ToPlayer() ? summoner->GetGUID() : 0;
             me->CastSpell(me, SPELL_STEALTH_AND_INVISIBILITY_DETECT, true);
             me->SetPhaseId(summoner->GetGUID(), true);
             me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
-            attack = 5000;
+            attack = 8000;
         }
 
         void JustDied(Unit* killer)
@@ -844,6 +844,10 @@ public:
             if (Player* plr = me->GetPlayer(*me, targetGuid))
                 if (plr->isAlive())
                     plr->CastSpell(plr, SPELL_CLEANSE_40, true);
+
+            if (Creature* amalgam = me->GetCreature(*me, instance->GetData64(NPC_AMALGAM_OF_CORRUPTION)))
+                amalgam->CastSpell(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), SPELL_SPAWN_VICTORY_ORB_DD_BIG);
+            me->DespawnOrUnsummon();
         }
 
         void UpdateAI(uint32 diff)
@@ -1070,7 +1074,7 @@ public:
             me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             me->DespawnOrUnsummon(60000);
             me->SetInCombatWithZone();
-            attack = 5000;
+            attack = 8000;
         }
 
         void EnterCombat(Unit* who)
@@ -1674,12 +1678,9 @@ public:
         {
             if (GetCaster() && GetHitUnit())
             {
-                uint32 pre_mod = GetHitDamage() / 100;
-                uint32 pct_mod = 100 - (uint32)floor(GetCaster()->GetHealthPct());
-                if ((pre_mod*pct_mod) > 0)
-                    SetHitDamage(GetHitDamage() + (pre_mod*pct_mod));
-                else
-                    SetHitDamage(GetHitDamage());
+                uint32 mod = 1200;
+                uint32 pctmod = 100 - (uint32)floor(GetCaster()->GetHealthPct());
+                SetHitDamage(GetHitDamage() + mod*pctmod);
             }
         }
 
@@ -1774,60 +1775,60 @@ public:
 
         void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+            if (GetTarget())
             {
                 GetTarget()->RemoveAurasDueToSpell(getPhaseSpell());
-                if (Player* pl = GetTarget()->ToPlayer())
+                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
                 {
-                    pl->RemoveAurasDueToSpell(getPhaseSpell());
-                    uint8 spec = pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec()));
-                    switch (spec)
+                    if (Player* pl = GetTarget()->ToPlayer())
                     {
-                    case ROLES_HEALER:
-                        pl->RemoveAllMinionsByEntry(NPC_GREATER_CORRUPTION);
-                        pl->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_1);
-                        pl->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_2);
-                        pl->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_3);
-                        break;
-                    case ROLES_TANK:
-                        pl->RemoveAllMinionsByEntry(NPC_TITANIC_CORRUPTION);
-                        break;
-                    default:
-                        break;
+                        uint8 spec = pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec()));
+                        switch (spec)
+                        {
+                        case ROLES_HEALER:
+                            pl->RemoveAllMinionsByEntry(NPC_GREATER_CORRUPTION);
+                            pl->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_1);
+                            pl->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_2);
+                            pl->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_3);
+                            break;
+                        case ROLES_TANK:
+                            pl->RemoveAllMinionsByEntry(NPC_TITANIC_CORRUPTION);
+                            break;
+                        default:
+                            break;
+                        }
                     }
-                    pl->SetPhaseId(0, true);
                 }
-            }
-            else if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_DEFAULT)
-            {
-                if (Player* pl = GetTarget()->ToPlayer())
+                else if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_DEFAULT)
                 {
-                    pl->RemoveAurasDueToSpell(getPhaseSpell());
-                    pl->CastSpell(GetTarget(), SPELL_PURIFIED_CHALLENGE, true);
-                    uint8 spec = pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec()));
-                    switch (spec)
+                    if (Player* pl = GetTarget()->ToPlayer())
                     {
-                    case ROLES_HEALER:
-                        pl->RemoveAllMinionsByEntry(NPC_GREATER_CORRUPTION);
-                        pl->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_1);
-                        pl->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_2);
-                        pl->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_3);
-                        pl->CastCustomSpell(SPELL_PURIFIED, SPELLVALUE_BASE_POINT0, 25.0f, pl, true);
-                        break;
-                    case ROLES_TANK:
-                        pl->RemoveAllMinionsByEntry(NPC_TITANIC_CORRUPTION);
-                        pl->CastCustomSpell(SPELL_PURIFIED, SPELLVALUE_BASE_POINT1, -25.0f, pl, true);
-                        break;
-                    case ROLES_DPS:
-                        pl->RemoveAllMinionsByEntry(NPC_MANIFESTATION_OF_CORRUPTION_C);
-                        pl->RemoveAllMinionsByEntry(NPC_ESSENCE_OF_CORRUPTION_C);
-                        pl->CastCustomSpell(SPELL_PURIFIED, SPELLVALUE_BASE_POINT3, 25.0f, pl, true);
-                        break;
-                    default:
-                        break;
+                        pl->CastSpell(GetTarget(), SPELL_PURIFIED_CHALLENGE, true);
+                        uint8 spec = pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec()));
+                        switch (spec)
+                        {
+                        case ROLES_HEALER:
+                            pl->RemoveAllMinionsByEntry(NPC_GREATER_CORRUPTION);
+                            pl->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_1);
+                            pl->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_2);
+                            pl->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_3);
+                            pl->CastCustomSpell(SPELL_PURIFIED, SPELLVALUE_BASE_POINT0, 25.0f, pl, true);
+                            break;
+                        case ROLES_TANK:
+                            pl->RemoveAllMinionsByEntry(NPC_TITANIC_CORRUPTION);
+                            pl->CastCustomSpell(SPELL_PURIFIED, SPELLVALUE_BASE_POINT1, -25.0f, pl, true);
+                            break;
+                        case ROLES_DPS:
+                            pl->RemoveAllMinionsByEntry(NPC_MANIFESTATION_OF_CORRUPTION_C);
+                            pl->RemoveAllMinionsByEntry(NPC_ESSENCE_OF_CORRUPTION_C);
+                            pl->CastCustomSpell(SPELL_PURIFIED, SPELLVALUE_BASE_POINT3, 25.0f, pl, true);
+                            break;
+                        default:
+                            break;
+                        }
                     }
-                    pl->SetPhaseId(0, true);
                 }
+                GetTarget()->SetPhaseId(0, true);
             }
         }
 
