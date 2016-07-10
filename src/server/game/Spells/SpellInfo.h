@@ -443,6 +443,8 @@ public:
     int32  MaxScalingLevel;
     int32  ScalesFromItemLevel;
     SpellEffectInfo Effects[MAX_SPELL_EFFECTS];
+    uint16 m_hasAura[MAX_SPELL_EFFECTS];
+    uint8 m_auraCount;
     SpellEffectInfoMap EffectsMap;
     SpellTargetRestrictionsMap RestrrictionsMap;
     uint32 ExplicitTargetMask;
@@ -482,7 +484,8 @@ public:
     SpellEffectInfo const* GetEffect(uint8 effect, uint8 difficulty = 0) const;
     SpellEffectInfo * GetDifficultyEffectInfo(uint8 effect, uint8 difficulty);
     bool HasEffect(SpellEffects effect) const;
-    bool HasAura(AuraType aura) const;
+    bool HasAura(uint16 aura) const;
+    bool InitHasAura(AuraType aura) const;
     bool HasAreaAuraEffect() const;
     bool HasDynAuraEffect() const;
     bool IsMountOrCompanions() const;

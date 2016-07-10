@@ -2154,7 +2154,7 @@ void WorldSession::HandleAreaSpiritHealerQueryOpcode(WorldPacket& recv_data)
     if (bg)
         sBattlegroundMgr->SendAreaSpiritHealerQueryOpcode(_player, bg, guid);
 
-    if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(_player->GetZoneId()))
+    if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(_player->getCurrentUpdateZoneID()))
         bf->SendAreaSpiritHealerQueryOpcode(_player,guid);
 }
 
@@ -2178,7 +2178,7 @@ void WorldSession::HandleAreaSpiritHealerQueueOpcode(WorldPacket& recv_data)
     if (bg)
         bg->AddPlayerToResurrectQueue(guid, _player->GetGUID());
 
-    if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(_player->GetZoneId()))
+    if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(_player->getCurrentUpdateZoneID()))
     {
         bf->RemovePlayerFromResurrectQueue(_player->GetGUID()); //remove as we already add me one time on HandleRepopRequestOpcode
         bf->AddPlayerToResurrectQueue(guid, _player->GetGUID());
@@ -2194,7 +2194,7 @@ void WorldSession::HandleHearthAndResurrect(WorldPacket& /*recvData*/)
     if (!atEntry || !(atEntry->flags & AREA_FLAG_WINTERGRASP_2))
         return;
 
-    Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(_player->GetZoneId());
+    Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(_player->getCurrentUpdateZoneID());
     if (!bf || !bf->IsWarTime())
         return;
 

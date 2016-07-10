@@ -2403,12 +2403,8 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
         float dist = CalcVisibilityRange(obj);
 
         if (Player const* player = ToPlayer())
-        {
             viewpoint = player->GetViewpoint();
 
-            if (obj->GetTypeName(HIGHGUID_GAMEOBJECT) && !GetZoneId())
-                dist = player->m_dynamicVisibleDistance * 3;
-        }
 
         if (!viewpoint)
             viewpoint = this;
@@ -2734,11 +2730,11 @@ void WorldObject::MonsterYellToZone(int32 textId, uint32 language, uint64 Target
     Trinity::MonsterChatBuilder say_build(*this, CHAT_MSG_MONSTER_YELL, textId, language, TargetGuid);
     Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> say_do(say_build);
 
-    uint32 zoneid = GetZoneId();
+    uint32 zoneid = GetCurrentZoneId();
 
     Map::PlayerList const& pList = GetMap()->GetPlayers();
     for (Map::PlayerList::const_iterator itr = pList.begin(); itr != pList.end(); ++itr)
-        if (itr->getSource()->GetZoneId() == zoneid)
+        if (itr->getSource()->getCurrentUpdateZoneID() == zoneid)
             say_do(itr->getSource());
 }
 
@@ -2815,23 +2811,28 @@ void WorldObject::SendMessageToSetInRange(WorldPacket* data, float dist, bool /*
 {
     if (Unit* unit = ToUnit())
     {
-        std::set<uint64> removePlrList;
+        std::list<Player*> removePlrList;
 
         for (auto itr : unit->m_whoseeme)
-            if (Player* plr = ObjectAccessor::GetPlayer(*unit, itr))
+        {
+            if (!itr->IsInWorld())
             {
-                if (!plr->HaveAtClient(unit))
-                {
-                    removePlrList.insert(plr->GetGUID());
-                    continue;
-                }
-
-                if (WorldSession* session = plr->GetSession())
-                    session->SendPacket(data);
+                removePlrList.push_back(itr);
+                continue;
             }
 
+            if (!itr->HaveAtClient(unit))
+            {
+                removePlrList.push_back(itr);
+                continue;
+            }
+
+            if (WorldSession* session = itr->GetSession())
+                session->SendPacket(data);
+        }
+
         for (auto itr : removePlrList)
-            unit->m_whoseeme.erase(itr);
+            unit->m_whoseeme.remove(itr);
     }
     else
     {
@@ -3048,14 +3049,14 @@ void WorldObject::SetZoneScript()
             m_zoneScript = (ZoneScript*)((InstanceMap*)map)->GetInstanceScript();
         else if (!map->IsBattlegroundOrArena())
         {
-            if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(GetZoneId()))
+            if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(GetCurrentZoneId()))
                 m_zoneScript = bf;
             else
             {
-                if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(GetZoneId()))
+                if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(GetCurrentZoneId()))
                     m_zoneScript = bf;
                 else
-                    m_zoneScript = sOutdoorPvPMgr->GetZoneScript(GetZoneId());
+                    m_zoneScript = sOutdoorPvPMgr->GetZoneScript(GetCurrentZoneId());
             }
         }
     }
@@ -3810,48 +3811,41 @@ struct WorldObjectChangeAccumulator
         }
     }
 
-    void Visit(std::set<uint64> objList)
+    void Visit(std::list<WorldObject*> objList)
     {
         for (auto itr : objList)
         {
-            if (IS_PLAYER_GUID(itr))
-            {
-                if (Player* plr = ObjectAccessor::FindPlayer(itr))
-                {
-                    BuildPacket(plr);
+            if (!itr->IsInWorld())
+                continue;
 
-                    if (!plr->GetSharedVisionList().empty())
-                    {
-                        SharedVisionList::const_iterator it = plr->GetSharedVisionList().begin();
-                        for (; it != plr->GetSharedVisionList().end(); ++it)
-                            BuildPacket(*it);
-                    }
+            if (Player* plr = itr->ToPlayer())
+            {
+                BuildPacket(plr);
+
+                if (!plr->GetSharedVisionList().empty())
+                {
+                    SharedVisionList::const_iterator it = plr->GetSharedVisionList().begin();
+                    for (; it != plr->GetSharedVisionList().end(); ++it)
+                        BuildPacket(*it);
                 }
             }
-            else if (IS_CREATURE_GUID(itr))
-            {
-                if (Creature* cre = ObjectAccessor::GetCreature(i_object, itr))
-                    if (!cre->GetSharedVisionList().empty())
-                    {
-                        SharedVisionList::const_iterator it = cre->GetSharedVisionList().begin();
-                        for (; it != cre->GetSharedVisionList().end(); ++it)
-                            BuildPacket(*it);
-                    }
-            }
-            else if (IS_DYNAMICOBJECT_GUID(itr))
-            {
-                if (DynamicObject* DO = ObjectAccessor::GetDynamicObject(i_object, itr))
-                {
-                    uint64 guid = DO->GetCasterGUID();
+        }
+    }
 
-                    if (IS_PLAYER_GUID(guid))
-                    {
-                        //Caster may be NULL if DynObj is in removelist
-                        if (Player* caster = ObjectAccessor::FindPlayer(guid))
-                            if (caster->GetUInt64Value(PLAYER_FARSIGHT) == itr)
-                                BuildPacket(caster);
-                    }
-                }
+    void Visit(std::list<Player*> plrList)
+    {
+        for (auto itr : plrList)
+        {
+            if (!itr->IsInWorld())
+                continue;
+
+            BuildPacket(itr);
+
+            if (!itr->GetSharedVisionList().empty())
+            {
+                SharedVisionList::const_iterator it = itr->GetSharedVisionList().begin();
+                for (; it != itr->GetSharedVisionList().end(); ++it)
+                    BuildPacket(*it);
             }
         }
     }

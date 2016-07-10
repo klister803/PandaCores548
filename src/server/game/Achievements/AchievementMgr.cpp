@@ -332,7 +332,7 @@ bool AchievementCriteriaData::Meets(uint32 criteria_id, Player const* source, Un
         case ACHIEVEMENT_CRITERIA_DATA_TYPE_S_AURA:
             return source->HasAuraEffect(aura.spell_id, aura.effect_idx);
         case ACHIEVEMENT_CRITERIA_DATA_TYPE_S_AREA:
-            return area.id == source->GetZoneId() || area.id == source->GetAreaId();
+            return area.id == source->getCurrentUpdateZoneID() || area.id == source->GetAreaId();
         case ACHIEVEMENT_CRITERIA_DATA_TYPE_T_AURA:
             return target && target->HasAuraEffect(aura.spell_id, aura.effect_idx);
         case ACHIEVEMENT_CRITERIA_DATA_TYPE_VALUE:
@@ -4269,7 +4269,7 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
                 }
                 case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_AREA_OR_ZONE: // 17
                 {
-                    if (referencePlayer->GetZoneId() != reqValue && referencePlayer->GetAreaId() != reqValue)
+                    if (referencePlayer->getCurrentUpdateZoneID() != reqValue && referencePlayer->GetAreaId() != reqValue)
                         check = false;
                     break;
                 }
@@ -4387,7 +4387,7 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
                     if (!unit || unit->getLevel() != reqValue)
                         check = false;
                 case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_ZONE: // 41
-                    if (referencePlayer->GetZoneId() != reqValue)
+                    if (referencePlayer->getCurrentUpdateZoneID() != reqValue)
                         check = false;
                     break;
                 case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_HEALTH_PERCENT_BELOW: // 46
