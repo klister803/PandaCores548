@@ -5094,12 +5094,14 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 //Norushen
                 case 144848: //Titanic Corruption Summon
-                case 144739: //Manofestation of Corruption Summon
+                case 144739: //Manifestation of Corruption Summon
+                case 144980: //Greater Corruption
                     spellInfo->Effects[0].TargetA = TARGET_DEST_DEST;
                     break;
                 case 144514:    //Lingering Corruption
-                    spellInfo->CustomMaxAffectedTargets = 1; //used if empty on dbc SpellTargetRestrictionsEntry
                     spellInfo->SchoolMask |= SPELL_SCHOOL_MASK_NORMAL;
+                    spellInfo->Effects[2].TargetA = 25;
+                    spellInfo->Effects[0].TargetB = 0;
                     break;
                 case 147082:    //Burst of Anger
                     spellInfo->TargetAuraSpell = 144421;
@@ -5110,7 +5112,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 145735:    //Icy Fear Dmg
                 case 145073:    //Residual Corruption
-                    spellInfo->TargetAuraSpell = 0;
+                    spellInfo->TargetAuraSpell = 0;  
                     break;
                 case 144421:    //Corruption
                     for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)

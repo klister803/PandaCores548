@@ -71,6 +71,9 @@ enum eSpells
     SPELL_PURIFIED_CHALLENGE        = 146022,
     SPELL_PURIFIED                  = 144452,
 
+    SPELL_BOTTOMLESS_PIT_AT         = 146793,
+    SPELL_BOTTOMLESS_PIT_DMG        = 146703,
+
     //Test for players
     SPELL_TEST_OF_SERENITY          = 144849, //dd
     SPELL_TEST_OF_RELIANCE          = 144850, //heal
@@ -137,9 +140,11 @@ enum sData
 enum sAction
 {
     //Blind Hatred
-    ACTION_START_EVENT         = 1,
+    ACTION_START_EVENT            = 1,
     //Residual corruption
-    ACTION_DESPAWN             = 2,
+    ACTION_DESPAWN                = 2,
+
+    ACTION_ESCAPE_FROM_VOID_ZONE  = 3,
 };
 
 Position eofcpos[4] =
@@ -390,6 +395,7 @@ public:
         void Reset()
         {
             _Reset();
+            DespawnOwerSummons();
             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PURIFIED);
             me->RemoveAllAuras();
             me->SetReactState(REACT_DEFENSIVE);
@@ -398,6 +404,16 @@ public:
             FrayedCounter = 0;
             if (Creature* HealChGreater = me->FindNearestCreature(NPC_GREATER_CORRUPTION, 200.0f))
                 me->Kill(HealChGreater);
+        }
+
+        void DespawnOwerSummons()
+        {
+            std::list<Creature*>addlist;
+            addlist.clear();
+            GetCreatureListWithEntryInGrid(addlist, me, NPC_RESIDUAL_CORRUPTION, 150.0f);
+            if (!addlist.empty())
+                for (std::list<Creature*>::const_iterator itr = addlist.begin(); itr != addlist.end(); itr++)
+                    (*itr)->DespawnOrUnsummon();
         }
 
         void IsSummonedBy(Unit* summoner)
@@ -458,7 +474,7 @@ public:
         {
             _JustDied();
             ApplyOrRemoveBar(false);
-            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+            DespawnOwerSummons();
             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PURIFIED);
         }
 
@@ -1173,16 +1189,14 @@ public:
 
         enum spells
         {
-            SPELL_BOTTOMLESS_PIT             = 146705,
             SPELL_DISHEARTENING_LAUGH        = 146707,
             SPELL_LINGERING_CORRUPTION       = 144514,
         };
 
         enum events
         {
-            EVENT_SPELL_BOTTOMLESS_PIT       = 1,
-            EVENT_SPELL_DISHEARTENING_LAUGH  = 2,
-            EVENT_SPELL_LINGERING_CORRUPTION = 3,
+            EVENT_SPELL_DISHEARTENING_LAUGH  = 1,
+            EVENT_SPELL_LINGERING_CORRUPTION = 2,
         };
 
         InstanceScript* pInstance;
@@ -1197,6 +1211,7 @@ public:
 
         void IsSummonedBy(Unit* summoner)
         {
+            me->SetReactState(REACT_PASSIVE);
             targetGuid = summoner->ToPlayer() ? summoner->GetGUID() : 0;
             me->SetPhaseId(summoner->GetGUID(), true);
             me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
@@ -1205,7 +1220,6 @@ public:
 
         void EnterCombat(Unit* who)
         {
-            events.ScheduleEvent(EVENT_SPELL_BOTTOMLESS_PIT, 17000);
             events.ScheduleEvent(EVENT_SPELL_DISHEARTENING_LAUGH, 12000);
             events.ScheduleEvent(EVENT_SPELL_LINGERING_CORRUPTION, 14000);
         }
@@ -1263,18 +1277,26 @@ public:
             {
                 switch (eventId)
                 {
-                case EVENT_SPELL_BOTTOMLESS_PIT:
-                    DoCast(me, SPELL_BOTTOMLESS_PIT);
-                    events.ScheduleEvent(EVENT_SPELL_BOTTOMLESS_PIT, 17000);
-                    break;
                 case EVENT_SPELL_DISHEARTENING_LAUGH:
                     DoCast(me, SPELL_DISHEARTENING_LAUGH);
                     events.ScheduleEvent(EVENT_SPELL_DISHEARTENING_LAUGH, 12000);
                     break;
                 case EVENT_SPELL_LINGERING_CORRUPTION:
-                    DoCastVictim(SPELL_LINGERING_CORRUPTION);
+                {
+                    for (uint8 n = 0; n < 3; n++)
+                    {
+                        if (Creature* battlenpc = me->FindNearestCreature(combatnpc[n], 100.0f, true))
+                        {
+                            if (!battlenpc->HasAura(SPELL_LINGERING_CORRUPTION))
+                            {
+                                DoCast(battlenpc, SPELL_LINGERING_CORRUPTION, true);
+                                break;
+                            }
+                        }
+                    }
                     events.ScheduleEvent(EVENT_SPELL_LINGERING_CORRUPTION, 14000);
-                    break;
+                }
+                break;
                 }
             }
             DoMeleeAttackIfReady();
@@ -1312,6 +1334,16 @@ public:
 
             if (damage >= me->GetHealth())
                 damage = 0;
+        }
+
+        void DoAction(int32 const action)
+        {
+            if (action == ACTION_ESCAPE_FROM_VOID_ZONE)
+            {
+                Position pos;
+                me->GetNearPosition(pos, 5.0f, 5.3f);
+                me->GetMotionMaster()->MoveCharge(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), 3.0f);
+            }
         }
 
         void HealReceived(Unit* /*done_by*/, uint32& addhealth)
@@ -1362,6 +1394,16 @@ public:
             me->SetPhaseId(summoner->GetGUID(), true);
             me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             DoCast(me, SPELL_PROTECTORS_DD);
+        }
+
+        void DoAction(int32 const action)
+        {
+            if (action == ACTION_ESCAPE_FROM_VOID_ZONE)
+            {
+                Position pos;
+                me->GetNearPosition(pos, 5.0f, 6.0f);
+                me->GetMotionMaster()->MoveCharge(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), 3.0f);
+            }
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -1443,6 +1485,16 @@ public:
         void EnterCombat(Unit* who)
         {
             events.ScheduleEvent(EVENT_2, 5000);
+        }
+
+        void DoAction(int32 const action)
+        {
+            if (action == ACTION_ESCAPE_FROM_VOID_ZONE)
+            {
+                Position pos;
+                me->GetNearPosition(pos, 5.0f, 5.3f);
+                me->GetMotionMaster()->MoveCharge(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), 3.0f);
+            }
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -1997,6 +2049,63 @@ public:
     }
 };
 
+//144514
+class spell_lingering_corruption : public SpellScriptLoader
+{
+public:
+    spell_lingering_corruption() : SpellScriptLoader("spell_lingering_corruption") { }
+
+    class spell_lingering_corruption_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_lingering_corruption_AuraScript);
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+        {
+            if (GetCaster() && GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_ENEMY_SPELL)
+                GetCaster()->CastSpell(GetTarget(), SPELL_BOTTOMLESS_PIT_AT, true);
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_lingering_corruption_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_lingering_corruption_AuraScript();
+    }
+};
+
+
+//146703
+class spell_bottomless_pit : public SpellScriptLoader
+{
+public:
+    spell_bottomless_pit() : SpellScriptLoader("spell_bottomless_pit") { }
+
+    class spell_bottomless_pit_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_bottomless_pit_AuraScript);
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetTarget() && GetTarget()->ToCreature())
+                GetTarget()->ToCreature()->AI()->DoAction(ACTION_ESCAPE_FROM_VOID_ZONE);
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_bottomless_pit_AuraScript::OnApply, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_bottomless_pit_AuraScript();
+    }
+};
+
 void AddSC_boss_norushen()
 {
     new boss_norushen();
@@ -2025,4 +2134,6 @@ void AddSC_boss_norushen()
     new spell_essence_expel_corruption();
     new spell_burst_of_anger();
     new spell_corrupt();
+    new spell_lingering_corruption();
+    new spell_bottomless_pit();
 }
