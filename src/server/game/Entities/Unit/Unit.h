@@ -2161,7 +2161,7 @@ class Unit : public WorldObject
         LiquidData liquid_status;
         ZLiquidStatus Zliquid_status;
 
-        std::list<Player*> m_whoseeme;
+        std::set<uint64> m_whoseeme;
 
         float m_threatModifier[MAX_SPELL_SCHOOL];
         float m_modAttackSpeedPct[3];

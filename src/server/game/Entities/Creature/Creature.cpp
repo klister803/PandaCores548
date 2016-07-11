@@ -236,7 +236,7 @@ void Creature::AddToWorld()
                 m_isImportantForVisibility = true;
 
                 if (Map* mapInfo = GetMap())
-                    mapInfo->AddImportantCreature(this);
+                    mapInfo->AddImportantCreature(GetGUID());
             }
     }
 }
@@ -247,7 +247,7 @@ void Creature::RemoveFromWorld()
     {
         if (m_isImportantForVisibility)
             if (Map* mapInfo = GetMap())
-                mapInfo->RemoveImportantCreature(this);
+                mapInfo->RemoveImportantCreature(GetGUID());
 
         if (m_zoneScript)
             m_zoneScript->OnCreatureRemove(this);
@@ -1305,7 +1305,7 @@ void Creature::SelectLevel(const CreatureTemplate* cinfo)
     if (cinfo->type == CREATURE_TYPE_WILD_PET)
     {
         // random level depends on zone data
-        if (AreaTableEntry const * aEntry = GetAreaEntryByAreaID(GetCurrentZoneId()))
+        if (AreaTableEntry const * aEntry = GetAreaEntryByAreaID(GetZoneId()))
         {
             uint8 level_ = urand(aEntry->m_wildBattlePetLevelMin, aEntry->m_wildBattlePetLevelMax);
             if (!level_)

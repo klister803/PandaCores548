@@ -1232,7 +1232,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
         buffer << uint16(player->getLevel());
 
     if (mask & GROUP_UPDATE_FLAG_ZONE)
-        buffer << uint16(player->getCurrentUpdateZoneID());
+        buffer << uint16(player->GetZoneId());
 
     if (mask & GROUP_UPDATE_FLAG_UNK100)
         buffer << uint16(0);
