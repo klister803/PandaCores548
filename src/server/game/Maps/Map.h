@@ -276,16 +276,16 @@ class Map : public GridRefManager<NGridType>
 
         float GetMapVisibleDistance() const { return m_VisibleDistance; }
         float GetMaxPossibleVisibilityRange() { return m_maxPossibleVisibilityRange; }
-        void AddImportantCreature(uint64 guid) { m_importantForVisibilityCreatureList.insert(guid); }
-        void RemoveImportantCreature(uint64 guid) { m_importantForVisibilityCreatureList.erase(guid); }
-        std::set<uint64> GetImportantCreatureList() { return m_importantForVisibilityCreatureList; }
+        void AddImportantCreature(Creature* cre) { m_importantForVisibilityCreatureList.push_back(cre); }
+        void RemoveImportantCreature(Creature* cre) { m_importantForVisibilityCreatureList.remove(cre); }
+        std::list<Creature*> GetImportantCreatureList() { return m_importantForVisibilityCreatureList; }
 
         //function for setting up visibility distance for maps on per-type/per-Id basis
         virtual void InitVisibilityDistance();
 
-        void AddBGArenaObj(uint64 obj) { m_BGArenaObjList.insert(obj); }
-        void RemoveBGArenaObj(uint64 obj) { m_BGArenaObjList.erase(obj); }
-        std::set<uint64> GetBGArenaObjList() { return m_BGArenaObjList; }
+        void AddBGArenaObj(WorldObject* obj) { m_BGArenaObjList.push_back(obj); }
+        void RemoveBGArenaObj(WorldObject* obj) { m_BGArenaObjList.remove(obj); }
+        std::list<WorldObject*> GetBGArenaObjList() { return m_BGArenaObjList; }
 
         void PlayerRelocation(Player*, float x, float y, float z, float orientation);
         void CreatureRelocation(Creature* creature, float x, float y, float z, float ang, bool respawnRelocationOnFail = true);
@@ -575,11 +575,13 @@ class Map : public GridRefManager<NGridType>
         float m_maxPossibleVisibilityRange;
         DynamicMapTree _dynamicTree;
 
+        
+
         MapRefManager m_mapRefManager;
         MapRefManager::iterator m_mapRefIter;
 
-        std::set<uint64> m_BGArenaObjList;
-        std::set<uint64> m_importantForVisibilityCreatureList;
+        std::list<WorldObject*> m_BGArenaObjList;
+        std::list<Creature*> m_importantForVisibilityCreatureList;
 
         int32 m_VisibilityNotifyPeriod;
 
