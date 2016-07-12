@@ -44,14 +44,14 @@ namespace Trinity
         UpdateData i_data;
         std::set<Unit*> i_visibleNow;
         Player::ClientGUIDs vis_guids;
+        std::list<WorldObject*> i_distList;
 
         VisibleNotifier(Player &player) : i_player(player), i_data(player.GetMapId()), vis_guids(player.m_clientGUIDs) {}
         template<class T> void Visit(GridRefManager<T> &m);
 
         void Visit(CreatureMapType &);
-        void Visit(PlayerMapType &);
         void Visit(GameObjectMapType &);
-        void Visit(std::list<WorldObject*> objList);
+        void Visit(std::set<uint64> objList);
         void SendToSelf(void);
     };
 
@@ -65,7 +65,7 @@ namespace Trinity
         void Visit(CreatureMapType &);
         void Visit(DynamicObjectMapType &);
         void Visit(AreaTriggerMapType &);
-        void Visit(std::list<WorldObject*> objList);
+        void Visit(std::set<uint64> objList);
     };
 
     struct PlayerRelocationNotifier : public VisibleNotifier
@@ -145,8 +145,7 @@ namespace Trinity
         void Visit(PlayerMapType &m);
         void Visit(CreatureMapType &m);
         void Visit(DynamicObjectMapType &m);
-        void Visit(std::list<WorldObject*> objList);
-        void Visit(std::list<Player*> plrList);
+        void Visit(std::set<uint64> objList);
         template<class SKIP> void Visit(GridRefManager<SKIP> &) {}
 
         void SendPacket(Player* player)

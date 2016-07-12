@@ -870,7 +870,7 @@ void BattlefieldWG::OnPlayerJoinWar(Player* player)
     player->CastSpell(player, SPELL_RECRUIT, true);
     player->CastSpell(player, SPELL_WINTERGRASP_RESTRICTED_FLIGHT_AREA, true);
 
-    bool onWg = player->getCurrentUpdateZoneID() == m_ZoneId; 
+    bool onWg = player->GetZoneId() == m_ZoneId; 
     player->PlayDirectSound(OutdoorPvP_WG_SOUND_START_BATTLE); // START Battle
 
     // resurect dead plr

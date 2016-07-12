@@ -537,7 +537,7 @@ void Guild::Member::SetStats(Player* player)
     m_name      = player->GetName();
     m_level     = player->getLevel();
     m_class     = player->getClass();
-    m_zoneId    = player->getCurrentUpdateZoneID();
+    m_zoneId    = player->GetZoneId();
     m_gender    = player->getGender();
     m_accountId = player->GetSession()->GetAccountId();
     m_achievementPoints = player->GetAchievementPoints();
@@ -1415,7 +1415,7 @@ void Guild::HandleRoster(WorldSession* session /*= NULL*/)
         data.WriteGuidBytes<4>(guid);
         data.WriteString(member->GetName());
         data << uint64(member->GetWeekActivity());
-        data << uint32(player ? player->getCurrentUpdateZoneID() : member->GetZoneId());
+        data << uint32(player ? player->GetZoneId() : member->GetZoneId());
         data.WriteString(member->GetPublicNote());
         data.WriteString(member->GetOfficerNote());
         data.WriteGuidBytes<7, 0>(guid);
