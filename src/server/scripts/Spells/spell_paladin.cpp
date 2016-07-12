@@ -1256,41 +1256,47 @@ class spell_pal_holy_wrath : public SpellScriptLoader
         {
             PrepareSpellScript(spell_pal_holy_wrath_SpellScript);
 
+            bool Load()
+            {
+                targetcount = 0;
+                return true;
+            }
+
             void FilterScript(std::list<WorldObject*>& unitList)
             {
-                if (Unit* caster = GetCaster())
+                if (GetCaster())
                 {
-                    if (caster->HasAura(115738))
+                    if (GetCaster()->HasAura(115738))
                     {
-                        if (Player* _player = caster->ToPlayer())
+                        if (Player* _player = GetCaster()->ToPlayer())
+                        {
                             if (Unit* target = _player->GetSelectedUnit())
                             {
                                 unitList.clear();
                                 unitList.push_back(target);
-                                return;
                             }
-                        if(unitList.size() > 1)
-                            Trinity::Containers::RandomResizeList(unitList, 1);
+                        }
+                        else
+                            if (unitList.size() > 1)
+                                Trinity::Containers::RandomResizeList(unitList, 1);
                     }
+                    else
+                        targetcount = unitList.size();
                 }
             }
 
             void HandleDamage(SpellEffIndex /*effIndex*/)
             {
-                if (Unit* caster = GetCaster())
+                int32 dmg = !targetcount ? GetHitDamage() : GetHitDamage() / targetcount;
+                if (GetCaster() && GetHitUnit())
                 {
-                    if (caster->HasAura(54935))
+                    if (GetCaster()->HasAura(54935))
                     {
-                        int32 _amount = GetHitDamage();
-                        if (Unit* unitTarget = GetHitUnit())
-                        {
-                            if(unitTarget->HealthBelowPct(20))
-                            {
-                                AddPct(_amount, 50);
-                                SetHitDamage(_amount);
-                            }
-                        }
+                        if (GetHitUnit()->HealthBelowPct(20))
+                            SetHitDamage(dmg + (dmg/2));
                     }
+                    else
+                        SetHitDamage(dmg);
                 }
             }
 
@@ -1299,6 +1305,8 @@ class spell_pal_holy_wrath : public SpellScriptLoader
                 OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pal_holy_wrath_SpellScript::FilterScript, EFFECT_1, TARGET_UNIT_SRC_AREA_ENEMY);
                 OnEffectHitTarget += SpellEffectFn(spell_pal_holy_wrath_SpellScript::HandleDamage, EFFECT_1, SPELL_EFFECT_SCHOOL_DAMAGE);
             }
+        private:
+            int32 targetcount;
         };
 
         SpellScript* GetSpellScript() const

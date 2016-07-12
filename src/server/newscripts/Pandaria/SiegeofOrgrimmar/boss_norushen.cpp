@@ -1325,6 +1325,9 @@ public:
             me->SetPhaseId(summoner->GetGUID(), true);
             me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             DoCast(me, SPELL_PROTECTORS_DD);
+            me->SetHealth(me->GetMaxHealth() / 2);
+            if (summoner->ToPlayer())
+                summoner->ToPlayer()->SendEncounterUnitForPlayer(ENCOUNTER_FRAME_ENGAGE, me);
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -1394,6 +1397,9 @@ public:
             me->SetPhaseId(summoner->GetGUID(), true);
             me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             DoCast(me, SPELL_PROTECTORS_DD);
+            me->SetHealth(me->GetMaxHealth() / 2);
+            if (summoner->ToPlayer())
+                summoner->ToPlayer()->SendEncounterUnitForPlayer(ENCOUNTER_FRAME_ENGAGE, me);
         }
 
         void DoAction(int32 const action)
@@ -1480,6 +1486,9 @@ public:
             me->SetReactState(REACT_DEFENSIVE);
             me->SetPhaseId(summoner->GetGUID(), true);
             me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+            me->SetHealth(me->GetMaxHealth() / 2);
+            if (summoner->ToPlayer())
+                summoner->ToPlayer()->SendEncounterUnitForPlayer(ENCOUNTER_FRAME_ENGAGE, me);
         }
 
         void EnterCombat(Unit* who)

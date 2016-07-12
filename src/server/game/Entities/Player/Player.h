@@ -2960,6 +2960,7 @@ class Player : public Unit, public GridObject<Player>
         bool CanSeeVignette(WorldObject *u);
         void RemoveVignette(WorldObject *u, bool update = false);
         void SendVignette(bool force = false);
+        void SendEncounterUnitForPlayer(uint32 type, Unit* unit /*= NULL*/, uint8 param1 = 0, uint8 param2 = 0);
 
         ///! Extra look method not alow remove some creatures from player visibility by grid VisibleNotifier
         void AddToExtraLook(WorldObject *u) { m_extraLookList.insert(u->GetGUID()); } 

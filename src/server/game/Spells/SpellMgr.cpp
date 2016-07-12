@@ -4226,7 +4226,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_CONE_LINE;
                     break;
                 case 119072: // Holy Wrath
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     spellInfo->Effects[EFFECT_1].ScalingMultiplier = 0;
                     spellInfo->Effects[EFFECT_1].DeltaScalingMultiplier = 0;
                     spellInfo->Effects[EFFECT_1].BonusMultiplier = 0.91f;
