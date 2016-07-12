@@ -1303,7 +1303,7 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
             if (!player)
                 return false;
 
-            Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(player->GetZoneId());
+            Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(player->getCurrentUpdateZoneID());
 
             if (!bf || bf->GetTypeId() != BATTLEFIELD_WG)
                 return false;
@@ -1332,7 +1332,7 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
             if (!player)
                 return false;
 
-            if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(player->GetZoneId()))
+            if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(player->getCurrentUpdateZoneID()))
                 return bf->IsWarTime();
             break;
         }
@@ -5096,8 +5096,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 144848: //Titanic Corruption Summon
                 case 144739: //Manofestation of Corruption Summon
                 case 144980: //Greater Corruption
-                case 144975: //Melee fighter
-                case 144973: //Summon Guardian
                     spellInfo->Effects[0].TargetA = TARGET_DEST_DEST;
                     break;
                 case 144514:    //Lingering Corruption
@@ -5114,7 +5112,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 145735:    //Icy Fear Dmg
                 case 145073:    //Residual Corruption
-                    spellInfo->TargetAuraSpell = 0;  
+                    spellInfo->TargetAuraSpell = 0;
                     break;
                 case 144421:    //Corruption
                     for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
@@ -5135,6 +5133,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 145128: //Unchecked Corruption
                     spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(1); //0
                     spellInfo->Effects[0].TargetA = 25;
+                    break;
+                case 145226: //Blind Hatred Dummy
+                    spellInfo->Effects[1].TriggerSpell = 0;
                     break;
                 case 145227: //Blind Hatred Dmg
                     spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(1); //0
@@ -6074,6 +6075,18 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesEx6 |= SPELL_ATTR6_CANT_PROC;
 
             spellInfo->SpecificType = spellInfo->GetSpellSpecific();
+
+            spellInfo->m_auraCount = 0;
+
+            for (uint16 i = 0; i < TOTAL_AURAS; i++)
+                if (spellInfo->InitHasAura(AuraType(i)))
+                {
+                    spellInfo->m_hasAura[spellInfo->m_auraCount] = i;
+                    spellInfo->m_auraCount++;
+                }
+
+            for (uint8 i = spellInfo->m_auraCount; i < MAX_SPELL_EFFECTS; i++)
+                spellInfo->m_hasAura[i] = 0;
         }
     }
 
