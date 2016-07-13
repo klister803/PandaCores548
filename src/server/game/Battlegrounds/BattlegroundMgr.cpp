@@ -1191,9 +1191,9 @@ void BattlegroundMgr::SendToBattleground(Player* player, uint32 instanceId, Batt
         sLog->outInfo(LOG_FILTER_BATTLEGROUND, "BATTLEGROUND: Sending %s to map %u, X %f, Y %f, Z %f, O %f", player->GetName(), mapid, x, y, z, O);
         if (bg->GetJoinType() == 5 && sWorld->getBoolConfig(CONFIG_CUSTOM_FOOTBALL))
             if (team == ALLIANCE)
-               player->TeleportTo(mapid, 941.9, 244.74, 0, 0);  //ALLIANCE //gold 
+               player->TeleportTo(mapid, 941.9f, 244.74f, 0.0f, 0.0f);  //ALLIANCE //gold 
             else 
-               player->TeleportTo(mapid, 1022, 247.21, 0, 3.1);  //HORDE //green
+               player->TeleportTo(mapid, 1022.0f, 247.21f, 0.0f, 3.1f);  //HORDE //green
         else
          player->TeleportTo(mapid, x, y, z, O);
     }

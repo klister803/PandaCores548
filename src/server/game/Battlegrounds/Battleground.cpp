@@ -637,7 +637,7 @@ inline void Battleground::_ProcessJoin(uint32 diff)
         {
            if (GetJoinType() == 5 && sWorld->getBoolConfig(CONFIG_CUSTOM_FOOTBALL))
            {
-            ball = AddCreature(250018, BgCreatures.size() - 1, 35, 984.65, 245.60, 0, 0);
+            ball = AddCreature(250018, BgCreatures.size() - 1, 35, 984.65f, 245.60f, 0.0f, 0.0f);
             end = false;
            }
          

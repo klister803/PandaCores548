@@ -295,7 +295,7 @@ public:
                    me->AddAura(58169, me);
                    goal = true;
                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_NOT_SELECTABLE);
-                   me->NearTeleportTo(984.65, 245.60, 0, 0);
+                   me->NearTeleportTo(984.65f, 245.60f, 0.0f, 0.0f);
                    GoalTimer = 15000;
                    Map::PlayerList const& players = me->GetMap()->GetPlayers();
                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
@@ -305,7 +305,7 @@ public:
                    }                
                 } 
                 else
-                   me->NearTeleportTo(848.5f, me->GetPositionY(), 0, 0);
+                   me->NearTeleportTo(848.5f, me->GetPositionY(), 0.0f, 0.0f);
              
              if (me->GetPositionX() >= 1124.5f && !goal)
                 if (me->GetPositionY() <= 256.0f && me->GetPositionY() >= 237.0f)
@@ -314,7 +314,7 @@ public:
                    me->AddAura(65964, me);
                    goal = true;
                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_NOT_SELECTABLE);
-                   me->NearTeleportTo(984.65, 245.60, 0, 0);
+                   me->NearTeleportTo(984.65f, 245.60f, 0.0f, 0.0f);
                    GoalTimer = 15000;
                    
                    Map::PlayerList const& players = me->GetMap()->GetPlayers();
