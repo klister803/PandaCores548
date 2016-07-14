@@ -676,6 +676,7 @@ class Battleground
         BattlegroundPlayerMap  m_Players;
         // Spirit Guide guid + Player list GUIDS
         std::map<uint64, std::vector<uint64> >  m_ReviveQueue;
+        bool isRevival;
 
         // these are important variables used for starting messages
         uint8 m_Events;

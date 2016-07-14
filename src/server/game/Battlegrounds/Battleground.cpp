@@ -226,6 +226,8 @@ Battleground::Battleground()
 
     m_IsRBG = false;
 
+    isRevival = false;
+
     m_sameBgTeamId = false;
     
     m_flagCarrierTime = FLAGS_UPDATE;
@@ -477,6 +479,7 @@ inline void Battleground::_ProcessRessurect(uint32 diff)
     {
         if (GetReviveQueueSize())
         {
+            isRevival = true;
             for (std::map<uint64, std::vector<uint64> >::iterator itr = m_ReviveQueue.begin(); itr != m_ReviveQueue.end(); ++itr)
             {
                 Creature* sh = NULL;
@@ -504,6 +507,7 @@ inline void Battleground::_ProcessRessurect(uint32 diff)
 
             m_ReviveQueue.clear();
             m_LastResurrectTime = 0;
+            isRevival = false;
         }
         else
             // queue is clear and time passed, just update last resurrection time
@@ -1742,6 +1746,9 @@ void Battleground::UpdatePlayerScore(Player* Source, uint32 type, uint32 value, 
 
 void Battleground::AddPlayerToResurrectQueue(uint64 npc_guid, uint64 player_guid)
 {
+    if (isRevival)
+        return;
+
     m_ReviveQueue[npc_guid].push_back(player_guid);
 
     Player* player = ObjectAccessor::FindPlayer(player_guid);
@@ -1753,6 +1760,9 @@ void Battleground::AddPlayerToResurrectQueue(uint64 npc_guid, uint64 player_guid
 
 void Battleground::RemovePlayerFromResurrectQueue(uint64 player_guid)
 {
+    if (isRevival)
+        return;
+
     for (std::map<uint64, std::vector<uint64> >::iterator itr = m_ReviveQueue.begin(); itr != m_ReviveQueue.end(); ++itr)
     {
         for (std::vector<uint64>::iterator itr2 = (itr->second).begin(); itr2 != (itr->second).end(); ++itr2)
