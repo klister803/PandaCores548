@@ -9836,6 +9836,9 @@ void Player::_ApplyOrRemoveItemEquipDependentAuras(uint64 itemGUID, bool apply)
 
 bool Player::CheckItemEquipDependentSpell(SpellInfo const* spellInfo, uint64 itemGUID)
 {
+    if (spellInfo->CheckShapeshift(GetShapeshiftForm()) != SPELL_CAST_OK)
+        return false;
+
     switch (spellInfo->EquippedItemClass)
     {
         case ITEM_CLASS_WEAPON:
