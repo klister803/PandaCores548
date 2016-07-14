@@ -19,7 +19,7 @@ public:
             { "use",            SEC_PLAYER,         false, &HandleUseMorphCommand,              "", NULL },
             { "remove",         SEC_PLAYER,         false, &HandleRemoveMorphCommand,           "", NULL },
             { "add",            SEC_CONFIRMED_GAMEMASTER,  false, &HandleAddMorphCommand,              "", NULL },
-            { "del",            SEC_GAMEMASTER,  false, &HandleDelMorphCommand,              "", NULL },
+            { "del",            SEC_CONFIRMED_GAMEMASTER,  false, &HandleDelMorphCommand,              "", NULL },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
         
@@ -37,7 +37,7 @@ public:
             { "list",           SEC_PLAYER,         false, &HandleListMountGroundCommand,             "", NULL },
             { "use",            SEC_PLAYER,         false, &HandleUseMountGroundCommand,              "", NULL },
             { "add",            SEC_CONFIRMED_GAMEMASTER,  false, &HandleAddMountGroundCommand,              "", NULL },
-            { "del",            SEC_GAMEMASTER,  false, &HandleDelMountGroundCommand,              "", NULL },
+            { "del",            SEC_CONFIRMED_GAMEMASTER,  false, &HandleDelMountGroundCommand,              "", NULL },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
         
@@ -52,6 +52,7 @@ public:
         {
             { "morph",          SEC_PLAYER,         false, NULL,                                "", morphCommandTable },
             { "mount",          SEC_PLAYER,         false, NULL,                                "", mountCommandTable },
+            { "add",            SEC_CONFIRMED_GAMEMASTER,  false, &HandleAddDonatCommand,              "", NULL },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
 
@@ -462,8 +463,8 @@ public:
        handler->PSendSysMessage("Ground mount add %u for %u efirs", mountId, efirCount);
 
         return true;
-    }
-    
+    }    
+        
     static bool HandleDelMountGroundCommand(ChatHandler* handler, const char* args)
     {
         char* nameStr;
@@ -502,6 +503,47 @@ public:
         else
            handler->PSendSysMessage("Ground mount %u don`t find", morphId);
 
+        return true;
+    }
+
+    static bool HandleAddDonatCommand(ChatHandler* handler, const char* args)
+    {
+        char* nameStr;
+        char* itemStr;
+        handler->extractOptFirstArg((char*)args, &nameStr, &itemStr);
+
+        char* efirCountStr = strtok(NULL, "\r");
+       
+        Player* player = handler->GetSession()->GetPlayer();
+        Player* target;
+        uint64 target_guid;
+        std::string target_name;
+        if (!handler->extractPlayerTarget(nameStr, &target, &target_guid, &target_name))
+            return false;
+        if (!target && target_guid)
+             target = sObjectMgr->GetPlayerByLowGUID(target_guid);
+        if (!target)
+            return false;
+        uint32 accountId = target->GetSession()->GetAccountId();
+
+        if (!itemStr)
+            return false;
+        uint32 itemId = atoi(itemStr);
+        
+        if (!efirCountStr)
+            return false;
+        uint32 efirCount = atoi(efirCountStr);
+
+        if (target->GetItemCount(38186, false) < efirCount)
+        {
+            handler->PSendSysMessage("Target don`t have efir count %u in bags", efirCount);
+            return false;
+        }
+        else
+        {
+           target->DestroyItemCount(38186, efirCount, true);
+           target->AddItem(itemId, 1);
+        }
         return true;
     }
     
