@@ -641,6 +641,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         }
 
         bool IsDungeonBoss() const;
+        bool _isDungeonBoss() const;
         bool IsPersonalLoot() const;
         bool IsAutoLoot() const;
 

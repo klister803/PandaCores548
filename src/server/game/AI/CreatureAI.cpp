@@ -156,7 +156,7 @@ void CreatureAI::DoAttackerGroupInCombat(Player* attacker)
             {
                 Player* player = itr->getSource();
 
-                if (player && player->isAlive() && player->GetMapId() == me->GetMapId())
+                if (player && player->isAlive() && player->GetMapId() == me->GetMapId() && !player->isInCombat())
                 {
                     me->SetInCombatWith(player);
                     player->SetInCombatWith(me);

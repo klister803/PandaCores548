@@ -695,7 +695,7 @@ void Creature::Update(uint32 diff)
                 }
             }
 
-            if (AI() && IsDungeonBoss() && isInCombat())
+            if (AI() && _isDungeonBoss() && isInCombat())
                 AI()->DoAggroPulse(diff);
 
             if (m_regenTimer != 0)
@@ -2911,6 +2911,12 @@ bool Creature::IsDungeonBoss() const
 {
     CreatureTemplate const* cinfo = sObjectMgr->GetCreatureTemplate(GetEntry());
     return cinfo && (cinfo->flags_extra & CREATURE_FLAG_EXTRA_DUNGEON_BOSS);
+}
+
+bool Creature::_isDungeonBoss() const
+{
+    CreatureTemplate const* cinfo = sObjectMgr->GetCreatureTemplate(GetEntry());
+    return cinfo && (cinfo->flags_extra & CREATURE_FLAG_EXTRA_CIVILIAN);
 }
 
 bool Creature::SetWalk(bool enable)
