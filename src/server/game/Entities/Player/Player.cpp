@@ -28809,7 +28809,8 @@ void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 mis
         }
 
         if (auto guild = sGuildMgr->GetGuildById(player->GetGuildId()))
-            guild->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, player, loginCheck);
+            if (type != ACHIEVEMENT_CRITERIA_TYPE_GAIN_REPUTATION)
+                guild->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, player, loginCheck);
 
         player->_deleteLock.release();
     };
