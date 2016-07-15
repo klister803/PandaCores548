@@ -109,6 +109,7 @@ enum eSpells
     //Karoz
     SPELL_STORE_KINETIC_ENERGY         = 143709,
     SPELL_FLASH                        = 143704,
+    SPELL_FLASH_DUMMY                  = 143700,
     SPELL_HURL_AMBER                   = 143759,
     SPELL_HURL_AMBER_DMG               = 143733,
 
@@ -427,7 +428,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
             InstanceScript* instance;
             SummonList summons;
             EventMap events;
-            uint64 jtGuid, dfatargetGuid, ftargetGuid, flashtargetGuid;
+            uint64 jtGuid, dfatargetGuid;
             uint32 checkklaxxi, healcooldown;
             uint8 flashcount;
             bool healready;
@@ -447,8 +448,6 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 checkklaxxi = 0;
                 healcooldown = 0;
                 flashcount = 0;
-                ftargetGuid = 0;
-                flashtargetGuid = 0;
                 healready = true;
                 switch (me->GetEntry())
                 {
@@ -460,13 +459,6 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 default:
                     break;
                 }
-            }
-
-            uint64 GetGUID(int32 id = 0)
-            {
-                if (id == DATA_GET_FLASH_TARGET)
-                    return flashtargetGuid;
-                return 0;
             }
 
             void JustSummoned(Creature* sum)
@@ -776,15 +768,6 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                 return 0;
             }
 
-            void SetGUID(uint64 guid, int32 id)
-            {
-                if (guid && id)
-                {
-                    ftargetGuid = guid;
-                    events.ScheduleEvent(EVENT_FIRE, 3000);
-                }
-            }
-
             void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
@@ -903,12 +886,6 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         }
                         events.ScheduleEvent(EVENT_AIM, 39500);
                         break;
-                    case EVENT_FIRE:
-                        if (Player* pl = me->GetPlayer(*me, ftargetGuid))
-                            if (pl->isAlive())
-                                DoCast(pl, SPELL_FIRE);
-                        ftargetGuid = 0;
-                        break;
                     case EVENT_RAPID_FIRE:
                         DoCast(me, SPELL_RAPID_FIRE_DUMMY);
                         events.ScheduleEvent(EVENT_RAPID_FIRE, 47000);
@@ -1016,10 +993,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         if (!flashcount)
                             flashcount = urand(2, 3);
                         if (Player* pl = me->GetPlayer(*me, GetFlashTargetGuid()))
-                        {
-                            flashtargetGuid = pl->GetGUID();
                             DoCast(pl, SPELL_STORE_KINETIC_ENERGY);
-                        }
                         break;
                     //Special
                     case EVENT_RE_ATTACK:
@@ -2146,22 +2120,28 @@ public:
         {
             if (GetCaster() && GetCaster()->ToCreature() && GetTarget())
             {
+                GetCaster()->SetFacingTo(GetTarget());
                 GetTarget()->AddAura(SPELL_AIM_STUN, GetTarget());
                 if (GetCaster()->GetDistance(GetTarget()) < 45.0f)
                 {
                     float x, y, ang;
                     ang = GetCaster()->GetAngle(GetTarget());
-                    GetCaster()->SetFacingTo(GetTarget());
                     GetPositionWithDistInOrientation(GetCaster(), 45.0f, ang, x, y);
                     GetTarget()->GetMotionMaster()->MoveJump(x, y, GetTarget()->GetPositionZ(), 15.0f, 15.0f);
-                    GetCaster()->ToCreature()->AI()->SetGUID(GetTarget()->GetGUID(), 1);
                 }
             }
+        }
+
+        void HandlelEffectRemove(AuraEffect const * aurEff, AuraEffectHandleModes mode)
+        {
+            if (GetCaster() && GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
+                GetCaster()->CastSpell(GetTarget(), SPELL_FIRE, true);
         }
 
         void Register()
         {
             OnEffectApply += AuraEffectApplyFn(spell_klaxxi_aim_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            OnEffectRemove += AuraEffectRemoveFn(spell_klaxxi_aim_AuraScript::HandlelEffectRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
         }
     };
 
@@ -2276,7 +2256,7 @@ public:
                     targetlist.clear();
                     for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                     {
-                        if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
+                        if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && !(*itr)->HasAura(SPELL_MESMERIZE))
                         {
                             count++;
                             targetlist.push_back(*itr);
@@ -2284,7 +2264,6 @@ public:
                                 break;
                         }
                     }
-
                     if (targetlist.size() >= maxcount)
                     {
                         for (uint8 n = 0; n < (maxcount - 1); ++n)
@@ -2319,11 +2298,8 @@ public:
 
         void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
         {
-            if (GetCaster() && GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
-            {
-                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
-                    GetCaster()->CastSpell(GetTarget(), SPELL_FIERY_EDGE_DUMMY, true);
-            }
+            if (GetCaster() && GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+                GetCaster()->CastSpell(GetTarget(), SPELL_FIERY_EDGE_DUMMY, true);
         }
 
         void Register()
@@ -2359,7 +2335,7 @@ public:
 
         void Register()
         {
-            OnEffectPeriodic += AuraEffectPeriodicFn(spell_fiery_edge_dummy_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_fiery_edge_dummy_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
         }
     };
 
@@ -2372,17 +2348,17 @@ public:
 class IsInBetweenCheck
 {
 public:
-    IsInBetweenCheck(std::vector<Player*>&dummytargets) : list(dummytargets){}
+    IsInBetweenCheck(Player* caster, Player* target) : _caster(caster), _target(target){}
 
     bool operator()(WorldObject* unit)
     {
-        for (uint8 n = 0; n < (list.size() -1); ++n)
-            if (unit->IsInBetween(list[n], list[n + 1]))
-                return false;
+        if (unit->IsInBetween(_caster, _target))
+            return false;
         return true;
     }
 private:
-    std::vector<Player*>list;
+    Player* _caster;
+    Player* _target;
 };
 
 //142809
@@ -2397,23 +2373,31 @@ public:
 
         void _FilterTarget(std::list<WorldObject*>&targets)
         {
-            if (GetCaster())
+            if (GetCaster() && GetCaster()->ToPlayer())
             {
+                uint64 beamtargetGuid = 0;
                 std::list<Player*>targets;
                 targets.clear();
-                std::vector<Player*>dummylist;
-                dummylist.clear();
                 GetPlayerListInGrid(targets, GetCaster(), 100.0f);
                 if (!targets.empty())
-                {
+                {   //find my target
                     for (std::list<Player*>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
-                        if ((*itr)->HasAura(SPELL_FIERY_EDGE_DUMMY))
-                            dummylist.push_back(*itr);
+                    {
+                        if ((*itr)->GetGUID() != GetCaster()->GetGUID())
+                        {
+                            if (Aura* aura = (*itr)->GetAura(SPELL_FIERY_EDGE_DUMMY))
+                            {
+                                if (aura->GetCasterGUID() == GetCaster()->GetGUID())
+                                {
+                                    beamtargetGuid = aura->GetCasterGUID();
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 }
-                if (dummylist.size() >= 2)
-                    targets.remove_if(IsInBetweenCheck(dummylist));
-                else
-                    targets.clear();
+                if (Player* beamtarget = GetCaster()->GetPlayer(*GetCaster(), beamtargetGuid))
+                    targets.remove_if(IsInBetweenCheck(GetCaster()->ToPlayer(), beamtarget));
             }
         }
             
@@ -2511,6 +2495,41 @@ public:
     }
 };
 
+//143704
+class spell_whirling_target : public SpellScriptLoader
+{
+public:
+    spell_whirling_target() : SpellScriptLoader("spell_whirling_target") { }
+
+    class spell_whirling_target_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_whirling_target_SpellScript);
+
+        SpellCastResult CheckTarget()
+        {
+            if (GetCaster() && GetExplTargetUnit())
+            {
+                if (Player* pl = GetExplTargetUnit()->ToPlayer())
+                {
+                    GetCaster()->SetFacingToObject(pl);
+                    pl->CastSpell(pl, SPELL_FLASH_DUMMY, true);
+                }
+            }
+            return SPELL_CAST_OK;
+        }
+
+        void Register()
+        {
+            OnCheckCast += SpellCheckCastFn(spell_whirling_target_SpellScript::CheckTarget);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_whirling_target_SpellScript();
+    }
+};
+
 class WhirlingTargetFilter
 {
 public:
@@ -2518,7 +2537,7 @@ public:
 
     bool operator()(WorldObject* unit)
     {
-        if (unit->IsInBetween(_caster, _player, 2.0f))
+        if (unit->IsInBetween(_caster, _player, 1.0f))
             return false;
         else if (_player->GetGUID() == unit->GetGUID())
             return false;
@@ -2539,13 +2558,39 @@ public:
     {
         PrepareSpellScript(spell_whirling_SpellScript);
 
+        bool Load()
+        {
+            flashtargetGuid = 0;
+            return true;
+        }
+
         void _FilterTarget(std::list<WorldObject*>&targets)
         {
-            if (GetCaster() && GetCaster()->ToCreature())
+            if (GetCaster())
             {
-                if (Player* maintarget = GetCaster()->GetPlayer(*GetCaster(), GetCaster()->ToCreature()->AI()->GetGUID(DATA_GET_FLASH_TARGET)))
+                if (!targets.empty())
+                {
+                    for (std::list<WorldObject*>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
+                    {
+                        if ((*itr)->ToPlayer())
+                        {
+                            if ((*itr)->ToPlayer()->HasAura(SPELL_FLASH_DUMMY))
+                            {
+                                flashtargetGuid = (*itr)->GetGUID();
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (Player* maintarget = GetCaster()->GetPlayer(*GetCaster(), flashtargetGuid))
                     targets.remove_if(WhirlingTargetFilter(GetCaster(), maintarget));
             }
+        }
+
+        void HandleOnHit()
+        {
+            if (GetHitUnit())
+                GetHitUnit()->RemoveAurasDueToSpell(SPELL_FLASH_DUMMY);
         }
 
         void Register()
@@ -2553,7 +2598,10 @@ public:
             OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_whirling_SpellScript::_FilterTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
             OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_whirling_SpellScript::_FilterTarget, EFFECT_1, TARGET_UNIT_SRC_AREA_ENEMY);
             OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_whirling_SpellScript::_FilterTarget, EFFECT_2, TARGET_UNIT_SRC_AREA_ENEMY);
+            OnHit += SpellHitFn(spell_whirling_SpellScript::HandleOnHit);
         }
+    private:
+        uint64 flashtargetGuid;
     };
 
     SpellScript* GetSpellScript() const
@@ -2633,14 +2681,9 @@ public:
 
         void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
         {
-            if (GetCaster() && GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
-            {
-                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
-                {
-                    if (GetCaster()->ToCreature())
-                        GetCaster()->ToCreature()->AI()->DoAction(ACTION_RE_ATTACK_KILRUK);
-                }
-            }
+            if (GetCaster() && GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+                if (GetCaster()->ToCreature())
+                    GetCaster()->ToCreature()->AI()->DoAction(ACTION_RE_ATTACK_KILRUK);
         }
 
         void Register()
@@ -2735,6 +2778,25 @@ public:
     }
 };
 
+
+class HisekAimFilter
+{
+public:
+    HisekAimFilter(Unit* caster, Player* target) : _caster(caster), _target(target){}
+
+    bool operator()(WorldObject* unit)
+    {
+        if (unit->ToPlayer()->HasAura(SPELL_AIM_STUN))
+            return false;
+        else if (unit->IsInBetween(_caster, _target))
+            return false;
+        return true;
+    }
+private:
+    Unit* _caster;
+    Player* _target;
+};
+
 //142950
 class spell_hisek_fire : public SpellScriptLoader
 {
@@ -2747,13 +2809,38 @@ public:
 
         void HandleHit()
         {
-            if (GetHitUnit())
+            if (GetHitUnit() && !GetHitUnit()->HasAura(SPELL_AIM_STUN))
                 GetHitUnit()->CastSpell(GetHitUnit(), SPELL_SONIC_RESONANCE_HISEK, true);
+        }
+
+        void _FilterTarget(std::list<WorldObject*>&targets)
+        {
+            if (GetCaster())
+            {
+                uint64 aimtargetGuid = 0;
+                if (!targets.empty())
+                {
+                    for (std::list<WorldObject*>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
+                    {
+                        if ((*itr)->ToPlayer())
+                        {
+                            if ((*itr)->ToPlayer()->HasAura(SPELL_AIM_STUN))
+                            {
+                                aimtargetGuid = (*itr)->GetGUID();
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (Player* aimtarget = GetCaster()->GetPlayer(*GetCaster(), aimtargetGuid))
+                    targets.remove_if(HisekAimFilter(GetCaster(), aimtarget));
+            }
         }
 
         void Register()
         {
             OnHit += SpellHitFn(spell_hisek_fire_SpellScript::HandleHit);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_hisek_fire_SpellScript::_FilterTarget, EFFECT_1, TARGET_UNIT_SRC_AREA_ENEMY);
         }
     };
 
@@ -2880,6 +2967,7 @@ void AddSC_boss_paragons_of_the_klaxxi()
     new spell_fiery_edge_dmg();
     new spell_reave();
     new spell_klaxxi_multi_shot();
+    new spell_whirling_target();
     new spell_whirling();
     new spell_genetic_modifications();
     new spell_store_kinetic_energy();

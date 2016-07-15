@@ -5265,6 +5265,12 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].TargetB = 0;
                     break;
                 //Paragons of the Klaxxi
+                case 143704: //Flash
+                    spellInfo->Effects[0].TargetB = 0;
+                    break;
+                case 142808: //Fiery Edge Dummy
+                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_DAMAGE;
+                    break;
                 case 142638: //Devour
                     spellInfo->TargetAuraSpell = 0;
                     break;
@@ -5323,6 +5329,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 142950: //Fire
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
+                    spellInfo->Effects[1].TargetA = 22;
+                    spellInfo->Effects[1].TargetB = 15;
                     break;
                 case 143362: //Feed
                 {
@@ -5358,12 +5366,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 144094: //Sonic Resonations Hisek
                     spellInfo->CastTimeMin = 0.7f;
                     spellInfo->CastTimeMax = 0.7f;
-                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
-                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
-                        {
-                            eff->TargetA = TARGET_SRC_CASTER;
-                            eff->TargetB = TARGET_UNIT_SRC_AREA_ALLY;
-                        }
                     break;
                 //Vicious Assaullt
                 case 143980:
@@ -5374,6 +5376,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
                         if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
                             eff->TargetA = TARGET_UNIT_CONE_ENEMY_104;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_CONE_LINE;
                     break;
                 //debuffs from klaxxi
                 case 142929:
