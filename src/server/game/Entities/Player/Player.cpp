@@ -27883,9 +27883,6 @@ void Player::SetViewpoint(WorldObject* target, bool apply)
 
         // farsight dynobj or puppet may be very far away
         UpdateVisibilityOf(target);
-
-        if (target->isType(TYPEMASK_UNIT) && !GetVehicle())
-            ((Unit*)target)->AddPlayerToVision(this);
     }
     else
     {
@@ -27896,9 +27893,6 @@ void Player::SetViewpoint(WorldObject* target, bool apply)
             sLog->outFatal(LOG_FILTER_PLAYER, "Player::CreateViewpoint: Player %s cannot remove current viewpoint!", GetName());
             return;
         }
-
-        if (target->isType(TYPEMASK_UNIT) && !GetVehicle())
-            ((Unit*)target)->RemovePlayerFromVision(this);
 
         //must immediately set seer back otherwise may crash
         m_seer = this;

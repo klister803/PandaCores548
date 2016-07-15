@@ -1904,10 +1904,6 @@ class Unit : public WorldObject
         void UpdateCharmAI();
         //Player* GetMoverSource() const;
         Player* m_movedPlayer;
-        SharedVisionList const& GetSharedVisionList() { return m_sharedVision; }
-        void AddPlayerToVision(Player* player);
-        void RemovePlayerFromVision(Player* player);
-        bool HasSharedVision() const { return !m_sharedVision.empty(); }
         void RemoveBindSightAuras();
         void RemoveCharmAuras();
 
@@ -2643,7 +2639,6 @@ class Unit : public WorldObject
         float m_speed_rate[MAX_MOVE_TYPE];
 
         CharmInfo* m_charmInfo;
-        SharedVisionList m_sharedVision;
 
         virtual SpellSchoolMask GetMeleeDamageSchoolMask() const;
 
