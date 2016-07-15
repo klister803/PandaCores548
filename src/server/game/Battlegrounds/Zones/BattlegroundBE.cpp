@@ -98,7 +98,7 @@ void BattlegroundBE::HandleKillPlayer(Player* player, Player* killer)
 
 bool BattlegroundBE::HandlePlayerUnderMap(Player* player)
 {
-    player->TeleportTo(GetMapId(), 6238.930176f, 262.963470f, 0.889519f, player->GetOrientation(), false);
+    player->TeleportTo(GetMapId(), 6238.930176f, 262.963470f, 2.73f, player->GetOrientation(), false);
     return true;
 }
 
@@ -117,6 +117,11 @@ void BattlegroundBE::HandleAreaTrigger(Player* Source, uint32 Trigger)
             break;
         case 4539:                                          // buff trigger?
             //buff_guid = BgObjects[BG_BE_OBJECT_BUFF_2];
+            break;
+        case 4944: //Fall 20 yards
+        case 5039: //Fall 60 yards
+        case 5040: //Fall 80 yards
+            HandlePlayerUnderMap(Source);
             break;
         default:
             sLog->outError(LOG_FILTER_BATTLEGROUND, "WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);

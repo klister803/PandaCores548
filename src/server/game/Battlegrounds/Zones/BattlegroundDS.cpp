@@ -198,6 +198,11 @@ void BattlegroundDS::HandleAreaTrigger(Player* Source, uint32 Trigger)
             if (getPipeKnockBackCount() >= BG_DS_PIPE_KNOCKBACK_TOTAL_COUNT)
                 setPipeKnockBackCount(0);
             break;
+        case 5326: //Fall 10yards
+        case 5343: //Fall 40yards
+        case 5344: //Fall 60yards
+            HandlePlayerUnderMap(Source);
+            break;
         default:
             sLog->outError(LOG_FILTER_BATTLEGROUND, "WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
             Source->GetSession()->SendNotification("Warning: Unhandled AreaTrigger in Battleground: %u", Trigger);

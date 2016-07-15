@@ -111,6 +111,11 @@ void BattlegroundNA::HandleAreaTrigger(Player* Source, uint32 Trigger)
         case 4536:                                          // buff trigger?
         case 4537:                                          // buff trigger?
             break;
+        case 5006: //Fall 10 yards
+        case 5008: //Fall 30 yards
+        case 4917: //Fall 50 yards
+            HandlePlayerUnderMap(Source);
+            break;
         default:
             sLog->outError(LOG_FILTER_BATTLEGROUND, "WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
             Source->GetSession()->SendNotification("Warning: Unhandled AreaTrigger in Battleground: %u", Trigger);
