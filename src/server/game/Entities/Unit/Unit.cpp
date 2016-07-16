@@ -25412,3 +25412,14 @@ Unit* Unit::GetLastCastTarget()
 
     return NULL;
 }
+
+void Unit::AddWhoSeeMe(Player* plr)
+{
+    TRINITY_WRITE_GUARD(ACE_RW_Thread_Mutex, _m_whoseemeRWLock);
+    m_whoseeme.push_back(plr);
+}
+void Unit::RemoveWhoSeeMe(Player* plr)
+{
+    TRINITY_WRITE_GUARD(ACE_RW_Thread_Mutex, _m_whoseemeRWLock);
+    m_whoseeme.remove(plr);
+}

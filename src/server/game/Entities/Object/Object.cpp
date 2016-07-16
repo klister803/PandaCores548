@@ -2811,28 +2811,15 @@ void WorldObject::SendMessageToSetInRange(WorldPacket* data, float dist, bool /*
 {
     if (Unit* unit = ToUnit())
     {
-        std::list<Player*> removePlrList;
-
-        for (auto itr : unit->m_whoseeme)
+        TRINITY_READ_GUARD(ACE_RW_Thread_Mutex, unit->_m_whoseemeRWLock);
+        for (auto itr : unit->WhoSeeMe())
         {
-            if (!itr->IsInWorld() || itr->GetTypeId() != TYPEID_PLAYER)
-            {
-                removePlrList.push_back(itr);
+            if (!itr->IsInWorld())
                 continue;
-            }
-
-            if (!itr->HaveAtClient(unit))
-            {
-                removePlrList.push_back(itr);
-                continue;
-            }
 
             if (WorldSession* session = itr->GetSession())
                 session->SendPacket(data);
         }
-
-        for (auto itr : removePlrList)
-            unit->m_whoseeme.remove(itr);
     }
     else
     {
@@ -3803,6 +3790,7 @@ struct WorldObjectChangeAccumulator
 
     void Visit(std::list<Player*> plrList)
     {
+        TRINITY_READ_GUARD(ACE_RW_Thread_Mutex, i_object.ToUnit()->_m_whoseemeRWLock);
         for (auto itr : plrList)
         {
             if (!itr->IsInWorld())
@@ -3839,7 +3827,7 @@ void WorldObject::BuildUpdate(UpdateDataMapType& data_map)
     else
     {
         if (ToCreature() && ToCreature()->m_isImportantForVisibility)
-            notifier.Visit(ToCreature()->m_whoseeme);
+            notifier.Visit(ToCreature()->WhoSeeMe());
         else
             cell.Visit(p, player_notifier, map, *this, CalcVisibilityRange());
     }

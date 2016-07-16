@@ -62,16 +62,18 @@ void VisibleNotifier::SendToSelf()
         if (IS_PLAYER_GUID(*it))
         {
             Player* player = ObjectAccessor::FindPlayer(*it);
-            if (player && player->IsInWorld() && !player->onVisibleUpdate())
+            if (player && player->IsInWorld())
             {
-                player->UpdateVisibilityOf(&i_player);
-                player->m_whoseeme.remove(&i_player);
+                if (!player->onVisibleUpdate())
+                    player->UpdateVisibilityOf(&i_player);
+
+                player->RemoveWhoSeeMe(&i_player);
             }
         }
         else if (IS_UNIT_GUID(*it))
         {
             if (Unit* unit = ObjectAccessor::GetUnit(i_player, *it))
-                unit->m_whoseeme.remove(&i_player);
+                unit->RemoveWhoSeeMe(&i_player);
         }
     }
 
@@ -319,15 +321,11 @@ void MessageDistDeliverer::Visit(std::list<WorldObject*> objList)
 
 void MessageDistDeliverer::Visit(std::list<Player*> plrList)
 {
+    TRINITY_READ_GUARD(ACE_RW_Thread_Mutex, i_source->ToUnit()->_m_whoseemeRWLock);
     for (auto itr : plrList)
     {
-        if (!itr->IsInWorld() || itr->GetTypeId() != TYPEID_PLAYER)
-        {
-            if (Unit* unit = i_source->ToUnit())
-                unit->m_whoseeme.remove(itr);
-
+        if (!itr->IsInWorld())
             continue;
-        }
 
         if (!itr->InSamePhase(i_phaseMask))
             continue;
