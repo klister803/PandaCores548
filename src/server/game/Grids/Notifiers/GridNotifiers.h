@@ -51,7 +51,7 @@ namespace Trinity
         void Visit(CreatureMapType &);
         void Visit(PlayerMapType &);
         void Visit(GameObjectMapType &);
-        void Visit(std::list<WorldObject*>& objList);
+        void Visit(std::list<WorldObject*> objList);
         void SendToSelf(void);
     };
 
@@ -64,7 +64,7 @@ namespace Trinity
         void Visit(PlayerMapType &);
         void Visit(DynamicObjectMapType &);
         void Visit(AreaTriggerMapType &);
-        void Visit(std::list<WorldObject*>& objList);
+        void Visit(std::list<WorldObject*> objList);
     };
 
     struct PlayerRelocationNotifier : public VisibleNotifier
@@ -130,22 +130,21 @@ namespace Trinity
     struct MessageDistDeliverer
     {
         WorldObject* i_source;
-        Unit* i_unit;
         WorldPacket* i_message;
         uint32 i_phaseMask;
         float i_distSq;
         uint32 team;
         Player const* skipped_receiver;
-        MessageDistDeliverer(WorldObject* src, WorldPacket* msg, float dist, bool own_team_only = false, Player const* skipped = NULL, Unit* unit = NULL)
+        MessageDistDeliverer(WorldObject* src, WorldPacket* msg, float dist, bool own_team_only = false, Player const* skipped = NULL)
             : i_source(src), i_message(msg), i_phaseMask(src->GetPhaseMask()), i_distSq(dist * dist)
             , team((own_team_only && src->GetTypeId() == TYPEID_PLAYER) ? ((Player*)src)->GetTeam() : 0)
-            , skipped_receiver(skipped), i_unit(unit)
+            , skipped_receiver(skipped)
         {
         }
         void Visit(PlayerMapType &m);
         void Visit(DynamicObjectMapType &m);
-        void Visit(std::list<WorldObject*>& objList);
-        void Visit(std::list<Player*>& plrList);
+        void Visit(std::list<WorldObject*> objList);
+        void Visit(std::list<Player*> plrList);
         template<class SKIP> void Visit(GridRefManager<SKIP> &) {}
 
         void SendPacket(Player* player)

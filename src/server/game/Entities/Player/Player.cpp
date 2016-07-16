@@ -7881,7 +7881,7 @@ void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self)
     if (self)
         GetSession()->SendPacket(data);
 
-    Trinity::MessageDistDeliverer notifier(this, data, dist, false, NULL, this);
+    Trinity::MessageDistDeliverer notifier(this, data, dist);
 
 //     if (Map* map = GetMap())
 //         if (map->IsBattlegroundOrArena())
@@ -7890,7 +7890,7 @@ void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self)
 //             return;
 //         }
 
-    notifier.Visit(WhoSeeMe());
+    notifier.Visit(m_whoseeme);
 
     //VisitNearbyWorldObject(dist, notifier);
 }
@@ -7903,7 +7903,7 @@ void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self, b
     if (self)
         GetSession()->SendPacket(data);
 
-    Trinity::MessageDistDeliverer notifier(this, data, dist, own_team_only, NULL, this);
+    Trinity::MessageDistDeliverer notifier(this, data, dist, own_team_only);
 
     if (Map* map = GetMap())
         if (map->IsBattlegroundOrArena())
@@ -7912,7 +7912,7 @@ void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self, b
             return;
         }
 
-    notifier.Visit(WhoSeeMe());
+    notifier.Visit(m_whoseeme);
 
     //VisitNearbyWorldObject(dist, notifier);
 }
@@ -7944,7 +7944,7 @@ void Player::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
     // we use World::GetMaxVisibleDistance() because i cannot see why not use a distance
     // update: replaced by GetMap()->GetVisibilityDistance()
     float visRange = CalcVisibilityRange();
-    Trinity::MessageDistDeliverer notifier(this, data, visRange, false, skipped_rcvr, this);
+    Trinity::MessageDistDeliverer notifier(this, data, visRange, false, skipped_rcvr);
 
 //     if (Map* map = GetMap())
 //         if (map->IsBattlegroundOrArena())
@@ -7953,7 +7953,7 @@ void Player::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
 //             return;
 //         }
 
-    notifier.Visit(WhoSeeMe());
+    notifier.Visit(m_whoseeme);
 
     //VisitNearbyWorldObject(visRange, notifier);
 }
@@ -25721,7 +25721,7 @@ void Player::UpdateVisibilityOf(WorldObject* target)
             m_clientGUIDs.erase(target->GetGUID());
 
             if (Unit* unit = target->ToUnit())
-                unit->RemoveWhoSeeMe(this);
+                unit->m_whoseeme.remove(this);
 
             #ifdef TRINITY_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "Object %u (Type: %u) out of range for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), GetGUIDLow(), GetDistance(target));
@@ -25740,7 +25740,7 @@ void Player::UpdateVisibilityOf(WorldObject* target)
             m_clientGUIDs.insert(target->GetGUID());
 
             if (Unit* unit = target->ToUnit())
-                unit->AddWhoSeeMe(this);
+                unit->m_whoseeme.push_back(this);
 
             #ifdef TRINITY_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "Object %u (Type: %u) is visible now for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), GetGUIDLow(), GetDistance(target));
@@ -25804,7 +25804,7 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
             RemoveListner(target);
 
             if (Unit* unit = target->ToUnit())
-                unit->RemoveWhoSeeMe(this);
+                unit->m_whoseeme.remove(this);
 
             #ifdef TRINITY_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "Object %u (Type: %u, Entry: %u) is out of range for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), target->GetEntry(), GetGUIDLow(), GetDistance(target));
@@ -25823,7 +25823,7 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
             UpdateVisibilityOf_helper(m_clientGUIDs, target, visibleNow);
 
             if (Unit* unit = target->ToUnit())
-                unit->AddWhoSeeMe(this);
+                unit->m_whoseeme.push_back(this);
 
             #ifdef TRINITY_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "Object %u (Type: %u, Entry: %u) is visible now for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), target->GetEntry(), GetGUIDLow(), GetDistance(target));
@@ -25845,7 +25845,7 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
             RemoveListner(target);
 
             if (Unit* unit = target->ToUnit())
-                unit->RemoveWhoSeeMe(this);
+                unit->m_whoseeme.remove(this);
         }
     }
     else
@@ -25857,7 +25857,7 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
             UpdateVisibilityOf_helper(m_clientGUIDs, target, visibleNow);
 
             if (Unit* unit = target->ToUnit())
-                unit->AddWhoSeeMe(this);
+                unit->m_whoseeme.push_back(this);
         }
     }
 

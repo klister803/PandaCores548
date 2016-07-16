@@ -62,18 +62,16 @@ void VisibleNotifier::SendToSelf()
         if (IS_PLAYER_GUID(*it))
         {
             Player* player = ObjectAccessor::FindPlayer(*it);
-            if (player && player->IsInWorld())
+            if (player && player->IsInWorld() && !player->onVisibleUpdate())
             {
-                if (!player->onVisibleUpdate())
-                    player->UpdateVisibilityOf(&i_player);
-
-                player->RemoveWhoSeeMe(&i_player);
+                player->UpdateVisibilityOf(&i_player);
+                player->m_whoseeme.remove(&i_player);
             }
         }
         else if (IS_UNIT_GUID(*it))
         {
             if (Unit* unit = ObjectAccessor::GetUnit(i_player, *it))
-                unit->RemoveWhoSeeMe(&i_player);
+                unit->m_whoseeme.remove(&i_player);
         }
     }
 
@@ -123,7 +121,7 @@ void VisibleNotifier::Visit(PlayerMapType &m)
         }
 }
 
-void VisibleNotifier::Visit(std::list<WorldObject*>& objList)
+void VisibleNotifier::Visit(std::list<WorldObject*> objList)
 {
     for (auto itr : objList)
     {
@@ -189,7 +187,7 @@ void VisibleChangesNotifier::Visit(PlayerMapType &m)
     }
 }
 
-void VisibleChangesNotifier::Visit(std::list<WorldObject*>& objList)
+void VisibleChangesNotifier::Visit(std::list<WorldObject*> objList)
 {
     for (auto itr : objList)
     {
@@ -298,7 +296,7 @@ void MessageDistDeliverer::Visit(DynamicObjectMapType &m)
     }
 }
 
-void MessageDistDeliverer::Visit(std::list<WorldObject*>& objList)
+void MessageDistDeliverer::Visit(std::list<WorldObject*> objList)
 {
     for (auto itr : objList)
     {
@@ -319,13 +317,17 @@ void MessageDistDeliverer::Visit(std::list<WorldObject*>& objList)
     }
 }
 
-void MessageDistDeliverer::Visit(std::list<Player*>& plrList)
+void MessageDistDeliverer::Visit(std::list<Player*> plrList)
 {
-    TRINITY_READ_GUARD(ACE_RW_Thread_Mutex, i_unit->_m_whoseemeRWLock);
     for (auto itr : plrList)
     {
-        if (!itr->IsInWorld())
+        if (!itr->IsInWorld() || itr->GetTypeId() != TYPEID_PLAYER)
+        {
+            if (Unit* unit = i_source->ToUnit())
+                unit->m_whoseeme.remove(itr);
+
             continue;
+        }
 
         if (!itr->InSamePhase(i_phaseMask))
             continue;

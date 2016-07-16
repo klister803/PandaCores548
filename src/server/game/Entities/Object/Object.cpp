@@ -2811,15 +2811,28 @@ void WorldObject::SendMessageToSetInRange(WorldPacket* data, float dist, bool /*
 {
     if (Unit* unit = ToUnit())
     {
-        TRINITY_READ_GUARD(ACE_RW_Thread_Mutex, unit->_m_whoseemeRWLock);
-        for (auto itr : unit->WhoSeeMe())
+        std::list<Player*> removePlrList;
+
+        for (auto itr : unit->m_whoseeme)
         {
-            if (!itr->IsInWorld())
+            if (!itr->IsInWorld() || itr->GetTypeId() != TYPEID_PLAYER)
+            {
+                removePlrList.push_back(itr);
                 continue;
+            }
+
+            if (!itr->HaveAtClient(unit))
+            {
+                removePlrList.push_back(itr);
+                continue;
+            }
 
             if (WorldSession* session = itr->GetSession())
                 session->SendPacket(data);
         }
+
+        for (auto itr : removePlrList)
+            unit->m_whoseeme.remove(itr);
     }
     else
     {
@@ -3745,9 +3758,8 @@ struct WorldObjectChangeAccumulator
 {
     UpdateDataMapType& i_updateDatas;
     WorldObject& i_object;
-    Unit* i_unit;
     std::set<uint64> plr_list;
-    WorldObjectChangeAccumulator(WorldObject &obj, UpdateDataMapType &d, Unit* u) : i_updateDatas(d), i_object(obj), i_unit(u) {}
+    WorldObjectChangeAccumulator(WorldObject &obj, UpdateDataMapType &d) : i_updateDatas(d), i_object(obj) {}
     void Visit(PlayerMapType &m)
     {
         Player* source = NULL;
@@ -3789,9 +3801,8 @@ struct WorldObjectChangeAccumulator
         }
     }
 
-    void Visit(std::list<Player*>& plrList)
+    void Visit(std::list<Player*> plrList)
     {
-        TRINITY_READ_GUARD(ACE_RW_Thread_Mutex, i_unit->_m_whoseemeRWLock);
         for (auto itr : plrList)
         {
             if (!itr->IsInWorld())
@@ -3819,8 +3830,7 @@ void WorldObject::BuildUpdate(UpdateDataMapType& data_map)
     CellCoord p = Trinity::ComputeCellCoord(GetPositionX(), GetPositionY());
     Cell cell(p);
     cell.SetNoCreate();
-    Unit* unit = ToUnit();
-    WorldObjectChangeAccumulator notifier(*this, data_map, unit);
+    WorldObjectChangeAccumulator notifier(*this, data_map);
     TypeContainerVisitor<WorldObjectChangeAccumulator, WorldTypeMapContainer > player_notifier(notifier);
     Map& map = *GetMap();
     //we must build packets for all visible players
@@ -3829,7 +3839,7 @@ void WorldObject::BuildUpdate(UpdateDataMapType& data_map)
     else
     {
         if (ToCreature() && ToCreature()->m_isImportantForVisibility)
-            notifier.Visit(ToCreature()->WhoSeeMe());
+            notifier.Visit(ToCreature()->m_whoseeme);
         else
             cell.Visit(p, player_notifier, map, *this, CalcVisibilityRange());
     }
