@@ -3788,7 +3788,7 @@ struct WorldObjectChangeAccumulator
         }
     }
 
-    void Visit(std::list<Player*> plrList)
+    void Visit(std::list<Player*>& plrList)
     {
         TRINITY_READ_GUARD(ACE_RW_Thread_Mutex, i_object.ToUnit()->_m_whoseemeRWLock);
         for (auto itr : plrList)
