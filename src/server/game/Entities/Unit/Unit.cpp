@@ -353,6 +353,7 @@ Unit::~Unit()
     ASSERT(!m_duringRemoveFromWorld);
     ASSERT(!m_attacking);
     ASSERT(m_attackers.empty());
+    ASSERT(m_sharedVision.empty());
     //ASSERT(m_Controlled.empty()); // @todo reimplement this
     ASSERT(m_appliedAuras.empty());
     ASSERT(m_ownedAuras.empty());
@@ -12222,6 +12223,29 @@ Unit* Unit::GetNextRandomRaidMemberOrPet(float radius)
     return nearMembers[randTarget];
 }
 
+// only called in Player::SetSeer
+// so move it to Player?
+void Unit::AddPlayerToVision(Player* player)
+{
+    if (m_sharedVision.empty())
+    {
+        setActive(true);
+        SetWorldObject(true);
+    }
+    m_sharedVision.push_back(player);
+}
+
+// only called in Player::SetSeer
+void Unit::RemovePlayerFromVision(Player* player)
+{
+    m_sharedVision.remove(player);
+    if (m_sharedVision.empty())
+    {
+        setActive(false);
+        SetWorldObject(false);
+    }
+}
+
 void Unit::RemoveBindSightAuras()
 {
     RemoveAurasByType(SPELL_AURA_BIND_SIGHT);
@@ -22476,6 +22500,13 @@ public:
 
     static void UpdateVisibility(Unit* me, float customVisRange = 0.0f)
      {
+        if (!me->m_sharedVision.empty())
+            for (SharedVisionList::const_iterator it = me->m_sharedVision.begin();it!= me->m_sharedVision.end();)
+            {
+                Player * tmp = *it;
+                ++it;
+                tmp->UpdateVisibilityForPlayer();
+            }
         if (me->isType(TYPEMASK_PLAYER))
             ((Player*)me)->UpdateVisibilityForPlayer();
         else

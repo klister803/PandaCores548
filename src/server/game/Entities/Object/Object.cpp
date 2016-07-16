@@ -3768,6 +3768,28 @@ struct WorldObjectChangeAccumulator
             source = iter->getSource();
 
             BuildPacket(source);
+
+            if (!source->GetSharedVisionList().empty())
+            {
+                SharedVisionList::const_iterator it = source->GetSharedVisionList().begin();
+                for (; it != source->GetSharedVisionList().end(); ++it)
+                    BuildPacket(*it);
+            }
+        }
+    }
+
+    void Visit(CreatureMapType &m)
+    {
+        Creature* source = NULL;
+        for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+        {
+            source = iter->getSource();
+            if (!source->GetSharedVisionList().empty())
+            {
+                SharedVisionList::const_iterator it = source->GetSharedVisionList().begin();
+                for (; it != source->GetSharedVisionList().end(); ++it)
+                    BuildPacket(*it);
+            }
         }
     }
 
@@ -3797,7 +3819,16 @@ struct WorldObjectChangeAccumulator
                 continue;
 
             if (Player* plr = itr->ToPlayer())
+            {
                 BuildPacket(plr);
+
+                if (!plr->GetSharedVisionList().empty())
+                {
+                    SharedVisionList::const_iterator it = plr->GetSharedVisionList().begin();
+                    for (; it != plr->GetSharedVisionList().end(); ++it)
+                        BuildPacket(*it);
+                }
+            }
         }
     }
 
@@ -3809,6 +3840,13 @@ struct WorldObjectChangeAccumulator
                 continue;
 
             BuildPacket(itr);
+
+            if (!itr->GetSharedVisionList().empty())
+            {
+                SharedVisionList::const_iterator it = itr->GetSharedVisionList().begin();
+                for (; it != itr->GetSharedVisionList().end(); ++it)
+                    BuildPacket(*it);
+            }
         }
     }
 
