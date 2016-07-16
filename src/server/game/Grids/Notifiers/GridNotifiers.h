@@ -144,7 +144,7 @@ namespace Trinity
         void Visit(PlayerMapType &m);
         void Visit(DynamicObjectMapType &m);
         void Visit(std::list<WorldObject*> objList);
-        void Visit(std::list<Player*> plrList);
+        void Visit(std::list<Player*> &plrList);
         template<class SKIP> void Visit(GridRefManager<SKIP> &) {}
 
         void SendPacket(Player* player)
