@@ -62,7 +62,6 @@ namespace Trinity
         explicit VisibleChangesNotifier(WorldObject &object) : i_object(object) {}
         template<class T> void Visit(GridRefManager<T> &) {}
         void Visit(PlayerMapType &);
-        void Visit(CreatureMapType &);
         void Visit(DynamicObjectMapType &);
         void Visit(AreaTriggerMapType &);
         void Visit(std::list<WorldObject*> objList);
@@ -143,7 +142,6 @@ namespace Trinity
         {
         }
         void Visit(PlayerMapType &m);
-        void Visit(CreatureMapType &m);
         void Visit(DynamicObjectMapType &m);
         void Visit(std::list<WorldObject*> objList);
         void Visit(std::list<Player*> plrList);
@@ -189,7 +187,6 @@ namespace Trinity
         }
 
         void Visit(PlayerMapType &m);
-        void Visit(CreatureMapType &m);
         void Visit(DynamicObjectMapType &m);
         template<class SKIP> void Visit(GridRefManager<SKIP> &) {}
 

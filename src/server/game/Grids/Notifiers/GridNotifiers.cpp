@@ -184,12 +184,6 @@ void VisibleChangesNotifier::Visit(PlayerMapType &m)
             continue;
 
         iter->getSource()->UpdateVisibilityOf(&i_object);
-
-        if (!iter->getSource()->GetSharedVisionList().empty())
-            for (SharedVisionList::const_iterator i = iter->getSource()->GetSharedVisionList().begin();
-                i != iter->getSource()->GetSharedVisionList().end(); ++i)
-                if ((*i)->m_seer == iter->getSource())
-                    (*i)->UpdateVisibilityOf(&i_object);
     }
 }
 
@@ -200,26 +194,13 @@ void VisibleChangesNotifier::Visit(std::list<WorldObject*> objList)
         if (!itr->IsInWorld())
             continue;
 
-        if (Creature* cre = itr->ToCreature())
-        {
-            if (!cre->GetSharedVisionList().empty())
-                for (SharedVisionList::const_iterator i = cre->GetSharedVisionList().begin();
-                    i != cre->GetSharedVisionList().end(); ++i)
-                    if ((*i)->m_seer == cre)
-                        (*i)->UpdateVisibilityOf(&i_object);
-        }
-        else if (Player* plr = itr->ToPlayer())
+
+        if (Player* plr = itr->ToPlayer())
         {
             if (plr->GetGUID() == i_object.GetGUID())
                 continue;
 
             plr->UpdateVisibilityOf(&i_object);
-
-            if (!plr->GetSharedVisionList().empty())
-                for (SharedVisionList::const_iterator i = plr->GetSharedVisionList().begin();
-                    i != plr->GetSharedVisionList().end(); ++i)
-                    if ((*i)->m_seer == plr)
-                        (*i)->UpdateVisibilityOf(&i_object);
         }
         else if (AreaTrigger* AT = itr->ToAreaTrigger())
         {
@@ -236,16 +217,6 @@ void VisibleChangesNotifier::Visit(std::list<WorldObject*> objList)
                         caster->UpdateVisibilityOf(&i_object);
         }
     }
-}
-
-void VisibleChangesNotifier::Visit(CreatureMapType &m)
-{
-    for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
-        if (!iter->getSource()->GetSharedVisionList().empty())
-            for (SharedVisionList::const_iterator i = iter->getSource()->GetSharedVisionList().begin();
-                i != iter->getSource()->GetSharedVisionList().end(); ++i)
-                if ((*i)->m_seer == iter->getSource())
-                    (*i)->UpdateVisibilityOf(&i_object);
 }
 
 void VisibleChangesNotifier::Visit(DynamicObjectMapType &m)
@@ -299,39 +270,8 @@ void MessageDistDeliverer::Visit(PlayerMapType &m)
         if (target->GetExactDist2dSq(i_source) > i_distSq)
             continue;
 
-        // Send packet to all who are sharing the player's vision
-        if (!target->GetSharedVisionList().empty())
-        {
-            SharedVisionList::const_iterator i = target->GetSharedVisionList().begin();
-            for (; i != target->GetSharedVisionList().end(); ++i)
-                if ((*i)->m_seer == target)
-                    SendPacket(*i);
-        }
-
         if (target->m_seer == target || target->GetVehicle())
             SendPacket(target);
-    }
-}
-
-void MessageDistDeliverer::Visit(CreatureMapType &m)
-{
-    for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
-    {
-        Creature* target = iter->getSource();
-        if (!target->InSamePhase(i_phaseMask))
-            continue;
-
-        if (target->GetExactDist2dSq(i_source) > i_distSq)
-            continue;
-
-        // Send packet to all who are sharing the creature's vision
-        if (!target->GetSharedVisionList().empty())
-        {
-            SharedVisionList::const_iterator i = target->GetSharedVisionList().begin();
-            for (; i != target->GetSharedVisionList().end(); ++i)
-                if ((*i)->m_seer == target)
-                    SendPacket(*i);
-        }
     }
 }
 
@@ -371,15 +311,6 @@ void MessageDistDeliverer::Visit(std::list<WorldObject*> objList)
             if (!plr->InSamePhase(i_phaseMask))
                 continue;
 
-            // Send packet to all who are sharing the player's vision
-            if (!plr->GetSharedVisionList().empty())
-            {
-                SharedVisionList::const_iterator i = plr->GetSharedVisionList().begin();
-                for (; i != plr->GetSharedVisionList().end(); ++i)
-                    if ((*i)->m_seer == plr)
-                        SendPacket(*i);
-            }
-
             if (plr->m_seer == plr || plr->GetVehicle())
                 SendPacket(plr);
         }
@@ -401,15 +332,6 @@ void MessageDistDeliverer::Visit(std::list<Player*> plrList)
         if (!itr->InSamePhase(i_phaseMask))
             continue;
 
-        // Send packet to all who are sharing the player's vision
-        if (!itr->GetSharedVisionList().empty())
-        {
-            SharedVisionList::const_iterator i = itr->GetSharedVisionList().begin();
-            for (; i != itr->GetSharedVisionList().end(); ++i)
-                if ((*i)->m_seer == itr)
-                    SendPacket(*i);
-        }
-
         if (itr->m_seer == itr || itr->GetVehicle())
             SendPacket(itr);
     }
@@ -426,39 +348,8 @@ void ChatMessageDistDeliverer::Visit(PlayerMapType &m)
         if (target->GetExactDist2dSq(i_source) > i_distSq)
             continue;
 
-        // Send packet to all who are sharing the player's vision
-        if (!target->GetSharedVisionList().empty())
-        {
-            SharedVisionList::const_iterator i = target->GetSharedVisionList().begin();
-            for (; i != target->GetSharedVisionList().end(); ++i)
-                if ((*i)->m_seer == target)
-                    SendPacket(*i);
-        }
-
         if (target->m_seer == target || target->GetVehicle())
             SendPacket(target);
-    }
-}
-
-void ChatMessageDistDeliverer::Visit(CreatureMapType &m)
-{
-    for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
-    {
-        Creature* target = iter->getSource();
-        if (!target->InSamePhase(i_phaseMask))
-            continue;
-
-        if (target->GetExactDist2dSq(i_source) > i_distSq)
-            continue;
-
-        // Send packet to all who are sharing the creature's vision
-        if (!target->GetSharedVisionList().empty())
-        {
-            SharedVisionList::const_iterator i = target->GetSharedVisionList().begin();
-            for (; i != target->GetSharedVisionList().end(); ++i)
-                if ((*i)->m_seer == target)
-                    SendPacket(*i);
-        }
     }
 }
 
