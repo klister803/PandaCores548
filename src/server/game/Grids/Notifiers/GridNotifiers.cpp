@@ -123,7 +123,7 @@ void VisibleNotifier::Visit(PlayerMapType &m)
         }
 }
 
-void VisibleNotifier::Visit(std::list<WorldObject*>& objList)
+void VisibleNotifier::Visit(std::list<WorldObject*> objList)
 {
     for (auto itr : objList)
     {
@@ -189,7 +189,7 @@ void VisibleChangesNotifier::Visit(PlayerMapType &m)
     }
 }
 
-void VisibleChangesNotifier::Visit(std::list<WorldObject*>& objList)
+void VisibleChangesNotifier::Visit(std::list<WorldObject*> objList)
 {
     for (auto itr : objList)
     {
@@ -298,7 +298,7 @@ void MessageDistDeliverer::Visit(DynamicObjectMapType &m)
     }
 }
 
-void MessageDistDeliverer::Visit(std::list<WorldObject*>& objList)
+void MessageDistDeliverer::Visit(std::list<WorldObject*> objList)
 {
     for (auto itr : objList)
     {
@@ -319,7 +319,7 @@ void MessageDistDeliverer::Visit(std::list<WorldObject*>& objList)
     }
 }
 
-void MessageDistDeliverer::Visit(std::list<Player*>& plrList)
+void MessageDistDeliverer::Visit(std::list<Player*> plrList)
 {
     TRINITY_READ_GUARD(ACE_RW_Thread_Mutex, i_source->ToUnit()->_m_whoseemeRWLock);
     for (auto itr : plrList)
