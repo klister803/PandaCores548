@@ -25901,6 +25901,7 @@ void Player::UpdateVisibilityForPlayer()
                     m_dynamicVisibleDistance = sWorld->GetZoneVisibilityRange(getCurrentUpdateZoneID());
                     m_seer->VisitNearbyObject(m_dynamicVisibleDistance, notifier, true);
 
+                    TRINITY_READ_GUARD(ACE_RW_Thread_Mutex, getmap->_m_importantFVCListRWLock);
                     for (auto itr : getmap->GetImportantCreatureList())
                     {
                         if (!itr->IsInWorld())
