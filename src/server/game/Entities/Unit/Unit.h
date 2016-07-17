@@ -2167,7 +2167,7 @@ class Unit : public WorldObject
 
         void AddWhoSeeMe(Player* plr);
         void RemoveWhoSeeMe(Player* plr);
-        std::list<Player*> WhoSeeMe() { return m_whoseeme; }
+        std::list<Player*> m_whoseeme;
 
         // stat system
         bool HandleStatModifier(UnitMods unitMod, UnitModifierType modifierType, float amount, bool apply);
@@ -2596,8 +2596,6 @@ class Unit : public WorldObject
         AttackerSet m_attackers;
         Unit* m_attacking;
         uint64 m_lastCastTargetGUID;
-
-        std::list<Player*> m_whoseeme;
 
         bool m_onMount;
 
