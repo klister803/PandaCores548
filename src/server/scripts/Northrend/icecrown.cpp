@@ -562,10 +562,106 @@ class npc_tournament_training_dummy : public CreatureScript
 
 };
 
+enum valiantSpells
+{
+    SPELL_MOUNTED_MELEE_VICTORY     = 62724,
+
+    SPELL_BESTED_DARNASSUS          = 64805,
+    SPELL_BESTED_EXODAR             = 64808,
+    SPELL_BESTED_GNOMEREGAN         = 64809,
+    SPELL_BESTED_IRONFORGE          = 64810,
+    SPELL_BESTED_ORGRIMMAR          = 64811,
+    SPELL_BESTED_SENJIN             = 64812,
+    SPELL_BESTED_SILVERMOON         = 64813,
+    SPELL_BESTED_STORMWIND          = 64814,
+    SPELL_BESTED_THUNDER_BLUFF      = 64815,
+    SPELL_BESTED_UNDERCITY          = 64816,
+};
+
+enum valiantNpcs
+{
+    NPC_CHAMPION_DARNASSUS          = 33738,
+    NPC_CHAMPION_EXODAR             = 33739,
+    NPC_CHAMPION_GNOMEREGAN         = 33740,
+    NPC_CHAMPION_IRONFORGE          = 33743,
+    NPC_CHAMPION_SENJIN             = 33745,
+    NPC_CHAMPION_ORGRIMMAR          = 33744,
+    NPC_CHAMPION_SILVERMOON         = 33746,
+    NPC_CHAMPION_STORMWIND          = 33747,
+    NPC_CHAMPION_THUNDER_BLUFF      = 33748,
+    NPC_CHAMPION_UNDERCITY          = 33749,
+};
+
 class npc_valiant : public CreatureScript
 {
 public:
     npc_valiant() : CreatureScript("npc_valiant") { }
+
+    bool OnGossipHello(Player* player, Creature* creature)
+    {
+        player->TalkedToCreature(creature->GetEntry(), creature->GetGUID());
+        player->PrepareGossipMenu(creature, 0);
+        player->ADD_GOSSIP_ITEM(0, "I am ready to fight!", GOSSIP_SENDER_MAIN, 90909090);
+        player->SendPreparedGossip(creature);
+        return true;
+    }
+    
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action)
+    {
+        if(sender != GOSSIP_SENDER_MAIN) return true;
+        if(!player->getAttackers().empty()) return true;
+
+        switch(action)
+        {
+            case 90909090:
+                player->CLOSE_GOSSIP_MENU();
+                ((npc_valiantAI*)creature->AI())->DoAction(action);
+                break;
+            default:
+                return false;                                   // nothing defined      -> trinity core handling
+        }
+        return true;
+    }
+
+    bool HasBestedAura(Unit* target, Creature* creature)
+    {
+        switch (creature->GetEntry())
+        {
+            case NPC_CHAMPION_DARNASSUS:
+                if (target->HasAura(SPELL_BESTED_DARNASSUS))
+                    return true;
+            case NPC_CHAMPION_EXODAR:
+                if (target->HasAura(SPELL_BESTED_EXODAR))
+                    return true;
+            case NPC_CHAMPION_GNOMEREGAN:
+                if (target->HasAura(SPELL_BESTED_GNOMEREGAN))
+                    return true;
+            case NPC_CHAMPION_IRONFORGE:
+                if (target->HasAura(SPELL_BESTED_IRONFORGE))
+                    return true;
+            case NPC_CHAMPION_SENJIN:
+                if (target->HasAura(SPELL_BESTED_SENJIN))
+                    return true;
+            case NPC_CHAMPION_ORGRIMMAR:
+                if (target->HasAura(SPELL_BESTED_ORGRIMMAR))
+                    return true;
+            case NPC_CHAMPION_SILVERMOON:
+                if (target->HasAura(SPELL_BESTED_SILVERMOON))
+                    return true;
+            case NPC_CHAMPION_STORMWIND:
+                if (target->HasAura(SPELL_BESTED_STORMWIND))
+                    return true;
+            case NPC_CHAMPION_THUNDER_BLUFF:
+                if (target->HasAura(SPELL_BESTED_THUNDER_BLUFF))
+                    return true;
+            case NPC_CHAMPION_UNDERCITY:
+                if (target->HasAura(SPELL_BESTED_UNDERCITY))
+                    return true;
+            default:
+                return false;
+        }
+        return false;
+    }
 
     struct npc_valiantAI : public ScriptedAI
     {
@@ -599,6 +695,42 @@ public:
                         pDoneBy->GetOwner()->CastSpell(pDoneBy->GetOwner(), 62724, true);
                     if(pDoneBy->GetTypeId() == TYPEID_PLAYER)
                         pDoneBy->CastSpell(pDoneBy, 62724, true);
+
+                    switch (me->GetEntry())
+                    {
+                        case NPC_CHAMPION_DARNASSUS:
+                            pDoneBy->CastSpell(pDoneBy, SPELL_BESTED_DARNASSUS, true);
+                            break;
+                        case NPC_CHAMPION_EXODAR:
+                            pDoneBy->CastSpell(pDoneBy, SPELL_BESTED_EXODAR, true);
+                            break;
+                        case NPC_CHAMPION_GNOMEREGAN:
+                            pDoneBy->CastSpell(pDoneBy, SPELL_BESTED_GNOMEREGAN, true);
+                            break;
+                        case NPC_CHAMPION_IRONFORGE:
+                            pDoneBy->CastSpell(pDoneBy, SPELL_BESTED_IRONFORGE, true);
+                            break;
+                        case NPC_CHAMPION_SENJIN:
+                            pDoneBy->CastSpell(pDoneBy, SPELL_BESTED_SENJIN, true);
+                            break;
+                        case NPC_CHAMPION_ORGRIMMAR:
+                            pDoneBy->CastSpell(pDoneBy, SPELL_BESTED_ORGRIMMAR, true);
+                            break;
+                        case NPC_CHAMPION_SILVERMOON:
+                            pDoneBy->CastSpell(pDoneBy, SPELL_BESTED_SILVERMOON, true);
+                            break;
+                        case NPC_CHAMPION_STORMWIND:
+                            pDoneBy->CastSpell(pDoneBy, SPELL_BESTED_STORMWIND, true);
+                            break;
+                        case NPC_CHAMPION_THUNDER_BLUFF:
+                            pDoneBy->CastSpell(pDoneBy, SPELL_BESTED_THUNDER_BLUFF, true);
+                            break;
+                        case NPC_CHAMPION_UNDERCITY:
+                            pDoneBy->CastSpell(pDoneBy, SPELL_BESTED_UNDERCITY, true);
+                            break;
+                        default:
+                            break;
+                    }
 
                     me->setFaction(35);
                     me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
@@ -666,32 +798,6 @@ public:
             DoMeleeAttackIfReady();
         }
     };
-
-    bool OnGossipHello(Player* player, Creature* creature)
-    {
-        player->TalkedToCreature(creature->GetEntry(), creature->GetGUID());
-        player->PrepareGossipMenu(creature, 0);
-        player->ADD_GOSSIP_ITEM(0, "I am ready to fight!", GOSSIP_SENDER_MAIN, 90909090);
-        player->SendPreparedGossip(creature);
-        return true;
-    }
-    
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action)
-    {
-        if(sender != GOSSIP_SENDER_MAIN) return true;
-        if(!player->getAttackers().empty()) return true;
-
-        switch(action)
-        {
-            case 90909090:
-                player->CLOSE_GOSSIP_MENU();
-                ((npc_valiantAI*)creature->AI())->DoAction(action);
-                break;
-            default:
-                return false;                                   // nothing defined      -> trinity core handling
-        }
-        return true;
-    }
 
     CreatureAI *GetAI(Creature *creature) const
     {

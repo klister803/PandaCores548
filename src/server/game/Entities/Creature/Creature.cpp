@@ -2916,7 +2916,7 @@ bool Creature::IsDungeonBoss() const
 bool Creature::_isDungeonBoss() const
 {
     CreatureTemplate const* cinfo = sObjectMgr->GetCreatureTemplate(GetEntry());
-    return cinfo && (cinfo->flags_extra & CREATURE_FLAG_EXTRA_CIVILIAN);
+    return cinfo && (cinfo->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND);
 }
 
 bool Creature::SetWalk(bool enable)
