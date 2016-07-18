@@ -3141,3 +3141,14 @@ void Map::UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Uni
     if(instance)
         instance->SetCompletedEncountersMask(completedEncounters);
 }
+
+void Map::AddImportantCreature(Creature* cre)
+{
+    TRINITY_WRITE_GUARD(ACE_RW_Thread_Mutex, _m_importantFVCListRWLock);
+    m_importantForVisibilityCreatureList.push_back(cre);
+}
+void Map::RemoveImportantCreature(Creature* cre)
+{
+    TRINITY_WRITE_GUARD(ACE_RW_Thread_Mutex, _m_importantFVCListRWLock);
+    m_importantForVisibilityCreatureList.remove(cre);
+}
