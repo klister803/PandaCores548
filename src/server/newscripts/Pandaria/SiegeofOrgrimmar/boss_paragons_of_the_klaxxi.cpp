@@ -2537,7 +2537,7 @@ public:
 
     bool operator()(WorldObject* unit)
     {
-        if (unit->IsInBetween(_caster, _player, 1.0f))
+        if (unit->IsInBetween(_caster, _player, 4.0f))
             return false;
         else if (_player->GetGUID() == unit->GetGUID())
             return false;
@@ -2788,7 +2788,7 @@ public:
     {
         if (unit->ToPlayer()->HasAura(SPELL_AIM_STUN))
             return false;
-        else if (unit->IsInBetween(_caster, _target))
+        else if (unit->IsInBetween(_caster, _target, 2.0f))
             return false;
         return true;
     }

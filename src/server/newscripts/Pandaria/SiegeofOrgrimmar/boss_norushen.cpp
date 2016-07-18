@@ -759,10 +759,8 @@ public:
             me->SetReactState(REACT_PASSIVE);
             me->CastSpell(me, SPELL_ESSENCE_OF_CORUPTION, false);
             me->CastSpell(me, SPELL_STEALTH_DETECTION, true);
-            events.RescheduleEvent(EVENT_2, urand(3000, 6000));
-            //me->SetPhaseId(summoner->GetGUID(), true);
-            //me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             AttackStart(summoner);
+            events.RescheduleEvent(EVENT_2, urand(3000, 6000));
         }
 
         void EnterEvadeMode()
@@ -850,8 +848,6 @@ public:
             me->SetReactState(REACT_DEFENSIVE);
             targetGuid = summoner->ToPlayer() ? summoner->GetGUID() : 0;
             me->CastSpell(me, SPELL_STEALTH_AND_INVISIBILITY_DETECT, true);
-            //me->SetPhaseId(summoner->GetGUID(), true);
-            //me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             attack = 5000;
         }
 
@@ -1086,8 +1082,6 @@ public:
         {
             me->SetReactState(REACT_PASSIVE);
             targetGuid = summoner->ToPlayer() ? summoner->GetGUID() : 0;
-            //me->SetPhaseId(summoner->GetGUID(), true);
-            //me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             me->DespawnOrUnsummon(60000);
             me->SetInCombatWithZone();
             attack = 5000;
@@ -1213,8 +1207,6 @@ public:
         {
             me->SetReactState(REACT_PASSIVE);
             targetGuid = summoner->ToPlayer() ? summoner->GetGUID() : 0;
-            //me->SetPhaseId(summoner->GetGUID(), true);
-            //me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             attack = 3000;
         }
 
@@ -1322,8 +1314,6 @@ public:
         void IsSummonedBy(Unit* summoner)
         {
             me->SetReactState(REACT_DEFENSIVE);
-            //me->SetPhaseId(summoner->GetGUID(), true);
-            //me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             DoCast(me, SPELL_PROTECTORS_DD);
             me->SetHealth(me->GetMaxHealth() / 2);
             if (summoner->ToPlayer())
@@ -1394,8 +1384,6 @@ public:
         void IsSummonedBy(Unit* summoner)
         {
             me->SetReactState(REACT_DEFENSIVE);
-            //me->SetPhaseId(summoner->GetGUID(), true);
-            //me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             DoCast(me, SPELL_PROTECTORS_DD);
             me->SetHealth(me->GetMaxHealth() / 2);
             if (summoner->ToPlayer())
@@ -1484,8 +1472,6 @@ public:
         void IsSummonedBy(Unit* summoner)
         {
             me->SetReactState(REACT_DEFENSIVE);
-            //me->SetPhaseId(summoner->GetGUID(), true);
-            //me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             me->SetHealth(me->GetMaxHealth() / 2);
             if (summoner->ToPlayer())
                 summoner->ToPlayer()->SendEncounterUnitForPlayer(ENCOUNTER_FRAME_ENGAGE, me);
