@@ -760,8 +760,8 @@ public:
             me->CastSpell(me, SPELL_ESSENCE_OF_CORUPTION, false);
             me->CastSpell(me, SPELL_STEALTH_DETECTION, true);
             events.RescheduleEvent(EVENT_2, urand(3000, 6000));
-            me->SetPhaseId(summoner->GetGUID(), true);
-            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+            //me->SetPhaseId(summoner->GetGUID(), true);
+            //me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             AttackStart(summoner);
         }
 
@@ -850,9 +850,9 @@ public:
             me->SetReactState(REACT_DEFENSIVE);
             targetGuid = summoner->ToPlayer() ? summoner->GetGUID() : 0;
             me->CastSpell(me, SPELL_STEALTH_AND_INVISIBILITY_DETECT, true);
-            me->SetPhaseId(summoner->GetGUID(), true);
-            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
-            attack = 8000;
+            //me->SetPhaseId(summoner->GetGUID(), true);
+            //me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+            attack = 5000;
         }
 
         void JustDied(Unit* killer)
@@ -1086,11 +1086,11 @@ public:
         {
             me->SetReactState(REACT_PASSIVE);
             targetGuid = summoner->ToPlayer() ? summoner->GetGUID() : 0;
-            me->SetPhaseId(summoner->GetGUID(), true);
-            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+            //me->SetPhaseId(summoner->GetGUID(), true);
+            //me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             me->DespawnOrUnsummon(60000);
             me->SetInCombatWithZone();
-            attack = 8000;
+            attack = 5000;
         }
 
         void EnterCombat(Unit* who)
@@ -1213,8 +1213,8 @@ public:
         {
             me->SetReactState(REACT_PASSIVE);
             targetGuid = summoner->ToPlayer() ? summoner->GetGUID() : 0;
-            me->SetPhaseId(summoner->GetGUID(), true);
-            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+            //me->SetPhaseId(summoner->GetGUID(), true);
+            //me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             attack = 3000;
         }
 
@@ -1322,8 +1322,8 @@ public:
         void IsSummonedBy(Unit* summoner)
         {
             me->SetReactState(REACT_DEFENSIVE);
-            me->SetPhaseId(summoner->GetGUID(), true);
-            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+            //me->SetPhaseId(summoner->GetGUID(), true);
+            //me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             DoCast(me, SPELL_PROTECTORS_DD);
             me->SetHealth(me->GetMaxHealth() / 2);
             if (summoner->ToPlayer())
@@ -1394,8 +1394,8 @@ public:
         void IsSummonedBy(Unit* summoner)
         {
             me->SetReactState(REACT_DEFENSIVE);
-            me->SetPhaseId(summoner->GetGUID(), true);
-            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+            //me->SetPhaseId(summoner->GetGUID(), true);
+            //me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             DoCast(me, SPELL_PROTECTORS_DD);
             me->SetHealth(me->GetMaxHealth() / 2);
             if (summoner->ToPlayer())
@@ -1484,8 +1484,8 @@ public:
         void IsSummonedBy(Unit* summoner)
         {
             me->SetReactState(REACT_DEFENSIVE);
-            me->SetPhaseId(summoner->GetGUID(), true);
-            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+            //me->SetPhaseId(summoner->GetGUID(), true);
+            //me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             me->SetHealth(me->GetMaxHealth() / 2);
             if (summoner->ToPlayer())
                 summoner->ToPlayer()->SendEncounterUnitForPlayer(ENCOUNTER_FRAME_ENGAGE, me);
@@ -1798,29 +1798,29 @@ public:
                     {
                     case SPELL_TEST_OF_SERENITY:    //dd
                     {
-                        GetTarget()->CastSpell(777.5012f, 974.7348f, 356.3398f, SPELL_SUM_MANIFESTATION_OF_C, true);
+                        GetTarget()->SummonCreature(NPC_MANIFESTATION_OF_CORRUPTION_C, 777.5012f, 974.7348f, 356.3398f, 0.0f, TEMPSUMMON_DEAD_DESPAWN, 2000, GetTarget()->GetGUID());
                         int32 plpower = GetTarget()->GetPower(POWER_ALTERNATE_POWER);
                         if (plpower > 40 && plpower <= 55)
-                            GetTarget()->CastSpell(eofcpos[0].GetPositionX(), eofcpos[0].GetPositionY(), eofcpos[0].GetPositionZ(), SPELL_SUM_ESSENCE_OF_CORRUPT_C, true);
+                            GetTarget()->SummonCreature(NPC_ESSENCE_OF_CORRUPTION_C, eofcpos[0].GetPositionX(), eofcpos[0].GetPositionY(), eofcpos[0].GetPositionZ(), 0.0f, TEMPSUMMON_DEAD_DESPAWN, 2000, GetTarget()->GetGUID());
                         else if (plpower > 55 && plpower <= 70)
                             for (uint8 n = 0; n < 2; n++)
-                                GetTarget()->CastSpell(eofcpos[n].GetPositionX(), eofcpos[n].GetPositionY(), eofcpos[n].GetPositionZ(), SPELL_SUM_ESSENCE_OF_CORRUPT_C, true);
+                                GetTarget()->SummonCreature(NPC_ESSENCE_OF_CORRUPTION_C, eofcpos[n].GetPositionX(), eofcpos[n].GetPositionY(), eofcpos[n].GetPositionZ(), 0.0f, TEMPSUMMON_DEAD_DESPAWN, 2000, GetTarget()->GetGUID());
                         else if (plpower > 70 && plpower <= 85)
                             for (uint8 n = 0; n < 3; n++)
-                                GetTarget()->CastSpell(eofcpos[n].GetPositionX(), eofcpos[n].GetPositionY(), eofcpos[n].GetPositionZ(), SPELL_SUM_ESSENCE_OF_CORRUPT_C, true);
+                                GetTarget()->SummonCreature(NPC_ESSENCE_OF_CORRUPTION_C, eofcpos[n].GetPositionX(), eofcpos[n].GetPositionY(), eofcpos[n].GetPositionZ(), 0.0f, TEMPSUMMON_DEAD_DESPAWN, 2000, GetTarget()->GetGUID());
                         else if (plpower > 85 && plpower <= 100)
                             for (uint8 n = 0; n < 4; n++)
-                                GetTarget()->CastSpell(eofcpos[n].GetPositionX(), eofcpos[n].GetPositionY(), eofcpos[n].GetPositionZ(), SPELL_SUM_ESSENCE_OF_CORRUPT_C, true);
+                                GetTarget()->SummonCreature(NPC_ESSENCE_OF_CORRUPTION_C, eofcpos[n].GetPositionX(), eofcpos[n].GetPositionY(), eofcpos[n].GetPositionZ(), 0.0f, TEMPSUMMON_DEAD_DESPAWN, 2000, GetTarget()->GetGUID());
                         break;
                     }
                     case SPELL_TEST_OF_RELIANCE:    //heal
-                        GetTarget()->CastSpell(777.5012f, 974.7348f, 356.3398f, SPELL_GREATER_CORRUPTION, true);
-                        GetTarget()->CastSpell(789.889f, 958.021f, 356.34f, SPELL_MELEE_COMBTANT, true);
-                        GetTarget()->CastSpell(772.854f, 947.467f, 356.34f, SPELL_CASTER, true);
-                        GetTarget()->CastSpell(780.8785f, 974.7535f, 356.34f, SPELL_SUMMON_GUARDIAN, true);
+                        GetTarget()->SummonCreature(NPC_GREATER_CORRUPTION, 777.5012f, 974.7348f, 356.3398f, 0.0f, TEMPSUMMON_DEAD_DESPAWN, 2000, GetTarget()->GetGUID());
+                        GetTarget()->SummonCreature(NPC_NN_HEAL_EVENT_PROTECTOR_1, 789.889f, 958.021f, 356.34f, 0.0f, TEMPSUMMON_DEAD_DESPAWN, 2000, GetTarget()->GetGUID());
+                        GetTarget()->SummonCreature(NPC_NN_HEAL_EVENT_PROTECTOR_2, 772.854f, 947.467f, 356.34f, 0.0f, TEMPSUMMON_DEAD_DESPAWN, 2000, GetTarget()->GetGUID());
+                        GetTarget()->SummonCreature(NPC_NN_HEAL_EVENT_PROTECTOR_3, 780.8785f, 974.7535f, 356.34f, 0.0f, TEMPSUMMON_DEAD_DESPAWN, 2000, GetTarget()->GetGUID());
                         break;
                     case SPELL_TEST_OF_CONFIDENCE:  //tank
-                        GetTarget()->CastSpell(777.5012f, 974.7348f, 356.3398f, SPELL_TITANIC_CORRUPTION);
+                        GetTarget()->SummonCreature(NPC_TITANIC_CORRUPTION, 777.5012f, 974.7348f, 356.3398f, 0.0f, TEMPSUMMON_DEAD_DESPAWN, 2000, GetTarget()->GetGUID());
                         break;
                     }
                 }

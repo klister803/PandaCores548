@@ -5092,11 +5092,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].BasePoints = 0;
                     break;
                 //Norushen
-                case 144848: //Titanic Corruption Summon
-                case 144739: //Manofestation of Corruption Summon
-                case 144980: //Greater Corruption
-                    spellInfo->Effects[0].TargetA = TARGET_DEST_DEST;
-                    break;
                 case 144514:    //Lingering Corruption
                     spellInfo->SchoolMask |= SPELL_SCHOOL_MASK_NORMAL;
                     spellInfo->Effects[2].TargetA = 25;
