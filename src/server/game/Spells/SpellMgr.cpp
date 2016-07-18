@@ -5128,9 +5128,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(1); //0
                     spellInfo->Effects[0].TargetA = 25;
                     break;
-                case 145226: //Blind Hatred Dummy
-                    spellInfo->Effects[1].TriggerSpell = 0;
-                    break;
                 case 145227: //Blind Hatred Dmg
                     spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(1); //0
                     break;

@@ -757,6 +757,8 @@ public:
         {
             targetGuid = summoner->ToPlayer() ? summoner->GetGUID() : 0;
             me->SetReactState(REACT_PASSIVE);
+            me->SetPhaseId(summoner->GetGUID(), true);
+            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             me->CastSpell(me, SPELL_ESSENCE_OF_CORUPTION, false);
             me->CastSpell(me, SPELL_STEALTH_DETECTION, true);
             AttackStart(summoner);
@@ -847,8 +849,10 @@ public:
         {
             me->SetReactState(REACT_DEFENSIVE);
             targetGuid = summoner->ToPlayer() ? summoner->GetGUID() : 0;
+            me->SetPhaseId(summoner->GetGUID(), true);
+            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             me->CastSpell(me, SPELL_STEALTH_AND_INVISIBILITY_DETECT, true);
-            attack = 5000;
+            attack = 4000;
         }
 
         void JustDied(Unit* killer)
@@ -1082,9 +1086,11 @@ public:
         {
             me->SetReactState(REACT_PASSIVE);
             targetGuid = summoner->ToPlayer() ? summoner->GetGUID() : 0;
+            me->SetPhaseId(summoner->GetGUID(), true);
+            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             me->DespawnOrUnsummon(60000);
             me->SetInCombatWithZone();
-            attack = 5000;
+            attack = 4000;
         }
 
         void EnterCombat(Unit* who)
@@ -1207,6 +1213,8 @@ public:
         {
             me->SetReactState(REACT_PASSIVE);
             targetGuid = summoner->ToPlayer() ? summoner->GetGUID() : 0;
+            me->SetPhaseId(summoner->GetGUID(), true);
+            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             attack = 3000;
         }
 
@@ -1314,6 +1322,8 @@ public:
         void IsSummonedBy(Unit* summoner)
         {
             me->SetReactState(REACT_DEFENSIVE);
+            me->SetPhaseId(summoner->GetGUID(), true);
+            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             DoCast(me, SPELL_PROTECTORS_DD);
             me->SetHealth(me->GetMaxHealth() / 2);
             if (summoner->ToPlayer())
@@ -1384,6 +1394,8 @@ public:
         void IsSummonedBy(Unit* summoner)
         {
             me->SetReactState(REACT_DEFENSIVE);
+            me->SetPhaseId(summoner->GetGUID(), true);
+            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             DoCast(me, SPELL_PROTECTORS_DD);
             me->SetHealth(me->GetMaxHealth() / 2);
             if (summoner->ToPlayer())
@@ -1472,6 +1484,8 @@ public:
         void IsSummonedBy(Unit* summoner)
         {
             me->SetReactState(REACT_DEFENSIVE);
+            me->SetPhaseId(summoner->GetGUID(), true);
+            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             me->SetHealth(me->GetMaxHealth() / 2);
             if (summoner->ToPlayer())
                 summoner->ToPlayer()->SendEncounterUnitForPlayer(ENCOUNTER_FRAME_ENGAGE, me);
@@ -1825,7 +1839,8 @@ public:
             if (GetTarget())
             {
                 GetTarget()->RemoveAurasDueToSpell(getPhaseSpell());
-                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE ||
+                    GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_DEFAULT)
                 {
                     if (Player* pl = GetTarget()->ToPlayer())
                     {
@@ -1846,7 +1861,7 @@ public:
                         }
                     }
                 }
-                else if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_DEFAULT)
+                else if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_CANCEL)
                 {
                     if (Player* pl = GetTarget()->ToPlayer())
                     {
@@ -2026,7 +2041,7 @@ public:
                 if (GetHitUnit()->GetPower(POWER_ALTERNATE_POWER) + 25 <= 100)
                 {
                     GetHitUnit()->SetPower(POWER_ALTERNATE_POWER, GetHitUnit()->GetPower(POWER_ALTERNATE_POWER) + 25);
-                    GetHitUnit()->RemoveAurasDueToSpell(SPELL_PURIFIED);
+                    GetHitUnit()->RemoveAurasDueToSpell(SPELL_PURIFIED, 0, 0, AURA_REMOVE_BY_CANCEL);
                     GetCaster()->ToCreature()->AI()->DoAction(ACTION_DESPAWN);
                 }
             }
