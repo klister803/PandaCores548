@@ -2812,7 +2812,7 @@ void WorldObject::SendMessageToSetInRange(WorldPacket* data, float dist, bool /*
     if (Unit* unit = ToUnit())
     {
         std::list<Player*> removePlrList;
-
+        ACE_Read_Guard<ACE_RW_Thread_Mutex> lock(unit->_m_whoseemeRWLock);
         for (auto itr : unit->m_whoseeme)
         {
             if (!itr->IsInWorld() || itr->GetTypeId() != TYPEID_PLAYER)
@@ -2824,6 +2824,7 @@ void WorldObject::SendMessageToSetInRange(WorldPacket* data, float dist, bool /*
             if (WorldSession* session = itr->GetSession())
                 session->SendPacket(data);
         }
+        lock.release();
 
         if (!removePlrList.empty())
             for (auto itr : removePlrList)
@@ -3798,6 +3799,7 @@ struct WorldObjectChangeAccumulator
 
     void Visit(Unit* unit)
     {
+        TRINITY_READ_GUARD(ACE_RW_Thread_Mutex, unit->_m_whoseemeRWLock);
         for (auto itr : unit->m_whoseeme)
         {
             if (!itr->IsInWorld())
