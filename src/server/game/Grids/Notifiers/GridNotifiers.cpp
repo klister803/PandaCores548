@@ -62,18 +62,16 @@ void VisibleNotifier::SendToSelf()
         if (IS_PLAYER_GUID(*it))
         {
             Player* player = ObjectAccessor::FindPlayer(*it);
-            if (player && player->IsInWorld())
+            if (player && player->IsInWorld() && !player->onVisibleUpdate())
             {
-                if (!player->onVisibleUpdate())
-                    player->UpdateVisibilityOf(&i_player);
-
-                player->RemoveWhoSeeMe(&i_player);
+                player->UpdateVisibilityOf(&i_player);
+                player->m_whoseeme.remove(&i_player);
             }
         }
         else if (IS_UNIT_GUID(*it))
         {
             if (Unit* unit = ObjectAccessor::GetUnit(i_player, *it))
-                unit->RemoveWhoSeeMe(&i_player);
+                unit->m_whoseeme.remove(&i_player);
         }
     }
 
@@ -123,9 +121,9 @@ void VisibleNotifier::Visit(PlayerMapType &m)
         }
 }
 
-void VisibleNotifier::Visit(Map* map)
+void VisibleNotifier::Visit(std::list<WorldObject*> objList)
 {
-    for (auto itr : map->GetBGArenaObjList())
+    for (auto itr : objList)
     {
         if (!itr->IsInWorld())
             continue;
@@ -189,12 +187,13 @@ void VisibleChangesNotifier::Visit(PlayerMapType &m)
     }
 }
 
-void VisibleChangesNotifier::Visit(Map* map)
+void VisibleChangesNotifier::Visit(std::list<WorldObject*> objList)
 {
-    for (auto itr : map->GetBGArenaObjList())
+    for (auto itr : objList)
     {
         if (!itr->IsInWorld())
             continue;
+
 
         if (Player* plr = itr->ToPlayer())
         {
@@ -297,9 +296,9 @@ void MessageDistDeliverer::Visit(DynamicObjectMapType &m)
     }
 }
 
-void MessageDistDeliverer::Visit(Map* map)
+void MessageDistDeliverer::Visit(std::list<WorldObject*> objList)
 {
-    for (auto itr : map->GetBGArenaObjList())
+    for (auto itr : objList)
     {
         if (!itr->IsInWorld())
             continue;
@@ -318,15 +317,15 @@ void MessageDistDeliverer::Visit(Map* map)
     }
 }
 
-void MessageDistDeliverer::Visit(Unit* unit)
+void MessageDistDeliverer::Visit(std::list<Player*> plrList)
 {
-    std::list<Player*> removePlrList;
-    TRINITY_READ_GUARD(ACE_RW_Thread_Mutex, unit->_m_whoseemeRWLock);
-    for (auto itr : unit->m_whoseeme)
+    for (auto itr : plrList)
     {
         if (!itr->IsInWorld() || itr->GetTypeId() != TYPEID_PLAYER)
         {
-            removePlrList.push_back(itr);
+            if (Unit* unit = i_source->ToUnit())
+                unit->m_whoseeme.remove(itr);
+
             continue;
         }
 
@@ -336,11 +335,6 @@ void MessageDistDeliverer::Visit(Unit* unit)
         if (itr->m_seer == itr || itr->GetVehicle())
             SendPacket(itr);
     }
-    unit->_m_whoseemeRWLock.release();
-
-    if (!removePlrList.empty())
-        for (auto itr : removePlrList)
-            unit->RemoveWhoSeeMe(itr);
 }
 
 void ChatMessageDistDeliverer::Visit(PlayerMapType &m)
