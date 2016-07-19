@@ -7883,7 +7883,7 @@ void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self)
 
     Trinity::MessageDistDeliverer notifier(this, data, dist);
 
-    notifier.Visit(m_whoseeme);
+    notifier.Visit(this);
 }
 
 void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self, bool own_team_only)
@@ -7903,7 +7903,7 @@ void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self, b
             return;
         }
 
-    notifier.Visit(m_whoseeme);
+    notifier.Visit(this);
 }
 
 void Player::SendChatMessageToSetInRange(Trinity::ChatData& c, float dist, bool self, bool own_team_only)
@@ -7935,7 +7935,7 @@ void Player::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
     float visRange = CalcVisibilityRange();
     Trinity::MessageDistDeliverer notifier(this, data, visRange, false, skipped_rcvr);
 
-    notifier.Visit(m_whoseeme);
+    notifier.Visit(this);
 }
 
 void Player::SendDirectMessage(WorldPacket* data)

@@ -2825,8 +2825,9 @@ void WorldObject::SendMessageToSetInRange(WorldPacket* data, float dist, bool /*
                 session->SendPacket(data);
         }
 
-        for (auto itr : removePlrList)
-            unit->RemoveWhoSeeMe(itr);
+        if (!removePlrList.empty())
+            for (auto itr : removePlrList)
+                unit->RemoveWhoSeeMe(itr);
     }
     else
     {
@@ -3795,9 +3796,9 @@ struct WorldObjectChangeAccumulator
         }
     }
 
-    void Visit(std::list<Player*> plrList)
+    void Visit(Unit* unit)
     {
-        for (auto itr : plrList)
+        for (auto itr : unit->m_whoseeme)
         {
             if (!itr->IsInWorld())
                 continue;
@@ -3833,7 +3834,7 @@ void WorldObject::BuildUpdate(UpdateDataMapType& data_map)
     else
     {
         if (ToCreature() && ToCreature()->m_isImportantForVisibility)
-            notifier.Visit(ToCreature()->m_whoseeme);
+            notifier.Visit(ToCreature());
         else
             cell.Visit(p, player_notifier, map, *this, CalcVisibilityRange());
     }

@@ -318,15 +318,14 @@ void MessageDistDeliverer::Visit(Map* map)
     }
 }
 
-void MessageDistDeliverer::Visit(std::list<Player*> plrList)
+void MessageDistDeliverer::Visit(Unit* unit)
 {
-    for (auto itr : plrList)
+    std::list<Player*> removePlrList;
+    for (auto itr : unit->m_whoseeme)
     {
         if (!itr->IsInWorld() || itr->GetTypeId() != TYPEID_PLAYER)
         {
-            if (Unit* unit = i_source->ToUnit())
-                unit->m_whoseeme.remove(itr);
-
+            removePlrList.push_back(itr);
             continue;
         }
 
@@ -336,6 +335,10 @@ void MessageDistDeliverer::Visit(std::list<Player*> plrList)
         if (itr->m_seer == itr || itr->GetVehicle())
             SendPacket(itr);
     }
+
+    if (!removePlrList.empty())
+        for (auto itr : removePlrList)
+            unit->RemoveWhoSeeMe(itr);
 }
 
 void ChatMessageDistDeliverer::Visit(PlayerMapType &m)
