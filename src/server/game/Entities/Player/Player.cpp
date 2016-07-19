@@ -7883,7 +7883,16 @@ void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self)
 
     Trinity::MessageDistDeliverer notifier(this, data, dist);
 
-    notifier.Visit(this);
+//     if (Map* map = GetMap())
+//         if (map->IsBattlegroundOrArena())
+//         {
+//             notifier.Visit(map->GetBGArenaObjList());
+//             return;
+//         }
+
+    notifier.Visit(m_whoseeme);
+
+    //VisitNearbyWorldObject(dist, notifier);
 }
 
 void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self, bool own_team_only)
@@ -7903,7 +7912,9 @@ void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self, b
             return;
         }
 
-    notifier.Visit(this);
+    notifier.Visit(m_whoseeme);
+
+    //VisitNearbyWorldObject(dist, notifier);
 }
 
 void Player::SendChatMessageToSetInRange(Trinity::ChatData& c, float dist, bool self, bool own_team_only)
@@ -7935,7 +7946,16 @@ void Player::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
     float visRange = CalcVisibilityRange();
     Trinity::MessageDistDeliverer notifier(this, data, visRange, false, skipped_rcvr);
 
-    notifier.Visit(this);
+//     if (Map* map = GetMap())
+//         if (map->IsBattlegroundOrArena())
+//         {
+//             notifier.Visit(map->GetBGArenaObjList());
+//             return;
+//         }
+
+    notifier.Visit(m_whoseeme);
+
+    //VisitNearbyWorldObject(visRange, notifier);
 }
 
 void Player::SendDirectMessage(WorldPacket* data)
@@ -25701,7 +25721,7 @@ void Player::UpdateVisibilityOf(WorldObject* target)
             m_clientGUIDs.erase(target->GetGUID());
 
             if (Unit* unit = target->ToUnit())
-                unit->RemoveWhoSeeMe(this);
+                unit->m_whoseeme.remove(this);
 
             #ifdef TRINITY_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "Object %u (Type: %u) out of range for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), GetGUIDLow(), GetDistance(target));
@@ -25720,7 +25740,7 @@ void Player::UpdateVisibilityOf(WorldObject* target)
             m_clientGUIDs.insert(target->GetGUID());
 
             if (Unit* unit = target->ToUnit())
-                unit->AddWhoSeeMe(this);
+                unit->m_whoseeme.push_back(this);
 
             #ifdef TRINITY_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "Object %u (Type: %u) is visible now for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), GetGUIDLow(), GetDistance(target));
@@ -25784,7 +25804,7 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
             RemoveListner(target);
 
             if (Unit* unit = target->ToUnit())
-                unit->RemoveWhoSeeMe(this);
+                unit->m_whoseeme.remove(this);
 
             #ifdef TRINITY_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "Object %u (Type: %u, Entry: %u) is out of range for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), target->GetEntry(), GetGUIDLow(), GetDistance(target));
@@ -25803,7 +25823,7 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
             UpdateVisibilityOf_helper(m_clientGUIDs, target, visibleNow);
 
             if (Unit* unit = target->ToUnit())
-                unit->AddWhoSeeMe(this);
+                unit->m_whoseeme.push_back(this);
 
             #ifdef TRINITY_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "Object %u (Type: %u, Entry: %u) is visible now for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), target->GetEntry(), GetGUIDLow(), GetDistance(target));
@@ -25825,7 +25845,7 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
             RemoveListner(target);
 
             if (Unit* unit = target->ToUnit())
-                unit->RemoveWhoSeeMe(this);
+                unit->m_whoseeme.remove(this);
         }
     }
     else
@@ -25837,7 +25857,7 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
             UpdateVisibilityOf_helper(m_clientGUIDs, target, visibleNow);
 
             if (Unit* unit = target->ToUnit())
-                unit->AddWhoSeeMe(this);
+                unit->m_whoseeme.push_back(this);
         }
     }
 
