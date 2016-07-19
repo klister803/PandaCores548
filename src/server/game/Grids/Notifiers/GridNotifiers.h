@@ -143,8 +143,8 @@ namespace Trinity
         }
         void Visit(PlayerMapType &m);
         void Visit(DynamicObjectMapType &m);
-        void Visit(std::list<Player*> plrList);
         void Visit(Map* map);
+        void Visit(Unit* unit);
         template<class SKIP> void Visit(GridRefManager<SKIP> &) {}
 
         void SendPacket(Player* player)
