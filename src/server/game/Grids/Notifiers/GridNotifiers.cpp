@@ -121,9 +121,9 @@ void VisibleNotifier::Visit(PlayerMapType &m)
         }
 }
 
-void VisibleNotifier::Visit(std::list<WorldObject*> objList)
+void VisibleNotifier::Visit(Map* map)
 {
-    for (auto itr : objList)
+    for (auto itr : map->GetBGArenaObjList())
     {
         if (!itr->IsInWorld())
             continue;
@@ -187,9 +187,9 @@ void VisibleChangesNotifier::Visit(PlayerMapType &m)
     }
 }
 
-void VisibleChangesNotifier::Visit(std::list<WorldObject*> objList)
+void VisibleChangesNotifier::Visit(Map* map)
 {
-    for (auto itr : objList)
+    for (auto itr : map->GetBGArenaObjList())
     {
         if (!itr->IsInWorld())
             continue;
@@ -296,9 +296,9 @@ void MessageDistDeliverer::Visit(DynamicObjectMapType &m)
     }
 }
 
-void MessageDistDeliverer::Visit(std::list<WorldObject*> objList)
+void MessageDistDeliverer::Visit(Map* map)
 {
-    for (auto itr : objList)
+    for (auto itr : map->GetBGArenaObjList())
     {
         if (!itr->IsInWorld())
             continue;
