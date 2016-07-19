@@ -25412,3 +25412,12 @@ Unit* Unit::GetLastCastTarget()
 
     return NULL;
 }
+
+void Unit::AddWhoSeeMe(Player* plr)
+{
+    m_whoseeme.push_back(plr);
+}
+void Unit::RemoveWhoSeeMe(Player* plr)
+{
+    m_whoseeme.remove(plr);
+}

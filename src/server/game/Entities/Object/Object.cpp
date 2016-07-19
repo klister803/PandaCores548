@@ -2821,18 +2821,12 @@ void WorldObject::SendMessageToSetInRange(WorldPacket* data, float dist, bool /*
                 continue;
             }
 
-            if (!itr->HaveAtClient(unit))
-            {
-                removePlrList.push_back(itr);
-                continue;
-            }
-
             if (WorldSession* session = itr->GetSession())
                 session->SendPacket(data);
         }
 
         for (auto itr : removePlrList)
-            unit->m_whoseeme.remove(itr);
+            unit->RemoveWhoSeeMe(itr);
     }
     else
     {

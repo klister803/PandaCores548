@@ -2157,13 +2157,15 @@ class Unit : public WorldObject
         LiquidData liquid_status;
         ZLiquidStatus Zliquid_status;
 
-        std::list<Player*> m_whoseeme;
-
         float m_threatModifier[MAX_SPELL_SCHOOL];
         float m_modAttackSpeedPct[3];
 
         // Event handler
         EventProcessor m_Events;
+
+        void AddWhoSeeMe(Player* plr);
+        void RemoveWhoSeeMe(Player* plr);
+        std::list<Player*> m_whoseeme;
 
         // stat system
         bool HandleStatModifier(UnitMods unitMod, UnitModifierType modifierType, float amount, bool apply);
