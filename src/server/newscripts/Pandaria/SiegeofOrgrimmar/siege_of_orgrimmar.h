@@ -139,6 +139,7 @@ enum eCreatures
     NPC_STARVED_YETI                = 73184,
     NPC_CAPTIVE_CAVE_BAT            = 73522,
     NPC_SWIRL_TARGET                = 71550,
+    NPC_FLASH_STALKER               = 90003,
 
     NPC_IMMERSEUS                   = 71543,
 

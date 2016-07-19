@@ -1615,6 +1615,43 @@ public:
     }
 };
 
+//90003
+class npc_flash_stalker : public CreatureScript
+{
+public:
+    npc_flash_stalker() : CreatureScript("npc_flash_stalker") {}
+
+    struct npc_flash_stalkerAI : public ScriptedAI
+    {
+        npc_flash_stalkerAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
+        }
+        InstanceScript* instance;
+
+        void Reset(){}
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (damage >= me->GetHealth())
+                damage = 0;
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_flash_stalkerAI(creature);
+    }
+};
+
 //143939
 class spell_klaxxi_gouge: public SpellScriptLoader
 {
@@ -2513,6 +2550,9 @@ public:
                 {
                     GetCaster()->SetFacingToObject(pl);
                     pl->CastSpell(pl, SPELL_FLASH_DUMMY, true);
+                    Position pos;
+                    GetCaster()->GetPosition(&pos);
+                    GetCaster()->SummonCreature(NPC_FLASH_STALKER, pos, 0, TEMPSUMMON_TIMED_DESPAWN, 2000);
                 }
             }
             return SPELL_CAST_OK;
@@ -2533,19 +2573,19 @@ public:
 class WhirlingTargetFilter
 {
 public:
-    WhirlingTargetFilter(WorldObject* caster, Player* player) : _caster(caster), _player(player){}
+    WhirlingTargetFilter(Player* player, Creature* stalker) :  _player(player), _stalker(stalker){}
 
     bool operator()(WorldObject* unit)
     {
-        if (unit->IsInBetween(_caster, _player, 4.0f))
+        if (unit->IsInBetween(_stalker, _player, 4.0f))
             return false;
         else if (_player->GetGUID() == unit->GetGUID())
             return false;
         return true;
     }
 private:
-    WorldObject* _caster;
     Player* _player;
+    Creature* _stalker;
 };
 
 //143701
@@ -2583,7 +2623,8 @@ public:
                     }
                 }
                 if (Player* maintarget = GetCaster()->GetPlayer(*GetCaster(), flashtargetGuid))
-                    targets.remove_if(WhirlingTargetFilter(GetCaster(), maintarget));
+                    if (Creature* stalker = GetCaster()->FindNearestCreature(NPC_FLASH_STALKER, 150.0f, true))
+                        targets.remove_if(WhirlingTargetFilter(maintarget, stalker));
             }
         }
 
@@ -2944,6 +2985,7 @@ void AddSC_boss_paragons_of_the_klaxxi()
     new npc_amber();
     new npc_amber_player();
     new npc_kunchong();
+    new npc_flash_stalker();
     new spell_klaxxi_gouge();
     new spell_gene_splice();
     new spell_snipe();
