@@ -321,6 +321,7 @@ void MessageDistDeliverer::Visit(Map* map)
 void MessageDistDeliverer::Visit(Unit* unit)
 {
     std::list<Player*> removePlrList;
+    TRINITY_READ_GUARD(ACE_RW_Thread_Mutex, unit->_m_whoseemeRWLock);
     for (auto itr : unit->m_whoseeme)
     {
         if (!itr->IsInWorld() || itr->GetTypeId() != TYPEID_PLAYER)
@@ -335,6 +336,7 @@ void MessageDistDeliverer::Visit(Unit* unit)
         if (itr->m_seer == itr || itr->GetVehicle())
             SendPacket(itr);
     }
+    unit->_m_whoseemeRWLock.release();
 
     if (!removePlrList.empty())
         for (auto itr : removePlrList)
