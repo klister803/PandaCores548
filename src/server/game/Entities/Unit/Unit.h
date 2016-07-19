@@ -2160,8 +2160,6 @@ class Unit : public WorldObject
         float m_threatModifier[MAX_SPELL_SCHOOL];
         float m_modAttackSpeedPct[3];
 
-        ACE_RW_Thread_Mutex _m_whoseemeRWLock;
-
         // Event handler
         EventProcessor m_Events;
 
