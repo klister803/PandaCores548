@@ -201,6 +201,14 @@ class deathmatch_player_script : public PlayerScript
                         group->RemoveMember(player->GetGUID());
                     player->RemoveAllAurasOnDeath(); //нужен дебаф, дабы не настакивались перед входом
                 }
+                
+                if (player && !player->HasAura(SPELL_QUEUE) && player->GetMapId() == 972) //бафа нет но на деатматч карте
+                {
+                    if (player->GetTeam() == HORDE)
+                        player->TeleportTo(1, 1573.98f, -4401.63f, 15.78f, 0.84f);  //orgri
+                    else
+                        player->TeleportTo(0, -8833.62f, 620.64f, 93.73f, 1.12f);  //storm
+                }
             }
             else
             {
