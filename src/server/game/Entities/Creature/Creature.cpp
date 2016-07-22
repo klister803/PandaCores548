@@ -245,16 +245,16 @@ void Creature::RemoveFromWorld()
 {
     if (IsInWorld())
     {
-        if (m_isImportantForVisibility)
-            if (Map* mapInfo = GetMap())
-                mapInfo->RemoveImportantCreature(this);
-
         if (m_zoneScript)
             m_zoneScript->OnCreatureRemove(this);
         if (m_formation)
             sFormationMgr->RemoveCreatureFromGroup(m_formation, this);
         Unit::RemoveFromWorld();
         sObjectAccessor->RemoveObject(this);
+
+        if (m_isImportantForVisibility)
+            if (Map* mapInfo = GetMap())
+                mapInfo->RemoveImportantCreature(this);
     }
 }
 
