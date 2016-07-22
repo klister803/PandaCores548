@@ -27,6 +27,7 @@ set(scripts_STAT_SRCS
     Custom/command_donate_mount.cpp
      Custom/custom_event.cpp
     Custom/custom_events_x20.cpp
+     Custom/custom_deathmatch.cpp
 )
 
 message("  -> Prepared: Custom")

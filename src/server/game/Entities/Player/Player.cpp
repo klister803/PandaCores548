@@ -2244,6 +2244,9 @@ void Player::setDeathState(DeathState s)
     if (isAlive() && !cur)
         //clear aura case after resurrection by another way (spells will be applied before next death)
         SetUInt32Value(PLAYER_SELF_RES_SPELL, 0);
+
+    if (s == JUST_DIED)
+        sScriptMgr->OnPlayerDeath(ToPlayer());
 }
 
 bool Player::BuildEnumData(PreparedQueryResult result, ByteBuffer* dataBuffer, ByteBuffer* bitBuffer)
@@ -9117,7 +9120,14 @@ void Player::UpdateArea(uint32 newArea)
             CombatStopWithPets();
         }
     }
-
+    
+     if (area && (area->mapid == 972 || GetMapId() == 972)) 
+     { 
+          SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP); 
+          pvpInfo.inNoPvPArea = false;
+          pvpInfo.inFFAPvPArea = true;
+     }
+    
     CalcStaticVisibleDistance(m_zoneUpdateId, newArea);
 
     if (m_zoneUpdateId == 0 && newArea == 0 && GetMapId() == 530) // event zone
@@ -25084,8 +25094,7 @@ void Player::UpdatePvPState(bool onlyFFA)
 {
     // TODO: should we always synchronize UNIT_FIELD_BYTES_2, 1 of controller and controlled?
     // no, we shouldn't, those are checked for affecting player by client
-    if (!pvpInfo.inNoPvPArea && !isGameMaster()
-        && (pvpInfo.inFFAPvPArea || sWorld->IsFFAPvPRealm()))
+    if (!pvpInfo.inNoPvPArea && !isGameMaster()  && (pvpInfo.inFFAPvPArea || sWorld->IsFFAPvPRealm()))
     {
         if (!HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP))
         {

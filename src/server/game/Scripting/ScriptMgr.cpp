@@ -1283,6 +1283,11 @@ void ScriptMgr::OnPlayerKilledByCreature(Creature* killer, Player* killed)
     FOREACH_SCRIPT(PlayerScript)->OnPlayerKilledByCreature(killer, killed);
 }
 
+void ScriptMgr::OnPlayerDeath(Player *deadPlayer)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnPlayerDeath(deadPlayer);
+}
+
 void ScriptMgr::OnPlayerLevelChanged(Player* player, uint8 oldLevel)
 {
     FOREACH_SCRIPT(PlayerScript)->OnLevelChanged(player, oldLevel);

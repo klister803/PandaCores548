@@ -38,6 +38,7 @@ void AddSC_npc_visualweapon();
 void AddSC_donate_mount();
 void AddSC_custum_event();
 void AddSC_custom_events_x20();
+void AddSC_custom_deathmatch();
 
 // spells
 void AddSC_deathknight_spell_scripts();
@@ -1914,5 +1915,6 @@ void AddCustomScripts()
     AddSC_donate_mount();
     AddSC_custum_event();
     AddSC_custom_events_x20();
+    AddSC_custom_deathmatch();
 #endif
 }

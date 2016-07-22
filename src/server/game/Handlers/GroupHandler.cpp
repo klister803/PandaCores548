@@ -34,6 +34,7 @@
 #include "DB2Structure.h"
 #include "DB2Stores.h"
 #include "SpellAuraEffects.h"
+#include "Player.h"
 
 class Aura;
 
@@ -170,6 +171,13 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket & recvData)
         SendPartyResult(PARTY_OP_INVITE, memberName, ERR_IGNORING_YOU_S);
         return;
     }
+    
+    if (player->HasAura(58169) || GetPlayer()->HasAura(58169))  //deathmatch
+    {
+        SendPartyResult(PARTY_OP_INVITE, memberName, ERR_IGNORING_YOU_S);
+        return;
+    }
+        
 
     Group* group = GetPlayer()->GetGroup();
     if (group && group->isBGGroup())

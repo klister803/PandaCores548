@@ -144,6 +144,7 @@ World::World()
     m_isClosed = false;
 
     m_CleaningFlags = 0;
+    m_CountQueueOnDM = 0;
 }
 
 /// World destructor

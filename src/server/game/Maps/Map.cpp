@@ -3016,7 +3016,7 @@ time_t Map::GetLinkedRespawnTime(uint64 guid) const
 
 uint32 Map::ItemLevelCap() const
 {
-    if (IsBattlegroundOrArena())
+    if (IsBattlegroundOrArena() || GetId() == 972)
         return sWorld->getIntConfig(CONFIG_PVP_ITEM_LEVEL_CAP);
 
     if (IsChallenge())

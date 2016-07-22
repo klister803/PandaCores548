@@ -897,6 +897,11 @@ class World
         void DeleteCharName(std::string name) { nameMap.erase(name); }
 
         uint32 GetAntiSpamm(uint32 opcode, uint32 value) { return loadantispamm[opcode][value]; }
+        
+        int32 GetCountQueueOnDM() { return m_CountQueueOnDM; }
+        void CountQueueOnDMPlus() { m_CountQueueOnDM++;}
+        void CountQueueOnDMMinus() { m_CountQueueOnDM--;}
+        void CountQueueOnDMNull() { m_CountQueueOnDM = 0; }
 
     protected:
         void _UpdateGameTime();
@@ -927,6 +932,7 @@ class World
         uint32 m_ShutdownMask;
 
         uint32 m_CleaningFlags;
+        int32 m_CountQueueOnDM;
 
         bool m_isClosed;
 
