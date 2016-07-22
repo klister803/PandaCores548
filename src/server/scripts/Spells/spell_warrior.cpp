@@ -765,6 +765,7 @@ class spell_warr_thunder_clap : public SpellScriptLoader
         }
 };
 
+/*
 // Called By Thunder Clap - 6343, Mortal Strike - 12294, Bloodthirst - 23881 and Devastate - 20243
 // Deep Wounds - 115767
 class spell_warr_deep_wounds : public SpellScriptLoader
@@ -800,7 +801,7 @@ class spell_warr_deep_wounds : public SpellScriptLoader
         {
             return new spell_warr_deep_wounds_SpellScript();
         }
-};
+}; */
 
 // Avatar - 107574
 class spell_war_avatar : public SpellScriptLoader
@@ -1221,7 +1222,7 @@ void AddSC_warrior_spell_scripts()
     new spell_warr_victory_rush();
     new spell_warr_last_stand();
     new spell_warr_thunder_clap();
-    new spell_warr_deep_wounds();
+  //  new spell_warr_deep_wounds();
     new spell_war_avatar();
     new spell_war_glyph_of_die_by_the_sword();
     new spell_glyph_of_gag_order();
