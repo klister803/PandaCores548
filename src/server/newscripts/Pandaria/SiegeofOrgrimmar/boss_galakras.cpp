@@ -228,6 +228,7 @@ Position const CannonPos[7]
     {1249.06f, -5039.08f, 1.91f, 5.04f},
     {1351.58f, -4989.40f, 0.59f, 5.33f},
 };
+
 Position const MinePos[21]
 {
     {1405.49f, -4928.59f, 11.34f},
@@ -252,6 +253,7 @@ Position const MinePos[21]
     {1243.05f, -5036.72f, 2.67f},
     {1243.06f, -5034.79f, 2.80f},
 };
+
 Position const FriendlyForcesSpawn[15] =
 {
     {1422.56f, -4900.93f, 11.3574f, 1.75f}, // Lady Sylvanas
@@ -301,25 +303,28 @@ const Position AttackTowers[2] =
     {1369.48f, -4846.21f, 32.70f}, // demolisher Attack Target South
     {1458.72f, -4814.36f, 29.19f}, // demolisher Attack Target North
 };
+
 //Heroic spawn grunt
 const Position HeroicGruntPos[2]
 {
     {1371.10f, -4851.11f, 32.70f, 5.03f}, // South
     {1457.60f, -4817.90f, 29.19f, 4.24f}, // North
 };
+
 const Position ProtoDrake[10] =
 {
-    {1420.26f, -4798.67f, 84.63f, 3.45f},
-    {1401.05f, -4811.58f, 70.55f, 0.65f},
-    {1385.86f, -4816.16f, 91.61f, 1.93f},
-    {1404.39f, -4844.62f, 88.55f, 5.98f},
-    {1392.97f, -4858.20f, 99.94f, 5.72f},
-    {1388.71f, -4809.67f, 99.63f, 4.27f},
-    {1398.95f, -4809.97f, 85.72f, 1.24f},
-    {1431.23f, -4826.53f, 87.39f, 2.31f},
-    {1402.32f, -4838.38f, 99.25f, 2.07f},
-    {1371.89f, -4840.31f, 99.12f, 3.18f},
+    {1409.60f, -4862.25f, 80.4107f, 3.03f},
+    {1428.28f, -4858.31f, 80.4107f, 1.93f},
+    {1459.56f, -4846.65f, 80.4107f, 2.24f},
+    {1482.62f, -4844.12f, 80.4107f, 1.89f},
+    {1411.65f, -4875.41f, 80.4107f, 1.71f},
+    {1447.68f, -4881.48f, 80.4107f, 1.82f},
+    {1408.65f, -4895.28f, 80.4107f, 1.85f},
+    {1376.97f, -4892.51f, 80.4107f, 1.86f},
+    {1472.60f, -4860.60f, 80.4107f, 1.59f},
+    {1430.69f, -4876.23f, 80.4107f, 2.37f},
 };
+
 const Position RinOrlortPos[2] =
 {
     {1424.51f, -4879.86f, 11.23f, 1.8f},
@@ -656,14 +661,18 @@ class boss_galakras : public CreatureScript
 
             void SpellHit(Unit* pCaster, SpellInfo const* spell)
             {
-                if(spell->Id == SPELL_ANTIAIR_CANNON)
-                    if(Aura* aura = me->GetAura(SPELL_ANTIAIR_CANNON))
+                if (spell->Id == SPELL_ANTIAIR_CANNON)
+                {
+                    if (Aura* aura = me->GetAura(SPELL_ANTIAIR_CANNON))
+                    {
                         if (aura->GetStackAmount() == 2)
                         {
                             events.Reset();
                             events.ScheduleEvent(EVENT_GALAKRAS_EXECUTE_1, 1000);
                             events.ScheduleEvent(EVENT_CHECK_PLAYERS, 2000);
                         }
+                    }
+                }
             }
         };
 
@@ -1370,6 +1379,7 @@ class npc_galakras_north_tower : public CreatureScript
         }
 };
 
+//72408
 class npc_antiair_turret : public CreatureScript
 {
     public:
@@ -1392,17 +1402,25 @@ class npc_antiair_turret : public CreatureScript
 
             void DoAction(int32 const action)
             {
-                if (action == ACTION_TOWER_GUARDS)
+                if (action == ACTION_TOWER_GUARDS && instance)
                 {
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     if (me->ToTempSummon() && me->ToTempSummon()->GetSummoner())
+                    {
                         if (Creature* Summoner = me->ToTempSummon()->GetSummoner()->ToCreature())
                         {
                             if (Summoner->GetEntry() == NPC_TOWER_SOUTH)
+                            {
                                 ZoneTalk(TEXT_GENERIC_0, 0);
+                                instance->SetData(DATA_ACTIVE_SOUTH_ROPE, 0);
+                            }
                             else if (Summoner->GetEntry() == NPC_TOWER_NORTH)
+                            {
                                 ZoneTalk(TEXT_GENERIC_1, 0);
+                                instance->SetData(DATA_ACTIVE_NORTH_ROPE, 0);
+                            }
                         }
+                    }
                 }
             }
         };
@@ -1719,6 +1737,7 @@ class npc_korkron_demolisher : public CreatureScript
         }
 };
 
+//72943
 class npc_dragonmaw_proto_drake : public CreatureScript
 {
     public:
@@ -1746,13 +1765,9 @@ class npc_dragonmaw_proto_drake : public CreatureScript
             InstanceScript* instance;
             EventMap events;
 
-            void Reset()
-            {
-            }
+            void Reset(){}
 
-            void EnterCombat(Unit* who)
-            {
-            }
+            void EnterCombat(Unit* who){}
 
             void SpellHit(Unit* caster, SpellInfo const* spell)
             {
@@ -1774,34 +1789,34 @@ class npc_dragonmaw_proto_drake : public CreatureScript
                 UpdateVictim();
 
                 events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
                 while (uint32 eventId = events.ExecuteEvent())
                 {
                     switch (eventId)
                     {
                         case EVENT_PROTO_DRAKE_GROUND:
-                        {
                             me->SetCanFly(false);
                             me->RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING);
                             me->GetMotionMaster()->MovePoint(1, RinOrlortPos[1]);
                             me->SetHomePosition(RinOrlortPos[1]);
                             DoZoneInCombat(me, 40.0f);
-                        }
                             events.ScheduleEvent(EVENT_DRAKE_FLAME_BREATH, 15000);
                             break;
                         case EVENT_PROTO_DRAKE_FLY:
                             me->SetCanFly(true);
-                            me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_HOVER);
-                            me->GetMotionMaster()->MoveRandom(10.0f);
+                            me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
+                            me->GetMotionMaster()->MoveRandom(5.0f);
                             DoZoneInCombat(me, 180.0f);
                             events.ScheduleEvent(EVENT_DRAKE_DRAKEFIRE, 7000);
                             break;
                         case EVENT_DRAKE_FLAME_BREATH:
-                        {
                             if (Unit* Target = me->getVictim())
                                 DoCast(Target, SPELL_FLAME_BREATH);
                             events.ScheduleEvent(EVENT_DRAKE_FLAME_BREATH, 25000);
                             break;
-                        }
                         case EVENT_DRAKE_DRAKEFIRE:
                             if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                                 DoCast(pTarget, SPELL_DRAKEFIRE);
@@ -1809,8 +1824,7 @@ class npc_dragonmaw_proto_drake : public CreatureScript
                             break;
                     }
                 }
-                if (!me->HasUnitState(UNIT_STATE_CASTING))
-                    DoMeleeAttackIfReady();
+                DoMeleeAttackIfReady();
             }
         };
 
@@ -2787,6 +2801,39 @@ class spell_galakras_shattering_roar : public SpellScriptLoader
         }
 };
 
+//223281, 223287, 223282
+class go_rope_skein : public GameObjectScript
+{
+public:
+    go_rope_skein() : GameObjectScript("go_rope_skein") { }
+
+    bool OnGossipHello(Player* player, GameObject* go)
+    {
+        InstanceScript* pInstance = (InstanceScript*)go->GetInstanceScript();
+        if (!pInstance)
+            return false;
+
+        switch (go->GetEntry())
+        {
+        case GO_SOUTH_ROPE_SKEIN:
+            player->NearTeleportTo(1385.46f, -4839.81f, 33.4012f, 4.9578f);
+            break;
+        case GO_NORTH_ROPE_SKEIN:
+            player->NearTeleportTo(1441.98f, -4815.71f, 28.4978f, 5.4447f);
+            break;
+        case GO_ROPE:
+            if (GameObject* _go = go->FindNearestGameObject(GO_SOUTH_ROPE_SKEIN, 50.0f))
+                player->NearTeleportTo(1379.31f, -4839.33f, 71.7601f, 3.3273f);
+            if (GameObject* _go2 = go->FindNearestGameObject(GO_NORTH_ROPE_SKEIN, 50.0f))
+                player->NearTeleportTo(1445.98f, -4811.17f, 68.3289f, 0.3475f);
+            break;
+        default:
+            break;
+        }
+        return true;
+    }
+};
+
 void AddSC_boss_galakras()
 {
     new boss_galakras();
@@ -2815,4 +2862,5 @@ void AddSC_boss_galakras()
     new spell_galakras_flames_of_galakrond();
     new spell_galakras_tower_rope_jump();
     new spell_galakras_shattering_roar();
+    new go_rope_skein();
 }

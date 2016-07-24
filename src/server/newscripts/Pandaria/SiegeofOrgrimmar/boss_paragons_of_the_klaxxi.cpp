@@ -254,19 +254,6 @@ Position bloodsumpos[3] =
     { 1549.81f, -5705.55f, -314.6497f, 0.5652f },
 };
 
-uint32 klaxxientry[9] =
-{
-    NPC_KILRUK,
-    NPC_XARIL,
-    NPC_KAZTIK,
-    NPC_KORVEN,
-    NPC_IYYOKYK,
-    NPC_KAROZ,
-    NPC_SKEER,
-    NPC_RIKKAL,
-    NPC_HISEK,
-};
-
 uint32 toxinlist[6] =
 {
     SPELL_TOXIN_BLUE,
@@ -285,6 +272,32 @@ uint32 catalystlist[6] =
     SPELL_DELAYED_CATALYST_ORANGE,
     SPELL_DELAYED_CATALYST_PURPLE,
     SPELL_DELAYED_CATALYST_GREEN,
+};
+
+Position klaxxispawnpos[9] =
+{
+    {1648.27f, -5736.53f, -291.0f, 2.34133f},//Hisek
+    {1515.46f, -5634.43f, -291.0f, 5.65569f},//Rikkal
+    {1549.77f, -5635.94f, -291.0f, 5.31405f},//Skeer
+    {1615.19f, -5732.10f, -291.0f, 2.22666f},//Karoz
+    {1540.31f, -5762.38f, -298.2f, 0.80514f},//Iyyokyk
+    {1606.35f, -5766.56f, -291.0f, 2.00833f},//Korven
+    {1519.30f, -5665.30f, -294.4f, 5.85205f},//Kaztik
+    {1559.07f, -5603.99f, -291.0f, 5.25514f},//Xaril
+    {1494.92f, -5694.08f, -298.4f, 0.24357f},//Kilruk
+};
+
+uint32 klaxxientry[9] =
+{
+    NPC_HISEK,
+    NPC_RIKKAL,
+    NPC_SKEER,
+    NPC_KAROZ,
+    NPC_IYYOKYK,
+    NPC_KORVEN,
+    NPC_KAZTIK,
+    NPC_XARIL,
+    NPC_KILRUK,
 };
 
 //71628
@@ -343,7 +356,7 @@ public:
 
     struct npc_klaxxi_controllerAI : public ScriptedAI
     {
-        npc_klaxxi_controllerAI(Creature* creature) : ScriptedAI(creature)
+        npc_klaxxi_controllerAI(Creature* creature) : ScriptedAI(creature), summons(me)
         {
             instance = creature->GetInstanceScript();
             me->SetDisplayId(11686);
@@ -352,17 +365,16 @@ public:
         }
 
         InstanceScript* instance;
+        SummonList summons;
         EventMap events;
 
         void Reset()
         {
-            DespawnSummons();
             events.Reset();
+            DespawnSummons();
+            summons.DespawnAll();
+            SummonKlaxxi();
         }
-
-        void EnterCombat(Unit* who){}
-
-        void EnterEvadeMode(){}
 
         void DespawnSummons()
         {
@@ -370,10 +382,34 @@ public:
             sumlist.clear();
             GetCreatureListWithEntryInGrid(sumlist, me, NPC_AMBER_PARASITE, 150.0f);
             GetCreatureListWithEntryInGrid(sumlist, me, NPC_HUNGRY_KUNCHONG, 150.0f);
+            GetCreatureListWithEntryInGrid(sumlist, me, NPC_AMBER, 150.0f);
+            GetCreatureListWithEntryInGrid(sumlist, me, NPC_BLOOD, 150.0f);
+            GetCreatureListWithEntryInGrid(sumlist, me, NPC_FLASH_STALKER, 150.0f);
             if (!sumlist.empty())
                 for (std::list<Creature*>::const_iterator itr = sumlist.begin(); itr != sumlist.end(); itr++)
                     (*itr)->DespawnOrUnsummon();
+            instance->SetData(DATA_CLEAR_KLAXXI_LIST, 0);
         }
+
+        void SummonKlaxxi()
+        {
+            for (uint8 n = 0; n < 9; n++)
+                if (Creature* klaxxi = me->FindNearestCreature(klaxxientry[n], 150.0f, true))
+                    continue;
+                else
+                    me->SummonCreature(klaxxientry[n], klaxxispawnpos[n]);
+            if (Creature* ap = me->FindNearestCreature(NPC_AMBER_PIECE, 30.0f, true))
+                ap->AI()->Reset();
+        }
+
+        void JustSummoned(Creature* sum)
+        {
+            summons.Summon(sum);
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
 
         void DoAction(int32 const action)
         {

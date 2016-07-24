@@ -58,6 +58,7 @@ enum eData
     DATA_BUFF_NEXT_KLAXXI,
     DATA_IS_KLAXXI_DONE,
     DATA_INTRO_NEXT_KLAXXI,
+    DATA_CLEAR_KLAXXI_LIST,
     DATA_SAFE_WEAPONS,
     DATA_D_WEAPON_IN_DEST_POINT,
     DATA_CRAWLER_MINE_READY,
@@ -97,6 +98,9 @@ enum eData
     DATA_NORTH_COUNT,
     DATA_DEMOLITIONS_EXPERT_S,
     DATA_DEMOLITIONS_EXPERT_N,
+    DATA_ACTIVE_NORTH_ROPE,
+    DATA_ACTIVE_SOUTH_ROPE,
+    DATA_DISABLE_ROPES,
 
     DATA_TEAM_IN_INSTANCE,
 
@@ -486,7 +490,12 @@ enum eGameObjects
     
     //Galakras
     GO_SOUTH_DOOR                   = 221916,
+    GO_SOUTH_ROPE_SKEIN             = 223281,
+
     GO_NORTH_DOOR                   = 223044,
+    GO_NORTH_ROPE_SKEIN             = 223287,
+
+    GO_ROPE                         = 223282,
 
     //Korkron Dark Shaman
     GO_KORKRON_CAGE                 = 221564,

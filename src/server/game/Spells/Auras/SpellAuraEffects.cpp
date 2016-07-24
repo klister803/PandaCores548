@@ -40,6 +40,7 @@
 #include "BattlefieldMgr.h"
 #include "WeatherMgr.h"
 #include "AreaTrigger.h"
+#include "InstanceScript.h"
 
 class Aura;
 //
@@ -4590,6 +4591,12 @@ void AuraEffect::HandleAuraModDecreaseSpeed(AuraApplication const* aurApp, uint8
         return;
 
     Unit* target = aurApp->GetTarget();
+
+    if (Unit* caster = aurApp->GetBase()->GetCaster())
+        if (caster->ToPlayer() && target->ToCreature())
+            if (InstanceScript* instance = target->GetInstanceScript())
+                if (instance->IsRaidBoss(target->GetEntry()))
+                    return;
 
     target->UpdateSpeed(MOVE_RUN, true);
     target->UpdateSpeed(MOVE_SWIM, true);

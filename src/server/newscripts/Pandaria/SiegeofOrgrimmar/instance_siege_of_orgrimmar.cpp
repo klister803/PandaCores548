@@ -154,6 +154,10 @@ public:
         uint64 fprotectorexdoorGUID;
         uint64 chestShaVaultOfForbiddenTreasures;
         std::vector<uint64> lightqGUIDs;
+        uint64 northropeGuid;
+        uint64 northropeskeinGuid;
+        uint64 southropeGuid;
+        uint64 southropeskeinGuid;
         uint64 winddoorGuid;
         uint64 orgrimmargateGuid;
         uint64 orgrimmargate2Guid;
@@ -262,6 +266,10 @@ public:
             immerseusexdoorGUID     = 0;
             chestShaVaultOfForbiddenTreasures = 0;
             lightqGUIDs.clear();
+            northropeGuid           = 0;
+            northropeskeinGuid      = 0;
+            southropeGuid           = 0;
+            southropeskeinGuid      = 0;
             winddoorGuid            = 0;
             orgrimmargateGuid       = 0;
             orgrimmargate2Guid      = 0;
@@ -775,6 +783,18 @@ public:
                     if (EventfieldOfSha >= 3)
                         HandleGameObject(go->GetGUID(), true, go);
                     break;
+                case GO_ROPE:
+                    if (go->GetPositionZ() > 35.0f && go->GetPositionZ() < 40.0f)
+                        southropeGuid = go->GetGUID();
+                    else if (go->GetPositionZ() < 35.0f)
+                        northropeGuid = go->GetGUID();
+                    break;
+                case GO_NORTH_ROPE_SKEIN:
+                    northropeskeinGuid = go->GetGUID();
+                    break;
+                case GO_SOUTH_ROPE_SKEIN:
+                    southropeskeinGuid = go->GetGUID();
+                    break;
                 case GO_WIND_DOOR:
                     winddoorGuid = go->GetGUID();
                     break;
@@ -975,6 +995,7 @@ public:
                 case NOT_STARTED:
                     SetData(DATA_SOUTH_TOWER, NOT_STARTED);
                     SetData(DATA_NORTH_TOWER, NOT_STARTED);
+                    SetData(DATA_DISABLE_ROPES, 0);
                     STowerFull = false;
                     STowerNull = false;
                     NTowerFull = false;
@@ -1215,29 +1236,10 @@ public:
                 case NOT_STARTED:
                     RemoveDebuffFromPlayers();
                     klaxxidiecount = 0;
-                    for (std::vector<uint64>::const_iterator itr = klaxxilist.begin(); itr != klaxxilist.end(); itr++)
-                    {
-                        if (Creature* klaxxi = instance->GetCreature(*itr))
-                        {
-                            SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, klaxxi);
-                            klaxxi->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                            klaxxi->StopMoving();
-                            klaxxi->GetMotionMaster()->Clear(false);
-                            klaxxi->Kill(klaxxi, true);
-                            klaxxi->Respawn();
-                            klaxxi->GetMotionMaster()->Clear(false);
-                            klaxxi->NearTeleportTo(klaxxi->GetHomePosition().GetPositionX(), klaxxi->GetHomePosition().GetPositionY(), klaxxi->GetHomePosition().GetPositionZ(), klaxxi->GetHomePosition().GetOrientation());
-                        }
-                    }
-
                     for (std::vector<uint64>::const_iterator itr = klaxxiarenagateGuid.begin(); itr != klaxxiarenagateGuid.end(); itr++)
                         HandleGameObject(*itr, true);
-
                     if (Creature* kc = instance->GetCreature(klaxxicontrollerGuid))
                         kc->AI()->Reset();
-
-                    if (Creature* ap = instance->GetCreature(amberpieceGuid))
-                        ap->AI()->Reset();
                     break;
                 case IN_PROGRESS:
                     for (std::vector<uint64>::const_iterator itr = klaxxiarenagateGuid.begin(); itr != klaxxiarenagateGuid.end(); itr++)
@@ -1540,6 +1542,28 @@ public:
                 }
                 break;
             }
+            case DATA_ACTIVE_NORTH_ROPE:
+                if (GameObject* nrs = instance->GetGameObject(northropeskeinGuid))
+                    nrs->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+                if (GameObject* nr = instance->GetGameObject(northropeGuid))
+                    nr->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+                break;
+            case DATA_ACTIVE_SOUTH_ROPE:
+                if (GameObject* srs = instance->GetGameObject(southropeskeinGuid))
+                    srs->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+                if (GameObject* sr = instance->GetGameObject(southropeGuid))
+                    sr->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+                break;
+            case DATA_DISABLE_ROPES:
+                if (GameObject* nrs = instance->GetGameObject(northropeskeinGuid))
+                    nrs->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+                if (GameObject* nr = instance->GetGameObject(northropeGuid))
+                    nr->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+                if (GameObject* srs = instance->GetGameObject(southropeskeinGuid))
+                    srs->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+                if (GameObject* sr = instance->GetGameObject(southropeGuid))
+                    sr->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+                break;
             case DATA_SOP_START:
                 //Open Gates In Room
                 for (std::vector<uint64>::const_iterator itr = roomgateGuids.begin(); itr != roomgateGuids.end(); itr++)
@@ -1575,8 +1599,11 @@ public:
                 klaxxidiecount++;
                 for (std::vector<uint64>::const_iterator itr = klaxxilist.begin(); itr != klaxxilist.end(); itr++)
                     if (Creature* klaxxi = instance->GetCreature(*itr))
-                        if (klaxxi->isAlive())
+                        if (klaxxi->isAlive() && klaxxi->isInCombat())
                             klaxxi->CastSpell(klaxxi, 143483, true); //Paragons Purpose Heal
+                break;
+            case DATA_CLEAR_KLAXXI_LIST:
+                klaxxilist.clear();
                 break;
             case DATA_SAFE_WEAPONS:
                 if (!dweaponGuids.empty())
@@ -2395,6 +2422,39 @@ public:
                     return GetBossState(DATA_F_PROTECTORS) == DONE;
             }
             return true;
+        }
+
+        bool IsRaidBoss(uint32 creature_entry)
+        {
+            switch (creature_entry)
+            {
+            case NPC_IMMERSEUS:
+            case NPC_ROOK_STONETOE:
+            case NPC_SUN_TENDERHEART:
+            case NPC_HE_SOFTFOOT:
+            case NPC_SHA_OF_PRIDE:
+            case NPC_AMALGAM_OF_CORRUPTION:
+            case NPC_GALAKRAS:
+            case NPC_IRON_JUGGERNAUT:
+            case NPC_WAVEBINDER_KARDRIS:
+            case NPC_EARTHBREAKER_HAROMM:
+            case NPC_GENERAL_NAZGRIM:
+            case NPC_MALKOROK:
+            case NPC_THOK:
+            case NPC_BLACKFUSE_MAUNT:
+            case NPC_KILRUK:
+            case NPC_XARIL:
+            case NPC_KAZTIK:
+            case NPC_KORVEN:
+            case NPC_IYYOKYK:
+            case NPC_KAROZ:
+            case NPC_SKEER:
+            case NPC_RIKKAL:
+            case NPC_HISEK:
+            case NPC_GARROSH:
+                return true;
+            }
+            return false;
         }
 
         void Update(uint32 diff)
