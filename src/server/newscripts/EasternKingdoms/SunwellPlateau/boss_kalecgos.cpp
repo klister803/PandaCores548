@@ -681,15 +681,17 @@ public:
             if (!map->IsDungeon())
                 return;
 
-            Map::PlayerList const &PlayerList = map->GetPlayers();
-            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-            {
-                if (i->getSource()->GetPositionZ() <= DRAGON_REALM_Z-5)
+            Position const& homePos = me->GetHomePosition();
+            Map::PlayerList const& players = map->GetPlayers();
+            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                if (Player* player = itr->getSource())
                 {
-                    i->getSource()->RemoveAura(AURA_SPECTRAL_REALM);
-                    i->getSource()->TeleportTo(me->GetMap()->GetId(), i->getSource()->GetPositionX(), i->getSource()->GetPositionY(), DRAGON_REALM_Z+5, i->getSource()->GetOrientation());
+                    if (player->IsInDist(&homePos, 50.0f) && player->GetPositionZ() <= DRAGON_REALM_Z-5)
+                    {
+                        player->RemoveAura(AURA_SPECTRAL_REALM);
+                        player->TeleportTo(me->GetMap()->GetId(), player->GetPositionX(), player->GetPositionY(), DRAGON_REALM_Z+5, player->GetOrientation());
+                    }
                 }
-            }
         }
 
         void DoAction(const int32 param)
