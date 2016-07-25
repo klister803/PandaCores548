@@ -2118,7 +2118,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
         trans->Append(stmt);
     }
 
-    if (used_loginFlag == AT_LOGIN_CHANGE_FACTION)
+    if (used_loginFlag & AT_LOGIN_CHANGE_FACTION)
     {
         // Delete all Flypaths
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_TAXI_PATH);
