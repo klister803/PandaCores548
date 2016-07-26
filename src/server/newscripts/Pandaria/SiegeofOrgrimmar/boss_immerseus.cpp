@@ -1168,6 +1168,50 @@ public:
     }
 };
 
+class CorrosiveBlastFilter
+{
+public:
+    CorrosiveBlastFilter(Unit* caster) : _caster(caster){}
+
+    bool operator()(WorldObject* unit)
+    {
+        if (_caster->isInFront(unit, M_PI / 3))
+            return false;
+        return true;
+    }
+private:
+    Unit* _caster;
+};
+
+//143436
+class spell_corrosive_blast : public SpellScriptLoader
+{
+public:
+    spell_corrosive_blast() : SpellScriptLoader("spell_corrosive_blast") { }
+
+    class spell_corrosive_blast_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_corrosive_blast_SpellScript);
+
+        void FilterTarget(std::list<WorldObject*>& targets)
+        {
+            if (GetCaster())
+                targets.remove_if(CorrosiveBlastFilter(GetCaster()));
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_corrosive_blast_SpellScript::FilterTarget, EFFECT_0, TARGET_UNIT_CONE_ENEMY_104);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_corrosive_blast_SpellScript::FilterTarget, EFFECT_1, TARGET_UNIT_CONE_ENEMY_104);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_corrosive_blast_SpellScript();
+    }
+};
+
 void AddSC_boss_immerseus()
 {
     new boss_immerseus();
@@ -1179,4 +1223,5 @@ void AddSC_boss_immerseus()
     new spell_swirl_searcher();
     new spell_sha_pool();
     new spell_sha_pool_p_s();
+    new spell_corrosive_blast();
 }
