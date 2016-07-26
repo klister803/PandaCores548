@@ -632,9 +632,201 @@ public:
     }
 };
 
+float const rate[91]
+{
+    0, // 0
+    0.5, // 1
+    0.5,
+    0.5,
+    0.5,
+    0.5,
+    0.5,
+    0.5,
+    0.5,
+    0.5,
+    0.5,
+    0.5,
+    0.5,
+    0.5,
+    0.5,
+    0.5,
+    0.5,
+    0.5,
+    0.5,
+    0.5,
+    0.5, // 20
+    1, // 21
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1, // 30
+    1.5, // 31
+    1.5,
+    1.5,
+    1.5,
+    1.5,
+    1.5,
+    1.5,
+    1.5,
+    1.5,
+    1.5, // 40
+    2, // 41
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2, // 50
+    2.5, // 51
+    2.5,
+    2.5,
+    2.5,
+    2.5,
+    2.5,
+    2.5,
+    2.5,
+    2.5,
+    2.5, // 60
+    3, // 61
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3, // 70
+    5, // 71
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5, // 80
+    10, // 81
+    10,
+    10,
+    10,
+    10, // 85
+    20, // 86
+    20,
+    20,
+    20, // 89
+    25, // 90
+};
+
+class char_levelup : public CreatureScript
+{
+public:
+    char_levelup() : CreatureScript("char_levelup"){}
+
+    bool OnGossipHello(Player* player, Creature* creature)
+    { 
+        LocaleConstant loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
+        if (player->getLevel() != 90)
+            player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, sObjectMgr->GetTrinityString(30100, loc_idx), GOSSIP_SENDER_MAIN, 3003, "", 1, true); // level
+        player->ADD_GOSSIP_ITEM(0, sObjectMgr->GetTrinityString(30101, loc_idx), GOSSIP_SENDER_MAIN, 3000); // price
+        player->ADD_GOSSIP_ITEM(0, sObjectMgr->GetTrinityString(30102, loc_idx), GOSSIP_SENDER_MAIN, 3001); // exit
+        player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
+        return true;
+    }
+
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action)
+    {
+        if(!player || !creature || !player->getAttackers().empty())
+            return true;
+        
+        LocaleConstant loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
+
+        player->PlayerTalkClass->ClearMenus();
+        ChatHandler chH = ChatHandler(player);
+        
+        if (action == 3001)
+        {
+            player->CLOSE_GOSSIP_MENU();
+            return true;
+        }
+        
+        if (action == 3000)
+        {
+            player->ADD_GOSSIP_ITEM(0, sObjectMgr->GetTrinityString(30103, loc_idx), GOSSIP_SENDER_MAIN, 3002); // back
+            player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
+            return true;
+        }
+        
+        if (action == 3002) // start
+        {
+            if (player->getLevel() != 90)
+                player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, sObjectMgr->GetTrinityString(30100, loc_idx), GOSSIP_SENDER_MAIN, 3003, "", 1, true); // level
+            player->ADD_GOSSIP_ITEM(0, sObjectMgr->GetTrinityString(30101, loc_idx), GOSSIP_SENDER_MAIN, 3000); // price
+            player->ADD_GOSSIP_ITEM(0, sObjectMgr->GetTrinityString(30102, loc_idx), GOSSIP_SENDER_MAIN, 3001); // exit
+            player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
+            return true;
+        }
+            
+        return true;
+    }
+    
+    bool OnGossipSelectCode(Player* player, Creature* creature, uint32 sender, uint32 action, const char* code)
+    {
+        LocaleConstant loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
+        player->PlayerTalkClass->ClearMenus();
+        ChatHandler chH = ChatHandler(player);
+        
+        if (action == 3003)
+        {           
+            ChatHandler chH = ChatHandler(player);
+            
+            if (!code)
+            {
+                player->CLOSE_GOSSIP_MENU();
+                return false;
+            }
+            
+            float efir;
+            efir = 0;
+            uint32 ucode = atof(code);
+            if (!ucode)
+            {
+                player->CLOSE_GOSSIP_MENU();
+                return false;
+            }
+            uint32 level = player->getLevel();
+            
+            if (ucode > 90 || ucode <= level)
+            {
+                player->CLOSE_GOSSIP_MENU();
+                return false;
+            }
+            
+            for (uint32 i = level+1; i <= ucode; i++)
+                efir += rate[i];
+            
+            float efirend = ceil(efir);
+            chH.PSendSysMessage("%f", efirend);
+        }
+        player->CLOSE_GOSSIP_MENU();
+        return false;        
+    }
+};
+
+
 void AddSC_multi_vendor()
 {
     new multi_vendor();
     new item_back();
     new char_transfer();
+    new char_levelup();
 }
