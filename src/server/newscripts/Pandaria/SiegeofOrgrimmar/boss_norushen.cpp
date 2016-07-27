@@ -852,7 +852,7 @@ public:
             me->SetPhaseId(summoner->GetGUID(), true);
             me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             me->CastSpell(me, SPELL_STEALTH_AND_INVISIBILITY_DETECT, true);
-            attack = 4000;
+            attack = 3000;
         }
 
         void JustDied(Unit* killer)
@@ -1089,8 +1089,7 @@ public:
             me->SetPhaseId(summoner->GetGUID(), true);
             me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             me->DespawnOrUnsummon(60000);
-            me->SetInCombatWithZone();
-            attack = 4000;
+            attack = 3000;
         }
 
         void EnterCombat(Unit* who)
@@ -1814,10 +1813,10 @@ public:
                         break;
                     }
                     case SPELL_TEST_OF_RELIANCE:    //heal
-                        GetTarget()->SummonCreature(NPC_GREATER_CORRUPTION, 777.5012f, 974.7348f, 356.3398f, 0.0f, TEMPSUMMON_DEAD_DESPAWN, 2000, GetTarget()->GetGUID());
-                        GetTarget()->SummonCreature(NPC_NN_HEAL_EVENT_PROTECTOR_1, 789.889f, 958.021f, 356.34f, 0.0f, TEMPSUMMON_DEAD_DESPAWN, 2000, GetTarget()->GetGUID());
-                        GetTarget()->SummonCreature(NPC_NN_HEAL_EVENT_PROTECTOR_2, 772.854f, 947.467f, 356.34f, 0.0f, TEMPSUMMON_DEAD_DESPAWN, 2000, GetTarget()->GetGUID());
-                        GetTarget()->SummonCreature(NPC_NN_HEAL_EVENT_PROTECTOR_3, 780.8785f, 974.7535f, 356.34f, 0.0f, TEMPSUMMON_DEAD_DESPAWN, 2000, GetTarget()->GetGUID());
+                        GetTarget()->CastSpell(777.5012f, 974.7348f, 356.3398f, SPELL_GREATER_CORRUPTION);
+                        GetTarget()->CastSpell(789.889f, 958.021f, 356.34f, SPELL_MELEE_COMBTANT);
+                        GetTarget()->CastSpell(772.854f, 947.467f, 356.34f, SPELL_CASTER);
+                        GetTarget()->CastSpell(780.8785f, 974.7535f, 356.34f, SPELL_SUMMON_GUARDIAN);
                         break;
                     case SPELL_TEST_OF_CONFIDENCE:  //tank
                         GetTarget()->SummonCreature(NPC_TITANIC_CORRUPTION, 777.5012f, 974.7348f, 356.3398f, 0.0f, TEMPSUMMON_DEAD_DESPAWN, 2000, GetTarget()->GetGUID());

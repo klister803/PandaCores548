@@ -5092,6 +5092,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].BasePoints = 0;
                     break;
                 //Norushen
+                case 144980: //Summon Greater Corruption
+                    spellInfo->Effects[0].TargetA = TARGET_DEST_DEST;
+                    break;
                 case 144514:    //Lingering Corruption
                     spellInfo->SchoolMask |= SPELL_SCHOOL_MASK_NORMAL;
                     spellInfo->Effects[2].TargetA = 25;
@@ -5196,7 +5199,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->ExcludeTargetAuraSpell = 0;
                     break;
                 //Spoils of Pandaria
-                
                 case 146289: //Mass Paralyses
                     spellInfo->Effects[0].TargetA = 22;
                     spellInfo->Effects[0].TargetB = 15;
