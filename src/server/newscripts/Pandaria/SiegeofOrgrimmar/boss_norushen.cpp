@@ -821,6 +821,7 @@ public:
         npc_norushen_manifestation_of_corruption_challengeAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
             instance = pCreature->GetInstanceScript();
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             attack = 0;
         }
         InstanceScript* instance;
@@ -851,6 +852,7 @@ public:
             targetGuid = summoner->ToPlayer() ? summoner->GetGUID() : 0;
             me->SetPhaseId(summoner->GetGUID(), true);
             me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             me->CastSpell(me, SPELL_STEALTH_AND_INVISIBILITY_DETECT, true);
             attack = 3000;
         }
@@ -1060,6 +1062,7 @@ public:
         npc_titanic_corruptionAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
             instance = (InstanceScript*)pCreature->GetInstanceScript();
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             attack = 0;
         }
 
@@ -1088,6 +1091,7 @@ public:
             targetGuid = summoner->ToPlayer() ? summoner->GetGUID() : 0;
             me->SetPhaseId(summoner->GetGUID(), true);
             me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             me->DespawnOrUnsummon(60000);
             attack = 3000;
         }
@@ -1183,6 +1187,8 @@ public:
         {
             pInstance = (InstanceScript*)pCreature->GetInstanceScript();
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+            me->SetVisible(false);
             attack = 0;
         }
 
@@ -1214,6 +1220,8 @@ public:
             targetGuid = summoner->ToPlayer() ? summoner->GetGUID() : 0;
             me->SetPhaseId(summoner->GetGUID(), true);
             me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+            me->SetVisible(true);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             attack = 3000;
         }
 
@@ -1316,13 +1324,17 @@ public:
 
     struct npc_norushen_heal_ch_melee_combtantAI : public ScriptedAI
     {
-        npc_norushen_heal_ch_melee_combtantAI(Creature* pCreature) : ScriptedAI(pCreature){}
+        npc_norushen_heal_ch_melee_combtantAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            me->SetVisible(false);
+        }
 
         void IsSummonedBy(Unit* summoner)
         {
             me->SetReactState(REACT_DEFENSIVE);
             me->SetPhaseId(summoner->GetGUID(), true);
             me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+            me->SetVisible(true);
             DoCast(me, SPELL_PROTECTORS_DD);
             me->SetHealth(me->GetMaxHealth() / 2);
             if (summoner->ToPlayer())
@@ -1381,7 +1393,10 @@ public:
 
     struct npc_norushen_heal_ch_casterAI : public ScriptedAI
     {
-        npc_norushen_heal_ch_casterAI(Creature* pCreature) : ScriptedAI(pCreature){}
+        npc_norushen_heal_ch_casterAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            me->SetVisible(false);
+        }
 
         EventMap events;
 
@@ -1395,6 +1410,7 @@ public:
             me->SetReactState(REACT_DEFENSIVE);
             me->SetPhaseId(summoner->GetGUID(), true);
             me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+            me->SetVisible(true);
             DoCast(me, SPELL_PROTECTORS_DD);
             me->SetHealth(me->GetMaxHealth() / 2);
             if (summoner->ToPlayer())
@@ -1471,7 +1487,10 @@ public:
 
     struct npc_norushen_heal_ch_guardianAI : public ScriptedAI
     {
-        npc_norushen_heal_ch_guardianAI(Creature* pCreature) : ScriptedAI(pCreature){}
+        npc_norushen_heal_ch_guardianAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            me->SetVisible(false);
+        }
 
         EventMap events;
 
@@ -1485,6 +1504,7 @@ public:
             me->SetReactState(REACT_DEFENSIVE);
             me->SetPhaseId(summoner->GetGUID(), true);
             me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+            me->SetVisible(true);
             me->SetHealth(me->GetMaxHealth() / 2);
             if (summoner->ToPlayer())
                 summoner->ToPlayer()->SendEncounterUnitForPlayer(ENCOUNTER_FRAME_ENGAGE, me);
