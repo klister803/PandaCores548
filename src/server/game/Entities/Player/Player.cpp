@@ -7886,16 +7886,7 @@ void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self)
 
     Trinity::MessageDistDeliverer notifier(this, data, dist);
 
-//     if (Map* map = GetMap())
-//         if (map->IsBattlegroundOrArena())
-//         {
-//             notifier.Visit(map->GetBGArenaObjList());
-//             return;
-//         }
-
-    notifier.Visit(m_whoseeme);
-
-    //VisitNearbyWorldObject(dist, notifier);
+    notifier.Visit(this);
 }
 
 void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self, bool own_team_only)
@@ -7911,13 +7902,11 @@ void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self, b
     if (Map* map = GetMap())
         if (map->IsBattlegroundOrArena())
         {
-            notifier.Visit(map->GetBGArenaObjList());
+            notifier.Visit(map);
             return;
         }
 
-    notifier.Visit(m_whoseeme);
-
-    //VisitNearbyWorldObject(dist, notifier);
+    notifier.Visit(this);
 }
 
 void Player::SendChatMessageToSetInRange(Trinity::ChatData& c, float dist, bool self, bool own_team_only)
@@ -7949,16 +7938,7 @@ void Player::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
     float visRange = CalcVisibilityRange();
     Trinity::MessageDistDeliverer notifier(this, data, visRange, false, skipped_rcvr);
 
-//     if (Map* map = GetMap())
-//         if (map->IsBattlegroundOrArena())
-//         {
-//             notifier.Visit(map->GetBGArenaObjList());
-//             return;
-//         }
-
-    notifier.Visit(m_whoseeme);
-
-    //VisitNearbyWorldObject(visRange, notifier);
+    notifier.Visit(this);
 }
 
 void Player::SendDirectMessage(WorldPacket* data)
@@ -25924,7 +25904,7 @@ void Player::UpdateVisibilityForPlayer()
             if (Map* getmap = GetMap())
             {
                 if (getmap->IsBattlegroundOrArena())
-                    notifier.Visit(GetMap()->GetBGArenaObjList());
+                    notifier.Visit(getmap);
                 else
                 {
                     m_dynamicVisibleDistance = sWorld->GetZoneVisibilityRange(getCurrentUpdateZoneID());

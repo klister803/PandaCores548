@@ -3742,6 +3742,9 @@ void Spell::cancel()
     if (m_selfContainer && *m_selfContainer == this)
         *m_selfContainer = NULL;
 
+    if (!m_spellInfo)
+        return;
+
     m_caster->RemoveDynObject(m_spellInfo->Id);
     if (m_spellInfo->IsChanneled()) // if not channeled then the object for the current cast wasn't summoned yet
         m_caster->RemoveGameObject(m_spellInfo->Id, true);
