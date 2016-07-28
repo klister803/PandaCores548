@@ -276,11 +276,9 @@ class Map : public GridRefManager<NGridType>
 
         float GetMapVisibleDistance() const { return m_VisibleDistance; }
         float GetMaxPossibleVisibilityRange() { return m_maxPossibleVisibilityRange; }
-        void AddImportantCreature(Creature* cre);
-        void RemoveImportantCreature(Creature* cre);
+        void AddImportantCreature(Creature* cre) { m_importantForVisibilityCreatureList.push_back(cre); }
+        void RemoveImportantCreature(Creature* cre) { m_importantForVisibilityCreatureList.remove(cre); }
         std::list<Creature*> GetImportantCreatureList() { return m_importantForVisibilityCreatureList; }
-
-        ACE_RW_Thread_Mutex _m_importantFVCListRWLock;
 
         //function for setting up visibility distance for maps on per-type/per-Id basis
         virtual void InitVisibilityDistance();

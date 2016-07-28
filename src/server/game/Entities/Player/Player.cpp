@@ -7911,7 +7911,7 @@ void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self, b
     if (Map* map = GetMap())
         if (map->IsBattlegroundOrArena())
         {
-            notifier.Visit(map);
+            notifier.Visit(map->GetBGArenaObjList());
             return;
         }
 
@@ -25924,13 +25924,12 @@ void Player::UpdateVisibilityForPlayer()
             if (Map* getmap = GetMap())
             {
                 if (getmap->IsBattlegroundOrArena())
-                    notifier.Visit(getmap);
+                    notifier.Visit(GetMap()->GetBGArenaObjList());
                 else
                 {
                     m_dynamicVisibleDistance = sWorld->GetZoneVisibilityRange(getCurrentUpdateZoneID());
                     m_seer->VisitNearbyObject(m_dynamicVisibleDistance, notifier, true);
 
-                    TRINITY_READ_GUARD(ACE_RW_Thread_Mutex, getmap->_m_importantFVCListRWLock);
                     for (auto itr : getmap->GetImportantCreatureList())
                     {
                         if (!itr->IsInWorld())
