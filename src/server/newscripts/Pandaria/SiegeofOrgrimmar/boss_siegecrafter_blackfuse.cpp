@@ -387,15 +387,16 @@ class boss_siegecrafter_blackfuse : public CreatureScript
 
          void UpdateLaserWalls()
          {
-             uint8 mod;
+             uint8 mod, mod2;
              for (uint8 n = 0; n < 3; n++)
              {
-                 mod = urand(0, 4);
+                 mod = urand(0, 1);
+                 mod2 = urand(2, 4);
                  for (uint8 m = 0; m < 5; m++)
                  {
                      if (Creature* laser = me->GetCreature(*me, laserline[n][m]))
                      {
-                         if (m == mod)
+                         if (m == mod || m == mod2)
                          {
                              if (laser->HasAura(SPELL_CONVEYOR_DEATH_BEAM_V))
                              {

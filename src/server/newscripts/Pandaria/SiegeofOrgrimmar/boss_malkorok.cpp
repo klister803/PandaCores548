@@ -110,6 +110,17 @@ uint32 ancientbarrierbar[3] =
     SPELL_STRONG_ANCIENT_BARRIER,
 }; 
 
+float const arcingsmashang[7] =
+{
+    0.0f,
+    0.5407f,
+    5.7714f,
+    4.7308f,
+    3.7137f,
+    2.6848f,
+    1.6324f,
+};
+
 class boss_malkorok : public CreatureScript
 {
     public:
@@ -124,6 +135,7 @@ class boss_malkorok : public CreatureScript
 
             InstanceScript* instance;
             std::vector<uint64> asGuids;
+            uint8 arcingsmashuseang[3];
             uint32 powercheck, displacedenergy, checkvictim;
             Phase phase;
 
@@ -144,6 +156,8 @@ class boss_malkorok : public CreatureScript
                 checkvictim = 0;
                 if (instance)
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_LANGUISH);
+                for (uint8 n = 0; n < 3; n++)
+                    arcingsmashuseang[n] = 0;
             }
 
             void JustReachedHome()
@@ -182,13 +196,60 @@ class boss_malkorok : public CreatureScript
                 events.ScheduleEvent(EVENT_ERADICATE, 360000);
             }
 
+            void PushArcingSmashUseAng(uint8 num)
+            {
+                for (uint8 n = 0; n < 3; n++)
+                {
+                    if (arcingsmashuseang[n] == 0)
+                    {
+                        arcingsmashuseang[n] = num;
+                        break;
+                    }
+                }
+            }
+
             void MovementInform(uint32 type, uint32 pointId)
             {
                 if (type == EFFECT_MOTION_TYPE)
                 {
                     if (pointId == SPELL_ARCING_SMASH_JUMP)
                     {
-                        float ang = float(urand(0, 6));
+                        float ang = 0;
+                        if (arcingsmashuseang[0] == 0 && arcingsmashuseang[1] == 0 && arcingsmashuseang[2] == 0)
+                        {   //first arcing smash
+                            uint8 mod = urand(1, 6);
+                            ang = arcingsmashang[mod];
+                            PushArcingSmashUseAng(mod);
+                        }
+                        else
+                        {
+                            uint8 rand = urand(0, 1);
+                            switch (rand)
+                            {
+                            case 0:
+                                for (uint8 b = 1; b < 7; b++)
+                                {
+                                    if (arcingsmashuseang[0] != b && arcingsmashuseang[1] != b && arcingsmashuseang[2] != b)
+                                    {
+                                        ang = arcingsmashang[b];
+                                        PushArcingSmashUseAng(b);
+                                        break;
+                                    }
+                                }
+                                break;
+                            case 1:
+                                for (uint8 b = 6; b > 0; b--)
+                                {
+                                    if (arcingsmashuseang[0] != b && arcingsmashuseang[1] != b && arcingsmashuseang[2] != b)
+                                    {
+                                        ang = arcingsmashang[b];
+                                        PushArcingSmashUseAng(b);
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+                        }
                         me->SetFacingTo(ang);
                         if (Creature* as = me->SummonCreature(NPC_ARCING_SMASH, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), ang))
                         {
@@ -258,15 +319,30 @@ class boss_malkorok : public CreatureScript
                     if (Creature* am = me->GetCreature(*me, instance->GetData64(NPC_ANCIENT_MIASMA)))
                     {
                         float x, y;
-                        uint8 num = me->GetMap()->Is25ManRaid() ? 7 : 3;
-                        for (uint8 n = 0; n < num; n++)
+                        if (me->GetMap()->Is25ManRaid())
                         {
-                            float ang = _GetRandomAngle(n);
-                            GetPositionWithDistInOrientation(am, float(urand(15, 30)), ang, x, y);
-                            me->SummonCreature(NPC_IMPLOSION, x, y, am->GetPositionZ());
+                            for (uint8 n = 0; n < 7; n++)
+                            {
+                                float ang = _GetRandomAngle(n);
+                                GetPositionWithDistInOrientation(am, float(urand(15, 30)), ang, x, y);
+                                me->SummonCreature(NPC_IMPLOSION, x, y, am->GetPositionZ());
+                            }
                         }
+                        else
+                        {
+                            float anglist[3];
+                            anglist[0] = arcingsmashang[urand(1, 2)];
+                            anglist[1] = arcingsmashang[urand(3, 4)];
+                            anglist[2] = arcingsmashang[urand(5, 6)];
+                            for (uint8 n = 0; n < 3; n++)
+                            {
+                                GetPositionWithDistInOrientation(am, float(urand(15, 30)), anglist[n], x, y);
+                                me->SummonCreature(NPC_IMPLOSION, x, y, am->GetPositionZ());
+                            }
+                        }  
                     }
                     if (!asGuids.empty())
+                    {
                         if (asGuids.size() == 3)
                             events.ScheduleEvent(EVENT_BREATH_OF_YSHAARJ, 13000, 0, PHASE_ONE);
                         else
@@ -274,13 +350,16 @@ class boss_malkorok : public CreatureScript
                             events.ScheduleEvent(EVENT_SEISMIC_SLAM, 16000, 0, PHASE_ONE);
                             events.ScheduleEvent(EVENT_PREPARE, 11000, 0, PHASE_ONE);
                         }
-                        events.ScheduleEvent(EVENT_RE_ATTACK, 1000);               
+                        events.ScheduleEvent(EVENT_RE_ATTACK, 1000);
+                    }
                     break;
                 case ACTION_BREATH_OF_YSHAARJ:
                     for (std::vector<uint64>::const_iterator itr = asGuids.begin(); itr != asGuids.end(); itr++)
                         if (Creature* as = me->GetCreature(*me, *itr))
                             as->AI()->DoAction(ACTION_BREATH_OF_YSHAARJ);
                     asGuids.clear();
+                    for (uint8 n = 0; n < 3; n++)
+                        arcingsmashuseang[n] = 0;
                     events.ScheduleEvent(EVENT_PREPARE, 12000, 0, PHASE_ONE);
                     events.ScheduleEvent(EVENT_RE_ATTACK, 1500);
                     break;
