@@ -2339,7 +2339,7 @@ public:
                         if (player->isAlive() && player->HasAura(SPELL_ON_CONVEYOR))
                         {
                             player->RemoveAurasDueToSpell(SPELL_ON_CONVEYOR);
-                            player->GetMotionMaster()->MoveJump(2008.93f, -5600.63f, -309.3268f, 20.0f, 20.0f);
+                            player->GetMotionMaster()->MoveJump(1983.22f, -5559.18f, -309.3264f, 20.0f, 20.0f);
                         }
                     }
                 }

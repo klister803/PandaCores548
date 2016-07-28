@@ -1175,7 +1175,7 @@ public:
 
     bool operator()(WorldObject* unit)
     {
-        if (_caster->isInFront(unit, M_PI / 3))
+        if (_caster->isInFront(unit, M_PI / 4))
             return false;
         return true;
     }
