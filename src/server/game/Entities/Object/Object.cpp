@@ -2831,9 +2831,8 @@ void WorldObject::SendMessageToSetInRange(WorldPacket* data, float dist, bool /*
                 session->SendPacket(data);
         }
 
-        if (!removePlrList.empty())
-            for (auto itr : removePlrList)
-                unit->m_whoseeme.remove(itr);
+        for (auto itr : removePlrList)
+            unit->m_whoseeme.remove(itr);
     }
     else
     {
@@ -3746,9 +3745,9 @@ void WorldObject::UpdateObjectVisibility(bool /*forced*/, float customVisRange)
     //updates object's visibility for nearby players
     Trinity::VisibleChangesNotifier notifier(*this);
     if (Map* map = GetMap())
-        if (map->IsBattlegroundOrArena())
+        if (GetMap()->IsBattlegroundOrArena())
         {
-            notifier.Visit(map);
+            notifier.Visit(GetMap()->GetBGArenaObjList());
             return;
         }
 
@@ -3790,9 +3789,9 @@ struct WorldObjectChangeAccumulator
         }
     }
 
-    void Visit(Map* map)
+    void Visit(std::list<WorldObject*> objList)
     {
-        for (auto itr : map->GetBGArenaObjList())
+        for (auto itr : objList)
         {
             if (!itr->IsInWorld())
                 continue;
@@ -3802,9 +3801,9 @@ struct WorldObjectChangeAccumulator
         }
     }
 
-    void Visit(Unit* unit)
+    void Visit(std::list<Player*> plrList)
     {
-        for (auto itr : unit->m_whoseeme)
+        for (auto itr : plrList)
         {
             if (!itr->IsInWorld())
                 continue;
@@ -3836,11 +3835,11 @@ void WorldObject::BuildUpdate(UpdateDataMapType& data_map)
     Map& map = *GetMap();
     //we must build packets for all visible players
     if (map.IsBattlegroundOrArena())
-        notifier.Visit(map);
+        notifier.Visit(map.GetBGArenaObjList());
     else
     {
         if (ToCreature() && ToCreature()->m_isImportantForVisibility)
-            notifier.Visit(ToCreature());
+            notifier.Visit(ToCreature()->m_whoseeme);
         else
             cell.Visit(p, player_notifier, map, *this, CalcVisibilityRange());
     }
