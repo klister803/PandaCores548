@@ -9,7 +9,7 @@
 
 #define EVENT_DEATHMATCH_QUEUE 120  
 #define EVENT_DEATHMATCH 121  
-#define MIN_PLAYERS 2
+#define MIN_PLAYERS 15
 #define MAX_PLAYERS 50
 
 #define SPELL_QUEUE 58169
@@ -50,32 +50,75 @@ class starter_deathmatch : public CreatureScript  //900000
 
     bool OnGossipHello(Player* player, Creature* pCreature)
     {
+        LocaleConstant loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
          if(sGameEventMgr->IsActiveEvent(EVENT_DEATHMATCH_QUEUE))
             if (!player->HasAura(SPELL_QUEUE))
                 if (sWorld->GetCountQueueOnDM() <= MAX_PLAYERS)
                     if (player->getLevel() == 90)
-                        player->ADD_GOSSIP_ITEM(5, "Зарегистрироваться в Deathmatch!", GOSSIP_SENDER_MAIN, 1);
+                        player->ADD_GOSSIP_ITEM(5, sObjectMgr->GetTrinityString(30016, loc_idx), GOSSIP_SENDER_MAIN, 1);
                 
-        player->ADD_GOSSIP_ITEM(5, "Моя статистика (с августа)", GOSSIP_SENDER_MAIN, 2);
-        player->ADD_GOSSIP_ITEM(5, "Назад!", GOSSIP_SENDER_MAIN, 3);
+        player->ADD_GOSSIP_ITEM(5, sObjectMgr->GetTrinityString(30017, loc_idx), GOSSIP_SENDER_MAIN, 2);
+        player->ADD_GOSSIP_ITEM(5, sObjectMgr->GetTrinityString(30018, loc_idx), GOSSIP_SENDER_MAIN, 3);
         player->SEND_GOSSIP_MENU(100003, pCreature->GetGUID());
         return true;
     }
 
     bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
+        LocaleConstant loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
         player->PlayerTalkClass->ClearMenus();
-        if (action == 1)
+        
+        switch(action)
         {
-            player->AddAura(SPELL_QUEUE, player); //registration aura
-            sWorld->CountQueueOnDMPlus();
-            if (!sGameEventMgr->IsActiveEvent(EVENT_DEATHMATCH))
-            {
-                player->GetSession()->SendNotification(30012);
-                ChatHandler(player->GetSession()).PSendSysMessage(30012);
+            case 1:
+                player->AddAura(SPELL_QUEUE, player); //registration aura
+                sWorld->CountQueueOnDMPlus();
+                if (!sGameEventMgr->IsActiveEvent(EVENT_DEATHMATCH))
+                {
+                    player->GetSession()->SendNotification(30012);
+                    ChatHandler(player->GetSession()).PSendSysMessage(30012);
+                }
+                player->CLOSE_GOSSIP_MENU(); 
+                break;
+            
+            case 2:
+                {
+                    std::stringstream str1;
+                    QueryResult result = CharacterDatabase.PQuery("SELECT * FROM custom_character_deathmatch WHERE guid = '%u';", player->GetGUID()); 
+                    if (result)
+                    {
+                        Field* fields = result->Fetch();
+                        uint32 kills = fields[1].GetUInt32();
+                        uint32 deads = fields[2].GetUInt32();
+                        uint32 count = fields[3].GetUInt32();
+                        
+                        str1 << "You have " << kills << " kills for " << deads << " deads and for " << count << "games" ;
+                    }
+                    else
+                        str1 << "You have 0 kills for 0 deads and for 0 games" ;
+                    
+                    player->ADD_GOSSIP_ITEM(5, str1.str(), GOSSIP_SENDER_MAIN, 4);
+                    player->ADD_GOSSIP_ITEM(5, sObjectMgr->GetTrinityString(30019, loc_idx), GOSSIP_SENDER_MAIN, 4);
+                    player->SEND_GOSSIP_MENU(100004, creature->GetGUID());
+                }
+                break;
+            
+            case 4:
+                if(sGameEventMgr->IsActiveEvent(EVENT_DEATHMATCH_QUEUE))
+                    if (!player->HasAura(SPELL_QUEUE))
+                        if (sWorld->GetCountQueueOnDM() <= MAX_PLAYERS)
+                            if (player->getLevel() == 90)
+                                player->ADD_GOSSIP_ITEM(5, sObjectMgr->GetTrinityString(30016, loc_idx), GOSSIP_SENDER_MAIN, 1);
+                        
+                player->ADD_GOSSIP_ITEM(5, sObjectMgr->GetTrinityString(30017, loc_idx), GOSSIP_SENDER_MAIN, 2);
+                player->ADD_GOSSIP_ITEM(5, sObjectMgr->GetTrinityString(30018, loc_idx), GOSSIP_SENDER_MAIN, 3);
+                player->SEND_GOSSIP_MENU(100003, creature->GetGUID());
+                break;
+            
+            default:            
+                player->CLOSE_GOSSIP_MENU(); 
+                break;
             }
-        }
-        player->CLOSE_GOSSIP_MENU();    
         return true;
     }
 };
@@ -125,7 +168,7 @@ class deathmatch_player_script : public PlayerScript
                 {
                     if (itr->first == killer->GetGUID() && itr->second.victimGUID == victim->GetGUID()) // Initial check
                     {
-                        if (GetMSTimeDiffToNow(itr->second.whenKilled) < 75000)
+                        if (GetMSTimeDiffToNow(itr->second.whenKilled) < 120000)
                         {  
                             // The player won't be able to kill the same player for another 1 minute
                             ChatHandler(killer->GetSession()).PSendSysMessage("You cannot kill this player for another %u second", CalculateTimeInSeconds(GetMSTimeDiffToNow(itr->second.whenKilled)));
@@ -152,7 +195,13 @@ class deathmatch_player_script : public PlayerScript
             if (result)
                 CharacterDatabase.PExecute("UPDATE custom_character_deathmatch set `kills` = kills+1 where guid = '%u';", killer->GetGUID());
             else
-                CharacterDatabase.PExecute("insert into custom_character_deathmatch values (%u, 1);", killer->GetGUID());
+                CharacterDatabase.PExecute("insert into custom_character_deathmatch values (%u, 1, 0, 1);", killer->GetGUID());
+            
+            QueryResult resultv = CharacterDatabase.PQuery("SELECT * FROM custom_character_deathmatch WHERE guid = '%u';", victim->GetGUID()); 
+            if (resultv)
+                CharacterDatabase.PExecute("UPDATE custom_character_deathmatch set `deads` = deads+1 where guid = '%u';", victim->GetGUID());
+            else
+                CharacterDatabase.PExecute("insert into custom_character_deathmatch values (%u, 0, 1, 1);", victim->GetGUID());
             
             // ORDER BY kills DESC LIMIT 3
             // GetPlayerNameByGUID
@@ -201,6 +250,13 @@ class deathmatch_player_script : public PlayerScript
                     if (Group* group = player->GetGroup()) // Remove the player from the group
                         group->RemoveMember(player->GetGUID());
                     player->RemoveAllAurasOnDeath(); //нужен дебаф, дабы не настакивались перед входом
+                    
+                    QueryResult result = CharacterDatabase.PQuery("SELECT * FROM custom_character_deathmatch WHERE guid = '%u';", player->GetGUID()); 
+                    if (result)
+                        CharacterDatabase.PExecute("UPDATE custom_character_deathmatch set `countmatch` = countmatch+1 where guid = '%u';", player->GetGUID());
+                    else
+                        CharacterDatabase.PExecute("insert into custom_character_deathmatch values (%u, 0, 0, 1);", player->GetGUID());
+            
                 }
                 
                 if (player && !player->HasAura(SPELL_QUEUE) && player->GetMapId() == 972) //бафа нет но на деатматч карте
