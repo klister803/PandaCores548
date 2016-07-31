@@ -271,8 +271,7 @@ void MessageDistDeliverer::Visit(PlayerMapType &m)
         if (target->GetExactDist2dSq(i_source) > i_distSq)
             continue;
 
-        if (target->m_seer == target || target->GetVehicle())
-            SendPacket(target);
+        SendPacket(target);
     }
 }
 
@@ -312,8 +311,7 @@ void MessageDistDeliverer::Visit(Map* map)
             if (!plr->InSamePhase(i_phaseMask))
                 continue;
 
-            if (plr->m_seer == plr || plr->GetVehicle())
-                SendPacket(plr);
+            SendPacket(plr);
         }
     }
 }
@@ -332,8 +330,7 @@ void MessageDistDeliverer::Visit(Unit* unit)
         if (!itr->InSamePhase(i_phaseMask))
             continue;
 
-        if (itr->m_seer == itr || itr->GetVehicle())
-            SendPacket(itr);
+        SendPacket(itr);
     }
     if (!removePlrList.empty())
         for (auto itr : removePlrList)
