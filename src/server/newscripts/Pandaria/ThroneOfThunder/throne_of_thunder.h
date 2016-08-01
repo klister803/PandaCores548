@@ -80,6 +80,11 @@ enum eCreatures
     NPC_RA_DEN              = 69473,
 };
 
+enum esSpell
+{
+    SPELL_SHADO_PAN_ONSLAUGHT = 149070,
+};
+
 enum eGameObjects
 {  
     //Jinrokh

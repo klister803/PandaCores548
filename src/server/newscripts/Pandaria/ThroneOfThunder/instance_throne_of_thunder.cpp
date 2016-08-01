@@ -268,6 +268,10 @@ public:
                 cvitaGuid = creature->GetGUID();
                 break;
             }
+
+            /*if (IsRaidBoss(creature->GetEntry())) online in future(need script bosses)
+                if (creature->isAlive())
+                    creature->CastSpell(creature, SPELL_SHADO_PAN_ONSLAUGHT, true);*/ //Patch 5.4
         }
 
         void OnGameObjectCreate(GameObject* go)
@@ -767,6 +771,38 @@ public:
             }
 
             return true;
+        }
+
+        bool IsRaidBoss(uint32 creature_entry)
+        {
+            switch (creature_entry)
+            {
+            case NPC_JINROKH:
+            case NPC_HORRIDON:
+            case NPC_JALAK:
+            case NPC_FROST_KING_MALAKK:
+            case NPC_PRINCESS_MARLI:
+            case NPC_KAZRAJIN:
+            case NPC_SUL_SANDCRAWLER:
+            case NPC_TORTOS:
+            case NPC_FLAMING_HEAD:
+            case NPC_FROZEN_HEAD:
+            case NPC_VENOMOUS_HEAD:
+            case NPC_JI_KUN:
+            case NPC_DURUMU:
+            case NPC_PRIMORDIUS:
+            case NPC_DARK_ANIMUS:
+            case NPC_IRON_QON:
+            case NPC_ROSHAK:
+            case NPC_QUETZAL:
+            case NPC_DAMREN:
+            case NPC_SULIN:
+            case NPC_LULIN:
+            case NPC_LEI_SHEN:
+            case NPC_RA_DEN:
+                return true;
+            }
+            return false;
         }
 
         std::string GetSaveData()
