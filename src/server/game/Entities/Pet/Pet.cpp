@@ -535,6 +535,11 @@ void Pet::Update(uint32 diff)
     if (!owner->HasAura(20895))
         RemoveAurasDueToSpell(24529);
     
+    if (GetMapId() == 972) // deathmatch
+        setFaction(16);
+    else
+        setFaction(owner->getFaction());
+    
     switch (m_deathState)
     {
         case CORPSE:

@@ -55,7 +55,8 @@ class starter_deathmatch : public CreatureScript  //900000
             if (!player->HasAura(SPELL_QUEUE))
                 if (sWorld->GetCountQueueOnDM() <= MAX_PLAYERS)
                     if (player->getLevel() == 90)
-                        player->ADD_GOSSIP_ITEM(5, sObjectMgr->GetTrinityString(30016, loc_idx), GOSSIP_SENDER_MAIN, 1);
+                        if (!player->HasAura(99413))
+                            player->ADD_GOSSIP_ITEM(5, sObjectMgr->GetTrinityString(30016, loc_idx), GOSSIP_SENDER_MAIN, 1);
                 
         player->ADD_GOSSIP_ITEM(5, sObjectMgr->GetTrinityString(30017, loc_idx), GOSSIP_SENDER_MAIN, 2);
         player->ADD_GOSSIP_ITEM(5, sObjectMgr->GetTrinityString(30018, loc_idx), GOSSIP_SENDER_MAIN, 3);
@@ -108,7 +109,8 @@ class starter_deathmatch : public CreatureScript  //900000
                     if (!player->HasAura(SPELL_QUEUE))
                         if (sWorld->GetCountQueueOnDM() <= MAX_PLAYERS)
                             if (player->getLevel() == 90)
-                                player->ADD_GOSSIP_ITEM(5, sObjectMgr->GetTrinityString(30016, loc_idx), GOSSIP_SENDER_MAIN, 1);
+                                if (!player->HasAura(99413))
+                                    player->ADD_GOSSIP_ITEM(5, sObjectMgr->GetTrinityString(30016, loc_idx), GOSSIP_SENDER_MAIN, 1);
                         
                 player->ADD_GOSSIP_ITEM(5, sObjectMgr->GetTrinityString(30017, loc_idx), GOSSIP_SENDER_MAIN, 2);
                 player->ADD_GOSSIP_ITEM(5, sObjectMgr->GetTrinityString(30018, loc_idx), GOSSIP_SENDER_MAIN, 3);
@@ -184,6 +186,8 @@ class deathmatch_player_script : public PlayerScript
             abuseList[killer->GetGUID()].whenKilled = getMSTime();
             
             Map::PlayerList const& players = killer->GetMap()->GetPlayers();  // announce
+            
+            killer->AddAura(46392, killer);
 
             for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
             {
@@ -221,6 +225,7 @@ class deathmatch_player_script : public PlayerScript
         
         rand = urand(0, 13);
         
+        deadPlayer->AddAura(58729, deadPlayer);
         deadPlayer->TeleportTo(972, StartPos[rand].GetPositionX(), StartPos[rand].GetPositionY(), StartPos[rand].GetPositionZ(), StartPos[rand].GetOrientation());
         deadPlayer->RemoveAllAurasOnDeath();
         deadPlayer->ResurrectPlayer(1.0f);
@@ -238,7 +243,10 @@ class deathmatch_player_script : public PlayerScript
         }
 
         bool Execute(uint64 /*time*/, uint32 /*diff*/)
-        {            
+        {        
+            if (player->GetMapId() == 972)
+                player->RemoveAura(58729);
+            
             if(sGameEventMgr->IsActiveEvent(EVENT_DEATHMATCH))
             {
                 if (player && player->HasAura(SPELL_QUEUE) && player->GetMapId() != 972 && !player->GetBattleground())
@@ -271,6 +279,7 @@ class deathmatch_player_script : public PlayerScript
             {
                 if (player->GetMapId() == 972)
                 {
+                    player->RemoveAura(46392);
                     if (player->GetTeam() == HORDE)
                         player->TeleportTo(1, 1573.98f, -4401.63f, 15.78f, 0.84f);  //orgri
                     else
@@ -318,6 +327,8 @@ class spell_deathmatch_checker : public SpellScriptLoader
                             target->ToPlayer()->TeleportTo(1, 1573.98f, -4401.63f, 15.78f, 0.84f);  //orgri
                         else
                             target->ToPlayer()->TeleportTo(0, -8833.62f, 620.64f, 93.73f, 1.12f);  //storm
+                        
+                        target->AddAura(99413, target);
                     }
                     else
                     {
