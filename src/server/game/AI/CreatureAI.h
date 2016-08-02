@@ -78,13 +78,12 @@ class CreatureAI : public UnitAI
         Creature* DoSummonFlyer(uint32 entry, WorldObject* obj, float flightZ, float radius = 5.0f, uint32 despawnTime = 30000, TempSummonType summonType = TEMPSUMMON_CORPSE_TIMED_DESPAWN);
 
     public:
-        uint32 inFightAggroCheck_Timer;
         void DoAggroPulse(const uint32 diff);
         bool IsInDisable();
         bool IsInControl();
         void Talk(uint8 id, uint64 WhisperGuid = 0);
         void ZoneTalk(uint8 id, uint64 WhisperGuid = 0);
-        explicit CreatureAI(Creature* creature) : UnitAI(creature), me(creature), m_MoveInLineOfSight_locked(false), m_canSeeEvenInPassiveMode(false) {}
+        explicit CreatureAI(Creature* creature) : UnitAI(creature), me(creature), m_MoveInLineOfSight_locked(false), m_canSeeEvenInPassiveMode(false), inFightAggroCheck_Timer(TIME_INTERVAL_LOOK) {}
 
         virtual ~CreatureAI() {}
 
@@ -206,6 +205,7 @@ class CreatureAI : public UnitAI
     private:
         bool m_MoveInLineOfSight_locked;
         bool m_canSeeEvenInPassiveMode;
+        uint32 inFightAggroCheck_Timer;
 };
 
 enum Permitions

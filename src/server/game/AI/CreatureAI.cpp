@@ -169,7 +169,7 @@ void CreatureAI::DoAttackerGroupInCombat(Player* attacker)
 
 void CreatureAI::DoAggroPulse(const uint32 diff)
 {
-    if (inFightAggroCheck_Timer < diff)
+    if (inFightAggroCheck_Timer <= diff)
     {
         if (me->getVictim() && me->getVictim()->ToPlayer())
             DoAttackerGroupInCombat(me->getVictim()->ToPlayer());
