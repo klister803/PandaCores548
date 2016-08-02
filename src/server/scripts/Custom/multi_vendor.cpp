@@ -822,6 +822,94 @@ public:
     }
 };
 
+// 220030
+class many_in_one_donate : public CreatureScript
+{
+    public:
+        many_in_one_donate() : CreatureScript("many_in_one_donate") { }
+
+        bool OnGossipHello(Player* player, Creature* creature)
+        {
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Табарды", GOSSIP_SENDER_MAIN, 220026);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Оружие", GOSSIP_SENDER_MAIN, 220013);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Осада Оргриммара (566 ilvl)", GOSSIP_SENDER_MAIN, 220012);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Осада Оргриммара (572 ilvl) #1", GOSSIP_SENDER_MAIN, 220021);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Осада Оргриммара (572 ilvl) #2", GOSSIP_SENDER_MAIN, 220023);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Тир 15-16", GOSSIP_SENDER_MAIN, 220015);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "PvP 15 сезон 550 ilvl (офф)", GOSSIP_SENDER_MAIN, 220017);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "PvP 15 сезон 550 ilvl ", GOSSIP_SENDER_MAIN, 220018);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Ювелирные изделия", GOSSIP_SENDER_MAIN, 220014);           
+
+            player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
+            return true;
+        }
+
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+        {
+            player->PlayerTalkClass->ClearMenus();
+            player->GetSession()->SendListInventory(creature->GetGUID(), action);
+            player->CustomMultiDonate = action;
+            return true;
+        }
+};
+
+// 220031
+class many_in_one_donate_trans : public CreatureScript
+{
+    public:
+        many_in_one_donate_trans() : CreatureScript("many_in_one_donate_trans") { }
+
+        bool OnGossipHello(Player* player, Creature* creature)
+        {
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Верховые животные #1", GOSSIP_SENDER_MAIN, 220016);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Верховые животные #2", GOSSIP_SENDER_MAIN, 220025);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Спутники", GOSSIP_SENDER_MAIN, 200204);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Рисовки и раритетные вещи", GOSSIP_SENDER_MAIN, 200203);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Накидки и рубашки с аурами", GOSSIP_SENDER_MAIN, 200205);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Вещи на транс", GOSSIP_SENDER_MAIN, 1);
+            
+
+            player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
+            return true;
+        }
+
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+        {
+            player->PlayerTalkClass->ClearMenus();
+            switch(action)
+            {
+                case 1:
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Т1", GOSSIP_SENDER_MAIN, 220182);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Т2", GOSSIP_SENDER_MAIN, 220183);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Т3", GOSSIP_SENDER_MAIN, 220184);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Т4", GOSSIP_SENDER_MAIN, 220185);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Т5", GOSSIP_SENDER_MAIN, 220186);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Т6", GOSSIP_SENDER_MAIN, 220187);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "а1", GOSSIP_SENDER_MAIN, 220188);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "а2", GOSSIP_SENDER_MAIN, 220189);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "а3", GOSSIP_SENDER_MAIN, 220190);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "а4", GOSSIP_SENDER_MAIN, 220191);
+                    
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Трансмогрификация (испытания в подземельях. золото)", GOSSIP_SENDER_MAIN, 2);            
+                    player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
+                    break;
+                case 2:
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Ткань", GOSSIP_SENDER_MAIN, 250112);            
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Кожа", GOSSIP_SENDER_MAIN, 250111);            
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Кольчуга", GOSSIP_SENDER_MAIN, 250113);            
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Латы", GOSSIP_SENDER_MAIN, 250110);            
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Оружие", GOSSIP_SENDER_MAIN, 250114);            
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Плащи", GOSSIP_SENDER_MAIN, 250115);            
+                    player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
+                    break;      
+                default:
+                    player->GetSession()->SendListInventory(creature->GetGUID(), action);
+                    player->CustomMultiDonate = action;
+                    break;
+            }
+            return true;
+        }
+};
 
 void AddSC_multi_vendor()
 {
@@ -829,4 +917,7 @@ void AddSC_multi_vendor()
     new item_back();
     new char_transfer();
     new char_levelup();
+    
+    new many_in_one_donate();
+    new many_in_one_donate_trans();
 }

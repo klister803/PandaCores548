@@ -713,6 +713,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_vis = NULL;
     m_speakTime = 0;
     m_speakCount = 0;
+    CustomMultiDonate = 0;
 
     m_currentPetNumber = 0;
     m_currentSummonedSlot = PET_SLOT_HUNTER_FIRST;
@@ -24546,7 +24547,7 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
     ItemPosCountVec vDest;
     uint16 uiDest = 0;
     uint32 uicount = 0;
-    bool isTransDonate = pVendor->GetEntry() == 220024 || pVendor->GetEntry() == 220022 || (pVendor->GetEntry() >= 200200 && pVendor->GetEntry() <= 200205);
+    bool isTransDonate = pVendor->GetEntry() == 220024 || pVendor->GetEntry() == 220022 || (pVendor->GetEntry() >= 200200 && pVendor->GetEntry() <= 200205) || pVendor->GetEntry() == 220031;
 
     InventoryResult msg = bStore ?
         CanStoreNewItem(bag, slot, vDest, item, count) :
@@ -24666,6 +24667,7 @@ bool Player::BuyCurrencyFromVendorSlot(uint64 vendorGuid, uint32 vendorSlot, uin
     }
 
     VendorItemData const* vItems = creature->GetVendorItems();
+     
     if (!vItems || vItems->Empty())
     {
         SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, currency, 0);
@@ -24797,7 +24799,12 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
         return false;
     }
 
-    VendorItemData const* vItems = creature->GetVendorItems();
+    VendorItemData const* vItems;
+    if (CustomMultiDonate && (creature->GetEntry() == 220030 || creature->GetEntry() == 220031))
+         vItems = sObjectMgr->GetNpcVendorItemList(CustomMultiDonate);   
+    else
+         vItems = creature->GetVendorItems();
+     
     if (!vItems || vItems->Empty())
     {
         SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
