@@ -31,6 +31,7 @@ enum eSpells
     SPELL_LIGTNING_BALL_VISUAL  = 136534, //Visual for npc
     SPELL_LIGHTNING_BALL_TARGET = 137422, 
     SPELL_WATER_POOL_VISUAL     = 137277, //Visual water pool
+    SPELL_WATER_POOL_SCALE_AURA = 137676,
     SPELL_STATIC_WATER_VISUAL   = 137978, //Visual static water pool
     SPELL_WATER_FONT_VISUAL     = 137340, //Visual water from font's head
 };
@@ -221,9 +222,39 @@ class spell_static_burst : public SpellScriptLoader
         }
 };
 
+//138389
+class spell_static_wound : public SpellScriptLoader
+{
+public:
+    spell_static_wound() : SpellScriptLoader("spell_static_wound") { }
+
+    class spell_static_wound_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_static_wound_SpellScript);
+
+        void _HandleHit()
+        {
+            if (GetHitUnit())
+                if (!GetHitUnit()->HasAura(SPELL_STATIC_WOUND))
+                    SetHitDamage(GetHitDamage() / 3);
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_static_wound_SpellScript::_HandleHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_static_wound_SpellScript();
+    }
+};
+
 void AddSC_boss_jinrokh()
 {
     new boss_jinrokh();
     new npc_lightning_ball();
     new spell_static_burst();
+    new spell_static_wound();
 }

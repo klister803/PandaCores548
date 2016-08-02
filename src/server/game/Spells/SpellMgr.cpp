@@ -4831,6 +4831,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 //Throne of Thunder
                 //Jinrokh
+                case 138349: //Static Wound
+                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+                    spellInfo->Effects[0].TriggerSpell = 0;
+                    break;
                 case 137162: //Static burst
                 case 144115: //Flame Coating
                 case 119610: //Bitter thoughts

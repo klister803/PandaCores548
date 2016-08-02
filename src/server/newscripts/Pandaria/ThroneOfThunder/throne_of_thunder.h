@@ -35,6 +35,7 @@ enum eCreatures
     NPC_STORMBRINGER        = 70445,
 
     //Npc
+    NPC_CONDUCTIVE_WATER    = 69469,
     NPC_LIGHTNING_BALL      = 69232, 
     NPC_WHIRL_TURTLE        = 67966,
     NPC_VAMPIRIC_CAVE_BAT   = 69352,

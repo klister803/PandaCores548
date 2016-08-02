@@ -9898,6 +9898,16 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
                         if (victim && victim->isAlive() && this->IsFriendlyTo(victim))
                             this->CastCustomSpell(142877, SPELLVALUE_BASE_POINT0, damage, victim, true); //Volatile Poultice
                         break;
+                    case 138349: //Static Wound - Jinrok[TT]
+                        if (this && this->isAlive())
+                        {
+                            if (Aura* aura = this->GetAura(138349))
+                            {
+                                float dmg = (aura->GetSpellInfo()->GetEffect(0)->BasePoints)*(aura->GetStackAmount());
+                                this->CastCustomSpell(138389, SPELLVALUE_BASE_POINT0, dmg, this, true); //Static Wound AOE Dmg - Jinrok[TT]
+                            }
+                        }
+                        break;
                 }
             case SPELLFAMILY_PRIEST:
             {
