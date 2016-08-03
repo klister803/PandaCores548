@@ -1158,7 +1158,7 @@ public:
         {
             if (Player* pPlayer = victim->ToPlayer())
             {
-                for (uint8 i = 0; i < 5; i++)
+                for (uint8 i = 0; i < 6; i++)
                     if (pPlayer->HasItemCount(LegBagCoung[i], 1, true))
                         return true;
 
@@ -1285,7 +1285,7 @@ public:
             // A Pandaren Legend
             case 9414:
             {
-                for (uint8 i = 0; i < 5; i++)
+                for (uint8 i = 0; i < 6; i++)
                     if (pPlayer->HasItemCount(LegBagCoung[i], 1, true))
                         return true;
 
