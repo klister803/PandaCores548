@@ -226,7 +226,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             }
 
             //Debug (for testing)
-            /*void SpellHit(Unit* caster, SpellInfo const *spell)
+            void SpellHit(Unit* caster, SpellInfo const *spell)
             {
                 if (spell->Id == SPELL_BLOODIED && me->HasAura(SPELL_POWER_REGEN))
                 {
@@ -234,7 +234,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     me->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
                     me->ToCreature()->AI()->DoAction(ACTION_PHASE_TWO);
                 }
-            }*/
+            }
 
             void EnterCombat(Unit* who)
             {
@@ -346,9 +346,10 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     break;
                 //Special actions
                 case ACTION_FIXATE:
+                    fplGuid = 0;
+                    findtargets = 0;
                     me->SetAttackStop(true);
                     me->getThreatManager().resetAllAggro();
-                    findtargets = 0;
                     events.ScheduleEvent(EVENT_FIXATE, 1000);
                     break;
                 case ACTION_START_FIXATE:
