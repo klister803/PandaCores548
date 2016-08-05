@@ -25919,7 +25919,7 @@ void Player::UpdateVisibilityForPlayer()
 
                     for (auto itr : getmap->GetImportantCreatureList())
                     {
-                        if (!itr->IsInWorld() || itr->GetTypeId() != TYPEID_UNIT)
+                        if (!itr->IsInWorld())
                             continue;
 
                         notifier.vis_guids.erase(itr->GetGUID());
