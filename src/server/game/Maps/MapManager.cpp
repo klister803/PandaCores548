@@ -258,6 +258,14 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
                     return false;
                 }*/
     }
+    else
+    {
+        InstancePlayerBind* boundInstance = player->GetBoundInstance(mapid, targetDifficulty);
+        if (boundInstance && boundInstance->save)
+            if (Map* boundMap = sMapMgr->FindMap(mapid, boundInstance->save->GetInstanceId()))
+                if (!loginCheck && !boundMap->CanEnter(player))
+                    return false;
+    }
 
     // players are only allowed to enter 5 instances per hour
     if (entry->IsDungeon() && (!player->GetGroup() || (player->GetGroup() && !player->GetGroup()->isLFGGroup())))

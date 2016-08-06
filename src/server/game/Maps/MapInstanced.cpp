@@ -171,7 +171,9 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player)
             map = FindInstanceMap(newInstanceId);
             // it is possible that the save exists but the map doesn't
             if (!map)
-                map = CreateInstance(newInstanceId, pSave, pSave->GetDifficulty());
+                map = CreateInstance(newInstanceId, pSave, difficulty);
+            else if(map->GetDifficulty() != difficulty)
+                map->SetSpawnMode(difficulty);
         }
         else
         {
@@ -187,6 +189,8 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player)
             map = FindInstanceMap(newInstanceId);
             if (!map)
                 map = CreateInstance(newInstanceId, NULL, diff);
+            else if(map->GetDifficulty() != diff)
+                map->SetSpawnMode(diff);
         }
     }
 
