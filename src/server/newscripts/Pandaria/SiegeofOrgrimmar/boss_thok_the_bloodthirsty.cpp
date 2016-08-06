@@ -578,24 +578,24 @@ class boss_thok_the_bloodthirsty : public CreatureScript
 
             uint64 GetFixateTargetGuid()
             {
-                std::list<Player*> pllist;
-                std::list<Player*> fpllist;
-                pllist.clear();
-                fpllist.clear();
-                GetPlayerListInGrid(pllist, me, 150.0f);
                 uint64 jvGuid = GetJailerVictimGuid();
-                if (!pllist.empty())
+                std::vector<uint64>_pllist;
+                _pllist.clear();
+                std::list<HostileReference*>ThreatList = me->getThreatManager().getThreatList();
+                if (!ThreatList.empty())
                 {
-                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
-                        if (!(*itr)->HasAura(SPELL_UNLOCKING))
-                            if ((*itr)->GetGUID() != jvGuid)
-                                fpllist.push_back(*itr);
+                    for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); itr++)
+                        if (Player* target = me->GetPlayer(*me, (*itr)->getUnitGuid()))
+                            if (!target->HasAura(SPELL_UNLOCKING))
+                                if (target->GetGUID() != jvGuid)
+                                    _pllist.push_back(target->GetGUID());
 
-                    if (!fpllist.empty())
+                    if (!_pllist.empty())
                     {
-                        std::list<Player*>::const_iterator Itr = fpllist.begin();
-                        std::advance(Itr, urand(0, fpllist.size() - 1));
-                        return (*Itr)->GetGUID();
+                        std::random_shuffle(_pllist.begin(), _pllist.end());
+                        std::vector<uint64>::const_iterator itr = _pllist.begin();
+                        std::advance(itr, urand(0, _pllist.size() - 1));
+                        return *itr;
                     }
                 }
                 return 0;

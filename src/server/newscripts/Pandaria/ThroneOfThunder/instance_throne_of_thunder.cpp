@@ -37,10 +37,6 @@ public:
         //GameObjects
         uint64 jinrokhpredoorGuid;
         uint64 jinrokhentdoorGuid;
-        uint64 mogufont_sr_Guid;
-        uint64 mogufont_nr_Guid;
-        uint64 mogufont_nl_Guid;
-        uint64 mogufont_sl_Guid;
         uint64 jinrokhexdoorGuid;
         uint64 horridonpredoorGuid;
         uint64 horridonentdoorGuid;
@@ -106,10 +102,6 @@ public:
 
             //GameObject
             jinrokhentdoorGuid    = 0;
-            mogufont_sr_Guid      = 0;
-            mogufont_nr_Guid      = 0;
-            mogufont_nl_Guid      = 0;
-            mogufont_sl_Guid      = 0;
             jinrokhexdoorGuid     = 0;
             horridonpredoorGuid   = 0;
             horridonentdoorGuid   = 0;
@@ -287,19 +279,9 @@ public:
                 break;
             //Mogu Fonts
             case GO_MOGU_SR:
-                mogufont_sr_Guid = go->GetGUID();
-                mogufontsGuids.push_back(go->GetGUID());
-                break;
             case GO_MOGU_NR:
-                mogufont_nr_Guid = go->GetGUID();
-                mogufontsGuids.push_back(go->GetGUID());
-                break;
             case GO_MOGU_NL:
-                mogufont_nl_Guid = go->GetGUID();
-                mogufontsGuids.push_back(go->GetGUID());
-                break;
             case GO_MOGU_SL:
-                mogufont_sl_Guid = go->GetGUID();
                 mogufontsGuids.push_back(go->GetGUID());
                 break;
             //
@@ -419,6 +401,7 @@ public:
                         for (std::vector<uint64>::const_iterator guid = mogufontsGuids.begin(); guid != mogufontsGuids.end(); guid++)
                             HandleGameObject(*guid, false);
                         HandleGameObject(jinrokhentdoorGuid, true);
+                        SetData(DATA_RESET_MOGU_FONTS, 0);
                         break;
                     case IN_PROGRESS:
                         HandleGameObject(jinrokhentdoorGuid, false);
@@ -679,10 +662,25 @@ public:
             }
         }
 
-        void SetData(uint32 type, uint32 data){}
+        void SetData(uint32 type, uint32 data)
+        {
+            if (data == DATA_RESET_MOGU_FONTS)
+            {
+                for (std::vector<uint64>::const_iterator itr = mogufontsGuids.begin(); itr != mogufontsGuids.end(); itr++)
+                    if (GameObject* mogufont = instance->GetGameObject(*itr))
+                        mogufont->SetGoState(GO_STATE_READY);
+            }
+        }
 
         uint32 GetData(uint32 type)
         {
+            if (type == DATA_CHECK_VALIDATE_THUNDERING_THROW)
+            {
+                for (std::vector<uint64>::const_iterator itr = mogufontsGuids.begin(); itr != mogufontsGuids.end(); itr++)
+                    if (GameObject* mogufont = instance->GetGameObject(*itr))
+                        if (mogufont->GetGoState() == GO_STATE_READY)
+                            return 1;
+            }
             return 0;
         }
 

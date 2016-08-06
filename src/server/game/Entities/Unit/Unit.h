@@ -1774,6 +1774,8 @@ class Unit : public WorldObject
         virtual bool UpdatePosition(float x, float y, float z, float ang, bool teleport = false, bool stop = false);
         // returns true if unit's position really changed
         bool UpdatePosition(const Position &pos, bool teleport = false) { return UpdatePosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), teleport); }
+        //Need hook movementfinalize on player, inside mini scripts
+        void UnitMovementInform(uint32 Id);
         void UpdateOrientation(float orientation);
         void UpdateHeight(float newZ);
         void SendTeleportPacket(Position &oldPos, uint32 sequenceIndex = 0);

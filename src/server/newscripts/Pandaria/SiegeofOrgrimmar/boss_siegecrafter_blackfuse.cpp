@@ -550,31 +550,43 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                  case EVENT_SAWBLADE:
                  {
                      bool havetarget = false;
-                     std::list<Player*> pllist;
-                     pllist.clear();
-                     GetPlayerListInGrid(pllist, me, 150.0f);
-                     if (!pllist.empty())
+                     std::vector<uint64>_pllist;
+                     _pllist.clear();
+                     std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
+                     if (!ThreatList.empty())
+                         for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); itr++)
+                             if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
+                                 if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) != ROLES_TANK && !pl->HasAura(SPELL_ON_CONVEYOR) && !pl->HasAura(SPELL_PATTERN_RECOGNITION))
+                                     _pllist.push_back(pl->GetGUID());
+
+                     if (!_pllist.empty())
                      {
-                         for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                         std::random_shuffle(_pllist.begin(), _pllist.end());
+                         for (std::vector<uint64>::const_iterator itr = _pllist.begin(); itr != _pllist.end(); itr++)
                          {
-                             if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && me->GetExactDist(*itr) >= 15.0f && !(*itr)->HasAura(SPELL_ON_CONVEYOR) && !(*itr)->HasAura(SPELL_PATTERN_RECOGNITION))
+                             if (Player* pl = me->GetPlayer(*me, *itr))
                              {
-                                 havetarget = true;
-                                 Talk(SAY_SAWBLADE);
-                                 DoCast(*itr, SPELL_LAUNCH_SAWBLADE);
-                                 break;
+                                 if (pl->isAlive() && me->GetExactDist(pl) >= 15.0f)
+                                 {
+                                     havetarget = true;
+                                     Talk(SAY_SAWBLADE);
+                                     DoCast(pl, SPELL_LAUNCH_SAWBLADE);
+                                     break;
+                                 }
                              }
                          }
-
                          if (!havetarget)
                          {
-                             for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                             for (std::vector<uint64>::const_iterator itr = _pllist.begin(); itr != _pllist.end(); itr++)
                              {
-                                 if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && !(*itr)->HasAura(SPELL_ON_CONVEYOR) && !(*itr)->HasAura(SPELL_PATTERN_RECOGNITION))
+                                 if (Player* pl = me->GetPlayer(*me, *itr))
                                  {
-                                     Talk(SAY_SAWBLADE);
-                                     DoCast(*itr, SPELL_LAUNCH_SAWBLADE);
-                                     break;
+                                     if (pl->isAlive())
+                                     {
+                                         Talk(SAY_SAWBLADE);
+                                         DoCast(pl, SPELL_LAUNCH_SAWBLADE);
+                                         break;
+                                     }
                                  }
                              }
                          }

@@ -23510,6 +23510,21 @@ bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool tel
     return (relocated || turn);
 }
 
+void Unit::UnitMovementInform(uint32 Id)
+{
+    switch (Id)
+    {
+    case 137173: //Thundering Throw Jump(to Mogu head) - Jinrok[TT]
+        RemoveAurasDueToSpell(137161, 0, 0, AURA_REMOVE_BY_CANCEL); //Thundering Throw Visual Aura Fly
+        break;
+    case 137161: //Thundering Throw Aura, emulation point (to ground) - Jinrok[TT]
+        CastSpell(this, 137167, true); //Thundering Throw AOE Dmg on raid
+        break;
+    default:
+        break;
+    }
+}
+
 //! Only server-side orientation update, does not broadcast to client
 void Unit::UpdateOrientation(float orientation)
 {

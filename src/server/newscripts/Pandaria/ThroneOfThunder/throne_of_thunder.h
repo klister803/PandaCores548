@@ -26,6 +26,9 @@ enum eData
     DATA_TWIN_CONSORTS      = 13,
     DATA_LEI_SHEN           = 14,
     DATA_RA_DEN             = 15,
+
+    DATA_RESET_MOGU_FONTS,
+    DATA_CHECK_VALIDATE_THUNDERING_THROW,
 };
 
 enum eCreatures
@@ -36,6 +39,7 @@ enum eCreatures
 
     //Npc
     NPC_CONDUCTIVE_WATER    = 69469,
+    NPC_MOGU_FONT           = 90005, //new trigger, need update in DB
     NPC_LIGHTNING_BALL      = 69232, 
     NPC_WHIRL_TURTLE        = 67966,
     NPC_VAMPIRIC_CAVE_BAT   = 69352,

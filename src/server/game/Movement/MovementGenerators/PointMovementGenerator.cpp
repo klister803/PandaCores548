@@ -130,8 +130,12 @@ void EffectMovementGenerator::Finalize(Unit &unit)
 
     if (((Creature&)unit).AI())
         ((Creature&)unit).AI()->MovementInform(EFFECT_MOTION_TYPE, m_Id);
+
     if (unit.GetTypeId() == TYPEID_PLAYER && unit.IsInWorld())
+    {
         unit.UpdatePosition(i_x, i_y, i_z, unit.GetOrientation(), false);
+        unit.UnitMovementInform(m_Id);
+    }
 
     // Effect event. Used for delay cast after jump for example
     if (m_event)

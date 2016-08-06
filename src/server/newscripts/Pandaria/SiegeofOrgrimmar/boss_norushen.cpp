@@ -823,11 +823,13 @@ public:
             instance = pCreature->GetInstanceScript();
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             attack = 0;
+            active = false;
         }
         InstanceScript* instance;
         EventMap events;
         uint64 targetGuid;
         uint32 attack;
+        bool active;
 
         enum spells
         {
@@ -837,6 +839,12 @@ public:
         void EnterCombat(Unit* who)
         {
             events.ScheduleEvent(EVENT_TEAR_REALITY, 8500);
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (!active)
+                damage = 0;
         }
 
         void EnterEvadeMode()
@@ -875,6 +883,8 @@ public:
                 if (attack <= diff)
                 {
                     attack = 0;
+                    active = true;
+                    me->SetFullHealth();
                     me->SetReactState(REACT_AGGRESSIVE);
                     DoZoneInCombat(me, 150.0f);
                 }
@@ -1064,6 +1074,7 @@ public:
             instance = (InstanceScript*)pCreature->GetInstanceScript();
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             attack = 0;
+            active = false;
         }
 
         enum spells
@@ -1079,6 +1090,7 @@ public:
         EventMap events;
         uint64 targetGuid;
         uint32 attack;
+        bool active;
 
         void Reset()
         {
@@ -1094,6 +1106,12 @@ public:
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             me->DespawnOrUnsummon(60000);
             attack = 3000;
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (!active)
+                damage = 0;
         }
 
         void EnterCombat(Unit* who)
@@ -1119,6 +1137,8 @@ public:
                 if (attack <= diff)
                 {
                     attack = 0;
+                    active = true;
+                    me->SetFullHealth();
                     me->SetReactState(REACT_AGGRESSIVE);
                     DoZoneInCombat(me, 150.0f);
                 }
@@ -1190,6 +1210,7 @@ public:
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             me->SetVisible(false);
             attack = 0;
+            active = false;
         }
 
         enum spells
@@ -1208,10 +1229,17 @@ public:
         EventMap events;
         uint64 targetGuid;
         uint32 attack;
+        bool active;
 
         void Reset()
         {
             events.Reset();
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (!active)
+                damage = 0;
         }
 
         void IsSummonedBy(Unit* summoner)
@@ -1266,6 +1294,8 @@ public:
                 if (attack <= diff)
                 {
                     attack = 0;
+                    active = true;
+                    me->SetFullHealth();
                     StartCombatWithCreatures();
                 }
                 else
