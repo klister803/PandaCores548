@@ -320,6 +320,9 @@ void MessageDistDeliverer::Visit(Map* map)
 
 void MessageDistDeliverer::Visit(Unit* unit)
 {
+    if (!unit)
+        return;
+
     std::list<Player*> removePlrList;
     for (auto itr : unit->m_whoseeme)
     {
