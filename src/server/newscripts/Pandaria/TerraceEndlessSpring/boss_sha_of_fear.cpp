@@ -816,10 +816,10 @@ class spell_sha_of_fear_ominous_cackle : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                return; // crashed http://pastebin.com/ZpyUb4WG
+                // return; // crashed http://pastebin.com/ZpyUb4WG
 
                 Unit* target = GetHitUnit();
-                if (!target)
+                if (!target || !target->isAlive() || !target->IsInWorld())
                     return;
 
                 target->CastSpell(target, 129147, true);
