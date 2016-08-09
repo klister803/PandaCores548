@@ -32,6 +32,7 @@ enum eSpells
     SPELL_SUBMERGE_2            = 143281,
     SPELL_BERSERK               = 64238,
     SPELL_SHA_SPLASH_DUMMY      = 130063,
+    SPELL_SHA_SPLASH_AT         = 143298,
     //HM
     SPELL_SWELLING_CORRUPTION   = 143574,
     SPELL_SWELLING_CORRUPTION_S = 143581,
@@ -55,12 +56,14 @@ enum Events
     EVENT_SHA_BOLT              = 2,
     EVENT_SWIRL                 = 3,
     EVENT_INTRO_PHASE_TWO       = 4,
+    EVENT_SPAWN_WAVE            = 5,
     //HM
-    EVENT_SWELLING_CORRUPTION   = 5,
-    EVENT_SHA_POOL              = 6,
+    EVENT_SWELLING_CORRUPTION   = 6,
+    EVENT_SHA_POOL              = 7,
     //Summons
-    EVENT_START_MOVING          = 7,
-    EVENT_CHECK_DIST            = 8,
+    EVENT_START_MOVING          = 8,
+    EVENT_CHECK_DIST            = 9,
+    EVENT_RE_ATTACK             = 10,
 };
 
 enum Actions
@@ -71,6 +74,7 @@ enum Actions
     //Summons
     ACTION_SPAWN                = 3,
     ACTION_MOVE                 = 4,
+    ACTION_RE_ATTACK_WITH_DELAY = 5,
 };
 
 enum SData
@@ -315,8 +319,15 @@ public:
 
         void JustSummoned(Creature* sum)
         {
-            if (sum->GetEntry() == NPC_SHA_POOL)
+            switch (sum->GetEntry())
+            {
+            case NPC_SHA_POOL:
                 shapoollist.push_back(sum->GetGUID());
+                break;
+            case NPC_CONGEALED_SHA:
+                DoZoneInCombat(sum, 100.0f);
+                break;
+            }
             summons.Summon(sum);
         }
 
@@ -331,56 +342,6 @@ public:
             events.ScheduleEvent(EVENT_SWIRL, 14000);
             if (me->GetMap()->IsHeroic())
                 events.ScheduleEvent(EVENT_SWELLING_CORRUPTION, 12000);
-        }
-
-        void SpawnWave()
-        {
-            events.Reset();
-            if (lasthppct >= 75)
-            {
-                for (uint8 n = 0; n < 25; n++)
-                {
-                    if (Creature* p = me->SummonCreature(wave1[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
-                        p->AI()->SetData(DATA_SEND_INDEX, n);
-                }
-            }
-            else if (lasthppct < 75 && lasthppct > 50)
-            {
-                for (uint8 n = 0; n < 25; n++)
-                {
-                    if (Creature* p = me->SummonCreature(wave2[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
-                        p->AI()->SetData(DATA_SEND_INDEX, n);
-                }
-            }
-            else if (lasthppct <= 50 && lasthppct > 30)
-            {
-                for (uint8 n = 0; n < 25; n++)
-                {
-                    if (Creature* p = me->SummonCreature(wave3[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
-                        p->AI()->SetData(DATA_SEND_INDEX, n);
-                }
-            }
-            else if (lasthppct <= 30 && lasthppct > 15)
-            {
-                for (uint8 n = 0; n < 25; n++)
-                {
-                    if (Creature* p = me->SummonCreature(wave4[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
-                        p->AI()->SetData(DATA_SEND_INDEX, n);
-                }
-            }
-            else if (lasthppct <= 15)
-            {
-                for (uint8 n = 0; n < 25; n++)
-                {
-                    if (Creature* p = me->SummonCreature(wave5[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
-                        p->AI()->SetData(DATA_SEND_INDEX, n);
-                }
-            }
-            if (me->GetMap()->IsHeroic())
-                events.ScheduleEvent(EVENT_SHA_POOL, 3000);
-            maxpcount = 0;
-            donecp = 0;
-            donesp = 0;
         }
 
         void SetData(uint32 type, uint32 data)
@@ -426,7 +387,8 @@ public:
                 me->InterruptNonMeleeSpells(true);
                 damage = 0;
                 phase_two = true;
-                SpawnWave();
+                events.Reset();
+                events.ScheduleEvent(EVENT_SPAWN_WAVE, 5000);
                 me->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
                 me->SetAttackStop(false);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
@@ -451,6 +413,9 @@ public:
             {
             case ACTION_RE_ATTACK:
                 me->ReAttackWithZone();
+                break;
+            case ACTION_RE_ATTACK_WITH_DELAY:
+                events.ScheduleEvent(EVENT_RE_ATTACK, 1500);
                 break;
             case ACTION_INTRO_PHASE_ONE:
                 if (me->GetPower(POWER_ENERGY) == 0)
@@ -538,8 +503,9 @@ public:
                 case EVENT_CORROSIVE_BLAST:
                     if (Unit* target = me->getVictim())
                     {
+                        me->SetAttackStop(true);
                         me->SetFacingToObject(target);
-                        me->CastSpell(target, SPELL_CORROSIVE_BLAST);
+                        me->CastSpell(me, SPELL_CORROSIVE_BLAST);
                     }
                     events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 17000);
                     break;
@@ -563,6 +529,12 @@ public:
                     }
                     events.ScheduleEvent(EVENT_SWIRL, 48000);
                     break;
+                case EVENT_SPAWN_WAVE:
+                    SpawnWave();
+                    break;
+                case EVENT_RE_ATTACK:
+                    me->ReAttackWithZone();
+                    break;
                     //HM
                 case EVENT_SWELLING_CORRUPTION:
                 {
@@ -579,6 +551,55 @@ public:
             }
             if (!phase_two)
                 DoMeleeAttackIfReady();
+        }
+
+        void SpawnWave()
+        {
+            if (lasthppct >= 75)
+            {
+                for (uint8 n = 0; n < 25; n++)
+                {
+                    if (Creature* p = me->SummonCreature(wave1[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
+                        p->AI()->SetData(DATA_SEND_INDEX, n);
+                }
+            }
+            else if (lasthppct < 75 && lasthppct > 50)
+            {
+                for (uint8 n = 0; n < 25; n++)
+                {
+                    if (Creature* p = me->SummonCreature(wave2[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
+                        p->AI()->SetData(DATA_SEND_INDEX, n);
+                }
+            }
+            else if (lasthppct <= 50 && lasthppct > 30)
+            {
+                for (uint8 n = 0; n < 25; n++)
+                {
+                    if (Creature* p = me->SummonCreature(wave3[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
+                        p->AI()->SetData(DATA_SEND_INDEX, n);
+                }
+            }
+            else if (lasthppct <= 30 && lasthppct > 15)
+            {
+                for (uint8 n = 0; n < 25; n++)
+                {
+                    if (Creature* p = me->SummonCreature(wave4[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
+                        p->AI()->SetData(DATA_SEND_INDEX, n);
+                }
+            }
+            else if (lasthppct <= 15)
+            {
+                for (uint8 n = 0; n < 25; n++)
+                {
+                    if (Creature* p = me->SummonCreature(wave5[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
+                        p->AI()->SetData(DATA_SEND_INDEX, n);
+                }
+            }
+            if (me->GetMap()->IsHeroic())
+                events.ScheduleEvent(EVENT_SHA_POOL, 3000);
+            maxpcount = 0;
+            donecp = 0;
+            donesp = 0;
         }
     };
     
@@ -602,39 +623,44 @@ public:
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
         }
+
+        EventMap events;
         
         void Reset()
         {
             me->SetFloatValue(OBJECT_FIELD_SCALE_X, 2.0f);
-            me->AddAura(SPELL_SHA_POOL, me);
+            events.ScheduleEvent(EVENT_SHA_POOL, 1500);
         }
 
         void DoAction(int32 const action)
         {
             if (action == ACTION_MOVE)
-            {
                 if (me->ToTempSummon())
-                {
                     if (Unit* i = me->ToTempSummon()->GetSummoner())
                         me->GetMotionMaster()->MoveCharge(i->GetPositionX(), i->GetPositionY(), i->GetPositionZ(), 4.0f, 0);
-                }
-            }
         }
 
         void MovementInform(uint32 type, uint32 pointId)
         {
             if (type == POINT_MOTION_TYPE)
-            {
                 if (pointId == 0)
                     me->DespawnOrUnsummon();
-            }
         }
 
         void EnterEvadeMode(){}
 
         void EnterCombat(Unit* who){}
 
-        void UpdateAI(uint32 diff){}
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_SHA_POOL)
+                    DoCast(me, SPELL_SHA_SPLASH_AT, true);
+            }
+        }
     };
     
     CreatureAI* GetAI(Creature* creature) const
@@ -1199,10 +1225,17 @@ public:
                 targets.remove_if(CorrosiveBlastFilter(GetCaster()));
         }
 
+        void HandleAfterCast()
+        {
+            if (GetCaster() && GetCaster()->ToCreature())
+                GetCaster()->ToCreature()->AI()->DoAction(ACTION_RE_ATTACK_WITH_DELAY);
+        }
+
         void Register()
         {
             OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_corrosive_blast_SpellScript::FilterTarget, EFFECT_0, TARGET_UNIT_CONE_ENEMY_104);
             OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_corrosive_blast_SpellScript::FilterTarget, EFFECT_1, TARGET_UNIT_CONE_ENEMY_104);
+            AfterCast += SpellCastFn(spell_corrosive_blast_SpellScript::HandleAfterCast);
         }
     };
 

@@ -1129,7 +1129,9 @@ public:
                 if (Creature* he = me->GetCreature(*me, instance->GetData64(NPC_HE_SOFTFOOT)))
                 {
                     sCreatureTextMgr->SendChat(he, TEXT_GENERIC_0, 0);
-                    me->CastSpell(target, SPELL_MARK_OF_ANGUISH_JUMP, true);
+                    float x, y;
+                    GetPosInRadiusWithRandomOrientation(target, 5.0f, x, y);
+                    me->CastSpell(x, y, target->GetPositionZ(), SPELL_MARK_OF_ANGUISH_JUMP, true);
                     target->CastSpell(target, SPELL_DEBILITATION, true);
                     me->CastSpell(target, SPELL_MARK_OF_ANGUISH_STAN, false);
                     me->AddThreat(target, 50000000.0f);

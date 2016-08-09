@@ -223,7 +223,7 @@ class boss_sha_of_pride : public CreatureScript
                 events.SetPhase(PHASE_BATTLE);
                 checkvictim = 1500;
                 if (IsHeroic())
-                    events.RescheduleEvent(EVENT_RIFT_OF_CORRUPTION, 6000, 0, PHASE_BATTLE);
+                    events.RescheduleEvent(EVENT_RIFT_OF_CORRUPTION, 8000, 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_SPELL_GIFT_OF_THE_TITANS, 1000, 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_SPELL_WOUNDED_PRIDE, 3000, 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_SPELL_MARK_OF_ARROGANCE, 2000, 0, PHASE_BATTLE);
@@ -362,7 +362,7 @@ class boss_sha_of_pride : public CreatureScript
                             float x, y;
                             GetPosInRadiusWithRandomOrientation(me, 55.0f, x, y);
                             me->SummonCreature(NPC_RIFT_OF_CORRUPTION, x, y, me->GetPositionZ(), 0.0f);
-                            events.RescheduleEvent(EVENT_RIFT_OF_CORRUPTION, 6000, 0, PHASE_BATTLE);
+                            events.RescheduleEvent(EVENT_RIFT_OF_CORRUPTION, 8000, 0, PHASE_BATTLE);
                             break;
                         }
                     }

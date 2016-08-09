@@ -10683,7 +10683,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
                 if (ToCreature())
                 {
                     CastSpell(victim, trigger_spell_id, true);
-                    CastSpell(victim, 143581, true);
+                    CastSpell(this->GetPositionX(), this->GetPositionY(), this->GetPositionZ(), 143581, true);
                     RemoveAuraFromStack(143574);
                     return true;
                 }

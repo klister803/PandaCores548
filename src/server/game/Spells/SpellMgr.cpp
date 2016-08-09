@@ -4831,6 +4831,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 //Throne of Thunder
                 //Jinrokh
+                case 137676: //Conduction water scale aura
+                    spellInfo->Effects[0].Amplitude = 500;
+                    break;
                 case 138349: //Static Wound
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
                     spellInfo->Effects[0].TriggerSpell = 0;
@@ -4867,9 +4870,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 53260:  // Cobra Strikes trigger
                 case 88764:  // Rolling Thunder
                 case 144278: //Generate rage
-                case 143462: //Sha pool
-                    spellInfo->Effects[EFFECT_0].TriggerSpell = 0;
-                    break;
                 case 136991: //Bitting cold tr ef 
                 case 144766: //Detonation sequence
                 case 136345: //Stormcloud tr ef
@@ -5094,6 +5094,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 //Fallen Protectors
                 case 143491: //Calamity
                     spellInfo->Effects[0].BasePoints = 0;
+                    break;
+                case 143808: //Mark of Anguish
+                    spellInfo->Effects[1].TargetA = TARGET_DEST_DEST;
                     break;
                 //Norushen
                 case 144980: //Summon Greater Corruption
