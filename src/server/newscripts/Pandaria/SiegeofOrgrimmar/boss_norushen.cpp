@@ -1880,7 +1880,7 @@ public:
         {
             if (GetTarget())
                 if (!GetTarget()->GetPower(POWER_ALTERNATE_POWER))
-                    GetTarget()->RemoveAurasDueToSpell(GetId());
+                    GetTarget()->RemoveAurasDueToSpell(GetId(), 0, 0, AURA_REMOVE_BY_CANCEL);
         }
 
         void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
@@ -1914,7 +1914,7 @@ public:
                 {
                     if (Player* pl = GetTarget()->ToPlayer())
                     {
-                        pl->CastSpell(GetTarget(), SPELL_PURIFIED_CHALLENGE, true);
+                        pl->CastSpell(pl, SPELL_PURIFIED_CHALLENGE, true);
                         uint8 spec = pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec()));
                         switch (spec)
                         {
@@ -2090,7 +2090,7 @@ public:
                 if (GetHitUnit()->GetPower(POWER_ALTERNATE_POWER) + 25 <= 100)
                 {
                     GetHitUnit()->SetPower(POWER_ALTERNATE_POWER, GetHitUnit()->GetPower(POWER_ALTERNATE_POWER) + 25);
-                    GetHitUnit()->RemoveAurasDueToSpell(SPELL_PURIFIED, 0, 0, AURA_REMOVE_BY_CANCEL);
+                    GetHitUnit()->RemoveAurasDueToSpell(SPELL_PURIFIED);
                     GetCaster()->ToCreature()->AI()->DoAction(ACTION_DESPAWN);
                 }
             }
