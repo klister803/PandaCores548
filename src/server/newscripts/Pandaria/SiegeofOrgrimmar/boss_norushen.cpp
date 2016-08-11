@@ -509,7 +509,7 @@ public:
                     break;
                 case EVENT_BLIND_HATRED:
                     DoCast(me, SPELL_BLIND_HATRED);
-                    events.ScheduleEvent(EVENT_BLIND_HATRED, 40000);
+                    events.ScheduleEvent(EVENT_BLIND_HATRED, 60000);
                     break;
                 }
             }
@@ -1613,12 +1613,11 @@ public:
 
         Position GetFirstRandPoin(BlindOrderList &m)
         {
-            /*BlindOrderList::iterator itr = m.begin();
+            BlindOrderList::iterator itr = m.begin();
             uint8 A = *itr;
             ++itr;
             uint8 B = *itr;
-            return BlindHatred[A].GetRandPointBetween(BlindHatred[B]);*/
-            return BlindHatred[urand(0, 4)];
+            return BlindHatred[A].GetRandPointBetween(BlindHatred[B]);
         }
 
         void GenerateOrder(BlindOrderList &m)
