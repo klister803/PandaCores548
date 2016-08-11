@@ -411,6 +411,7 @@ public:
             std::list<Creature*>addlist;
             addlist.clear();
             GetCreatureListWithEntryInGrid(addlist, me, NPC_RESIDUAL_CORRUPTION, 150.0f);
+            GetCreatureListWithEntryInGrid(addlist, me, NPC_ESSENCE_OF_CORRUPTION, 150.0f);
             if (!addlist.empty())
                 for (std::list<Creature*>::const_iterator itr = addlist.begin(); itr != addlist.end(); itr++)
                     (*itr)->DespawnOrUnsummon();
@@ -1723,11 +1724,15 @@ public:
     {
         PrepareSpellScript(spell_norushen_blind_hatred_prock_SpellScript);
 
-        void FilterTargets(std::list<WorldObject*> &unitList)
+        void FilterTargets(std::list<WorldObject*>&unitList)
         {
             if (InstanceScript* instance = GetCaster()->GetInstanceScript())
+            {
                 if (Creature* bh = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(NPC_BLIND_HATRED)))
                     unitList.remove_if(BlindHatredDmgSelector(GetCaster(), bh));
+                else
+                    unitList.clear();
+            }
         }
 
         void Register()

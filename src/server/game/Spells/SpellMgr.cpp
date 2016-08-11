@@ -4831,6 +4831,15 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 //Throne of Thunder
                 //Jinrokh
+                case 138568: //Conductive water periodic aura
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(8);
+                    spellInfo->Effects[0].TriggerSpell = 0;
+                    break;
+                case 138647: //Conductive water - storm visual
+                case 140811: //Storm - storm visual
+                    spellInfo->Effects[0].TargetA = TARGET_DEST_DEST;
+                    spellInfo->Effects[0].TargetB = 0;
+                    break;
                 case 137676: //Conduction water scale aura
                     spellInfo->Effects[0].Amplitude = 500;
                     break;
