@@ -1613,11 +1613,12 @@ public:
 
         Position GetFirstRandPoin(BlindOrderList &m)
         {
-            BlindOrderList::iterator itr = m.begin();
+            /*BlindOrderList::iterator itr = m.begin();
             uint8 A = *itr;
             ++itr;
             uint8 B = *itr;
-            return BlindHatred[A].GetRandPointBetween(BlindHatred[B]);
+            return BlindHatred[A].GetRandPointBetween(BlindHatred[B]);*/
+            return BlindHatred[urand(0, 4)];
         }
 
         void GenerateOrder(BlindOrderList &m)
