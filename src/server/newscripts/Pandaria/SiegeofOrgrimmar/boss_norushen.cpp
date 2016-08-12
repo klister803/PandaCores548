@@ -128,6 +128,9 @@ enum sEvents
     EVENT_EXPELLED_CORRUPTION  = 12,
     
     EVENT_RE_ATTACK            = 13,
+    EVENT_START_ROTATE         = 14,
+    EVENT_FIRST_POINT          = 15,
+    EVENT_UPDATE_POINT         = 16,
 };
 
 enum sData
@@ -167,11 +170,11 @@ Position const plspos[5] =  //purifying light spawn pos
 //Blind Hatred
 Position const BlindHatred[4] =
 {
-    { 808.897f, 1023.77f, 356.3f}, //A
-    { 728.585f, 1006.259f,356.3f}, //B
-    { 748.132f, 911.165f, 356.3f}, //C
-    { 828.936f, 929.101f, 356.3f}, //D
-}; 
+    { 808.897f, 1023.77f, 356.3f},
+    { 728.585f, 1006.259f,356.3f},
+    { 748.132f, 911.165f, 356.3f},
+    { 828.936f, 929.101f, 356.3f},
+};
 
 uint32 combatnpc[3] =
 {
@@ -536,9 +539,27 @@ public:
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
             me->SetReactState(REACT_PASSIVE);
             me->SetDisplayId(11686);
+            bhGuid = 0;
+            dist = 0;
+        }
+        EventMap events;
+        uint64 bhGuid;
+        float dist;
+
+        void Reset()
+        {
+            events.Reset();
         }
 
-        void Reset(){}
+        void SetGUID(uint64 guid, int32 id)
+        {
+            bhGuid = guid;
+            if (Creature* bh = me->GetCreature(*me, bhGuid))
+            {
+                dist = me->GetDistance(bh);
+                events.ScheduleEvent(EVENT_START_ROTATE, 3000);
+            }
+        }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
@@ -546,7 +567,32 @@ public:
                 damage = 0;
         }
 
-        void UpdateAI(uint32 diff){}
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                case EVENT_START_ROTATE:
+                {
+                    uint8 rand = urand(0, 1);
+                    me->GetMotionMaster()->MoveRotate(50000, rand ? ROTATE_DIRECTION_RIGHT : ROTATE_DIRECTION_LEFT);
+                    events.ScheduleEvent(EVENT_FIRST_POINT, 500);
+                    break;
+                }
+                case EVENT_FIRST_POINT:
+                    if (Creature* bh = me->GetCreature(*me, bhGuid))
+                    {
+                        float x, y;
+                        GetPositionWithDistInOrientation(me, dist, me->GetOrientation(), x, y);
+                        bh->GetMotionMaster()->MoveJump(x, y, bh->GetPositionZ(), 7.0f, 0.0f, 1);
+                    }
+                    break;
+                }
+            }
+        }
     };
 
     CreatureAI* GetAI(Creature* pCreature) const
@@ -568,15 +614,27 @@ public:
             pInstance = (InstanceScript*)pCreature->GetInstanceScript();
             me->SetReactState(REACT_PASSIVE);
             me->SetDisplayId(11686);
+            bhbaseGuid = 0;
+            dist = 0;
         }
-
         InstanceScript* pInstance;
         EventMap events;
-        BlindOrderList order;
+        uint64 bhbaseGuid;
+        float dist;
 
         void Reset()
         {
             events.Reset();
+        }
+
+        void SetGUID(uint64 guid, int32 id)
+        {
+            bhbaseGuid = guid;
+            if (Creature* bhbase = me->GetCreature(*me, bhbaseGuid))
+            {
+                dist = me->GetDistance(bhbase);
+                events.ScheduleEvent(EVENT_START_ROTATE, 1000);
+            }
         }
 
         void EnterEvadeMode(){}
@@ -589,34 +647,28 @@ public:
                 damage = 0;
         }
 
-        void SetData(uint32 type, uint32 data)
+        void MovementInform(uint32 type, uint32 pointId)
         {
-            if (type == DATA_FILL_MOVE_ORDER)
-                order.push_back(data);
-
-            if (type == DATA_START_MOVING)
-            {
-                order.pop_front();  //remove first point as it was source rand generation.
-                Position p = BlindHatred[*order.begin()];
-                me->GetMotionMaster()->MoveCharge(p.GetPositionX(), p.GetPositionY(), me->GetPositionZ(), 5.0f, 0);
-                order.pop_front();  //remove secont point as we just move from it.
-            }
-        }
-
-        void MovementInform(uint32 type, uint32 id)
-        {
-            if (type == POINT_MOTION_TYPE && !order.empty())
-                events.ScheduleEvent(DATA_START_MOVING, 1);
+            if (type == EFFECT_MOTION_TYPE || type == POINT_MOTION_TYPE)
+                if (pointId == 1)
+                    events.ScheduleEvent(EVENT_UPDATE_POINT, 100);
         }
 
         void UpdateAI(uint32 diff)
         {
             events.Update(diff);
+
             while (uint32 eventId = events.ExecuteEvent())
             {
-                Position p = BlindHatred[*order.begin()];
-                me->GetMotionMaster()->MoveCharge(p.GetPositionX(), p.GetPositionY(), me->GetPositionZ(), 5.0f, 0);
-                order.pop_front();  //remove secont point as we just move from it.
+                if (eventId == EVENT_UPDATE_POINT)
+                {
+                    if (Creature* bhbase = me->GetCreature(*me, bhbaseGuid))
+                    {
+                        float x, y;
+                        GetPositionWithDistInOrientation(bhbase, dist, bhbase->GetOrientation(), x, y);
+                        me->GetMotionMaster()->MoveJump(x, y, me->GetPositionZ(), 7.0f, 0.0f, 1);
+                    }
+                }
             }
         }
     };
@@ -1611,46 +1663,18 @@ public:
     {
         PrepareSpellScript(spell_norushen_blind_hatred_SpellScript);
 
-        Position GetFirstRandPoin(BlindOrderList &m)
-        {
-            BlindOrderList::iterator itr = m.begin();
-            uint8 A = *itr;
-            ++itr;
-            uint8 B = *itr;
-            return BlindHatred[A].GetRandPointBetween(BlindHatred[B]);
-        }
-
-        void GenerateOrder(BlindOrderList &m)
-        {
-            uint8 c = urand(0, 3);
-            bool decrase = urand(0, 1);
-            for (int8 i = 0; i < 4; ++i)
-            {
-                if (c > 3)
-                    c = 0;
-                if (decrase)    
-                    m.push_back(c);
-                else            
-                    m.push_front(c);
-                ++c;
-            }
-        }
-
         void HandleScriptEffect(SpellEffIndex /*effIndex*/)
         {
             if (GetCaster())
             {
-                BlindOrderList m;
-                GenerateOrder(m);
-                Position p = GetFirstRandPoin(m);
+                uint8 mod = urand(0, 3);
                 if (Creature* bhbase = GetCaster()->SummonCreature(NPC_BLIND_HATRED_BASE, GetCaster()->GetPositionX(), GetCaster()->GetPositionY(), GetCaster()->GetPositionZ() + 2.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 30000))
                 {
-                    bhbase->SetReactState(REACT_PASSIVE);
-                    if (Creature* bh = GetCaster()->SummonCreature(NPC_BLIND_HATRED, p.GetPositionX(), p.GetPositionY(), p.GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 30000))
+                    if (Creature* bh = GetCaster()->SummonCreature(NPC_BLIND_HATRED, BlindHatred[mod].GetPositionX(), BlindHatred[mod].GetPositionY(), BlindHatred[mod].GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 32000))
                     {
-                        for (BlindOrderList::iterator itr = m.begin(); itr != m.end(); ++itr)
-                            bh->AI()->SetData(DATA_FILL_MOVE_ORDER, *itr);
-                        bh->AI()->SetData(DATA_START_MOVING, 0);
+                        bhbase->SetFacingToObject(bh);
+                        bhbase->AI()->SetGUID(bh->GetGUID(), 1);
+                        bh->AI()->SetGUID(bhbase->GetGUID(), 1);
                         bhbase->CastSpell(bh, SPELL_BLIND_HATRED_V, true);
                     }
                 }
