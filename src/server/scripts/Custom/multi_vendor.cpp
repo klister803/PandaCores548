@@ -889,19 +889,16 @@ class many_in_one_donate_trans : public CreatureScript
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "а2", GOSSIP_SENDER_MAIN, 220189);
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "а3", GOSSIP_SENDER_MAIN, 220190);
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "а4", GOSSIP_SENDER_MAIN, 220191);
-                    
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Трансмогрификация (испытания в подземельях. золото)", GOSSIP_SENDER_MAIN, 2);            
-                    player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
-                    break;
-                case 2:
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Ткань", GOSSIP_SENDER_MAIN, 250112);            
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Кожа", GOSSIP_SENDER_MAIN, 250111);            
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Кольчуга", GOSSIP_SENDER_MAIN, 250113);            
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Латы", GOSSIP_SENDER_MAIN, 250110);            
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Оружие", GOSSIP_SENDER_MAIN, 250114);            
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Плащи", GOSSIP_SENDER_MAIN, 250115);            
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Плащи", GOSSIP_SENDER_MAIN, 250115); 
+                    
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Трансмогрификация (испытания в подземельях. золото)", GOSSIP_SENDER_MAIN, 220024);            
                     player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
-                    break;      
+                    break;    
                 default:
                     player->GetSession()->SendListInventory(creature->GetGUID(), action);
                     player->CustomMultiDonate = action;
