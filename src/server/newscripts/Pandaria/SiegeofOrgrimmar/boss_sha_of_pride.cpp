@@ -140,6 +140,27 @@ public:
     }
 };
 
+uint32 corruptedprisonlist[4] =
+{
+    SPELL_CORRUPTED_PRISON_WEST,
+    SPELL_CORRUPTED_PRISON_EAST,
+    SPELL_CORRUPTED_PRISON_NORTH,
+    SPELL_CORRUPTED_PRISON_SOUTH,
+};
+
+class RiftOfCorruptionFilter
+{
+public:
+    bool operator()(WorldObject* unit)
+    {
+        if (Player* target = unit->ToPlayer())
+            for (uint8 n = 0; n < 4; n++)
+                if (target->HasAura(corruptedprisonlist[n]))
+                    return true;
+        return false;
+    }
+};
+
 class boss_sha_of_pride : public CreatureScript
 {
     public:
@@ -1133,6 +1154,7 @@ public:
                     std::list<Player*> pllist;
                     pllist.clear();
                     GetPlayerListInGrid(pllist, me, 150.0f);
+                    pllist.remove_if(RiftOfCorruptionFilter());
                     if (!pllist.empty())
                     {
                         for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)

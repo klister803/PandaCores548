@@ -737,15 +737,8 @@ public:
                     easyGUIDconteiner[go->GetEntry()] = go->GetGUID();
                     break;
                 case GO_VAULT_OF_FORBIDDEN_TREASURES_1:
-                case GO_VAULT_OF_FORBIDDEN_TREASURES_2:
-                case GO_VAULT_OF_FORBIDDEN_TREASURES_3:
-                case GO_VAULT_OF_FORBIDDEN_TREASURES_4:
-                case GO_VAULT_OF_FORBIDDEN_TREASURES_5:
-                case GO_VAULT_OF_FORBIDDEN_TREASURES_6:
-                case GO_VAULT_OF_FORBIDDEN_TREASURES_7:
                     chestShaVaultOfForbiddenTreasures = go->GetGUID();
                     break;
-
                 case GO_IMMERSEUS_EX_DOOR:
                     AddDoor(go, true);
                     break;
