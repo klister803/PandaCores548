@@ -474,6 +474,11 @@ class boss_galakras : public CreatureScript
                         break;
                     case ACTION_DEMOLITIONS_NORTH:
                         events.ScheduleEvent(EVENT_SUMMON_DEMOLITIONS_NORTH, 40000);
+                        if (me->GetMap()->IsHeroic())
+                        {
+                            events.CancelEvent(EVENT_SUMMON_GRUNT_SOUTH);
+                            events.CancelEvent(EVENT_SUMMON_GRUNT_NORTH);
+                        }
                         break;
                     //Heroic mode
                     case ACTION_GRUNT_SOUTH:
@@ -554,6 +559,7 @@ class boss_galakras : public CreatureScript
                             break;
                         case EVENT_SUMMON_DEMOLITIONS_NORTH:
                             me->SummonCreature(instance->GetData(DATA_TEAM_IN_INSTANCE) == HORDE ? NPC_DEMOLITIONS_EXPERT_N_H: NPC_DEMOLITIONS_EXPERT_N_A, DemolitionNPos[0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
+                            events.ScheduleEvent(EVENT_SUMMON_GRUNT_NORTH, 6000);
                             break;
                         case EVENT_SUMMON_ADDS_1:
                             me->SummonCreature(NPC_DRAGONMAW_BONECRUSHER, AddsSpawn[0].GetPositionX() + 4.0f, AddsSpawn[0].GetPositionY() + 1.0f, AddsSpawn[0].GetPositionZ() + 1.0f, AddsSpawn[0].GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
@@ -777,17 +783,6 @@ class npc_varian_or_lorthemar : public CreatureScript
                 if(spell->Id == SPELL_FRACTURE)
                     DoCast(pCaster, SPELL_PING_BOSS, true);
             }
-
-            /*void UpdateAI(uint32 diff)
-            {
-                events.Update(diff);
-                while (uint32 eventId = events.ExecuteEvent())
-                {
-                    switch (eventId)
-                    {
-                    }
-                }
-            }*/
         };
 
         CreatureAI* GetAI(Creature* creature) const
