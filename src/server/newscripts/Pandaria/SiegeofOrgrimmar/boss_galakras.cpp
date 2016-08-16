@@ -489,11 +489,7 @@ class boss_galakras : public CreatureScript
                         }
                         break;
                     case ACTION_GRUNT_NORTH:
-                        if (instance->instance->GetDifficulty() == MAN10_HEROIC_DIFFICULTY || instance->instance->GetDifficulty() == MAN25_HEROIC_DIFFICULTY)
-                        {
-                            NorthGruntEvent = true;
-                            events.ScheduleEvent(EVENT_SUMMON_GRUNT_NORTH, 6000);
-                        }
+                        NorthGruntEvent = true;
                         break;
                     case ACTION_GRUNT_SOUTH_FINISH:
                         SouthGruntEvent = false;
