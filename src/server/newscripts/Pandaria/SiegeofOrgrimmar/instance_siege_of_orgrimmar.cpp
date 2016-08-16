@@ -1457,8 +1457,8 @@ public:
                 case IN_PROGRESS:
                     ShowNorthTower = data;
                     DoUpdateWorldState(WS_SHOW_NORTH_TOWER, 1);
-                    if (Creature* Galakras = instance->GetCreature(GetData64(NPC_GALAKRAS)))
-                        Galakras->AI()->DoAction(ACTION_GRUNT_NORTH);
+                    //if (Creature* Galakras = instance->GetCreature(GetData64(NPC_GALAKRAS)))
+                        //Galakras->AI()->DoAction(ACTION_GRUNT_NORTH);
                     break;
                 case NOT_STARTED:
                     ShowNorthTower = data;
