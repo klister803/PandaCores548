@@ -307,8 +307,8 @@ const Position AttackTowers[2] =
 //Heroic spawn grunt
 const Position HeroicGruntPos[2]
 {
-    {1371.10f, -4851.11f, 32.70f, 5.03f}, // South
-    {1457.60f, -4817.90f, 29.19f, 4.24f}, // North
+    {1373.57f, -4861.87f, 31.3380f, 1.9148f},//South
+    {1454.72f, -4825.64f, 29.0519f, 1.2080f},//Norh
 };
 
 const Position ProtoDrake[10] =
@@ -346,6 +346,12 @@ const Position DemolitionNPos[2] =
 {
     {1433.97f, -4904.58f, 11.39f, 1.05f}, // Expert North
     {1431.86f, -4907.19f, 11.47f, 1.04f}, // Assistant North
+};
+
+uint32 demolicionsexpertlist[2] =
+{
+    NPC_DEMOLITIONS_EXPERT_S_A,
+    NPC_DEMOLITIONS_EXPERT_S_H,
 };
 
 class boss_galakras : public CreatureScript
@@ -1962,8 +1968,8 @@ class npc_dragonmaw_grunt_h : public CreatureScript
 
             void SpellHit(Unit* dTarget, SpellInfo const* spell)
             {
-                if(dTarget)
-                    if(spell->Id == SPELL_BANTER_E || spell->Id == SPELL_BANTER_A)
+                if (dTarget)
+                    if (spell->Id == SPELL_BANTER_A)
                         dTarget->CastSpell(dTarget, SPELL_KNOCKED_OVER);
             }
 
@@ -1976,29 +1982,25 @@ class npc_dragonmaw_grunt_h : public CreatureScript
                 {
                     switch (eventId)
                     {
-                        case EVENT_DRAGON_CLEAVE:
+                    case EVENT_DRAGON_CLEAVE:
+                        if (Unit* dTarget = me->getVictim())
+                            if (me->GetDistance(dTarget) <= 5.0f)
+                                DoCast(dTarget, SPELL_DRAGON_CLEAVE);
+                        events.ScheduleEvent(EVENT_DRAGON_CLEAVE, 10000);
+                        break;
+                    case EVENT_FIXATE:
+                        for (uint8 n = 0; n < 2; n++)
                         {
-                            if (Unit* dTarget = me->getVictim())
-                                if (me->GetDistance(dTarget) <= 5.0f)
-                                    DoCast(dTarget, SPELL_DRAGON_CLEAVE);
-                            events.ScheduleEvent(EVENT_DRAGON_CLEAVE, 10000);
-                            break;
+                            if (Creature* dex = me->FindNearestCreature(demolicionsexpertlist[n], 50.0f, true))
+                            {
+                                AttackStart(dex);
+                                me->AddThreat(dex, 1000000.0f);
+                                DoCast(dex, SPELL_FIXATE, true);
+                                return;
+                            }
                         }
-                        case EVENT_FIXATE:
-                            if (Creature* sExpert = instance->instance->GetCreature(instance->GetData64(DATA_DEMOLITIONS_EXPERT_S)))
-                            {
-                                AttackStart(sExpert);
-                                me->AddThreat(sExpert, 1000000.0f);
-                                DoCast(sExpert, SPELL_FIXATE, true);
-                            }
-                            if (Creature* nExpert = instance->instance->GetCreature(instance->GetData64(DATA_DEMOLITIONS_EXPERT_N)))
-                            {
-                                AttackStart(nExpert);
-                                me->AddThreat(nExpert, 1000000.0f);
-                                DoCast(nExpert, SPELL_FIXATE, true);
-                            }
-                            events.ScheduleEvent(EVENT_FIXATE, 5000);
-                            break;
+                        events.ScheduleEvent(EVENT_FIXATE, 5000);
+                        break;
                     }
                 }
                 DoMeleeAttackIfReady();

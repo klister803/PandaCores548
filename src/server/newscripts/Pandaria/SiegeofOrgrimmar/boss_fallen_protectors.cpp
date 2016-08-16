@@ -94,6 +94,9 @@ enum eSpells
     SPELL_DEFILE_GROUND_PROC                = 143959,
     SPELL_INFERNO_STRIKE                    = 143962, //Inferno Strike
     SPELL_CORRUPTION_SHOCK                  = 143958, //Corruption Shock
+
+    SPELL_BERSERK                            = 26662,
+    SPELL_BERSERK_TR_EF                      = 64112,
 };
 
 enum Phase
@@ -258,6 +261,14 @@ struct boss_fallen_protectors : public ScriptedAI
                     if (prot->isAlive() && !prot->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
                         prot->AI()->DoAction(ACTION_START_EVENTS);
     }
+
+    void LaunchBerserk()
+    {
+        for (int32 i = 0; i < 3; i++)
+            if (Creature* prot = me->GetCreature(*me, instance->GetData64(protectors[i])))
+                if (prot->isAlive() && !prot->HasAura(SPELL_BERSERK))
+                    prot->CastSpell(prot, SPELL_BERSERK, true);
+    }
 };
 
 //Rook Stonetoe
@@ -277,6 +288,7 @@ public:
         EventMap events;
         Phase phase;
         uint8 corruptedbrewcount;
+        uint32 berserk;
 
         void Reset()
         {
@@ -287,7 +299,10 @@ public:
             me->SetReactState(REACT_DEFENSIVE);
             corruptedbrewcount = 0;
             phase = PHASE_NULL;
+            berserk = 0;
             DoCast(me, SPELL_DESPAWN_AT, true);
+            me->RemoveAurasDueToSpell(SPELL_BERSERK);
+            me->RemoveAurasDueToSpell(SPELL_BERSERK_TR_EF);
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         }
 
@@ -301,6 +316,7 @@ public:
             events.ScheduleEvent(EVENT_VENGEFUL_STRIKE, 7000);
             events.ScheduleEvent(EVENT_CORRUPTED_BREW, 5000);
             events.ScheduleEvent(EVENT_CLASH, 27000);
+            berserk = me->GetMap()->IsHeroic() ? 6000000 : 900000;
         }
 
         void JustSummoned(Creature* sum)
@@ -401,6 +417,17 @@ public:
             if (!UpdateVictim())
                 return;
 
+            if (berserk)
+            {
+                if (berserk <= diff)
+                {
+                    berserk = 0;
+                    LaunchBerserk();
+                }
+                else
+                    berserk -= diff;
+            }
+
             EnterEvadeIfOutOfCombatArea(diff);
             events.Update(diff);
 
@@ -466,6 +493,8 @@ public:
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             me->SetReactState(REACT_DEFENSIVE);
             phase = PHASE_NULL;
+            me->RemoveAurasDueToSpell(SPELL_BERSERK);
+            me->RemoveAurasDueToSpell(SPELL_BERSERK_TR_EF);
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROTE);
         }
@@ -679,6 +708,8 @@ public:
             checkprogress = 0;
             summons.DespawnAll();
             me->SummonCreature(NPC_GOLD_LOTOS_MAIN, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0);
+            me->RemoveAurasDueToSpell(SPELL_BERSERK);
+            me->RemoveAurasDueToSpell(SPELL_BERSERK_TR_EF);
             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WORD_BANE);
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         }
