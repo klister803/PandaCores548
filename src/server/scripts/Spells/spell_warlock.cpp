@@ -2623,6 +2623,7 @@ class spell_warl_demonic_gateway_at : public SpellScriptLoader
         }
 };
 
+/*
 // Seduction (Special Ability) - 6358, Mesmerize (Special Ability) - 115268
 class spell_warl_seduction : public SpellScriptLoader
 {
@@ -2652,7 +2653,7 @@ class spell_warl_seduction : public SpellScriptLoader
         {
             return new spell_warl_seduction_SpellScript();
         }
-};
+};*/
 
 // 108686 - Immolate
 class spell_warl_immolate : public SpellScriptLoader
