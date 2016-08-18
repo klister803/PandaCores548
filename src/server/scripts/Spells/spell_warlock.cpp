@@ -2900,7 +2900,7 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_wild_imps();
     new spell_warl_demonic_slash();
     new spell_warl_demonic_gateway_at();
-    new spell_warl_seduction();
+    // new spell_warl_seduction();
     new spell_warl_immolate();
     new spell_warl_incinerate();
     new spell_warl_void_shield();
