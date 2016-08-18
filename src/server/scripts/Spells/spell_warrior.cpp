@@ -765,44 +765,6 @@ class spell_warr_thunder_clap : public SpellScriptLoader
         }
 };
 
-/*
-// Called By Thunder Clap - 6343, Mortal Strike - 12294, Bloodthirst - 23881 and Devastate - 20243
-// Deep Wounds - 115767
-class spell_warr_deep_wounds : public SpellScriptLoader
-{
-    public:
-        spell_warr_deep_wounds() : SpellScriptLoader("spell_warr_deep_wounds") { }
-
-        class spell_warr_deep_wounds_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warr_deep_wounds_SpellScript);
-
-            void HandleAfterHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        if (GetSpellInfo()->Id == WARRIOR_SPELL_THUNDER_CLAP && _player->HasAura(WARRIOR_SPELL_BLOOD_AND_THUNDER))
-                            _player->CastSpell(target, WARRIOR_SPELL_DEEP_WOUNDS, true);
-                        else if (GetSpellInfo()->Id != WARRIOR_SPELL_THUNDER_CLAP)
-                            _player->CastSpell(target, WARRIOR_SPELL_DEEP_WOUNDS, true);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                AfterHit += SpellHitFn(spell_warr_deep_wounds_SpellScript::HandleAfterHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warr_deep_wounds_SpellScript();
-        }
-}; */
-
 // Avatar - 107574
 class spell_war_avatar : public SpellScriptLoader
 {
@@ -1222,7 +1184,6 @@ void AddSC_warrior_spell_scripts()
     new spell_warr_victory_rush();
     new spell_warr_last_stand();
     new spell_warr_thunder_clap();
-  //  new spell_warr_deep_wounds();
     new spell_war_avatar();
     new spell_war_glyph_of_die_by_the_sword();
     new spell_glyph_of_gag_order();
