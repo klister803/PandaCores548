@@ -677,15 +677,15 @@ float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
             {
                 case 48707: // Anti-Magic Shell
                 {
-                    amount = caster->CountPctFromMaxHealth(m_spellInfo->Effects[m_effIndex].BasePoints);
+                    amount = caster->CountPctFromMaxHealth(m_spellInfo->Effects[m_effIndex]->BasePoints);
                     break;
                 }
                 case 108416: // Sacrificial Pact
                 {
                     Unit* spelltarget = caster->GetGuardianPet() ? caster->GetGuardianPet(): caster;
-                    int32 sacrifiedHealth = spelltarget->CountPctFromCurHealth(m_spellInfo->Effects[EFFECT_1].BasePoints);
+                    int32 sacrifiedHealth = spelltarget->CountPctFromCurHealth(m_spellInfo->Effects[EFFECT_1]->BasePoints);
                     spelltarget->ModifyHealth(-sacrifiedHealth);
-                    amount = CalculatePct(sacrifiedHealth, m_spellInfo->Effects[EFFECT_0].BasePoints);
+                    amount = CalculatePct(sacrifiedHealth, m_spellInfo->Effects[EFFECT_0]->BasePoints);
                     break;
                 }
                 default:
@@ -779,7 +779,7 @@ float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
                     if (GetBase()->GetStackAmount() == 2)
                     {
                         SpellInfo const* _spellinf = sSpellMgr->GetSpellInfo(138228);
-                        amount = -100 + _spellinf->Effects[EFFECT_1].BasePoints;
+                        amount = -100 + _spellinf->Effects[EFFECT_1]->BasePoints;
                         CalcStack = false;
                     }
                     break;
@@ -896,7 +896,7 @@ float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
                 case 146198: // Essence of Yu'lon
                 {
                     SpellInfo const* _info = sSpellMgr->GetSpellInfo(148008);
-                    amount = caster->GetSpellPowerDamage(_info->GetSchoolMask()) * _info->Effects[EFFECT_0].BonusMultiplier / GetTotalTicks(); 
+                    amount = caster->GetSpellPowerDamage(_info->GetSchoolMask()) * _info->Effects[EFFECT_0]->BonusMultiplier / GetTotalTicks(); 
                     break;
                 }
                 default:
@@ -924,7 +924,7 @@ float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
                     if (Player* plr = caster->ToPlayer())
                     {
                         float mastery = plr->GetFloatValue(PLAYER_MASTERY);
-                        amount = -(RoundingFloatValue(float(m_spellInfo->Effects[EFFECT_5].BasePoints) + (mastery / (mastery + float(m_spellInfo->Effects[EFFECT_0].BasePoints))) * 100.0f));
+                        amount = -(RoundingFloatValue(float(m_spellInfo->Effects[EFFECT_5]->BasePoints) + (mastery / (mastery + float(m_spellInfo->Effects[EFFECT_0]->BasePoints))) * 100.0f));
                         
                     }
                     break;
@@ -935,7 +935,7 @@ float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
                     if (Player* plr = caster->ToPlayer())
                     {
                         if (plr->isInTankSpec())
-                            amount = (m_spellInfo->Effects[EFFECT_1].BasePoints + 30);
+                            amount = (m_spellInfo->Effects[EFFECT_1]->BasePoints + 30);
                     }
                     break;
                 }
@@ -998,7 +998,7 @@ float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
                 case 106830: // Thrash (Cat)
                 case 77758:  // Thrash
                 {
-                    amount += caster->GetTotalAttackPowerValue(BASE_ATTACK) * m_spellInfo->Effects[EFFECT_3].BasePoints / 1000;
+                    amount += caster->GetTotalAttackPowerValue(BASE_ATTACK) * m_spellInfo->Effects[EFFECT_3]->BasePoints / 1000;
                     break;
                 }
                 case 109076: // Incendiary Fireworks Launcher
@@ -1141,7 +1141,7 @@ float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
                 break;
             case 54428: // Divine Plea
                 int32 manaPerc;
-                manaPerc = CalculatePct(caster->GetMaxPower(POWER_MANA), m_spellInfo->Effects[1].BasePoints) / GetTotalTicks();
+                manaPerc = CalculatePct(caster->GetMaxPower(POWER_MANA), m_spellInfo->Effects[1]->BasePoints) / GetTotalTicks();
                 amount = CalculatePct(caster->GetTotalStatValue(STAT_SPIRIT), amount);
                 if(amount < manaPerc)
                    amount = manaPerc;
@@ -1149,8 +1149,8 @@ float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
             case 29166: // Innervate
                 if (!caster)
                     break;
-                manaPerc = CalculatePct(caster->GetMaxPower(POWER_MANA), m_spellInfo->Effects[1].BasePoints) / 10;
-                amount = CalculatePct(caster->GetStat(STAT_SPIRIT), m_spellInfo->Effects[0].BasePoints);
+                manaPerc = CalculatePct(caster->GetMaxPower(POWER_MANA), m_spellInfo->Effects[1]->BasePoints) / 10;
+                amount = CalculatePct(caster->GetStat(STAT_SPIRIT), m_spellInfo->Effects[0]->BasePoints);
                 if(amount < manaPerc)
                    amount = manaPerc;
                 break;
@@ -1167,7 +1167,7 @@ float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
             {
                 case 73651: // Recuperate
                 {
-                    int32 bp = m_spellInfo->Effects[0].BasePoints;
+                    int32 bp = m_spellInfo->Effects[0]->BasePoints;
                     
                     if (caster->HasAura(56806))
                         bp += 1;
@@ -1188,7 +1188,7 @@ float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
                 case 121093: // Monk        - Gift of the Naaru
                 {
                     if(GetTotalTicks())
-                        amount = CalculatePct(caster->GetMaxHealth(), m_spellInfo->Effects[1].BasePoints) / GetTotalTicks();
+                        amount = CalculatePct(caster->GetMaxHealth(), m_spellInfo->Effects[1]->BasePoints) / GetTotalTicks();
                     break;
                 }
                 default:
@@ -1210,7 +1210,7 @@ float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
                 {
                     if (target == caster)
                     {
-                        int32 pct = m_spellInfo->Effects[EFFECT_2].BasePoints;
+                        int32 pct = m_spellInfo->Effects[EFFECT_2]->BasePoints;
 
                         if (Aura* Bastion_of_Glory = caster->GetAura(114637))
                         {
@@ -1376,8 +1376,8 @@ float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
                             SpellInfo const* _spellinf = sSpellMgr->GetSpellInfo(138228);
                             switch (ownerAura->GetStackAmount())
                             {
-                                case 1: amount = -100 + _spellinf->Effects[EFFECT_0].BasePoints; break;
-                                case 2: amount = -100 + _spellinf->Effects[EFFECT_1].BasePoints; break;
+                                case 1: amount = -100 + _spellinf->Effects[EFFECT_0]->BasePoints; break;
+                                case 2: amount = -100 + _spellinf->Effects[EFFECT_1]->BasePoints; break;
                             }
                         }
                     break;
@@ -1387,7 +1387,7 @@ float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
                     if (GetBase()->GetStackAmount() == 2)
                     {
                         SpellInfo const* _spellinf = sSpellMgr->GetSpellInfo(138228);
-                        amount = -100 + _spellinf->Effects[EFFECT_1].BasePoints;
+                        amount = -100 + _spellinf->Effects[EFFECT_1]->BasePoints;
                         CalcStack = false;
                     }
                     break;
@@ -1495,7 +1495,7 @@ float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
             sSpellMgr->IsSpellMemberOfSpellGroup(GetId(), SPELL_GROUP_ELIXIR_BATTLE) ||
             sSpellMgr->IsSpellMemberOfSpellGroup(GetId(), SPELL_GROUP_ELIXIR_GUARDIAN)))
         {
-            if (caster->HasAura(53042) && caster->HasSpell(GetSpellInfo()->Effects[0].TriggerSpell))
+            if (caster->HasAura(53042) && caster->HasSpell(GetSpellInfo()->Effects[0]->TriggerSpell))
             {
                 switch (GetId())
                 {
@@ -1815,7 +1815,7 @@ void AuraEffect::CalculateFromDummyAmount(Unit* caster, Unit* target, float &amo
                         {
                             float bp = itr->custombp;
                             if(!bp)
-                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                                bp = dummyInfo->Effects[itr->effectDummy]->BasePoints;
                             amount += CalculatePct(amount, bp);
                             check = true;
                         }
@@ -1826,7 +1826,7 @@ void AuraEffect::CalculateFromDummyAmount(Unit* caster, Unit* target, float &amo
                         {
                             float bp = itr->custombp;
                             if(!bp)
-                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                                bp = dummyInfo->Effects[itr->effectDummy]->BasePoints;
                             amount -= CalculatePct(amount, bp);
                             check = true;
                         }
@@ -1846,7 +1846,7 @@ void AuraEffect::CalculateFromDummyAmount(Unit* caster, Unit* target, float &amo
                         {
                             float bp = itr->custombp;
                             if(!bp)
-                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                                bp = dummyInfo->Effects[itr->effectDummy]->BasePoints;
                             amount += bp;
                             check = true;
                         }
@@ -1857,7 +1857,7 @@ void AuraEffect::CalculateFromDummyAmount(Unit* caster, Unit* target, float &amo
                         {
                             float bp = itr->custombp;
                             if(!bp)
-                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                                bp = dummyInfo->Effects[itr->effectDummy]->BasePoints;
                             amount -= bp;
                             check = true;
                         }
@@ -1877,7 +1877,7 @@ void AuraEffect::CalculateFromDummyAmount(Unit* caster, Unit* target, float &amo
                         {
                             float bp = itr->custombp;
                             if(!bp)
-                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                                bp = dummyInfo->Effects[itr->effectDummy]->BasePoints;
 
                             bp /= 100.0f;
                             amount += CalculatePct(amount, bp);
@@ -1890,7 +1890,7 @@ void AuraEffect::CalculateFromDummyAmount(Unit* caster, Unit* target, float &amo
                         {
                             float bp = itr->custombp;
                             if(!bp)
-                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                                bp = dummyInfo->Effects[itr->effectDummy]->BasePoints;
 
                             bp /= 100.0f;
                             amount -= CalculatePct(amount, bp);
@@ -2670,7 +2670,7 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
                     // Survival of the Fittest
                     if (AuraEffect const* aurEff = target->GetAuraEffect(SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE, SPELLFAMILY_DRUID, 961, 0))
                     {
-                        float bp = aurEff->GetSpellInfo()->Effects[EFFECT_2].CalcValue(GetCaster());
+                        float bp = aurEff->GetSpellInfo()->Effects[EFFECT_2]->CalcValue(GetCaster());
                         target->CastCustomSpell(target, 62069, &bp, NULL, NULL, true, 0, this);
                     }
                 break;
@@ -6355,7 +6355,7 @@ void AuraEffect::HandleNoReagentUseAura(AuraApplication const* aurApp, uint8 mod
     flag128 mask;
     Unit::AuraEffectList const& noReagent = target->GetAuraEffectsByType(SPELL_AURA_NO_REAGENT_USE);
         for (Unit::AuraEffectList::const_iterator i = noReagent.begin(); i != noReagent.end(); ++i)
-            mask |= (*i)->m_spellInfo->Effects[(*i)->m_effIndex].SpellClassMask;
+            mask |= (*i)->m_spellInfo->Effects[(*i)->m_effIndex]->SpellClassMask;
 
     target->SetUInt32Value(PLAYER_NO_REAGENT_COST_1  , mask[0]);
     target->SetUInt32Value(PLAYER_NO_REAGENT_COST_1+1, mask[1]);
@@ -8125,7 +8125,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
             }
             case 38772: // Grievous Wound
             {
-                uint32 percent = GetSpellInfo()->Effects[EFFECT_1].CalcValue(caster);
+                uint32 percent = GetSpellInfo()->Effects[EFFECT_1]->CalcValue(caster);
                 if (!target->HealthBelowPct(percent))
                 {
                     target->RemoveAurasDueToSpell(GetSpellInfo()->Id);
@@ -8334,7 +8334,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
 
     if (damage > 0)
     {
-        if (GetSpellInfo()->Effects[m_effIndex].IsTargetingArea() || GetSpellInfo()->Effects[m_effIndex].Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA)
+        if (GetSpellInfo()->Effects[m_effIndex]->IsTargetingArea() || GetSpellInfo()->Effects[m_effIndex]->Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA)
         {
             resist += damage;
             damage = int32(float(damage) * target->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_AOE_DAMAGE_AVOIDANCE, GetSpellInfo()->GetSchoolMask()));
@@ -9074,7 +9074,7 @@ void AuraEffect::HandleOverrideActionbarSpells(AuraApplication const* aurApp, ui
                 {
                     for (int j = 0; j < MAX_SPELL_EFFECTS; ++j)
                     {
-                        if (thisInfo->Effects[i].SpellClassMask & otherInfo->Effects[j].SpellClassMask)
+                        if (thisInfo->Effects[i]->SpellClassMask & otherInfo->Effects[j]->SpellClassMask)
                         {
                             updated = true;
                             (*itr)->GetBase()->SetNeedClientUpdateForTargets();

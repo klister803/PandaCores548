@@ -301,7 +301,7 @@ class spell_trollgore_invader_taunt : public SpellScriptLoader
 
             bool Validate(SpellInfo const* spellInfo)
             {
-                if (!sSpellMgr->GetSpellInfo(spellInfo->Effects[EFFECT_0].CalcValue()))
+                if (!sSpellMgr->GetSpellInfo(spellInfo->Effects[EFFECT_0]->CalcValue()))
                     return false;
                 return true;
             }

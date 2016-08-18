@@ -2006,7 +2006,7 @@ class spell_hagara_the_stormbinder_frostflake : public SpellScriptLoader
 
             bool Load()
             {
-                return sSpellStore.LookupEntry(GetSpellInfo()->Effects[EFFECT_1].BasePoints);
+                return sSpellStore.LookupEntry(GetSpellInfo()->Effects[EFFECT_1]->BasePoints);
             }
 
             void HandlePeriodicTick(AuraEffect const* /*aurEff*/)
@@ -2027,7 +2027,7 @@ class spell_hagara_the_stormbinder_frostflake : public SpellScriptLoader
                 if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_ENEMY_SPELL && GetUnitOwner()->HasAura(SPELL_WATERY_ENTRENCHMENT))
                     return;
 
-                GetCaster()->CastSpell(GetUnitOwner(), GetSpellInfo()->Effects[EFFECT_1].BasePoints);
+                GetCaster()->CastSpell(GetUnitOwner(), GetSpellInfo()->Effects[EFFECT_1]->BasePoints);
             }
 
             void OnDispel(DispelInfo* dispelInfo)

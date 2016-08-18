@@ -1081,7 +1081,7 @@ uint32 Unit::CalcStaggerDamage(uint32 damage, SpellSchoolMask damageSchoolMask, 
             if (HasAura(117967))
             {
                 if (Aura* Stance_of_the_Sturdy_OxAura = GetAura(115069))
-                    stagger += float(Stance_of_the_Sturdy_OxAura->GetSpellInfo()->Effects[EFFECT_7].BasePoints);
+                    stagger += float(Stance_of_the_Sturdy_OxAura->GetSpellInfo()->Effects[EFFECT_7]->BasePoints);
 
                 if (AuraEffect const* mastery = GetAuraEffect(117906, EFFECT_0))
                     stagger += float(mastery->GetAmount());
@@ -1862,8 +1862,8 @@ bool Unit::IsDamageReducedByArmor(SpellSchoolMask schoolMask, SpellInfo const* s
 
         for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
-            if ((effectMask & (1 << i)) && (spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE ||
-                spellInfo->Effects[i].Effect == SPELL_EFFECT_SCHOOL_DAMAGE))
+            if ((effectMask & (1 << i)) && (spellInfo->Effects[i]->ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE ||
+                spellInfo->Effects[i]->Effect == SPELL_EFFECT_SCHOOL_DAMAGE))
             {
                 if (spellInfo->GetEffectMechanicMask(i) & (1 << MECHANIC_BLEED))
                     return false;
@@ -6337,8 +6337,8 @@ bool Unit::HandleProcTriggerSpellCopy(Unit* victim, DamageInfo* dmgInfoProc, Aur
         return false;
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        if (procSpell->Effects[i].Effect)
-            if (procSpell->Effects[i].HasRadius())
+        if (procSpell->Effects[i]->Effect)
+            if (procSpell->Effects[i]->HasRadius())
                 return false;
 
     int32 procSpellId = procSpell->Id;
@@ -6471,17 +6471,17 @@ bool Unit::HandleAuraProcOnPowerAmount(Unit* victim, DamageInfo* /*dmgInfoProc*/
             {
                 case 2912:
                 {
-                    powerMod = (aura67483 || (!aura67483 && !aura67484)) ? procSpell->Effects[1].CalcValue(this) : 0;
+                    powerMod = (aura67483 || (!aura67483 && !aura67484)) ? procSpell->Effects[1]->CalcValue(this) : 0;
                     break;
                 }
                 case 78674:
                 {
-                    powerMod = aura67483 ? procSpell->Effects[1].CalcValue(this) : -procSpell->Effects[1].CalcValue(this);
+                    powerMod = aura67483 ? procSpell->Effects[1]->CalcValue(this) : -procSpell->Effects[1]->CalcValue(this);
                     break;
                 }
                 case 5176:
                 {
-                    powerMod = (aura67484 || (!aura67483 && !aura67484)) ? -procSpell->Effects[1].CalcValue(this) : 0;
+                    powerMod = (aura67484 || (!aura67483 && !aura67484)) ? -procSpell->Effects[1]->CalcValue(this) : 0;
                     break;
                 }
                 case 99:
@@ -8083,8 +8083,8 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         return false;
 
                     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-                        if (procSpell->Effects[i].Effect)
-                            if (procSpell->Effects[i].HasRadius())
+                        if (procSpell->Effects[i]->Effect)
+                            if (procSpell->Effects[i]->HasRadius())
                                 return false;
 
                     if (Aura* aura = GetAura(137009))
@@ -8859,8 +8859,8 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 case 51558:  // Ancestral Awakening
                 {
                     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-                        if (procSpell->Effects[i].Effect)
-                            if (procSpell->Effects[i].HasRadius())
+                        if (procSpell->Effects[i]->Effect)
+                            if (procSpell->Effects[i]->HasRadius())
                                 return false;
                     triggered_spell_id = 52759;
                     basepoints0 = CalculatePct(int32(damage), triggerAmount);
@@ -9920,7 +9920,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
                     }
                     case 108945: // Angelic Bulwark
                     {
-                        if ((this->GetHealth() - damage) < CalculatePct(this->GetMaxHealth(), auraSpellInfo->Effects[0].BasePoints))
+                        if ((this->GetHealth() - damage) < CalculatePct(this->GetMaxHealth(), auraSpellInfo->Effects[0]->BasePoints))
                         {
                             trigger_spell_id = 114214;
                             basepoints0 = CalculatePct(this->GetMaxHealth(), 20);
@@ -10206,8 +10206,8 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
         case 146199: // Spirit of Chi-Ji
         {
             for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-                if (procSpell->Effects[i].Effect)
-                    if (procSpell->Effects[i].HasRadius())
+                if (procSpell->Effects[i]->Effect)
+                    if (procSpell->Effects[i]->HasRadius())
                         return false;
 
             break;
@@ -10224,8 +10224,8 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
 
             if (procSpell)
                 for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-                    if (procSpell->Effects[i].Effect)
-                        if (procSpell->Effects[i].HasRadius())
+                    if (procSpell->Effects[i]->Effect)
+                        if (procSpell->Effects[i]->HasRadius())
                             return false;
             break;
         }
@@ -12759,7 +12759,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         {
             // Pyroblast!
             if (HasAura(48108))
-                DoneTotalMod *= (100.0f + spellProto->Effects[2].CalcValue()) / 100.0f;
+                DoneTotalMod *= (100.0f + spellProto->Effects[2]->CalcValue()) / 100.0f;
         }
 
         tmpDamage = (int32(pdamage) + DoneTotal) * DoneTotalMod;
@@ -13218,7 +13218,7 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                             }
                             case 7384: // Overpower
                             {
-                                crit_chance += spellProto->Effects[2].BasePoints;
+                                crit_chance += spellProto->Effects[2]->BasePoints;
                                 break;
                             }
                             default:
@@ -13501,9 +13501,9 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
                     {
                         bool singleTarget = false;
                         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-                            if (spellProto->Effects[i].Effect)
+                            if (spellProto->Effects[i]->Effect)
                             {
-                                if (!spellProto->Effects[i].HasRadius())
+                                if (!spellProto->Effects[i]->HasRadius())
                                     singleTarget = true;
                             }
                             else break;
@@ -15388,15 +15388,15 @@ void Unit::TriggerEclipse(int32 oldPower)
     // Eclipse is cleared when eclipse power reaches 0
     if (newPower * oldPower <= 0)
     {
-        RemoveAurasDueToSpell(spellInfo->Effects[EFFECT_0].TriggerSpell);
-        RemoveAurasDueToSpell(spellInfo->Effects[EFFECT_1].TriggerSpell);
+        RemoveAurasDueToSpell(spellInfo->Effects[EFFECT_0]->TriggerSpell);
+        RemoveAurasDueToSpell(spellInfo->Effects[EFFECT_1]->TriggerSpell);
     }
 
-    if (newPower != spellInfo->Effects[EFFECT_0].CalcValue(this) && newPower != spellInfo->Effects[EFFECT_1].CalcValue(this))
+    if (newPower != spellInfo->Effects[EFFECT_0]->CalcValue(this) && newPower != spellInfo->Effects[EFFECT_1]->CalcValue(this))
         return;
 
     uint32 effIdx = newPower > 0 ? EFFECT_0 : EFFECT_1;
-    uint32 eclipseSpell = spellInfo->Effects[effIdx].TriggerSpell;
+    uint32 eclipseSpell = spellInfo->Effects[effIdx]->TriggerSpell;
     if (!eclipseSpell)
         return;
 
@@ -17505,7 +17505,7 @@ bool CharmInfo::AddSpellToActionBar(SpellInfo const* spellInfo, ActiveStates new
     {
         for (int j = 0; j < MAX_SPELL_EFFECTS; ++j)
         {
-            switch (spellInfo->Effects[j].Effect)
+            switch (spellInfo->Effects[j]->Effect)
             {
                 case SPELL_EFFECT_SUMMON:
                     return false;
@@ -19214,7 +19214,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
             if(itr->dummyId) //take amount from other spell
             {
                 if(SpellInfo const* dummySpellInfo = sSpellMgr->GetSpellInfo(abs(itr->dummyId)))
-                    triggerAmount = dummySpellInfo->Effects[itr->dummyEffect].BasePoints;
+                    triggerAmount = dummySpellInfo->Effects[itr->dummyEffect]->BasePoints;
             }
 
             sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellTriggered target %u, caster %u, spell_trigger %i, chance %i, triggerAmount %i, damage %i, GetAbsorb %i, GetResist %i, GetBlock %i",
@@ -20789,7 +20789,7 @@ void Unit::CalculateCastTimeFromDummy(int32& castTime, SpellInfo const* spellPro
                         {
                             int32 bp = itr->custombp;
                             if(!bp)
-                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                                bp = dummyInfo->Effects[itr->effectDummy]->BasePoints;
 
                             castTime += CalculatePct(castTime, bp);
                             check = true;
@@ -20801,7 +20801,7 @@ void Unit::CalculateCastTimeFromDummy(int32& castTime, SpellInfo const* spellPro
                         {
                             int32 bp = itr->custombp;
                             if(!bp)
-                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                                bp = dummyInfo->Effects[itr->effectDummy]->BasePoints;
                             castTime -= CalculatePct(castTime, bp);
                             check = true;
                         }
@@ -20821,7 +20821,7 @@ void Unit::CalculateCastTimeFromDummy(int32& castTime, SpellInfo const* spellPro
                         {
                             int32 bp = itr->custombp;
                             if(!bp)
-                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                                bp = dummyInfo->Effects[itr->effectDummy]->BasePoints;
                             castTime += bp;
                             check = true;
                         }
@@ -20832,7 +20832,7 @@ void Unit::CalculateCastTimeFromDummy(int32& castTime, SpellInfo const* spellPro
                         {
                             int32 bp = itr->custombp;
                             if(!bp)
-                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                                bp = dummyInfo->Effects[itr->effectDummy]->BasePoints;
                             castTime -= bp;
                             check = true;
                         }

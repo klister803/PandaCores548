@@ -125,7 +125,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     {
         for (uint32 j = 0; j < MAX_SPELL_EFFECTS; ++j)
         {
-            if (float r = info->Effects[j].CalcRadius(caster))
+            if (float r = info->Effects[j]->CalcRadius(caster))
             {
                 _radius = r * (spell ? spell->m_spellValue->RadiusMod : 1.0f);
                 find = true;
@@ -550,8 +550,8 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
         Powers energeType = POWER_NULL;
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
-            if(spellInfo->Effects[i].Effect == SPELL_EFFECT_ENERGIZE)
-                energeType = Powers(spellInfo->Effects[i].MiscValue);
+            if(spellInfo->Effects[i]->Effect == SPELL_EFFECT_ENERGIZE)
+                energeType = Powers(spellInfo->Effects[i]->MiscValue);
         }
 
         if (energeType == POWER_NULL || unit->GetMaxPower(energeType) == 0 || unit->GetMaxPower(energeType) == unit->GetPower(energeType))
@@ -559,7 +559,7 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
     }
 
     // should cast on self.
-    if (spellInfo->Effects[EFFECT_0].TargetA.GetTarget() == TARGET_UNIT_CASTER
+    if (spellInfo->Effects[EFFECT_0]->TargetA.GetTarget() == TARGET_UNIT_CASTER
         || action.action->targetFlags & AT_TARGET_FLAG_CASTER_IS_TARGET)
         caster = unit;
 
@@ -657,7 +657,7 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
             float searchRange = 0.0f;
             for (uint32 j = 0; j < MAX_SPELL_EFFECTS; ++j)
             {
-                if (float radius = spellInfo->Effects[j].CalcRadius(caster))
+                if (float radius = spellInfo->Effects[j]->CalcRadius(caster))
                     searchRange = radius;
             }
             if(!searchRange)

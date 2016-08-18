@@ -201,7 +201,7 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
 
                                         SpellInfo const* _spellinfo = sSpellMgr->GetSpellInfo(*iter);
 
-                                        if (crt->GetEntry() == _spellinfo->Effects[EFFECT_0].MiscValue)
+                                        if (crt->GetEntry() == _spellinfo->Effects[EFFECT_0]->MiscValue)
                                         {
                                             getVisual = true;
                                             addVisual = false;
@@ -1860,7 +1860,7 @@ class spell_monk_blackout_kick : public SpellScriptLoader
                             uint32 triggered_spell_id = 128531;
                             Unit* originalCaster = caster->GetOwner() ? caster->GetOwner(): caster;
                             float damsges = GetHitAbsorb() + GetHitDamage() + GetHitResist() + GetHitBlocked();
-                            float basepoints0 = CalculatePct(damsges, GetSpellInfo()->Effects[EFFECT_1].BasePoints);
+                            float basepoints0 = CalculatePct(damsges, GetSpellInfo()->Effects[EFFECT_1]->BasePoints);
 
                             if (!originalCaster->HasAura(132005) && !target->isInBack(caster))
                                 triggered_spell_id = 128591;
@@ -2734,7 +2734,7 @@ class spell_monk_dampen_harm : public SpellScriptLoader
             bool Load()
             {
                 if (Unit* caster = GetCaster())
-                    bpHealh = uint32(caster->GetMaxHealth() * float(GetSpellInfo()->Effects[EFFECT_0].BasePoints / 100.0f));
+                    bpHealh = uint32(caster->GetMaxHealth() * float(GetSpellInfo()->Effects[EFFECT_0]->BasePoints / 100.0f));
                 else
                     bpHealh = 0;
                 return true;
@@ -2881,7 +2881,7 @@ class spell_monk_mana_tea_glyph : public SpellScriptLoader
                             stack = 2;
                         else
                             stack = 1;
-                        setDamage = GetSpellInfo()->Effects[EFFECT_0].BasePoints * stack;
+                        setDamage = GetSpellInfo()->Effects[EFFECT_0]->BasePoints * stack;
                         aura->ModStackAmount(-stack);
                     }
 

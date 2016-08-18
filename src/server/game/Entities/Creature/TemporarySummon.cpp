@@ -240,9 +240,9 @@ void TempSummon::InitStats(uint32 duration)
                 {
                     for (uint32 j = 0; j < MAX_SPELL_EFFECTS; j++)
                     {
-                        if (spellInfo->Effects[j].Effect == SPELL_EFFECT_SUMMON && spellInfo->Effects[j].BasePoints > count)
+                        if (spellInfo->Effects[j]->Effect == SPELL_EFFECT_SUMMON && spellInfo->Effects[j]->BasePoints > count)
                         {
-                            count = spellInfo->Effects[j].BasePoints;
+                            count = spellInfo->Effects[j]->BasePoints;
                             break;
                         }
                     }

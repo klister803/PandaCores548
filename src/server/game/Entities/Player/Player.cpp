@@ -5173,7 +5173,7 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
         if (spellInfo->IsPassive())
         {
             for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
-                if (spellInfo->Effects[i].Effect == SPELL_EFFECT_DUAL_WIELD)
+                if (spellInfo->Effects[i]->Effect == SPELL_EFFECT_DUAL_WIELD)
                 {
                     SetCanDualWield(false);
                     break;
@@ -5579,8 +5579,8 @@ bool Player::ResetTalents(bool no_cost)
         removeSpell(itr->first, true);
         // search for spells that the talent teaches and unlearn them
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-            if (_spellEntry->Effects[i].TriggerSpell > 0 && _spellEntry->Effects[i].Effect == SPELL_EFFECT_LEARN_SPELL)
-                removeSpell(_spellEntry->Effects[i].TriggerSpell, true);
+            if (_spellEntry->Effects[i]->TriggerSpell > 0 && _spellEntry->Effects[i]->Effect == SPELL_EFFECT_LEARN_SPELL)
+                removeSpell(_spellEntry->Effects[i]->TriggerSpell, true);
         // if this talent rank can be found in the PlayerTalentMap, mark the talent as removed so it gets deleted
         PlayerTalentMap::iterator plrTalent = GetTalentMap(GetActiveSpec())->find(itr->first);
         if (plrTalent != GetTalentMap(GetActiveSpec())->end())
@@ -26613,7 +26613,7 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
     bool found = false;
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
-        if (spellInfo->Effects[i].Effect == SPELL_EFFECT_LEARN_SPELL && !HasSpell(spellInfo->Effects[i].TriggerSpell))
+        if (spellInfo->Effects[i]->Effect == SPELL_EFFECT_LEARN_SPELL && !HasSpell(spellInfo->Effects[i]->TriggerSpell))
         {
             found = true;
             break;
@@ -26625,7 +26625,7 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
         return;
 
     // prevent learn non first rank unknown profession and second specialization for same profession)
-    uint32 learned_0 = spellInfo->Effects[0].TriggerSpell;
+    uint32 learned_0 = spellInfo->Effects[0]->TriggerSpell;
     if (sSpellMgr->GetSpellRank(learned_0) > 1 && !HasSpell(learned_0))
     {
         // not have first rank learned (unlearned prof?)
@@ -26643,7 +26643,7 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
             uint32 profSpell = itr2->second;
 
             // specialization
-            if (learnedInfo->Effects[0].Effect == SPELL_EFFECT_TRADE_SKILL && learnedInfo->Effects[1].Effect == 0 && profSpell)
+            if (learnedInfo->Effects[0]->Effect == SPELL_EFFECT_TRADE_SKILL && learnedInfo->Effects[1]->Effect == 0 && profSpell)
             {
                 PlayerSpellMap _spells = m_spells;
                 // search other specialization for same prof
@@ -26657,7 +26657,7 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
                         return;
 
                     // compare only specializations
-                    if (itrInfo->Effects[0].Effect != SPELL_EFFECT_TRADE_SKILL || itrInfo->Effects[1].Effect != 0)
+                    if (itrInfo->Effects[0]->Effect != SPELL_EFFECT_TRADE_SKILL || itrInfo->Effects[1]->Effect != 0)
                         continue;
 
                     // compare same chain spells
@@ -29526,8 +29526,8 @@ void Player::ActivateSpec(uint8 spec)
         removeSpell(itr->first, true); // removes the talent, and all dependant, learned, and chained spells..
         if (SpellInfo const* _spellEntry = sSpellMgr->GetSpellInfo(itr->first))
             for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)                  // search through the SpellInfo for valid trigger spells
-                if (_spellEntry->Effects[i].TriggerSpell > 0 && _spellEntry->Effects[i].Effect == SPELL_EFFECT_LEARN_SPELL)
-                    removeSpell(_spellEntry->Effects[i].TriggerSpell, true); // and remove any spells that the talent teaches
+                if (_spellEntry->Effects[i]->TriggerSpell > 0 && _spellEntry->Effects[i]->Effect == SPELL_EFFECT_LEARN_SPELL)
+                    removeSpell(_spellEntry->Effects[i]->TriggerSpell, true); // and remove any spells that the talent teaches
     }
 
     if (const std::vector<SpellTalentLinked> *spell_triggered = sSpellMgr->GetSpelltalentLinked(0))
@@ -31414,8 +31414,8 @@ SpellModifier* Player::ChangePriorityMods(SpellModifier* currentMod, SpellModifi
 
     if (SpellInfo const* curInf = sSpellMgr->GetSpellInfo(currentMod->spellId))
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; i++)
-            if (curInf->Effects[i].Effect == SPELL_EFFECT_APPLY_AURA)
-                switch (curInf->Effects[i].ApplyAuraName)
+            if (curInf->Effects[i]->Effect == SPELL_EFFECT_APPLY_AURA)
+                switch (curInf->Effects[i]->ApplyAuraName)
                 {
                     case SPELL_AURA_ADD_PCT_MODIFIER:
                     case SPELL_AURA_ADD_FLAT_MODIFIER:
@@ -31430,8 +31430,8 @@ SpellModifier* Player::ChangePriorityMods(SpellModifier* currentMod, SpellModifi
 
     if (SpellInfo const* newInf = sSpellMgr->GetSpellInfo(newMod->spellId))
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; i++)
-            if (newInf->Effects[i].Effect == SPELL_EFFECT_APPLY_AURA)
-                switch (newInf->Effects[i].ApplyAuraName)
+            if (newInf->Effects[i]->Effect == SPELL_EFFECT_APPLY_AURA)
+                switch (newInf->Effects[i]->ApplyAuraName)
                 {
                     case SPELL_AURA_ADD_PCT_MODIFIER:
                     case SPELL_AURA_ADD_FLAT_MODIFIER:

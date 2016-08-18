@@ -595,8 +595,8 @@ class spell_warr_shockwave : public SpellScriptLoader
 
             void FilterTargets(std::list<WorldObject*>& targets)
             {
-                if (targets.size() >= GetSpellInfo()->Effects[EFFECT_0].BasePoints)
-                    delay = -GetSpellInfo()->Effects[EFFECT_3].BasePoints * IN_MILLISECONDS;
+                if (targets.size() >= GetSpellInfo()->Effects[EFFECT_0]->BasePoints)
+                    delay = -GetSpellInfo()->Effects[EFFECT_3]->BasePoints * IN_MILLISECONDS;
             }
 
 

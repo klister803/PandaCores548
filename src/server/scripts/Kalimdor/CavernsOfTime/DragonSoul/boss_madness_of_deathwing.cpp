@@ -3285,7 +3285,7 @@ class spell_madness_of_deathwing_corrupted_blood_stacker : public SpellScriptLoa
                     return;
 
                 if (AuraEffect* effect = GetCaster()->GetAuraEffect(SPELL_CORRUPTED_BLOOD, EFFECT_1))
-                    effect->SetAmount(GetCaster()->GetPower(POWER_ALTERNATE_POWER) * sSpellMgr->GetSpellInfo(SPELL_CORRUPTED_BLOOD)->Effects[EFFECT_1].BasePoints);
+                    effect->SetAmount(GetCaster()->GetPower(POWER_ALTERNATE_POWER) * sSpellMgr->GetSpellInfo(SPELL_CORRUPTED_BLOOD)->Effects[EFFECT_1]->BasePoints);
             }
 
             void Register()

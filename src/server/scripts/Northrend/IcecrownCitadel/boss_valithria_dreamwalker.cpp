@@ -1074,7 +1074,7 @@ class spell_dreamwalker_summoner : public SpellScriptLoader
                 if (!GetHitUnit())
                     return;
 
-                GetHitUnit()->CastSpell(GetCaster(), GetSpellInfo()->Effects[effIndex].TriggerSpell, true, NULL, NULL, GetCaster()->GetInstanceScript()->GetData64(DATA_VALITHRIA_LICH_KING));
+                GetHitUnit()->CastSpell(GetCaster(), GetSpellInfo()->Effects[effIndex]->TriggerSpell, true, NULL, NULL, GetCaster()->GetInstanceScript()->GetData64(DATA_VALITHRIA_LICH_KING));
             }
 
             void Register()
@@ -1153,7 +1153,7 @@ class spell_dreamwalker_summon_suppresser_effect : public SpellScriptLoader
                 if (!GetHitUnit())
                     return;
 
-                GetHitUnit()->CastSpell(GetCaster(), GetSpellInfo()->Effects[effIndex].TriggerSpell, true, NULL, NULL, GetCaster()->GetInstanceScript()->GetData64(DATA_VALITHRIA_LICH_KING));
+                GetHitUnit()->CastSpell(GetCaster(), GetSpellInfo()->Effects[effIndex]->TriggerSpell, true, NULL, NULL, GetCaster()->GetInstanceScript()->GetData64(DATA_VALITHRIA_LICH_KING));
             }
 
             void Register()
@@ -1282,7 +1282,7 @@ class spell_dreamwalker_twisted_nightmares : public SpellScriptLoader
                 //    return;
 
                 if (InstanceScript* instance = GetHitUnit()->GetInstanceScript())
-                    GetHitUnit()->CastSpell((Unit*)NULL, GetSpellInfo()->Effects[effIndex].TriggerSpell, true, NULL, NULL, instance->GetData64(DATA_VALITHRIA_DREAMWALKER));
+                    GetHitUnit()->CastSpell((Unit*)NULL, GetSpellInfo()->Effects[effIndex]->TriggerSpell, true, NULL, NULL, instance->GetData64(DATA_VALITHRIA_DREAMWALKER));
             }
 
             void Register()

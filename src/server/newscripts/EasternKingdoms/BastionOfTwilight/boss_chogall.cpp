@@ -853,7 +853,7 @@ class npc_chogall_darkened_creation : public CreatureScript
                     me->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id == SPELL_DEBILITATING_BEAM_10H ||
                     me->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id == SPELL_DEBILITATING_BEAM_25H)
                     for (uint8 i = 0; i < 3; ++i)
-                        if (spell->Effects[i].Effect == SPELL_EFFECT_INTERRUPT_CAST)
+                        if (spell->Effects[i]->Effect == SPELL_EFFECT_INTERRUPT_CAST)
                             me->InterruptSpell(CURRENT_GENERIC_SPELL);
             }
 
@@ -1015,7 +1015,7 @@ class npc_chogall_corrupting_adherent : public CreatureScript
                     me->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id == SPELL_DEPRAVITY_10H ||
                     me->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id == SPELL_DEPRAVITY_25H)
                     for (uint8 i = 0; i < 3; ++i)
-                        if (spell->Effects[i].Effect == SPELL_EFFECT_INTERRUPT_CAST)
+                        if (spell->Effects[i]->Effect == SPELL_EFFECT_INTERRUPT_CAST)
                             me->InterruptSpell(CURRENT_GENERIC_SPELL);
             }
 

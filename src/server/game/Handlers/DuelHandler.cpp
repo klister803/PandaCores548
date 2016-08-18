@@ -71,7 +71,7 @@ void WorldSession::HandleSendDuelRequest(WorldPacket& recvPacket)
     //CREATE DUEL FLAG OBJECT
     GameObject* pGameObj = new GameObject;
 
-    uint32 gameobject_id = 21680;//m_spellInfo->Effects[effIndex].MiscValue;
+    uint32 gameobject_id = 21680;//m_spellInfo->Effects[effIndex]->MiscValue;
 
     Map* map = caster->GetMap();
     if (!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), gameobject_id,

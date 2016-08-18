@@ -479,7 +479,7 @@ public:
         void SpellHit(Unit* /*caster*/, const SpellInfo* Spell)
         {
             for (uint8 i = 0; i < 3; ++i)
-                if (Spell->Effects[i].Effect == 38)
+                if (Spell->Effects[i]->Effect == 38)
                     me->DisappearAndDie();
         }
 

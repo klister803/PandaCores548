@@ -168,8 +168,8 @@ class spell_endurance_of_niuzao : public SpellScriptLoader
                         {
                             dmgInfo.AbsorbDamage(-(int32(absorbAmount)));
                             if (SpellInfo const* info = aurEff->GetSpellInfo())
-                                if (aurEff->GetAmount() != info->Effects[EFFECT_0].BasePoints)
-                                    aurEff->SetAmount(info->Effects[EFFECT_0].BasePoints);
+                                if (aurEff->GetAmount() != info->Effects[EFFECT_0]->BasePoints)
+                                    aurEff->SetAmount(info->Effects[EFFECT_0]->BasePoints);
                         }
                         else
                         {
@@ -205,7 +205,7 @@ class spell_gen_absorb0_hitlimit1 : public SpellScriptLoader
             bool Load()
             {
                 // Max absorb stored in 1 dummy effect
-                limit = GetSpellInfo()->Effects[EFFECT_1].CalcValue();
+                limit = GetSpellInfo()->Effects[EFFECT_1]->CalcValue();
                 return true;
             }
 
@@ -1073,7 +1073,7 @@ class spell_generic_clone : public SpellScriptLoader
             void HandleScriptEffect(SpellEffIndex effIndex)
             {
                 PreventHitDefaultEffect(effIndex);
-                uint32 spellId = uint32(GetSpellInfo()->Effects[effIndex].CalcValue());
+                uint32 spellId = uint32(GetSpellInfo()->Effects[effIndex]->CalcValue());
                 GetHitUnit()->CastSpell(GetCaster(), spellId, true);
             }
 
@@ -1119,7 +1119,7 @@ class spell_generic_clone_weapon : public SpellScriptLoader
                 if (Unit* target = GetHitUnit())
                 {
 
-                    uint32 spellId = uint32(GetSpellInfo()->Effects[EFFECT_0].CalcValue());
+                    uint32 spellId = uint32(GetSpellInfo()->Effects[EFFECT_0]->CalcValue());
                     caster->CastSpell(target, spellId, true);
                 }
             }
@@ -1539,8 +1539,8 @@ class spell_gen_oracle_wolvar_reputation : public SpellScriptLoader
             void HandleDummy(SpellEffIndex effIndex)
             {
                 Player* player = GetCaster()->ToPlayer();
-                uint32 factionId = GetSpellInfo()->Effects[effIndex].CalcValue();
-                int32  repChange =  GetSpellInfo()->Effects[EFFECT_1].CalcValue();
+                uint32 factionId = GetSpellInfo()->Effects[effIndex]->CalcValue();
+                int32  repChange =  GetSpellInfo()->Effects[EFFECT_1]->CalcValue();
 
                 FactionEntry const* factionEntry = sFactionStore.LookupEntry(factionId);
 
@@ -2108,7 +2108,7 @@ class spell_gen_mounted_charge: public SpellScriptLoader
                 if (spell->HasEffect(SPELL_EFFECT_SCRIPT_EFFECT))
                     OnEffectHitTarget += SpellEffectFn(spell_gen_mounted_charge_SpellScript::HandleScriptEffect, EFFECT_FIRST_FOUND, SPELL_EFFECT_SCRIPT_EFFECT);
 
-                if (spell->Effects[EFFECT_0].Effect == SPELL_EFFECT_CHARGE)
+                if (spell->Effects[EFFECT_0]->Effect == SPELL_EFFECT_CHARGE)
                     OnEffectHitTarget += SpellEffectFn(spell_gen_mounted_charge_SpellScript::HandleChargeEffect, EFFECT_0, SPELL_EFFECT_CHARGE);
             }
         };
@@ -2180,18 +2180,18 @@ class spell_gen_defend : public SpellScriptLoader
                 SpellInfo const* spell = sSpellMgr->GetSpellInfo(m_scriptSpellId);
 
                 // Defend spells casted by NPCs (add visuals)
-                if (spell->Effects[EFFECT_0].ApplyAuraName == SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN)
+                if (spell->Effects[EFFECT_0]->ApplyAuraName == SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN)
                 {
                     AfterEffectApply += AuraEffectApplyFn(spell_gen_defend_AuraScript::RefreshVisualShields, EFFECT_0, SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
                     OnEffectRemove += AuraEffectRemoveFn(spell_gen_defend_AuraScript::RemoveVisualShields, EFFECT_0, SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN, AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK);
                 }
 
                 // Remove Defend spell from player when he dismounts
-                if (spell->Effects[EFFECT_2].ApplyAuraName == SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN)
+                if (spell->Effects[EFFECT_2]->ApplyAuraName == SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN)
                     OnEffectRemove += AuraEffectRemoveFn(spell_gen_defend_AuraScript::RemoveDummyFromDriver, EFFECT_2, SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN, AURA_EFFECT_HANDLE_REAL);
 
                 // Defend spells casted by players (add/remove visuals)
-                if (spell->Effects[EFFECT_1].ApplyAuraName == SPELL_AURA_DUMMY)
+                if (spell->Effects[EFFECT_1]->ApplyAuraName == SPELL_AURA_DUMMY)
                 {
                     AfterEffectApply += AuraEffectApplyFn(spell_gen_defend_AuraScript::RefreshVisualShields, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
                     OnEffectRemove += AuraEffectRemoveFn(spell_gen_defend_AuraScript::RemoveVisualShields, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK);
@@ -2714,7 +2714,7 @@ public:
 
         void HandleDummy(SpellEffIndex effIndex)
         {
-            if (GetSpellInfo()->Effects[effIndex].Effect == SPELL_EFFECT_DUMMY || GetSpellInfo()->Effects[effIndex].Effect == SPELL_EFFECT_SCRIPT_EFFECT)
+            if (GetSpellInfo()->Effects[effIndex]->Effect == SPELL_EFFECT_DUMMY || GetSpellInfo()->Effects[effIndex]->Effect == SPELL_EFFECT_SCRIPT_EFFECT)
                 GetCaster()->ToCreature()->DespawnOrUnsummon();
         }
 
@@ -4124,8 +4124,8 @@ class spell_gen_cooking_way : public SpellScriptLoader
                 if (!caster)
                     return;
 
-                uint32 skillid = GetSpellInfo()->Effects[1].MiscValue;
-                caster->SetSkill(skillid, GetSpellInfo()->Effects[1].CalcValue(), 525, 600);
+                uint32 skillid = GetSpellInfo()->Effects[1]->MiscValue;
+                caster->SetSkill(skillid, GetSpellInfo()->Effects[1]->CalcValue(), 525, 600);
             }
 
             void Register()

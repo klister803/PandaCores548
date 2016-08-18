@@ -1122,7 +1122,7 @@ class spell_hun_cobra_shot : public SpellScriptLoader
                         if (AuraEffect* aurEff = target->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_HUNTER, 16384, 0, 0, GetCaster()->GetGUID()))
                         {
                             Aura* serpentSting = aurEff->GetBase();
-                            serpentSting->SetDuration(serpentSting->GetDuration() + (GetSpellInfo()->Effects[EFFECT_2].BasePoints * 1000));
+                            serpentSting->SetDuration(serpentSting->GetDuration() + (GetSpellInfo()->Effects[EFFECT_2]->BasePoints * 1000));
 
                             if (serpentSting->GetMaxDuration() < serpentSting->GetDuration())
                                 serpentSting->RefreshTimers();
@@ -1156,7 +1156,7 @@ class spell_hun_steady_shot : public SpellScriptLoader
             void HandleOnCast()
             {
                 SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(HUNTER_SPELL_STEADY_SHOT_ENERGIZE);
-                float basepoints0 = spellInfo->Effects[EFFECT_0].BasePoints;
+                float basepoints0 = spellInfo->Effects[EFFECT_0]->BasePoints;
                 
                 if (Unit* caster = GetCaster())
                 {

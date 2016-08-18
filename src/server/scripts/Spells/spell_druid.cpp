@@ -1240,7 +1240,7 @@ class spell_dru_ferocious_bite : public SpellScriptLoader
                     // energize
                     if (SpellInfo const* info = sSpellMgr->GetSpellInfo(114113))
                     {
-                        float bp = info->Effects[EFFECT_0].CalcValue(player) * comboPoints;
+                        float bp = info->Effects[EFFECT_0]->CalcValue(player) * comboPoints;
                         player->CastCustomSpell(player, info->Id, &bp, NULL, NULL, true);
                     }
                 }
@@ -1286,7 +1286,7 @@ class spell_dru_rip : public SpellScriptLoader
                     // energize
                     if (SpellInfo const* info = sSpellMgr->GetSpellInfo(114113))
                     {
-                        float bp = info->Effects[EFFECT_0].CalcValue(player) * comboPoints;
+                        float bp = info->Effects[EFFECT_0]->CalcValue(player) * comboPoints;
                         player->CastCustomSpell(player, info->Id, &bp, NULL, NULL, true);
                     }
                 }
@@ -2005,8 +2005,8 @@ class spell_dru_frenzied_regeneration : public SpellScriptLoader
                             int32 AP = _player->GetTotalAttackPowerValue(BASE_ATTACK);
                             int32 agility = _player->GetStat(STAT_AGILITY) * 2;
                             int32 stamina = int32(_player->GetStat(STAT_STAMINA));
-                            int32 a = (AP - agility) * GetSpellInfo()->Effects[1].BasePoints / 100;
-                            int32 b = stamina * GetSpellInfo()->Effects[2].BasePoints / 100;
+                            int32 a = (AP - agility) * GetSpellInfo()->Effects[1]->BasePoints / 100;
+                            int32 b = stamina * GetSpellInfo()->Effects[2]->BasePoints / 100;
 
                             int32 healAmount = int32(std::max(a, b));
 
@@ -2887,7 +2887,7 @@ class spell_druid_eclipse_buff : public SpellScriptLoader
                     // Astral Alignment
                     if (SpellInfo const* bonus = sSpellMgr->GetSpellInfo(90164))
                     {
-                        float bp = bonus->Effects[0].CalcValue(player) * 3;
+                        float bp = bonus->Effects[0]->CalcValue(player) * 3;
                         player->CastCustomSpell(player, bonus->Id, &bp, NULL, NULL, true, NULL, aura);
                     }
                 }
@@ -3041,7 +3041,7 @@ class spell_dru_swipe : public SpellScriptLoader
             {
                 if (Unit* unitTarget = GetHitUnit())
                 {
-                    float percent = float(GetSpellInfo()->Effects[1].BasePoints + 100)/100.0f;
+                    float percent = float(GetSpellInfo()->Effects[1]->BasePoints + 100)/100.0f;
                     if(unitTarget->HasAuraState(AURA_STATE_BLEEDING))
                         SetHitDamage(int32(GetHitDamage() * percent));
                 }
@@ -3073,7 +3073,7 @@ class spell_dru_swipe_two : public SpellScriptLoader
             {
                 if (Unit* unitTarget = GetHitUnit())
                 {
-                    float percent = float(GetSpellInfo()->Effects[1].BasePoints + 100)/100.0f;
+                    float percent = float(GetSpellInfo()->Effects[1]->BasePoints + 100)/100.0f;
                     if(unitTarget->HasAuraState(AURA_STATE_BLEEDING))
                         SetHitDamage(int32(GetHitDamage() * percent));
                 }
@@ -3596,7 +3596,7 @@ class spell_dru_anti_magic_shell : public SpellScriptLoader
             uint32 absorbPct, hpPct;
             bool Load()
             {
-                absorbPct = GetSpellInfo()->Effects[EFFECT_0].CalcValue(GetCaster());
+                absorbPct = GetSpellInfo()->Effects[EFFECT_0]->CalcValue(GetCaster());
                 return true;
             }
 
@@ -3611,7 +3611,7 @@ class spell_dru_anti_magic_shell : public SpellScriptLoader
                 if (!caster)
                     return;
 
-                int32 perc = GetSpellInfo()->Effects[EFFECT_1].CalcValue(caster);;
+                int32 perc = GetSpellInfo()->Effects[EFFECT_1]->CalcValue(caster);;
                 amount = caster->CountPctFromCurHealth(perc);
             }
 
@@ -3644,7 +3644,7 @@ class spell_dru_fortifying_brew : public SpellScriptLoader
                 if (!caster)
                     return;
 
-                int32 perc = GetSpellInfo()->Effects[EFFECT_0].CalcValue(caster);;
+                int32 perc = GetSpellInfo()->Effects[EFFECT_0]->CalcValue(caster);;
                 amount += caster->CountPctFromCurHealth(perc);
             }
 

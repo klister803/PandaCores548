@@ -218,7 +218,7 @@ bool Totem::IsImmunedToSpell(SpellInfo const* spellInfo)
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
-        switch (spellInfo->Effects[i].Effect)
+        switch (spellInfo->Effects[i]->Effect)
         {
             case SPELL_EFFECT_HEALTH_LEECH:
             case SPELL_EFFECT_HEAL:
@@ -228,7 +228,7 @@ bool Totem::IsImmunedToSpell(SpellInfo const* spellInfo)
                 return true;
             case SPELL_EFFECT_APPLY_AURA:
             {
-                switch (spellInfo->Effects[i].ApplyAuraName)
+                switch (spellInfo->Effects[i]->ApplyAuraName)
                 {
                     case SPELL_AURA_MOD_FEAR:
                     case SPELL_AURA_MOD_FEAR_2:

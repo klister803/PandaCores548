@@ -370,7 +370,7 @@ class boss_arcanotron : public CreatureScript
                         (me->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id == SPELL_ARCANE_ANNIHILATOR_10H) ||
                         (me->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id == SPELL_ARCANE_ANNIHILATOR_25H))
                         for (uint8 i = 0; i < 3; ++i)
-                            if (spell->Effects[i].Effect == SPELL_EFFECT_INTERRUPT_CAST)
+                            if (spell->Effects[i]->Effect == SPELL_EFFECT_INTERRUPT_CAST)
                                 me->InterruptSpell(CURRENT_GENERIC_SPELL, false);
             }
 

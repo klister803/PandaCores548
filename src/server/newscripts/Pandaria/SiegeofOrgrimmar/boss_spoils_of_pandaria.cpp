@@ -1520,7 +1520,7 @@ public:
         void HandleOnHit()
         {
             if (GetHitUnit()->ToPlayer())
-                GetCaster()->CastCustomSpell(SPELL_SHADOW_VOLLEY_D, SPELLVALUE_BASE_POINT0, GetSpellInfo()->Effects[EFFECT_0].BasePoints, GetHitUnit());
+                GetCaster()->CastCustomSpell(SPELL_SHADOW_VOLLEY_D, SPELLVALUE_BASE_POINT0, GetSpellInfo()->Effects[EFFECT_0]->BasePoints, GetHitUnit());
         }
 
         void Register()
@@ -1549,7 +1549,7 @@ public:
         {
             if (GetCaster())
             {
-                int32 dmg = GetSpellInfo()->Effects[EFFECT_0].BasePoints;
+                int32 dmg = GetSpellInfo()->Effects[EFFECT_0]->BasePoints;
                 std::list<Player*> pllist;
                 pllist.clear();
                 GetPlayerListInGrid(pllist, GetCaster(), 30.0f);
@@ -1587,7 +1587,7 @@ public:
         {
             if (GetCaster())
             {
-                int32 dmg = GetSpellInfo()->Effects[EFFECT_0].BasePoints;
+                int32 dmg = GetSpellInfo()->Effects[EFFECT_0]->BasePoints;
                 std::list<Player*> pllist;
                 pllist.clear();
                 GetPlayerListInGrid(pllist, GetCaster(), 30.0f);

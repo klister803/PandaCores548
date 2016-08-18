@@ -808,7 +808,7 @@ class spell_darkmoon_cannonball : public SpellScriptLoader
                 if (pCaster->IsInWater())
                     if (Creature* CanonTrigger = pCaster->FindNearestCreature(NPC_DARKMOON_FAIRE_CANNON_TARGET, 30.0f))
                     {
-                        pCaster->CastSpell(pCaster, GetSpellInfo()->Effects[EFFECT_0].BasePoints, true);
+                        pCaster->CastSpell(pCaster, GetSpellInfo()->Effects[EFFECT_0]->BasePoints, true);
 
                         if (pCaster->IsInRange(CanonTrigger, 0.0f, 1.0f))
                         {

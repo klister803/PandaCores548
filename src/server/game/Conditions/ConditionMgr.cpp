@@ -1184,10 +1184,10 @@ bool ConditionMgr::addToSpellImplicitTargetConditions(Condition* cond)
 
         // build new shared mask with found effect
         uint32 sharedMask = (1<<i);
-        ConditionList* cmp = spellInfo->Effects[i].ImplicitTargetConditions;
+        ConditionList* cmp = spellInfo->Effects[i]->ImplicitTargetConditions;
         for (uint8 effIndex = i+1; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
         {
-            if (spellInfo->Effects[effIndex].ImplicitTargetConditions == cmp)
+            if (spellInfo->Effects[effIndex]->ImplicitTargetConditions == cmp)
                 sharedMask |= 1<<effIndex;
         }
         sharedMasks.push_back(sharedMask);
@@ -1204,7 +1204,7 @@ bool ConditionMgr::addToSpellImplicitTargetConditions(Condition* cond)
                     break;
 
             // get shared data
-            ConditionList* sharedList = spellInfo->Effects[firstEffIndex].ImplicitTargetConditions;
+            ConditionList* sharedList = spellInfo->Effects[firstEffIndex]->ImplicitTargetConditions;
 
             // there's already data entry for that sharedMask
             if (sharedList)
@@ -1224,7 +1224,7 @@ bool ConditionMgr::addToSpellImplicitTargetConditions(Condition* cond)
                 sharedList = new ConditionList();
                 for (uint8 i = firstEffIndex; i < MAX_SPELL_EFFECTS; ++i)
                     if ((1<<i) & commonMask)
-                        spellInfo->Effects[i].ImplicitTargetConditions = sharedList;
+                        spellInfo->Effects[i]->ImplicitTargetConditions = sharedList;
             }
             sharedList->push_back(cond);
             break;
@@ -1487,7 +1487,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                 if (!((1<<i) & cond->SourceGroup))
                     continue;
 
-                switch (spellInfo->Effects[i].TargetA.GetSelectionCategory())
+                switch (spellInfo->Effects[i]->TargetA.GetSelectionCategory())
                 {
                     case TARGET_SELECT_CATEGORY_NEARBY:
                     case TARGET_SELECT_CATEGORY_CONE:
@@ -1498,7 +1498,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                         break;
                 }
 
-                switch (spellInfo->Effects[i].TargetB.GetSelectionCategory())
+                switch (spellInfo->Effects[i]->TargetB.GetSelectionCategory())
                 {
                     case TARGET_SELECT_CATEGORY_NEARBY:
                     case TARGET_SELECT_CATEGORY_CONE:

@@ -201,7 +201,7 @@ void AuraApplication::BuildBitUpdatePacket(ByteBuffer& data, bool remove) const
         if(!(_effectsToApply & (1 << i)))
             continue;
 
-        if(aura->GetSpellInfo()->Effects[i].IsEffect())
+        if(aura->GetSpellInfo()->Effects[i]->IsEffect())
         {
             ++count;
             if (AuraEffect const* eff = aura->GetEffect(i))
@@ -250,7 +250,7 @@ void AuraApplication::BuildByteUpdatePacket(ByteBuffer& data, bool remove, uint3
         if(!(_effectsToApply & (1 << i)))
             continue;
 
-        if(aura->GetSpellInfo()->Effects[i].IsEffect())
+        if(aura->GetSpellInfo()->Effects[i]->IsEffect())
         {
             if (AuraEffect const* eff = aura->GetEffect(i))
             {
@@ -278,7 +278,7 @@ void AuraApplication::BuildByteUpdatePacket(ByteBuffer& data, bool remove, uint3
         {
             if(!(_effectsToApply & (1 << i)))
                 continue;
-            if(aura->GetSpellInfo()->Effects[i].IsEffect())
+            if(aura->GetSpellInfo()->Effects[i]->IsEffect())
             {
                 if (AuraEffect const* eff = aura->GetEffect(i))
                 {
@@ -299,7 +299,7 @@ void AuraApplication::BuildByteUpdatePacket(ByteBuffer& data, bool remove, uint3
             if(!(_effectsToApply & (1 << i)))
                 continue;
 
-            if(aura->GetSpellInfo()->Effects[i].IsEffect())
+            if(aura->GetSpellInfo()->Effects[i]->IsEffect())
             {
                 if (AuraEffect const* eff = aura->GetEffect(i))
                     data << float(eff->GetAmount());
@@ -324,7 +324,7 @@ void AuraApplication::BuildByteUpdatePacket(ByteBuffer& data, bool remove, uint3
             if(!(_effectsToApply & (1 << i)))
                 continue;
 
-            if(aura->GetSpellInfo()->Effects[i].IsEffect())
+            if(aura->GetSpellInfo()->Effects[i]->IsEffect())
             {
                 if (AuraEffect const* eff = aura->GetEffect(i))
                     data << float(eff->GetAmount());
@@ -388,14 +388,14 @@ uint32 Aura::BuildEffectMaskForOwner(SpellInfo const* spellProto, uint32 avalibl
         case TYPEID_PLAYER:
             for (uint8 i = 0; i< MAX_SPELL_EFFECTS; ++i)
             {
-                if (spellProto->Effects[i].IsUnitOwnedAuraEffect())
+                if (spellProto->Effects[i]->IsUnitOwnedAuraEffect())
                     effMask |= 1 << i;
             }
             break;
         case TYPEID_DYNAMICOBJECT:
             for (uint8 i = 0; i< MAX_SPELL_EFFECTS; ++i)
             {
-                if (spellProto->Effects[i].Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA)
+                if (spellProto->Effects[i]->Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA)
                     effMask |= 1 << i;
             }
             break;
@@ -634,7 +634,7 @@ void Aura::CalculateDurationFromDummy(int32 &duration)
                         {
                             float bp = itr->custombp;
                             if(!bp)
-                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                                bp = dummyInfo->Effects[itr->effectDummy]->BasePoints;
                             duration += CalculatePct(duration, bp);
                             check = true;
                         }
@@ -645,7 +645,7 @@ void Aura::CalculateDurationFromDummy(int32 &duration)
                         {
                             float bp = itr->custombp;
                             if(!bp)
-                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                                bp = dummyInfo->Effects[itr->effectDummy]->BasePoints;
                             duration -= CalculatePct(duration, bp);
                             check = true;
                         }
@@ -665,7 +665,7 @@ void Aura::CalculateDurationFromDummy(int32 &duration)
                         {
                             float bp = itr->custombp;
                             if(!bp)
-                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                                bp = dummyInfo->Effects[itr->effectDummy]->BasePoints;
                             duration += bp;
                             check = true;
                         }
@@ -676,7 +676,7 @@ void Aura::CalculateDurationFromDummy(int32 &duration)
                         {
                             float bp = itr->custombp;
                             if(!bp)
-                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                                bp = dummyInfo->Effects[itr->effectDummy]->BasePoints;
                             duration -= bp;
                             check = true;
                         }
@@ -1070,7 +1070,7 @@ void Aura::Update(uint32 diff, Unit* caster)
         if (m_timeCla)
         {
             for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-                if (GetSpellInfo()->Effects[i].Amplitude)
+                if (GetSpellInfo()->Effects[i]->Amplitude)
                 {
                     if (m_effects[i])
                         break;
@@ -1385,7 +1385,7 @@ bool Aura::IsArea() const
 {
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
-        if (HasEffect(i) && GetSpellInfo()->Effects[i].IsAreaAuraEffect())
+        if (HasEffect(i) && GetSpellInfo()->Effects[i]->IsAreaAuraEffect())
             return true;
     }
     return false;
@@ -1471,7 +1471,7 @@ bool Aura::CanBeSaved() const
     // If need save it -> perfome manual cast for example spell_area table or by script.
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
-        if(GetSpellInfo()->Effects[i].IsEffect())
+        if(GetSpellInfo()->Effects[i]->IsEffect())
         {
             if (AuraEffect const* eff = GetEffect(i))
                 if(eff->GetAuraType() == SPELL_AURA_OVERRIDE_SPELLS)
@@ -1544,7 +1544,7 @@ void Aura::UnregisterCasterAuras()
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
-        if (GetSpellInfo()->Effects[i].TargetA.GetTarget() == TARGET_UNIT_CASTER_AREA_SUMMON)
+        if (GetSpellInfo()->Effects[i]->TargetA.GetTarget() == TARGET_UNIT_CASTER_AREA_SUMMON)
         {
             if (caster != GetUnitOwner())
                 return;
@@ -2112,7 +2112,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         if (target->isInBack(caster))
                         {
                             int32 duration = GetMaxDuration();
-                            AddPct(duration, m_spellInfo->Effects[EFFECT_1].BasePoints);
+                            AddPct(duration, m_spellInfo->Effects[EFFECT_1]->BasePoints);
                             SetMaxDuration(duration);
                             SetDuration(duration);
                         }
@@ -2520,9 +2520,9 @@ bool Aura::CanStackWith(Aura const* existingAura) const
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         // prevent remove triggering aura by triggered aura
-        if (existingSpellInfo->Effects[i].TriggerSpell == GetId()
+        if (existingSpellInfo->Effects[i]->TriggerSpell == GetId()
             // prevent remove triggered aura by triggering aura refresh
-            || m_spellInfo->Effects[i].TriggerSpell == existingAura->GetId())
+            || m_spellInfo->Effects[i]->TriggerSpell == existingAura->GetId())
             return true;
     }
 
@@ -2556,7 +2556,7 @@ bool Aura::CanStackWith(Aura const* existingAura) const
         // check same periodic auras
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
-            switch (m_spellInfo->Effects[i].ApplyAuraName)
+            switch (m_spellInfo->Effects[i]->ApplyAuraName)
             {
                 // DOT or HOT or frame from different casters will stack
                 case SPELL_AURA_PERIODIC_DAMAGE:
@@ -2571,7 +2571,7 @@ bool Aura::CanStackWith(Aura const* existingAura) const
                 case SPELL_AURA_OBS_MOD_HEALTH:
                 case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
                     // periodic auras which target areas are not allowed to stack this way (replenishment for example)
-                    if (m_spellInfo->Effects[i].IsTargetingArea() || existingSpellInfo->Effects[i].IsTargetingArea())
+                    if (m_spellInfo->Effects[i]->IsTargetingArea() || existingSpellInfo->Effects[i]->IsTargetingArea())
                         break;
                     return true;
                 case SPELL_AURA_ENABLE_BOSS1_UNIT_FRAME:
@@ -3170,17 +3170,17 @@ void UnitAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* caster)
             continue;
         UnitList targetList;
         // non-area aura
-        if (GetSpellInfo()->Effects[effIndex].Effect == SPELL_EFFECT_APPLY_AURA)
+        if (GetSpellInfo()->Effects[effIndex]->Effect == SPELL_EFFECT_APPLY_AURA)
         {
             targetList.push_back(GetUnitOwner());
         }
         else
         {
-            float radius = GetSpellInfo()->Effects[effIndex].CalcRadius(caster);
+            float radius = GetSpellInfo()->Effects[effIndex]->CalcRadius(caster);
 
             if (!GetUnitOwner()->HasUnitState(UNIT_STATE_ISOLATED))
             {
-                switch (GetSpellInfo()->Effects[effIndex].Effect)
+                switch (GetSpellInfo()->Effects[effIndex]->Effect)
                 {
                     case SPELL_EFFECT_APPLY_AREA_AURA_PARTY:
                     case SPELL_EFFECT_APPLY_AREA_AURA_RAID:
@@ -3193,7 +3193,7 @@ void UnitAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* caster)
                                     if (IS_UNIT_GUID(itr))
                                         if (Unit* unit = ObjectAccessor::GetUnit(*plr, itr))
                                         {
-                                            if (GetSpellInfo()->Effects[effIndex].Effect == SPELL_EFFECT_APPLY_AREA_AURA_RAID)
+                                            if (GetSpellInfo()->Effects[effIndex]->Effect == SPELL_EFFECT_APPLY_AREA_AURA_RAID)
                                             {
                                                 if (!plr->IsInRaidWith(unit))
                                                     continue;
@@ -3207,7 +3207,7 @@ void UnitAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* caster)
                         }
                         else
                         {
-                            Trinity::AnyGroupedUnitInObjectRangeCheck u_check(GetUnitOwner(), GetUnitOwner(), radius, GetSpellInfo()->Effects[effIndex].Effect == SPELL_EFFECT_APPLY_AREA_AURA_RAID);
+                            Trinity::AnyGroupedUnitInObjectRangeCheck u_check(GetUnitOwner(), GetUnitOwner(), radius, GetSpellInfo()->Effects[effIndex]->Effect == SPELL_EFFECT_APPLY_AREA_AURA_RAID);
                             Trinity::UnitListSearcher<Trinity::AnyGroupedUnitInObjectRangeCheck> searcher(GetUnitOwner(), targetList, u_check);
                             GetUnitOwner()->VisitNearbyObject(radius, searcher);
                         }
@@ -3330,8 +3330,8 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
         if (!HasEffect(effIndex))
             continue;
         UnitList targetList;
-        if (GetSpellInfo()->Effects[effIndex].TargetB.GetTarget() == TARGET_DEST_DYNOBJ_ALLY
-            || GetSpellInfo()->Effects[effIndex].TargetB.GetTarget() == TARGET_UNIT_DEST_AREA_ALLY)
+        if (GetSpellInfo()->Effects[effIndex]->TargetB.GetTarget() == TARGET_DEST_DYNOBJ_ALLY
+            || GetSpellInfo()->Effects[effIndex]->TargetB.GetTarget() == TARGET_UNIT_DEST_AREA_ALLY)
         {
             Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(GetDynobjOwner(), dynObjOwnerCaster, radius);
             Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);

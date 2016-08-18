@@ -422,7 +422,7 @@ class spell_captain_cookie_throw_food_targeting : public SpellScriptLoader
                 uint32 spellId = 0;
 
                 if (SpellInfo const* spellInfo = GetSpellInfo())
-                    spellId = spellInfo->Effects[EFFECT_0].BasePoints;
+                    spellId = spellInfo->Effects[EFFECT_0]->BasePoints;
                 if (!sSpellMgr->GetSpellInfo(spellId))
                     return;
 

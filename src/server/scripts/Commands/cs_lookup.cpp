@@ -797,9 +797,9 @@ public:
                 }
 
                 bool known = target && target->HasSpell(id);
-                bool learn = (spellInfo->Effects[0].Effect == SPELL_EFFECT_LEARN_SPELL);
+                bool learn = (spellInfo->Effects[0]->Effect == SPELL_EFFECT_LEARN_SPELL);
 
-                SpellInfo const* learnSpellInfo = sSpellMgr->GetSpellInfo(spellInfo->Effects[0].TriggerSpell);
+                SpellInfo const* learnSpellInfo = sSpellMgr->GetSpellInfo(spellInfo->Effects[0]->TriggerSpell);
 
                 uint32 talentCost =0;// GetTalentSpellCost(id);
 

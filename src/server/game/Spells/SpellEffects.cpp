@@ -555,7 +555,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                     case 106830: // Thrash (Cat)
                     case 77758:  // Thrash
                     {
-                        damage += m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * m_spellInfo->Effects[EFFECT_2].BasePoints / 1000;
+                        damage += m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * m_spellInfo->Effects[EFFECT_2]->BasePoints / 1000;
                         break;
                     }
                     default:
@@ -692,10 +692,10 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         if (!Living_Bomb_Dot)
                             return;
 
-                        float cof = Living_Bomb_Dot->Effects[EFFECT_2].BasePoints;
-                        int32 SPD = m_caster->GetSpellPowerDamage(m_spellInfo->GetSchoolMask()) * Living_Bomb_Dot->Effects[EFFECT_0].BonusMultiplier;
-                        int32 eff1val = Living_Bomb_Dot->Effects[EFFECT_0].CalcValue(m_caster);
-                        uint8 totalticks = Living_Bomb_Dot->GetMaxDuration() / Living_Bomb_Dot->Effects[EFFECT_0].Amplitude;
+                        float cof = Living_Bomb_Dot->Effects[EFFECT_2]->BasePoints;
+                        int32 SPD = m_caster->GetSpellPowerDamage(m_spellInfo->GetSchoolMask()) * Living_Bomb_Dot->Effects[EFFECT_0]->BonusMultiplier;
+                        int32 eff1val = Living_Bomb_Dot->Effects[EFFECT_0]->CalcValue(m_caster);
+                        uint8 totalticks = Living_Bomb_Dot->GetMaxDuration() / Living_Bomb_Dot->Effects[EFFECT_0]->Amplitude;
                         eff1val += SPD;
                         eff1val *= totalticks;
 
@@ -815,8 +815,8 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                     case 10444:
                     {
                         SpellInfo const* _spellinfo = sSpellMgr->GetSpellInfo(8024);
-                        int32 dmg = _spellinfo->Effects[EFFECT_1].CalcValue(m_caster);
-                        float add_spellpower = m_caster->GetSpellPowerDamage(SPELL_SCHOOL_MASK_FIRE) * _spellinfo->Effects[EFFECT_1].BonusMultiplier;
+                        int32 dmg = _spellinfo->Effects[EFFECT_1]->CalcValue(m_caster);
+                        float add_spellpower = m_caster->GetSpellPowerDamage(SPELL_SCHOOL_MASK_FIRE) * _spellinfo->Effects[EFFECT_1]->BonusMultiplier;
 
                         float BaseWeaponSpeed = m_caster->GetAttackTime(damage == 100 ? OFF_ATTACK : BASE_ATTACK) / 1000.0f;
                         damage = dmg / (100 / BaseWeaponSpeed);
@@ -843,7 +843,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             //Tsulong - Terrorize
             case 123018:
             {
-                m_damage = unitTarget->CountPctFromMaxHealth(m_spellInfo->Effects[0].BasePoints);
+                m_damage = unitTarget->CountPctFromMaxHealth(m_spellInfo->Effects[0]->BasePoints);
                 break;
             }
             //Tsulong - Unstable Bolt
@@ -1494,7 +1494,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
     {
         case 115921: // Legacy of the Emperor
         {
-            spell_id = m_spellInfo->Effects[effIndex].BasePoints;
+            spell_id = m_spellInfo->Effects[effIndex]->BasePoints;
 
             if (unitTarget->IsInPartyWith(m_caster))
                 spell_id = 117666;
@@ -1606,7 +1606,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             break;
         }
         case 120202: // Gate of the Setting Sun | Boss 3 | Bombard
-            spell_id = GetSpellInfo()->Effects[0].BasePoints;
+            spell_id = GetSpellInfo()->Effects[0]->BasePoints;
             break;
     }
 
@@ -2011,7 +2011,7 @@ void Spell::EffectJumpDest(SpellEffIndex effIndex)
     float x, y, z, o = 0.0f;
     destTarget->GetPosition(x, y, z);
 
-    if (m_spellInfo->Effects[effIndex].TargetA.GetTarget() == TARGET_DEST_TARGET_BACK)
+    if (m_spellInfo->Effects[effIndex]->TargetA.GetTarget() == TARGET_DEST_TARGET_BACK)
     {
         Unit* pTarget = NULL;
         if (m_targets.GetUnitTarget() && m_targets.GetUnitTarget() != m_caster)
@@ -2473,7 +2473,7 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
         {
             case 34299:  // Leader of the Pack
             {
-                addhealth = CalculatePct(m_caster->GetMaxHealth(), m_spellInfo->Effects[effIndex].BasePoints);
+                addhealth = CalculatePct(m_caster->GetMaxHealth(), m_spellInfo->Effects[effIndex]->BasePoints);
                 break;
             }
             case 115072: // Expel Harm
@@ -2481,11 +2481,11 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
             {
                 SpellInfo const* _triggerInfo = sSpellMgr->GetSpellInfo(115129);
                 addhealth = CalculateMonkSpellDamage(m_caster, 7.0f / 1.1125f, 0.5f, 7);
-                Unit* target = m_caster->SelectNearbyTarget(m_caster, _triggerInfo->Effects[0].CalcRadius());
+                Unit* target = m_caster->SelectNearbyTarget(m_caster, _triggerInfo->Effects[0]->CalcRadius());
 
                 if (target && m_caster->IsValidAttackTarget(target))
                 {
-                    float bp = CalculatePct(addhealth, _triggerInfo->Effects[1].BasePoints);
+                    float bp = CalculatePct(addhealth, _triggerInfo->Effects[1]->BasePoints);
                     m_caster->CastCustomSpell(target, _triggerInfo->Id, &bp, NULL, NULL, true);
                 }
                 break;
@@ -2587,7 +2587,7 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
             {
                 if (Aura * aura = caster->GetAura(108371))
                 {
-                    AddPct(addhealth, aura->GetSpellInfo()->Effects[1].BasePoints);
+                    AddPct(addhealth, aura->GetSpellInfo()->Effects[1]->BasePoints);
                 }
                 break;
             }
@@ -2625,7 +2625,7 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
             unitTarget->RemoveAura(48920);
 
         // Chakra : Serenity - 81208
-        if (m_caster && addhealth && m_caster->HasAura(81208) && m_spellInfo->Effects[0].TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY) // Single heal target
+        if (m_caster && addhealth && m_caster->HasAura(81208) && m_spellInfo->Effects[0]->TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY) // Single heal target
             if (Aura* renew = unitTarget->GetAura(139, m_caster->GetGUID()))
                 renew->RefreshDuration();
 
@@ -3955,9 +3955,9 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
     
     for (uint32 eff = effIndex+1; eff < MAX_SPELL_EFFECTS; ++eff)
     {
-        if (m_spellInfo->Effects[eff].Effect != 0)
+        if (m_spellInfo->Effects[eff]->Effect != 0)
         {
-            if (m_spellInfo->Effects[eff].IsEffect(SPELL_EFFECT_DISPEL))
+            if (m_spellInfo->Effects[eff]->IsEffect(SPELL_EFFECT_DISPEL))
                 break;
             else
                 continue;
@@ -4664,14 +4664,14 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
     // and handle all effects at once
     for (uint32 j = effIndex + 1; j < MAX_SPELL_EFFECTS; ++j)
     {
-        switch (m_spellInfo->Effects[j].Effect)
+        switch (m_spellInfo->Effects[j]->Effect)
         {
             case SPELL_EFFECT_WEAPON_DAMAGE:
             case SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL:
             case SPELL_EFFECT_NORMALIZED_WEAPON_DMG:
             case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
-                if ((m_spellInfo->Effects[effIndex].TargetA.GetTarget() == m_spellInfo->Effects[j].TargetA.GetTarget() || m_spellInfo->Effects[effIndex].TargetA.GetTarget() == TARGET_NONE || m_spellInfo->Effects[j].TargetA.GetTarget() == TARGET_NONE)
-                    && (m_spellInfo->Effects[effIndex].TargetB.GetTarget() == m_spellInfo->Effects[j].TargetB.GetTarget() || m_spellInfo->Effects[effIndex].TargetB.GetTarget() == TARGET_NONE || m_spellInfo->Effects[j].TargetB.GetTarget() == TARGET_NONE))
+                if ((m_spellInfo->Effects[effIndex]->TargetA.GetTarget() == m_spellInfo->Effects[j]->TargetA.GetTarget() || m_spellInfo->Effects[effIndex]->TargetA.GetTarget() == TARGET_NONE || m_spellInfo->Effects[j]->TargetA.GetTarget() == TARGET_NONE)
+                    && (m_spellInfo->Effects[effIndex]->TargetB.GetTarget() == m_spellInfo->Effects[j]->TargetB.GetTarget() || m_spellInfo->Effects[effIndex]->TargetB.GetTarget() == TARGET_NONE || m_spellInfo->Effects[j]->TargetB.GetTarget() == TARGET_NONE))
                     return;     // we must calculate only at last weapon effect
             break;
         }
@@ -4766,7 +4766,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
             // Blood Strike
             if (m_spellInfo->Id == 45902)
             {
-                float bonusPct = m_spellInfo->Effects[EFFECT_3].BasePoints * unitTarget->GetDiseasesByCaster(m_caster->GetGUID()) / 10.0f;
+                float bonusPct = m_spellInfo->Effects[EFFECT_3]->BasePoints * unitTarget->GetDiseasesByCaster(m_caster->GetGUID()) / 10.0f;
                 // Death Knight T8 Melee 4P Bonus
                 if (AuraEffect const* aurEff = m_caster->GetAuraEffect(64736, EFFECT_0))
                     AddPct(bonusPct, aurEff->GetAmount());
@@ -4802,7 +4802,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
     float weaponDamagePercentMod = 0.0f;
     for (int j = 0; j < MAX_SPELL_EFFECTS; ++j)
     {
-        switch (m_spellInfo->Effects[j].Effect)
+        switch (m_spellInfo->Effects[j]->Effect)
         {
             case SPELL_EFFECT_WEAPON_DAMAGE:
             case SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL:
@@ -4865,7 +4865,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
     {
         // We assume that a spell have at most one fixed_bonus
         // and at most one weaponDamagePercentMod
-        switch (m_spellInfo->Effects[j].Effect)
+        switch (m_spellInfo->Effects[j]->Effect)
         {
             case SPELL_EFFECT_WEAPON_DAMAGE:
             case SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL:
@@ -6167,7 +6167,7 @@ void Spell::EffectActivateObject(SpellEffIndex /*effIndex*/)
             if (gameObjTarget->GetEntry() == 209623 || gameObjTarget->GetEntry() == 209631 || gameObjTarget->GetEntry() == 209632)
             {
                 // Send anim kit
-                gameObjTarget->SendGameObjectActivateAnimKit(m_spellInfo->Effects[0].MiscValueB, false);
+                gameObjTarget->SendGameObjectActivateAnimKit(m_spellInfo->Effects[0]->MiscValueB, false);
                 return;
             }
             break;
@@ -6576,7 +6576,7 @@ void Spell::EffectResurrect(SpellEffIndex effIndex)
         if (InstanceScript* pInstance = target->GetInstanceScript())
             pInstance->SetResurectSpell();
 
-    int32 hpPerc = m_spellInfo->Effects[EFFECT_1].CalcValue(m_caster);
+    int32 hpPerc = m_spellInfo->Effects[EFFECT_1]->CalcValue(m_caster);
     if(!hpPerc)
         hpPerc = damage;
 
@@ -6728,7 +6728,7 @@ void Spell::EffectSelfResurrect(SpellEffIndex effIndex)
     uint32 health = 0;
     uint32 mana = 0;
 
-    int32 hpPerc = m_spellInfo->Effects[EFFECT_1].CalcValue(m_caster);
+    int32 hpPerc = m_spellInfo->Effects[EFFECT_1]->CalcValue(m_caster);
     if(!hpPerc)
         hpPerc = damage;
 
@@ -6949,7 +6949,7 @@ void Spell::EffectLeapBack(SpellEffIndex effIndex)
     if (m_spellInfo->Id == 109150)
         forward = false;
 
-    float angle = m_spellInfo->Effects[effIndex].TargetB.CalcDirectionAngle();
+    float angle = m_spellInfo->Effects[effIndex]->TargetB.CalcDirectionAngle();
 
     //1891: Disengage and Wild Charge (moonkin form)
     m_caster->JumpTo(speedxy, speedz, forward, angle);
@@ -7912,7 +7912,7 @@ void Spell::EffectPlaySound(SpellEffIndex effIndex)
             break;
     }
 
-    uint32 soundId = m_spellInfo->Effects[effIndex].MiscValue;
+    uint32 soundId = m_spellInfo->Effects[effIndex]->MiscValue;
 
     if (!sSoundEntriesStore.LookupEntry(soundId))
     {
@@ -8176,7 +8176,7 @@ void Spell::EffectCreateAreaTrigger(SpellEffIndex effIndex)
     destAtTarget.GetPosition(&posMove);
 
     // trigger entry/miscvalue relation is currently unknown, for now use MiscValue as trigger entry
-    uint32 triggerEntry = GetSpellInfo()->Effects[effIndex].MiscValue;
+    uint32 triggerEntry = GetSpellInfo()->Effects[effIndex]->MiscValue;
     if (!triggerEntry)
         return;
 

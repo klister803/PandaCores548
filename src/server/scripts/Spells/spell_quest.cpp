@@ -591,12 +591,12 @@ class spell_q12683_take_sputum_sample : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                uint32 reqAuraId = GetSpellInfo()->Effects[EFFECT_1].CalcValue();
+                uint32 reqAuraId = GetSpellInfo()->Effects[EFFECT_1]->CalcValue();
 
                 Unit* caster = GetCaster();
                 if (caster->HasAuraEffect(reqAuraId, 0))
                 {
-                    uint32 spellId = GetSpellInfo()->Effects[EFFECT_0].CalcValue();
+                    uint32 spellId = GetSpellInfo()->Effects[EFFECT_0]->CalcValue();
                     caster->CastSpell(caster, spellId, true, NULL);
                 }
             }

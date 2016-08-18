@@ -115,7 +115,7 @@ class boss_drahga_shadowburner : public CreatureScript
                     if ((me->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id == SPELL_BURNING_SHADOWBOLT) ||
                         (me->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id == SPELL_BURNING_SHADOWBOLT_H))
                         for (uint8 i = 0; i < 3; ++i)
-                            if (spell->Effects[i].Effect == SPELL_EFFECT_INTERRUPT_CAST)
+                            if (spell->Effects[i]->Effect == SPELL_EFFECT_INTERRUPT_CAST)
                                 me->InterruptSpell(CURRENT_GENERIC_SPELL);
             }
 

@@ -1181,7 +1181,7 @@ public:
             if (!GetCaster() || !GetHitGObj())
                 return;
 
-            GetCaster()->CastSpell(GetHitGObj(), GetSpellInfo()->Effects[EFFECT_0].BasePoints, true);
+            GetCaster()->CastSpell(GetHitGObj(), GetSpellInfo()->Effects[EFFECT_0]->BasePoints, true);
         }
 
         void Register()

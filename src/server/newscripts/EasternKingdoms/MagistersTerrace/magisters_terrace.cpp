@@ -146,8 +146,8 @@ public:
             {
                 if (Player* player = i->getSource())
                 {
-                    if (pSpell && pSpell->Effects[0].MiscValue)
-                        player->KilledMonsterCredit(pSpell->Effects[0].MiscValue, 0);
+                    if (pSpell && pSpell->Effects[0]->MiscValue)
+                        player->KilledMonsterCredit(pSpell->Effects[0]->MiscValue, 0);
                 }
             }
         }

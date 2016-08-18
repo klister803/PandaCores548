@@ -702,7 +702,7 @@ class spell_petrification : public SpellScriptLoader
                     if (target->HasAura(SPELL_TOTALY_PETRIFIED))
                         continue;
 
-                    uint32 triggeredSpell = GetSpellInfo()->Effects[0].TriggerSpell;
+                    uint32 triggeredSpell = GetSpellInfo()->Effects[0]->TriggerSpell;
 
                     if (!target->HasAura(triggeredSpell))
                         caster->AddAura(triggeredSpell, target);
@@ -775,7 +775,7 @@ class spell_jasper_chains : public SpellScriptLoader
                     return;
                 }
 
-                if (target->GetDistance(linkedPlayer) > spell->Effects[EFFECT_0].BasePoints)
+                if (target->GetDistance(linkedPlayer) > spell->Effects[EFFECT_0]->BasePoints)
                 {
                     if (Aura* aura = target->GetAura(spell->Id))
                     {

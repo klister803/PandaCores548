@@ -1883,8 +1883,8 @@ public:
             if (!GetCaster() || !GetHitUnit())
                 return;
 
-            float speedZ = float(GetSpellInfo()->Effects[effIndex].CalcValue() / 10);
-            float speedXY = float(GetSpellInfo()->Effects[effIndex].MiscValue / 10);
+            float speedZ = float(GetSpellInfo()->Effects[effIndex]->CalcValue() / 10);
+            float speedXY = float(GetSpellInfo()->Effects[effIndex]->MiscValue / 10);
 
             GetHitUnit()->GetMotionMaster()->MoveJump(
                 GetCaster()->GetPositionX(),

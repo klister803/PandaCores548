@@ -1757,7 +1757,7 @@ void GameObject::CastSpell(Unit* target, uint32 spellId)
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
-        if (spellInfo->Effects[i].TargetA.GetTarget() == TARGET_UNIT_CASTER)
+        if (spellInfo->Effects[i]->TargetA.GetTarget() == TARGET_UNIT_CASTER)
         {
             self = true;
             break;
@@ -1775,7 +1775,7 @@ void GameObject::CastSpell(Unit* target, uint32 spellId)
     {
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
-            if (spellInfo->Effects[i].TargetA.GetTarget() == TARGET_DEST_DYNOBJ_ENEMY)
+            if (spellInfo->Effects[i]->TargetA.GetTarget() == TARGET_DEST_DYNOBJ_ENEMY)
             {
                 self = true;
                 break;

@@ -233,7 +233,7 @@ bool EquippedOk(Player* player, uint32 spellId)
 
     for (uint8 i = 0; i < 3; ++i)
     {
-        uint32 reqSpell = spell->Effects[i].TriggerSpell;
+        uint32 reqSpell = spell->Effects[i]->TriggerSpell;
         if (!reqSpell)
             continue;
 

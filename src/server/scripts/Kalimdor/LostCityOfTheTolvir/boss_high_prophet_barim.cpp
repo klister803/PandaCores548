@@ -967,8 +967,8 @@ class spell_repentance_pull_player : public SpellScriptLoader
 
                 caster->GetNearPoint2D(x, y, frand(5.0f, 9.0f), caster->GetAngle(_x, _y));
                 float z = caster->GetBaseMap()->GetHeight(x, y, MAX_HEIGHT);
-                float speedZ = (float)(GetSpellInfo()->Effects[effIndex].CalcValue() / 10);
-                float speedXY = (float)(GetSpellInfo()->Effects[effIndex].MiscValue / 10);
+                float speedZ = (float)(GetSpellInfo()->Effects[effIndex]->CalcValue() / 10);
+                float speedXY = (float)(GetSpellInfo()->Effects[effIndex]->MiscValue / 10);
                 target->GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ);
             }
 
@@ -1121,7 +1121,7 @@ class spell_repentance_player_summon_mirror : public SpellScriptLoader
                 if (!caster)
                     return;
 
-                uint32 uiEntry = GetSpellInfo()->Effects[effIndex].MiscValue;
+                uint32 uiEntry = GetSpellInfo()->Effects[effIndex]->MiscValue;
 
                 if (!uiEntry)
                     return;

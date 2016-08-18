@@ -2041,7 +2041,7 @@ bool Creature::IsImmunedToSpell(SpellInfo const* spellInfo)
     bool immunedToAllEffects = true;
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
-        if (!spellInfo->Effects[i].IsEffect())
+        if (!spellInfo->Effects[i]->IsEffect())
             continue;
         if (!IsImmunedToSpellEffect(spellInfo, i))
         {
@@ -2060,10 +2060,10 @@ bool Creature::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) 
     if (spellInfo->AttributesEx5 & SPELL_ATTR5_CANT_IMMUNITY_SPELL)
         return false;
 
-    if (m_mechanicImmuneMask & (1 << (spellInfo->Effects[index].Mechanic - 1)))
+    if (m_mechanicImmuneMask & (1 << (spellInfo->Effects[index]->Mechanic - 1)))
         return true;
 
-    if (GetCreatureTemplate()->type == CREATURE_TYPE_MECHANICAL && spellInfo->Effects[index].Effect == SPELL_EFFECT_HEAL)
+    if (GetCreatureTemplate()->type == CREATURE_TYPE_MECHANICAL && spellInfo->Effects[index]->Effect == SPELL_EFFECT_HEAL)
         return true;
 
     return Unit::IsImmunedToSpellEffect(spellInfo, index);
@@ -2088,10 +2088,10 @@ SpellInfo const* Creature::reachWithSpellAttack(Unit* victim)
         bool bcontinue = true;
         for (uint32 j = 0; j < MAX_SPELL_EFFECTS; j++)
         {
-            if ((spellInfo->Effects[j].Effect == SPELL_EFFECT_SCHOOL_DAMAGE)       ||
-                (spellInfo->Effects[j].Effect == SPELL_EFFECT_INSTAKILL)            ||
-                (spellInfo->Effects[j].Effect == SPELL_EFFECT_ENVIRONMENTAL_DAMAGE) ||
-                (spellInfo->Effects[j].Effect == SPELL_EFFECT_HEALTH_LEECH)
+            if ((spellInfo->Effects[j]->Effect == SPELL_EFFECT_SCHOOL_DAMAGE)       ||
+                (spellInfo->Effects[j]->Effect == SPELL_EFFECT_INSTAKILL)            ||
+                (spellInfo->Effects[j]->Effect == SPELL_EFFECT_ENVIRONMENTAL_DAMAGE) ||
+                (spellInfo->Effects[j]->Effect == SPELL_EFFECT_HEALTH_LEECH)
                 )
             {
                 bcontinue = false;
@@ -2139,7 +2139,7 @@ SpellInfo const* Creature::reachWithSpellCure(Unit* victim)
         bool bcontinue = true;
         for (uint32 j = 0; j < MAX_SPELL_EFFECTS; j++)
         {
-            if ((spellInfo->Effects[j].Effect == SPELL_EFFECT_HEAL))
+            if ((spellInfo->Effects[j]->Effect == SPELL_EFFECT_HEAL))
             {
                 bcontinue = false;
                 break;

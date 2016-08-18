@@ -204,7 +204,7 @@ class spell_mage_incanters_ward : public SpellScriptLoader
                     {
                         absorbTotal += float(dmgInfo.GetDamage());
 
-                        int32 pct = aurEff->GetSpellInfo()->Effects[EFFECT_1].CalcValue(GetCaster());
+                        int32 pct = aurEff->GetSpellInfo()->Effects[EFFECT_1]->CalcValue(GetCaster());
                         int32 manaGain = CalculatePct(caster->GetMaxPower(POWER_MANA), CalculatePct(((float(dmgInfo.GetDamage()) / absorbtionAmount) * 100.0f), pct));
 
                         caster->EnergizeBySpell(caster, SPELL_MAGE_INCANTERS_WARD_ENERGIZE, manaGain, POWER_MANA);
@@ -219,7 +219,7 @@ class spell_mage_incanters_ward : public SpellScriptLoader
                     if(absorbTotal > absorbtionAmount)
                         absorbTotal = absorbtionAmount;      
                         
-                    float damageGain = CalculatePct(sSpellMgr->GetSpellInfo(SPELL_MAGE_INCANTERS_ABSORBTION)->Effects[0].BasePoints, ((absorbTotal / absorbtionAmount) * 100.0f));
+                    float damageGain = CalculatePct(sSpellMgr->GetSpellInfo(SPELL_MAGE_INCANTERS_ABSORBTION)->Effects[0]->BasePoints, ((absorbTotal / absorbtionAmount) * 100.0f));
                     if (!damageGain)
                         return;
 
@@ -313,7 +313,7 @@ class spell_mage_cauterize : public SpellScriptLoader
 
             bool Load()
             {
-                healtPct = GetSpellInfo()->Effects[EFFECT_1].CalcValue(GetCaster());
+                healtPct = GetSpellInfo()->Effects[EFFECT_1]->CalcValue(GetCaster());
                 return GetUnitOwner()->ToPlayer();
             }
 
@@ -439,7 +439,7 @@ class spell_mage_arcane_barrage : public SpellScriptLoader
                         }*/
                         if(_player->GetSelectedUnit() != target)
                         {
-                            int32 _damage = int32((GetHitDamage() * GetSpellInfo()->Effects[EFFECT_1].BasePoints) / 100);
+                            int32 _damage = int32((GetHitDamage() * GetSpellInfo()->Effects[EFFECT_1]->BasePoints) / 100);
                             SetHitDamage(_damage);
                         }
                     }
@@ -1841,7 +1841,7 @@ class spell_mage_arcane_blast : public SpellScriptLoader
                 if (!caster)
                     return;
 
-                caster->CastSpell(caster, GetSpellInfo()->Effects[1].TriggerSpell, true);
+                caster->CastSpell(caster, GetSpellInfo()->Effects[1]->TriggerSpell, true);
             }
 
             void Register()
@@ -2146,7 +2146,7 @@ class spell_mage_flameglow : public SpellScriptLoader
             void Absorb(AuraEffect* /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
             {
                 absorb = GetCaster()->GetSpellPowerDamage() * 15 / 100;
-                LimitAbsorb = GetSpellInfo()->Effects[EFFECT_2].BasePoints;
+                LimitAbsorb = GetSpellInfo()->Effects[EFFECT_2]->BasePoints;
                 
                 absorbAmount = CalculatePct(dmgInfo.GetDamage(), LimitAbsorb);
                 if (absorbAmount > absorb)

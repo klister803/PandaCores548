@@ -953,7 +953,7 @@ class go_soulwell : public GameObjectScript
                 if (!spellInfo)
                     return;
 
-                _stoneId = spellInfo->Effects[EFFECT_0].ItemType;
+                _stoneId = spellInfo->Effects[EFFECT_0]->ItemType;
             }
 
             /// Due to the fact that this GameObject triggers CMSG_GAMEOBJECT_USE

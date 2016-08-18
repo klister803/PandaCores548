@@ -749,12 +749,12 @@ class spell_warl_hellfire : public SpellScriptLoader
                             {
                                 if (firstTatget)
                                 {
-                                    bp += _spellinfo->Effects[EFFECT_2].BasePoints;
+                                    bp += _spellinfo->Effects[EFFECT_2]->BasePoints;
                                     firstTatget = false;
                                 }
                                 else
                                 {
-                                    bp += _spellinfo->Effects[EFFECT_3].BasePoints;
+                                    bp += _spellinfo->Effects[EFFECT_3]->BasePoints;
                                 }
                             }
 
@@ -1367,10 +1367,10 @@ class spell_warl_drain_life : public SpellScriptLoader
                         return;
 
                     // In Demonology spec : Generates 10 Demonic Fury per second
-                    if (GetSpellInfo()->Effects[2].IsAura(SPELL_AURA_DUMMY))
-                        _player->EnergizeBySpell(_player, 689, GetSpellInfo()->Effects[2].BasePoints, POWER_DEMONIC_FURY);
+                    if (GetSpellInfo()->Effects[2]->IsAura(SPELL_AURA_DUMMY))
+                        _player->EnergizeBySpell(_player, 689, GetSpellInfo()->Effects[2]->BasePoints, POWER_DEMONIC_FURY);
 
-                    float basepoints = _player->CountPctFromMaxHealth(GetSpellInfo()->Effects[1].BasePoints);
+                    float basepoints = _player->CountPctFromMaxHealth(GetSpellInfo()->Effects[1]->BasePoints);
                     _player->CastCustomSpell(_player, WARLOCK_DRAIN_LIFE_HEAL, &basepoints, NULL, NULL, true);
                 }
             }
@@ -1461,7 +1461,7 @@ class spell_warl_life_tap : public SpellScriptLoader
             {
                 if(Unit* caster = GetCaster())
                 {
-                    amount = CalculatePct(caster->GetMaxHealth(), GetSpellInfo()->Effects[EFFECT_2].BasePoints);
+                    amount = CalculatePct(caster->GetMaxHealth(), GetSpellInfo()->Effects[EFFECT_2]->BasePoints);
                     amount += aurEff->GetOldBaseAmount();
                 }
             }
@@ -1480,7 +1480,7 @@ class spell_warl_life_tap : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                 {
-                    int32 percent = GetSpellInfo()->Effects[EFFECT_2].BasePoints;
+                    int32 percent = GetSpellInfo()->Effects[EFFECT_2]->BasePoints;
                     if (caster->GetHealthPct() <= percent)
                     {
                         SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_NOT_ENOUGH_HEALTH);
@@ -2198,7 +2198,7 @@ class spell_warl_healthstone : public SpellScriptLoader
 
             void HandleHeal(SpellEffIndex effIndex)
             {
-                int32 percent = GetSpellInfo()->Effects[effIndex].BasePoints;
+                int32 percent = GetSpellInfo()->Effects[effIndex]->BasePoints;
                 if (Unit* caster = GetCaster())
                     SetHitHeal(CalculatePct(caster->GetMaxHealth(), percent));
             }
@@ -2215,7 +2215,7 @@ class spell_warl_healthstone : public SpellScriptLoader
 
             void CalculateAmount(AuraEffect const* aurEff, float & amount, bool & /*canBeRecalculated*/)
             {
-                int32 percent = int32(GetSpellInfo()->Effects[aurEff->GetEffIndex()].BasePoints / 10);
+                int32 percent = int32(GetSpellInfo()->Effects[aurEff->GetEffIndex()]->BasePoints / 10);
                 if (Unit* caster = GetCaster())
                     amount = CalculatePct(caster->GetMaxHealth(), percent);
             }

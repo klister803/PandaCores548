@@ -254,7 +254,7 @@ class spell_taran_zhu_grip_of_hate : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                     if (Unit* target = GetHitUnit())
-                        target->CastSpell(caster, GetSpellInfo()->Effects[effIndex].BasePoints, true);
+                        target->CastSpell(caster, GetSpellInfo()->Effects[effIndex]->BasePoints, true);
             }
 
             void Register()

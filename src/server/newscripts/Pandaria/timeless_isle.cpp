@@ -1344,7 +1344,7 @@ public:
         void HandleOnHit()
         {
             if (Unit* target = GetHitUnit())
-                GetCaster()->CastSpell(target, GetSpellInfo()->Effects[EFFECT_0].BasePoints);
+                GetCaster()->CastSpell(target, GetSpellInfo()->Effects[EFFECT_0]->BasePoints);
         }
 
         void Register()
@@ -1377,7 +1377,7 @@ public:
         void HandleOnHit()
         {
             if (Unit* target = GetHitUnit())
-                GetCaster()->CastSpell(target, GetSpellInfo()->Effects[EFFECT_0].BasePoints);
+                GetCaster()->CastSpell(target, GetSpellInfo()->Effects[EFFECT_0]->BasePoints);
         }
 
         void Register()
@@ -1410,7 +1410,7 @@ public:
         void HandleOnHit()
         {
             if (Unit* target = GetHitUnit())
-                GetCaster()->CastSpell(target, GetSpellInfo()->Effects[EFFECT_0].BasePoints);
+                GetCaster()->CastSpell(target, GetSpellInfo()->Effects[EFFECT_0]->BasePoints);
         }
 
         void Register()

@@ -801,8 +801,8 @@ class spell_pal_ardent_defender : public SpellScriptLoader
 
             bool Load()
             {
-                healPct = GetSpellInfo()->Effects[EFFECT_1].CalcValue();
-                absorbPct = GetSpellInfo()->Effects[EFFECT_0].CalcValue();
+                healPct = GetSpellInfo()->Effects[EFFECT_1]->CalcValue();
+                absorbPct = GetSpellInfo()->Effects[EFFECT_0]->CalcValue();
                 return GetUnitOwner()->GetTypeId() == TYPEID_PLAYER;
             }
 
@@ -910,7 +910,7 @@ class spell_pal_divine_storm : public SpellScriptLoader
 
             bool Load()
             {
-                healPct = GetSpellInfo()->Effects[EFFECT_1].CalcValue(GetCaster());
+                healPct = GetSpellInfo()->Effects[EFFECT_1]->CalcValue(GetCaster());
                 return true;
             }
 
@@ -1053,14 +1053,14 @@ class spell_pal_hand_of_purity : public SpellScriptLoader
             void CalculateAmount(AuraEffect const* /*aurEff*/, float & amount, bool & /*canBeRecalculated*/)
             {
                 // Set absorbtion amount to unlimited
-                amount = GetSpellInfo()->Effects[EFFECT_0].BasePoints;
+                amount = GetSpellInfo()->Effects[EFFECT_0]->BasePoints;
             }
 
             void Absorb(AuraEffect* aurEff, DamageInfo & dmgInfo, uint32 & absorbAmount)
             {
                 PreventDefaultAction();
                 if(dmgInfo.GetDamageType() == DOT)
-                    absorbAmount = CalculatePct(dmgInfo.GetDamage(), GetSpellInfo()->Effects[EFFECT_0].BasePoints);
+                    absorbAmount = CalculatePct(dmgInfo.GetDamage(), GetSpellInfo()->Effects[EFFECT_0]->BasePoints);
                 else
                     absorbAmount = 0;
             }
@@ -1097,7 +1097,7 @@ class spell_pal_stay_of_execution : public SpellScriptLoader
             void CalculateAmount(AuraEffect const* /*aurEff*/, float& amount, bool& /*canBeRecalculated*/)
             {
                 if(Unit* caster = GetCaster())
-                    amount = int32((caster->GetSpellPowerDamage(SPELL_SCHOOL_MASK_HOLY) * GetSpellInfo()->Effects[EFFECT_1].BasePoints / 1000 + 26.72716306 * amount) / 20);
+                    amount = int32((caster->GetSpellPowerDamage(SPELL_SCHOOL_MASK_HOLY) * GetSpellInfo()->Effects[EFFECT_1]->BasePoints / 1000 + 26.72716306 * amount) / 20);
             }
 
             void HandleTick(AuraEffect const* aurEff, float& amount, Unit* /*target*/, bool /*crit*/)
@@ -1162,7 +1162,7 @@ class spell_pal_execution_sentence_damage : public SpellScriptLoader
             void CalculateAmount(AuraEffect const* /*aurEff*/, float& amount, bool& /*canBeRecalculated*/)
             {
                 if(Unit* caster = GetCaster())
-                    amount = int32((caster->GetSpellPowerDamage(SPELL_SCHOOL_MASK_HOLY) * GetSpellInfo()->Effects[EFFECT_1].BasePoints / 1000 + 26.72716306 * amount) / 20);
+                    amount = int32((caster->GetSpellPowerDamage(SPELL_SCHOOL_MASK_HOLY) * GetSpellInfo()->Effects[EFFECT_1]->BasePoints / 1000 + 26.72716306 * amount) / 20);
             }
 
             void HandleTick(AuraEffect const* aurEff, float& amount, Unit* /*target*/, bool /*crit*/)
@@ -1370,7 +1370,7 @@ class spell_pal_pursuit_of_justice : public SpellScriptLoader
                     int32 increment = 5;
                     float amount = 15;
                     if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(26023))
-                        increment = spellInfo->Effects[EFFECT_7].BasePoints;
+                        increment = spellInfo->Effects[EFFECT_7]->BasePoints;
 
                     if(AuraEffect const* triggerBy = GetSpell()->GetTriggeredAuraEff())
                     {

@@ -1674,10 +1674,10 @@ void ObjectMgr::LoadPersonalLootTemplate()
         if(bonusspellId)
         {
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(bonusspellId);
-            if(!spellInfo || !spellInfo->Effects[0].TriggerSpell)
+            if(!spellInfo || !spellInfo->Effects[0]->TriggerSpell)
                 continue;
 
-            PersonalLootData& personallootForSpell = _PersonalLootBySpellStore[spellInfo->Effects[0].TriggerSpell];
+            PersonalLootData& personallootForSpell = _PersonalLootBySpellStore[spellInfo->Effects[0]->TriggerSpell];
             personallootForSpell.entry = entry;
             personallootForSpell.type = type;
             personallootForSpell.chance = chance;
@@ -3969,8 +3969,8 @@ void ObjectMgr::LoadQuests()
                     bool found = false;
                     for (uint8 k = 0; k < MAX_SPELL_EFFECTS; ++k)
                     {
-                        if ((spellInfo->Effects[k].Effect == SPELL_EFFECT_QUEST_COMPLETE && uint32(spellInfo->Effects[k].MiscValue) == qinfo->Id) ||
-                            spellInfo->Effects[k].Effect == SPELL_EFFECT_SEND_EVENT)
+                        if ((spellInfo->Effects[k]->Effect == SPELL_EFFECT_QUEST_COMPLETE && uint32(spellInfo->Effects[k]->MiscValue) == qinfo->Id) ||
+                            spellInfo->Effects[k]->Effect == SPELL_EFFECT_SEND_EVENT)
                         {
                             found = true;
                             break;
@@ -4365,10 +4365,10 @@ void ObjectMgr::LoadQuests()
 
         for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
         {
-            if (spellInfo->Effects[j].Effect != SPELL_EFFECT_QUEST_COMPLETE)
+            if (spellInfo->Effects[j]->Effect != SPELL_EFFECT_QUEST_COMPLETE)
                 continue;
 
-            uint32 quest_id = spellInfo->Effects[j].MiscValue;
+            uint32 quest_id = spellInfo->Effects[j]->MiscValue;
 
             Quest const* quest = GetQuestTemplate(quest_id);
 
@@ -4817,7 +4817,7 @@ void ObjectMgr::LoadSpellScripts()
 
         uint8 i = (uint8)((uint32(itr->first) >> 24) & 0x000000FF);
         //check for correct spellEffect
-        if (!spellInfo->Effects[i].Effect || (spellInfo->Effects[i].Effect != SPELL_EFFECT_SCRIPT_EFFECT && spellInfo->Effects[i].Effect != SPELL_EFFECT_DUMMY))
+        if (!spellInfo->Effects[i]->Effect || (spellInfo->Effects[i]->Effect != SPELL_EFFECT_SCRIPT_EFFECT && spellInfo->Effects[i]->Effect != SPELL_EFFECT_DUMMY))
             sLog->outError(LOG_FILTER_SQL, "Table `spell_scripts` - spell %u effect %u is not SPELL_EFFECT_SCRIPT_EFFECT or SPELL_EFFECT_DUMMY", spellId, i);
     }
 }
@@ -4837,9 +4837,9 @@ void ObjectMgr::LoadEventScripts()
     for (uint32 i = 1; i < sSpellMgr->GetSpellInfoStoreSize(); ++i)
         if (SpellInfo const* spell = sSpellMgr->GetSpellInfo(i))
             for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
-                if (spell->Effects[j].Effect == SPELL_EFFECT_SEND_EVENT)
-                    if (spell->Effects[j].MiscValue)
-                        evt_scripts.insert(spell->Effects[j].MiscValue);
+                if (spell->Effects[j]->Effect == SPELL_EFFECT_SEND_EVENT)
+                    if (spell->Effects[j]->MiscValue)
+                        evt_scripts.insert(spell->Effects[j]->MiscValue);
 
     for (size_t path_idx = 0; path_idx < sTaxiPathNodesByPath.size(); ++path_idx)
     {
@@ -8432,19 +8432,19 @@ void ObjectMgr::AddSpellToTrainer(uint32 entry, uint32 spell, uint32 spellCost, 
     trainerSpell.learnedSpell[0] = spell;
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
-        if (spellinfo->Effects[i].Effect != SPELL_EFFECT_LEARN_SPELL)
+        if (spellinfo->Effects[i]->Effect != SPELL_EFFECT_LEARN_SPELL)
             continue;
         if (trainerSpell.learnedSpell[0] == spell)
             trainerSpell.learnedSpell[0] = 0;
         // player must be able to cast spell on himself
-        if (spellinfo->Effects[i].TargetA.GetTarget() != 0 && spellinfo->Effects[i].TargetA.GetTarget() != TARGET_UNIT_TARGET_ALLY
-            && spellinfo->Effects[i].TargetA.GetTarget() != TARGET_UNIT_TARGET_ANY && spellinfo->Effects[i].TargetA.GetTarget() != TARGET_UNIT_CASTER)
+        if (spellinfo->Effects[i]->TargetA.GetTarget() != 0 && spellinfo->Effects[i]->TargetA.GetTarget() != TARGET_UNIT_TARGET_ALLY
+            && spellinfo->Effects[i]->TargetA.GetTarget() != TARGET_UNIT_TARGET_ANY && spellinfo->Effects[i]->TargetA.GetTarget() != TARGET_UNIT_CASTER)
         {
             sLog->outError(LOG_FILTER_SQL, "Table `npc_trainer` has spell %u for trainer entry %u with learn effect which has incorrect target type, ignoring learn effect!", spell, entry);
             continue;
         }
 
-        trainerSpell.learnedSpell[i] = spellinfo->Effects[i].TriggerSpell;
+        trainerSpell.learnedSpell[i] = spellinfo->Effects[i]->TriggerSpell;
 
         if (trainerSpell.learnedSpell[i])
         {

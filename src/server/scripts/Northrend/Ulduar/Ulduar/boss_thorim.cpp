@@ -1108,7 +1108,7 @@ class spell_thorim_lightning_pillar : public SpellScriptLoader
             void HandlePeriodic(AuraEffect const* /*aurEff*/)
             {
                 PreventDefaultAction();
-                GetTarget()->CastSpell(GetCaster(), GetSpellInfo()->Effects[0].TriggerSpell, true);
+                GetTarget()->CastSpell(GetCaster(), GetSpellInfo()->Effects[0]->TriggerSpell, true);
             }
 
             void Register()

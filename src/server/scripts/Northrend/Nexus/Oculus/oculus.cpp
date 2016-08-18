@@ -436,7 +436,7 @@ class spell_oculus_ride_ruby_emerald_amber_drake_que : public SpellScriptLoader
                 // caster of the triggered spell is wrong for an unknown reason, handle it here correctly
                 PreventDefaultAction();
                 if (Unit* caster = GetCaster())
-                    GetTarget()->CastSpell(caster, GetSpellInfo()->Effects[aurEff->GetEffIndex()].TriggerSpell, true);
+                    GetTarget()->CastSpell(caster, GetSpellInfo()->Effects[aurEff->GetEffIndex()]->TriggerSpell, true);
             }
 
             void Register()

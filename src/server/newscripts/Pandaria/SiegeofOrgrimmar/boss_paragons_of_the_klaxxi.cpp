@@ -2401,7 +2401,7 @@ public:
         {
             if (GetCaster() && GetTarget())
             {
-                int32 dmg = GetSpellInfo()->Effects[EFFECT_0].BasePoints;
+                int32 dmg = GetSpellInfo()->Effects[EFFECT_0]->BasePoints;
                 GetCaster()->CastCustomSpell(SPELL_FIERY_EDGE_DMG, SPELLVALUE_BASE_POINT0, dmg, GetTarget());
             }
         }
@@ -2701,7 +2701,7 @@ public:
         {
             if (GetCaster())
             {
-                int32 dmg = GetSpellInfo()->Effects[EFFECT_0].BasePoints;
+                int32 dmg = GetSpellInfo()->Effects[EFFECT_0]->BasePoints;
                 GetCaster()->CastCustomSpell(SPELL_REGENERATE, SPELLVALUE_BASE_POINT0, dmg, GetCaster());
             }
         }

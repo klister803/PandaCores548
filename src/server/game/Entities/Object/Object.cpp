@@ -868,8 +868,8 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                         // this also applies for transform auras
                         if (SpellInfo const* transform = sSpellMgr->GetSpellInfo(ToUnit()->getTransForm()))
                             for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-                                if (transform->Effects[i].IsAura(SPELL_AURA_TRANSFORM))
-                                    if (CreatureTemplate const* transformInfo = sObjectMgr->GetCreatureTemplate(transform->Effects[i].MiscValue))
+                                if (transform->Effects[i]->IsAura(SPELL_AURA_TRANSFORM))
+                                    if (CreatureTemplate const* transformInfo = sObjectMgr->GetCreatureTemplate(transform->Effects[i]->MiscValue))
                                     {
                                         cinfo = transformInfo;
                                         break;

@@ -1729,7 +1729,7 @@ public:
 
         void RecalculateDamage()
         {
-            SetHitDamage(GetHitDamage() * GetSpellInfo()->Effects[EFFECT_0].BasePoints);
+            SetHitDamage(GetHitDamage() * GetSpellInfo()->Effects[EFFECT_0]->BasePoints);
         }
 
         void Register()
@@ -1771,7 +1771,7 @@ public:
                     delete areaTrigger;
                     return;
                 }
-                areaTrigger->SetSpellId(GetSpellInfo()->Effects[EFFECT_1].TriggerSpell);
+                areaTrigger->SetSpellId(GetSpellInfo()->Effects[EFFECT_1]->TriggerSpell);
             }
         }
 

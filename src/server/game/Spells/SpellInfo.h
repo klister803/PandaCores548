@@ -442,15 +442,19 @@ public:
     uint32 CoefLevelBase;
     int32  MaxScalingLevel;
     int32  ScalesFromItemLevel;
-    SpellEffectInfo Effects[MAX_SPELL_EFFECTS];
     uint16 m_hasAura[MAX_SPELL_EFFECTS];
     uint8 m_auraCount;
-    SpellEffectInfoMap EffectsMap;
     SpellTargetRestrictionsMap RestrrictionsMap;
     uint32 ExplicitTargetMask;
     SpellChainNode const* ChainEntry;
     SpellPowerEntry spellPower[MAX_POWERS_FOR_SPELL];
     SpellSpecificType SpecificType;
+
+    SpellEffectInfo* Effects[MAX_SPELL_EFFECTS];
+    SpellEffectInfo NullEffect;
+    SpellEffectInfoMap EffectsMap;
+    uint32 EffectMask;
+    uint32 EffectDiffycultyMask;
 
     // SpecializationSpellEntry
     std::set<uint32> SpecializationIdList;

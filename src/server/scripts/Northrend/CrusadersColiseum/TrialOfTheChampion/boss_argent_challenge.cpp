@@ -201,7 +201,7 @@ public:
             // Faceroller achievement
             if(IsHeroic())
                 if(spell->Id == SPELL_HAMMER_RIGHTEOUS_RET)
-                    if(me->GetHealth() <= (uint32)spell->Effects[0].BasePoints)
+                    if(me->GetHealth() <= (uint32)spell->Effects[0]->BasePoints)
                         if(InstanceScript* instance = me->GetInstanceScript())
                             instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_EADRIC_ACHIEVEMENT);
         }

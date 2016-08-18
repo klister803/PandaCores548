@@ -376,7 +376,7 @@ class spell_pri_prayer_of_mending_divine_insight : public SpellScriptLoader
                             if (target->HasAura(GetSpellInfo()->Id))
                                 target->RemoveAura(GetSpellInfo()->Id);
 
-                            float radius = sSpellMgr->GetSpellInfo(PRIEST_PRAYER_OF_MENDING_RADIUS)->Effects[0].CalcRadius(_player);
+                            float radius = sSpellMgr->GetSpellInfo(PRIEST_PRAYER_OF_MENDING_RADIUS)->Effects[0]->CalcRadius(_player);
 
                             if (Unit* secondTarget = target->GetNextRandomRaidMemberOrPet(radius))
                             {
@@ -1459,7 +1459,7 @@ class spell_pri_void_shift : public SpellScriptLoader
                     {
                         float casterPct;
                         float targetPct;
-                        float basePct = GetSpellInfo()->Effects[EFFECT_0].BasePoints;
+                        float basePct = GetSpellInfo()->Effects[EFFECT_0]->BasePoints;
                         float casterHeal = 0, targetHeal = 0;
                         float casterDamage = 0, targetDamage = 0;
 
@@ -1713,7 +1713,7 @@ class spell_pri_guardian_spirit : public SpellScriptLoader
 
             bool Load()
             {
-                healPct = GetSpellInfo()->Effects[EFFECT_1].CalcValue();
+                healPct = GetSpellInfo()->Effects[EFFECT_1]->CalcValue();
                 return true;
             }
 
@@ -2123,7 +2123,7 @@ class spell_pri_divine_star : public SpellScriptLoader
 
                 if(tick == 5)
                 {
-                    caster->SendMissileCancel(GetSpellInfo()->Effects[1].TriggerSpell);
+                    caster->SendMissileCancel(GetSpellInfo()->Effects[1]->TriggerSpell);
                     GetAura()->ClearEffectTarget();
                 }
 
@@ -2142,7 +2142,7 @@ class spell_pri_divine_star : public SpellScriptLoader
                 Trinity::NormalizeMapCoord(x);
                 Trinity::NormalizeMapCoord(y);
 
-                caster->CastSpell(x, y, _ownPos.GetPositionZ(), GetSpellInfo()->Effects[0].TriggerSpell, true, NULL, aurEff);
+                caster->CastSpell(x, y, _ownPos.GetPositionZ(), GetSpellInfo()->Effects[0]->TriggerSpell, true, NULL, aurEff);
             }
 
             void HandleApplyEffect(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
@@ -2163,7 +2163,7 @@ class spell_pri_divine_star : public SpellScriptLoader
             void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if(Unit* caster = GetCaster())
-                    caster->SendMissileCancel(GetSpellInfo()->Effects[1].TriggerSpell, false);
+                    caster->SendMissileCancel(GetSpellInfo()->Effects[1]->TriggerSpell, false);
             }
 
             void Register()

@@ -1700,7 +1700,7 @@ class spell_warmaster_blackhorn_twilight_barrage_dmg : public SpellScriptLoader
                     {
                         if (SpellInfo const* spellInfo = GetSpellInfo())
                         {
-                            float bp0 = GetSpellInfo()->Effects[EFFECT_0].BasePoints;
+                            float bp0 = GetSpellInfo()->Effects[EFFECT_0]->BasePoints;
                             bp0 *= 1.5f;
                             GetCaster()->CastCustomSpell(pShip, SPELL_TWILIGHT_BARRAGE_DMG_2, &bp0, NULL, NULL, true);
                         }
@@ -1736,7 +1736,7 @@ class spell_warmaster_blackhorn_twilight_onslaught_dmg : public SpellScriptLoade
 
                 if (Creature* pShip = GetCaster()->FindNearestCreature(NPC_SKYFIRE, 300.0f))
                 {
-                    float bp0 = GetSpellInfo()->Effects[EFFECT_0].BasePoints;
+                    float bp0 = GetSpellInfo()->Effects[EFFECT_0]->BasePoints;
                     bp0 /= targets.size() + 1;
                     GetCaster()->CastCustomSpell(pShip, SPELL_TWILIGHT_ONSLAUGHT_DMG_2, &bp0, NULL, NULL, true);
                 }

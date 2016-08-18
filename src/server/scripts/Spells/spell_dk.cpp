@@ -717,7 +717,7 @@ class spell_dk_death_siphon : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        float bp = CalculatePct(float(GetHitDamage()), GetSpellInfo()->Effects[EFFECT_1].CalcValue(_player));
+                        float bp = CalculatePct(float(GetHitDamage()), GetSpellInfo()->Effects[EFFECT_1]->CalcValue(_player));
                         _player->CastCustomSpell(_player, DK_SPELL_DEATH_SIPHON_HEAL, &bp, NULL, NULL, true);
                     }
                 }
@@ -1068,7 +1068,7 @@ class spell_dk_anti_magic_shell_raid : public SpellScriptLoader
 
             bool Load()
             {
-                absorbPct = GetSpellInfo()->Effects[EFFECT_0].CalcValue(GetCaster());
+                absorbPct = GetSpellInfo()->Effects[EFFECT_0]->CalcValue(GetCaster());
                 return true;
             }
 
@@ -1109,7 +1109,7 @@ class spell_dk_anti_magic_shell_self : public SpellScriptLoader
             uint32 absorbPct, container;
             bool Load()
             {
-                absorbPct = GetSpellInfo()->Effects[EFFECT_0].CalcValue(GetCaster());
+                absorbPct = GetSpellInfo()->Effects[EFFECT_0]->CalcValue(GetCaster());
                 container = 0;
                 return true;
             }
@@ -1184,7 +1184,7 @@ class spell_dk_anti_magic_zone : public SpellScriptLoader
 
             bool Load()
             {
-                absorbPct = GetSpellInfo()->Effects[EFFECT_0].CalcValue(GetCaster());
+                absorbPct = GetSpellInfo()->Effects[EFFECT_0]->CalcValue(GetCaster());
                 return true;
             }
 
@@ -2000,7 +2000,7 @@ public:
                 AddPct(stacks, masterPct);
                 if (roll_chance_i(stacks))
                 {
-                    float damage = GetStackAmount() * target->GetMaxHealth() * GetSpellInfo()->Effects[EFFECT_1].BasePoints / 100.0f;
+                    float damage = GetStackAmount() * target->GetMaxHealth() * GetSpellInfo()->Effects[EFFECT_1]->BasePoints / 100.0f;
                     target->CastCustomSpell(target, 81280, &damage, NULL, NULL, true);
                 }
             }

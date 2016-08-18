@@ -1112,7 +1112,7 @@ class spell_putricide_unstable_experiment : public SpellScriptLoader
                 Creature * target = ObjectAccessor::GetCreature(*GetCaster(), targetGUID);
 
                 if (target)
-                    GetCaster()->CastSpell(target, uint32(GetSpellInfo()->Effects[stage].CalcValue()), true, NULL, NULL, GetCaster()->GetGUID());
+                    GetCaster()->CastSpell(target, uint32(GetSpellInfo()->Effects[stage]->CalcValue()), true, NULL, NULL, GetCaster()->GetGUID());
             }
 
             void Register()
@@ -1175,7 +1175,7 @@ class spell_putricide_choking_gas_bomb : public SpellScriptLoader
                     if (i == skipIndex)
                         continue;
 
-                    uint32 spellId = uint32(GetSpellInfo()->Effects[i].CalcValue());
+                    uint32 spellId = uint32(GetSpellInfo()->Effects[i]->CalcValue());
                     GetCaster()->CastSpell(GetCaster(), spellId, true, NULL, NULL, GetCaster()->GetGUID());
                 }
             }
@@ -1322,10 +1322,10 @@ class spell_putricide_mutated_plague : public SpellScriptLoader
                 if (!caster)
                     return;
 
-                uint32 triggerSpell = GetSpellInfo()->Effects[aurEff->GetEffIndex()].TriggerSpell;
+                uint32 triggerSpell = GetSpellInfo()->Effects[aurEff->GetEffIndex()]->TriggerSpell;
                 SpellInfo const* spell = sSpellMgr->GetSpellInfo(triggerSpell);
 
-                int32 damage = spell->Effects[EFFECT_0].CalcValue(caster);
+                int32 damage = spell->Effects[EFFECT_0]->CalcValue(caster);
                 float multiplier = 2.0f;
                 if (GetTarget()->GetMap()->GetSpawnMode() & 1)
                     multiplier = 3.0f;
@@ -1338,7 +1338,7 @@ class spell_putricide_mutated_plague : public SpellScriptLoader
 
             void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                uint32 healSpell = uint32(GetSpellInfo()->Effects[EFFECT_0].CalcValue());
+                uint32 healSpell = uint32(GetSpellInfo()->Effects[EFFECT_0]->CalcValue());
                 GetTarget()->CastSpell(GetTarget(), healSpell, true, NULL, NULL, GetCasterGUID());
             }
 
@@ -1502,8 +1502,8 @@ class spell_putricide_mutated_transformation : public SpellScriptLoader
                     return;
                 }
 
-                uint32 entry = uint32(GetSpellInfo()->Effects[effIndex].MiscValue);
-                SummonPropertiesEntry const* properties = sSummonPropertiesStore.LookupEntry(uint32(GetSpellInfo()->Effects[effIndex].MiscValueB));
+                uint32 entry = uint32(GetSpellInfo()->Effects[effIndex]->MiscValue);
+                SummonPropertiesEntry const* properties = sSummonPropertiesStore.LookupEntry(uint32(GetSpellInfo()->Effects[effIndex]->MiscValueB));
                 uint32 duration = uint32(GetSpellInfo()->GetDuration());
 
                 Position pos;

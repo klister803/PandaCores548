@@ -177,7 +177,7 @@ class spell_rog_blade_flurry : public SpellScriptLoader
                     if (!damage || eventInfo.GetDamageInfo()->GetDamageType() == DOT)
                         return;
 
-                    int32 percent = GetSpellInfo()->Effects[2].BasePoints;
+                    int32 percent = GetSpellInfo()->Effects[2]->BasePoints;
                     damage = int32((damage * percent) / 100);
 
                     if (Unit* target = _player->SelectNearbyTarget(eventInfo.GetActionTarget()))
@@ -449,7 +449,7 @@ class spell_rog_hemorrhage : public SpellScriptLoader
                             if(_player->HasAura(56807) && !target->HasAuraWithMechanic((1 << MECHANIC_BLEED))) //Glyph of Hemorrhage
                                 return;
 
-                            float bp = CalculatePct(float(GetHitDamage()) + GetHitAbsorb(), GetSpellInfo()->Effects[EFFECT_3].BasePoints) / 8;
+                            float bp = CalculatePct(float(GetHitDamage()) + GetHitAbsorb(), GetSpellInfo()->Effects[EFFECT_3]->BasePoints) / 8;
                             _player->CastCustomSpell(target, ROGUE_SPELL_HEMORRHAGE_DOT, &bp, NULL, NULL, true);
                         }
             }
@@ -620,7 +620,7 @@ class spell_rog_crimson_tempest : public SpellScriptLoader
                         {
                             int32 percent = 240;
                             if(SpellInfo const* sinfo = sSpellMgr->GetSpellInfo(ROGUE_SPELL_CRIMSON_TEMPEST_DOT))
-                                percent = sinfo->Effects[0].BasePoints;
+                                percent = sinfo->Effects[0]->BasePoints;
 
                             float damage = float((GetHitDamage() + GetHitAbsorb()) / 6);
                             AddPct(damage, percent);

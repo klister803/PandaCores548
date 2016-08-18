@@ -1788,7 +1788,7 @@ class spell_icc_sprit_alarm : public SpellScriptLoader
             {
                 PreventHitDefaultEffect(effIndex);
                 uint32 trapId = 0;
-                switch (GetSpellInfo()->Effects[effIndex].MiscValue)
+                switch (GetSpellInfo()->Effects[effIndex]->MiscValue)
                 {
                     case EVENT_AWAKEN_WARD_1:
                         trapId = GO_SPIRIT_ALARM_1;

@@ -571,7 +571,7 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
         for (std::vector<LootItem>::iterator itemCurrent = items.begin(); itemCurrent != items.end(); ++itemCurrent)
             for (std::vector<uint32>::iterator spellId = sSpellMgr->mSpellCreateItemList.begin(); spellId != sSpellMgr->mSpellCreateItemList.end(); ++spellId)
                 if (const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(*spellId))
-                    if (spellInfo->Effects[EFFECT_0].ItemType == itemCurrent->itemid)
+                    if (spellInfo->Effects[EFFECT_0]->ItemType == itemCurrent->itemid)
                         if (!lootOwner->HasActiveSpell(*spellId))
                             lootOwner->learnSpell(*spellId, false);
     }
@@ -2228,9 +2228,9 @@ void LoadLootTemplates_Bonus()
 
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
-            if (spellInfo->Effects[i].IsEffect(SPELL_EFFECT_LOOT_BONUS))
+            if (spellInfo->Effects[i]->IsEffect(SPELL_EFFECT_LOOT_BONUS))
             {
-                uint32 lootId = spellInfo->Effects[i].MiscValue;
+                uint32 lootId = spellInfo->Effects[i]->MiscValue;
 
                 if (lootIdSet.find(lootId) != lootIdSet.end())
                     lootIdSetUsed.insert(lootId);
@@ -2540,7 +2540,7 @@ void LoadLootTemplates_Spell()
         {
             // not report about not trainable spells (optionally supported by DB)
             // ignore 61756 (Northrend Inscription Research (FAST QA VERSION) for example
-            if (!(spellInfo->Attributes & SPELL_ATTR0_NOT_SHAPESHIFT) || (spellInfo->Effects[0].ItemType == 0))
+            if (!(spellInfo->Attributes & SPELL_ATTR0_NOT_SHAPESHIFT) || (spellInfo->Effects[0]->ItemType == 0))
             {
                 LootTemplates_Spell.ReportNotExistedId(spell_id);
             }

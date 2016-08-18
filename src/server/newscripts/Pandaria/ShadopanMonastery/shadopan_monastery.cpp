@@ -383,7 +383,7 @@ class spell_shadopan_apparitions : public SpellScriptLoader
 
                     for (std::list<Creature*>::const_iterator itr = hatredList.begin(); itr != hatredList.end(); ++itr)
                         if ((*itr)->isAlive())
-                            (*itr)->CastSpell(*itr, GetSpellInfo()->Effects[EFFECT_0].TriggerSpell, true);
+                            (*itr)->CastSpell(*itr, GetSpellInfo()->Effects[EFFECT_0]->TriggerSpell, true);
                 }
             }
 

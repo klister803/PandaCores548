@@ -42,7 +42,7 @@ float ThreatCalcHelper::calcThreat(Unit* hatedUnit, Unit* /*hatingUnit*/, float 
 
         // Energize is not affected by Mods
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; i++)
-            if (threatSpell->Effects[i].Effect == SPELL_EFFECT_ENERGIZE || threatSpell->Effects[i].ApplyAuraName == SPELL_AURA_PERIODIC_ENERGIZE)
+            if (threatSpell->Effects[i]->Effect == SPELL_EFFECT_ENERGIZE || threatSpell->Effects[i]->ApplyAuraName == SPELL_AURA_PERIODIC_ENERGIZE)
                 return threat;
 
         if (Player* modOwner = hatedUnit->GetSpellModOwner())
@@ -447,7 +447,7 @@ void ThreatManager::doAddThreat(Unit* victim, float threat)
         Unit* redirectTarget = victim->GetMisdirectionTarget();
         if (redirectTarget)
             if (Aura* glyphAura = redirectTarget->GetAura(63326)) // Glyph of Vigilance
-                reducedThreadPercent += glyphAura->GetSpellInfo()->Effects[0].CalcValue(glyphAura->GetCaster());
+                reducedThreadPercent += glyphAura->GetSpellInfo()->Effects[0]->CalcValue(glyphAura->GetCaster());
 
         float reducedThreat = threat * reducedThreadPercent / 100.0f;
         threat -= reducedThreat;

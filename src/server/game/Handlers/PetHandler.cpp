@@ -376,7 +376,7 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid
 
             for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
             {
-                if (spellInfo->Effects[i].TargetA.GetTarget() == TARGET_UNIT_SRC_AREA_ENEMY || spellInfo->Effects[i].TargetA.GetTarget() == TARGET_UNIT_DEST_AREA_ENEMY || spellInfo->Effects[i].TargetA.GetTarget() == TARGET_DEST_DYNOBJ_ENEMY)
+                if (spellInfo->Effects[i]->TargetA.GetTarget() == TARGET_UNIT_SRC_AREA_ENEMY || spellInfo->Effects[i]->TargetA.GetTarget() == TARGET_UNIT_DEST_AREA_ENEMY || spellInfo->Effects[i]->TargetA.GetTarget() == TARGET_DEST_DYNOBJ_ENEMY)
                     return;
             }
 
@@ -1157,7 +1157,7 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
     bool triggered = false;
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
-        if (spellInfo->Effects[i].TargetA.GetTarget() == TARGET_DEST_TRAJ || spellInfo->Effects[i].TargetB.GetTarget() == TARGET_DEST_TRAJ || spellInfo->Effects[i].Effect == SPELL_EFFECT_TRIGGER_MISSILE)
+        if (spellInfo->Effects[i]->TargetA.GetTarget() == TARGET_DEST_TRAJ || spellInfo->Effects[i]->TargetB.GetTarget() == TARGET_DEST_TRAJ || spellInfo->Effects[i]->Effect == SPELL_EFFECT_TRIGGER_MISSILE)
             triggered = true;
     }
 

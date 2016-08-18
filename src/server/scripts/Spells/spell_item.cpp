@@ -2395,7 +2395,7 @@ public:
             {
                 if (target != caster)
                 {
-                    target->CastSpell(caster, GetSpellInfo()->Effects[0].BasePoints, false);
+                    target->CastSpell(caster, GetSpellInfo()->Effects[0]->BasePoints, false);
                     return;
                 }
             }

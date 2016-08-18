@@ -171,11 +171,11 @@ std::string _SpellScript::EffectHook::EffIndexToString()
 
 bool _SpellScript::EffectNameCheck::Check(SpellInfo const* spellEntry, uint8 effIndex)
 {
-    if (!spellEntry->Effects[effIndex].Effect && !effName)
+    if (!spellEntry->Effects[effIndex]->Effect && !effName)
         return true;
-    if (!spellEntry->Effects[effIndex].Effect)
+    if (!spellEntry->Effects[effIndex]->Effect)
         return false;
-    return (effName == SPELL_EFFECT_ANY) || (spellEntry->Effects[effIndex].Effect == effName);
+    return (effName == SPELL_EFFECT_ANY) || (spellEntry->Effects[effIndex]->Effect == effName);
 }
 
 std::string _SpellScript::EffectNameCheck::ToString()
@@ -193,11 +193,11 @@ std::string _SpellScript::EffectNameCheck::ToString()
 
 bool _SpellScript::EffectAuraNameCheck::Check(SpellInfo const* spellEntry, uint8 effIndex)
 {
-    if (!spellEntry->Effects[effIndex].ApplyAuraName && !effAurName)
+    if (!spellEntry->Effects[effIndex]->ApplyAuraName && !effAurName)
         return true;
-    if (!spellEntry->Effects[effIndex].ApplyAuraName)
+    if (!spellEntry->Effects[effIndex]->ApplyAuraName)
         return false;
-    return (effAurName == SPELL_EFFECT_ANY) || (spellEntry->Effects[effIndex].ApplyAuraName == effAurName);
+    return (effAurName == SPELL_EFFECT_ANY) || (spellEntry->Effects[effIndex]->ApplyAuraName == effAurName);
 }
 
 std::string _SpellScript::EffectAuraNameCheck::ToString()
@@ -290,8 +290,8 @@ bool SpellScript::TargetHook::CheckEffect(SpellInfo const* spellEntry, uint8 eff
     if (!targetType)
         return false;
 
-    if (spellEntry->Effects[effIndex].TargetA.GetTarget() != targetType &&
-        spellEntry->Effects[effIndex].TargetB.GetTarget() != targetType)
+    if (spellEntry->Effects[effIndex]->TargetA.GetTarget() != targetType &&
+        spellEntry->Effects[effIndex]->TargetB.GetTarget() != targetType)
         return false;
 
     SpellImplicitTargetInfo targetInfo(targetType);

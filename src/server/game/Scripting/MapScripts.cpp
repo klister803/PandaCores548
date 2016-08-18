@@ -690,7 +690,7 @@ void Map::ScriptsProcess()
                             {
                                 for (uint32 j = 0; j < MAX_SPELL_EFFECTS; j++)
                                 {
-                                    if (spellInfo->Effects[j].Effect == SPELL_EFFECT_ACTIVATE_OBJECT)
+                                    if (spellInfo->Effects[j]->Effect == SPELL_EFFECT_ACTIVATE_OBJECT)
                                         break;
                                 }
                             }

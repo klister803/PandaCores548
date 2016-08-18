@@ -830,8 +830,8 @@ class spell_meljarak_whirling_blade_visual : public SpellScriptLoader
 
                 if (tick == 7)
                 {
-                    caster->SendMissileCancel(GetSpellInfo()->Effects[2].TriggerSpell);
-                    caster->SendMissileCancel(GetSpellInfo()->Effects[3].TriggerSpell);
+                    caster->SendMissileCancel(GetSpellInfo()->Effects[2]->TriggerSpell);
+                    caster->SendMissileCancel(GetSpellInfo()->Effects[3]->TriggerSpell);
                     GetAura()->ClearEffectTarget();
                 }
 
@@ -848,7 +848,7 @@ class spell_meljarak_whirling_blade_visual : public SpellScriptLoader
                 Trinity::NormalizeMapCoord(x);
                 Trinity::NormalizeMapCoord(y);
 
-                caster->CastSpell(x, y, _ownPos.GetPositionZ(), GetSpellInfo()->Effects[0].TriggerSpell, true, NULL, aurEff);
+                caster->CastSpell(x, y, _ownPos.GetPositionZ(), GetSpellInfo()->Effects[0]->TriggerSpell, true, NULL, aurEff);
             }
 
             void HandleApplyEffect(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
@@ -876,8 +876,8 @@ class spell_meljarak_whirling_blade_visual : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                 {
-                    caster->SendMissileCancel(GetSpellInfo()->Effects[2].TriggerSpell);
-                    caster->SendMissileCancel(GetSpellInfo()->Effects[3].TriggerSpell);
+                    caster->SendMissileCancel(GetSpellInfo()->Effects[2]->TriggerSpell);
+                    caster->SendMissileCancel(GetSpellInfo()->Effects[3]->TriggerSpell);
                 }
             }
 
@@ -909,8 +909,8 @@ class spell_meljarak_whirling_blade_visual : public SpellScriptLoader
                 float angle = caster->GetAngle(target);
                 caster->GetNearPoint2D(x, y, 40.0f, angle);
 
-                caster->CastSpell(x, y, caster->GetPositionZ(), GetSpellInfo()->Effects[2].TriggerSpell, true);
-                caster->CastSpell(x, y, caster->GetPositionZ(), GetSpellInfo()->Effects[3].TriggerSpell, true);
+                caster->CastSpell(x, y, caster->GetPositionZ(), GetSpellInfo()->Effects[2]->TriggerSpell, true);
+                caster->CastSpell(x, y, caster->GetPositionZ(), GetSpellInfo()->Effects[3]->TriggerSpell, true);
             }
             
             void Register()
