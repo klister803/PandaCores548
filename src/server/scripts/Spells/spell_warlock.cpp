@@ -2623,38 +2623,6 @@ class spell_warl_demonic_gateway_at : public SpellScriptLoader
         }
 };
 
-/*
-// Seduction (Special Ability) - 6358, Mesmerize (Special Ability) - 115268
-class spell_warl_seduction : public SpellScriptLoader
-{
-    public:
-        spell_warl_seduction() : SpellScriptLoader("spell_warl_seduction") { }
-
-        class spell_warl_seduction_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warl_seduction_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Unit* caster = GetCaster())
-                    if (Unit* owner = caster->GetAnyOwner())
-                        if(owner->HasAura(56249)) // Glyph of Demon Training
-                            if (Unit* target = GetHitUnit())
-                                target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_warl_seduction_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warl_seduction_SpellScript();
-        }
-};*/
-
 // 108686 - Immolate
 class spell_warl_immolate : public SpellScriptLoader
 {
@@ -2900,7 +2868,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_wild_imps();
     new spell_warl_demonic_slash();
     new spell_warl_demonic_gateway_at();
-    // new spell_warl_seduction();
     new spell_warl_immolate();
     new spell_warl_incinerate();
     new spell_warl_void_shield();
