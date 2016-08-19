@@ -537,7 +537,7 @@ void AuraEffect::GetApplicationList(std::list<AuraApplication*> & applicationLis
 
 float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
 {
-    float amount;
+    float amount = 0.0f;
     Item* castItem = NULL;
 
     if(caster)
