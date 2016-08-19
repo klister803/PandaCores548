@@ -60,6 +60,7 @@ enum eSpells
     SPELL_LIGHTNING_STORM_VISUAL    = 140811,
     SPELL_CONDUCTIVE_WATER_STROM_A  = 138568, //periodic aura
     SPELL_CONDUCTION_WATER_STORM_V  = 138647, //storm visual
+    SPELL_BERSERK                   = 47008,
 };
 
 enum Events
@@ -128,10 +129,12 @@ public:
         }
 
         InstanceScript* instance;
+        uint32 berserk;
 
         void Reset()
         {
             _Reset();
+            berserk = 0;
             me->SetReactState(REACT_DEFENSIVE);
         }
 
@@ -139,8 +142,10 @@ public:
         {
             _EnterCombat();
             events.ScheduleEvent(EVENT_STATIC_BURST, 12000);
-            events.ScheduleEvent(EVENT_LIGHTNING_BALL, 10000);
+            events.ScheduleEvent(EVENT_LIGHTNING_BALL, 25000);
             events.ScheduleEvent(EVENT_THUNDERING_THROW, 30000);
+            if (me->GetMap()->IsHeroic())
+                berserk = 360000;
         }
 
         void ChargeConductionWater()
@@ -191,7 +196,7 @@ public:
             if (apply)
             {
                 DoCast(who, SPELL_THUNDERING_THROW);
-                events.ScheduleEvent(EVENT_RE_ATTACK, 1000);
+                events.ScheduleEvent(EVENT_RE_ATTACK, 2500);
             }
         }
 
@@ -199,6 +204,17 @@ public:
         {
             if (!UpdateVictim())
                 return;
+
+            if (berserk)
+            {
+                if (berserk <= diff)
+                {
+                    berserk = 0;
+                    DoCast(me, SPELL_BERSERK, true);
+                }
+                else
+                    berserk -= diff;
+            }
 
             events.Update(diff);
 
@@ -233,7 +249,7 @@ public:
                             }
                         }
                     }
-                    events.ScheduleEvent(EVENT_LIGHTNING_BALL, 10000);
+                    events.ScheduleEvent(EVENT_LIGHTNING_BALL, 25000);
                     break;
                 }
                 case EVENT_THUNDERING_THROW:
@@ -260,8 +276,15 @@ public:
                     events.ScheduleEvent(EVENT_THUNDERING_THROW, 32500);
                     break;
                 case EVENT_RE_ATTACK:
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    DoZoneInCombat(me, 100.0f);
+                    if (Player* pl = me->FindNearestPlayer(80.0f, true))
+                    {
+                        me->AddThreat(pl, 1000.0f);
+                        me->SetReactState(REACT_AGGRESSIVE);
+                        me->Attack(pl, true);
+                        me->GetMotionMaster()->MoveChase(pl);
+                    }
+                    else
+                        EnterEvadeMode();
                     break;
                 }
             }
