@@ -395,6 +395,9 @@ SpellEffectInfo::SpellEffectInfo(SpellEntry const* spellEntry, SpellInfo const* 
 
 bool SpellEffectInfo::IsEffect() const
 {
+    if (_effIndex == MAX_SPELL_EFFECTS)
+        return false;
+
     return Effect != 0;
 }
 
