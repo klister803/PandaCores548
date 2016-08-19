@@ -617,6 +617,36 @@ public:
     }
 };
 
+//138349
+class spell_static_wound_periodic : public SpellScriptLoader
+{
+public:
+    spell_static_wound_periodic() : SpellScriptLoader("spell_static_wound_periodic") { }
+
+    class spell_static_wound_periodic_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_static_wound_periodic_AuraScript);
+
+        void OnPeriodic(AuraEffect const*aurEff)
+        {
+            if (GetTarget())
+                if (Aura* aura = GetTarget()->GetAura(SPELL_STATIC_WOUND))
+                    if (aura->GetStackAmount() > 1)
+                        aura->SetStackAmount(aura->GetStackAmount() - 1);
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_static_wound_periodic_AuraScript::OnPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_static_wound_periodic_AuraScript();
+    }
+};
+
 //137180
 class spell_thundering_throw : public SpellScriptLoader
 {
@@ -987,6 +1017,7 @@ void AddSC_boss_jinrokh()
     new npc_storm_stalker();
     new spell_static_burst();
     new spell_static_wound();
+    new spell_static_wound_periodic();
     new spell_thundering_throw();
     new spell_thundering_throw_aura();
     new spell_thundering_throw_aoe();
