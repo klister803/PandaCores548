@@ -345,6 +345,7 @@ public:
 
         void Reset()
         {
+            me->SetFloatValue(OBJECT_FIELD_SCALE_X, 0.3f);
             DoCast(me, SPELL_LIGHTNING_FISSURE_VISUAL, true);
             events.ScheduleEvent(EVENT_SEARCH_PLAYERS, 2000);
         }
@@ -363,19 +364,18 @@ public:
                 {
                     std::list<Player*>pllist;
                     pllist.clear();
-                    GetPlayerListInGrid(pllist, me, 6.0f);
+                    GetPlayerListInGrid(pllist, me, 3.0f);
                     if (!pllist.empty())
                     {
                         for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
                         {
-                            if (me->GetExactDist2d(*itr) <= 6.0f)
+                            if (me->GetExactDist2d(*itr) <= 3.0f)
                             {
                                 if (!(*itr)->HasAura(SPELL_LIGHTNING_FISSURE_DMG))
                                     (*itr)->CastSpell(*itr, SPELL_LIGHTNING_FISSURE_DMG, true);
                             }
                             else
-                                if ((*itr)->HasAura(SPELL_LIGHTNING_FISSURE_DMG))
-                                    (*itr)->RemoveAurasDueToSpell(SPELL_LIGHTNING_FISSURE_DMG);
+                                (*itr)->RemoveAurasDueToSpell(SPELL_LIGHTNING_FISSURE_DMG);
                         }
                     }
                     events.ScheduleEvent(EVENT_SEARCH_PLAYERS, 1000);
