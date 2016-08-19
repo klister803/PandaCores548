@@ -4832,10 +4832,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 //Throne of Thunder
                 //Jinrokh
                 case 137422: //Focused Lightning
-                    spellInfo->Effects[0].TriggerSpell = 0;
+                    spellInfo->Effects[0]->TriggerSpell = 0;
                     break;
                 case 137429: //Focused Lightning Dummy(searcher)
-                    spellInfo->Effects[0].TargetB = 15;
+                    spellInfo->Effects[0]->TargetB = 15;
                     break;
                 case 137374: //Focused Lightning Explose
                     for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
