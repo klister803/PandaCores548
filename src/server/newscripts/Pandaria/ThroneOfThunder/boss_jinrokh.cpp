@@ -338,9 +338,12 @@ public:
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
             DoCast(me, SPELL_LIGHTNING_BALL_VISUAL, true);
+            targetGuid = 0;
         }
 
         InstanceScript* pInstance;
+        EventMap events;
+        uint64 targetGuid;
 
         void Reset(){}
 
@@ -359,23 +362,35 @@ public:
         
         void SetGUID(uint64 plguid, int32 id)
         {
-            if (Player* pl = me->GetPlayer(*me, plguid))
+            targetGuid = plguid;
+            events.ScheduleEvent(EVENT_ACTIVE, 3000);
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
             {
-                if (pl->isAlive())
+                if (eventId == EVENT_ACTIVE)
                 {
-                    DoCast(me, SPELL_LIGHTNING_BALL_AURA_INC_S, true);
-                    DoCast(pl, SPELL_LIGHTNING_BALL_TARGET, true);
-                    me->AddThreat(pl, 50000000.0f);
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    me->Attack(pl, true);
-                    me->GetMotionMaster()->MoveChase(pl);
-                    return;
+                    if (Player* pl = me->GetPlayer(*me, targetGuid))
+                    {
+                        if (pl->isAlive())
+                        {
+                            DoCast(me, SPELL_LIGHTNING_BALL_AURA_INC_S, true);
+                            DoCast(pl, SPELL_LIGHTNING_BALL_TARGET, true);
+                            me->AddThreat(pl, 50000000.0f);
+                            me->SetReactState(REACT_AGGRESSIVE);
+                            me->Attack(pl, true);
+                            me->GetMotionMaster()->MoveChase(pl);
+                            return;
+                        }
+                    }
+                    me->DespawnOrUnsummon();
                 }
             }
-            me->DespawnOrUnsummon();
         }
-        
-        void UpdateAI(uint32 diff){}
     };
 
     CreatureAI* GetAI(Creature* creature) const
@@ -396,7 +411,7 @@ public:
         {
             InstanceScript* pInstance = creature->GetInstanceScript();
             me->SetReactState(REACT_PASSIVE);
-            me->SetFlag(UNIT_FIELD_FLAGS, /*UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE |*/ UNIT_FLAG_DISABLE_MOVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE);
             me->SetDisplayId(11686);
         }
 
