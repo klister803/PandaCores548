@@ -50,6 +50,7 @@ enum eSpells
     SPELL_THUNDERING_THROW_JUMP     = 137173,
     SPELL_THUNDERING_THROW_DMG      = 137370,
     SPELL_THUNDERING_THROW_AOE_DMG  = 137167,
+    SPELL_THUNDERING_THROW_STUN     = 137371,
 
     SPELL_CONDUCTIVE_WATER_DEBUFF   = 138470,
     SPELL_FLUIDITY                  = 138002,
@@ -79,6 +80,7 @@ enum Actions
     ACTION_RE_ATTACK_AFTER_STORM,
     ACTION_EXPLOSE,
     ACTION_SET_STORM_TIMER,
+    ACTION_CHARGE_CONDUCTIVE_WATER,
 };
 
 uint32 mogufontsentry[4] =
@@ -130,6 +132,7 @@ public:
         void Reset()
         {
             _Reset();
+            me->SetReactState(REACT_DEFENSIVE);
         }
 
         void EnterCombat(Unit* who)
@@ -169,8 +172,10 @@ public:
         {
             switch (action)
             {
-            case ACTION_RE_ATTACK_AFTER_STORM:
+            case ACTION_CHARGE_CONDUCTIVE_WATER:
                 ChargeConductionWater();
+                break;
+            case ACTION_RE_ATTACK_AFTER_STORM:
                 me->ReAttackWithZone();
                 events.ScheduleEvent(EVENT_STATIC_BURST, 12000);
                 events.ScheduleEvent(EVENT_LIGHTNING_BALL, 10000);
@@ -285,6 +290,10 @@ public:
             {
                 me->SetAttackStop(true);
                 DoCast(me, SPELL_EXPLOSE_LIGHTNING_BALL, true);
+                if (me->ToTempSummon())
+                    if (Unit* jinrokh = me->ToTempSummon()->GetSummoner())
+                        jinrokh->SummonCreature(NPC_LIGHTNING_FISSURE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
+                me->DespawnOrUnsummon();
             }
         }
         
@@ -671,6 +680,7 @@ public:
                                 if (GameObject* go = GetTarget()->FindNearestGameObject(mogufontsentry[n], 60.0f))
                                 {
                                     GetTarget()->CastSpell(GetTarget(), SPELL_THUNDERING_THROW_DMG, true);
+                                    GetTarget()->CastSpell(GetTarget(), SPELL_THUNDERING_THROW_STUN, true);
                                     go->SetGoState(GO_STATE_ACTIVE);
                                     uint8 num = GetFontNum(go->GetEntry());
                                     GetTarget()->GetMotionMaster()->MoveJump(jumpdestpos[num].GetPositionX(), jumpdestpos[num].GetPositionY(), jumpdestpos[num].GetPositionZ(), 35.0f, 15.0f, 137161);
@@ -782,7 +792,11 @@ public:
         void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (GetCaster())
+            {
                 GetCaster()->SummonCreature(NPC_STORM_STALKER, 5891.61f, 6263.18f, 124.035f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 15000);
+                if (GetCaster()->ToCreature())
+                    GetCaster()->ToCreature()->AI()->DoAction(ACTION_CHARGE_CONDUCTIVE_WATER);
+            }
         }
 
         void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes mode)

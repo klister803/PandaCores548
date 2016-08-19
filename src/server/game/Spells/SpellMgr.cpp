@@ -4851,6 +4851,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(8);
                     spellInfo->Effects[0]->TriggerSpell = 0;
                     break;
+                case 137694: //Conductive water scale
+                    spellInfo->StackAmount = 90;
+                    break;
                 case 138647: //Conductive water - storm visual
                 case 140811: //Storm - storm visual
                     spellInfo->Effects[0]->TargetA = TARGET_DEST_DEST;
