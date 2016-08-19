@@ -39,6 +39,9 @@ enum eSpells
     SPELL_LIGHTNING_FISSURE_VISUAL  = 137480,
     SPELL_LIGHTNING_FISSURE_DMG     = 137484,
 
+    SPELL_LIGHTNING_FISSURE_DMG_EX  = 138133,
+    SPELL_LIGHTNING_FISSURE_DMG_EX2 = 137530, //if player
+
     SPELL_WATER_POOL_VISUAL         = 137277, //Visual water pool
     SPELL_WATER_POOL_SCALE_AURA     = 137676,
     SPELL_STATIC_WATER_VISUAL       = 137978, //Visual static water pool
@@ -129,12 +132,14 @@ public:
         }
 
         InstanceScript* instance;
+        uint64 lastvictimGuid;
         uint32 berserk;
 
         void Reset()
         {
             _Reset();
             berserk = 0;
+            lastvictimGuid = 0;
             me->SetReactState(REACT_DEFENSIVE);
         }
 
@@ -260,6 +265,7 @@ public:
                             if (Player* ttpl = me->getVictim()->ToPlayer())
                             {
                                 me->SetAttackStop(true);
+                                lastvictimGuid = ttpl->GetGUID();
                                 ttpl->EnterVehicle(me, 0);
                                 events.DelayEvents(5000);
                             }
@@ -275,17 +281,32 @@ public:
                     DoCast(me, SPELL_STORM);
                     events.ScheduleEvent(EVENT_THUNDERING_THROW, 32500);
                     break;
-                case EVENT_RE_ATTACK:
-                    if (Player* pl = me->FindNearestPlayer(80.0f, true))
+                case EVENT_RE_ATTACK: //After Thundering Throw
+                {
+                    bool havetarget = false;
+                    std::list<Player*> pllist;
+                    pllist.clear();
+                    GetPlayerListInGrid(pllist, me, 80.0f);
+                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                     {
-                        me->AddThreat(pl, 1000.0f);
-                        me->SetReactState(REACT_AGGRESSIVE);
-                        me->Attack(pl, true);
-                        me->GetMotionMaster()->MoveChase(pl);
+                        if ((*itr)->GetGUID() != lastvictimGuid)
+                        {
+                            havetarget = true;
+                            me->getThreatManager().resetAllAggro();
+                            me->AddThreat(*itr, 5000.0f);
+                            me->SetReactState(REACT_AGGRESSIVE);
+                            me->Attack(*itr, true);
+                            me->GetMotionMaster()->MoveChase(*itr);
+                        }
                     }
-                    else
-                        EnterEvadeMode();
-                    break;
+                    lastvictimGuid = 0;
+                    if (!havetarget)
+                    {
+                        me->SetReactState(REACT_AGGRESSIVE);
+                        DoZoneInCombat(me, 150.0f);
+                    }
+                }
+                break;
                 }
             }
             DoMeleeAttackIfReady();
