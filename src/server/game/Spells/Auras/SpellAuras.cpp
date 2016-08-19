@@ -875,7 +875,8 @@ void Aura::UpdateTargetMap(Unit* caster, bool apply)
             // needs readding - remove now, will be applied in next update cycle
             // (dbcs do not have auras which apply on same type of targets but have different radius, so this is not really needed)
             if (appIter->second->GetEffectMask() != existing->second || !CanBeAppliedOn(existing->first))
-                targetsToRemove.push_back(appIter->second->GetTarget());
+                if (GetId() != 137313)//Hack fix - Storm(Jinrokh)[TT]
+                    targetsToRemove.push_back(appIter->second->GetTarget());
             // nothing todo - aura already applied
             // remove from auras to register list
             targets.erase(existing);

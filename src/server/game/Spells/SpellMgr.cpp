@@ -4831,6 +4831,22 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 //Throne of Thunder
                 //Jinrokh
+                case 137422: //Focused Lightning
+                    spellInfo->Effects[0].TriggerSpell = 0;
+                    break;
+                case 137429: //Focused Lightning Dummy(searcher)
+                    spellInfo->Effects[0].TargetB = 15;
+                    break;
+                case 137374: //Focused Lightning Explose
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                    {
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                        {
+                            eff->TargetA = TARGET_SRC_CASTER;
+                            eff->TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
+                        }
+                    }
+                    break;
                 case 138568: //Conductive water periodic aura
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(8);
                     spellInfo->Effects[0]->TriggerSpell = 0;
