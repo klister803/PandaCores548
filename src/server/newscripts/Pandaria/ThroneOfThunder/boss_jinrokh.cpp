@@ -215,11 +215,27 @@ public:
                     events.ScheduleEvent(EVENT_STATIC_BURST, 20000);
                     break;
                 case EVENT_LIGHTNING_BALL:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 40.0f, true))
-                        if (Creature* ball = me->SummonCreature(NPC_LIGHTNING_BALL, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()))
-                            ball->AI()->SetGUID(target->GetGUID(), 0);
+                {
+                    std::list<Player*> pllist;
+                    pllist.clear();
+                    GetPlayerListInGrid(pllist, me, 150.0f);
+                    if (!pllist.empty())
+                    {
+                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                        {
+                            if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
+                            {
+                                if (Creature* ball = me->SummonCreature(NPC_LIGHTNING_BALL, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()))
+                                {
+                                    ball->AI()->SetGUID((*itr)->GetGUID(), 0);
+                                    break;
+                                }
+                            }
+                        }
+                    }
                     events.ScheduleEvent(EVENT_LIGHTNING_BALL, 10000);
                     break;
+                }
                 case EVENT_THUNDERING_THROW:
                     if (instance && instance->GetData(DATA_CHECK_VALIDATE_THUNDERING_THROW))
                     {
@@ -345,7 +361,7 @@ public:
 
         void Reset()
         {
-            me->SetFloatValue(OBJECT_FIELD_SCALE_X, 0.3f);
+            me->SetFloatValue(OBJECT_FIELD_SCALE_X, 0.5f);
             DoCast(me, SPELL_LIGHTNING_FISSURE_VISUAL, true);
             events.ScheduleEvent(EVENT_SEARCH_PLAYERS, 2000);
         }
@@ -364,16 +380,13 @@ public:
                 {
                     std::list<Player*>pllist;
                     pllist.clear();
-                    GetPlayerListInGrid(pllist, me, 3.0f);
+                    GetPlayerListInGrid(pllist, me, 40.0f);
                     if (!pllist.empty())
                     {
                         for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
                         {
                             if (me->GetExactDist2d(*itr) <= 3.0f)
-                            {
-                                if (!(*itr)->HasAura(SPELL_LIGHTNING_FISSURE_DMG))
-                                    (*itr)->CastSpell(*itr, SPELL_LIGHTNING_FISSURE_DMG, true);
-                            }
+                                (*itr)->CastSpell(*itr, SPELL_LIGHTNING_FISSURE_DMG, true);
                             else
                                 (*itr)->RemoveAurasDueToSpell(SPELL_LIGHTNING_FISSURE_DMG);
                         }
@@ -684,7 +697,7 @@ public:
                                     go->SetGoState(GO_STATE_ACTIVE);
                                     uint8 num = GetFontNum(go->GetEntry());
                                     GetTarget()->GetMotionMaster()->MoveJump(jumpdestpos[num].GetPositionX(), jumpdestpos[num].GetPositionY(), jumpdestpos[num].GetPositionZ(), 35.0f, 15.0f, 137161);
-                                    jinrokh->SummonCreature(NPC_MOGU_FONT, fontspos[num].GetPositionX(), fontspos[num].GetPositionY(), fontspos[num].GetPositionZ(), fontspos[num].GetOrientation());
+                                    jinrokh->SummonCreature(NPC_MOGU_FONT, fontspos[num].GetPositionX(), fontspos[num].GetPositionY(), fontspos[num].GetPositionZ(), fontspos[num].GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 50000);
                                     break;
                                 }
                             }

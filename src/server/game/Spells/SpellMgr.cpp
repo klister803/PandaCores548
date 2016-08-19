@@ -4852,7 +4852,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->TriggerSpell = 0;
                     break;
                 case 137694: //Conductive water scale
-                    spellInfo->StackAmount = 85;
+                    spellInfo->StackAmount = 75;
                     break;
                 case 138647: //Conductive water - storm visual
                 case 140811: //Storm - storm visual
