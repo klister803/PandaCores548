@@ -36,6 +36,7 @@ public:
             { "listname",       SEC_GAMEMASTER,     false, &HandleListChangeName,               "", NULL },
             { "checkitem",       SEC_GAMEMASTER,     false, &HandleCharacterItemsCheckCommand,               "", NULL },
             { "checkitembag",       SEC_GAMEMASTER,     false, &HandleCharacterItemsCheckBagCommand,               "", NULL },
+            { "dmselect",       SEC_GAMEMASTER,     false, &HandleCharacterDMSelectCommand,               "", NULL },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
 
@@ -658,6 +659,35 @@ public:
                std::string nameLink = handler->playerLink(target_name);
                handler->PSendSysMessage("Игрок %s имеет %u итемов с идом %u", nameLink.c_str(), count, itemId);
             } while ( result->NextRow() );
+        }
+
+        return true;
+    }
+    
+    static bool HandleCharacterDMSelectCommand(ChatHandler* handler, const char* args) //селект на ДМ
+    {         
+        Player* player = handler->GetSession()->GetPlayer();
+      
+        
+        QueryResult result = CharacterDatabase.PQuery("SELECT * FROM `custom_character_deathmatch` ORDER BY kills DESC LIMIT 10;");
+        if (result)
+        {  
+            uint32 index = 0;
+            do
+            {
+               Field * fetch = result->Fetch();
+               uint64 guid = fetch[0].GetUInt64();
+               std::string namePl;
+               if (!ObjectMgr::GetPlayerNameByGUID(guid, namePl))
+                   continue;
+               else
+                   index++;
+               uint32 kills = fetch[1].GetUInt32();
+               uint32 deads = fetch[2].GetUInt32();
+               uint32 count = fetch[3].GetUInt32();
+               
+               handler->PSendSysMessage("Игрок %s имеет %u киллов, %u смертей и сыграл %u игр. Занимает место %u", namePl.c_str(), kills, deads, count, index);
+            } while ( result->NextRow() && index < 3 );
         }
 
         return true;
