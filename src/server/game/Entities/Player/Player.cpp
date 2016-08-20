@@ -24574,7 +24574,7 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
         return false;
     }
 
-    ModifyMoney(-price);
+ //   ModifyMoney(-price); перенес в if 
 
     if (crItem->ExtendedCost) // case for new honor system
     {
@@ -24601,7 +24601,12 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
             if (iece->RequiredCurrency[i])
                 ModifyCurrency(iece->RequiredCurrency[i], -int32(iece->RequiredCurrencyCount[i]), true, true);
         }
+        
+        if(iece->RequiredItem[0] != 38186)
+            ModifyMoney(-price);
     }
+    else
+        ModifyMoney(-price);
 
     Item* it = bStore ?
         StoreNewItem(vDest, item, true) :
@@ -24787,6 +24792,8 @@ bool Player::BuyCurrencyFromVendorSlot(uint64 vendorGuid, uint32 vendorSlot, uin
 // Return true is the bought item has a max count to force refresh of window by caller
 bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot)
 {
+    bool checkmoney = true;
+    
     // cheating attempt
     if (count < 1) count = 1;
 
@@ -24883,6 +24890,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
                     SendEquipError(EQUIP_ERR_VENDOR_MISSING_TURNINS, NULL, NULL);
                     return false;
                 }
+                checkmoney = false;
             }
             else
             {
@@ -24987,7 +24995,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
         //if (int32 priceMod = GetTotalAuraModifier(SPELL_AURA_MOD_VENDOR_ITEMS_PRICES))
             //price -= CalculatePct(price, priceMod);
 
-        if (!HasEnoughMoney(price))
+        if (!HasEnoughMoney(price) && checkmoney)
         {
             SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, creature, item, 0);
             return false;
