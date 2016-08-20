@@ -737,9 +737,11 @@ public:
         LocaleConstant loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
         if (player->getLevel() != 90)
             player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, sObjectMgr->GetTrinityString(30100, loc_idx), GOSSIP_SENDER_MAIN, 3003, "", 1, true); // level
+        
+        player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, sObjectMgr->GetTrinityString(30104, loc_idx), GOSSIP_SENDER_MAIN, 3004, "", 0, true); // calculate
         player->ADD_GOSSIP_ITEM(0, sObjectMgr->GetTrinityString(30101, loc_idx), GOSSIP_SENDER_MAIN, 3000); // price
         player->ADD_GOSSIP_ITEM(0, sObjectMgr->GetTrinityString(30102, loc_idx), GOSSIP_SENDER_MAIN, 3001); // exit
-        player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
+        player->SEND_GOSSIP_MENU(100004, creature->GetGUID());
         return true;
     }
 
@@ -762,17 +764,20 @@ public:
         if (action == 3000)
         {
             player->ADD_GOSSIP_ITEM(0, sObjectMgr->GetTrinityString(30103, loc_idx), GOSSIP_SENDER_MAIN, 3002); // back
-            player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
+            player->ADD_GOSSIP_ITEM(0, sObjectMgr->GetTrinityString(30102, loc_idx), GOSSIP_SENDER_MAIN, 3001); // exit
+            player->SEND_GOSSIP_MENU(100005, creature->GetGUID());
             return true;
         }
         
         if (action == 3002) // start
         {
             if (player->getLevel() != 90)
-                player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, sObjectMgr->GetTrinityString(30100, loc_idx), GOSSIP_SENDER_MAIN, 3003, "", 1, true); // level
+                player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, sObjectMgr->GetTrinityString(30100, loc_idx), GOSSIP_SENDER_MAIN, 3003, "", 0, true); // level
+            
+            player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, sObjectMgr->GetTrinityString(30104, loc_idx), GOSSIP_SENDER_MAIN, 3004, "", 0, true); // calculate
             player->ADD_GOSSIP_ITEM(0, sObjectMgr->GetTrinityString(30101, loc_idx), GOSSIP_SENDER_MAIN, 3000); // price
             player->ADD_GOSSIP_ITEM(0, sObjectMgr->GetTrinityString(30102, loc_idx), GOSSIP_SENDER_MAIN, 3001); // exit
-            player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
+            player->SEND_GOSSIP_MENU(100004, creature->GetGUID());
             return true;
         }
             
@@ -785,7 +790,7 @@ public:
         player->PlayerTalkClass->ClearMenus();
         ChatHandler chH = ChatHandler(player);
         
-        if (action == 3003)
+        if (action == 3003 || action == 3004)
         {           
             ChatHandler chH = ChatHandler(player);
             
@@ -815,7 +820,17 @@ public:
                 efir += rate[i];
             
             float efirend = ceil(efir);
-            chH.PSendSysMessage("%f", efirend);
+            uint32 efirendu = uint32(efirend);
+            if (action == 3004)
+                chH.PSendSysMessage(30105, ucode, efirendu);
+            else if (action == 3003)
+            {
+                if (player->GetItemCount(EFIRALS, false >= efirendu))
+                {
+                    player->DestroyItemCount(EFIRALS, efirendu, true);
+                    player->GiveLevel(ucode);
+                }
+            }
         }
         player->CLOSE_GOSSIP_MENU();
         return false;        
