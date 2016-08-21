@@ -20975,6 +20975,8 @@ void Player::AddPlayerLootCooldown(uint32 entry, uint8 type/* = 0*/, bool respaw
 
 bool Player::IsPlayerLootCooldown(uint32 entry, uint8 type/* = 0*/, uint8 diff/* = 0*/) const
 {
+    sWorld->SendWorldText(19, type);
+    sWorld->SendWorldText(19, diff);
     PlayerLootCooldownMap::const_iterator itr = m_playerLootCooldown[type].find(entry);
     if(itr == m_playerLootCooldown[type].end())
         return false;

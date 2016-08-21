@@ -25153,7 +25153,6 @@ void Unit::GeneratePersonalLoot(Creature* creature, Player* anyLooter)
         {
             if(looter->IsPlayerLootCooldown(cooldownid, cooldowntype, creature->GetMap()->GetDifficulty()) || creature->GetCurrentZoneId() != looter->getCurrentUpdateZoneID())
             {
-                sWorld->SendWorldText(19, 1);
                 --cLoot->unlootedCount;
                 continue;
             }
@@ -25182,10 +25181,8 @@ void Unit::GeneratePersonalLoot(Creature* creature, Player* anyLooter)
             {
                 //sLog->outDebug(LOG_FILTER_LOOT, "Unit::GeneratePersonalLoot IsAutoLoot lootGUID %i", loot->GetGUID());
                 loot->AutoStoreItems();
-                sWorld->SendWorldText(19, 3);
                 --cLoot->unlootedCount;
             }
-            sWorld->SendWorldText(19, 2);
             if(creature->isWorldBoss())
                 looter->AddPlayerLootCooldown(cooldownid, cooldowntype, true, creature->GetMap()->GetDifficulty());
 
