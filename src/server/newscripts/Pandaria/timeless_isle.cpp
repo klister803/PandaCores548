@@ -1162,11 +1162,11 @@ public:
                     if (pPlayer->HasItemCount(LegBagCoung[i], 1, true))
                         return true;
 
-//                 if (pPlayer->GetQuestStatus(33104) != QUEST_STATUS_REWARDED && !pPlayer->HasAchieved(8325))
-//                 {
-//                     pPlayer->CastSpell(pPlayer, SPELL_BANISHMENT, true);
-//                     return false;
-//                }
+                if (pPlayer->GetQuestStatus(33104) != QUEST_STATUS_REWARDED && !pPlayer->HasAchieved(8325))
+                {
+                    pPlayer->CastSpell(pPlayer, SPELL_BANISHMENT, true);
+                    return false;
+                }
             }
 
             return true;
