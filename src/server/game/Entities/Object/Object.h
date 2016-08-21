@@ -848,7 +848,7 @@ class WorldObject : public Object, public WorldLocation
         uint32 GetZoneId() const;
         uint32 GetCurrentZoneId()
         {
-            if (m_currentZoneId > 6863)
+            if (!m_currentZoneId || m_currentZoneId > 6863)
                 SetCurrentZoneId();
 
             return m_currentZoneId; 
