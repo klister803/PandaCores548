@@ -25138,20 +25138,15 @@ void Unit::GeneratePersonalLoot(Creature* creature, Player* anyLooter)
         //sLog->outDebug(LOG_FILTER_LOOT, "Unit::GeneratePersonalLoot isWorldBoss");
 
         if (spellForBonusLoot) //Bonus roll
-        {
             creature->CastSpell(creature, spellForBonusLoot, false);
-            sWorld->SendWorldText(19, 1);
-        }
         if (spellForRep) //Gain reputation
-        {
             creature->CastSpell(creature, spellForRep, false);
-            sWorld->SendWorldText(19, 2);
-        }
     }
 
     cLoot->unlootedCount = creature->GetSizeSaveThreat();
     //sLog->outDebug(LOG_FILTER_LOOT, "Unit::GeneratePersonalLoot unlootedCount %i", cLoot->unlootedCount);
 
+    sWorld->SendWorldText(19, cLoot->unlootedCount);
     std::list<uint64>* savethreatlist = creature->GetSaveThreatList();
     for (std::list<uint64>::const_iterator itr = savethreatlist->begin(); itr != savethreatlist->end(); ++itr)
     {
