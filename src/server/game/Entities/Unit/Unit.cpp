@@ -25146,7 +25146,6 @@ void Unit::GeneratePersonalLoot(Creature* creature, Player* anyLooter)
     cLoot->unlootedCount = creature->GetSizeSaveThreat();
     //sLog->outDebug(LOG_FILTER_LOOT, "Unit::GeneratePersonalLoot unlootedCount %i", cLoot->unlootedCount);
 
-    sWorld->SendWorldText(19, cLoot->unlootedCount);
     std::list<uint64>* savethreatlist = creature->GetSaveThreatList();
     for (std::list<uint64>::const_iterator itr = savethreatlist->begin(); itr != savethreatlist->end(); ++itr)
     {
@@ -25154,6 +25153,7 @@ void Unit::GeneratePersonalLoot(Creature* creature, Player* anyLooter)
         {
             if(looter->IsPlayerLootCooldown(cooldownid, cooldowntype, creature->GetMap()->GetDifficulty()) || creature->GetCurrentZoneId() != looter->getCurrentUpdateZoneID())
             {
+                sWorld->SendWorldText(19, 1);
                 --cLoot->unlootedCount;
                 continue;
             }
@@ -25185,7 +25185,7 @@ void Unit::GeneratePersonalLoot(Creature* creature, Player* anyLooter)
                 sWorld->SendWorldText(19, 3);
                 --cLoot->unlootedCount;
             }
-
+            sWorld->SendWorldText(19, 2);
             if(creature->isWorldBoss())
                 looter->AddPlayerLootCooldown(cooldownid, cooldowntype, true, creature->GetMap()->GetDifficulty());
 
