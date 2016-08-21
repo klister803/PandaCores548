@@ -20977,19 +20977,10 @@ bool Player::IsPlayerLootCooldown(uint32 entry, uint8 type/* = 0*/, uint8 diff/*
 {
     PlayerLootCooldownMap::const_iterator itr = m_playerLootCooldown[type].find(entry);
     if (itr == m_playerLootCooldown[type].end())
-    {
-        sWorld->SendWorldText(19, 1);
         return false;
-    }
 
-    sWorld->SendWorldText(19, 2);
     if (itr->second.difficultyMask & (1 << (sObjectMgr->GetDiffFromSpawn(diff))))
-    {
-        sWorld->SendWorldText(19, 3);
         return true;
-    }
-
-    sWorld->SendWorldText(19, 4);
 
     return false;
 }
