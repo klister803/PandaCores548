@@ -25137,10 +25137,16 @@ void Unit::GeneratePersonalLoot(Creature* creature, Player* anyLooter)
     {
         //sLog->outDebug(LOG_FILTER_LOOT, "Unit::GeneratePersonalLoot isWorldBoss");
 
-        if(spellForBonusLoot) //Bonus roll
+        if (spellForBonusLoot) //Bonus roll
+        {
             creature->CastSpell(creature, spellForBonusLoot, false);
-        if(spellForRep) //Gain reputation
+            sWorld->SendWorldText(19, 1);
+        }
+        if (spellForRep) //Gain reputation
+        {
             creature->CastSpell(creature, spellForRep, false);
+            sWorld->SendWorldText(19, 2);
+        }
     }
 
     cLoot->unlootedCount = creature->GetSizeSaveThreat();
@@ -25181,6 +25187,7 @@ void Unit::GeneratePersonalLoot(Creature* creature, Player* anyLooter)
             {
                 //sLog->outDebug(LOG_FILTER_LOOT, "Unit::GeneratePersonalLoot IsAutoLoot lootGUID %i", loot->GetGUID());
                 loot->AutoStoreItems();
+                sWorld->SendWorldText(19, 3);
                 --cLoot->unlootedCount;
             }
 
