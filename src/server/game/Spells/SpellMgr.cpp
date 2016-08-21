@@ -5197,6 +5197,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->TargetB = 0;
                     break;
                 //Korkron Dark Shaman
+                case 144107: //Toxicity
+                    spellInfo->StackAmount = 10;
+                    break;
                 case 143987: //Fallen Ash Dmg
                     spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(1);
                     break;

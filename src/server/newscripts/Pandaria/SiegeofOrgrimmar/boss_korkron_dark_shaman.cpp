@@ -338,7 +338,7 @@ public:
                 case NPC_WAVEBINDER_KARDRIS:
                     Talk(SAY_ASHFLARE_TOTEM);
                     DoCast(me, SPELL_ASHFLARE_TOTEM, true);
-                    //events.ScheduleEvent(EVENT_FALLING_ASH, 20000); not works
+                    events.ScheduleEvent(EVENT_FALLING_ASH, 2000);
                     break;
                 case NPC_EARTHBREAKER_HAROMM:
                     events.ScheduleEvent(EVENT_ASHEN_WALL, 2000);
@@ -389,10 +389,10 @@ public:
                 SetExtraEvents(nextpct);
             }
 
+            events.Update(diff);
+
             if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
-
-            events.Update(diff);
 
             while (uint32 eventId = events.ExecuteEvent())
             {
@@ -450,24 +450,22 @@ public:
                 //Haromm
                 case EVENT_TOXIC_MIST:
                 {
-                    std::list<HostileReference*> tlist = me->getThreatManager().getThreatList();
-                    if (!tlist.empty())
+                    uint8 num = 0;
+                    std::list<Player*>pllist;
+                    pllist.clear();
+                    GetPlayerListInGrid(pllist, me, 80.0f);
+                    if (!pllist.empty())
                     {
-                        uint8 num = 0;
-                        for (std::list<HostileReference*>::const_iterator itr = tlist.begin(); itr != tlist.end(); itr++)
+                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                         {
-                            if (itr != tlist.begin())
+                            if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
                             {
-                                if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
+                                if (!(*itr)->HasAura(SPELL_TOXIC_MIST))
                                 {
-                                    if (!pl->HasAura(SPELL_TOXIC_MIST))
-                                    {
-                                        pl->AddAura(SPELL_TOXIC_MIST, pl);
-                                        num++;
-
-                                        if (num == 2)
-                                            break;
-                                    }
+                                    (*itr)->AddAura(SPELL_TOXIC_MIST, *itr);
+                                    num++;
+                                    if (num == 2)
+                                        break;
                                 }
                             }
                         }
@@ -491,7 +489,13 @@ public:
                 //Extra events 50pct
                 //Kardris
                 case EVENT_FALLING_ASH:
-                    //TODO - Not found visual spell id 
+                    if (Unit* target = me->getVictim())
+                    {
+                        Position pos;
+                        target->GetPosition(&pos);
+                        me->SummonCreature(NPC_FALLING_ASH_GROUND_STALKER, pos, TEMPSUMMON_TIMED_DESPAWN, 17000);
+                    }
+                    events.ScheduleEvent(EVENT_FALLING_ASH, 30000);
                     break;
                 //Haromm
                 case EVENT_ASHEN_WALL:
@@ -982,7 +986,9 @@ public:
             float x = me->GetPositionX();
             float y = me->GetPositionY();
             float z = me->GetPositionZ() + 50.0f;
-            me->SummonCreature(NPC_FALLING_ASH, x, y, z);
+            if (me->ToTempSummon())
+                if (Unit* kardris = me->ToTempSummon()->GetSummoner())
+                    kardris->SummonCreature(NPC_FALLING_ASH, x, y, z);
         }
 
         void EnterCombat(Unit* who){}
@@ -1072,6 +1078,27 @@ public:
     }
 };
 
+class IronTombFilter
+{
+public:
+    IronTombFilter(Unit* caster) : _caster(caster){}
+
+    bool operator()(WorldObject* unit) const
+    {
+        if (Player* pl = unit->ToPlayer())
+        {
+            if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_TANK)
+                return true;
+
+            if (_caster->GetDistance(pl) < 15.0f)
+                return true;
+        }
+        return false;
+    }
+private:
+    Unit* _caster;
+};
+
 //144328
 class spell_iron_tomb : public SpellScriptLoader
 {
@@ -1082,34 +1109,19 @@ public:
     {
         PrepareSpellScript(spell_iron_tomb_SpellScript);
 
-        void HandleAfterCast()
+        void _FilterTarget(std::list<WorldObject*>&targets)
         {
             if (GetCaster())
             {
-                std::list<Player*> pllist;
-                pllist.clear();
-                GetPlayerListInGrid(pllist, GetCaster(), 60.0f);
-                if (!pllist.empty())
-                {
-                    uint8 maxcount = 3;
-                    uint8 count = 0;
-                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
-                    {
-                        if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
-                        {
-                            GetCaster()->CastSpell(*itr, SPELL_IRON_TOMB_SUM, true);
-                            count++;
-                            if (count >= maxcount)
-                                break;
-                        }
-                    }
-                }
+                targets.remove_if(IronTombFilter(GetCaster()));
+                if (targets.size() > 3)
+                    targets.resize(3);
             }
         }
 
         void Register()
         {
-            AfterCast += SpellCastFn(spell_iron_tomb_SpellScript::HandleAfterCast);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_iron_tomb_SpellScript::_FilterTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
         }
     };
 
@@ -1125,9 +1137,14 @@ public:
     bool operator()(WorldObject* unit) const
     {
         if (Player* pl = unit->ToPlayer())
-            if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) != ROLES_TANK && !pl->HasAura(SPELL_IRON_PRISON))
-                return false;
-        return true;
+        {
+            if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_TANK)
+                return true;
+
+            if (pl->HasAura(SPELL_IRON_PRISON))
+                return true;
+        }
+        return false;
     }
 };
 
