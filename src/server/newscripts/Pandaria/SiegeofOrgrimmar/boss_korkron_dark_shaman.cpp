@@ -45,6 +45,7 @@ enum eSpells
     SPELL_FALLING_ASH_SUM       = 143973,
     SPELL_FALLING_ASH_DMG       = 143987,
     SPELL_FALLING_ASH_COSMETIC  = 143986,
+    SPELL_FALLING_ASH_DEST_V    = 149016, //conveyer change beam visual(Balckfuse)
 
     //Haromm
     SPELL_FROSTSTORM_STRIKE     = 144215,
@@ -188,13 +189,9 @@ public:
         Creature* GetOtherShaman()
         {
             if (instance)
-            { 
                 if (Creature* oshaman = me->GetCreature(*me, instance->GetData64(me->GetEntry() == NPC_WAVEBINDER_KARDRIS ? NPC_EARTHBREAKER_HAROMM : NPC_WAVEBINDER_KARDRIS)))
-                {
                     if (oshaman->isAlive())
                         return oshaman;
-                }
-            }
             return NULL;
         }
 
@@ -205,10 +202,8 @@ public:
             me->GetCreatureListWithEntryInGrid(list, 71827, 200.0f); //ash elemental
             me->GetCreatureListWithEntryInGrid(list, 71817, 200.0f); //toxic tornado
             if (!list.empty())
-            {
                 for (std::list<Creature*>::const_iterator itr = list.begin(); itr != list.end(); itr++)
                     (*itr)->DespawnOrUnsummon();
-            }
 
             if (me->GetMap()->IsHeroic())
             {
@@ -450,7 +445,7 @@ public:
                 case EVENT_TOXIC_STORM:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 60.0f, true))
                         DoCast(target, SPELL_TOXIC_STORM_SUM);
-                    events.ScheduleEvent(EVENT_TOXIC_STORM, 25000);
+                    events.ScheduleEvent(EVENT_TOXIC_STORM, 30000);
                     break;
                 //Haromm
                 case EVENT_TOXIC_MIST:
@@ -961,6 +956,94 @@ public:
     }
 };
 
+//90007
+class npc_falling_ash_ground_stalker : public CreatureScript
+{
+public:
+    npc_falling_ash_ground_stalker() : CreatureScript("npc_falling_ash_ground_stalker") {}
+
+    struct npc_falling_ash_ground_stalkerAI : public ScriptedAI
+    {
+        npc_falling_ash_ground_stalkerAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetDisplayId(11686);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, /*UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE*/ UNIT_FLAG_DISABLE_MOVE);
+        }
+        InstanceScript* instance;
+
+        void Reset()
+        {
+            me->SetFloatValue(OBJECT_FIELD_SCALE_X, 3.0f);
+            me->AddAura(SPELL_FALLING_ASH_DEST_V, me);
+            if (Aura* aura = me->GetAura(SPELL_FALLING_ASH_DEST_V))
+                aura->SetDuration(15000);
+            float x = me->GetPositionX();
+            float y = me->GetPositionY();
+            float z = me->GetPositionZ() + 50.0f;
+            me->SummonCreature(NPC_FALLING_ASH, x, y, z);
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_falling_ash_ground_stalkerAI(creature);
+    }
+};
+
+//71789
+class npc_falling_ash : public CreatureScript
+{
+public:
+    npc_falling_ash() : CreatureScript("npc_falling_ash") {}
+
+    struct npc_falling_ashAI : public ScriptedAI
+    {
+        npc_falling_ashAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetDisplayId(11686);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
+        }
+        InstanceScript* instance;
+
+        void Reset()
+        {
+            DoCast(me, SPELL_FALLING_ASH_COSMETIC, true);
+            if (Creature* fags = me->FindNearestCreature(NPC_FALLING_ASH_GROUND_STALKER, 100.0f, true))
+                me->GetMotionMaster()->MoveCharge(fags->GetPositionX(), fags->GetPositionY(), fags->GetPositionZ(), 3.2f, 1);
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (type == POINT_MOTION_TYPE)
+            {
+                DoCast(me, SPELL_FALLING_ASH_DMG, true);
+                me->DespawnOrUnsummon();
+            }
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_falling_ashAI(creature);
+    }
+};
+
 //144070
 class spell_asher_wall : public SpellScriptLoader
 {
@@ -1167,6 +1250,8 @@ void AddSC_boss_korkron_dark_shaman()
     new npc_ash_elemental();
     new npc_iron_tomb();
     new npc_wildhammer_shaman();
+    new npc_falling_ash_ground_stalker();
+    new npc_falling_ash();
     new spell_asher_wall();
     new spell_iron_tomb();
     new spell_iron_prison();

@@ -267,6 +267,9 @@ enum eCreatures
     //Wolf Mounts
     NPC_BLOODCLAW                   = 71923,
     NPC_DARKFANG                    = 71921,
+
+    NPC_FALLING_ASH                 = 71789,
+    NPC_FALLING_ASH_GROUND_STALKER  = 90007,//bew trigger, need update on DB
     //
 
     NPC_GENERAL_NAZGRIM             = 71515,
