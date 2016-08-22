@@ -2082,7 +2082,15 @@ class spell_dru_stampeding_roar : public SpellScriptLoader
             void HandleOnHit()
             {
                 if (Unit* target = GetHitUnit())
+                {
                     target->RemoveMovementImpairingAuras();
+                    //Malkorok HM[SO] - remove displaced energy
+                    if (target->HasAura(148790))
+                    {
+                        target->RemoveAurasDueToSpell(148790); //Area Raf
+                        target->RemoveAurasDueToSpell(142913); //displaced energy periodic dmg
+                    }
+                }
             }
 
             void Register()

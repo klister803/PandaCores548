@@ -155,7 +155,11 @@ class boss_malkorok : public CreatureScript
                 powercheck = 0;
                 checkvictim = 0;
                 if (instance)
+                {
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_LANGUISH);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_AREA_RAF);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_DISPLACED_ENERGY_DMG);
+                }
                 for (uint8 n = 0; n < 3; n++)
                     arcingsmashuseang[n] = 0;
             }
@@ -547,7 +551,11 @@ class boss_malkorok : public CreatureScript
                 _JustDied();
                 SetGasStateAndBuffPlayers(false);
                 if (instance)
+                {
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_LANGUISH);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_AREA_RAF);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_DISPLACED_ENERGY_DMG);
+                }
             }
         };
 
@@ -702,7 +710,7 @@ public:
                     uint8 num = me->GetMap()->Is25ManRaid() ? 5 : 2;
                     for (uint8 n = 0; n < num; n++)
                     {
-                        GetPositionWithDistInOrientation(me, float(urand(15, 35)), GetRandomAngle(), x, y);
+                        GetPositionWithDistInOrientation(me, float(urand(15, 40)), GetRandomAngle(), x, y);
                         me->SummonCreature(NPC_ESSENCE_OF_YSHAARJ, x, y, me->GetPositionZ());
                     }
                     events.ScheduleEvent(EVENT_ESSENCE_OF_YSHAARJ, 3000);
@@ -986,10 +994,8 @@ public:
         void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (GetTarget())
-            {
                 for (uint8 n = 0; n < 3; n++)
                     GetTarget()->RemoveAurasDueToSpell(ancientbarrierbar[n]);
-            }
         }
 
         void Register()
@@ -1052,7 +1058,7 @@ public:
 
         void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            if (GetTarget())
+            if (GetTarget() && GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEFAULT)
             {
                 GetTarget()->RemoveAurasDueToSpell(SPELL_AREA_RAF);
                 GetTarget()->CastSpell(GetTarget(), SPELL_DISPLACED_ENERGY_DMG, true);
