@@ -358,7 +358,11 @@ public:
             summon.DespawnAll();
             DespawnAllSummons();
             if (killer != me)
+            {
                 instance->SetBossState(DATA_KORKRON_D_SHAMAN, DONE);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_IRON_PRISON);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TOXIC_MIST);
+            }
         }
         
         void UpdateAI(uint32 diff)

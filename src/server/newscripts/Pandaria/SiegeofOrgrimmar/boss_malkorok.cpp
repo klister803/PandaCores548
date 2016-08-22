@@ -699,8 +699,12 @@ public:
                 if (eventId == EVENT_ESSENCE_OF_YSHAARJ)
                 {
                     float x, y;
-                    GetPositionWithDistInOrientation(me, float(urand(15, 35)), GetRandomAngle(), x, y);
-                    me->SummonCreature(NPC_ESSENCE_OF_YSHAARJ, x, y, me->GetPositionZ());
+                    uint8 num = me->GetMap()->Is25ManRaid() ? 5 : 2;
+                    for (uint8 n = 0; n < num; n++)
+                    {
+                        GetPositionWithDistInOrientation(me, float(urand(15, 35)), GetRandomAngle(), x, y);
+                        me->SummonCreature(NPC_ESSENCE_OF_YSHAARJ, x, y, me->GetPositionZ());
+                    }
                     events.ScheduleEvent(EVENT_ESSENCE_OF_YSHAARJ, 3000);
                 }
             }

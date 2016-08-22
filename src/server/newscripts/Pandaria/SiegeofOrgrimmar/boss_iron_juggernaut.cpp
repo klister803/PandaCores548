@@ -160,7 +160,7 @@ class boss_iron_juggernaut : public CreatureScript
                 events.ScheduleEvent(EVENT_DEMOLISHER_CANNON, 9000);
                 events.ScheduleEvent(EVENT_BORER_DRILL, 20000, 0, PHASE_ONE);
                 events.ScheduleEvent(EVENT_SCATTER_LASER, 11500, 0, PHASE_ONE);
-                events.ScheduleEvent(EVENT_FLAME_VENTS, 12000, 0, PHASE_ONE);
+                events.ScheduleEvent(EVENT_FLAME_VENTS, 7000, 0, PHASE_ONE);
                 events.ScheduleEvent(EVENT_MORTAR_BLAST, 30000, 0, PHASE_ONE);
             }
 
@@ -226,7 +226,7 @@ class boss_iron_juggernaut : public CreatureScript
                                 DoAction(ACTION_PHASE_TWO);
                                 return;
                             }
-                            PowerTimer = 1100;
+                            PowerTimer = 1200;
                             break;
                         case PHASE_TWO:
                             if (me->GetPower(POWER_ENERGY) >= 1)
@@ -328,10 +328,22 @@ class boss_iron_juggernaut : public CreatureScript
                     case EVENT_DEMOLISHER_CANNON:
                         if (Unit* p = GetPassengerForCast(NPC_CANNON))
                         {
-                            for (uint8 n = 0; n < 3; n++)
+                            uint8 num = 0;
+                            std::list<Player*>pllist;
+                            pllist.clear();
+                            GetPlayerListInGrid(pllist, me, 80.0f);
+                            if (!pllist.empty())
                             {
-                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 80.0f, true))
-                                    p->CastSpell(target, SPELL_DEMOLISHER_CANNON);
+                                for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                                {
+                                    if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
+                                    {
+                                        p->CastSpell(*itr, SPELL_DEMOLISHER_CANNON);
+                                        num++;
+                                        if (num == 3)
+                                            break;
+                                    }
+                                }
                             }
                         }
                         events.ScheduleEvent(EVENT_DEMOLISHER_CANNON, 9000);
