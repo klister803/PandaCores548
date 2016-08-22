@@ -25151,8 +25151,6 @@ void Unit::GeneratePersonalLoot(Creature* creature, Player* anyLooter)
     {
         if (Player* looter = ObjectAccessor::GetPlayer(*creature, (*itr)))
         {
-            sWorld->SendWorldText(19, creature->GetCurrentZoneId());
-            sWorld->SendWorldText(19, looter->getCurrentUpdateZoneID());
             if(looter->IsPlayerLootCooldown(cooldownid, cooldowntype, creature->GetMap()->GetDifficulty()) || creature->GetCurrentZoneId() != looter->getCurrentUpdateZoneID())
             {
                 --cLoot->unlootedCount;
