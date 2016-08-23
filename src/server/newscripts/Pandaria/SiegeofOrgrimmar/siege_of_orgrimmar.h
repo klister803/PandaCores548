@@ -269,7 +269,7 @@ enum eCreatures
     NPC_DARKFANG                    = 71921,
 
     NPC_FALLING_ASH                 = 71789,
-    NPC_FALLING_ASH_GROUND_STALKER  = 90007,//new trigger, need update on DB
+    NPC_FALLING_ASH_GROUND_STALKER  = 90007,//new trigger, need update in DB
     //
 
     NPC_GENERAL_NAZGRIM             = 71515,

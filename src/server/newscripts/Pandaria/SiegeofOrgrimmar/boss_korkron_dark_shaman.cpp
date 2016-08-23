@@ -69,6 +69,7 @@ enum eSpells
     SPELL_FOULNESS              = 144064,
     SPELL_RESISTANCE_TOTEM      = 145730,
     SPELL_RESISTANCE_TOTEM_SUM  = 145732,
+    SPELL_TOXICITY              = 144107,
 };
 
 enum CreatureText
@@ -201,6 +202,7 @@ public:
             list.clear();
             me->GetCreatureListWithEntryInGrid(list, 71827, 200.0f); //ash elemental
             me->GetCreatureListWithEntryInGrid(list, 71817, 200.0f); //toxic tornado
+            me->GetCreatureListWithEntryInGrid(list, NPC_IRON_TOMB, 200.0f);
             if (!list.empty())
                 for (std::list<Creature*>::const_iterator itr = list.begin(); itr != list.end(); itr++)
                     (*itr)->DespawnOrUnsummon();
@@ -977,7 +979,7 @@ public:
             instance = creature->GetInstanceScript();
             me->SetDisplayId(11686);
             me->SetReactState(REACT_PASSIVE);
-            me->SetFlag(UNIT_FIELD_FLAGS, /*UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE*/ UNIT_FLAG_DISABLE_MOVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
         }
         InstanceScript* instance;
 
@@ -1085,18 +1087,25 @@ public:
 class IronTombFilter
 {
 public:
-    IronTombFilter(Unit* caster) : _caster(caster){}
+    bool operator()(WorldObject* unit) const
+    {
+        if (Player* pl = unit->ToPlayer())
+            if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_TANK)
+                return true;
+        return false;
+    }
+};
+
+class IronTombRangeFilter
+{
+public:
+    IronTombRangeFilter(Unit* caster) : _caster(caster){}
 
     bool operator()(WorldObject* unit) const
     {
         if (Player* pl = unit->ToPlayer())
-        {
-            if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_TANK)
-                return true;
-
             if (_caster->GetDistance(pl) < 15.0f)
                 return true;
-        }
         return false;
     }
 private:
@@ -1117,15 +1126,38 @@ public:
         {
             if (GetCaster())
             {
-                targets.remove_if(IronTombFilter(GetCaster()));
+                bool havetargetinrange = false;
+                targets.remove_if(IronTombFilter());
+                if (!targets.empty())
+                {
+                    for (std::list<WorldObject*>::const_iterator itr = targets.begin(); itr != targets.end(); itr++)
+                    {
+                        if (GetCaster()->GetDistance(*itr) >= 15.0f)
+                        {
+                            havetargetinrange = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (havetargetinrange)
+                    targets.remove_if(IronTombRangeFilter(GetCaster()));
+
                 if (targets.size() > 3)
                     targets.resize(3);
             }
         }
 
+        void _HandleHit()
+        {
+            if (GetHitUnit())
+                GetHitUnit()->CastSpell(GetHitUnit(), SPELL_IRON_TOMB_SUM, true);
+        }
+
         void Register()
         {
             OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_iron_tomb_SpellScript::_FilterTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+            OnHit += SpellHitFn(spell_iron_tomb_SpellScript::_HandleHit);
         }
     };
 
@@ -1261,6 +1293,34 @@ public:
     }
 };
 
+//144089
+class spell_toxic_mist : public SpellScriptLoader
+{
+public:
+    spell_toxic_mist() : SpellScriptLoader("spell_toxic_mist") { }
+
+    class spell_toxic_mist_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_toxic_mist_AuraScript);
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+        {
+            if (GetTarget() && GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
+                GetTarget()->RemoveAurasDueToSpell(SPELL_TOXICITY);
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_toxic_mist_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_toxic_mist_AuraScript();
+    }
+};
+
 void AddSC_boss_korkron_dark_shaman()
 {
     new boss_korkron_dark_shaman();
@@ -1278,4 +1338,5 @@ void AddSC_boss_korkron_dark_shaman()
     new spell_iron_prison();
     new spell_kds_unlock();
     new spell_iron_prison_dmg();
+    new spell_toxic_mist();
 }

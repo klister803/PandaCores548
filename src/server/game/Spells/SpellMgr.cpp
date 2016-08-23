@@ -5197,8 +5197,12 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->TargetB = 0;
                     break;
                 //Korkron Dark Shaman
+                case 144089: //Toxic Mist
+                    spellInfo->AttributesEx6 &= ~SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
+                    break;
                 case 144107: //Toxicity
                     spellInfo->StackAmount = 10;
+                    spellInfo->Effects[0]->MiscValue = 8;
                     break;
                 case 143987: //Fallen Ash Dmg
                     spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(1);

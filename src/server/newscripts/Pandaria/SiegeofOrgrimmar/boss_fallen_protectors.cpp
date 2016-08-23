@@ -77,7 +77,7 @@ enum eSpells
     SPELL_SHA_CORRUPTION_SUMMONED           = 142885,
     SPELL_MARK_OF_ANGUISH_JUMP              = 143808, //Mark of Anguish
     SPELL_MARK_OF_ANGUISH_SELECT_TARGET     = 143822, //Mark of Anguish by 143840
-    SPELL_MARK_OF_ANGUISH_STAN              = 143840,
+    SPELL_MARK_OF_ANGUISH_STUN              = 143840,
     SPELL_MARK_OF_ANGUISH_DAMAGE            = 144365,
     SPELL_MARK_OF_ANGUISH_GIVE_A_FRIEND     = 143842,
     SPELL_SHADOW_WEAKNES_PROC               = 144079, //prock spell on hit or something else
@@ -231,7 +231,10 @@ struct boss_fallen_protectors : public ScriptedAI
                         prot->Kill(prot, true);
 
         if (instance->GetBossState(DATA_F_PROTECTORS) != DONE)
+        {
             instance->SetBossState(DATA_F_PROTECTORS, DONE);
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MARK_OF_ANGUISH_STUN);
+        }
     }
 
     bool CheckLotus()
@@ -1164,7 +1167,7 @@ public:
                     GetPosInRadiusWithRandomOrientation(target, 5.0f, x, y);
                     me->CastSpell(x, y, target->GetPositionZ(), SPELL_MARK_OF_ANGUISH_JUMP, true);
                     target->CastSpell(target, SPELL_DEBILITATION, true);
-                    me->CastSpell(target, SPELL_MARK_OF_ANGUISH_STAN, false);
+                    me->CastSpell(target, SPELL_MARK_OF_ANGUISH_STUN, false);
                     me->AddThreat(target, 50000000.0f);
                     me->SetReactState(REACT_AGGRESSIVE);
                     me->Attack(target, true);
@@ -1194,7 +1197,7 @@ public:
                 case EVENT_ACTIVE:
                     if (Unit* target = me->GetUnit(*me, _target))
                     {
-                        if (!target->isAlive() || !target->HasAura(SPELL_MARK_OF_ANGUISH_STAN))
+                        if (!target->isAlive() || !target->HasAura(SPELL_MARK_OF_ANGUISH_STUN))
                         {
                             RemoveShadowWeakness();
                             events.ScheduleEvent(EVENT_1, 1000);
@@ -1685,7 +1688,7 @@ public:
                 if (Creature* mesOfHe = GetCaster()->FindNearestCreature(NPC_EMBODIED_ANGUISH_OF_HE, 50.0f, true))
                 {
                     mesOfHe->CastSpell(mesOfHe, SPELL_SHADOW_WEAKNES_MASS, true);
-                    GetCaster()->RemoveAurasDueToSpell(SPELL_MARK_OF_ANGUISH_STAN);
+                    GetCaster()->RemoveAurasDueToSpell(SPELL_MARK_OF_ANGUISH_STUN);
                     mesOfHe->AI()->SetGUID(GetHitUnit()->GetGUID(), true);
                 }
             }
