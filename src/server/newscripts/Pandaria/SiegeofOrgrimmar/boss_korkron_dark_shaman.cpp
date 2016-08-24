@@ -213,10 +213,8 @@ public:
                 glist.clear();
                 me->GetGameObjectListWithEntryInGrid(glist, 220864, 200.0f); //iron tomb
                 if (!glist.empty())
-                {
                     for (std::list<GameObject*>::const_iterator itr = glist.begin(); itr != glist.end(); itr++)
                         (*itr)->Delete();
-                }
             }
         }
 
@@ -488,10 +486,24 @@ public:
                     break;
                 //Haromm
                 case EVENT_FOUL_STREAM:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 60.0f, true))
-                        DoCast(target, SPELL_FOUL_STREAM);
+                {
+                    std::list<Player*>pllist;
+                    pllist.clear();
+                    GetPlayerListInGrid(pllist, me, 80.0f);
+                    if (!pllist.empty())
+                    {
+                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                        {
+                            if (!(*itr)->HasAura(SPELL_TOXIC_MIST))
+                            {
+                                DoCast(*itr, SPELL_FOUL_STREAM);
+                                break;
+                            }
+                        }
+                    }
                     events.ScheduleEvent(EVENT_FOUL_STREAM, 30000);
                     break;
+                }
                 //Extra events 50pct
                 //Kardris
                 case EVENT_FALLING_ASH:
@@ -536,8 +548,7 @@ public:
         {
             if (type == DATA_GET_PULL_STATE)
                 return firstpull ? 1 : 0;
-
-            return NULL;
+            return 0;
         }
     };
     
