@@ -489,7 +489,7 @@ public:
                 {
                     std::list<Player*>pllist;
                     pllist.clear();
-                    GetPlayerListInGrid(pllist, me, 80.0f);
+                    GetPlayerListInGrid(pllist, me, 50.0f);
                     if (!pllist.empty())
                     {
                         for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
