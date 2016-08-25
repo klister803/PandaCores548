@@ -1517,15 +1517,15 @@ public:
     {
         PrepareSpellScript(spell_shadow_volley_SpellScript);
 
-        void HandleOnHit()
+        void HandleDummy(SpellEffIndex effIndex)
         {
-            if (GetHitUnit()->ToPlayer())
-                GetCaster()->CastCustomSpell(SPELL_SHADOW_VOLLEY_D, SPELLVALUE_BASE_POINT0, GetSpellInfo()->Effects[EFFECT_0]->BasePoints, GetHitUnit());
+            if (GetHitUnit() && GetHitUnit()->ToPlayer())
+                GetHitUnit()->CastCustomSpell(SPELL_SHADOW_VOLLEY_D, SPELLVALUE_BASE_POINT0, GetSpellInfo()->Effects[EFFECT_0]->BasePoints, GetHitUnit());
         }
 
         void Register()
         {
-            OnHit += SpellHitFn(spell_shadow_volley_SpellScript::HandleOnHit);
+            OnEffectHitTarget += SpellEffectFn(spell_shadow_volley_SpellScript::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
         }
     };
 
@@ -1547,16 +1547,17 @@ public:
 
         void HandleOnHit()
         {
-            if (GetCaster())
+            if (GetCaster() && GetCaster()->ToTempSummon())
             {
-                int32 dmg = GetSpellInfo()->Effects[EFFECT_0]->BasePoints;
-                std::list<Player*> pllist;
-                pllist.clear();
-                GetPlayerListInGrid(pllist, GetCaster(), 30.0f);
-                if (!pllist.empty())
+                if (Unit* spoil = GetCaster()->ToTempSummon()->GetSummoner())
                 {
-                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
-                        GetCaster()->CastCustomSpell(SPELL_MOLTEN_FIST_D, SPELLVALUE_BASE_POINT0, dmg, *itr, true);
+                    int32 dmg = GetSpellInfo()->Effects[EFFECT_0]->BasePoints;
+                    std::list<Player*> pllist;
+                    pllist.clear();
+                    GetPlayerListInGrid(pllist, spoil, 55.0f);
+                    if (!pllist.empty())
+                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                            (*itr)->CastCustomSpell(SPELL_MOLTEN_FIST_D, SPELLVALUE_BASE_POINT0, dmg, *itr, true);
                 }
             }
         }
@@ -2261,6 +2262,55 @@ public:
     }
 };
 
+//148583
+class spell_jade_tempest : public SpellScriptLoader
+{
+public:
+    spell_jade_tempest() : SpellScriptLoader("spell_jade_tempest") { }
+
+    class spell_jade_tempest_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_jade_tempest_SpellScript);
+
+        void HandleOnHit()
+        {
+            if (GetHitUnit())
+            {
+                int32 dmg = 0;
+                switch (GetHitUnit()->GetMap()->GetDifficulty())
+                {
+                case MAN10_DIFFICULTY:
+                    dmg = 150000;
+                    break;
+                case MAN25_DIFFICULTY:
+                    dmg = 165000;
+                    break;
+                case MAN10_HEROIC_DIFFICULTY:
+                    dmg = 300000;
+                    break;
+                case MAN25_HEROIC_DIFFICULTY:
+                    dmg = 301000;
+                    break;
+                default:
+                    dmg = 123750;
+                    break;
+                }
+                SetHitDamage(dmg);
+            }
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_jade_tempest_SpellScript::HandleOnHit);
+        };
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_jade_tempest_SpellScript();
+    }
+};
+
 void AddSC_boss_spoils_of_pandaria()
 {
     new npc_ssop_spoils();
@@ -2288,4 +2338,5 @@ void AddSC_boss_spoils_of_pandaria()
     new spell_spoils_staff_of_resonating_water();
     new spell_unstable_defense_system_dummy();
     new spell_spoils_encapsulated_pheromones();
+    new spell_jade_tempest();
 }

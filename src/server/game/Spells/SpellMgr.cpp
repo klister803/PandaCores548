@@ -5251,14 +5251,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 148515: //Shadow Volley Dummy
                     spellInfo->Effects[1]->TargetA = 22;
                     spellInfo->Effects[1]->TargetB = 15;
+                    spellInfo->Effects[1]->RadiusEntry = sSpellRadiusStore.LookupEntry(27);
                     break;
                 case 148582: //Jade Tempest AT
                     spellInfo->Effects[2]->Effect = 0;
                     spellInfo->Effects[3]->Effect = 0;
                     spellInfo->Effects[4]->Effect = 0;
-                    break;
-                case 148583: //Jade Tempest Dmg
-                    spellInfo->Effects[0]->BasePoints = 105000;
                     break;
                 case 146824: //Unstable Spark Spawn Dummy
                     spellInfo->Effects[0]->TargetA = 25;
