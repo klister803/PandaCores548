@@ -68,6 +68,7 @@ enum Events
     EVENT_EXPLOSE                 = 7,
     EVENT_BLOOD_RAGE              = 8,
     EVENT_ESSENCE_OF_YSHAARJ      = 9,
+    EVENT_CHECK_PROGRESS          = 10,
 };
 
 enum Actions
@@ -195,6 +196,7 @@ class boss_malkorok : public CreatureScript
                 powercheck = 1400;
                 checkvictim = 1500;
                 DoCast(me, SPELL_FATAL_STRIKE, true);
+                events.ScheduleEvent(EVENT_CHECK_PROGRESS, 4000);
                 events.ScheduleEvent(EVENT_SEISMIC_SLAM, 5000, 0, PHASE_ONE);
                 events.ScheduleEvent(EVENT_PREPARE, 12000, 0, PHASE_ONE);
                 events.ScheduleEvent(EVENT_ERADICATE, 360000);
@@ -481,6 +483,16 @@ class boss_malkorok : public CreatureScript
                 {
                     switch (eventId)
                     {
+                    case EVENT_CHECK_PROGRESS:
+                        if (instance && instance->GetBossState(DATA_GENERAL_NAZGRIM) != DONE)
+                        {
+                            events.Reset();
+                            me->AttackStop();
+                            me->SetReactState(REACT_PASSIVE);
+                            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                            EnterEvadeMode();
+                        }
+                        break;
                     case EVENT_PREPARE:
                         me->SetAiAnimKit(0);
                         me->SetAttackStop(true);

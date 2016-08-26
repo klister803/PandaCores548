@@ -689,7 +689,7 @@ public:
 
         void Reset()
         {
-            events.ScheduleEvent(EVENT_SUMMON_TORNADO, 8000);
+            events.ScheduleEvent(EVENT_SUMMON_TORNADO, 12000);
         }
 
         void EnterCombat(Unit* who){}
@@ -707,7 +707,7 @@ public:
                     float ang = float(urand(0, 6));
                     me->SetOrientation(ang);
                     DoCast(me, SPELL_TOXIC_TORNADO_SUM);
-                    events.ScheduleEvent(EVENT_SUMMON_TORNADO, 8000);
+                    events.ScheduleEvent(EVENT_SUMMON_TORNADO, 12000);
                 }
             }
         }

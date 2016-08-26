@@ -72,6 +72,7 @@ enum Events
     EVENT_EXECUTE             = 15,
     EVENT_SHOOT               = 16,
     EVENT_MULTI_SHOT          = 17,
+    EVENT_CHECK_PROGRESS      = 18,
 };
 
 enum Actions
@@ -355,6 +356,7 @@ class boss_general_nazgrim : public CreatureScript
                 SetStance(0);
                 wavenum = 0;
                 checkvictim = 1500;
+                events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
                 events.ScheduleEvent(EVENT_SUMMON, 45000);
                 events.ScheduleEvent(EVENT_SUNDERING_BLOW, 30000);
                 events.ScheduleEvent(EVENT_BONECRACKER, 15000);
@@ -471,6 +473,15 @@ class boss_general_nazgrim : public CreatureScript
                 {
                     switch (eventId)
                     {
+                    case EVENT_CHECK_PROGRESS:
+                        if (instance && instance->GetBossState(DATA_KORKRON_D_SHAMAN) != DONE)
+                        {
+                            me->AttackStop();
+                            me->SetReactState(REACT_PASSIVE);
+                            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                            EnterEvadeMode();
+                        }
+                        break;
                     //Default events
                     case EVENT_SUNDERING_BLOW:
                         if (me->getVictim())

@@ -7945,6 +7945,18 @@ void Spell::EffectDamageFromMaxHealthPCT(SpellEffIndex /*effIndex*/)
     if (m_spellInfo->Id == 125372)
         damage = damage / 100;
 
+    if (m_spellInfo->Id == 144331)//Iron Prison - Korkron Dark Shamans[SO]
+    {
+        if (unitTarget->HasAuraType(SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN))
+        {
+            int32 dmg = unitTarget->CountPctFromMaxHealth(damage);
+            int32 amount = unitTarget->GetTotalAuraModifier(SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN);
+            AddPct(dmg, amount);
+            m_damage = dmg;
+            return;
+        }
+    }
+
     m_damage += unitTarget->CountPctFromMaxHealth(damage);
 }
 
