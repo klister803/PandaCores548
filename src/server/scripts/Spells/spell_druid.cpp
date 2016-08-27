@@ -2463,8 +2463,8 @@ class spell_dru_starfall_dummy : public SpellScriptLoader
                 }
 
                 // Any effect which causes you to lose control of your character will supress the starfall effect.
-//                 if (caster->HasUnitState(UNIT_STATE_CONTROLLED))
-//                     return;
+                if (caster->HasUnitState(UNIT_STATE_CONTROLLED))
+                    return;
 
                 caster->CastSpell(GetHitUnit(), uint32(GetEffectValue()), true);
             }
