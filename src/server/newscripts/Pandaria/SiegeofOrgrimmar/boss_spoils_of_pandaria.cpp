@@ -364,19 +364,8 @@ public:
                         DespawnAllAT();
                         OfflineWorldState();
                         if (!me->GetMap()->IsLfr())
-                        {
-                            if (GameObject* chest = me->SummonGameObject(GO_NSOP_SPOILS, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 604800))
-                            {
-                                /*if (!lfl.empty())
-                                {
-                                    me->MonsterTextEmote("lfl not empty", 0, true);
-                                    chest->AddThreatTargetLoot(&lfl);
-                                }
-                                else
-                                    me->MonsterTextEmote("lfl empty", 0, true);*/
+                            if (GameObject* chest = me->SummonGameObject(GO_NSOP_SPOILS, 1631.8f, -5125.97f, -271.122f, 5.31506f, 0.0f, 0.0f, 0.0f, 1.0f, 604800))
                                 chest->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
-                            }
-                        }
                         lfl.clear();
                         me->GeneratePersonalLoot(me, NULL); // bonus loot
                         events.ScheduleEvent(EVENT_OUTRO, 4000);

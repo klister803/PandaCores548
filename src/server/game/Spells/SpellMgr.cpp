@@ -5178,11 +5178,13 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 144218: //Borer Drill Dmg
                 {
                     for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                    {
                         if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
                         {
                             eff->Effect = SPELL_EFFECT_APPLY_AURA;
                             eff->TargetA = TARGET_UNIT_TARGET_ANY;
                         }
+                    }
                     break;
                 }
                 case 144458: //Scatter Laser
@@ -5244,6 +5246,16 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->ExcludeTargetAuraSpell = 0;
                     break;
                 //Spoils of Pandaria
+                case 145748: //Encapsulated Pheromones Dmg
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                    {
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                        {
+                            eff->TargetA = TARGET_UNIT_TARGET_ANY;
+                            eff->TargetB = TARGET_NONE;
+                        }
+                    }
+                    break;
                 case 146289: //Mass Paralyses
                     spellInfo->Effects[0]->TargetA = 22;
                     spellInfo->Effects[0]->TargetB = 15;
