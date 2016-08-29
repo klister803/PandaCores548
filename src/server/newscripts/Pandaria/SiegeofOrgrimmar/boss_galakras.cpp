@@ -482,7 +482,7 @@ class boss_galakras : public CreatureScript
                         break;
                     //Heroic mode
                     case ACTION_GRUNT_SOUTH:
-                        if (instance->instance->GetDifficulty() == MAN10_HEROIC_DIFFICULTY || instance->instance->GetDifficulty() == MAN25_HEROIC_DIFFICULTY)
+                        if (me->GetMap()->IsHeroic())
                         {
                             SouthGruntEvent = true;
                             events.ScheduleEvent(EVENT_SUMMON_GRUNT_SOUTH, 6000);
@@ -541,14 +541,20 @@ class boss_galakras : public CreatureScript
                             break;
                         }
                         case EVENT_SUMMON_GRUNT_SOUTH:
-                            if (SouthGruntEvent)
-                                me->SummonCreature(NPC_DRAGONMAW_GRUNT_H, HeroicGruntPos[0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
-                            events.ScheduleEvent(EVENT_SUMMON_GRUNT_SOUTH, 60000);
+                            if (me->GetMap()->IsHeroic())
+                            {
+                                if (SouthGruntEvent)
+                                    me->SummonCreature(NPC_DRAGONMAW_GRUNT_H, HeroicGruntPos[0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
+                                events.ScheduleEvent(EVENT_SUMMON_GRUNT_SOUTH, 60000);
+                            }
                             break;
                         case EVENT_SUMMON_GRUNT_NORTH:
-                            if (NorthGruntEvent)
-                                me->SummonCreature(NPC_DRAGONMAW_GRUNT_H, HeroicGruntPos[1], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
-                            events.ScheduleEvent(EVENT_SUMMON_GRUNT_NORTH, 60000);
+                            if (me->GetMap()->IsHeroic())
+                            {
+                                if (NorthGruntEvent)
+                                    me->SummonCreature(NPC_DRAGONMAW_GRUNT_H, HeroicGruntPos[1], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
+                                events.ScheduleEvent(EVENT_SUMMON_GRUNT_NORTH, 60000);
+                            }
                             break;
                         case EVENT_SUMMON_DEMOLITIONS_SOUTH:
                             me->SummonCreature(instance->GetData(DATA_TEAM_IN_INSTANCE) == HORDE ? NPC_DEMOLITIONS_EXPERT_S_H: NPC_DEMOLITIONS_EXPERT_S_A, DemolitionSPos[0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);

@@ -387,7 +387,7 @@ public:
                     nextpct = 25;
                     break;
                 case 25:
-                    nextpct = NULL;
+                    nextpct = 0;
                     break;
                 }
                 SetExtraEvents(nextpct);

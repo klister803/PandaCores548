@@ -1431,8 +1431,9 @@ public:
                 case IN_PROGRESS:
                     ShowSouthTower = data;
                     DoUpdateWorldState(WS_SHOW_SOUTH_TOWER, 1);
-                    if (Creature* Galakras = instance->GetCreature(GetData64(NPC_GALAKRAS)))
-                        Galakras->AI()->DoAction(ACTION_GRUNT_SOUTH);
+                    if (instance->IsHeroic())
+                        if (Creature* Galakras = instance->GetCreature(GetData64(NPC_GALAKRAS)))
+                            Galakras->AI()->DoAction(ACTION_GRUNT_SOUTH);
                     break;
                 case NOT_STARTED:
                     ShowSouthTower = data;
