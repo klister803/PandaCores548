@@ -1102,10 +1102,7 @@ public:
                     break;
                 case EVENT_TORMENT:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 50.0f, true))
-                    {
-                        DoCast(target, SPELL_TORMENT_DUMMY);
-                        DoCast(target, SPELL_TORMENT_MAIN);
-                    }
+                        me->CastSpell(target, SPELL_TORMENT_DUMMY, true, 0, 0, me->GetGUID());
                     events.ScheduleEvent(EVENT_TORMENT, 18000);
                     break;
                 case EVENT_MOGU_RUNE_OF_POWER:
@@ -2300,6 +2297,90 @@ public:
     }
 };
 
+//142942
+class spell_torment : public SpellScriptLoader
+{
+public:
+    spell_torment() : SpellScriptLoader("spell_torment") { }
+
+    class spell_torment_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_torment_SpellScript);
+
+        void HandleOnHit()
+        {
+            if (GetHitUnit())
+                if (Unit* ocaster = GetOriginalCaster())
+                    GetHitUnit()->CastSpell(GetHitUnit(), SPELL_TORMENT_MAIN, true, 0, 0, ocaster->GetGUID());
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_torment_SpellScript::HandleOnHit);
+        };
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_torment_SpellScript();
+    }
+};
+
+//142983
+class spell_torment_periodic : public SpellScriptLoader
+{
+public:
+    spell_torment_periodic() : SpellScriptLoader("spell_torment_periodic") { }
+
+    class spell_torment_periodic_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_torment_periodic_AuraScript);
+
+        void HandleEffectRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_ENEMY_SPELL)
+            {
+                if (GetCaster() && GetTarget())
+                {
+                    if (GetCaster()->isAlive())
+                    {
+                        float dist = 5.0f;
+                        std::list<Player*>pllist;
+                        for (uint8 n = 0; n < 10; n++)
+                        {
+                            pllist.clear();
+                            GetPlayerListInGrid(pllist, GetTarget(), dist);
+                            if (!pllist.empty())
+                            {
+                                for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                                {
+                                    if (GetTarget()->GetGUID() != (*itr)->GetGUID() && !(*itr)->HasAura(SPELL_TORMENT_MAIN))
+                                    {
+                                        GetTarget()->CastSpell(*itr, SPELL_TORMENT_DUMMY, true, 0, 0, GetCaster()->GetGUID());
+                                        return;
+                                    }
+                                }
+                            }
+                            dist += 5.0f;
+                        }
+                    }
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_torment_periodic_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_torment_periodic_AuraScript();
+    }
+};
+
 void AddSC_boss_spoils_of_pandaria()
 {
     new npc_ssop_spoils();
@@ -2328,4 +2409,6 @@ void AddSC_boss_spoils_of_pandaria()
     new spell_unstable_defense_system_dummy();
     new spell_spoils_encapsulated_pheromones();
     new spell_jade_tempest();
+    new spell_torment();
+    new spell_torment_periodic();
 }
