@@ -5033,19 +5033,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->Effect = SPELL_EFFECT_DUMMY;
                     spellInfo->Effects[0]->TargetB = 15;
                     break;
-                case 143297: //Sha splash
-                {
-                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
-                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
-                        {
-                            eff->TargetA = TARGET_SRC_CASTER;
-                            eff->TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
-                            eff->RadiusEntry = sSpellRadiusStore.LookupEntry(7); //2yards
-                        }
-
-                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(65); // 1.5s
-                    break;
-                }
                 case 130063: //Sha splash Dummy
                     spellInfo->Effects[0]->ApplyAuraName = SPELL_AURA_DUMMY;
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21);

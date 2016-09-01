@@ -230,6 +230,7 @@ enum sActions
 {
     ACTION_SEND_AURA_BAR         = 1,
     ACTION_SECOND_ROOM           = 2,
+    ACTION_RE_ATTACK             = 3,
 };
 
 enum sData
@@ -1015,6 +1016,12 @@ public:
             }
         }
 
+        void DoAction(int32 const action)
+        {
+            if (action == ACTION_RE_ATTACK)
+                me->ReAttackWithZone();
+        }
+
         void DoRoomInCombat()
         {
             if (!me->ToTempSummon())
@@ -1112,7 +1119,11 @@ public:
                     break;
                 case EVENT_FORBIDDEN_MAGIC:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 10.0f, true))
+                    {
+                        me->SetAttackStop(true);
+                        me->SetFacingToObject(target);
                         DoCast(target, SPELL_FORBIDDEN_MAGIC);
+                    }
                     events.ScheduleEvent(EVENT_FORBIDDEN_MAGIC, 15000);
                     break;
                 case EVENT_RESIDUE:
@@ -2381,6 +2392,36 @@ public:
     }
 };
 
+//145230
+class spell_forbidden_magic : public SpellScriptLoader
+{
+public:
+    spell_forbidden_magic() : SpellScriptLoader("spell_forbidden_magic") { }
+
+    class spell_forbidden_magic_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_forbidden_magic_AuraScript);
+
+        void HandleEffectRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetCaster() && GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
+                if (GetCaster()->ToCreature())
+                    GetCaster()->ToCreature()->AI()->DoAction(ACTION_RE_ATTACK);
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_forbidden_magic_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_forbidden_magic_AuraScript();
+    }
+};
+
 void AddSC_boss_spoils_of_pandaria()
 {
     new npc_ssop_spoils();
@@ -2411,4 +2452,5 @@ void AddSC_boss_spoils_of_pandaria()
     new spell_jade_tempest();
     new spell_torment();
     new spell_torment_periodic();
+    new spell_forbidden_magic();
 }

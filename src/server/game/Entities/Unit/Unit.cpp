@@ -4495,12 +4495,17 @@ uint32 Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
 
     // interrupt channeled spell
     if (Spell* spell = m_currentSpells[CURRENT_CHANNELED_SPELL])
+    {
+        if (spell->m_spellInfo->Id == 145230) //Forbidden Magic (SOP)[SO]
+            return count;
+
         if (spell->getState() == SPELL_STATE_CASTING
             && (spell->m_spellInfo->ChannelInterruptFlags & flag)
             && spell->m_spellInfo->Id != except
             && !(spell->m_spellInfo->Id == 120360 && flag == AURA_INTERRUPT_FLAG_MOVE)
             && ((flag & AURA_INTERRUPT_FLAG_MOVING) == 0 || !HasAuraCastWhileWalking(spell->m_spellInfo)))
             InterruptNonMeleeSpells(false);
+    }
 
     UpdateInterruptMask();
     return count;
