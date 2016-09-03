@@ -5079,7 +5079,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 103536: // Resonating Crystal: Warning
                 case 103541: // Resonating Crystal: Safe
                 case 105479: // Corruption: Searing Plasma
-                case 144774: // Sha of Pride: Reaching Attack
                 case 100941: // CATA: Ragnaros: Dreadflame
                 case 146703: // Amalgam of Corruption: Bottomless Pit
                 case 148310: // Bombard Stun
@@ -5160,6 +5159,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 146595: //Gift of Titans base spell
                     spellInfo->Effects[0]->TriggerSpell = 0;
                     spellInfo->Effects[1]->TriggerSpell = 0;
+                    break;
+                case 144774:
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
+                    spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(1);
                     break;
                 //Iron Juggernaut
                 case 144218: //Borer Drill Dmg
