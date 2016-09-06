@@ -63,6 +63,8 @@ enum eSpells
     SPELL_MANTID_SWARM3               = 145808,
     SPELL_THROW_EXPLOSIVES            = 145702,
     SPELL_GUSTING_BOMB                = 145712,
+    SPELL_GUSTING_BOMB_AOE_DMG        = 145718,
+    SPELL_GUSTING_BOMB_AT             = 145714,
     SPELL_ENCAPSULATED_PHEROMONES     = 142524,
     SPELL_ENCAPSULATED_VISUAL         = 142492,
     SPELL_ENCAPSULATED_PHEROMONES_AT  = 145285,
@@ -96,6 +98,11 @@ enum eSpells
     SPELL_UNSTABLE_SPARK_DUMMY_SPAWN  = 146824,
     SPELL_UNSTABLE_SPARK_SPAWN_VISUAL = 146696,
     SPELL_SUPERNOVA                   = 146815,
+
+    SPELL_STONE_STATUE_SUMMON         = 145489,
+    SPELL_ANIMATED_STRIKE_SIT         = 145499,
+    SPELL_ANIMATED_STRIKE_LAUNCH_V    = 142944,
+    SPELL_ANIMATED_STRIKE_DMG         = 145523,
 };
 
 enum Events
@@ -140,6 +147,11 @@ enum Events
     EVENT_START_SOP                   = 35,
     EVENT_OUTRO                       = 36,
     EVENT_ACTIVE                      = 37,
+    EVENT_ANIMATED_STRIKE_START       = 38,
+    EVENT_ANIMATED_STRIKE_LAUNCH      = 39,
+    EVENT_ANIMATED_STRIKE_FINISH      = 40,
+    EVENT_ANIMATED_STRIKE_RESET       = 41,
+    EVENT_SUMMON_STONE_STATUE         = 42,
 };
 
 enum Says
@@ -932,15 +944,19 @@ public:
             //Big 
             case NPC_JUN_WEI:
                 events.ScheduleEvent(EVENT_SHADOW_VOLLEY, 8000);
+                events.ScheduleEvent(EVENT_SUMMON_STONE_STATUE, 3000);
                 break;
             case NPC_ZU_YIN:
                 events.ScheduleEvent(EVENT_MOLTEN_FIST, 8000);
+                events.ScheduleEvent(EVENT_SUMMON_STONE_STATUE, 3000);
                 break;
             case NPC_XIANG_LIN:
                 events.ScheduleEvent(EVENT_JADE_TEMPEST, 8000);
+                events.ScheduleEvent(EVENT_SUMMON_STONE_STATUE, 3000);
                 break;
             case NPC_KUN_DA:
                 events.ScheduleEvent(EVENT_FRACTURE, 8000);
+                events.ScheduleEvent(EVENT_SUMMON_STONE_STATUE, 3000);
                 break;
             case NPC_COMMANDER_ZAKTAR:
             case NPC_COMMANDER_IKTAL:
@@ -1005,14 +1021,21 @@ public:
 
         void JustSummoned(Creature* summon)
         {
-            if (summon->GetEntry() == NPC_ZARTHIK_SWARMER)
+            switch (summon->GetEntry())
             {
+            case NPC_ZARTHIK_SWARMER:
                 if (me->ToTempSummon())
                     if (Unit* summoner = me->ToTempSummon()->GetSummoner())
                         summoner->ToCreature()->AI()->JustSummoned(summon);
                 summon->setFaction(16);
                 summon->SetReactState(REACT_AGGRESSIVE);
                 summon->AI()->DoZoneInCombat(summon, 50.0f);
+                break;
+            case NPC_STONE_STATUE:
+                if (me->ToTempSummon())
+                    if (Unit* summoner = me->ToTempSummon()->GetSummoner())
+                        summoner->ToCreature()->AI()->JustSummoned(summon);
+                break;
             }
         }
 
@@ -1075,7 +1098,11 @@ public:
             {
                 switch (eventId)
                 {
-                //Big                      
+                //Big  
+                case EVENT_SUMMON_STONE_STATUE:
+                    DoCast(me, SPELL_STONE_STATUE_SUMMON);
+                    events.ScheduleEvent(EVENT_SUMMON_STONE_STATUE, 12000);
+                    break;
                 case EVENT_MOLTEN_FIST:
                     DoCast(me, SPELL_MOLTEN_FIST);
                     events.ScheduleEvent(EVENT_MOLTEN_FIST, 15000);
@@ -1317,6 +1344,80 @@ public:
     }
 };
 
+//72535
+class npc_stone_statue : public CreatureScript
+{
+public:
+    npc_stone_statue() : CreatureScript("npc_stone_statue") {}
+
+    struct npc_stone_statueAI : public ScriptedAI
+    {
+        npc_stone_statueAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+        }
+        InstanceScript* instance;
+        EventMap events;
+
+        void Reset()
+        {
+            events.ScheduleEvent(EVENT_ANIMATED_STRIKE_START, 4000);
+        }
+
+        void JustDied(Unit* killer)
+        {
+            me->DespawnOrUnsummon();
+        }
+
+        float GetRandomAngle()
+        {
+            float pos = urand(0, 6);
+            float ang = pos <= 5 ? pos + float(urand(1, 9)) / 10 : pos;
+            return ang;
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                case EVENT_ANIMATED_STRIKE_START:
+                    me->SetFacingTo(GetRandomAngle());
+                    DoCast(me, SPELL_ANIMATED_STRIKE_LAUNCH_V);
+                    events.ScheduleEvent(EVENT_ANIMATED_STRIKE_LAUNCH, 1800);
+                    break;
+                case EVENT_ANIMATED_STRIKE_LAUNCH:
+                    DoCast(me, SPELL_ANIMATED_STRIKE_DMG);
+                    events.ScheduleEvent(EVENT_ANIMATED_STRIKE_FINISH, 4500);
+                    break;
+                case EVENT_ANIMATED_STRIKE_FINISH:
+                    DoCast(me, SPELL_ANIMATED_STRIKE_SIT);
+                    events.ScheduleEvent(EVENT_ANIMATED_STRIKE_RESET, 5000);
+                    break;
+                case EVENT_ANIMATED_STRIKE_RESET:
+                    me->RemoveAurasDueToSpell(SPELL_ANIMATED_STRIKE_SIT);
+                    events.ScheduleEvent(EVENT_ANIMATED_STRIKE_START, 2000);
+                    break;
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_stone_statueAI(creature);
+    }
+};
+
 //73104
 class npc_unstable_spark : public CreatureScript
 {
@@ -1329,7 +1430,7 @@ public:
         {
             instance = creature->GetInstanceScript();
             me->SetReactState(REACT_PASSIVE);
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
         }
         EventMap events;
 
@@ -1337,12 +1438,12 @@ public:
 
         void Reset()
         {
-            events.ScheduleEvent(EVENT_ACTIVE, 4000);
+            events.ScheduleEvent(EVENT_ACTIVE, 500);
         }
 
         void JustDied(Unit* killer)
         {
-            me->DespawnOrUnsummon(2000);
+            me->DespawnOrUnsummon();
         }
 
         void EnterCombat(Unit* who){}
@@ -1590,10 +1691,8 @@ public:
                 pllist.clear();
                 GetPlayerListInGrid(pllist, GetCaster(), 30.0f);
                 if (!pllist.empty())
-                {
                     for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
                         GetCaster()->CastCustomSpell(SPELL_FRACTURE_D, SPELLVALUE_BASE_POINT0, dmg, *itr, true);
-                }
             }
         }
 
@@ -1880,7 +1979,7 @@ class spell_boss_gusting_bomb : public SpellScriptLoader
                     float angle = caster->GetAngle(target);
                     target->GetPosition(&GetSpell()->visualPos);
 
-                    caster->CastSpell(target, 145718, true);
+                    caster->CastSpell(target, SPELL_GUSTING_BOMB_AOE_DMG, true);
                     if(count > 0)
                     {
                         for(uint32 j = 1; j < count + 1; ++j)
@@ -1888,7 +1987,7 @@ class spell_boss_gusting_bomb : public SpellScriptLoader
                             uint32 distanceNext = j * 2;
                             float destx = caster->GetPositionX() + distanceNext * std::cos(angle);
                             float desty = caster->GetPositionY() + distanceNext * std::sin(angle);
-                            caster->CastSpell(destx, desty, caster->GetPositionZ(), 145714, true);
+                            caster->CastSpell(destx, desty, caster->GetPositionZ(), SPELL_GUSTING_BOMB_AT, true);
                         }
                     }
                 }
@@ -2422,6 +2521,44 @@ public:
     }
 };
 
+//145489
+class spell_stone_statue_summon : public SpellScriptLoader
+{
+public:
+    spell_stone_statue_summon() : SpellScriptLoader("spell_stone_statue_summon") { }
+
+    class spell_stone_statue_summon_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_stone_statue_summon_SpellScript);
+
+        void HandleAfterCast()
+        {
+            if (GetCaster() && GetCaster()->ToCreature() && GetCaster()->ToTempSummon())
+            {
+                if (Unit* spoil = GetCaster()->ToTempSummon()->GetSummoner())
+                {
+                    for (uint8 n = 0; n < 2; n++)
+                    {
+                        float x, y;
+                        GetPosInRadiusWithRandomOrientation(spoil, float(urand(5, 45)), x, y);
+                        spoil->SummonCreature(NPC_STONE_STATUE, x, y, spoil->GetPositionZ());
+                    }
+                }
+            }
+        }
+
+        void Register()
+        {
+            AfterCast += SpellCastFn(spell_stone_statue_summon_SpellScript::HandleAfterCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_stone_statue_summon_SpellScript();
+    }
+};
+
 void AddSC_boss_spoils_of_pandaria()
 {
     new npc_ssop_spoils();
@@ -2429,6 +2566,7 @@ void AddSC_boss_spoils_of_pandaria()
     new npc_lever();
     new npc_lift_hook();
     new npc_generic_sop_units();
+    new npc_stone_statue();
     new npc_unstable_spark();
     new go_ssop_spoils();
     new go_generic_lever();
@@ -2453,4 +2591,5 @@ void AddSC_boss_spoils_of_pandaria()
     new spell_torment();
     new spell_torment_periodic();
     new spell_forbidden_magic();
+    new spell_stone_statue_summon();
 }

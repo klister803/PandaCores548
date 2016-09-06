@@ -5160,7 +5160,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->TriggerSpell = 0;
                     spellInfo->Effects[1]->TriggerSpell = 0;
                     break;
-                case 144774:
+                case 144774: //Sha of Pride : Reaching Attack
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(1);
                     break;

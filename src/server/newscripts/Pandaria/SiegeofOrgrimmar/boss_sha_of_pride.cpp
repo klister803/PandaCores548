@@ -292,6 +292,18 @@ class boss_sha_of_pride : public CreatureScript
             {
                 if (!UpdateVictim())
                     return;
+
+                if (checkvictim)
+                {
+                    if (checkvictim <= diff)
+                    {
+                        if (me->getVictim() && !me->IsWithinMeleeRange(me->getVictim()))
+                            DoCastVictim(SPELL_REACHING_ATTACK, true);
+                        checkvictim = 1500;
+                    }
+                    else
+                        checkvictim -= diff;
+                }
                 
                 EnterEvadeIfOutOfCombatArea(diff);
                 events.Update(diff);
@@ -376,19 +388,6 @@ class boss_sha_of_pride : public CreatureScript
                         }
                     }
                 }
-
-                if (checkvictim)
-                {
-                    if (checkvictim <= diff)
-                    {
-                        if (me->getVictim() && !me->IsWithinMeleeRange(me->getVictim()))
-                            DoCastVictim(SPELL_REACHING_ATTACK, true);
-                        checkvictim = 1500;
-                    }
-                    else
-                        checkvictim -= diff;
-                }
-
                 DoMeleeAttackIfReady();
             }
         };

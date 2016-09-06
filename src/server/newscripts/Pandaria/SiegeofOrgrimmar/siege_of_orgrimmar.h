@@ -327,6 +327,7 @@ enum eCreatures
     NPC_AMBER_ENCASED_KUNCHONG      = 71388,
     NPC_KORTHIK_WARCALLER           = 71383,
     //
+    NPC_STONE_STATUE                = 72535,
 
     //Summons
     NPC_ZARTHIK_SWARMER             = 71398,
