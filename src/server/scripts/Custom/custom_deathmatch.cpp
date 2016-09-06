@@ -244,8 +244,7 @@ class deathmatch_player_script : public PlayerScript
 
         bool Execute(uint64 /*time*/, uint32 /*diff*/)
         {        
-            if (player->GetMapId() == 972)
-                player->RemoveAura(58729);
+            player->RemoveAura(58729);
             
             if(sGameEventMgr->IsActiveEvent(EVENT_DEATHMATCH))
             {
