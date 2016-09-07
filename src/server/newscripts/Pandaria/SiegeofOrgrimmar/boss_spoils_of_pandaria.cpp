@@ -1629,7 +1629,10 @@ public:
         void HandleDummy(SpellEffIndex effIndex)
         {
             if (GetHitUnit() && GetHitUnit()->ToPlayer())
-                GetHitUnit()->CastCustomSpell(SPELL_SHADOW_VOLLEY_D, SPELLVALUE_BASE_POINT0, GetSpellInfo()->Effects[EFFECT_0]->BasePoints, GetHitUnit());
+            {
+                float dmg = GetHitUnit()->GetMap()->IsHeroic() ? GetSpellInfo()->Effects[EFFECT_0]->BasePoints * 2 : GetSpellInfo()->Effects[EFFECT_0]->BasePoints;
+                GetHitUnit()->CastCustomSpell(SPELL_SHADOW_VOLLEY_D, SPELLVALUE_BASE_POINT0, dmg, GetHitUnit());
+            }
         }
 
         void Register()
@@ -1660,7 +1663,7 @@ public:
             {
                 if (Unit* spoil = GetCaster()->ToTempSummon()->GetSummoner())
                 {
-                    int32 dmg = GetSpellInfo()->Effects[EFFECT_0]->BasePoints;
+                    float dmg = GetCaster()->GetMap()->IsHeroic() ? GetSpellInfo()->Effects[EFFECT_0]->BasePoints * 2 : GetSpellInfo()->Effects[EFFECT_0]->BasePoints;
                     std::list<Player*> pllist;
                     pllist.clear();
                     GetPlayerListInGrid(pllist, spoil, 55.0f);
@@ -1697,7 +1700,7 @@ public:
         {
             if (GetCaster())
             {
-                int32 dmg = GetSpellInfo()->Effects[EFFECT_0]->BasePoints;
+                float dmg = GetCaster()->GetMap()->IsHeroic() ? GetSpellInfo()->Effects[EFFECT_0]->BasePoints * 2 : GetSpellInfo()->Effects[EFFECT_0]->BasePoints;
                 std::list<Player*> pllist;
                 pllist.clear();
                 GetPlayerListInGrid(pllist, GetCaster(), 30.0f);

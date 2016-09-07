@@ -5214,9 +5214,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 142906: //Ancient Miasma Dmg
                 case 29604:  //Jom Gabbar
-                case 148517: //Molten fist
-                case 148583: //Jade Tempest
-                case 148514: //Fracture
                     spellInfo->AttributesEx6 |= SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
                     break;
                 //General Nazgrim
