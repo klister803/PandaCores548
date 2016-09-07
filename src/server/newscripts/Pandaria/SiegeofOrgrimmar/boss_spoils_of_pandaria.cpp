@@ -943,18 +943,22 @@ public:
             {
             //Big 
             case NPC_JUN_WEI:
+                DoCast(me, SPELL_STRENGTH_OF_THE_STONE, true);
                 events.ScheduleEvent(EVENT_SHADOW_VOLLEY, 8000);
                 events.ScheduleEvent(EVENT_SUMMON_STONE_STATUE, 3000);
                 break;
             case NPC_ZU_YIN:
+                DoCast(me, SPELL_STRENGTH_OF_THE_STONE, true);
                 events.ScheduleEvent(EVENT_MOLTEN_FIST, 8000);
                 events.ScheduleEvent(EVENT_SUMMON_STONE_STATUE, 3000);
                 break;
             case NPC_XIANG_LIN:
+                DoCast(me, SPELL_STRENGTH_OF_THE_STONE, true);
                 events.ScheduleEvent(EVENT_JADE_TEMPEST, 8000);
                 events.ScheduleEvent(EVENT_SUMMON_STONE_STATUE, 3000);
                 break;
             case NPC_KUN_DA:
+                DoCast(me, SPELL_STRENGTH_OF_THE_STONE, true);
                 events.ScheduleEvent(EVENT_FRACTURE, 8000);
                 events.ScheduleEvent(EVENT_SUMMON_STONE_STATUE, 3000);
                 break;
@@ -1368,6 +1372,12 @@ public:
 
         void JustDied(Unit* killer)
         {
+            if (me->ToTempSummon())
+                if (Unit* summoner = me->ToTempSummon()->GetSummoner())
+                    if (summoner->isAlive())
+                        if (Aura* aura = summoner->GetAura(SPELL_STRENGTH_OF_THE_STONE))
+                            if (aura->GetStackAmount() >= 2)
+                                aura->SetStackAmount(aura->GetStackAmount() - 1);
             me->DespawnOrUnsummon();
         }
 
@@ -1971,7 +1981,7 @@ class spell_boss_gusting_bomb : public SpellScriptLoader
                     if(!caster->ToCreature() || !caster->ToCreature()->AI())
                         return;
 
-                    Unit* target = caster->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true);
+                    Unit* target = caster->ToCreature()->AI()->SelectTarget(SELECT_TARGET_FARTHEST, 0, 50.0f, true);
                     if(!target)
                         return;
 
@@ -2533,15 +2543,16 @@ public:
 
         void HandleAfterCast()
         {
-            if (GetCaster() && GetCaster()->ToCreature() && GetCaster()->ToTempSummon())
+            if (GetCaster() && GetCaster()->ToCreature() && GetCaster())
             {
                 if (Unit* spoil = GetCaster()->ToTempSummon()->GetSummoner())
                 {
                     for (uint8 n = 0; n < 2; n++)
                     {
                         float x, y;
-                        GetPosInRadiusWithRandomOrientation(spoil, float(urand(5, 45)), x, y);
-                        spoil->SummonCreature(NPC_STONE_STATUE, x, y, spoil->GetPositionZ());
+                        GetPosInRadiusWithRandomOrientation(spoil, float(urand(5.0f, 20.0f)), x, y);
+                        GetCaster()->SummonCreature(NPC_STONE_STATUE, x, y, spoil->GetPositionZ());
+                        GetCaster()->CastSpell(GetCaster(), SPELL_STRENGTH_OF_THE_STONE, true);
                     }
                 }
             }
@@ -2556,6 +2567,33 @@ public:
     SpellScript* GetSpellScript() const
     {
         return new spell_stone_statue_summon_SpellScript();
+    }
+};
+
+//145716
+class spell_gusting_bomb_dmg : public SpellScriptLoader
+{
+public:
+    spell_gusting_bomb_dmg() : SpellScriptLoader("spell_gusting_bomb_dmg") { }
+
+    class spell_gusting_bomb_dmg_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_gusting_bomb_dmg_SpellScript);
+
+        void HandleOnHit()
+        {
+            SetHitDamage(GetHitDamage() / 10);
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_gusting_bomb_dmg_SpellScript::HandleOnHit);
+        };
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_gusting_bomb_dmg_SpellScript();
     }
 };
 
@@ -2592,4 +2630,5 @@ void AddSC_boss_spoils_of_pandaria()
     new spell_torment_periodic();
     new spell_forbidden_magic();
     new spell_stone_statue_summon();
+    new spell_gusting_bomb_dmg();
 }
