@@ -379,6 +379,11 @@ public:
                         if (!me->GetMap()->IsLfr())
                             if (GameObject* chest = me->SummonGameObject(GO_NSOP_SPOILS, 1631.8f, -5125.97f, -271.122f, 5.31506f, 0.0f, 0.0f, 0.0f, 1.0f, 604800))
                                 chest->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+                        Map::PlayerList const &PlayerList = me->GetMap()->GetPlayers();
+                        if (!PlayerList.isEmpty())
+                            for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+                                if (Player* player = Itr->getSource())
+                                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 145904);
                         lfl.clear();
                         me->GeneratePersonalLoot(me, NULL); // bonus loot
                         events.ScheduleEvent(EVENT_OUTRO, 4000);
@@ -943,22 +948,18 @@ public:
             {
             //Big 
             case NPC_JUN_WEI:
-                DoCast(me, SPELL_STRENGTH_OF_THE_STONE, true);
                 events.ScheduleEvent(EVENT_SHADOW_VOLLEY, 8000);
                 events.ScheduleEvent(EVENT_SUMMON_STONE_STATUE, 3000);
                 break;
             case NPC_ZU_YIN:
-                DoCast(me, SPELL_STRENGTH_OF_THE_STONE, true);
                 events.ScheduleEvent(EVENT_MOLTEN_FIST, 8000);
                 events.ScheduleEvent(EVENT_SUMMON_STONE_STATUE, 3000);
                 break;
             case NPC_XIANG_LIN:
-                DoCast(me, SPELL_STRENGTH_OF_THE_STONE, true);
                 events.ScheduleEvent(EVENT_JADE_TEMPEST, 8000);
                 events.ScheduleEvent(EVENT_SUMMON_STONE_STATUE, 3000);
                 break;
             case NPC_KUN_DA:
-                DoCast(me, SPELL_STRENGTH_OF_THE_STONE, true);
                 events.ScheduleEvent(EVENT_FRACTURE, 8000);
                 events.ScheduleEvent(EVENT_SUMMON_STONE_STATUE, 3000);
                 break;
