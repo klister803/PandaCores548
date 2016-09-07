@@ -99,8 +99,8 @@ void Warden::Update(uint32 diff)
         // first thread - static checks
         if (_dataSent)
         {
-            if (_clientResponseTimer)
-                ClientResponseTimerUpdate(diff);
+            //if (_clientResponseTimer)
+                //ClientResponseTimerUpdate(diff);
         }
         else
         {
