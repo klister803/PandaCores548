@@ -637,7 +637,7 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recvData)
 
     for (uint32 i = 0; i < count; ++i)
     {
-        ObjectGuid lootguid = guids[i];
+        ObjectGuid lootguid = GetPlayer()->GetLootGUID();
         uint8 slotid = types[i];
         Loot* loot = NULL;
 

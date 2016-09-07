@@ -1494,15 +1494,15 @@ void Group::NeedBeforeGreed(Loot* loot, WorldObject* lootedObject)
 }
 
 //! 5.4.1
-void Group::MasterLoot(Loot* /*loot*/, WorldObject* pLootedObject)
+void Group::MasterLoot(Loot* loot, WorldObject* pLootedObject)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Group::MasterLoot (SMSG_LOOT_MASTER_LIST)");
     uint32 real_count = 0;
 
     ByteBuffer dataBuffer(GetMembersCount()*8);
-    ObjectGuid guid_looted = pLootedObject->GetGUID();
+    uint64 lootGUID = loot->GetGUID();
     WorldPacket data(SMSG_LOOT_MASTER_LIST, 12 + GetMembersCount()*8);
-    data.WriteGuidMask<5, 4, 6, 1, 0>(guid_looted);
+    data.WriteGuidMask<5, 4, 6, 1, 0>(lootGUID);
     uint32 pos = data.bitwpos();
     data.WriteBits(0, 24);
 
@@ -1514,24 +1514,21 @@ void Group::MasterLoot(Loot* /*loot*/, WorldObject* pLootedObject)
 
         if (looter->IsWithinDistInMap(pLootedObject, sWorld->getFloatConfig(CONFIG_GROUP_XP_DISTANCE), false))
         {
-            //HardHack! Plr should have off-like hiGuid
             ObjectGuid guid = MAKE_NEW_GUID(looter->GetGUIDLow(), 0, HIGHGUID_PLAYER_MOP);
 
             data.WriteGuidMask<0, 6, 3, 1, 5, 7, 4, 2>(guid);
             dataBuffer.WriteGuidBytes<6, 7, 2, 0, 5, 3, 1, 4>(guid);
             ++real_count;
-            if (real_count >= 10)
-                break;
         }
     }
 
-    data.WriteGuidMask<2, 3, 7>(guid_looted);
+    data.WriteGuidMask<2, 3, 7>(lootGUID);
     data.PutBits<uint32>(pos, real_count, 24);
 
     data.FlushBits();
 
     data.append(dataBuffer);
-    data.WriteGuidBytes<7, 0, 3, 2, 1, 4, 5, 6>(guid_looted);
+    data.WriteGuidBytes<7, 0, 3, 2, 1, 4, 5, 6>(lootGUID);
 
     if (Player* player = ObjectAccessor::FindPlayer(GetLooterGuid()))
         player->GetSession()->SendPacket(&data);
