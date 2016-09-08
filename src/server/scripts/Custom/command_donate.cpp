@@ -159,7 +159,7 @@ public:
            target->DestroyItemCount(38186, efirCount, true);
         }
         
-       CharacterDatabase.PExecute("replace into `character_donate` (`owner_guid`, `itemguid`, `type`, `itemEntry`, `efircount`, `count`, `account`) value ('%u', '0', '1', '%u', '%u', '1', '%u');", target_guid, morphId, efirCount, accountId);
+       CharacterDatabase.PExecute("replace into `character_donate` (`owner_guid`, `itemguid`, `type`, `itemEntry`, `efircount`, `count`, `account`) value ('%u', '%u', '1', '%u', '%u', '1', '%u');", target_guid, morphId, morphId, efirCount, accountId);
        handler->PSendSysMessage("Morph add %u for %u efirs", morphId, efirCount);
 
         return true;
@@ -258,11 +258,8 @@ public:
         if (result)
         {
            player->CastSpell(player, 121805);
-           
-           CharacterDatabase.PQuery("UPDATE character_donate set itemguid = '0' WHERE account = %u AND `type` = 2 AND `state` = '0';", accountId); //clear
-           CharacterDatabase.PQuery("UPDATE character_donate set itemguid = '1' WHERE account = %u AND `type` = 2 AND itemEntry = '%u' AND `state` = '0';", accountId, mount); //select active mount
            //player->Mount(displayID, ci->VehicleId, mount);
-           player->m_Events.AddEvent(new mount_set_display_fly(player), player->m_Events.CalculateTime(1600));
+           new mount_set_display_fly(player, mount);
         }
         else
             handler->PSendSysMessage("Cant find mount to use.");
@@ -308,7 +305,7 @@ public:
            target->DestroyItemCount(38186, efirCount, true);
         }
         
-       CharacterDatabase.PExecute("replace into `character_donate` (`owner_guid`, `itemguid`, `type`, `itemEntry`, `efircount`, `count`, `account`) value ('%u', '0', '2', '%u', '%u', '1', '%u');", target_guid, mountId, efirCount, accountId);
+       CharacterDatabase.PExecute("replace into `character_donate` (`owner_guid`, `itemguid`, `type`, `itemEntry`, `efircount`, `count`, `account`) value ('%u', '%u', '2', '%u', '%u', '1', '%u');", target_guid, mountId, mountId, efirCount, accountId);
        handler->PSendSysMessage("Fly mount add %u for %u efirs", mountId, efirCount);
 
         return true;
@@ -408,12 +405,9 @@ public:
         if (result)
         {
            player->CastSpell(player, 58819);
-           
-           CharacterDatabase.PQuery("UPDATE character_donate set itemguid = '0' WHERE account = %u AND `type` = 3 AND `state` = '0';", accountId); //clear
-           CharacterDatabase.PQuery("UPDATE character_donate set itemguid = '1' WHERE account = %u AND `type` = 3 AND itemEntry = '%u' AND `state` = '0';", accountId, mount); //select active mount
 
            //player->Mount(displayID, ci->VehicleId, mount);
-           player->m_Events.AddEvent(new mount_set_display_ground(player), player->m_Events.CalculateTime(1700));
+           new mount_set_display_ground(player, mount);
         }
         else
             handler->PSendSysMessage("Cant find mount to use.");
@@ -459,7 +453,7 @@ public:
            target->DestroyItemCount(38186, efirCount, true);
         }
         
-       CharacterDatabase.PExecute("replace into `character_donate` (`owner_guid`, `itemguid`, `type`, `itemEntry`, `efircount`, `count`, `account`) value ('%u', '0', '3', '%u', '%u', '1', '%u');", target_guid, mountId, efirCount, accountId);
+       CharacterDatabase.PExecute("replace into `character_donate` (`owner_guid`, `itemguid`, `type`, `itemEntry`, `efircount`, `count`, `account`) value ('%u', '%u', '3', '%u', '%u', '1', '%u');", target_guid, mountId, mountId, efirCount, accountId);
        handler->PSendSysMessage("Ground mount add %u for %u efirs", mountId, efirCount);
 
         return true;
@@ -549,74 +543,64 @@ public:
     
 class mount_set_display_fly : public BasicEvent
 {
-   public:
-      mount_set_display_fly(Player* player) : player(player) {}
+    public:
+    mount_set_display_fly(Player* player, uint32 mount) : player(player), mount(mount) 
+    {
+        player->m_Events.AddEvent(this, player->m_Events.CalculateTime(1550));
+    }
 
-      bool Execute(uint64 /*time*/, uint32 /*diff*/)
-         {
-            if (player->HasAura(121805))
-               {          
-                          Player * pPlayer = player->GetSession()->GetPlayer();
-                          uint32 accountId = pPlayer->GetSession()->GetAccountId();
-                          QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 2 AND itemguid = '1' AND `state` = '0';", accountId);
-                          if (result)
-                          {
-                             do
-                              {
-                                   Field * fetch = result->Fetch();
-                                   uint32 mount = fetch[0].GetUInt32();
-                                   CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate(mount);
-                                   if (!(ci))
-                                      return false;
-                                   
-                                   uint32 displayID = sObjectMgr->ChooseDisplayId(0, ci);
-                                   sObjectMgr->GetCreatureModelRandomGender(&displayID);
-                                   
-                                   player->Mount(displayID, ci->VehicleId, mount);
-                             } while ( result->NextRow() );
-                             
-                          }
-               }
-               
-            return true;
-         }
-      Player* player;
-   };
+    bool Execute(uint64 /*time*/, uint32 /*diff*/)
+    {
+        if (player->HasAura(121805))
+        {          
+            Player * pPlayer = player->GetSession()->GetPlayer();
+
+            CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate(mount);
+            if (!(ci))
+                return false;
+
+            uint32 displayID = sObjectMgr->ChooseDisplayId(0, ci);
+            sObjectMgr->GetCreatureModelRandomGender(&displayID);
+
+            player->Mount(displayID, ci->VehicleId, mount);
+        }
+
+        return true;
+    }
+    Player* player;
+    uint32 mount;
+};
    
-   class mount_set_display_ground : public BasicEvent
+class mount_set_display_ground : public BasicEvent
 {
    public:
-      mount_set_display_ground(Player* player) : player(player) {}
+      mount_set_display_ground(Player* player, uint32 mount) : player(player), mount(mount) 
+    {
+        player->m_Events.AddEvent(this, player->m_Events.CalculateTime(1550));
+    }
 
-      bool Execute(uint64 /*time*/, uint32 /*diff*/)
-         {
-            if (player->HasAura(58819))
-               {          
-                          Player * pPlayer = player->GetSession()->GetPlayer();
-                          uint32 accountId = pPlayer->GetSession()->GetAccountId();
-                          QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 3 AND itemguid = '1' AND `state` = '0';", accountId);
-                          if (result)
-                          {
-                             do
-                              {
-                                   Field * fetch = result->Fetch();
-                                   uint32 mount = fetch[0].GetUInt32();
-                                   CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate(mount);
-                                   if (!(ci))
-                                      return false;
-                                   
-                                   uint32 displayID = sObjectMgr->ChooseDisplayId(0, ci);
-                                   sObjectMgr->GetCreatureModelRandomGender(&displayID);
-                                   
-                                   player->Mount(displayID, ci->VehicleId, mount);
-                             } while ( result->NextRow() );
-                             
-                          }
-               }
-               
-            return true;
-         }
-      Player* player;
+    bool Execute(uint64 /*time*/, uint32 /*diff*/)
+    {
+        if (player->HasAura(58819))
+        {          
+            Player * pPlayer = player->GetSession()->GetPlayer();
+
+            CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate(mount);
+            if (!(ci))
+                return false;
+
+            uint32 displayID = sObjectMgr->ChooseDisplayId(0, ci);
+            sObjectMgr->GetCreatureModelRandomGender(&displayID);
+
+            player->Mount(displayID, ci->VehicleId, mount);
+        }
+
+        return true;
+    }
+    
+    Player* player;
+    uint32 mount;
+    
    };
 };
 
