@@ -164,6 +164,7 @@ public:
         InstanceScript* instance;
         SummonList summon;
         EventMap events;
+        uint32 evadecheck;
         uint8 nextpct;
         bool firstpull, firstattack;
         
@@ -184,6 +185,7 @@ public:
                 else
                     nextpct = 85;
                 firstattack = false;
+                evadecheck = 0;
             }
         }
 
@@ -259,6 +261,7 @@ public:
                 }
             }
             Talk(SAY_PULL);
+            evadecheck = 1500;
             events.ScheduleEvent(EVENT_BERSERK, 600000);
             events.ScheduleEvent(me->GetEntry() == NPC_WAVEBINDER_KARDRIS ? EVENT_FROSTSTORM_BOLT : EVENT_FROSTSTORM_STRIKE, 6000);
         }
@@ -267,10 +270,8 @@ public:
         {
             ScriptedAI::EnterEvadeMode();
             if (Creature* oshaman = GetOtherShaman())
-            {
                 if (oshaman->isInCombat())
                     oshaman->AI()->EnterEvadeMode();
-            }
         }
         
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -369,6 +370,24 @@ public:
         {
             if (!UpdateVictim())
                 return;
+
+            if (evadecheck)
+            {
+                if (evadecheck <= diff)
+                {
+                    if (GameObject* kc = me->FindNearestGameObject(GO_KORKRON_CAGE, 80.0f))
+                        evadecheck = 1500;
+                    else
+                    {
+                        evadecheck = 0;
+                        me->SetReactState(REACT_PASSIVE);
+                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                        EnterEvadeMode();
+                    }
+                }
+                else
+                    evadecheck -= diff;
+            }
 
             if (HealthBelowPct(nextpct))
             {

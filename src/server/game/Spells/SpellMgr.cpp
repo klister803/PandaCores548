@@ -5236,6 +5236,16 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->ExcludeTargetAuraSpell = 0;
                     break;
                 //Spoils of Pandaria
+                case 148582: //Jade Tempest Dummy
+                case 148583: //Jade Tempest Dmg
+                case 148518: //Molten Fist Dummy
+                case 148517: //Molten Fist Dmg
+                case 148515: //Shadow Volley Dummy
+                case 148516: //Shadow Volley Dmg
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                            eff->MiscValue = 8;
+                    break;
                 case 145998: //Strengh of the stone
                     spellInfo->StackAmount = 99;
                     break;
@@ -5257,16 +5267,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 146289: //Mass Paralyses
                     spellInfo->Effects[0]->TargetA = 22;
                     spellInfo->Effects[0]->TargetB = 15;
-                    break;
-                case 148515: //Shadow Volley Dummy
-                    spellInfo->Effects[1]->TargetA = 22;
-                    spellInfo->Effects[1]->TargetB = 15;
-                    spellInfo->Effects[1]->RadiusEntry = sSpellRadiusStore.LookupEntry(27);
-                    break;
-                case 148582: //Jade Tempest AT
-                    spellInfo->Effects[2]->Effect = 0;
-                    spellInfo->Effects[3]->Effect = 0;
-                    spellInfo->Effects[4]->Effect = 0;
                     break;
                 case 146824: //Unstable Spark Spawn Dummy
                     spellInfo->Effects[0]->TargetA = 25;

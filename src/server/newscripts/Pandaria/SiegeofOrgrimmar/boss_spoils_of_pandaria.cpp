@@ -378,12 +378,21 @@ public:
                         OfflineWorldState();
                         if (!me->GetMap()->IsLfr())
                             if (GameObject* chest = me->SummonGameObject(GO_NSOP_SPOILS, 1631.8f, -5125.97f, -271.122f, 5.31506f, 0.0f, 0.0f, 0.0f, 1.0f, 604800))
+
                                 chest->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
                         Map::PlayerList const &PlayerList = me->GetMap()->GetPlayers();
                         if (!PlayerList.isEmpty())
+                        {
                             for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+                            {
                                 if (Player* player = Itr->getSource())
+                                {
                                     player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 145904);
+                                    if (AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(8478))
+                                        player->CompletedAchievement(achievementEntry);
+                                }
+                            }
+                        }
                         lfl.clear();
                         me->GeneratePersonalLoot(me, NULL); // bonus loot
                         events.ScheduleEvent(EVENT_OUTRO, 4000);
@@ -1373,12 +1382,6 @@ public:
 
         void JustDied(Unit* killer)
         {
-            if (me->ToTempSummon())
-                if (Unit* summoner = me->ToTempSummon()->GetSummoner())
-                    if (summoner->isAlive())
-                        if (Aura* aura = summoner->GetAura(SPELL_STRENGTH_OF_THE_STONE))
-                            if (aura->GetStackAmount() >= 2)
-                                aura->SetStackAmount(aura->GetStackAmount() - 1);
             me->DespawnOrUnsummon();
         }
 
@@ -1510,7 +1513,7 @@ public:
     {
         if (InstanceScript* instance = go->GetInstanceScript())
         {
-            if (instance->GetBossState(DATA_SPOILS_OF_PANDARIA) == NOT_STARTED)
+            if (instance->GetBossState(DATA_MALKOROK) == DONE && instance->GetBossState(DATA_SPOILS_OF_PANDARIA) == NOT_STARTED)
             {
                 pl->PrepareGossipMenu(go);
                 pl->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
@@ -1626,18 +1629,26 @@ public:
     {
         PrepareSpellScript(spell_shadow_volley_SpellScript);
 
-        void HandleDummy(SpellEffIndex effIndex)
+        void HandleAfterCast()
         {
-            if (GetHitUnit() && GetHitUnit()->ToPlayer())
+            if (GetCaster() && GetCaster()->ToTempSummon())
             {
-                float dmg = GetHitUnit()->GetMap()->IsHeroic() ? GetSpellInfo()->Effects[EFFECT_0]->BasePoints * 2 : GetSpellInfo()->Effects[EFFECT_0]->BasePoints;
-                GetHitUnit()->CastCustomSpell(SPELL_SHADOW_VOLLEY_D, SPELLVALUE_BASE_POINT0, dmg, GetHitUnit());
+                if (Unit* spoil = GetCaster()->ToTempSummon()->GetSummoner())
+                {
+                    float dmg = GetCaster()->GetMap()->IsHeroic() ? GetSpellInfo()->Effects[EFFECT_0]->BasePoints * 2 : GetSpellInfo()->Effects[EFFECT_0]->BasePoints;
+                    std::list<Player*> pllist;
+                    pllist.clear();
+                    GetPlayerListInGrid(pllist, spoil, 55.0f);
+                    if (!pllist.empty())
+                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                            GetCaster()->CastCustomSpell(SPELL_SHADOW_VOLLEY_D, SPELLVALUE_BASE_POINT0, dmg, *itr, true);
+                }
             }
         }
 
         void Register()
         {
-            OnEffectHitTarget += SpellEffectFn(spell_shadow_volley_SpellScript::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
+            AfterCast += SpellCastFn(spell_shadow_volley_SpellScript::HandleAfterCast);
         }
     };
 
@@ -1657,7 +1668,7 @@ public:
     {
         PrepareSpellScript(spell_molten_fist_SpellScript);
 
-        void HandleOnHit()
+        void HandleAfterCast()
         {
             if (GetCaster() && GetCaster()->ToTempSummon())
             {
@@ -1669,14 +1680,14 @@ public:
                     GetPlayerListInGrid(pllist, spoil, 55.0f);
                     if (!pllist.empty())
                         for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
-                            (*itr)->CastCustomSpell(SPELL_MOLTEN_FIST_D, SPELLVALUE_BASE_POINT0, dmg, *itr, true);
+                            GetCaster()->CastCustomSpell(SPELL_MOLTEN_FIST_D, SPELLVALUE_BASE_POINT0, dmg, *itr, true);
                 }
             }
         }
 
         void Register()
         {
-            OnHit += SpellHitFn(spell_molten_fist_SpellScript::HandleOnHit);
+            AfterCast += SpellCastFn(spell_molten_fist_SpellScript::HandleAfterCast);
         }
     };
 
@@ -1696,7 +1707,7 @@ public:
     {
         PrepareSpellScript(spell_fracture_SpellScript);
 
-        void HandleOnHit()
+        void HandleAfterCast()
         {
             if (GetCaster())
             {
@@ -1712,13 +1723,50 @@ public:
 
         void Register()
         {
-            OnHit += SpellHitFn(spell_fracture_SpellScript::HandleOnHit);
+            AfterCast += SpellCastFn(spell_fracture_SpellScript::HandleAfterCast);
         }
     };
 
     SpellScript* GetSpellScript() const
     {
         return new spell_fracture_SpellScript();
+    }
+};
+
+//148582
+class spell_jade_tempest : public SpellScriptLoader
+{
+public:
+    spell_jade_tempest() : SpellScriptLoader("spell_jade_tempest") { }
+
+    class spell_jade_tempest_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_jade_tempest_SpellScript);
+
+        void HandleAfterCast()
+        {
+            if (GetCaster())
+            {
+                float dmg = GetCaster()->GetMap()->IsHeroic() ? GetSpellInfo()->Effects[EFFECT_0]->BasePoints * 2 : GetSpellInfo()->Effects[EFFECT_0]->BasePoints;
+                std::list<Player*> pllist;
+                pllist.clear();
+                GetPlayerListInGrid(pllist, GetCaster(), 50.0f);
+                if (!pllist.empty())
+                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                        GetCaster()->CastCustomSpell(SPELL_JADE_TEMPEST_D, SPELLVALUE_BASE_POINT0, dmg, *itr, true);
+            }
+
+        }
+
+        void Register()
+        {
+            AfterCast += SpellCastFn(spell_jade_tempest_SpellScript::HandleAfterCast);
+        };
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_jade_tempest_SpellScript();
     }
 };
 
@@ -2372,55 +2420,6 @@ public:
     }
 };
 
-//148583
-class spell_jade_tempest : public SpellScriptLoader
-{
-public:
-    spell_jade_tempest() : SpellScriptLoader("spell_jade_tempest") { }
-
-    class spell_jade_tempest_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_jade_tempest_SpellScript);
-
-        void HandleOnHit()
-        {
-            if (GetHitUnit())
-            {
-                int32 dmg = 0;
-                switch (GetHitUnit()->GetMap()->GetDifficulty())
-                {
-                case MAN10_DIFFICULTY:
-                    dmg = 150000;
-                    break;
-                case MAN25_DIFFICULTY:
-                    dmg = 165000;
-                    break;
-                case MAN10_HEROIC_DIFFICULTY:
-                    dmg = 300000;
-                    break;
-                case MAN25_HEROIC_DIFFICULTY:
-                    dmg = 301000;
-                    break;
-                default:
-                    dmg = 123750;
-                    break;
-                }
-                SetHitDamage(dmg);
-            }
-        }
-
-        void Register()
-        {
-            OnHit += SpellHitFn(spell_jade_tempest_SpellScript::HandleOnHit);
-        };
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_jade_tempest_SpellScript();
-    }
-};
-
 //142942
 class spell_torment : public SpellScriptLoader
 {
@@ -2556,7 +2555,6 @@ public:
                         float x, y;
                         GetPosInRadiusWithRandomOrientation(spoil, float(urand(5.0f, 20.0f)), x, y);
                         GetCaster()->SummonCreature(NPC_STONE_STATUE, x, y, spoil->GetPositionZ());
-                        GetCaster()->CastSpell(GetCaster(), SPELL_STRENGTH_OF_THE_STONE, true);
                     }
                 }
             }
@@ -2601,6 +2599,44 @@ public:
     }
 };
 
+//145998
+class spell_strength_of_the_stone : public SpellScriptLoader
+{
+public:
+    spell_strength_of_the_stone() : SpellScriptLoader("spell_strength_of_the_stone") { }
+
+    class spell_strength_of_the_stone_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_strength_of_the_stone_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (GetTarget() && GetTarget()->ToCreature() && GetTarget()->ToTempSummon())
+            {
+                if (Unit* spoil = GetTarget()->ToTempSummon()->GetSummoner())
+                {
+                    std::list<Creature*>sslist;
+                    sslist.clear();
+                    GetCreatureListWithEntryInGrid(sslist, spoil, NPC_STONE_STATUE, 55.0f);
+                    uint8 size = sslist.size();
+                    if (Aura* aura = GetTarget()->GetAura(SPELL_STRENGTH_OF_THE_STONE))
+                        aura->SetStackAmount(size + 1);
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_strength_of_the_stone_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_strength_of_the_stone_AuraScript();
+    }
+};
+
 void AddSC_boss_spoils_of_pandaria()
 {
     new npc_ssop_spoils();
@@ -2616,6 +2652,7 @@ void AddSC_boss_spoils_of_pandaria()
     new spell_shadow_volley();
     new spell_molten_fist();
     new spell_fracture();
+    new spell_jade_tempest();
     new spell_breath_of_fire();
     new spell_gusting_crane_kick();
     new spell_set_to_blow();
@@ -2629,10 +2666,10 @@ void AddSC_boss_spoils_of_pandaria()
     new spell_spoils_staff_of_resonating_water();
     new spell_unstable_defense_system_dummy();
     new spell_spoils_encapsulated_pheromones();
-    new spell_jade_tempest();
     new spell_torment();
     new spell_torment_periodic();
     new spell_forbidden_magic();
     new spell_stone_statue_summon();
     new spell_gusting_bomb_dmg();
+    new spell_strength_of_the_stone();
 }
