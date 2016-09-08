@@ -375,7 +375,7 @@ public:
             {
                 if (evadecheck <= diff)
                 {
-                    if (GameObject* kc = me->FindNearestGameObject(GO_KORKRON_CAGE, 80.0f))
+                    if (GameObject* kc = me->FindNearestGameObject(GO_KORKRON_CAGE, 150.0f))
                         evadecheck = 1500;
                     else
                     {
