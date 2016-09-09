@@ -232,10 +232,10 @@ bool TargetedMovementGeneratorMedium<T,D>::DoUpdate(T &owner, const uint32 & tim
         G3D::Vector3 dest = owner.movespline->FinalDestination();
         float allowed_dist = 0.0f;
         bool targetIsVictim = owner.getVictim() && owner.getVictim()->GetGUID() == i_target->GetGUID();
-        if (targetIsVictim)
-            allowed_dist = owner.GetMeleeReach() + owner.getVictim()->GetMeleeReach()/* + owner.getVictim()->GetObjectSize()*/;
-        else if(((Creature*)&owner)->isPet())
+        if (((Creature*)&owner)->isPet())
             allowed_dist = sWorld->getRate(RATE_TARGET_POS_RECALCULATION_RANGE);
+        else if (targetIsVictim)
+            allowed_dist = owner.GetMeleeReach() + owner.getVictim()->GetMeleeReach()/* + owner.getVictim()->GetObjectSize()*/;
         else
             allowed_dist = i_target->GetObjectSize() + sWorld->getRate(RATE_TARGET_POS_RECALCULATION_RANGE);
 
