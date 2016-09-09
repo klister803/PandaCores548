@@ -332,6 +332,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
             movementInfo.flags &= ~MOVEMENTFLAG_WALKING;
     }
 
+    //sLog->outError(LOG_FILTER_NETWORKIO, "%s, posX - %f, posY - %f, posZ - %f, moveTime(client) - %u, flags - %u", GetOpcodeNameForLogging(opcode, CMSG).c_str(), movementInfo.position.m_positionX, movementInfo.position.m_positionY, movementInfo.position.m_positionZ, movementInfo.moveTime, movementInfo.flags);
+
     /* handle special cases */
     if (movementInfo.hasTransportData && movementInfo.transportGUID)
     {
@@ -498,7 +500,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                 //plrMover->SetBlocked(true, "Anticheat System : teleport/XYZ hack detected. You are disabled and kicked in 10 seconds");
                 sLog->outWarden("CLIENT WARDEN: Teleport hack detected (map - %u (%s), source zone - %u (%s), source area - %u (%s), source X - %f, source Y - %f, source Z - %f, dest zone - %u (%s), dest area - %u (%s), dest X - %f, dest Y - %f, dest Z - %f, opcode - %s, teleport distance - %f), player - %s",
                     plrMover->GetMapId(), mapEntry ? mapEntry->name : "<unknown>", plrMover->GetZoneId(), srcZoneEntry ? srcZoneEntry->area_name : "<unknown>", plrMover->GetAreaId(), srcAreaEntry ? srcAreaEntry->area_name : "<unknown>",
-                    plrMover->GetPositionX(), plrMover->GetPositionY(), plrMover->GetPositionZ(), destZoneId, destZoneEntry ? destZoneEntry->area_name : "<unknown>", destAreaId, destAreaEntry ? destAreaEntry->area_name : "<unknown>", movementInfo.position.GetPositionX(), movementInfo.position.GetPositionY(), movementInfo.position.GetPositionZ(), GetOpcodeNameForLogging(opcode), curD, plrMover->GetName());
+                    plrMover->GetPositionX(), plrMover->GetPositionY(), plrMover->GetPositionZ(), destZoneId, destZoneEntry ? destZoneEntry->area_name : "<unknown>", destAreaId, destAreaEntry ? destAreaEntry->area_name : "<unknown>", movementInfo.position.GetPositionX(), movementInfo.position.GetPositionY(), movementInfo.position.GetPositionZ(), GetOpcodeNameForLogging(opcode).c_str(), curD, plrMover->GetName());
                 //KickPlayer();
                 return;
             }
@@ -534,10 +536,10 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
 
                 sLog->outWarden("CLIENT WARDEN: Teleport hack detected (map - %u (%s), source zone - %u (%s), source area - %u (%s), source X - %f, source Y - %f, source Z - %f, dest zone - %u (%s), dest area - %u (%s), dest X - %f, dest Y - %f, dest Z - %f, opcode - %s, on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, moving - %s, teleport distance - %f), player - %s",
                     plrMover->GetMapId(), mapEntry ? mapEntry->name : "<unknown>", plrMover->GetZoneId(), srcZoneEntry ? srcZoneEntry->area_name : "<unknown>", plrMover->GetAreaId(), srcAreaEntry ? srcAreaEntry->area_name : "<unknown>",
-                    plrMover->GetPositionX(), plrMover->GetPositionY(), plrMover->GetPositionZ(), destZoneId, destZoneEntry ? destZoneEntry->area_name : "<unknown>", destAreaId, destAreaEntry ? destAreaEntry->area_name : "<unknown>", movementInfo.position.GetPositionX(), movementInfo.position.GetPositionY(), movementInfo.position.GetPositionZ(), GetOpcodeNameForLogging(opcode),
+                    plrMover->GetPositionX(), plrMover->GetPositionY(), plrMover->GetPositionZ(), destZoneId, destZoneEntry ? destZoneEntry->area_name : "<unknown>", destAreaId, destAreaEntry ? destAreaEntry->area_name : "<unknown>", movementInfo.position.GetPositionX(), movementInfo.position.GetPositionY(), movementInfo.position.GetPositionZ(), GetOpcodeNameForLogging(opcode).c_str(),
                     plrMover->GetVehicle() ? "true" : "false", plrMover->GetTransport() ? "true" : "false", plrMover->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plrMover->IsFalling() || plrMover->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false", plrMover->isMoving() ? "true" : "false", curD, plrMover->GetName());
-                KickPlayer();
-                return;
+                //KickPlayer();
+                //return;
             }
             /*else if (sWorld->getBoolConfig(CONFIG_WARDEN_USES_Z_AXIS_CHECK))
             {
