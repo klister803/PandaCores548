@@ -437,7 +437,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
     {
         //sLog->outWarden("Failed read header for account Id %u", _session->GetAccountId());
         buff.rpos(buff.wpos());
-        //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed read Warden packet header. Player kicked", _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId());
+        //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed read Warden packet header. Player kicked", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
         _session->KickPlayer();
         return;
     }
@@ -469,7 +469,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
             {
                 //sLog->outWarden("Failed read system import data for account Id %u", _session->GetAccountId());
                 buff.rpos(buff.wpos());
-                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed read Warden packet data. Player kicked", _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId());
+                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed read Warden packet data. Player kicked", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
                 _session->KickPlayer();
                 return;
             }
@@ -484,7 +484,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
     //sLog->outWarden("Failed check header for account Id %u", _session->GetAccountId());
     buff.rpos(buff.wpos());
     //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed check Warden packet header. Player kicked",
-        //_session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId());
+        //_session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
     _session->KickPlayer();
 }
 
@@ -519,7 +519,7 @@ void WardenWin::HandleStaticData(ByteBuffer &buff)
             {
                 //sLog->outWarden("RESULT MEM_CHECK not 0x00, CheckId %u account Id %u", *itr, _session->GetAccountId());
                 buff.rpos(buff.wpos());
-                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
+                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
                 return;
             }
 
@@ -528,7 +528,7 @@ void WardenWin::HandleStaticData(ByteBuffer &buff)
             {
                 //sLog->outWarden("RESULT MEM_CHECK fail CheckId %u, account Id %u, Failed data %s", *itr, _session->GetAccountId(), packet_data.c_str());
                 buff.rpos(buff.wpos());
-                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
+                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
                 return;
             }
 
@@ -579,7 +579,7 @@ void WardenWin::HandleStaticData(ByteBuffer &buff)
                 delete[] str;
 
                 buff.rpos(buff.wpos());
-                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
+                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
                 return;
             }
 
@@ -594,7 +594,7 @@ void WardenWin::HandleStaticData(ByteBuffer &buff)
             {
                 //sLog->outWarden("RESULT MPQ_CHECK not 0x00 account id %u", _session->GetAccountId());
                 buff.rpos(buff.wpos());
-                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
+                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
                 return;
             }
 
@@ -603,7 +603,7 @@ void WardenWin::HandleStaticData(ByteBuffer &buff)
             {
                 //sLog->outWarden("RESULT MPQ_CHECK fail, CheckId %u, account Id %u", *itr, _session->GetAccountId());
                 buff.rpos(buff.wpos());
-                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
+                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
                 return;
             }
 
@@ -903,7 +903,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
                     if (m_speedExtAlert == int8(sWorld->getIntConfig(CONFIG_WARDEN_NUM_SPEED_EXT_ALERTS)))
                     {
                         // logs
-                        sLog->outWarden("CLIENT WARDEN: Player - %s banned - over-speed speedhack, data : base_speed - %f, server_speed - %f, cur_speed - %f, on_vehicle - %s", _session->GetPlayerName(), baseClientSpeed, serverSpeed, curClientSpeed, plr->GetVehicle() ? "true" : "false");
+                        sLog->outWarden("CLIENT WARDEN: Player - %s banned - over-speed speedhack, data : base_speed - %f, server_speed - %f, cur_speed - %f, on_vehicle - %s", _session->GetPlayerName().c_str(), baseClientSpeed, serverSpeed, curClientSpeed, plr->GetVehicle() ? "true" : "false");
                         ClearAlerts();
 
                         // test system - enable ban after
@@ -930,7 +930,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
                     if (m_speedExtAlert == int8(sWorld->getIntConfig(CONFIG_WARDEN_NUM_SPEED_EXT_ALERTS)))
                     {
                         bool correct = CheckCorrectBoundValues(baseSwimClientSpeed);
-                        sLog->outWarden("CLIENT WARDEN: Player %s %s - detect Hitchhiker's Hack, base swim speed - %f, server swim speed - %f, on_vehicle - %s", _session->GetPlayerName(), correct ? "banned" : "kicked", baseSwimClientSpeed, GetServerSpeed(plr, MOVE_SWIM), plr->GetVehicle() ? "true" : "false");
+                        sLog->outWarden("CLIENT WARDEN: Player %s %s - detect Hitchhiker's Hack, base swim speed - %f, server swim speed - %f, on_vehicle - %s", _session->GetPlayerName().c_str(), correct ? "banned" : "kicked", baseSwimClientSpeed, GetServerSpeed(plr, MOVE_SWIM), plr->GetVehicle() ? "true" : "false");
                         ClearAlerts();
 
                         if (correct)
@@ -972,7 +972,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
                     {
                         //buff.rpos(buff.wpos());
                         sLog->outWarden("CLIENT WARDEN: Player - %s must be banned - force change base movespeed (Hithchiker's Hack, etc.), data : base_speed - %f, server_speed - %f, cur_speed - %f, on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, map name - %s, zone_name - %s, subzone_name - %s",
-                            _session->GetPlayerName(), baseClientSpeed, serverSpeed, curClientSpeed, plr->GetVehicle() ? "true" : "false", plr->GetTransport() ? "true" : "false", plr->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plr->IsFalling() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false",
+                            _session->GetPlayerName().c_str(), baseClientSpeed, serverSpeed, curClientSpeed, plr->GetVehicle() ? "true" : "false", plr->GetTransport() ? "true" : "false", plr->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plr->IsFalling() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false",
                             plr->GetMap() ? plr->GetMap()->GetMapName() : "<unknown>", srcZoneEntry ? srcZoneEntry->area_name : "<unknown>", srcAreaEntry ? srcAreaEntry->area_name : "<unknown>");
                         ClearAlerts();
                         //_session->KickPlayer();
@@ -1009,7 +1009,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
                     if (m_speedAlert == int8(sWorld->getIntConfig(CONFIG_WARDEN_NUM_SPEED_ALERTS)))
                     {
                         sLog->outWarden("CLIENT WARDEN: Player - %s must be banned - force change current speed(WoWEmuHacker, etc.), data : base_speed - %f, server_speed - %f, cur_speed - %f, on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, map name - %s, zone_name - %s, subzone_name - %s",
-                            _session->GetPlayerName(), baseClientSpeed, serverSpeed, curClientSpeed, plr->GetVehicle() ? "true" : "false", plr->GetTransport() ? "true" : "false", plr->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plr->IsFalling() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false",
+                            _session->GetPlayerName().c_str(), baseClientSpeed, serverSpeed, curClientSpeed, plr->GetVehicle() ? "true" : "false", plr->GetTransport() ? "true" : "false", plr->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plr->IsFalling() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false",
                             plr->GetMap() ? plr->GetMap()->GetMapName() : "<unknown>", srcZoneEntry ? srcZoneEntry->area_name : "<unknown>", srcAreaEntry ? srcAreaEntry->area_name : "<unknown>");
                         ClearAlerts();
                         //_session->KickPlayer();
@@ -1026,7 +1026,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
                 {
                     if (m_moveFlagsAlert == int8(sWorld->getIntConfig(CONFIG_WARDEN_NUM_MOVEFLAGS_ALERTS)))
                     {
-                        sLog->outWarden("CLIENT WARDEN: Player - %s has incorrect moveflags, reason - %s, moveflags - %X (%s), on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, map name - %s, zone_name - %s, subzone_name - %s", _session->GetPlayerName(), mflags_reason.c_str(), m_flags, GetMovementFlagInfo(m_flags).c_str(),
+                        sLog->outWarden("CLIENT WARDEN: Player - %s has incorrect moveflags, reason - %s, moveflags - %X (%s), on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, map name - %s, zone_name - %s, subzone_name - %s", _session->GetPlayerName().c_str(), mflags_reason.c_str(), m_flags, GetMovementFlagInfo(m_flags).c_str(),
                             plr->GetVehicle() ? "true" : "false", plr->GetTransport() ? "true" : "false", plr->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plr->IsFalling() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false",
                             plr->GetMap() ? plr->GetMap()->GetMapName() : "<unknown>", srcZoneEntry ? srcZoneEntry->area_name : "<unknown>", srcAreaEntry ? srcAreaEntry->area_name : "<unknown>");
                         ClearAlerts();
@@ -1036,7 +1036,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
 
                     m_moveFlagsAlert++;
                     moveFlagsAlertsActivate = true;
-                    //sLog->outError("CLIENT WARDEN: player - %s, incorrect moveflags - %X (%s)", _session->GetPlayerName(), m_flags, GetMovementFlagInfo(m_flags).c_str());
+                    //sLog->outError("CLIENT WARDEN: player - %s, incorrect moveflags - %X (%s)", _session->GetPlayerName().c_str(), m_flags, GetMovementFlagInfo(m_flags).c_str());
                 }
 
                 // SYNCRONIZE SERVER/CLIENT COORDINATES - CHECK BLOCK (DISABLED)
@@ -1054,7 +1054,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
                             if (m_failedCoordsAlert == int8(sWorld->getIntConfig(CONFIG_WARDEN_NUM_FALIED_COORDS_ALERTS)))
                             {
                                 buff.rpos(buff.wpos());
-                                sLog->outWarden("CLIENT WARDEN: player - %s has invalid Z height, server_x - %f, server_y - %f, server_z - %f, client_z - %f, server speed - %f, client speed - %f, on_vehicle - %s, falling - %s, map name - %s, zone_name - %s, subzone_name - %s, client_map_height - %f", _session->GetPlayerName(),
+                                sLog->outWarden("CLIENT WARDEN: player - %s has invalid Z height, server_x - %f, server_y - %f, server_z - %f, client_z - %f, server speed - %f, client speed - %f, on_vehicle - %s, falling - %s, map name - %s, zone_name - %s, subzone_name - %s, client_map_height - %f", _session->GetPlayerName().c_str(),
                                     plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ(), client_z, serverSpeed, curClientSpeed, plr->GetVehicle() ? "true" : "false", (plr->IsFalling() || plr->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false",
                                     plr->GetMap() ? plr->GetMap()->GetMapName() : "<unknown>", srcZoneEntry ? srcZoneEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", srcAreaEntry ? srcAreaEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", map_z);
 
@@ -1077,7 +1077,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
                 // Wallhack!
                 if (vDeltaConst == 255.0f)
                 {
-                    sLog->outWarden("CLIENT WARDEN: WallClimb on account %u, player %s", _session->GetAccountId(), _session->GetPlayerName());
+                    sLog->outWarden("CLIENT WARDEN: WallClimb on account %u, player %s", _session->GetAccountId(), _session->GetPlayerName().c_str());
                     _session->KickPlayer();
                     _dynDataSent = false;
                     return;
@@ -1087,7 +1087,7 @@ void WardenWin::HandleDynamicData(ByteBuffer &buff)
             // FACTION ID - CHECK BLOCK
             if (plr->isSpectator() && !IsNotTeamFaction(plr->GetTeam(), faction_id) && faction_id != 35 && faction_id < 1629)
             {
-                sLog->outWarden("CLIENT WARDEN: Faction ID is not allowed for spectator (client - %u, server - %u) on account %u, player %s", faction_id, plr->getFaction(), _session->GetAccountId(), _session->GetPlayerName());
+                sLog->outWarden("CLIENT WARDEN: Faction ID is not allowed for spectator (client - %u, server - %u) on account %u, player %s", faction_id, plr->getFaction(), _session->GetAccountId(), _session->GetPlayerName().c_str());
                 _session->KickPlayer();
                 _dynDataSent = false;
                 return;

@@ -128,13 +128,13 @@ void Warden::ClientResponseTimerUpdate(uint32 diff)
         if (m_clientResponseAlert >= sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_RESPONSE_DELAY_ALERTS))
         {
             sLog->outWarden("Player %s (guid: %u, account: %u, latency: %u, IP: %s) exceeded Warden module response delay for more than 60s after %u tries - disconnecting client",
-                _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId(), _session->GetLatency(), _session->GetRemoteAddress().c_str(), sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_RESPONSE_DELAY_ALERTS));
+                _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), _session->GetLatency(), _session->GetRemoteAddress().c_str(), sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_RESPONSE_DELAY_ALERTS));
             _session->KickPlayer();
             return;
         }
 
         //sLog->outWarden("Player %s (guid: %u, account: %u, latency: %u, IP: %s) exceeded Warden module response delay for more than 60s - disconnecting client",
-        //_session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId(), _session->GetLatency(), _session->GetRemoteAddress().c_str());
+        //_session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), _session->GetLatency(), _session->GetRemoteAddress().c_str());
         _clientResponseTimer = 0;
         m_clientResponseAlert++;
     }
