@@ -2081,7 +2081,7 @@ class spell_warl_rain_of_fire_damage : public SpellScriptLoader
                     return;
 
                 if (Unit* caster = GetCaster())
-                    if (roll_chance_i(30))
+                    if (roll_chance_i(100))
                         caster->ModifyPower(POWER_BURNING_EMBERS, 1);
             }
 
