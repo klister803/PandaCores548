@@ -148,6 +148,8 @@ static SpecialModifier mod[] =
     { 20.0f, M_PI + 1.570796326795f },
 };
 
+float const minx = 1483.13f;
+float const miny = -4417.83f;
 class boss_korkron_dark_shaman : public CreatureScript
 {
 public:
@@ -375,15 +377,15 @@ public:
             {
                 if (evadecheck <= diff)
                 {
-                    if (GameObject* kc = me->FindNearestGameObject(GO_KORKRON_CAGE, 150.0f))
-                        evadecheck = 1500;
-                    else
+                    if (me->GetPositionX() <= minx || me->GetPositionY() <= miny)
                     {
                         evadecheck = 0;
                         me->SetReactState(REACT_PASSIVE);
                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                         EnterEvadeMode();
                     }
+                    else
+                        evadecheck = 1500;
                 }
                 else
                     evadecheck -= diff;
@@ -473,6 +475,7 @@ public:
                 //Haromm
                 case EVENT_TOXIC_MIST:
                 {
+                    bool havetarget = false;
                     uint8 num = 0;
                     std::list<Player*>pllist;
                     pllist.clear();
@@ -482,6 +485,21 @@ public:
                         for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                         {
                             if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
+                            {
+                                if (!(*itr)->HasAura(SPELL_TOXIC_MIST))
+                                {
+                                    if (!havetarget)
+                                        havetarget = true;
+                                    (*itr)->AddAura(SPELL_TOXIC_MIST, *itr);
+                                    num++;
+                                    if (num == 2)
+                                        break;
+                                }
+                            }
+                        }
+                        if (!havetarget)
+                        {
+                            for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                             {
                                 if (!(*itr)->HasAura(SPELL_TOXIC_MIST))
                                 {
@@ -823,7 +841,7 @@ public:
 
     struct npc_ash_elementalAI : public ScriptedAI
     {
-        npc_ash_elementalAI(Creature* creature) : ScriptedAI(creature), summon(me)
+        npc_ash_elementalAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             me->SetReactState(REACT_PASSIVE);
@@ -832,7 +850,6 @@ public:
         }
 
         InstanceScript* instance;
-        SummonList summon;
         EventMap events;
 
         void Reset(){}
@@ -849,16 +866,10 @@ public:
                     GetPositionWithDistInOrientation(me, mod[n].dist, ang, x, y);
                     me->SummonCreature(NPC_ASH_ELEMENTAL, x, y, me->GetPositionZ() + 5.0f, me->GetOrientation());
                 }
-                events.ScheduleEvent(EVENT_DESPAWN, 60000);
             }
             else
                 me->GetMotionMaster()->MoveFall();
             events.ScheduleEvent(EVENT_ACTIVE, 1250);
-        }
-
-        void JustSummoned(Creature* sum)
-        {
-            summon.Summon(sum);
         }
 
         void UpdateAI(uint32 diff)
@@ -867,18 +878,12 @@ public:
 
             while (uint32 eventId = events.ExecuteEvent())
             {
-                switch (eventId)
+                if (eventId == EVENT_ACTIVE)
                 {
-                case EVENT_ACTIVE:
                     me->SetVisible(true);
                     DoCast(me, SPELL_ASH_ELEMENTAL_SPAWN, true);
                     me->SetReactState(REACT_AGGRESSIVE);
                     DoZoneInCombat(me, 150.0f);
-                    break;
-                case EVENT_DESPAWN:
-                    summon.DespawnAll();
-                    me->DespawnOrUnsummon();
-                    break;
                 }
             }
             DoMeleeAttackIfReady();
@@ -1114,18 +1119,6 @@ public:
     }
 };
 
-class IronTombFilter
-{
-public:
-    bool operator()(WorldObject* unit) const
-    {
-        if (Player* pl = unit->ToPlayer())
-            if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_TANK)
-                return true;
-        return false;
-    }
-};
-
 class IronTombRangeFilter
 {
 public:
@@ -1157,7 +1150,6 @@ public:
             if (GetCaster())
             {
                 bool havetargetinrange = false;
-                targets.remove_if(IronTombFilter());
                 if (!targets.empty())
                 {
                     for (std::list<WorldObject*>::const_iterator itr = targets.begin(); itr != targets.end(); itr++)
