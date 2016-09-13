@@ -378,7 +378,6 @@ public:
                         OfflineWorldState();
                         if (!me->GetMap()->IsLfr())
                             if (GameObject* chest = me->SummonGameObject(GO_NSOP_SPOILS, 1631.8f, -5125.97f, -271.122f, 5.31506f, 0.0f, 0.0f, 0.0f, 1.0f, 604800))
-
                                 chest->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
                         Map::PlayerList const &PlayerList = me->GetMap()->GetPlayers();
                         if (!PlayerList.isEmpty())
@@ -2637,6 +2636,50 @@ public:
     }
 };
 
+class SuperNovaFilter
+{
+public:
+    SuperNovaFilter(Unit* caster) : _caster(caster){}
+
+    bool operator()(WorldObject* target)
+    {
+        if (target->GetPositionZ() < -281.0f && target->GetExactDist2d(_caster) <= 55.0f)
+            return false;
+        return true;
+    }
+private:
+    Unit* _caster;
+};
+
+//146815
+class spell_supernova : public SpellScriptLoader
+{
+public:
+    spell_supernova() : SpellScriptLoader("spell_supernova") { }
+
+    class spell_supernova_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_supernova_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*>&unitList)
+        {
+            if (GetCaster() && GetCaster()->ToTempSummon())
+                if (Unit* spoil = GetCaster()->ToTempSummon()->GetSummoner())
+                    unitList.remove_if(SuperNovaFilter(spoil));
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_supernova_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_supernova_SpellScript();
+    }
+};
+
 void AddSC_boss_spoils_of_pandaria()
 {
     new npc_ssop_spoils();
@@ -2672,4 +2715,5 @@ void AddSC_boss_spoils_of_pandaria()
     new spell_stone_statue_summon();
     new spell_gusting_bomb_dmg();
     new spell_strength_of_the_stone();
+    new spell_supernova();
 }
