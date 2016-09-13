@@ -95,6 +95,7 @@ enum Events
     EVENT_PRE_Y_CHARGE       = 19,
     EVENT_VAMPIRIC_FRENZY    = 20,
     EVENT_R_WATERS           = 21,
+    EVENT_CHECK_PROGRESS     = 22,
 };
 
 enum Action
@@ -242,6 +243,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 enrage = 600000;
                 DoCast(me, SPELL_POWER_REGEN, true);
                 events.ScheduleEvent(EVENT_SHOCK_BLAST, 4000);
+                events.ScheduleEvent(EVENT_CHECK_PROGRESS, 6000);
                 events.ScheduleEvent(EVENT_TAIL_LASH, 12000);
                 events.ScheduleEvent(EVENT_FEARSOME_ROAR, 15000);
             }
@@ -443,6 +445,15 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 {
                     switch (eventId)
                     {
+                    case EVENT_CHECK_PROGRESS:
+                        if (instance && instance->GetBossState(DATA_SPOILS_OF_PANDARIA) != DONE)
+                        {
+                            me->AttackStop();
+                            me->SetReactState(REACT_PASSIVE);
+                            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                            EnterEvadeMode();
+                        }
+                        break;
                     //Default events
                     case EVENT_SHOCK_BLAST:
                         DoCastAOE(SPELL_SHOCK_BLAST, true);
