@@ -2194,7 +2194,7 @@ void FillItemDamageFields(float* minDamage, float* maxDamage, float* dps, uint32
             store = &sItemDamageAmmoStore;
             break;
         case INVTYPE_2HWEAPON:
-            if (flags2 & ITEM_FLAGS_EXTRA_CASTER_WEAPON)
+            if (flags2 & ITEM_FLAG2_CASTER_WEAPON)
                 store = &sItemDamageTwoHandCasterStore;
             else
                 store = &sItemDamageTwoHandStore;
@@ -2222,7 +2222,7 @@ void FillItemDamageFields(float* minDamage, float* maxDamage, float* dps, uint32
         case INVTYPE_WEAPON:
         case INVTYPE_WEAPONMAINHAND:
         case INVTYPE_WEAPONOFFHAND:
-            if (flags2 & ITEM_FLAGS_EXTRA_CASTER_WEAPON)
+            if (flags2 & ITEM_FLAG2_CASTER_WEAPON)
                 store = &sItemDamageOneHandCasterStore;
             else
                 store = &sItemDamageOneHandStore;
@@ -2365,7 +2365,7 @@ void FillDisenchantFields(uint32* disenchantID, uint32* requiredDisenchantSkill,
 {
     *disenchantID = 0;
     *(int32*)requiredDisenchantSkill = -1;
-    if ((itemTemplate.Flags & (ITEM_PROTO_FLAG_CONJURED | ITEM_PROTO_FLAG_UNK6)) ||
+    if ((itemTemplate.Flags & (ITEM_FLAG_CONJURED | ITEM_FLAG_NO_DISENCHANT)) ||
         itemTemplate.Bonding == BIND_QUEST_ITEM || itemTemplate.Area || itemTemplate.Map ||
         itemTemplate.Stackable > 1 ||
         itemTemplate.Quality < ITEM_QUALITY_UNCOMMON || itemTemplate.Quality > ITEM_QUALITY_EPIC ||
