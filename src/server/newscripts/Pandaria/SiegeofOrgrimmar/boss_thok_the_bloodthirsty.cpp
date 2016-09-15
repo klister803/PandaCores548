@@ -179,6 +179,8 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             {
                 _Reset();
                 DespawnObjects();
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, false);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
                 me->SetReactState(REACT_DEFENSIVE);
                 me->RemoveAllAuras();
                 me->SetCreateMana(100);
@@ -252,6 +254,8 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             {
                 if (type == 2 && instance)
                 {   //End phase two, go to kill prisoner
+                    fplGuid = 0;
+                    events.Reset();
                     findtargets = 0;
                     pGuid = Guid;
                     me->InterruptNonMeleeSpells(true);
@@ -414,11 +418,9 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         plist.clear();
                         GetPlayerListInGrid(plist, me, 20.0f);
                         if (!plist.empty())
-                        {
                             for (std::list<Player*>::const_iterator itr = plist.begin(); itr != plist.end(); itr++)
                                 if (me->isInFront(*itr, 2.0f) && me->GetDistance(*itr) <= 8.0f)
                                     me->Kill(*itr, true);
-                        }
                         findtargets = 700;
                     }
                     else

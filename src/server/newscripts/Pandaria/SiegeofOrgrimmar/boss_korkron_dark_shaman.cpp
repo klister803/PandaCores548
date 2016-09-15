@@ -270,10 +270,16 @@ public:
 
         void EnterEvadeMode()
         {
+            me->NearTeleportTo(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY(), me->GetHomePosition().GetPositionZ(), me->GetHomePosition().GetOrientation());
             ScriptedAI::EnterEvadeMode();
             if (Creature* oshaman = GetOtherShaman())
+            {
                 if (oshaman->isInCombat())
+                {
+                    oshaman->NearTeleportTo(oshaman->GetHomePosition().GetPositionX(), oshaman->GetHomePosition().GetPositionY(), oshaman->GetHomePosition().GetPositionZ(), oshaman->GetHomePosition().GetOrientation());
                     oshaman->AI()->EnterEvadeMode();
+                }
+            }
         }
         
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -622,10 +628,8 @@ public:
             if (instance)
             {
                 if (Creature* omount = me->GetCreature(*me, instance->GetData64(me->GetEntry() == NPC_BLOODCLAW ? NPC_DARKFANG : NPC_BLOODCLAW)))
-                {
                     if (!omount->isInCombat())
                         omount->AI()->DoZoneInCombat(omount, 150.0f);
-                }
                 CallAndDismountShamans();
                 events.ScheduleEvent(EVENT_SWIPE, 7000);
                 events.ScheduleEvent(EVENT_REND,  13000);
