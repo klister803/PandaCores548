@@ -106,6 +106,7 @@ enum eEvents
     EVENT_LASER_ROTATE2             = 15,
     EVENT_LAUNCH_FORWARD            = 16,
     EVENT_LAUNCH_BACK               = 17,
+    EVENT_CHECK_PROGRESS            = 18,
 };
 
 enum _ATentry
@@ -286,6 +287,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              berserk = 600000;
              DoCast(me, SPELL_AUTOMATIC_REPAIR_BEAM_AT, true);
              events.ScheduleEvent(EVENT_ELECTROSTATIC_CHARGE, 1000);
+             events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
              events.ScheduleEvent(EVENT_SAWBLADE, 10000);
              events.ScheduleEvent(EVENT_ACTIVE_CONVEYER, 2000);
              events.ScheduleEvent(EVENT_SUMMON_SHREDDER, 36000);
@@ -547,6 +549,14 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              {
                  switch (eventId)
                  {
+                 case EVENT_CHECK_PROGRESS:
+                     if (instance && instance->GetBossState(DATA_MALKOROK) != DONE)
+                     {
+                         me->SetReactState(REACT_PASSIVE);
+                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                         EnterEvadeMode();
+                     }
+                     break;
                  case EVENT_SAWBLADE:
                  {
                      bool havetarget = false;
