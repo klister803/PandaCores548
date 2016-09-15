@@ -63,6 +63,7 @@ enum eSpells
     SPELL_CANNON_BALL_DESTD  = 147662,
     SPELL_FLAME_COATING      = 144115,
     SPELL_R_WATERS           = 144117,
+    SPELL_HEAL               = 149232,
 };
 
 enum Events
@@ -325,7 +326,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     if (me->GetMap()->IsHeroic())
                     {
                         phasecount++;
-                        me->SetHealth(me->GetHealth() + me->CountPctFromMaxHealth(8));
+                        me->CastCustomSpell(SPELL_HEAL, SPELLVALUE_BASE_POINT0, 8.0f, me, true);
                     }
                     break;
                 case ACTION_PHASE_TWO:
