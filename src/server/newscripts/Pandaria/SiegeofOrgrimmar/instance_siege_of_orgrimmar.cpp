@@ -1853,6 +1853,20 @@ public:
                 for (std::vector<uint64>::const_iterator guid = lightqGUIDs.begin(); guid != lightqGUIDs.end(); guid++)
                     HandleGameObject(*guid, false);
                 break;
+            case DATA_CHECK_KDS_RESET_IS_DONE:
+                for (uint8 n = 0; n < 2; n++)
+                {
+                    Creature* kdsmaunt = instance->GetCreature(!n ? bloodclawGuid : darkfangGuid);
+                    if (!kdsmaunt)
+                        return;
+                    if (!kdsmaunt->isAlive() || kdsmaunt->isInCombat())
+                        return;
+                }
+
+                for (uint8 n = 0; n < 2; n++)
+                    if (Creature* kdsmaunt = instance->GetCreature(!n ? bloodclawGuid : darkfangGuid))
+                        kdsmaunt->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                break;
             }
         }
 

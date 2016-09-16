@@ -241,7 +241,12 @@ public:
                 break;
             }
             if (Creature* mount = me->SummonCreature(mauntentry, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()))
+            {
+                if (!firstpull)
+                    mount->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                 me->EnterVehicle(mount->ToUnit(), 0);
+            }
+            instance->SetData(DATA_CHECK_KDS_RESET_IS_DONE, 0);
         }
         
         void EnterCombat(Unit* who)
