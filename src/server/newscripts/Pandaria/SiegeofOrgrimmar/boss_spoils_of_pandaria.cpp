@@ -379,6 +379,7 @@ public:
                         if (!me->GetMap()->IsLfr())
                             if (GameObject* chest = me->SummonGameObject(GO_NSOP_SPOILS, 1631.8f, -5125.97f, -271.122f, 5.31506f, 0.0f, 0.0f, 0.0f, 1.0f, 604800))
                                 chest->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+
                         Map::PlayerList const &PlayerList = me->GetMap()->GetPlayers();
                         if (!PlayerList.isEmpty())
                         {
@@ -387,8 +388,9 @@ public:
                                 if (Player* player = Itr->getSource())
                                 {
                                     player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 145904);
-                                    if (AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(8478))
-                                        player->CompletedAchievement(achievementEntry);
+                                    if (me->GetMap()->IsHeroic())
+                                        if (AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(8478))
+                                            player->CompletedAchievement(achievementEntry);
                                 }
                             }
                         }

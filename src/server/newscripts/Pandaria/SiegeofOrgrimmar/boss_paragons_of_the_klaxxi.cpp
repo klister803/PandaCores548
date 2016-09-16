@@ -1037,7 +1037,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
                         break;
                     //HM
                     case EVENT_PARAGONS_PURPOSE:
-                        DoCast(me, SPELL_PARAGONS_PURPOSE_DMG);
+                        DoCast(me, SPELL_PARAGONS_PURPOSE_DMG, true);
                         events.ScheduleEvent(EVENT_PARAGONS_PURPOSE, 50000);
                         break;
                     }
@@ -1453,12 +1453,20 @@ public:
             instance = creature->GetInstanceScript();
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+            if (me->GetMap()->IsHeroic())
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             DoCast(me, SPELL_AMBER_VISUAL, true);
         }
 
         InstanceScript* instance;
 
         void Reset(){}
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (me->GetMap()->IsHeroic()) //for safe
+                damage = 0;
+        }
 
         void EnterCombat(Unit* who){}
 
