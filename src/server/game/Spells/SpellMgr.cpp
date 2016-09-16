@@ -5444,6 +5444,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 142940: //Green
                     spellInfo->TargetAuraSpell = 142549;
                     break;
+                case 142945: //Eerie Fog
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21);
+                    break;
                 //Siegecrafter Blackfuse
                 case 143265: //Launch
                     spellInfo->Effects[1]->Effect = 0;

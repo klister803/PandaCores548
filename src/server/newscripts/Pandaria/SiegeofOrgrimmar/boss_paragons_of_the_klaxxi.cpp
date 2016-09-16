@@ -142,6 +142,11 @@ enum eSpells
     //Xaril
     SPELL_VOLATILE_POULTICE_HEAL       = 142897,
     //
+
+    //Purple toxin player effect
+    SPELL_CANNED_HEAT                  = 143570,
+
+    SPELL_EERIE_FOG_DMG                = 142945,
 };
 
 enum sEvents
@@ -449,739 +454,685 @@ public:
 
 class boss_paragons_of_the_klaxxi : public CreatureScript
 {
-    public:
-        boss_paragons_of_the_klaxxi() : CreatureScript("boss_paragons_of_the_klaxxi") {}
+public:
+    boss_paragons_of_the_klaxxi() : CreatureScript("boss_paragons_of_the_klaxxi") {}
 
-        struct boss_paragons_of_the_klaxxiAI : public ScriptedAI
+    struct boss_paragons_of_the_klaxxiAI : public ScriptedAI
+    {
+        boss_paragons_of_the_klaxxiAI(Creature* creature) : ScriptedAI(creature), summons(me)
         {
-            boss_paragons_of_the_klaxxiAI(Creature* creature) : ScriptedAI(creature), summons(me)
+            instance = creature->GetInstanceScript();
+            me->SetDisableGravity(true);
+            me->SetCanFly(true);
+        }
+
+        InstanceScript* instance;
+        SummonList summons;
+        EventMap events;
+        uint64 jtGuid, dfatargetGuid;
+        uint32 checkklaxxi, healcooldown;
+        uint8 flashcount;
+        bool healready;
+
+        void Reset()
+        {
+            events.Reset();
+            summons.DespawnAll();
+            for (uint8 n = 0; n < 4; n++)
+                me->RemoveAurasDueToSpell(removeaurasentry[n]);
+            me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
+            me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            jtGuid = 0;
+            dfatargetGuid = 0;
+            checkklaxxi = 0;
+            healcooldown = 0;
+            flashcount = 0;
+            healready = true;
+            switch (me->GetEntry())
             {
-                instance = creature->GetInstanceScript();
-                me->SetDisableGravity(true);
-                me->SetCanFly(true);
+            case NPC_SKEER:
+            case NPC_RIKKAL:
+            case NPC_HISEK:
+                DoCast(me, SPELL_READY_TO_FIGHT, true);
+                break;
+            default:
+                break;
             }
+        }
 
-            InstanceScript* instance;
-            SummonList summons;
-            EventMap events;
-            uint64 jtGuid, dfatargetGuid;
-            uint32 checkklaxxi, healcooldown;
-            uint8 flashcount;
-            bool healready;
-
-            void Reset()
+        void JustSummoned(Creature* sum)
+        {
+            if (sum->GetEntry() == 71309)
             {
-                events.Reset();
-                summons.DespawnAll();
-                for (uint8 n = 0; n < 4; n++)
-                    me->RemoveAurasDueToSpell(removeaurasentry[n]);
+                sum->SetDisplayId(11686);
+                sum->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                jtGuid = sum->GetGUID();
+                DoCast(sum, SPELL_DEATH_FROM_ABOVE_VISUAL);
+                events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE_START, 2000);
+            }
+            summons.Summon(sum);
+        }
+
+        void EnterCombat(Unit* who)
+        {
+            DoZoneInCombat(me, 300.0f);
+            switch (me->GetEntry())
+            {
+            case NPC_KILRUK:
+                DoCast(me, SPELL_RAZOR_SHARP_BLADES, true);
+                events.ScheduleEvent(EVENT_GOUGE, 20000);
+                events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 34000);
+                if (me->GetMap()->IsHeroic())
+                    events.ScheduleEvent(EVENT_REAVE, 16000);
+                break;
+            case NPC_XARIL:
+                Talk(SAY_XARIL_PULL, 0);
+                DoCast(me, SPELL_TENDERIZING_STRIKES, true);
+                events.ScheduleEvent(EVENT_TOXIC_INJECTION, 3000);
+                break;
+            case NPC_SKEER:
+                Talk(SAY_SKEER_PULL, 0);
+                DoCast(me, SPELL_HEVER_OF_FOES, true);
+                events.ScheduleEvent(EVENT_BLODDLETTING, 10000);
+                break;
+            case NPC_RIKKAL:
+                DoCast(me, SPELL_MAD_SCIENTIST_AURA, true);
+                events.ScheduleEvent(EVENT_MUTATE, 34000);
+                events.ScheduleEvent(EVENT_INJECTION, 14000);
+                break;
+            case NPC_KAZTIK:
+                events.ScheduleEvent(EVENT_SONIC_PROJECTION, 5000);
+                events.ScheduleEvent(EVENT_SUM_HUNGRY_KUNCHONG, 2000);
+                break;
+            case NPC_KORVEN:
+                Talk(SAY_KORVEN_PULL, 0);
+                events.ScheduleEvent(EVENT_SHIELD_BASH, 17000);
+                checkklaxxi = 2000;
+                break;
+            case NPC_IYYOKYK:
+                Talk(SAY_IYYOKYK_PULL, 0);
+                events.ScheduleEvent(EVENT_DIMINISH, 5000);
+                events.ScheduleEvent(EVENT_INSANE_CALCULATION, 25000);
+                break;
+            case NPC_KAROZ:
+                Talk(SAY_KAROZ_PULL, 0);
+                events.ScheduleEvent(EVENT_HURL_AMBER, 43000);
+                break;
+            case NPC_HISEK:
+                events.ScheduleEvent(EVENT_MULTI_SHOT, 2000);
+                events.ScheduleEvent(EVENT_AIM, 39500);
+                if (me->GetMap()->IsHeroic())
+                    events.ScheduleEvent(EVENT_RAPID_FIRE, 47000);
+                break;
+            }
+            if (me->GetMap()->IsHeroic())
+                events.ScheduleEvent(EVENT_PARAGONS_PURPOSE, 50000);
+        }
+
+        void DoAction(int32 const action)
+        {
+            switch (action)
+            {
+            case ACTION_KLAXXI_IN_PROGRESS:
+                instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
+                me->GetMotionMaster()->MoveJump(1582.4f, -5684.9f, -313.635f, 15.0f, 15.0f, 1);
+                me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
+                break;
+            case ACTION_RE_ATTACK:
+                me->SetFullHealth();
+                if (me->GetEntry() != NPC_HISEK)
+                    me->SetReactState(REACT_AGGRESSIVE);
+                DoZoneInCombat(me, 150.0f);
+                break;
+            case ACTION_RE_ATTACK_KILRUK:
                 me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
-                me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
-                me->SetReactState(REACT_PASSIVE);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                jtGuid = 0;
-                dfatargetGuid = 0;
-                checkklaxxi = 0;
-                healcooldown = 0;
-                flashcount = 0;
-                healready = true;
+                me->ReAttackWithZone();
+                events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 34000);
+                break;
+            case ACTION_MOVE_TO_CENTER:
+                events.ScheduleEvent(EVENT_RE_ATTACK, 2000);
+                break;
+            }
+        }
+
+        void EnterEvadeMode()
+        {
+            if (instance->GetBossState(DATA_KLAXXI) != NOT_STARTED)
+                instance->SetBossState(DATA_KLAXXI, NOT_STARTED);
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            switch (type)
+            {
+            case EFFECT_MOTION_TYPE:
+            {
+                switch (pointId)
+                {
+                case 1:
+                    if (Player* pl = me->FindNearestPlayer(250.0f, true))
+                    {
+                        me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
+                        me->RemoveAurasDueToSpell(SPELL_READY_TO_FIGHT);
+                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                        if (me->GetEntry() != NPC_HISEK)
+                            me->SetReactState(REACT_AGGRESSIVE);
+                        me->SetInCombatWith(pl);
+                        pl->SetInCombatWith(me);
+                        me->AddThreat(pl, 0.0f);
+                        instance->SetData(DATA_BUFF_NEXT_KLAXXI, 0);
+                    }
+                    else
+                    {
+                        if (instance->GetBossState(DATA_KLAXXI) != NOT_STARTED)
+                            instance->SetBossState(DATA_KLAXXI, NOT_STARTED);
+                    }
+                    break;
+                case 2:
+                    if (Creature* kc = me->GetCreature(*me, instance->GetData64(NPC_KLAXXI_CONTROLLER)))
+                        me->SetFacingToObject(kc);
+                    DoCast(me, SPELL_HURL_AMBER);
+                    break;
+                case 3:
+                    me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
+                    me->ReAttackWithZone();
+                    events.ScheduleEvent(EVENT_FLASH, 10000);
+                    break;
+                case 4:
+                    if (Player* pl = me->GetPlayer(*me, dfatargetGuid))
+                        DoCast(pl, SPELL_DEATH_FROM_ABOVE_SUM);
+                    break;
+                }
+            }
+            break;
+            case POINT_MOTION_TYPE:
+            {
+                if (pointId == 1003)
+                {
+                    flashcount--;
+                    if (flashcount)
+                        events.ScheduleEvent(EVENT_FLASH, 3000);
+                    else
+                    {
+                        me->ReAttackWithZone();
+                        events.ScheduleEvent(EVENT_HURL_AMBER, 50000);
+                    }
+                }
+            }
+            break;
+            }
+        }
+
+        void JustDied(Unit* killer)
+        {
+            if (killer != me && instance)
+            {
+                if (!instance->GetData(DATA_IS_KLAXXI_DONE))
+                {
+                    me->SetLootRecipient(NULL);
+                    me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+                    instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+                    instance->SetData(DATA_INTRO_NEXT_KLAXXI, 0);
+                }
+                else
+                {
+                    Map::PlayerList const& PlayerList = me->GetMap()->GetPlayers();
+                    if (!PlayerList.isEmpty())
+                        for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+                            if (Player* player = Itr->getSource())
+                                player->ModifyCurrency(CURRENCY_TYPE_VALOR_POINTS, 7000);
+                    instance->SetBossState(DATA_KLAXXI, DONE);
+                }
                 switch (me->GetEntry())
                 {
                 case NPC_SKEER:
+                    Talk(SAY_SKEER_DIE, 0);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_HEWN);
+                    break;
                 case NPC_RIKKAL:
+                    Talk(SAY_RIKKAL_DIE, 0);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_INJECTION);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GENETIC_ALTERATION);
+                    break;
                 case NPC_HISEK:
-                    DoCast(me, SPELL_READY_TO_FIGHT, true); 
+                    Talk(SAY_HISEK_DIE, 0);
+                    break;
+                case NPC_KAROZ:
+                    Talk(SAY_KAROZ_DIE, 0);
+                    break;
+                case NPC_KORVEN:
+                    Talk(SAY_KORVEN_DIE, 0);
+                    break;
+                case NPC_IYYOKYK:
+                    Talk(SAY_IYYOKYK_DIE, 0);
+                    break;
+                case NPC_XARIL:
+                    Talk(SAY_XARIL_DIE, 0);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TENDERIZING_STRIKES_DMG);
+                    for (uint8 n = 0; n < 6; n++)
+                        instance->DoRemoveAurasDueToSpellOnPlayers(toxinlist[n]);
+                    break;
+                case NPC_KAZTIK:
+                    Talk(SAY_KAZTIK_DIE, 0);
+                    break;
+                case NPC_KILRUK:
+                    Talk(SAY_KILRUK_DIE, 0);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EXPOSED_VEINS);
                     break;
                 default:
                     break;
                 }
             }
+        }
 
-            void JustSummoned(Creature* sum)
+        void OnSpellClick(Unit* clicker)
+        {
+            if (instance && instance->GetBossState(DATA_KLAXXI) == IN_PROGRESS)
             {
-                if (sum->GetEntry() == 71309)
+                if (Player* pl = clicker->ToPlayer())
                 {
-                    sum->SetDisplayId(11686);
-                    sum->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                    jtGuid = sum->GetGUID();
-                    DoCast(sum, SPELL_DEATH_FROM_ABOVE_VISUAL);
-                    events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE_START, 2000);
-                }
-                summons.Summon(sum);
-            }
-
-            void EnterCombat(Unit* who)
-            {
-                DoZoneInCombat(me, 300.0f);
-                switch (me->GetEntry())
-                {
-                case NPC_KILRUK:
-                    DoCast(me, SPELL_RAZOR_SHARP_BLADES, true);
-                    events.ScheduleEvent(EVENT_GOUGE, 20000);
-                    events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 34000);
-                    if (me->GetMap()->IsHeroic())
-                        events.ScheduleEvent(EVENT_REAVE, 16000);
-                    break;
-                case NPC_XARIL:
-                    Talk(SAY_XARIL_PULL, 0);
-                    DoCast(me, SPELL_TENDERIZING_STRIKES, true);
-                    events.ScheduleEvent(EVENT_TOXIC_INJECTION, 3000);
-                    break;
-                case NPC_SKEER:
-                    Talk(SAY_SKEER_PULL, 0);
-                    DoCast(me, SPELL_HEVER_OF_FOES, true);
-                    events.ScheduleEvent(EVENT_BLODDLETTING, 10000);
-                    break;
-                case NPC_RIKKAL:
-                    DoCast(me, SPELL_MAD_SCIENTIST_AURA, true);
-                    events.ScheduleEvent(EVENT_MUTATE, 34000);
-                    events.ScheduleEvent(EVENT_INJECTION, 14000); 
-                    break;
-                case NPC_KAZTIK:
-                    events.ScheduleEvent(EVENT_SONIC_PROJECTION, 5000);
-                    events.ScheduleEvent(EVENT_SUM_HUNGRY_KUNCHONG, 2000);
-                    break;
-                case NPC_KORVEN:
-                    Talk(SAY_KORVEN_PULL, 0);
-                    events.ScheduleEvent(EVENT_SHIELD_BASH, 17000);
-                    checkklaxxi = 2000;
-                    break;
-                case NPC_IYYOKYK:
-                    Talk(SAY_IYYOKYK_PULL, 0);
-                    events.ScheduleEvent(EVENT_DIMINISH, 5000);
-                    events.ScheduleEvent(EVENT_INSANE_CALCULATION, 25000);
-                    break;
-                case NPC_KAROZ:
-                    Talk(SAY_KAROZ_PULL, 0);
-                    events.ScheduleEvent(EVENT_HURL_AMBER, 43000);
-                    break;
-                case NPC_HISEK:
-                    events.ScheduleEvent(EVENT_MULTI_SHOT, 2000);
-                    events.ScheduleEvent(EVENT_AIM, 39500);
-                    if (me->GetMap()->IsHeroic())
-                        events.ScheduleEvent(EVENT_RAPID_FIRE, 47000);
-                    break;
-                }
-                if (me->GetMap()->IsHeroic())
-                    events.ScheduleEvent(EVENT_PARAGONS_PURPOSE, 50000);
-            }
-
-            void DoAction(int32 const action)
-            {
-                switch (action)
-                {
-                case ACTION_KLAXXI_IN_PROGRESS:
-                    instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
-                    me->GetMotionMaster()->MoveJump(1582.4f, -5684.9f, -313.635f, 15.0f, 15.0f, 1);
-                    me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
-                    break;
-                case ACTION_RE_ATTACK:
-                    me->SetFullHealth();
-                    if (me->GetEntry() != NPC_HISEK)
-                        me->SetReactState(REACT_AGGRESSIVE);
-                    DoZoneInCombat(me, 150.0f);
-                    break;
-                case ACTION_RE_ATTACK_KILRUK:
-                    me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
-                    me->ReAttackWithZone();
-                    events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 34000);
-                    break;
-                case ACTION_MOVE_TO_CENTER:
-                    events.ScheduleEvent(EVENT_RE_ATTACK, 2000);
-                    break;
-                }
-            }
-
-            void EnterEvadeMode()
-            {
-                if (instance->GetBossState(DATA_KLAXXI) != NOT_STARTED)
-                    instance->SetBossState(DATA_KLAXXI, NOT_STARTED);
-            }
-
-            void MovementInform(uint32 type, uint32 pointId)
-            {
-                switch (type)
-                {
-                case EFFECT_MOTION_TYPE:
-                {
-                    switch (pointId)
-                    {
-                    case 1:
-                        if (Player* pl = me->FindNearestPlayer(250.0f, true))
-                        {
-                            me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
-                            me->RemoveAurasDueToSpell(SPELL_READY_TO_FIGHT);
-                            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                            if (me->GetEntry() != NPC_HISEK)
-                                me->SetReactState(REACT_AGGRESSIVE);
-                            me->SetInCombatWith(pl);
-                            pl->SetInCombatWith(me);
-                            me->AddThreat(pl, 0.0f);
-                            instance->SetData(DATA_BUFF_NEXT_KLAXXI, 0);
-                        }
-                        else
-                        {
-                            if (instance->GetBossState(DATA_KLAXXI) != NOT_STARTED)
-                                instance->SetBossState(DATA_KLAXXI, NOT_STARTED);
-                        }
-                        break;
-                    case 2:
-                        if (Creature* kc = me->GetCreature(*me, instance->GetData64(NPC_KLAXXI_CONTROLLER)))
-                            me->SetFacingToObject(kc);
-                        DoCast(me, SPELL_HURL_AMBER);
-                        break;
-                    case 3:
-                        me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
-                        me->ReAttackWithZone();
-                        events.ScheduleEvent(EVENT_FLASH, 10000);
-                        break;
-                    case 4:
-                        if (Player* pl = me->GetPlayer(*me, dfatargetGuid))
-                            DoCast(pl, SPELL_DEATH_FROM_ABOVE_SUM);
-                        break;
-                    }
-                }
-                break;
-                case POINT_MOTION_TYPE:
-                {
-                    if (pointId == 1003)
-                    {
-                        flashcount--;
-                        if (flashcount)
-                            events.ScheduleEvent(EVENT_FLASH, 3000);
-                        else
-                        {
-                            me->ReAttackWithZone();
-                            events.ScheduleEvent(EVENT_HURL_AMBER, 50000);
-                        }
-                    }
-                }
-                break;
-                }
-            }
-
-            void JustDied(Unit* killer)
-            {
-                if (killer != me && instance)
-                {
-                    if (!instance->GetData(DATA_IS_KLAXXI_DONE))
-                    {
-                        me->SetLootRecipient(NULL);
-                        me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
-                        instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
-                        instance->SetData(DATA_INTRO_NEXT_KLAXXI, 0);
-                    }
-                    else
-                    {
-                        Map::PlayerList const& PlayerList = me->GetMap()->GetPlayers();
-                        if (!PlayerList.isEmpty())
-                            for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
-                                if (Player* player = Itr->getSource())
-                                    player->ModifyCurrency(CURRENCY_TYPE_VALOR_POINTS, 7000);
-                        instance->SetBossState(DATA_KLAXXI, DONE);
-                    }
                     switch (me->GetEntry())
                     {
-                    case NPC_SKEER:
-                        Talk(SAY_SKEER_DIE, 0);
-                        instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_HEWN);
-                        break;
                     case NPC_RIKKAL:
-                        Talk(SAY_RIKKAL_DIE, 0);
-                        instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_INJECTION);
-                        instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GENETIC_ALTERATION);
-                        break;
-                    case NPC_HISEK:
-                        Talk(SAY_HISEK_DIE, 0);
-                        break;
-                    case NPC_KAROZ:
-                        Talk(SAY_KAROZ_DIE, 0);
+                        //Any
+                        pl->CastSpell(pl, SPELL_MAD_SCIENTIST, true);
                         break;
                     case NPC_KORVEN:
-                        Talk(SAY_KORVEN_DIE, 0);
-                        break;
-                    case NPC_IYYOKYK:
-                        Talk(SAY_IYYOKYK_DIE, 0);
-                        break;
-                    case NPC_XARIL:
-                        Talk(SAY_XARIL_DIE, 0);
-                        instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TENDERIZING_STRIKES_DMG);
-                        for (uint8 n = 0; n < 6; n++)
-                            instance->DoRemoveAurasDueToSpellOnPlayers(toxinlist[n]);
-                        break;
-                    case NPC_KAZTIK:
-                        Talk(SAY_KAZTIK_DIE, 0);
+                        if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_TANK)
+                            pl->CastSpell(pl, SPELL_MASTER_OF_AMBER, true);
                         break;
                     case NPC_KILRUK:
-                        Talk(SAY_KILRUK_DIE, 0);
-                        instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EXPOSED_VEINS);
+                        if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_DPS)
+                            pl->CastSpell(pl, SPELL_ANGEL_OF_DEATH, true);
+                        break;
+                    case NPC_HISEK:
+                        if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_DPS)
+                            pl->CastSpell(pl, SPELL_COMPOUND_EYE, true);
+                        break;
+                    case NPC_XARIL:
+                        if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_HEALER)
+                            pl->CastSpell(pl, SPELL_VAST_APOTHECARIAL_KNOWLEDGE, true);
                         break;
                     default:
                         break;
                     }
+                    me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
                 }
             }
+        }
 
-            void OnSpellClick(Unit* clicker)
+        uint64 GetTargetGuid(uint32 filteraura = 0)
+        {
+            std::list<Player*> pllist;
+            pllist.clear();
+            GetPlayerListInGrid(pllist, me, 150.0f);
+            if (!pllist.empty())
             {
-                if (instance && instance->GetBossState(DATA_KLAXXI) == IN_PROGRESS)
-                { 
-                    if (Player* pl = clicker->ToPlayer())
-                    {
-                        switch (me->GetEntry())
-                        {
-                        case NPC_RIKKAL:
-                            //Any
-                            pl->CastSpell(pl, SPELL_MAD_SCIENTIST, true);
-                            break;
-                        case NPC_KORVEN:
-                            if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_TANK)
-                                pl->CastSpell(pl, SPELL_MASTER_OF_AMBER, true);
-                            break;
-                        case NPC_KILRUK:
-                            if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_DPS)
-                                pl->CastSpell(pl, SPELL_ANGEL_OF_DEATH, true);
-                            break;
-                        case NPC_HISEK:
-                            if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_DPS)
-                                pl->CastSpell(pl, SPELL_COMPOUND_EYE, true);
-                            break;
-                        case NPC_XARIL:
-                            if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_HEALER)
-                                pl->CastSpell(pl, SPELL_VAST_APOTHECARIAL_KNOWLEDGE, true);
-                            break;
-                        default:
-                            break;
-                        }
-                        me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
-                    }
-                }
-            }
-
-            uint64 GetTargetGuid(uint32 filteraura = 0)
-            {
-                std::list<Player*> pllist;
-                pllist.clear();
-                GetPlayerListInGrid(pllist, me, 150.0f);
-                if (!pllist.empty())
+                for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                 {
-                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                    if (filteraura)
                     {
-                        if (filteraura)
-                        {
-                            if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && !(*itr)->HasAura(filteraura))
-                                return (*itr)->GetGUID();
-                        }
-                        else
-                        {
-                            if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
-                                return (*itr)->GetGUID();
-                        }
-                    }
-                }
-                return 0;
-            }
-
-            uint64 GetFlashTargetGuid()
-            {
-                std::list<Player*> pllist;
-                pllist.clear();
-                GetPlayerListInGrid(pllist, me, 150.0f);
-                if (!pllist.empty())
-                {
-                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
-                    {
-                        if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && me->GetDistance(*itr) >= 30.0f)
+                        if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && !(*itr)->HasAura(filteraura))
                             return (*itr)->GetGUID();
                     }
-
-                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                    else
                     {
                         if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
                             return (*itr)->GetGUID();
                     }
                 }
-                return 0;
+            }
+            return 0;
+        }
+
+        uint64 GetFlashTargetGuid()
+        {
+            std::list<Player*> pllist;
+            pllist.clear();
+            GetPlayerListInGrid(pllist, me, 150.0f);
+            if (!pllist.empty())
+            {
+                for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                    if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && me->GetDistance(*itr) >= 30.0f)
+                        return (*itr)->GetGUID();
+
+                for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                    if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
+                        return (*itr)->GetGUID();
+            }
+            return 0;
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
+
+            if (healcooldown)
+            {
+                if (healcooldown <= diff)
+                {
+                    healcooldown = 0;
+                    healready = true;
+                }
+                else
+                    healcooldown -= diff;
             }
 
-            void UpdateAI(uint32 diff)
+            events.Update(diff);
+
+            if (me->HasAura(SPELL_ENCASE_IN_AMBER) || me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            if (checkklaxxi)
             {
-                if (!UpdateVictim())
-                    return;
-
-                if (healcooldown)
+                if (checkklaxxi <= diff)
                 {
-                    if (healcooldown <= diff)
+                    if (healready)
                     {
-                        healcooldown = 0;
-                        healready = true;
-                    }
-                    else
-                        healcooldown -= diff;
-                }
-
-                events.Update(diff);
-
-                if (me->HasAura(SPELL_ENCASE_IN_AMBER) || me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
-
-                if (checkklaxxi)
-                {
-                    if (checkklaxxi <= diff)
-                    {
-                        if (healready)
+                        for (uint8 n = 0; n < 9; n++)
                         {
-                            for (uint8 n = 0; n < 9; n++)
+                            if (Creature* klaxxi = me->FindNearestCreature(klaxxientry[n], 150.0f, true))
                             {
-                                if (Creature* klaxxi = me->FindNearestCreature(klaxxientry[n], 150.0f, true))
+                                if (klaxxi->isInCombat())
                                 {
-                                    if (klaxxi->isInCombat())
+                                    if (klaxxi->HealthBelowPct(50))
                                     {
-                                        if (klaxxi->HealthBelowPct(50))
-                                        {
-                                            healready = false;
-                                            klaxxi->CastSpell(klaxxi, SPELL_ENCASE_IN_AMBER, true);
-                                            klaxxi->SummonCreature(NPC_AMBER, klaxxi->GetPositionX(), klaxxi->GetPositionY(), klaxxi->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 10000);
-                                            healcooldown = 90000;
-                                            break;
-                                        }
+                                        healready = false;
+                                        klaxxi->CastSpell(klaxxi, SPELL_ENCASE_IN_AMBER, true);
+                                        klaxxi->SummonCreature(NPC_AMBER, klaxxi->GetPositionX(), klaxxi->GetPositionY(), klaxxi->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 10000);
+                                        healcooldown = 90000;
+                                        break;
                                     }
                                 }
                             }
                         }
-                        checkklaxxi = 2000;
                     }
-                    else
-                        checkklaxxi -= diff;
-                }
-
-                while (uint32 eventId = events.ExecuteEvent())
-                {
-                    switch (eventId)
-                    {
-                    //Kaztik
-                    case EVENT_SONIC_PROJECTION:
-                        if (me->getVictim())
-                            DoCastVictim(SPELL_SONIC_PROJECTION_AT);
-                        events.ScheduleEvent(EVENT_SONIC_PROJECTION, 4000);
-                        break;
-                    case EVENT_SUM_HUNGRY_KUNCHONG:
-                    {
-                        uint8 maxcount = me->GetMap()->Is25ManRaid() ? 4 : 2;
-                        for (uint8 n = 0; n < maxcount; n++)
-                        {
-                            if (Creature* ap = me->FindNearestCreature(NPC_AMBER_PIECE, 150.0f, true))
-                            {
-                                float x, y;
-                                GetPosInRadiusWithRandomOrientation(ap, 50.0f, x, y);
-                                me->SummonCreature(NPC_HUNGRY_KUNCHONG, x, y, ap->GetPositionZ());
-                            }
-                        }
-                        events.ScheduleEvent(EVENT_DEVOUR, 60000);
-                        break;
-                    }
-                    case EVENT_DEVOUR:
-                    {
-                        std::list<Creature*> hklist;
-                        GetCreatureListWithEntryInGrid(hklist, me, NPC_HUNGRY_KUNCHONG, 150.0f);
-                        if (!hklist.empty())
-                        {
-                            for (std::list<Creature*>::const_iterator itr = hklist.begin(); itr != hklist.end(); itr++)
-                            {
-                                if (!(*itr)->HasAura(SPELL_MOLT))
-                                {
-                                    (*itr)->AI()->DoAction(ACTION_DEVOUR);
-                                    break;
-                                }
-                            }
-                        }
-                        events.ScheduleEvent(EVENT_DEVOUR, 60000);
-                        break;
-                    }
-                    //Iyyokyk
-                    case EVENT_DIMINISH:
-                        if (me->getVictim())
-                            DoCastVictim(SPELL_DIMINISH);
-                        events.ScheduleEvent(EVENT_DIMINISH, 5000);
-                        break;
-                    case EVENT_INSANE_CALCULATION:
-                        DoCast(me, SPELL_INSANE_CALC_FIERY_EDGE);
-                        events.ScheduleEvent(EVENT_INSANE_CALCULATION, 36000);
-                        break;
-                    //Hisek
-                    case EVENT_MULTI_SHOT:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
-                            DoCast(target, SPELL_MULTI_SHOT);
-                        events.ScheduleEvent(EVENT_MULTI_SHOT, 4000);
-                        break;
-                    case EVENT_AIM:
-                        if (Player* pl = me->GetPlayer(*me, GetTargetGuid()))
-                        {
-                            Talk(SAY_HISEK_AIM, 0);
-                            DoCast(pl, SPELL_AIM_DUMMY);
-                        }
-                        events.ScheduleEvent(EVENT_AIM, 39500);
-                        break;
-                    case EVENT_RAPID_FIRE:
-                        DoCast(me, SPELL_RAPID_FIRE_DUMMY);
-                        events.ScheduleEvent(EVENT_RAPID_FIRE, 47000);
-                        break;
-                    //Skeer
-                    case EVENT_BLODDLETTING:
-                        Talk(SAY_SKEER_BLOOD, 0);
-                        if (me->getVictim())
-                            DoCastVictim(SPELL_BLODDLETTING);
-                        events.ScheduleEvent(EVENT_BLODDLETTING, 35000);
-                        break;
-                    //Kilruk
-                    case EVENT_DEATH_FROM_ABOVE:
-                        if (Player* pl = me->GetPlayer(*me, GetTargetGuid()))
-                        {
-                            dfatargetGuid = pl->GetGUID();
-                            events.DelayEvents(6000);
-                            me->SetAttackStop(true);
-                            me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
-                            me->GetMotionMaster()->MoveJump(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 10.0f, 15.0f, 15.0f, 4);
-                        }
-                        else
-                            events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 34000);
-                        break;
-                    case EVENT_DEATH_FROM_ABOVE_START:
-                        if (Creature* jt = me->GetCreature(*me, jtGuid))
-                            DoCast(jt, SPELL_DEATH_FROM_ABOVE);
-                        break;
-                    case EVENT_GOUGE:
-                        if (me->getVictim())
-                            DoCastVictim(SPELL_GOUGE);
-                        events.ScheduleEvent(EVENT_GOUGE, 20000);
-                        break;
-                    case EVENT_REAVE:
-                        if (Player* pl = me->GetPlayer(*me, GetTargetGuid()))
-                        {
-                            me->AttackStop();
-                            me->SetReactState(REACT_PASSIVE);
-                            DoCast(pl, SPELL_REAVE);
-                        }
-                        events.ScheduleEvent(EVENT_REAVE, 33000);
-                        break;
-                    //Rikkal
-                    case EVENT_MUTATE:
-                    {
-                        std::list<Player*> pllist;
-                        pllist.clear();
-                        GetPlayerListInGrid(pllist, me, 100.0f);
-                        uint8 count = 0;
-                        uint8 maxcount = me->GetMap()->Is25ManRaid() ? 3 : 1;                   
-                        if (!pllist.empty() && maxcount)
-                        {
-                            for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
-                            {
-                                if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && !(*itr)->HasAura(SPELL_MUTATE))
-                                {
-                                    count++;
-                                    DoCast(*itr, SPELL_MUTATE, true);
-                                }
-                                if (count >= maxcount)
-                                    break;
-                            }
-                        }
-                        events.ScheduleEvent(EVENT_MUTATE, 34000);
-                        break;
-                    }
-                    case EVENT_INJECTION:
-                        if (me->getVictim())
-                            DoCast(me->getVictim(), SPELL_INJECTION);
-                        events.ScheduleEvent(EVENT_INJECTION, 10000); 
-                        break;
-                    //Xaril
-                    case EVENT_TOXIC_INJECTION:
-                        ToxicInjection();
-                        events.ScheduleEvent(EVENT_CATALYST, 27000);
-                        break;
-                    case EVENT_CATALYST:
-                    {
-                        if (!instance)
-                            return;
-
-                        uint32 mod = me->GetMap()->IsHeroic() ? urand(3, 5) : urand(0, 2);
-                        DoCast(me, catalystlist[mod], true);
-                        for (uint8 b = 0; b < 6; ++b)
-                            if (b != mod)
-                                instance->DoRemoveAurasDueToSpellOnPlayers(toxinlist[b]);
-                        events.ScheduleEvent(EVENT_TOXIC_INJECTION, 32000);
-                        break;
-                    }
-                    //Korven
-                    case EVENT_SHIELD_BASH:
-                        if (me->getVictim())
-                            DoCastVictim(SPELL_SHIELD_BASH);
-                        events.ScheduleEvent(EVENT_SHIELD_BASH, 15000);
-                        break;
-                    //Karoz
-                    case EVENT_HURL_AMBER:
-                        me->SetAttackStop(true);
-                        me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
-                        if (Creature* ab = me->FindNearestCreature(NPC_AMBER_BOMB, 110.0f, true))
-                            me->GetMotionMaster()->MoveJump(ab->GetPositionX(), ab->GetPositionY(), ab->GetPositionZ() + 5.0f, 15.0f, 15.0f, 2);
-                        break;
-                    case EVENT_FLASH:
-                        me->SetAttackStop(true);
-                        if (!flashcount)
-                            flashcount = urand(2, 3);
-                        if (Player* pl = me->GetPlayer(*me, GetFlashTargetGuid()))
-                            DoCast(pl, SPELL_STORE_KINETIC_ENERGY);
-                        break;
-                    //Special
-                    case EVENT_RE_ATTACK:
-                        me->GetMotionMaster()->MoveJump(1582.4f, -5684.9f, -313.635f, 15.0f, 15.0f, 3);
-                        break;
-                    //HM
-                    case EVENT_PARAGONS_PURPOSE:
-                        DoCast(me, SPELL_PARAGONS_PURPOSE_DMG, true);
-                        events.ScheduleEvent(EVENT_PARAGONS_PURPOSE, 50000);
-                        break;
-                    }
-                }
-                if (me->GetEntry() != NPC_HISEK)
-                    DoMeleeAttackIfReady();
-            }
-
-            void ToxicInjection()
-            {
-                uint8 firsttoxin = 0;   //blue or orange
-                uint8 secondtoxin = 0;  //red or purple
-                uint8 lasttoxin = 0;    //yellow or green
-                uint8 mod = me->GetMap()->IsHeroic() ? 3 : 0;
-                if (me->GetMap()->IsHeroic())
-                {
-                    uint8 random = urand(0, 2);
-                    if (me->GetMap()->Is25ManRaid())
-                    {
-                        switch (random)
-                        {
-                        case 0:
-                            firsttoxin = 8;
-                            secondtoxin = 9;
-                            lasttoxin = 8;
-                            break;
-                        case 1:
-                            firsttoxin = 9;
-                            secondtoxin = 8;
-                            lasttoxin = 8;
-                            break;
-                        case 2:
-                            firsttoxin = 8;
-                            secondtoxin = 8;
-                            lasttoxin = 9;
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        switch (random)
-                        {
-                        case 0:
-                            firsttoxin = 3;
-                            secondtoxin = 3;
-                            lasttoxin = 4;
-                            break;
-                        case 1:
-                            firsttoxin = 4;
-                            secondtoxin = 3;
-                            lasttoxin = 3;
-                            break;
-                        case 2:
-                            firsttoxin = 3;
-                            secondtoxin = 4;
-                            lasttoxin = 3;
-                            break;
-                        }
-                    }
+                    checkklaxxi = 2000;
                 }
                 else
+                    checkklaxxi -= diff;
+            }
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
                 {
-                    if (me->GetMap()->Is25ManRaid())
+                    //Kaztik
+                case EVENT_SONIC_PROJECTION:
+                    if (me->getVictim())
+                        DoCastVictim(SPELL_SONIC_PROJECTION_AT);
+                    events.ScheduleEvent(EVENT_SONIC_PROJECTION, 4000);
+                    break;
+                case EVENT_SUM_HUNGRY_KUNCHONG:
+                {
+                    uint8 maxcount = me->GetMap()->Is25ManRaid() ? 4 : 2;
+                    for (uint8 n = 0; n < maxcount; n++)
                     {
-                        uint8 random = urand(0, 2);
-                        switch (random)
+                        if (Creature* ap = me->FindNearestCreature(NPC_AMBER_PIECE, 150.0f, true))
                         {
-                        case 0:
-                            firsttoxin = 3;
-                            secondtoxin = 11;
-                            lasttoxin = 11;
-                            break;
-                        case 1:
-                            firsttoxin = 3;
-                            secondtoxin = 10;
-                            lasttoxin = 12;
-                            break;
-                        case 2:
-                            firsttoxin = 3;
-                            secondtoxin = 12;
-                            lasttoxin = 10;
-                            break;
+                            float x, y;
+                            GetPosInRadiusWithRandomOrientation(ap, 50.0f, x, y);
+                            me->SummonCreature(NPC_HUNGRY_KUNCHONG, x, y, ap->GetPositionZ());
                         }
+                    }
+                    events.ScheduleEvent(EVENT_DEVOUR, 60000);
+                    break;
+                }
+                case EVENT_DEVOUR:
+                {
+                    std::list<Creature*> hklist;
+                    GetCreatureListWithEntryInGrid(hklist, me, NPC_HUNGRY_KUNCHONG, 150.0f);
+                    if (!hklist.empty())
+                    {
+                        for (std::list<Creature*>::const_iterator itr = hklist.begin(); itr != hklist.end(); itr++)
+                        {
+                            if (!(*itr)->HasAura(SPELL_MOLT))
+                            {
+                                (*itr)->AI()->DoAction(ACTION_DEVOUR);
+                                break;
+                            }
+                        }
+                    }
+                    events.ScheduleEvent(EVENT_DEVOUR, 60000);
+                    break;
+                }
+                //Iyyokyk
+                case EVENT_DIMINISH:
+                    if (me->getVictim())
+                        DoCastVictim(SPELL_DIMINISH);
+                    events.ScheduleEvent(EVENT_DIMINISH, 5000);
+                    break;
+                case EVENT_INSANE_CALCULATION:
+                    DoCast(me, SPELL_INSANE_CALC_FIERY_EDGE);
+                    events.ScheduleEvent(EVENT_INSANE_CALCULATION, 36000);
+                    break;
+                    //Hisek
+                case EVENT_MULTI_SHOT:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
+                        DoCast(target, SPELL_MULTI_SHOT);
+                    events.ScheduleEvent(EVENT_MULTI_SHOT, 4000);
+                    break;
+                case EVENT_AIM:
+                    if (Player* pl = me->GetPlayer(*me, GetTargetGuid()))
+                    {
+                        Talk(SAY_HISEK_AIM, 0);
+                        DoCast(pl, SPELL_AIM_DUMMY);
+                    }
+                    events.ScheduleEvent(EVENT_AIM, 39500);
+                    break;
+                case EVENT_RAPID_FIRE:
+                    DoCast(me, SPELL_RAPID_FIRE_DUMMY);
+                    events.ScheduleEvent(EVENT_RAPID_FIRE, 47000);
+                    break;
+                    //Skeer
+                case EVENT_BLODDLETTING:
+                    Talk(SAY_SKEER_BLOOD, 0);
+                    if (me->getVictim())
+                        DoCastVictim(SPELL_BLODDLETTING);
+                    events.ScheduleEvent(EVENT_BLODDLETTING, 35000);
+                    break;
+                    //Kilruk
+                case EVENT_DEATH_FROM_ABOVE:
+                    if (Player* pl = me->GetPlayer(*me, GetTargetGuid()))
+                    {
+                        dfatargetGuid = pl->GetGUID();
+                        events.DelayEvents(6000);
+                        me->SetAttackStop(true);
+                        me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
+                        me->GetMotionMaster()->MoveJump(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 10.0f, 15.0f, 15.0f, 4);
                     }
                     else
+                        events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 34000);
+                    break;
+                case EVENT_DEATH_FROM_ABOVE_START:
+                    if (Creature* jt = me->GetCreature(*me, jtGuid))
+                        DoCast(jt, SPELL_DEATH_FROM_ABOVE);
+                    break;
+                case EVENT_GOUGE:
+                    if (me->getVictim())
+                        DoCastVictim(SPELL_GOUGE);
+                    events.ScheduleEvent(EVENT_GOUGE, 20000);
+                    break;
+                case EVENT_REAVE:
+                    if (Player* pl = me->GetPlayer(*me, GetTargetGuid()))
                     {
-                        uint8 random = urand(0, 2);
-                        switch (random)
+                        me->AttackStop();
+                        me->SetReactState(REACT_PASSIVE);
+                        DoCast(pl, SPELL_REAVE);
+                    }
+                    events.ScheduleEvent(EVENT_REAVE, 33000);
+                    break;
+                    //Rikkal
+                case EVENT_MUTATE:
+                {
+                    std::list<Player*> pllist;
+                    pllist.clear();
+                    GetPlayerListInGrid(pllist, me, 100.0f);
+                    uint8 count = 0;
+                    uint8 maxcount = me->GetMap()->Is25ManRaid() ? 3 : 1;
+                    if (!pllist.empty() && maxcount)
+                    {
+                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                         {
-                        case 0:
-                            firsttoxin = 2;
-                            secondtoxin = 4;
-                            lasttoxin = 4;
-                            break;
-                        case 1:
-                            firsttoxin = 2;
-                            secondtoxin = 5;
-                            lasttoxin = 3;
-                            break;
-                        case 2:
-                            firsttoxin = 2;
-                            secondtoxin = 3;
-                            lasttoxin = 5;
-                            break;
+                            if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK && !(*itr)->HasAura(SPELL_MUTATE))
+                            {
+                                count++;
+                                DoCast(*itr, SPELL_MUTATE, true);
+                            }
+                            if (count >= maxcount)
+                                break;
                         }
                     }
+                    events.ScheduleEvent(EVENT_MUTATE, 34000);
+                    break;
                 }
-                std::list<Player*>pllist;
-                pllist.clear();
-                me->GetPlayerListInGrid(pllist, 150.0f);
-                if (pllist.size())
+                case EVENT_INJECTION:
+                    if (me->getVictim())
+                        DoCast(me->getVictim(), SPELL_INJECTION);
+                    events.ScheduleEvent(EVENT_INJECTION, 10000);
+                    break;
+                    //Xaril
+                case EVENT_TOXIC_INJECTION:
+                    ToxicInjection();
+                    events.ScheduleEvent(EVENT_CATALYST, 27000);
+                    break;
+                case EVENT_CATALYST:
                 {
-                    std::vector<Player*>_pllist;
-                    _pllist.clear();
-                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
-                        _pllist.push_back(*itr);
+                    if (!instance)
+                        return;
 
-                    uint8 _size = _pllist.size();
-                    for (uint8 n = 0; n < _size; ++n)
+                    uint32 mod = me->GetMap()->IsHeroic() ? urand(3, 5) : urand(0, 2);
+                    DoCast(me, catalystlist[mod], true);
+                    for (uint8 b = 0; b < 6; ++b)
+                        if (b != mod)
+                            instance->DoRemoveAurasDueToSpellOnPlayers(toxinlist[b]);
+                    events.ScheduleEvent(EVENT_TOXIC_INJECTION, 32000);
+                    break;
+                }
+                //Korven
+                case EVENT_SHIELD_BASH:
+                    if (me->getVictim())
+                        DoCastVictim(SPELL_SHIELD_BASH);
+                    events.ScheduleEvent(EVENT_SHIELD_BASH, 15000);
+                    break;
+                    //Karoz
+                case EVENT_HURL_AMBER:
+                    me->SetAttackStop(true);
+                    me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
+                    if (Creature* ab = me->FindNearestCreature(NPC_AMBER_BOMB, 110.0f, true))
+                        me->GetMotionMaster()->MoveJump(ab->GetPositionX(), ab->GetPositionY(), ab->GetPositionZ() + 5.0f, 15.0f, 15.0f, 2);
+                    break;
+                case EVENT_FLASH:
+                    me->SetAttackStop(true);
+                    if (!flashcount)
+                        flashcount = urand(2, 3);
+                    if (Player* pl = me->GetPlayer(*me, GetFlashTargetGuid()))
+                        DoCast(pl, SPELL_STORE_KINETIC_ENERGY);
+                    break;
+                    //Special
+                case EVENT_RE_ATTACK:
+                    me->GetMotionMaster()->MoveJump(1582.4f, -5684.9f, -313.635f, 15.0f, 15.0f, 3);
+                    break;
+                    //HM
+                case EVENT_PARAGONS_PURPOSE:
+                    DoCast(me, SPELL_PARAGONS_PURPOSE_DMG, true);
+                    events.ScheduleEvent(EVENT_PARAGONS_PURPOSE, 50000);
+                    break;
+                }
+            }
+            if (me->GetEntry() != NPC_HISEK)
+                DoMeleeAttackIfReady();
+        }
+
+        void ToxicInjection()
+        {
+            uint8 firsttoxin = 0; //blue
+            uint8 secondtoxin = 0;//red
+            uint8 lasttoxin = 0;  //yellow
+            if (me->GetMap()->Is25ManRaid())
+            {
+                uint8 random = urand(0, 2);
+                switch (random)
+                {
+                case 0:
+                    firsttoxin = 3;
+                    secondtoxin = 11;
+                    lasttoxin = 11;
+                    break;
+                case 1:
+                    firsttoxin = 3;
+                    secondtoxin = 10;
+                    lasttoxin = 12;
+                    break;
+                case 2:
+                    firsttoxin = 3;
+                    secondtoxin = 12;
+                    lasttoxin = 10;
+                    break;
+                }
+            }
+            else
+            {
+                uint8 random = urand(0, 2);
+                switch (random)
+                {
+                case 0:
+                    firsttoxin = 2;
+                    secondtoxin = 4;
+                    lasttoxin = 4;
+                    break;
+                case 1:
+                    firsttoxin = 2;
+                    secondtoxin = 5;
+                    lasttoxin = 3;
+                    break;
+                case 2:
+                    firsttoxin = 2;
+                    secondtoxin = 3;
+                    lasttoxin = 5;
+                    break;
+                }
+            }
+            std::list<Player*>pllist;
+            pllist.clear();
+            me->GetPlayerListInGrid(pllist, 150.0f);
+            if (pllist.size())
+            {
+                std::vector<Player*>_pllist;
+                _pllist.clear();
+                for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                    _pllist.push_back(*itr);
+
+                uint8 _size = _pllist.size();
+                for (uint8 n = 0; n < _size; ++n)
+                {
+                    if (firsttoxin)
                     {
-                        if (firsttoxin)
-                        {
-                            firsttoxin--;
-                            DoCast(_pllist[n], toxinlist[0 + mod]);
-                        }
-                        else if (secondtoxin)
-                        {
-                            secondtoxin--;
-                            DoCast(_pllist[n], toxinlist[1 + mod]);
-                        }
-                        else if (lasttoxin)
-                        {
-                            lasttoxin--;
-                            DoCast(_pllist[n], toxinlist[2 + mod]);
-                        }
+                        firsttoxin--;
+                        DoCast(_pllist[n], toxinlist[0]);
+                    }
+                    else if (secondtoxin)
+                    {
+                        secondtoxin--;
+                        DoCast(_pllist[n], toxinlist[1]);
+                    }
+                    else if (lasttoxin)
+                    {
+                        lasttoxin--;
+                        DoCast(_pllist[n], toxinlist[2]);
                     }
                 }
             }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new boss_paragons_of_the_klaxxiAI(creature);
         }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new boss_paragons_of_the_klaxxiAI(creature);
+    }
 };
 
 //71542
@@ -3019,6 +2970,36 @@ public:
     }
 };
 
+//142945
+class spell_eerie_fog : public SpellScriptLoader
+{
+public:
+    spell_eerie_fog() : SpellScriptLoader("spell_eerie_fog") { }
+
+    class spell_eerie_fog_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_eerie_fog_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (GetTarget())
+                if (Aura* aura = GetTarget()->GetAura(SPELL_EERIE_FOG_DMG))
+                    if (aura->GetStackAmount() < 99)
+                        aura->SetStackAmount(aura->GetStackAmount() + 1);
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_eerie_fog_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_eerie_fog_AuraScript();
+    }
+};
+
 void AddSC_boss_paragons_of_the_klaxxi()
 {
     new npc_amber_piece();
@@ -3063,4 +3044,5 @@ void AddSC_boss_paragons_of_the_klaxxi()
     new spell_hisek_fire();
     new spell_kunchong_devour();
     new spell_hungry_periodic();
+    new spell_eerie_fog();
 }
