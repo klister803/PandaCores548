@@ -443,7 +443,7 @@ class Object
 
     private:
         C_PTR ptr;
-        bool m_inWorld;
+        uint64 m_inWorld;
 
         ByteBuffer m_PackGUID;
 

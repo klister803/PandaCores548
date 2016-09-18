@@ -114,7 +114,7 @@ std::string Object::GetString() const
 
 Object::Object() : m_PackGUID(sizeof(uint64)+1), 
     m_objectTypeId(TYPEID_OBJECT), m_objectType(TYPEMASK_OBJECT), m_uint32Values(NULL),
-    _changedFields(NULL), m_valuesCount(0), _fieldNotifyFlags(UF_FLAG_NONE), m_inWorld(false),
+    _changedFields(NULL), m_valuesCount(0), _fieldNotifyFlags(UF_FLAG_NONE), m_inWorld(0),
     m_objectUpdated(false)
 {
     m_PackGUID.appendPackGUID(0);
@@ -204,7 +204,7 @@ void Object::AddToWorld()
 
     ASSERT(m_uint32Values);
 
-    m_inWorld = true;
+    m_inWorld = 1;
 
     // synchronize values mirror with values array (changes will send in updatecreate opcode any way
     ClearUpdateMask(true);
@@ -215,7 +215,7 @@ void Object::RemoveFromWorld()
     if (!m_inWorld)
         return;
 
-    m_inWorld = false;
+    m_inWorld = 0;
 
     // if we remove from world then sending changes not required
     ClearUpdateMask(true);
@@ -1305,7 +1305,7 @@ void Object::SetInt32Value(uint16 index, int32 value)
         m_int32Values[index] = value;
         _changedFields[index] = true;
 
-        if (m_inWorld && !m_objectUpdated)
+        if (m_inWorld == 1 && !m_objectUpdated)
         {
             sObjectAccessor->AddUpdateObject(this);
             m_objectUpdated = true;
@@ -1329,7 +1329,7 @@ void Object::SetUInt32Value(uint16 index, uint32 value)
         m_uint32Values[index] = value;
         _changedFields[index] = true;
 
-        if (m_inWorld && !m_objectUpdated)
+        if (m_inWorld == 1 && !m_objectUpdated)
         {
             sObjectAccessor->AddUpdateObject(this);
             m_objectUpdated = true;
@@ -1354,7 +1354,7 @@ void Object::SetUInt64Value(uint16 index, uint64 value)
         _changedFields[index] = true;
         _changedFields[index + 1] = true;
 
-        if (m_inWorld && !m_objectUpdated)
+        if (m_inWorld == 1 && !m_objectUpdated)
         {
             sObjectAccessor->AddUpdateObject(this);
             m_objectUpdated = true;
@@ -1372,7 +1372,7 @@ bool Object::AddUInt64Value(uint16 index, uint64 value)
         _changedFields[index] = true;
         _changedFields[index + 1] = true;
 
-        if (m_inWorld && !m_objectUpdated)
+        if (m_inWorld == 1 && !m_objectUpdated)
         {
             sObjectAccessor->AddUpdateObject(this);
             m_objectUpdated = true;
@@ -1394,7 +1394,7 @@ bool Object::RemoveUInt64Value(uint16 index, uint64 value)
         _changedFields[index] = true;
         _changedFields[index + 1] = true;
 
-        if (m_inWorld && !m_objectUpdated)
+        if (m_inWorld == 1 && !m_objectUpdated)
         {
             sObjectAccessor->AddUpdateObject(this);
             m_objectUpdated = true;
@@ -1415,7 +1415,7 @@ void Object::SetFloatValue(uint16 index, float value)
         m_floatValues[index] = value;
         _changedFields[index] = true;
 
-        if (m_inWorld && !m_objectUpdated)
+        if (m_inWorld == 1 && !m_objectUpdated)
         {
             sObjectAccessor->AddUpdateObject(this);
             m_objectUpdated = true;
@@ -1439,7 +1439,7 @@ void Object::SetByteValue(uint16 index, uint8 offset, uint8 value)
         m_uint32Values[index] |= uint32(uint32(value) << (offset * 8));
         _changedFields[index] = true;
 
-        if (m_inWorld && !m_objectUpdated)
+        if (m_inWorld == 1 && !m_objectUpdated)
         {
             sObjectAccessor->AddUpdateObject(this);
             m_objectUpdated = true;
@@ -1463,7 +1463,7 @@ void Object::SetUInt16Value(uint16 index, uint8 offset, uint16 value)
         m_uint32Values[index] |= uint32(uint32(value) << (offset * 16));
         _changedFields[index] = true;
 
-        if (m_inWorld && !m_objectUpdated)
+        if (m_inWorld == 1 && !m_objectUpdated)
         {
             sObjectAccessor->AddUpdateObject(this);
             m_objectUpdated = true;
@@ -1530,7 +1530,7 @@ void Object::SetFlag(uint16 index, uint32 newFlag)
         m_uint32Values[index] = newval;
         _changedFields[index] = true;
 
-        if (m_inWorld && !m_objectUpdated)
+        if (m_inWorld == 1 && !m_objectUpdated)
         {
             sObjectAccessor->AddUpdateObject(this);
             m_objectUpdated = true;
@@ -1551,7 +1551,7 @@ void Object::RemoveFlag(uint16 index, uint32 oldFlag)
         m_uint32Values[index] = newval;
         _changedFields[index] = true;
 
-        if (m_inWorld && !m_objectUpdated)
+        if (m_inWorld == 1 && !m_objectUpdated)
         {
             sObjectAccessor->AddUpdateObject(this);
             m_objectUpdated = true;
@@ -1574,7 +1574,7 @@ void Object::SetByteFlag(uint16 index, uint8 offset, uint8 newFlag)
         m_uint32Values[index] |= uint32(uint32(newFlag) << (offset * 8));
         _changedFields[index] = true;
 
-        if (m_inWorld && !m_objectUpdated)
+        if (m_inWorld == 1 && !m_objectUpdated)
         {
             sObjectAccessor->AddUpdateObject(this);
             m_objectUpdated = true;
@@ -1597,7 +1597,7 @@ void Object::RemoveByteFlag(uint16 index, uint8 offset, uint8 oldFlag)
         m_uint32Values[index] &= ~uint32(uint32(oldFlag) << (offset * 8));
         _changedFields[index] = true;
 
-        if (m_inWorld && !m_objectUpdated)
+        if (m_inWorld == 1 && !m_objectUpdated)
         {
             sObjectAccessor->AddUpdateObject(this);
             m_objectUpdated = true;
@@ -1618,7 +1618,7 @@ void Object::SetDynamicUInt32Value(uint32 tab, uint16 index, uint32 value)
     {
         m_dynamicTab[tab][index] = value;
         m_dynamicChange[tab] = true;
-        if (m_inWorld && !m_objectUpdated)
+        if (m_inWorld == 1 && !m_objectUpdated)
         {
             sObjectAccessor->AddUpdateObject(this);
             m_objectUpdated = true;
@@ -2619,7 +2619,7 @@ void WorldObject::SendPlaySound(uint32 Sound, bool OnlySelf)
 void Object::ForceValuesUpdateAtIndex(uint32 i)
 {
     _changedFields[i] = true;
-    if (m_inWorld && !m_objectUpdated)
+    if (m_inWorld == 1 && !m_objectUpdated)
     {
         sObjectAccessor->AddUpdateObject(this);
         m_objectUpdated = true;
