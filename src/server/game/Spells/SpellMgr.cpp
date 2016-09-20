@@ -5190,6 +5190,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 //Korkron Dark Shaman
                 case 144089: //Toxic Mist
+                    spellInfo->AttributesEx2 |= SPELL_ATTR2_CANT_CRIT;
                     spellInfo->AttributesEx6 &= ~SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
                     break;
                 case 144107: //Toxicity

@@ -91,8 +91,8 @@ enum eSpells
     SPELL_CATALYST_YELLOW_AT           = 142737,
     //Heroic Toxins
     SPELL_DELAYED_CATALYST_ORANGE      = 142938,
-    SPELL_DELAYED_CATALYST_PURPLE      = 142939,
-    SPELL_DELAYED_CATALYST_GREEN       = 142940,
+    SPELL_DELAYED_CATALYST_PURPLE      = 142729,
+    SPELL_DELAYED_CATALYST_GREEN       = 142730,
 
     //Korven
     SPELL_SHIELD_BASH                  = 143974,
@@ -145,8 +145,10 @@ enum eSpells
 
     //Purple toxin player effect
     SPELL_CANNED_HEAT                  = 143570,
-
+    SPELL_CANNED_HEAT_BASE             = 143572,
+    //Green toxin player effect
     SPELL_EERIE_FOG_DMG                = 142945,
+    SPELL_EERIE_FOG_AT                 = 142812,
 };
 
 enum sEvents
@@ -530,7 +532,7 @@ public:
             case NPC_XARIL:
                 Talk(SAY_XARIL_PULL, 0);
                 DoCast(me, SPELL_TENDERIZING_STRIKES, true);
-                events.ScheduleEvent(EVENT_TOXIC_INJECTION, 3000);
+                events.ScheduleEvent(EVENT_TOXIC_INJECTION, me->GetMap()->IsHeroic() ? 20000 : 3000);
                 break;
             case NPC_SKEER:
                 Talk(SAY_SKEER_PULL, 0);
@@ -899,7 +901,7 @@ public:
                     events.ScheduleEvent(EVENT_DEVOUR, 60000);
                     break;
                 }
-                //Iyyokyk
+                    //Iyyokyk
                 case EVENT_DIMINISH:
                     if (me->getVictim())
                         DoCastVictim(SPELL_DIMINISH);
@@ -996,7 +998,10 @@ public:
                     break;
                     //Xaril
                 case EVENT_TOXIC_INJECTION:
-                    ToxicInjection();
+                    if (me->GetMap()->IsHeroic())
+                        DoCast(me, catalystlist[urand(4, 5)]);
+                    else
+                        ToxicInjection();
                     events.ScheduleEvent(EVENT_CATALYST, 27000);
                     break;
                 case EVENT_CATALYST:
@@ -1644,6 +1649,46 @@ public:
     CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_flash_stalkerAI(creature);
+    }
+};
+
+//71453
+class npc_eerie_fog : public CreatureScript
+{
+public:
+    npc_eerie_fog() : CreatureScript("npc_eerie_fog") {}
+
+    struct npc_eerie_fogAI : public ScriptedAI
+    {
+        npc_eerie_fogAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
+        }
+        InstanceScript* instance;
+
+        void Reset()
+        {
+            DoCast(me, SPELL_EERIE_FOG_AT, true);
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (damage >= me->GetHealth())
+                damage = 0;
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_eerie_fogAI(creature);
     }
 };
 
@@ -3000,6 +3045,55 @@ public:
     }
 };
 
+//142729, 142730
+class spell_heroic_catalyst : public SpellScriptLoader
+{
+public:
+    spell_heroic_catalyst() : SpellScriptLoader("spell_heroic_catalyst") { }
+
+    class spell_heroic_catalyst_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_heroic_catalyst_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*>&targets)
+        {
+            if (GetCaster())
+            {
+                uint8 count = GetCaster()->GetMap()->Is25ManRaid() ? 11 : 5;
+                if (targets.size() > count)
+                    targets.resize(count);
+            }
+        }
+
+        void HitHandle()
+        {
+            if (GetCaster() && GetHitUnit())
+            {
+                switch (GetSpellInfo()->Id)
+                {
+                case SPELL_DELAYED_CATALYST_PURPLE:
+                    GetHitUnit()->CastSpell(GetHitUnit(), SPELL_CANNED_HEAT_BASE, true);
+                    break;
+                case SPELL_DELAYED_CATALYST_GREEN:
+                    GetCaster()->SummonCreature(NPC_EERIE_FOG, GetHitUnit()->GetPositionX(), GetHitUnit()->GetPositionY(), GetCaster()->GetPositionZ());
+                    break;
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_heroic_catalyst_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
+            OnHit += SpellHitFn(spell_heroic_catalyst_SpellScript::HitHandle);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_heroic_catalyst_SpellScript();
+    }
+};
+
 void AddSC_boss_paragons_of_the_klaxxi()
 {
     new npc_amber_piece();
@@ -3011,6 +3105,7 @@ void AddSC_boss_paragons_of_the_klaxxi()
     new npc_amber_player();
     new npc_kunchong();
     new npc_flash_stalker();
+    new npc_eerie_fog();
     new spell_klaxxi_gouge();
     new spell_gene_splice();
     new spell_snipe();
@@ -3045,4 +3140,5 @@ void AddSC_boss_paragons_of_the_klaxxi()
     new spell_kunchong_devour();
     new spell_hungry_periodic();
     new spell_eerie_fog();
+    new spell_heroic_catalyst();
 }

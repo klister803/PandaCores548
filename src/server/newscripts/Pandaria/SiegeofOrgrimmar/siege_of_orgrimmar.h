@@ -396,6 +396,7 @@ enum eCreatures
     NPC_AMBER_PARASITE              = 71578,
     NPC_AMBER_BOMB                  = 71691,
     NPC_HUNGRY_KUNCHONG             = 71420,
+    NPC_EERIE_FOG                   = 71453, //stalker
     //
 
     NPC_GARROSH                     = 71865,
@@ -423,6 +424,7 @@ enum eCreatures
     NPC_EMBODIED_FEAR               = 72237,
     //HM, Last Phase
     NPC_MANIFESTATION_OF_RAGE       = 73253,
+    NPC_KORKRON_GUNSHIP             = 73065,
     NPC_HORDE_CANNON                = 73665,
 };
 
