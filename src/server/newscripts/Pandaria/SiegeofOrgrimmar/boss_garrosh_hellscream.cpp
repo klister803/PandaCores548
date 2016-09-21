@@ -1052,7 +1052,8 @@ public:
                 events.ScheduleEvent(EVENT_EMBODIED_DESPAIR, 10000);
                 break;
             case NPC_EMBODIED_DOUBT:
-                events.ScheduleEvent(EVENT_EMBODIED_DOUBT, urand(8000, 13000));
+                if (me->GetMap()->IsHeroic())
+                    events.ScheduleEvent(EVENT_EMBODIED_DOUBT, urand(8000, 13000));
                 break;
             default:
                 break;
@@ -1127,10 +1128,7 @@ public:
                     break;
                 //Embodied doubt
                 case EVENT_EMBODIED_DOUBT:
-                    if (me->GetMap()->IsHeroic())
-                        DoCast(me, SPELL_EMBODIED_DOUBT_HM);
-                    else
-                        DoCast(me, SPELL_EMBODIED_DOUBT);
+                    DoCast(me, SPELL_EMBODIED_DOUBT_HM);
                     events.ScheduleEvent(EVENT_EMBODIED_DOUBT, urand(8000, 13000));
                     break;
                 }
