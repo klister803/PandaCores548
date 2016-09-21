@@ -395,6 +395,14 @@ public:
             if (!sumlist.empty())
                 for (std::list<Creature*>::const_iterator itr = sumlist.begin(); itr != sumlist.end(); itr++)
                     (*itr)->DespawnOrUnsummon();
+
+            std::list<AreaTrigger*> atlist;
+            atlist.clear();
+            me->GetAreaTriggersWithEntryInRange(atlist, 4850, 0, 100.0f);
+            if (!atlist.empty())
+                for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
+                    (*itr)->RemoveFromWorld();
+
             instance->SetData(DATA_CLEAR_KLAXXI_LIST, 0);
         }
 

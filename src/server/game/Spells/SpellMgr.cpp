@@ -5156,6 +5156,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(1); //0
                     break;
                 //Sha of Pride
+                case 144358: //Wounded Pride
+                    spellInfo->Attributes |= SPELL_ATTR0_IMPOSSIBLE_DODGE_PARRY_BLOCK;
+                    break;
                 case 146595: //Gift of Titans base spell
                     spellInfo->Effects[0]->TriggerSpell = 0;
                     spellInfo->Effects[1]->TriggerSpell = 0;
@@ -5235,6 +5238,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 143882: //Hunter's Mark
                     spellInfo->ExcludeTargetAuraSpell = 0;
+                    break;
+                //Malkorok
+                case 142990: //Fatal Strike
+                    spellInfo->Attributes |= SPELL_ATTR0_IMPOSSIBLE_DODGE_PARRY_BLOCK;
                     break;
                 //Spoils of Pandaria
                 case 148582: //Jade Tempest Dummy
