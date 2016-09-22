@@ -149,6 +149,7 @@ static SpecialModifier mod[] =
 };
 
 float const minx = 1483.13f;
+float const maxx = 1744.00f;
 float const miny = -4417.83f;
 class boss_korkron_dark_shaman : public CreatureScript
 {
@@ -388,7 +389,7 @@ public:
             {
                 if (evadecheck <= diff)
                 {
-                    if (me->GetPositionX() <= minx || me->GetPositionY() <= miny)
+                    if (me->GetPositionX() <= minx || (me->GetPositionX() >= maxx && me->GetPositionY() <= miny))
                     {
                         evadecheck = 0;
                         me->SetReactState(REACT_PASSIVE);
