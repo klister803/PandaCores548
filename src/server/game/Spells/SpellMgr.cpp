@@ -5612,6 +5612,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->TargetA = 25;
                     spellInfo->Effects[1]->TargetA = 25;
                     break;
+
                 //World Bosses
                 //Sha of Anger
                 case 119487: //Anger

@@ -232,6 +232,8 @@ public:
         uint64 garroshrealmGuid;
         std::vector<uint64> engeneerGuids;
         std::vector<uint64> garroshsoldiersGuids;
+        uint64 korkrongunshipGuid;
+        std::vector<uint64> hordecannonlistGuids;
 
         EventMap Events;
 
@@ -341,6 +343,8 @@ public:
             garroshrealmGuid        = 0;
             engeneerGuids.clear();
             garroshsoldiersGuids.clear();
+            korkrongunshipGuid = 0;
+            hordecannonlistGuids.clear();
 
             onInitEnterState = false;
             STowerFull = false;
@@ -707,6 +711,12 @@ public:
                 case NPC_WARBRINGER:
                 case NPC_WOLF_RIDER:
                     garroshsoldiersGuids.push_back(creature->GetGUID());
+                    break;
+                case NPC_KORKRON_GUNSHIP:
+                    korkrongunshipGuid = creature->GetGUID();
+                    break;
+                case NPC_HORDE_CANNON:
+                    hordecannonlistGuids.push_back(creature->GetGUID());
                     break;
             }
         }

@@ -40,9 +40,11 @@ enum eSpells
     SPELL_EXPLOSIVE_DESPAIR_DOT      = 145213,
     //HM
     SPELL_GARROSH_ENERGY_4           = 146999,
+    SPELL_CALL_BOMBARTMENT           = 147120,
     SPELL_BOMBARTMENT                = 147133,
+    SPELL_BOMBARTMENT_TR_M           = 147140,
     SPELL_BOMBARTMENT_AURA           = 147122,
-    SPELL_BOMBARTMENT_PERIODIC_DUMMY = 147088,
+    SPELL_BOMBARTMENT_AT             = 147135,
     SPELL_COSMETIC_MISSILE           = 148364,
     SPELL_MANIFEST_RAGE              = 147011,
     SPELL_MALICE                     = 147209,
@@ -1648,6 +1650,86 @@ public:
     }
 };
 
+//73065
+class npc_korkron_gunship : public CreatureScript
+{
+public:
+    npc_korkron_gunship() : CreatureScript("npc_korkron_gunship") {}
+
+    struct npc_korkron_gunshipAI : public ScriptedAI
+    {
+        npc_korkron_gunshipAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
+            if (!me->GetMap()->IsHeroic())
+                me->SetVisible(false);
+        }
+        InstanceScript* instance;
+
+        void Reset(){}
+
+        void DoAction(int32 const action)
+        {
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            damage = 0;
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_korkron_gunshipAI(creature);
+    }
+};
+
+//73665
+class npc_horde_cannon : public CreatureScript
+{
+public:
+    npc_horde_cannon() : CreatureScript("npc_horde_cannon") {}
+
+    struct npc_horde_cannonAI : public ScriptedAI
+    {
+        npc_horde_cannonAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
+            if (!me->GetMap()->IsHeroic())
+                me->SetVisible(false);
+        }
+        InstanceScript* instance;
+
+        void Reset(){}
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            damage = 0;
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_horde_cannonAI(creature);
+    }
+};
+
 //144798
 class spell_exploding_iron_star : public SpellScriptLoader
 {
@@ -2303,6 +2385,8 @@ void AddSC_boss_garrosh_hellscream()
     new npc_sha_vortex();
     new npc_heart_of_yshaarj();
     new npc_heart_of_yshaarj_realm();
+    new npc_korkron_gunship();
+    new npc_horde_cannon();
     new spell_exploding_iron_star();
     new spell_whirling_corruption();
     new spell_empovered_whirling_corruption();
