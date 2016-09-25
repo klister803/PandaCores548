@@ -21212,6 +21212,11 @@ void Player::SendRaidInfo()
             {
                 save = itr->second.save;
                 instanceID = save->GetInstanceId();
+
+                uint32 timeReset = uint32(save->GetResetTime() - now);
+                if (MapDifficulty const* mapDiff = GetMapDifficultyData(save->GetMapId(), save->GetDifficulty()))
+                    timeReset = uint32(sWorld->getInstanceResetTime(mapDiff->resetTime) - now);
+
                 data.WriteGuidMask<2, 4, 7>(instanceID);
                 data.WriteBit(0);                                       //extended?
                 data.WriteGuidMask<1, 6>(instanceID);
@@ -21219,7 +21224,7 @@ void Player::SendRaidInfo()
                 data.WriteGuidMask<5, 3, 0>(instanceID);
 
                 dataBuffer.WriteGuidBytes<2>(instanceID);
-                dataBuffer << uint32(save->GetResetTime() - now);       // reset time
+                dataBuffer << uint32(timeReset);       // reset time
                 dataBuffer.WriteGuidBytes<7, 5, 0, 4, 1, 3>(instanceID);
                 dataBuffer << uint32(save->GetDifficulty());            // difficulty
                 dataBuffer << uint32(save->GetMapId());                 // map id
