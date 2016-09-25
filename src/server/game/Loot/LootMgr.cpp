@@ -1534,13 +1534,9 @@ void LootTemplate::LootGroup::Process(Loot& loot) const
                 if(_proto->ItemSpecExist && loot.objType == 4)
                 {
                     bool specFind = false;
-                    std::list<uint32> specList = GetItemSpecsList(itr->itemid);
-                    for (std::list<uint32>::const_iterator spec = specList.begin(); spec != specList.end(); ++spec)
-                        if(specId == (*spec))
-                        {
-                            specFind = true;
-                            break;
-                        }
+                    if (_proto->IsUsableBySpecialization(specId, loot.GetLootOwner()->getLevel()))
+                        specFind = true;
+
                     if(loot.itemLevel && loot.itemLevel != _proto->ItemLevel)
                         specFind = false;
 
@@ -1716,15 +1712,8 @@ bool LootTemplate::LootGroup::ProcessPersonalInst(Loot& loot) const
                 if(_proto->ItemSpecExist)
                 {
                     bool specFind = false;
-                    std::list<uint32> specList = GetItemSpecsList(item->itemid);
-                    for (std::list<uint32>::const_iterator spec = specList.begin(); spec != specList.end(); ++spec)
-                    {
-                        if(specId == (*spec))
-                        {
-                            specFind = true;
-                            break;
-                        }
-                    }
+                    if (_proto->IsUsableBySpecialization(specId, loot.GetLootOwner()->getLevel()))
+                        specFind = true;
 
                     if(!specFind)
                     {
@@ -1903,13 +1892,9 @@ void LootTemplate::Process(Loot& loot, bool rate, uint8 groupId) const
                 if(_proto->ItemSpecExist && loot.objType == 4)
                 {
                     bool specFind = false;
-                    std::list<uint32> specList = GetItemSpecsList(i->itemid);
-                    for (std::list<uint32>::const_iterator spec = specList.begin(); spec != specList.end(); ++spec)
-                        if(specId == (*spec))
-                        {
-                            specFind = true;
-                            break;
-                        }
+                    if (_proto->IsUsableBySpecialization(specId, lootOwner->getLevel()))
+                        specFind = true;
+
                     if(loot.itemLevel && loot.itemLevel != _proto->ItemLevel)
                         specFind = false;
 

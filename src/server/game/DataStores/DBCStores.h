@@ -31,6 +31,7 @@ std::list<uint32> GetItemSpecsList(uint32 ItemID);
 void AddSpecdtoItem(uint32 ItemID, uint32 SpecID);
 uint32 GetLearnSpell(uint32 trigerSpell);
 uint32 GetSpellByTrigger(uint32 trigerSpell);
+std::vector<ItemSpecOverrideEntry const*> const* GetItemSpecOverrides(uint32 itemId);
 
 std::vector<CriteriaTreeEntry const*> const* GetCriteriaTreeList(uint32 parent);
 std::vector<ModifierTreeEntry const*> const* GetModifierTreeList(uint32 parent);

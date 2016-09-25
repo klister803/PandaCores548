@@ -3393,42 +3393,6 @@ public:
         for (std::list<uint32>::const_iterator spec = specList.begin(); spec != specList.end(); ++spec)
             handler->PSendSysMessage("GetItemSpecsList %u", (*spec));
 
-        ItemSparseEntry const* sparse = sItemSparseStore.LookupEntry(itemId);
-        ItemEntry const* db2Data = sItemStore.LookupEntry(itemId);
-
-        ItemSpecStats itemSpecStats(db2Data, sparse);
-        handler->PSendSysMessage("ItemSpecStats ItemSpecStatCount %u", itemSpecStats.ItemSpecStatCount);
-
-        if (itemSpecStats.ItemSpecStatCount || itemSpecStats.ItemSpecPrimaryStat != -1)
-        {
-            for (uint32 i = 0; i < sItemSpecStore.GetNumRows(); ++i)
-            {
-                if (ItemSpecEntry const* itemSpec = sItemSpecStore.LookupEntry(i))
-                {
-                    if (itemSpecStats.ItemType != itemSpec->ItemType)
-                        continue;
-
-                    bool hasPrimary = false;
-                    if (itemSpecStats.ItemSpecPrimaryStat == itemSpec->PrimaryStat)
-                        hasPrimary = true;
-
-                    bool hasSecondary = itemSpec->SecondaryStat == ITEM_SPEC_STAT_NONE || itemSpecStats.ItemSpecStatCount == 0;
-                    for (uint32 i = 0; i < itemSpecStats.ItemSpecStatCount; ++i)
-                    {
-                        if (itemSpecStats.ItemSpecStatTypes[i] == itemSpec->SecondaryStat)
-                            hasSecondary = true;
-                    }
-
-                    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "ItemSpecStats SpecID %u hasPrimary %u, hasSecondary %u ItemSpecPrimaryStat %i PrimaryStat %i", itemSpec->SpecID, hasPrimary, hasSecondary, itemSpecStats.ItemSpecPrimaryStat, itemSpec->PrimaryStat);
-
-                    if (!hasPrimary || !hasSecondary)
-                        continue;
-
-                    handler->PSendSysMessage("ItemSpecStats SpecID %u hasPrimary %u, hasSecondary %u", itemSpec->SpecID, hasPrimary, hasSecondary);
-                }
-            }
-        }
-
         handler->PSendSysMessage("end");
         return true;
     }

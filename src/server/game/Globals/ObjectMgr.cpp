@@ -48,6 +48,7 @@
 #include "DB2Stores.h"
 #include "Configuration/Config.h"
 #include "LFGMgr.h"
+#include "ItemPrototype.h"
 #include <openssl/md5.h>
 
 ScriptMapMap sQuestEndScripts;
@@ -2518,11 +2519,23 @@ void ObjectMgr::LoadItemTemplates()
         itemTemplate.FlagsCu = 0;
         ++sparseCount;
 
-        /*ItemSpecStats itemSpecStats(db2Data, sparse);
-        if (itemSpecStats.ItemSpecStatCount)
+        itemTemplate.ItemSpecExist = GetItemSpecsList(itemId).empty() ? 0 : 1;
+
+        if (std::vector<ItemSpecOverrideEntry const*> const* itemSpecOverrides = GetItemSpecOverrides(sparse->ID))
         {
-            for (uint32 i = 0; i < sItemSpecStore.GetNumRows(); ++i)
+            for (ItemSpecOverrideEntry const* itemSpecOverride : *itemSpecOverrides)
+                if (ChrSpecializationsEntry const* specialization = sChrSpecializationsStore.LookupEntry(itemSpecOverride->SpecID))
+                    itemTemplate.Specializations[0].set(ItemTemplate::CalculateItemSpecBit(specialization));
+
+            itemTemplate.Specializations[1] |= itemTemplate.Specializations[0];
+        }
+        else
+        {
+            ItemSpecStats itemSpecStats(db2Data, sparse);
+
+            if (itemSpecStats.ItemSpecStatCount)
             {
+                for (uint32 i = 0; i < sItemSpecStore.GetNumRows(); ++i)
                 if (ItemSpecEntry const* itemSpec = sItemSpecStore.LookupEntry(i))
                 {
                     if (itemSpecStats.ItemType != itemSpec->ItemType)
@@ -2542,12 +2555,14 @@ void ObjectMgr::LoadItemTemplates()
                         continue;
 
                     if (ChrSpecializationsEntry const* specialization = sChrSpecializationsStore.LookupEntry(itemSpec->SpecID))
-                        if ((1 << specialization->classId) & sparse->AllowableClass)
-                            AddSpecdtoItem(itemId, itemSpec->SpecID);
+                        if ((1 << (specialization->classId - 1)) & sparse->AllowableClass)
+                        {
+                            itemTemplate.Specializations[itemSpec->MaxLevel > 40].set(ItemTemplate::CalculateItemSpecBit(specialization));
+                            itemTemplate.ItemSpecExist = true;
+                        }
                 }
             }
-        }*/
-        itemTemplate.ItemSpecExist = GetItemSpecsList(itemId).empty() ? 0 : 1;
+        }
 
         // Mantid Amber Sliver
         if (itemTemplate.ItemId == 95373)

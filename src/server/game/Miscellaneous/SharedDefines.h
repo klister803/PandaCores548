@@ -881,6 +881,7 @@ enum SpellAttr13
 #define MIN_TALENT_SPECS        1
 #define MAX_TALENT_SPECS        2
 #define MAX_GLYPH_SLOT_INDEX    6
+static const uint8 MAX_SPECIALIZATIONS = 4;
 
 // Custom values
 enum SpellClickUserTypes

@@ -678,12 +678,10 @@ struct ItemSpecStats
     uint32 ItemType;
     uint32 ItemSpecStatTypes[MAX_ITEM_PROTO_STATS];
     uint32 ItemSpecStatCount;
-    int32 ItemSpecPrimaryStat;
 
-    ItemSpecStats(ItemEntry const* item, ItemSparseEntry const* sparse) : ItemType(0), ItemSpecStatCount(0), ItemSpecPrimaryStat(-1)
+    ItemSpecStats(ItemEntry const* item, ItemSparseEntry const* sparse) : ItemType(0), ItemSpecStatCount(0)
     {
         memset(ItemSpecStatTypes, -1, sizeof(ItemSpecStatTypes));
-        ItemSpecPrimaryStat = GetPrimaryStat(sparse);
 
         if (item->Class == ITEM_CLASS_WEAPON)
         {
@@ -779,27 +777,6 @@ struct ItemSpecStats
                 AddModStat(sparse->ItemStatType[i]);
     }
 
-    int32 GetPrimaryStat(ItemSparseEntry const* sparse)
-    {
-        for (uint32 i = 0; i < MAX_ITEM_PROTO_STATS; ++i)
-        {
-            if (sparse->ItemStatType[i] != -1)
-            {
-                switch (sparse->ItemStatType[i])
-                {
-                    case ITEM_MOD_AGILITY:
-                        return ITEM_SPEC_STAT_AGILITY;
-                    case ITEM_MOD_STRENGTH:
-                        return ITEM_SPEC_STAT_STRENGTH;
-                    case ITEM_MOD_INTELLECT:
-                        return ITEM_SPEC_STAT_INTELLECT;
-                }
-            }
-        }
-
-        return -1;
-    }
-
     void AddStat(ItemSpecStat statType)
     {
         if (ItemSpecStatCount >= MAX_ITEM_PROTO_STATS)
@@ -816,7 +793,7 @@ struct ItemSpecStats
     {
         switch (itemStatType)
         {
-            /*case ITEM_MOD_AGILITY:
+            case ITEM_MOD_AGILITY:
                 AddStat(ITEM_SPEC_STAT_AGILITY);
                 break;
             case ITEM_MOD_STRENGTH:
@@ -824,7 +801,7 @@ struct ItemSpecStats
                 break;
             case ITEM_MOD_INTELLECT:
                 AddStat(ITEM_SPEC_STAT_INTELLECT);
-                break;*/
+                break;
             case ITEM_MOD_SPIRIT:
                 AddStat(ITEM_SPEC_STAT_SPIRIT);
                 break;
@@ -869,7 +846,7 @@ struct ItemSpecStats
                 AddStat(ITEM_SPEC_STAT_STRENGTH);
                 AddStat(ITEM_SPEC_STAT_INTELLECT);
                 break;
-       }
+        }
     }
 };
 

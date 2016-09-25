@@ -19,6 +19,8 @@
 #ifndef _ITEMPROTOTYPE_H
 #define _ITEMPROTOTYPE_H
 
+#include <bitset>
+
 #include "Common.h"
 #include "SharedDefines.h"
 #include "DBCEnums.h"
@@ -695,6 +697,8 @@ struct _Socket
 #define MAX_ITEM_PROTO_SPELLS  5
 #define MAX_ITEM_PROTO_STATS  10
 
+struct ChrSpecializationsEntry;
+
 struct ItemTemplate
 {
     uint32 ItemId;
@@ -775,6 +779,7 @@ struct ItemTemplate
     uint32 MaxMoneyLoot;
     bool   ItemSpecExist;
     uint32 FlagsCu;
+    std::bitset<MAX_CLASSES * MAX_SPECIALIZATIONS> Specializations[2];  // one set for 1-40 level range and another for 41-100
 
     // helpers
     bool CanChangeEquipStateInCombat() const
@@ -851,6 +856,9 @@ struct ItemTemplate
                SubClass == ITEM_SUBCLASS_WEAPON_GUN ||
                SubClass == ITEM_SUBCLASS_WEAPON_CROSSBOW;
     }
+
+    bool IsUsableBySpecialization(uint32 specId, uint8 level) const;
+    static std::size_t CalculateItemSpecBit(ChrSpecializationsEntry const* spec);
 };
 
 // Benchmarked: Faster than std::map (insert/find)

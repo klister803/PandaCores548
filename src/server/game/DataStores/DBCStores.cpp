@@ -54,6 +54,7 @@ static UNORDERED_MAP<uint32, AchievementEntry const* > sAchievementParentList;
 static UNORDERED_MAP<uint32, std::list<uint32> > sItemSpecsList;
 static UNORDERED_MAP<uint32, uint32 > sRevertLearnSpellList;
 static UNORDERED_MAP<uint32, uint32 > sReversTriggerSpellList;
+static std::unordered_map<uint32, std::vector<ItemSpecOverrideEntry const*>> _itemSpecOverrides;
 
 typedef std::map<WMOAreaTableTripple, WMOAreaTableEntry const*> WMOAreaInfoByTripple;
 
@@ -509,8 +510,11 @@ void LoadDBCStores(const std::string& dataPath)
 
     for (uint32 i = 0; i < sItemSpecOverrideStore.GetNumRows(); ++i)
     {
-        if (ItemSpecOverrideEntry const* isp = sItemSpecOverrideStore.LookupEntry(i))
-            sItemSpecsList[isp->ItemID].push_back(isp->SpecID);
+        if (ItemSpecOverrideEntry const* entry = sItemSpecOverrideStore.LookupEntry(i))
+        {
+            sItemSpecsList[entry->ItemID].push_back(entry->SpecID);
+            _itemSpecOverrides[entry->ItemID].push_back(entry);
+        }
     }
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sItemArmorQualityStore,       dbcPath, "ItemArmorQuality.dbc");//14545
@@ -950,6 +954,15 @@ std::list<uint32> GetItemSpecsList(uint32 ItemID)
 void AddSpecdtoItem(uint32 ItemID, uint32 SpecID)
 {
     sItemSpecsList[ItemID].push_back(SpecID);
+}
+
+std::vector<ItemSpecOverrideEntry const*> const* GetItemSpecOverrides(uint32 itemId)
+{
+    auto itr = _itemSpecOverrides.find(itemId);
+    if (itr != _itemSpecOverrides.end())
+        return &itr->second;
+
+    return nullptr;
 }
 
 AchievementEntry const* GetsAchievementByTreeList(uint32 criteriaTree)
