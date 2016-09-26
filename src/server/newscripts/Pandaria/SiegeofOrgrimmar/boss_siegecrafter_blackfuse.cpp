@@ -234,6 +234,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          
          void Reset()
          {
+             PrepareToUnsummon();
              _Reset();
              me->NearTeleportTo(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY(), me->GetHomePosition().GetPositionZ(), me->GetHomePosition().GetOrientation());
              checkvictim = 0;
@@ -246,6 +247,15 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              me->RemoveAurasDueToSpell(SPELL_ENERGIZED_DEFENSIVE_MATRIX);
              me->SetReactState(REACT_DEFENSIVE);
              ClearConveyerArray();
+         }
+
+         void PrepareToUnsummon()
+         {
+             if (!summons.empty())
+                 for (std::list<uint64>::const_iterator itr = summons.begin(); itr != summons.end(); ++itr)
+                     if (Creature* _sum = me->GetCreature(*me, *itr))
+                         if (_sum->GetEntry() == NPC_LASER_TARGET)
+                             _sum->RemoveAurasDueToSpell(SPELL_DISINTEGRATION_LASER_V);
          }
 
          void JustReachedHome()
@@ -462,6 +472,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          
          void JustDied(Unit* killer)
          {
+             PrepareToUnsummon();
              RemoveDebuffs();
              Talk(urand(SAY_DEATH, SAY_DEATH2));
              _JustDied();
@@ -606,7 +617,9 @@ class boss_siegecrafter_blackfuse : public CreatureScript
                  }
                  case EVENT_ELECTROSTATIC_CHARGE:
                      if (me->getVictim())
-                         DoCastVictim(SPELL_ELECTROSTATIC_CHARGE);
+                         if (Player* pl = me->getVictim()->ToPlayer())
+                             if (pl->GetRoleForGroup(pl->GetSpecializationId(pl->GetActiveSpec())) == ROLES_TANK)
+                                 DoCast(pl, SPELL_ELECTROSTATIC_CHARGE);
                      events.ScheduleEvent(EVENT_ELECTROSTATIC_CHARGE, 15000);
                      break;
                  case EVENT_ACTIVE_CONVEYER:

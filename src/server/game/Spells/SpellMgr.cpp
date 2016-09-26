@@ -5612,6 +5612,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->TargetA = 25;
                     spellInfo->Effects[1]->TargetA = 25;
                     break;
+                case 147120: //Call Bombartment
+                    spellInfo->Effects[0]->TriggerSpell = 0;
+                    spellInfo->Effects[1]->TriggerSpell = 0;
+                    break;
 
                 //World Bosses
                 //Sha of Anger

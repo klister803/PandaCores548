@@ -1922,6 +1922,13 @@ public:
                         break;
                     }  
                     return rycount;
+                case NPC_HORDE_CANNON:
+                    if (!hordecannonlistGuids.empty())
+                    {
+                        std::vector<uint64>::const_iterator itr = hordecannonlistGuids.begin();
+                        std::advance(itr, urand(0, hordecannonlistGuids.size() - 1));
+                        return *itr;
+                    }
             }
             return 0;
         }
@@ -1956,6 +1963,8 @@ public:
                                 player->NearTeleportTo(Garroshroomcenterpos.GetPositionX(), Garroshroomcenterpos.GetPositionY(), Garroshroomcenterpos.GetPositionZ(), Garroshroomcenterpos.GetOrientation());
                                 player->RemoveAurasDueToSpell(SPELL_REALM_OF_YSHAARJ);
                             }
+                            else if (player->GetMap()->GetAreaId(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ()) == 6816)
+                                player->NearTeleportTo(Garroshroomcenterpos.GetPositionX(), Garroshroomcenterpos.GetPositionY(), Garroshroomcenterpos.GetPositionZ(), Garroshroomcenterpos.GetOrientation());
                         }
                     }
                 }

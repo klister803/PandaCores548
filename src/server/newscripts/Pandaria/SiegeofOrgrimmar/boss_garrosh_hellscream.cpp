@@ -109,10 +109,10 @@ enum eSpells
     SPELL_ENTER_REALM_OF_YSHAARJ     = 144867,
 
     //Remove this absorb aura when player on mind control
-    SPELL_SPIRIT_SHELL             = 114908,
-    SPELL_DIVINE_AEGIS             = 47753,
-    SPELL_POWER_WORD_SHIELD        = 17,
-    SPELL_SACRED_SHIELD            = 65148,
+    SPELL_SPIRIT_SHELL               = 114908,
+    SPELL_DIVINE_AEGIS               = 47753,
+    SPELL_POWER_WORD_SHIELD          = 17,
+    SPELL_SACRED_SHIELD              = 65148,
 };
 
 uint32 auraarray[4] = 
@@ -187,6 +187,7 @@ enum sActions
     ACTION_INTRO_PHASE_FOUR          = 6,
     //Unstable Iron Star
     ACTION_CHANGE_TARGET             = 7,
+    ACTION_BOMBARTMENT               = 8,
 };
 
 Position ironstarspawnpos[2] =
@@ -410,6 +411,12 @@ class boss_garrosh_hellscream : public CreatureScript
                     events.ScheduleEvent(EVENT_SUMMON_WOLF_RIDER, 30000);
                     events.ScheduleEvent(EVENT_SUMMON_ENGINEER, 20000);
                 }
+            }
+
+            void EnterEvadeMode()
+            {
+                me->NearTeleportTo(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY(), me->GetHomePosition().GetPositionZ(), me->GetHomePosition().GetOrientation());
+                ScriptedAI::EnterEvadeMode();
             }
 
             void KilledUnit(Unit* unit)
@@ -1672,6 +1679,25 @@ public:
 
         void DoAction(int32 const action)
         {
+            switch (action)
+            {
+            case ACTION_BOMBARTMENT:
+                DoCast(me, SPELL_CALL_BOMBARTMENT, true);
+                break;
+            case ACTION_RESET:
+                DespawnAllAT();
+                break;
+            }
+        }
+
+        void DespawnAllAT()
+        {
+            std::list<AreaTrigger*> atlist;
+            atlist.clear();
+            me->GetAreaTriggersWithEntryInRange(atlist, 5236, 0, 200.0f);
+            if (!atlist.empty())
+                for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
+                    (*itr)->RemoveFromWorld();
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)

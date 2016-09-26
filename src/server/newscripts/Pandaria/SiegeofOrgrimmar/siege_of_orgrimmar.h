@@ -360,7 +360,7 @@ enum eCreatures
     //Triggers
     NPC_LASER_ARRAY                 = 71910,
     NPC_LASER_TARGET                = 71740,
-    NPC_SHOCKWAVE_MISSILE_STALKER   = 72710, 
+    NPC_SHOCKWAVE_MISSILE_STALKER   = 72710,
     NPC_SHOCKWAVE_MISSILE           = 72052,
     NPC_SIEGE_ENGINEER_HELPER       = 71520,
     //Summons
