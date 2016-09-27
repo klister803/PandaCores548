@@ -881,7 +881,7 @@ class many_in_one_donate_trans : public CreatureScript
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Спутники", GOSSIP_SENDER_MAIN, 200204);
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Рисовки и раритетные вещи", GOSSIP_SENDER_MAIN, 200203);
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Накидки и рубашки с аурами", GOSSIP_SENDER_MAIN, 200205);
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Вещи на транс", GOSSIP_SENDER_MAIN, 1);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Вещи на трансмогрификацию", GOSSIP_SENDER_MAIN, 1);
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Легендарные камни", GOSSIP_SENDER_MAIN, 250116);
             
 
