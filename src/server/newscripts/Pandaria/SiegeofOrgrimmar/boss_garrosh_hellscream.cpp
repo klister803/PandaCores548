@@ -567,7 +567,6 @@ class boss_garrosh_hellscream : public CreatureScript
                 if (pllist.size() >= count)
                     return true;
                 return false;
-                //HM Iron Star 10 - 4pl, 25 - 7pl, 8yard
             }
 
             bool CheckEvade()
@@ -1674,17 +1673,37 @@ public:
                 me->SetVisible(false);
         }
         InstanceScript* instance;
+        bool hmironstarready;
 
-        void Reset(){}
+        void Reset()
+        {
+            hmironstarready = true;
+        }
+
+        void SetData(uint32 type, uint32 data)
+        {
+            if (type == DATA_HM_IRON_STAR_READY)
+                hmironstarready = false;
+        }
+
+        uint32 GetData(uint32 type)
+        {
+            if (type == DATA_HM_IRON_STAR_READY)
+                return uint32(hmironstarready);
+            return 0;
+        }
 
         void DoAction(int32 const action)
         {
             switch (action)
             {
             case ACTION_BOMBARTMENT:
+                hmironstarready = true;
                 DoCast(me, SPELL_CALL_BOMBARTMENT, true);
                 break;
             case ACTION_RESET:
+                hmironstarready = true;
+                me->RemoveAurasDueToSpell(SPELL_CALL_BOMBARTMENT);
                 DespawnAllAT();
                 break;
             }
@@ -2400,6 +2419,116 @@ public:
     }
 };
 
+//147120
+class spell_call_bombartment : public SpellScriptLoader
+{
+public:
+    spell_call_bombartment() : SpellScriptLoader("spell_call_bombartment") { }
+
+    class spell_call_bombartment_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_call_bombartment_AuraScript);
+
+        bool IfTargetHavePlayersInRange(Player* target, uint8 count, float radius)
+        {
+            count++;
+            std::list<Player*>pllist;
+            GetPlayerListInGrid(pllist, target, radius);
+            if (pllist.size() >= count)
+                return true;
+            return false;
+        }
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (GetCaster())
+            {
+                if (InstanceScript* instance = GetCaster()->GetInstanceScript())
+                {
+                    if (Creature* hcannon = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(NPC_HORDE_CANNON)))
+                    {
+                        bool havetarget = false;
+                        std::list<Player*> pllist;
+                        pllist.clear();
+                        GetPlayerListInGrid(pllist, GetCaster(), 200.0f);
+                        uint8 count = GetCaster()->GetMap()->Is25ManRaid() ? 7 : 4;
+                        if (!pllist.empty())
+                        {
+                            if (aurEff->GetTickNumber() == 1)
+                            {
+                                for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                                {
+                                    if (IfTargetHavePlayersInRange(*itr, count, 8.0f))
+                                    {
+                                        havetarget = true;
+                                        hcannon->CastSpell(*itr, SPELL_BOMBARTMENT_TR_M);
+                                        break;
+                                    }
+                                }
+                                if (!havetarget)
+                                {
+                                    std::list<Player*>::iterator itr = pllist.begin();
+                                    std::advance(itr, urand(0, pllist.size() - 1));
+                                    hcannon->CastSpell(*itr, SPELL_BOMBARTMENT_TR_M);
+                                }
+                            }
+                            else
+                            {
+                                std::list<Player*>::iterator itr = pllist.begin();
+                                std::advance(itr, urand(0, pllist.size() - 1));
+                                hcannon->CastSpell(*itr, SPELL_BOMBARTMENT_TR_M);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        void _OnTick(AuraEffect const* aurEff)
+        {
+            if (GetCaster() && GetCaster()->ToCreature())
+            {
+                if (GetCaster()->ToCreature()->AI()->GetData(DATA_HM_IRON_STAR_READY))
+                {
+                    if (InstanceScript* instance = GetCaster()->GetInstanceScript())
+                    {
+                        std::list<Player*> pllist;
+                        pllist.clear();
+                        GetPlayerListInGrid(pllist, GetCaster(), 200.0f);
+                        uint8 count = GetCaster()->GetMap()->Is25ManRaid() ? 7 : 4;
+                        if (!pllist.empty())
+                        {
+                            for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                            {
+                                if (IfTargetHavePlayersInRange(*itr, count, 8.0f))
+                                {
+                                    if (Creature* garrosh = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(DATA_GARROSH)))
+                                    {
+                                        GetCaster()->ToCreature()->AI()->SetData(DATA_HM_IRON_STAR_READY, 0);
+                                        garrosh->CastSpell(*itr, SPELL_FIRE_UNSTABLE_IRON_STAR);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_call_bombartment_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL); //search target to shoot
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_call_bombartment_AuraScript::_OnTick, EFFECT_1, SPELL_AURA_PERIODIC_TRIGGER_SPELL); //search target to spawn Iron Star
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_call_bombartment_AuraScript();
+    }
+};
+
 void AddSC_boss_garrosh_hellscream()
 {
     new boss_garrosh_hellscream();
@@ -2430,4 +2559,5 @@ void AddSC_boss_garrosh_hellscream()
     new spell_manifest_rage();
     new spell_malice_dummy();
     new spell_fixate_iron_star();
+    new spell_call_bombartment();
 }

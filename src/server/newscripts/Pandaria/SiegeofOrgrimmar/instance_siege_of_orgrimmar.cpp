@@ -1338,6 +1338,9 @@ public:
                         HandleGameObject(*itr, true);
                     HandleGameObject(garroshentdoorGuid, true);
                     SomeActionsAfterGarroshEvade();
+                    if (instance->IsHeroic())
+                        if (Creature* kgs = instance->GetCreature(korkrongunshipGuid))
+                            kgs->AI()->DoAction(ACTION_RESET);
                     break;
                 case IN_PROGRESS:
                     rycount = urand(0, 2);
@@ -1350,6 +1353,9 @@ public:
                     for (std::vector<uint64>::const_iterator itr = garroshfenchGuids.begin(); itr != garroshfenchGuids.end(); ++itr)
                         HandleGameObject(*itr, true);
                     HandleGameObject(garroshentdoorGuid, true);
+                    if (instance->IsHeroic())
+                        if (Creature* kgs = instance->GetCreature(korkrongunshipGuid))
+                            kgs->AI()->DoAction(ACTION_RESET);
                     break;
                 }
             }
@@ -1922,13 +1928,6 @@ public:
                         break;
                     }  
                     return rycount;
-                case NPC_HORDE_CANNON:
-                    if (!hordecannonlistGuids.empty())
-                    {
-                        std::vector<uint64>::const_iterator itr = hordecannonlistGuids.begin();
-                        std::advance(itr, urand(0, hordecannonlistGuids.size() - 1));
-                        return *itr;
-                    }
             }
             return 0;
         }
@@ -2188,6 +2187,13 @@ public:
                     return garroshGuid;
                 case DATA_GARROSH_REALM:
                     return garroshrealmGuid;
+                case NPC_HORDE_CANNON:
+                    if (!hordecannonlistGuids.empty())
+                    {
+                        std::vector<uint64>::const_iterator itr = hordecannonlistGuids.begin();
+                        std::advance(itr, urand(0, hordecannonlistGuids.size() - 1));
+                        return *itr;
+                    }
             }
             std::map<uint32, uint64>::iterator itr = easyGUIDconteiner.find(type);
             if (itr != easyGUIDconteiner.end())
