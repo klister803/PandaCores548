@@ -59,6 +59,9 @@ enum eSpells
     SPELL_FLUIDITY                  = 138002,
     SPELL_ELECTRIFIED_WATERS        = 138006,
 
+    SPELL_FOCUSED_LIGHTNING_CONDUCTION2 = 137530,
+    SPELL_FOCUSED_LIGHTNING_VIOLENT_DETONATION = 138990,
+
     //Storm Visual
     SPELL_LIGHTNING_STORM_VISUAL    = 140811,
     SPELL_CONDUCTIVE_WATER_STROM_A  = 138568, //periodic aura
@@ -861,9 +864,20 @@ public:
                     {
                         if ((*itr)->isAlive() && GetCaster()->GetExactDist2d(*itr) <= dist)
                         {
-                            (*itr)->CastSpell(*itr, SPELL_CONDUCTIVE_WATER_DEBUFF, true);
+                            (*itr)->CastSpell(*itr, SPELL_CONDUCTIVE_WATER_DEBUFF, true, 0, 0, GetCaster()->GetGUID());
                             (*itr)->CastSpell(*itr, GetCaster()->HasAura(SPELL_STATIC_WATER_VISUAL) ? SPELL_ELECTRIFIED_WATERS : SPELL_FLUIDITY, true);
                         }
+                    }
+                }
+                std::list<Creature*>lflist;
+                lflist.clear();
+                GetCreatureListWithEntryInGrid(lflist, GetCaster(), NPC_LIGHTNING_FISSURE, dist);
+                if (!lflist.empty())
+                {
+                    for (std::list<Creature*>::const_iterator itr = lflist.begin(); itr != lflist.end(); itr++)
+                    {
+                        (*itr)->DespawnOrUnsummon();
+                        GetCaster()->CastSpell(GetCaster(), SPELL_LIGHTNING_FISSURE_DMG_EX, true);
                     }
                 }
             }
@@ -1003,7 +1017,18 @@ public:
                 {
                     GetCaster()->RemoveAurasDueToSpell(SPELL_LIGHTNING_BALL_AURA_INC_S);
                     GetHitUnit()->RemoveAurasDueToSpell(SPELL_LIGHTNING_BALL_TARGET);
-                    GetCaster()->ToCreature()->AI()->DoAction(ACTION_EXPLOSE);
+                    if (GetHitUnit()->HasAura(SPELL_CONDUCTIVE_WATER_DEBUFF))
+                    {
+                        GetCaster()->AttackStop();
+                        GetCaster()->ToCreature()->SetReactState(REACT_PASSIVE);
+                        GetCaster()->StopMoving();
+                        GetCaster()->GetMotionMaster()->Clear(false);
+                        GetCaster()->CastSpell(GetHitUnit(), SPELL_FOCUSED_LIGHTNING_VIOLENT_DETONATION, true);
+                        GetHitUnit()->CastSpell(GetHitUnit(), SPELL_FOCUSED_LIGHTNING_CONDUCTION2, true);
+                        GetCaster()->ToCreature()->DespawnOrUnsummon();
+                    }
+                    else
+                        GetCaster()->ToCreature()->AI()->DoAction(ACTION_EXPLOSE);
                 }
                 else
                     GetCaster()->CastSpell(GetHitUnit(), SPELL_LIGHTNING_BALL_DMG, true);
@@ -1019,6 +1044,85 @@ public:
     SpellScript* GetSpellScript() const
     {
         return new spell_focused_lightning_dummy_SpellScript();
+    }
+};
+
+
+class LightningFissureConductionFilter
+{
+public:
+    LightningFissureConductionFilter(Unit* caster) : _caster(caster){}
+
+    bool operator()(WorldObject* unit)
+    {
+        if (Player* pl = unit->ToPlayer())
+            if (pl->HasAura(SPELL_CONDUCTIVE_WATER_DEBUFF))
+                if (pl->GetAura(SPELL_CONDUCTIVE_WATER_DEBUFF)->GetCasterGUID() == _caster->GetGUID())
+                    return false;
+        return true;
+    }
+private:
+    Unit* _caster;
+};
+
+//138133
+class spell_lightning_fissure_conduction : public SpellScriptLoader
+{
+public:
+    spell_lightning_fissure_conduction() : SpellScriptLoader("spell_lightning_fissure_conduction") { }
+
+    class spell_lightning_fissure_conduction_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_lightning_fissure_conduction_SpellScript);
+
+        void _FilterTarget(std::list<WorldObject*>&targets)
+        {
+            if (GetCaster())
+                targets.remove_if(LightningFissureConductionFilter(GetCaster()));
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_lightning_fissure_conduction_SpellScript::_FilterTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_lightning_fissure_conduction_SpellScript();
+    }
+};
+
+//137530
+class spell_lightning_fissure_conduction_extra : public SpellScriptLoader
+{
+public:
+    spell_lightning_fissure_conduction_extra() : SpellScriptLoader("spell_lightning_fissure_conduction_extra") { }
+
+    class spell_lightning_fissure_conduction_extra_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_lightning_fissure_conduction_extra_SpellScript);
+
+        void _FilterTarget(std::list<WorldObject*>&targets)
+        {
+            if (GetCaster() && GetCaster()->HasAura(SPELL_CONDUCTIVE_WATER_DEBUFF))
+            {
+                if (Unit* caster = GetCaster()->GetAura(SPELL_CONDUCTIVE_WATER_DEBUFF)->GetCaster())
+                    targets.remove_if(LightningFissureConductionFilter(caster));
+                else
+                    targets.clear();
+            }
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_lightning_fissure_conduction_extra_SpellScript::_FilterTarget, EFFECT_0, TARGET_UNIT_DEST_AREA_ALLY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_lightning_fissure_conduction_extra_SpellScript();
     }
 };
 
@@ -1041,4 +1145,6 @@ void AddSC_boss_jinrokh()
     new spell_conductive_water_periodic();
     new spell_focused_lightning();
     new spell_focused_lightning_dummy();
+    new spell_lightning_fissure_conduction();
+    new spell_lightning_fissure_conduction_extra();
 }

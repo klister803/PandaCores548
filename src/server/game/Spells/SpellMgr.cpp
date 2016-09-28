@@ -4829,8 +4829,19 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0]->RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
                     spellInfo->Effects[EFFECT_1]->RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
                     break;
+
                 //Throne of Thunder
                 //Jinrokh
+                case 138133: //Lightning Fissure Conduction
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                    {
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                        {
+                            eff->TargetA = TARGET_SRC_CASTER;
+                            eff->TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
+                        }
+                    }
+                    break;
                 case 137422: //Focused Lightning
                     spellInfo->Effects[0]->TriggerSpell = 0;
                     break;
