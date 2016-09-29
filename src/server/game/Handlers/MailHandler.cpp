@@ -118,6 +118,22 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
         }
     }
 
+    // Strip invisible characters for non-addon messages
+    if (sWorld->getBoolConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
+    {
+        stripLineInvisibleChars(subject);
+        stripLineInvisibleChars(body);
+
+        if (strchr(subject.c_str(), '|') || strchr(body.c_str(), '|'))
+        {
+
+            if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_KICK))
+                KickPlayer();
+            
+            return;
+        }
+    }
+
     uint64 rc = 0;
     if (normalizePlayerName(receiver))
         rc = ObjectMgr::GetPlayerGUIDByName(receiver);

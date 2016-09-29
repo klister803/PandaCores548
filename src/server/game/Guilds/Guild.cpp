@@ -1514,6 +1514,18 @@ void Guild::HandleSetMOTD(WorldSession* session, const std::string& motd)
     if (m_motd == motd)
         return;
 
+    if (sWorld->getBoolConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
+    {
+        stripLineInvisibleChars(const_cast<std::string&>(motd));
+
+        if (strchr(motd.c_str(), '|'))
+        {
+            if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_KICK))
+                session->KickPlayer();
+            return;
+        }
+    }
+ 
     // Player must have rights to set MOTD
     if (!_HasRankRight(session->GetPlayer(), GR_RIGHT_SETMOTD))
         SendCommandResult(session, GUILD_INVITE_S, ERR_GUILD_PERMISSIONS);
@@ -1695,6 +1707,19 @@ void Guild::HandleSpellEffectBuyBankTab(WorldSession* session, uint8 tabId)
 
 void Guild::HandleInviteMember(WorldSession* session, const std::string& name)
 {
+    // Strip invisible characters for non-addon messages
+    if (sWorld->getBoolConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
+    {
+        stripLineInvisibleChars(const_cast<std::string&>(name));
+
+        if (strchr(name.c_str(), '|'))
+        {
+            if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_KICK))
+                session->KickPlayer();
+            return;
+        }
+    }
+ 
     Player* pInvitee = sObjectAccessor->FindPlayerByName(name.c_str());
     if (!pInvitee)
     {

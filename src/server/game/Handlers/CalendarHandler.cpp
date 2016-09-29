@@ -309,6 +309,19 @@ void WorldSession::HandleCalendarAddEvent(WorldPacket& recvData)
     CalendarAction action;
     uint64 eventID = sCalendarMgr->GetFreeEventId();
 
+    // Strip invisible characters for non-addon messages
+    if (sWorld->getBoolConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
+    {
+        stripLineInvisibleChars(title);
+        if (strchr(title.c_str(), '|'))
+        {
+            if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_KICK))
+                KickPlayer();
+            recvData.rfinish();
+            return;
+        }
+    }
+
     for(uint32 i = 0; i < inviteCount; ++i)
     {
         recvData.ReadGuidBytes<2>(inviteCountGuid[i]);
@@ -330,6 +343,21 @@ void WorldSession::HandleCalendarAddEvent(WorldPacket& recvData)
     }
 
     description = recvData.ReadString(descrLen);
+
+    // Strip invisible characters for non-addon messages
+    if (sWorld->getBoolConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
+    {
+        stripLineInvisibleChars(description);
+
+        if (strchr(description.c_str(), '|'))
+        {
+            if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_KICK))
+                KickPlayer();
+
+            recvData.rfinish();
+            return;
+        }
+    }
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_CALENDAR_ADD_EVENT: [" UI64FMTD "] "
         "Title %s, Description %s, type %u, MaxInvites %u, "
@@ -382,6 +410,23 @@ void WorldSession::HandleCalendarUpdateEvent(WorldPacket& recvData)
         "Time2 %u, Flags %u", guid, eventId, inviteId, title.c_str(),
         description.c_str(), type, repeatable, maxInvites, dungeonId,
         eventPackedTime, timeZoneTime, flags);
+
+    // Strip invisible characters for non-addon messages
+    if (sWorld->getBoolConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
+    {
+        stripLineInvisibleChars(title);
+        stripLineInvisibleChars(description);
+
+        if (strchr(title.c_str(), '|') || strchr(description.c_str(), '|'))
+        {
+
+            if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_KICK))
+                KickPlayer();
+            
+            recvData.rfinish();
+            return;
+        }
+    }
 
     CalendarAction action;
     action.SetAction(CALENDAR_ACTION_MODIFY_EVENT);
@@ -455,6 +500,21 @@ void WorldSession::HandleCalendarEventInvite(WorldPacket& recvData)
     uint32 team = 0;
 
     recvData >> eventId >> inviteId >> name >> status >> rank;
+    // Strip invisible characters for non-addon messages
+    if (sWorld->getBoolConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
+    {
+        stripLineInvisibleChars(name);
+
+        if (strchr(name.c_str(), '|'))
+        {
+
+            if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_KICK))
+                KickPlayer();
+            
+            return;
+        }
+    }
+
     if (Player* player = sObjectAccessor->FindPlayerByName(name.c_str()))
     {
         invitee = player->GetGUID();

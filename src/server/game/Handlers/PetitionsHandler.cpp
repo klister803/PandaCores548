@@ -66,6 +66,18 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recvData)
         return;
     }
 
+    if (sWorld->getBoolConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
+    {
+        stripLineInvisibleChars(name);
+
+        if (strchr(name.c_str(), '|'))
+        {
+            if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_KICK))
+                KickPlayer();
+            return;
+        }
+    }
+ 
     // remove fake death
     if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
