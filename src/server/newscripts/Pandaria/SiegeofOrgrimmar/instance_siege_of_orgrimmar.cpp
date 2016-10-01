@@ -25,7 +25,7 @@ uint32 bonusklaxxientry[6] =
     NPC_KILRUK,
 };
 
-uint32 removelist[29] =
+uint32 removelist[30] =
 {
     SPELL_HEWN,
     SPELL_ANGEL_OF_DEATH,
@@ -56,6 +56,7 @@ uint32 removelist[29] =
     SPELL_AIM_PLAYER,
     SPELL_MASTER_OF_AMBER,
     SPELL_MASTER_OF_AMBER2,
+    SPELL_CANNED_HEAT_BASE,
 };
 
 Position const Sha_of_pride_Norushe  = {797.357f, 880.5637f, 371.1606f, 1.786108f };
@@ -410,13 +411,13 @@ public:
 
         void OnPlayerLeave(Player* player)
         {
-            for (uint8 n = 0; n < 29; ++n)
+            for (uint8 n = 0; n < 30; ++n)
                 DoRemoveAurasDueToSpellOnPlayers(removelist[n]);
         }
 
         void RemoveDebuffFromPlayers()
         {
-            for (uint8 n = 0; n < 29; ++n)
+            for (uint8 n = 0; n < 30; ++n)
                 DoRemoveAurasDueToSpellOnPlayers(removelist[n]);
         }
 

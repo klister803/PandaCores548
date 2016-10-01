@@ -145,7 +145,6 @@ enum eSpells
 
     //Purple toxin player effect
     SPELL_CANNED_HEAT                  = 143570,
-    SPELL_CANNED_HEAT_BASE             = 143572,
     //Green toxin player effect
     SPELL_EERIE_FOG_DMG                = 142945,
     SPELL_EERIE_FOG_AT                 = 142812,
