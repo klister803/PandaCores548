@@ -434,6 +434,8 @@ public:
                 events.ScheduleEvent(EVENT_START_KLAXXI, 5000);
                 break;
             case ACTION_KLAXXI_DONE:
+                if (me->GetMap()->IsHeroic())
+                    DoCast(me, 148512, true);
                 DespawnSummons();
                 events.Reset();
                 if (Creature* ap = me->GetCreature(*me, instance->GetData64(NPC_AMBER_PIECE)))
@@ -678,11 +680,11 @@ public:
         {
             if (killer != me && instance)
             {
+                instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
                 if (!instance->GetData(DATA_IS_KLAXXI_DONE))
                 {
                     me->SetLootRecipient(NULL);
                     me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
-                    instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
                     instance->SetData(DATA_INTRO_NEXT_KLAXXI, 0);
                 }
                 else
