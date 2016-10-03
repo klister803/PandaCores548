@@ -183,6 +183,13 @@ uint32 combatnpc[3] =
     NPC_NN_HEAL_EVENT_PROTECTOR_3,
 };
 
+uint32 const challengeauras[3] =
+{
+    SPELL_TEST_OF_SERENITY,
+    SPELL_TEST_OF_RELIANCE,
+    SPELL_TEST_OF_CONFIDENCE,
+};
+
 typedef std::list<uint8> BlindOrderList;
 float const radius = 38.0f;
 Position const Norushen  = {767.6754f, 1015.564f, 356.1747f, 4.922687f };
@@ -1721,6 +1728,19 @@ public:
     }
 };
 
+class ChallengeFilterTargets
+{
+public:
+    bool operator()(WorldObject* target)
+    {
+        if (Unit* unit = target->ToUnit())
+            for (uint8 n = 0; n < 3; n++)
+                if (unit->HasAura(challengeauras[n]))
+                    return true;
+        return false;
+    }
+};
+
 class BlindHatredDmgSelector
 {
 public:
@@ -1752,6 +1772,7 @@ public:
         {
             if (InstanceScript* instance = GetCaster()->GetInstanceScript())
             {
+                unitList.remove_if(ChallengeFilterTargets());
                 if (Creature* bh = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(NPC_BLIND_HATRED)))
                     unitList.remove_if(BlindHatredDmgSelector(GetCaster(), bh));
                 else

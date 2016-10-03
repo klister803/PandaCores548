@@ -5035,6 +5035,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1]->TargetA = 1;
                     spellInfo->Effects[1]->TargetB = 0;
                     break;
+
                 //Siege of Orgrimmar
                 //Immerseus
                 case 139832: //Submerge
@@ -5467,6 +5468,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21);
                     break;
                 //Siegecrafter Blackfuse
+                case 143828: //Locked On
+                    spellInfo->Effects[0]->TargetA = 25;
+                    break;
                 case 143265: //Launch
                     spellInfo->Effects[1]->Effect = 0;
                     spellInfo->Effects[2]->Effect = 0;

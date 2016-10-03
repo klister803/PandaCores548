@@ -804,7 +804,7 @@ public:
             if (Player* pl = me->GetPlayer(*me, sGuid))
             {
                 pl->RemoveAurasDueToSpell(SPELL_FROZEN_SOLID);
-                if (GameObject* it = me->FindNearestGameObject(GO_ICE_TOMB, 3.0f))
+                if (GameObject* it = me->FindNearestGameObject(GO_ICE_TOMB, 10.0f))
                     it->Delete();
             }
             me->DespawnOrUnsummon();
@@ -822,7 +822,7 @@ public:
                     {
                         if (!pl->isAlive())
                         {
-                            if (GameObject* it = me->FindNearestGameObject(GO_ICE_TOMB, 3.0f))
+                            if (GameObject* it = me->FindNearestGameObject(GO_ICE_TOMB, 10.0f))
                                 it->Delete();
                             me->DespawnOrUnsummon();
                         }

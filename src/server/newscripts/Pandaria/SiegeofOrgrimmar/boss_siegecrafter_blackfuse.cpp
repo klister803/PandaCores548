@@ -1154,7 +1154,7 @@ public:
                                     {
                                         if (Creature* laser = blackfuse->SummonCreature(NPC_LASER_TARGET, (*itr)->GetPositionX() + 10.0f, (*itr)->GetPositionY(), blackfuse->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 120000))
                                         {
-                                            laser->CastSpell(*itr, SPELL_PURSUIT_LASER);
+                                            laser->CastSpell(*itr, SPELL_PURSUIT_LASER, true);
                                             DoCast(laser, SPELL_DISINTEGRATION_LASER_V, true);
                                             laser->AI()->SetGUID(0, 8);
                                             laser->CastSpell(laser, SPELL_LASER_GROUND_PERIODIC_AT);
