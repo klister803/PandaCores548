@@ -574,8 +574,8 @@ public:
             case NPC_HISEK:
                 events.ScheduleEvent(EVENT_MULTI_SHOT, 2000);
                 events.ScheduleEvent(EVENT_AIM, 39500);
-                if (me->GetMap()->IsHeroic())
-                    events.ScheduleEvent(EVENT_RAPID_FIRE, 47000);
+                /*if (me->GetMap()->IsHeroic()) Not found spell
+                    events.ScheduleEvent(EVENT_RAPID_FIRE, 47000);*/
                 break;
             }
             if (me->GetMap()->IsHeroic())
