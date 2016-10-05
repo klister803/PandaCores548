@@ -1674,10 +1674,12 @@ public:
         }
         InstanceScript* instance;
         bool hmironstarready;
+        uint32 test; //for testing
 
         void Reset()
         {
             hmironstarready = true;
+            test = 10000;
         }
 
         void SetData(uint32 type, uint32 data)
@@ -1728,7 +1730,19 @@ public:
 
         void EnterEvadeMode(){}
 
-        void UpdateAI(uint32 diff){}
+        void UpdateAI(uint32 diff)
+        {
+            if (test)
+            {
+                if (test <= diff)
+                {
+                    test = 0;
+                    DoCast(me, SPELL_CALL_BOMBARTMENT, true);
+                }
+                else
+                    test -= diff;
+            }
+        }
     };
 
     CreatureAI* GetAI(Creature* creature) const
@@ -2450,7 +2464,7 @@ public:
                         bool havetarget = false;
                         std::list<Player*> pllist;
                         pllist.clear();
-                        GetPlayerListInGrid(pllist, GetCaster(), 200.0f);
+                        GetPlayerListInGrid(pllist, GetCaster(), 400.0f);
                         uint8 count = GetCaster()->GetMap()->Is25ManRaid() ? 7 : 4;
                         if (!pllist.empty())
                         {
@@ -2461,7 +2475,8 @@ public:
                                     if (IfTargetHavePlayersInRange(*itr, count, 8.0f))
                                     {
                                         havetarget = true;
-                                        hcannon->CastSpell(*itr, SPELL_BOMBARTMENT_TR_M);
+                                        hcannon->SetFacingToObject(*itr);
+                                        hcannon->CastSpell(*itr, SPELL_BOMBARTMENT_TR_M, true);
                                         break;
                                     }
                                 }
@@ -2469,14 +2484,16 @@ public:
                                 {
                                     std::list<Player*>::iterator itr = pllist.begin();
                                     std::advance(itr, urand(0, pllist.size() - 1));
-                                    hcannon->CastSpell(*itr, SPELL_BOMBARTMENT_TR_M);
+                                    hcannon->SetFacingToObject(*itr);
+                                    hcannon->CastSpell(*itr, SPELL_BOMBARTMENT_TR_M, true);
                                 }
                             }
                             else
                             {
                                 std::list<Player*>::iterator itr = pllist.begin();
                                 std::advance(itr, urand(0, pllist.size() - 1));
-                                hcannon->CastSpell(*itr, SPELL_BOMBARTMENT_TR_M);
+                                hcannon->SetFacingToObject(*itr);
+                                hcannon->CastSpell(*itr, SPELL_BOMBARTMENT_TR_M, true);
                             }
                         }
                     }
@@ -2494,7 +2511,7 @@ public:
                     {
                         std::list<Player*> pllist;
                         pllist.clear();
-                        GetPlayerListInGrid(pllist, GetCaster(), 200.0f);
+                        GetPlayerListInGrid(pllist, GetCaster(), 400.0f);
                         uint8 count = GetCaster()->GetMap()->Is25ManRaid() ? 7 : 4;
                         if (!pllist.empty())
                         {
