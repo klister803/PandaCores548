@@ -173,6 +173,7 @@ enum Phase
     PHASE_TWO,
     PHASE_LAST_PREPARE,
     PHASE_THREE,
+    PHASE_FOUR_READY,
     PHASE_FOUR_PREPARE,
     PHASE_FOUR,
 };
@@ -352,6 +353,7 @@ class boss_garrosh_hellscream : public CreatureScript
             uint32 realmofyshaarjtimer;
             uint32 updatepower;
             uint32 checkevade;
+            uint32 lastphaseready;
             uint8 realmnum;
             Phase phase;
 
@@ -359,6 +361,7 @@ class boss_garrosh_hellscream : public CreatureScript
             {
                 phasetwo = false;
                 checkevade = 0;
+                lastphaseready = 0;
                 updatepower = 0;
                 realmofyshaarjtimer = 0;
                 me->RemoveAurasDueToSpell(SPELL_GARROSH_ENERGY_4);
@@ -415,8 +418,15 @@ class boss_garrosh_hellscream : public CreatureScript
 
             void EnterEvadeMode()
             {
-                me->NearTeleportTo(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY(), me->GetHomePosition().GetPositionZ(), me->GetHomePosition().GetOrientation());
-                ScriptedAI::EnterEvadeMode();
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                if (me->GetMap()->GetAreaId(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()) == 6816)
+                {
+                    me->SetAttackStop(true);
+                    me->SetReactState(REACT_PASSIVE);
+                    me->NearTeleportTo(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY(), me->GetHomePosition().GetPositionZ(), me->GetHomePosition().GetOrientation());
+                }
+                else
+                    ScriptedAI::EnterEvadeMode();
             }
 
             void KilledUnit(Unit* unit)
@@ -460,7 +470,7 @@ class boss_garrosh_hellscream : public CreatureScript
                         realmofyshaarjtimer = 0;
                         DoAction(ACTION_INTRO_PHASE_THREE);
                     }
-                    else if (damage <= me->GetHealth() && phase == PHASE_THREE && me->GetMap()->IsHeroic())
+                    else if (HealthBelowPct(1) && phase == PHASE_FOUR_READY && me->GetMap()->IsHeroic())
                     {   //phase four, only heroic
                         me->InterruptNonMeleeSpells(true);
                         phase = PHASE_FOUR_PREPARE;
@@ -514,6 +524,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
                     events.ScheduleEvent(EVENT_TOUCH_OF_YSHAARJ, 16000);
                     events.ScheduleEvent(EVENT_WHIRLING_CORRUPTION, 30000);
+                    lastphaseready = 5000; //need delay before change phase
                     break;
                 case ACTION_INTRO_PHASE_FOUR:
                     Talk(SAY_HM_LAST_PHASE, 0);
@@ -610,6 +621,17 @@ class boss_garrosh_hellscream : public CreatureScript
                         updatepower -= diff;
                 }
                 //
+
+                if (lastphaseready)
+                {
+                    if (lastphaseready <= diff)
+                    {
+                        lastphaseready = 0;
+                        phase = PHASE_FOUR_READY;
+                    }
+                    else
+                        lastphaseready -= diff;
+                }
 
                 if (realmofyshaarjtimer)
                 {
@@ -872,6 +894,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     //HM
                     case EVENT_INTRO_PHASE_FOUR:
                     {
+                        checkevade = 0;
                         std::list<Player*>pllist;
                         GetPlayerListInGrid(pllist, me, 150.0f);
                         if (!pllist.empty())
@@ -913,7 +936,8 @@ class boss_garrosh_hellscream : public CreatureScript
                     }
                     break;
                     case EVENT_BOMBARTMENT:
-                        //Not found visual prepare spell
+                        if (Creature* kg = me->GetCreature(*me, instance->GetData64(NPC_KORKRON_GUNSHIP)))
+                            kg->AI()->DoAction(ACTION_BOMBARTMENT);
                         break;
                     }
                 }
@@ -1674,12 +1698,10 @@ public:
         }
         InstanceScript* instance;
         bool hmironstarready;
-        uint32 test; //for testing
 
         void Reset()
         {
             hmironstarready = true;
-            test = 10000;
         }
 
         void SetData(uint32 type, uint32 data)
@@ -1715,7 +1737,7 @@ public:
         {
             std::list<AreaTrigger*> atlist;
             atlist.clear();
-            me->GetAreaTriggersWithEntryInRange(atlist, 5236, 0, 200.0f);
+            me->GetAreaTriggersWithEntryInRange(atlist, 5236, 0, 400.0f);
             if (!atlist.empty())
                 for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
                     (*itr)->RemoveFromWorld();
@@ -1730,19 +1752,7 @@ public:
 
         void EnterEvadeMode(){}
 
-        void UpdateAI(uint32 diff)
-        {
-            if (test)
-            {
-                if (test <= diff)
-                {
-                    test = 0;
-                    DoCast(me, SPELL_CALL_BOMBARTMENT, true);
-                }
-                else
-                    test -= diff;
-            }
-        }
+        void UpdateAI(uint32 diff){}
     };
 
     CreatureAI* GetAI(Creature* creature) const

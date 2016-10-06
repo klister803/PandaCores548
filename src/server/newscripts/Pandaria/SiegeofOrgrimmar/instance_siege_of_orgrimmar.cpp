@@ -2195,6 +2195,8 @@ public:
                         std::advance(itr, urand(0, hordecannonlistGuids.size() - 1));
                         return *itr;
                     }
+                case NPC_KORKRON_GUNSHIP:
+                    return korkrongunshipGuid;
             }
             std::map<uint32, uint64>::iterator itr = easyGUIDconteiner.find(type);
             if (itr != easyGUIDconteiner.end())
