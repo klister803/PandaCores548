@@ -186,7 +186,6 @@ enum sActions
     ACTION_INTRO_PHASE_THREE         = 4,
     ACTION_PHASE_THREE               = 5,
     ACTION_INTRO_PHASE_FOUR          = 6,
-    //Unstable Iron Star
     ACTION_CHANGE_TARGET             = 7,
     ACTION_BOMBARTMENT               = 8,
 };
@@ -354,6 +353,8 @@ class boss_garrosh_hellscream : public CreatureScript
             uint32 updatepower;
             uint32 checkevade;
             uint32 lastphaseready;
+            uint32 lastbombartmenttimer;
+            uint8 bombartmentnum;
             uint8 realmnum;
             Phase phase;
 
@@ -363,6 +364,8 @@ class boss_garrosh_hellscream : public CreatureScript
                 checkevade = 0;
                 lastphaseready = 0;
                 updatepower = 0;
+                lastbombartmenttimer = 55000;
+                bombartmentnum = 0;
                 realmofyshaarjtimer = 0;
                 me->RemoveAurasDueToSpell(SPELL_GARROSH_ENERGY_4);
                 me->setPowerType(POWER_ENERGY);
@@ -408,7 +411,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     phase = PHASE_ONE;
                     realmnum = 0;
                     events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 4000);
-                    events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
+                    //events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
                     events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
                     events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 18000);
                     events.ScheduleEvent(EVENT_SUMMON_WOLF_RIDER, 30000);
@@ -913,7 +916,7 @@ class boss_garrosh_hellscream : public CreatureScript
                         me->ReAttackWithZone();
                         DoCast(me, SPELL_GARROSH_ENERGY_4, true);
                         events.ScheduleEvent(EVENT_MALICE, 30000);
-                        events.ScheduleEvent(EVENT_BOMBARTMENT, 60000);
+                        events.ScheduleEvent(EVENT_BOMBARTMENT, lastbombartmenttimer);
                     }
                     break;
                     case EVENT_MALICE:
@@ -938,6 +941,12 @@ class boss_garrosh_hellscream : public CreatureScript
                     case EVENT_BOMBARTMENT:
                         if (Creature* kg = me->GetCreature(*me, instance->GetData64(NPC_KORKRON_GUNSHIP)))
                             kg->AI()->DoAction(ACTION_BOMBARTMENT);
+                        if (++bombartmentnum == 2)
+                        {
+                            bombartmentnum = 0;
+                            lastbombartmenttimer = lastbombartmenttimer > 15000 ? lastbombartmenttimer - 15000 : 15000;
+                        }
+                        events.ScheduleEvent(EVENT_BOMBARTMENT, lastbombartmenttimer);
                         break;
                     }
                 }
@@ -1320,6 +1329,7 @@ public:
                 switch (eventId)
                 {
                 case EVENT_ACTIVE:
+                    me->getThreatManager().resetAllAggro();
                     FindAndFixateTarget();
                     break;
                 case EVENT_CHANGE_TARGET:
@@ -1697,36 +1707,15 @@ public:
                 me->SetVisible(false);
         }
         InstanceScript* instance;
-        bool hmironstarready;
-
-        void Reset()
-        {
-            hmironstarready = true;
-        }
-
-        void SetData(uint32 type, uint32 data)
-        {
-            if (type == DATA_HM_IRON_STAR_READY)
-                hmironstarready = false;
-        }
-
-        uint32 GetData(uint32 type)
-        {
-            if (type == DATA_HM_IRON_STAR_READY)
-                return uint32(hmironstarready);
-            return 0;
-        }
 
         void DoAction(int32 const action)
         {
             switch (action)
             {
             case ACTION_BOMBARTMENT:
-                hmironstarready = true;
                 DoCast(me, SPELL_CALL_BOMBARTMENT, true);
                 break;
             case ACTION_RESET:
-                hmironstarready = true;
                 me->RemoveAurasDueToSpell(SPELL_CALL_BOMBARTMENT);
                 DespawnAllAT();
                 break;
@@ -2348,7 +2337,7 @@ public:
                 {
                     float x, y;
                     GetPosInRadiusWithRandomOrientation(GetCaster(), float(urand(20, 40)), x, y);
-                    if (Creature* mof = GetCaster()->SummonCreature(NPC_MANIFESTATION_OF_RAGE, x, y, GetCaster()->GetPositionZ()))
+                    if (Creature* mof = GetCaster()->SummonCreature(NPC_MANIFESTATION_OF_RAGE, x, y, GetCaster()->GetPositionZ(), 0.0f, TEMPSUMMON_CORPSE_DESPAWN))
                         mof->AI()->DoZoneInCombat(mof, 150.0f);
                 }
             }
@@ -2515,8 +2504,13 @@ public:
         {
             if (GetCaster() && GetCaster()->ToCreature())
             {
-                if (GetCaster()->ToCreature()->AI()->GetData(DATA_HM_IRON_STAR_READY))
+                uint32 tick = aurEff->GetTickNumber();
+                switch (tick)
                 {
+                case 1:
+                case 6:
+                case 12:
+                case 18:
                     if (InstanceScript* instance = GetCaster()->GetInstanceScript())
                     {
                         std::list<Player*> pllist;
@@ -2531,7 +2525,6 @@ public:
                                 {
                                     if (Creature* garrosh = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(DATA_GARROSH)))
                                     {
-                                        GetCaster()->ToCreature()->AI()->SetData(DATA_HM_IRON_STAR_READY, 0);
                                         garrosh->CastSpell(*itr, SPELL_FIRE_UNSTABLE_IRON_STAR);
                                         break;
                                     }
@@ -2539,6 +2532,9 @@ public:
                             }
                         }
                     }
+                    break;
+                default:
+                    break;
                 }
             }
         }
@@ -2553,6 +2549,40 @@ public:
     AuraScript* GetAuraScript() const
     {
         return new spell_call_bombartment_AuraScript();
+    }
+};
+
+//146999
+class spell_growing_power : public SpellScriptLoader
+{
+public:
+    spell_growing_power() : SpellScriptLoader("spell_growing_power") { }
+
+    class spell_growing_power_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_growing_power_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (GetCaster() && GetCaster()->ToCreature())
+            {
+                if (GetCaster()->GetPower(POWER_ENERGY) == 99)
+                {
+                    GetCaster()->SetPower(POWER_ENERGY, 0);
+                    GetCaster()->CastSpell(GetCaster(), SPELL_MANIFEST_RAGE);
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_growing_power_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_ENERGIZE);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_growing_power_AuraScript();
     }
 };
 
@@ -2587,4 +2617,5 @@ void AddSC_boss_garrosh_hellscream()
     new spell_malice_dummy();
     new spell_fixate_iron_star();
     new spell_call_bombartment();
+    new spell_growing_power();
 }

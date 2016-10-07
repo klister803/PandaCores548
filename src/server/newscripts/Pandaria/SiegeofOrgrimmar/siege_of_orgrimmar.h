@@ -110,7 +110,6 @@ enum eData
     DATA_SPOIL_MANTIS,
     DATA_SPOIL_MOGU,
     DATA_CHECK_KDS_RESET_IS_DONE,
-    DATA_HM_IRON_STAR_READY,
 };
 
 enum eCreatures

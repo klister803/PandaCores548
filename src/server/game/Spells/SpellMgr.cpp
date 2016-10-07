@@ -5631,9 +5631,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->TriggerSpell = 0;
                     spellInfo->Effects[1]->TriggerSpell = 0;
                     break;
-                case 147140:
+                case 146999: //Growing Power
                     spellInfo->Effects[0]->Amplitude = 1000;
-                    spellInfo->Effects[1]->Amplitude = 1000;
                     break;
 
                 //World Bosses
