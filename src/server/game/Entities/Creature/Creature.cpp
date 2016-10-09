@@ -804,7 +804,7 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
     delete oldAI;
     IsAIEnabled = true;
 
-    if (i_AI && isAlive())
+    if (i_AI)
         i_AI->InitializeAI();
 
     // Initialize vehicle
