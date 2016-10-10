@@ -1250,7 +1250,7 @@ public:
     }
 };
 
-//73059, need update in DB(faction, level)
+//73059
 class npc_unstable_iron_star : public CreatureScript
 {
 public:
