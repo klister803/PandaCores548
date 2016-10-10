@@ -5502,6 +5502,7 @@ void SpellMgr::LoadSpellCustomAttr()
                             eff->TargetB = TARGET_UNIT_SRC_AREA_ENTRY;
                     break;
                 case 143385: //Electrostatic charge
+                    spellInfo->AttributesEx3 &= ~SPELL_ATTR3_DEATH_PERSISTENT;
                     spellInfo->AuraInterruptFlags = 0;
                     spellInfo->ChannelInterruptFlags = 0;
                     break;
