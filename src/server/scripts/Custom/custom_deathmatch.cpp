@@ -78,6 +78,7 @@ class starter_deathmatch : public CreatureScript  //900000
                 {
                     player->GetSession()->SendNotification(30012);
                     ChatHandler(player->GetSession()).PSendSysMessage(30012);
+                    ChatHandler(player->GetSession()).PSendSysMessage("%u members left before the start of the deathmatch", (10-(sWorld->GetCountQueueOnDM())));
                 }
                 player->CLOSE_GOSSIP_MENU(); 
                 break;
@@ -352,7 +353,11 @@ class spell_deathmatch_checker : public SpellScriptLoader
 class deathmatch_event_checker : public WorldScript
 {
 public:
-    deathmatch_event_checker() : WorldScript("deathmatch_event_checker") { }
+    deathmatch_event_checker() : WorldScript("deathmatch_event_checker") 
+    { 
+        timerforannounce = 10000;
+    }
+    uint32 timerforannounce;
 
     void OnUpdate(uint32 diff)
     {
@@ -360,6 +365,18 @@ public:
         
         if(!sGameEventMgr->IsActiveEvent(120) || sWorld->GetCountQueueOnDM() < 0)
             sWorld->CountQueueOnDMNull();
+        if (sGameEventMgr->IsActiveEvent(120))
+        {
+            if (timerforannounce <= diff)
+            {   
+                std::string name("Гладиатор Викт");
+                std::string text("Деатматч уже начался! Спешите принять участие, попасть в `топ-3` и получить великолепные призы! Зарегистрироваться можно у меня в столицах!");
+                sWorld->SendWorldText(LANG_ANNOUNCE_COLOR, name.c_str(), text.c_str());
+                timerforannounce = urand(300000, 500000);
+            }
+            else
+                timerforannounce -= diff;
+        }
         
         if(sGameEventMgr->IsActiveEvent(EVENT_DEATHMATCH))  //если детматч идет, но стало мало игроков/истекло время - заканчиваем
         {
