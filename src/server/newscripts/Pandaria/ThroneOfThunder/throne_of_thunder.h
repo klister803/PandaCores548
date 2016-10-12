@@ -29,6 +29,7 @@ enum eData
 
     DATA_RESET_MOGU_FONTS,
     DATA_CHECK_VALIDATE_THUNDERING_THROW,
+    DATA_GET_NEXT_GATE,
 };
 
 enum eCreatures
@@ -53,6 +54,34 @@ enum eCreatures
     NPC_BEAST_OF_NIGHTMARES = 69479,
     NPC_CORRUPTED_ANIMA     = 69957,
     NPC_CORRUPTED_VITA      = 69958,
+    NPC_SAND_TRAP           = 69346,
+    NPC_LIVING_POISON       = 69313,
+
+    //Horridon adds
+    //Farrak Gate
+    //Big
+    NPC_FARRAKI_WASTEWALKER     = 69175,
+    //Small
+    NPC_SULLITHUZ_STONEGAZER    = 69172,
+    //Gurubashi
+    //Big
+    NPC_GURUBASHI_VENOM_PRIEST  = 69164,
+    NPC_VENOMOUS_EFFUSION       = 69314,
+    //Small
+    NPC_GURUBASHI_BLOODLORD     = 69167,
+    //Drakkari
+    //Big
+    NPC_DRAKKARI_FROZEN_WARLORD = 69178,
+    //Small
+    NPC_RISEN_DRAKKARI_CHAMPION = 69185,
+    NPC_RISEN_DRAKKARI_WARRIOR  = 69184,
+    //Amani
+    //Big
+    NPC_AMANI_WARBEAR           = 69177,
+    NPC_AMANISHI_BEAST_SHAMAN   = 69176,
+    //Small
+    NPC_AMANISHI_FLAME_CASTER   = 69168,
+    //
 
     //Bosses
     NPC_JINROKH             = 69465,
@@ -105,11 +134,14 @@ enum eGameObjects
     //Horridon
     GO_HORRIDON_PRE_DOOR    = 218669,
     GO_HORRIDON_ENT_DOOR    = 218667,
+    //Event door
     GO_MAIN_GATE            = 218674,
+    //Add gates
     GO_FARRAK_GATE          = 218672,
     GO_GURUBASHI_GATE       = 218670,
     GO_DRAKKARI_GATE        = 218671,
     GO_AMANI_GATE           = 218673,
+    //
     GO_HORRIDON_EX_DOOR     = 218666,
     //Council of Elders
     GO_COUNCIL_LENT_DOOR    = 218655,

@@ -4901,6 +4901,12 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->TargetB = 0;
                     break;
                 //Horridon
+                case 136653: //Rending Charge
+                    spellInfo->Effects[0]->TriggerSpell = 0;
+                    break;
+                case 136654: //Rending Charge Dmg
+                    spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(153); //60 yards
+                    break;
                 case 136740: //Double swipe tr ef
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_CONE_BACK;
                     spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(4);

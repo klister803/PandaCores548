@@ -25,6 +25,14 @@ const DoorData doorData[] =
     {0,                      0,                      DOOR_TYPE_PASSAGE, 0},
 };
 
+uint32 HorridonAddGates[4] =
+{
+    GO_FARRAK_GATE,
+    GO_GURUBASHI_GATE,
+    GO_DRAKKARI_GATE,
+    GO_AMANI_GATE,
+};
+
 class instance_throne_of_thunder : public InstanceMapScript
 {
 public:
@@ -40,6 +48,7 @@ public:
         uint64 jinrokhexdoorGuid;
         uint64 horridonpredoorGuid;
         uint64 horridonentdoorGuid;
+        std::vector<uint64>horridonaddgateGuids;
         uint64 horridonexdoorGuid;
         uint64 councilexdoorGuid;
         uint64 councilex2doorGuid;
@@ -105,6 +114,7 @@ public:
             jinrokhexdoorGuid     = 0;
             horridonpredoorGuid   = 0;
             horridonentdoorGuid   = 0;
+            horridonaddgateGuids.clear();
             horridonexdoorGuid    = 0;
             councilexdoorGuid     = 0;
             councilex2doorGuid    = 0;
@@ -296,6 +306,12 @@ public:
             case GO_HORRIDON_ENT_DOOR:
                 horridonentdoorGuid = go->GetGUID();
                 break;
+            case GO_FARRAK_GATE:
+            case GO_GURUBASHI_GATE:
+            case GO_DRAKKARI_GATE:
+            case GO_AMANI_GATE:
+                horridonaddgateGuids.push_back(go->GetGUID());
+                break;
             case GO_HORRIDON_EX_DOOR:
                 AddDoor(go, true);
                 horridonexdoorGuid = go->GetGUID();
@@ -422,6 +438,7 @@ public:
                     switch (state)
                     {
                     case NOT_STARTED:
+                        ResetHorridonAddGates();
                         HandleGameObject(horridonentdoorGuid, true);
                         break;
                     case IN_PROGRESS:
@@ -645,6 +662,14 @@ public:
             return true;
         }
 
+        void ResetHorridonAddGates()
+        {
+            if (!horridonaddgateGuids.empty())
+                for (std::vector<uint64>::const_iterator itr = horridonaddgateGuids.begin(); itr != horridonaddgateGuids.end(); itr++)
+                    if (GameObject* gate = instance->GetGameObject(*itr))
+                        gate->SetGoState(GO_STATE_READY);
+        }
+
         void LoadSecretRaDenDoor(GameObject* go)
         {
             if (!go || !instance->IsHeroic())
@@ -694,6 +719,14 @@ public:
                 return horridonGuid;
             case NPC_JALAK:
                 return jalakGuid;
+            case DATA_GET_NEXT_GATE:
+                if (!horridonaddgateGuids.empty())
+                    for (uint8 n = 0; n < 4; n++)
+                        for (std::vector<uint64>::const_iterator itr = horridonaddgateGuids.begin(); itr != horridonaddgateGuids.end(); itr++)
+                            if (GameObject* gate = instance->GetGameObject(*itr))
+                                if (gate->GetEntry() == HorridonAddGates[n] && gate->GetGoState() == GO_STATE_READY)
+                                    return *itr;
+                return 0;
             //Council of Elders
             case NPC_FROST_KING_MALAKK:
                 return mallakGuid;
