@@ -372,7 +372,7 @@ public:
                 std::string name("Гладиатор Викт");
                 std::string text("Деатматч уже начался! Спешите принять участие, попасть в `топ-3` и получить великолепные призы! Зарегистрироваться можно у меня в столицах!");
                 sWorld->SendWorldText(LANG_ANNOUNCE_COLOR, name.c_str(), text.c_str());
-                timerforannounce = urand(300000, 500000);
+                timerforannounce = urand(900000, 1200000);
             }
             else
                 timerforannounce -= diff;
