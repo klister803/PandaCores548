@@ -241,6 +241,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              weaponwavecount = 0;
              updatehmlaserwalls = 0;
              berserk = 0;
+             DespawnOverchargedElectromagnet();
              RemoveDebuffs();
              me->RemoveAurasDueToSpell(SPELL_PROTECTIVE_FRENZY);
              me->RemoveAurasDueToSpell(SPELL_AUTOMATIC_REPAIR_BEAM_AT);
@@ -271,6 +272,23 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              for (uint8 b = 0; b < 3; b++)
                  laserwallmod[b] = 0;
              createconveyer = false;
+         }
+
+         void DespawnOverchargedElectromagnet()
+         {
+             std::list<Creature*>addlist;
+             addlist.clear();
+             GetCreatureListWithEntryInGrid(addlist, me, NPC_OVERCHARGED_ELECTROMAGNET, 250.0f);
+             if (!addlist.empty())
+                 for (std::list<Creature*>::const_iterator itr = addlist.begin(); itr != addlist.end(); itr++)
+                     (*itr)->DespawnOrUnsummon();
+
+             std::list<AreaTrigger*> atlist;
+             atlist.clear();
+             me->GetAreaTriggersWithEntryInRange(atlist, 4903, 0, 250.0f);
+             if (!atlist.empty())
+                 for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
+                     (*itr)->RemoveFromWorld();
          }
 
          void RemoveDebuffs()
