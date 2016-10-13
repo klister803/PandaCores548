@@ -5511,6 +5511,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_DEATH_PERSISTENT;
                     spellInfo->AuraInterruptFlags = 0;
                     spellInfo->ChannelInterruptFlags = 0;
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_2, d))
+                            eff->MiscValue = 22;
                     break;
                 case 143830: //Disentegration laser AT
                     spellInfo->Effects[0]->TargetA = 18;

@@ -763,7 +763,7 @@ public:
         npc_automated_shredderAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
-            me->ModifyAuraState(AURA_STATE_CONFLAGRATE, true);
+            me->ModifyAuraState(AURA_STATE_UNKNOWN22, true);
             me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
