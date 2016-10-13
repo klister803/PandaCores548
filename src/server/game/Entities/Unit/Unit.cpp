@@ -23476,7 +23476,8 @@ void Unit::_ExitVehicle(Position const* exitPosition)
 
 void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool casting /*= false*/)
 {
-    DisableSpline();
+    if (!casting)
+        DisableSpline();
 
     if (GetTypeId() == TYPEID_PLAYER)
     {
