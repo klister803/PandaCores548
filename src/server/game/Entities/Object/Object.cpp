@@ -391,7 +391,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     data->WriteBit(0);                              // byte428
     data->WriteBit(0);                              // byte32A
     data->WriteBit(flags & UPDATEFLAG_STATIONARY_POSITION);
-    data->WriteBit(0);                              // byte2
+    data->WriteBit(0);                              // PlayHoverAnim?
     data->WriteBit(flags & UPDATEFLAG_LIVING);
     data->WriteBit(flags & UPDATEFLAG_ANIMKITS);
     data->WriteBit(flags & UPDATEFLAG_VEHICLE);
