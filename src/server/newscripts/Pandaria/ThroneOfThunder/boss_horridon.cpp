@@ -39,6 +39,14 @@ enum eSpells
     SPELL_LIVING_POISON      = 136645,
     SPELL_RENDING_CHARGE     = 136653,
     SPELL_RENDING_CHARGE_DMG = 136654,
+    //Drakkari
+    SPELL_MORTAL_STRIKE      = 136670,
+    SPELL_FROZEN_ORB_SUM     = 136564,
+    SPELL_FROZEN_BOLT_AURA   = 136572,
+    SPELL_UNCONTROLLED_ABOM  = 136709, //Uncontrolled Abomination
+    //Amani
+    SPELL_SWIPE              = 136463,
+    SPELL_FIREBALL           = 136465,
 };
 
 enum sEvents
@@ -57,6 +65,10 @@ enum sEvents
     EVENT_STONE_GAZE         = 9,
     EVENT_VENOM_BOLT_VOLLEY  = 10,
     EVENT_RENDING_CHARGE     = 11,
+    EVENT_MORTAL_STRIKE      = 12,
+    EVENT_SUMMON_FROZEN_ORB  = 13,
+    EVENT_SWIPE              = 14,
+    EVENT_FIREBALL           = 15,
 
     EVENT_RE_ATTACK          = 35,
 };
@@ -285,7 +297,9 @@ public:
 };
 
 //Farrak: big - 69175, small - 69172.
-//Gurubashi: big - 69164, 69314, small - 69167
+//Gurubashi: big - 69164, 69314, small - 69167.
+//Drakkari: big - 69178, special summons - 69268, small - 69185.
+//Amani: big - 69177, 69176, small - 69168.
 class npc_generic_gate_add: public CreatureScript
 {
 public:
@@ -296,6 +310,12 @@ public:
         npc_generic_gate_addAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            if (me->GetEntry() == NPC_RISEN_DRAKKARI_CHAMPION)
+            {
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+            }
         }
 
         InstanceScript* instance;
@@ -304,6 +324,36 @@ public:
         void Reset()
         {
             events.Reset();
+            switch (me->GetEntry())
+            {
+            case NPC_FROZEN_ORB:
+                me->SetDisplayId(11686);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                DoZoneInCombat(me, 100.0f);
+                DoCast(me, SPELL_FROZEN_BOLT_AURA, true);
+                break;
+            case NPC_RISEN_DRAKKARI_CHAMPION:
+                FindAndAttackRandomPlayer();
+            case NPC_AMANISHI_BEAST_SHAMAN:
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                break;
+            case NPC_AMANI_WARBEAR: //for testing
+                me->SetReactState(REACT_DEFENSIVE);
+                break;
+            default:
+                break;
+            }
+        }
+
+        void FindAndAttackRandomPlayer()
+        {
+            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 80.0f, true))
+            {
+                me->AddThreat(target, 50000000.0f);
+                me->SetReactState(REACT_AGGRESSIVE);
+                me->Attack(target, true);
+                me->GetMotionMaster()->MoveChase(target);
+            }
         }
 
         void EnterCombat(Unit* who)
@@ -325,6 +375,38 @@ public:
             case NPC_GURUBASHI_BLOODLORD:
                 events.ScheduleEvent(EVENT_RENDING_CHARGE, 10000);
                 break;
+            //Drakkari
+            case NPC_DRAKKARI_FROZEN_WARLORD:
+                events.ScheduleEvent(EVENT_MORTAL_STRIKE, 6000);
+                events.ScheduleEvent(EVENT_SUMMON_FROZEN_ORB, 15000);
+                break;
+            case NPC_RISEN_DRAKKARI_CHAMPION:
+                DoCast(me, SPELL_UNCONTROLLED_ABOM, true);
+                break;
+            //Amani
+            case NPC_AMANI_WARBEAR:
+                events.ScheduleEvent(EVENT_SWIPE, 5000);
+                break;
+            case NPC_AMANISHI_FLAME_CASTER:
+                events.ScheduleEvent(EVENT_FIREBALL, 4000);
+                break;
+            }
+        }
+
+        void JustDied(Unit* killer)
+        {
+            if (me->GetEntry() == NPC_AMANI_WARBEAR)
+            {
+                if (Vehicle* vehicle = me->GetVehicleKit())
+                {
+                    if (Unit* passenger = vehicle->GetPassenger(0))
+                    {
+                        passenger->ExitVehicle();
+                        passenger->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                        passenger->ToCreature()->SetReactState(REACT_AGGRESSIVE);
+                        passenger->ToCreature()->AI()->DoZoneInCombat(passenger->ToCreature(), 100.0f);
+                    }
+                }
             }
         }
 
@@ -336,9 +418,6 @@ public:
 
         void UpdateAI(uint32 diff)
         {
-            if (!UpdateVictim())
-                return;
-
             events.Update(diff);
 
             if (me->HasUnitState(UNIT_STATE_CASTING))
@@ -375,6 +454,27 @@ public:
                         DoCast(target, SPELL_RENDING_CHARGE);
                     }
                     break;
+                //Drakkari
+                case EVENT_MORTAL_STRIKE:
+                    if (me->getVictim())
+                        DoCast(me->getVictim(), SPELL_MORTAL_STRIKE);
+                    events.ScheduleEvent(EVENT_MORTAL_STRIKE, 10000);
+                    break;
+                case EVENT_SUMMON_FROZEN_ORB:
+                    DoCast(me, SPELL_FROZEN_ORB_SUM);
+                    events.ScheduleEvent(EVENT_SUMMON_FROZEN_ORB, 20000);
+                    break;
+                //Amani
+                case EVENT_SWIPE:
+                    if (me->getVictim())
+                        DoCast(me->getVictim(), SPELL_SWIPE);
+                    events.ScheduleEvent(EVENT_SWIPE, 5000);
+                    break;
+                case EVENT_FIREBALL:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 45.0f, true))
+                        DoCast(target, SPELL_FIREBALL);
+                    events.ScheduleEvent(EVENT_FIREBALL, 4000);
+                    break;
                 //Special
                 case EVENT_RE_ATTACK:
                     me->ReAttackWithZone();
@@ -385,7 +485,8 @@ public:
                     break;
                 }
             }
-            DoMeleeAttackIfReady();
+            if (me->GetEntry() != NPC_AMANISHI_FLAME_CASTER)
+                DoMeleeAttackIfReady();
         }
     };
 

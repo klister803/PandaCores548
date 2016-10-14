@@ -56,6 +56,7 @@ enum eCreatures
     NPC_CORRUPTED_VITA      = 69958,
     NPC_SAND_TRAP           = 69346,
     NPC_LIVING_POISON       = 69313,
+    NPC_FROZEN_ORB          = 69268,
 
     //Horridon adds
     //Farrak Gate
