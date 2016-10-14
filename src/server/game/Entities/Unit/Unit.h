@@ -1804,7 +1804,9 @@ class Unit : public WorldObject
         virtual bool SetWaterWalking(bool enable, bool packetOnly = false);
         virtual bool SetFeatherFall(bool enable, bool packetOnly = false);
         virtual bool SetCanFly(bool apply);
+
         bool SetHover(bool enable, bool packetOnly = false);
+        uint32 GetSequenceIndex() { return m_sequenceIndex; }
 
         void SetInFront(Unit const* target);
         void SetFacingTo(float ori);
@@ -1904,6 +1906,8 @@ class Unit : public WorldObject
         CharmInfo* InitCharmInfo();
         void DeleteCharmInfo();
         void UpdateCharmAI();
+        Unit* GetMover() const;
+        Player* GetPlayerMover() const;
         //Player* GetMoverSource() const;
         Player* m_movedPlayer;
         void RemoveBindSightAuras();
@@ -2158,6 +2162,7 @@ class Unit : public WorldObject
         int32 m_baseSpellCritChance;
         LiquidData liquid_status;
         ZLiquidStatus Zliquid_status;
+        uint32 m_sequenceIndex;
 
         std::list<Player*> m_whoseeme;
 
@@ -2386,15 +2391,6 @@ class Unit : public WorldObject
         bool IsSplineEnabled() const;
 
         void WriteMovementUpdate(WorldPacket &data) const;
-
-        float GetPositionZMinusOffset() const
-        {
-            float offset = 0.0f;
-            if (HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
-                offset = GetFloatValue(UNIT_FIELD_HOVERHEIGHT);
-
-            return GetPositionZ() - offset;
-        }
 
         void SetControlled(bool apply, UnitState state);
 

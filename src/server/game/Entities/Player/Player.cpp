@@ -2593,8 +2593,6 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         if (!GetSession()->PlayerLogout())
         {
             Position newPos;
-            if (HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
-                z += GetFloatValue(UNIT_FIELD_HOVERHEIGHT);
             newPos.Relocate(x, y, z, orientation);
             SendTeleportPacket(newPos, m_sequenceIndex); // this automatically relocates to oldPos in order to broadcast the packet in the right place
         }
@@ -3425,7 +3423,7 @@ Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask, uint3
                     return NULL;
 
     // not too far
-    if (!creature->IsWithinDistInMap(this, INTERACTION_DISTANCE + GetFloatValue(UNIT_FIELD_HOVERHEIGHT)))
+    if (!creature->IsWithinDistInMap(this, INTERACTION_DISTANCE))
         return NULL;
 
     return creature;
@@ -13635,7 +13633,7 @@ bool Player::CanGetItemForLoot(ItemTemplate const* proto) const
                 return false;
         }
 
-        if (_class == CLASS_ROGUE || _class == CLASS_DRUID)
+        if (_class == CLASS_ROGUE || _class == CLASS_DRUID || _class == CLASS_MONK)
             if (proto->SubClass != ITEM_SUBCLASS_ARMOR_LEATHER)
                 return false;
 
@@ -13712,7 +13710,7 @@ InventoryResult Player::CanRollForItemInLFG(ItemTemplate const* proto, WorldObje
                 return EQUIP_ERR_CLIENT_LOCKED_OUT;
         }
 
-        if (_class == CLASS_ROGUE || _class == CLASS_DRUID)
+        if (_class == CLASS_ROGUE || _class == CLASS_DRUID || _class == CLASS_MONK)
             if (proto->SubClass != ITEM_SUBCLASS_ARMOR_LEATHER)
                 return EQUIP_ERR_CLIENT_LOCKED_OUT;
 

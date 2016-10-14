@@ -873,11 +873,13 @@ class boss_yoggsaron : public CreatureScript
                             events.ScheduleEvent(EVENT_LUNATIC_GAZE, urand(15000, 20000), 0, PHASE_3);
                             break;
                         case EVENT_IMMORTAL_GUARDIAN:
+                        {
                             Position pos;
                             me->GetRandomNearPosition(pos, 25);
                             me->SummonCreature(NPC_IMMORTAL_GUARDIAN, pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
                             events.ScheduleEvent(EVENT_IMMORTAL_GUARDIAN, urand(25000, 30000), 0, PHASE_3);
                             break;
+                        }
                         case EVENT_SHADOW_BEACON:
                             if (Creature *pImmortal = me->FindNearestCreature(NPC_IMMORTAL_GUARDIAN,80,true))
                             {

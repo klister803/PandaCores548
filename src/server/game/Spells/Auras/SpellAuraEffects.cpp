@@ -9039,9 +9039,9 @@ void AuraEffect::HandleAuraStrangulate(AuraApplication const* aurApp, uint8 mode
         target->SetControlled(apply, UNIT_STATE_STUNNED);
 
         if (apply)
-            target->UpdateHeight(target->GetPositionZ() + newZ);
+            target->UpdateHeight(1.0f);
         else
-            target->UpdateHeight(target->GetPositionZ() - newZ);
+            target->UpdateHeight(0.0f);
     }
 }
 

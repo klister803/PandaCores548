@@ -132,9 +132,7 @@ void ScriptedAI::AttackStart(Unit* who)
 
     if (who && me->Attack(who, true))
     {
-        if (me->ToCreature() && me->GetEntry() == 69099) //World Boss Nalak
-            me->GetMotionMaster()->MoveCharge(who->GetPositionX(), who->GetPositionY(), who->GetPositionZ() + 18.0f);
-        else if(me->GetCasterPet())
+        if(me->GetCasterPet())
         {
             if(!me->IsWithinMeleeRange(who, me->GetAttackDist()))
                 me->GetMotionMaster()->MoveChase(who, me->GetAttackDist() - 0.5f);

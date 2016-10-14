@@ -74,5 +74,5 @@ enum eSays
     SAY_SCENARIO_FINISH     = 18,
 };
 
-const Position centerPos[1] = {3795.26f, 533.56f, 639.40f, 6.14f};
+const Position centerPos = {3795.26f, 533.56f, 639.40f, 6.14f};
 #endif

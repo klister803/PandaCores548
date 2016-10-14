@@ -110,12 +110,12 @@ public:
                     case EVENT_POINT_HOME:
                         if (GameObject* pGo = instance->instance->GetGameObject(instance->GetData64(DATA_DOOR)))
                             pGo->SetGoState(GO_STATE_ACTIVE);
-                        me->GetMotionMaster()->MovePoint(1, centerPos[0]);
+                        me->GetMotionMaster()->MovePoint(1, centerPos);
                         break;
                     case EVENT_JUMP:
                         DoStopAttack();
                         me->GetMotionMaster()->Clear();
-                        me->GetMotionMaster()->MoveJump(centerPos[0].GetPositionX(), centerPos[0].GetPositionY(), centerPos[0].GetPositionZ(), 30.f, 15.f);
+                        me->GetMotionMaster()->MoveJump(centerPos.GetPositionX(), centerPos.GetPositionY(), centerPos.GetPositionZ(), 30.f, 15.f);
                         events.ScheduleEvent(EVENT_JUMP, 20000);
                         events.ScheduleEvent(EVENT_SLAM, 2000);
                         break;

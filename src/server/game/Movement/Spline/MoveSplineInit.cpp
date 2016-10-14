@@ -60,7 +60,7 @@ namespace Movement
     {
         MoveSpline& move_spline = *unit.movespline;
 
-        Location real_position(unit.GetPositionX(), unit.GetPositionY(), unit.GetPositionZMinusOffset(), unit.GetOrientation());
+        Location real_position(unit.GetPositionX(), unit.GetPositionY(), unit.GetPositionZ(), unit.GetOrientation());
         // Elevators also use MOVEMENTFLAG_ONTRANSPORT but we do not keep track of their position changes
         if (unit.GetTransGUID())
         {
@@ -212,7 +212,7 @@ namespace Movement
             {
                 input.x -= vehicle->GetPositionX();
                 input.y -= vehicle->GetPositionY();
-                input.z -= vehicle->GetPositionZMinusOffset();
+                input.z -= vehicle->GetPositionZ();
             }
             else if (Transport* transport = _owner.GetTransport())
             {

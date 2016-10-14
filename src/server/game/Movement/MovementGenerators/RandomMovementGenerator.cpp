@@ -49,7 +49,7 @@ void RandomMovementGenerator<Creature>::_setRandomLocation(Creature& creature)
 
     destX = respX + distanceX;
     destY = respY + distanceY;
-    destZ = creature.GetPositionZMinusOffset();
+    destZ = creature.GetPositionZ();
     creature.UpdateAllowedPositionZ(destX, destY, destZ);
 
     // prevent invalid coordinates generation

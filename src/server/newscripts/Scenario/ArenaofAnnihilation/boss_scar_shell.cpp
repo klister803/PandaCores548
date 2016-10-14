@@ -120,7 +120,7 @@ public:
                     case EVENT_POINT_HOME:
                         if (GameObject* pGo = instance->instance->GetGameObject(instance->GetData64(DATA_DOOR)))
                             pGo->SetGoState(GO_STATE_ACTIVE);
-                        me->GetMotionMaster()->MovePoint(1, centerPos[0]);
+                        me->GetMotionMaster()->MovePoint(1, centerPos);
                         break;
                     case EVENT_STONE_SPIN:
                         DoStopAttack();

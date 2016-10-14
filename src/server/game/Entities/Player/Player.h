@@ -3548,7 +3548,6 @@ class Player : public Unit, public GridObject<Player>
          // end movement anticheat
 
         uint32 GetServerTime() const { return m_serverTime; }
-        uint32 GetSequenceIndex() { return m_sequenceIndex; }
         std::unordered_map<uint32, uint32> syncQueue;
         
         VisualEnchantMap m_customVisualEnchant; // custom for custom enchant
@@ -3671,7 +3670,6 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_ChampioningFactionDungeonLevel;
 
         // important part of synchronization server/client
-        uint32 m_sequenceIndex;
         uint32 m_syncTimer;
         uint32 m_clientTime;
         uint32 m_serverTime;

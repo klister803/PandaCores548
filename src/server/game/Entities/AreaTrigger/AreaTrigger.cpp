@@ -586,7 +586,7 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
             if (caster)
             {
                 if (action.action->targetFlags & AT_TARGET_FLAG_CAST_AT_SRC)
-                    caster->CastSpell(GetPositionX(), GetPositionY(), GetPositionZ(), action.action->spellId, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_CASTED_BY_AREATRIGGER));
+                    caster->CastSpell(GetPositionX(), GetPositionY(), GetPositionZH(), action.action->spellId, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_CASTED_BY_AREATRIGGER));
                 else
                     caster->CastSpell(unit, action.action->spellId, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_CASTED_BY_AREATRIGGER));
             }
@@ -626,7 +626,7 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
                 if (action.action->targetFlags & AT_TARGET_FLAG_CAST_AT_SRC)
                 {
                     SpellCastTargets targets;
-                    targets.SetDst(GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
+                    targets.SetDst(GetPositionX(), GetPositionY(), GetPositionZH(), GetOrientation());
 
                     CustomSpellValues values;
                     if (bp0)
@@ -892,7 +892,7 @@ bool AreaTrigger::IsInHeight(Unit* unit, WorldObject const* obj)
     if (!atInfo.Height)
         return true;
 
-    float z_source = unit->GetPositionZ() - obj->GetPositionZ();
+    float z_source = unit->GetPositionZH() - obj->GetPositionZH();
     if(z_source > atInfo.Height)
         return false;
 

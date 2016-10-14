@@ -460,6 +460,11 @@ class Object
 
 struct Position
 {
+    Position(float x = 0, float y = 0, float z = 0, float o = 0, float h = 0)
+        : m_positionX(x), m_positionY(y), m_positionZ(z), m_orientation(NormalizeOrientation(o)), m_positionH(h) { }
+
+    Position(Position const& loc) { Relocate(loc); }
+
     struct PositionXYStreamer
     {
         explicit PositionXYStreamer(Position& pos) : Pos(&pos) { }
@@ -481,43 +486,50 @@ struct Position
     float m_positionX;
     float m_positionY;
     float m_positionZ;
+    float m_positionH;
 // Better to limit access to m_orientation field, but this will be hard to achieve with many scripts using array initialization for this structure
 //private:
     float m_orientation;
 //public:
 
+    void operator += (Position pos) {m_positionX += pos.m_positionX; m_positionY += pos.m_positionY; m_positionZ += pos.m_positionZ; m_positionH += pos.m_positionH; m_orientation += pos.m_orientation; }
+
     void Relocate(float x, float y) { m_positionX = x; m_positionY = y;}
     void Relocate(float x, float y, float z) { m_positionX = x; m_positionY = y; m_positionZ = z; }
-    void Relocate(float x, float y, float z, float orientation) { m_positionX = x; m_positionY = y; m_positionZ = z; SetOrientation(orientation); }
+    void Relocate(float x, float y, float z, float orientation) {  m_positionX = x; m_positionY = y; m_positionZ = z; SetOrientation(orientation); }
+    void Relocate(float x, float y, float z, float orientation, float positionH) { m_positionX = x; m_positionY = y; m_positionZ = z; SetOrientation(orientation); m_positionH = positionH; }
 
-    void Relocate(Position const& pos) { m_positionX = pos.m_positionX; m_positionY = pos.m_positionY; m_positionZ = pos.m_positionZ; SetOrientation(pos.m_orientation); }
-    void Relocate(Position const* pos) { m_positionX = pos->m_positionX; m_positionY = pos->m_positionY; m_positionZ = pos->m_positionZ; SetOrientation(pos->m_orientation); }
-
+    void Relocate(Position const& pos) { m_positionX = pos.m_positionX; m_positionY = pos.m_positionY; m_positionZ = pos.m_positionZ; m_positionH = pos.m_positionH; SetOrientation(pos.m_orientation); }
+    void Relocate(Position const* pos) { m_positionX = pos->m_positionX; m_positionY = pos->m_positionY; m_positionZ = pos->m_positionZ; m_positionH = pos->m_positionH; SetOrientation(pos->m_orientation); }
 
     void RelocateOffset(const Position &offset);
     void SetOrientation(float orientation)
     { m_orientation = NormalizeOrientation(orientation); }
+    void SetPositionH(float positionH) { m_positionH = positionH; }
 
     float GetPositionX() const { return m_positionX; }
     float GetPositionY() const { return m_positionY; }
     float GetPositionZ() const { return m_positionZ; }
+    float GetPositionH() const { return m_positionH; }
     float GetOrientation() const { return m_orientation; }
+    float GetPositionZH() const { return m_positionZ - m_positionH; }
 
     void GetPosition(float &x, float &y) const
         { x = m_positionX; y = m_positionY; }
     void GetPosition(float &x, float &y, float &z) const
-        { x = m_positionX; y = m_positionY; z = m_positionZ; }
+        { x = m_positionX; y = m_positionY; z = GetPositionZH(); }
     void GetPosition(float &x, float &y, float &z, float &o) const
-        { x = m_positionX; y = m_positionY; z = m_positionZ; o = m_orientation; }
+        { x = m_positionX; y = m_positionY; z = GetPositionZH(); o = m_orientation; }
     void GetPosition(Position* pos) const
     {
         if (pos)
-            pos->Relocate(m_positionX, m_positionY, m_positionZ, m_orientation);
+            pos->Relocate(m_positionX, m_positionY, GetPositionZH(), m_orientation);
     }
     void PositionToVector(G3D::Vector3& pos) const
-        { pos.x = m_positionX; pos.y = m_positionY; pos.z = m_positionZ; }
+        { pos.x = m_positionX; pos.y = m_positionY; pos.z = GetPositionZH(); }
     void VectorToPosition(G3D::Vector3 pos)
         { m_positionX = pos.x; m_positionY = pos.y; m_positionZ = pos.z; }
+    G3D::Vector3 AsVector3() const { return G3D::Vector3(m_positionX, m_positionY, GetPositionZH()); }
 
     Position::PositionXYStreamer PositionXYStream() { return PositionXYStreamer(*this); }
     Position::PositionXYZStreamer PositionXYZStream() { return PositionXYZStreamer(*this); }
@@ -534,11 +546,11 @@ struct Position
     float GetExactDist2d(const Position* pos) const
         { return sqrt(GetExactDist2dSq(pos)); }
     float GetExactDistSq(float x, float y, float z) const
-        { float dz = m_positionZ - z; return GetExactDist2dSq(x, y) + dz*dz; }
+        { float dz = GetPositionZH() - z; return GetExactDist2dSq(x, y) + dz*dz; }
     float GetExactDist(float x, float y, float z) const
         { return sqrt(GetExactDistSq(x, y, z)); }
     float GetExactDistSq(const Position* pos) const
-        { float dx = m_positionX - pos->m_positionX; float dy = m_positionY - pos->m_positionY; float dz = m_positionZ - pos->m_positionZ; return dx*dx + dy*dy + dz*dz; }
+        { float dx = m_positionX - pos->m_positionX; float dy = m_positionY - pos->m_positionY; float dz = GetPositionZH() - pos->GetPositionZH(); return dx*dx + dy*dy + dz*dz; }
     float GetExactDist(const Position* pos) const
         { return sqrt(GetExactDistSq(pos)); }
 

@@ -365,8 +365,14 @@ bool Creature::InitEntry(uint32 Entry, uint32 /*team*/, const CreatureData* data
     SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, minfo->bounding_radius);
     SetFloatValue(UNIT_FIELD_COMBATREACH, minfo->combat_reach);
 
+    //Hast default
     SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);
     SetFloatValue(UNIT_MOD_CAST_HASTE, 1.0f);
+    SetFloatValue(UNIT_MOD_HASTE, 1.0f);
+    SetFloatValue(UNIT_MOD_HASTE_REGEN, 1.0f);
+    SetFloatValue(UNIT_FIELD_MOD_RANGED_HASTE, 1.0f);
+    SetFloatValue(UNIT_FIELD_HOVERHEIGHT, cinfo->HoverHeight);
+
 
     SetSpeed(MOVE_WALK,     cinfo->speed_walk);
     SetSpeed(MOVE_RUN,      cinfo->speed_run);
@@ -374,8 +380,6 @@ bool Creature::InitEntry(uint32 Entry, uint32 /*team*/, const CreatureData* data
     SetSpeed(MOVE_FLIGHT,   cinfo->speed_fly);
 
     SetObjectScale(cinfo->scale);
-
-    SetFloatValue(UNIT_FIELD_HOVERHEIGHT, cinfo->HoverHeight);
 
     // checked at loading
     m_defaultMovementType = MovementGeneratorType(cinfo->MovementType);
@@ -892,7 +896,6 @@ bool Creature::Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, 
     if (HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
     {
         z += GetFloatValue(UNIT_FIELD_HOVERHEIGHT);
-
         //! Relocate again with updated Z coord
         Relocate(x, y, z, ang);
     }
@@ -920,14 +923,6 @@ bool Creature::Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, 
 
     if (Entry == VISUAL_WAYPOINT)
         SetVisible(false);
-
-    //Hast default
-    SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);
-    SetFloatValue(UNIT_MOD_CAST_HASTE, 1.0f);
-    SetFloatValue(UNIT_MOD_HASTE, 1.0f);
-    SetFloatValue(UNIT_MOD_HASTE_REGEN, 1.0f);
-    SetFloatValue(UNIT_FIELD_MOD_RANGED_HASTE, 1.0f);
-    SetFloatValue(UNIT_FIELD_HOVERHEIGHT, 1.0f);
 
     m_areaUpdateId = GetMap()->GetAreaId(x, y, z);
     m_zoneUpdateId = GetMap()->GetZoneId(x, y, z);
@@ -1215,7 +1210,7 @@ void Creature::SaveToDB(uint32 mapid, uint32 spawnMask, uint32 phaseMask)
     data.equipmentId = GetEquipmentId();
     data.posX = GetPositionX();
     data.posY = GetPositionY();
-    data.posZ = GetPositionZMinusOffset();
+    data.posZ = GetPositionZH();
     data.orientation = GetOrientation();
     data.spawntimesecs = m_respawnDelay;
     // prevent add data integrity problems
@@ -1254,7 +1249,7 @@ void Creature::SaveToDB(uint32 mapid, uint32 spawnMask, uint32 phaseMask)
     stmt->setInt32(index++,  int32(GetEquipmentId()));
     stmt->setFloat(index++,  GetPositionX());
     stmt->setFloat(index++,  GetPositionY());
-    stmt->setFloat(index++,  GetPositionZ());
+    stmt->setFloat(index++,  GetPositionZH());
     stmt->setFloat(index++,  GetOrientation());
     stmt->setUInt32(index++, m_respawnDelay);
     stmt->setFloat(index++,  m_respawnradius);
@@ -1869,6 +1864,10 @@ void Creature::setDeathState(DeathState s)
 
     if (s == JUST_DIED)
     {
+        // Disable hover after die
+        if (HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
+            SetHover(false);
+
         m_corpseRemoveTime = time(NULL) + m_corpseDelay;
         m_respawnTime = time(NULL) + m_respawnDelay + m_corpseDelay;
 
@@ -1896,7 +1895,7 @@ void Creature::setDeathState(DeathState s)
         if (m_formation && m_formation->getLeader() == this)
             m_formation->FormationReset(true);
 
-        if ((CanFly() || IsFlying()))
+        if (CanFly() || IsFlying() || HasByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_HOVER))
             i_motionMaster.MoveFall();
 
         Unit::setDeathState(CORPSE);
@@ -1917,6 +1916,11 @@ void Creature::setDeathState(DeathState s)
             SetDisableGravity(true);
         if (cinfo->InhabitType & INHABIT_WATER)
             AddUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
+
+        //Enable hover when respawn
+        if (HasByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_HOVER))
+            SetHover(true);
+
         SetUInt32Value(UNIT_NPC_FLAGS, cinfo->npcflag);
         SetUInt32Value(UNIT_NPC_FLAGS2, cinfo->npcflag2);
         ClearUnitState(uint32(UNIT_STATE_ALL_STATE));
@@ -2508,8 +2512,8 @@ bool Creature::LoadCreaturesAddon(bool reload)
         //! Suspected correlation between UNIT_FIELD_BYTES_1, offset 3, value 0x2:
         //! If no inhabittype_fly (if no MovementFlag_DisableGravity flag found in sniffs)
         //! Set MovementFlag_Hover. Otherwise do nothing.
-        if (GetByteValue(UNIT_FIELD_BYTES_1, 3) & UNIT_BYTE1_FLAG_HOVER && !IsLevitating())
-            AddUnitMovementFlag(MOVEMENTFLAG_HOVER);
+        if (HasByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_HOVER) && isAlive())
+            SetHover(true);
     }
 
     if (cainfo->bytes2 != 0)
@@ -3084,30 +3088,31 @@ bool Creature::SetFeatherFall(bool enable, bool packetOnly/* = false*/)
     return true;
 }
 
-bool Creature::SetHover(bool enable, bool packetOnly)
+bool Creature::SetHover(bool enable, bool /*packetOnly*/)
 {
-    if (!packetOnly && !Unit::SetHover(enable))
+    if (!Unit::SetHover(enable))
         return false;
 
-    /*WorldPacket data(SMSG_SET_PLAY_HOVER_ANIM, 100);
-    data.WriteGuidMask<0, 3, 4, 1>(guid);
-    data.WriteBit(true);
-    data.WriteGuidMask<2, 5, 6, 7>(guid);
-    data.WriteGuidBytes<1, 0, 6, 7, 5, 3, 2, 4>(guid);
+    ObjectGuid guid = GetGUID();
+    if (!IsLevitating())
+    {
+        if (enable)
+            m_updateFlag |= UPDATEFLAG_PLAY_HOVER_ANIM;
+        else
+            m_updateFlag &= ~UPDATEFLAG_PLAY_HOVER_ANIM;
 
-    SendMessageToSet(&data, false);*/
-
-    //! Unconfirmed for players:
-    if (enable)
-        SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_HOVER);
-    else
-        RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_HOVER);
+        WorldPacket dataAnim(SMSG_SET_PLAY_HOVER_ANIM, 100);
+        dataAnim.WriteGuidMask<0, 3, 4, 1>(guid);
+        dataAnim.WriteBit(enable);
+        dataAnim.WriteGuidMask<2, 5, 6, 7>(guid);
+        dataAnim.WriteGuidBytes<1, 0, 6, 7, 5, 3, 2, 4>(guid);
+        SendMessageToSet(&dataAnim, false);
+    }
 
     if (!movespline->Initialized())
         return true;
 
     //! Not always a packet is sent
-    ObjectGuid guid = GetGUID();
     if (enable)
     {
         WorldPacket data(SMSG_MOVE_SPLINE_SET_HOVER, 9);

@@ -449,9 +449,6 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         }
 
         ObjectGuid transGuid = self->m_movementInfo.transportGUID;
-        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "BuildMovement GUID %u, Entry %u, t_guid %u, Flags %i, FlagsExtra %i, flags %i, xyz (%f %f %f) Zofset %f, T(%f %f %f)", 
-        //GetGUID(), GetEntry(), self->m_movementInfo.t_guid, movementFlags, movementFlagsExtra, flags, self->GetPositionX(), self->GetPositionY(), self->GetPositionZ(), self->GetPositionZMinusOffset(), self->GetTransOffsetX(), self->GetTransOffsetY(), self->GetTransOffsetZ());
-
         data->WriteGuidMask<4, 1>(guid);
         data->WriteBits(0, 19);                     // movementForcesCount
         data->WriteGuidMask<5>(guid);
@@ -663,7 +660,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             *data << float(self->m_movementInfo.stepUpStartElevation);
         *data << self->GetSpeed(MOVE_RUN_BACK);
         data->WriteGuidBytes<7, 2>(guid);
-        *data << float(self->GetPositionZMinusOffset());
+        *data << float(self->GetPositionZ());
         data->WriteGuidBytes<0>(guid);
     }
 
@@ -672,10 +669,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         WorldObject const* self = static_cast<WorldObject const*>(this);
 
         *data << float(self->GetPositionX());
-        if (Unit const* unit = ToUnit())
-            *data << float(unit->GetPositionZMinusOffset());
-        else
-            *data << float(self->GetPositionZ());
+        *data << float(self->GetPositionZ());
         *data << float(self->GetPositionY());
         *data << float(Position::NormalizeOrientation(self->GetOrientation()));
     }
@@ -1892,7 +1886,7 @@ InstanceScript* WorldObject::GetInstanceScript()
 
 float WorldObject::GetDistanceZ(const WorldObject* obj) const
 {
-    float dz = fabs(GetPositionZ() - obj->GetPositionZ());
+    float dz = fabs(GetPositionZH() - obj->GetPositionZH());
     float sizefactor = GetObjectSize() + obj->GetObjectSize();
     float dist = dz - sizefactor;
     return (dist > 0 ? dist : 0);
@@ -1921,7 +1915,7 @@ bool WorldObject::_IsWithinDist(WorldObject const* obj, float dist2compare, bool
     float distsq = dx*dx + dy*dy;
     if (is3D)
     {
-        float dz = GetPositionZ() - obj->GetPositionZ();
+        float dz = GetPositionZH() - obj->GetPositionZH();
         distsq += dz*dz;
     }
 
@@ -1945,7 +1939,7 @@ bool WorldObject::IsWithinLOS(float ox, float oy, float oz) const
     VMAP::IVMapManager* vMapManager = VMAP::VMapFactory::createOrGetVMapManager();
     return vMapManager->isInLineOfSight(GetMapId(), x, y, z+2.0f, ox, oy, oz+2.0f);*/
     if (IsInWorld())
-        return GetMap()->isInLineOfSight(GetPositionX(), GetPositionY(), GetPositionZ()+2.f, ox, oy, oz+2.f, GetPhaseMask());
+        return GetMap()->isInLineOfSight(GetPositionX(), GetPositionY(), GetPositionZH()+2.f, ox, oy, oz+2.f, GetPhaseMask());
 
     return true;
 }
@@ -1957,7 +1951,7 @@ bool WorldObject::GetDistanceOrder(WorldObject const* obj1, WorldObject const* o
     float distsq1 = dx1*dx1 + dy1*dy1;
     if (is3D)
     {
-        float dz1 = GetPositionZ() - obj1->GetPositionZ();
+        float dz1 = GetPositionZH() - obj1->GetPositionZH();
         distsq1 += dz1*dz1;
     }
 
@@ -1966,7 +1960,7 @@ bool WorldObject::GetDistanceOrder(WorldObject const* obj1, WorldObject const* o
     float distsq2 = dx2*dx2 + dy2*dy2;
     if (is3D)
     {
-        float dz2 = GetPositionZ() - obj2->GetPositionZ();
+        float dz2 = GetPositionZH() - obj2->GetPositionZH();
         distsq2 += dz2*dz2;
     }
 
@@ -1980,7 +1974,7 @@ bool WorldObject::IsInRange(WorldObject const* obj, float minRange, float maxRan
     float distsq = dx*dx + dy*dy;
     if (is3D)
     {
-        float dz = GetPositionZ() - obj->GetPositionZ();
+        float dz = GetPositionZH() - obj->GetPositionZH();
         distsq += dz*dz;
     }
 
@@ -2022,7 +2016,7 @@ bool WorldObject::IsInRange3d(float x, float y, float z, float minRange, float m
 {
     float dx = GetPositionX() - x;
     float dy = GetPositionY() - y;
-    float dz = GetPositionZ() - z;
+    float dz = GetPositionZH() - z;
     float distsq = dx*dx + dy*dy + dz*dz;
 
     float sizefactor = GetObjectSize();
@@ -2222,6 +2216,7 @@ void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
 
 void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
 {
+    float _offset = GetPositionH() < 2.0f ? 2.0f : 0.0f; // For find correct position Z
     switch (GetTypeId())
     {
         case TYPEID_UNIT:
@@ -2240,8 +2235,10 @@ void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
                 bool canSwim = ToCreature()->canSwim();
                 float ground_z = z;
                 float max_z = canSwim
-                    ? GetBaseMap()->GetWaterOrGroundLevel(x, y, z, &ground_z, !ToUnit()->HasAuraType(SPELL_AURA_WATER_WALK))
-                    : ((ground_z = GetBaseMap()->GetHeight(GetPhaseMask(), x, y, z, true)));
+                    ? GetBaseMap()->GetWaterOrGroundLevel(x, y, z + _offset, &ground_z, !ToUnit()->HasAuraType(SPELL_AURA_WATER_WALK))
+                    : ((ground_z = GetBaseMap()->GetHeight(GetPhaseMask(), x, y, z + _offset, true)));
+                max_z += GetPositionH();
+                ground_z += GetPositionH();
                 if (max_z > INVALID_HEIGHT)
                 {
                     if (z > max_z)
@@ -2252,7 +2249,8 @@ void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
             }
             else
             {
-                float ground_z = GetBaseMap()->GetHeight(GetPhaseMask(), x, y, z, true);
+                float ground_z = GetBaseMap()->GetHeight(GetPhaseMask(), x, y, z + _offset, true);
+                ground_z += GetPositionH();
                 if (z < ground_z)
                     z = ground_z;
             }
@@ -2264,7 +2262,9 @@ void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
             if (!ToPlayer()->CanFly())
             {
                 float ground_z = z;
-                float max_z = GetBaseMap()->GetWaterOrGroundLevel(x, y, z, &ground_z, !ToUnit()->HasAuraType(SPELL_AURA_WATER_WALK));
+                float max_z = GetBaseMap()->GetWaterOrGroundLevel(x, y, z + _offset, &ground_z, !ToUnit()->HasAuraType(SPELL_AURA_WATER_WALK));
+                max_z += GetPositionH();
+                ground_z += GetPositionH();
                 if (max_z > INVALID_HEIGHT)
                 {
                     if (z > max_z)
@@ -2275,7 +2275,8 @@ void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
             }
             else
             {
-                float ground_z = GetBaseMap()->GetHeight(GetPhaseMask(), x, y, z, true);
+                float ground_z = GetBaseMap()->GetHeight(GetPhaseMask(), x, y, z + _offset, true);
+                ground_z += GetPositionH();
                 if (z < ground_z)
                     z = ground_z;
             }
@@ -2283,7 +2284,8 @@ void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
         }
         default:
         {
-            float ground_z = GetBaseMap()->GetHeight(GetPhaseMask(), x, y, z, true);
+            float ground_z = GetBaseMap()->GetHeight(GetPhaseMask(), x, y, z + _offset, true);
+            ground_z += GetPositionH();
             if (ground_z > INVALID_HEIGHT)
                 z = ground_z;
             break;
@@ -3436,9 +3438,12 @@ void WorldObject::GetNearPoint2D(Position &pos, float distance2d, float angle) c
 void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, float &z, float searcher_size, float distance2d, float absAngle) const
 {
     GetNearPoint2D(x, y, distance2d+searcher_size, absAngle);
-    z = GetPositionZ();
-    if (!searcher || !searcher->ToCreature() || !searcher->GetMap()->Instanceable())
+    z = GetPositionZH() + (searcher ? searcher->GetPositionH() : 0.0f);
+
+    if (!searcher)
         UpdateAllowedPositionZ(x, y, z);
+    else if (!searcher->ToCreature() || !searcher->GetMap()->Instanceable())
+        searcher->UpdateAllowedPositionZ(x, y, z);
 }
 
 void WorldObject::MovePosition(Position &pos, float dist, float angle)

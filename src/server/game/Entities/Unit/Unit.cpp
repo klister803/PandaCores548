@@ -313,6 +313,8 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
 
     for (uint8 i = 0; i < MAX_COMBAT_RATING; i++)
         m_baseRatingValue[i] = 0;
+
+    m_sequenceIndex = 0;
 }
 
 ////////////////////////////////////////////////////////////
@@ -528,7 +530,7 @@ bool Unit::IsWithinCombatRange(const Unit* obj, float dist2compare) const
 
     float dx = GetPositionX() - obj->GetPositionX();
     float dy = GetPositionY() - obj->GetPositionY();
-    float dz = GetPositionZ() - obj->GetPositionZ();
+    float dz = GetPositionZH() - obj->GetPositionZH();
     float distsq = dx * dx + dy * dy + dz * dz;
 
     float sizefactor = GetCombatReach() + obj->GetCombatReach();
@@ -544,7 +546,7 @@ bool Unit::IsWithinMeleeRange(const Unit* obj, float dist) const
 
     float dx = GetPositionX() - obj->GetPositionX();
     float dy = GetPositionY() - obj->GetPositionY();
-    float dz = GetPositionZ() - obj->GetPositionZ();
+    float dz = GetPositionZH() - obj->GetPositionZH();
     float distsq = dx*dx + dy*dy + dz*dz;
 
     float sizefactor = GetMeleeReach() + obj->GetMeleeReach();
@@ -17323,6 +17325,22 @@ void Unit::CleanupsBeforeDelete(bool finalCleanup)
             GetTransport()->RemovePassenger(thisCreature);
 }
 
+Unit* Unit::GetMover() const
+ {
+     if (Player const* player = ToPlayer())
+         return player->m_mover;
+
+     return nullptr;
+ }
+ 
+ Player* Unit::GetPlayerMover() const
+ {
+     if (Unit* mover = GetMover())
+         return mover->ToPlayer();
+
+     return nullptr;
+ }
+
 void Unit::UpdateCharmAI()
 {
     if (GetTypeId() == TYPEID_PLAYER)
@@ -23557,7 +23575,7 @@ void Unit::UpdateOrientation(float orientation)
 //! Only server-side height update, does not broadcast to client
 void Unit::UpdateHeight(float newZ)
 {
-    Relocate(GetPositionX(), GetPositionY(), newZ);
+    SetPositionH(newZ);
     if (IsVehicle())
         GetVehicleKit()->RelocatePassengers();
 }
@@ -23947,7 +23965,7 @@ void Unit::SetInFront(Unit const* target)
 void Unit::SetFacingTo(float ori)
 {
     Movement::MoveSplineInit init(*this);
-    init.MoveTo(GetPositionX(), GetPositionY(), GetPositionZMinusOffset());
+    init.MoveTo(GetPositionX(), GetPositionY(), GetPositionZ());
     init.SetFacing(ori);
     init.Launch();
 }
@@ -23955,7 +23973,7 @@ void Unit::SetFacingTo(float ori)
 void Unit::SetFacingTo(Unit const* target)
 {
     Movement::MoveSplineInit init(*this);
-    init.MoveTo(GetPositionX(), GetPositionY(), GetPositionZMinusOffset());
+    init.MoveTo(GetPositionX(), GetPositionY(), GetPositionZ());
     init.SetFacing(target);
     init.Launch();
 }
@@ -24067,27 +24085,20 @@ bool Unit::SetHover(bool enable, bool packetOnly)
         if (enable == HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
             return false;
 
-        if (GetTypeId() == TYPEID_PLAYER)
-            ToPlayer()->SendMovementSetHover(enable);
-
         if (enable)
         {
-            //! No need to check height on ascent
             AddUnitMovementFlag(MOVEMENTFLAG_HOVER);
-            if (float hh = GetFloatValue(UNIT_FIELD_HOVERHEIGHT))
-                UpdateHeight(GetPositionZ() + hh);
+            UpdateHeight(GetFloatValue(UNIT_FIELD_HOVERHEIGHT));
         }
         else
         {
             RemoveUnitMovementFlag(MOVEMENTFLAG_HOVER);
-            if (float hh = GetFloatValue(UNIT_FIELD_HOVERHEIGHT))
-            {
-                float newZ = GetPositionZ() - hh;
-                UpdateAllowedPositionZ(GetPositionX(), GetPositionY(), newZ);
-                UpdateHeight(newZ);
-            }
+            UpdateHeight(0.0f);
         }
     }
+
+    if (Player* player = ToPlayer())
+        player->SendMovementSetHover(enable);
 
     return true;
 }
@@ -24220,7 +24231,7 @@ void Unit::SendTeleportPacket(Position &destPos, uint32 sequenceIndex)
     data.WriteGuidBytes<4, 3, 2>(guid);
     data << float(destPos.GetPositionY());
     data << float(NormalizeOrientation(destPos.GetOrientation()));
-    data << float(destPos.GetPositionZ());//oldPos.GetPositionZMinusOffset()
+    data << float(destPos.GetPositionZ());
 
     SendMessageToSet(&data, true);
 }

@@ -471,6 +471,7 @@ public:
                     DoCast(me, SPELL_VORTEX_3, true);
                     break;
                 case ACTION_LIFT_IN_AIR:
+                {
                     Position pos;
                     me->GetPosition(&pos);
                     if (_phase == PHASE_ONE)
@@ -484,6 +485,7 @@ public:
                         me->GetMotionMaster()->MoveTakeoff(POINT_PHASE_ONE_TO_TWO_TRANSITION, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
                     }
                     break;
+                }
                 case ACTION_HANDLE_P_THREE_INTRO:
                     events.CancelEventGroup(0);
                     events.CancelEventGroup(1);

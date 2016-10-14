@@ -226,7 +226,7 @@ public:
                     case EVENT_POINT_HOME:
                         if (GameObject* pGo = instance->instance->GetGameObject(instance->GetData64(DATA_DOOR)))
                             pGo->SetGoState(GO_STATE_ACTIVE);
-                        me->GetMotionMaster()->MovePoint(1, centerPos[0]);
+                        me->GetMotionMaster()->MovePoint(1, centerPos);
                         break;
                     case EVENT_THROW:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30.0f, true))
@@ -347,11 +347,11 @@ public:
                     case EVENT_POINT_HOME:
                         if (GameObject* pGo = instance->instance->GetGameObject(instance->GetData64(DATA_DOOR)))
                             pGo->SetGoState(GO_STATE_ACTIVE);
-                        me->GetMotionMaster()->MovePoint(1, centerPos[0]);
+                        me->GetMotionMaster()->MovePoint(1, centerPos);
                         break;
                     case EVENT_NIMBUS:
                         DoStopAttack();
-                        me->GetMotionMaster()->MovePoint(2, centerPos[0]);
+                        me->GetMotionMaster()->MovePoint(2, centerPos);
                         events.ScheduleEvent(EVENT_NIMBUS, 67000);
                         break;
                     case EVENT_POINT_1:
@@ -368,7 +368,7 @@ public:
                         me->GetMotionMaster()->MovePoint(6, CirclePos[3]);
                         break;
                     case EVENT_POINT_5:
-                        me->GetMotionMaster()->MovePoint(7, centerPos[0]);
+                        me->GetMotionMaster()->MovePoint(7, centerPos);
                         break;
                     case EVENT_FLYING_KICK:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
@@ -473,7 +473,7 @@ public:
                     case EVENT_POINT_HOME:
                         if (GameObject* pGo = instance->instance->GetGameObject(instance->GetData64(DATA_DOOR)))
                             pGo->SetGoState(GO_STATE_ACTIVE);
-                        me->GetMotionMaster()->MovePoint(1, centerPos[0]);
+                        me->GetMotionMaster()->MovePoint(1, centerPos);
                         break;
                     case EVENT_CRASHING_SLASH:
                         if (Unit* target = me->getVictim())
@@ -483,7 +483,7 @@ public:
                     case EVENT_WHIRLPOOL:
                         Talk(SAY_WHIRLPOOL);
                         DoStopAttack();
-                        me->GetMotionMaster()->MovePoint(2, centerPos[0]);
+                        me->GetMotionMaster()->MovePoint(2, centerPos);
                         events.ScheduleEvent(EVENT_WHIRLPOOL, 80000);
                         break;
                 }
