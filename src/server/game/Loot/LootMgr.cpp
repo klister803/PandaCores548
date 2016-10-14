@@ -1540,6 +1540,9 @@ void LootTemplate::LootGroup::Process(Loot& loot) const
                     if(loot.itemLevel && loot.itemLevel != _proto->ItemLevel)
                         specFind = false;
 
+                    if(!loot.GetLootOwner()->CanGetItemForLoot(_proto))
+                        specFind = false;
+
                     if(!specFind)
                         duplicate = true;
                 }
@@ -1703,7 +1706,7 @@ bool LootTemplate::LootGroup::ProcessPersonalInst(Loot& loot) const
 
             if (ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(item->itemid))
             {
-                if(!(_proto->AllowableClass & loot.GetLootOwner()->getClassMask()) || !(_proto->AllowableRace & loot.GetLootOwner()->getRaceMask()))
+                if(!loot.GetLootOwner()->CanGetItemForLoot(_proto))
                 {
                     EqualPossibleDrops.erase(itr);
                     continue;
@@ -1888,6 +1891,8 @@ void LootTemplate::Process(Loot& loot, bool rate, uint8 groupId) const
                             continue;
                     }
                 if (_item != loot.items.end())
+                    continue;
+                if(!lootOwner->CanGetItemForLoot(_proto))
                     continue;
                 if(_proto->ItemSpecExist && loot.objType == 4)
                 {

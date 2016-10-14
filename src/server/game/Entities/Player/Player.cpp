@@ -13579,6 +13579,74 @@ InventoryResult Player::CanUseItem(ItemTemplate const* proto) const
     return EQUIP_ERR_ITEM_NOT_FOUND;
 }
 
+bool Player::CanGetItemForLoot(ItemTemplate const* proto) const
+{
+    if (!proto)
+        return false;
+
+    const static uint32 item_weapon_skills[MAX_ITEM_SUBCLASS_WEAPON] =
+    {
+        SKILL_AXES,     SKILL_2H_AXES,  SKILL_BOWS,          SKILL_GUNS,            SKILL_MACES,
+        SKILL_2H_MACES, SKILL_POLEARMS, SKILL_SWORDS,        SKILL_2H_SWORDS,       0,
+        SKILL_STAVES,   0,              0,                   SKILL_FIST_WEAPONS,    0,
+        SKILL_DAGGERS,  SKILL_THROWN,   SKILL_ASSASSINATION, SKILL_CROSSBOWS,       SKILL_WANDS,
+        SKILL_FISHING
+    }; //Copy from function Item::GetSkill()
+
+    if ((proto->AllowableClass & getClassMask()) == 0 || (proto->AllowableRace & getRaceMask()) == 0)
+        return false;
+
+    if (proto->RequiredSpell != 0 && !HasSpell(proto->RequiredSpell))
+        return false;
+
+    if (proto->RequiredSkill != 0)
+    {
+        if (!GetSkillValue(proto->RequiredSkill))
+            return false;
+        else if (GetSkillValue(proto->RequiredSkill) < proto->RequiredSkillRank)
+            return false;
+    }
+
+    if (proto->Class == ITEM_CLASS_WEAPON && GetSkillValue(item_weapon_skills[proto->SubClass]) == 0)
+        return false;
+
+    uint8 _class = getClass();
+
+    if (proto->Class == ITEM_CLASS_ARMOR && proto->SubClass > ITEM_SUBCLASS_ARMOR_MISCELLANEOUS && proto->SubClass < ITEM_SUBCLASS_ARMOR_COSMETIC && proto->InventoryType != INVTYPE_CLOAK)
+    {
+        if (_class == CLASS_WARRIOR || _class == CLASS_PALADIN || _class == CLASS_DEATH_KNIGHT)
+        {
+            if (getLevel() < 40)
+            {
+                if (proto->SubClass != ITEM_SUBCLASS_ARMOR_MAIL)
+                    return false;
+            }
+            else if (proto->SubClass != ITEM_SUBCLASS_ARMOR_PLATE)
+                return false;
+        }
+        else if (_class == CLASS_HUNTER || _class == CLASS_SHAMAN)
+        {
+            if (getLevel() < 40)
+            {
+                if (proto->SubClass != ITEM_SUBCLASS_ARMOR_LEATHER)
+                    return false;
+            }
+            else if (proto->SubClass != ITEM_SUBCLASS_ARMOR_MAIL)
+                return false;
+        }
+
+        if (_class == CLASS_ROGUE || _class == CLASS_DRUID)
+            if (proto->SubClass != ITEM_SUBCLASS_ARMOR_LEATHER)
+                return false;
+
+        if (_class == CLASS_MAGE || _class == CLASS_PRIEST || _class == CLASS_WARLOCK)
+            if (proto->SubClass != ITEM_SUBCLASS_ARMOR_CLOTH)
+                return false;
+    }
+
+    return true;
+}
+
 InventoryResult Player::CanRollForItemInLFG(ItemTemplate const* proto, WorldObject const* lootedObject) const
 {
     if (!GetGroup() || !GetGroup()->isLFGGroup())
