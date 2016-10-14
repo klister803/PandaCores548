@@ -30,6 +30,9 @@
 #include "LockedMap.h"
 #include "LockedQueue.h"
 
+static uint16 const MAX_ACHIEVEMENT = 9000;
+static uint32 const MAX_CRITERIA_TREE = 36000;
+
 struct CriteriaTreeInfo
 {
     uint32 criteriaTreeID = 0;
@@ -330,7 +333,6 @@ class AchievementMgr
         void ClearProgressMap(CriteriaProgressMap* progressMap);
 
         const CompletedAchievementMap &GetCompletedAchievementsList() const { return m_completedAchievements; }
-        ACE_Thread_Mutex &GetCompletedAchievementLock() { return m_CompletedAchievementsLock; }
 
     private:
         enum ProgressType { PROGRESS_SET, PROGRESS_ACCUMULATE, PROGRESS_HIGHEST };
@@ -356,10 +358,13 @@ class AchievementMgr
         AchievementProgressMap m_achievementProgress;
         AchievementTreeProgressMap m_achievementTreeProgress;
         CompletedAchievementMap m_completedAchievements;
-        mutable ACE_Thread_Mutex m_CompletedAchievementsLock;
         typedef ACE_Based::LockedMap<uint32, uint32> TimedAchievementMap;
         TimedAchievementMap m_timedAchievements;      // Criteria id/time left in MS
         uint32 _achievementPoints;
+
+        CriteriaProgressMap* m_achievementProgressArr[MAX_ACHIEVEMENT];
+        CriteriaProgressTree* m_achievementTreeProgressArr[MAX_CRITERIA_TREE];
+        CompletedAchievementData* m_completedAchievementsArr[MAX_ACHIEVEMENT];
 };
 
 class AchievementGlobalMgr

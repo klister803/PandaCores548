@@ -411,6 +411,14 @@ bool AchievementCriteriaDataSet::Meets(Player const* source, Unit const* target,
 template<class T>
 AchievementMgr<T>::AchievementMgr(T* owner): _owner(owner), _achievementPoints(0) 
 {
+    for (uint32 i = 0; i < MAX_ACHIEVEMENT; ++i)
+    {
+        m_achievementProgressArr[i] = NULL;
+        m_completedAchievementsArr[i] = NULL;
+    }
+
+    for (uint32 i = 0; i < MAX_CRITERIA_TREE; ++i)
+        m_achievementTreeProgressArr[i] = NULL;
 }
 
 template<class T>
@@ -595,7 +603,6 @@ void AchievementMgr<T>::SaveToDB(SQLTransaction& /*trans*/)
 template<>
 void AchievementMgr<Player>::SaveToDB(SQLTransaction& trans)
 {
-    m_CompletedAchievementsLock.acquire();
     if (!m_completedAchievements.empty())
     {
         bool need_execute = false;
@@ -641,7 +648,6 @@ void AchievementMgr<Player>::SaveToDB(SQLTransaction& trans)
         if (need_execute_acc)
             trans->Append(ssAccIns.str().c_str());
     }
-    m_CompletedAchievementsLock.release();
 
     if (m_achievementProgress.empty())
         return;
@@ -758,8 +764,7 @@ void AchievementMgr<Guild>::SaveToDB(SQLTransaction& trans)
 {
     PreparedStatement* stmt;
     std::ostringstream guidstr;
-    
-    m_CompletedAchievementsLock.acquire();
+
     for (CompletedAchievementMap::iterator itr = m_completedAchievements.begin(); itr != m_completedAchievements.end(); ++itr)
     {
         if (!itr->second.changed)
@@ -778,7 +783,6 @@ void AchievementMgr<Guild>::SaveToDB(SQLTransaction& trans)
 
         guidstr.str("");
     }
-    m_CompletedAchievementsLock.release();
 
     for (AchievementProgressMap::iterator itr = m_achievementProgress.begin(); itr != m_achievementProgress.end(); ++itr)
     {
@@ -842,13 +846,12 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
             if (!achievement)
                 continue;
 
-            m_CompletedAchievementsLock.acquire();
             CompletedAchievementData& ca = m_completedAchievements[achievementid];
             ca.date = time_t(fields[2].GetUInt32());
             ca.changed = false;
             ca.first_guid = first_guid;
             ca.isAccountAchievement = achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT;
-            m_CompletedAchievementsLock.release();
+            m_completedAchievementsArr[achievementid] = &ca;
 
             _achievementPoints += achievement->points;
 
@@ -880,20 +883,21 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
                 continue;
 
             // not added on account?
-            if (m_completedAchievements.find(achievementid) == m_completedAchievements.end())
+            if (!m_completedAchievementsArr[achievementid])
             {
                 CompletedAchievementData& ca = m_completedAchievements[achievementid];
                 ca.changed = true;
                 ca.first_guid = GetOwner()->GetGUIDLow();
                 ca.date = time_t(fields[1].GetUInt32());
                 _achievementPoints += achievement->points;
+                m_completedAchievementsArr[achievementid] = &ca;
             }
             else
             {
-                CompletedAchievementData& ca = m_completedAchievements[achievementid];
-                ca.changed = false;
-                ca.first_guid = GetOwner()->GetGUIDLow();
-                ca.date = time_t(fields[1].GetUInt32());
+                CompletedAchievementData* ca = m_completedAchievementsArr[achievementid];
+                ca->changed = false;
+                ca->first_guid = GetOwner()->GetGUIDLow();
+                ca->date = time_t(fields[1].GetUInt32());
             }
 
             // title achievement rewards are retroactive
@@ -1079,6 +1083,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
         CriteriaProgressTree& parentTreeProgress = m_achievementTreeProgress[achievement->criteriaTree];
         CriteriaTreeEntry const* parentTree = sCriteriaTreeStore.LookupEntry(achievement->criteriaTree);
         GenerateAchievementProgressMap(achievement, &iter->second, parentTree, &parentTreeProgress);
+        m_achievementTreeProgressArr[achievement->criteriaTree] = &parentTreeProgress;
     }
 }
 
@@ -1105,6 +1110,7 @@ void AchievementMgr<Guild>::LoadFromDB(PreparedQueryResult achievementResult, Pr
 
             ca.changed = false;
             _achievementPoints += achievement->points;
+            m_completedAchievementsArr[achievementid] = &ca;
 
         } while (achievementResult->NextRow());
     }
@@ -1192,6 +1198,7 @@ void AchievementMgr<Guild>::LoadFromDB(PreparedQueryResult achievementResult, Pr
         CriteriaProgressTree& parentTreeProgress = m_achievementTreeProgress[achievement->criteriaTree];
         CriteriaTreeEntry const* parentTree = sCriteriaTreeStore.LookupEntry(achievement->criteriaTree);
         GenerateAchievementProgressMap(achievement, &iter->second, parentTree, &parentTreeProgress);
+        m_achievementTreeProgressArr[achievement->criteriaTree] = &parentTreeProgress;
     }
 }
 
@@ -1215,6 +1222,7 @@ void AchievementMgr<T>::GenerateAchievementProgressMap(AchievementEntry const* a
         {
             //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "GenerateAchievementProgressMap achievement %i parentTreeID %u ChildrenTreeId %u", achievement->ID, parentTree->ID, criteriaTree->ID);
             CriteriaProgressTree &treeProgress = m_achievementTreeProgress[criteriaTree->ID];
+            m_achievementTreeProgressArr[criteriaTree->ID] = &treeProgress;
             parentTreeProgress->ChildrenTree.push_back(&treeProgress);
             GenerateAchievementProgressMap(achievement, progressMap, criteriaTree, &treeProgress);
         }
@@ -1258,7 +1266,6 @@ void AchievementMgr<ScenarioProgress>::Reset()
 template<>
 void AchievementMgr<Player>::Reset()
 {
-    m_CompletedAchievementsLock.acquire();
     for (CompletedAchievementMap::const_iterator iter = m_completedAchievements.begin(); iter != m_completedAchievements.end(); ++iter)
     {
         WorldPacket data(SMSG_ACHIEVEMENT_DELETED, 4 + 4);
@@ -1268,7 +1275,6 @@ void AchievementMgr<Player>::Reset()
     }
 
     m_completedAchievements.clear();
-    m_CompletedAchievementsLock.release();
 
     _achievementPoints = 0;
     DeleteFromDB(GetOwner()->GetGUIDLow());
@@ -1555,13 +1561,25 @@ void AchievementMgr<Guild>::SendCriteriaUpdate(CriteriaEntry const* entry, Crite
 template<class T>
 CriteriaProgressMap *AchievementMgr<T>::GetCriteriaProgressMap(uint32 achievementId)
 {
-    return &m_achievementProgress[achievementId];
+    CriteriaProgressMap* progress = m_achievementProgressArr[achievementId];
+    if (progress)
+        return progress;
+
+    progress = &m_achievementProgress[achievementId];
+    m_achievementProgressArr[achievementId] = progress;
+    return progress;
 }
 
 template<class T>
 CriteriaProgressTree *AchievementMgr<T>::GetCriteriaTreeProgressMap(uint32 criteriaTreeId)
 {
-    return &m_achievementTreeProgress[criteriaTreeId];
+    CriteriaProgressTree* progressTree = m_achievementTreeProgressArr[criteriaTreeId];
+    if (progressTree)
+        return progressTree;
+
+    progressTree = &m_achievementTreeProgress[criteriaTreeId];
+    m_achievementTreeProgressArr[criteriaTreeId] = progressTree;
+    return progressTree;
 }
 
 /**
@@ -1652,10 +1670,8 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
         CriteriaProgressMap* progressMap = nullptr;
         CriteriaTreeProgress* progress = nullptr;
 
-        m_CompletedAchievementsLock.acquire();
         progressMap = GetCriteriaProgressMap(achievement ? achievement->ID : 0);
         progress = GetCriteriaProgress(criteriaTree->ID, achievement ? achievement->ID : 0, progressMap);
-        m_CompletedAchievementsLock.release();
 
         if (!CanUpdateCriteria(criteriaTree, criteria, achievement, miscValue1, miscValue2, miscValue3, unit, referencePlayer, progressMap, progress))
             continue;
@@ -2843,6 +2859,7 @@ bool AchievementMgr<T>::SetCriteriaProgress(AchievementEntry const* achievement,
             CriteriaProgressTree& parentTreeProgress = m_achievementTreeProgress[achievement->criteriaTree];
             CriteriaTreeEntry const* parentTree = sCriteriaTreeStore.LookupEntry(achievement->criteriaTree);
             GenerateAchievementProgressMap(achievement, progressMap, parentTree, &parentTreeProgress);
+            m_achievementTreeProgressArr[achievement->criteriaTree] = &parentTreeProgress;
         }
     }
     else
@@ -3009,12 +3026,11 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
     if (!loginCheck && !GetOwner()->GetSession()->PlayerLoading())
         SendAchievementEarned(achievement);
 
-    m_CompletedAchievementsLock.acquire();
     CompletedAchievementData& ca = m_completedAchievements[achievement->ID];
     ca.date = time(NULL);
     ca.first_guid = GetOwner()->GetGUIDLow();
     ca.changed = true;
-    m_CompletedAchievementsLock.release();
+    m_completedAchievementsArr[achievement->ID] = &ca;
 
     if (!progressMap)
         progressMap = GetCriteriaProgressMap(achievement->ID);
@@ -3034,7 +3050,7 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
     sAchievementMgr->AchievementScriptLoaders(achievement, GetOwner());
 
     if (sWorld->getBoolConfig(CONFIG_CUSTOM_X20))
-      {
+    {
        if (GetOwner()->getLevel() > 1 && GetOwner()->getLevel() != 55) // on 1 level accounts achievment
        {
           QueryResult result = CharacterDatabase.PQuery("SELECT * FROM account_achievement WHERE account = '%u' and achievement = '%u' ", GetOwner()->GetSession()->GetAccountId(), achievement->ID);
@@ -3074,7 +3090,7 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
                 CharacterDatabase.PExecute("INSERT INTO `custom_account_checker` (`type`, `count`, `account`) VALUES ('4', '%u', '%u');", achievement->ID, GetOwner()->GetSession()->GetAccountId()); 
              }
         }
-       }
+    }
     // reward items and titles if any
     AchievementReward const* reward = sAchievementMgr->GetAchievementReward(achievement);
     // no rewards
@@ -3161,6 +3177,7 @@ void AchievementMgr<Guild>::CompletedAchievement(AchievementEntry const* achieve
     CompletedAchievementData& ca = m_completedAchievements[achievement->ID];
     ca.date = time(NULL);
     ca.changed = true;
+    m_completedAchievementsArr[achievement->ID] = &ca;
     if (!progressMap)
         progressMap = GetCriteriaProgressMap(achievement->ID);
 
@@ -3246,7 +3263,6 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
         }
     }
 
-    m_CompletedAchievementsLock.acquire();
     for (CompletedAchievementMap::const_iterator itr = m_completedAchievements.begin(); itr != m_completedAchievements.end(); ++itr)
     {
         if (!isVisible(*itr))
@@ -3273,7 +3289,6 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
         data << uint32(realmID);
         data.WriteGuidBytes<7, 1>(firstAccountGuid);
     }
-    m_CompletedAchievementsLock.release();
 
     for (AchievementProgressMap::const_iterator iter = m_achievementProgress.begin(); iter != m_achievementProgress.end(); ++iter)
     {
@@ -3628,35 +3643,30 @@ void AchievementMgr<Guild>::SendAchievementInfo(Player* receiver, uint32 achieve
 template<class T>
 bool AchievementMgr<T>::HasAchieved(uint32 achievementId, uint64 guid /*= 0*/) const
 {
-    CompletedAchievementMap::const_iterator itr = m_completedAchievements.find(achievementId);
-
-    if (itr == m_completedAchievements.end())
+    CompletedAchievementData* ca = m_completedAchievementsArr[achievementId];
+    if (!ca)
         return false;
 
-    if ((*itr).second.isAccountAchievement)
+    if (ca->isAccountAchievement)
         return true;
 
-    return GetCriteriaSort() == PLAYER_CRITERIA ? (*itr).second.first_guid == guid : true;
+    return GetCriteriaSort() == PLAYER_CRITERIA ? ca->first_guid == guid : true;
 }
 
 template<class T>
 bool AchievementMgr<T>::HasAccountAchieved(uint32 achievementId) const
 {
-    if (m_completedAchievements.empty())
-        return false;
-
-    return m_completedAchievements.find(achievementId) != m_completedAchievements.end();
+    return m_completedAchievementsArr[achievementId] != NULL;
 }
 
 template<class T>
 uint64 AchievementMgr<T>::GetFirstAchievedCharacterOnAccount(uint32 achievementId) const
 {
-    CompletedAchievementMap::const_iterator itr = m_completedAchievements.find(achievementId);
-
-    if (itr == m_completedAchievements.end())
+    CompletedAchievementData* ca = m_completedAchievementsArr[achievementId];
+    if (!ca)
         return 0LL;
 
-    return (*itr).second.first_guid;
+    return ca->first_guid;
 }
 
 template<class T>
@@ -3847,7 +3857,7 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
         case ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_WIN:
             break;
         case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ACHIEVEMENT:
-            if (m_completedAchievements.find(criteria->complete_achievement.linkedAchievement) == m_completedAchievements.end())
+            if (m_completedAchievementsArr[criteria->complete_achievement.linkedAchievement] == NULL)
                 return false;
             break;
         case ACHIEVEMENT_CRITERIA_TYPE_WIN_BG:
