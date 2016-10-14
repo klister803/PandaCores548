@@ -1036,6 +1036,7 @@ enum Opcodes
     SMSG_SET_PCT_SPELL_MODIFIER                       = 0x0061, // 5.4.1 17538
     SMSG_SET_PET_SPECIALIZATION                       = 0x1115, // 5.4.1 17538
     SMSG_SET_PHASE_SHIFT                              = 0x0426, // 5.4.1 17538
+    SMSG_SET_PLAY_HOVER_ANIM                          = 0x04B4, // 5.4.1 17538
     SMSG_SET_PLAYER_DECLINED_NAMES_RESULT             = 0x0085, // 5.4.1 17538
     SMSG_SET_PROFICIENCY                              = 0x05B6, // 5.4.1 17538
     SMSG_SET_TIME_ZONE_INFORMATION                    = 0x14AF, // 5.4.1 17538 (JamList) (NYI)
@@ -1369,7 +1370,6 @@ enum Opcodes
     SMSG_SERVER_INFO_RESPONSE                         = 0xA5C,  // 5.0.5 16048
     SMSG_SERVER_PERF                                  = 0xE8D,  // 5.0.5 16048
     SMSG_SET_FACTION_ATWAR                            = 0xDD2,  // 5.0.5 16048
-    SMSG_SET_PLAY_HOVER_ANIM                          = 0xE84,  // 5.0.5 16048
     SMSG_SET_PROJECTILE_POSITION                      = 0x8BC,  // 5.0.5 16048
     SMSG_SHOW_RATINGS                                 = 0xB99,  // 5.0.5 16048
     SMSG_SOR_START_EXPERIENCE_INCOMPLETE              = 0xAB4,  // 5.0.5 16048
