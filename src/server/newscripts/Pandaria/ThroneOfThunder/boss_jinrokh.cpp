@@ -151,7 +151,7 @@ public:
             _EnterCombat();
             events.ScheduleEvent(EVENT_STATIC_BURST, 12000);
             events.ScheduleEvent(EVENT_LIGHTNING_BALL, 25000);
-            events.ScheduleEvent(EVENT_THUNDERING_THROW, 30000);
+            //events.ScheduleEvent(EVENT_THUNDERING_THROW, 30000);
             if (me->GetMap()->IsHeroic())
                 berserk = 360000;
         }
