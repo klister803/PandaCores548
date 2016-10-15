@@ -453,7 +453,13 @@ void ObjectUpdater::Visit(GridRefManager<T> &m)
     for (typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
         if (iter->getSource()->IsInWorld())
+        {
+            uint32 _s = getMSTime();
             iter->getSource()->Update(i_timeDiff);
+            uint32 _ms = GetMSTimeDiffToNow(_s);
+            if (_ms > 50)
+                sLog->outDiff("ObjectUpdater::Visit: type - %u, e:%u(g:%u). Diff - %ums.", iter->getSource()->GetTypeId(), iter->getSource()->GetEntry(), iter->getSource()->GetGUIDLow(), _ms);
+        }
     }
 }
 

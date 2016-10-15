@@ -116,7 +116,13 @@ namespace Trinity
         template<class T> void updateObjects(GridRefManager<T> &m)
         {
             for (typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
+            {
+                uint32 _s = getMSTime();
                 iter->getSource()->Update(i_timeDiff);
+                uint32 _ms = GetMSTimeDiffToNow(_s);
+                if (_ms > 50)
+                    sLog->outDiff("updateObjects: type - %u, e:%u(g:%u). Diff - %ums.", iter->getSource()->GetTypeId(), iter->getSource()->GetEntry(), iter->getSource()->GetGUIDLow(), _ms);
+            }
         }
 
         void Visit(PlayerMapType &m) { updateObjects<Player>(m); }
