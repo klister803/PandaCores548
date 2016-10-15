@@ -4901,6 +4901,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->TargetB = 0;
                     break;
                 //Horridon
+                case 136480: //Chain Lightning
+                    spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(153);
+                    break;
                 case 136653: //Rending Charge
                     spellInfo->Effects[0]->TriggerSpell = 0;
                     break;
@@ -4954,8 +4957,12 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_2]->TargetA = TARGET_UNIT_TARGET_ENEMY;
                     break;
                 }
+                case 135103: //Drain the weak
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                            eff->TriggerSpell = 0;
+                    break;
                 case 135101: //Drain the weak tr ef dmg
-                    spellInfo->Effects[EFFECT_0]->TargetA = TARGET_UNIT_TARGET_ENEMY;
                     spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(2);
                     break;
                 //Megaera

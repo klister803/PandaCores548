@@ -9888,6 +9888,10 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
 
                         break;
                     }
+                    case 135103: //Drain the weak(Tortos)[TT}
+                        if (victim && victim->isAlive() && victim->HealthBelowPct(35))
+                            CastSpell(victim, 135101, true);
+                        break;
                     case 148714: //Empowered (Garrosh HM)
                         if (ToCreature())
                         {
