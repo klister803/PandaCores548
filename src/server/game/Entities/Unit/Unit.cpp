@@ -512,9 +512,10 @@ void Unit::UpdateSplinePosition(bool stop/* = false*/)
     UpdatePosition(loc.x, loc.y, loc.z, loc.orientation, false, stop);
 }
 
-void Unit::DisableSpline()
+void Unit::DisableSpline(bool clearFlags)
 {
-    // m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_FORWARD);
+    if (clearFlags)
+        m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_FORWARD);
     movespline->_Interrupt();
 }
 
@@ -23494,7 +23495,7 @@ void Unit::_ExitVehicle(Position const* exitPosition)
 
 void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool casting /*= false*/)
 {
-    DisableSpline();
+    DisableSpline(!casting);
 
     if (GetTypeId() == TYPEID_PLAYER)
     {

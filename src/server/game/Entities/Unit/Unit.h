@@ -2665,7 +2665,7 @@ class Unit : public WorldObject
         bool IsAlwaysVisibleFor(WorldObject const* seer) const;
         bool IsAlwaysDetectableFor(WorldObject const* seer) const;
 
-        void DisableSpline();
+        void DisableSpline(bool clearFlags = true);
     private:
         bool SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo const* procSpell, uint8 effect);
         bool SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
