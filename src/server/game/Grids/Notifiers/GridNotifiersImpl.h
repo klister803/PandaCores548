@@ -50,7 +50,13 @@ inline void Trinity::ObjectUpdater::Visit(CreatureMapType &m)
     {
         Creature* cre = iter->getSource();
         if (cre->IsInWorld())
+        {
+            uint32 _s = getMSTime();
             cre->Update(i_timeDiff);
+            uint32 _ms = getMSTimeDiff(_s, getMSTime());
+            if (_ms > 50)
+                sLog->outDiff("ObjectUpdater Visit: type - %u, e:%u(g:%u). Diff - %ums.", iter->getSource()->GetTypeId(), iter->getSource()->GetEntry(), iter->getSource()->GetGUIDLow(), _ms);
+        }
     }
 }
 
