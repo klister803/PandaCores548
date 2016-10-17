@@ -81,10 +81,13 @@ class boss_lei_shen : public CreatureScript
 
             void UpdateAI(uint32 diff)
             {
-                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                if (!UpdateVictim())
                     return;
 
                 events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
 
                 while (uint32 eventId = events.ExecuteEvent())
                 {
@@ -96,10 +99,9 @@ class boss_lei_shen : public CreatureScript
                         events.ScheduleEvent(EVENT_DECAPITATE, 30000);
                         break;
                     case EVENT_LIGHTNING_WHIP:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 50.0f, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
                         {
-                            me->AttackStop();
-                            me->SetReactState(REACT_PASSIVE);
+                            me->SetAttackStop(true);
                             me->SetFacingToObject(target);
                             DoCast(target, SPELL_LIGHTNING_WHIP);
                         }
@@ -111,8 +113,7 @@ class boss_lei_shen : public CreatureScript
                         events.ScheduleEvent(EVENT_STATIC_SHOCK, 50000);
                         break;
                     case EVENT_RE_ATTACK:
-                        me->SetReactState(REACT_AGGRESSIVE);
-                        DoZoneInCombat(me, 150.0f);
+                        me->ReAttackWithZone();
                         break;
                     }
                 }

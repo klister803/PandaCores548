@@ -11,21 +11,21 @@
 
 enum eData
 {
-    DATA_STORM_CALLER       = 1, //Mini Boss
-    DATA_JINROKH            = 2,
-    DATA_STORMBRINGER       = 3, //Mini Boss
-    DATA_HORRIDON           = 4,
-    DATA_COUNCIL_OF_ELDERS  = 5,
-    DATA_TORTOS             = 6,
-    DATA_MEGAERA            = 7,
-    DATA_JI_KUN             = 8,
-    DATA_DURUMU             = 9,
-    DATA_PRIMORDIUS         = 10,
-    DATA_DARK_ANIMUS        = 11,
-    DATA_IRON_QON           = 12,
-    DATA_TWIN_CONSORTS      = 13,
-    DATA_LEI_SHEN           = 14,
-    DATA_RA_DEN             = 15,
+    DATA_STORM_CALLER           = 1, //Mini Boss
+    DATA_JINROKH                = 2,
+    DATA_STORMBRINGER           = 3, //Mini Boss
+    DATA_HORRIDON               = 4,
+    DATA_COUNCIL_OF_ELDERS      = 5,
+    DATA_TORTOS                 = 6,
+    DATA_MEGAERA                = 7,
+    DATA_JI_KUN                 = 8,
+    DATA_DURUMU                 = 9,
+    DATA_PRIMORDIUS             = 10,
+    DATA_DARK_ANIMUS            = 11,
+    DATA_IRON_QON               = 12,
+    DATA_TWIN_CONSORTS          = 13,
+    DATA_LEI_SHEN               = 14,
+    DATA_RA_DEN                 = 15,
 
     DATA_RESET_MOGU_FONTS,
     DATA_CHECK_VALIDATE_THUNDERING_THROW,
@@ -35,28 +35,29 @@ enum eData
 enum eCreatures
 {
     //Minibosses
-    NPC_STORM_CALLER        = 70236,
-    NPC_STORMBRINGER        = 70445,
+    NPC_STORM_CALLER            = 70236,
+    NPC_STORMBRINGER            = 70445,
 
     //Npc
-    NPC_CONDUCTIVE_WATER    = 69469,
-    NPC_MOGU_FONT           = 90005, //new trigger, need update in DB
-    NPC_STORM_STALKER       = 69676,
-    NPC_LIGHTNING_BALL      = 69232, 
-    NPC_LIGHTNING_FISSURE   = 69609,
-    NPC_WHIRL_TURTLE        = 67966,
-    NPC_VAMPIRIC_CAVE_BAT   = 69352,
-    NPC_CINDERS             = 70432,
-    NPC_LIVING_FLUID        = 69069,
-    NPC_ANIMA_GOLEM         = 69701,
-    NPC_LARGE_ANIMA_GOLEM   = 69700,
-    NPC_MASSIVE_ANIMA_GOLEM = 69699,
-    NPC_BEAST_OF_NIGHTMARES = 69479,
-    NPC_CORRUPTED_ANIMA     = 69957,
-    NPC_CORRUPTED_VITA      = 69958,
-    NPC_SAND_TRAP           = 69346,
-    NPC_LIVING_POISON       = 69313,
-    NPC_FROZEN_ORB          = 69268,
+    NPC_CONDUCTIVE_WATER        = 69469,
+    NPC_MOGU_FONT               = 90005, //new trigger, need update in DB
+    NPC_STORM_STALKER           = 69676,
+    NPC_LIGHTNING_BALL          = 69232,
+    NPC_LIGHTNING_FISSURE       = 69609,
+    NPC_WHIRL_TURTLE            = 67966,
+    NPC_VAMPIRIC_CAVE_BAT       = 69352,
+    NPC_CINDERS                 = 70432,
+    NPC_LIVING_FLUID            = 69069,
+    NPC_ANIMA_GOLEM             = 69701,
+    NPC_LARGE_ANIMA_GOLEM       = 69700,
+    NPC_MASSIVE_ANIMA_GOLEM     = 69699,
+    NPC_BEAST_OF_NIGHTMARES     = 69479,
+    NPC_CORRUPTED_ANIMA         = 69957,
+    NPC_CORRUPTED_VITA          = 69958,
+    NPC_SAND_TRAP               = 69346,
+    NPC_LIVING_POISON           = 69313,
+    NPC_FROZEN_ORB              = 69268,
+    NPC_LIGHTNING_NOVA_TOTEM    = 69215,
 
     //Horridon adds
     //Farrak Gate

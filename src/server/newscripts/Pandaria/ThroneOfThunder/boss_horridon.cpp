@@ -46,6 +46,10 @@ enum eSpells
     SPELL_UNCONTROLLED_ABOM  = 136709, //Uncontrolled Abomination
     //Amani
     SPELL_SWIPE              = 136463,
+    SPELL_CHAIN_LIGHTNING    = 136480,
+    SPELL_LIGHTNING_NOVA_T_S = 136487,
+    SPELL_LIGHTNING_NOVA     = 136489,
+    SPELL_HEX_OF_CONFUSION   = 136512,
     SPELL_FIREBALL           = 136465,
 };
 
@@ -68,7 +72,10 @@ enum sEvents
     EVENT_MORTAL_STRIKE      = 12,
     EVENT_SUMMON_FROZEN_ORB  = 13,
     EVENT_SWIPE              = 14,
-    EVENT_FIREBALL           = 15,
+    EVENT_CHAIN_LIGHTNING    = 15,
+    EVENT_SUMMON_TOTEM       = 16,
+    EVENT_HEX_OF_CONFUSION   = 17,
+    EVENT_FIREBALL           = 18,
 
     EVENT_RE_ATTACK          = 35,
 };
@@ -78,6 +85,7 @@ enum sAction
     //Jalak
     ACTION_INTRO             = 1,
     ACTION_RE_ATTACK         = 2,
+    ACTION_SHAMAN_DISMAUNT   = 3,
 };
 
 enum Phase
@@ -334,13 +342,9 @@ public:
                 break;
             case NPC_RISEN_DRAKKARI_CHAMPION:
                 FindAndAttackRandomPlayer();
+                break;
             case NPC_AMANISHI_BEAST_SHAMAN:
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                break;
-            case NPC_AMANI_WARBEAR: //for testing
-                me->SetReactState(REACT_DEFENSIVE);
-                break;
-            default:
+                me->SetFlag(UNIT_FIELD_FLAGS,  UNIT_FLAG_NON_ATTACKABLE);
                 break;
             }
         }
@@ -386,6 +390,9 @@ public:
             //Amani
             case NPC_AMANI_WARBEAR:
                 events.ScheduleEvent(EVENT_SWIPE, 5000);
+                events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, 10000);
+                events.ScheduleEvent(EVENT_SUMMON_TOTEM, 20000);
+                events.ScheduleEvent(EVENT_HEX_OF_CONFUSION, 30000);
                 break;
             case NPC_AMANISHI_FLAME_CASTER:
                 events.ScheduleEvent(EVENT_FIREBALL, 4000);
@@ -396,24 +403,28 @@ public:
         void JustDied(Unit* killer)
         {
             if (me->GetEntry() == NPC_AMANI_WARBEAR)
-            {
                 if (Vehicle* vehicle = me->GetVehicleKit())
-                {
                     if (Unit* passenger = vehicle->GetPassenger(0))
-                    {
-                        passenger->ExitVehicle();
-                        passenger->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                        passenger->ToCreature()->SetReactState(REACT_AGGRESSIVE);
-                        passenger->ToCreature()->AI()->DoZoneInCombat(passenger->ToCreature(), 100.0f);
-                    }
-                }
-            }
+                        passenger->ToCreature()->AI()->DoAction(ACTION_SHAMAN_DISMAUNT);
         }
 
         void DoAction(int32 const action)
         {
-            if (action == ACTION_RE_ATTACK)
+            switch (action)
+            {
+            case ACTION_RE_ATTACK:
                 events.ScheduleEvent(EVENT_RE_ATTACK, 1500);
+                break;
+            case ACTION_SHAMAN_DISMAUNT:
+                me->ExitVehicle();
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->SetReactState(REACT_AGGRESSIVE);
+                DoZoneInCombat(me, 100.0f);
+                events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, 10000);
+                events.ScheduleEvent(EVENT_SUMMON_TOTEM, 20000);
+                events.ScheduleEvent(EVENT_HEX_OF_CONFUSION, 30000);
+                break;
+            }
         }
 
         void UpdateAI(uint32 diff)
@@ -470,6 +481,45 @@ public:
                         DoCast(me->getVictim(), SPELL_SWIPE);
                     events.ScheduleEvent(EVENT_SWIPE, 5000);
                     break;
+                //Amani Beast Shaman
+                case EVENT_CHAIN_LIGHTNING:
+                    if (me->GetEntry() == NPC_AMANI_WARBEAR)
+                    {
+                        if (Vehicle* vehicle = me->GetVehicleKit())
+                            if (Unit* passenger = vehicle->GetPassenger(0))
+                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 40.0f, true))
+                                    passenger->CastSpell(target, SPELL_CHAIN_LIGHTNING);
+                    }
+                    else
+                    {
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 40.0f, true))
+                            DoCast(target, SPELL_CHAIN_LIGHTNING);
+                    }
+                    events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, 10000);
+                    break;
+                case EVENT_SUMMON_TOTEM:
+                    if (me->GetEntry() == NPC_AMANI_WARBEAR)
+                    {
+                        if (Vehicle* vehicle = me->GetVehicleKit())
+                            if (Unit* passenger = vehicle->GetPassenger(0))
+                                passenger->CastSpell(passenger, SPELL_LIGHTNING_NOVA_T_S);
+                    }
+                    else
+                        DoCast(me, SPELL_LIGHTNING_NOVA_T_S);
+                    events.ScheduleEvent(EVENT_SUMMON_TOTEM, 20000);
+                    break;
+                case EVENT_HEX_OF_CONFUSION:
+                    if (me->GetEntry() == NPC_AMANI_WARBEAR)
+                    {
+                        if (Vehicle* vehicle = me->GetVehicleKit())
+                            if (Unit* passenger = vehicle->GetPassenger(0))
+                                passenger->CastSpell(passenger, SPELL_HEX_OF_CONFUSION);
+                    }
+                    else
+                        DoCast(me, SPELL_HEX_OF_CONFUSION);
+                    events.ScheduleEvent(EVENT_HEX_OF_CONFUSION, 30000);
+                    break;
+                //
                 case EVENT_FIREBALL:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 45.0f, true))
                         DoCast(target, SPELL_FIREBALL);
@@ -478,10 +528,17 @@ public:
                 //Special
                 case EVENT_RE_ATTACK:
                     me->ReAttackWithZone();
-                    if (me->GetEntry() == NPC_SULLITHUZ_STONEGAZER)
+                    switch (me->GetEntry())
+                    {
+                    case NPC_SULLITHUZ_STONEGAZER:
                         events.ScheduleEvent(EVENT_STONE_GAZE, 10000);
-                    else if (me->GetEntry() == NPC_GURUBASHI_BLOODLORD)
+                        break;
+                    case NPC_GURUBASHI_BLOODLORD:
                         events.ScheduleEvent(EVENT_RENDING_CHARGE, 10000);
+                        break;
+                    default:
+                        break;
+                    }
                     break;
                 }
             }
@@ -576,6 +633,47 @@ public:
     CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_living_poisonAI(creature);
+    }
+};
+
+//69215
+class npc_lightning_nova_totem : public CreatureScript
+{
+public:
+    npc_lightning_nova_totem() : CreatureScript("npc_lightning_nova_totem") {}
+
+    struct npc_lightning_nova_totemAI : public ScriptedAI
+    {
+        npc_lightning_nova_totemAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetDisplayId(11686);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
+        }
+        InstanceScript* instance;
+
+        void Reset()
+        {
+            DoCast(me, SPELL_LIGHTNING_NOVA, true);
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            damage = 0;
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_lightning_nova_totemAI(creature);
     }
 };
 
@@ -719,6 +817,7 @@ void AddSC_boss_horridon()
     new npc_generic_gate_add();
     new npc_sand_trap();
     new npc_living_poison();
+    new npc_lightning_nova_totem();
     new spell_horridon_charge();
     new spell_blazing_sunlight();
     new spell_stone_gaze();
