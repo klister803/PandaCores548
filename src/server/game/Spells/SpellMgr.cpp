@@ -6101,6 +6101,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 117954: // Materialize Protector
                 case 120729: // Demonic Gateway
                 case 113896: // Demonic Gateway
+                case 2643: // Multi-Shot
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
                     break;
                 case 113314: // Energizing Smash
@@ -6127,6 +6128,15 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 119414: //Sha of Fear - Breath of Fear
                 case 125786:
                     spellInfo->ExcludeTargetAuraSpell = 117964;
+                    break;
+                case 132169: // Stormbolt
+                    spellInfo->AttributesEx3 &= ~SPELL_ATTR3_IGNORE_HIT_RESULT;
+                    break;
+                case 118905: // Static Charge
+                    spellInfo->AttributesEx |= SPELL_ATTR1_CANT_BE_REFLECTED;
+                    break;
+                case 103965: // Metamorphosis - hotfix 5.4.8
+                    spellInfo->Effects[EFFECT_7]->BasePoints = 0;
                     break;
                 default:
                     break;
