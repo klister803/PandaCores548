@@ -2105,36 +2105,6 @@ class spell_dru_stampeding_roar : public SpellScriptLoader
         }
 };
 
-// Lacerate - 33745, 77758
-class spell_dru_lacerate : public SpellScriptLoader
-{
-    public:
-        spell_dru_lacerate() : SpellScriptLoader("spell_dru_lacerate") { }
-
-        class spell_dru_lacerate_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dru_lacerate_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        if (roll_chance_i(25))
-                            _player->RemoveSpellCooldown(33878, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_dru_lacerate_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dru_lacerate_SpellScript();
-        }
-};
-
 // Faerie Fire - 770
 class spell_dru_faerie_fire : public SpellScriptLoader
 {
@@ -3668,34 +3638,6 @@ class spell_dru_fortifying_brew : public SpellScriptLoader
         }
 };
 
-// Mangle - 93622
-class spell_dru_mangle : public SpellScriptLoader
-{
-    public:
-        spell_dru_mangle() : SpellScriptLoader("spell_dru_mangle") { }
-
-        class spell_dru_mangle_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dru_mangle_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    _player->RemoveSpellCooldown(33878, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_dru_mangle_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dru_mangle_SpellScript();
-        }
-};
-
 void AddSC_druid_spell_scripts()
 {
     new spell_dru_play_death();
@@ -3731,7 +3673,6 @@ void AddSC_druid_spell_scripts()
     new spell_dru_frenzied_regeneration();
     new spell_dru_stampeding_roar_speed();
     new spell_dru_stampeding_roar();
-    new spell_dru_lacerate();
     new spell_dru_faerie_fire();
     new spell_dru_teleport_moonglade();
     new spell_dru_growl();
@@ -3766,5 +3707,4 @@ void AddSC_druid_spell_scripts()
     new spell_dru_wild_mushroom_bloom_heal();
     new spell_dru_anti_magic_shell();
     new spell_dru_fortifying_brew();
-    new spell_dru_mangle();
 }
