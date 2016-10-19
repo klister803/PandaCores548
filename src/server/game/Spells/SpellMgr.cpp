@@ -4115,6 +4115,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 2818:  // Deadly Poison
                 case 703:   // Garrote
                 case 89775: // Hemo
+                case 79136: // Venomous Wounds
+                case 63106: // Siphon Life
                     spellInfo->AttributesEx4 |= SPELL_ATTR4_DAMAGE_DOESNT_BREAK_AURAS;
                     break;
                 case 83968: // Mass Resurrection
