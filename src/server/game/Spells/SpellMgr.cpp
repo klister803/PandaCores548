@@ -4115,7 +4115,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 2818:  // Deadly Poison
                 case 703:   // Garrote
                 case 89775: // Hemo
-                case 79136: // Venomous Wounds
                 case 63106: // Siphon Life
                     spellInfo->AttributesEx4 |= SPELL_ATTR4_DAMAGE_DOESNT_BREAK_AURAS;
                     break;
@@ -4167,6 +4166,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
                     break;
                 case 79136: // Venomous Wound
+                    spellInfo->Speed = 25.f;
+                    spellInfo->AttributesEx4 |= SPELL_ATTR4_DAMAGE_DOESNT_BREAK_AURAS;
+                    break;
                 case 127802: // Touch of the Grave
                     spellInfo->Speed = 25.f;
                     break;
@@ -4903,6 +4905,12 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->TargetB = 0;
                     break;
                 //Horridon
+                case 136797: //Dino Mending
+                    spellInfo->Effects[0]->TargetA = 25;
+                    spellInfo->Effects[0]->TargetB = 0;
+                    spellInfo->Effects[1]->TargetA = 25;
+                    spellInfo->Effects[1]->TargetB = 0;
+                    break;
                 case 136480: //Chain Lightning
                     spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(153);
                     break;

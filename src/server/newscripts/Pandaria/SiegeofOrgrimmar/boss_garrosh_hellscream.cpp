@@ -527,7 +527,8 @@ class boss_garrosh_hellscream : public CreatureScript
                     events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
                     events.ScheduleEvent(EVENT_TOUCH_OF_YSHAARJ, 16000);
                     events.ScheduleEvent(EVENT_WHIRLING_CORRUPTION, 30000);
-                    lastphaseready = 5000; //need delay before change phase
+                    if (me->GetMap()->IsHeroic())
+                        lastphaseready = 5000; //need delay before change phase
                     break;
                 case ACTION_INTRO_PHASE_FOUR:
                     Talk(SAY_HM_LAST_PHASE, 0);
