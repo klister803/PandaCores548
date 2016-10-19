@@ -1706,14 +1706,14 @@ bool LootTemplate::LootGroup::ProcessPersonalInst(Loot& loot) const
 
             if (ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(item->itemid))
             {
-                if(!loot.GetLootOwner()->CanGetItemForLoot(_proto))
-                {
-                    EqualPossibleDrops.erase(itr);
-                    continue;
-                }
-
                 if(_proto->ItemSpecExist)
                 {
+                    if(!loot.GetLootOwner()->CanGetItemForLoot(_proto))
+                    {
+                        EqualPossibleDrops.erase(itr);
+                        continue;
+                    }
+
                     bool specFind = false;
                     if (_proto->IsUsableBySpecialization(specId, loot.GetLootOwner()->getLevel()))
                         specFind = true;
@@ -1892,10 +1892,10 @@ void LootTemplate::Process(Loot& loot, bool rate, uint8 groupId) const
                     }
                 if (_item != loot.items.end())
                     continue;
-                if(!lootOwner->CanGetItemForLoot(_proto))
-                    continue;
                 if(_proto->ItemSpecExist && loot.objType == 4)
                 {
+                    if(!lootOwner->CanGetItemForLoot(_proto))
+                        continue;
                     bool specFind = false;
                     if (_proto->IsUsableBySpecialization(specId, lootOwner->getLevel()))
                         specFind = true;
