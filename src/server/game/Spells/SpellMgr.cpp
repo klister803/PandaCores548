@@ -4303,6 +4303,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 118000: // Dragon Roar
                 case 107029: // Impale Aspect
                 case 106548:
+                case 22482: // Blade Flurry
+                case 144331: //Iron Prison Dmg
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
                     break;
                 case 64422:  // Sonic Screech (Auriaya)
@@ -5247,9 +5249,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 144330: //Iron Prison
                     spellInfo->Effects[0]->TriggerSpell = 0;
-                    break;
-                case 144331: //Iron Prison Dmg
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
                     break;
                 case 142906: //Ancient Miasma Dmg
                 case 29604:  //Jom Gabbar
