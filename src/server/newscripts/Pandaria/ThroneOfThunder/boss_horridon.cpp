@@ -51,6 +51,11 @@ enum eSpells
     SPELL_LIGHTNING_NOVA     = 136489,
     SPELL_HEX_OF_CONFUSION   = 136512,
     SPELL_FIREBALL           = 136465,
+
+    SPELL_DINO_FORM          = 137237,
+    SPELL_DINO_MENDING       = 136797,
+
+    SPELL_HEADACHE           = 137294,
 };
 
 enum sEvents
@@ -59,7 +64,6 @@ enum sEvents
     EVENT_TRIPLE_PUNCTURE    = 1,
     EVENT_DOUBLE_SWIPE       = 2,
     EVENT_CHARGES            = 3,
-    EVENT_OPEN_GATE          = 4,
     //Jalak
     EVENT_INTRO              = 5,
     EVENT_BESTIAL_CRY        = 6,
@@ -76,8 +80,14 @@ enum sEvents
     EVENT_SUMMON_TOTEM       = 16,
     EVENT_HEX_OF_CONFUSION   = 17,
     EVENT_FIREBALL           = 18,
+    EVENT_DINO_MENDING       = 19,
 
     EVENT_RE_ATTACK          = 35,
+    EVENT_OPEN_GATE          = 36,
+    EVENT_UPDATE_WAVE        = 37,
+    EVENT_UPDATE_WAVE2       = 38,
+    EVENT_UPDATE_WAVE3       = 39,
+    EVENT_UPDATE_WAVE4       = 40,
 };
 
 enum sAction
@@ -86,6 +96,9 @@ enum sAction
     ACTION_INTRO             = 1,
     ACTION_RE_ATTACK         = 2,
     ACTION_SHAMAN_DISMAUNT   = 3,
+    ACTION_RESET             = 4,
+    ACTION_ACTIVE_GATE_EVENT = 5,
+    ACTION_ENTERCOMBAT       = 6,
 };
 
 enum Phase
@@ -93,6 +106,31 @@ enum Phase
     PHASE_NULL,
     PHASE_ONE,
     PHASE_TWO,
+    PHASE_THREE,
+    PHASE_FOUR,
+    PHASE_FIVE,
+};
+
+Position farrakspawnpos[3] =
+{
+    {5523.08f, 5844.93f, 130.1096f, 3.9444f}, //center
+    {5531.18f, 5837.05f, 130.0269f, 3.9444f}, //left
+    {5514.92f, 5852.99f, 130.0348f, 3.9444f}, //right
+};
+
+Position farrakdestpos[3] =
+{
+    {5497.93f, 5819.61f, 130.0380f, 3.9036f}, //center
+    {5503.82f, 5812.21f, 130.0380f, 3.9036f}, //left
+    {5490.60f, 5826.27f, 130.0380f, 3.9036f}, //right
+};
+
+uint32 const gateentry[4] =
+{
+    GO_FARRAK_GATE,
+    GO_GURUBASHI_GATE,
+    GO_DRAKKARI_GATE,
+    GO_AMANI_GATE,
 };
 
 class boss_horridon : public CreatureScript
@@ -111,10 +149,13 @@ public:
 
         void Reset()
         {
+            //if (Creature* gatecontroller = me->GetCreature(*me, instance->GetData64(NPC_H_GATE_CONTROLLER)))
+                //gatecontroller->AI()->DoAction(ACTION_RESET);
             _Reset();
             ResetJalak();
             phase = PHASE_NULL;
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            //me->SetReactState(REACT_PASSIVE);
             me->SetReactState(REACT_AGGRESSIVE);
         }
 
@@ -138,8 +179,9 @@ public:
             phase = PHASE_ONE;
             events.ScheduleEvent(EVENT_TRIPLE_PUNCTURE, urand(11000, 15000));
             events.ScheduleEvent(EVENT_DOUBLE_SWIPE, urand(17000, 20000));
-            //events.ScheduleEvent(EVENT_OPEN_GATE, 31000);
             events.ScheduleEvent(EVENT_CHARGES, urand(50000, 60000));
+            //if (Creature* gc = me->GetCreature(*me, instance->GetData64(NPC_H_GATE_CONTROLLER)))
+                //gc->AI()->DoAction(ACTION_ACTIVE_GATE_EVENT);
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -159,8 +201,19 @@ public:
                 if (jalak->isAlive())
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 else
+                {
                     instance->SetBossState(DATA_HORRIDON, DONE);
+                    /*if (Creature* gatecontroller = me->GetCreature(*me, instance->GetData64(NPC_H_GATE_CONTROLLER)))
+                        gatecontroller->AI()->DoAction(ACTION_RESET);*/
+                }
             }
+        }
+
+        uint32 GetData(uint32 type)
+        {
+            if (type == DATA_GET_PHASE)
+                return uint32(phase);
+            return 0;
         }
 
         void UpdateAI(uint32 diff)
@@ -190,10 +243,6 @@ public:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 40.0f, true))
                         DoCast(target, SPELL_HORRIDON_CHARGE);
                     events.ScheduleEvent(EVENT_CHARGES, urand(50000, 60000));
-                    break;
-                case EVENT_OPEN_GATE:
-                    if (GameObject* gate = instance->instance->GetGameObject(instance->GetData64(DATA_GET_NEXT_GATE)))
-                        gate->UseDoorOrButton(10);
                     break;
                 }
             }
@@ -304,7 +353,224 @@ public:
     }
 };
 
-//Farrak: big - 69175, small - 69172.
+//90010
+class npc_horridon_gate_controller : public CreatureScript
+{
+public:
+    npc_horridon_gate_controller() : CreatureScript("npc_horridon_gate_controller") {}
+
+    struct npc_horridon_gate_controllerAI : public ScriptedAI
+    {
+        npc_horridon_gate_controllerAI(Creature* creature) : ScriptedAI(creature), summon(me)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+        }
+        InstanceScript* instance;
+        SummonList summon;
+        EventMap events;
+        uint8 gatenum;
+
+        void Reset()
+        {
+            events.Reset();
+            summon.DespawnAll();
+            gatenum = 0;
+        }
+
+        void JustSummoned(Creature* sum)
+        {
+            summon.Summon(sum);
+        }
+
+        void DoAction(int32 const action)
+        {
+            switch (action)
+            {
+            case ACTION_RESET:
+                events.Reset();
+                summon.DespawnAll();
+                gatenum = 0;
+                break;
+            case ACTION_ACTIVE_GATE_EVENT:
+                events.ScheduleEvent(EVENT_OPEN_GATE, 30000);
+                break;
+            }
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            damage = 0;
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                case EVENT_OPEN_GATE:
+                    if (Creature* horridon = me->GetCreature(*me, instance->GetData64(NPC_HORRIDON)))
+                    {
+                        gatenum = uint8(horridon->AI()->GetData(DATA_GET_PHASE) - 1);
+                        if (GameObject* gate = me->GetMap()->GetGameObject(instance->GetData64(gateentry[gatenum])))
+                        {
+                            gate->UseDoorOrButton(10);
+                            switch (gatenum)
+                            {
+                            case 0: //Farrak
+                                if (Creature* add = me->SummonCreature(NPC_SULLITHUZ_STONEGAZER, farrakspawnpos[1]))
+                                    add->AI()->SetData(DATA_SEND_DEST_POS, 1);
+                                if (Creature* add2 = me->SummonCreature(NPC_FARRAKI_SKIRMISHER, farrakspawnpos[2]))
+                                    add2->AI()->SetData(DATA_SEND_DEST_POS, 2);
+                                break;
+                            case 1:
+                                break;
+                            case 2:
+                                break;
+                            case 3:
+                                break;
+                            default:
+                                break;
+                            }
+                        }
+                    }
+                    events.ScheduleEvent(EVENT_UPDATE_WAVE, 20000);
+                    break;
+                case EVENT_UPDATE_WAVE:
+                    if (Creature* horridon = me->GetCreature(*me, instance->GetData64(NPC_HORRIDON)))
+                    {
+                        gatenum = uint8(horridon->AI()->GetData(DATA_GET_PHASE) - 1);
+                        if (GameObject* gate = me->GetMap()->GetGameObject(instance->GetData64(gateentry[gatenum])))
+                        {
+                            gate->UseDoorOrButton(10);
+                            switch (gatenum)
+                            {
+                            case 0: //Farrak
+                                if (Creature* add = me->SummonCreature(NPC_SULLITHUZ_STONEGAZER, farrakspawnpos[1]))
+                                    add->AI()->SetData(DATA_SEND_DEST_POS, 1);
+                                if (Creature* add2 = me->SummonCreature(NPC_SULLITHUZ_STONEGAZER, farrakspawnpos[2]))
+                                    add2->AI()->SetData(DATA_SEND_DEST_POS, 2);
+                                if (Creature* badd = me->SummonCreature(NPC_FARRAKI_WASTEWALKER, farrakdestpos[0]))
+                                    badd->AI()->DoAction(ACTION_ENTERCOMBAT);
+                                break;
+                            case 1:
+                                break;
+                            case 2:
+                                break;
+                            case 3:
+                                break;
+                            default:
+                                break;
+                            }
+                        }
+                    }
+                    events.ScheduleEvent(EVENT_UPDATE_WAVE2, 20000);
+                    break;
+                case EVENT_UPDATE_WAVE2:
+                    if (Creature* horridon = me->GetCreature(*me, instance->GetData64(NPC_HORRIDON)))
+                    {
+                        gatenum = uint8(horridon->AI()->GetData(DATA_GET_PHASE) - 1);
+                        if (GameObject* gate = me->GetMap()->GetGameObject(instance->GetData64(gateentry[gatenum])))
+                        {
+                            gate->UseDoorOrButton(10);
+                            switch (gatenum)
+                            {
+                            case 0: //Farrak
+                                if (Creature* add = me->SummonCreature(NPC_SULLITHUZ_STONEGAZER, farrakspawnpos[1]))
+                                    add->AI()->SetData(DATA_SEND_DEST_POS, 1);
+                                if (Creature* add2 = me->SummonCreature(NPC_SULLITHUZ_STONEGAZER, farrakspawnpos[2]))
+                                    add2->AI()->SetData(DATA_SEND_DEST_POS, 2);
+                                if (Creature* badd = me->SummonCreature(NPC_FARRAKI_WASTEWALKER, farrakdestpos[1]))
+                                    badd->AI()->DoAction(ACTION_ENTERCOMBAT);
+                                if (Creature* badd2 = me->SummonCreature(NPC_FARRAKI_WASTEWALKER, farrakdestpos[2]))
+                                    badd2->AI()->DoAction(ACTION_ENTERCOMBAT);
+                                break;
+                            case 1:
+                                break;
+                            case 2:
+                                break;
+                            case 3:
+                                break;
+                            default:
+                                break;
+                            }
+                        }
+                    }
+                    events.ScheduleEvent(EVENT_UPDATE_WAVE3, 20000);
+                    break;
+                case EVENT_UPDATE_WAVE3:
+                    if (Creature* horridon = me->GetCreature(*me, instance->GetData64(NPC_HORRIDON)))
+                    {
+                        gatenum = uint8(horridon->AI()->GetData(DATA_GET_PHASE) - 1);
+                        if (GameObject* gate = me->GetMap()->GetGameObject(instance->GetData64(gateentry[gatenum])))
+                        {
+                            gate->UseDoorOrButton(10);
+                            switch (gatenum)
+                            {
+                            case 0: //Farrak
+                                if (Creature* add = me->SummonCreature(NPC_SULLITHUZ_STONEGAZER, farrakspawnpos[1]))
+                                    add->AI()->SetData(DATA_SEND_DEST_POS, 1);
+                                if (Creature* add2 = me->SummonCreature(NPC_FARRAKI_SKIRMISHER, farrakspawnpos[2]))
+                                    add2->AI()->SetData(DATA_SEND_DEST_POS, 2);
+                                if (Creature* dino = me->SummonCreature(NPC_ZANDALARI_DINOMANCER, farrakdestpos[urand(0, 2)]))
+                                    dino->AI()->DoZoneInCombat(dino, 150.0f);
+                                break;
+                            case 1:
+                                break;
+                            case 2:
+                                break;
+                            case 3:
+                                break;
+                            default:
+                                break;
+                            }
+                        }
+                    }
+                    events.ScheduleEvent(EVENT_UPDATE_WAVE4, 20000);
+                    break;
+                case EVENT_UPDATE_WAVE4:
+                    if (Creature* horridon = me->GetCreature(*me, instance->GetData64(NPC_HORRIDON)))
+                    {
+                        gatenum = uint8(horridon->AI()->GetData(DATA_GET_PHASE) - 1);
+                        if (GameObject* gate = me->GetMap()->GetGameObject(instance->GetData64(gateentry[gatenum])))
+                        {
+                            gate->UseDoorOrButton(10);
+                            switch (gatenum)
+                            {
+                            case 0: //Farrak
+                                if (Creature* add = me->SummonCreature(NPC_SULLITHUZ_STONEGAZER, farrakspawnpos[1]))
+                                    add->AI()->SetData(DATA_SEND_DEST_POS, 1);
+                                if (Creature* add2 = me->SummonCreature(NPC_FARRAKI_SKIRMISHER, farrakspawnpos[2]))
+                                    add2->AI()->SetData(DATA_SEND_DEST_POS, 2);
+                                break;
+                            case 1:
+                                break;
+                            case 2:
+                                break;
+                            case 3:
+                                break;
+                            default:
+                                break;
+                            }
+                        }
+                    }
+                    events.ScheduleEvent(EVENT_UPDATE_WAVE4, 20000);
+                    break;
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_horridon_gate_controllerAI(creature);
+    }
+};
+
+//Farrak: big - 69175, 69173, small - 69172.
 //Gurubashi: big - 69164, 69314, small - 69167.
 //Drakkari: big - 69178, special summons - 69268, small - 69185.
 //Amani: big - 69177, 69176, small - 69168.
@@ -324,6 +590,7 @@ public:
                 me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, true);
                 me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
             }
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         }
 
         InstanceScript* instance;
@@ -343,9 +610,32 @@ public:
             case NPC_RISEN_DRAKKARI_CHAMPION:
                 FindAndAttackRandomPlayer();
                 break;
-            case NPC_AMANISHI_BEAST_SHAMAN:
-                me->SetFlag(UNIT_FIELD_FLAGS,  UNIT_FLAG_NON_ATTACKABLE);
-                break;
+            }
+        }
+
+        void SetData(uint32 type, uint32 data)
+        {
+            if (type == DATA_SEND_DEST_POS)
+            {
+                switch (data)
+                {
+                case 1:
+                    me->GetMotionMaster()->MoveJump(farrakdestpos[1].GetPositionX(), farrakdestpos[1].GetPositionY(), farrakdestpos[1].GetPositionZ(), 7.0f, 0.0f, 1);
+                    break;
+                case 2:
+                    me->GetMotionMaster()->MoveJump(farrakdestpos[2].GetPositionX(), farrakdestpos[2].GetPositionY(), farrakdestpos[2].GetPositionZ(), 7.0f, 0.0f, 2);
+                    break;
+                }
+            }
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (type == EFFECT_MOTION_TYPE)
+            {
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->SetReactState(REACT_AGGRESSIVE);
+                DoZoneInCombat(me, 100.0f);
             }
         }
 
@@ -423,6 +713,11 @@ public:
                 events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, 10000);
                 events.ScheduleEvent(EVENT_SUMMON_TOTEM, 20000);
                 events.ScheduleEvent(EVENT_HEX_OF_CONFUSION, 30000);
+                break;
+            case ACTION_ENTERCOMBAT:
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->SetReactState(REACT_AGGRESSIVE);
+                DoZoneInCombat(me, 100.0f);
                 break;
             }
         }
@@ -550,6 +845,63 @@ public:
     CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_generic_gate_addAI(creature);
+    }
+};
+
+//69221
+class npc_zandalari_dinomancer : public CreatureScript
+{
+public:
+    npc_zandalari_dinomancer() : CreatureScript("npc_zandalari_dinomancer") {}
+
+    struct npc_zandalari_dinomancerAI : public ScriptedAI
+    {
+        npc_zandalari_dinomancerAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_AGGRESSIVE);
+        }
+        InstanceScript* instance;
+        EventMap events;
+        bool done;
+
+        void Reset()
+        {
+            done = false;
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (HealthBelowPct(50) && !done)
+            {
+                done = true;
+                DoCast(me, SPELL_DINO_FORM, true);
+                float x, y;
+                GetPosInRadiusWithRandomOrientation(me, 8.0f, x, y);
+                me->SummonGameObject(GO_ORB_OF_CONTROL, x, y, me->GetPositionZ() + 3.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 604800);
+            }
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_DINO_MENDING)
+                {
+                    if (Creature* horridon = me->GetCreature(*me, instance->GetData64(NPC_HORRIDON)))
+                        DoCast(horridon, SPELL_DINO_MENDING);
+                    events.ScheduleEvent(EVENT_DINO_MENDING, 30000);
+                }
+            }
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_zandalari_dinomancerAI(creature);
     }
 };
 
@@ -814,7 +1166,9 @@ void AddSC_boss_horridon()
 {
     new boss_horridon();
     new boss_jalak();
+    new npc_horridon_gate_controller();
     new npc_generic_gate_add();
+    new npc_zandalari_dinomancer();
     new npc_sand_trap();
     new npc_living_poison();
     new npc_lightning_nova_totem();

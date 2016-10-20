@@ -73,6 +73,7 @@ public:
         uint64 jinrokhGuid;
         uint64 stormbringerGuid;
         uint64 horridonGuid;
+        uint64 hgatecontrollerGuid;
         uint64 jalakGuid;
         uint64 mallakGuid;
         uint64 marliGuid;
@@ -139,6 +140,7 @@ public:
             jinrokhGuid           = 0;
             stormbringerGuid      = 0;
             horridonGuid          = 0;
+            hgatecontrollerGuid   = 0;
             jalakGuid             = 0;
             mallakGuid            = 0;
             marliGuid             = 0;
@@ -189,6 +191,9 @@ public:
                 break;
             case NPC_JALAK:
                 jalakGuid = creature->GetGUID();
+                break;
+            case NPC_H_GATE_CONTROLLER:
+                hgatecontrollerGuid = creature->GetGUID();
                 break;
             //Council of Elders
             case NPC_FROST_KING_MALAKK:
@@ -719,14 +724,16 @@ public:
                 return horridonGuid;
             case NPC_JALAK:
                 return jalakGuid;
-            case DATA_GET_NEXT_GATE:
-                if (!horridonaddgateGuids.empty())
-                    for (uint8 n = 0; n < 4; n++)
-                        for (std::vector<uint64>::const_iterator itr = horridonaddgateGuids.begin(); itr != horridonaddgateGuids.end(); itr++)
-                            if (GameObject* gate = instance->GetGameObject(*itr))
-                                if (gate->GetEntry() == HorridonAddGates[n] && gate->GetGoState() == GO_STATE_READY)
-                                    return *itr;
-                return 0;
+            case NPC_H_GATE_CONTROLLER:
+                return hgatecontrollerGuid;
+            case GO_FARRAK_GATE:
+            case GO_GURUBASHI_GATE:
+            case GO_DRAKKARI_GATE:
+            case GO_AMANI_GATE:
+                for (std::vector<uint64>::const_iterator itr = horridonaddgateGuids.begin(); itr != horridonaddgateGuids.end(); itr++)
+                    if (GameObject* gate = instance->GetGameObject(*itr))
+                        if (gate->GetEntry() == type)
+                            return gate->GetGUID();
             //Council of Elders
             case NPC_FROST_KING_MALAKK:
                 return mallakGuid;

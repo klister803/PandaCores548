@@ -29,7 +29,8 @@ enum eData
 
     DATA_RESET_MOGU_FONTS,
     DATA_CHECK_VALIDATE_THUNDERING_THROW,
-    DATA_GET_NEXT_GATE,
+    DATA_GET_PHASE,
+    DATA_SEND_DEST_POS,
 };
 
 enum eCreatures
@@ -63,6 +64,7 @@ enum eCreatures
     //Farrak Gate
     //Big
     NPC_FARRAKI_WASTEWALKER     = 69175,
+    NPC_FARRAKI_SKIRMISHER      = 69173,
     //Small
     NPC_SULLITHUZ_STONEGAZER    = 69172,
     //Gurubashi
@@ -84,6 +86,8 @@ enum eCreatures
     //Small
     NPC_AMANISHI_FLAME_CASTER   = 69168,
     //
+    NPC_ZANDALARI_DINOMANCER    = 69221,
+    NPC_H_GATE_CONTROLLER       = 90010,
 
     //Bosses
     NPC_JINROKH             = 69465,
@@ -143,6 +147,8 @@ enum eGameObjects
     GO_GURUBASHI_GATE       = 218670,
     GO_DRAKKARI_GATE        = 218671,
     GO_AMANI_GATE           = 218673,
+
+    GO_ORB_OF_CONTROL       = 218374,
     //
     GO_HORRIDON_EX_DOOR     = 218666,
     //Council of Elders
