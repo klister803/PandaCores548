@@ -4115,7 +4115,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 2818:  // Deadly Poison
                 case 703:   // Garrote
                 case 89775: // Hemo
-                case 63106: // Siphon Life
                     spellInfo->AttributesEx4 |= SPELL_ATTR4_DAMAGE_DOESNT_BREAK_AURAS;
                     break;
                 case 83968: // Mass Resurrection
@@ -4166,9 +4165,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
                     break;
                 case 79136: // Venomous Wound
-                    spellInfo->Speed = 25.f;
-                    spellInfo->AttributesEx4 |= SPELL_ATTR4_DAMAGE_DOESNT_BREAK_AURAS;
-                    break;
                 case 127802: // Touch of the Grave
                     spellInfo->Speed = 25.f;
                     break;
