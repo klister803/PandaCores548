@@ -111,6 +111,7 @@ enum Phase
     PHASE_FIVE,
 };
 
+//Farrak
 Position farrakspawnpos[3] =
 {
     {5523.08f, 5844.93f, 130.1096f, 3.9444f}, //center
@@ -120,9 +121,54 @@ Position farrakspawnpos[3] =
 
 Position farrakdestpos[3] =
 {
-    {5497.93f, 5819.61f, 130.0380f, 3.9036f}, //center
-    {5503.82f, 5812.21f, 130.0380f, 3.9036f}, //left
-    {5490.60f, 5826.27f, 130.0380f, 3.9036f}, //right
+    {5497.93f, 5819.61f, 130.0380f, 3.9036f},
+    {5503.82f, 5812.21f, 130.0380f, 3.9036f},
+    {5490.60f, 5826.27f, 130.0380f, 3.9036f},
+};
+
+//Gurubashi
+Position gurubashispawnpos[3] =
+{
+    {5523.46f, 5661.59f, 130.0168f, 2.3265f},
+    {5514.13f, 5652.66f, 130.0282f, 2.3262f},
+    {5532.19f, 5669.82f, 130.0172f, 2.3265f},
+};
+
+Position gurubashidestpos[3] =
+{
+    {5498.91f, 5687.65f, 130.0377f, 2.3147f},
+    {5490.29f, 5679.63f, 130.0377f, 2.3147f},
+    {5506.46f, 5695.52f, 130.0377f, 2.3147f},
+};
+
+//Drakkari
+Position drakkarispawnpos[3] =
+{
+    {5340.36f, 5662.42f, 130.1075f, 0.7604f},
+    {5331.84f, 5671.37f, 130.0962f, 0.7604f},
+    {5349.24f, 5653.73f, 130.0990f, 0.7604f},
+};
+
+Position drakkaridestpos[3] =
+{
+    {5365.96f, 5687.19f, 130.0361f, 0.7290f},
+    {5357.18f, 5695.09f, 130.0361f, 0.7290f},
+    {5374.31f, 5678.31f, 130.0361f, 0.7290f},
+};
+
+//Amani
+Position amanispawnpos[3] =
+{
+    {5340.68f, 5845.15f, 130.1072f, 5.4524f},
+    {5349.75f, 5853.64f, 130.0978f, 5.4524f},
+    {5331.79f, 5835.75f, 130.0992f, 5.4524f},
+};
+
+Position amanidestpos[3] =
+{
+    {5365.37f, 5819.05f, 130.0378f, 5.4790f},
+    {5374.40f, 5828.42f, 130.0378f, 5.4790f},
+    {5356.72f, 5810.77f, 130.0378f, 5.4790f},
 };
 
 uint32 const gateentry[4] =
@@ -149,8 +195,8 @@ public:
 
         void Reset()
         {
-            //if (Creature* gatecontroller = me->GetCreature(*me, instance->GetData64(NPC_H_GATE_CONTROLLER)))
-                //gatecontroller->AI()->DoAction(ACTION_RESET);
+            /*if (Creature* gatecontroller = me->GetCreature(*me, instance->GetData64(NPC_H_GATE_CONTROLLER)))
+                gatecontroller->AI()->DoAction(ACTION_RESET);*/
             _Reset();
             ResetJalak();
             phase = PHASE_NULL;
@@ -180,8 +226,8 @@ public:
             events.ScheduleEvent(EVENT_TRIPLE_PUNCTURE, urand(11000, 15000));
             events.ScheduleEvent(EVENT_DOUBLE_SWIPE, urand(17000, 20000));
             events.ScheduleEvent(EVENT_CHARGES, urand(50000, 60000));
-            //if (Creature* gc = me->GetCreature(*me, instance->GetData64(NPC_H_GATE_CONTROLLER)))
-                //gc->AI()->DoAction(ACTION_ACTIVE_GATE_EVENT);
+            /*if (Creature* gc = me->GetCreature(*me, instance->GetData64(NPC_H_GATE_CONTROLLER)))
+                gc->AI()->DoAction(ACTION_ACTIVE_GATE_EVENT);*/
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -378,6 +424,10 @@ public:
             gatenum = 0;
         }
 
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
         void JustSummoned(Creature* sum)
         {
             summon.Summon(sum);
@@ -421,16 +471,26 @@ public:
                             switch (gatenum)
                             {
                             case 0: //Farrak
-                                if (Creature* add = me->SummonCreature(NPC_SULLITHUZ_STONEGAZER, farrakspawnpos[1]))
+                                if (Creature* add = me->SummonCreature(NPC_SULLITHUZ_STONEGAZER, farrakspawnpos[1], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
                                     add->AI()->SetData(DATA_SEND_DEST_POS, 1);
-                                if (Creature* add2 = me->SummonCreature(NPC_FARRAKI_SKIRMISHER, farrakspawnpos[2]))
+                                if (Creature* add2 = me->SummonCreature(NPC_FARRAKI_SKIRMISHER, farrakspawnpos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
                                     add2->AI()->SetData(DATA_SEND_DEST_POS, 2);
                                 break;
-                            case 1:
+                            case 1: //Gurubasi
+                                if (Creature* add = me->SummonCreature(NPC_GURUBASHI_BLOODLORD, gurubashispawnpos[0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add->AI()->SetData(DATA_SEND_DEST_POS, 0);
                                 break;
-                            case 2:
+                            case 2: //Drakkari
+                                if (Creature* add = me->SummonCreature(NPC_RISEN_DRAKKARI_CHAMPION, drakkarispawnpos[1], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add->AI()->SetData(DATA_SEND_DEST_POS, 1);
+                                if (Creature* add2 = me->SummonCreature(NPC_RISEN_DRAKKARI_WARRIOR, drakkarispawnpos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add2->AI()->SetData(DATA_SEND_DEST_POS, 2);
                                 break;
-                            case 3:
+                            case 3: //Amani
+                                if (Creature* add = me->SummonCreature(NPC_AMANISHI_FLAME_CASTER, amanispawnpos[1], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add->AI()->SetData(DATA_SEND_DEST_POS, 1);
+                                if (Creature* add2 = me->SummonCreature(NPC_AMANISHI_PROTECTOR, amanispawnpos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add2->AI()->SetData(DATA_SEND_DEST_POS, 2);
                                 break;
                             default:
                                 break;
@@ -449,18 +509,34 @@ public:
                             switch (gatenum)
                             {
                             case 0: //Farrak
-                                if (Creature* add = me->SummonCreature(NPC_SULLITHUZ_STONEGAZER, farrakspawnpos[1]))
+                                if (Creature* add = me->SummonCreature(NPC_SULLITHUZ_STONEGAZER, farrakspawnpos[1], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
                                     add->AI()->SetData(DATA_SEND_DEST_POS, 1);
-                                if (Creature* add2 = me->SummonCreature(NPC_SULLITHUZ_STONEGAZER, farrakspawnpos[2]))
+                                if (Creature* add2 = me->SummonCreature(NPC_SULLITHUZ_STONEGAZER, farrakspawnpos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
                                     add2->AI()->SetData(DATA_SEND_DEST_POS, 2);
-                                if (Creature* badd = me->SummonCreature(NPC_FARRAKI_WASTEWALKER, farrakdestpos[0]))
+                                if (Creature* badd = me->SummonCreature(NPC_FARRAKI_WASTEWALKER, farrakdestpos[0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
                                     badd->AI()->DoAction(ACTION_ENTERCOMBAT);
                                 break;
-                            case 1:
+                            case 1: //Gurubashi
+                                if (Creature* add = me->SummonCreature(NPC_GURUBASHI_BLOODLORD, gurubashispawnpos[0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add->AI()->SetData(DATA_SEND_DEST_POS, 0);
+                                if (Creature* badd = me->SummonCreature(NPC_GURUBASHI_VENOM_PRIEST, gurubashidestpos[urand(1, 2)], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    badd->AI()->DoAction(ACTION_ENTERCOMBAT);
                                 break;
-                            case 2:
+                            case 2: //Drakkari
+                                if (Creature* add = me->SummonCreature(NPC_RISEN_DRAKKARI_CHAMPION, drakkarispawnpos[1], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add->AI()->SetData(DATA_SEND_DEST_POS, 1);
+                                if (Creature* add2 = me->SummonCreature(NPC_RISEN_DRAKKARI_WARRIOR, drakkarispawnpos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add2->AI()->SetData(DATA_SEND_DEST_POS, 2);
+                                if (Creature* badd = me->SummonCreature(NPC_DRAKKARI_FROZEN_WARLORD, drakkaridestpos[0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    badd->AI()->DoAction(ACTION_ENTERCOMBAT);
                                 break;
-                            case 3:
+                            case 3: //Amani
+                                if (Creature* add = me->SummonCreature(NPC_AMANISHI_FLAME_CASTER, amanispawnpos[1], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add->AI()->SetData(DATA_SEND_DEST_POS, 1);
+                                if (Creature* add2 = me->SummonCreature(NPC_AMANISHI_PROTECTOR, amanispawnpos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add2->AI()->SetData(DATA_SEND_DEST_POS, 2);
+                                if (Creature* badd = me->SummonCreature(NPC_AMANI_WARBEAR, amanidestpos[0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    badd->AI()->DoAction(ACTION_ENTERCOMBAT);
                                 break;
                             default:
                                 break;
@@ -479,20 +555,42 @@ public:
                             switch (gatenum)
                             {
                             case 0: //Farrak
-                                if (Creature* add = me->SummonCreature(NPC_SULLITHUZ_STONEGAZER, farrakspawnpos[1]))
+                                if (Creature* add = me->SummonCreature(NPC_SULLITHUZ_STONEGAZER, farrakspawnpos[1], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
                                     add->AI()->SetData(DATA_SEND_DEST_POS, 1);
-                                if (Creature* add2 = me->SummonCreature(NPC_SULLITHUZ_STONEGAZER, farrakspawnpos[2]))
+                                if (Creature* add2 = me->SummonCreature(NPC_SULLITHUZ_STONEGAZER, farrakspawnpos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
                                     add2->AI()->SetData(DATA_SEND_DEST_POS, 2);
-                                if (Creature* badd = me->SummonCreature(NPC_FARRAKI_WASTEWALKER, farrakdestpos[1]))
+                                if (Creature* badd = me->SummonCreature(NPC_FARRAKI_WASTEWALKER, farrakdestpos[1], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
                                     badd->AI()->DoAction(ACTION_ENTERCOMBAT);
-                                if (Creature* badd2 = me->SummonCreature(NPC_FARRAKI_WASTEWALKER, farrakdestpos[2]))
+                                if (Creature* badd2 = me->SummonCreature(NPC_FARRAKI_WASTEWALKER, farrakdestpos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
                                     badd2->AI()->DoAction(ACTION_ENTERCOMBAT);
                                 break;
-                            case 1:
+                            case 1: //Gurubashi
+                                if (Creature* add = me->SummonCreature(NPC_GURUBASHI_BLOODLORD, gurubashispawnpos[0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add->AI()->SetData(DATA_SEND_DEST_POS, 0);
+                                if (Creature* badd = me->SummonCreature(NPC_GURUBASHI_VENOM_PRIEST, gurubashidestpos[1], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    badd->AI()->DoAction(ACTION_ENTERCOMBAT);
+                                if (Creature* badd2 = me->SummonCreature(NPC_GURUBASHI_VENOM_PRIEST, gurubashidestpos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    badd2->AI()->DoAction(ACTION_ENTERCOMBAT);
                                 break;
-                            case 2:
+                            case 2: //Drakkari
+                                if (Creature* add = me->SummonCreature(NPC_RISEN_DRAKKARI_CHAMPION, drakkarispawnpos[1], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add->AI()->SetData(DATA_SEND_DEST_POS, 1);
+                                if (Creature* add2 = me->SummonCreature(NPC_RISEN_DRAKKARI_WARRIOR, drakkarispawnpos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add2->AI()->SetData(DATA_SEND_DEST_POS, 2);
+                                if (Creature* badd = me->SummonCreature(NPC_DRAKKARI_FROZEN_WARLORD, drakkaridestpos[1], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    badd->AI()->DoAction(ACTION_ENTERCOMBAT);
+                                if (Creature* badd2 = me->SummonCreature(NPC_DRAKKARI_FROZEN_WARLORD, drakkaridestpos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    badd2->AI()->DoAction(ACTION_ENTERCOMBAT);
                                 break;
-                            case 3:
+                            case 3: //Amani
+                                if (Creature* add = me->SummonCreature(NPC_AMANISHI_FLAME_CASTER, amanispawnpos[1], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add->AI()->SetData(DATA_SEND_DEST_POS, 1);
+                                if (Creature* add2 = me->SummonCreature(NPC_AMANISHI_PROTECTOR, amanispawnpos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add2->AI()->SetData(DATA_SEND_DEST_POS, 2);
+                                if (Creature* badd = me->SummonCreature(NPC_AMANI_WARBEAR, amanidestpos[1], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    badd->AI()->DoAction(ACTION_ENTERCOMBAT);
+                                if (Creature* badd2 = me->SummonCreature(NPC_AMANI_WARBEAR, amanidestpos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    badd2->AI()->DoAction(ACTION_ENTERCOMBAT);
                                 break;
                             default:
                                 break;
@@ -511,18 +609,34 @@ public:
                             switch (gatenum)
                             {
                             case 0: //Farrak
-                                if (Creature* add = me->SummonCreature(NPC_SULLITHUZ_STONEGAZER, farrakspawnpos[1]))
+                                if (Creature* add = me->SummonCreature(NPC_SULLITHUZ_STONEGAZER, farrakspawnpos[1], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
                                     add->AI()->SetData(DATA_SEND_DEST_POS, 1);
-                                if (Creature* add2 = me->SummonCreature(NPC_FARRAKI_SKIRMISHER, farrakspawnpos[2]))
+                                if (Creature* add2 = me->SummonCreature(NPC_FARRAKI_SKIRMISHER, farrakspawnpos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
                                     add2->AI()->SetData(DATA_SEND_DEST_POS, 2);
-                                if (Creature* dino = me->SummonCreature(NPC_ZANDALARI_DINOMANCER, farrakdestpos[urand(0, 2)]))
+                                if (Creature* dino = me->SummonCreature(NPC_ZANDALARI_DINOMANCER, farrakdestpos[urand(0, 2)], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
                                     dino->AI()->DoZoneInCombat(dino, 150.0f);
                                 break;
-                            case 1:
+                            case 1: //Gurubashi
+                                if (Creature* add = me->SummonCreature(NPC_GURUBASHI_BLOODLORD, gurubashispawnpos[0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add->AI()->SetData(DATA_SEND_DEST_POS, 0);
+                                if (Creature* dino = me->SummonCreature(NPC_ZANDALARI_DINOMANCER, gurubashidestpos[urand(1, 2)], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    dino->AI()->DoZoneInCombat(dino, 150.0f);
                                 break;
-                            case 2:
+                            case 2: //Drakkari
+                                if (Creature* add = me->SummonCreature(NPC_RISEN_DRAKKARI_CHAMPION, drakkarispawnpos[1], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add->AI()->SetData(DATA_SEND_DEST_POS, 1);
+                                if (Creature* add2 = me->SummonCreature(NPC_RISEN_DRAKKARI_WARRIOR, drakkarispawnpos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add2->AI()->SetData(DATA_SEND_DEST_POS, 2);
+                                if (Creature* dino = me->SummonCreature(NPC_ZANDALARI_DINOMANCER, drakkaridestpos[0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    dino->AI()->DoZoneInCombat(dino, 150.0f);
                                 break;
-                            case 3:
+                            case 3: //Amani
+                                if (Creature* add = me->SummonCreature(NPC_AMANISHI_FLAME_CASTER, amanispawnpos[1], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add->AI()->SetData(DATA_SEND_DEST_POS, 1);
+                                if (Creature* add2 = me->SummonCreature(NPC_AMANISHI_PROTECTOR, amanispawnpos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add2->AI()->SetData(DATA_SEND_DEST_POS, 2);
+                                if (Creature* dino = me->SummonCreature(NPC_ZANDALARI_DINOMANCER, amanidestpos[0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    dino->AI()->DoZoneInCombat(dino, 150.0f);
                                 break;
                             default:
                                 break;
@@ -541,16 +655,26 @@ public:
                             switch (gatenum)
                             {
                             case 0: //Farrak
-                                if (Creature* add = me->SummonCreature(NPC_SULLITHUZ_STONEGAZER, farrakspawnpos[1]))
+                                if (Creature* add = me->SummonCreature(NPC_SULLITHUZ_STONEGAZER, farrakspawnpos[1], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
                                     add->AI()->SetData(DATA_SEND_DEST_POS, 1);
-                                if (Creature* add2 = me->SummonCreature(NPC_FARRAKI_SKIRMISHER, farrakspawnpos[2]))
+                                if (Creature* add2 = me->SummonCreature(NPC_FARRAKI_SKIRMISHER, farrakspawnpos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
                                     add2->AI()->SetData(DATA_SEND_DEST_POS, 2);
                                 break;
-                            case 1:
+                            case 1: //Gurubashi
+                                if (Creature* add = me->SummonCreature(NPC_GURUBASHI_BLOODLORD, gurubashispawnpos[0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add->AI()->SetData(DATA_SEND_DEST_POS, 0);
                                 break;
-                            case 2:
+                            case 2: //Drakkari
+                                if (Creature* add = me->SummonCreature(NPC_RISEN_DRAKKARI_CHAMPION, drakkarispawnpos[1], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add->AI()->SetData(DATA_SEND_DEST_POS, 1);
+                                if (Creature* add2 = me->SummonCreature(NPC_RISEN_DRAKKARI_WARRIOR, drakkarispawnpos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add2->AI()->SetData(DATA_SEND_DEST_POS, 2);
                                 break;
-                            case 3:
+                            case 3: //Amani
+                                if (Creature* add = me->SummonCreature(NPC_AMANISHI_FLAME_CASTER, amanispawnpos[1], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add->AI()->SetData(DATA_SEND_DEST_POS, 1);
+                                if (Creature* add2 = me->SummonCreature(NPC_AMANISHI_PROTECTOR, amanispawnpos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                                    add2->AI()->SetData(DATA_SEND_DEST_POS, 2);
                                 break;
                             default:
                                 break;
@@ -573,7 +697,7 @@ public:
 //Farrak: big - 69175, 69173, small - 69172.
 //Gurubashi: big - 69164, 69314, small - 69167.
 //Drakkari: big - 69178, special summons - 69268, small - 69185.
-//Amani: big - 69177, 69176, small - 69168.
+//Amani: big - 69177, 69176, small - 69168, 69169
 class npc_generic_gate_add: public CreatureScript
 {
 public:
@@ -617,13 +741,49 @@ public:
         {
             if (type == DATA_SEND_DEST_POS)
             {
-                switch (data)
+                switch (me->GetEntry())
                 {
-                case 1:
-                    me->GetMotionMaster()->MoveJump(farrakdestpos[1].GetPositionX(), farrakdestpos[1].GetPositionY(), farrakdestpos[1].GetPositionZ(), 7.0f, 0.0f, 1);
+                case NPC_FARRAKI_SKIRMISHER:
+                case NPC_SULLITHUZ_STONEGAZER:
+                    switch (data)
+                    {
+                    case 1:
+                        me->GetMotionMaster()->MoveJump(farrakdestpos[1].GetPositionX(), farrakdestpos[1].GetPositionY(), farrakdestpos[1].GetPositionZ(), 7.0f, 0.0f, 1);
+                        break;
+                    case 2:
+                        me->GetMotionMaster()->MoveJump(farrakdestpos[2].GetPositionX(), farrakdestpos[2].GetPositionY(), farrakdestpos[2].GetPositionZ(), 7.0f, 0.0f, 2);
+                        break;
+                    }
                     break;
-                case 2:
-                    me->GetMotionMaster()->MoveJump(farrakdestpos[2].GetPositionX(), farrakdestpos[2].GetPositionY(), farrakdestpos[2].GetPositionZ(), 7.0f, 0.0f, 2);
+                case NPC_GURUBASHI_BLOODLORD:
+                    if (!data)
+                        me->GetMotionMaster()->MoveJump(gurubashidestpos[0].GetPositionX(), gurubashidestpos[0].GetPositionY(), gurubashidestpos[0].GetPositionZ(), 7.0f, 0.0f, 0);
+                    break;
+                case NPC_RISEN_DRAKKARI_CHAMPION:
+                case NPC_RISEN_DRAKKARI_WARRIOR:
+                    switch (data)
+                    {
+                    case 1:
+                        me->GetMotionMaster()->MoveJump(drakkaridestpos[1].GetPositionX(), drakkaridestpos[1].GetPositionY(), drakkaridestpos[1].GetPositionZ(), 7.0f, 0.0f, 1);
+                        break;
+                    case 2:
+                        me->GetMotionMaster()->MoveJump(drakkaridestpos[2].GetPositionX(), drakkaridestpos[2].GetPositionY(), drakkaridestpos[2].GetPositionZ(), 7.0f, 0.0f, 2);
+                        break;
+                    }
+                    break;
+                case NPC_AMANISHI_FLAME_CASTER:
+                case NPC_AMANISHI_PROTECTOR:
+                    switch (data)
+                    {
+                    case 1:
+                        me->GetMotionMaster()->MoveJump(amanidestpos[1].GetPositionX(), amanidestpos[1].GetPositionY(), amanidestpos[1].GetPositionZ(), 7.0f, 0.0f, 1);
+                        break;
+                    case 2:
+                        me->GetMotionMaster()->MoveJump(amanidestpos[2].GetPositionX(), amanidestpos[2].GetPositionY(), amanidestpos[2].GetPositionZ(), 7.0f, 0.0f, 1);
+                        break;
+                    }
+                    break;
+                default:
                     break;
                 }
             }

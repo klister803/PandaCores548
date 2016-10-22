@@ -447,6 +447,7 @@ public:
                         HandleGameObject(horridonentdoorGuid, true);
                         break;
                     case IN_PROGRESS:
+                        ResetHorridonAddGates();
                         HandleGameObject(horridonentdoorGuid, false);
                         break;
                     case DONE:
