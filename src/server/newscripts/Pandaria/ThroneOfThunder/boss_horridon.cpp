@@ -56,6 +56,9 @@ enum eSpells
     SPELL_DINO_MENDING       = 136797,
 
     SPELL_HEADACHE           = 137294,
+    SPELL_SUM_ORB_OF_CONTROL = 137447,
+    SPELL_CONTROL_HORRIDON   = 137442,
+    SPELL_VENOMOUS_EFFUSIONS = 136644,
 };
 
 enum sEvents
@@ -81,6 +84,7 @@ enum sEvents
     EVENT_HEX_OF_CONFUSION   = 17,
     EVENT_FIREBALL           = 18,
     EVENT_DINO_MENDING       = 19,
+    EVENT_VENOMOUS_EFFUSION  = 20,
 
     EVENT_RE_ATTACK          = 35,
     EVENT_OPEN_GATE          = 36,
@@ -171,6 +175,14 @@ Position amanidestpos[3] =
     {5356.72f, 5810.77f, 130.0378f, 5.4790f},
 };
 
+Position horridonchargedestpos[4] =
+{
+    {5497.175f, 5818.986f, 130.0373f}, //Farrak
+    {5497.503f, 5687.455f, 130.0373f}, //Gurubashi
+    {5365.979f, 5687.588f, 130.0371f}, //Drakkari
+    {5365.813f, 5818.714f, 130.0371f}, //Amani
+};
+
 uint32 const gateentry[4] =
 {
     GO_FARRAK_GATE,
@@ -195,14 +207,44 @@ public:
 
         void Reset()
         {
-            /*if (Creature* gatecontroller = me->GetCreature(*me, instance->GetData64(NPC_H_GATE_CONTROLLER)))
-                gatecontroller->AI()->DoAction(ACTION_RESET);*/
             _Reset();
+            //ActiveOrOfflineGateEvent(false);
+            DespawnSpecialSummons();
             ResetJalak();
             phase = PHASE_NULL;
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             //me->SetReactState(REACT_PASSIVE);
             me->SetReactState(REACT_AGGRESSIVE);
+        }
+
+        void ActiveOrOfflineGateEvent(bool state)
+        {
+            if (Creature* gatecontroller = me->GetCreature(*me, instance->GetData64(NPC_H_GATE_CONTROLLER)))
+            {
+                if (state)
+                    gatecontroller->AI()->DoAction(ACTION_ACTIVE_GATE_EVENT);
+                else
+                    gatecontroller->AI()->DoAction(ACTION_RESET);
+            }
+        }
+
+        void DespawnSpecialSummons()
+        {
+            std::list<Creature*>_sumlist;
+            _sumlist.clear();
+            GetCreatureListWithEntryInGrid(_sumlist, me, NPC_FROZEN_ORB, 200.0f);
+            GetCreatureListWithEntryInGrid(_sumlist, me, NPC_LIGHTNING_NOVA_TOTEM, 200.0f);
+            GetCreatureListWithEntryInGrid(_sumlist, me, NPC_LIVING_POISON, 200.0f);
+            GetCreatureListWithEntryInGrid(_sumlist, me, NPC_VENOMOUS_EFFUSION, 200.0f);
+            if (!_sumlist.empty())
+                for (std::list<Creature*>::const_iterator itr = _sumlist.begin(); itr != _sumlist.end(); itr++)
+                    (*itr)->DespawnOrUnsummon();
+
+            std::list<GameObject*>_orbcontrolist;
+            _orbcontrolist.clear();
+            GetGameObjectListWithEntryInGrid(_orbcontrolist, me, GO_ORB_OF_CONTROL, 200.0f);
+            for (std::list<GameObject*>::const_iterator Itr = _orbcontrolist.begin(); Itr != _orbcontrolist.end(); Itr++)
+                (*Itr)->Delete();
         }
 
         void ResetJalak()
@@ -223,11 +265,10 @@ public:
         {
             _EnterCombat();
             phase = PHASE_ONE;
+            //ActiveOrOfflineGateEvent(true);
             events.ScheduleEvent(EVENT_TRIPLE_PUNCTURE, urand(11000, 15000));
             events.ScheduleEvent(EVENT_DOUBLE_SWIPE, urand(17000, 20000));
             events.ScheduleEvent(EVENT_CHARGES, urand(50000, 60000));
-            /*if (Creature* gc = me->GetCreature(*me, instance->GetData64(NPC_H_GATE_CONTROLLER)))
-                gc->AI()->DoAction(ACTION_ACTIVE_GATE_EVENT);*/
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -249,8 +290,7 @@ public:
                 else
                 {
                     instance->SetBossState(DATA_HORRIDON, DONE);
-                    /*if (Creature* gatecontroller = me->GetCreature(*me, instance->GetData64(NPC_H_GATE_CONTROLLER)))
-                        gatecontroller->AI()->DoAction(ACTION_RESET);*/
+                    //ActiveOrOfflineGateEvent(false);
                 }
             }
         }
@@ -825,6 +865,7 @@ public:
             //Gurubashi
             case NPC_GURUBASHI_VENOM_PRIEST:
                 events.ScheduleEvent(EVENT_VENOM_BOLT_VOLLEY, 10000);
+                events.ScheduleEvent(EVENT_VENOMOUS_EFFUSION, 20000);
                 break;
             case NPC_GURUBASHI_BLOODLORD:
                 events.ScheduleEvent(EVENT_RENDING_CHARGE, 10000);
@@ -912,6 +953,10 @@ public:
                 case EVENT_VENOM_BOLT_VOLLEY:
                     DoCast(me, SPELL_VENOM_BOLT_VOLLEY);
                     events.ScheduleEvent(EVENT_VENOM_BOLT_VOLLEY, 20000);
+                    break;
+                case EVENT_VENOMOUS_EFFUSION:
+                    DoCast(me, SPELL_VENOMOUS_EFFUSIONS);
+                    events.ScheduleEvent(EVENT_VENOMOUS_EFFUSION, 20000);
                     break;
                 case EVENT_RENDING_CHARGE:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 55.0f, true))
@@ -1019,7 +1064,7 @@ public:
         npc_zandalari_dinomancerAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
-            me->SetReactState(REACT_AGGRESSIVE);
+            me->SetReactState(REACT_PASSIVE);
         }
         InstanceScript* instance;
         EventMap events;
@@ -1030,15 +1075,29 @@ public:
             done = false;
         }
 
+        void EnterCombat(Unit* who)
+        {
+            events.ScheduleEvent(EVENT_DINO_MENDING, 5000);
+        }
+
+        void OnInterruptCast(Unit* /*caster*/, uint32 spellId, uint32 curSpellID, uint32 /*schoolMask*/)
+        {
+            if (curSpellID == SPELL_DINO_MENDING)
+                events.ScheduleEvent(EVENT_DINO_MENDING, 5000);
+        }
+
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
             if (HealthBelowPct(50) && !done)
             {
                 done = true;
+                events.CancelEvent(EVENT_DINO_MENDING);
+                me->InterruptNonMeleeSpells(true);
+                DoCast(me, SPELL_SUM_ORB_OF_CONTROL, true);
                 DoCast(me, SPELL_DINO_FORM, true);
-                float x, y;
-                GetPosInRadiusWithRandomOrientation(me, 8.0f, x, y);
-                me->SummonGameObject(GO_ORB_OF_CONTROL, x, y, me->GetPositionZ() + 3.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 604800);
+                me->SetReactState(REACT_AGGRESSIVE);
+                if (me->getVictim())
+                    me->GetMotionMaster()->MoveChase(me->getVictim());
             }
         }
 
@@ -1055,7 +1114,8 @@ public:
                     events.ScheduleEvent(EVENT_DINO_MENDING, 30000);
                 }
             }
-            DoMeleeAttackIfReady();
+            if (me->HasAura(SPELL_DINO_FORM))
+                DoMeleeAttackIfReady();
         }
     };
 
@@ -1186,6 +1246,30 @@ public:
     CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_lightning_nova_totemAI(creature);
+    }
+};
+
+//218374
+class go_orb_of_control : public GameObjectScript
+{
+public:
+    go_orb_of_control() : GameObjectScript("go_orb_of_control") { }
+
+
+    bool OnGossipHello(Player* player, GameObject* go)
+    {
+        InstanceScript* pInstance = (InstanceScript*)go->GetInstanceScript();
+
+        if (!pInstance)
+            return false;
+
+        if (Creature* horridon = player->GetCreature(*player, pInstance->GetData64(NPC_HORRIDON)))
+        {
+            go->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+            player->CastSpell(horridon, SPELL_CONTROL_HORRIDON);
+            go->Delete();
+        }
+        return true;
     }
 };
 
@@ -1331,6 +1415,7 @@ void AddSC_boss_horridon()
     new npc_zandalari_dinomancer();
     new npc_sand_trap();
     new npc_living_poison();
+    new go_orb_of_control();
     new npc_lightning_nova_totem();
     new spell_horridon_charge();
     new spell_blazing_sunlight();

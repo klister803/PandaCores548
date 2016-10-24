@@ -208,9 +208,9 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
             }
 
-            void OnInterruptCast(Unit* /*caster*/, uint32 spellId, uint32 /*curSpellID*/, uint32 /*schoolMask*/)
+            void OnInterruptCast(Unit* /*caster*/, uint32 spellId, uint32 curSpellID, uint32 /*schoolMask*/)
             {
-                if (spellId == SPELL_DEAFENING_SCREECH)
+                if (curSpellID == SPELL_DEAFENING_SCREECH)
                 {
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                     EnterEvadeMode();

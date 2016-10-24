@@ -4903,6 +4903,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->TargetB = 0;
                     break;
                 //Horridon
+                case 137442: //Horridon Control
+                    spellInfo->Effects[1]->TargetA = 25;
+                    break;
                 case 136797: //Dino Mending
                     spellInfo->Effects[0]->TargetA = 25;
                     spellInfo->Effects[0]->TargetB = 0;
