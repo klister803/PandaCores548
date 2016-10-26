@@ -56,6 +56,7 @@ enum eSpells
     SPELL_DINO_MENDING       = 136797,
 
     SPELL_HEADACHE           = 137294,
+    SPELL_CRACKED_SHELL      = 137240,
     SPELL_SUM_ORB_OF_CONTROL = 137447,
     SPELL_CONTROL_HORRIDON   = 137442,
     SPELL_VENOMOUS_EFFUSIONS = 136644,
@@ -85,6 +86,7 @@ enum sEvents
     EVENT_FIREBALL           = 18,
     EVENT_DINO_MENDING       = 19,
     EVENT_VENOMOUS_EFFUSION  = 20,
+    EVENT_CHANGE_PHASE       = 21,
 
     EVENT_RE_ATTACK          = 35,
     EVENT_OPEN_GATE          = 36,
@@ -103,6 +105,11 @@ enum sAction
     ACTION_RESET             = 4,
     ACTION_ACTIVE_GATE_EVENT = 5,
     ACTION_ENTERCOMBAT       = 6,
+    ACTION_ATTACK_STOP       = 7,
+    ACTION_CHARGE_TO_GATE    = 8,
+    ACTION_STOP_GATE_EVENT   = 9,
+    ACTION_NEW_PHASE         = 10, 
+    ACTION_NEW_GATE_EVENT    = 11,
 };
 
 enum Phase
@@ -175,7 +182,7 @@ Position amanidestpos[3] =
     {5356.72f, 5810.77f, 130.0378f, 5.4790f},
 };
 
-Position horridonchargedestpos[4] =
+Position hchargedestpos[4] =
 {
     {5497.175f, 5818.986f, 130.0373f}, //Farrak
     {5497.503f, 5687.455f, 130.0373f}, //Gurubashi
@@ -208,12 +215,13 @@ public:
         void Reset()
         {
             _Reset();
-            //ActiveOrOfflineGateEvent(false);
+            ActiveOrOfflineGateEvent(false);
             DespawnSpecialSummons();
             ResetJalak();
             phase = PHASE_NULL;
+            me->RemoveAurasDueToSpell(SPELL_HEADACHE);
+            me->RemoveAurasDueToSpell(SPELL_CRACKED_SHELL);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            //me->SetReactState(REACT_PASSIVE);
             me->SetReactState(REACT_AGGRESSIVE);
         }
 
@@ -261,11 +269,75 @@ public:
             }
         }
 
+        void DoAction(int32 const action)
+        {
+            switch (action)
+            {
+            case ACTION_ATTACK_STOP:
+                me->InterruptNonMeleeSpells(true);
+                events.Reset();
+                me->SetAttackStop(true);
+                if (Creature* gc = me->GetCreature(*me, instance->GetData64(NPC_H_GATE_CONTROLLER)))
+                    gc->AI()->DoAction(ACTION_STOP_GATE_EVENT);
+                break;
+            case ACTION_CHARGE_TO_GATE:
+                if (GameObject* gate = me->GetMap()->GetGameObject(instance->GetData64(gateentry[phase - 1])))
+                {
+                    me->SetFacingToObject(gate);
+                    me->GetMotionMaster()->MoveCharge(hchargedestpos[phase - 1].GetPositionX(), hchargedestpos[phase - 1].GetPositionY(), hchargedestpos[phase - 1].GetPositionZ(), 42.0f, 5);
+                }
+                break;
+            case ACTION_NEW_PHASE:
+                switch (phase)
+                {
+                case PHASE_ONE:
+                    phase = PHASE_TWO;
+                    break;
+                case PHASE_TWO:
+                    phase = PHASE_THREE;
+                    break;
+                case PHASE_THREE:
+                    phase = PHASE_FOUR;
+                    break;
+                case PHASE_FOUR:
+                    phase = PHASE_FIVE;
+                    break;
+                default:
+                    break;
+                }
+                me->ReAttackWithZone();
+                if (phase != PHASE_FIVE)
+                {
+                    if (Creature* gc = me->GetCreature(*me, instance->GetData64(NPC_H_GATE_CONTROLLER)))
+                        gc->AI()->DoAction(ACTION_NEW_GATE_EVENT);
+                }
+                else if (phase == PHASE_FIVE)
+                {
+                    if (Creature* jalak = me->GetCreature(*me, instance->GetData64(NPC_JALAK)))
+                        jalak->AI()->DoAction(ACTION_INTRO);
+                }
+                events.ScheduleEvent(EVENT_TRIPLE_PUNCTURE, urand(11000, 15000));
+                events.ScheduleEvent(EVENT_DOUBLE_SWIPE, urand(17000, 20000));
+                events.ScheduleEvent(EVENT_CHARGES, urand(50000, 60000));
+                break;
+            }
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (type == POINT_MOTION_TYPE && pointId == 5)
+            {
+                if (GameObject* gate = me->GetMap()->GetGameObject(instance->GetData64(gateentry[phase - 1])))
+                    gate->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
+                DoCast(me, SPELL_HEADACHE, true);
+            }
+        }
+
         void EnterCombat(Unit* who)
         {
             _EnterCombat();
             phase = PHASE_ONE;
-            //ActiveOrOfflineGateEvent(true);
+            ActiveOrOfflineGateEvent(true);
             events.ScheduleEvent(EVENT_TRIPLE_PUNCTURE, urand(11000, 15000));
             events.ScheduleEvent(EVENT_DOUBLE_SWIPE, urand(17000, 20000));
             events.ScheduleEvent(EVENT_CHARGES, urand(50000, 60000));
@@ -273,9 +345,9 @@ public:
 
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
-            if (HealthBelowPct(30) && phase == PHASE_ONE)
+            if (HealthBelowPct(30) && phase != PHASE_FIVE)
             {
-                phase = PHASE_TWO;
+                phase = PHASE_FIVE;
                 if (Creature* jalak = me->GetCreature(*me, instance->GetData64(NPC_JALAK)))
                     jalak->AI()->DoAction(ACTION_INTRO);
             }
@@ -289,8 +361,9 @@ public:
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 else
                 {
-                    instance->SetBossState(DATA_HORRIDON, DONE);
-                    //ActiveOrOfflineGateEvent(false);
+                    _JustDied();
+                    DespawnSpecialSummons();
+                    ActiveOrOfflineGateEvent(false);
                 }
             }
         }
@@ -482,8 +555,14 @@ public:
                 summon.DespawnAll();
                 gatenum = 0;
                 break;
+            case ACTION_STOP_GATE_EVENT:
+                events.Reset();
+                break;
             case ACTION_ACTIVE_GATE_EVENT:
                 events.ScheduleEvent(EVENT_OPEN_GATE, 30000);
+                break;
+            case ACTION_NEW_GATE_EVENT:
+                events.ScheduleEvent(EVENT_OPEN_GATE, 40000);
                 break;
             }
         }
@@ -943,7 +1022,7 @@ public:
                     if (Creature* horridon = me->GetCreature(*me, instance->GetData64(NPC_HORRIDON)))
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 80.0f, true))
                             horridon->SummonCreature(NPC_SAND_TRAP, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
-                    events.ScheduleEvent(EVENT_SAND_TRAP, 7000);
+                    events.ScheduleEvent(EVENT_SAND_TRAP, 15000);
                     break;
                 case EVENT_STONE_GAZE:
                     me->SetAttackStop(true);
@@ -956,7 +1035,7 @@ public:
                     break;
                 case EVENT_VENOMOUS_EFFUSION:
                     DoCast(me, SPELL_VENOMOUS_EFFUSIONS);
-                    events.ScheduleEvent(EVENT_VENOMOUS_EFFUSION, 20000);
+                    events.ScheduleEvent(EVENT_VENOMOUS_EFFUSION, 25000);
                     break;
                 case EVENT_RENDING_CHARGE:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 55.0f, true))
@@ -979,7 +1058,7 @@ public:
                 case EVENT_SWIPE:
                     if (me->getVictim())
                         DoCast(me->getVictim(), SPELL_SWIPE);
-                    events.ScheduleEvent(EVENT_SWIPE, 5000);
+                    events.ScheduleEvent(EVENT_SWIPE, 10000);
                     break;
                 //Amani Beast Shaman
                 case EVENT_CHAIN_LIGHTNING:
@@ -1023,7 +1102,7 @@ public:
                 case EVENT_FIREBALL:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 45.0f, true))
                         DoCast(target, SPELL_FIREBALL);
-                    events.ScheduleEvent(EVENT_FIREBALL, 4000);
+                    events.ScheduleEvent(EVENT_FIREBALL, 6000);
                     break;
                 //Special
                 case EVENT_RE_ATTACK:
@@ -1034,7 +1113,7 @@ public:
                         events.ScheduleEvent(EVENT_STONE_GAZE, 10000);
                         break;
                     case NPC_GURUBASHI_BLOODLORD:
-                        events.ScheduleEvent(EVENT_RENDING_CHARGE, 10000);
+                        events.ScheduleEvent(EVENT_RENDING_CHARGE, 12000);
                         break;
                     default:
                         break;
@@ -1096,6 +1175,7 @@ public:
                 DoCast(me, SPELL_SUM_ORB_OF_CONTROL, true);
                 DoCast(me, SPELL_DINO_FORM, true);
                 me->SetReactState(REACT_AGGRESSIVE);
+                DoZoneInCombat(me, 150.0f);
                 if (me->getVictim())
                     me->GetMotionMaster()->MoveChase(me->getVictim());
             }
@@ -1406,6 +1486,117 @@ public:
     }
 };
 
+//137442
+class spell_control_horridon : public SpellScriptLoader
+{
+public:
+    spell_control_horridon() : SpellScriptLoader("spell_control_horridon") { }
+
+    class spell_control_horridon_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_control_horridon_AuraScript);
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetTarget() && GetTarget()->ToCreature())
+                GetTarget()->ToCreature()->AI()->DoAction(ACTION_ATTACK_STOP);
+        }
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+        {
+            if (GetTarget() && GetTarget()->ToCreature())
+                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+                    GetTarget()->ToCreature()->AI()->DoAction(ACTION_CHARGE_TO_GATE);
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_control_horridon_AuraScript::OnApply, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            OnEffectRemove += AuraEffectRemoveFn(spell_control_horridon_AuraScript::HandleEffectRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_control_horridon_AuraScript();
+    }
+};
+
+//137294
+class spell_headache : public SpellScriptLoader
+{
+public:
+    spell_headache() : SpellScriptLoader("spell_headache") { }
+
+    class spell_headache_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_headache_AuraScript);
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+        {
+            if (GetTarget() && GetTarget()->ToCreature())
+            {
+                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+                {
+                    GetTarget()->RemoveAurasDueToSpell(SPELL_CRACKED_SHELL);
+                    GetTarget()->ToCreature()->AI()->DoAction(ACTION_NEW_PHASE);
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_headache_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_headache_AuraScript();
+    }
+};
+
+class ExactDistanceCheck
+{
+public:
+    ExactDistanceCheck(WorldObject* source, float dist) : _source(source), _dist(dist) {}
+
+    bool operator()(WorldObject* unit)
+    {
+        return _source->GetExactDist2d(unit) > _dist;
+    }
+private:
+    WorldObject* _source;
+    float _dist;
+};
+
+//136723
+class spell_sand_trap : public SpellScriptLoader
+{
+public:
+    spell_sand_trap() : SpellScriptLoader("spell_sand_trap") { }
+
+    class spell_sand_trap_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_sand_trap_SpellScript);
+
+        void ScaleRange(std::list<WorldObject*>& targets)
+        {
+            targets.remove_if(ExactDistanceCheck(GetCaster(), 2.0f * GetCaster()->GetFloatValue(OBJECT_FIELD_SCALE_X)));
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sand_trap_SpellScript::ScaleRange, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_sand_trap_SpellScript();
+    }
+};
+
 void AddSC_boss_horridon()
 {
     new boss_horridon();
@@ -1421,4 +1612,7 @@ void AddSC_boss_horridon()
     new spell_blazing_sunlight();
     new spell_stone_gaze();
     new spell_rending_charge();
+    new spell_control_horridon();
+    new spell_headache();
+    new spell_sand_trap();
 }
