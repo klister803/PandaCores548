@@ -82,13 +82,7 @@ enum AreaTriggerMoveType
     AT_MOVE_TYPE_SPIRAL  = 2,
 };
 
-struct PolygonPOI
-{
-    uint32 id;
-    float x;
-    float y;
-};
-typedef UNORDERED_MAP<uint32, PolygonPOI> PolygonPOIMap;
+typedef std::vector<G3D::Vector2> PolygonPOIMap;
 typedef std::vector<Vector3> PositionsArray;
 
 struct AreaTriggerAction
