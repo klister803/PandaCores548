@@ -23,7 +23,7 @@ SD%Complete: 90
 SDComments: Hodir's Protective Gaze and Mimiron's Destabilization Matrix don't work.
 EndScriptData */
 
-#include "ScriptPCH.h"
+#include "NorthrendPCH.h"
 #include "ulduar.h"
 
 enum Sara_Yells

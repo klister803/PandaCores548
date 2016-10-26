@@ -23,7 +23,7 @@ SDAuthor: PrinceCreed
 SD%Complete: 100
 EndScriptData */
 
-#include "ScriptPCH.h"
+#include "NorthrendPCH.h"
 #include "ulduar.h"
 
 enum Says
