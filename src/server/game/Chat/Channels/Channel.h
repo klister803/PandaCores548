@@ -264,12 +264,12 @@ class Channel
 
         void Join(uint64 p, const char *pass);
         void Leave(uint64 p, bool send = true);
-        void KickOrBan(uint64 good, const char *badname, bool ban);
-        void Kick(uint64 good, const char *badname) { KickOrBan(good, badname, false); }
-        void Ban(uint64 good, const char *badname) { KickOrBan(good, badname, true); }
-        void UnBan(uint64 good, const char *badname);
+        void KickOrBan(uint64 good, std::string const& badname, bool ban);
+        void Kick(uint64 good, std::string const& badname) { KickOrBan(good, badname, false); }
+        void Ban(uint64 good, std::string const& badname) { KickOrBan(good, badname, true); }
+        void UnBan(uint64 good, std::string const& badname);
         void Password(uint64 p, const char *pass);
-        void SetMode(uint64 p, const char *p2n, bool mod, bool set);
+        void SetMode(uint64 p, std::string const& p2n, bool mod, bool set);
         void SetOwner(uint64 p, bool exclaim = true);
         void SetOwner(uint64 p, const char *newname);
         void SendWhoOwner(uint64 p);

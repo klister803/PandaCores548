@@ -495,8 +495,7 @@ public:
 
             Trinity::AllCreaturesOfEntryInRange check(me, entry, 100);
             Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(me, templist, check);
-            TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
-            cell.Visit(pair, cSearcher, *(me->GetMap()), *me, me->CalcVisibilityRange());
+            cell.Visit(pair, Trinity::makeGridVisitor(searcher), *(me->GetMap()), *me, me->CalcVisibilityRange());
 
             for (std::list<Creature*>::const_iterator i = templist.begin(); i != templist.end(); ++i)
             {

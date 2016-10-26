@@ -28,6 +28,7 @@
 #include "GridNotifiersImpl.h"
 #include "CreatureTextMgr.h"
 #include "icecrown_citadel.h"
+#include "ObjectVisitors.hpp"
 
 enum Texts
 {
@@ -585,7 +586,7 @@ class boss_the_lich_king : public CreatureScript
                 // Reset The Frozen Throne gameobjects
                 FrozenThroneResetWorker reset;
                 Trinity::GameObjectWorker<FrozenThroneResetWorker> worker(me, reset);
-                me->VisitNearbyGridObject(333.0f, worker);
+                Trinity::VisitNearbyGridObject(me, 333.0f, worker);
 
                 // Reset any light override
                 SendLightOverride(0, 5000);

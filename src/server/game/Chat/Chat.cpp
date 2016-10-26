@@ -36,6 +36,7 @@
 #include "ScriptMgr.h"
 #include "ChatLink.h"
 #include "Group.h"
+#include "ObjectVisitors.hpp"
 
 bool ChatHandler::load_command_table = true;
 
@@ -862,7 +863,7 @@ GameObject* ChatHandler::GetNearbyGameObject()
     GameObject* obj = NULL;
     Trinity::NearestGameObjectCheck check(*pl);
     Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectCheck> searcher(pl, obj, check);
-    pl->VisitNearbyGridObject(SIZE_OF_GRIDS, searcher);
+    Trinity::VisitNearbyGridObject(pl, SIZE_OF_GRIDS, searcher);
     return obj;
 }
 
@@ -881,11 +882,10 @@ GameObject* ChatHandler::GetObjectGlobalyWithGuidOrNearWithDbGuid(uint32 lowguid
         CellCoord p(Trinity::ComputeCellCoord(pl->GetPositionX(), pl->GetPositionY()));
         Cell cell(p);
 
-        Trinity::GameObjectWithDbGUIDCheck go_check(*pl, lowguid);
+        Trinity::GameObjectWithDbGUIDCheck go_check(lowguid);
         Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck> checker(pl, obj, go_check);
 
-        TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck>, GridTypeMapContainer > object_checker(checker);
-        cell.Visit(p, object_checker, *pl->GetMap(), *pl, pl->CalcVisibilityRange());
+        cell.Visit(p, Trinity::makeGridVisitor(checker), *pl->GetMap(), *pl, pl->CalcVisibilityRange());
     }
 
     return obj;
@@ -1013,7 +1013,7 @@ uint64 ChatHandler::extractGuidFromLink(char* text)
             if (!normalizePlayerName(name))
                 return 0;
 
-            if (Player* player = sObjectAccessor->FindPlayerByName(name.c_str()))
+            if (Player* player = sObjectAccessor->FindPlayerByName(name))
                 return player->GetGUID();
 
             return ObjectMgr::GetPlayerGUIDByName(name);
@@ -1068,7 +1068,7 @@ bool ChatHandler::extractPlayerTarget(char* args, Player** player, uint64* playe
             return false;
         }
 
-        Player* pl = sObjectAccessor->FindPlayerByName(name.c_str());
+        Player* pl = sObjectAccessor->FindPlayerByName(name);
 
         // if allowed player pointer
         if (player)
@@ -1203,7 +1203,7 @@ bool ChatHandler::GetPlayerGroupAndGUIDByName(const char* cname, Player* &player
                 return false;
             }
 
-            player = sObjectAccessor->FindPlayerByName(name.c_str());
+            player = sObjectAccessor->FindPlayerByName(name);
             if (offline)
                 guid = ObjectMgr::GetPlayerGUIDByName(name.c_str());
         }

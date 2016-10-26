@@ -2946,18 +2946,12 @@ class Player : public Unit, public GridObject<Player>
 
         bool CanSummonPet(uint32 entry) const;
 
-        float m_staticVisibleDistance;
-        float m_dynamicVisibleDistance;
-        bool m_inEventZone;
-        Position m_eventZonePointForVisUpdate;
         // currently visible objects at player client
-        typedef std::set<uint64> ClientGUIDs;
-        ClientGUIDs m_clientGUIDs;
-        ClientGUIDs m_extraLookList;
+        GuidUnorderedSet m_clientGUIDs;
+        GuidSet m_extraLookList;
 
         bool HaveAtClient(WorldObject const* u) const { return u == this || m_clientGUIDs.find(u->GetGUID()) != m_clientGUIDs.end(); }
         void AddClient(WorldObject *u) { m_clientGUIDs.insert(u->GetGUID()); }
-        void CalcStaticVisibleDistance(uint32 zoneId = 0, uint32 areaId = 0);
 
         void AddVignette(WorldObject *u);
         bool CanSeeVignette(WorldObject *u);
@@ -3244,8 +3238,6 @@ class Player : public Unit, public GridObject<Player>
         /*********************************************************/
         bool isWatchingMovie() const { return m_watching_movie; }
         void setWatchinMovie(bool s) { m_watching_movie = s; }
-        uint32 getCurrentUpdateAreaID() const { return m_areaUpdateId; }
-        uint32 getCurrentUpdateZoneID() const { return m_zoneUpdateId; }
 
         //
         AreaTriggerEntry const* GetLastAreaTrigger() { return LastAreaTrigger; }
@@ -3492,9 +3484,7 @@ class Player : public Unit, public GridObject<Player>
 
         bool m_zoneUpdateAllow;
         Position m_lastZoneUpdPos;
-        uint32 m_zoneUpdateId;
         uint32 m_zoneUpdateTimer;
-        uint32 m_areaUpdateId;
 
         uint32 m_deathTimer;
         time_t m_deathExpireTime;

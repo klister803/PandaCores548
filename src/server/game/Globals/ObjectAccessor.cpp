@@ -36,8 +36,38 @@
 #include "ObjectDefines.h"
 #include "MapInstanced.h"
 #include "World.h"
+#include "ThreadPoolMgr.hpp"
 
 #include <cmath>
+
+namespace {
+
+class ValuesUpdateRequest
+{
+public:
+    ValuesUpdateRequest(Object *obj)
+        : m_obj(obj)
+    { }
+
+    void operator()()
+    {
+        UpdateDataMapType update_players;
+        m_obj->BuildUpdate(update_players);
+
+        WorldPacket packet;
+        for (UpdateDataMapType::iterator iter = update_players.begin(); iter != update_players.end(); ++iter)
+        {
+            if (iter->second.BuildPacket(&packet))
+                iter->first->SendDirectMessage(&packet);
+            packet.clear();
+        }
+    }
+
+private:
+    Object *m_obj;
+};
+
+} // namespace
 
 ObjectAccessor::ObjectAccessor()
 {
@@ -177,20 +207,21 @@ Unit* ObjectAccessor::FindUnit(uint64 guid)
     return GetObjectInWorld(guid, (Unit*)NULL);
 }
 
-Player* ObjectAccessor::FindPlayerByName(const char* name)
+Player* ObjectAccessor::FindPlayerByName(std::string name)
 {
+    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+
     TRINITY_READ_GUARD(HashMapHolder<Player>::LockType, *HashMapHolder<Player>::GetLock());
-    std::string nameStr = name;
-    std::transform(nameStr.begin(), nameStr.end(), nameStr.begin(), ::tolower);
-    HashMapHolder<Player>::MapType const& m = GetPlayers();
-    for (HashMapHolder<Player>::MapType::const_iterator iter = m.begin(); iter != m.end(); ++iter)
+
+    for (auto const &kvPair : GetPlayers())
     {
-        if (!iter->second->IsInWorld())
+        if (!kvPair.second->IsInWorld())
             continue;
-        std::string currentName = iter->second->GetName();
+
+        std::string currentName = kvPair.second->GetName();
         std::transform(currentName.begin(), currentName.end(), currentName.begin(), ::tolower);
-        if (nameStr.compare(currentName) == 0)
-            return iter->second;
+        if (name.compare(currentName) == 0)
+            return kvPair.second;
     }
 
     return NULL;
@@ -199,14 +230,13 @@ Player* ObjectAccessor::FindPlayerByName(const char* name)
 void ObjectAccessor::SaveAllPlayers()
 {
     TRINITY_READ_GUARD(HashMapHolder<Player>::LockType, *HashMapHolder<Player>::GetLock());
-    HashMapHolder<Player>::MapType const& m = GetPlayers();
-    for (HashMapHolder<Player>::MapType::const_iterator itr = m.begin(); itr != m.end(); ++itr)
-        itr->second->SaveToDB();
+    for (auto &pair : GetPlayers())
+        pair.second->SaveToDB();
 }
 
 Corpse* ObjectAccessor::GetCorpseForPlayerGUID(uint64 guid)
 {
-    TRINITY_READ_GUARD(ACE_RW_Thread_Mutex, i_corpseLock);
+    CorpseReadGuard guard(i_corpseLock);
 
     Player2CorpsesMapType::iterator iter = i_player2corpse.find(guid);
     if (iter == i_player2corpse.end())
@@ -234,12 +264,11 @@ void ObjectAccessor::RemoveCorpse(Corpse* corpse)
         }
     }
     else
-
         corpse->RemoveFromWorld();
 
     // Critical section
     {
-        TRINITY_WRITE_GUARD(ACE_RW_Thread_Mutex, i_corpseLock);
+        CorpseWriteGuard guard(i_corpseLock);
 
         Player2CorpsesMapType::iterator iter = i_player2corpse.find(corpse->GetOwnerGUID());
         if (iter == i_player2corpse.end()) // TODO: Fix this
@@ -259,7 +288,7 @@ void ObjectAccessor::AddCorpse(Corpse* corpse)
 
     // Critical section
     {
-        TRINITY_WRITE_GUARD(ACE_RW_Thread_Mutex, i_corpseLock);
+        CorpseWriteGuard guard(i_corpseLock);
 
         ASSERT(i_player2corpse.find(corpse->GetOwnerGUID()) == i_player2corpse.end());
         i_player2corpse[corpse->GetOwnerGUID()] = corpse;
@@ -270,9 +299,9 @@ void ObjectAccessor::AddCorpse(Corpse* corpse)
     }
 }
 
-void ObjectAccessor::AddCorpsesToGrid(GridCoord const& gridpair, GridType& grid, Map* map)
+void ObjectAccessor::AddCorpsesToGrid(GridCoord const& gridpair, Grid& grid, Map* map)
 {
-    TRINITY_READ_GUARD(ACE_RW_Thread_Mutex, i_corpseLock);
+    CorpseReadGuard guard(i_corpseLock);
 
     for (Player2CorpsesMapType::iterator iter = i_player2corpse.begin(); iter != i_player2corpse.end(); ++iter)
     {
@@ -351,6 +380,9 @@ Corpse* ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insignia
         map->AddToMap(bones);
     }
 
+    if (corpse->IsInGrid())
+        corpse->RemoveFromGrid();
+
     // all references to the corpse should be removed at this point
     delete corpse;
 
@@ -375,37 +407,37 @@ void ObjectAccessor::RemoveOldCorpses()
 
 void ObjectAccessor::Update(uint32 /*diff*/)
 {
-    UpdateDataMapType update_players;
+    decltype(i_objects) objectsToUpdate;
 
-    while (!i_objects.empty())
     {
-        Object* obj = *i_objects.begin();
-        ASSERT(obj && obj->IsInWorld());
-        i_objects.erase(i_objects.begin());
-        obj->BuildUpdate(update_players);
+        ObjectGuard guard(i_objectLock);
+        if (!i_objects.empty())
+            std::swap(objectsToUpdate, i_objects);
     }
 
-    WorldPacket packet;                                     // here we allocate a std::vector with a size of 0x10000
-    for (UpdateDataMapType::iterator iter = update_players.begin(); iter != update_players.end(); ++iter)
-    {
-        iter->second.BuildPacket(&packet);
-        iter->first->GetSession()->SendPacket(&packet);
-        packet.clear();                                     // clean the string
-    }
+    for (auto &obj : objectsToUpdate)
+        if (obj && obj->IsInWorld())
+            sThreadPoolMgr->schedule(ValuesUpdateRequest(obj));
+
+    sThreadPoolMgr->wait();
 }
 
 void ObjectAccessor::UnloadAll()
 {
-    for (Player2CorpsesMapType::const_iterator itr = i_player2corpse.begin(); itr != i_player2corpse.end(); ++itr)
+    for (auto itr = i_player2corpse.begin(); itr != i_player2corpse.end(); ++itr)
     {
-        itr->second->RemoveFromWorld();
-        delete itr->second;
-    }
-}
+        auto &corpse = itr->second;
+
+        corpse->RemoveFromWorld();
+        if (corpse->IsInGrid())
+            corpse->RemoveFromGrid();
+
+        delete corpse;
+    }}
 
 /// Define the static members of HashMapHolder
 
-template <class T> UNORDERED_MAP< uint64, T* > HashMapHolder<T>::m_objectMap;
+template <class T> std::unordered_map<uint64, T*> HashMapHolder<T>::m_objectMap;
 template <class T> typename HashMapHolder<T>::LockType HashMapHolder<T>::i_lock;
 
 /// Global definitions for the hashmap storage

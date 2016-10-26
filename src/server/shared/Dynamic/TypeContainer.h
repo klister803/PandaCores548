@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -24,68 +24,78 @@
  * types of object at the same time.
  */
 
-#include <map>
-#include <vector>
 #include "Define.h"
 #include "Dynamic/TypeList.h"
-#include "GridRefManager.h"
+
+#include <type_traits>
+#include <vector>
+
+namespace Trinity {
+
+namespace Detail {
 
 /*
  * @class ContainerMapList is a mulit-type container for map elements
  * By itself its meaningless but collaborate along with TypeContainers,
  * it become the most powerfully container in the whole system.
  */
-template<class OBJECT> struct ContainerMapList
+template <typename T>
+struct ContainerMapList
 {
-    //std::map<OBJECT_HANDLE, OBJECT *> _element;
-    GridRefManager<OBJECT> _element;
+    std::vector<T*> elements;
 };
 
-template<> struct ContainerMapList<TypeNull>                /* nothing is in type null */
+template <>
+struct ContainerMapList<TypeNull> { };
+
+template <typename Head, typename Tail>
+struct ContainerMapList<TypeList<Head, Tail>>
 {
-};
-template<class H, class T> struct ContainerMapList<TypeList<H, T> >
-{
-    ContainerMapList<H> _elements;
-    ContainerMapList<T> _TailElements;
+    ContainerMapList<Head> head;
+    ContainerMapList<Tail> tail;
 };
 
-/*
- * @class ContaierArrayList is a multi-type container for
- * array of elements.
- */
-template<class OBJECT> struct ContainerArrayList
+template <typename SpecificType, typename Head, typename Tail>
+inline typename std::enable_if<
+    std::is_same<Head, SpecificType>::value,
+    ContainerMapList<SpecificType> const &
+>::type
+mapForType(ContainerMapList<TypeList<Head, Tail>> const &m)
 {
-    std::vector<OBJECT> _element;
-};
+    return m.head;
+}
 
-// termination condition
-template<> struct ContainerArrayList<TypeNull> {};
-// recursion
-template<class H, class T> struct ContainerArrayList<TypeList<H, T> >
+template <typename SpecificType, typename Head, typename Tail>
+inline typename std::enable_if<
+    !std::is_same<Head, SpecificType>::value,
+    ContainerMapList<SpecificType> const &
+>::type
+mapForType(ContainerMapList<TypeList<Head, Tail>> const &m)
 {
-    ContainerArrayList<H> _elements;
-    ContainerArrayList<T> _TailElements;
-};
+    return Trinity::Detail::mapForType<SpecificType>(m.tail);
+}
 
-/*
- * @class ContainerList is a simple list of different types of elements
- *
- */
-template<class OBJECT> struct ContainerList
+template <typename SpecificType, typename Head, typename Tail>
+inline typename std::enable_if<
+    std::is_same<Head, SpecificType>::value,
+    ContainerMapList<SpecificType> &
+>::type
+mapForType(ContainerMapList<TypeList<Head, Tail>> &m)
 {
-    OBJECT _element;
-};
+    return m.head;
+}
 
-/* TypeNull is underfined */
-template<> struct ContainerList<TypeNull> {};
-template<class H, class T> struct ContainerList<TypeList<H, T> >
+template <typename SpecificType, typename Head, typename Tail>
+inline typename std::enable_if<
+    !std::is_same<Head, SpecificType>::value,
+    ContainerMapList<SpecificType> &
+>::type
+mapForType(ContainerMapList<TypeList<Head, Tail>> &m)
 {
-    ContainerList<H> _elements;
-    ContainerMapList<T> _TailElements;
-};
+    return Trinity::Detail::mapForType<SpecificType>(m.tail);
+}
 
-#include "TypeContainerFunctions.h"
+} // namespace Detail
 
 /*
  * @class TypeMapContainer contains a fixed number of types and is
@@ -94,31 +104,35 @@ template<class H, class T> struct ContainerList<TypeList<H, T> >
  * of different types.
  */
 
-template<class OBJECT_TYPES>
-class TypeMapContainer
+template <typename ObjectTypes>
+class TypeMapContainer final
 {
-    public:
-        template<class SPECIFIC_TYPE> size_t Count() const { return Trinity::Count(i_elements, (SPECIFIC_TYPE*)NULL); }
+public:
+    typedef Detail::ContainerMapList<ObjectTypes> ObjectMap;
 
-        /// inserts a specific object into the container
-        template<class SPECIFIC_TYPE> bool insert(SPECIFIC_TYPE *obj)
-        {
-            SPECIFIC_TYPE* t = Trinity::Insert(i_elements, obj);
-            return (t != NULL);
-        }
+public:
+    template <typename SpecificType>
+    std::size_t count() const
+    {
+        auto const &m = Detail::mapForType<SpecificType>(m_objectMap);
+        return m.elements.size();
+    }
 
-        ///  Removes the object from the container, and returns the removed object
-        //template<class SPECIFIC_TYPE> bool remove(SPECIFIC_TYPE* obj)
-        //{
-        //    SPECIFIC_TYPE* t = Trinity::Remove(i_elements, obj);
-        //    return (t != NULL);
-        //}
+    template <typename SpecificType>
+    void insert(SpecificType *obj)
+    {
+        auto &m = Detail::mapForType<SpecificType>(m_objectMap);
+        obj->AddToGrid(m.elements);
+    }
 
-        ContainerMapList<OBJECT_TYPES> & GetElements(void) { return i_elements; }
-        const ContainerMapList<OBJECT_TYPES> & GetElements(void) const { return i_elements;}
+    ObjectMap & objectMap() { return m_objectMap; }
 
-    private:
-        ContainerMapList<OBJECT_TYPES> i_elements;
+    ObjectMap const & objectMap() const { return m_objectMap; }
+
+private:
+    ObjectMap m_objectMap;
 };
-#endif
 
+} // namespace Trinity
+
+#endif

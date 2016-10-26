@@ -273,11 +273,10 @@ inline GameObject* Map::_FindGameObject(WorldObject* searchObject, uint32 guid) 
     CellCoord p(Trinity::ComputeCellCoord(searchObject->GetPositionX(), searchObject->GetPositionY()));
     Cell cell(p);
 
-    Trinity::GameObjectWithDbGUIDCheck goCheck(*searchObject, guid);
+    Trinity::GameObjectWithDbGUIDCheck goCheck(guid);
     Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck> checker(searchObject, gameobject, goCheck);
 
-    TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck>, GridTypeMapContainer > objectChecker(checker);
-    cell.Visit(p, objectChecker, *searchObject->GetMap(), *searchObject, searchObject->CalcVisibilityRange());
+    cell.Visit(p, Trinity::makeGridVisitor(checker), *searchObject->GetMap(), *searchObject, searchObject->GetGridActivationRange());
 
     return gameobject;
 }
@@ -840,11 +839,10 @@ void Map::ScriptsProcess()
                     CellCoord p(Trinity::ComputeCellCoord(wSource->GetPositionX(), wSource->GetPositionY()));
                     Cell cell(p);
 
-                    Trinity::CreatureWithDbGUIDCheck target_check(wSource, step.script->CallScript.CreatureEntry);
+                    Trinity::CreatureWithDbGUIDCheck target_check(uint64(step.script->CallScript.CreatureEntry));
                     Trinity::CreatureSearcher<Trinity::CreatureWithDbGUIDCheck> checker(wSource, cTarget, target_check);
 
-                    TypeContainerVisitor<Trinity::CreatureSearcher <Trinity::CreatureWithDbGUIDCheck>, GridTypeMapContainer > unit_checker(checker);
-                    cell.Visit(p, unit_checker, *wSource->GetMap(), *wSource, wSource->CalcVisibilityRange());
+                    cell.Visit(p, Trinity::makeGridVisitor(checker), *wSource->GetMap(), *wSource, wSource->GetGridActivationRange());
                 }
                 else //check hashmap holders
                 {

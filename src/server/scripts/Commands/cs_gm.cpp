@@ -27,6 +27,8 @@ EndScriptData */
 #include "Chat.h"
 #include "AccountMgr.h"
 #include "World.h"
+#include <ting/shared_mutex.hpp>
+#include <mutex>
 
 class gm_commandscript : public CommandScript
 {
@@ -116,12 +118,13 @@ public:
         bool footer = false;
 
         TRINITY_READ_GUARD(HashMapHolder<Player>::LockType, *HashMapHolder<Player>::GetLock());
-        HashMapHolder<Player>::MapType const& m = sObjectAccessor->GetPlayers();
-        for (HashMapHolder<Player>::MapType::const_iterator itr = m.begin(); itr != m.end(); ++itr)
+
+        for (auto const &kvPair : sObjectAccessor->GetPlayers())
         {
-            AccountTypes itrSec = itr->second->GetSession()->GetSecurity();
-            if ((itr->second->isGameMaster() || (!AccountMgr::IsPlayerAccount(itrSec) && itrSec <= AccountTypes(sWorld->getIntConfig(CONFIG_GM_LEVEL_IN_GM_LIST)))) &&
-                (!handler->GetSession() || itr->second->IsVisibleGloballyFor(handler->GetSession()->GetPlayer())))
+            Player const * const player = kvPair.second;
+            AccountTypes itrSec = kvPair.second->GetSession()->GetSecurity();
+            if ((player->isGameMaster() || (!AccountMgr::IsPlayerAccount(itrSec) && itrSec <= AccountTypes(sWorld->getIntConfig(CONFIG_GM_LEVEL_IN_GM_LIST)))) &&
+                (!handler->GetSession() || player->IsVisibleGloballyFor(handler->GetSession()->GetPlayer())))
             {
                 if (first)
                 {
@@ -130,7 +133,7 @@ public:
                     handler->SendSysMessage(LANG_GMS_ON_SRV);
                     handler->SendSysMessage("========================");
                 }
-                char const* name = itr->second->GetName();
+                char const* name = player->GetName();
                 uint8 security = itrSec;
                 uint8 max = ((16 - strlen(name)) / 2);
                 uint8 max2 = max;

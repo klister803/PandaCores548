@@ -2,8 +2,8 @@
 #include "ScriptPCH.h"
 #include "Vehicle.h"
 #include "CreatureTextMgr.h"
-
 #include "throne_of_the_four_winds.h"
+#include "ObjectVisitors.hpp"
 
 enum AnshalTalk
 {
@@ -1043,7 +1043,7 @@ public:
                             me->RemoveAura(SPELL_HURRICANE_CAST);
                     CouncilGameObject reset;
                     Trinity::GameObjectWorker<CouncilGameObject> worker(me, reset);
-                    me->VisitNearbyGridObject(400.0f, worker);
+                    Trinity::VisitNearbyGridObject(me, 400.0f, worker);
                     me->DespawnOrUnsummon(500);
                     break;
                 }

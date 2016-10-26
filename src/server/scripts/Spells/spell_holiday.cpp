@@ -27,6 +27,7 @@
 #include "GridNotifiers.h"
 #include "CellImpl.h"
 #include "GameObjectAI.h"
+#include "ObjectVisitors.hpp"
 
 // 45102 Romantic Picnic
 enum SpellsPicnic
@@ -78,7 +79,7 @@ class spell_love_is_in_the_air_romantic_picnic : public SpellScriptLoader
                 std::list<Player*> playerList;
                 Trinity::AnyPlayerInObjectRangeCheck checker(target, INTERACTION_DISTANCE*2);
                 Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(target, playerList, checker);
-                target->VisitNearbyWorldObject(INTERACTION_DISTANCE*2, searcher);
+                Trinity::VisitNearbyWorldObject(target, INTERACTION_DISTANCE*2, searcher);
                 for (std::list<Player*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
                 {
                     if ((*itr) != target && (*itr)->HasAura(GetId())) // && (*itr)->getStandState() == UNIT_STAND_STATE_SIT)

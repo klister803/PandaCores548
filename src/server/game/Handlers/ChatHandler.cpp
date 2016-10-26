@@ -342,7 +342,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
                 break;
             }
 
-            Player* receiver = sObjectAccessor->FindPlayerByName(to.c_str());
+            Player* receiver = sObjectAccessor->FindPlayerByName(to);
             bool senderIsPlayer = AccountMgr::IsPlayerAccount(GetSecurity());
             bool receiverIsPlayer = AccountMgr::IsPlayerAccount(receiver ? receiver->GetSession()->GetSecurity() : SEC_PLAYER);
             if (!receiver || (senderIsPlayer && !receiverIsPlayer && !receiver->isAcceptWhispers() && !receiver->IsInWhisperWhiteList(sender->GetGUID())))
@@ -663,7 +663,7 @@ void WorldSession::HandleAddonMessagechatOpcode(WorldPacket& recvData)
         {
             if (!normalizePlayerName(targetName))
                 break;
-            Player* receiver = sObjectAccessor->FindPlayerByName(targetName.c_str());
+            Player* receiver = sObjectAccessor->FindPlayerByName(targetName);
             if (!receiver)
                 break;
 
@@ -809,8 +809,7 @@ void WorldSession::HandleTextEmoteOpcode(WorldPacket & recvData)
     Trinity::EmoteChatBuilder emote_builder(*GetPlayer(), text_emote, emoteNum, unit);
     Trinity::LocalizedPacketDo<Trinity::EmoteChatBuilder > emote_do(emote_builder);
     Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::EmoteChatBuilder > > emote_worker(GetPlayer(), sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE), emote_do);
-    TypeContainerVisitor<Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::EmoteChatBuilder> >, WorldTypeMapContainer> message(emote_worker);
-    cell.Visit(p, message, *GetPlayer()->GetMap(), *GetPlayer(), sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE));
+    cell.Visit(p, Trinity::makeWorldVisitor(emote_worker), *GetPlayer()->GetMap(), *GetPlayer(), sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE));
 
     GetPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_DO_EMOTE, text_emote, 0, 0, unit);
 

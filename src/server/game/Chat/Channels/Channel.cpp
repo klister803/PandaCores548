@@ -292,7 +292,7 @@ void Channel::Leave(uint64 p, bool send)
     }
 }
 
-void Channel::KickOrBan(uint64 good, const char *badname, bool ban)
+void Channel::KickOrBan(uint64 good, std::string const& badname, bool ban)
 {
     AccountTypes sec = SEC_PLAYER;
     Player* gplr = ObjectAccessor::FindPlayer(good);
@@ -360,7 +360,7 @@ void Channel::KickOrBan(uint64 good, const char *badname, bool ban)
     }
 }
 
-void Channel::UnBan(uint64 good, const char *badname)
+void Channel::UnBan(uint64 good, std::string const& badname)
 {
     uint32 sec = 0;
     Player* gplr = ObjectAccessor::FindPlayer(good);
@@ -440,7 +440,7 @@ void Channel::Password(uint64 p, const char *pass)
     }
 }
 
-void Channel::SetMode(uint64 p, const char *p2n, bool mod, bool set)
+void Channel::SetMode(uint64 p, std::string const& p2n, bool mod, bool set)
 {
     Player* player = ObjectAccessor::FindPlayer(p);
     if (!player)

@@ -41,6 +41,7 @@
 #include "WeatherMgr.h"
 #include "AreaTrigger.h"
 #include "InstanceScript.h"
+#include "ObjectVisitors.hpp"
 
 class Aura;
 //
@@ -3598,9 +3599,9 @@ void AuraEffect::HandleFeignDeath(AuraApplication const* aurApp, uint8 mode, boo
         */
 
         UnitList targets;
-        Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(target, target, target->CalcVisibilityRange());
+        Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(target, target, target->GetMap()->GetVisibilityRange());
         Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(target, targets, u_check);
-        target->VisitNearbyObject(target->CalcVisibilityRange(), searcher);
+        Trinity::VisitNearbyObject(target, target->GetMap()->GetVisibilityRange(), searcher);
         for (UnitList::iterator iter = targets.begin(); iter != targets.end(); ++iter)
         {
             if (!(*iter)->HasUnitState(UNIT_STATE_CASTING))

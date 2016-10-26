@@ -315,7 +315,7 @@ void WorldSession::HandleChannelKick(WorldPacket& recvPacket)
 
     if (ChannelMgr* cMgr = channelMgr(_player->GetTeam()))
         if (Channel* chn = cMgr->GetChannel(channelname, _player))
-            chn->Kick(_player->GetGUID(), otp.c_str());
+            chn->Kick(_player->GetGUID(), otp);
 }
 
 void WorldSession::HandleChannelBan(WorldPacket& recvPacket)
@@ -365,7 +365,7 @@ void WorldSession::HandleChannelUnban(WorldPacket& recvPacket)
 
     if (ChannelMgr* cMgr = channelMgr(_player->GetTeam()))
         if (Channel* chn = cMgr->GetChannel(channelname, _player))
-            chn->UnBan(_player->GetGUID(), otp.c_str());
+            chn->UnBan(_player->GetGUID(), otp);
 }
 
 void WorldSession::HandleChannelAnnouncements(WorldPacket& recvPacket)

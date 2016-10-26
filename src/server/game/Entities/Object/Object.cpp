@@ -51,6 +51,8 @@
 #include "Group.h"
 #include "Battlefield.h"
 #include "BattlefieldMgr.h"
+#include "ObjectVisitors.hpp"
+#include "Map.h"
 
 uint32 GuidHigh2TypeId(uint32 guid_hi)
 {
@@ -307,9 +309,12 @@ void Object::SendUpdateToPlayer(Player* player)
     UpdateData upd(player->GetMapId());
     WorldPacket packet;
 
-    BuildCreateUpdateBlockForPlayer(&upd, player);
-    upd.BuildPacket(&packet);
-    player->GetSession()->SendPacket(&packet);
+    if (player->HaveAtClient((WorldObject*)this))
+        BuildValuesUpdateBlockForPlayer(&upd, player);
+    else
+        BuildCreateUpdateBlockForPlayer(&upd, player);
+    if (upd.BuildPacket(&packet))
+        player->GetSession()->SendPacket(&packet);
 }
 
 void Object::BuildValuesUpdateBlockForPlayer(UpdateData* data, Player* target) const
@@ -2300,29 +2305,53 @@ bool Position::IsPositionValid() const
 
 float WorldObject::CalcVisibilityRange(const WorldObject* obj) const
 {
-    if (Player const* plr = ToPlayer())
-    {
-        if (obj)
+    if (isActiveObject() && !ToPlayer())
+        return MAX_VISIBILITY_DISTANCE;
+    else
+        if (GetMap())
         {
-            if (Player const* objPlr = obj->ToPlayer())
-                return std::min(objPlr->m_staticVisibleDistance ? objPlr->m_staticVisibleDistance : objPlr->m_dynamicVisibleDistance, plr->m_staticVisibleDistance ? plr->m_staticVisibleDistance : plr->m_dynamicVisibleDistance);
-            else if (Creature const* cre = obj->ToCreature())
-            {
-                if (cre->m_isImportantForVisibility)
-                    return MAX_VISIBILITY;
-            }
+            if (Player const* thisPlayer = ToPlayer())
+                return GetMap()->GetVisibilityRange(thisPlayer->getCurrentUpdateZoneID(), thisPlayer->getCurrentUpdateAreaID());
+            else if (Creature const* creature = ToCreature())
+                return GetMap()->GetVisibilityRange(creature->getCurrentUpdateZoneID(), creature->getCurrentUpdateAreaID());
+            else
+                return GetMap()->GetVisibilityRange();
         }
 
-        return plr->m_staticVisibleDistance ? plr->m_staticVisibleDistance : plr->m_dynamicVisibleDistance;
-    }
-    else if (obj)
-    {
-        if (Player const* objPlr = obj->ToPlayer())
-            return objPlr->m_staticVisibleDistance ? objPlr->m_staticVisibleDistance : objPlr->m_dynamicVisibleDistance;
-    }
+    return MAX_VISIBILITY_DISTANCE;
+}
 
-    if (Map* map = GetMap())
-        return map->GetMapVisibleDistance();
+float WorldObject::GetGridActivationRange() const
+{
+    if (Player const* thisPlayer = ToPlayer())
+        return GetMap()->GetVisibilityRange(thisPlayer->getCurrentUpdateZoneID(), thisPlayer->getCurrentUpdateAreaID());
+    else if (ToCreature())
+        return ToCreature()->m_SightDistance;
+    else
+        return 0.0f;
+}
+
+float WorldObject::GetVisibilityCombatLog() const
+{
+    return SIGHT_RANGE_UNIT;
+}
+
+float WorldObject::GetSightRange(const WorldObject* target) const
+{
+    if (ToUnit())
+    {
+        if (Player const* thisPlayer = ToPlayer())
+        {
+            if (target && target->isActiveObject() && !target->ToPlayer())
+                return MAX_VISIBILITY_DISTANCE;
+            else
+                return GetMap()->GetVisibilityRange(thisPlayer->getCurrentUpdateZoneID(), thisPlayer->getCurrentUpdateAreaID());
+        }
+        else if (ToCreature())
+            return ToCreature()->m_SightDistance;
+        else
+            return SIGHT_RANGE_UNIT;
+    }
 
     return 0.0f;
 }
@@ -2337,7 +2366,7 @@ void WorldObject::SetVisible(bool x)
     UpdateObjectVisibility();
 }
 
-bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, bool distanceCheck, bool isExactDist) const
+bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, bool distanceCheck) const
 {
     if (this == obj)
         return true;
@@ -2393,25 +2422,21 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
                 if (Corpse* corpse = thisPlayer->GetCorpse())
                 {
                     corpseCheck = true;
-                    float visRange = CalcVisibilityRange(obj);
-                    if (isExactDist ? visRange > corpse->GetExactDist2d(thisPlayer) : corpse->IsWithinDist(thisPlayer, visRange, false))
-                        if (isExactDist ? visRange > corpse->GetExactDist2d(obj) : corpse->IsWithinDist(obj, visRange, false))
+                    if (corpse->IsWithinDist(thisPlayer, GetSightRange(obj), false))
+                        if (corpse->IsWithinDist(obj, GetSightRange(obj), false))
                             corpseVisibility = true;
                 }
             }
         }
 
         WorldObject const* viewpoint = this;
-        float dist = CalcVisibilityRange(obj);
-
         if (Player const* player = ToPlayer())
             viewpoint = player->GetViewpoint();
-
 
         if (!viewpoint)
             viewpoint = this;
 
-        if (!corpseCheck && !onArena && (isExactDist ? viewpoint->GetExactDist2d(obj) > dist : !viewpoint->IsWithinDist(obj, dist, false)))
+        if (!corpseCheck && !onArena && !viewpoint->IsWithinDist(obj, GetSightRange(obj), false))
             return false;
     }
 
@@ -2529,6 +2554,7 @@ bool WorldObject::CanDetectStealthOf(WorldObject const* obj) const
     if (!HasInArc(M_PI, obj))
         return false;
 
+    GameObject const* go = ToGameObject();
     for (uint32 i = 0; i < TOTAL_STEALTH_TYPES; ++i)
     {
         if (!(obj->m_stealth.GetFlags() & (1 << i)))
@@ -2548,8 +2574,8 @@ bool WorldObject::CanDetectStealthOf(WorldObject const* obj) const
 
         // Apply modifiers
         detectionValue += m_stealthDetect.GetValue(StealthType(i));
-        if (obj->isType(TYPEMASK_GAMEOBJECT))
-            if (Unit* owner = ((GameObject*)obj)->GetOwner())
+        if (go)
+            if (Unit* owner = go->GetOwner())
                 detectionValue -= int32(owner->getLevelForTarget(this) - 1) * 5;
 
         detectionValue -= obj->m_stealth.GetValue(StealthType(i));
@@ -2681,8 +2707,8 @@ void WorldObject::MonsterSay(const char* text, uint32 language, uint64 TargetGui
     Trinity::MonsterCustomChatBuilder say_build(*this, CHAT_MSG_MONSTER_SAY, text, language, TargetGuid);
     Trinity::LocalizedPacketDo<Trinity::MonsterCustomChatBuilder> say_do(say_build);
     Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::MonsterCustomChatBuilder> > say_worker(this, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_SAY), say_do);
-    TypeContainerVisitor<Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::MonsterCustomChatBuilder> >, WorldTypeMapContainer > message(say_worker);
-    cell.Visit(p, message, *GetMap(), *this, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_SAY));
+
+    cell.Visit(p, Trinity::makeWorldVisitor(say_worker), *GetMap(), *this, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_SAY));
 }
 
 void WorldObject::MonsterSay(int32 textId, uint32 language, uint64 TargetGuid)
@@ -2695,8 +2721,8 @@ void WorldObject::MonsterSay(int32 textId, uint32 language, uint64 TargetGuid)
     Trinity::MonsterChatBuilder say_build(*this, CHAT_MSG_MONSTER_SAY, textId, language, TargetGuid);
     Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> say_do(say_build);
     Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> > say_worker(this, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_SAY), say_do);
-    TypeContainerVisitor<Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> >, WorldTypeMapContainer > message(say_worker);
-    cell.Visit(p, message, *GetMap(), *this, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_SAY));
+
+    cell.Visit(p, Trinity::makeWorldVisitor(say_worker), *GetMap(), *this, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_SAY));
 }
 
 void WorldObject::MonsterYell(const char* text, uint32 language, uint64 TargetGuid)
@@ -2709,8 +2735,8 @@ void WorldObject::MonsterYell(const char* text, uint32 language, uint64 TargetGu
     Trinity::MonsterCustomChatBuilder say_build(*this, CHAT_MSG_MONSTER_YELL, text, language, TargetGuid);
     Trinity::LocalizedPacketDo<Trinity::MonsterCustomChatBuilder> say_do(say_build);
     Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::MonsterCustomChatBuilder> > say_worker(this, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_YELL), say_do);
-    TypeContainerVisitor<Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::MonsterCustomChatBuilder> >, WorldTypeMapContainer > message(say_worker);
-    cell.Visit(p, message, *GetMap(), *this, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_YELL));
+
+    cell.Visit(p, Trinity::makeWorldVisitor(say_worker), *GetMap(), *this, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_YELL));
 }
 
 void WorldObject::MonsterYell(int32 textId, uint32 language, uint64 TargetGuid)
@@ -2723,8 +2749,8 @@ void WorldObject::MonsterYell(int32 textId, uint32 language, uint64 TargetGuid)
     Trinity::MonsterChatBuilder say_build(*this, CHAT_MSG_MONSTER_YELL, textId, language, TargetGuid);
     Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> say_do(say_build);
     Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> > say_worker(this, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_YELL), say_do);
-    TypeContainerVisitor<Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> >, WorldTypeMapContainer > message(say_worker);
-    cell.Visit(p, message, *GetMap(), *this, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_YELL));
+
+    cell.Visit(p, Trinity::makeWorldVisitor(say_worker), *GetMap(), *this, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_YELL));
 }
 
 void WorldObject::MonsterYellToZone(int32 textId, uint32 language, uint64 TargetGuid)
@@ -2757,8 +2783,8 @@ void WorldObject::MonsterTextEmote(int32 textId, uint64 TargetGuid, bool IsBossE
     Trinity::MonsterChatBuilder say_build(*this, IsBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE, textId, LANG_UNIVERSAL, TargetGuid);
     Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> say_do(say_build);
     Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> > say_worker(this, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE), say_do);
-    TypeContainerVisitor<Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> >, WorldTypeMapContainer > message(say_worker);
-    cell.Visit(p, message, *GetMap(), *this, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE));
+
+    cell.Visit(p, Trinity::makeWorldVisitor(say_worker), *GetMap(), *this, sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE));
 }
 
 void WorldObject::MonsterWhisper(const char* text, uint64 receiver, bool IsBossWhisper)
@@ -2811,43 +2837,14 @@ void WorldObject::SendMessageToSet(WorldPacket* data, bool self)
 
 void WorldObject::SendMessageToSetInRange(WorldPacket* data, float dist, bool /*self*/)
 {
-    if (Unit* unit = ToUnit())
-    {
-        std::list<Player*> removePlrList;
-
-        for (auto itr : unit->m_whoseeme)
-        {
-            if (!itr->IsInWorld() || itr->GetTypeId() != TYPEID_PLAYER)
-            {
-                removePlrList.push_back(itr);
-                continue;
-            }
-
-            if (!itr->HaveAtClient(unit))
-            {
-                removePlrList.push_back(itr);
-                continue;
-            }
-
-            if (WorldSession* session = itr->GetSession())
-                session->SendPacket(data);
-        }
-
-        if (!removePlrList.empty())
-            for (auto itr : removePlrList)
-                unit->m_whoseeme.remove(itr);
-    }
-    else
-    {
-        Trinity::MessageDistDeliverer notifier(this, data, dist);
-        VisitNearbyWorldObject(dist, notifier);
-    }
+    Trinity::MessageDistDeliverer notifier(this, data, dist);
+    Trinity::VisitNearbyWorldObject(this, dist, notifier);
 }
 
 void WorldObject::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
 {
     Trinity::MessageDistDeliverer notifier(this, data, CalcVisibilityRange(), false, skipped_rcvr);
-    VisitNearbyWorldObject(CalcVisibilityRange(), notifier);
+    Trinity::VisitNearbyWorldObject(this, CalcVisibilityRange(), notifier);
 }
 
 void WorldObject::SendObjectDeSpawnAnim(uint64 guid)
@@ -3263,18 +3260,15 @@ void WorldObject::GetAttackableUnitListInRange(std::list<Unit*> &list, float fMa
     Trinity::AnyUnitInObjectRangeCheck u_check(this, fMaxSearchRange, size);
     Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(this, list, u_check);
 
-    TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
-    TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
-
-    cell.Visit(p, world_unit_searcher, *GetMap(), *this, fMaxSearchRange);
-    cell.Visit(p, grid_unit_searcher, *GetMap(), *this, fMaxSearchRange);
+    cell.Visit(p, Trinity::makeWorldVisitor(searcher), *GetMap(), *this, fMaxSearchRange);
+    cell.Visit(p, Trinity::makeGridVisitor(searcher), *GetMap(), *this, fMaxSearchRange);
 }
 
 void WorldObject::GetAreaTriggersWithEntryInRange(std::list<AreaTrigger*>& list, uint32 entry, uint64 casterGuid, float fMaxSearchRange) const
 {
     Trinity::AreaTriggerWithEntryInObjectRangeCheck checker(this, entry, casterGuid, fMaxSearchRange);
     Trinity::AreaTriggerListSearcher<Trinity::AreaTriggerWithEntryInObjectRangeCheck> searcher(this, list, checker);
-    VisitNearbyObject(fMaxSearchRange, searcher);
+    Trinity::VisitNearbyObject(this, fMaxSearchRange, searcher);
 }
 
 Creature* WorldObject::FindNearestCreature(uint32 entry, float range, bool alive) const
@@ -3282,7 +3276,7 @@ Creature* WorldObject::FindNearestCreature(uint32 entry, float range, bool alive
     Creature* creature = NULL;
     Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck checker(*this, entry, alive, range);
     Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(this, creature, checker);
-    VisitNearbyObject(range, searcher);
+    Trinity::VisitNearbyObject(this, range, searcher);
     return creature;
 }
 
@@ -3291,7 +3285,7 @@ GameObject* WorldObject::FindNearestGameObject(uint32 entry, float range) const
     GameObject* go = NULL;
     Trinity::NearestGameObjectEntryInObjectRangeCheck checker(*this, entry, range);
     Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(this, go, checker);
-    VisitNearbyGridObject(range, searcher);
+    Trinity::VisitNearbyGridObject(this, range, searcher);
     return go;
 }
 
@@ -3300,7 +3294,7 @@ Player* WorldObject::FindNearestPlayer(float range, bool alive)
     Player* player = NULL;
     Trinity::AnyPlayerInObjectRangeCheck check(this, CalcVisibilityRange());
     Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, player, check);
-    VisitNearbyWorldObject(range, searcher);
+    Trinity::VisitNearbyWorldObject(this, range, searcher);
     return player;
 }
 
@@ -3309,7 +3303,7 @@ GameObject* WorldObject::FindNearestGameObjectOfType(GameobjectTypes type, float
     GameObject* go = NULL;
     Trinity::NearestGameObjectTypeInObjectRangeCheck checker(*this, type, range);
     Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectTypeInObjectRangeCheck> searcher(this, go, checker);
-    VisitNearbyGridObject(range, searcher);
+    Trinity::VisitNearbyGridObject(this, range, searcher);
     return go;
 }
 
@@ -3321,9 +3315,8 @@ void WorldObject::GetGameObjectListWithEntryInGrid(std::list<GameObject*>& gameo
 
     Trinity::AllGameObjectsWithEntryInRange check(this, entry, maxSearchRange);
     Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInRange> searcher(this, gameobjectList, check);
-    TypeContainerVisitor<Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInRange>, GridTypeMapContainer> visitor(searcher);
 
-    cell.Visit(pair, visitor, *(this->GetMap()), *this, maxSearchRange);
+    cell.Visit(pair, Trinity::makeGridVisitor(searcher), *(this->GetMap()), *this, maxSearchRange);
 }
 
 void WorldObject::GetCreatureListWithEntryInGrid(std::list<Creature*>& creatureList, uint32 entry, float maxSearchRange) const
@@ -3334,9 +3327,8 @@ void WorldObject::GetCreatureListWithEntryInGrid(std::list<Creature*>& creatureL
 
     Trinity::AllCreaturesOfEntryInRange check(this, entry, maxSearchRange);
     Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(this, creatureList, check);
-    TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> visitor(searcher);
 
-    cell.Visit(pair, visitor, *(this->GetMap()), *this, maxSearchRange);
+    cell.Visit(pair, Trinity::makeGridVisitor(searcher), *(this->GetMap()), *this, maxSearchRange);
 }
 
 void WorldObject::GetAreaTriggerListWithEntryInGrid(std::list<AreaTrigger*>& atList, uint32 entry, float maxSearchRange) const
@@ -3347,16 +3339,15 @@ void WorldObject::GetAreaTriggerListWithEntryInGrid(std::list<AreaTrigger*>& atL
 
     Trinity::AllAreaTriggeresOfEntryInRange check(this, entry, maxSearchRange);
     Trinity::AreaTriggerListSearcher<Trinity::AllAreaTriggeresOfEntryInRange> searcher(this, atList, check);
-    TypeContainerVisitor<Trinity::AreaTriggerListSearcher<Trinity::AllAreaTriggeresOfEntryInRange>, GridTypeMapContainer> visitor(searcher);
 
-    cell.Visit(pair, visitor, *(this->GetMap()), *this, maxSearchRange);
+    cell.Visit(pair, Trinity::makeGridVisitor(searcher), *(this->GetMap()), *this, maxSearchRange);
 }
 
 void WorldObject::GetPlayerListInGrid(std::list<Player*>& playerList, float maxSearchRange) const
 {    
     Trinity::AnyPlayerInObjectRangeCheck checker(this, maxSearchRange);
     Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, playerList, checker);
-    this->VisitNearbyWorldObject(maxSearchRange, searcher);
+    Trinity::VisitNearbyWorldObject(this, maxSearchRange, searcher);
 }
 
 void WorldObject::GetGameObjectListWithEntryInGridAppend(std::list<GameObject*>& gameobjectList, uint32 entry, float maxSearchRange) const
@@ -3385,9 +3376,8 @@ void WorldObject::GetAliveCreatureListWithEntryInGrid(std::list<Creature*>& crea
 
     Trinity::AllAliveCreaturesOfEntryInRange check(this, entry, maxSearchRange);
     Trinity::CreatureListSearcher<Trinity::AllAliveCreaturesOfEntryInRange> searcher(this, creatureList, check);
-    TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllAliveCreaturesOfEntryInRange>, GridTypeMapContainer> visitor(searcher);
 
-    cell.Visit(pair, visitor, *(this->GetMap()), *this, maxSearchRange);
+    cell.Visit(pair, Trinity::makeGridVisitor(searcher), *(this->GetMap()), *this, maxSearchRange);
 }
 
 void WorldObject::GetCorpseCreatureInGrid(std::list<Creature*>& creatureList, float maxSearchRange) const
@@ -3398,9 +3388,8 @@ void WorldObject::GetCorpseCreatureInGrid(std::list<Creature*>& creatureList, fl
 
     Trinity::SearchCorpseCreatureCheck check(this, maxSearchRange);
     Trinity::CreatureListSearcher<Trinity::SearchCorpseCreatureCheck> searcher(this, creatureList, check);
-    TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::SearchCorpseCreatureCheck>, GridTypeMapContainer> visitor(searcher);
 
-    cell.Visit(pair, visitor, *(this->GetMap()), *this, maxSearchRange);
+    cell.Visit(pair, Trinity::makeGridVisitor(searcher), *(this->GetMap()), *this, maxSearchRange);
 }
 
 //===================================================================================================
@@ -3701,7 +3690,7 @@ void WorldObject::DestroyForNearbyPlayers()
     float radius = CalcVisibilityRange();
     Trinity::AnyPlayerInObjectRangeCheck check(this, radius, false);
     Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, targets, check);
-    VisitNearbyWorldObject(radius, searcher);
+    Trinity::VisitNearbyWorldObject(this, radius, searcher);
     for (std::list<Player*>::const_iterator iter = targets.begin(); iter != targets.end(); ++iter)
     {
         Player* player = (*iter);
@@ -3728,7 +3717,7 @@ void WorldObject::DestroyVignetteForNearbyPlayers()
     std::list<Player*> targets;
     Trinity::AnyPlayerInObjectRangeCheck check(this, CalcVisibilityRange(), false);
     Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, targets, check);
-    VisitNearbyWorldObject(CalcVisibilityRange(), searcher);
+    Trinity::VisitNearbyWorldObject(this, CalcVisibilityRange(), searcher);
     for (std::list<Player*>::const_iterator iter = targets.begin(); iter != targets.end(); ++iter)
     {
         Player* player = (*iter);
@@ -3757,7 +3746,7 @@ void WorldObject::UpdateObjectVisibility(bool /*forced*/, float customVisRange)
             return;
         }
 
-    VisitNearbyWorldObject(customVisRange ? customVisRange : CalcVisibilityRange(), notifier);
+    Trinity::VisitNearbyWorldObject(this, customVisRange ? customVisRange : CalcVisibilityRange(), notifier);
 }
 
 struct WorldObjectChangeAccumulator
@@ -3765,56 +3754,44 @@ struct WorldObjectChangeAccumulator
     UpdateDataMapType& i_updateDatas;
     WorldObject& i_object;
     std::set<uint64> plr_list;
-    WorldObjectChangeAccumulator(WorldObject &obj, UpdateDataMapType &d) : i_updateDatas(d), i_object(obj) {}
+        WorldObjectChangeAccumulator(WorldObject &obj, UpdateDataMapType &d)
+        : i_updateDatas(d), i_object(obj)
+    { }
+
     void Visit(PlayerMapType &m)
     {
-        Player* source = NULL;
-        for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+        for (auto &source : m)
         {
-            source = iter->getSource();
-
             BuildPacket(source);
+
+            if (!source->GetSharedVisionList().empty())
+                for (auto &player : source->GetSharedVisionList())
+                    BuildPacket(player);
+        }
+    }
+
+    void Visit(CreatureMapType &m)
+    {
+        for (auto &source : m)
+        {
+            if (!source->GetSharedVisionList().empty())
+                for (auto &player : source->GetSharedVisionList())
+                    BuildPacket(player);
         }
     }
 
     void Visit(DynamicObjectMapType &m)
     {
-        DynamicObject* source = NULL;
-        for (DynamicObjectMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+        for (auto &source : m)
         {
-            source = iter->getSource();
-            uint64 guid = source->GetCasterGUID();
-
-            if (IS_PLAYER_GUID(guid))
-            {
-                //Caster may be NULL if DynObj is in removelist
-                if (Player* caster = ObjectAccessor::FindPlayer(guid))
-                    if (caster->GetUInt64Value(PLAYER_FARSIGHT) == source->GetGUID())
-                        BuildPacket(caster);
-            }
-        }
-    }
-
-    void Visit(Map* map)
-    {
-        for (auto itr : map->GetBGArenaObjList())
-        {
-            if (!itr->IsInWorld())
+            auto const guid = source->GetCasterGUID();
+            if (!IS_PLAYER_GUID(guid))
                 continue;
 
-            if (Player* plr = itr->ToPlayer())
-                BuildPacket(plr);
-        }
-    }
-
-    void Visit(Unit* unit)
-    {
-        for (auto itr : unit->m_whoseeme)
-        {
-            if (!itr->IsInWorld())
-                continue;
-
-            BuildPacket(itr);
+            // Caster may be NULL if DynObj is in removelist
+            auto const caster = ObjectAccessor::FindPlayer(guid);
+            if (caster && caster->GetUInt64Value(PLAYER_FARSIGHT) == source->GetGUID())
+                BuildPacket(caster);
         }
     }
 
@@ -3828,7 +3805,8 @@ struct WorldObjectChangeAccumulator
         }
     }
 
-    template<class SKIP> void Visit(GridRefManager<SKIP> &) {}
+    template <typename NotInterested>
+    void Visit(NotInterested &) { }
 };
 
 void WorldObject::BuildUpdate(UpdateDataMapType& data_map)
@@ -3837,18 +3815,9 @@ void WorldObject::BuildUpdate(UpdateDataMapType& data_map)
     Cell cell(p);
     cell.SetNoCreate();
     WorldObjectChangeAccumulator notifier(*this, data_map);
-    TypeContainerVisitor<WorldObjectChangeAccumulator, WorldTypeMapContainer > player_notifier(notifier);
-    Map& map = *GetMap();
+
     //we must build packets for all visible players
-    if (map.IsBattlegroundOrArena())
-        notifier.Visit(GetMap());
-    else
-    {
-        if (ToCreature() && ToCreature()->m_isImportantForVisibility)
-            notifier.Visit(ToCreature());
-        else
-            cell.Visit(p, player_notifier, map, *this, CalcVisibilityRange());
-    }
+    cell.Visit(p, Trinity::makeWorldVisitor(notifier), *GetMap(), *this, CalcVisibilityRange());
 
     ClearUpdateMask(false);
 }
@@ -3868,4 +3837,25 @@ C_PTR Object::get_ptr()
     ptr.InitParent(this);
     ASSERT(ptr.numerator);  // It's very bad. If it hit nothing work.
     return ptr.shared_from_this();
+}
+
+template<class NOTIFIER>
+void WorldObject::VisitNearbyObject(const float &radius, NOTIFIER &notifier) const 
+{
+    if (IsInWorld())
+        GetMap()->VisitAll(GetPositionX(), GetPositionY(), radius, notifier);
+}
+
+template<class NOTIFIER> 
+void WorldObject::VisitNearbyGridObject(const float &radius, NOTIFIER &notifier) const 
+{
+    if (IsInWorld())
+        GetMap()->VisitGrid(GetPositionX(), GetPositionY(), radius, notifier);
+}
+
+template<class NOTIFIER> 
+void WorldObject::VisitNearbyWorldObject(const float &radius, NOTIFIER &notifier) const 
+{
+    if (IsInWorld())
+        GetMap()->VisitWorld(GetPositionX(), GetPositionY(), radius, notifier);
 }

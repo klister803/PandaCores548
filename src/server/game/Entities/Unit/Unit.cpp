@@ -59,6 +59,7 @@
 #include "UpdateFieldFlags.h"
 #include "Battlefield.h"
 #include "BattlefieldMgr.h"
+#include "ObjectVisitors.hpp"
 #include <math.h>
 
 float baseMoveSpeed[MAX_MOVE_TYPE] =
@@ -294,8 +295,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     _mount = NULL;
 
     m_IsInKillingProcess = false;
-    m_VisibilityUpdScheduled = false;
-    m_VisibilityUpdateTask = false;
+    m_AINotifyScheduled = false;
     m_diffMode = GetMap() ? GetMap()->GetSpawnMode() : 0;
     m_SpecialTarget = 0;
     isMagnetSpellTarget = false;
@@ -309,12 +309,14 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_baseHastRatingPct = 1.0f;
     m_comboPointsMod = 0;
 
-    m_whoseeme.clear();
-
     for (uint8 i = 0; i < MAX_COMBAT_RATING; i++)
         m_baseRatingValue[i] = 0;
 
     m_sequenceIndex = 0;
+    m_zoneUpdateId = 0;
+    m_oldZoneUpdateId = 0;
+    m_areaUpdateId = 0;
+    m_oldAreaUpdateId = 0;
 }
 
 ////////////////////////////////////////////////////////////
@@ -355,6 +357,7 @@ Unit::~Unit()
     ASSERT(!m_duringRemoveFromWorld);
     ASSERT(!m_attacking);
     ASSERT(m_attackers.empty());
+    ASSERT(m_sharedVision.empty());
     //ASSERT(m_Controlled.empty()); // @todo reimplement this
     ASSERT(m_appliedAuras.empty());
     ASSERT(m_ownedAuras.empty());
@@ -11613,8 +11616,8 @@ void Unit::SetOwnerGUID(uint64 owner)
     UpdateData udata(GetMapId());
     WorldPacket packet;
     BuildValuesUpdateBlockForPlayer(&udata, player);
-    udata.BuildPacket(&packet);
-    player->SendDirectMessage(&packet);
+    if (udata.BuildPacket(&packet))
+        player->SendDirectMessage(&packet);
 
     RemoveFieldNotifyFlag(UF_FLAG_OWNER);
 }
@@ -12242,6 +12245,29 @@ Unit* Unit::GetNextRandomRaidMemberOrPet(float radius)
 
     uint32 randTarget = urand(0, nearMembers.size()-1);
     return nearMembers[randTarget];
+}
+
+// only called in Player::SetSeer
+// so move it to Player?
+void Unit::AddPlayerToVision(Player* player)
+{
+    if (m_sharedVision.empty())
+    {
+        setActive(true);
+        SetWorldObject(true);
+    }
+    m_sharedVision.push_back(player);
+}
+
+// only called in Player::SetSeer
+void Unit::RemovePlayerFromVision(Player* player)
+{
+    m_sharedVision.remove(player);
+    if (m_sharedVision.empty())
+    {
+        setActive(false);
+        SetWorldObject(false);
+    }
 }
 
 void Unit::RemoveBindSightAuras()
@@ -17258,8 +17284,6 @@ void Unit::RemoveFromWorld()
 
     if (IsInWorld())
     {
-        m_VisibilityUpdateTask  = false;
-        m_VisibilityUpdScheduled = false;
         m_duringRemoveFromWorld = true;
         if (IsVehicle())
             RemoveVehicleKit();
@@ -18856,7 +18880,7 @@ Unit* Unit::SelectNearbyTarget(Unit* exclude, float dist) const
     std::list<Unit*> targets;
     Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(this, this, dist);
     Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(this, targets, u_check);
-    VisitNearbyObject(dist, searcher);
+    Trinity::VisitNearbyObject(this, dist, searcher);
 
     // remove current target
     if (getVictim())
@@ -18887,7 +18911,7 @@ Unit* Unit::SelectNearbyAlly(Unit* exclude, float dist) const
     std::list<Unit*> targets;
     Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(this, this, dist);
     Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(this, targets, u_check);
-    VisitNearbyObject(dist, searcher);
+    Trinity::VisitNearbyObject(this, dist, searcher);
 
     if (exclude)
         targets.remove(exclude);
@@ -22483,84 +22507,98 @@ void Unit::SetPhaseId(uint32 newPhase, bool update)
         UpdateObjectVisibility();
 }
 
-class Unit::AINotifyTask : public BasicEvent
+class AINotifyTask final : public BasicEvent
 {
-    Unit& m_owner;
 public:
-    explicit AINotifyTask(Unit * me) : m_owner(*me) {}
-
-    virtual bool Execute(uint64 , uint32)
+    explicit AINotifyTask(Unit* me)
+        : m_owner(me)
     {
-        float dist = SIGHT_RANGE_UNIT;
+        m_owner->setAINotifyScheduled(true);
+    }
 
-        if (Player* plr = m_owner.ToPlayer())
-            dist = plr->m_dynamicVisibleDistance < SIGHT_RANGE_UNIT ? plr->m_dynamicVisibleDistance : SIGHT_RANGE_UNIT;
+    ~AINotifyTask()
+    {
+        m_owner->setAINotifyScheduled(false);
+    }
 
-        Trinity::AIRelocationNotifier notifier(m_owner);
-        m_owner.VisitNearbyObject(dist, notifier);
-        m_owner.m_VisibilityUpdScheduled = false;
+    bool Execute(uint64, uint32) final
+    {
+        Trinity::AIRelocationNotifier notifier(*m_owner);
+        Trinity::VisitNearbyObject(m_owner, m_owner->CalcVisibilityRange(), notifier);
         return true;
     }
 
-    static void ScheduleAINotify(Unit* me)
+    static void Schedule(Unit* me)
     {
-        if (!me->m_VisibilityUpdScheduled)
+        if (!me->isAINotifyScheduled())
         {
-            me->m_VisibilityUpdScheduled = true;
-            me->m_Events.AddEvent(new AINotifyTask(me), me->m_Events.CalculateTime(World::Visibility_AINotifyDelay));
+            EventProcessor &events = me->m_Events;
+            events.AddEvent(new AINotifyTask(me), events.CalculateTime(sWorld->GetVisibilityAINotifyDelay()));
         }
     }
+
+private:
+    Unit* m_owner;
 };
 
-class Unit::VisibilityUpdateTask : public BasicEvent
+class VisibilityUpdateTask final : public BasicEvent
 {
-    Unit& m_owner;
 public:
-    explicit VisibilityUpdateTask(Unit * me) : m_owner(*me) {}
+    VisibilityUpdateTask(Unit* me, bool loadGrids)
+        : m_owner(me)
+        , m_loadGrids(loadGrids)
+    { }
 
-    virtual bool Execute(uint64 , uint32)
+    bool Execute(uint64, uint32) final
     {
-        UpdateVisibility(&m_owner);
+        UpdateVisibility(m_owner);
+
+        if (m_loadGrids)
+            m_owner->GetMap()->loadGridsInRange(*m_owner, MAX_VISIBILITY_DISTANCE);
+
         return true;
     }
 
-    static void UpdateVisibility(Unit* me, float customVisRange = 0.0f)
-     {
-        if (me->isType(TYPEMASK_PLAYER))
-            ((Player*)me)->UpdateVisibilityForPlayer();
-        else
-            me->WorldObject::UpdateObjectVisibility(true, customVisRange);
-        me->m_VisibilityUpdateTask = false;
+    static void UpdateVisibility(Unit* me)
+    {
+        SharedVisionList const &shList = me->GetSharedVisionList();
+
+        if (!shList.empty())
+        {
+            for (SharedVisionList::const_iterator it = shList.begin(); it != shList.end();)
+                (*it++)->UpdateVisibilityForPlayer();
+        }
+
+        if (Player* player = me->ToPlayer())
+            player->UpdateVisibilityForPlayer();
+
+        me->WorldObject::UpdateObjectVisibility(true);
     }
+
+private:
+    Unit* m_owner;
+    bool m_loadGrids;
 };
 
 void Unit::OnRelocated()
 {
-    if (m_VisibilityUpdateTask)
-        return;
-
-    if (!m_lastVisibilityUpdPos.IsInDist(this, World::Visibility_RelocationLowerLimit))
+    if (!m_lastVisibilityUpdPos.IsInDist(this, sWorld->GetVisibilityRelocationLowerLimit()))
     {
         m_lastVisibilityUpdPos = *this;
-        m_VisibilityUpdateTask = true;
-        m_Events.AddEvent(new VisibilityUpdateTask(this), m_Events.CalculateTime(2000));
+        m_Events.AddEvent(new VisibilityUpdateTask(this, GetTypeId() == TYPEID_PLAYER), m_Events.CalculateTime(1));
     }
-    AINotifyTask::ScheduleAINotify(this);
+
+    AINotifyTask::Schedule(this);
 }
 
-void Unit::UpdateObjectVisibility(bool forced, float customRange)
+void Unit::UpdateObjectVisibility(bool forced, float /*customRange*/)
 {
-    if (m_VisibilityUpdateTask)
-        return;
-
     if (forced)
-        VisibilityUpdateTask::UpdateVisibility(this, customRange);
+        VisibilityUpdateTask::UpdateVisibility(this);
     else
-    {
-        m_VisibilityUpdateTask = true;
-        m_Events.AddEvent(new VisibilityUpdateTask(this), m_Events.CalculateTime(2000));
-    }
-    AINotifyTask::ScheduleAINotify(this);
+        m_Events.AddEvent(new VisibilityUpdateTask(this, false), m_Events.CalculateTime(1));
+
+    AINotifyTask::Schedule(this);
 }
 
 void Unit::SendMoveKnockBack(Player* player, float speedXY, float speedZ, float vcos, float vsin)

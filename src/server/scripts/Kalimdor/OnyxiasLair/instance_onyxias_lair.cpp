@@ -29,6 +29,7 @@ EndScriptData */
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "onyxias_lair.h"
+#include "ObjectVisitors.hpp"
 
 class instance_onyxias_lair : public InstanceMapScript
 {
@@ -126,7 +127,7 @@ public:
                 std::list<GameObject*> nearFloorList;
                 Trinity::GameObjectInRangeCheck check(pFloorEruption->GetPositionX(), pFloorEruption->GetPositionY(), pFloorEruption->GetPositionZ(), 15);
                 Trinity::GameObjectListSearcher<Trinity::GameObjectInRangeCheck> searcher(pFloorEruption, nearFloorList, check);
-                pFloorEruption->VisitNearbyGridObject(999, searcher);
+                Trinity::VisitNearbyGridObject(pFloorEruption, 999, searcher);
                 //remove all that are not present on FloorEruptionGUID[1] and update treeLen on each GUID
                 for (std::list<GameObject*>::const_iterator itr = nearFloorList.begin(); itr != nearFloorList.end(); ++itr)
                 {

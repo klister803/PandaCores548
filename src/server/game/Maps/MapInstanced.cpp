@@ -25,6 +25,7 @@
 #include "InstanceSaveMgr.h"
 #include "World.h"
 #include "Group.h"
+#include "ThreadPoolMgr.hpp"
 
 MapInstanced::MapInstanced(uint32 id, time_t expiry) : Map(id, expiry, 0, REGULAR_DIFFICULTY)
 {
@@ -55,7 +56,8 @@ void MapInstanced::Update(const uint32 t)
 
     while (i != m_InstancedMaps.end())
     {
-        if (i->second->CanUnload(t))
+        Map * const instanced = i->second;
+        if (instanced->CanUnload(t))
         {
             if (!DestroyInstance(i))                             // iterator incremented
             {
@@ -65,10 +67,7 @@ void MapInstanced::Update(const uint32 t)
         else
         {
             // update only here, because it may schedule some bad things before delete
-            if (sMapMgr->GetMapUpdater()->activated())
-                sMapMgr->GetMapUpdater()->schedule_update(*i->second, t);
-            else
-                i->second->Update(t);
+            sThreadPoolMgr->schedule([instanced, t] { instanced->Update(t); });
             ++i;
         }
     }
@@ -76,8 +75,10 @@ void MapInstanced::Update(const uint32 t)
 
 void MapInstanced::DelayedUpdate(const uint32 diff)
 {
-    for (InstancedMaps::iterator i = m_InstancedMaps.begin(); i != m_InstancedMaps.end(); ++i)
-        i->second->DelayedUpdate(diff);
+    for (InstancedMaps::iterator i = m_InstancedMaps.begin(); i != m_InstancedMaps.end(); ++i) {
+        Map * const instanced = i->second;
+        sThreadPoolMgr->schedule([instanced, diff] { instanced->DelayedUpdate(diff); });
+    }
 
     Map::DelayedUpdate(diff); // this may be removed
 }
@@ -200,7 +201,7 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player)
 InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave* save, Difficulty difficulty)
 {
     // load/create a map
-    TRINITY_GUARD(ACE_Thread_Mutex, Lock);
+    GuardType guard(m_lock);
 
     // make sure we have a valid map id
     const MapEntry* entry = sMapStore.LookupEntry(GetId());
@@ -236,7 +237,7 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave* save,
 BattlegroundMap* MapInstanced::CreateBattleground(uint32 InstanceId, Battleground* bg)
 {
     // load/create a map
-    TRINITY_GUARD(ACE_Thread_Mutex, Lock);
+    GuardType guard(m_lock);
 
     sLog->outDebug(LOG_FILTER_MAPS, "MapInstanced::CreateBattleground: map bg %d for %d created.", InstanceId, GetId());
 
@@ -252,6 +253,7 @@ BattlegroundMap* MapInstanced::CreateBattleground(uint32 InstanceId, Battlegroun
     BattlegroundMap* map = new BattlegroundMap(GetId(), GetGridExpiry(), InstanceId, this, spawnMode);
     ASSERT(map->IsBattlegroundOrArena());
     map->SetBG(bg);
+    map->InitVisibilityDistance();
     bg->SetBgMap(map);
 
     m_InstancedMaps[InstanceId] = map;

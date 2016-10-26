@@ -33,10 +33,9 @@
 #include "Language.h"
 #include "WorldPacket.h"
 #include "Group.h"
+#include "ThreadPoolMgr.hpp"
 
 #include <thread>
-
-extern GridState* si_GridStates[];                          // debugging code, should be deleted some day
 
 MapManager::MapManager()
 {
@@ -50,25 +49,7 @@ MapManager::~MapManager()
 
 void MapManager::Initialize()
 {
-    Map::InitStateMachine();
 
-    // debugging code, should be deleted some day
-    {
-        for (uint8 i = 0; i < MAX_GRID_STATE; ++i)
-             i_GridStates[i] = si_GridStates[i];
-
-        i_GridStateErrorCount = 0;
-    }
-    int num_threads(sWorld->getIntConfig(CONFIG_NUMTHREADS));
-    // Start mtmaps if needed.
-    if (num_threads > 0)
-        m_updater.activate(num_threads);
-
-    for (uint8 i = 0; i < num_threads; ++i)
-        _achievementUpdaters.push_back(new MapUpdater());
-
-    for (auto &achievementUpdater : _achievementUpdaters)
-        achievementUpdater->activate(1);
 }
 
 void MapManager::InitializeVisibilityDistanceInfo()
@@ -77,38 +58,13 @@ void MapManager::InitializeVisibilityDistanceInfo()
         (*iter).second->InitVisibilityDistance();
 }
 
-// debugging code, should be deleted some day
-void MapManager::checkAndCorrectGridStatesArray()
-{
-    bool ok = true;
-    for (int i=0; i<MAX_GRID_STATE; i++)
-    {
-        if (i_GridStates[i] != si_GridStates[i])
-        {
-            sLog->outError(LOG_FILTER_MAPS, "MapManager::checkGridStates(), GridState: si_GridStates is currupt !!!");
-            ok = false;
-            si_GridStates[i] = i_GridStates[i];
-        }
-        #ifdef TRINITY_DEBUG
-        // inner class checking only when compiled with debug
-        if (!si_GridStates[i]->checkMagic())
-        {
-            ok = false;
-            si_GridStates[i]->setMagic();
-        }
-        #endif
-    }
-    if (!ok)
-        ++i_GridStateErrorCount;
-}
-
 Map* MapManager::CreateBaseMap(uint32 id)
 {
     Map* map = FindBaseMap(id);
 
     if (map == NULL)
     {
-        TRINITY_GUARD(ACE_Thread_Mutex, Lock);
+        GuardType guard(i_lock);
 
         MapEntry const* entry = sMapStore.LookupEntry(id);
         ASSERT(entry);
@@ -292,72 +248,25 @@ void MapManager::Update(uint32 diff)
     if (!i_timer.Passed())
         return;
 
-    /// - Start Achievement criteria update processing thread
-    sAchievementMgr->PrepareCriteriaUpdateTaskThread();
-    auto updaterItr = _achievementUpdaters.begin();
-    for (auto playerTask : sAchievementMgr->GetPlayersCriteriaTask())
-    {
-        auto assignItr = _assignedUpdaters.find(playerTask.first);
-        /// > assign one player to one updater because of unsafe criteria updates
-        if (assignItr != _assignedUpdaters.end())
-        {
-            auto updater = assignItr->second;
-            if (updater->activated()) {
-                updater->schedule_specific(new AchievementCriteriaUpdateRequest(updater, playerTask.second));
-            }
-            else
-            {
-                auto task = new AchievementCriteriaUpdateRequest(nullptr, playerTask.second);
-                task->call();
-                delete task;
-            }
-        }
-        else
-        {
-            auto updater = (*updaterItr);
-            if (updater->activated())
-            {
-                updater->schedule_specific(new AchievementCriteriaUpdateRequest(updater, playerTask.second));
-                _assignedUpdaters[playerTask.first] = updater;
-            }
-            else
-            {
-                auto task = new AchievementCriteriaUpdateRequest(nullptr, playerTask.second);
-                task->call();
-                delete task;
-            }
-
-            if (++updaterItr == _achievementUpdaters.end())
-                updaterItr = _achievementUpdaters.begin();
-        }
-    }
-
-    MapMapType::iterator iter = i_maps.begin();
-    for (; iter != i_maps.end(); ++iter)
-    {
-        if (m_updater.activated())
-            m_updater.schedule_update(*iter->second, uint32(i_timer.GetCurrent()));
-        else
-            iter->second->Update(uint32(i_timer.GetCurrent()));
-    }
-    if (m_updater.activated())
-        m_updater.wait();
-
-    for (auto &achievementUpdater : _achievementUpdaters)
-        if (achievementUpdater->activated())
-            achievementUpdater->wait();
-
-    _assignedUpdaters.clear();
-    sAchievementMgr->ClearPlayersCriteriaTask();
-
-    for (iter = i_maps.begin(); iter != i_maps.end(); ++iter)
-        iter->second->DelayedUpdate(uint32(i_timer.GetCurrent()));
-
-    sObjectAccessor->Update(uint32(i_timer.GetCurrent()));
-    for (TransportSet::iterator itr = m_Transports.begin(); itr != m_Transports.end(); ++itr)
-        (*itr)->Update(uint32(i_timer.GetCurrent()));
-
+    uint32 curr = uint32(i_timer.GetCurrent());
     i_timer.SetCurrent(0);
+
+    for (MapMapType::iterator i = i_maps.begin(); i != i_maps.end(); ++i) {
+        Map * const map = i->second;
+        sThreadPoolMgr->schedule([map, curr] { map->Update(curr); });
+    }
+    sThreadPoolMgr->wait();
+
+    for (MapMapType::iterator i = i_maps.begin(); i != i_maps.end(); ++i) {
+        Map * const map = i->second;
+        sThreadPoolMgr->schedule([map, curr] { map->DelayedUpdate(curr); });
+    }
+    sThreadPoolMgr->wait();
+
+    sObjectAccessor->Update(curr);
+
+    for (auto itr = m_Transports.begin(); itr != m_Transports.end(); ++itr)
+        (*itr)->Update(curr);
 }
 
 void MapManager::DoDelayedMovesAndRemoves()
@@ -400,22 +309,11 @@ void MapManager::UnloadAll()
         delete iter->second;
         i_maps.erase(iter++);
     }
-
-    if (m_updater.activated())
-        m_updater.deactivate();
-
-    for (std::vector<MapUpdater*>::const_iterator itr = _achievementUpdaters.begin(); itr != _achievementUpdaters.end(); ++itr)
-    {
-        if ((*itr)->activated())
-            (*itr)->deactivate();
-    }
-
-    Map::DeleteStateMachine();
 }
 
 uint32 MapManager::GetNumInstances()
 {
-    TRINITY_GUARD(ACE_Thread_Mutex, Lock);
+    GuardType guard(i_lock);
 
     uint32 ret = 0;
     for (MapMapType::iterator itr = i_maps.begin(); itr != i_maps.end(); ++itr)
@@ -432,7 +330,7 @@ uint32 MapManager::GetNumInstances()
 
 uint32 MapManager::GetNumPlayersInInstances()
 {
-    TRINITY_GUARD(ACE_Thread_Mutex, Lock);
+    GuardType guard(i_lock);
 
     uint32 ret = 0;
     for (MapMapType::iterator itr = i_maps.begin(); itr != i_maps.end(); ++itr)

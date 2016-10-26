@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -34,111 +34,78 @@
 #include "TypeContainer.h"
 #include "TypeContainerVisitor.h"
 
-// forward declaration
-template<class A, class T, class O> class GridLoader;
+class Corpse;
+class Creature;
+class DynamicObject;
+class GameObject;
+class Pet;
+class Player;
+class AreaTrigger;
 
-template
-<
-class ACTIVE_OBJECT,
-class WORLD_OBJECT_TYPES,
-class GRID_OBJECT_TYPES
->
-class Grid
+class Grid final
 {
-    // allows the GridLoader to access its internals
-    template<class A, class T, class O> friend class GridLoader;
-    public:
+public:
+    typedef TYPELIST_5(GameObject, Creature/*except pets*/, DynamicObject, Corpse/*Bones*/, AreaTrigger) GridObjectTypeList;
 
-        /** destructor to clean up its resources. This includes unloading the
-        grid if it has not been unload.
-        */
-        ~Grid() {}
+    // Creature used instead pet to simplify *::Visit templates (not required duplicate code for Creature->Pet case)
+    typedef TYPELIST_5(Player, Creature/*pets*/, Corpse/*resurrectable*/, DynamicObject/*farsight target*/, AreaTrigger) WorldObjectTypeList;
 
-        /** an object of interested enters the grid
-         */
-        template<class SPECIFIC_OBJECT> void AddWorldObject(SPECIFIC_OBJECT *obj)
-        {
-            i_objects.template insert<SPECIFIC_OBJECT>(obj);
-            ASSERT(obj->IsInGrid());
-        }
+    typedef Trinity::TypeMapContainer<GridObjectTypeList> GridObjectMap;
 
-        /** an object of interested exits the grid
-         */
-        //Actually an unlink is enough, no need to go through the container
-        //template<class SPECIFIC_OBJECT> void RemoveWorldObject(SPECIFIC_OBJECT *obj)
-        //{
-        //    ASSERT(obj->GetGridRef().isValid());
-        //    i_objects.template remove<SPECIFIC_OBJECT>(obj);
-        //    ASSERT(!obj->GetGridRef().isValid());
-        //}
+    typedef Trinity::TypeMapContainer<WorldObjectTypeList> WorldObjectMap;
 
-        /** Refreshes/update the grid. This required for remote grids.
-         */
-        //void RefreshGrid(void) { /* TBI */}
+public:
+    template <typename SpecificObject>
+    void AddWorldObject(SpecificObject *obj)
+    {
+        i_worldObjects.template insert<SpecificObject>(obj);
+    }
 
-        /** Locks a grid.  Any object enters must wait until the grid is unlock.
-         */
-        //void LockGrid(void) { /* TBI */ }
+    template<typename SpecificObject>
+    void AddGridObject(SpecificObject *obj)
+    {
+        i_gridObjects.template insert<SpecificObject>(obj);
+    }
 
-        /** Unlocks the grid.
-         */
-        //void UnlockGrid(void) { /* TBI */ }
+    template <typename T>
+    std::size_t GetWorldObjectCountInGrid() const
+    {
+        return i_worldObjects.template count<T>();
+    }
 
-        // Visit grid objects
-        template<class T>
-        void Visit(TypeContainerVisitor<T, TypeMapContainer<GRID_OBJECT_TYPES> > &visitor)
-        {
-            visitor.Visit(i_container);
-        }
+    // Visit grid objects
+    template <typename T>
+    void Visit(Trinity::TypeContainerVisitor<T, GridObjectMap> &visitor)
+    {
+        visitor.Visit(i_gridObjects);
+    }
 
-        // Visit world objects
-        template<class T>
-        void Visit(TypeContainerVisitor<T, TypeMapContainer<WORLD_OBJECT_TYPES> > &visitor)
-        {
-            visitor.Visit(i_objects);
-        }
+    // Visit world objects
+    template <typename T>
+    void Visit(Trinity::TypeContainerVisitor<T, WorldObjectMap> &visitor)
+    {
+        visitor.Visit(i_worldObjects);
+    }
 
-        /** Returns the number of object within the grid.
-         */
-        //unsigned int ActiveObjectsInGrid(void) const { return i_objects.template Count<ACTIVE_OBJECT>(); }
-        template<class T>
-        uint32 GetWorldObjectCountInGrid() const
-        {
-            return i_objects.template Count<T>();
-        }
-
-        /** Inserts a container type object into the grid.
-         */
-        template<class SPECIFIC_OBJECT> void AddGridObject(SPECIFIC_OBJECT *obj)
-        {
-            i_container.template insert<SPECIFIC_OBJECT>(obj);
-            ASSERT(obj->IsInGrid());
-        }
-
-        /** Removes a containter type object from the grid
-         */
-        //template<class SPECIFIC_OBJECT> void RemoveGridObject(SPECIFIC_OBJECT *obj)
-        //{
-        //    ASSERT(obj->GetGridRef().isValid());
-        //    i_container.template remove<SPECIFIC_OBJECT>(obj);
-        //    ASSERT(!obj->GetGridRef().isValid());
-        //}
-
-        /*bool NoWorldObjectInGrid() const
-        {
-            return i_objects.GetElements().isEmpty();
-        }
-
-        bool NoGridObjectInGrid() const
-        {
-            return i_container.GetElements().isEmpty();
-        }*/
-    private:
-
-        TypeMapContainer<GRID_OBJECT_TYPES> i_container;
-        TypeMapContainer<WORLD_OBJECT_TYPES> i_objects;
-        //typedef std::set<void*> ActiveGridObjects;
-        //ActiveGridObjects m_activeGridObjects;
+private:
+    GridObjectMap i_gridObjects;
+    WorldObjectMap i_worldObjects;
 };
-#endif
 
+namespace Trinity {
+
+template <typename T>
+inline TypeContainerVisitor<T, Grid::GridObjectMap> makeGridVisitor(T &searcher)
+{
+    return TypeContainerVisitor<T, Grid::GridObjectMap>(searcher);
+}
+
+template <typename T>
+inline TypeContainerVisitor<T, Grid::WorldObjectMap> makeWorldVisitor(T &searcher)
+{
+    return TypeContainerVisitor<T, Grid::WorldObjectMap>(searcher);
+}
+
+} // namespace Trinity
+
+#endif

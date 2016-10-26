@@ -30,7 +30,10 @@
 #include "Object.h"
 #include "Player.h"
 #include "Transport.h"
+#include "SpinLock.hpp"
 
+#include <ting/shared_mutex.hpp>
+#include <mutex>
 #include <set>
 
 class Creature;
@@ -49,7 +52,7 @@ class HashMapHolder
 {
     public:
 
-        typedef UNORDERED_MAP<uint64, T*> MapType;
+        typedef std::unordered_map<uint64, T*> MapType;
         typedef ACE_RW_Thread_Mutex LockType;
 
         static void Insert(T* o)
@@ -86,7 +89,13 @@ class HashMapHolder
 
 class ObjectAccessor
 {
-    friend class ACE_Singleton<ObjectAccessor, ACE_Null_Mutex>;
+    typedef Trinity::SpinLock ObjectLock;
+    typedef std::lock_guard<ObjectLock> ObjectGuard;
+
+    typedef ting::shared_mutex CorpseLock;
+    typedef std::lock_guard<CorpseLock> CorpseReadGuard;
+    typedef ting::shared_lock<CorpseLock> CorpseWriteGuard;
+
     private:
         ObjectAccessor();
         ~ObjectAccessor();
@@ -95,6 +104,12 @@ class ObjectAccessor
 
     public:
         // TODO: override these template functions for each holder type and add assertions
+
+        static ObjectAccessor* instance()
+        {
+            static ObjectAccessor instance;
+            return &instance;
+        }
 
         template<class T> static T* GetObjectInOrOutOfWorld(uint64 guid, T* /*typeSpecifier*/)
         {
@@ -197,7 +212,7 @@ class ObjectAccessor
         static Player* FindPlayer(uint64);
         static Creature* FindCreature(uint64);
         static Unit* FindUnit(uint64);
-        static Player* FindPlayerByName(const char* name);
+        static Player* FindPlayerByName(std::string name);
 
         // when using this, you must use the hashmapholder's lock
         static HashMapHolder<Player>::MapType const& GetPlayers()
@@ -232,13 +247,13 @@ class ObjectAccessor
         //non-static functions
         void AddUpdateObject(Object* obj)
         {
-            TRINITY_GUARD(ACE_Thread_Mutex, i_objectLock);
+            ObjectGuard guard(i_objectLock);
             i_objects.insert(obj);
         }
 
         void RemoveUpdateObject(Object* obj)
         {
-            TRINITY_GUARD(ACE_Thread_Mutex, i_objectLock);
+            ObjectGuard guard(i_objectLock);
             i_objects.erase(obj);
         }
 
@@ -246,7 +261,7 @@ class ObjectAccessor
         Corpse* GetCorpseForPlayerGUID(uint64 guid);
         void RemoveCorpse(Corpse* corpse);
         void AddCorpse(Corpse* corpse);
-        void AddCorpsesToGrid(GridCoord const& gridpair, GridType& grid, Map* map);
+        void AddCorpsesToGrid(GridCoord const& gridpair, Grid& grid, Map* map);
         Corpse* ConvertCorpseForPlayer(uint64 player_guid, bool insignia = false);
 
         //Thread unsafe
@@ -259,15 +274,15 @@ class ObjectAccessor
         static void _buildPacket(Player*, Object*, UpdateDataMapType&);
         void _update();
 
-        typedef UNORDERED_MAP<uint64, Corpse*> Player2CorpsesMapType;
-        typedef UNORDERED_MAP<Player*, UpdateData>::value_type UpdateDataValueType;
+        typedef std::unordered_map<uint64, Corpse*> Player2CorpsesMapType;
+        typedef std::unordered_map<Player*, UpdateData>::value_type UpdateDataValueType;
 
         std::set<Object*> i_objects;
-        Player2CorpsesMapType i_player2corpse;
+        ObjectLock i_objectLock;
 
-        ACE_Thread_Mutex i_objectLock;
-        ACE_RW_Thread_Mutex i_corpseLock;
+        Player2CorpsesMapType i_player2corpse;
+        CorpseLock i_corpseLock;
 };
 
-#define sObjectAccessor ACE_Singleton<ObjectAccessor, ACE_Null_Mutex>::instance()
+#define sObjectAccessor ObjectAccessor::instance()
 #endif

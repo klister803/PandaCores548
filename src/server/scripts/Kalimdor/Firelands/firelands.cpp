@@ -5,6 +5,7 @@
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "firelands.h"
+#include "ObjectVisitors.hpp"
 
 enum Spells
 {
@@ -1019,7 +1020,7 @@ static void AlysrazorTrashEvaded(Creature* creature)
 {
     TrashRespawnWorker check;
     Trinity::CreatureWorker<TrashRespawnWorker> worker(creature, check);
-    creature->VisitNearbyGridObject(SIZE_OF_GRIDS, worker);
+    Trinity::VisitNearbyGridObject(creature, SIZE_OF_GRIDS, worker);
 }
 
 class npc_harbinger_of_flame : public CreatureScript
@@ -1316,7 +1317,7 @@ class npc_egg_pile : public CreatureScript
                             std::list<Creature*> eggs;
                             MoltenEggCheck check(me);
                             Trinity::CreatureListSearcher<MoltenEggCheck> searcher(me, eggs, check);
-                            me->VisitNearbyGridObject(20.0f, searcher);
+                            Trinity::VisitNearbyGridObject(me, 20.0f, searcher);
                             if (!eggs.empty())
                             {
                                 Creature* egg = Trinity::Containers::SelectRandomContainerElement(eggs);

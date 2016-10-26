@@ -1,6 +1,7 @@
 #include "NewScriptPCH.h"
 #include "Spell.h"
 #include "bastion_of_twilight.h"
+#include "ObjectVisitors.hpp"
 
 enum SinestraScriptTexts
 {
@@ -1136,7 +1137,7 @@ class spell_sinestra_wrack : public SpellScriptLoader
                 std::list<Player*> targets;
                 Trinity::AnyPlayerInObjectRangeCheck checker(GetTarget(), 100.0f, true);
                 Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(GetTarget(), targets, checker); 
-                GetTarget()->VisitNearbyWorldObject(100.0f, searcher);
+                Trinity::VisitNearbyWorldObject(GetTarget(), 100.0f, searcher);
                 targets.sort(Trinity::ObjectDistanceOrderPred(GetTarget()));
                 uint8 count = 0;
                 if (!targets.empty())

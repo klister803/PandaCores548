@@ -1,5 +1,6 @@
 #include "ScriptPCH.h"
 #include "dragon_soul.h"
+#include "ObjectVisitors.hpp"
 
 enum ScriptedTexts
 {
@@ -374,7 +375,7 @@ class npc_spine_of_deathwing_deathwing : public CreatureScript
                 std::list<Player*> players;
                 AnyLivePlayerNoGmCheck check(me, 200.0f, true);
                 Trinity::PlayerListSearcher<AnyLivePlayerNoGmCheck> searcher(me, players, check);
-                me->VisitNearbyWorldObject(200.0f, searcher);
+                Trinity::VisitNearbyWorldObject(me, 200.0f, searcher);
                 if (!players.empty())
                     for (std::list<Player*>::iterator itr = players.begin(); itr != players.end(); ++ itr)
                         if (Player* pPlayer = (*itr))
@@ -463,7 +464,7 @@ class npc_spine_of_deathwing_deathwing : public CreatureScript
                 Player* player = NULL;
                 AnyLivePlayerNoGmCheck check(me, 200.0f);
                 Trinity::PlayerSearcher<AnyLivePlayerNoGmCheck> searcher(me, player, check);
-                me->VisitNearbyWorldObject(200.0f, searcher);
+                Trinity::VisitNearbyWorldObject(me, 200.0f, searcher);
                 return (player ? true : false);
             }
 
@@ -1317,7 +1318,7 @@ class spell_spine_of_deathwing_blood_corruption : public SpellScriptLoader
                     std::list<Player*> players;
                     PlayersCheck check(owner);
                     Trinity::PlayerListSearcher<PlayersCheck> searcher(owner, players, check);
-                    owner->VisitNearbyObject(200.0f, searcher);
+                    Trinity::VisitNearbyObject(owner, 200.0f, searcher);
                     if (!players.empty())
                         target = Trinity::Containers::SelectRandomContainerElement(players);
                     else

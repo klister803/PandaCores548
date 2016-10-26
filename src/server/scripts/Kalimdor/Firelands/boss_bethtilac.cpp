@@ -1,5 +1,6 @@
 #include "ScriptPCH.h"
 #include "firelands.h"
+#include "ObjectVisitors.hpp"
 
 enum Spells
 {
@@ -235,7 +236,7 @@ class boss_bethtilac : public CreatureScript
                             std::list<Player*> PlayerList;
                             PlayerPositionCheck checker(true);
                             Trinity::PlayerListSearcher<PlayerPositionCheck> searcher(me, PlayerList, checker);
-                            me->VisitNearbyWorldObject(300.0f, searcher);
+                            Trinity::VisitNearbyWorldObject(me, 300.0f, searcher);
                             if (PlayerList.size() == 0)
                                 DoCastAOE(SPELL_VENOM_RAIN);
                             events.ScheduleEvent(EVENT_CHECK_HIGH, 5000);
@@ -247,7 +248,7 @@ class boss_bethtilac : public CreatureScript
                                 std::list<Player*> PlayerList;
                                 PlayerPositionCheck checker(true);
                                 Trinity::PlayerListSearcher<PlayerPositionCheck> searcher(me, PlayerList, checker);
-                                me->VisitNearbyWorldObject(300.0f, searcher);
+                                Trinity::VisitNearbyWorldObject(me, 300.0f, searcher);
                                 if (PlayerList.size() > 0)
                                     DoCastAOE(SPELL_EMBER_FLARE_1);
                             }

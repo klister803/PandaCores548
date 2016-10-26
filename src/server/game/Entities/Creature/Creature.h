@@ -874,7 +874,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         static float _GetDamageMod(int32 Rank);
         static float _GetDamageModMulti(int32 Rank);
 
-        float m_CombatDistance;
+        float m_SightDistance, m_CombatDistance;
 
         void SetGUIDTransport(uint32 guid) { guid_transport=guid; }
         uint32 GetGUIDTransport() { return guid_transport; }
@@ -892,6 +892,8 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         void ForcedDespawn(uint32 timeMSToDespawn = 0);
 
+        void SetLockAI(bool lock) { m_AI_locked = lock; }
+
         uint32 m_LOSCheckTimer;
         bool m_LOSCheck_creature;
         bool m_LOSCheck_player;
@@ -908,9 +910,6 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         bool onVehicleAccessoryInit() const { return m_onVehicleAccessory; }
         void SetVehicleAccessoryInit(bool r) { m_onVehicleAccessory = r; }
-
-        uint32 getCurrentUpdateAreaID() const { return m_areaUpdateId; }
-        uint32 getCurrentUpdateZoneID() const { return m_zoneUpdateId; }
 
         bool IsDespawn() const { return m_despan; }
 
@@ -990,9 +989,6 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         //WaypointMovementGenerator vars
         uint32 m_waypointID;
         uint32 m_path_id;
-
-        uint16 m_zoneUpdateId;
-        uint16 m_areaUpdateId;
 
         //Formation var
         CreatureGroup* m_formation;

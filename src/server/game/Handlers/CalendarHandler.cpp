@@ -515,7 +515,7 @@ void WorldSession::HandleCalendarEventInvite(WorldPacket& recvData)
         }
     }
 
-    if (Player* player = sObjectAccessor->FindPlayerByName(name.c_str()))
+    if (Player* player = sObjectAccessor->FindPlayerByName(name))
     {
         invitee = player->GetGUID();
         team = player->GetTeam();

@@ -32,6 +32,7 @@
 #include "AccountMgr.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
+#include "ObjectVisitors.hpp"
 
 void WorldSession::HandleSendMail(WorldPacket& recvData)
 {
@@ -629,7 +630,7 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
     GameObject* _mailbox = NULL;
     Trinity::MailBoxMasterCheck check(player);
     Trinity::GameObjectSearcher<Trinity::MailBoxMasterCheck> searcher(player, _mailbox, check);
-    player->VisitNearbyObject(5.0f, searcher);
+    Trinity::VisitNearbyObject(player, 5.0f, searcher);
 
     WorldPacket data(SMSG_MAIL_LIST_RESULT, 200);         // guess size
 

@@ -22,7 +22,6 @@
 #include "Common.h"
 #include "UpdateFields.h"
 #include "UpdateData.h"
-#include "GridReference.h"
 #include "ObjectDefines.h"
 #include "GridDefines.h"
 #include "Map.h"
@@ -38,9 +37,9 @@
 #define LOOT_DISTANCE               25.0f
 #define MAX_VISIBILITY_DISTANCE     SIZE_OF_GRIDS           // max distance for visible objects
 #define SIGHT_RANGE_UNIT            50.0f
-#define QUEST_EXPLORED_DISTANCE     90.0f                   // quest explored distance, 90 yards
-#define NORMAL_VISIBILITY_DISTANCE  100.0f                  // visible distance on continents
-#define MAX_VISIBILITY              400.0f                  // default visible distance in Arenas, roughly 400 yards
+#define DEFAULT_VISIBILITY_DISTANCE 90.0f                   // default visible distance, 90 yards on continents
+#define DEFAULT_VISIBILITY_INSTANCE 170.0f                  // default visible distance in instances, 170 yards
+#define DEFAULT_VISIBILITY_BGARENAS 533.0f                  // default visible distance in BG/Arenas, roughly 533 yards
 
 #define DEFAULT_WORLD_OBJECT_SIZE   0.388999998569489f      // player size, also currently used (correctly?) for any non Unit world objects
 #define DEFAULT_COMBAT_REACH        1.5f
@@ -144,7 +143,18 @@ private:
     uint16 _dungeonId;
 };
 
-typedef std::map<Player*, UpdateData> UpdateDataMapType;
+struct ObjectInvisibility final
+{
+    ObjectInvisibility(InvisibilityType t, int32 a)
+        : type(t)
+        , amount(a)
+    { }
+
+    InvisibilityType type;
+    int32 amount;
+};
+
+typedef std::unordered_map<Player*, UpdateData> UpdateDataMapType;
 typedef cyber_ptr<Object> C_PTR;
 class Object
 {
@@ -728,15 +738,58 @@ class WorldLocation : public Position
         uint32 m_mapId;
 };
 
-template<class T>
+template <typename ObjectType>
 class GridObject
 {
-    public:
-        bool IsInGrid() const { return _gridRef.isValid(); }
-        void AddToGrid(GridRefManager<T>& m) { ASSERT(!IsInGrid()); _gridRef.link(&m, (T*)this); }
-        void RemoveFromGrid() { ASSERT(IsInGrid()); _gridRef.unlink(); }
-    private:
-        GridReference<T> _gridRef;
+    typedef GridObject<ObjectType> SelfType;
+
+    typedef std::vector<ObjectType*> ObjectTypeStorage;
+
+public:
+    GridObject()
+        : storage_()
+    { }
+
+    ~GridObject()
+    {
+        ASSERT(!IsInGrid());
+    }
+
+    bool IsInGrid() const
+    {
+        return storage_ != nullptr;
+    }
+
+    void AddToGrid(ObjectTypeStorage &storage)
+    {
+        ASSERT(!IsInGrid());
+
+        storage_ = &storage;
+        offset_ = storage_->size();
+        storage_->emplace_back(static_cast<ObjectType*>(this));
+    }
+
+    void RemoveFromGrid()
+    {
+        ASSERT(IsInGrid());
+        ASSERT(storage_->size() > offset_);
+
+        auto &atOffset = (*storage_)[offset_];
+        ASSERT(atOffset == static_cast<ObjectType*>(this));
+
+        if (atOffset != storage_->back())
+        {
+            std::swap(atOffset, storage_->back());
+            static_cast<SelfType*>(atOffset)->offset_ = offset_;
+        }
+
+        storage_->pop_back();
+        storage_ = nullptr;
+    }
+
+private:
+    ObjectTypeStorage *storage_;
+    std::size_t offset_;
 };
 
 template <class T_VALUES, class T_FLAGS, class FLAG_TYPE, uint8 ARRAY_SIZE>
@@ -972,8 +1025,11 @@ class WorldObject : public Object, public WorldLocation
         virtual void SaveRespawnTime() {}
         void AddObjectToRemoveList();
 
+        float GetGridActivationRange() const;
         float CalcVisibilityRange(const WorldObject* obj = NULL) const;
-        bool canSeeOrDetect(WorldObject const* obj, bool ignoreStealth = false, bool distanceCheck = false, bool isExactDist = false) const;
+        float GetVisibilityCombatLog() const;
+        float GetSightRange(const WorldObject* target = NULL) const;
+        bool canSeeOrDetect(WorldObject const* obj, bool ignoreStealth = false, bool distanceCheck = false) const;
 
         void SetVisible(bool x);
 
@@ -1045,9 +1101,6 @@ class WorldObject : public Object, public WorldLocation
         bool IsPermanentWorldObject() const { return m_isWorldObject; }
         bool IsWorldObject() const;
 
-        template<class NOTIFIER> void VisitNearbyObject(const float &radius, NOTIFIER &notifier, bool loadGrids = false) const { if (IsInWorld()) GetMap()->VisitAll(GetPositionX(), GetPositionY(), radius, notifier, loadGrids); }
-        template<class NOTIFIER> void VisitNearbyGridObject(const float &radius, NOTIFIER &notifier, bool loadGrids = false) const { if (IsInWorld()) GetMap()->VisitGrid(GetPositionX(), GetPositionY(), radius, notifier, loadGrids); }
-        template<class NOTIFIER> void VisitNearbyWorldObject(const float &radius, NOTIFIER &notifier, bool loadGrids = false) const { if (IsInWorld()) GetMap()->VisitWorld(GetPositionX(), GetPositionY(), radius, notifier, loadGrids); }
 #ifdef MAP_BASED_RAND_GEN
         int32 irand(int32 min, int32 max) const     { return int32 (GetMap()->mtRand.randInt(max - min)) + min; }
         uint32 urand(uint32 min, uint32 max) const  { return GetMap()->mtRand.randInt(max - min) + min;}
@@ -1071,6 +1124,10 @@ class WorldObject : public Object, public WorldLocation
 
         MovementInfo m_movementInfo;
         bool m_deleted;
+
+        template<class NOTIFIER> void VisitNearbyObject(const float &radius, NOTIFIER &notifier) const;
+        template<class NOTIFIER> void VisitNearbyGridObject(const float &radius, NOTIFIER &notifier) const;
+        template<class NOTIFIER> void VisitNearbyWorldObject(const float &radius, NOTIFIER &notifier) const;
 
         // Personal visibility system
         bool MustBeVisibleOnlyForSomePlayers() const { return !_visibilityPlayerList.empty(); }

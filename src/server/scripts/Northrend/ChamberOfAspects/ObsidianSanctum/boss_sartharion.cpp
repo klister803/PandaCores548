@@ -22,6 +22,7 @@
 #include "Cell.h"
 #include "CellImpl.h"
 #include "obsidian_sanctum.h"
+#include "ObjectVisitors.hpp"
 
 enum eEnums
 {
@@ -522,7 +523,7 @@ public:
             std::list<Creature*> pFireCyclonesList;
             Trinity::AllCreaturesOfEntryInRange checker(me, NPC_FIRE_CYCLONE, 200.0f);
             Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(me, pFireCyclonesList, checker);
-            me->VisitNearbyObject(200.0f, searcher);
+            Trinity::VisitNearbyObject(me, 200.0f, searcher);
 
             if (pFireCyclonesList.empty())
                 return;

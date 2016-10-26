@@ -21,6 +21,7 @@
 #include "Transport.h"
 #include "Vehicle.h"
 #include "Group.h"
+#include "ObjectVisitors.hpp"
 
 enum eAchievements
 {
@@ -2578,7 +2579,7 @@ class npc_korkron_primalist: public CreatureScript
                                 Unit* finalTarget = me;
                                 Trinity::AnyFriendlyUnitInObjectRangeCheck checker(me, me, 30.0f);
                                 Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(me, TargetList, checker);
-                                me->VisitNearbyObject(30.0f, searcher);
+                                Trinity::VisitNearbyObject(me, 30.0f, searcher);
                                 for (std::list<Unit*>::iterator itr = TargetList.begin(); itr != TargetList.end(); ++itr)
                                     if ((*itr)->GetHealthPct() < finalTarget->GetHealthPct())
                                         finalTarget = *itr;

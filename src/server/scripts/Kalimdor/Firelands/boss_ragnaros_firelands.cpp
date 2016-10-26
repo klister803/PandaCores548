@@ -2,6 +2,7 @@
 #include "firelands.h"
 #include "boss_ragnaros_firelands.h"
 #include "Group.h"
+#include "ObjectVisitors.hpp"
 
 enum ScriptTextsRagnaros
 {
@@ -2047,7 +2048,7 @@ class npc_ragnaros_firelands_dreadflame_spawn : public CreatureScript
                             UnitList targets;
                             CloudburstCheck check(me);
                             Trinity::UnitListSearcher<CloudburstCheck> searcher(me, targets, check);
-                            me->VisitNearbyObject(3.0f, searcher);
+                            Trinity::VisitNearbyObject(me, 3.0f, searcher);
                             if (!targets.empty())
                             {
                                 events.Reset();
@@ -2128,7 +2129,7 @@ class npc_ragnaros_firelands_dreadflame : public CreatureScript
                             std::list<Player*> targets;
                             Trinity::AnyPlayerInObjectRangeCheck check(me, 3.0f, true);
                             Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(me, targets, check);
-                            me->VisitNearbyObject(3.0f, searcher);
+                            Trinity::VisitNearbyObject(me, 3.0f, searcher);
                             if (!targets.empty())
                             {
                                 for (std::list<Player*>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
@@ -2145,7 +2146,7 @@ class npc_ragnaros_firelands_dreadflame : public CreatureScript
                             UnitList targets;
                             CloudburstCheck check(me);
                             Trinity::UnitListSearcher<CloudburstCheck> searcher(me, targets, check);
-                            me->VisitNearbyObject(3.0f, searcher);
+                            Trinity::VisitNearbyObject(me, 3.0f, searcher);
                             if (!targets.empty())
                             {
                                 events.Reset();

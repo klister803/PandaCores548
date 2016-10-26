@@ -33,6 +33,7 @@
 #include "GroupMgr.h"
 #include "Chat.h"
 #include "Language.h"
+#include "ObjectVisitors.hpp"
 
 Battlefield::Battlefield()
 {
@@ -1112,7 +1113,7 @@ bool BfCapturePoint::Update(uint32 diff)
     std::list<Player*> players;
     Trinity::AnyPlayerInObjectRangeCheck checker(m_capturePoint, radius);
     Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(m_capturePoint, players, checker);
-    m_capturePoint->VisitNearbyWorldObject(radius, searcher);
+    Trinity::VisitNearbyWorldObject(m_capturePoint, radius, searcher);
 
     for (std::list<Player*>::iterator itr = players.begin(); itr != players.end(); ++itr)
         if ((*itr)->IsOutdoorPvPActive())

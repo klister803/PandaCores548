@@ -865,9 +865,8 @@ public:
                     Creature* sironas = NULL;
                     Trinity::AllCreaturesOfEntryInRange check(me, NPC_SIRONAS, SIZE_OF_GRIDS);
                     Trinity::CreatureSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(me, sironas, check);
-                    TypeContainerVisitor<Trinity::CreatureSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> visitor(searcher);
 
-                    cell.Visit(p, visitor, *(me->GetMap()), *me, SIZE_OF_GRIDS);
+                    cell.Visit(p, Trinity::makeGridVisitor(searcher), *(me->GetMap()), *me, SIZE_OF_GRIDS);
 
                     if (sironas)
                     {

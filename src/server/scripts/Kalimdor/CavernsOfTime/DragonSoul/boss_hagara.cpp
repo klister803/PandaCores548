@@ -1,6 +1,7 @@
 #include "ScriptPCH.h"
 #include "MoveSplineInit.h"
 #include "dragon_soul.h"
+#include "ObjectVisitors.hpp"
 
 enum ScriptedTexts
 {
@@ -2078,7 +2079,7 @@ class spell_hagara_the_stormbinder_lightning_conduit : public SpellScriptLoader
                 std::list<Player*> players;
                 AnyPlayerOrCrystalCheck check(GetTarget(), 10.0f);
                 Trinity::PlayerListSearcher<AnyPlayerOrCrystalCheck> searcher(GetTarget(), players, check); 
-                GetTarget()->VisitNearbyObject(10.0f, searcher);
+                Trinity::VisitNearbyObject(GetTarget(), 10.0f, searcher);
 
                 if (!players.empty())
                 {

@@ -40,6 +40,7 @@ EndContentData */
 #include "GridNotifiersImpl.h"
 #include "Cell.h"
 #include "CellImpl.h"
+#include "ObjectVisitors.hpp"
 
 //Support for quest: You're Fired! (10821)
 bool     obelisk_one, obelisk_two, obelisk_three, obelisk_four, obelisk_five;
@@ -754,7 +755,7 @@ class npc_simon_bunny : public CreatureScript
                 std::list<WorldObject*> ClusterList;
                 Trinity::AllWorldObjectsInRange objects(me, searchDistance);
                 Trinity::WorldObjectListSearcher<Trinity::AllWorldObjectsInRange> searcher(me, ClusterList, objects);
-                me->VisitNearbyObject(searchDistance, searcher);
+                Trinity::VisitNearbyObject(me, searchDistance, searcher);
 
                 for (std::list<WorldObject*>::const_iterator i = ClusterList.begin(); i != ClusterList.end(); ++i)
                 {

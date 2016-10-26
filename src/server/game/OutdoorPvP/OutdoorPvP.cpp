@@ -25,9 +25,8 @@
 #include "WorldPacket.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
-#include "GridNotifiers.h"
-#include "GridNotifiersImpl.h"
 #include "CellImpl.h"
+#include "ObjectVisitors.hpp"
 
 OPvPCapturePoint::OPvPCapturePoint(OutdoorPvP* pvp) :
 m_capturePointGUID(0), m_capturePoint(NULL), m_maxValue(0.0f), m_minValue(0.0f), m_maxSpeed(0),
@@ -312,7 +311,7 @@ bool OPvPCapturePoint::Update(uint32 diff)
     std::list<Player*> players;
     Trinity::AnyPlayerInObjectRangeCheck checker(m_capturePoint, radius);
     Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(m_capturePoint, players, checker);
-    m_capturePoint->VisitNearbyWorldObject(radius, searcher);
+    Trinity::VisitNearbyWorldObject(m_capturePoint, radius, searcher);
 
     for (std::list<Player*>::iterator itr = players.begin(); itr != players.end(); ++itr)
     {

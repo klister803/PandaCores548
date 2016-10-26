@@ -2,6 +2,7 @@
 #include "dragon_soul.h"
 #include "MoveSplineInit.h"
 #include "boss_warmaster_blackhorn.h"
+#include "ObjectVisitors.hpp"
 
 enum ScriptedTextBlackhorn
 {
@@ -1609,7 +1610,7 @@ class npc_dragon_soul_sky_captain_swayze : public CreatureScript
                 Player* player = NULL;
                 AnyLivePlayerNoGmCheck check(me, 200.0f);
                 Trinity::PlayerSearcher<AnyLivePlayerNoGmCheck> searcher(me, player, check);
-                me->VisitNearbyWorldObject(200.0f, searcher);
+                Trinity::VisitNearbyWorldObject(me, 200.0f, searcher);
                 return (player ? true : false);
             }
 

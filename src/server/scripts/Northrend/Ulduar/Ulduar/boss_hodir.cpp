@@ -24,6 +24,7 @@ EndScriptData */
 
 #include "ScriptPCH.h"
 #include "ulduar.h"
+#include "ObjectVisitors.hpp"
 
 enum Spells
 {
@@ -571,7 +572,7 @@ public:
                 std::list<Player*> players;
                 Trinity::AnyPlayerInObjectRangeCheck checker(me, 30);
                 Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(me, players, checker);
-                me->VisitNearbyWorldObject(30, searcher);
+                Trinity::VisitNearbyWorldObject(me, 30, searcher);
                 if (!players.empty())
                 {
                     for (std::list<Player*>::iterator iter = players.begin(); iter != players.end(); ++iter)
@@ -656,7 +657,7 @@ public:
                 std::list<Player*> players;
                 Trinity::AnyPlayerInObjectRangeCheck checker(me, 30);
                 Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(me, players, checker);
-                me->VisitNearbyWorldObject(30, searcher);
+                Trinity::VisitNearbyWorldObject(me, 30, searcher);
                 if (!players.empty())
                 {
                     std::list<Player*>::iterator iter = players.begin(); 

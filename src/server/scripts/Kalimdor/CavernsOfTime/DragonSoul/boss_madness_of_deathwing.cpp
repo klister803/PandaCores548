@@ -2,6 +2,7 @@
 #include "dragon_soul.h"
 #include "LFGMgr.h"
 #include "Group.h"
+#include "ObjectVisitors.hpp"
 
 // send SendPlaySpellVisualKit from limbs
 // 22445 + 0 before casting visual spell
@@ -1262,7 +1263,7 @@ class npc_dragon_soul_thrall_1 : public CreatureScript
                 Player* player = NULL;
                 AnyLivePlayerNoGmCheck check(me, 500.0f);
                 Trinity::PlayerSearcher<AnyLivePlayerNoGmCheck> searcher(me, player, check);
-                me->VisitNearbyWorldObject(500.0f, searcher);
+                Trinity::VisitNearbyWorldObject(me, 500.0f, searcher);
                 return (player ? true : false);
             }
 
@@ -2771,7 +2772,7 @@ class npc_madness_of_deathwing_jump_pad : public CreatureScript
                         Creature* otherJumpPad = NULL;
                         OtherJumpPadCheck otherJumpPadCheck((pos % 2) == 1 ? pos : pos - 2);
                         Trinity::CreatureSearcher<OtherJumpPadCheck> jumpPadSearcher(me, otherJumpPad, otherJumpPadCheck);
-                        me->VisitNearbyObject(100.0f, jumpPadSearcher);
+                        Trinity::VisitNearbyObject(me, 100.0f, jumpPadSearcher);
 
                         if (!otherJumpPad)
                         {
@@ -2796,7 +2797,7 @@ class npc_madness_of_deathwing_jump_pad : public CreatureScript
                     std::list<Player*> players;
                     PlayerCheck check(me, spellIdEx1, spellIdEx2);
                     Trinity::PlayerListSearcher<PlayerCheck> searcher(me, players, check);
-                    me->VisitNearbyObject(32.0f, searcher);
+                    Trinity::VisitNearbyObject(me, 32.0f, searcher);
                     if (!players.empty())
                         for (std::list<Player*>::const_iterator itr = players.begin(); itr != players.end(); ++ itr)
                             DoCast((*itr), spellId, true);

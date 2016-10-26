@@ -33,6 +33,7 @@
 #include "GameObjectModel.h"
 #include "DynamicTree.h"
 #include "SpellAuraEffects.h"
+#include "ObjectVisitors.hpp"
 
 GameObject::GameObject() : WorldObject(false), m_model(NULL), m_goValue(new GameObjectValue), m_AI(NULL), 
     m_manual_anim(false), m_respawnTime(0), m_respawnDelayTime(300),
@@ -300,8 +301,8 @@ void GameObject::Update(uint32 diff)
                             UpdateData udata(caster->GetMapId());
                             WorldPacket packet;
                             BuildValuesUpdateBlockForPlayer(&udata, caster->ToPlayer());
-                            udata.BuildPacket(&packet);
-                            caster->ToPlayer()->GetSession()->SendPacket(&packet);
+                            if (udata.BuildPacket(&packet))
+                                caster->ToPlayer()->GetSession()->SendPacket(&packet);
 
                             SendCustomAnim(GetGoAnimProgress());
                         }
@@ -428,8 +429,8 @@ void GameObject::Update(uint32 diff)
                     {
                         Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck checker(this, owner, radius);
                         Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck> searcher(this, ok, checker);
-                        VisitNearbyGridObject(radius, searcher);
-                        if (!ok) VisitNearbyWorldObject(radius, searcher);
+                        Trinity::VisitNearbyGridObject(this, radius, searcher);
+                        if (!ok) Trinity::VisitNearbyWorldObject(this, radius, searcher);
                     }
                     else                                        // environmental trap
                     {
@@ -438,7 +439,7 @@ void GameObject::Update(uint32 diff)
                         Player* player = NULL;
                         Trinity::AnyPlayerInObjectRangeCheck checker(this, radius);
                         Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, player, checker);
-                        VisitNearbyWorldObject(radius, searcher);
+                        Trinity::VisitNearbyWorldObject(this, radius, searcher);
                         ok = player;
                     }
 
@@ -1022,8 +1023,7 @@ void GameObject::TriggeringLinkedGameObject(uint32 trapEntry, Unit* target)
         Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*target, trapEntry, range);
         Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> checker(this, trapGO, go_check);
 
-        TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer > object_checker(checker);
-        cell.Visit(p, object_checker, *GetMap(), *target, range);
+        cell.Visit(p, Trinity::makeGridVisitor(checker), *GetMap(), *target, range);
     }
 
     // found correct GO
@@ -1040,8 +1040,7 @@ GameObject* GameObject::LookupFishingHoleAround(float range)
     Trinity::NearestGameObjectFishingHole u_check(*this, range);
     Trinity::GameObjectSearcher<Trinity::NearestGameObjectFishingHole> checker(this, ok, u_check);
 
-    TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::NearestGameObjectFishingHole>, GridTypeMapContainer > grid_object_checker(checker);
-    cell.Visit(p, grid_object_checker, *GetMap(), *this, range);
+    cell.Visit(p, Trinity::makeGridVisitor(checker), *GetMap(), *this, range);
 
     return ok;
 }
@@ -1209,7 +1208,7 @@ void GameObject::Use(Unit* user)
 
             // a chair may have n slots. we have to calculate their positions and teleport the player to the nearest one
 
-            float lowestDist = NORMAL_VISIBILITY_DISTANCE;
+            float lowestDist = DEFAULT_VISIBILITY_DISTANCE;
 
             uint32 nearest_slot = 0;
             float x_lowest = GetPositionX();

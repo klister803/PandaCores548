@@ -85,21 +85,23 @@
 #include "PlayerDump.h"
 #include "ChallengeMgr.h"
 #include "ScenarioMgr.h"
+#include "ThreadPoolMgr.hpp"
 
 ACE_Atomic_Op<ACE_Thread_Mutex, bool> World::m_stopEvent = false;
 uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
 volatile uint32 World::m_worldLoopCounter = 0;
 
-float World::m_MaxVisibleDistanceOnContinents = NORMAL_VISIBILITY_DISTANCE;
-float World::m_MaxVisibleDistanceInInstances = NORMAL_VISIBILITY_DISTANCE;
-float World::m_MaxVisibleDistanceInBGArenas = MAX_VISIBILITY_DISTANCE;
+float World::m_MaxVisibleDistanceOnContinents = DEFAULT_VISIBILITY_DISTANCE;
+float World::m_MaxVisibleDistanceInInstances = DEFAULT_VISIBILITY_DISTANCE;
+float World::m_MaxVisibleDistanceInBG   = DEFAULT_VISIBILITY_BGARENAS;
+float World::m_MaxVisibleDistanceInArenas   = DEFAULT_VISIBILITY_BGARENAS;
 
 int32 World::m_visibility_notify_periodOnContinents = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
 int32 World::m_visibility_notify_periodInInstances  = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
 int32 World::m_visibility_notify_periodInBGArenas   = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
+int32 World::m_visibilityAINotifyDelay   = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
 
-float World::Visibility_RelocationLowerLimit = 20.0f;
-uint32 World::Visibility_AINotifyDelay = 2000;
+float World::m_visibilityRelocationLowerLimit = 20.0f;
 float World::ZoneUpdateDistanceRangeLimit = 5.0f;
 
 // movement anticheat
@@ -1200,11 +1202,11 @@ void World::LoadConfigSettings(bool reload)
         m_int_configs[CONFIG_GUILD_BANK_EVENT_LOG_COUNT] = GUILD_BANKLOG_MAX_RECORDS;
 
     //visibility on continents
-    m_MaxVisibleDistanceOnContinents = ConfigMgr::GetFloatDefault("Visibility.Distance.Continents", NORMAL_VISIBILITY_DISTANCE);
-    if (m_MaxVisibleDistanceOnContinents < NORMAL_VISIBILITY_DISTANCE*sWorld->getRate(RATE_CREATURE_AGGRO))
+    m_MaxVisibleDistanceOnContinents = ConfigMgr::GetFloatDefault("Visibility.Distance.Continents", DEFAULT_VISIBILITY_DISTANCE);
+    if (m_MaxVisibleDistanceOnContinents < DEFAULT_VISIBILITY_DISTANCE*sWorld->getRate(RATE_CREATURE_AGGRO))
     {
-        sLog->outError(LOG_FILTER_SERVER_LOADING, "Visibility.Distance.Continents can't be less max aggro radius %f", NORMAL_VISIBILITY_DISTANCE*sWorld->getRate(RATE_CREATURE_AGGRO));
-        m_MaxVisibleDistanceOnContinents = NORMAL_VISIBILITY_DISTANCE*sWorld->getRate(RATE_CREATURE_AGGRO);
+        sLog->outError(LOG_FILTER_SERVER_LOADING, "Visibility.Distance.Continents can't be less max aggro radius %f", DEFAULT_VISIBILITY_DISTANCE*sWorld->getRate(RATE_CREATURE_AGGRO));
+        m_MaxVisibleDistanceOnContinents = DEFAULT_VISIBILITY_DISTANCE*sWorld->getRate(RATE_CREATURE_AGGRO);
     }
     else if (m_MaxVisibleDistanceOnContinents > MAX_VISIBILITY_DISTANCE)
     {
@@ -1212,15 +1214,15 @@ void World::LoadConfigSettings(bool reload)
         m_MaxVisibleDistanceOnContinents = MAX_VISIBILITY_DISTANCE;
     }
 
-    Visibility_RelocationLowerLimit = ConfigMgr::GetFloatDefault("Visibility.RelocationLowerLimit", 20.f);
-    Visibility_AINotifyDelay = ConfigMgr::GetFloatDefault("Visibility.AINotifyDelay", 2000);
+    m_visibilityRelocationLowerLimit = ConfigMgr::GetFloatDefault("Visibility.RelocationLowerLimit", 10.f);
+    m_visibilityAINotifyDelay = ConfigMgr::GetIntDefault("Visibility.AINotifyDelay", DEFAULT_VISIBILITY_NOTIFY_PERIOD);
 
     //visibility in instances
-    m_MaxVisibleDistanceInInstances = ConfigMgr::GetFloatDefault("Visibility.Distance.Instances", NORMAL_VISIBILITY_DISTANCE);
-    if (m_MaxVisibleDistanceInInstances < NORMAL_VISIBILITY_DISTANCE*sWorld->getRate(RATE_CREATURE_AGGRO))
+    m_MaxVisibleDistanceInInstances = ConfigMgr::GetFloatDefault("Visibility.Distance.Instances", DEFAULT_VISIBILITY_DISTANCE);
+    if (m_MaxVisibleDistanceInInstances < DEFAULT_VISIBILITY_DISTANCE*sWorld->getRate(RATE_CREATURE_AGGRO))
     {
-        sLog->outError(LOG_FILTER_SERVER_LOADING, "Visibility.Distance.Instances can't be less max aggro radius %f", NORMAL_VISIBILITY_DISTANCE*sWorld->getRate(RATE_CREATURE_AGGRO));
-        m_MaxVisibleDistanceInInstances = NORMAL_VISIBILITY_DISTANCE*sWorld->getRate(RATE_CREATURE_AGGRO);
+        sLog->outError(LOG_FILTER_SERVER_LOADING, "Visibility.Distance.Instances can't be less max aggro radius %f", DEFAULT_VISIBILITY_DISTANCE*sWorld->getRate(RATE_CREATURE_AGGRO));
+        m_MaxVisibleDistanceInInstances = DEFAULT_VISIBILITY_DISTANCE*sWorld->getRate(RATE_CREATURE_AGGRO);
     }
     else if (m_MaxVisibleDistanceInInstances > MAX_VISIBILITY_DISTANCE)
     {
@@ -1228,17 +1230,30 @@ void World::LoadConfigSettings(bool reload)
         m_MaxVisibleDistanceInInstances = MAX_VISIBILITY_DISTANCE;
     }
 
-    //visibility in BG/Arenas
-    m_MaxVisibleDistanceInBGArenas = MAX_VISIBILITY_DISTANCE;//ConfigMgr::GetFloatDefault("Visibility.Distance.BGArenas", DEFAULT_VISIBILITY_BGS);
-    if (m_MaxVisibleDistanceInBGArenas < 45*sWorld->getRate(RATE_CREATURE_AGGRO))
+    //visibility in BG
+    m_MaxVisibleDistanceInBG = ConfigMgr::GetFloatDefault("Visibility.Distance.BG", DEFAULT_VISIBILITY_BGARENAS);
+    if (m_MaxVisibleDistanceInBG < 45*sWorld->getRate(RATE_CREATURE_AGGRO))
     {
-        sLog->outError(LOG_FILTER_SERVER_LOADING, "Visibility.Distance.BGArenas can't be less max aggro radius %f", 45*sWorld->getRate(RATE_CREATURE_AGGRO));
-        m_MaxVisibleDistanceInBGArenas = 45*sWorld->getRate(RATE_CREATURE_AGGRO);
+        sLog->outError(LOG_FILTER_SERVER_LOADING, "Visibility.Distance.BG can't be less max aggro radius %f", 45*sWorld->getRate(RATE_CREATURE_AGGRO));
+        m_MaxVisibleDistanceInBG = 45*sWorld->getRate(RATE_CREATURE_AGGRO);
     }
-    else if (m_MaxVisibleDistanceInBGArenas > MAX_VISIBILITY_DISTANCE)
+    else if (m_MaxVisibleDistanceInBG > MAX_VISIBILITY_DISTANCE)
     {
-        sLog->outError(LOG_FILTER_SERVER_LOADING, "Visibility.Distance.BGArenas can't be greater %f", MAX_VISIBILITY_DISTANCE);
-        m_MaxVisibleDistanceInBGArenas = MAX_VISIBILITY_DISTANCE;
+        sLog->outError(LOG_FILTER_SERVER_LOADING, "Visibility.Distance.BG can't be greater %f", MAX_VISIBILITY_DISTANCE);
+        m_MaxVisibleDistanceInBG = MAX_VISIBILITY_DISTANCE;
+    }
+
+    //visibility in Arenas
+    m_MaxVisibleDistanceInArenas = ConfigMgr::GetFloatDefault("Visibility.Distance.Arenas", DEFAULT_VISIBILITY_BGARENAS);
+    if (m_MaxVisibleDistanceInArenas < 45*sWorld->getRate(RATE_CREATURE_AGGRO))
+    {
+        sLog->outError(LOG_FILTER_SERVER_LOADING, "Visibility.Distance.Arenas can't be less max aggro radius %f", 45*sWorld->getRate(RATE_CREATURE_AGGRO));
+        m_MaxVisibleDistanceInArenas = 45*sWorld->getRate(RATE_CREATURE_AGGRO);
+    }
+    else if (m_MaxVisibleDistanceInArenas > MAX_VISIBILITY_DISTANCE)
+    {
+        sLog->outError(LOG_FILTER_SERVER_LOADING, "Visibility.Distance.Arenas can't be greater %f", MAX_VISIBILITY_DISTANCE);
+        m_MaxVisibleDistanceInArenas = MAX_VISIBILITY_DISTANCE;
     }
 
     m_visibility_notify_periodOnContinents = ConfigMgr::GetIntDefault("Visibility.Notify.Period.OnContinents", DEFAULT_VISIBILITY_NOTIFY_PERIOD);
@@ -1521,6 +1536,9 @@ void World::SetInitialWorldSettings()
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_OLD_CORPSES);
     stmt->setUInt32(0, 3 * DAY);
     CharacterDatabase.Execute(stmt);
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Starting thread pool manager");
+    sThreadPoolMgr->start(getIntConfig(CONFIG_NUMTHREADS));
 
     ///- Load the DBC files
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Initialize data stores...");
@@ -2817,7 +2835,7 @@ bool World::RemoveBanAccount(BanMode mode, std::string nameOrIP)
 /// Ban an account or ban an IP address, duration will be parsed using TimeStringToSecs if it is positive, otherwise permban
 BanReturn World::BanCharacter(std::string name, std::string duration, std::string reason, std::string author)
 {
-    Player* pBanned = sObjectAccessor->FindPlayerByName(name.c_str());
+    Player* pBanned = sObjectAccessor->FindPlayerByName(name);
     uint32 guid = 0;
 
     uint32 duration_secs = TimeStringToSecs(duration);
@@ -2858,7 +2876,7 @@ BanReturn World::BanCharacter(std::string name, std::string duration, std::strin
 /// Remove a ban from a character
 bool World::RemoveBanCharacter(std::string name)
 {
-    Player* pBanned = sObjectAccessor->FindPlayerByName(name.c_str());
+    Player* pBanned = sObjectAccessor->FindPlayerByName(name);
     uint32 guid = 0;
 
     /// Pick a player to ban if not online
@@ -3326,7 +3344,11 @@ void World::ResetDailyQuests()
 
 void World::ResetCurrencyWeekCap()
 {
-    CharacterDatabase.Execute("UPDATE `character_currency` SET `week_count` = 0, `curentcap` = 0");
+    sThreadPoolMgr->schedule([] {
+        CharacterDatabase.Execute("UPDATE `character_currency` SET `week_count` = 0, `curentcap` = 0");
+    });
+
+    sThreadPoolMgr->wait();
 
     for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
         if (itr->second->GetPlayer())

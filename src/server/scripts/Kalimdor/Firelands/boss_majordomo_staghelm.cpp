@@ -1,5 +1,6 @@
 #include "ScriptPCH.h"
 #include "firelands.h"
+#include "ObjectVisitors.hpp"
 
 enum Spells
 {
@@ -240,7 +241,7 @@ class boss_majordomo_staghelm : public CreatureScript
                                 std::list<Player*> PlayerList;
                                 Trinity::AnyPlayerInObjectRangeCheck checker(target, 10.0f);
                                 Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(target, PlayerList, checker);
-                                target->VisitNearbyWorldObject(5.0f, searcher);
+                                Trinity::VisitNearbyWorldObject(target, 5.0f, searcher);
                                 uint8 const minTargets = Is25ManRaid() ? 18 : 7;
                                 if (PlayerList.size() >= minTargets)
                                     _phase = PHASE_SCORPION;

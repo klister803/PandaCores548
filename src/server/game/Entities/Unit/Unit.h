@@ -1910,6 +1910,10 @@ class Unit : public WorldObject
         Player* GetPlayerMover() const;
         //Player* GetMoverSource() const;
         Player* m_movedPlayer;
+        SharedVisionList const& GetSharedVisionList() { return m_sharedVision; }
+        void AddPlayerToVision(Player* player);
+        void RemovePlayerFromVision(Player* player);
+        bool HasSharedVision() const { return !m_sharedVision.empty(); }
         void RemoveBindSightAuras();
         void RemoveCharmAuras();
 
@@ -2164,8 +2168,6 @@ class Unit : public WorldObject
         ZLiquidStatus Zliquid_status;
         uint32 m_sequenceIndex;
 
-        std::list<Player*> m_whoseeme;
-
         float m_threatModifier[MAX_SPELL_SCHOOL];
         float m_modAttackSpeedPct[3];
 
@@ -2194,6 +2196,11 @@ class Unit : public WorldObject
         float GetTotalAttackPowerValue(WeaponAttackType attType) const;
         float GetWeaponDamageRange(WeaponAttackType attType, WeaponDamageRange type) const;
         void SetBaseWeaponDamage(WeaponAttackType attType, WeaponDamageRange damageRange, float value) { m_weaponDamage[attType][damageRange] = value; }
+
+        uint32 getCurrentUpdateAreaID() const { return m_areaUpdateId; }
+        uint32 getCurrentUpdateZoneID() const { return m_zoneUpdateId; }
+        uint32 getOldUpdateAreaID() const { return m_oldAreaUpdateId; }
+        uint32 getOldUpdateZoneID() const { return m_oldZoneUpdateId; }
 
         bool isInFrontInMap(Unit const* target, float distance, float arc = M_PI) const;
         bool isInBackInMap(Unit const* target, float distance, float arc = M_PI) const;
@@ -2523,6 +2530,14 @@ class Unit : public WorldObject
         //Combat rating
         int16 m_baseRatingValue[MAX_COMBAT_RATING];
 
+        uint32 m_zoneUpdateId;
+        uint32 m_oldZoneUpdateId;
+        uint32 m_areaUpdateId;
+        uint32 m_oldAreaUpdateId;
+
+        bool isAINotifyScheduled() const { return m_AINotifyScheduled; }
+        void setAINotifyScheduled(bool val) { m_AINotifyScheduled = val; }
+
         // Handling caster facing during spell cast
         void FocusTarget(Spell const* focusSpell, uint64 target);
         void ReleaseFocus(Spell const* focusSpell);
@@ -2540,7 +2555,6 @@ class Unit : public WorldObject
         Movement::MoveSpline * movespline;
 
         void OnRelocated();
-        bool onVisibleUpdate() const { return m_VisibilityUpdateTask; }
 
         std::set<uint64> m_unitsHasCasterAura;
 
@@ -2637,6 +2651,7 @@ class Unit : public WorldObject
         float m_speed_rate[MAX_MOVE_TYPE];
 
         CharmInfo* m_charmInfo;
+        SharedVisionList m_sharedVision;
 
         virtual SpellSchoolMask GetMeleeDamageSchoolMask() const;
 
@@ -2705,13 +2720,11 @@ class Unit : public WorldObject
         void SetRooted(bool apply);
 
     private:
-        class AINotifyTask;
-        class VisibilityUpdateTask;
+
         Position m_lastVisibilityUpdPos;
-        bool m_VisibilityUpdScheduled;
-        bool m_VisibilityUpdateTask;
         uint32 m_rootTimes;
         uint8 m_comboPointsMod;
+        bool m_AINotifyScheduled;
 
         uint32 m_state;                                     // Even derived shouldn't modify
         uint32 m_CombatTimer;

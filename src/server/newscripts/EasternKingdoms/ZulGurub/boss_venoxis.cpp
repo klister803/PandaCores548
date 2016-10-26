@@ -1,6 +1,7 @@
 #include "NewScriptPCH.h"
 //#include "GridNotifiers.h"
 #include "zulgurub.h"
+#include "ObjectVisitors.hpp"
 
 enum ScriptTexts
 {
@@ -519,7 +520,7 @@ class spell_venoxis_toxic_link_aura : public SpellScriptLoader
                  UnitList targets;
                  Trinity::AnyUnitHavingBuffInObjectRangeCheck u_check(GetCaster(), GetTarget(), 100, SPELL_TOXIC_LINK_AURA, true);
                  Trinity::UnitListSearcher<Trinity::AnyUnitHavingBuffInObjectRangeCheck> searcher(GetTarget(), targets, u_check);
-                 GetTarget()->VisitNearbyObject(80, searcher);
+                 Trinity::VisitNearbyObject(GetTarget(), 80, searcher);
 
                  if (targets.size() < 2)
                      GetTarget()->RemoveAura(SPELL_TOXIC_LINK_AURA);

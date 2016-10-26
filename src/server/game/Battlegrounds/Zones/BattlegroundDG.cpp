@@ -692,9 +692,8 @@ void BattlegroundDG::Cart::ToggleCaptured(Player *player)
     Creature* cart = NULL;
     Trinity::AllCreaturesOfEntryInRange check(player, cartEntry, SIZE_OF_GRIDS);
     Trinity::CreatureSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(player, cart, check);
-    TypeContainerVisitor<Trinity::CreatureSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> visitor(searcher);
 
-    cell.Visit(p, visitor, *(player->GetMap()), *player, SIZE_OF_GRIDS);
+    cell.Visit(p, Trinity::makeGridVisitor(searcher), *(player->GetMap()), *player, SIZE_OF_GRIDS);
 
     if (cart)
     {

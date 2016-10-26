@@ -60,6 +60,7 @@ EndContentData */
 #include "Vehicle.h"
 #include "Player.h"
 #include "CreatureTextMgr.h"
+#include "ObjectVisitors.hpp"
 
 /*########
 # npc_air_force_bots
@@ -2551,7 +2552,7 @@ class npc_ebon_gargoyle : public CreatureScript
                     std::list<Unit*> targets;
                     Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(me, me, 30);
                     Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(me, targets, u_check);
-                    me->VisitNearbyObject(30, searcher);
+                    Trinity::VisitNearbyObject(me, 30, searcher);
                     for (std::list<Unit*>::const_iterator iter = targets.begin(); iter != targets.end(); ++iter)
                         if (Unit* unit = (*iter)->ToUnit())
                             if (unit->HasAura(49206, ownerGuid))
@@ -3706,11 +3707,11 @@ class npc_frozen_orb : public CreatureScript
 
                     if (!findTarget)
                     {
-                        UnitList targets;
-                        Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(me, me, 10.0f);
+                        std::list<Unit*> targets;
+                        Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(me, me, 30);
                         Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(me, targets, u_check);
-                        me->VisitNearbyObject(10.0f, searcher);
-                        for (UnitList::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                        Trinity::VisitNearbyObject(me, 30, searcher);
+                        for (std::list<Unit*>::const_iterator iter = targets.begin(); iter != targets.end(); ++iter)
                         {
                             me->SetSpeed(MOVE_WALK, 0.2f);
                             me->SetSpeed(MOVE_RUN, 0.2f);

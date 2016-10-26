@@ -14,6 +14,7 @@
 #include "CellImpl.h"
 #include "ObjectMgr.h"
 #include "TemporarySummon.h"
+#include "ObjectVisitors.hpp"
 
 // Spell summary for ScriptedAI::SelectSpell
 struct TSpellSummary
@@ -350,7 +351,7 @@ Unit* ScriptedAI::DoSelectLowestHpFriendly(float range, uint32 minHPDiff)
     Unit* unit = NULL;
     Trinity::MostHPMissingInRange u_check(me, range, minHPDiff);
     Trinity::UnitLastSearcher<Trinity::MostHPMissingInRange> searcher(me, unit, u_check);
-    me->VisitNearbyObject(range, searcher);
+    Trinity::VisitNearbyObject(me, range, searcher);
 
     return unit;
 }
@@ -360,7 +361,7 @@ std::list<Creature*> ScriptedAI::DoFindFriendlyCC(float range)
     std::list<Creature*> list;
     Trinity::FriendlyCCedInRange u_check(me, range);
     Trinity::CreatureListSearcher<Trinity::FriendlyCCedInRange> searcher(me, list, u_check);
-    me->VisitNearbyObject(range, searcher);
+    Trinity::VisitNearbyObject(me, range, searcher);
     return list;
 }
 
@@ -369,7 +370,7 @@ std::list<Creature*> ScriptedAI::DoFindFriendlyMissingBuff(float range, uint32 u
     std::list<Creature*> list;
     Trinity::FriendlyMissingBuffInRange u_check(me, range, uiSpellid);
     Trinity::CreatureListSearcher<Trinity::FriendlyMissingBuffInRange> searcher(me, list, u_check);
-    me->VisitNearbyObject(range, searcher);
+    Trinity::VisitNearbyObject(me, range, searcher);
     return list;
 }
 
@@ -383,9 +384,8 @@ Player* ScriptedAI::GetPlayerAtMinimumRange(float minimumRange)
 
     Trinity::PlayerAtMinimumRangeAway check(me, minimumRange);
     Trinity::PlayerSearcher<Trinity::PlayerAtMinimumRangeAway> searcher(me, player, check);
-    TypeContainerVisitor<Trinity::PlayerSearcher<Trinity::PlayerAtMinimumRangeAway>, GridTypeMapContainer> visitor(searcher);
 
-    cell.Visit(pair, visitor, *me->GetMap(), *me, minimumRange);
+    cell.Visit(pair, Trinity::makeGridVisitor(searcher), *me->GetMap(), *me, minimumRange);
 
     return player;
 }

@@ -32,6 +32,7 @@ EndScriptData */
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "onyxias_lair.h"
+#include "ObjectVisitors.hpp"
 
 enum Yells
 {
@@ -369,7 +370,7 @@ public:
                         GameObject* Floor = NULL;
                         Trinity::GameObjectInRangeCheck check(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 15);
                         Trinity::GameObjectLastSearcher<Trinity::GameObjectInRangeCheck> searcher(me, Floor, check);
-                        me->VisitNearbyGridObject(30, searcher);
+                        Trinity::VisitNearbyGridObject(me, 30, searcher);
                         if (instance && Floor)
                             instance->SetData64(DATA_FLOOR_ERUPTION_GUID, Floor->GetGUID());
                         BellowingRoarTimer = 30000;

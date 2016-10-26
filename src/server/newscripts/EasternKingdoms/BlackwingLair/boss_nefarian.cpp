@@ -21,6 +21,7 @@
 #include "ScriptedCreature.h"
 #include "blackwing_lair.h"
 #include "Player.h"
+#include "ObjectVisitors.hpp"
 
 #define ADDS_COUNT 42
 
@@ -470,7 +471,7 @@ public:
             {
                 Trinity::AllWorldObjectsInRange u_check(obj, dist);
                 Trinity::WorldObjectListSearcher<Trinity::AllWorldObjectsInRange> searcher(obj, *targets, u_check);
-                obj->VisitNearbyObject(dist, searcher);
+                Trinity::VisitNearbyObject(obj, dist, searcher);
             }
             return targets;
         }

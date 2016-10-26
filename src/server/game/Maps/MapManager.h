@@ -24,17 +24,33 @@
 #include <ace/Thread_Mutex.h>
 #include "Common.h"
 #include "Map.h"
-#include "GridStates.h"
-#include "MapUpdater.h"
+#include "Object.h"
 
 class Transport;
 struct TransportCreatureProto;
+class WorldLocation;
 
 class MapManager
 {
-    friend class ACE_Singleton<MapManager, ACE_Thread_Mutex>;
+    typedef std::mutex LockType;
+    typedef std::lock_guard<LockType> GuardType;
+
+    typedef std::unordered_map<uint32, Map*> MapMapType;
+    typedef std::vector<bool> InstanceIds;
+
+    MapManager();
+    ~MapManager();
+
+    MapManager(const MapManager &);
+    MapManager& operator=(const MapManager &);
 
     public:
+        static MapManager* instance()
+        {
+            static MapManager instance;
+            return &instance;
+        }
+
         Map* CreateBaseMap(uint32 mapId);
         Map* FindBaseNonInstanceMap(uint32 mapId) const;
         Map* CreateMap(uint32 mapId, Player* player);
@@ -114,6 +130,7 @@ class MapManager
 
         typedef std::map<uint32, TransportSet> TransportMap;
         TransportMap m_TransportsByMap;
+        TransportMap m_TransportsByInstanceIdMap;
 
         bool CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck = false);
         void InitializeVisibilityDistanceInfo();
@@ -131,19 +148,9 @@ class MapManager
         uint32 GetNextInstanceId() const { return _nextInstanceId; };
         void SetNextInstanceId(uint32 nextInstanceId) { _nextInstanceId = nextInstanceId; };
 
-        MapUpdater * GetMapUpdater() { return &m_updater; }
+        uint32 GetLoadedGrids();
 
     private:
-        typedef UNORDERED_MAP<uint32, Map*> MapMapType;
-        typedef std::vector<bool> InstanceIds;
-
-        // debugging code, should be deleted some day
-        void checkAndCorrectGridStatesArray();              // just for debugging to find some memory overwrites
-        GridState* i_GridStates[MAX_GRID_STATE];            // shadow entries to the global array in Map.cpp
-        int i_GridStateErrorCount;
-
-        MapManager();
-        ~MapManager();
 
         Map* FindBaseMap(uint32 mapId) const
         {
@@ -151,19 +158,13 @@ class MapManager
             return (iter == i_maps.end() ? NULL : iter->second);
         }
 
-        MapManager(const MapManager &);
-        MapManager& operator=(const MapManager &);
-
-        ACE_Thread_Mutex Lock;
+        LockType i_lock;
         uint32 i_gridCleanUpDelay;
         MapMapType i_maps;
         IntervalTimer i_timer;
 
         InstanceIds _instanceIds;
         uint32 _nextInstanceId;
-        MapUpdater m_updater;
-        std::vector<MapUpdater*> _achievementUpdaters;
-        std::unordered_map<uint64, MapUpdater*> _assignedUpdaters;
 };
-#define sMapMgr ACE_Singleton<MapManager, ACE_Thread_Mutex>::instance()
+#define sMapMgr MapManager::instance()
 #endif

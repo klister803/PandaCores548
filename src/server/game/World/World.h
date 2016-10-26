@@ -831,15 +831,17 @@ class World
         // for max speed access
         static float GetMaxVisibleDistanceOnContinents()    { return m_MaxVisibleDistanceOnContinents; }
         static float GetMaxVisibleDistanceInInstances()     { return m_MaxVisibleDistanceInInstances;  }
-        static float GetMaxVisibleDistanceInBGArenas()      { return m_MaxVisibleDistanceInBGArenas;   }
+        float GetMaxVisibleDistanceInBG() const { return m_MaxVisibleDistanceInBG; }
+        float GetMaxVisibleDistanceInArenas() const { return m_MaxVisibleDistanceInArenas; }
 
         static int32 GetVisibilityNotifyPeriodOnContinents(){ return m_visibility_notify_periodOnContinents; }
         static int32 GetVisibilityNotifyPeriodInInstances() { return m_visibility_notify_periodInInstances;  }
         static int32 GetVisibilityNotifyPeriodInBGArenas()  { return m_visibility_notify_periodInBGArenas;   }
 
-        static float Visibility_RelocationLowerLimit;
-        static uint32 Visibility_AINotifyDelay;
+        float GetVisibilityRelocationLowerLimit() const { return m_visibilityRelocationLowerLimit; }
+        uint32 GetVisibilityAINotifyDelay() const { return m_visibilityAINotifyDelay; }
 
+        static float Relocation_UpdateUnderwateLimit;
         static float ZoneUpdateDistanceRangeLimit;
 
         // movement anticheat
@@ -984,11 +986,15 @@ class World
         // for max speed access
         static float m_MaxVisibleDistanceOnContinents;
         static float m_MaxVisibleDistanceInInstances;
-        static float m_MaxVisibleDistanceInBGArenas;
+        static float m_MaxVisibleDistanceInBG;
+        static float m_MaxVisibleDistanceInArenas;
 
         static int32 m_visibility_notify_periodOnContinents;
         static int32 m_visibility_notify_periodInInstances;
         static int32 m_visibility_notify_periodInBGArenas;
+
+        static float m_visibilityRelocationLowerLimit;
+        static int32 m_visibilityAINotifyDelay;
 
         // movement anticheat enable flag
         static bool m_EnableMvAnticheat;

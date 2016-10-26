@@ -1720,7 +1720,7 @@ void Guild::HandleInviteMember(WorldSession* session, const std::string& name)
         }
     }
  
-    Player* pInvitee = sObjectAccessor->FindPlayerByName(name.c_str());
+    Player* pInvitee = sObjectAccessor->FindPlayerByName(name);
     if (!pInvitee)
     {
         SendCommandResult(session, GUILD_INVITE_S, ERR_GUILD_PLAYER_NOT_FOUND_S, name);

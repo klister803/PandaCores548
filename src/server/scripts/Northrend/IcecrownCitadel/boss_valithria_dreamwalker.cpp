@@ -18,6 +18,7 @@
 
 #include "ScriptPCH.h"
 #include "icecrown_citadel.h"
+#include "ObjectVisitors.hpp"
 
 enum Texts
 {
@@ -946,7 +947,7 @@ class npc_dream_cloud : public CreatureScript
                             Player* player = NULL;
                             Trinity::AnyPlayerInObjectRangeCheck check(me, 5.0f);
                             Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(me, player, check);
-                            me->VisitNearbyWorldObject(7.5f, searcher);
+                            Trinity::VisitNearbyWorldObject(me, 7.5f, searcher);
                             _events.ScheduleEvent(player ? EVENT_EXPLODE : EVENT_CHECK_PLAYER, 1000);
                             break;
                         }

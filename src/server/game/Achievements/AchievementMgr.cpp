@@ -411,14 +411,9 @@ bool AchievementCriteriaDataSet::Meets(Player const* source, Unit const* target,
 template<class T>
 AchievementMgr<T>::AchievementMgr(T* owner): _owner(owner), _achievementPoints(0) 
 {
-    for (uint32 i = 0; i < MAX_ACHIEVEMENT; ++i)
-    {
-        m_achievementProgressArr[i] = NULL;
-        m_completedAchievementsArr[i] = NULL;
-    }
-
-    for (uint32 i = 0; i < MAX_CRITERIA_TREE; ++i)
-        m_achievementTreeProgressArr[i] = NULL;
+    memset(m_achievementProgressArr, NULL, sizeof(m_achievementProgressArr));
+    memset(m_completedAchievementsArr, NULL, sizeof(m_completedAchievementsArr));
+    memset(m_achievementTreeProgressArr, NULL, sizeof(m_achievementTreeProgressArr));
 }
 
 template<class T>
@@ -1378,8 +1373,7 @@ void AchievementMgr<T>::SendAchievementEarned(AchievementEntry const* achievemen
 
         Trinity::LocalizedPacketDo<Trinity::AchievementChatBuilder> say_do(say_builder);
         Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::AchievementChatBuilder> > say_worker(GetOwner(), sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_SAY), say_do);
-        TypeContainerVisitor<Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::AchievementChatBuilder> >, WorldTypeMapContainer > message(say_worker);
-        cell.Visit(p, message, *GetOwner()->GetMap(), *GetOwner(), sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_SAY));
+        cell.Visit(p, Trinity::makeWorldVisitor(say_worker), *GetOwner()->GetMap(), *GetOwner(), sWorld->getFloatConfig(CONFIG_LISTEN_RANGE_SAY));
     }
 
     WorldPacket data(SMSG_ACHIEVEMENT_EARNED, 8+4+8);

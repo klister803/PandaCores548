@@ -68,6 +68,7 @@
 #include "Guild.h"
 #include "GuildMgr.h"
 #include "AreaTrigger.h"
+#include "ObjectVisitors.hpp"
 
 pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
 {
@@ -1584,7 +1585,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             UnitList friends;
             Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(m_caster, m_caster, 5.0f);
             Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(m_caster, friends, u_check);
-            m_caster->VisitNearbyObject(5.0f, searcher);
+            Trinity::VisitNearbyObject(m_caster, 5.0f, searcher);
 
             for (UnitList::const_iterator unit = friends.begin(); unit != friends.end(); ++unit)
             {

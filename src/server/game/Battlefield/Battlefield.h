@@ -72,7 +72,6 @@ class Unit;
 class Battlefield;
 class BfGraveyard;
 
-typedef std::set<uint64> GuidSet;
 typedef std::vector<BfGraveyard*> GraveyardVect;
 typedef std::map<uint64, uint32> PlayerTimerMap;
 

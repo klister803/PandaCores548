@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -27,36 +27,13 @@
 #include "CreatureAI.h"
 #include "SpellAuras.h"
 
-template<class T>
-inline void Trinity::VisibleNotifier::Visit(GridRefManager<T> &m)
+template <typename AnyMapType>
+inline void Trinity::VisibleNotifier::Visit(AnyMapType &m)
 {
-    for (typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
+    for (auto &object : m)
     {
-        vis_guids.erase(iter->getSource()->GetGUID());
-
-        if (i_player.canSeeOrDetect(iter->getSource(), false, true, true))
-        {
-            if (i_player.m_staticVisibleDistance)
-                i_player.UpdateVisibilityOf(iter->getSource(), i_data, i_visibleNow, true);
-        }
-        else 
-            i_player.UpdateVisibilityOf(iter->getSource(), i_data, i_visibleNow, false);
-    }
-}
-
-inline void Trinity::ObjectUpdater::Visit(CreatureMapType &m)
-{
-    for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
-    {
-        Creature* cre = iter->getSource();
-        if (cre->IsInWorld())
-        {
-            uint32 _s = getMSTime();
-            cre->Update(i_timeDiff);
-            uint32 _ms = getMSTimeDiff(_s, getMSTime());
-            if (_ms > 50)
-                sLog->outDiff("ObjectUpdater Visit: type - %u, e:%u(g:%u). Diff - %ums.", iter->getSource()->GetTypeId(), iter->getSource()->GetEntry(), iter->getSource()->GetGUIDLow(), _ms);
-        }
+        vis_guids.erase(object->GetGUID());
+        i_player.UpdateVisibilityOf(object, i_data, i_visibleNow);
     }
 }
 
@@ -74,14 +51,11 @@ void Trinity::WorldObjectSearcher<Check>::Visit(GameObjectMapType &m)
     if (i_object)
         return;
 
-    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (auto &obj : m)
     {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
+        if (obj->InSamePhase(i_phaseMask) && i_check(obj))
         {
-            i_object = itr->getSource();
+            i_object = obj;
             return;
         }
     }
@@ -97,14 +71,11 @@ void Trinity::WorldObjectSearcher<Check>::Visit(PlayerMapType &m)
     if (i_object)
         return;
 
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (auto &player : m)
     {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
+        if (player->InSamePhase(i_phaseMask) && i_check(player))
         {
-            i_object = itr->getSource();
+            i_object = player;
             return;
         }
     }
@@ -120,14 +91,11 @@ void Trinity::WorldObjectSearcher<Check>::Visit(CreatureMapType &m)
     if (i_object)
         return;
 
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (auto &creature : m)
     {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
+        if (creature->InSamePhase(i_phaseMask) && i_check(creature))
         {
-            i_object = itr->getSource();
+            i_object = creature;
             return;
         }
     }
@@ -143,14 +111,11 @@ void Trinity::WorldObjectSearcher<Check>::Visit(CorpseMapType &m)
     if (i_object)
         return;
 
-    for (CorpseMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (auto &corpse : m)
     {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
+        if (corpse->InSamePhase(i_phaseMask) && i_check(corpse))
         {
-            i_object = itr->getSource();
+            i_object = corpse;
             return;
         }
     }
@@ -166,14 +131,11 @@ void Trinity::WorldObjectSearcher<Check>::Visit(DynamicObjectMapType &m)
     if (i_object)
         return;
 
-    for (DynamicObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (auto &obj : m)
     {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
+        if (obj->InSamePhase(i_phaseMask) && i_check(obj))
         {
-            i_object = itr->getSource();
+            i_object = obj;
             return;
         }
     }
@@ -189,14 +151,11 @@ void Trinity::WorldObjectSearcher<Check>::Visit(AreaTriggerMapType &m)
     if (i_object)
         return;
 
-    for (AreaTriggerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (auto &trigger : m)
     {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
+        if (trigger->InSamePhase(i_phaseMask) && i_check(trigger))
         {
-            i_object = itr->getSource();
+            i_object = trigger;
             return;
         }
     }
@@ -208,14 +167,9 @@ void Trinity::WorldObjectLastSearcher<Check>::Visit(GameObjectMapType &m)
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_GAMEOBJECT))
         return;
 
-    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
-            i_object = itr->getSource();
-    }
+    for (auto &obj : m)
+        if (obj->InSamePhase(i_phaseMask) && i_check(obj))
+            i_object = obj;
 }
 
 template<class Check>
@@ -224,14 +178,9 @@ void Trinity::WorldObjectLastSearcher<Check>::Visit(PlayerMapType &m)
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_PLAYER))
         return;
 
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
-            i_object = itr->getSource();
-    }
+    for (auto &player : m)
+        if (player->InSamePhase(i_phaseMask) && i_check(player))
+            i_object = player;
 }
 
 template<class Check>
@@ -240,14 +189,9 @@ void Trinity::WorldObjectLastSearcher<Check>::Visit(CreatureMapType &m)
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_CREATURE))
         return;
 
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
-            i_object = itr->getSource();
-    }
+    for (auto &creature : m)
+        if (creature->InSamePhase(i_phaseMask) && i_check(creature))
+            i_object = creature;
 }
 
 template<class Check>
@@ -256,14 +200,9 @@ void Trinity::WorldObjectLastSearcher<Check>::Visit(CorpseMapType &m)
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_CORPSE))
         return;
 
-    for (CorpseMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
-            i_object = itr->getSource();
-    }
+    for (auto &corpse : m)
+        if (corpse->InSamePhase(i_phaseMask) && i_check(corpse))
+            i_object = corpse;
 }
 
 template<class Check>
@@ -272,14 +211,9 @@ void Trinity::WorldObjectLastSearcher<Check>::Visit(DynamicObjectMapType &m)
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_DYNAMICOBJECT))
         return;
 
-    for (DynamicObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
-            i_object = itr->getSource();
-    }
+    for (auto &obj : m)
+        if (obj->InSamePhase(i_phaseMask) && i_check(obj))
+            i_object = obj;
 }
 
 template<class Check>
@@ -288,14 +222,9 @@ void Trinity::WorldObjectLastSearcher<Check>::Visit(AreaTriggerMapType &m)
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_AREATRIGGER))
         return;
 
-    for (AreaTriggerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
-            i_object = itr->getSource();
-    }
+    for (auto &trigger : m)
+        if (trigger->InSamePhase(i_phaseMask) && i_check(trigger))
+            i_object = trigger;
 }
 
 template<class Check>
@@ -304,9 +233,9 @@ void Trinity::WorldObjectListSearcher<Check>::Visit(PlayerMapType &m)
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_PLAYER))
         return;
 
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
+    for (auto &player : m)
+        if (i_check(player))
+            i_objects.push_back(player);
 }
 
 template<class Check>
@@ -315,9 +244,9 @@ void Trinity::WorldObjectListSearcher<Check>::Visit(CreatureMapType &m)
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_CREATURE))
         return;
 
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
+    for (auto &creature : m)
+        if (i_check(creature))
+            i_objects.push_back(creature);
 }
 
 template<class Check>
@@ -326,9 +255,9 @@ void Trinity::WorldObjectListSearcher<Check>::Visit(CorpseMapType &m)
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_CORPSE))
         return;
 
-    for (CorpseMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
+    for (auto &corpse : m)
+        if (i_check(corpse))
+            i_objects.push_back(corpse);
 }
 
 template<class Check>
@@ -337,9 +266,9 @@ void Trinity::WorldObjectListSearcher<Check>::Visit(GameObjectMapType &m)
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_GAMEOBJECT))
         return;
 
-    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
+    for (auto &obj : m)
+        if (i_check(obj))
+            i_objects.push_back(obj);
 }
 
 template<class Check>
@@ -348,9 +277,9 @@ void Trinity::WorldObjectListSearcher<Check>::Visit(DynamicObjectMapType &m)
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_DYNAMICOBJECT))
         return;
 
-    for (DynamicObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
+    for (auto &obj : m)
+        if (i_check(obj))
+            i_objects.push_back(obj);
 }
 
 template<class Check>
@@ -359,9 +288,9 @@ void Trinity::WorldObjectListSearcher<Check>::Visit(AreaTriggerMapType &m)
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_AREATRIGGER))
         return;
 
-    for (AreaTriggerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
+    for (auto &trigger : m)
+        if (i_check(trigger))
+            i_objects.push_back(trigger);
 }
 
 // Gameobject searchers
@@ -373,14 +302,11 @@ void Trinity::GameObjectSearcher<Check>::Visit(GameObjectMapType &m)
     if (i_object)
         return;
 
-    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (auto &obj : m)
     {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
+        if (obj->InSamePhase(i_phaseMask) && i_check(obj))
         {
-            i_object = itr->getSource();
+            i_object = obj;
             return;
         }
     }
@@ -389,23 +315,17 @@ void Trinity::GameObjectSearcher<Check>::Visit(GameObjectMapType &m)
 template<class Check>
 void Trinity::GameObjectLastSearcher<Check>::Visit(GameObjectMapType &m)
 {
-    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
-            i_object = itr->getSource();
-    }
+    for (auto &obj : m)
+        if (obj->InSamePhase(i_phaseMask) && i_check(obj))
+            i_object = obj;
 }
 
 template<class Check>
 void Trinity::GameObjectListSearcher<Check>::Visit(GameObjectMapType &m)
 {
-    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (itr->getSource()->InSamePhase(i_phaseMask))
-            if (i_check(itr->getSource()))
-                i_objects.push_back(itr->getSource());
+    for (auto &obj : m)
+        if (obj->InSamePhase(i_phaseMask) && i_check(obj))
+            i_objects.push_back(obj);
 }
 
 // Unit searchers
@@ -417,14 +337,11 @@ void Trinity::UnitSearcher<Check>::Visit(CreatureMapType &m)
     if (i_object)
         return;
 
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (auto &creature : m)
     {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
+        if (creature->InSamePhase(i_phaseMask) && i_check(creature))
         {
-            i_object = itr->getSource();
+            i_object = creature;
             return;
         }
     }
@@ -437,14 +354,11 @@ void Trinity::UnitSearcher<Check>::Visit(PlayerMapType &m)
     if (i_object)
         return;
 
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (auto &player : m)
     {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
+        if (player->InSamePhase(i_phaseMask) && i_check(player))
         {
-            i_object = itr->getSource();
+            i_object = player;
             return;
         }
     }
@@ -453,57 +367,43 @@ void Trinity::UnitSearcher<Check>::Visit(PlayerMapType &m)
 template<class Check>
 void Trinity::UnitLastSearcher<Check>::Visit(CreatureMapType &m)
 {
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
-            i_object = itr->getSource();
-    }
+    for (auto &creature : m)
+        if (creature->InSamePhase(i_phaseMask) && i_check(creature))
+            i_object = creature;
 }
 
 template<class Check>
 void Trinity::UnitLastSearcher<Check>::Visit(PlayerMapType &m)
 {
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
-            i_object = itr->getSource();
-    }
+    for (auto &player : m)
+        if (player->InSamePhase(i_phaseMask) && i_check(player))
+            i_object = player;
 }
 
 template<class Check>
 void Trinity::UnitListSearcher<Check>::Visit(PlayerMapType &m)
 {
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (itr->getSource()->InSamePhase(i_phaseMask))
-            if (i_check(itr->getSource()))
-                i_objects.push_back(itr->getSource());
+    for (auto &player : m)
+        if (player->InSamePhase(i_phaseMask) && i_check(player))
+            i_objects.push_back(player);
 }
 
 template<class Check>
 void Trinity::UnitListSearcher<Check>::Visit(CreatureMapType &m)
 {
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (itr->getSource()->InSamePhase(i_phaseMask))
-            if (i_check(itr->getSource()))
-                i_objects.push_back(itr->getSource());
+    for (auto &creature : m)
+        if (creature->InSamePhase(i_phaseMask) && i_check(creature))
+            i_objects.push_back(creature);
 }
 
-// AreaTrigger searchers
 template<class Check>
 void Trinity::AreaTriggerListSearcher<Check>::Visit(AreaTriggerMapType &m)
 {
-    for (AreaTriggerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (itr->getSource()->InSamePhase(i_phaseMask))
-            if (i_check(itr->getSource()))
-                i_objects.push_back(itr->getSource());
+    for (auto &trigger : m)
+        if (trigger->InSamePhase(i_phaseMask) && i_check(trigger))
+            i_objects.push_back(trigger);
 }
-
+ 
 // Creature searchers
 
 template<class Check>
@@ -513,14 +413,11 @@ void Trinity::CreatureSearcher<Check>::Visit(CreatureMapType &m)
     if (i_object)
         return;
 
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (auto &creature : m)
     {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
+        if (creature->InSamePhase(i_phaseMask) && i_check(creature))
         {
-            i_object = itr->getSource();
+            i_object = creature;
             return;
         }
     }
@@ -529,32 +426,25 @@ void Trinity::CreatureSearcher<Check>::Visit(CreatureMapType &m)
 template<class Check>
 void Trinity::CreatureLastSearcher<Check>::Visit(CreatureMapType &m)
 {
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
-            i_object = itr->getSource();
-    }
+    for (auto &creature : m)
+        if (creature->InSamePhase(i_phaseMask) && i_check(creature))
+            i_object = creature;
 }
 
 template<class Check>
 void Trinity::CreatureListSearcher<Check>::Visit(CreatureMapType &m)
 {
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (itr->getSource()->InSamePhase(i_phaseMask))
-            if (i_check(itr->getSource()))
-                i_objects.push_back(itr->getSource());
+    for (auto &creature : m)
+        if (creature->InSamePhase(i_phaseMask) && i_check(creature))
+            i_objects.push_back(creature);
 }
 
 template<class Check>
 void Trinity::PlayerListSearcher<Check>::Visit(PlayerMapType &m)
 {
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (itr->getSource()->InSamePhase(i_phaseMask))
-            if (i_check(itr->getSource()))
-                i_objects.push_back(itr->getSource());
+    for (auto &player : m)
+        if (player->InSamePhase(i_phaseMask) && i_check(player))
+            i_objects.push_back(player);
 }
 
 template<class Check>
@@ -564,14 +454,11 @@ void Trinity::PlayerSearcher<Check>::Visit(PlayerMapType &m)
     if (i_object)
         return;
 
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (auto &player : m)
     {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
+        if (player->InSamePhase(i_phaseMask) && i_check(player))
         {
-            i_object = itr->getSource();
+            i_object = player;
             return;
         }
     }
@@ -580,14 +467,9 @@ void Trinity::PlayerSearcher<Check>::Visit(PlayerMapType &m)
 template<class Check>
 void Trinity::PlayerLastSearcher<Check>::Visit(PlayerMapType& m)
 {
-    for (PlayerMapType::iterator itr = m.begin(); itr != m.end(); ++itr)
-    {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
-            i_object = itr->getSource();
-    }
+    for (auto &player : m)
+        if (player->InSamePhase(i_phaseMask) && i_check(player))
+            i_object = player;
 }
 
 template<class Builder>

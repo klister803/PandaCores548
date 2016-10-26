@@ -82,8 +82,8 @@ void BattlegroundIC::SendTransportInit(Player* player)
 
     WorldPacket packet;
 
-    transData.BuildPacket(&packet);
-    player->GetSession()->SendPacket(&packet);
+    if (transData.BuildPacket(&packet))
+        player->GetSession()->SendPacket(&packet);
 }
 
 void BattlegroundIC::DoAction(uint32 action, uint64 var)

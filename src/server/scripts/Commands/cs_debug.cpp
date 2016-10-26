@@ -33,6 +33,7 @@ EndScriptData */
 #include "GossipDef.h"
 #include "MapManager.h"
 #include "Vehicle.h"
+#include "ObjectVisitors.hpp"
 
 #include <fstream>
 
@@ -998,7 +999,7 @@ public:
             Creature* passenger = NULL;
             Trinity::AllCreaturesOfEntryInRange check(handler->GetSession()->GetPlayer(), entry, 20.0f);
             Trinity::CreatureSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(handler->GetSession()->GetPlayer(), passenger, check);
-            handler->GetSession()->GetPlayer()->VisitNearbyObject(30.0f, searcher);
+            Trinity::VisitNearbyObject(handler->GetSession()->GetPlayer(), 30.0f, searcher);
             if (!passenger || passenger == target)
                 return false;
             passenger->EnterVehicle(target, seatId);
@@ -1753,7 +1754,6 @@ public:
         handler->PSendSysMessage("PlayerGUIDs: %u", playerGUIDs);
         handler->PSendSysMessage("unitGUIDs: %u", unitGUIDs);
         handler->PSendSysMessage("OtherGUIDs: %u", otherGUIDs);
-        handler->PSendSysMessage("dynamicVisibleDistance: %f", plr->m_dynamicVisibleDistance);
 
         return true;
     }

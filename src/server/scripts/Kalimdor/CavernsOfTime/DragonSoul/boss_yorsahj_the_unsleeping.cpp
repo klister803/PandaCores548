@@ -2,6 +2,7 @@
 #include "CreatureTextMgr.h"
 #include "Containers.h"
 #include "dragon_soul.h"
+#include "ObjectVisitors.hpp"
 
 enum ScriptedTexts
 {
@@ -402,7 +403,7 @@ class boss_yorsahj_the_unsleeping: public CreatureScript
                             std::list<Creature*> creatures;
                             GlobulesCheck checker;
                             Trinity::CreatureListSearcher<GlobulesCheck> searcher(me, creatures, checker);
-                            me->VisitNearbyObject(100.0f, searcher);
+                            Trinity::VisitNearbyObject(me, 100.0f, searcher);
 
                             if (!creatures.empty())
                             {

@@ -82,6 +82,7 @@
 #include "BracketMgr.h"
 #include "AuctionHouseMgr.h"
 #include "ScenarioMgr.h"
+#include "ObjectVisitors.hpp"
 
 
 #define ZONE_UPDATE_INTERVAL (1*IN_MILLISECONDS)
@@ -734,13 +735,6 @@ Player::Player(WorldSession* session) : Unit(true), m_achievementMgr(this), m_re
     m_session = session;
 
     m_divider = 0;
-
-    m_dynamicVisibleDistance = NORMAL_VISIBILITY_DISTANCE;
-    m_staticVisibleDistance = 0.0f;
-    m_inEventZone = false;
-    m_eventZonePointForVisUpdate.m_positionX = 0.0f;
-    m_eventZonePointForVisUpdate.m_positionY = 0.0f;
-    m_eventZonePointForVisUpdate.m_positionZ = 0.0f;
 
     m_ExtraFlags = 0;
 
@@ -7858,7 +7852,7 @@ bool Player::UpdatePosition(float x, float y, float z, float orientation, bool t
     CheckAreaExploreAndOutdoor();
 
     // Enable check for zone.
-    if (!m_zoneUpdateAllow && !m_lastZoneUpdPos.IsInDist(this, World::Visibility_RelocationLowerLimit))
+    if (!m_zoneUpdateAllow && !m_lastZoneUpdPos.IsInDist(this, sWorld->GetVisibilityRelocationLowerLimit()))
     {
         m_zoneUpdateAllow = true;
         m_lastZoneUpdPos = *this;
@@ -7886,8 +7880,7 @@ void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self)
         GetSession()->SendPacket(data);
 
     Trinity::MessageDistDeliverer notifier(this, data, dist);
-
-    notifier.Visit(this);
+    Trinity::VisitNearbyWorldObject(this, dist, notifier);
 }
 
 void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self, bool own_team_only)
@@ -7899,15 +7892,7 @@ void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self, b
         GetSession()->SendPacket(data);
 
     Trinity::MessageDistDeliverer notifier(this, data, dist, own_team_only);
-
-    if (Map* map = GetMap())
-        if (map->IsBattlegroundOrArena())
-        {
-            notifier.Visit(map);
-            return;
-        }
-
-    notifier.Visit(this);
+    Trinity::VisitNearbyWorldObject(this, dist, notifier);
 }
 
 void Player::SendChatMessageToSetInRange(Trinity::ChatData& c, float dist, bool self, bool own_team_only)
@@ -7923,7 +7908,7 @@ void Player::SendChatMessageToSetInRange(Trinity::ChatData& c, float dist, bool 
     }
 
     Trinity::ChatMessageDistDeliverer notifier(this, c, dist, own_team_only);
-    VisitNearbyWorldObject(dist, notifier);
+    Trinity::VisitNearbyWorldObject(this, dist, notifier);
 }
 
 void Player::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
@@ -7936,10 +7921,8 @@ void Player::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
 
     // we use World::GetMaxVisibleDistance() because i cannot see why not use a distance
     // update: replaced by GetMap()->GetVisibilityDistance()
-    float visRange = CalcVisibilityRange();
-    Trinity::MessageDistDeliverer notifier(this, data, visRange, false, skipped_rcvr);
-
-    notifier.Visit(this);
+    Trinity::MessageDistDeliverer notifier(this, data, CalcVisibilityRange(), false, skipped_rcvr);
+    Trinity::VisitNearbyWorldObject(this, CalcVisibilityRange(), notifier);
 }
 
 void Player::SendDirectMessage(WorldPacket* data)
@@ -9108,18 +9091,6 @@ void Player::UpdateArea(uint32 newArea)
           pvpInfo.inNoPvPArea = false;
           pvpInfo.inFFAPvPArea = true;
      }
-    
-    CalcStaticVisibleDistance(m_zoneUpdateId, newArea);
-
-    if (m_zoneUpdateId == 0 && newArea == 0 && GetMapId() == 530) // event zone
-    {
-        m_inEventZone = true;
-    }
-    else if (m_inEventZone)
-    {
-        m_inEventZone = false;
-        m_eventZonePointForVisUpdate.Relocate(0, 0, 0);
-    }
 
     phaseMgr.RemoveUpdateFlag(PHASE_UPDATE_FLAG_AREA_UPDATE);
 }
@@ -21032,7 +21003,7 @@ void Player::AddPlayerLootCooldown(uint32 entry, uint8 type/* = 0*/, bool respaw
         playerLootCooldown lootCooldown;
         lootCooldown.entry = entry;
         lootCooldown.type = type;
-        lootCooldown.difficultyMask |= (1 << (sObjectMgr->GetDiffFromSpawn(diff)));
+        lootCooldown.difficultyMask = (1 << (sObjectMgr->GetDiffFromSpawn(diff)));
         lootCooldown.respawnTime = respawn ? time(NULL) + WEEK : 0;
         lootCooldown.state = true;
         m_playerLootCooldown[type][entry] = lootCooldown;
@@ -25755,13 +25726,13 @@ bool Player::IsVisibleGloballyFor(Player* u) const
 }
 
 template<class T>
-inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, T* target, std::set<Unit*>& /*v*/)
+inline void UpdateVisibilityOf_helper(GuidUnorderedSet& s64, T* target, std::set<Unit*>& /*v*/)
 {
     s64.insert(target->GetGUID());
 }
 
 template<>
-inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, GameObject* target, std::set<Unit*>& /*v*/)
+inline void UpdateVisibilityOf_helper(GuidUnorderedSet& s64, GameObject* target, std::set<Unit*>& /*v*/)
 {
     // Don't update only GAMEOBJECT_TYPE_TRANSPORT (or all transports and destructible buildings?)
     if ((target->GetGOInfo()->type != GAMEOBJECT_TYPE_TRANSPORT))
@@ -25769,14 +25740,14 @@ inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, GameObject* target,
 }
 
 template<>
-inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, Creature* target, std::set<Unit*>& v)
+inline void UpdateVisibilityOf_helper(GuidUnorderedSet& s64, Creature* target, std::set<Unit*>& v)
 {
     s64.insert(target->GetGUID());
     v.insert(target);
 }
 
 template<>
-inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, Player* target, std::set<Unit*>& v)
+inline void UpdateVisibilityOf_helper(GuidUnorderedSet& s64, Player* target, std::set<Unit*>& v)
 {
     s64.insert(target->GetGUID());
     v.insert(target);
@@ -25796,15 +25767,9 @@ inline void BeforeVisibilityDestroy<Creature>(Creature* t, Player* p)
 
 void Player::UpdateVisibilityOf(WorldObject* target)
 {
-    bool distCheck = true;
-
-    if (Map* map = GetMap())
-        if (map->IsBattlegroundOrArena() && target->GetTypeId() != TYPEID_UNIT)
-            distCheck = false;
-
     if (HaveAtClient(target))
     {
-        if (!canSeeOrDetect(target, false, distCheck, true))
+        if (!canSeeOrDetect(target, false, true))
         {
             if (target->GetTypeId() == TYPEID_UNIT)
                 BeforeVisibilityDestroy<Creature>(target->ToCreature(), this);
@@ -25813,9 +25778,6 @@ void Player::UpdateVisibilityOf(WorldObject* target)
             target->DestroyForPlayer(this);
             m_clientGUIDs.erase(target->GetGUID());
 
-            if (Unit* unit = target->ToUnit())
-                unit->m_whoseeme.remove(this);
-
             #ifdef TRINITY_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "Object %u (Type: %u) out of range for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), GetGUIDLow(), GetDistance(target));
             #endif
@@ -25823,7 +25785,7 @@ void Player::UpdateVisibilityOf(WorldObject* target)
     }
     else
     {
-        if (canSeeOrDetect(target, false, distCheck, true))
+        if (canSeeOrDetect(target, false, true))
         {
             //if (target->isType(TYPEMASK_UNIT) && ((Unit*)target)->m_Vehicle)
             //    UpdateVisibilityOf(((Unit*)target)->m_Vehicle);
@@ -25831,9 +25793,6 @@ void Player::UpdateVisibilityOf(WorldObject* target)
             AddListner(target, true);
             target->SendUpdateToPlayer(this);
             m_clientGUIDs.insert(target->GetGUID());
-
-            if (Unit* unit = target->ToUnit())
-                unit->m_whoseeme.push_back(this);
 
             #ifdef TRINITY_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "Object %u (Type: %u) is visible now for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), GetGUIDLow(), GetDistance(target));
@@ -25857,7 +25816,7 @@ void Player::UpdateTriggerVisibility()
 
     UpdateData udata(GetMapId());
     WorldPacket packet;
-    for (ClientGUIDs::iterator itr = m_clientGUIDs.begin(); itr != m_clientGUIDs.end(); ++itr)
+    for (GuidUnorderedSet::iterator itr = m_clientGUIDs.begin(); itr != m_clientGUIDs.end(); ++itr)
     {
         if (IS_CREATURE_GUID(*itr))
         {
@@ -25869,8 +25828,11 @@ void Player::UpdateTriggerVisibility()
         }
     }
 
-    udata.BuildPacket(&packet);
-    GetSession()->SendPacket(&packet);
+    if (!udata.HasData())
+        return;
+
+    if (udata.BuildPacket(&packet))
+        GetSession()->SendPacket(&packet);
 }
 
 void Player::SendInitialVisiblePackets(Unit* target)
@@ -25896,9 +25858,6 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
             m_clientGUIDs.erase(target->GetGUID());
             RemoveListner(target);
 
-            if (Unit* unit = target->ToUnit())
-                unit->m_whoseeme.remove(this);
-
             #ifdef TRINITY_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "Object %u (Type: %u, Entry: %u) is out of range for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), target->GetEntry(), GetGUIDLow(), GetDistance(target));
             #endif
@@ -25915,9 +25874,6 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
             target->BuildCreateUpdateBlockForPlayer(&data, this);
             UpdateVisibilityOf_helper(m_clientGUIDs, target, visibleNow);
 
-            if (Unit* unit = target->ToUnit())
-                unit->m_whoseeme.push_back(this);
-
             #ifdef TRINITY_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "Object %u (Type: %u, Entry: %u) is visible now for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), target->GetEntry(), GetGUIDLow(), GetDistance(target));
             #endif
@@ -25925,125 +25881,23 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
     }
 }
 
-template<class T>
-void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& visibleNow, bool canSeeOrDetect)
-{
-    if (HaveAtClient(target))
-    {
-        if (!canSeeOrDetect)
-        {
-            BeforeVisibilityDestroy<T>(target, this);
-            target->BuildOutOfRangeUpdateBlock(&data);
-            m_clientGUIDs.erase(target->GetGUID());
-            RemoveListner(target);
-
-            if (Unit* unit = target->ToUnit())
-                unit->m_whoseeme.remove(this);
-        }
-    }
-    else
-    {
-        if (canSeeOrDetect)
-        {
-            AddListner(target);
-            target->BuildCreateUpdateBlockForPlayer(&data, this);
-            UpdateVisibilityOf_helper(m_clientGUIDs, target, visibleNow);
-
-            if (Unit* unit = target->ToUnit())
-                unit->m_whoseeme.push_back(this);
-        }
-    }
-
-    if (Player* plr = target->ToPlayer())
-        plr->UpdateVisibilityOf(this);
-}
-
 template void Player::UpdateVisibilityOf(Player*        target, UpdateData& data, std::set<Unit*>& visibleNow);
 template void Player::UpdateVisibilityOf(Creature*      target, UpdateData& data, std::set<Unit*>& visibleNow);
 template void Player::UpdateVisibilityOf(Corpse*        target, UpdateData& data, std::set<Unit*>& visibleNow);
 template void Player::UpdateVisibilityOf(GameObject*    target, UpdateData& data, std::set<Unit*>& visibleNow);
 template void Player::UpdateVisibilityOf(DynamicObject* target, UpdateData& data, std::set<Unit*>& visibleNow);
-template void Player::UpdateVisibilityOf(WorldObject* target, UpdateData& data, std::set<Unit*>& visibleNow);
-
-template void Player::UpdateVisibilityOf(Player*        target, UpdateData& data, std::set<Unit*>& visibleNow, bool canSeeOrDetect);
-template void Player::UpdateVisibilityOf(Creature*      target, UpdateData& data, std::set<Unit*>& visibleNow, bool canSeeOrDetect);
-template void Player::UpdateVisibilityOf(Corpse*        target, UpdateData& data, std::set<Unit*>& visibleNow, bool canSeeOrDetect);
-template void Player::UpdateVisibilityOf(GameObject*    target, UpdateData& data, std::set<Unit*>& visibleNow, bool canSeeOrDetect);
-template void Player::UpdateVisibilityOf(DynamicObject* target, UpdateData& data, std::set<Unit*>& visibleNow, bool canSeeOrDetect);
-template void Player::UpdateVisibilityOf(WorldObject* target, UpdateData& data, std::set<Unit*>& visibleNow, bool canSeeOrDetect);
+template void Player::UpdateVisibilityOf(WorldObject*   target, UpdateData& data, std::set<Unit*>& visibleNow);
+template void Player::UpdateVisibilityOf(AreaTrigger*   target, UpdateData& data, std::set<Unit*>& visibleNow);
 
 void Player::UpdateVisibilityForPlayer()
 {
+    if (!m_seer)
+        return;
+
     // updates visibility of all objects around point of view for current player
     Trinity::VisibleNotifier notifier(*this);
-    
-    if (m_inEventZone)
-    {
-        if (m_eventZonePointForVisUpdate.m_positionX && m_eventZonePointForVisUpdate.m_positionY)
-        {
-            if (GetExactDist2d(m_eventZonePointForVisUpdate.m_positionX, m_eventZonePointForVisUpdate.m_positionY) > 300.0f)
-            {
-                for (auto itr : m_clientGUIDs)
-                    m_extraLookList.erase(itr);
-
-                m_seer->VisitNearbyGridObject(MAX_VISIBILITY, notifier, true);
-                m_eventZonePointForVisUpdate.Relocate(GetPositionX(), GetPositionY());
-            }
-
-            m_seer->VisitNearbyWorldObject(m_dynamicVisibleDistance, notifier, true);
-        }
-        else
-        {
-            m_seer->VisitNearbyGridObject(MAX_VISIBILITY, notifier, true);
-            m_seer->VisitNearbyWorldObject(m_dynamicVisibleDistance, notifier, true);
-            m_eventZonePointForVisUpdate.Relocate(GetPositionX(), GetPositionY());
-        }
-    }
-    else
-    {
-        if (m_staticVisibleDistance)
-            m_seer->VisitNearbyObject(m_staticVisibleDistance, notifier, true);
-        else if (IsInWorld())
-        {
-            if (Map* getmap = GetMap())
-            {
-                if (getmap->IsBattlegroundOrArena())
-                    notifier.Visit(getmap);
-                else
-                {
-                    m_dynamicVisibleDistance = sWorld->GetZoneVisibilityRange(getCurrentUpdateZoneID());
-                    m_seer->VisitNearbyObject(m_dynamicVisibleDistance, notifier, true);
-
-                    for (auto itr : getmap->GetImportantCreatureList())
-                    {
-                        if (!itr->IsInWorld() || itr->GetTypeId() != TYPEID_UNIT)
-                            continue;
-
-                        notifier.vis_guids.erase(itr->GetGUID());
-                        UpdateVisibilityOf(itr, notifier.i_data, notifier.i_visibleNow);
-                    }
-                }
-            }
-        }
-    }
-    
+    Trinity::VisitNearbyObject(m_seer, GetSightRange(), notifier);
     notifier.SendToSelf();   // send gathered data
-}
-
-void Player::CalcStaticVisibleDistance(uint32 zoneId, uint32 areaId)
-{
-    if (areaId)
-    {
-        if (m_staticVisibleDistance = GetVisibleDistance(TYPE_VISIBLE_AREA, areaId))
-            return;
-    }
-    if (zoneId)
-    {
-        if (m_staticVisibleDistance = GetVisibleDistance(TYPE_VISIBLE_ZONE, zoneId))
-            return;
-    }
-
-    m_staticVisibleDistance = 0;
 }
 
 void Player::InitPrimaryProfessions()
@@ -26337,7 +26191,6 @@ void Player::SendInitialPacketsBeforeAddToMap()
 //! After send self obj. update 
 void Player::SendInitialPacketsAfterAddToMap()
 {
-    m_dynamicVisibleDistance = NORMAL_VISIBILITY_DISTANCE;
     UpdateVisibilityForPlayer();
 
     // update zone
@@ -27080,7 +26933,7 @@ void Player::UpdateForQuestWorldObjects()
 
     UpdateData udata(GetMapId());
     WorldPacket packet;
-    for (ClientGUIDs::iterator itr=m_clientGUIDs.begin(); itr != m_clientGUIDs.end(); ++itr)
+    for (GuidUnorderedSet::iterator itr=m_clientGUIDs.begin(); itr != m_clientGUIDs.end(); ++itr)
     {
         if (IS_GAMEOBJECT_GUID(*itr))
         {
@@ -27116,8 +26969,8 @@ void Player::UpdateForQuestWorldObjects()
             }
         }
     }
-    udata.BuildPacket(&packet);
-    GetSession()->SendPacket(&packet);
+    if (udata.BuildPacket(&packet))
+        GetSession()->SendPacket(&packet);
 }
 
 void Player::UpdateForRaidMarkers(Group* group)
@@ -27976,6 +27829,9 @@ void Player::SetViewpoint(WorldObject* target, bool apply)
 
         // farsight dynobj or puppet may be very far away
         UpdateVisibilityOf(target);
+
+        if (target->isType(TYPEMASK_UNIT) && !GetVehicle())
+            ((Unit*)target)->AddPlayerToVision(this);
     }
     else
     {
@@ -27986,6 +27842,9 @@ void Player::SetViewpoint(WorldObject* target, bool apply)
             sLog->outFatal(LOG_FILTER_PLAYER, "Player::CreateViewpoint: Player %s cannot remove current viewpoint!", GetName());
             return;
         }
+
+        if (target->isType(TYPEMASK_UNIT) && !GetVehicle())
+            ((Unit*)target)->RemovePlayerFromVision(this);
 
         //must immediately set seer back otherwise may crash
         m_seer = this;
@@ -28864,62 +28723,27 @@ void Player::HandleFall(MovementInfo const& movementInfo)
 void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /* = 0 */, uint32 miscValue2 /* = 0 */, uint32 miscValue3 /* = 0 */,
                                        Unit* unit /* = nullptr */, bool ignoreGroup /* = false */, bool loginCheck /* = false */)
 {
-    AchievementCriteriaUpdateTask task;
-    task.PlayerGUID = GetGUID();
-    task.UnitGUID = unit ? unit->GetGUID() : 0;
-    task.Task = [&, type, miscValue1, miscValue2, miscValue3, ignoreGroup, loginCheck](uint64 const &playerGUID, uint64 const &unitGUID) -> void
-    {
-        /// Task will be executed async
-        /// We need to ensure the player still exist
-        Player *player = HashMapHolder<Player>::Find(playerGUID);
-        if (!player)
-            return;
+    GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, this, false, loginCheck);
 
-        player->_deleteLock.acquire();
+    /// Update scenario/challenge criterias
+    auto map = GetMap();
+    if (uint32 instanceId = map ? map->GetInstanceId() : 0)
+        if (auto progress = sScenarioMgr->GetScenarioProgress(instanceId))
+            progress->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, this, false, loginCheck);
 
-        /// Same for the unit
-        Unit *unit = unitGUID ? Unit::GetUnit(*player, unitGUID) : nullptr;
-        player->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, player, false, loginCheck);
+    /// Update only individual achievement criteria here, otherwise we may get multiple updates
+    /// from a single boss kill
+    if (!ignoreGroup && sAchievementMgr->IsGroupCriteriaType(type))
+        return;
 
-        /// Update scenario/challenge criterias
-        auto map = player->GetMap();
-        if (uint32 instanceId = map ? map->GetInstanceId() : 0)
-            if (auto progress = sScenarioMgr->GetScenarioProgress(instanceId))
-                progress->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, player, false, loginCheck);
-
-        /// Update only individual achievement criteria here, otherwise we may get multiple updates
-        /// from a single boss kill
-        if (!ignoreGroup && sAchievementMgr->IsGroupCriteriaType(type))
-        {
-            player->_deleteLock.release();
-            return;
-        }
-
-        if (auto guild = sGuildMgr->GetGuildById(player->GetGuildId()))
-            if (type != ACHIEVEMENT_CRITERIA_TYPE_GAIN_REPUTATION)
-                guild->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, player, loginCheck);
-
-        player->_deleteLock.release();
-    };
-
-    sAchievementMgr->AddCriteriaUpdateTask(task);
+    if (auto guild = sGuildMgr->GetGuildById(GetGuildId()))
+        if (type != ACHIEVEMENT_CRITERIA_TYPE_GAIN_REPUTATION)
+            guild->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, miscValue3, unit, this, loginCheck);
 }
 
 void Player::CompletedAchievement(AchievementEntry const* entry)
 {
-    AchievementCriteriaUpdateTask task;
-    task.PlayerGUID = GetGUID();
-    task.UnitGUID = 0;
-    task.Task = [&, entry](uint64 const &playerGUID, uint64 const &unitGUID) -> void
-    {
-        Player *player = HashMapHolder<Player>::Find(playerGUID);
-        if (!player)
-            return;
-
-        player->GetAchievementMgr().CompletedAchievement(entry, player);
-    };
-
-    sAchievementMgr->AddCriteriaUpdateTask(task);
+    GetAchievementMgr().CompletedAchievement(entry, this);
 }
 
 bool Player::HasAchieved(uint32 achievementId) const
