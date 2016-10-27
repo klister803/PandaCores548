@@ -47,6 +47,8 @@ enum eSpells
     SPELL_PURIFIED_RESIDUE      = 143524,//buff
     
     SPELL_ACHIEV_CREDIT         = 145889,
+    SPELL_SPLIT_C_PUDDLE_SUM_V  = 143024, //Visual dest pos contaminated puddle
+    SPELL_SPLUT_S_PUDDLE_SUM_V  = 143022, //Visual dest pos sha puddle
 };
 
 enum Events
@@ -558,45 +560,30 @@ public:
             if (lasthppct >= 75)
             {
                 for (uint8 n = 0; n < 25; n++)
-                {
-                    if (Creature* p = me->SummonCreature(wave1[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
-                        p->AI()->SetData(DATA_SEND_INDEX, n);
-                }
+                    me->CastSpell(psp[n].GetPositionX(), psp[n].GetPositionY(), psp[n].GetPositionZ(), wave1[n] == NPC_CONTAMINATED_PUDDLE ? SPELL_SPLIT_C_PUDDLE_SUM_V : SPELL_SPLUT_S_PUDDLE_SUM_V, true);
             }
             else if (lasthppct < 75 && lasthppct > 50)
             {
                 for (uint8 n = 0; n < 25; n++)
-                {
-                    if (Creature* p = me->SummonCreature(wave2[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
-                        p->AI()->SetData(DATA_SEND_INDEX, n);
-                }
+                    me->CastSpell(psp[n].GetPositionX(), psp[n].GetPositionY(), psp[n].GetPositionZ(), wave2[n] == NPC_CONTAMINATED_PUDDLE ? SPELL_SPLIT_C_PUDDLE_SUM_V : SPELL_SPLUT_S_PUDDLE_SUM_V, true);
             }
             else if (lasthppct <= 50 && lasthppct > 30)
             {
                 for (uint8 n = 0; n < 25; n++)
-                {
-                    if (Creature* p = me->SummonCreature(wave3[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
-                        p->AI()->SetData(DATA_SEND_INDEX, n);
-                }
+                    me->CastSpell(psp[n].GetPositionX(), psp[n].GetPositionY(), psp[n].GetPositionZ(), wave3[n] == NPC_CONTAMINATED_PUDDLE ? SPELL_SPLIT_C_PUDDLE_SUM_V : SPELL_SPLUT_S_PUDDLE_SUM_V, true);
             }
             else if (lasthppct <= 30 && lasthppct > 15)
             {
                 for (uint8 n = 0; n < 25; n++)
-                {
-                    if (Creature* p = me->SummonCreature(wave4[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
-                        p->AI()->SetData(DATA_SEND_INDEX, n);
-                }
+                    me->CastSpell(psp[n].GetPositionX(), psp[n].GetPositionY(), psp[n].GetPositionZ(), wave4[n] == NPC_CONTAMINATED_PUDDLE ? SPELL_SPLIT_C_PUDDLE_SUM_V : SPELL_SPLUT_S_PUDDLE_SUM_V, true);
             }
             else if (lasthppct <= 15)
             {
                 for (uint8 n = 0; n < 25; n++)
-                {
-                    if (Creature* p = me->SummonCreature(wave5[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
-                        p->AI()->SetData(DATA_SEND_INDEX, n);
-                }
+                    me->CastSpell(psp[n].GetPositionX(), psp[n].GetPositionY(), psp[n].GetPositionZ(), wave5[n] == NPC_CONTAMINATED_PUDDLE ? SPELL_SPLIT_C_PUDDLE_SUM_V : SPELL_SPLUT_S_PUDDLE_SUM_V, true);
             }
             if (me->GetMap()->IsHeroic())
-                events.ScheduleEvent(EVENT_SHA_POOL, 3000);
+                events.ScheduleEvent(EVENT_SHA_POOL, 4000);
             maxpcount = 0;
             donecp = 0;
             donesp = 0;
@@ -734,31 +721,13 @@ public:
             index = 0;
             me->ModifyAuraState(AURA_STATE_UNKNOWN22, true);
         }
-        
-        void SetData(uint32 type, uint32 data)
+
+        void IsSummonedBy(Unit* summoner)
         {
-            if (type == DATA_SEND_INDEX)
+            if (summoner->ToCreature())
             {
-                index = data;
-                DoAction(ACTION_SPAWN);
-            }
-        }
-        
-        void DoAction(int32 const action)
-        {
-            if (action == ACTION_SPAWN)
-                me->GetMotionMaster()->MoveJump(psp[index].GetPositionX(), psp[index].GetPositionY(), psp[index].GetPositionZ(), 12.5f, 12.5f, 0);
-        }
-        
-        void MovementInform(uint32 type, uint32 pointId)
-        {
-            if (type == EFFECT_MOTION_TYPE)
-            {
-                if (pointId == 0)
-                {
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                    events.ScheduleEvent(EVENT_START_MOVING, 1500);
-                }
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                events.ScheduleEvent(EVENT_START_MOVING, 1500);
             }
         }
         
@@ -767,61 +736,61 @@ public:
             if (damage >= me->GetHealth())
                 DoCastAOE(SPELL_SHA_RESIDUE);
         }
+        
+        void JustDied(Unit* killer)
+        {
+            CalcPuddle(instance, me, me->GetEntry(), true);
+        }
+        
+        void EnterEvadeMode(){}
+        
+        void EnterCombat(Unit* who){}
+        
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
 
-            void JustDied(Unit* killer)
+            while (uint32 eventId = events.ExecuteEvent())
             {
-                CalcPuddle(instance, me, me->GetEntry(), true);
-            }
-
-            void EnterEvadeMode(){}
-
-            void EnterCombat(Unit* who){}
-
-            void UpdateAI(uint32 diff)
-            {
-                events.Update(diff);
-
-                while (uint32 eventId = events.ExecuteEvent())
+                switch (eventId)
                 {
-                    switch (eventId)
+                case EVENT_START_MOVING:
+                    if (instance)
                     {
-                    case EVENT_START_MOVING:
-                        if (instance)
+                        if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
                         {
-                            if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
-                            {
-                                me->GetMotionMaster()->MoveFollow(pp, 10.0f, 0.0f);
-                                events.ScheduleEvent(EVENT_CHECK_DIST, 1000);
-                            }
+                            me->GetMotionMaster()->MoveFollow(pp, 10.0f, 0.0f);
+                            events.ScheduleEvent(EVENT_CHECK_DIST, 1000);
                         }
-                        break;
-                    case EVENT_CHECK_DIST:
-                        if (instance)
-                        {
-                            if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
-                            {
-                                if (me->GetDistance(pp) <= 18.0f && !finish)
-                                {
-                                    finish = true;
-                                    me->StopMoving();
-                                    me->GetMotionMaster()->Clear();
-                                    DoCast(me, SPELL_ERUPTING_SHA);
-                                    CalcPuddle(instance, me, me->GetEntry(), false);
-                                }
-                                else if (me->GetDistance(pp) > 18.0f && !finish)
-                                    events.ScheduleEvent(EVENT_CHECK_DIST, 1000);
-                            }
-                        }
-                        break;
                     }
+                    break;
+                case EVENT_CHECK_DIST:
+                    if (instance)
+                    {
+                        if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
+                        {
+                            if (me->GetDistance(pp) <= 18.0f && !finish)
+                            {
+                                finish = true;
+                                me->StopMoving();
+                                me->GetMotionMaster()->Clear();
+                                DoCast(me, SPELL_ERUPTING_SHA);
+                                CalcPuddle(instance, me, me->GetEntry(), false);
+                            }
+                            else if (me->GetDistance(pp) > 18.0f && !finish)
+                                events.ScheduleEvent(EVENT_CHECK_DIST, 1000);
+                        }
+                    }
+                    break;
                 }
             }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new npc_sha_puddleAI(creature);
         }
+    };
+    
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_sha_puddleAI(creature);
+    }
 };
 
 //71604
@@ -851,6 +820,15 @@ public:
             finish = false;
             done = false;
             index = 0;
+        }
+
+        void IsSummonedBy(Unit* summoner)
+        {
+            if (summoner->ToCreature())
+            {
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                events.ScheduleEvent(EVENT_START_MOVING, 1500);
+            }
         }
 
         void EnterEvadeMode(){}
@@ -919,33 +897,6 @@ public:
             {
                 done = true;
                 DoCast(me, SPELL_PURIFIED_RESIDUE);
-            }
-        }
-
-        void SetData(uint32 type, uint32 data)
-        {
-            if (type == DATA_SEND_INDEX)
-            {
-                index = data;
-                DoAction(ACTION_SPAWN);
-            }
-        }
-
-        void DoAction(int32 const action)
-        {
-            if (action == ACTION_SPAWN)
-                me->GetMotionMaster()->MoveJump(psp[index].GetPositionX(), psp[index].GetPositionY(), psp[index].GetPositionZ(), 12.5f, 12.5f, 0);
-        }
-
-        void MovementInform(uint32 type, uint32 pointId)
-        {
-            if (type == EFFECT_MOTION_TYPE)
-            {
-                if (pointId == 0)
-                {
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                    events.ScheduleEvent(EVENT_START_MOVING, 1500);
-                }
             }
         }
 
