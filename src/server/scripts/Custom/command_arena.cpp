@@ -687,7 +687,7 @@ public:
                uint32 count = fetch[3].GetUInt32();
                
                handler->PSendSysMessage("Игрок %s имеет %u киллов, %u смертей и сыграл %u игр. Занимает место %u", namePl.c_str(), kills, deads, count, index);
-            } while ( result->NextRow() && index < 3 );
+            } while ( result->NextRow() && index < 10 );
         }
 
         return true;
