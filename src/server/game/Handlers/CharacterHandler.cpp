@@ -361,8 +361,12 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recvData)
             uint32 team = Player::TeamForRace(race_);
             switch (team)
             {
-                case ALLIANCE: disabled = mask & (1 << 0); break;
-                case HORDE:    disabled = mask & (1 << 1); break;
+                case ALLIANCE: 
+                    disabled = (mask & (1 << 0)) != 0; 
+                    break;
+                case HORDE:    
+                    disabled = (mask & (1 << 1)) != 0; 
+                    break;
             }
 
             if (disabled)
