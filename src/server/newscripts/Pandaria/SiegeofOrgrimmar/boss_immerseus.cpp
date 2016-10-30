@@ -25,6 +25,7 @@ enum eSpells
     SPELL_CORROSIVE_BLAST       = 143436, 
     SPELL_SHA_BOLT              = 143293, 
     SPELL_SWIRL                 = 143309, 
+    SPELL_SWIRL_AURA_DUMMY      = 113762,
     SPELL_SWIRL_DMG             = 143412,
     SPELL_SEEPING_SHA           = 143286,
     SPELL_SEEPING_SHA_AT        = 143281,
@@ -66,17 +67,21 @@ enum Events
     EVENT_START_MOVING          = 8,
     EVENT_CHECK_DIST            = 9,
     EVENT_RE_ATTACK             = 10,
+    EVENT_START_ROTATE          = 11,
+    EVENT_UPDATE_ROTATE         = 12,
+    EVENT_UPDATE_POINT          = 13,
 };
 
 enum Actions
 {
     //Immerseus
-    ACTION_RE_ATTACK            = 1,
-    ACTION_INTRO_PHASE_ONE      = 2,
+    ACTION_INTRO_PHASE_ONE      = 1,
     //Summons
-    ACTION_SPAWN                = 3,
-    ACTION_MOVE                 = 4,
-    ACTION_RE_ATTACK_WITH_DELAY = 5,
+    ACTION_SPAWN                = 2,
+    ACTION_MOVE                 = 3,
+    ACTION_RE_ATTACK_WITH_DELAY = 4,
+    ACTION_LAUNCH_ROTATE        = 5,
+    ACTION_RE_ATTACK_SWIRL      = 6
 };
 
 enum SData
@@ -300,6 +305,7 @@ public:
                 pp->RemoveAurasDueToSpell(SPELL_SEEPING_SHA_AT);
             me->SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
             me->SetReactState(REACT_DEFENSIVE);
+            me->RemoveAurasDueToSpell(SPELL_SWIRL_AURA_DUMMY);
             me->RemoveAurasDueToSpell(SPELL_SHA_POOL);
             me->RemoveAurasDueToSpell(SPELL_BERSERK);
             me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
@@ -413,8 +419,10 @@ public:
         {
             switch (action)
             {
-            case ACTION_RE_ATTACK:
-                me->ReAttackWithZone();
+            case ACTION_RE_ATTACK_SWIRL:
+                if (!summons.empty())
+                    summons.DespawnEntry(NPC_SWIRL_TARGET);
+                events.ScheduleEvent(EVENT_RE_ATTACK, 1000);
                 break;
             case ACTION_RE_ATTACK_WITH_DELAY:
                 events.ScheduleEvent(EVENT_RE_ATTACK, 1500);
@@ -522,12 +530,24 @@ public:
                     break;
                 }
                 case EVENT_SWIRL:
+                    me->SetAttackStop(false);
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
                     {
-                        me->SetAttackStop(false);
-                        me->SetFacingToObject(target);
-                        events.DelayEvents(10000);
-                        DoCast(me, SPELL_SWIRL);
+                        float ang = me->GetAngle(target);
+                        me->SetFacingTo(ang);
+                        if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
+                        {
+                            pp->SetFacingTo(ang);
+                            float x, y;
+                            GetPositionWithDistInOrientation(pp, 78.0f, ang, x, y);
+                            if (Creature* st = me->SummonCreature(NPC_SWIRL_TARGET, x, y, me->GetPositionZ()))
+                            {
+                                DoCast(st, SPELL_SWIRL);
+                                pp->AI()->SetGUID(st->GetGUID(), 1);
+                                st->AI()->SetGUID(pp->GetGUID(), 2);
+                            }
+                            events.DelayEvents(16000);
+                        }
                     }
                     events.ScheduleEvent(EVENT_SWIRL, 48000);
                     break;
@@ -593,6 +613,79 @@ public:
     CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_immerseusAI(creature);
+    }
+};
+
+//71550
+class npc_swirl_target : public CreatureScript
+{
+public:
+    npc_swirl_target() : CreatureScript("npc_swirl_target") { }
+
+    struct npc_swirl_targetAI : public ScriptedAI
+    {
+        npc_swirl_targetAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetDisplayId(11686);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+        }
+
+        InstanceScript* pInstance;
+        EventMap events;
+        uint64 ppGuid;
+
+        void Reset()
+        {
+            events.Reset();
+        }
+
+        void SetGUID(uint64 guid, int32 id)
+        {
+            if (id == 2)
+                ppGuid = guid;
+        }
+
+        void EnterEvadeMode(){}
+
+        void EnterCombat(Unit* who){}
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (damage >= me->GetHealth())
+                damage = 0;
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (type == POINT_MOTION_TYPE)
+                if (pointId == 1)
+                    events.ScheduleEvent(EVENT_UPDATE_POINT, 100);
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_UPDATE_POINT)
+                {
+                    if (Creature* pp = me->GetCreature(*me, ppGuid))
+                    {
+                        float x, y;
+                        GetPositionWithDistInOrientation(pp, 78.0f, pp->GetOrientation(), x, y);
+                        me->GetMotionMaster()->MoveCharge(x, y, pp->GetPositionZ()+2.0f, 15.0f, 1);
+                    }
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_swirl_targetAI(pCreature);
     }
 };
 
@@ -962,16 +1055,58 @@ public:
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE);
         }
-
         InstanceScript* instance;
+        EventMap events;
+        uint64 swirltargetGuid;
 
-        void Reset(){}
+        void Reset()
+        {
+            events.Reset();
+            swirltargetGuid = 0;
+        }
+
+        void SetGUID(uint64 guid, int32 id)
+        {
+            if (id == 1)
+                swirltargetGuid = guid;
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (damage >= me->GetHealth())
+                damage = 0;
+        }
+
+        void DoAction(int32 const action)
+        {
+            if (action == ACTION_LAUNCH_ROTATE)
+            {
+                me->GetMotionMaster()->MoveRotate(15000, ROTATE_DIRECTION_RIGHT);
+                events.ScheduleEvent(EVENT_START_ROTATE, 1000);
+            }
+        }
 
         void EnterCombat(Unit* who){}
 
         void EnterEvadeMode(){}
 
-        void UpdateAI(uint32 diff){}
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_START_ROTATE)
+                {
+                    if (Creature* st = me->GetCreature(*me, swirltargetGuid))
+                    {
+                        float x, y;
+                        GetPositionWithDistInOrientation(me, 78.0f, me->GetOrientation(), x, y);
+                        st->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ() + 2.0f, 15.0f, 1);
+                    }
+                }
+            }
+        }
     };
 
     CreatureAI* GetAI(Creature* creature) const
@@ -990,24 +1125,30 @@ public:
     {
         PrepareAuraScript(spell_swirl_AuraScript);
            
-        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes mode)
         {
             if (GetCaster() && GetCaster()->ToCreature())
             {
-                GetCaster()->ClearUnitState(UNIT_STATE_CASTING);
-                GetCaster()->GetMotionMaster()->MoveRotate(20000, ROTATE_DIRECTION_RIGHT);
-                GetCaster()->CastSpell(GetCaster(), SPELL_SWIRL_SEARCHER, true);
+                if (InstanceScript * instance = GetCaster()->GetInstanceScript())
+                {
+                    if (Creature* pp = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(NPC_PUDDLE_POINT)))
+                    {
+                        GetCaster()->CastSpell(GetCaster(), SPELL_SWIRL_AURA_DUMMY, true);
+                        pp->AI()->DoAction(ACTION_LAUNCH_ROTATE);
+                    }
+                }
             }
         }
         
-        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        void HandleEffectRemove(AuraEffect const * aurEff, AuraEffectHandleModes mode)
         {
             if (GetCaster() && GetCaster()->ToCreature())
             {
-                GetCaster()->RemoveAurasDueToSpell(SPELL_SWIRL_SEARCHER);
-                GetCaster()->StopMoving();
-                GetCaster()->GetMotionMaster()->Clear(false);
-                GetCaster()->ToCreature()->AI()->DoAction(ACTION_RE_ATTACK);
+                if (GetCaster()->isAlive() && GetCaster()->isInCombat())
+                {
+                    GetCaster()->RemoveAurasDueToSpell(SPELL_SWIRL_AURA_DUMMY);
+                    GetCaster()->ToCreature()->AI()->DoAction(ACTION_RE_ATTACK_SWIRL);
+                }
             }
         }
         
@@ -1024,38 +1165,53 @@ public:
     }
 };
 
+class SwirlFilter
+{
+public:
+    SwirlFilter(Unit* caster, Creature* target) : _caster(caster), _target(target){}
+
+    bool operator()(WorldObject* unit)
+    {
+        if (unit->IsInBetween(_caster, _target, 8.0f))
+            return false;
+        return true;
+    }
+private:
+    Unit* _caster;
+    Creature* _target;
+};
+
 //125925
 class spell_swirl_searcher : public SpellScriptLoader
 {
 public:
     spell_swirl_searcher() : SpellScriptLoader("spell_swirl_searcher") { }
-    
+
     class spell_swirl_searcher_SpellScript : public SpellScript
     {
         PrepareSpellScript(spell_swirl_searcher_SpellScript);
-        
-        void ApplyHit()
+
+        void FilterTarget(std::list<WorldObject*>& targets)
         {
-            if (GetHitUnit() && GetCaster() && GetCaster()->ToCreature())
+            if (GetCaster())
             {
-                switch (GetCaster()->GetEntry())
-                {
-                case NPC_IMMERSEUS:
-                    GetHitUnit()->CastSpell(GetHitUnit(), SPELL_SWIRL_DMG);
-                    break;
-                case NPC_STARVED_YETI:
-                    if (GetCaster()->GetDistance(GetHitUnit()) <= 8.0f)
-                        GetCaster()->CastSpell(GetHitUnit(), 147607, true); //SPELL_CANNON_BALL_ATDMG
-                    break;
-                default:
-                    break;
-                }
+                if (Creature* st = GetCaster()->FindNearestCreature(NPC_SWIRL_TARGET, 100.0f, true))
+                    targets.remove_if(SwirlFilter(GetCaster(), st));
+                else
+                    targets.clear();
             }
         }
-        
+
+        void HitHandler()
+        {
+            if (GetHitUnit())
+                GetHitUnit()->CastSpell(GetHitUnit(), SPELL_SWIRL_DMG, true);
+        }
+
         void Register()
         {
-            OnHit += SpellHitFn(spell_swirl_searcher_SpellScript::ApplyHit);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_swirl_searcher_SpellScript::FilterTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+            OnHit += SpellHitFn(spell_swirl_searcher_SpellScript::HitHandler);
         }
     };
 
@@ -1199,6 +1355,7 @@ public:
 void AddSC_boss_immerseus()
 {
     new boss_immerseus();
+    new npc_swirl_target();
     new npc_sha_pool();
     new npc_sha_puddle();
     new npc_contaminated_puddle();

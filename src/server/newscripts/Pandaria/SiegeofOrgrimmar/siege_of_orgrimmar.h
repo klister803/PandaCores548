@@ -592,7 +592,6 @@ enum eGameObjects
 
 enum esSpells
 {
-    SPELL_SWIRL_SEARCHER               = 113762, //Cone Searcher
     SPELL_HEWN                         = 143275,
     SPELL_ANGEL_OF_DEATH               = 141859,
     SPELL_REAVE_PL                     = 142269,

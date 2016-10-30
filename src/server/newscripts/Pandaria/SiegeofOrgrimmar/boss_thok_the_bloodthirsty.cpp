@@ -979,7 +979,6 @@ public:
             {
                 if (pointId == 1)
                 {
-                    me->RemoveAurasDueToSpell(SPELL_SWIRL_SEARCHER);
                     summons.DespawnAll();
                     DoCast(me, SPELL_CANNON_BALL, true);
                     if (Creature* bs = me->FindNearestCreature(NPC_BODY_STALKER, 100.0f, true))
@@ -1028,7 +1027,6 @@ public:
                     if (Creature* sc = me->FindNearestCreature(NPC_SHOCK_COLLAR, 135.0f, true))
                         me->SetFacingToObject(sc);
                     me->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), 30.0f, 1);
-                    DoCast(me, SPELL_SWIRL_SEARCHER, true);
                     break;
                 }
             }

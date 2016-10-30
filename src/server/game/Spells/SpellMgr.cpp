@@ -5062,6 +5062,22 @@ void SpellMgr::LoadSpellCustomAttr()
 
                 //Siege of Orgrimmar
                 //Immerseus
+                case 143309: //Swirl
+                    spellInfo->Effects[0]->TargetA = 25;
+                    spellInfo->AttributesEx |= SPELL_ATTR0_CASTABLE_WHILE_MOUNTED;
+                    spellInfo->AttributesEx |= SPELL_ATTR0_CASTABLE_WHILE_SITTING;
+                    spellInfo->AttributesEx2 |= SPELL_ATTR2_UNK22;
+                    spellInfo->AttributesEx2 |= SPELL_ATTR2_UNK28;
+                    spellInfo->AttributesEx3 &= ~SPELL_ATTR3_UNK28;
+                    spellInfo->AttributesEx4 |= SPELL_ATTR4_UNK23;
+                    spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_MOVING;
+                    spellInfo->AttributesEx5 &= ~SPELL_ATTR5_DONT_TURN_DURING_CAST;
+                    spellInfo->AttributesEx6 |= SPELL_ATTR6_UNK9;
+                    spellInfo->AttributesEx6 |= SPELL_ATTR6_CAN_TARGET_POSSESSED_FRIENDS;
+                    spellInfo->AttributesEx9 |= SPELL_ATTR9_UNK20;
+                    spellInfo->AttributesEx11 |= SPELL_ATTR11_UNK6;
+                    spellInfo->InterruptFlags = 0;
+                    break;
                 case 139832: //Submerge
                     spellInfo->AuraInterruptFlags = 0;
                     break;
@@ -5082,29 +5098,27 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->TargetB = TARGET_UNIT_SRC_AREA_ALLY;
                     break;
                 case 113762: //Swirl
-                    spellInfo->Effects[0]->TriggerSpell = 125925;
                     spellInfo->Attributes |= SPELL_ATTR0_PASSIVE;
                     spellInfo->Attributes |= SPELL_ATTR0_HIDDEN_CLIENTSIDE;
+                    spellInfo->Effects[0]->TriggerSpell = 125925;
+                    spellInfo->Effects[0]->Amplitude = 500;
+                    break;
+                case 125925: //Ping Victim(swirld searcher)
+                    spellInfo->Effects[0]->TargetA = 22;
+                    spellInfo->Effects[0]->TargetB = 15;
+                    spellInfo->Effects[0]->RadiusEntry = sSpellRadiusStore.LookupEntry(41); //150yards
                     break;
                 case 143412: //Swirl dmg
-                {
                     for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                    {
                         if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
                         {
-                            eff->TargetA = TARGET_UNIT_CASTER;
+                            eff->TargetA = 25;
                             eff->Effect = SPELL_EFFECT_SCHOOL_DAMAGE;
                             eff->ApplyAuraName = 0;
                         }
-
-                    spellInfo->Effects[1]->TargetA = TARGET_UNIT_CASTER;
-                    break;
-                }
-                case 125925: //Swirlr tr ef (Cone Searcher)
-                    spellInfo->Effects[0]->BasePoints = 0;
-                    spellInfo->Effects[0]->TargetA = TARGET_UNIT_CONE_ENEMY_110;
-                    spellInfo->Effects[0]->TargetB = 0;
-                    spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(13); //200yards
-                    spellInfo->Effects[0]->RadiusEntry = sSpellRadiusStore.LookupEntry(22); //200yards
+                    }
+                    spellInfo->Effects[1]->TargetA = 25;
                     break;
                 case 143574: //Swelling corruption
                     spellInfo->Effects[0]->ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
