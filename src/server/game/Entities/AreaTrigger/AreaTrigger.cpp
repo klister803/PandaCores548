@@ -918,7 +918,7 @@ bool AreaTrigger::IsInPolygon(Unit* unit, WorldObject const* obj)
 
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::IsInPolygon x_source %f y_source %f angle %f dist %f x %f y %f", x_source, y_source, angle, dist, x, y);
 
-    G3D::Vector2 pred_pt = &atInfo.polygonPoints[0];
+    G3D::Vector2 pred_pt = atInfo.polygonPoints[0];
     pred_pt.x -= x;
     pred_pt.y -= y;
 
@@ -928,7 +928,7 @@ bool AreaTrigger::IsInPolygon(Unit* unit, WorldObject const* obj)
 
     for (uint16 i = 0; i < atInfo.polygonPoints.size(); ++i)
     {
-        G3D::Vector2 cur_pt = &atInfo.polygonPoints[i];
+        G3D::Vector2 cur_pt = atInfo.polygonPoints[i];
 
         cur_pt.x -= x;
         cur_pt.y -= y;
@@ -965,7 +965,7 @@ float AreaTrigger::CalculateRadius()
     float distance = 0.0f;
     for (uint16 i = 0; i < atInfo.polygonPoints.size(); ++i)
     {
-        G3D::Vector2 cur_pt = &atInfo.polygonPoints[i];
+        G3D::Vector2 cur_pt = atInfo.polygonPoints[i];
         float distsq = fabs(cur_pt.x) > fabs(cur_pt.y) ? fabs(cur_pt.x) : fabs(cur_pt.y);
         if(distsq > distance)
             distance = distsq;
