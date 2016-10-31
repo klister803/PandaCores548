@@ -929,6 +929,8 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         {
             m_respawnTime = respawn > 0 ? time(NULL) + respawn : 0;
             m_respawnDelayTime = respawn > 0 ? respawn : 0;
+            if (respawn)
+                UpdateObjectVisibility();
         }
         void Respawn();
         bool isSpawned() const
