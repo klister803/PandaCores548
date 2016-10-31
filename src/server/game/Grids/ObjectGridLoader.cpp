@@ -183,8 +183,10 @@ void ObjectGridStoper::Visit(CreatureMapType &m)
     {
         // volatile uint32 entryorguid = source->GetTypeId() == TYPEID_PLAYER ? source->GetGUIDLow() : source->GetEntry();
 
-        if (source->IsInWorld())
-            source->RemoveAllDynObjects();
+        if (!source->IsInWorld())
+            continue;
+
+        source->RemoveAllDynObjects();
         source->RemoveAllAreaObjects();       // Calls RemoveFromWorld, needs to be after RemoveAllAuras or we invalidate the Owner pointer of the aura
 
         if (source->isInCombat())
