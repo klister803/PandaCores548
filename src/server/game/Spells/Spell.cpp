@@ -5777,7 +5777,7 @@ void Spell::SendLogExecute()
 
     data.PutBits<uint32>(bitpos, effectCount, 19);
 
-    m_caster->SendMessageToSet(&data, true);
+    m_caster->SendMessageToSetInRange(&data, GetVisibilityCombatLog(), true);
 }
 
 void Spell::ExecuteLogEffectGeneric(uint8 effIndex, uint64 guid)

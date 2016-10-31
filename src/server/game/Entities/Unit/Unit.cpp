@@ -1839,7 +1839,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
             data << uint32(i_spellProto->Id);
             data.WriteGuidBytes<2>(victimGuid);
             data.WriteGuidBytes<3, 4>(sourceGuid);
-            victim->SendMessageToSet(&data, true);
+            victim->SendMessageToSetInRange(&data, GetVisibilityCombatLog(), true);
 
             victim->DealDamage(this, damage, 0, SPELL_DIRECT_DAMAGE, i_spellProto->GetSchoolMask(), i_spellProto, true);
         }
@@ -5984,7 +5984,7 @@ void Unit::SendSpellNonMeleeDamageLog(SpellNonMeleeDamage* log)
     data << uint32(overkill > 0 ? overkill : -1);   // overkill
     data.WriteGuidBytes<2, 1>(casterGuid);
 
-    SendMessageToSet(&data, true);
+    SendMessageToSetInRange(&data, GetVisibilityCombatLog(), true);
 }
 
 void Unit::SendSpellNonMeleeDamageLog(Unit* target, uint32 SpellID, uint32 Damage, SpellSchoolMask damageSchoolMask, uint32 AbsorbedDamage, uint32 Resist, bool PhysicalDamage, uint32 Blocked, bool CriticalHit)
@@ -6132,7 +6132,7 @@ void Unit::SendPeriodicAuraLog(SpellPeriodicAuraLogInfo* pInfo)
     data.WriteGuidBytes<6>(casterGuid);
     data.WriteGuidBytes<3, 5>(targetGuid);
 
-    SendMessageToSet(&data, true);
+    SendMessageToSetInRange(&data, GetVisibilityCombatLog(), true);
 }
 
 void Unit::SendSpellMiss(Unit* target, uint32 spellID, SpellMissInfo missInfo)
@@ -6164,7 +6164,7 @@ void Unit::SendSpellMiss(Unit* target, uint32 spellID, SpellMissInfo missInfo)
     data.WriteGuidBytes<3, 6, 4, 2, 1, 7, 5, 0>(casterGuid);
     data << uint32(spellID);
 
-    SendMessageToSet(&data, true);
+    SendMessageToSetInRange(&data, GetVisibilityCombatLog(), true);
 }
 
 void Unit::SendSpellDamageResist(Unit* target, uint32 spellId)
@@ -6174,7 +6174,7 @@ void Unit::SendSpellDamageResist(Unit* target, uint32 spellId)
     data << uint64(target->GetGUID());
     data << uint32(spellId);
     data << uint8(0); // bool - log format: 0-default, 1-debug
-    SendMessageToSet(&data, true);
+    SendMessageToSetInRange(&data, GetVisibilityCombatLog(), true);
 }
 
 void Unit::SendSpellDamageImmune(Unit* target, uint32 spellId)
@@ -6205,7 +6205,7 @@ void Unit::SendSpellDamageImmune(Unit* target, uint32 spellId)
     data << uint32(spellId);
     data.WriteGuidBytes<0, 7, 1, 3>(targetGuid);
 
-    SendMessageToSet(&data, true);
+    SendMessageToSetInRange(&data, GetVisibilityCombatLog(), true);
 }
 
 void Unit::SendAttackStateUpdate(CalcDamageInfo* damageInfo)
@@ -12323,7 +12323,7 @@ void Unit::SendHealSpellLog(Unit* victim, uint32 SpellID, uint32 Damage, uint32 
     data << uint32(Absorb); // Absorb amount
     data.WriteGuidBytes<2, 1, 0>(casterGuid);
 
-    SendMessageToSet(&data, true);
+    SendMessageToSetInRange(&data, GetVisibilityCombatLog(), true);
 }
 
 int32 Unit::HealBySpell(Unit* victim, SpellInfo const* spellInfo, uint32 addHealth, bool critical)
@@ -12381,7 +12381,7 @@ void Unit::SendEnergizeSpellLog(Unit* victim, uint32 spellID, uint32 damage, Pow
     data << uint32(spellID);
     data.WriteGuidBytes<4, 6>(sourceGuid);
 
-    SendMessageToSet(&data, true);
+    SendMessageToSetInRange(&data, GetVisibilityCombatLog(), true);
 }
 
 void Unit::EnergizeBySpell(Unit* victim, uint32 spellID, int32 damage, Powers powerType)
@@ -24604,7 +24604,7 @@ void Unit::SendDispelFailed(uint64 targetGuid, uint32 spellId, std::list<uint32>
 
     data << uint32(spellId);
 
-    SendMessageToSet(&data, true);
+    SendMessageToSetInRange(&data, GetVisibilityCombatLog(), true);
 }
 
 void Unit::SendDispelLog(uint64 unitTargetGuid, uint32 spellId, std::list<uint32>& spellList, bool broke, bool stolen)
@@ -24653,7 +24653,7 @@ void Unit::SendDispelLog(uint64 unitTargetGuid, uint32 spellId, std::list<uint32
     data.WriteGuidBytes<6>(unitTargetGuid);
     data.WriteGuidBytes<5>(casterGuid);
 
-    SendMessageToSet(&data, true);
+    SendMessageToSetInRange(&data, GetVisibilityCombatLog(), true);
 }
 
 uint32 Unit::GetDamageCounterInPastSecs(uint32 secs, int type)
@@ -24833,7 +24833,7 @@ void Unit::SendSpellCreateVisual(SpellInfo const* spellInfo, Position const* pos
     data.WriteGuidBytes<7, 4>(casterGuid);
     data << float(positionY);           // y
     data.WriteGuidBytes<5>(casterGuid);
-    SendMessageToSet(&data, true);
+    SendMessageToSetInRange(&data, GetVisibilityCombatLog(), true);
 }
 
 void Unit::SendFakeAuraUpdate(uint32 auraId, uint32 flags, uint32 diration, uint32 _slot, bool remove)
@@ -25033,7 +25033,7 @@ void Unit::SendMissileCancel(uint32 spellId, bool cancel)
     data.WriteGuidBytes<4, 5, 7, 6, 1, 3>(guid);
     data << uint32(spellId);
     data.WriteGuidBytes<0, 2>(guid);
-    SendMessageToSet(&data, true);
+    SendMessageToSetInRange(&data, GetVisibilityCombatLog(), true);
 }
 
 void Unit::SendLossOfControl(Unit* caster, uint32 spellId, uint32 duraction, uint32 rmDuraction, uint32 mechanic, uint32 schoolMask, LossOfControlType type, bool apply)
