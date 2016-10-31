@@ -918,22 +918,22 @@ bool AreaTrigger::IsInPolygon(Unit* unit, WorldObject const* obj)
 
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::IsInPolygon x_source %f y_source %f angle %f dist %f x %f y %f", x_source, y_source, angle, dist, x, y);
 
-    G3D::Vector2* pred_pt = &atInfo.polygonPoints[0];
-    pred_pt->x -= x;
-    pred_pt->y -= y;
+    G3D::Vector2 pred_pt = &atInfo.polygonPoints[0];
+    pred_pt.x -= x;
+    pred_pt.y -= y;
 
-    int pred_q = q_patt[pred_pt->y < 0][pred_pt->x < 0];
+    int pred_q = q_patt[pred_pt.y < 0][pred_pt.x < 0];
 
     int w = 0;
 
     for (uint16 i = 0; i < atInfo.polygonPoints.size(); ++i)
     {
-        G3D::Vector2* cur_pt = &atInfo.polygonPoints[i];
+        G3D::Vector2 cur_pt = &atInfo.polygonPoints[i];
 
-        cur_pt->x -= x;
-        cur_pt->y -= y;
+        cur_pt.x -= x;
+        cur_pt.y -= y;
 
-        int q = q_patt[cur_pt->y < 0][cur_pt->x < 0];
+        int q = q_patt[cur_pt.y < 0][cur_pt.x < 0];
 
         switch (q - pred_q)
         {
@@ -944,11 +944,11 @@ bool AreaTrigger::IsInPolygon(Unit* unit, WorldObject const* obj)
                 --w;
                 break;
             case -2:
-                if (pred_pt->x * cur_pt->y >= pred_pt->y * cur_pt->x)
+                if (pred_pt.x * cur_pt.y >= pred_pt.y * cur_pt.x)
                     ++w;
                 break;
             case 2:
-                if (!(pred_pt->x * cur_pt->y >= pred_pt->y * cur_pt->x))
+                if (!(pred_pt.x * cur_pt.y >= pred_pt.y * cur_pt.x))
                     --w;
                 break;
         }
@@ -965,8 +965,8 @@ float AreaTrigger::CalculateRadius()
     float distance = 0.0f;
     for (uint16 i = 0; i < atInfo.polygonPoints.size(); ++i)
     {
-        G3D::Vector2* cur_pt = &atInfo.polygonPoints[i];
-        float distsq = fabs(cur_pt->x) > fabs(cur_pt->y) ? fabs(cur_pt->x) : fabs(cur_pt->y);
+        G3D::Vector2 cur_pt = &atInfo.polygonPoints[i];
+        float distsq = fabs(cur_pt.x) > fabs(cur_pt.y) ? fabs(cur_pt.x) : fabs(cur_pt.y);
         if(distsq > distance)
             distance = distsq;
     }
