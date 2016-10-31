@@ -3525,24 +3525,25 @@ class mop_air_balloon : public VehicleScript
         {
             me->GetMap()->LoadGrid(865.222f, 4986.84f); //voice
             me->GetMap()->LoadGrid(868.356f, 4631.19f); //head
-            // if (WorldObject* head = me->GetMap()->GetActiveObjectWithEntry(NPC_TURTLE_HEAD))
-            // {
-                // head->m_invisibilityDetect.AddFlag(INVISIBILITY_UNK5);
-                // head->m_invisibilityDetect.AddValue(INVISIBILITY_UNK5, 999);
-                // player->AddToExtraLook(head);
-                // headGUID = head->GetGUID();
-            // }else
+            if (WorldObject* head = me->GetMap()->GetActiveObjectWithEntry(NPC_TURTLE_HEAD))
+            {
+                head->m_invisibilityDetect.AddFlag(INVISIBILITY_UNK5);
+                head->m_invisibilityDetect.AddValue(INVISIBILITY_UNK5, 999);
+                player->AddToExtraLook(head);
+                headGUID = head->GetGUID();
+            }
+            else
             {
                 me->MonsterSay("SCRIPT::mop_air_balloon not find turtle heat entry 57769", LANG_UNIVERSAL, playerGuid);
                 player->ExitVehicle();
                 return;
             }
 
-            // if (WorldObject* shen = me->GetMap()->GetActiveObjectWithEntry(NPC_SHEN_ZI_SU))
-                // shenZiGUID = shen->GetGUID();
-            // else
+            if (WorldObject* shen = me->GetMap()->GetActiveObjectWithEntry(NPC_SHEN_ZI_SU))
+                shenZiGUID = shen->GetGUID();
+            else
             {
-                me->MonsterSay("SCRIPT::mop_air_balloon not find shen zi su entry 57769", LANG_UNIVERSAL, playerGuid);
+                me->MonsterSay("SCRIPT::mop_air_balloon not find shen zi su entry 56676", LANG_UNIVERSAL, playerGuid);
                 player->ExitVehicle();
                 return;
             }

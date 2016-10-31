@@ -560,6 +560,7 @@ class Map
         void DeleteRespawnTimes();
 
         static void DeleteRespawnTimesInDB(uint16 mapId, uint32 instanceId);
+        WorldObject* GetActiveObjectWithEntry(uint32 entry);    ///< Hard iteration of all active object on map
     private:
         void LoadMapAndVMap(int gx, int gy);
         void LoadVMap(int gx, int gy);
@@ -620,6 +621,7 @@ class Map
 
         typedef std::set<WorldObject*> ActiveNonPlayers;
         ActiveNonPlayers m_activeNonPlayers;
+        ActiveNonPlayers::iterator m_activeNonPlayersIter;
 
     private:
         Player* _GetScriptPlayerSourceOrTarget(Object* source, Object* target, const ScriptInfo* scriptInfo) const;

@@ -351,7 +351,8 @@ Map::Map(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode, Map* _par
 _creatureToMoveLock(false), i_mapEntry (sMapStore.LookupEntry(id)), i_spawnMode(SpawnMode), i_difficulty(SpawnMode), i_InstanceId(InstanceId),
 m_unloadTimer(0), m_VisibleDistance(DEFAULT_VISIBILITY_DISTANCE),
 m_VisibilityNotifyPeriod(DEFAULT_VISIBILITY_NOTIFY_PERIOD),
-i_gridExpiry(expiry), i_scriptLock(false), i_grids(), i_gridMaps()
+i_gridExpiry(expiry), i_scriptLock(false), i_grids(), i_gridMaps(),
+m_activeNonPlayersIter(m_activeNonPlayers.end())
 {
     m_parentMap = (_parent ? _parent : this);
 
@@ -3095,6 +3096,22 @@ uint32 Map::GetGridCount()
         count++;
 
     return count;
+}
+
+WorldObject* Map::GetActiveObjectWithEntry(uint32 entry)
+{
+    // non-player active objects, increasing iterator in the loop in case of object removal
+    for (m_activeNonPlayersIter = m_activeNonPlayers.begin(); m_activeNonPlayersIter != m_activeNonPlayers.end();)
+    {
+        WorldObject* obj = *m_activeNonPlayersIter;
+        ++m_activeNonPlayersIter;
+
+        if (!obj || !obj->IsInWorld() || obj->GetEntry() !=entry)
+            continue;
+
+        return obj;
+    }
+    return NULL;
 }
 
 void Map::UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* source)
