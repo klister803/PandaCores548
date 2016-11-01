@@ -3870,6 +3870,13 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 31224:  // Cloak of Shadows
+                    spellInfo->Effects[EFFECT_1]->TriggerSpell = 81549;
+                    break;
+                case 81549:  // Cloak of Shadows (Tr)
+                    spellInfo->AttributesEx |= SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY;
+                    spellInfo->Mechanic = MECHANIC_MAGICAL_IMMUNITY;
+                    break;
                 case 45438:  // Ice Block
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_IGNORE_HIT_RESULT;
                     break;
