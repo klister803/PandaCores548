@@ -1954,6 +1954,34 @@ public:
     }
 };
 
+//144287
+class spell_on_conveyor : public SpellScriptLoader
+{
+public:
+    spell_on_conveyor() : SpellScriptLoader("spell_on_conveyor") { }
+
+    class spell_on_conveyor_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_on_conveyor_AuraScript);
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetTarget())
+                GetTarget()->RemoveAurasDueToSpell(SPELL_MAGNETIC_CRASH_DMG);
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_on_conveyor_AuraScript::OnApply, EFFECT_0, SPELL_AURA_INTERFERE_TARGETTING, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_on_conveyor_AuraScript();
+    }
+};
+
 //9250, 9251, 9252, 9253, 9371, 9240, 9189, 9190, 9493, 9194, 9238, 9239, 
 class at_blackfuse_pipe : public AreaTriggerScript
 {
@@ -2036,5 +2064,6 @@ void AddSC_boss_siegecrafter_blackfuse()
     new spell_shockwave_missile();
     new spell_blacksue_cm_explose();
     new spell_shockwave_missiles_tm();
+    new spell_on_conveyor();
     new at_blackfuse_pipe();
 }

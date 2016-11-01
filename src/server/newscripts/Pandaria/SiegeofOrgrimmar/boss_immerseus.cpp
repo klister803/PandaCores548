@@ -715,9 +715,16 @@ public:
         void DoAction(int32 const action)
         {
             if (action == ACTION_MOVE)
+            {
                 if (me->ToTempSummon())
+                {
                     if (Unit* i = me->ToTempSummon()->GetSummoner())
+                    {
+                        me->RemoveAurasDueToSpell(SPELL_SHA_SPLASH_AT);
                         me->GetMotionMaster()->MoveCharge(i->GetPositionX(), i->GetPositionY(), i->GetPositionZ(), 4.0f, 0);
+                    }
+                }
+            }
         }
 
         void MovementInform(uint32 type, uint32 pointId)

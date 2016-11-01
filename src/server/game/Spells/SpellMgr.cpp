@@ -5256,6 +5256,11 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 144215: //Froststorm strike 
                     spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(13); //200yards
                     break;
+                case 144328: //Iron Tomb
+                case 144090: //Foul Stream
+                case 143990: //Foul Geyser
+                    spellInfo->AttributesEx2 &= ~SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
+                    break;
                 case 144334: //Iron Tomb dmg
                     spellInfo->Effects[0]->TargetA = TARGET_DEST_CASTER_FRONT;
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
