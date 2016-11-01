@@ -22571,16 +22571,10 @@ private:
 
 void Unit::OnRelocated()
 {
-    if (m_stealth.GetFlags())
-    {
-        UpdateObjectVisibility(true);
-        return;
-    }
-
     if (!m_lastVisibilityUpdPos.IsInDist(this, sWorld->GetVisibilityRelocationLowerLimit()))
     {
         m_lastVisibilityUpdPos = *this;
-        m_Events.AddEvent(new VisibilityUpdateTask(this, GetTypeId() == TYPEID_PLAYER), m_Events.CalculateTime(2000));
+        m_Events.AddEvent(new VisibilityUpdateTask(this, GetTypeId() == TYPEID_PLAYER), m_Events.CalculateTime(1));
     }
 
     AINotifyTask::Schedule(this);
@@ -22591,7 +22585,7 @@ void Unit::UpdateObjectVisibility(bool forced, float /*customRange*/)
     if (forced)
         VisibilityUpdateTask::UpdateVisibility(this);
     else
-        m_Events.AddEvent(new VisibilityUpdateTask(this, false), m_Events.CalculateTime(2000));
+        m_Events.AddEvent(new VisibilityUpdateTask(this, false), m_Events.CalculateTime(1));
 
     AINotifyTask::Schedule(this);
 }
