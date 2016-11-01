@@ -59,6 +59,7 @@ enum eCreatures
     NPC_LIVING_POISON           = 69313,
     NPC_FROZEN_ORB              = 69268,
     NPC_LIGHTNING_NOVA_TOTEM    = 69215,
+    NPC_GARAJAL_SOUL            = 69182,
 
     //Horridon adds
     //Farrak Gate
