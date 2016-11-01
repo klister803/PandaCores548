@@ -3739,14 +3739,7 @@ void WorldObject::UpdateObjectVisibility(bool /*forced*/, float customVisRange)
 {
     //updates object's visibility for nearby players
     Trinity::VisibleChangesNotifier notifier(*this);
-    if (Map* map = GetMap())
-        if (map->IsBattlegroundOrArena())
-        {
-            notifier.Visit(map);
-            return;
-        }
-
-    Trinity::VisitNearbyWorldObject(this, customVisRange ? customVisRange : CalcVisibilityRange(), notifier);
+    Trinity::VisitNearbyWorldObject(this, CalcVisibilityRange(), notifier);
 }
 
 struct WorldObjectChangeAccumulator
