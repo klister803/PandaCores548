@@ -1231,9 +1231,10 @@ public:
                             }
                             stalker->SetFacingTo(modang);
                             float x, y;
-                            GetPositionWithDistInOrientation(stalker, 53, modang, x, y);
+                            GetPositionWithDistInOrientation(stalker, 56, modang, x, y);
                             if (Creature* mt = blackfuse->SummonCreature(NPC_SHOCKWAVE_MISSILE, x, y, stalker->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
                             {
+                                mt->SetFacingToObject(stalker);
                                 DoCast(mt, SPELL_SHOCKWAVE_VISUAL_TURRET);
                                 modang -= 0.7f;
                                 missilecount++;
@@ -1246,10 +1247,10 @@ public:
                         else
                         {
                             float x, y;
-                            GetPosInRadiusWithRandomOrientation(stalker, 53.0f, x, y);
+                            GetPosInRadiusWithRandomOrientation(stalker, 56.0f, x, y);
                             if (Creature* mt = blackfuse->SummonCreature(NPC_SHOCKWAVE_MISSILE, x, y, stalker->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
                             {
-                                mt->SetFacingToObject(me);
+                                mt->SetFacingToObject(stalker);
                                 DoCast(mt, SPELL_SHOCKWAVE_VISUAL_TURRET);
                                 mt->AI()->SetGUID(me->GetGUID(), 1);
                             }

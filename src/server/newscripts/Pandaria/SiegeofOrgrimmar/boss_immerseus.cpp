@@ -50,6 +50,7 @@ enum eSpells
     SPELL_ACHIEV_CREDIT         = 145889,
     SPELL_SPLIT_C_PUDDLE_SUM_V  = 143024, //Visual dest pos contaminated puddle
     SPELL_SPLUT_S_PUDDLE_SUM_V  = 143022, //Visual dest pos sha puddle
+    SPELL_SPLIT_VISUAL          = 143020,
 };
 
 enum Events
