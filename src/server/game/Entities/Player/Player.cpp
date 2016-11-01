@@ -9798,7 +9798,7 @@ void Player::_ApplyOrRemoveItemEquipDependentAuras(uint64 itemGUID, bool apply)
 
 bool Player::CheckItemEquipDependentSpell(SpellInfo const* spellInfo, uint64 itemGUID)
 {
-    if (spellInfo->CheckShapeshift(GetShapeshiftForm()) != SPELL_CAST_OK)
+    if (spellInfo->CheckShapeshift(this) != SPELL_CAST_OK)
         return false;
 
     switch (spellInfo->EquippedItemClass)
@@ -9884,7 +9884,7 @@ void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply,
     if (apply)
     {
         // Cannot be used in this stance/form
-        if (spellInfo->CheckShapeshift(GetShapeshiftForm()) != SPELL_CAST_OK)
+        if (spellInfo->CheckShapeshift(this) != SPELL_CAST_OK)
             return;
 
         if (form_change)                                    // check aura active state from other form
@@ -9976,7 +9976,7 @@ void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply,
         if (form_change)                                     // check aura compatibility
         {
             // Cannot be used in this stance/form
-            if (spellInfo->CheckShapeshift(GetShapeshiftForm()) == SPELL_CAST_OK)
+            if (spellInfo->CheckShapeshift(this) == SPELL_CAST_OK)
                 return;                                     // and remove only not compatible at form change
         }
 

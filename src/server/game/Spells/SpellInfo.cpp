@@ -1768,8 +1768,9 @@ bool SpellInfo::IsAuraExclusiveBySpecificPerCasterWith(SpellInfo const* spellInf
     }
 }
 
-SpellCastResult SpellInfo::CheckShapeshift(uint32 form) const
+SpellCastResult SpellInfo::CheckShapeshift(Unit const* _caster) const
 {
+    uint32 form = _caster->GetShapeshiftForm();
     // talents that learn spells can have stance requirements that need ignore
     // (this requirement only for client-side stance show in talent description)
     if (/*GetTalentSpellCost(Id) > 0 &&*/
@@ -1800,7 +1801,10 @@ SpellCastResult SpellInfo::CheckShapeshift(uint32 form) const
     if (actAsShifted)
     {
         if (Attributes & SPELL_ATTR0_NOT_SHAPESHIFT) // not while shapeshifted
-            return SPELL_FAILED_NOT_SHAPESHIFT;
+        {
+            if (_caster->GetVehicleKit())
+                return SPELL_FAILED_NOT_SHAPESHIFT;
+        }
         else if (Stances != 0)                   // needs other shapeshift
             return SPELL_FAILED_ONLY_SHAPESHIFT;
     }

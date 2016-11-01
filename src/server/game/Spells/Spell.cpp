@@ -6819,10 +6819,9 @@ SpellCastResult Spell::CheckCast(bool strict)
         if (checkForm)
         {
             // Cannot be used in this stance/form
-            SpellCastResult shapeError = m_spellInfo->CheckShapeshift(m_caster->GetShapeshiftForm());
+            SpellCastResult shapeError = m_spellInfo->CheckShapeshift(m_caster);
             if (shapeError != SPELL_CAST_OK)
-                if (m_caster->GetVehicleKit()) //only vehiclekit block
-                    return shapeError;
+                return shapeError;
 
             if ((AttributesCustom & SPELL_ATTR0_ONLY_STEALTHED) && !(m_caster->HasStealthAura()))
                 return SPELL_FAILED_ONLY_STEALTHED;
