@@ -129,9 +129,9 @@ class Aura
         virtual void Remove(AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT) = 0;
 
         virtual void FillTargetMap(std::map<Unit*, uint32> & targets, Unit* caster) = 0;
-        void UpdateTargetMap(Unit* caster, bool apply = true);
+        void UpdateTargetMap(Unit* caster, bool apply = true, bool immuneCheck = false);
 
-        void _RegisterForTargets() {Unit* caster = GetCaster(); UpdateTargetMap(caster, false);}
+        void _RegisterForTargets(bool immuneCheck = false) { Unit* caster = GetCaster(); UpdateTargetMap(caster, false, immuneCheck); }
         void ApplyForTargets() {Unit* caster = GetCaster(); UpdateTargetMap(caster, true);}
         void _ApplyEffectForTargets(uint8 effIndex);
 

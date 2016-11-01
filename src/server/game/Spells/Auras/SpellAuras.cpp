@@ -850,7 +850,7 @@ void Aura::_Remove(AuraRemoveMode removeMode)
     }
 }
 
-void Aura::UpdateTargetMap(Unit* caster, bool apply)
+void Aura::UpdateTargetMap(Unit* caster, bool apply, bool immuneCheck)
 {
     if (IsRemoved())
         return;
@@ -917,7 +917,7 @@ void Aura::UpdateTargetMap(Unit* caster, bool apply)
                 itr->second &= ~(1 << effIndex);
         }
         if (!itr->second
-            || itr->first->IsImmunedToSpell(GetSpellInfo())
+            || (!immuneCheck && itr->first->IsImmunedToSpell(GetSpellInfo()))
             || !CanBeAppliedOn(itr->first))
             addUnit = false;
 

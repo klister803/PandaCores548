@@ -3089,7 +3089,7 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
         return SPELL_MISS_EVADE;
 
     // For delayed spells immunity may be applied between missile launch and hit - check immunity for that case
-    if (m_spellInfo->Speed && (unit->IsImmunedToDamage(m_spellInfo) || unit->IsImmunedToSpell(m_spellInfo)))
+    if (unit->IsImmunedToSpell(m_spellInfo) || (m_spellInfo->Speed && unit->IsImmunedToDamage(m_spellInfo)))
         return SPELL_MISS_IMMUNE;
 
     // disable effects to which unit is immune
@@ -3320,7 +3320,7 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
                         }
                     }
 
-                    m_spellAura->_RegisterForTargets();
+                    m_spellAura->_RegisterForTargets(true);
 
                     std::list<uint64> list_efftarget = GetEffectTargets();
                     if(!list_efftarget.empty())
