@@ -60,17 +60,16 @@ enum Events
     EVENT_SHA_BOLT              = 2,
     EVENT_SWIRL                 = 3,
     EVENT_INTRO_PHASE_TWO       = 4,
-    EVENT_SPAWN_WAVE            = 5,
     //HM
-    EVENT_SWELLING_CORRUPTION   = 6,
-    EVENT_SHA_POOL              = 7,
+    EVENT_SWELLING_CORRUPTION   = 5,
+    EVENT_SHA_POOL              = 6,
     //Summons
-    EVENT_START_MOVING          = 8,
-    EVENT_CHECK_DIST            = 9,
-    EVENT_RE_ATTACK             = 10,
-    EVENT_START_ROTATE          = 11,
-    EVENT_UPDATE_ROTATE         = 12,
-    EVENT_UPDATE_POINT          = 13,
+    EVENT_START_MOVING          = 7,
+    EVENT_CHECK_DIST            = 8,
+    EVENT_RE_ATTACK             = 11,
+    EVENT_START_ROTATE          = 12,
+    EVENT_UPDATE_ROTATE         = 13,
+    EVENT_UPDATE_POINT          = 14,
 };
 
 enum Actions
@@ -82,7 +81,8 @@ enum Actions
     ACTION_MOVE                 = 3,
     ACTION_RE_ATTACK_WITH_DELAY = 4,
     ACTION_LAUNCH_ROTATE        = 5,
-    ACTION_RE_ATTACK_SWIRL      = 6
+    ACTION_RE_ATTACK_SWIRL      = 6,
+    ACTION_SPAWN_WAVE           = 7,
 };
 
 enum SData
@@ -309,6 +309,7 @@ public:
             me->RemoveAurasDueToSpell(SPELL_SWIRL_AURA_DUMMY);
             me->RemoveAurasDueToSpell(SPELL_SHA_POOL);
             me->RemoveAurasDueToSpell(SPELL_BERSERK);
+            me->RemoveAurasDueToSpell(SPELL_SPLIT_VISUAL);
             me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
             me->RemoveAurasDueToSpell(SPELL_SUBMERGE_2);
             me->RemoveAurasDueToSpell(SPELL_SWELLING_CORRUPTION);
@@ -397,12 +398,11 @@ public:
                 damage = 0;
                 phase_two = true;
                 events.Reset();
-                events.ScheduleEvent(EVENT_SPAWN_WAVE, 5000);
                 me->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
                 me->SetAttackStop(false);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->RemoveAurasDueToSpell(SPELL_SWELLING_CORRUPTION);
-                me->AddAura(SPELL_SUBMERGE, me);
+                DoCast(me, SPELL_SPLIT_VISUAL);
                 me->SetFullHealth();
                 if (!shapoollist.empty())
                 {
@@ -420,6 +420,9 @@ public:
         {
             switch (action)
             {
+            case ACTION_SPAWN_WAVE:
+                SpawnWave();
+                break;
             case ACTION_RE_ATTACK_SWIRL:
                 if (!summons.empty())
                     summons.DespawnEntry(NPC_SWIRL_TARGET);
@@ -451,7 +454,7 @@ public:
                 lasthp = me->GetHealth();
                 lasthppct = me->GetHealthPct();
                 me->RemoveAurasDueToSpell(SPELL_SHA_POOL);
-                me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
+                me->RemoveAurasDueToSpell(SPELL_SPLIT_VISUAL);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->ReAttackWithZone();
                 phase_two = false;
@@ -552,9 +555,6 @@ public:
                     }
                     events.ScheduleEvent(EVENT_SWIRL, 48000);
                     break;
-                case EVENT_SPAWN_WAVE:
-                    SpawnWave();
-                    break;
                 case EVENT_RE_ATTACK:
                     me->ReAttackWithZone();
                     break;
@@ -604,7 +604,7 @@ public:
                     me->CastSpell(psp[n].GetPositionX(), psp[n].GetPositionY(), psp[n].GetPositionZ(), wave5[n] == NPC_CONTAMINATED_PUDDLE ? SPELL_SPLIT_C_PUDDLE_SUM_V : SPELL_SPLUT_S_PUDDLE_SUM_V, true);
             }
             if (me->GetMap()->IsHeroic())
-                events.ScheduleEvent(EVENT_SHA_POOL, 4000);
+                events.ScheduleEvent(EVENT_SHA_POOL, 6000);
             maxpcount = 0;
             donecp = 0;
             donesp = 0;
@@ -1360,6 +1360,35 @@ public:
     }
 };
 
+//143020
+class spell_split_visual : public SpellScriptLoader
+{
+public:
+    spell_split_visual() : SpellScriptLoader("spell_split_visual") { }
+    
+    class spell_split_visual_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_split_visual_SpellScript);
+
+        void HandleScript(SpellEffIndex effIndex)
+        {
+            if (GetCaster() && GetCaster()->ToCreature())
+                if (GetCaster()->isAlive() && GetCaster()->isInCombat())
+                    GetCaster()->ToCreature()->AI()->DoAction(ACTION_SPAWN_WAVE);
+        }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_split_visual_SpellScript::HandleScript, EFFECT_1, SPELL_EFFECT_SCRIPT_EFFECT);
+        }
+    };
+    
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_split_visual_SpellScript();
+    }
+};
+
 void AddSC_boss_immerseus()
 {
     new boss_immerseus();
@@ -1373,4 +1402,5 @@ void AddSC_boss_immerseus()
     new spell_sha_pool();
     new spell_sha_pool_p_s();
     new spell_corrosive_blast();
+    new spell_split_visual();
 }
