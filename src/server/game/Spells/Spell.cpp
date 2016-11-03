@@ -2535,11 +2535,8 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
     if (targetInfo.missCondition == SPELL_MISS_REFLECT)
     {
         // process reflect removal (not delayed)
-        if (!targetInfo.timeDelay)
-        {
-            DamageInfo dmgInfoProc = DamageInfo(m_caster, target, 1, m_spellInfo, m_spellInfo ? SpellSchoolMask(m_spellInfo->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE, targetInfo.damageBeforeHit);
-            m_caster->ProcDamageAndSpell(target, PROC_FLAG_NONE, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, PROC_EX_REFLECT, &dmgInfoProc, BASE_ATTACK, m_spellInfo);
-        }
+        DamageInfo dmgInfoProc = DamageInfo(m_caster, target, 1, m_spellInfo, m_spellInfo ? SpellSchoolMask(m_spellInfo->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE, targetInfo.damageBeforeHit);
+        m_caster->ProcDamageAndSpell(target, PROC_FLAG_NONE, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, PROC_EX_REFLECT, &dmgInfoProc, BASE_ATTACK, m_spellInfo);
 
         // Calculate reflected spell result on caster
         targetInfo.reflectResult = m_caster->SpellHitResult(m_caster, m_spellInfo, m_canReflect, effectMask);
@@ -3029,11 +3026,11 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     }
 
     // process reflect removal (delayed)
-    if (missInfo == SPELL_MISS_REFLECT && target->timeDelay)
-    {
-        DamageInfo dmgInfoProc = DamageInfo(m_caster, unit, 1, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE, target->damageBeforeHit);
-        caster->ProcDamageAndSpell(unit, procAttacker, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, procEx, &dmgInfoProc, BASE_ATTACK, m_spellInfo);
-    }
+//     if (missInfo == SPELL_MISS_REFLECT && target->timeDelay)
+//     {
+//         DamageInfo dmgInfoProc = DamageInfo(m_caster, unit, 1, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE, target->damageBeforeHit);
+//         caster->ProcDamageAndSpell(unit, procAttacker, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, procEx, &dmgInfoProc, BASE_ATTACK, m_spellInfo);
+//     }
 
     if (missInfo != SPELL_MISS_EVADE && m_caster->IsValidAttackTarget(unit) && (!m_spellInfo->IsPositive() || m_spellInfo->HasEffect(SPELL_EFFECT_DISPEL)))
     {
