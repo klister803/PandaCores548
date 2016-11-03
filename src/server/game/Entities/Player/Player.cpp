@@ -2226,16 +2226,24 @@ void Player::setDeathState(DeathState s)
     // restore resurrection spell id for player after aura remove
     if (s == JUST_DIED && cur && ressSpellId)
     {
-        if (InstanceScript* instance = GetInstanceScript())
+        if (SpellInfo const* rsInfo = sSpellMgr->GetSpellInfo(ressSpellId))
         {
-            if (instance->GetResurectSpell())
+            if (InstanceScript* instance = GetInstanceScript())
             {
-                SetUInt32Value(PLAYER_SELF_RES_SPELL, ressSpellId);
-                instance->SetResurectSpell();
+                if (rsInfo->AttributesEx8 & SPELL_ATTR8_BATTLE_RESURRECTION)
+                {
+                    if (instance->GetResurectSpell())
+                    {
+                        SetUInt32Value(PLAYER_SELF_RES_SPELL, ressSpellId);
+                        instance->SetResurectSpell();
+                    }
+                }
+                else
+                    SetUInt32Value(PLAYER_SELF_RES_SPELL, ressSpellId);
             }
+            else
+                SetUInt32Value(PLAYER_SELF_RES_SPELL, ressSpellId);
         }
-        else
-            SetUInt32Value(PLAYER_SELF_RES_SPELL, ressSpellId);
     }
 
     if (isAlive() && !cur)
@@ -23744,7 +23752,7 @@ bool Player::IsAffectedBySpellmod(SpellInfo const* spellInfo, SpellModifier* mod
 
 void Player::AddSpellMod(SpellModifier* mod, bool apply)
 {
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::AddSpellMod %d", mod->spellId);
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::AddSpellMod %d", mod->spellId);
     Opcodes opcode = Opcodes((mod->type == SPELLMOD_FLAT) ? SMSG_SET_FLAT_SPELL_MODIFIER : SMSG_SET_PCT_SPELL_MODIFIER);
 
     int i = 0;
@@ -27190,38 +27198,14 @@ void Player::RemoveItemDependentAurasAndCasts(Item* pItem)
 
 uint32 Player::GetResurrectionSpellId()
 {
-    // search priceless resurrection possibilities
-    uint32 prio = 0;
-    uint32 spell_id = 0;
-    AuraEffectList const& dummyAuras = GetAuraEffectsByType(SPELL_AURA_DUMMY);
-    for (AuraEffectList::const_iterator itr = dummyAuras.begin(); itr != dummyAuras.end(); ++itr)
-    {
-        // Soulstone Resurrection                           // prio: 3 (max, non death persistent)
-        if (prio < 2 && (*itr)->GetSpellInfo()->SpellVisual[0] == 99 && (*itr)->GetSpellInfo()->SpellIconID == 92)
-        {
-            switch ((*itr)->GetId())
-            {
-                case 20707: spell_id =  3026; break;        // rank 1
-                default:
-                    sLog->outError(LOG_FILTER_PLAYER, "Unhandled spell %u: S.Resurrection", (*itr)->GetId());
-                    continue;
-            }
+    if (HasAura(20707))
+        return 3026;
+    else if (HasAura(23701) && roll_chance_i(10))
+        return 23700;
+    else if (HasAura(20608) && !HasSpellCooldown(21169))
+        return 21169;
 
-            prio = 3;
-        }
-        // Twisting Nether                                  // prio: 2 (max)
-        else if ((*itr)->GetId() == 23701 && roll_chance_i(10))
-        {
-            prio = 2;
-            spell_id = 23700;
-        }
-    }
-
-    // Reincarnation (passive spell)  // prio: 1
-    if (prio < 1 && HasSpell(20608) && !HasSpellCooldown(21169))
-        spell_id = 21169;
-
-    return spell_id;
+    return NULL;
 }
 
 // Used in triggers for check "Only to targets that grant experience or honor" req
