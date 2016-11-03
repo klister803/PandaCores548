@@ -3897,6 +3897,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0]->MiscValue = 280;
                     spellInfo->Effects[EFFECT_0]->BasePoints = 75;
                     break;
+                case 114028: // Mass Spell Reflection
+                case 23920:  // Spell Reflection
                 case 8178:   // Grounding Totem
                 case 130493: // Nightstalker
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_REMOVE_AFTER_DELAY;
