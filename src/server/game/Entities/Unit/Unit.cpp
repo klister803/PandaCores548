@@ -1538,7 +1538,7 @@ void Unit::CalculateMeleeDamage(Unit* victim, float damage, CalcDamageInfo* dama
         damageInfo->damage = damage;
 
     if (Unit* owner = GetAnyOwner()) //For pets chance calc from owner
-        damageInfo->hitOutCome = owner->RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType);
+        damageInfo->hitOutCome = owner->RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType, false);
     else
         damageInfo->hitOutCome = RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType);
 
@@ -2440,13 +2440,13 @@ void Unit::HandleProcExtraAttackFor(Unit* victim)
     }
 }
 
-MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackType attType) const
+MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackType attType, bool checkHitPenalty) const
 {
     // This is only wrapper
 
     // Miss chance based on melee
     //float miss_chance = MeleeMissChanceCalc(victim, attType);
-    float miss_chance = MeleeSpellMissChance(victim, attType, 0);
+    float miss_chance = MeleeSpellMissChance(victim, attType, 0, checkHitPenalty);
 
     // Critical hit chance
     float crit_chance = GetUnitCriticalChance(attType, victim);
@@ -22320,7 +22320,7 @@ void Unit::ApplyResilience(Unit const* victim, float* damage, bool isCrit) const
 
 // Melee based spells can be miss, parry or dodge on this step
 // Crit or block - determined on damage calculation phase! (and can be both in some time)
-float Unit::MeleeSpellMissChance(const Unit* victim, WeaponAttackType attType, uint32 spellId) const
+float Unit::MeleeSpellMissChance(const Unit* victim, WeaponAttackType attType, uint32 spellId, bool checkHitPenalty) const
 {
     //calculate miss chance
     float missChance = victim->GetUnitMissChance(attType);

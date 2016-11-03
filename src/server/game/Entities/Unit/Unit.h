@@ -1644,7 +1644,7 @@ class Unit : public WorldObject
 
         void ApplyResilience(const Unit* victim, float * damage, bool isCrit) const;
 
-        float MeleeSpellMissChance(const Unit* victim, WeaponAttackType attType, uint32 spellId) const;
+        float MeleeSpellMissChance(const Unit* victim, WeaponAttackType attType, uint32 spellId, bool checkHitPenalty = true) const;
         SpellMissInfo MeleeSpellHitResult(Unit* victim, SpellInfo const* spell);
         SpellMissInfo MagicSpellHitResult(Unit* victim, SpellInfo const* spell);
         SpellMissInfo SpellHitResult(Unit* victim, SpellInfo const* spell, bool canReflect = false, uint32 effectMask = 0);
@@ -1672,7 +1672,7 @@ class Unit : public WorldObject
         float GetWeaponProcChance() const;
         float GetPPMProcChance(uint32 WeaponSpeed, float PPM, const SpellInfo* spellProto) const;
 
-        MeleeHitOutcome RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackType attType) const;
+        MeleeHitOutcome RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackType attType, bool checkHitPenalty = true) const;
         MeleeHitOutcome RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackType attType, int32 crit_chance, int32 miss_chance, int32 dodge_chance, int32 parry_chance, int32 block_chance) const;
 
         bool isVendor()       const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_VENDOR); }
