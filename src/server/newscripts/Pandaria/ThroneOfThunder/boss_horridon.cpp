@@ -856,6 +856,12 @@ public:
             }
         }
 
+        void IsSummonedBy(Unit* summoner)
+        {
+            if (me->GetEntry() == NPC_VENOMOUS_EFFUSION)
+                DoAction(ACTION_ENTERCOMBAT);
+        }
+
         void SetData(uint32 type, uint32 data)
         {
             if (type == DATA_SEND_DEST_POS)
@@ -943,6 +949,7 @@ public:
                 break;
             //Gurubashi
             case NPC_GURUBASHI_VENOM_PRIEST:
+            case NPC_VENOMOUS_EFFUSION:
                 events.ScheduleEvent(EVENT_VENOM_BOLT_VOLLEY, 10000);
                 events.ScheduleEvent(EVENT_VENOMOUS_EFFUSION, 20000);
                 break;
@@ -1535,13 +1542,8 @@ public:
         void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
         {
             if (GetTarget() && GetTarget()->ToCreature())
-            {
                 if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
-                {
-                    GetTarget()->RemoveAurasDueToSpell(SPELL_CRACKED_SHELL);
                     GetTarget()->ToCreature()->AI()->DoAction(ACTION_NEW_PHASE);
-                }
-            }
         }
 
         void Register()
