@@ -22336,8 +22336,8 @@ float Unit::MeleeSpellMissChance(const Unit* victim, WeaponAttackType attType, u
     missChance += 1.5f * level_diff;
 
 
-    if (!spellId && haveOffhandWeapon())
-        missChance += 19;
+    if (checkHitPenalty && !spellId && haveOffhandWeapon())
+        missChance += 20;
 
     // Calculate hit chance
     float hitChance = 100.0f;
