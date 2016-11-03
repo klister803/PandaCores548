@@ -230,12 +230,7 @@ class InstanceScript : public ZoneScript
         // Returns completed encounters mask for packets
         uint32 GetCompletedEncounterMask() const { return completedEncounters; }
 
-        void SetResurectSpell()
-        {
-            ResurectCount++;
-            if (!GetResurectSpell())
-                RemoveSelfResFieldFromPlayers();
-        }
+        void SetResurectSpell() { ResurectCount++; }
 
         bool GetResurectSpell()
         {
