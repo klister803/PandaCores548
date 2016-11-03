@@ -1520,7 +1520,10 @@ void Object::ApplyModPositiveFloatValue(uint16 index, float  val, bool apply)
 
 void Object::SetFlag(uint16 index, uint32 newFlag)
 {
-    ASSERT(index < m_valuesCount || PrintIndexError(index, true));
+    // ASSERT(index < m_valuesCount || PrintIndexError(index, true));
+    if(!(index < m_valuesCount || PrintIndexError(index , true)))
+        return;
+
     uint32 oldval = m_uint32Values[index];
     uint32 newval = oldval | newFlag;
 

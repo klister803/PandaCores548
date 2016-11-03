@@ -2271,7 +2271,7 @@ class spell_mage_glyph_of_icy_veins : public SpellScriptLoader
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_mage_glyph_of_icy_veins_SpellScript::HandleOnHit);
+                BeforeHit += SpellHitFn(spell_mage_glyph_of_icy_veins_SpellScript::HandleOnHit);
             }
         };
 
