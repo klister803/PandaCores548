@@ -3870,6 +3870,33 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 115696: // D/W Swords
+                    spellInfo->Attributes |= SPELL_ATTR0_PASSIVE;
+                    spellInfo->EquippedItemClass = 2;
+                    spellInfo->EquippedItemSubClassMask = (1 << ITEM_SUBCLASS_WEAPON_SWORD);
+                    break;
+                case 108561: // 2H Staff Override
+                    spellInfo->Attributes |= SPELL_ATTR0_PASSIVE;
+                    spellInfo->EquippedItemClass = 2;
+                    spellInfo->EquippedItemSubClassMask = (1 << ITEM_SUBCLASS_WEAPON_STAFF);
+                    spellInfo->EquippedItemInventoryTypeMask = 0;
+                    break;
+                case 115697: // 2H Polearm Override
+                    spellInfo->Attributes |= SPELL_ATTR0_PASSIVE;
+                    spellInfo->EquippedItemClass = 2;
+                    spellInfo->EquippedItemSubClassMask = (1 << ITEM_SUBCLASS_WEAPON_POLEARM);
+                    spellInfo->EquippedItemInventoryTypeMask = 0;
+                    break;
+                case 115689: // D/W Axes
+                    spellInfo->Attributes |= SPELL_ATTR0_PASSIVE;
+                    spellInfo->EquippedItemClass = 2;
+                    spellInfo->EquippedItemSubClassMask = (1 << ITEM_SUBCLASS_WEAPON_AXE);
+                    break;
+                case 115694: // D/W Maces
+                    spellInfo->Attributes |= SPELL_ATTR0_PASSIVE;
+                    spellInfo->EquippedItemClass = 2;
+                    spellInfo->EquippedItemSubClassMask = (1 << ITEM_SUBCLASS_WEAPON_MACE);
+                    break;
                 case 31224:  // Cloak of Shadows
                     spellInfo->Effects[EFFECT_1]->TriggerSpell = 81549;
                     break;

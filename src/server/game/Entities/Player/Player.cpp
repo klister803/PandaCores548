@@ -13986,47 +13986,7 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
     UpdateAchievementCriteria(CRITERIA_TYPE_EQUIP_ITEM, pItem->GetEntry());
     UpdateAchievementCriteria(CRITERIA_TYPE_EQUIP_EPIC_ITEM, pItem->GetEntry(), slot);
 
-    // Custom MoP script
-    // Jab Override Driver
-    if (GetTypeId() == TYPEID_PLAYER && getClass() == CLASS_MONK)
-    {
-        Item* mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
 
-        if (mainItem && mainItem->GetTemplate()->Class == ITEM_CLASS_WEAPON)
-        {
-            RemoveAura(108561); // 2H Staff Override
-            RemoveAura(115697); // 2H Polearm Override
-            RemoveAura(115689); // D/W Axes
-            RemoveAura(115694); // D/W Maces
-            RemoveAura(115696); // D/W Swords
-
-            uint32 spellId = 0;
-            switch (mainItem->GetTemplate()->SubClass)
-            {
-                case ITEM_SUBCLASS_WEAPON_STAFF:
-                    spellId = 108561;
-                    break;
-                case ITEM_SUBCLASS_WEAPON_POLEARM:
-                    spellId = 115697;
-                    break;
-                case ITEM_SUBCLASS_WEAPON_AXE:
-                    spellId = 115689;
-                    break;
-                case ITEM_SUBCLASS_WEAPON_MACE:
-                    spellId = 115694;
-                    break;
-                case ITEM_SUBCLASS_WEAPON_SWORD:
-                    spellId = 115696;
-                    break;
-                default:
-                    break;
-            }
-            if (HasAura(125660)) // Glyph of Jab
-                spellId = 108561;
-            if (spellId)
-                CastSpell(this, spellId, true);
-        }
-    }
     // Way of the Monk - 120277
     if (GetTypeId() == TYPEID_PLAYER)
     {
@@ -14955,47 +14915,6 @@ void Player::SwapItem(uint16 src, uint16 dst)
             AutoUnequipOffhandIfNeed();
         }
 
-        // Custom MoP script
-        // Jab Override Driver
-        if (GetTypeId() == TYPEID_PLAYER && getClass() == CLASS_MONK)
-        {
-            Item* mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-
-            if (mainItem && mainItem->GetTemplate()->Class == ITEM_CLASS_WEAPON)
-            {
-                RemoveAura(108561); // 2H Staff Override
-                RemoveAura(115697); // 2H Polearm Override
-                RemoveAura(115689); // D/W Axes
-                RemoveAura(115694); // D/W Maces
-                RemoveAura(115696); // D/W Swords
-
-                uint32 spellId = 0;
-                switch (mainItem->GetTemplate()->SubClass)
-                {
-                    case ITEM_SUBCLASS_WEAPON_STAFF:
-                        spellId = 108561;
-                        break;
-                    case ITEM_SUBCLASS_WEAPON_POLEARM:
-                        spellId = 115697;
-                        break;
-                    case ITEM_SUBCLASS_WEAPON_AXE:
-                        spellId = 115689;
-                        break;
-                    case ITEM_SUBCLASS_WEAPON_MACE:
-                        spellId = 115694;
-                        break;
-                    case ITEM_SUBCLASS_WEAPON_SWORD:
-                        spellId = 115696;
-                        break;
-                    default:
-                        break;
-                }
-            if (HasAura(125660)) // Glyph of Jab
-                spellId = 108561;
-            if (spellId)
-                CastSpell(this, spellId, true);
-            }
-        }
         return;
     }
 
