@@ -2127,6 +2127,93 @@ class spell_monk_remove_zen_flight : public SpellScriptLoader
         }
 };
 
+// Glyph of Jab 125660
+class spell_monk_glyph_of_jab : public SpellScriptLoader
+{
+public:
+    spell_monk_glyph_of_jab() : SpellScriptLoader("spell_monk_glyph_of_jab") { }
+
+    class spell_monk_glyph_of_jab_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_monk_glyph_of_jab_AuraScript);
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (Unit* owner = GetUnitOwner())
+            {
+                if (Aura* aura = owner->GetAura(115696))
+                {
+                    if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
+                        eff->SetAmount(0);
+                }
+                else if (Aura* aura = owner->GetAura(108561))
+                {
+                    if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
+                        eff->SetAmount(0);
+                }
+                else if (Aura* aura = owner->GetAura(115697))
+                {
+                    if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
+                        eff->SetAmount(0);
+                }
+                else if (Aura* aura = owner->GetAura(115694))
+                {
+                    if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
+                        eff->SetAmount(0);
+                }
+                else if (Aura* aura = owner->GetAura(115689))
+                {
+                    if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
+                        eff->SetAmount(0);
+                }
+            }
+        }
+
+        void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (Unit* owner = GetUnitOwner())
+            {
+                if (Aura* aura = owner->GetAura(115696))
+                {
+                    if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
+                        eff->SetAmount(eff->GetBaseAmount());
+                }
+                else if (Aura* aura = owner->GetAura(108561))
+                {
+                    if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
+                        eff->SetAmount(eff->GetBaseAmount());
+                }
+                else if (Aura* aura = owner->GetAura(115697))
+                {
+                    if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
+                        eff->SetAmount(eff->GetBaseAmount());
+                }
+                else if (Aura* aura = owner->GetAura(115694))
+                {
+                    if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
+                        eff->SetAmount(eff->GetBaseAmount());
+                }
+                else if (Aura* aura = owner->GetAura(115689))
+                {
+                    if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
+                        eff->SetAmount(eff->GetBaseAmount());
+                }
+            }
+        }
+
+        void Register()
+        {
+            AfterEffectApply += AuraEffectApplyFn(spell_monk_glyph_of_jab_AuraScript::OnApply, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            AfterEffectRemove += AuraEffectRemoveFn(spell_monk_glyph_of_jab_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_monk_glyph_of_jab_AuraScript();
+    }
+};
+
 // Spinning Crane Kick - 107270, 148187
 class spell_monk_spinning_crane_kick : public SpellScriptLoader
 {
@@ -3532,4 +3619,5 @@ void AddSC_monk_spell_scripts()
     new spell_monk_purified_healing();
     new spell_monk_grapple_weapon();
     new spell_monk_transcendence_clone_visual();
+    new spell_monk_glyph_of_jab();
 }
