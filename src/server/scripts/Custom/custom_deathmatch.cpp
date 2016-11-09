@@ -101,7 +101,7 @@ class starter_deathmatch : public CreatureScript  //900000
                     
                     player->ADD_GOSSIP_ITEM(5, str1.str(), GOSSIP_SENDER_MAIN, 4);
                     player->ADD_GOSSIP_ITEM(5, sObjectMgr->GetTrinityString(30019, loc_idx), GOSSIP_SENDER_MAIN, 4);
-                    player->SEND_GOSSIP_MENU(100004, creature->GetGUID());
+                    player->SEND_GOSSIP_MENU(100003, creature->GetGUID());
                 }
                 break;
             
