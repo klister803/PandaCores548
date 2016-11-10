@@ -4945,6 +4945,12 @@ void SpellMgr::LoadSpellCustomAttr()
                         if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
                             eff->TargetB = TARGET_UNIT_SRC_AREA_ALLY;
                     break;
+                //Council of elders
+                case 136467: //Lindering Presence
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                            eff->TargetA = TARGET_UNIT_TARGET_ANY;
+                    break;
                 //Kazrajin
                 case 137122: //Reckless charge (point dmg)
                 {

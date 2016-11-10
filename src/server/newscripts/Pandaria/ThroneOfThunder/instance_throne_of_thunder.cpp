@@ -79,6 +79,7 @@ public:
         uint64 marliGuid;
         uint64 kazrajinGuid;
         uint64 sulGuid;
+        uint64 garajalsoulGuid;
         uint64 tortosGuid;
         uint64 flameheadGuid;
         uint64 frozenheadGuid;
@@ -146,6 +147,7 @@ public:
             marliGuid             = 0;
             kazrajinGuid          = 0;
             sulGuid               = 0;
+            garajalsoulGuid       = 0;
             tortosGuid            = 0;
             flameheadGuid         = 0;
             frozenheadGuid        = 0;
@@ -211,6 +213,9 @@ public:
             case NPC_SUL_SANDCRAWLER: 
                 sulGuid = creature->GetGUID();
                 councilGuids.push_back(creature->GetGUID());
+                break;
+            case NPC_GARAJAL_SOUL:
+                garajalsoulGuid = creature->GetGUID();
                 break;
             //
             case NPC_TORTOS: 
@@ -462,37 +467,10 @@ public:
                     switch (state)
                     {
                     case NOT_STARTED:
-                        //Reset all council
-                        for (std::vector<uint64>::const_iterator guid = councilGuids.begin(); guid != councilGuids.end(); guid++)
-                        {
-                            if (Creature* council = instance->GetCreature(*guid))
-                            {
-                                if (council->isAlive() && council->isInCombat())
-                                    council->AI()->EnterEvadeMode();
-                                else if (!council->isAlive())
-                                {
-                                    council->Respawn();
-                                    council->GetMotionMaster()->MoveTargetedHome();
-                                }
-                                SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, council);
-                            }
-                        }
-
                         for (std::vector <uint64>::const_iterator guids = councilentdoorGuids.begin(); guids != councilentdoorGuids.end(); guids++)
                             HandleGameObject(*guids, true);
                         break;
                     case IN_PROGRESS:
-                        //Call all council 
-                        for (std::vector<uint64>::const_iterator guid = councilGuids.begin(); guid != councilGuids.end(); guid++)
-                        {
-                            if (Creature* council = instance->GetCreature(*guid))
-                            {
-                                if (council->isAlive() && !council->isInCombat())
-                                    council->AI()->DoZoneInCombat(council, 150.0f);
-                                SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, council);
-                            }
-                        }
-
                         for (std::vector <uint64>::const_iterator guids = councilentdoorGuids.begin(); guids != councilentdoorGuids.end(); guids++)
                             HandleGameObject(*guids, false);
                         break;
@@ -715,6 +693,29 @@ public:
             return 0;
         }
 
+        void CreatureDies(Creature* creature, Unit* /*killer*/)
+        {
+            switch (creature->GetEntry())
+            {
+            case NPC_FROST_KING_MALAKK:
+            case NPC_PRINCESS_MARLI:
+            case NPC_KAZRAJIN:
+            case NPC_SUL_SANDCRAWLER:
+                if (!councilGuids.empty())
+                {
+                    for (std::vector<uint64>::const_iterator itr = councilGuids.begin(); itr != councilGuids.end(); itr++)
+                        if (Creature* council = instance->GetCreature(*itr))
+                            if (council->isAlive())
+                                return;
+
+                    SetBossState(DATA_COUNCIL_OF_ELDERS, DONE);
+                }
+                break;
+            default:
+                break;
+            }
+        }
+
         uint64 GetData64(uint32 type)
         {
             switch (type)
@@ -744,6 +745,8 @@ public:
                 return kazrajinGuid;
             case NPC_SUL_SANDCRAWLER: 
                 return sulGuid;
+            case NPC_GARAJAL_SOUL:
+                return garajalsoulGuid;
             //
             case NPC_TORTOS: 
                 return tortosGuid;
