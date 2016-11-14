@@ -29,18 +29,30 @@ enum eSpells
     //Sul
     SPELL_SAND_BOLT          = 136189,
     SPELL_QUICK_SAND_VISUAL  = 136851,
+    SPELL_B_LOA_SPIRIT_P_SUM = 137203,
+    SPELL_B_LOA_SPIRIT_SUM   = 137200,
+    SPELL_BLESSED_GIFT       = 137303,
+    SPELL_D_LOA_SPIRIT_P_SUM = 137350,
+    SPELL_D_LOA_SPIRIT_SUM   = 137351,
+    SPELL_SANDSTORM          = 136894,
     //Marli
     SPELL_WRATH_OF_THE_LOA   = 137344,
+    SPELL_D_WRATH_OF_THE_LOA = 137347,
     //Kazrajin
     SPELL_R_CHARGE_DMG       = 137133,
     SPELL_R_CHARGE_POINT_T   = 138026,
     SPELL_R_CHARGE_VISUAL    = 137117,
     SPELL_R_CHARGE_POINT_DMG = 137122,
+    SPELL_K_OVERLOAD_AURA    = 137149,
 
-    SPELL_LINGERING_PRESENCE = 136467, //after soul gone
+    SPELL_LINGERING_PRESENCE = 136467,
     SPELL_DARK_POWER         = 136507,
     SPELL_POSSESSED          = 136442,
     SPELL_GARAJAL_SOUL_V     = 136423,
+
+    //Dark loa
+    SPELL_MARKED_SOUL        = 137359,
+    SPELL_DARK_EXPLOSE       = 137390,
 };
 
 enum SsAction
@@ -57,17 +69,29 @@ enum eEvents
     EVENT_FRIGIT_ASSAULT     = 2,
     //Sul
     EVENT_SAND_BOLT          = 3,
+    EVENT_SUM_LOA_SPIRIT     = 4,
     //Kazrajin
-    EVENT_R_CHARGE           = 4,
-    EVENT_MOVING             = 5,
+    EVENT_R_CHARGE           = 5,
+    EVENT_MOVING             = 6,
+    EVENT_FIND_LOWHP_COUNCIL = 7,
+    EVENT_CHECK_COUNCIL      = 8,
+    EVENT_FIND_PLAYER        = 9,
+    EVENT_CHECK_DISTANCE     = 10,
 };
 
 //Spells summon loa spirit
-uint32 spell_loa_spirit[3] =
+uint32 blessed_loa_spirit[3] =
 {
     137200,
     137201,
     137202,
+};
+
+uint32 dark_loa_spirit[3] =
+{
+    137351,
+    137352,
+    137353,
 };
 
 uint32 councilentry[4] =
@@ -105,7 +129,10 @@ struct council_of_eldersAI : public ScriptedAI
             }
         }
         if (instance->GetBossState(DATA_COUNCIL_OF_ELDERS != NOT_STARTED))
+        {
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MARKED_SOUL);
             instance->SetBossState(DATA_COUNCIL_OF_ELDERS, NOT_STARTED);
+        }
     }
 
     void CouncilsEnterCombat()
@@ -135,6 +162,8 @@ public:
         Position chargepos;
         EventMap events;
         uint32 donehppct;
+        uint32 timerpower;
+        uint32 actualtimer;
 
         void Reset()
         {
@@ -143,6 +172,7 @@ public:
             //RemovePassenger(true);
             events.Reset();
             me->RemoveAurasDueToSpell(SPELL_R_CHARGE_VISUAL);
+            me->RemoveAurasDueToSpell(SPELL_K_OVERLOAD_AURA);
             if (me->GetEntry() == NPC_KAZRAJIN)
                 me->SetReactState(REACT_PASSIVE);
             else
@@ -152,6 +182,8 @@ public:
             me->setPowerType(POWER_ENERGY);
             me->SetPower(POWER_ENERGY, 0);
             donehppct = 100; //default value
+            timerpower = 0;
+            actualtimer = 0;
         }
 
         void RemovePassenger(bool action)
@@ -185,14 +217,14 @@ public:
 
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
-            /*if (donehppct < 100)
+            if (donehppct < 100)
             {
                 if (HealthBelowPct(donehppct))
                 {
                     donehppct = 100;
                     RemovePassenger(false);
                 }
-            }*/
+            }
         }
 
         void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
@@ -201,14 +233,22 @@ public:
             {
                 donehppct = uint32(me->GetHealthPct()) - 25 < 0 ? 1 : uint32(me->GetHealthPct() - 25);
                 DoCast(me, SPELL_POSSESSED, true);
-                //Create special events
+                if (me->HasAura(SPELL_LINGERING_PRESENCE))
+                {
+                    uint8 stack = me->GetAura(SPELL_LINGERING_PRESENCE)->GetStackAmount();
+                    timerpower = 670 - (67 * stack);
+                }
+                else
+                    timerpower = 670;
+                actualtimer = timerpower;
             }
             else
             {
                 me->RemoveAurasDueToSpell(SPELL_POSSESSED);
                 me->SetPower(POWER_ENERGY, 0);
                 DoCast(me, SPELL_LINGERING_PRESENCE, true);
-                //Offline special events
+                timerpower = 0;
+                actualtimer = 0;
             }
         }
 
@@ -253,6 +293,13 @@ public:
                 {
                     me->RemoveAurasDueToSpell(SPELL_R_CHARGE_VISUAL);
                     DoCastAOE(SPELL_R_CHARGE_POINT_DMG);
+                    if (me->HasAura(SPELL_POSSESSED))
+                    {
+                        me->AddAura(SPELL_K_OVERLOAD_AURA, me);
+                        events.ScheduleEvent(EVENT_R_CHARGE, 23000);
+                    }
+                    else
+                        events.ScheduleEvent(EVENT_R_CHARGE, 3000);
                 }
             }
         }
@@ -261,6 +308,23 @@ public:
         {
             if (!UpdateVictim())
                 return;
+
+            if (timerpower)
+            {
+                if (timerpower <= diff)
+                {
+                    if (me->GetPower(POWER_ENERGY) < 100)
+                    {
+                        me->SetPower(POWER_ENERGY, me->GetPower(POWER_ENERGY) + 1);
+                        if (me->GetPower(POWER_ENERGY) == 100)
+                            timerpower = 0;
+                        else
+                            timerpower = actualtimer;
+                    }
+                }
+                else
+                    timerpower -= diff;
+            }
 
             events.Update(diff);
 
@@ -289,21 +353,25 @@ public:
                     break;
                 //Kazrajin
                 case EVENT_R_CHARGE:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 80.0f, true))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 80.0f, true))
                     {
                         me->SetFacingToObject(target);
                         target->GetPosition(&chargepos);
                         target->CastSpell(target, SPELL_R_CHARGE_POINT_T);
                         DoCast(me, SPELL_R_CHARGE_VISUAL);
                     }
-                    events.ScheduleEvent(EVENT_R_CHARGE, 6000);
                     break;
                 }
             }
             if (me->GetEntry() != NPC_PRINCESS_MARLI)
                 DoMeleeAttackIfReady();
             else
-                DoSpellAttackIfReady(SPELL_WRATH_OF_THE_LOA);
+            {
+                if (me->HasAura(SPELL_POSSESSED))
+                    DoSpellAttackIfReady(SPELL_D_WRATH_OF_THE_LOA);
+                else
+                    DoSpellAttackIfReady(SPELL_WRATH_OF_THE_LOA);
+            }
         }
     };
 
@@ -393,12 +461,26 @@ public:
                         std::advance(Itr, urand(0, councillistGuids.size() - 1));
                         if (Creature* council = me->GetCreature(*me, *Itr))
                             councilcount = GetCouncilCount(council->GetEntry());
+
+                        if (Creature* council = me->GetCreature(*me, instance->GetData64(councilentry[councilcount])))
+                        {
+                            lastcouncil = council->GetEntry();
+                            me->GetMotionMaster()->MoveCharge(council->GetPositionX(), council->GetPositionY(), council->GetPositionZ(), 10.0f, 1);
+                        }
                     }
                 }
-                if (Creature* council = me->GetCreature(*me, instance->GetData64(councilentry[councilcount])))
+                else
                 {
-                    lastcouncil = council->GetEntry();
-                    me->GetMotionMaster()->MoveCharge(council->GetPositionX(), council->GetPositionY(), council->GetPositionZ(), 10.0f, 1);
+                    for (uint8 b = councilcount; b < 4; b++)
+                    {
+                        if (Creature* council = me->FindNearestCreature(councilentry[b], 200.0f, true))
+                        {
+                            councilcount = b;
+                            lastcouncil = council->GetEntry();
+                            me->GetMotionMaster()->MoveCharge(council->GetPositionX(), council->GetPositionY(), council->GetPositionZ(), 10.0f, 1);
+                            break;
+                        }
+                    }
                 }
                 events.ScheduleEvent(EVENT_MOVING, 1000);
                 break;
@@ -458,6 +540,217 @@ public:
     }
 };
 
+//69480, 69491, 69492; 69548, 69553, 69556
+class npc_loa_spirit : public CreatureScript
+{
+public:
+    npc_loa_spirit() : CreatureScript("npc_loa_spirit") {}
+
+    struct npc_loa_spiritAI : public ScriptedAI
+    {
+        npc_loa_spiritAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
+        }
+        InstanceScript* instance;
+        EventMap events;
+        uint64 councilGuid;
+        uint64 targetGuid;
+        uint32 checktarget;
+        bool done;
+
+        void Reset()
+        {
+            councilGuid = 0;
+            targetGuid = 0;
+            done = false;
+            switch (me->GetEntry())
+            {
+            //go to low hp boss
+            case NPC_BLESSED_LOA_SPIRIT:
+            case NPC_BLESSED_LOA_SPIRIT_2:
+            case NPC_BLESSED_LOA_SPIRIT_3:
+                events.ScheduleEvent(EVENT_FIND_LOWHP_COUNCIL, 500);
+                break;
+            //go to player
+            case NPC_DARK_LOA_SPIRIT:
+            case NPC_DARK_LOA_SPIRIT_2:
+            case NPC_DARK_LOA_SPIRIT_3:
+                events.ScheduleEvent(EVENT_FIND_PLAYER, 500);
+                break;
+            }
+        }
+
+        void FindAndStartPursuitPlayer()
+        {
+            if (me->ToTempSummon())
+            {
+                if (Unit* council = me->ToTempSummon()->GetSummoner())
+                {
+                    if (council->ToCreature() && council->ToCreature()->AI())
+                    {
+                        if (Unit* target = council->ToCreature()->AI()->SelectTarget(SELECT_TARGET_FARTHEST, 0.0f, 100.0f, true))
+                        {
+                            targetGuid = target->GetGUID();
+                            DoCast(target, SPELL_MARKED_SOUL, true);
+                            me->AddThreat(target, 50000000.0f);
+                            me->SetReactState(REACT_AGGRESSIVE);
+                            me->TauntApply(target);
+                        }
+                    }
+                }
+            }
+            events.ScheduleEvent(EVENT_CHECK_DISTANCE, 1000);
+        }
+
+        uint64 GetLowestHpCouncil()
+        {
+            std::list<Creature*> councillist;
+            councillist.clear();
+            float lasthppct = 100;
+            for (uint8 n = 0; n < 4; n++)
+                if (Creature* council = me->FindNearestCreature(councilentry[n], 150.0f, true))
+                    councillist.push_back(council);
+
+            if (!councillist.empty())
+            {
+                for (std::list<Creature*>::const_iterator itr = councillist.begin(); itr != councillist.end(); itr++)
+                    if ((*itr)->GetHealthPct() < lasthppct)
+                        lasthppct = (*itr)->GetHealthPct();
+
+                for (std::list<Creature*>::const_iterator itr = councillist.begin(); itr != councillist.end(); itr++)
+                    if ((*itr)->GetHealthPct() <= lasthppct)
+                        return ((*itr)->GetGUID());
+            }
+            return 0;
+        }
+
+        void CheckCouncil()
+        {
+            if (Creature* council = me->GetCreature(*me, councilGuid))
+            {
+                if (council->isAlive())
+                {
+                    me->GetMotionMaster()->Clear(false);
+                    me->GetMotionMaster()->MoveCharge(council->GetPositionX(), council->GetPositionY(), council->GetPositionZ(), 4.0f, 0);
+                    events.ScheduleEvent(EVENT_CHECK_COUNCIL, 1000);
+                    return;
+                }
+            }
+            me->StopMoving();
+            me->GetMotionMaster()->Clear(false);
+            events.ScheduleEvent(EVENT_FIND_LOWHP_COUNCIL, 1000);
+        }
+
+        void JustDied(Unit* killer)
+        {
+            switch (me->GetEntry())
+            {
+            case NPC_DARK_LOA_SPIRIT:
+            case NPC_DARK_LOA_SPIRIT_2:
+            case NPC_DARK_LOA_SPIRIT_3:
+                if (Player* pl = me->GetPlayer(*me, targetGuid))
+                    pl->RemoveAurasDueToSpell(SPELL_MARKED_SOUL);
+                break;
+            default:
+                break;
+            }
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            me->getThreatManager().addThreat(attacker, 0.0f);
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (type == POINT_MOTION_TYPE)
+            {
+                if (pointId == 0)
+                {
+                    events.Reset();
+                    me->StopMoving();
+                    me->GetMotionMaster()->Clear(false);
+                    if (Creature* council = me->GetCreature(*me, councilGuid))
+                    {
+                        if (council->isAlive())
+                        {
+                            DoCast(council, SPELL_BLESSED_GIFT, true);
+                            me->DespawnOrUnsummon();
+                        }
+                    }
+                }
+            }
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                case EVENT_FIND_LOWHP_COUNCIL:
+                    if (Creature* council = me->GetCreature(*me, GetLowestHpCouncil()))
+                    {
+                        councilGuid = council->GetGUID();
+                        me->GetMotionMaster()->MoveCharge(council->GetPositionX(), council->GetPositionY(), council->GetPositionZ(), 4.0f, 0);
+                        events.ScheduleEvent(EVENT_CHECK_COUNCIL, 1000);
+                    }
+                    else
+                        events.ScheduleEvent(EVENT_FIND_LOWHP_COUNCIL, 1000);
+                    break;
+                case EVENT_CHECK_COUNCIL:
+                    CheckCouncil();
+                    break;
+                case EVENT_FIND_PLAYER:
+                    FindAndStartPursuitPlayer();
+                    break;
+                case EVENT_CHECK_DISTANCE:
+                {
+                    Player* pl = me->GetPlayer(*me, targetGuid);
+                    if (pl && pl->isAlive())
+                    {
+                        if (IsInControl())
+                        {
+                            events.ScheduleEvent(EVENT_CHECK_DISTANCE, 1000);
+                            return;
+                        }
+                        if (me->GetDistance(pl) <= 6.0f && !done)
+                        {
+                            done = true;
+                            pl->RemoveAurasDueToSpell(SPELL_MARKED_SOUL);
+                            me->GetMotionMaster()->Clear(false);
+                            DoCast(pl, SPELL_DARK_EXPLOSE, true);
+                            me->DespawnOrUnsummon(1000);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        me->SetAttackStop(true);
+                        events.ScheduleEvent(EVENT_FIND_PLAYER, 1000);
+                        return;
+                    }
+                    events.ScheduleEvent(EVENT_CHECK_DISTANCE, 1000);
+                }
+                break;
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_loa_spiritAI(creature);
+    }
+};
 
 class spell_frigit_assault : public SpellScriptLoader
 {
@@ -502,13 +795,9 @@ public:
 
         void OnTick(AuraEffect const* aurEff)
         {
-            if (GetCaster() && GetCaster()->ToCreature())
-            {
-                if (GetCaster()->GetPower(POWER_ENERGY) + 1 < 100)
-                    GetCaster()->SetPower(POWER_ENERGY, GetCaster()->GetPower(POWER_ENERGY) + 1);
-                else if (GetCaster()->GetPower(POWER_ENERGY) == 100)
-                    GetCaster()->CastSpell(GetCaster(), SPELL_DARK_POWER);
-            }
+            if (GetTarget() && GetTarget()->ToCreature())
+                if (GetTarget()->GetPower(POWER_ENERGY) == 100)
+                    GetTarget()->CastSpell(GetTarget(), SPELL_DARK_POWER, true);
         }
 
         void Register()
@@ -523,10 +812,52 @@ public:
     }
 };
 
+//137203, 137350
+class spell_loa_spirit : public SpellScriptLoader
+{
+public:
+    spell_loa_spirit() : SpellScriptLoader("spell_loa_spirit") { }
+
+    class spell_loa_spirit_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_loa_spirit_SpellScript);
+
+        void HandleAfterCast()
+        {
+            if (GetCaster())
+            {
+                switch (GetSpellInfo()->Id)
+                {
+                case SPELL_B_LOA_SPIRIT_P_SUM:
+                    GetCaster()->CastSpell(GetCaster(), blessed_loa_spirit[urand(0, 2)], true);
+                    break;
+                case SPELL_D_LOA_SPIRIT_P_SUM:
+                    GetCaster()->CastSpell(GetCaster(), dark_loa_spirit[urand(0, 2)], true);
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+
+        void Register()
+        {
+            AfterCast += SpellCastFn(spell_loa_spirit_SpellScript::HandleAfterCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_loa_spirit_SpellScript();
+    }
+};
+
 void AddSC_boss_council_of_elders()
 {
     new boss_council_of_elders();
     new npc_garajal_soul();
+    new npc_loa_spirit();
     new spell_frigit_assault();
     new spell_possessed();
+    new spell_loa_spirit();
 }

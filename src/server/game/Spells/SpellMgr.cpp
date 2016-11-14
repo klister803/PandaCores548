@@ -4951,7 +4951,16 @@ void SpellMgr::LoadSpellCustomAttr()
                         if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
                             eff->TargetA = TARGET_UNIT_TARGET_ANY;
                     break;
+                case 137359: //Marked Soul
+                    spellInfo->Effects[0]->TargetA = TARGET_UNIT_TARGET_ANY;
+                    spellInfo->Effects[0]->TargetB = TARGET_NONE;
+                    break;
                 //Kazrajin
+                case 137149:
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                            eff->ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+                    break;
                 case 137122: //Reckless charge (point dmg)
                 {
                     for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)

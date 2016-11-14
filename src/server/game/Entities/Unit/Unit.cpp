@@ -9912,6 +9912,17 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
                             }
                         }
                         break;
+                    case 137149: //Kazrajin - Overload Aura
+                        if (this && victim && victim->isAlive())
+                        {
+                            if (Aura* aura = this->GetAura(137149))
+                            {
+                                float mod = aura->GetSpellInfo()->GetEffect(0)->BasePoints;
+                                float dmg = damage*(mod / 100);
+                                this->CastCustomSpell(137151, SPELLVALUE_BASE_POINT0, dmg, victim, true); //Overload Dmg
+                            }
+                        }
+                        break;
                 }
             case SPELLFAMILY_PRIEST:
             {

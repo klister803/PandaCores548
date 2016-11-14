@@ -61,6 +61,14 @@ enum eCreatures
     NPC_LIGHTNING_NOVA_TOTEM    = 69215,
     NPC_GARAJAL_SOUL            = 69182,
 
+    NPC_BLESSED_LOA_SPIRIT      = 69480,
+    NPC_BLESSED_LOA_SPIRIT_2    = 69491,
+    NPC_BLESSED_LOA_SPIRIT_3    = 69492,
+
+    NPC_DARK_LOA_SPIRIT         = 69548,
+    NPC_DARK_LOA_SPIRIT_2       = 69553,
+    NPC_DARK_LOA_SPIRIT_3       = 69556,
+
     //Horridon adds
     //Farrak Gate
     //Big
