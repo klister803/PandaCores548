@@ -42,6 +42,8 @@
 #include "ScriptMgr.h"
 #include "AccountMgr.h"
 
+std::map<uint64, uint32>  lastSayTime;
+
 bool WorldSession::processChatmessageFurtherAfterSecurityChecks(std::string& msg, uint32 lang)
 {
     if (lang != LANG_ADDON)
@@ -489,6 +491,30 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
                 if (Channel* chn = cMgr->GetChannel(channel, _player))
                 {
                     sScriptMgr->OnPlayerChat(_player, type, lang, msg, chn);
+                    
+                    if (chn->IsLFG())
+                    {                     
+                        if(sWorld->getBoolConfig(CONFIG_ANTI_FLOOD_LFG))
+                        {
+                            if (!lastSayTime.empty())
+                            {
+                                for (std::map<uint64, uint32>::const_iterator itr = lastSayTime.begin(); itr != lastSayTime.end(); ++itr)
+                                {
+                                    if (itr->first == _player->GetGUID())// Initial check
+                                    {
+                                        if (GetMSTimeDiffToNow(itr->second) < 10000)
+                                        {  
+                                            ChatHandler(_player->GetSession()).PSendSysMessage("You cannot say for another %u second on the LFG", (10 - (GetMSTimeDiffToNow(itr->second)/1000)));
+                                            return;
+                                        }
+                                        else
+                                            lastSayTime.erase(_player->GetGUID());
+                                    }
+                                }
+                            }
+                            lastSayTime[_player->GetGUID()] = getMSTime();
+                        }
+                    }
 
                     chn->Say(_player->GetGUID(), msg.c_str(), lang);
                 }
