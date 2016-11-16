@@ -31404,3 +31404,59 @@ UnitMoveType Player::GetMovementType(uint32 moveflags)
 
     return MOVE_RUN;
 }
+
+uint32 Player::LoadControlableGuardianActionBarInfo(uint32 entry)
+{
+    if (!m_CGActionBarInfo.empty())
+    {
+        std::map<uint32, uint16>::iterator itr = m_CGActionBarInfo.find(entry);
+        if (itr != m_CGActionBarInfo.end())
+            return itr->second;
+    }
+
+    uint32 infoMask = 0;
+
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CG_ACTION_BAR_INFO);
+    stmt->setUInt64(0, GetGUID());
+    PreparedQueryResult result = CharacterDatabase.Query(stmt);
+    
+    if (result)
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+
+            uint32 _entry = fields[0].GetUInt32();
+            uint16 _infoMask = fields[1].GetUInt16();
+
+            m_CGActionBarInfo[_entry] = _infoMask;
+
+            if (_entry == entry)
+                infoMask = _infoMask;
+
+        } while (result->NextRow());
+    }
+
+    return infoMask;
+}
+
+void Player::SaveControlableGuardianActionBarInfo(uint32 entry, uint16 infoMask)
+{
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    PreparedStatement* stmt;
+    uint64 guid = GetGUID();
+
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CG_ACTION_BAR_INFO);
+    stmt->setUInt64(0, guid);
+    stmt->setUInt32(1, entry);
+    trans->Append(stmt);
+
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CG_ACTION_BAR_INFO);
+    stmt->setUInt64(0, guid);
+    stmt->setUInt32(1, entry);
+    stmt->setUInt16(2, infoMask);
+    trans->Append(stmt);
+
+    CharacterDatabase.CommitTransaction(trans);
+    m_CGActionBarInfo[entry] = infoMask;
+}

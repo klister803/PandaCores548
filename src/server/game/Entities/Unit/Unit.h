@@ -1242,7 +1242,7 @@ struct CharmInfo
         bool HasCommandState(CommandStates state) const { return (m_CommandState == state); }
 
         void InitPossessCreateSpells();
-        void InitCharmCreateSpells();
+        void InitCharmCreateSpells(uint32 infoMask = 0);
         void InitPetActionBar();
         void InitEmptyActionBar(bool withAttack = true);
 

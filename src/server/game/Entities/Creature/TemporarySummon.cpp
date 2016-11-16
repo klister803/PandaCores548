@@ -437,6 +437,27 @@ void TempSummon::UnSummon(uint32 msTime)
 
     Unit* owner = GetSummoner();
 
+    if (HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN))
+        if (Player* plr = owner->ToPlayer())
+            if (CharmInfo* charm = GetCharmInfo())
+            {
+                uint32 infoMask = 0;
+
+                for (uint8 i = 0; i < MAX_SPELL_CHARM; i++)
+                    if (UnitActionBarEntry const* uabe = charm->GetActionBarEntry(3 + i))
+                        if (uabe->GetType() == ACT_ENABLED)
+                            infoMask |= (1 << (4 + i));
+
+                if (GetReactState() == REACT_HELPER)
+                    infoMask |= (1 << CGUARDIAN_IS_HELPER);
+                else if (GetReactState() == REACT_DEFENSIVE)
+                    infoMask |= (1 << CGUARDIAN_IS_DEFENSIVE);
+                else if (GetReactState() == REACT_PASSIVE)
+                    infoMask |= (1<<CGUARDIAN_IS_PASSIVE);
+
+                plr->SaveControlableGuardianActionBarInfo(GetEntry(), infoMask);
+            }
+
     if (owner && owner->GetTypeId() == TYPEID_PLAYER && GetCreatureTemplate()->type == CREATURE_TYPE_WILD_PET)
     {
         owner->SetUInt64Value(PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID, 0);
@@ -562,8 +583,21 @@ void Guardian::InitStats(uint32 duration)
 
     InitStatsForLevel(m_owner->getLevel());
 
-    if (m_owner->GetTypeId() == TYPEID_PLAYER && HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN))
-        m_charmInfo->InitCharmCreateSpells();
+    if (HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN))
+        if (Player* plr = m_owner->ToPlayer())
+        {
+            uint32 infoMask = plr->LoadControlableGuardianActionBarInfo(GetEntry());
+            m_charmInfo->InitCharmCreateSpells(infoMask);
+
+            if (infoMask & (1 << CGUARDIAN_IS_HELPER))
+                SetReactState(REACT_HELPER);
+            else if (infoMask & (1 << CGUARDIAN_IS_DEFENSIVE))
+                SetReactState(REACT_DEFENSIVE);
+            else if (infoMask & (1 << CGUARDIAN_IS_PASSIVE))
+                SetReactState(REACT_PASSIVE);
+
+            return;
+        }
 
     SetReactState(REACT_AGGRESSIVE);
 }

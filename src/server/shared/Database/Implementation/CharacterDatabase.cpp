@@ -648,4 +648,8 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     // Custom Enchant
     PrepareStatement(CHAR_REP_CHAR_VISUAL_ENCHANT, "REPLACE INTO character_visual_enchant (guid, item_guid, enchantId, slot) VALUES (?, ?, ?, ?)", CONNECTION_ASYNC);
 
+    PrepareStatement(CHAR_SEL_CG_ACTION_BAR_INFO, "SELECT entry, infoMask FROM controlable_guardian_action_bar_info WHERE guid = ?", CONNECTION_SYNCH);
+    PrepareStatement(CHAR_DEL_CG_ACTION_BAR_INFO, "DELETE FROM controlable_guardian_action_bar_info WHERE (guid = ?) AND (entry= ?)", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_INS_CG_ACTION_BAR_INFO, "INSERT INTO controlable_guardian_action_bar_info (guid, entry, infoMask) VALUES (?, ?, ?)", CONNECTION_ASYNC);
+
 }

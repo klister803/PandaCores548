@@ -3551,6 +3551,11 @@ class Player : public Unit, public GridObject<Player>
         bool CheckZAxis(uint32 opcode, float delta, float new_x, float new_y, float new_z, uint32 cur_mflags, uint32 new_mflags);
         UnitMoveType GetMovementType(uint32 moveFlags);
 
+        uint32 LoadControlableGuardianActionBarInfo(uint32 entry);
+        void SaveControlableGuardianActionBarInfo(uint32 entry, uint16 infoMask);
+
+        std::map<uint32, uint16> m_CGActionBarInfo;
+
     protected:
         //kill honor sistem
         KillInfoMap m_killsPerPlayer;

@@ -17513,7 +17513,7 @@ void CharmInfo::InitPossessCreateSpells()
     }
 }
 
-void CharmInfo::InitCharmCreateSpells()
+void CharmInfo::InitCharmCreateSpells(uint32 infoMask)
 {
     if (m_unit->GetTypeId() == TYPEID_PLAYER)                // charmed players don't have spells
     {
@@ -17522,6 +17522,13 @@ void CharmInfo::InitCharmCreateSpells()
     }
 
     InitPetActionBar();
+
+    bool _charmSpellsType[MAX_SPELL_CHARM] = {false};
+
+    if (infoMask)
+        for (uint8 i = 0; i < MAX_SPELL_CHARM; i++)
+            if (infoMask & (1 << (4 + i)))
+                _charmSpellsType[i] = true;
 
     for (uint32 x = 0; x < MAX_SPELL_CHARM; ++x)
     {
@@ -17551,11 +17558,11 @@ void CharmInfo::InitCharmCreateSpells()
             {
                 if (spellInfo->NeedsExplicitUnitTarget())
                 {
-                    newstate = ACT_ENABLED;
-                    ToggleCreatureAutocast(spellInfo, true);
+                    newstate = _charmSpellsType[x] ? ACT_ENABLED : ACT_DISABLED;
+                    ToggleCreatureAutocast(spellInfo, _charmSpellsType[x]);
                 }
                 else
-                    newstate = ACT_DISABLED;
+                    newstate = _charmSpellsType[x] ? ACT_ENABLED : ACT_DISABLED;
             }
 
             AddSpellToActionBar(spellInfo, newstate);

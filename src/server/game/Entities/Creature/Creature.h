@@ -523,6 +523,13 @@ struct PetSpell
     PetSpellType type;
 };
 
+enum CGuardianActionBarInfo
+{
+    CGUARDIAN_IS_HELPER        = 1,
+    CGUARDIAN_IS_DEFENSIVE     = 2,
+    CGUARDIAN_IS_PASSIVE       = 3,
+};
+
 typedef UNORDERED_MAP<uint32, PetSpell> PetSpellMap;
 typedef std::vector<uint32> AutoSpellList;
 
