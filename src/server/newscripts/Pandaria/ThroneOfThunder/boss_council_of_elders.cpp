@@ -26,15 +26,26 @@ enum eSpells
     SPELL_FRIGIT_ASSAULT_S   = 136910,
     SPELL_FRIGIT_ASSAULT_D   = 136903,
     SPELL_BITING_COLD        = 136992,
+    SPELL_FROSTBITE          = 136922,
+    SPELL_FROSTBITE_DMG      = 136937,
     //Sul
     SPELL_SAND_BOLT          = 136189,
+    SPELL_SAND_TRAP_VISUAL   = 136851,
+    SPELL_SAND_TRAP_AT       = 136861,
+    SPELL_SAND_TRAP_DMG      = 136860,
+    SPELL_ENSNARED           = 136878,
+    SPELL_ENTRAPPED          = 136857,
     SPELL_QUICK_SAND_VISUAL  = 136851,
+    SPELL_BLESSED_TRANSFORM  = 137181,
+    SPELL_SHADOW_TRANSFORM   = 137271,
     SPELL_B_LOA_SPIRIT_P_SUM = 137203,
     SPELL_B_LOA_SPIRIT_SUM   = 137200,
     SPELL_BLESSED_GIFT       = 137303,
     SPELL_D_LOA_SPIRIT_P_SUM = 137350,
     SPELL_D_LOA_SPIRIT_SUM   = 137351,
     SPELL_SANDSTORM          = 136894,
+    SPELL_SANDSTORM_VISUAL   = 136895,
+    SPELL_FORTIFIED          = 136864,
     //Marli
     SPELL_WRATH_OF_THE_LOA   = 137344,
     SPELL_D_WRATH_OF_THE_LOA = 137347,
@@ -58,6 +69,7 @@ enum eSpells
 enum SsAction
 {
     ACTION_RESET,
+    ACTION_ACTIVE,
     ACTION_CHANGE_COUNCIL,
     ACTION_GARAJAL_SOUL_ACTIVE,
 };
@@ -70,13 +82,17 @@ enum eEvents
     //Sul
     EVENT_SAND_BOLT          = 3,
     EVENT_SUM_LOA_SPIRIT     = 4,
+    EVENT_SANDSTORM          = 5,
     //Kazrajin
-    EVENT_R_CHARGE           = 5,
-    EVENT_MOVING             = 6,
-    EVENT_FIND_LOWHP_COUNCIL = 7,
-    EVENT_CHECK_COUNCIL      = 8,
-    EVENT_FIND_PLAYER        = 9,
-    EVENT_CHECK_DISTANCE     = 10,
+    EVENT_R_CHARGE           = 6,
+    //Marli
+    EVENT_LOA_SPIRIT         = 7,
+    //
+    EVENT_MOVING             = 8,
+    EVENT_FIND_LOWHP_COUNCIL = 9,
+    EVENT_CHECK_COUNCIL      = 10,
+    EVENT_FIND_PLAYER        = 11,
+    EVENT_CHECK_DISTANCE     = 12,
 };
 
 //Spells summon loa spirit
@@ -154,16 +170,18 @@ public:
 
     struct boss_council_of_eldersAI : public council_of_eldersAI
     {
-        boss_council_of_eldersAI(Creature* creature) : council_of_eldersAI(creature)
+        boss_council_of_eldersAI(Creature* creature) : council_of_eldersAI(creature), summon(me)
         {
             instance = creature->GetInstanceScript();
         }
         InstanceScript* instance;
+        SummonList summon;
         Position chargepos;
         EventMap events;
         uint32 donehppct;
         uint32 timerpower;
         uint32 actualtimer;
+        bool needresetevents;
 
         void Reset()
         {
@@ -171,6 +189,7 @@ public:
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
             //RemovePassenger(true);
             events.Reset();
+            summon.DespawnAll();
             me->RemoveAurasDueToSpell(SPELL_R_CHARGE_VISUAL);
             me->RemoveAurasDueToSpell(SPELL_K_OVERLOAD_AURA);
             if (me->GetEntry() == NPC_KAZRAJIN)
@@ -184,6 +203,12 @@ public:
             donehppct = 100; //default value
             timerpower = 0;
             actualtimer = 0;
+            needresetevents = false;
+        }
+
+        void JustSummoned(Creature* sum)
+        {
+            summon.Summon(sum);
         }
 
         void RemovePassenger(bool action)
@@ -215,16 +240,30 @@ public:
                 gs->AI()->DoAction(ACTION_GARAJAL_SOUL_ACTIVE);
         }
 
+        void ResetEvents()
+        {
+            switch (me->GetEntry())
+            {
+            case NPC_FROST_KING_MALAKK:
+                events.ScheduleEvent(EVENT_FRIGIT_ASSAULT, 15000);
+                events.ScheduleEvent(EVENT_BITTING_COLD, 30000);
+                break;
+            case NPC_SUL_SANDCRAWLER:
+                events.ScheduleEvent(EVENT_SAND_BOLT, 35000);
+                break;
+            }
+        }
+
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
-            if (donehppct < 100)
+            /*if (donehppct < 100)
             {
                 if (HealthBelowPct(donehppct))
                 {
                     donehppct = 100;
                     RemovePassenger(false);
                 }
-            }
+            }*/
         }
 
         void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
@@ -237,6 +276,11 @@ public:
                 {
                     uint8 stack = me->GetAura(SPELL_LINGERING_PRESENCE)->GetStackAmount();
                     timerpower = 670 - (67 * stack);
+                    if (me->GetEntry() == NPC_SUL_SANDCRAWLER)
+                    {
+                        events.Reset();
+                        events.ScheduleEvent(EVENT_SANDSTORM, 1000);
+                    }
                 }
                 else
                     timerpower = 670;
@@ -249,6 +293,14 @@ public:
                 DoCast(me, SPELL_LINGERING_PRESENCE, true);
                 timerpower = 0;
                 actualtimer = 0;
+                if (me->GetEntry() != NPC_KAZRAJIN)
+                {
+                    if (needresetevents)
+                    {
+                        needresetevents = false;
+                        ResetEvents();
+                    }
+                }
             }
         }
 
@@ -268,6 +320,9 @@ public:
                 break;
             case NPC_KAZRAJIN:
                 events.ScheduleEvent(EVENT_R_CHARGE, 6000);
+                break;
+            case NPC_PRINCESS_MARLI:
+                //events.ScheduleEvent(EVENT_LOA_SPIRIT, 38000);
                 break;
             default:
                 break;
@@ -293,13 +348,16 @@ public:
                 {
                     me->RemoveAurasDueToSpell(SPELL_R_CHARGE_VISUAL);
                     DoCastAOE(SPELL_R_CHARGE_POINT_DMG);
-                    if (me->HasAura(SPELL_POSSESSED))
+                    if (me->GetPower(POWER_ENERGY) != 100)
                     {
-                        me->AddAura(SPELL_K_OVERLOAD_AURA, me);
-                        events.ScheduleEvent(EVENT_R_CHARGE, 23000);
+                        if (me->HasAura(SPELL_POSSESSED))
+                        {
+                            me->AddAura(SPELL_K_OVERLOAD_AURA, me);
+                            events.ScheduleEvent(EVENT_R_CHARGE, 23000);
+                        }
+                        else
+                            events.ScheduleEvent(EVENT_R_CHARGE, 3000);
                     }
-                    else
-                        events.ScheduleEvent(EVENT_R_CHARGE, 3000);
                 }
             }
         }
@@ -317,7 +375,11 @@ public:
                     {
                         me->SetPower(POWER_ENERGY, me->GetPower(POWER_ENERGY) + 1);
                         if (me->GetPower(POWER_ENERGY) == 100)
+                        {
+                            needresetevents = true;
+                            events.Reset();
                             timerpower = 0;
+                        }
                         else
                             timerpower = actualtimer;
                     }
@@ -350,6 +412,10 @@ public:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 40.0f, true))
                         DoCast(target, SPELL_SAND_BOLT);
                     events.ScheduleEvent(EVENT_SAND_BOLT, 35000);
+                    break;
+                case EVENT_SANDSTORM:
+                    DoCast(me, SPELL_SANDSTORM);
+                    events.ScheduleEvent(EVENT_SANDSTORM, 40000);
                     break;
                 //Kazrajin
                 case EVENT_R_CHARGE:
@@ -465,7 +531,7 @@ public:
                         if (Creature* council = me->GetCreature(*me, instance->GetData64(councilentry[councilcount])))
                         {
                             lastcouncil = council->GetEntry();
-                            me->GetMotionMaster()->MoveCharge(council->GetPositionX(), council->GetPositionY(), council->GetPositionZ(), 10.0f, 1);
+                            me->GetMotionMaster()->MoveCharge(council->GetPositionX(), council->GetPositionY(), council->GetPositionZ(), 15.0f, 1);
                         }
                     }
                 }
@@ -477,7 +543,7 @@ public:
                         {
                             councilcount = b;
                             lastcouncil = council->GetEntry();
-                            me->GetMotionMaster()->MoveCharge(council->GetPositionX(), council->GetPositionY(), council->GetPositionZ(), 10.0f, 1);
+                            me->GetMotionMaster()->MoveCharge(council->GetPositionX(), council->GetPositionY(), council->GetPositionZ(), 15.0f, 1);
                             break;
                         }
                     }
@@ -488,7 +554,7 @@ public:
                 if (Creature* council = me->GetCreature(*me, instance->GetData64(councilentry[councilcount])))
                 {
                     lastcouncil = council->GetEntry();
-                    me->GetMotionMaster()->MoveCharge(council->GetPositionX(), council->GetPositionY(), council->GetPositionZ(), 10.0f, 1);
+                    me->GetMotionMaster()->MoveCharge(council->GetPositionX(), council->GetPositionY(), council->GetPositionZ(), 15.0f, 1);
                     events.ScheduleEvent(EVENT_MOVING, 1000);
                 }
                 break;
@@ -527,7 +593,7 @@ public:
                     if (Creature* council = me->GetCreature(*me, instance->GetData64(councilentry[councilcount])))
                     {
                         me->GetMotionMaster()->Clear(false);
-                        me->GetMotionMaster()->MoveCharge(council->GetPositionX(), council->GetPositionY(), council->GetPositionZ(), 10.0f, 1);
+                        me->GetMotionMaster()->MoveCharge(council->GetPositionX(), council->GetPositionY(), council->GetPositionZ(), 15.0f, 1);
                     }
                 }
             }
@@ -552,6 +618,10 @@ public:
         {
             instance = creature->GetInstanceScript();
             me->SetReactState(REACT_PASSIVE);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, true);
+            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
         }
         InstanceScript* instance;
@@ -572,12 +642,14 @@ public:
             case NPC_BLESSED_LOA_SPIRIT:
             case NPC_BLESSED_LOA_SPIRIT_2:
             case NPC_BLESSED_LOA_SPIRIT_3:
+                DoCast(me, SPELL_BLESSED_TRANSFORM, true);
                 events.ScheduleEvent(EVENT_FIND_LOWHP_COUNCIL, 500);
                 break;
             //go to player
             case NPC_DARK_LOA_SPIRIT:
             case NPC_DARK_LOA_SPIRIT_2:
             case NPC_DARK_LOA_SPIRIT_3:
+                DoCast(me, SPELL_SHADOW_TRANSFORM, true);
                 events.ScheduleEvent(EVENT_FIND_PLAYER, 500);
                 break;
             }
@@ -752,6 +824,76 @@ public:
     }
 };
 
+//69153
+class npc_living_sand : public CreatureScript
+{
+public:
+    npc_living_sand() : CreatureScript("npc_living_sand") {}
+
+    struct npc_living_sandAI : public ScriptedAI
+    {
+        npc_living_sandAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE);
+        }
+        InstanceScript* instance;
+        bool done;
+
+        void Reset()
+        {
+            done = false;
+            DoCast(me, SPELL_SAND_TRAP_VISUAL, true);
+            DoCast(me, SPELL_SAND_TRAP_AT, true);
+        }
+
+        void DoAction(int32 const action)
+        {
+            if (action == ACTION_ACTIVE)
+            {
+                me->RemoveAurasDueToSpell(SPELL_SAND_TRAP_VISUAL);
+                me->RemoveAurasDueToSpell(SPELL_SAND_TRAP_AT);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE);
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
+                {
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    me->Attack(target, true);
+                    me->GetMotionMaster()->MoveChase(target);
+                    done = false;
+                }
+            }
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (damage >= me->GetHealth() && !done)
+            {
+                done = true;
+                me->SetAttackStop(true);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE);
+                DoCast(me, SPELL_SAND_TRAP_VISUAL, true);
+                DoCast(me, SPELL_SAND_TRAP_AT, true);
+            }
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff)
+        {
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_living_sandAI(creature);
+    }
+};
+
+
 class spell_frigit_assault : public SpellScriptLoader
 {
 public:
@@ -852,12 +994,100 @@ public:
     }
 };
 
+//136894
+class spell_sandstorm : public SpellScriptLoader
+{
+public:
+    spell_sandstorm() : SpellScriptLoader("spell_sandstorm") { }
+
+    class spell_sandstorm_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_sandstorm_AuraScript);
+
+        void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+        {
+            if (GetCaster())
+            {
+                GetCaster()->AddAura(SPELL_SANDSTORM_VISUAL, GetCaster());
+                std::list<Creature*>list;
+                list.clear();
+                GetCreatureListWithEntryInGrid(list, GetCaster(), NPC_LIVING_SAND, 150.0f);
+                if (!list.empty())
+                {
+                    for (std::list<Creature*>::const_iterator itr = list.begin(); itr != list.end(); itr++)
+                    {
+                        if ((*itr)->HasAura(SPELL_SAND_TRAP_VISUAL))
+                            (*itr)->AI()->DoAction(ACTION_ACTIVE);
+                        else
+                            (*itr)->CastSpell(*itr, SPELL_FORTIFIED, true);
+                    }
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_sandstorm_AuraScript::OnApply, EFFECT_0, SPELL_EFFECT_APPLY_AURA, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_sandstorm_AuraScript();
+    }
+};
+
+//136860
+class spell_coe_sand_trap : public SpellScriptLoader
+{
+public:
+    spell_coe_sand_trap() : SpellScriptLoader("spell_coe_sand_trap") { }
+
+    class spell_coe_sand_trap_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_coe_sand_trap_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (GetTarget())
+                GetTarget()->CastSpell(GetTarget(), SPELL_ENSNARED, true);
+
+            if (Aura* aura = GetTarget()->GetAura(SPELL_ENSNARED))
+                if (aura->GetStackAmount() == 5 && !GetTarget()->HasAura(SPELL_ENTRAPPED))
+                    GetTarget()->CastSpell(GetTarget(), SPELL_ENTRAPPED, true);
+        }
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+        {
+            if (GetTarget())
+            {
+                GetTarget()->RemoveAurasDueToSpell(SPELL_ENSNARED);
+                GetTarget()->RemoveAurasDueToSpell(SPELL_ENTRAPPED);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_coe_sand_trap_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+            OnEffectRemove += AuraEffectRemoveFn(spell_coe_sand_trap_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_coe_sand_trap_AuraScript();
+    }
+};
+
 void AddSC_boss_council_of_elders()
 {
     new boss_council_of_elders();
     new npc_garajal_soul();
     new npc_loa_spirit();
+    new npc_living_sand();
     new spell_frigit_assault();
     new spell_possessed();
     new spell_loa_spirit();
+    new spell_sandstorm();
+    new spell_coe_sand_trap();
 }

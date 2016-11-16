@@ -9919,6 +9919,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
                             {
                                 float mod = aura->GetSpellInfo()->GetEffect(0)->BasePoints;
                                 float dmg = damage*(mod / 100);
+                                this->CastSpell(victim, 137163, true); //visual
                                 this->CastCustomSpell(137151, SPELLVALUE_BASE_POINT0, dmg, victim, true); //Overload Dmg
                             }
                         }
