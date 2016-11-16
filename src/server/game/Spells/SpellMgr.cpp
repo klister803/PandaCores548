@@ -3870,6 +3870,11 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 134967: // Heroic Throw
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(9);
+                    spellInfo->Effects[EFFECT_0]->ApplyAuraName = SPELL_AURA_PERIODIC_DUMMY;
+                    spellInfo->Effects[EFFECT_0]->Amplitude = 1000;
+                    break;
                 case 115696: // D/W Swords
                     spellInfo->Attributes |= SPELL_ATTR0_PASSIVE;
                     spellInfo->EquippedItemClass = 2;

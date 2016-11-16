@@ -96,6 +96,71 @@ class spell_warr_stampeding_shout : public SpellScriptLoader
         }
 };
 
+// Heroic Throw - 57755
+class spell_warr_heroic_throw : public SpellScriptLoader
+{
+public:
+    spell_warr_heroic_throw() : SpellScriptLoader("spell_warr_heroic_throw") { }
+
+    class spell_warr_heroic_throw_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_warr_heroic_throw_SpellScript);
+
+        void HandleAfterHit()
+        {
+            if (Unit* caster = GetCaster())
+                if (caster->HasAura(146970))
+                    if (Unit* target = GetHitUnit())
+                        if (caster->GetDistance(target) > 10.0f)
+                            caster->AddAura(134967, target);
+        }
+
+        void Register()
+        {
+            AfterHit += SpellHitFn(spell_warr_heroic_throw_SpellScript::HandleAfterHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_warr_heroic_throw_SpellScript();
+    }
+};
+
+// Heroic Throw - 134967
+class spell_warr_heroic_throw_glyph : public SpellScriptLoader
+{
+public:
+    spell_warr_heroic_throw_glyph() : SpellScriptLoader("spell_warr_heroic_throw_glyph") { }
+
+    class spell_warr_heroic_throw_glyph_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_warr_heroic_throw_glyph_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (Unit* caster = GetCaster())
+                if (Unit* owner = GetUnitOwner())
+                    if (caster->GetDistance(owner) <= 5.0f)
+                        if (Player* plr = caster->ToPlayer())
+                        {
+                            plr->RemoveSpellCooldown(57755, true);
+                            Remove(AURA_REMOVE_BY_DEFAULT);
+                        }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_warr_heroic_throw_glyph_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_warr_heroic_throw_glyph_AuraScript();
+    }
+};
+
 // Shield Barrier - 112048
 class spell_warr_shield_barrier : public SpellScriptLoader
 {
@@ -1193,4 +1258,6 @@ void AddSC_warrior_spell_scripts()
     new spell_war_intervene();
     new spell_warr_charge_drop_fire();
     new spell_warr_dragon_roar();
+    new spell_warr_heroic_throw();
+    new spell_warr_heroic_throw_glyph();
 }
