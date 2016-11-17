@@ -4315,7 +4315,10 @@ void AuraEffect::HandleModFear(AuraApplication const* aurApp, uint8 mode, bool a
     if (apply)
         target->AddControlledMask(UNIT_STATE_FLEEING);
     else
-        target->SetControlled(apply, UNIT_STATE_FLEEING);
+    {
+        if (!target->HasAuraType(SPELL_AURA_MOD_FEAR) && !target->HasAuraType(SPELL_AURA_MOD_FEAR_2))
+            target->SetControlled(apply, UNIT_STATE_FLEEING);
+    }
 
     if (aura->GetDuration() > 0)
         target->SendLossOfControl(GetCaster(), GetId(), aura->GetDuration(), aura->GetDuration(), GetSpellInfo()->GetEffectMechanic(GetEffIndex()), 0, LOC_FEAR, apply);
