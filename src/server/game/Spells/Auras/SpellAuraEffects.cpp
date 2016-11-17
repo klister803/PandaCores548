@@ -4283,15 +4283,20 @@ void AuraEffect::HandleModConfuse(AuraApplication const* aurApp, uint8 mode, boo
         return;
 
     Unit* target = aurApp->GetTarget();
+    Aura* aura = GetBase();
 
     if(apply)
         target->SetTimeForSpline(GetBase()->GetDuration());
     else
         target->SetTimeForSpline(0);
 
-    target->SetControlled(apply, UNIT_STATE_CONFUSED);
-    if(GetBase()->GetDuration() > 0)
-        target->SendLossOfControl(GetCaster(), GetId(), GetBase()->GetDuration(), GetBase()->GetDuration(), GetSpellInfo()->GetEffectMechanic(GetEffIndex()), 0, LOC_CONFUSE, apply);
+    if (apply)
+        target->AddControlledMask(UNIT_STATE_CONFUSED);
+    else
+        target->SetControlled(apply, UNIT_STATE_CONFUSED);
+
+    if (aura->GetDuration() > 0)
+        target->SendLossOfControl(GetCaster(), GetId(), aura->GetDuration(), aura->GetDuration(), GetSpellInfo()->GetEffectMechanic(GetEffIndex()), 0, LOC_CONFUSE, apply);
 }
 
 void AuraEffect::HandleModFear(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4300,15 +4305,20 @@ void AuraEffect::HandleModFear(AuraApplication const* aurApp, uint8 mode, bool a
         return;
 
     Unit* target = aurApp->GetTarget();
+    Aura* aura = GetBase();
 
     if(apply)
         target->SetTimeForSpline(GetBase()->GetDuration());
     else
         target->SetTimeForSpline(0);
 
-    target->SetControlled(apply, UNIT_STATE_FLEEING);
-    if(GetBase()->GetDuration() > 0)
-        target->SendLossOfControl(GetCaster(), GetId(), GetBase()->GetDuration(), GetBase()->GetDuration(), GetSpellInfo()->GetEffectMechanic(GetEffIndex()), 0, LOC_FEAR, apply);
+    if (apply)
+        target->AddControlledMask(UNIT_STATE_FLEEING);
+    else
+        target->SetControlled(apply, UNIT_STATE_FLEEING);
+
+    if (aura->GetDuration() > 0)
+        target->SendLossOfControl(GetCaster(), GetId(), aura->GetDuration(), aura->GetDuration(), GetSpellInfo()->GetEffectMechanic(GetEffIndex()), 0, LOC_FEAR, apply);
 }
 
 void AuraEffect::HandleAuraModStun(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4317,10 +4327,15 @@ void AuraEffect::HandleAuraModStun(AuraApplication const* aurApp, uint8 mode, bo
         return;
 
     Unit* target = aurApp->GetTarget();
+    Aura* aura = GetBase();
 
-    target->SetControlled(apply, UNIT_STATE_STUNNED);
-    if(GetBase()->GetDuration() > 0)
-        target->SendLossOfControl(GetCaster(), GetId(), GetBase()->GetDuration(), GetBase()->GetDuration(), GetSpellInfo()->GetEffectMechanic(GetEffIndex()), 0, LOC_STUN, apply);
+    if (apply)
+        target->AddControlledMask(UNIT_STATE_STUNNED);
+    else
+        target->SetControlled(apply, UNIT_STATE_STUNNED);
+
+    if (aura->GetDuration() > 0)
+        target->SendLossOfControl(GetCaster(), GetId(), aura->GetDuration(), aura->GetDuration(), GetSpellInfo()->GetEffectMechanic(GetEffIndex()), 0, LOC_STUN, apply);
 }
 
 void AuraEffect::HandleAuraModRoot(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4330,14 +4345,19 @@ void AuraEffect::HandleAuraModRoot(AuraApplication const* aurApp, uint8 mode, bo
 
     Unit* target = aurApp->GetTarget();
     Unit* caster = GetCaster();
+    Aura* aura = GetBase();
 
     // Earthgrab totem - Immunity
     if (apply && target->HasAura(116946))
         return;
 
-    target->SetControlled(apply, UNIT_STATE_ROOT);
-    if(GetBase()->GetDuration() > 0)
-        target->SendLossOfControl(GetCaster(), GetId(), GetBase()->GetDuration(), GetBase()->GetDuration(), GetSpellInfo()->GetEffectMechanic(GetEffIndex()), 0, LOC_ROOT, apply);
+    if (apply)
+        target->AddControlledMask(UNIT_STATE_ROOT);
+    else
+        target->SetControlled(apply, UNIT_STATE_ROOT);
+
+    if (aura->GetDuration() > 0)
+        target->SendLossOfControl(GetCaster(), GetId(), aura->GetDuration(), aura->GetDuration(), GetSpellInfo()->GetEffectMechanic(GetEffIndex()), 0, LOC_ROOT, apply);
 }
 
 void AuraEffect::HandlePreventFleeing(AuraApplication const* aurApp, uint8 mode, bool apply) const
