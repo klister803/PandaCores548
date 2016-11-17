@@ -749,6 +749,9 @@ void Player::UpdateSpellCritChance(uint32 school)
     // Increase crit from spell crit ratings
     crit += GetRatingBonusValue(CR_CRIT_SPELL);
 
+    if (crit < 0.0f)
+        crit = 0.0f;
+
     // Store crit value
     SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + school, crit);
 }
