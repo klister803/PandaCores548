@@ -81,7 +81,7 @@ enum eEvents
     EVENT_FRIGIT_ASSAULT     = 2,
     //Sul
     EVENT_SAND_BOLT          = 3,
-    EVENT_SUM_LOA_SPIRIT     = 4,
+    EVENT_SAND_TRAP          = 4,
     EVENT_SANDSTORM          = 5,
     //Kazrajin
     EVENT_R_CHARGE           = 6,
@@ -181,13 +181,14 @@ public:
         uint32 donehppct;
         uint32 timerpower;
         uint32 actualtimer;
+        uint32 loaspirittimer;
         bool needresetevents;
 
         void Reset()
         {
             CouncilsReset();
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
-            //RemovePassenger(true);
+            RemovePassenger(true);
             events.Reset();
             summon.DespawnAll();
             me->RemoveAurasDueToSpell(SPELL_R_CHARGE_VISUAL);
@@ -196,14 +197,15 @@ public:
                 me->SetReactState(REACT_PASSIVE);
             else
                 me->SetReactState(REACT_DEFENSIVE);
-            //if (me->GetEntry() == NPC_FROST_KING_MALAKK)
-                //ResetGarajalSoul();
+            if (me->GetEntry() == NPC_FROST_KING_MALAKK)
+                ResetGarajalSoul();
             me->setPowerType(POWER_ENERGY);
             me->SetPower(POWER_ENERGY, 0);
             donehppct = 100; //default value
             timerpower = 0;
             actualtimer = 0;
             needresetevents = false;
+            loaspirittimer = 0;
         }
 
         void JustSummoned(Creature* sum)
@@ -249,21 +251,25 @@ public:
                 events.ScheduleEvent(EVENT_BITTING_COLD, 30000);
                 break;
             case NPC_SUL_SANDCRAWLER:
-                events.ScheduleEvent(EVENT_SAND_BOLT, 35000);
+                events.ScheduleEvent(EVENT_SAND_BOLT, 30000);
+                events.ScheduleEvent(EVENT_SAND_TRAP, 40000);
+                break;
+            case NPC_PRINCESS_MARLI:
+                loaspirittimer = 38000;
                 break;
             }
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
-            /*if (donehppct < 100)
+            if (donehppct < 100)
             {
                 if (HealthBelowPct(donehppct))
                 {
                     donehppct = 100;
                     RemovePassenger(false);
                 }
-            }*/
+            }
         }
 
         void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
@@ -311,18 +317,19 @@ public:
             switch (me->GetEntry())
             {
             case NPC_FROST_KING_MALAKK:
-                //ActiveGarajalSoul();
+                ActiveGarajalSoul();
                 events.ScheduleEvent(EVENT_FRIGIT_ASSAULT, 15000);
                 events.ScheduleEvent(EVENT_BITTING_COLD, 30000);
                 break;
             case NPC_SUL_SANDCRAWLER:
                 events.ScheduleEvent(EVENT_SAND_BOLT, 35000);
+                events.ScheduleEvent(EVENT_SAND_TRAP, 40000);
                 break;
             case NPC_KAZRAJIN:
                 events.ScheduleEvent(EVENT_R_CHARGE, 6000);
                 break;
             case NPC_PRINCESS_MARLI:
-                //events.ScheduleEvent(EVENT_LOA_SPIRIT, 38000);
+                loaspirittimer = 38000;
                 break;
             default:
                 break;
@@ -378,6 +385,8 @@ public:
                         {
                             needresetevents = true;
                             events.Reset();
+                            if (me->GetEntry() == NPC_PRINCESS_MARLI)
+                                loaspirittimer = 0;
                             timerpower = 0;
                         }
                         else
@@ -386,6 +395,17 @@ public:
                 }
                 else
                     timerpower -= diff;
+            }
+
+            if (loaspirittimer)
+            {
+                if (loaspirittimer <= diff)
+                {
+                    DoCast(me, me->HasAura(SPELL_POSSESSED) ? SPELL_B_LOA_SPIRIT_P_SUM : SPELL_D_LOA_SPIRIT_P_SUM);
+                    loaspirittimer = 38000;
+                }
+                else
+                    loaspirittimer -= diff;
             }
 
             events.Update(diff);
@@ -411,7 +431,16 @@ public:
                 case EVENT_SAND_BOLT:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 40.0f, true))
                         DoCast(target, SPELL_SAND_BOLT);
-                    events.ScheduleEvent(EVENT_SAND_BOLT, 35000);
+                    events.ScheduleEvent(EVENT_SAND_BOLT, 30000);
+                    break;
+                case EVENT_SAND_TRAP:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 80.0f, true))
+                    {
+                        Position pos;
+                        target->GetPosition(&pos);
+                        me->SummonCreature(NPC_LIVING_SAND, pos.GetPositionX(), pos.GetPositionY(), me->GetPositionZ());
+                    }
+                    events.ScheduleEvent(EVENT_SAND_TRAP, 40000);
                     break;
                 case EVENT_SANDSTORM:
                     DoCast(me, SPELL_SANDSTORM);

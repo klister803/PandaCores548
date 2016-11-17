@@ -8,9 +8,9 @@ UPDATE `creature_template` SET `ScriptName`='npc_loa_spirit' WHERE `entry`='6949
 UPDATE `creature_template` SET `ScriptName`='npc_loa_spirit' WHERE `entry`='69548';
 UPDATE `creature_template` SET `ScriptName`='npc_loa_spirit' WHERE `entry`='69553';
 UPDATE `creature_template` SET `ScriptName`='npc_loa_spirit' WHERE `entry`='69556';
-INSERT INTO `uwow_world_mop`.`spell_script_names`(`spell_id`,`ScriptName`) VALUES ( '136860','spell_coe_sand_trap'); 
-INSERT INTO `uwow_world_mop`.`spell_script_names`(`spell_id`,`ScriptName`) VALUES ( '136442','spell_possessed'); 
-INSERT INTO `uwow_world_mop`.`spell_script_names`(`spell_id`,`ScriptName`) VALUES ( '137203','spell_loa_spirit'); 
-INSERT INTO `uwow_world_mop`.`spell_script_names`(`spell_id`,`ScriptName`) VALUES ( '137350','spell_loa_spirit'); 
-INSERT INTO `uwow_world_mop`.`spell_script_names`(`spell_id`,`ScriptName`) VALUES ( '136894','spell_sandstorm'); 
+INSERT INTO `spell_script_names`(`spell_id`,`ScriptName`) VALUES ( '136860','spell_coe_sand_trap'); 
+INSERT INTO `spell_script_names`(`spell_id`,`ScriptName`) VALUES ( '136442','spell_possessed'); 
+INSERT INTO `spell_script_names`(`spell_id`,`ScriptName`) VALUES ( '137203','spell_loa_spirit'); 
+INSERT INTO `spell_script_names`(`spell_id`,`ScriptName`) VALUES ( '137350','spell_loa_spirit'); 
+INSERT INTO `spell_script_names`(`spell_id`,`ScriptName`) VALUES ( '136894','spell_sandstorm'); 
 

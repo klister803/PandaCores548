@@ -477,6 +477,8 @@ public:
                     case DONE:
                         for (std::vector <uint64>::const_iterator guids = councilentdoorGuids.begin(); guids != councilentdoorGuids.end(); guids++)
                             HandleGameObject(*guids, true);
+                        if (Creature* gs = instance->GetCreature(garajalsoulGuid))
+                            gs->DespawnOrUnsummon();
                         HandleGameObject(councilexdoorGuid, true);
                         HandleGameObject(councilex2doorGuid, true);
                         break;
