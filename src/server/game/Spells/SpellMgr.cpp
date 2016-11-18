@@ -3740,10 +3740,6 @@ void SpellMgr::LoadSpellCustomAttr()
             if (!spellInfo)
                 continue;
 
-            // Remove feather fall auras on ground
-            if (spellInfo->HasAura(SPELL_AURA_FEATHER_FALL) && !spellInfo->HasAura(SPELL_AURA_HOVER))
-                spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_LANDING;
-
             for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
             {
                 switch (spellInfo->Effects[j]->ApplyAuraName)
