@@ -1506,11 +1506,11 @@ void AchievementMgr<T>::UpdateAchievementCriteria(CriteriaTypes type, uint32 mis
         CriteriaEntry const* criteria = tree->Criteria ? tree->Criteria->Entry : NULL;
         AchievementEntry const* achievement = tree->Achievement;
 
-        bool canComplete = false;
-        if (!CanUpdateCriteria(tree, miscValue1, miscValue2, miscValue3, unit, referencePlayer))
+        if(!criteriaTree || !criteria)
             continue;
 
-        if(!criteriaTree || !criteria)
+        bool canComplete = false;
+        if (!CanUpdateCriteria(tree, miscValue1, miscValue2, miscValue3, unit, referencePlayer))
             continue;
 
         // requirements not found in the dbc
