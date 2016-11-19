@@ -1454,11 +1454,11 @@ void AchievementMgr<Guild>::SendCriteriaUpdate(CriteriaProgress const* progress,
 template<class T>
 void AchievementMgr<T>::CheckAllAchievementCriteria(Player* referencePlayer)
 {
-    m_canUpdateAchiev = 1;
-
     // suppress sending packets
     for (uint32 i = 0; i < CRITERIA_TYPE_TOTAL; ++i)
         UpdateAchievementCriteria(CriteriaTypes(i), 0, 0, 0, NULL, referencePlayer, true);
+
+    m_canUpdateAchiev = 1;
 }
 
 static const uint32 achievIdByArenaSlot[MAX_ARENA_SLOT] = {1057, 1107, 1108};
