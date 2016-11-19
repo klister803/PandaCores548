@@ -1482,8 +1482,8 @@ void AchievementMgr<T>::UpdateAchievementCriteria(CriteriaTypes type, uint32 mis
     // sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "UpdateAchievementCriteria type %u (%u, %u, %u) CriteriaSort %u", type, miscValue1, miscValue2, miscValue3, GetCriteriaSort());
 
     // Prevent update if player not loading
-    // if (!CanUpdate())
-        // return;
+    if (!CanUpdate())
+        return;
 
     // disable for gamemasters with GM-mode enabled
     if (referencePlayer->isGameMaster())
