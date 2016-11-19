@@ -95,6 +95,43 @@ WorldObject* ObjectAccessor::GetWorldObject(WorldObject const& p, uint64 guid)
     }
 }
 
+void ObjectAccessor::SetGuidSize(HighGuid type, uint32 size)
+{
+    switch (type)
+    {
+        case HIGHGUID_PLAYER:
+            HashMapHolder<Player>::SetSize(size);
+            break;
+        case HIGHGUID_TRANSPORT:
+        case HIGHGUID_MO_TRANSPORT:
+            HashMapHolder<Transport>::SetSize(size);
+            break;
+        case HIGHGUID_GAMEOBJECT:
+            HashMapHolder<GameObject>::SetSize(size);
+            break;
+        case HIGHGUID_VEHICLE:
+            HashMapHolder<Vehicle>::SetSize(size);
+            break;
+        case HIGHGUID_UNIT:
+            HashMapHolder<Creature>::SetSize(size);
+            break;
+        case HIGHGUID_PET:
+            HashMapHolder<Pet>::SetSize(size);
+            break;
+        case HIGHGUID_DYNAMICOBJECT:
+            HashMapHolder<DynamicObject>::SetSize(size);
+            break;
+        case HIGHGUID_AREATRIGGER:
+            HashMapHolder<AreaTrigger>::SetSize(size);
+            break;
+        case HIGHGUID_CORPSE:
+            HashMapHolder<Corpse>::SetSize(size);
+            break;
+        default:
+            break;
+    }
+}
+
 Object* ObjectAccessor::GetObjectByTypeMask(WorldObject const& p, uint64 guid, uint32 typemask)
 {
     switch (GUID_HIPART(guid))
@@ -211,25 +248,27 @@ Player* ObjectAccessor::FindPlayerByName(std::string name)
 {
     std::transform(name.begin(), name.end(), name.begin(), ::tolower);
 
-    TRINITY_READ_GUARD(HashMapHolder<Player>::LockType, *HashMapHolder<Player>::GetLock());
+    return HashMapHolder<Player>::FindStr(name);
 
-    for (auto const &kvPair : GetPlayers())
-    {
-        if (!kvPair.second->IsInWorld())
-            continue;
+    // TRINITY_READ_GUARD(HashMapHolder<Player>::LockType, *HashMapHolder<Player>::GetLock());
 
-        std::string currentName = kvPair.second->GetName();
-        std::transform(currentName.begin(), currentName.end(), currentName.begin(), ::tolower);
-        if (name.compare(currentName) == 0)
-            return kvPair.second;
-    }
+    // for (auto const &kvPair : GetPlayers())
+    // {
+        // if (!kvPair.second->IsInWorld())
+            // continue;
 
-    return NULL;
+        // std::string currentName = kvPair.second->GetName();
+        // std::transform(currentName.begin(), currentName.end(), currentName.begin(), ::tolower);
+        // if (name.compare(currentName) == 0)
+            // return kvPair.second;
+    // }
+
+    // return NULL;
 }
 
 void ObjectAccessor::SaveAllPlayers()
 {
-    TRINITY_READ_GUARD(HashMapHolder<Player>::LockType, *HashMapHolder<Player>::GetLock());
+    HashMapHolder<Player>::ReadGuardType guard(HashMapHolder<Player>::GetLock());
     for (auto &pair : GetPlayers())
         pair.second->SaveToDB();
 }
@@ -437,8 +476,12 @@ void ObjectAccessor::UnloadAll()
 
 /// Define the static members of HashMapHolder
 
-template <class T> std::unordered_map<uint64, T*> HashMapHolder<T>::m_objectMap;
+template <class T> std::unordered_map<uint64, T*> HashMapHolder<T>::_objectMap;
+template <class T> std::unordered_map<std::string, T*> HashMapHolder<T>::_objectMapStr;
+template <class T> std::vector<T*> HashMapHolder<T>::_objectVector;
 template <class T> typename HashMapHolder<T>::LockType HashMapHolder<T>::i_lock;
+template <class T> typename HashMapHolder<T>::LockType HashMapHolder<T>::i_lockVector;
+template <class T> uint32 HashMapHolder<T>::_size;
 
 /// Global definitions for the hashmap storage
 
@@ -449,6 +492,7 @@ template class HashMapHolder<DynamicObject>;
 template class HashMapHolder<Creature>;
 template class HashMapHolder<Corpse>;
 template class HashMapHolder<Transport>;
+template class HashMapHolder<AreaTrigger>;
 
 template Player* ObjectAccessor::GetObjectInWorld<Player>(uint32 mapid, float x, float y, uint64 guid, Player* /*fake*/);
 template Pet* ObjectAccessor::GetObjectInWorld<Pet>(uint32 mapid, float x, float y, uint64 guid, Pet* /*fake*/);
@@ -457,3 +501,4 @@ template Corpse* ObjectAccessor::GetObjectInWorld<Corpse>(uint32 mapid, float x,
 template GameObject* ObjectAccessor::GetObjectInWorld<GameObject>(uint32 mapid, float x, float y, uint64 guid, GameObject* /*fake*/);
 template DynamicObject* ObjectAccessor::GetObjectInWorld<DynamicObject>(uint32 mapid, float x, float y, uint64 guid, DynamicObject* /*fake*/);
 template Transport* ObjectAccessor::GetObjectInWorld<Transport>(uint32 mapid, float x, float y, uint64 guid, Transport* /*fake*/);
+template AreaTrigger* ObjectAccessor::GetObjectInWorld<AreaTrigger>(uint32 mapid, float x, float y, uint64 guid, AreaTrigger* /*fake*/);

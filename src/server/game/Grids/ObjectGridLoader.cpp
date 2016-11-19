@@ -191,14 +191,27 @@ void ObjectGridStoper::Visit(CreatureMapType &m)
 
         if (source->isInCombat())
         {
-            source->CombatStop();
-            source->DeleteThreatList();
+            // For crash info
+            volatile uint32 guid = source->GetGUIDLow();
+            volatile uint32 entry = source->GetEntry();
+
             // If creature calling RemoveCharmedBy during EnterEvadeMode, RemoveCharmedBy call AIM_Initialize so AI() pointer may be corrupt
             // Maybe we need to lock AI during the call of EnterEvadeMode ?
-            source->SetLockAI(true);
-            if (source->IsAIEnabled)
-                source->AI()->EnterEvadeMode();    // Calls RemoveAllAuras
-            source->SetLockAI(false);
+            switch(source->GetEntry())
+            {
+                case 46499:
+                case 62982:
+                case 67236:
+                case 35814:
+                    break;
+                default:
+                    if (!source->isAnySummons() && !source->isTrainingDummy())
+                        source->RemoveAllAurasExceptType(SPELL_AURA_CONTROL_VEHICLE);
+                    break;
+            }
+
+            source->CombatStop();
+            source->DeleteThreatList();
         }
     }
     // _lock.unlock();
