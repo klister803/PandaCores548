@@ -61,6 +61,7 @@ enum eCreatures
     NPC_LIGHTNING_NOVA_TOTEM    = 69215,
     NPC_LIVING_SAND             = 69153,
     NPC_GARAJAL_SOUL            = 69182,
+    NPC_ROCKFALL                = 68219,
 
     NPC_BLESSED_LOA_SPIRIT      = 69480,
     NPC_BLESSED_LOA_SPIRIT_2    = 69491,

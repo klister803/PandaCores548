@@ -26,10 +26,17 @@ enum eSpells
     SPELL_SNAPPING_BITE        = 135251,
     SPELL_QUAKE_STOMP          = 134920,
     SPELL_CALL_OF_TORTOS       = 136294,
+    SPELL_SUM_ROCKFALL         = 134365,
+    SPELL_ROCKFALL             = 134475,
     SPELL_ROCKFALL_P_DMG       = 134539,
 
     //Whirl turtle
+    SPELL_KICK_SHELL           = 134030,
+    SPELL_KICK_SHELL_KICK_AURA = 134031,
+    SPELL_KICK_SHELL_I_AURA    = 134092,
+    SPELL_KICK_SHELL_ROOT      = 134073,
     SPELL_SHELL_BLOCK          = 133971,
+    SPELL_SHELL_BLOCK_DUMMY    = 140054,
     SPELL_SPINNING_SHELL_V     = 133974,
     SPELL_SPINNING_SHELL_DMG   = 134011,
 
@@ -49,7 +56,7 @@ enum eEvents
     EVENT_STONE_BREATH         = 5,
 
     //Whirl turtle
-    EVENT_SPINNING_SHELL       = 5,
+    EVENT_DESPAWN              = 5,
 };
 
 const float maxpullpos = 4988.0f;
@@ -65,16 +72,24 @@ public:
         {
             instance = creature->GetInstanceScript();
         }
-
         InstanceScript* instance;
         uint32 checkvictim;
 
         void Reset()
         {
             _Reset();
+            AddOrRemoveSpellKickShellOnPlayers(false);
             checkvictim = 0;
             me->setPowerType(POWER_ENERGY);
-            me->SetPower(POWER_ENERGY, 100);
+            me->SetPower(POWER_ENERGY, 0);
+        }
+
+        void AddOrRemoveSpellKickShellOnPlayers(bool state)
+        {
+            if (state)
+                instance->DoCastSpellOnPlayers(SPELL_KICK_SHELL);
+            else
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_KICK_SHELL);
         }
 
         void JustReachedHome()
@@ -86,6 +101,7 @@ public:
         void EnterCombat(Unit* who)
         {
             _EnterCombat();
+            AddOrRemoveSpellKickShellOnPlayers(true);
             checkvictim = 1500;
             events.ScheduleEvent(EVENT_SUMMON_BATS, 45000);
             events.ScheduleEvent(EVENT_CALL_OF_TORTOS, 60000);
@@ -97,6 +113,7 @@ public:
         void JustDied(Unit* /*killer*/)
         {
             _JustDied();
+            AddOrRemoveSpellKickShellOnPlayers(false);
         }
 
         bool CheckPullPlayerPos(Unit* who)
@@ -200,13 +217,38 @@ public:
             me->SetReactState(REACT_PASSIVE);
         }
         InstanceScript* pInstance;
+        EventMap events;
+        bool kick;
         bool done;
 
         void Reset()
         {
+            kick = false;
             done = false;
             DoCast(me, SPELL_SPINNING_SHELL_V, true);
             me->GetMotionMaster()->MoveRandom(8.0f);
+        }
+
+        void SetGUID(uint64 guid, int32 id)
+        {
+            if (id && !kick)
+            {
+                kick = true;
+                if (Player* pl = me->GetPlayer(*me, guid))
+                {
+                    float x, y;
+                    float ang = pl->GetOrientation();
+                    GetPositionWithDistInOrientation(pl, 100.0f, ang, x, y);
+                    me->GetMotionMaster()->MoveJump(x, y, -61.2176f, 42.0f, 0.0f, 1);
+                    me->AddAura(SPELL_KICK_SHELL_I_AURA, me);
+                }
+            }
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (type == EFFECT_MOTION_TYPE)
+                events.ScheduleEvent(EVENT_DESPAWN, 5000);
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -223,7 +265,16 @@ public:
             }
         }
 
-        void UpdateAI(uint32 diff){}
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_DESPAWN)
+                    me->DespawnOrUnsummon();
+            }
+        }
     };
 
     CreatureAI* GetAI(Creature* creature) const
@@ -331,6 +382,114 @@ public:
     }
 };
 
+//134031
+class spell_kick_shell_aura : public SpellScriptLoader
+{
+public:
+    spell_kick_shell_aura() : SpellScriptLoader("spell_kick_shell_aura") { }
+
+    class spell_kick_shell_aura_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_kick_shell_aura_SpellScript);
+
+        SpellCastResult CheckCast()
+        {
+            if (GetCaster())
+            {
+                Aura* aura = GetCaster()->GetAura(SPELL_SHELL_BLOCK_DUMMY);
+                if (!aura)
+                    return SPELL_FAILED_OUT_OF_RANGE;
+            }
+            return SPELL_CAST_OK;
+        }
+
+        void Register()
+        {
+            OnCheckCast += SpellCheckCastFn(spell_kick_shell_aura_SpellScript::CheckCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_kick_shell_aura_SpellScript();
+    }
+
+    class spell_kick_shell_aura_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_kick_shell_aura_AuraScript);
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetTarget())
+                GetTarget()->AddAura(SPELL_KICK_SHELL_ROOT, GetTarget());
+        }
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+        {
+            if (GetCaster() && GetCaster()->ToPlayer() && GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+            {
+                if (Aura* aura = GetCaster()->GetAura(SPELL_SHELL_BLOCK_DUMMY))
+                {
+                    if (Creature* wt = aura->GetCaster()->ToCreature())
+                    {
+                        wt->RemoveAurasDueToSpell(SPELL_SHELL_BLOCK);
+                        wt->AI()->SetGUID(GetCaster()->GetGUID(), 1);
+                    }
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_kick_shell_aura_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            OnEffectRemove += AuraEffectRemoveFn(spell_kick_shell_aura_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_kick_shell_aura_AuraScript();
+    }
+};
+
+class KickShellFilterTarget
+{
+public:
+    bool operator()(WorldObject* unit) const
+    {
+        if (unit->ToCreature() && unit->GetEntry() == NPC_TORTOS)
+            return false;
+        return true;
+    }
+};
+
+//134091, 136431
+class spell_kick_shell_dmg : public SpellScriptLoader
+{
+public:
+    spell_kick_shell_dmg() : SpellScriptLoader("spell_kick_shell_dmg") { }
+
+    class spell_kick_shell_dmg_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_kick_shell_dmg_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*>& targets)
+        {
+            targets.remove_if(KickShellFilterTarget());
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_kick_shell_dmg_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_kick_shell_dmg_SpellScript();
+    }
+};
+
 void AddSC_boss_tortos()
 {
     new boss_tortos();
@@ -338,4 +497,6 @@ void AddSC_boss_tortos()
     new npc_vampiric_cave_bat();
     new spell_quake_stomp();
     new spell_drain_the_weak();
+    new spell_kick_shell_aura();
+    new spell_kick_shell_dmg();
 }

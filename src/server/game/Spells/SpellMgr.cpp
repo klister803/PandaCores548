@@ -4975,6 +4975,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 }
                 //Tortos
+                case 134030: //Shell Kick Override Spells
+                    spellInfo->Effects[0]->Effect = SPELL_EFFECT_APPLY_AURA;
+                    break;
                 case 134920: //Quake stomp
                     spellInfo->Effects[2]->TriggerSpell = 0;
                     break;
