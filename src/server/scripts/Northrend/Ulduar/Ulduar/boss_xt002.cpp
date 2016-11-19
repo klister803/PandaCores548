@@ -190,7 +190,7 @@ public:
             gbfail = false;
             
             if (instance)
-                instance->DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, ACHIEV_TIMED_START_EVENT);
+                instance->DoStopTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, ACHIEV_TIMED_START_EVENT);
         }
 
         void EnterCombat(Unit* /*who*/)
@@ -205,7 +205,7 @@ public:
             events.ScheduleEvent(EVENT_TYMPANIC_TANTRUM, 40000, 0, 1);
 
             if (instance)
-                instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, ACHIEV_TIMED_START_EVENT);
+                instance->DoStartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, ACHIEV_TIMED_START_EVENT);
         }
 
         bool isgbfail()
@@ -589,8 +589,8 @@ public:
             {
                 if (m_pInstance)
                 {
-                    m_pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET2, ACHIEVEMENT_NERF_SCRAPBOTS);
-                    m_pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, ACHIEVEMENT_NERF_SCRAPBOTS);
+                    m_pInstance->DoStartTimedAchievement(CRITERIA_TIMED_TYPE_SPELL_TARGET2, ACHIEVEMENT_NERF_SCRAPBOTS);
+                    m_pInstance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, ACHIEVEMENT_NERF_SCRAPBOTS);
                 }
                     
             }

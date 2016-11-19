@@ -453,7 +453,7 @@ void BattlefieldWG::OnBattleEnd(bool endByTimer)
                 RemoveAurasFromPlayer(player);
                 player->RewardHonor(NULL, 1, (team == GetDefenderTeam()) ? 3000 : 1250);
                 RewardMarkOfHonor(player, marks);
-                player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, (team == GetDefenderTeam()) ? SPELL_VICTORY_REWARD : SPELL_DEFEAT_REWARD);
+                player->UpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, (team == GetDefenderTeam()) ? SPELL_VICTORY_REWARD : SPELL_DEFEAT_REWARD);
 
                 // reward for our workshops not damaged
                 for (uint32 i = 0; i < intactNum; ++i)

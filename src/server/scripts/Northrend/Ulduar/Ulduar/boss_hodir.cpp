@@ -194,7 +194,7 @@ public:
             {
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BITING_COLD_TRIGGERED);
                 // Kill credit
-                instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET2, 64899, 0, 0, me);
+                instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET2, 64899, 0, 0, me);
                 // Getting Cold in Here
                 if (RareCache)
                     instance->SetData(DATA_HODIR_RARE_CHEST, GO_STATE_READY);
@@ -246,7 +246,7 @@ public:
                         continue;
                     
                     /*if (pTarget->GetAura(SPELL_STORM_POWER_HELPER) && pTarget->GetAura(62821) && pTarget->GetAura(62807))
-                            pTarget->ToPlayer()->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET2, ACHIEVEMENT_STAYING_BUFFED_ALL_WINTER);*/
+                            pTarget->ToPlayer()->GetAchievementMgr().UpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET2, ACHIEVEMENT_STAYING_BUFFED_ALL_WINTER);*/
                     
                     if (bMoreThanTwoIntenseCold)
                     {

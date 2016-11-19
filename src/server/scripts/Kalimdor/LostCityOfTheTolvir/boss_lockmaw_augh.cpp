@@ -311,7 +311,7 @@ public:
             InstanceScript* instance = me->GetInstanceScript();
 
             if (instance)
-                instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_CREATURE, 43658);
+                instance->DoStartTimedAchievement(CRITERIA_TIMED_TYPE_CREATURE, 43658);
         }
 
         void UpdateAI(uint32 diff)

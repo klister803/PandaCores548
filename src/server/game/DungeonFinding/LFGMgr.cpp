@@ -1656,9 +1656,9 @@ void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId)
 
         // Update achievements
         if (rDungeon->difficulty == HEROIC_DIFFICULTY)
-            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_USE_LFD_TO_GROUP_WITH_PLAYERS, 1);
+            player->UpdateAchievementCriteria(CRITERIA_TYPE_USE_LFD_TO_GROUP_WITH_PLAYERS, 1);
 
-        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_RAID, dungeonDone->dbc->GetMaxGroupSize());
+        player->UpdateAchievementCriteria(CRITERIA_TYPE_COMPLETE_RAID, dungeonDone->dbc->GetMaxGroupSize());
 
         LfgReward const* reward = GetDungeonReward(rDungeonId, player->getLevel());
         if (!reward)

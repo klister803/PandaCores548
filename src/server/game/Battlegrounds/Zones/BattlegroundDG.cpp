@@ -90,11 +90,11 @@ void BattlegroundDG::UpdatePlayerScore(Player* player, uint32 type, uint32 addva
             break;
         case SCORE_POINTS_CAPTURED:
             ((BattlegroundDGScore*)itr->second)->pointsCaptured += addvalue;
-            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, DG_OBJECTIVE_CAPTURE_FLAG, 1);
+            player->UpdateAchievementCriteria(CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, DG_OBJECTIVE_CAPTURE_FLAG, 1);
             break;
         case SCORE_POINTS_DEFENDED:
             ((BattlegroundDGScore*)itr->second)->pointsCaptured += addvalue;
-            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, DG_OBJECTIVE_DEFENDED_FLAG, 1);
+            player->UpdateAchievementCriteria(CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, DG_OBJECTIVE_DEFENDED_FLAG, 1);
             break;
         default: /// else only count another kill
             Battleground::UpdatePlayerScore(player, type, addvalue, addHonor);
@@ -156,7 +156,7 @@ void BattlegroundDG::HandleKillPlayer(Player* player, Player* killer)
         {
             UpdatePlayerScore(killer, SCORE_CARTS_DEFENDED, 1, false);
             if (killer != player)
-                killer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, DG_OBJECTIVE_RETURN_CART, 1);
+                killer->UpdateAchievementCriteria(CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, DG_OBJECTIVE_RETURN_CART, 1);
         }
 
     if (player)
@@ -742,7 +742,7 @@ void BattlegroundDG::Cart::CartDelivered()
     GetBg()->ModGold(player->GetBGTeamId(), m_stolenGold);
     m_stolenGold = 0;
     UnbindCartFromPlayer();
-    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, DG_OBJECTIVE_CAPTURE_CART, 1);
+    player->UpdateAchievementCriteria(CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, DG_OBJECTIVE_CAPTURE_CART, 1);
 
     GetBg()->PlaySoundToAll(player->GetBGTeamId() == TEAM_ALLIANCE ? BG_DG_SOUND_NODE_CAPTURED_ALLIANCE : BG_DG_SOUND_NODE_CAPTURED_HORDE);
 }

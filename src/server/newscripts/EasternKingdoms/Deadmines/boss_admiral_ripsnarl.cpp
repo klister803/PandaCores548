@@ -178,7 +178,7 @@ class boss_admiral_ripsnarl : public CreatureScript
                     events.ScheduleEvent(EVENT_GO_FOR_THE_THROAT, urand(5000, 10000));
 
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_RIPSNARL_ACHIEVEMENT);
-                instance->DoResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET2, ACHIEVEMENT_CRITERIA_CONDITION_UNK13, 28179);
+                instance->DoResetAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET2, CRITERIA_CONDITION_UNK13, 28179);
                 DoZoneInCombat();
                 SetFog(false);
                 instance->SetBossState(DATA_ADMIRAL, IN_PROGRESS);

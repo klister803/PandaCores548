@@ -81,8 +81,8 @@ public:
             case 2:
                 if (IsNextStageAllowed(creature->GetInstanceScript(), STAGE_3))
                 {
-                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34543, 1); //< set stage 3-1
-                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34540, 1); //< set stage 3-2
+                    player->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 34543, 1); //< set stage 3-1
+                    player->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 34540, 1); //< set stage 3-2
                 }
                 player->CLOSE_GOSSIP_MENU();
                 creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
@@ -630,7 +630,7 @@ public:
                 case ACTION_1:
                     if (Player* plr = me->FindNearestPlayer(300.0f))
                         if (IsNextStageAllowed(instance, STAGE_5))
-                            plr->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34552, 1); //< set stage 5
+                            plr->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 34552, 1); //< set stage 5
                     me->SetVisible(true);
                     me->SetReactState(REACT_AGGRESSIVE);
                     break;
@@ -1069,7 +1069,7 @@ public:
                             if (Player* player = players.begin()->getSource())
                             {
                                 player->KilledMonsterCredit(68054, 0); //Quest: Infiltrating the Black Temple - 32325
-                                instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 139410);
+                                instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, 139410);
                             }
                         break;
                     }
@@ -1381,11 +1381,11 @@ public:
             {
                 case 8696:
                     if (IsNextStageAllowed(instance, STAGE_2))
-                        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34539, 1);  //< set stage 2
+                        player->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 34539, 1);  //< set stage 2
                     return true;
                 case 8699:
                     if (IsNextStageAllowed(instance, STAGE_4))
-                        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34545, 1);  //< set stage 4
+                        player->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 34545, 1);  //< set stage 4
                     return true;
                 case 8698:
                     if (instance->GetData(DATA_ESSENCE_OF_ORDER_EVENT) != DONE || instance->GetData(DATA_ESSENCE_OF_ORDER_EVENT) != TO_BE_DECIDED)
@@ -1401,7 +1401,7 @@ public:
                     return true;
                 case 8701:
                     if (instance->GetData(DATA_ALLOWED_STAGE) == STAGE_6)
-                        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34554, 1); //< set stage 7 
+                        player->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 34554, 1); //< set stage 7 
                     return true;
                 case 8706:
                     if (instance->GetData(DATA_NOBEL_EVENT) == NOT_STARTED && instance->GetData(DATA_ESSENCE_OF_ORDER_EVENT) == DONE)
@@ -1437,7 +1437,7 @@ public:
                     return true;
                 case 8908:
                     if (IsNextStageAllowed(instance, STAGE_LAST))
-                        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34559, 1); //< set final stage
+                        player->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 34559, 1); //< set final stage
                     return true;
                 default:
                     return false;
@@ -1480,8 +1480,8 @@ public:
         {
             if (IsNextStageAllowed(instance, STAGE_8))
             {
-                player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34558, 1); //< set stage 8
-                player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34579, 1); //< set stage 8
+                player->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 34558, 1); //< set stage 8
+                player->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 34579, 1); //< set stage 8
                 player->CastSpell(player, SPELL_APPRAISAL);
             }
 

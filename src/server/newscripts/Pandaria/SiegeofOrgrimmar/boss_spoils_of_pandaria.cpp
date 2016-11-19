@@ -387,7 +387,7 @@ public:
                             {
                                 if (Player* player = Itr->getSource())
                                 {
-                                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 145904);
+                                    player->UpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, 145904);
                                     if (me->GetMap()->IsHeroic())
                                         if (AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(8478))
                                             player->CompletedAchievement(achievementEntry);

@@ -221,17 +221,17 @@ void ScenarioProgress::SendStepUpdate(Player* player, bool full)
     {
         ByteBuffer buff;
         uint32 count = 0;
-        if (CriteriaProgressMap const* progressMap = GetAchievementMgr().GetCriteriaProgressMap(0))
+        if (CriteriaProgressMap const* progressMap = GetAchievementMgr().GetCriteriaProgressMap())
         {
             for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
             {
-                CriteriaTreeProgress const& progress = itr->second;
+                CriteriaProgress const& progress = itr->second;
                 CriteriaTreeEntry const* criteriaTreeEntry = sCriteriaTreeStore.LookupEntry(itr->first);
                 if (!criteriaTreeEntry)
                     continue;
 
                 ObjectGuid criteriaGuid = MAKE_NEW_GUID(1, GetScenarioId(), HIGHGUID_SCENARIO_CRITERIA);
-                uint64 counter = progress.counter;
+                uint64 counter = progress.Counter;
 
                 data.WriteGuidMask<7, 6, 0, 4>(criteriaGuid);
                 data.WriteGuidMask<7>(counter);
@@ -253,7 +253,7 @@ void ScenarioProgress::SendStepUpdate(Player* player, bool full)
                 buff.WriteGuidBytes<0>(counter);
                 buff.WriteGuidBytes<5>(criteriaGuid);
                 buff.WriteGuidBytes<4, 5>(counter);
-                buff << uint32(criteriaTreeEntry->criteria);
+                buff << uint32(criteriaTreeEntry->CriteriaID);
                 buff.WriteGuidBytes<2>(counter);
                 buff << uint32(time(NULL) - progress.date);
                 buff.WriteGuidBytes<6, 7>(counter);
@@ -282,11 +282,12 @@ void ScenarioProgress::SendStepUpdate(Player* player, bool full)
         BroadCastPacket(data);
 }
 
-void ScenarioProgress::SendCriteriaUpdate(uint32 criteriaId, uint32 counter, time_t date)
+void ScenarioProgress::SendCriteriaUpdate(CriteriaProgress const* progress)
 {
     WorldPacket data(SMSG_SCENARIO_CRITERIA_UPDATE, 8 + 8 + 4 * 4 + 1);
 
     ObjectGuid criteriaGuid = MAKE_NEW_GUID(1, GetScenarioId(), HIGHGUID_SCENARIO_CRITERIA);
+    ObjectGuid counter = progress->Counter;
 
     data.WriteGuidMask<3>(counter);
     data.WriteGuidMask<7, 2, 0>(criteriaGuid);
@@ -302,15 +303,15 @@ void ScenarioProgress::SendCriteriaUpdate(uint32 criteriaId, uint32 counter, tim
     data.WriteGuidMask<7, 0>(counter);
 
     data.WriteGuidBytes<6, 4>(counter);
-    data << uint32(criteriaId);
-    data << uint32(time(NULL) - date);
+    data << uint32(progress->criteriaTree->CriteriaID);
+    data << uint32(time(NULL) - progress->date);
     data.WriteGuidBytes<4, 5>(criteriaGuid);
     data.WriteGuidBytes<3, 1>(counter);
     data.WriteGuidBytes<3, 1, 6>(criteriaGuid);
     data.WriteGuidBytes<7>(counter);
     data.WriteGuidBytes<0>(criteriaGuid);
-    data << uint32(time(NULL) - date);
-    data << secsToTimeBitFields(date);
+    data << uint32(time(NULL) - progress->date);
+    data << secsToTimeBitFields(progress->date);
     data.WriteGuidBytes<5>(counter);
     data.WriteGuidBytes<2>(criteriaGuid);
     data.WriteGuidBytes<2>(counter);
@@ -340,7 +341,7 @@ bool ScenarioProgress::CanUpdateCriteria(uint32 criteriaId, uint32 recursTree /*
     {
         if(CriteriaTreeEntry const* criteriaTree = *itr)
         {
-            if(criteriaTree->criteria == 0)
+            if(criteriaTree->CriteriaID == 0)
             {
                 if(CanUpdateCriteria(criteriaId, criteriaTree->ID))
                 {

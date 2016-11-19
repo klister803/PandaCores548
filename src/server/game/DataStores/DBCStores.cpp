@@ -394,22 +394,22 @@ void LoadDBCStores(const std::string& dataPath)
     for (uint32 i = 0; i < sAchievementStore.GetNumRows(); ++i)
     {
         if (AchievementEntry const* as = sAchievementStore.LookupEntry(i))
-            if (as->criteriaTree > 0)
-                sAchievementParentList[as->criteriaTree] = as;
+            if (as->CriteriaTree > 0)
+                sAchievementParentList[as->CriteriaTree] = as;
     }
 
     for (uint32 i = 0; i < sCriteriaTreeStore.GetNumRows(); ++i)
     {
         if (CriteriaTreeEntry const* ct = sCriteriaTreeStore.LookupEntry(i))
-            if (ct->parent > 0)
-                sCriteriaTreeList[ct->parent].push_back(ct);
+            if (ct->Parent > 0)
+                sCriteriaTreeList[ct->Parent].push_back(ct);
     }
 
     for (uint32 i = 0; i < sModifierTreeStore.GetNumRows(); ++i)
     {
         if (ModifierTreeEntry const* mt = sModifierTreeStore.LookupEntry(i))
-            if (mt->parent > 0)
-                sModifierTreeList[mt->parent].push_back(mt);
+            if (mt->Parent > 0)
+                sModifierTreeList[mt->Parent].push_back(mt);
     }
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sAreaTriggerStore,            dbcPath, "AreaTrigger.dbc");//14545

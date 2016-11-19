@@ -994,8 +994,8 @@ void Battleground::EndBattleground(uint32 winner)
             if (team == winner)
             {
                 // update achievement BEFORE personal rating update.
-                player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_ARENA, 1);
-                player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_ARENA, GetMapId());
+                player->UpdateAchievementCriteria(CRITERIA_TYPE_WIN_RATED_ARENA, 1);
+                player->UpdateAchievementCriteria(CRITERIA_TYPE_WIN_ARENA, GetMapId());
                 if (GetJoinType() == 5 && sWorld->getBoolConfig(CONFIG_CUSTOM_FOOTBALL))
                   player->ModifyCurrency(CURRENCY_TYPE_HONOR_POINTS, 40);
                 else
@@ -1004,9 +1004,9 @@ void Battleground::EndBattleground(uint32 winner)
             else
             {
                 // Arena lost => reset the win_rated_arena having the "no_lose" condition
-                player->GetAchievementMgr().ResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_ARENA, ACHIEVEMENT_CRITERIA_CONDITION_NO_LOSE);
+                player->GetAchievementMgr().ResetAchievementCriteria(CRITERIA_TYPE_WIN_RATED_ARENA, CRITERIA_CONDITION_NO_LOSE);
             }
-            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_PLAY_ARENA, GetMapId());
+            player->UpdateAchievementCriteria(CRITERIA_TYPE_PLAY_ARENA, GetMapId());
         }
 
         uint32 winner_bonus = player->GetRandomWinner() ? BG_REWARD_WINNER_HONOR_LAST : BG_REWARD_WINNER_HONOR_FIRST;
@@ -1032,18 +1032,18 @@ void Battleground::EndBattleground(uint32 winner)
                     player->ModifyCurrency(CURRENCY_TYPE_CONQUEST_META_ARENA/*CURRENCY_TYPE_CONQUEST_META_RANDOM_BG*/, BG_REWARD_WINNER_CONQUEST_LAST);
             }
 
-            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_BG, 1);
+            player->UpdateAchievementCriteria(CRITERIA_TYPE_WIN_BG, 1);
             if (!guildAwarded)
             {
                 guildAwarded = true;
                 if (uint32 guildId = GetBgMap()->GetOwnerGuildId(player->GetTeam()))
                     if (Guild* guild = sGuildMgr->GetGuildById(guildId))
                     {
-                        guild->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_BG, 1, 0, 0, NULL, player);
+                        guild->GetAchievementMgr().UpdateAchievementCriteria(CRITERIA_TYPE_WIN_BG, 1, 0, 0, NULL, player);
                         if (isArena() && isRated() && winner != WINNER_NONE)
                         {
                             ASSERT(bracket);
-                            guild->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_ARENA, std::max<uint32>(bracket->getRating(), 1), 0, 0, NULL, player);
+                            guild->GetAchievementMgr().UpdateAchievementCriteria(CRITERIA_TYPE_WIN_RATED_ARENA, std::max<uint32>(bracket->getRating(), 1), 0, 0, NULL, player);
                         }
                     }
             }
@@ -1070,15 +1070,15 @@ void Battleground::EndBattleground(uint32 winner)
             if (team == winner)
                 player->ModifyCurrency(CURRENCY_TYPE_CONQUEST_META_RATED_BG, sWorld->getIntConfig(CONFIG_CURRENCY_CONQUEST_POINTS_RBG_REWARD));
             
-            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_BATTLEGROUND, GetMapId());
-            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_RBG_RATING, std::max<uint32>(bracket->getRating(), 1));
+            player->UpdateAchievementCriteria(CRITERIA_TYPE_WIN_RATED_BATTLEGROUND, GetMapId());
+            player->UpdateAchievementCriteria(CRITERIA_TYPE_REACH_RBG_RATING, std::max<uint32>(bracket->getRating(), 1));
         }
 
         BattlegroundQueueTypeId bgQueueTypeId = BattlegroundMgr::BGQueueTypeId(GetTypeID(), GetJoinType());
         sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, this, player, player->GetBattlegroundQueueIndex(bgQueueTypeId), STATUS_IN_PROGRESS, player->GetBattlegroundQueueJoinTime(isArena() ? BATTLEGROUND_AA : GetTypeID()), GetElapsedTime(), GetJoinType());
         player->GetSession()->SendPacket(&data);
 
-        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_BATTLEGROUND, 1);
+        player->UpdateAchievementCriteria(CRITERIA_TYPE_COMPLETE_BATTLEGROUND, 1);
     }
 
     if (isArena() && isRated() && winner != WINNER_NONE)
@@ -2373,7 +2373,7 @@ bool Battleground::IsTeamScoreInRange(uint32 team, uint32 minScore, uint32 maxSc
     return score >= minScore && score <= maxScore;
 }
 
-void Battleground::StartTimedAchievement(AchievementCriteriaTimedTypes type, uint32 entry)
+void Battleground::StartTimedAchievement(CriteriaTimedTypes type, uint32 entry)
 {
     for (BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
         if (Player* player = ObjectAccessor::FindPlayer(itr->first))

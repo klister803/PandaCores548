@@ -162,7 +162,7 @@ public:
 
             if (instance)
             {
-                instance->DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, ACHIEV_TIMED_START_EVENT);
+                instance->DoStopTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, ACHIEV_TIMED_START_EVENT);
             }
             
             construct_list.clear();
@@ -185,7 +185,7 @@ public:
 
             // Stokin' the Furnace
             if (instance)
-                instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, ACHIEV_TIMED_START_EVENT);
+                instance->DoStartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, ACHIEV_TIMED_START_EVENT);
         }
 
         void JustDied(Unit* /*victim*/)

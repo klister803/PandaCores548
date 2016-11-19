@@ -204,7 +204,7 @@ public:
                         Map::PlayerList const& players = instance->GetPlayers();
                         if (Player* plr = players.begin()->getSource())
                         {
-                            plr->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 35754, 1);
+                            plr->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 35754, 1);
                             plr->KilledMonsterCredit(70094, 0); //< set quest 32593 completed
                         }
 

@@ -2385,7 +2385,7 @@ void Spell::EffectSendEvent(SpellEffIndex effIndex)
     m_caster->GetMap()->ScriptsStart(sEventScripts, m_spellInfo->GetEffect(effIndex, m_diffMode)->MiscValue, m_caster, target);
 
     if (Player* player = m_caster->ToPlayer())
-        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT, m_spellInfo->GetEffect(effIndex, m_diffMode)->MiscValue, 1);
+        player->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT, m_spellInfo->GetEffect(effIndex, m_diffMode)->MiscValue, 1);
 }
 
 void Spell::EffectPowerBurn(SpellEffIndex effIndex)
@@ -2883,7 +2883,7 @@ void Spell::DoCreateItem(uint32 /*i*/, uint32 itemtype)
             if (pProto->Quality > ITEM_QUALITY_EPIC || (pProto->Quality == ITEM_QUALITY_EPIC && pProto->ItemLevel >= MinNewsItemLevel[sWorld->getIntConfig(CONFIG_EXPANSION)]))
                 guild->GetNewsLog().AddNewEvent(GUILD_NEWS_ITEM_CRAFTED, time(NULL), player->GetGUID(), 0, pProto->ItemId);
 
-            guild->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CRAFT_ITEMS_GUILD, pProto->ItemId, num_to_add, 0, NULL, player);
+            guild->GetAchievementMgr().UpdateAchievementCriteria(CRITERIA_TYPE_CRAFT_ITEMS_GUILD, pProto->ItemId, num_to_add, 0, NULL, player);
         }
 
         // was it successful? return error if not
@@ -8658,7 +8658,7 @@ void Spell::EffectBonusLoot(SpellEffIndex effIndex)
             //sLog->outDebug(LOG_FILTER_LOOT, "Spell::EffectBonusLoot gold %i bonusLoot %i", loot->gold, loot->bonusLoot);
             player->ModifyMoney(loot->gold);
             player->SendDisplayToast(0, 1, 0/*loot->bonusLoot*/, loot->gold, 0);
-            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_MONEY, loot->gold);
+            player->UpdateAchievementCriteria(CRITERIA_TYPE_LOOT_MONEY, loot->gold);
             loot->gold = 0;
         }
         if(IsTriggered())

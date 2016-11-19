@@ -208,8 +208,8 @@ void BattlegroundBFG::StartingEventOpenDoors()
     DoorOpen(GILNEAS_BG_OBJECT_GATE_A_1);
     DoorOpen(GILNEAS_BG_OBJECT_GATE_H_1);
 
-    StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, BG_EVENT_START_BATTLE);
-    StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, BG_EVENT_START_BATTLE);
+    StartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT, BG_EVENT_START_BATTLE);
+    StartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, BG_EVENT_START_BATTLE);
 }
 
 void BattlegroundBFG::AddPlayer(Player* player)
@@ -614,11 +614,11 @@ void BattlegroundBFG::UpdatePlayerScore(Player* Source, uint32 type, uint32 valu
     {
         case SCORE_BASES_ASSAULTED:
             ((BattlegroundBFGScore*)itr->second)->BasesAssaulted += value;
-            Source->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, BG_OBJECTIVE_ASSAULT_BASE, 1);
+            Source->UpdateAchievementCriteria(CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, BG_OBJECTIVE_ASSAULT_BASE, 1);
             break;
         case SCORE_BASES_DEFENDED:
             ((BattlegroundBFGScore*)itr->second)->BasesDefended += value;
-            Source->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, BG_OBJECTIVE_DEFEND_BASE, 1);
+            Source->UpdateAchievementCriteria(CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, BG_OBJECTIVE_DEFEND_BASE, 1);
             break;
         default:
             Battleground::UpdatePlayerScore(Source, type, value, doAddHonor);

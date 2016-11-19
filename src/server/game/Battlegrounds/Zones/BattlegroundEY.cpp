@@ -123,8 +123,8 @@ void BattlegroundEY::StartingEventOpenDoors()
     }
 
     // Achievement: Flurry
-    StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, EY_EVENT_START_BATTLE);
-    StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, EY_EVENT_START_BATTLE);
+    StartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT, EY_EVENT_START_BATTLE);
+    StartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, EY_EVENT_START_BATTLE);
 }
 
 void BattlegroundEY::AddPoints(uint32 Team, uint32 Points)
@@ -814,7 +814,7 @@ void BattlegroundEY::UpdatePlayerScore(Player* Source, uint32 type, uint32 value
     {
         case SCORE_FLAG_CAPTURES:                           // flags captured
             ((BattlegroundEYScore*)itr->second)->FlagCaptures += value;
-            Source->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, EY_OBJECTIVE_CAPTURE_FLAG, 1);
+            Source->UpdateAchievementCriteria(CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, EY_OBJECTIVE_CAPTURE_FLAG, 1);
             break;
         default:
             Battleground::UpdatePlayerScore(Source, type, value, doAddHonor);

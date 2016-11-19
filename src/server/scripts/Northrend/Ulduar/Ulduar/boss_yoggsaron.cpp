@@ -421,7 +421,7 @@ class boss_sara : public CreatureScript
         {
             if (pInstance)
             {
-                pInstance->DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, 21001);
+                pInstance->DoStopTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, 21001);
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SANITY);
                 // Reset Yogg-Saron
                 for (uint8 data = DATA_YOGGSARON_BRAIN; data <= DATA_YOGGSARON; ++data)
@@ -488,7 +488,7 @@ class boss_sara : public CreatureScript
             DoScriptText(RAND(SAY_SARA_AGGRO_1,SAY_SARA_AGGRO_2,SAY_SARA_AGGRO_3), me);
             if (pInstance)
             {
-                pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, 21001);
+                pInstance->DoStartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, 21001);
                 // 100% Sanity
                 Map::PlayerList const &players = pInstance->instance->GetPlayers();
                 for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
@@ -1272,8 +1272,8 @@ class npc_guardian_yoggsaron : public CreatureScript
         {
             if (pInstance)
             {
-                pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_CREATURE, 33136);
-                pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, 33136, 0, 0, me);
+                pInstance->DoStartTimedAchievement(CRITERIA_TIMED_TYPE_CREATURE, 33136);
+                pInstance->DoUpdateAchievementCriteria(CRITERIA_TYPE_KILL_CREATURE, 33136, 0, 0, me);
                 DoCast(me, RAID_MODE(SPELL_SHADOW_NOVA_10, SPELL_SHADOW_NOVA_25), true);
                 me->DespawnOrUnsummon(3000);
             }

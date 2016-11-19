@@ -288,7 +288,7 @@ public:
             _JustDied();
             me->setFaction(35);
             if (instance) // Kill credit
-                instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 65074, 0, 0, me);
+                instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, 65074, 0, 0, me);
             // Hard mode chest
             uint32 chest;
             switch (EldersCount)
@@ -383,8 +383,8 @@ public:
                     {
                         me->MonsterTextEmote("Deforestation is Done", 0, true);
                         DeforesTimer = 0;
-                        instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAST_SPELL, 65015, 0, 0, me);
-                        instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 65015, 0, 0, me);
+                        instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_CAST_SPELL, 65015, 0, 0, me);
+                        instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, 65015, 0, 0, me);
                     }
                     else
                     {
@@ -667,12 +667,12 @@ public:
             DoScriptText(SAY_BRIGHTLEAF_DEATH, me);
             if (pInstance)
             {
-                pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, ACHIEV_LUMBERJACKED);
+                pInstance->DoStartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, ACHIEV_LUMBERJACKED);
                 if (Creature* IR = me->GetCreature(*me, pInstance->GetData64(DATA_IRONBRANCH)))
                     if (Creature* ST = me->GetCreature(*me, pInstance->GetData64(DATA_STONEBARK)))
                         if (!IR->isAlive()) 
                             if (!ST->isAlive())
-                                pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_LUMBERJACKED_ACHIEVEMENT_CHECK);
+                                pInstance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_LUMBERJACKED_ACHIEVEMENT_CHECK);
              }
         }
         
@@ -818,12 +818,12 @@ public:
             DoScriptText(SAY_IRONBRANCH_DEATH, me);
             if (pInstance)
             {
-                pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, ACHIEV_LUMBERJACKED);
+                pInstance->DoStartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, ACHIEV_LUMBERJACKED);
                 if (Creature* BR = me->GetCreature(*me, pInstance->GetData64(DATA_BRIGHTLEAF)))
                     if (Creature* ST = me->GetCreature(*me, pInstance->GetData64(DATA_STONEBARK)))
                         if (!BR->isAlive())
                             if (!ST->isAlive())
-                                pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_LUMBERJACKED_ACHIEVEMENT_CHECK);
+                                pInstance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_LUMBERJACKED_ACHIEVEMENT_CHECK);
              }
         }
 
@@ -943,12 +943,12 @@ public:
             DoScriptText(SAY_STONEBARK_DEATH, me);
             if (pInstance)
             {
-                pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, ACHIEV_LUMBERJACKED);
+                pInstance->DoStartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, ACHIEV_LUMBERJACKED);
                 if (Creature* BR = me->GetCreature(*me, pInstance->GetData64(DATA_BRIGHTLEAF)))
                     if (Creature* IR = me->GetCreature(*me, pInstance->GetData64(DATA_IRONBRANCH)))
                         if (!BR->isAlive())
                             if (!IR->isAlive())
-                                pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_LUMBERJACKED_ACHIEVEMENT_CHECK);
+                                pInstance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_LUMBERJACKED_ACHIEVEMENT_CHECK);
              }
         }
 

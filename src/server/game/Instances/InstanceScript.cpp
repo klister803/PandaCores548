@@ -395,7 +395,7 @@ void InstanceScript::DoSendNotifyToInstance(char const* format, ...)
 }
 
 // Reset Achievement Criteria for all players in instance
-void InstanceScript::DoResetAchievementCriteria(AchievementCriteriaTypes type, uint64 miscValue1 /*= 0*/, uint64 miscValue2 /*= 0*/, bool evenIfCriteriaComplete /*= false*/)
+void InstanceScript::DoResetAchievementCriteria(CriteriaTypes type, uint64 miscValue1 /*= 0*/, uint64 miscValue2 /*= 0*/, bool evenIfCriteriaComplete /*= false*/)
 {
     Map::PlayerList const &PlayerList = instance->GetPlayers();
 
@@ -421,7 +421,7 @@ void InstanceScript::DoCompleteAchievement(uint32 achievement)
 }
 
 // Update Achievement Criteria for all players in instance
-void InstanceScript::DoUpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, uint32 miscValue3 /*= 0*/, Unit* unit /*= NULL*/)
+void InstanceScript::DoUpdateAchievementCriteria(CriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, uint32 miscValue3 /*= 0*/, Unit* unit /*= NULL*/)
 {
     Map::PlayerList const &PlayerList = instance->GetPlayers();
 
@@ -432,7 +432,7 @@ void InstanceScript::DoUpdateAchievementCriteria(AchievementCriteriaTypes type, 
 }
 
 // Start timed achievement for all players in instance
-void InstanceScript::DoStartTimedAchievement(AchievementCriteriaTimedTypes type, uint32 entry)
+void InstanceScript::DoStartTimedAchievement(CriteriaTimedTypes type, uint32 entry)
 {
     Map::PlayerList const &PlayerList = instance->GetPlayers();
 
@@ -443,7 +443,7 @@ void InstanceScript::DoStartTimedAchievement(AchievementCriteriaTimedTypes type,
 }
 
 // Stop timed achievement for all players in instance
-void InstanceScript::DoStopTimedAchievement(AchievementCriteriaTimedTypes type, uint32 entry)
+void InstanceScript::DoStopTimedAchievement(CriteriaTimedTypes type, uint32 entry)
 {
     Map::PlayerList const &PlayerList = instance->GetPlayers();
 

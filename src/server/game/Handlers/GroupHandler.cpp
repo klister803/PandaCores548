@@ -697,9 +697,9 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recvData)
         // not move item from loot to target inventory
         Item* newitem = target->StoreNewItem(dest, item.itemid, true, item.randomPropertyId, looters);
         target->SendNewItem(newitem, uint32(item.count), false, false, true);
-        target->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_ITEM, item.itemid, item.count);
-        target->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_TYPE, loot->loot_type, item.count);
-        target->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_EPIC_ITEM, item.itemid, item.count);
+        target->UpdateAchievementCriteria(CRITERIA_TYPE_LOOT_ITEM, item.itemid, item.count);
+        target->UpdateAchievementCriteria(CRITERIA_TYPE_LOOT_TYPE, loot->loot_type, item.count);
+        target->UpdateAchievementCriteria(CRITERIA_TYPE_LOOT_EPIC_ITEM, item.itemid, item.count);
 
         // mark as looted
         item.count=0;
@@ -765,10 +765,10 @@ void WorldSession::HandleLootRoll(WorldPacket& recvData)
     switch (rollType)
     {
     case ROLL_NEED:
-        GetPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_ROLL_NEED, 1);
+        GetPlayer()->UpdateAchievementCriteria(CRITERIA_TYPE_ROLL_NEED, 1);
         break;
     case ROLL_GREED:
-        GetPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_ROLL_GREED, 1);
+        GetPlayer()->UpdateAchievementCriteria(CRITERIA_TYPE_ROLL_GREED, 1);
         break;
     }
 }

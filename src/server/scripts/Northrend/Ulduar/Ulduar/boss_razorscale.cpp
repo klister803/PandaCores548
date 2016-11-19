@@ -768,7 +768,7 @@ public:
             {
                 killedByRzr = true;
                 if (instance)
-                    instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, NPC_DARK_RUNE_GUARDIAN, 1, 0, me);
+                    instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_KILL_CREATURE, NPC_DARK_RUNE_GUARDIAN, 1, 0, me);
             }
         }
 

@@ -2031,7 +2031,7 @@ class Player : public Unit, public GridObject<Player>
         {
             SetUInt64Value(PLAYER_FIELD_COINAGE, value);
             MoneyChanged(value);
-            UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_GOLD_VALUE_OWNED);
+            UpdateAchievementCriteria(CRITERIA_TYPE_HIGHEST_GOLD_VALUE_OWNED);
         }
 
         RewardedQuestSet const& getRewardedQuests() const { return m_RewardedQuests; }
@@ -3121,7 +3121,7 @@ class Player : public Unit, public GridObject<Player>
 
         AchievementMgr<Player>& GetAchievementMgr() { return m_achievementMgr; }
         AchievementMgr<Player> const& GetAchievementMgr() const { return m_achievementMgr; }
-        void UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, uint32 miscValue3 = 0,
+        void UpdateAchievementCriteria(CriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, uint32 miscValue3 = 0,
                                        Unit* unit = nullptr, bool ignoreGroup = false, bool loginCheck = false);
 
         bool HasAchieved(uint32 achievementId) const;

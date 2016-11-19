@@ -237,7 +237,7 @@ class npc_neptulon : public CreatureScript
                 if (pInstance)
                 {
                     // Achievement
-                    pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_KILL_OZUMAT, 0, 0, me); 
+                    pInstance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_KILL_OZUMAT, 0, 0, me); 
                     
                     // Guild Achievement
                     Map::PlayerList const &PlayerList = pInstance->instance->GetPlayers();
@@ -249,7 +249,7 @@ class npc_neptulon : public CreatureScript
                                 if (Group* pGroup = pPlayer->GetGroup())
                                     if (pPlayer->GetGuildId() && pGroup->IsGuildGroup(pPlayer->GetGuildId(), true, true))
                                     {
-                                        pGroup->UpdateGuildAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_KILL_OZUMAT, 0, 0, NULL, me);
+                                        pGroup->UpdateGuildAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_KILL_OZUMAT, 0, 0, NULL, me);
                                         break;
                                     }
                         }

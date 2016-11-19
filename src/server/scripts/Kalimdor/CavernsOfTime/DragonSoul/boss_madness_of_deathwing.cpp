@@ -2136,7 +2136,7 @@ class npc_madness_of_deathwing_deathwing : public CreatureScript
                     {
                         isDead = true;
                         DoCastAOE(SPELL_DEATHWING_CREDIT);
-                        pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_DEATHWING_CREDIT, 0, 0, me);
+                        pInstance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_DEATHWING_CREDIT, 0, 0, me);
                         Map::PlayerList const& players = pInstance->instance->GetPlayers();
                         if (!players.isEmpty())
                             if (players.begin()->getSource()->GetGroup())

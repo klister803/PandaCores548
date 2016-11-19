@@ -341,7 +341,7 @@ class npc_vanessa_vancleef_vanessa_sitting : public CreatureScript
                             if (Creature* pVanessa = me->FindNearestCreature(NPC_VANESSA_VANCLEEF, 40.0f))
                                 pVanessa->SetVisible(true);
                             
-                            pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, ACHIEVEMENT_EVENT);
+                            pInstance->DoStartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, ACHIEVEMENT_EVENT);
 
                             me->DespawnOrUnsummon(1000);
                             break;

@@ -501,7 +501,7 @@ void WorldSession::HandleGameobjectReportUse(WorldPacket& recvPacket)
         else
             go->AI()->GossipHello(_player);
 
-        _player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_USE_GAMEOBJECT, go->GetEntry());
+        _player->UpdateAchievementCriteria(CRITERIA_TYPE_USE_GAMEOBJECT, go->GetEntry());
     }
 }
 

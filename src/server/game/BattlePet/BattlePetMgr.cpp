@@ -1696,21 +1696,21 @@ void PetBattleWild::UpdatePetsAfterBattle()
                 newPets.push_back(petguid);
 
                 m_player->GetBattlePetMgr()->SendUpdatePets(newPets, true);
-                m_player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_ADD_BATTLE_PET_JOURNAL, pb->GetCreatureEntry());
-                m_player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COLLECT_BATTLEPET);
-                m_player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_PET_IN_BATTLE, pb->GetSpeciesID(), pb->GetQuality(), pb->GetType());
-                m_player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_BATTLE_PET_CREDIT);
+                m_player->UpdateAchievementCriteria(CRITERIA_TYPE_ADD_BATTLE_PET_JOURNAL, pb->GetCreatureEntry());
+                m_player->UpdateAchievementCriteria(CRITERIA_TYPE_COLLECT_BATTLEPET);
+                m_player->UpdateAchievementCriteria(CRITERIA_TYPE_CAPTURE_PET_IN_BATTLE, pb->GetSpeciesID(), pb->GetQuality(), pb->GetType());
+                m_player->UpdateAchievementCriteria(CRITERIA_TYPE_CAPTURE_BATTLE_PET_CREDIT);
             }
 
             if (GetWinner() == TEAM_ALLY)
             {
-                m_player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_WIN, 0, 0, pb->GetType());
+                m_player->UpdateAchievementCriteria(CRITERIA_TYPE_BATTLEPET_WIN, 0, 0, pb->GetType());
 
                 if (pb->GetNewLevel() > pb->GetLevel())
-                    m_player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_LEVEL_UP, pb->GetNewLevel());
+                    m_player->UpdateAchievementCriteria(CRITERIA_TYPE_BATTLEPET_LEVEL_UP, pb->GetNewLevel());
             }
             else
-                m_player->GetAchievementMgr().ResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_WIN, ACHIEVEMENT_CRITERIA_CONDITION_NO_LOSE_PET_BATTLE);
+                m_player->GetAchievementMgr().ResetAchievementCriteria(CRITERIA_TYPE_BATTLEPET_WIN, CRITERIA_CONDITION_NO_LOSE_PET_BATTLE);
         }
     }
 

@@ -71,7 +71,7 @@ public:
             _Reset();
 
             if (instance)
-                instance->DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, ACHIEV_MAKE_QUICK_WERK_OF_HIM_STARTING_EVENT);
+                instance->DoStopTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, ACHIEV_MAKE_QUICK_WERK_OF_HIM_STARTING_EVENT);
         }
 
         void KilledUnit(Unit* /*Victim*/)
@@ -95,7 +95,7 @@ public:
             events.ScheduleEvent(EVENT_BERSERK, 360000);
 
             if (instance)
-                instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, ACHIEV_MAKE_QUICK_WERK_OF_HIM_STARTING_EVENT);
+                instance->DoStartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, ACHIEV_MAKE_QUICK_WERK_OF_HIM_STARTING_EVENT);
         }
 
         void UpdateAI(uint32 diff)

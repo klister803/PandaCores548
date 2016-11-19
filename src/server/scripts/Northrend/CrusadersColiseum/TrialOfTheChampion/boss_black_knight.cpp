@@ -371,7 +371,7 @@ public:
             DoCast(me, SPELL_KILL_CREDIT);
             if (instance)
             {
-                instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 68663);
+                instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, 68663);
                 instance->SetData(BOSS_BLACK_KNIGHT, DONE);
             }
         }

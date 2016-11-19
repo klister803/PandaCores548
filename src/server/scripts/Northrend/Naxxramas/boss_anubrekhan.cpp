@@ -108,7 +108,7 @@ public:
 
             // start achievement timer (kill Maexna within 20 min)
             if (instance)
-                instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, ACHIEV_TIMED_START_EVENT);
+                instance->DoStartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, ACHIEV_TIMED_START_EVENT);
         }
         void EnterCombat(Unit* /*who*/)
         {

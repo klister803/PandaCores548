@@ -155,7 +155,7 @@ public:
             if (instance)
             {
                 instance->SetData(DATA_HERALD_VOLAZJ, NOT_STARTED);
-                instance->DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, ACHIEV_QUICK_DEMISE_START_EVENT);
+                instance->DoStopTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, ACHIEV_QUICK_DEMISE_START_EVENT);
             }
 
             // Visible for all players in insanity
@@ -178,7 +178,7 @@ public:
             if (instance)
             {
                 instance->SetData(DATA_HERALD_VOLAZJ, IN_PROGRESS);
-                instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, ACHIEV_QUICK_DEMISE_START_EVENT);
+                instance->DoStartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, ACHIEV_QUICK_DEMISE_START_EVENT);
             }
         }
 

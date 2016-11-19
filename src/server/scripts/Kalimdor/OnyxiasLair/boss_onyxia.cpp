@@ -182,7 +182,7 @@ public:
             {
                 instance->SetData(DATA_ONYXIA, NOT_STARTED);
                 instance->SetData(DATA_ONYXIA_PHASE, Phase);
-                instance->DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2,  ACHIEV_TIMED_START_EVENT);
+                instance->DoStopTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2,  ACHIEV_TIMED_START_EVENT);
             }
         }
 
@@ -194,7 +194,7 @@ public:
             if (instance)
             {
                 instance->SetData(DATA_ONYXIA, IN_PROGRESS);
-                instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2,  ACHIEV_TIMED_START_EVENT);
+                instance->DoStartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2,  ACHIEV_TIMED_START_EVENT);
             }
         }
 

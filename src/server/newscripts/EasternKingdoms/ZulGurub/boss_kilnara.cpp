@@ -161,8 +161,8 @@ class boss_kilnara : public CreatureScript
                 events.ScheduleEvent(EVENT_LASH_OF_ANGUISH, 10000);
                 events.ScheduleEvent(EVENT_WAIL_OF_SORROW, urand(15000, 20000));
                 events.ScheduleEvent(EVENT_TEARS_OF_BLOOD, urand(12000, 15000));
-                instance->DoResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, ACHIEVEMENT_CRITERIA_CONDITION_NO_SPELL_HIT, SPELL_CLEAR_ACHIEVEMENT);
-                instance->DoResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, ACHIEVEMENT_CRITERIA_CONDITION_NO_SPELL_HIT, SPELL_CLEAR_ACHIEVEMENT);
+                instance->DoResetAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, CRITERIA_CONDITION_NO_SPELL_HIT, SPELL_CLEAR_ACHIEVEMENT);
+                instance->DoResetAchievementCriteria(CRITERIA_TYPE_KILL_CREATURE, CRITERIA_CONDITION_NO_SPELL_HIT, SPELL_CLEAR_ACHIEVEMENT);
                 instance->SetBossState(DATA_KILNARA, IN_PROGRESS);
             }
 
@@ -492,7 +492,7 @@ class spell_kilnara_rat_lure : public SpellScriptLoader
                 GetHitUnit()->CastSpell(GetHitUnit(), SPELL_BLOOD_FRENZY, true);
                 GetHitUnit()->CastSpell(GetCaster(), SPELL_POUNCE_RAT, true);
                 if (InstanceScript* pInstance = GetHitUnit()->GetInstanceScript())
-                    pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_CAT_FED);
+                    pInstance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_CAT_FED);
             }
 
             void Register()

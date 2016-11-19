@@ -498,8 +498,8 @@ class instance_dragon_soul : public InstanceMapScript
                 {
                     if (IsEncounterInProgress() && (player->GetAreaId() == 5960 || player->GetAreaId() == 5893))
                     {
-                        player->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 94644, 0, 0, player, player);
-                        player->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET2, 94655, 0, 0, player, player);
+                        player->GetAchievementMgr().UpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, 94644, 0, 0, player, player);
+                        player->GetAchievementMgr().UpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET2, 94655, 0, 0, player, player);
                     }
                 }
             }

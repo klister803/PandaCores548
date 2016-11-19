@@ -163,17 +163,17 @@ class InstanceScript : public ZoneScript
         void DoSendNotifyToInstance(char const* format, ...);
 
         // Reset Achievement Criteria
-        void DoResetAchievementCriteria(AchievementCriteriaTypes type, uint64 miscValue1 = 0, uint64 miscValue2 = 0, bool evenIfCriteriaComplete = false);
+        void DoResetAchievementCriteria(CriteriaTypes type, uint64 miscValue1 = 0, uint64 miscValue2 = 0, bool evenIfCriteriaComplete = false);
 
         // Complete Achievement for all players in instance
         DECLSPEC_DEPRECATED void DoCompleteAchievement(uint32 achievement) ATTR_DEPRECATED;
 
         // Update Achievement Criteria for all players in instance
-        void DoUpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, uint32 miscValue3 = 0, Unit* unit = NULL);
+        void DoUpdateAchievementCriteria(CriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, uint32 miscValue3 = 0, Unit* unit = NULL);
 
         // Start/Stop Timed Achievement Criteria for all players in instance
-        void DoStartTimedAchievement(AchievementCriteriaTimedTypes type, uint32 entry);
-        void DoStopTimedAchievement(AchievementCriteriaTimedTypes type, uint32 entry);
+        void DoStartTimedAchievement(CriteriaTimedTypes type, uint32 entry);
+        void DoStopTimedAchievement(CriteriaTimedTypes type, uint32 entry);
 
         // Remove Auras due to Spell on all players in instance
         void DoRemoveAurasDueToSpellOnPlayers(uint32 spell);

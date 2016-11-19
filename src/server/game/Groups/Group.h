@@ -246,7 +246,7 @@ class Group
         uint64 GetMemberGUID(const std::string& name);
         bool IsAssistant(uint64 guid) const;
         bool IsGuildGroup(uint32 guildId, bool AllInSameMap = false, bool AllInSameInstanceId = false);
-        void UpdateGuildAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1, uint32 miscValue2, uint32 miscValue3, Unit* unit, WorldObject* rewardSource);
+        void UpdateGuildAchievementCriteria(CriteriaTypes type, uint32 miscValue1, uint32 miscValue2, uint32 miscValue3, Unit* unit, WorldObject* rewardSource);
 
         Player* GetInvited(uint64 guid) const;
         Player* GetInvited(const std::string& name) const;

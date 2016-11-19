@@ -249,7 +249,7 @@ public:
             {
                 pInstance->SetBossState(BOSS_ASSEMBLY, DONE);
                 pInstance->DoCompleteAchievement(ACHIEVEMENT_CHOOSE_STEELBREAKER);
-                pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 65195);
+                pInstance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, 65195);
             }
             else me->SetLootRecipient(NULL);
             
@@ -383,7 +383,7 @@ public:
             {
                 pInstance->SetBossState(BOSS_ASSEMBLY, DONE);
                 pInstance->DoCompleteAchievement(ACHIEVEMENT_CHOOSE_MOLGEIM);
-                pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 65195);
+                pInstance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, 65195);
             }
             else me->SetLootRecipient(NULL);
             
@@ -673,7 +673,7 @@ public:
             {
                 pInstance->SetBossState(BOSS_ASSEMBLY, DONE);
                 pInstance->DoCompleteAchievement(ACHIEVEMENT_CHOOSE_BRUNDIR);
-                pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 65195);
+                pInstance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, 65195);
                 if (me->GetPositionZ() > 428)
                     me->GetMotionMaster()->MoveFall(427.28f);
             }

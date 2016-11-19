@@ -203,7 +203,7 @@ public:
                 if(spell->Id == SPELL_HAMMER_RIGHTEOUS_RET)
                     if(me->GetHealth() <= (uint32)spell->Effects[0]->BasePoints)
                         if(InstanceScript* instance = me->GetInstanceScript())
-                            instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_EADRIC_ACHIEVEMENT);
+                            instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_EADRIC_ACHIEVEMENT);
         }
 
         void EnterCombat(Unit* /*attacker*/)
@@ -242,7 +242,7 @@ public:
                 defeated = true;
                 if (InstanceScript* instance = me->GetInstanceScript())
                 {
-                    instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 68575);
+                    instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, 68575);
                 }
                 me->SetUnitMovementFlags(MOVEMENTFLAG_WALKING);
                 me->GetMotionMaster()->MovePoint(1, me->GetHomePosition());
@@ -447,7 +447,7 @@ public:
                 defeated = true;
                 if (InstanceScript* instance = me->GetInstanceScript())
                 {
-                    instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 68574);
+                    instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, 68574);
                 }
                 me->SetUnitMovementFlags(MOVEMENTFLAG_WALKING);
                 me->GetMotionMaster()->MovePoint(1, me->GetHomePosition());

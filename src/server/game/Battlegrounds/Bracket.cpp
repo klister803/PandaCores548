@@ -185,7 +185,7 @@ uint16 Bracket::FinishGame(bool win, uint16 opponents_mmv)
         values[BRACKET_BEST] = m_rating;
     
     if (Player* player = ObjectAccessor::FindPlayer(m_owner))
-        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_PERSONAL_RATING, m_rating, GetSlotByType());
+        player->UpdateAchievementCriteria(CRITERIA_TYPE_HIGHEST_PERSONAL_RATING, m_rating, GetSlotByType());
 
     // this should be done at week reset
     //if (Player* player = ObjectAccessor::FindPlayer(m_owner))

@@ -100,7 +100,7 @@ public:
             if(!criteriaType)
                 player->KilledMonsterCredit(miscValue1);
             else
-                player->UpdateAchievementCriteria(AchievementCriteriaTypes(criteriaType), miscValue1, miscValue2, miscValue3, handler->getSelectedUnit());
+                player->UpdateAchievementCriteria(CriteriaTypes(criteriaType), miscValue1, miscValue2, miscValue3, handler->getSelectedUnit());
         }
 
         return true;
@@ -120,41 +120,41 @@ public:
                 return false;
         }
 
-        if (AchievementEntry const* achievement = sAchievementStore.LookupEntry(achievementId))
-        {
-            sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementInfo achievement %u", achievement->ID);
+        // if (AchievementEntry const* achievement = sAchievementStore.LookupEntry(achievementId))
+        // {
+            // sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementInfo achievement %u", achievement->ID);
 
-            if(Player* player = handler->GetSession()->GetPlayer())
-            {
-                sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementInfo player %u", achievement->ID);
-                if(CriteriaProgressTree* treeProgress = player->GetAchievementMgr().GetCriteriaTreeProgressMap(achievement->criteriaTree))
-                {
-                    sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementInfo criteriaTree %u, achievement %u ChildrenTree %u ChildrenCriteria %u", achievement->criteriaTree, achievement->ID, treeProgress->ChildrenTree.size(), treeProgress->ChildrenCriteria.size());
+            // if(Player* player = handler->GetSession()->GetPlayer())
+            // {
+                // sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementInfo player %u", achievement->ID);
+                // if(CriteriaProgressTree* treeProgress = player->GetAchievementMgr().GetCriteriaTreeProgressMap(achievement->criteriaTree))
+                // {
+                    // sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementInfo criteriaTree %u, achievement %u ChildrenTree %u ChildrenCriteria %u", achievement->criteriaTree, achievement->ID, treeProgress->ChildrenTree.size(), treeProgress->ChildrenCriteria.size());
 
-                    for (std::vector<CriteriaProgressTree*>::iterator itr = treeProgress->ChildrenTree.begin(); itr != treeProgress->ChildrenTree.end(); ++itr)
-                        sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementInfo ChildrenTree criteriaTree %u parent %u", (*itr)->criteriaTree->ID, (*itr)->criteriaTree->parent);
+                    // for (std::vector<CriteriaProgressTree*>::iterator itr = treeProgress->ChildrenTree.begin(); itr != treeProgress->ChildrenTree.end(); ++itr)
+                        // sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementInfo ChildrenTree criteriaTree %u parent %u", (*itr)->criteriaTree->ID, (*itr)->criteriaTree->parent);
 
-                    for (std::vector<CriteriaTreeProgress const*>::const_iterator itr = treeProgress->ChildrenCriteria.begin(); itr != treeProgress->ChildrenCriteria.end(); ++itr)
-                    {
-                        CriteriaTreeProgress const* progress = *itr;
-                        if(!progress)
-                        {
-                            sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementInfo ChildrenCriteria error progress achievement %u", achievement->ID);
-                            continue;
-                        }
-                        CriteriaEntry const* criteria = progress->criteria;
-                        if(!criteria)
-                        {
-                            sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementInfo ChildrenCriteria error criteria achievement %u criteriaTree %u parent %u", achievement->ID, progress->criteriaTree->ID, progress->parent->ID);
-                            continue;
-                        }
-                        sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementInfo ChildrenCriteria criteria achievement %u criteriaTree %u parent %u criteria %u completed %i deactiveted %i",
-                        achievement->ID, progress->criteriaTree ? progress->criteriaTree->ID : 0, progress->parent ? progress->parent->ID : 0, criteria->ID, progress->completed, progress->deactiveted);
-                    }
-                }
-            }
-        }
-        else
+                    // for (std::vector<CriteriaTreeProgress const*>::const_iterator itr = treeProgress->ChildrenCriteria.begin(); itr != treeProgress->ChildrenCriteria.end(); ++itr)
+                    // {
+                        // CriteriaTreeProgress const* progress = *itr;
+                        // if(!progress)
+                        // {
+                            // sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementInfo ChildrenCriteria error progress achievement %u", achievement->ID);
+                            // continue;
+                        // }
+                        // CriteriaEntry const* criteria = progress->criteria;
+                        // if(!criteria)
+                        // {
+                            // sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementInfo ChildrenCriteria error criteria achievement %u criteriaTree %u parent %u", achievement->ID, progress->criteriaTree->ID, progress->parent->ID);
+                            // continue;
+                        // }
+                        // sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementInfo ChildrenCriteria criteria achievement %u criteriaTree %u parent %u criteria %u completed %i deactiveted %i",
+                        // achievement->ID, progress->criteriaTree ? progress->criteriaTree->ID : 0, progress->parent ? progress->parent->ID : 0, criteria->ID, progress->completed, progress->deactiveted);
+                    // }
+                // }
+            // }
+        // }
+        // else
             sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementInfo error achievement %u not found", achievementId);
 
         return true;

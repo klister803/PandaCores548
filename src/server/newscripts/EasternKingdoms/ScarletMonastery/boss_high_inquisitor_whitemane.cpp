@@ -163,7 +163,7 @@ public:
 
         void JustDied(Unit* /*killer*/)
         {
-            instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ACHIEV_CREDIT, 0, 0, me);
+            instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ACHIEV_CREDIT, 0, 0, me);
             Talk(SAY_WH_DEATH);
             if (instance->instance->GetDifficulty() != CHALLENGE_MODE_DIFFICULTY)
                 if (Creature* durand = instance->instance->GetCreature(instance->GetData64(DATA_DURAND)))

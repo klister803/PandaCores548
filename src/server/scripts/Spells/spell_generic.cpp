@@ -1289,7 +1289,7 @@ class spell_gen_seaforium_blast : public SpellScriptLoader
                 if (Player* originalCaster = GetOriginalCaster()->ToPlayer())
                     if (GameObject* go = GetHitGObj())
                         if (go->GetGOInfo()->type == GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING)
-                            originalCaster->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_PLANT_CHARGES_CREDIT_ACHIEVEMENT);
+                            originalCaster->UpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_PLANT_CHARGES_CREDIT_ACHIEVEMENT);
             }
 
             void Register()
@@ -3810,7 +3810,7 @@ class spell_gen_orb_of_power : public SpellScriptLoader
                         ticks++;
 
                         if (ticks == 6)
-                            caster->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 128768); // Credit Achieve - Powerball
+                            caster->UpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, 128768); // Credit Achieve - Powerball
                     }
                     else
                         ticks = 0;
@@ -4185,7 +4185,7 @@ class spell_gen_bounce_achievement : public SpellScriptLoader
             void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* pCaster = GetCaster()->ToPlayer())
-                    pCaster->GetAchievementMgr().ResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, ACHIEVEMENT_CRITERIA_CONDITION_NOT_LOSE_AURA, 95529);
+                    pCaster->GetAchievementMgr().ResetAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, CRITERIA_CONDITION_NOT_LOSE_AURA, 95529);
             }
 
             void Register()

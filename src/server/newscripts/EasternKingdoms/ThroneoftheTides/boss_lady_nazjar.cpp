@@ -387,7 +387,7 @@ class npc_lady_nazjar_honnor_guard : public CreatureScript
             {
                 if (instance)
                     if (killer && killer->GetTypeId() == TYPEID_UNIT && killer->GetEntry() == NPC_GEYSER)
-                        instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ACHIEV_CREDIT, 0, 0, me);
+                        instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ACHIEV_CREDIT, 0, 0, me);
             }
         };
 };
@@ -454,7 +454,7 @@ class npc_lady_nazjar_tempest_witch : public CreatureScript
             {
                 if (instance)
                     if (killer && killer->GetTypeId() == TYPEID_UNIT && killer->GetEntry() == NPC_GEYSER)
-                        instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ACHIEV_CREDIT, 0, 0, me); 
+                        instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ACHIEV_CREDIT, 0, 0, me); 
             }
         };
 };

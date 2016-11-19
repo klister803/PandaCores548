@@ -73,7 +73,7 @@ class boss_gekkan : public CreatureScript
                     if (c->isAlive())
                         me->CastSpell(c, SPELL_RECKLESS_INSPIRATION, false);
                 }
-                instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET2, SPELL_SAUROK_ACHIEV_AURA, 0, 0, me);
+                instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET2, SPELL_SAUROK_ACHIEV_AURA, 0, 0, me);
                 Talk(TALK_DEATH);
             }
 

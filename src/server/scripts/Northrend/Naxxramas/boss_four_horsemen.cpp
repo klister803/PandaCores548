@@ -331,7 +331,7 @@ public:
 
                 // Achievements related to the 4-horsemen are given through spell 59450 which does not exist.
                 // There is thus no way it can be given by casting the spell on the players.
-                instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 59450);
+                instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, 59450);
             }
 
             DoScriptText(SAY_DEATH[id], me);

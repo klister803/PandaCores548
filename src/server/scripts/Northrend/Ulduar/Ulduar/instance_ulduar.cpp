@@ -225,7 +225,7 @@ public:
                 creature->GetEntry() == 33526 ||
                 creature->GetEntry() == 33527 ||
                 creature->GetEntry() == 33528)
-                DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, 21597);
+                DoStartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, 21597);
             
 
             if (ApplyAchiv)
@@ -235,19 +235,19 @@ public:
             {
                 if (!ironDefTimer)
                 {
-                    DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET2, CRITERIA_DWARFGEDDON);
+                    DoStartTimedAchievement(CRITERIA_TIMED_TYPE_SPELL_TARGET2, CRITERIA_DWARFGEDDON);
                     ironDefTimer = 10*IN_MILLISECONDS;
                 }
 
                 count++;
-                DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, CRITERIA_DWARFGEDDON);
+                DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, CRITERIA_DWARFGEDDON);
 
                 if (count >= 100)
                 {
                     ApplyAchiv = true;
                     ironDefTimer = 0;
                     count = 0;
-                    DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET2, CRITERIA_DWARFGEDDON);
+                    DoStopTimedAchievement(CRITERIA_TIMED_TYPE_SPELL_TARGET2, CRITERIA_DWARFGEDDON);
                 }
             }
         }
@@ -260,7 +260,7 @@ public:
                 {
                     ironDefTimer = 0;
                     count = 0;
-                    DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET2, CRITERIA_DWARFGEDDON);
+                    DoStopTimedAchievement(CRITERIA_TIMED_TYPE_SPELL_TARGET2, CRITERIA_DWARFGEDDON);
                 } else ironDefTimer -= diff;
             }
 

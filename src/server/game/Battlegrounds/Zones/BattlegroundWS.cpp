@@ -218,8 +218,8 @@ void BattlegroundWS::StartingEventOpenDoors()
     SpawnBGObject(BG_WS_OBJECT_DOOR_H_4, RESPAWN_ONE_DAY);
     
     // players joining later are not eligibles
-    StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, WS_EVENT_START_BATTLE);
-    StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, WS_EVENT_START_BATTLE);
+    StartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT, WS_EVENT_START_BATTLE);
+    StartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, WS_EVENT_START_BATTLE);
 
     UpdateWorldState(BG_WS_STATE_TIMER_ACTIVE, 1);
     UpdateWorldState(BG_WS_STATE_TIMER, 20);
@@ -460,11 +460,11 @@ void BattlegroundWS::UpdatePlayerScore(Player* player, uint32 type, uint32 value
     {
         case SCORE_FLAG_CAPTURES:
             ((BattlegroundWGScore*)itr->second)->FlagCaptures += value;
-            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, WS_OBJECTIVE_CAPTURE_FLAG, 1);
+            player->UpdateAchievementCriteria(CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, WS_OBJECTIVE_CAPTURE_FLAG, 1);
             break;
         case SCORE_FLAG_RETURNS:
             ((BattlegroundWGScore*)itr->second)->FlagReturns += value;
-            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, WS_OBJECTIVE_RETURN_FLAG, 1);
+            player->UpdateAchievementCriteria(CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, WS_OBJECTIVE_RETURN_FLAG, 1);
             break;
         default: /// else only count another kill
             Battleground::UpdatePlayerScore(player, type, value, doAddHonor);
@@ -620,7 +620,7 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player* source, GameObject* target
                     source->CastSpell(source, team == TEAM_ALLIANCE ? BG_WS_SPELL_HORDE_FLAG : BG_WS_SPELL_ALLIANCE_FLAG , true);
 
                     /// Start achievement criteria
-                    source->GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET2, team == TEAM_ALLIANCE ? BG_WS_SPELL_HORDE_FLAG_PICKED : BG_WS_SPELL_ALLIANCE_FLAG_PICKED);
+                    source->GetAchievementMgr().StartTimedAchievement(CRITERIA_TIMED_TYPE_SPELL_TARGET2, team == TEAM_ALLIANCE ? BG_WS_SPELL_HORDE_FLAG_PICKED : BG_WS_SPELL_ALLIANCE_FLAG_PICKED);
 
                     /// Verify if both flag are carried
                     if (_flagKeepers[team])

@@ -481,14 +481,14 @@ public:
         switch (action)
         {
             case GOSSIP_ACTION_INFO_DEF + 1:
-                player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 35534, 1);
+                player->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 35534, 1);
                 creature->CastSpell(player, SPELL_SPEC_TEST);
                 creature->CastSpell(player, SPELL_UPDATE_PHASE_SHIFT);
                 creature->AI()->DoAction(ACTION_WRATHION_START);
                 break;
             case GOSSIP_ACTION_INFO_DEF + 3:
             case GOSSIP_ACTION_INFO_DEF + 2:
-                player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 35740, 1);
+                player->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 35740, 1);
                 creature->AI()->DoAction(ACTION_4);
                 break;
             default:
@@ -784,7 +784,7 @@ public:
                         if (!players.isEmpty())
                         if (Player* player = players.begin()->getSource())
                         {
-                            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 35408, 1);
+                            player->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 35408, 1);
                             player->RemoveAura(SPELL_THUNDER_FORGE_CHARGE);
                             player->RemoveAura(SPELL_THUNDER_FORGE_CHARGING_EVENT_STAGE_1);
                         }
@@ -957,7 +957,7 @@ public:
                         Map::PlayerList const& players = me->GetMap()->GetPlayers();
                         if (!players.isEmpty())
                             if (Player* player = players.begin()->getSource())
-                                player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 35409, 1);
+                                player->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 35409, 1);
 
                         if (Creature* stalker = me->FindNearestCreature(NPC_PHASE3_ROOM_CENTER_STALKER, 100.f))
                             stalker->AI()->DoAction(ACTION_1);
@@ -1167,7 +1167,7 @@ public:
         {
             if (Helper::IsNextStageAllowed(instance, STAGE_3))
             {
-                player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 35588, 1);
+                player->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 35588, 1);
                 go->SendGameObjectActivateAnimKit(3809, true);
                 go->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
                 return true;
@@ -1830,7 +1830,7 @@ public:
             Map::PlayerList const& players = me->GetMap()->GetPlayers();
             if (!players.isEmpty())
                 if (Player* player = players.begin()->getSource())
-                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 35744, 1);
+                    player->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 35744, 1);
         }
 
     private:

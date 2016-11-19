@@ -182,7 +182,7 @@ void ChallengeMgr::GroupReward(Map *instance, uint32 recordTime, ChallengeMode m
             CheckBestMemberMapId(member.guid, c);
 
             /// @there is achieve just for complete challenge with no medal
-            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_INSTANSE_MAP_ID, instance->GetId(), medal);
+            player->UpdateAchievementCriteria(CRITERIA_TYPE_INSTANSE_MAP_ID, instance->GetId(), medal);
 
             /// @quest reward for finish challenge. daily
             if (npcRewardCredit)    //should never happend

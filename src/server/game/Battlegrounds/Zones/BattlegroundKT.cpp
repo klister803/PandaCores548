@@ -85,7 +85,7 @@ void BattlegroundKT::PostUpdateImpl(uint32 diff)
                         {
                             AccumulateScore(player->GetTeamId(), m_playersZone[guid]);
                             UpdatePlayerScore(player, SCORE_ORB_SCORE, m_playersZone[guid]);
-                            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, BG_KT_OBJECTIVE_ORB_COUNT, m_playersZone[guid] + 3);
+                            player->UpdateAchievementCriteria(CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, BG_KT_OBJECTIVE_ORB_COUNT, m_playersZone[guid] + 3);
                         }
 
             m_UpdatePointsTimer = BG_KT_POINTS_UPDATE_TIME;
@@ -115,8 +115,8 @@ void BattlegroundKT::StartingEventOpenDoors()
         SpawnBGObject(BG_KT_OBJECT_ORB_1 + i, RESPAWN_IMMEDIATELY);
 
     // Players that join battleground after start are not eligible to get achievement.
-    StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, BG_KT_EVENT_START_BATTLE);
-    StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, BG_KT_EVENT_START_BATTLE);
+    StartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT, BG_KT_EVENT_START_BATTLE);
+    StartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, BG_KT_EVENT_START_BATTLE);
 }
 
 void BattlegroundKT::AddPlayer(Player *player)

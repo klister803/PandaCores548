@@ -61,7 +61,7 @@ public:
     AchievementMgr<ScenarioProgress> const& GetAchievementMgr() const { return m_achievementMgr; }
 
     void SendStepUpdate(Player* player = NULL, bool full = false);
-    void SendCriteriaUpdate(uint32 criteriaId, uint32 counter, time_t date);
+    void SendCriteriaUpdate(CriteriaProgress const* progress);
     void BroadCastPacket(WorldPacket& data);
     uint32 GetScenarioCriteriaByStep(uint8 step);
 

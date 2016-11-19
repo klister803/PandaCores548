@@ -2360,7 +2360,7 @@ public:
 
             // Achiev: You'll Feel Right as Rain
             if (GetStackAmount() == 91)
-                caster->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 99041);
+                caster->UpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, 99041);
         }
 
         void Register()

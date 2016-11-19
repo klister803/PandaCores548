@@ -518,7 +518,7 @@ class boss_valithria_dreamwalker : public CreatureScript
                         Talk(SAY_VALITHRIA_SUCCESS);
 
                         if (_openPortals == _missedPortals)
-                            instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ACHIEVEMENT_CHECK, 0, 0, me);
+                            instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ACHIEVEMENT_CHECK, 0, 0, me);
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                         me->SetReactState(REACT_PASSIVE);
                         me->RemoveAurasDueToSpell(SPELL_CORRUPTION);

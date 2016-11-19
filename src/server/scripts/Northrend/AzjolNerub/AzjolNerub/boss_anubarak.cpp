@@ -138,7 +138,7 @@ public:
             if (instance)
             {
                 instance->SetData(DATA_ANUBARAK_EVENT, NOT_STARTED);
-                instance->DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, ACHIEV_TIMED_START_EVENT);
+                instance->DoStopTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, ACHIEV_TIMED_START_EVENT);
             }
         }
 
@@ -164,7 +164,7 @@ public:
             DoScriptText(SAY_AGGRO, me);
             DelayTimer = 0;
             if (instance)
-                instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, ACHIEV_TIMED_START_EVENT);
+                instance->DoStartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, ACHIEV_TIMED_START_EVENT);
         }
 
         void DelayEventStart()

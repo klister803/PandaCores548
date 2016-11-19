@@ -1856,7 +1856,7 @@ public:
             }
         }
 
-        player->UpdateAchievementCriteria(AchievementCriteriaTypes(criteriaType), miscValue1, miscValue2, miscValue3, unit, true);
+        player->UpdateAchievementCriteria(CriteriaTypes(criteriaType), miscValue1, miscValue2, miscValue3, unit, true);
         return true;
     }
 };

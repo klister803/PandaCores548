@@ -539,7 +539,7 @@ class npc_halls_of_origination_brann_bronzebeard : public CreatureScript
                             if (pInstance)
                             {
                                 pInstance->HandleGameObject(pInstance->GetData64(DATA_ANRAPHET_ENTRANCE_DOOR), true);
-                                pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, EVENT_FASTER_THAN_LIGHT);
+                                pInstance->DoStartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, EVENT_FASTER_THAN_LIGHT);
                             }
                             Talk(SAY_1);
                             events.ScheduleEvent(EVENT_TALK_2, 4000);

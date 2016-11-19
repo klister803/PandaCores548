@@ -3119,10 +3119,10 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
 
     if (unit->GetTypeId() == TYPEID_PLAYER)
     {
-        unit->ToPlayer()->GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET, m_spellInfo->Id);
-        unit->ToPlayer()->GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET2, m_spellInfo->Id);
-        unit->ToPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, m_spellInfo->Id, 0, 0, m_caster);
-        unit->ToPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET2, m_spellInfo->Id);
+        unit->ToPlayer()->GetAchievementMgr().StartTimedAchievement(CRITERIA_TIMED_TYPE_SPELL_TARGET, m_spellInfo->Id);
+        unit->ToPlayer()->GetAchievementMgr().StartTimedAchievement(CRITERIA_TIMED_TYPE_SPELL_TARGET2, m_spellInfo->Id);
+        unit->ToPlayer()->UpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, m_spellInfo->Id, 0, 0, m_caster);
+        unit->ToPlayer()->UpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET2, m_spellInfo->Id);
 
         Map* map = unit->GetMap();
 
@@ -3132,15 +3132,15 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
         if (uint32 instanceId =  map ? map->GetInstanceId() : 0)
             if (ScenarioProgress* progress = sScenarioMgr->GetScenarioProgress(instanceId))
             {
-                progress->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, m_spellInfo->Id, 0, 0, m_caster, unit->ToPlayer());
-                progress->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, m_spellInfo->Id, 0, 0, NULL, unit->ToPlayer());
+                progress->GetAchievementMgr().UpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, m_spellInfo->Id, 0, 0, m_caster, unit->ToPlayer());
+                progress->GetAchievementMgr().UpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, m_spellInfo->Id, 0, 0, NULL, unit->ToPlayer());
             }
     }
 
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
     {
-        m_caster->ToPlayer()->GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_CASTER, m_spellInfo->Id);
-        m_caster->ToPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAST_SPELL2, m_spellInfo->Id, 0, 0, unit);
+        m_caster->ToPlayer()->GetAchievementMgr().StartTimedAchievement(CRITERIA_TIMED_TYPE_SPELL_CASTER, m_spellInfo->Id);
+        m_caster->ToPlayer()->UpdateAchievementCriteria(CRITERIA_TYPE_CAST_SPELL2, m_spellInfo->Id, 0, 0, unit);
     }
 
     if (m_caster != unit)
@@ -3910,12 +3910,12 @@ void Spell::cast(bool skipCheck)
     {
         if (!(_triggeredCastFlags & TRIGGERED_IGNORE_CAST_ITEM) && m_CastItem)
         {
-            //plrCaster->GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_ITEM, m_CastItem->GetEntry());
-            plrCaster->GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_ITEM2, m_CastItem->GetEntry());
-            plrCaster->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_USE_ITEM, m_CastItem->GetEntry());
+            //plrCaster->GetAchievementMgr().StartTimedAchievement(CRITERIA_TIMED_TYPE_ITEM, m_CastItem->GetEntry());
+            plrCaster->GetAchievementMgr().StartTimedAchievement(CRITERIA_TIMED_TYPE_ITEM2, m_CastItem->GetEntry());
+            plrCaster->UpdateAchievementCriteria(CRITERIA_TYPE_USE_ITEM, m_CastItem->GetEntry());
         }
 
-        plrCaster->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAST_SPELL, m_spellInfo->Id);
+        plrCaster->UpdateAchievementCriteria(CRITERIA_TYPE_CAST_SPELL, m_spellInfo->Id);
 
         plrCaster->TakeSpellCharge(m_spellInfo);
     }

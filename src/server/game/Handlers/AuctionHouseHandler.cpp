@@ -320,7 +320,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
 
             SendAuctionCommandResult(AH, AUCTION_SELL_ITEM, ERR_AUCTION_OK);
 
-            GetPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CREATE_AUCTION, 1);
+            GetPlayer()->UpdateAchievementCriteria(CRITERIA_TYPE_CREATE_AUCTION, 1);
             return;
         }
         else // Required stack size of auction does not match to current item stack size, clone item and set correct stack size
@@ -388,7 +388,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
 
             SendAuctionCommandResult(AH, AUCTION_SELL_ITEM, ERR_AUCTION_OK);
 
-            GetPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CREATE_AUCTION, 1);
+            GetPlayer()->UpdateAchievementCriteria(CRITERIA_TYPE_CREATE_AUCTION, 1);
             return;
         }
     }
@@ -482,7 +482,7 @@ void WorldSession::HandleAuctionPlaceBid(WorldPacket& recvData)
 
         auction->bidder = player->GetGUIDLow();
         auction->bid = price;
-        GetPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_AUCTION_BID, price);
+        GetPlayer()->UpdateAchievementCriteria(CRITERIA_TYPE_HIGHEST_AUCTION_BID, price);
 
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_AUCTION_BID);
         stmt->setUInt32(0, auction->bidder);
@@ -505,7 +505,7 @@ void WorldSession::HandleAuctionPlaceBid(WorldPacket& recvData)
         }
         auction->bidder = player->GetGUIDLow();
         auction->bid = auction->buyout;
-        GetPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_AUCTION_BID, auction->buyout);
+        GetPlayer()->UpdateAchievementCriteria(CRITERIA_TYPE_HIGHEST_AUCTION_BID, auction->buyout);
 
         SendAuctionCommandResult(auction, AUCTION_PLACE_BID, ERR_AUCTION_OK);
 

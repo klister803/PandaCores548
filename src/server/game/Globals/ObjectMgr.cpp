@@ -4997,7 +4997,7 @@ void ObjectMgr::LoadAchievementScriptNames()
         int32 Id          = fields[0].GetInt32();
         const char *scriptName = fields[1].GetCString();
 
-        AchievementEntry const* achievement = sAchievementMgr->GetAchievement(Id);
+        AchievementEntry const* achievement = sAchievementStore.LookupEntry(Id);
         if (!achievement)
         {
             sLog->outError(LOG_FILTER_SQL, "Scriptname:`%s` achievement (id:%d) does not exist in `Achievement.dbc`.", scriptName, fields[0].GetInt32());

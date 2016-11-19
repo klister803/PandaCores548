@@ -242,7 +242,7 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
                 for (std::vector<Player*>::const_iterator i = playersNear.begin(); i != playersNear.end(); ++i)
                 {
                     (*i)->ModifyMoney(goldPerPlayer);
-                    (*i)->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_MONEY, goldPerPlayer);
+                    (*i)->UpdateAchievementCriteria(CRITERIA_TYPE_LOOT_MONEY, goldPerPlayer);
 
                     if (Guild* guild = sGuildMgr->GetGuildById((*i)->GetGuildId()))
                         if (uint32 guildGold = CalculatePct(goldPerPlayer, (*i)->GetTotalAuraModifier(SPELL_AURA_DEPOSIT_BONUS_MONEY_IN_GUILD_BANK_ON_LOOT)))
@@ -254,7 +254,7 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
             else
             {
                 player->ModifyMoney(loot->gold);
-                player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_MONEY, loot->gold);
+                player->UpdateAchievementCriteria(CRITERIA_TYPE_LOOT_MONEY, loot->gold);
 
                 if (Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId()))
                     if (uint32 guildGold = CalculatePct(loot->gold, player->GetTotalAuraModifier(SPELL_AURA_DEPOSIT_BONUS_MONEY_IN_GUILD_BANK_ON_LOOT)))
