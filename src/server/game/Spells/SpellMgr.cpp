@@ -4036,10 +4036,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 119032: // Spectral Guise
                     spellInfo->AttributesEx4 |= SPELL_ATTR4_UNK19;
                     break;
-                case 10326:  // Turn Evil
-                case 145067: // Turn Evil
-                    spellInfo->Mechanic = MECHANIC_FEAR;
-                    break;
                 case 86213:  // Soul Swap Exhale
                     spellInfo->Speed = 0;
                     spellInfo->spellPower->powerCostPercentage = 0;
