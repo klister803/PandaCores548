@@ -3870,6 +3870,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 26573:  // Consecration
+                    spellInfo->AttributesEx5 |= SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME;
+                    break;
                 case 134967: // Heroic Throw
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(9);
                     spellInfo->Effects[EFFECT_0]->ApplyAuraName = SPELL_AURA_PERIODIC_DUMMY;
