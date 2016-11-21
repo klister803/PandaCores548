@@ -3870,6 +3870,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 49039:  // Lichborne
+                    spellInfo->Effects[EFFECT_3]->Effect = SPELL_EFFECT_NONE;
+                    spellInfo->Effects[EFFECT_3]->ApplyAuraName = SPELL_AURA_NONE;
+                    break;
                 case 26573:  // Consecration
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME;
                     break;
