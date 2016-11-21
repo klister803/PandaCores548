@@ -1066,21 +1066,21 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             }
             break;
         }
-        case 123273:        // Surging Mist - 123273 and Surging Mist - 116995
-        {
-            if (Spell* _spell = _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
-                if (_spell->GetSpellInfo()->Id == 115175)
-                    if (Unit* target = _spell->m_targets.GetUnitTarget())
-                    {
-                        recvPacket.rfinish();
-                        _player->CastSpell(target, 116995, true);
-                        _player->EnergizeBySpell(_player, 116995, 1, POWER_CHI);
-                        int32 powerCost = spellInfo->CalcPowerCost(_player, spellInfo->GetSchoolMask());
-                        _player->ModifyPower(POWER_MANA, -powerCost, true);
-                        return;
-                    }
-            break;
-        }
+        // case 123273:        // Surging Mist - 123273 and Surging Mist - 116995
+        // {
+            // if (Spell* _spell = _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+                // if (_spell->GetSpellInfo()->Id == 115175)
+                    // if (Unit* target = _spell->m_targets.GetUnitTarget())
+                    // {
+                        // recvPacket.rfinish();
+                        // _player->CastSpell(target, 116995, true);
+                        // _player->EnergizeBySpell(_player, 116995, 1, POWER_CHI);
+                        // int32 powerCost = spellInfo->CalcPowerCost(_player, spellInfo->GetSchoolMask());
+                        // _player->ModifyPower(POWER_MANA, -powerCost, true);
+                        // return;
+                    // }
+            // break;
+        // }
         case 116694:        // Surging Mist - 116694 and Surging Mist - 116995
         {
             if (Unit* target = targets.GetUnitTarget())
