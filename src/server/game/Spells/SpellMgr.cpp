@@ -3870,6 +3870,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 51755:
+                    spellInfo->AuraInterruptFlags &= ~AURA_INTERRUPT_FLAG_CAST;
+                    spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_ENTER_COMBAT;
+                    break;
                 case 49039:  // Lichborne
                     spellInfo->Effects[EFFECT_3]->Effect = SPELL_EFFECT_NONE;
                     spellInfo->Effects[EFFECT_3]->ApplyAuraName = SPELL_AURA_NONE;
