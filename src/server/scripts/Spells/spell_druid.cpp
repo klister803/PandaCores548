@@ -467,7 +467,7 @@ class spell_dru_shattering_blow : public SpellScriptLoader
                 {
                     if (Unit* target = GetUnitOwner())
                     {
-                        if (!(target->IsInPartyWith(caster) && target->IsInRaidWith(caster)) ||
+                        if ((!target->IsInPartyWith(caster) && !target->IsInRaidWith(caster)) ||
                             (target->GetMapId() != caster->GetMapId()) || target->GetExactDist2d(caster) > 100.0f || !caster->HasAura(SPELL_DRUID_SYMBIOSIS_FOR_CASTER))
                         {
                             GetAura()->Remove();
