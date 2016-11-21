@@ -4357,6 +4357,13 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
         //Profession mastery. Fix bracking professtions.
         switch (spellId)
         {
+            case 105361:
+                if (HasSpell(31801))
+                    return false;
+                break;
+            case 31801:
+                removeSpell(105361);
+                break;
             case 28672: //Alchemy: Transmutation Master
                 removeSpell(28675);
                 removeSpell(28677);
