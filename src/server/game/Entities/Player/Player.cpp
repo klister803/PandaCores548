@@ -23348,6 +23348,8 @@ void Player::WhisperAddon(const std::string& text, const std::string& prefix, Pl
 void Player::Whisper(const std::string& text, uint32 language, uint64 receiver)
 {
     Player* rPlayer = ObjectAccessor::FindPlayer(receiver);
+    if(!rPlayer)
+        return;
 
     std::string _text(text);
     sScriptMgr->OnPlayerChat(this, CHAT_MSG_WHISPER, language, _text, rPlayer);
