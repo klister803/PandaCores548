@@ -330,6 +330,7 @@ void ObjectMgr::LoadWorldVisibleDistance()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u world visible distance in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
+
 void ObjectMgr::LoadCreatureLocales()
 {
     uint32 oldMSTime = getMSTime();
@@ -6323,16 +6324,6 @@ void ObjectMgr::SetHighestGuids()
     result = CharacterDatabase.Query("SELECT MAX(itemId) from character_void_storage");
     if (result)
         _voidItemId = (*result)[0].GetUInt64()+1;
-
-    ObjectAccessor::SetGuidSize(HIGHGUID_PLAYER, _hiCharGuid + 1);
-    ObjectAccessor::SetGuidSize(HIGHGUID_UNIT, _hiCreatureGuid + 1);
-    ObjectAccessor::SetGuidSize(HIGHGUID_PET, _hiPetGuid + 1);
-    ObjectAccessor::SetGuidSize(HIGHGUID_VEHICLE, _hiVehicleGuid + 1);
-    ObjectAccessor::SetGuidSize(HIGHGUID_GAMEOBJECT, _hiGoGuid + 1);
-    ObjectAccessor::SetGuidSize(HIGHGUID_CORPSE, _hiCorpseGuid + 1);
-    ObjectAccessor::SetGuidSize(HIGHGUID_AREATRIGGER, _hiAreaTriggerGuid + 1);
-    ObjectAccessor::SetGuidSize(HIGHGUID_DYNAMICOBJECT, _hiDoGuid + 1);
-    ObjectAccessor::SetGuidSize(HIGHGUID_TRANSPORT, _hiMoTransGuid + 1);
 }
 
 uint32 ObjectMgr::GenerateAuctionID()
@@ -6372,61 +6363,51 @@ uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh)
         case HIGHGUID_ITEM:
         {
             ASSERT(_hiItemGuid < 0xFFFFFFFE && "Item guid overflow!");
-            ObjectAccessor::SetGuidSize(guidhigh, _hiItemGuid + 1);
             return _hiItemGuid++;
         }
         case HIGHGUID_UNIT:
         {
             ASSERT(_hiCreatureGuid < 0x00FFFFFE && "Creature guid overflow!");
-            ObjectAccessor::SetGuidSize(guidhigh, _hiCreatureGuid + 1);
             return _hiCreatureGuid++;
         }
         case HIGHGUID_PET:
         {
             ASSERT(_hiPetGuid < 0x00FFFFFE && "Pet guid overflow!");
-            ObjectAccessor::SetGuidSize(guidhigh, _hiPetGuid + 1);
             return _hiPetGuid++;
         }
         case HIGHGUID_VEHICLE:
         {
             ASSERT(_hiVehicleGuid < 0x00FFFFFF && "Vehicle guid overflow!");
-            ObjectAccessor::SetGuidSize(guidhigh, _hiVehicleGuid + 1);
             return _hiVehicleGuid++;
         }
         case HIGHGUID_PLAYER:
         {
             ASSERT(_hiCharGuid < 0xFFFFFFFE && "Player guid overflow!");
-            ObjectAccessor::SetGuidSize(guidhigh, _hiCharGuid + 1);
             return _hiCharGuid++;
         }
         case HIGHGUID_GAMEOBJECT:
         {
             ASSERT(_hiGoGuid < 0x00FFFFFE && "Gameobject guid overflow!");
-            ObjectAccessor::SetGuidSize(guidhigh, _hiGoGuid + 1);
             return _hiGoGuid++;
         }
         case HIGHGUID_CORPSE:
         {
             ASSERT(_hiCorpseGuid < 0xFFFFFFFE && "Corpse guid overflow!");
-            ObjectAccessor::SetGuidSize(guidhigh, _hiCorpseGuid + 1);
             return _hiCorpseGuid++;
         }
         case HIGHGUID_AREATRIGGER:
         {
             ASSERT(_hiAreaTriggerGuid < 0xFFFFFFFE && "AreaTrigger guid overflow!");
-            ObjectAccessor::SetGuidSize(guidhigh, _hiAreaTriggerGuid + 1);
             return _hiAreaTriggerGuid++;
         }
         case HIGHGUID_DYNAMICOBJECT:
         {
             ASSERT(_hiDoGuid < 0xFFFFFFFE && "DynamicObject guid overflow!");
-            ObjectAccessor::SetGuidSize(guidhigh, _hiDoGuid + 1);
             return _hiDoGuid++;
         }
         case HIGHGUID_MO_TRANSPORT:
         {
             ASSERT(_hiMoTransGuid < 0xFFFFFFFE && "MO Transport guid overflow!");
-            ObjectAccessor::SetGuidSize(guidhigh, _hiMoTransGuid + 1);
             return _hiMoTransGuid++;
         }
         case HIGHGUID_LOOT:

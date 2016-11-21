@@ -47,88 +47,36 @@ class Map;
 class WorldRunnable;
 class Transport;
 
-static uint32 const INCREMENT_COUNTER = 1000000;
-
 template <class T>
 class HashMapHolder
 {
     public:
 
         typedef std::unordered_map<uint64, T*> MapType;
-        typedef std::unordered_map<std::string, T*> MapTypeStr;
-        typedef std::vector<T*> MapTypeVector;
-
-        typedef ting::shared_mutex LockType;
-        typedef std::lock_guard<LockType> WriteGuardType;
-        typedef ting::shared_lock<LockType> ReadGuardType;
+        typedef ACE_RW_Thread_Mutex LockType;
 
         static void Insert(T* o)
         {
-            volatile uint32 _guidlow = o->GetGUIDLow(); // For debug
-            volatile uint32 _sizeV = _size; // For debug
-            if (_guidlow >= _size) // If guid buged don`t check it
-                return;
-            _objectVector[_guidlow] = o;
-            {
-                WriteGuardType guard(i_lock);
-                _objectMap[o->GetGUID()] = o;
-                if (o->GetTypeId() == TYPEID_PLAYER)
-                {
-                    std::string _name = o->GetName();
-                    std::transform(_name.begin(), _name.end(), _name.begin(), ::tolower);
-                    _objectMapStr[_name] = o;
-                }
-            }
+            TRINITY_WRITE_GUARD(LockType, i_lock);
+            m_objectMap[o->GetGUID()] = o;
         }
 
         static void Remove(T* o)
         {
-            volatile uint32 _guidlow = o->GetGUIDLow(); // For debug
-            volatile uint32 _sizeV = _size; // For debug
-            if (_guidlow >= _size) // If guid buged don`t check it
-                return;
-            _objectVector[_guidlow] = NULL;
-            {
-                WriteGuardType guard(i_lock);
-                _objectMap.erase(o->GetGUID());
-                if (o->GetTypeId() == TYPEID_PLAYER)
-                {
-                    std::string _name = o->GetName();
-                    std::transform(_name.begin(), _name.end(), _name.begin(), ::tolower);
-                    _objectMapStr.erase(_name);
-                }
-            }
+            TRINITY_WRITE_GUARD(LockType, i_lock);
+            m_objectMap.erase(o->GetGUID());
         }
 
         static T* Find(uint64 guid)
         {
-            volatile uint32 _guidlow = PAIR64_LOPART(guid); // For debug
-            volatile uint32 _sizeV = _size; // For debug
-            if (_guidlow >= _size) // If guid buged don`t check it
-                return NULL;
-            return _objectVector[_guidlow];
+            TRINITY_READ_GUARD(LockType, i_lock);
+            typename MapType::iterator itr = m_objectMap.find(guid);
+            return (itr != m_objectMap.end()) ? itr->second : NULL;
         }
 
-        static T* FindStr(std::string name)
-        {
-            ReadGuardType guard(i_lock);
-            typename MapTypeStr::iterator itr = _objectMapStr.find(name);
-            return (itr != _objectMapStr.end()) ? itr->second : NULL;
-        }
+        static MapType& GetContainer() { return m_objectMap; }
 
-        static void SetSize(uint32 size)
-        {
-            if (_objectVector.size() < (size + INCREMENT_COUNTER))
-            {
-                // WriteGuardType guard(i_lockVector);
-                _objectVector.resize(size + INCREMENT_COUNTER * 2);
-                _size = _objectVector.size();
-            }
-        }
-
-        static MapType& GetContainer() { return _objectMap; }
-
-        static LockType& GetLock() { return i_lock; }
+        static LockType* GetLock() { return &i_lock; }
 
     private:
 
@@ -136,11 +84,7 @@ class HashMapHolder
         HashMapHolder() {}
 
         static LockType i_lock;
-        static LockType i_lockVector;
-        static MapType _objectMap;
-        static MapTypeStr _objectMapStr;
-        static MapTypeVector _objectVector;
-        static uint32 _size;
+        static MapType  m_objectMap;
 };
 
 class ObjectAccessor
@@ -299,7 +243,6 @@ class ObjectAccessor
         }
 
         static void SaveAllPlayers();
-        static void SetGuidSize(HighGuid type, uint32 size);
 
         //non-static functions
         void AddUpdateObject(Object* obj)
