@@ -150,6 +150,7 @@ void PetAI::UpdateAI(uint32 diff)
         if (owner)
         {
             owner->SetInCombatWith(me->getVictim());
+            owner->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_COMBAT);
 
             if (!me->HasUnitState(UNIT_STATE_CASTING))
                 if (me->getVictim()->GetGUID() != owner->GetLastCastTargetGUID())
@@ -389,7 +390,10 @@ void PetAI::AttackStart(Unit* target)
         return;
 
     if (Unit* owner = me->GetOwner())
+    {
         owner->SetInCombatWith(target);
+        owner->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_COMBAT);
+    }
 
     DoAttack(target, true);
 }
