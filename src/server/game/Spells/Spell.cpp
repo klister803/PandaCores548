@@ -1023,6 +1023,11 @@ void Spell::SelectImplicitNearbyTargets(SpellEffIndex effIndex, SpellImplicitTar
         case TARGET_OBJECT_TYPE_DEST:
             m_targets.SetDst(*target);
             break;
+        case TARGET_OBJECT_TYPE_CORPSE:
+            if (Unit* unitTarget = target->ToUnit())
+                if (unitTarget->isDead())
+                    AddUnitTarget(unitTarget, effMask, true, false);
+            break;
         default:
             ASSERT(false && "Spell::SelectImplicitNearbyTargets: received not implemented target object type");
             break;

@@ -4200,6 +4200,51 @@ class spell_gen_bounce_achievement : public SpellScriptLoader
         }
 };
 
+//51640
+class spell_gen_taunt_flag_targeting : public SpellScriptLoader
+{
+    public:
+        spell_gen_taunt_flag_targeting() : SpellScriptLoader("spell_gen_taunt_flag_targeting") { }
+
+        class spell_gen_taunt_flag_targeting_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_gen_taunt_flag_targeting_SpellScript);
+
+            SpellCastResult CheckIfCorpseNear()
+            {
+                Unit* caster = GetCaster();
+                float max_range = GetSpellInfo()->GetMaxRange(false);
+                WorldObject* result = nullptr;
+                // search for nearby enemy corpse in range
+                Trinity::AnyDeadUnitSpellTargetInRangeCheck check(caster, max_range, GetSpellInfo(), TARGET_CHECK_ENEMY, MAX_SPELL_EFFECTS);
+                Trinity::WorldObjectSearcher<Trinity::AnyDeadUnitSpellTargetInRangeCheck> searcher(caster, result, check);
+                caster->GetMap()->VisitFirstFound(caster->m_positionX, caster->m_positionY, max_range, searcher);
+                if (!result || !result->ToPlayer())
+                    return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+                return SPELL_CAST_OK;
+            }
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                if (!GetCaster() || !GetHitUnit())
+                    return;
+
+                GetCaster()->CastSpell(GetHitUnit(), 51657, true);
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_gen_taunt_flag_targeting_SpellScript::CheckIfCorpseNear);
+                OnEffectHitTarget += SpellEffectFn(spell_gen_taunt_flag_targeting_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_gen_taunt_flag_targeting_SpellScript();
+        }
+};
+
 void AddSC_generic_spell_scripts()
 {
 //    new spell_gen_protect();
@@ -4292,4 +4337,5 @@ void AddSC_generic_spell_scripts()
     new spell_gen_bg_inactive();
     new spell_gen_bounce_achievement();
     new spell_gen_spirit_of_chi_ji();
+    new spell_gen_taunt_flag_targeting();
 }
