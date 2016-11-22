@@ -367,7 +367,7 @@ public:
                             ObjectMgr::GetLocaleString(il->Name, loc_idx, Name);
                     }
 
-                    player->ADD_GOSSIP_ITEM_EXTENDED(0, Name, GOSSIP_SENDER_MAIN, item_guid, sObjectMgr->GetTrinityString(20042, loc_idx), 0, false););
+                    player->ADD_GOSSIP_ITEM_EXTENDED(0, Name, GOSSIP_SENDER_MAIN, item_guid, sObjectMgr->GetTrinityString(20042, loc_idx), 0, false);
                 }
             }while (result->NextRow());
         }
