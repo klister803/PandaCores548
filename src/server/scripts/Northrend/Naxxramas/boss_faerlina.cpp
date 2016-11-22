@@ -254,7 +254,10 @@ class achievement_momma_said_knock_you_out : public AchievementCriteriaScript
 
         bool OnCheck(Player* /*source*/, Unit* target)
         {
-            return target && !target->GetAI()->GetData(DATA_FRENZY_DISPELS);
+            if (!target || !target->IsInWorld() || !target->GetAI())
+                return false;
+
+            return !target->GetAI()->GetData(DATA_FRENZY_DISPELS);
         }
 };
 
