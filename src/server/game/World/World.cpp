@@ -3135,7 +3135,7 @@ void World::_UpdateRealmCharCount(PreparedQueryResult resultCharCount)
 
 void World::InitWeeklyQuestResetTime()
 {
-    time_t wstime = uint64(sWorld->getWorldState(WS_WEEKLY_QUEST_RESET_TIME));
+    time_t wstime = sWorld->getWorldState(WS_WEEKLY_QUEST_RESET_TIME);
     time_t curtime = time(NULL);
     m_NextWeeklyQuestReset = wstime < curtime ? curtime : time_t(wstime);
 }
@@ -3176,10 +3176,7 @@ void World::InitDailyQuestResetTime()
 
 void World::InitRandomBGResetTime()
 {
-    time_t bgtime = uint64(sWorld->getWorldState(WS_BG_DAILY_RESET_TIME));
-    if (!bgtime)
-        m_NextRandomBGReset = time_t(time(NULL));         // game time not yet init
-
+    time_t bgtime = sWorld->getWorldState(WS_BG_DAILY_RESET_TIME);
     // generate time by config
     time_t curTime = time(NULL);
     tm localTm = *localtime(&curTime);
@@ -3195,18 +3192,15 @@ void World::InitRandomBGResetTime()
         nextDayResetTime += DAY;
 
     // normalize reset time
-    m_NextRandomBGReset = bgtime < curTime ? nextDayResetTime - DAY : nextDayResetTime;
+    m_NextRandomBGReset = bgtime ? bgtime : nextDayResetTime;
 
     if (!bgtime)
-        sWorld->setWorldState(WS_BG_DAILY_RESET_TIME, uint64(m_NextRandomBGReset));
+        sWorld->setWorldState(WS_BG_DAILY_RESET_TIME, m_NextRandomBGReset);
 }
 
 void World::InitCurrencyResetTime()
 {
-    time_t currencytime = uint64(sWorld->getWorldState(WS_CURRENCY_RESET_TIME));
-    if (!currencytime)
-        m_NextCurrencyReset = time_t(time(NULL));         // game time not yet init
-
+    time_t currencytime = sWorld->getWorldState(WS_CURRENCY_RESET_TIME);
     // generate time by config
     time_t curTime = time(NULL);
     tm localTm = *localtime(&curTime);
@@ -3224,18 +3218,15 @@ void World::InitCurrencyResetTime()
         nextWeekResetTime += getIntConfig(CONFIG_CURRENCY_RESET_INTERVAL) * DAY;
 
     // normalize reset time
-    m_NextCurrencyReset = currencytime < curTime ? nextWeekResetTime - getIntConfig(CONFIG_CURRENCY_RESET_INTERVAL) * DAY : nextWeekResetTime;
+    m_NextCurrencyReset = currencytime ? currencytime : nextWeekResetTime;
 
     if (!currencytime)
-        sWorld->setWorldState(WS_CURRENCY_RESET_TIME, uint64(m_NextCurrencyReset));
+        sWorld->setWorldState(WS_CURRENCY_RESET_TIME, m_NextCurrencyReset);
 }
 
 void World::InitInstanceDailyResetTime()
 {
-    time_t insttime = uint64(sWorld->getWorldState(WS_INSTANCE_DAILY_RESET_TIME));
-    if (!insttime)
-        m_NextInstanceDailyReset = time_t(time(NULL));         // game time not yet init
-
+    time_t insttime = sWorld->getWorldState(WS_INSTANCE_DAILY_RESET_TIME);
     // generate time by config
     time_t curTime = time(NULL);
     tm localTm = *localtime(&curTime);
@@ -3251,18 +3242,15 @@ void World::InitInstanceDailyResetTime()
         nextResetTime += getIntConfig(CONFIG_INSTANCE_DAILY_RESET) * DAY;
 
     // normalize reset time
-    m_NextInstanceDailyReset = insttime < curTime ? nextResetTime - getIntConfig(CONFIG_INSTANCE_DAILY_RESET) * DAY : nextResetTime;
+    m_NextInstanceDailyReset = insttime ? insttime : nextResetTime;
 
     if (!insttime)
-        sWorld->setWorldState(WS_INSTANCE_DAILY_RESET_TIME, uint64(m_NextInstanceDailyReset));
+        sWorld->setWorldState(WS_INSTANCE_DAILY_RESET_TIME, m_NextInstanceDailyReset);
 }
 
 void World::InitInstanceHalfWeekResetTime()
 {
-    time_t insttime = uint64(sWorld->getWorldState(WS_INSTANCE_HALF_WEEK_RESET_TIME));
-    if (!insttime)
-        m_NextInstanceHalfWeekReset = time_t(time(NULL));         // game time not yet init
-
+    time_t insttime = sWorld->getWorldState(WS_INSTANCE_HALF_WEEK_RESET_TIME);
     // generate time by config
     time_t curTime = time(NULL);
     tm localTm = *localtime(&curTime);
@@ -3278,17 +3266,15 @@ void World::InitInstanceHalfWeekResetTime()
         nextResetTime += getIntConfig(CONFIG_INSTANCE_HALF_WEEK_RESET) * DAY;
 
     // normalize reset time
-    m_NextInstanceHalfWeekReset = insttime < curTime ? nextResetTime - getIntConfig(CONFIG_INSTANCE_HALF_WEEK_RESET) * DAY : nextResetTime;
+    m_NextInstanceHalfWeekReset = insttime ? insttime : nextResetTime;
 
     if (!insttime)
-        sWorld->setWorldState(WS_INSTANCE_HALF_WEEK_RESET_TIME, uint64(m_NextInstanceHalfWeekReset));
+        sWorld->setWorldState(WS_INSTANCE_HALF_WEEK_RESET_TIME, m_NextInstanceHalfWeekReset);
 }
 
 void World::InitInstanceWeeklyResetTime()
 {
-    time_t insttime = uint64(sWorld->getWorldState(WS_INSTANCE_WEEKLY_RESET_TIME));
-    if (!insttime)
-        m_NextInstanceWeeklyReset = time_t(time(NULL));         // game time not yet init
+    time_t insttime = sWorld->getWorldState(WS_INSTANCE_WEEKLY_RESET_TIME);
 
     // generate time by config
     time_t curTime = time(NULL);
@@ -3306,10 +3292,10 @@ void World::InitInstanceWeeklyResetTime()
         nextResetTime += getIntConfig(CONFIG_INSTANCE_WEEKLY_RESET) * DAY;
 
     // normalize reset time
-    m_NextInstanceWeeklyReset = insttime < curTime ? nextResetTime - getIntConfig(CONFIG_INSTANCE_WEEKLY_RESET) * DAY : nextResetTime;
+    m_NextInstanceWeeklyReset = insttime ? insttime : nextResetTime;
 
     if (!insttime)
-        sWorld->setWorldState(WS_INSTANCE_WEEKLY_RESET_TIME, uint64(m_NextInstanceWeeklyReset));
+        sWorld->setWorldState(WS_INSTANCE_WEEKLY_RESET_TIME, m_NextInstanceWeeklyReset);
 }
 
 time_t World::getInstanceResetTime(uint32 resetTime)
@@ -3357,7 +3343,7 @@ void World::ResetCurrencyWeekCap()
             itr->second->GetPlayer()->ResetCurrencyWeekCap();
 
     m_NextCurrencyReset = time_t(m_NextCurrencyReset + DAY * getIntConfig(CONFIG_CURRENCY_RESET_INTERVAL));
-    sWorld->setWorldState(WS_CURRENCY_RESET_TIME, uint64(m_NextCurrencyReset));
+    sWorld->setWorldState(WS_CURRENCY_RESET_TIME, m_NextCurrencyReset);
 }
 
 void World::InstanceDailyResetTime()
@@ -3372,7 +3358,7 @@ void World::InstanceDailyResetTime()
     }
 
     m_NextInstanceDailyReset = time_t(m_NextInstanceDailyReset + DAY * getIntConfig(CONFIG_INSTANCE_DAILY_RESET));
-    sWorld->setWorldState(WS_INSTANCE_DAILY_RESET_TIME, uint64(m_NextInstanceDailyReset));
+    sWorld->setWorldState(WS_INSTANCE_DAILY_RESET_TIME, m_NextInstanceDailyReset);
 }
 
 void World::InstanceHalfWeekResetTime()
@@ -3387,7 +3373,7 @@ void World::InstanceHalfWeekResetTime()
     }
 
     m_NextInstanceHalfWeekReset = time_t(m_NextInstanceHalfWeekReset + DAY * getIntConfig(CONFIG_INSTANCE_HALF_WEEK_RESET));
-    sWorld->setWorldState(WS_INSTANCE_HALF_WEEK_RESET_TIME, uint64(m_NextInstanceHalfWeekReset));
+    sWorld->setWorldState(WS_INSTANCE_HALF_WEEK_RESET_TIME, m_NextInstanceHalfWeekReset);
 }
 
 void World::InstanceWeeklyResetTime()
@@ -3402,7 +3388,7 @@ void World::InstanceWeeklyResetTime()
     }
 
     m_NextInstanceWeeklyReset = time_t(m_NextInstanceWeeklyReset + DAY * getIntConfig(CONFIG_INSTANCE_WEEKLY_RESET));
-    sWorld->setWorldState(WS_INSTANCE_WEEKLY_RESET_TIME, uint64(m_NextInstanceWeeklyReset));
+    sWorld->setWorldState(WS_INSTANCE_WEEKLY_RESET_TIME, m_NextInstanceWeeklyReset);
 }
 
 void World::ResetLootCooldown()
@@ -3443,7 +3429,7 @@ void World::ResetWeeklyQuests()
             itr->second->GetPlayer()->ResetWeeklyQuestStatus();
 
     m_NextWeeklyQuestReset = time_t(m_NextWeeklyQuestReset + WEEK);
-    sWorld->setWorldState(WS_WEEKLY_QUEST_RESET_TIME, uint64(m_NextWeeklyQuestReset));
+    sWorld->setWorldState(WS_WEEKLY_QUEST_RESET_TIME, m_NextWeeklyQuestReset);
 
     // change available weeklies
     sPoolMgr->ChangeWeeklyQuests();
@@ -3472,7 +3458,7 @@ void World::ResetRandomBG()
             itr->second->GetPlayer()->SetRandomWinner(false);
 
     m_NextRandomBGReset = time_t(m_NextRandomBGReset + DAY);
-    sWorld->setWorldState(WS_BG_DAILY_RESET_TIME, uint64(m_NextRandomBGReset));
+    sWorld->setWorldState(WS_BG_DAILY_RESET_TIME, m_NextRandomBGReset);
 }
 
 void World::UpdateMaxSessionCounters()
@@ -3578,7 +3564,7 @@ void World::LoadWorldAntispamm()
 }
 
 // Setting a worldstate will save it to DB
-void World::setWorldState(uint32 index, uint64 value)
+void World::setWorldState(uint32 index, uint32 value)
 {
     WorldStatesMap::const_iterator it = m_worldstates.find(index);
     if (it != m_worldstates.end())
@@ -3602,7 +3588,7 @@ void World::setWorldState(uint32 index, uint64 value)
     m_worldstates[index] = value;
 }
 
-uint64 World::getWorldState(uint32 index) const
+uint32 World::getWorldState(uint32 index) const
 {
     WorldStatesMap::const_iterator it = m_worldstates.find(index);
     return it != m_worldstates.end() ? it->second : 0;
@@ -3828,7 +3814,7 @@ void World::ProcessMailboxQueue()
 
 void World::InitServerAutoRestartTime()
 {
-    time_t serverRestartTime = uint64(sWorld->getWorldState(WS_AUTO_SERVER_RESTART_TIME));
+    time_t serverRestartTime = sWorld->getWorldState(WS_AUTO_SERVER_RESTART_TIME);
     if (!serverRestartTime)
         m_NextServerRestart = time_t(time(NULL));         // game time not yet init
 
@@ -3850,7 +3836,7 @@ void World::InitServerAutoRestartTime()
     m_NextServerRestart = serverRestartTime < curTime ? nextDayRestartTime - DAY : nextDayRestartTime;
 
     if (!serverRestartTime)
-        sWorld->setWorldState(WS_AUTO_SERVER_RESTART_TIME, uint64(m_NextServerRestart));
+        sWorld->setWorldState(WS_AUTO_SERVER_RESTART_TIME, m_NextServerRestart);
 
     if (m_bool_configs[CONFIG_DISABLE_RESTART])
         m_NextServerRestart += DAY*1;
@@ -3863,7 +3849,7 @@ void World::AutoRestartServer()
     sWorld->ShutdownServ(60, SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE);
 
     m_NextServerRestart = time_t(m_NextServerRestart + DAY*1);
-    sWorld->setWorldState(WS_AUTO_SERVER_RESTART_TIME, uint64(m_NextServerRestart));
+    sWorld->setWorldState(WS_AUTO_SERVER_RESTART_TIME, m_NextServerRestart);
 }
 
 void World::Transfer()
