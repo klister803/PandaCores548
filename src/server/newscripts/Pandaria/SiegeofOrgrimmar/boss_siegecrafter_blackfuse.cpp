@@ -205,6 +205,11 @@ enum CretureText
     SAY_DEATH2,
 };
 
+enum SActions
+{
+    ACTION_DESPAWN,
+};
+
 //71504
 class boss_siegecrafter_blackfuse : public CreatureScript
 {
@@ -213,7 +218,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
      
      struct boss_siegecrafter_blackfuseAI : public BossAI
      {
-         boss_siegecrafter_blackfuseAI(Creature* creature) : BossAI(creature, DATA_BLACKFUSE)
+         boss_siegecrafter_blackfuseAI(Creature* creature) : BossAI(creature, DATA_BLACKFUSE), summon(me)
          {
              instance = creature->GetInstanceScript();
              me->ApplySpellImmune(0, IMMUNITY_ID, 348, true);
@@ -221,8 +226,8 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
              reset = 0;
          }
-         
          InstanceScript* instance;
+         SummonList summon;
          uint32 checkvictim;
          uint32 updatehmlaserwalls;
          uint32 reset;
@@ -234,8 +239,11 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          
          void Reset()
          {
-             PrepareToUnsummon();
-             _Reset();
+             events.Reset();
+             instance->SetBossState(DATA_BLACKFUSE, NOT_STARTED);
+             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+             instance->SendEncounterUnit(ENCOUNTER_FRAME_RESET_COMBAT_RES_LIMIT, me);
+             SpecialDespawnSummons();
              me->NearTeleportTo(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY(), me->GetHomePosition().GetPositionZ(), me->GetHomePosition().GetOrientation());
              checkvictim = 0;
              weaponwavecount = 0;
@@ -250,13 +258,32 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              ClearConveyerArray();
          }
 
-         void PrepareToUnsummon()
+         void JustSummoned(Creature* sum)
          {
-             if (!summons.empty())
-                 for (std::list<uint64>::const_iterator itr = summons.begin(); itr != summons.end(); ++itr)
+             summon.Summon(sum);
+         }
+
+         void SpecialDespawnSummons()
+         {
+             if (!summon.empty())
+             {
+                 for (std::list<uint64>::const_iterator itr = summon.begin(); itr != summon.end(); ++itr)
+                 {
                      if (Creature* _sum = me->GetCreature(*me, *itr))
-                         if (_sum->GetEntry() == NPC_LASER_TARGET)
-                             _sum->RemoveAurasDueToSpell(SPELL_DISINTEGRATION_LASER_V);
+                     {
+                         switch (_sum->GetEntry())
+                         {
+                         case NPC_LASER_TARGET:
+                         case NPC_ACTIVATED_LASER_TURRET:
+                             _sum->AI()->DoAction(ACTION_DESPAWN);
+                             break;
+                         default:
+                             _sum->DespawnOrUnsummon();
+                             break;
+                         }
+                     }
+                 }
+             }
          }
 
          void JustReachedHome()
@@ -490,7 +517,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
          
          void JustDied(Unit* killer)
          {
-             PrepareToUnsummon();
+             SpecialDespawnSummons();
              RemoveDebuffs();
              Talk(urand(SAY_DEATH, SAY_DEATH2));
              _JustDied();
@@ -1260,6 +1287,16 @@ public:
             }
         }
 
+        void DoAction(int32 const action)
+        {
+            if (action == ACTION_DESPAWN)
+            {
+                events.Reset();
+                me->RemoveAurasDueToSpell(SPELL_DISINTEGRATION_LASER_V);
+                events.ScheduleEvent(EVENT_DESPAWN, 2000);
+            }
+        }
+
         void UpdateAI(uint32 diff)
         {
             events.Update(diff);
@@ -1554,6 +1591,16 @@ public:
                 }
                 if (Creature* cannon = me->GetCreature(*me, cannonGuid))
                     cannon->DespawnOrUnsummon();
+            }
+        }
+
+        void DoAction(int32 const action)
+        {
+            if (action == ACTION_DESPAWN)
+            {
+                events.Reset();
+                me->RemoveAurasDueToSpell(SPELL_DISINTEGRATION_LASER_V);
+                events.ScheduleEvent(EVENT_DESPAWN, 2000);
             }
         }
 

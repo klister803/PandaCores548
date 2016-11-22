@@ -4978,23 +4978,14 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 134030: //Shell Kick Override Spells
                     spellInfo->Effects[0]->Effect = SPELL_EFFECT_APPLY_AURA;
                     break;
-                case 134920: //Quake stomp
-                    spellInfo->Effects[2]->TriggerSpell = 0;
+                case 134915: //Rockfall aura
+                    spellInfo->Effects[0]->TriggerSpell = 0;
                     break;
                 case 134011: //Spinning shell dmg
-                {
                     for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
-                    {
-                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
-                            eff->TargetA = TARGET_UNIT_TARGET_ENEMY;
-
                         if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_1, d))
-                            eff->TargetA = TARGET_UNIT_TARGET_ENEMY;
-                    }
-
-                    spellInfo->Effects[EFFECT_2]->TargetA = TARGET_UNIT_TARGET_ENEMY;
+                            eff->MiscValue = 75;
                     break;
-                }
                 case 135103: //Drain the weak
                     for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
                         if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
