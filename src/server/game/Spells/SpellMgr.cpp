@@ -4412,18 +4412,13 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 61999: // Raise Ally
                     spellInfo->Effects[EFFECT_1]->TargetA = TARGET_UNIT_TARGET_ALLY;
                     break;
+                case 82716:
+                    spellInfo->Effects[EFFECT_0]->BasePoints = 5;
+                    break;
+                case 132764: // Dire Beast summons
                 case 121118: // Dire Beast summons
-                case 122802:
-                case 122804:
-                case 122806:
-                case 122807:
-                case 122809:
-                case 122811:
-                case 126213:
-                case 126214:
-                case 126215:
-                case 126216:
-                case 132764:
+                    spellInfo->Effects[EFFECT_0]->TargetB = TARGET_DEST_TARGET_RANDOM;
+                    break;
                 case 106853: // Fists of Fury
                     spellInfo->Effects[EFFECT_0]->TargetA = TARGET_UNIT_TARGET_ENEMY;
                     spellInfo->Effects[EFFECT_0]->TargetB = 0;

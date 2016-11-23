@@ -3946,12 +3946,22 @@ class npc_dire_beast : public CreatureScript
         {
             npc_dire_beastAI(Creature *creature) : ScriptedAI(creature) {}
 
-            void DamageDealt(Unit* target, uint32& damage, DamageEffectType damageType)
+            void InitializeAI()
             {
-                if (Unit* owner = me->GetOwner())
-                    owner->ModifyPower(POWER_FOCUS, 5);
-            }
+                me->AddAura(120694, me);
+                me->AddAura(8875, me);
 
+                if (Unit* owner = me->GetOwner())
+                {
+                    for (auto itr : owner->m_unitsHasCasterAura)
+                        if (Unit* _target = ObjectAccessor::GetUnit(*me, itr))
+                            if (_target->HasAura(120679, GetGUID()))
+                            {
+                                AttackStart(_target);
+                                break;
+                            }
+                }
+            }
         };
 
         CreatureAI* GetAI(Creature* creature) const
