@@ -10201,6 +10201,19 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        case 144671: // Item - Hunter T16 BM 4P Player Driver
+        {
+            if (Player* plr = ToPlayer())
+                if (Pet* pet = plr->GetPet())
+                    pet->CastSpell(pet, 145737, true);
+            break;
+        }
+        case 145738: // Item - Hunter T16 BM 4P Pet Driver
+        {
+            if (Unit* owner = GetOwner())
+                owner->CastSpell(owner, 144670, true);
+            break;
+        }
         case 109939: // Item - Dragon Soul 
         {
             if (!victim)
