@@ -3855,3 +3855,54 @@ void WorldObject::VisitNearbyWorldObject(const float &radius, NOTIFIER &notifier
     if (IsInWorld())
         GetMap()->VisitWorld(GetPositionX(), GetPositionY(), radius, notifier);
 }
+
+void WorldObject::GetNearPosition(Position &pos, float dist, float angle, bool withinLOS)
+{
+    GetPosition(&pos);
+
+    if (withinLOS)
+    {
+        Position savePos = pos;
+        MovePosition(pos, dist, angle);
+
+        if (!IsWithinLOS(pos.m_positionX, pos.m_positionY, pos.m_positionZ))
+        {
+            float stepOfangle = static_cast<float>(2 * M_PI) / 8.0f;
+            uint8 reSteps = 0;
+            bool goToCheck = false;
+
+            for (uint8 i = 0; i < 8; i++)
+            {
+                if (!goToCheck)
+                {
+                    reSteps = i;
+                    if (stepOfangle * (i + 1) > angle)
+                        goToCheck = true;
+                }
+
+                if (goToCheck)
+                {
+                    pos = savePos;
+                    MovePosition(pos, dist, stepOfangle * (i + 1));
+
+                    if (IsWithinLOS(pos.m_positionX, pos.m_positionY, pos.m_positionZ))
+                        return;
+                }
+            }
+
+            for (uint8 q = 0; q <= reSteps; q++)
+            {
+                pos = savePos;
+                MovePosition(pos, dist, stepOfangle * q);
+
+                if (IsWithinLOS(pos.m_positionX, pos.m_positionY, pos.m_positionZ))
+                    return;
+            }
+
+            pos = savePos;
+            MovePosition(pos, 0.1f, angle);
+        }
+    }
+    else
+        MovePosition(pos, dist, angle);
+}

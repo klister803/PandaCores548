@@ -847,11 +847,8 @@ class WorldObject : public Object, public WorldLocation
         }
         
         void MovePosition(Position &pos, float dist, float angle);
-        void GetNearPosition(Position &pos, float dist, float angle)
-        {
-            GetPosition(&pos);
-            MovePosition(pos, dist, angle);
-        }
+        void GetNearPosition(Position &pos, float dist, float angle, bool withinLOS = false);
+
         void MovePositionToFirstCollision(Position &pos, float dist, float angle);
         void GetFirstCollisionPosition(Position &pos, float dist, float angle)
         {

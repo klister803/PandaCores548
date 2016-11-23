@@ -1696,7 +1696,7 @@ void Spell::SelectImplicitTargetDestTargets(SpellEffIndex effIndex, SpellImplici
     if (canHitTargetInLOS && m_caster->ToCreature() && dist < 200.0f)
         target->GetNearPoint2D(pos, dist, angle);
     else
-        target->GetNearPosition(pos, dist, angle);
+        target->GetNearPosition(pos, dist, angle, true);
     m_targets.SetDst(*target);
     m_targets.ModDst(pos);
 }
