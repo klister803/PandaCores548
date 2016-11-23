@@ -4978,9 +4978,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 134030: //Shell Kick Override Spells
                     spellInfo->Effects[0]->Effect = SPELL_EFFECT_APPLY_AURA;
                     break;
-                case 134915: //Rockfall aura
-                    spellInfo->Effects[0]->TriggerSpell = 0;
-                    break;
                 case 134011: //Spinning shell dmg
                     for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
                         if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_1, d))

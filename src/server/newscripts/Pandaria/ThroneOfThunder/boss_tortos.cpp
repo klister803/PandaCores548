@@ -28,12 +28,15 @@ enum eSpells
     SPELL_CALL_OF_TORTOS       = 136294,
     SPELL_SUM_ROCKFALL         = 134365,
     SPELL_ROCKFALL             = 134475,
+    SPELL_ROCKFALL_AURA        = 134915,
     SPELL_ROCKFALL_P_DMG       = 134539,
+    SPELL_GROWING_FURY         = 136010,
 
     //Whirl turtle
     SPELL_KICK_SHELL           = 134030,
     SPELL_KICK_SHELL_KICK_AURA = 134031,
     SPELL_KICK_SHELL_I_AURA    = 134092,
+    SPELL_KICK_SHELL_T_AURA    = 136431,
     SPELL_KICK_SHELL_ROOT      = 134073,
     SPELL_SHELL_BLOCK          = 133971,
     SPELL_SHELL_BLOCK_DUMMY    = 140054,
@@ -53,10 +56,14 @@ enum eEvents
     EVENT_QUAKE_STOMP          = 2, 
     EVENT_CALL_OF_TORTOS       = 3,
     EVENT_SUMMON_BATS          = 4,
-    EVENT_STONE_BREATH         = 5,
+    EVENT_ROCKFALL             = 5,
 
     //Whirl turtle
-    EVENT_DESPAWN              = 5,
+    EVENT_DESPAWN              = 6,
+    EVENT_CHANGE_POSITION      = 7,
+
+    //Rockfall
+    EVENT_ACTIVE               = 8,
 };
 
 const float maxpullpos = 4988.0f;
@@ -71,17 +78,23 @@ public:
         boss_tortosAI(Creature* creature) : BossAI(creature, DATA_TORTOS)
         {
             instance = creature->GetInstanceScript();
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
         }
         InstanceScript* instance;
         uint32 checkvictim;
+        uint32 updatepower;
+        uint32 checkmelee;
 
         void Reset()
         {
             _Reset();
             AddOrRemoveSpellKickShellOnPlayers(false);
-            checkvictim = 0;
+            me->RemoveAurasDueToSpell(SPELL_KICK_SHELL_T_AURA);
             me->setPowerType(POWER_ENERGY);
             me->SetPower(POWER_ENERGY, 0);
+            checkvictim = 0;
+            updatepower = 0;
+            checkmelee = 0;
         }
 
         void AddOrRemoveSpellKickShellOnPlayers(bool state)
@@ -90,6 +103,12 @@ public:
                 instance->DoCastSpellOnPlayers(SPELL_KICK_SHELL);
             else
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_KICK_SHELL);
+        }
+
+        void OnInterruptCast(Unit* /*caster*/, uint32 /*spellId*/, uint32 curSpellID, uint32 /*schoolMask*/)
+        {
+            if (curSpellID == SPELL_FURIOS_STONE_BREATH)
+                me->SetPower(POWER_ENERGY, 0);
         }
 
         void JustReachedHome()
@@ -102,12 +121,14 @@ public:
         {
             _EnterCombat();
             AddOrRemoveSpellKickShellOnPlayers(true);
+            updatepower = 450;
             checkvictim = 1500;
-            events.ScheduleEvent(EVENT_SUMMON_BATS, 45000);
-            events.ScheduleEvent(EVENT_CALL_OF_TORTOS, 60000);
-            events.ScheduleEvent(EVENT_STONE_BREATH, urand(60000, 70000));
+            checkmelee = 4000;
+            events.ScheduleEvent(EVENT_ROCKFALL, 9000);
+            events.ScheduleEvent(EVENT_SUMMON_BATS, 30000);
+            events.ScheduleEvent(EVENT_CALL_OF_TORTOS, 22000);
             events.ScheduleEvent(EVENT_SNAPPING_BITE, urand(8000, 10000));
-            events.ScheduleEvent(EVENT_QUAKE_STOMP, urand(45000, 50000));
+            events.ScheduleEvent(EVENT_QUAKE_STOMP, 28000);
         }
 
         void JustDied(Unit* /*killer*/)
@@ -128,7 +149,28 @@ public:
             if (!UpdateVictim())
                 return;
 
-            if (checkvictim && instance)
+            if (updatepower)
+            {
+                if (updatepower <= diff)
+                {
+                    if (me->GetPower(POWER_ENERGY) < 100)
+                    {
+                        me->SetPower(POWER_ENERGY, me->GetPower(POWER_ENERGY) + 1);
+                        if (me->GetPower(POWER_ENERGY) == 100)
+                            DoCast(me, SPELL_FURIOS_STONE_BREATH);
+                        updatepower = 450;
+                    }
+                    else if (me->GetPower(POWER_ENERGY) == 100 && !me->HasUnitState(UNIT_STATE_CASTING))
+                    {
+                        DoCast(me, SPELL_FURIOS_STONE_BREATH);
+                        updatepower = 450;
+                    }
+                }
+                else
+                    updatepower -= diff;
+            }
+
+            if (checkvictim)
             {
                 if (checkvictim <= diff)
                 {
@@ -136,10 +178,7 @@ public:
                     {
                         if (!CheckPullPlayerPos(me->getVictim()))
                         {
-                            checkvictim = 0;
-                            me->AttackStop();
-                            me->SetReactState(REACT_PASSIVE);
-                            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                            me->SetFullHealth();
                             EnterEvadeMode();
                         }
                         else
@@ -159,6 +198,11 @@ public:
             {
                 switch (eventId)
                 {
+                case EVENT_ROCKFALL:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
+                        DoCast(target, SPELL_SUM_ROCKFALL);
+                    events.ScheduleEvent(EVENT_ROCKFALL, 9000);
+                    break;
                 case EVENT_SNAPPING_BITE:
                     if (me->getVictim())
                         DoCast(me->getVictim(), SPELL_SNAPPING_BITE);
@@ -166,33 +210,54 @@ public:
                     break;
                 case EVENT_QUAKE_STOMP:
                     DoCastAOE(SPELL_QUAKE_STOMP);
-                    events.ScheduleEvent(EVENT_QUAKE_STOMP, urand(45000, 50000));
+                    events.ScheduleEvent(EVENT_QUAKE_STOMP, 46000);
                     break;
                 case EVENT_CALL_OF_TORTOS:
+                {
                     DoCastAOE(SPELL_CALL_OF_TORTOS);
-                    for (uint8 n = 0; n < 3; n++)
+                    uint8 num = 0;
+                    std::list<Player*>pllist;
+                    pllist.clear();
+                    GetPlayerListInGrid(pllist, me, 150.0f);
+                    if (!pllist.empty())
                     {
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 50.0f, true))
+                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
                         {
-                            Position pos;
-                            target->GetPosition(&pos);
-                            me->SummonCreature(NPC_WHIRL_TURTLE, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), 0.0f);
+                            //if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
+                            //{
+                                num++;
+                                if (Creature* wt = me->SummonCreature(NPC_WHIRL_TURTLE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f))
+                                    wt->GetMotionMaster()->MoveJump((*itr)->GetPositionX(), (*itr)->GetPositionY(), me->GetPositionZ(), 21.0f, 0.0f, 2);
+                                if (num == 3)
+                                    break;
+                            //}
                         }
                     }
                     events.ScheduleEvent(EVENT_CALL_OF_TORTOS, 60000);
                     break;
+                }
                 case EVENT_SUMMON_BATS:
                     for (uint8 n = 0; n < 5; n++)
                         if (Creature* vb = me->SummonCreature(NPC_VAMPIRIC_CAVE_BAT, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f))
                             vb->AI()->DoZoneInCombat(vb, 100.0f);
-                    events.ScheduleEvent(EVENT_SUMMON_BATS, 45000);
-                    break;
-                case EVENT_STONE_BREATH:
-                    DoCast(me, SPELL_FURIOS_STONE_BREATH);
-                    events.ScheduleEvent(EVENT_STONE_BREATH, urand(60000, 70000));
+                    events.ScheduleEvent(EVENT_SUMMON_BATS, 30000);
                     break;
                 }
             }
+
+            if (checkmelee <= diff)
+            {
+                if (!me->HasUnitState(UNIT_STATE_CASTING))
+                    if (me->getVictim() && !me->IsWithinMeleeRange(me->getVictim()))
+                        DoCast(me, SPELL_GROWING_FURY);
+                checkmelee = 4000;
+            }
+            else
+                checkmelee -= diff;
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
             DoMeleeAttackIfReady();
         }
     };
@@ -226,7 +291,6 @@ public:
             kick = false;
             done = false;
             DoCast(me, SPELL_SPINNING_SHELL_V, true);
-            me->GetMotionMaster()->MoveRandom(8.0f);
         }
 
         void SetGUID(uint64 guid, int32 id)
@@ -248,7 +312,17 @@ public:
         void MovementInform(uint32 type, uint32 pointId)
         {
             if (type == EFFECT_MOTION_TYPE)
-                events.ScheduleEvent(EVENT_DESPAWN, 5000);
+            {
+                switch (pointId)
+                {
+                case 1:
+                    events.ScheduleEvent(EVENT_DESPAWN, 5000);
+                    break;
+                case 2:
+                    events.ScheduleEvent(EVENT_CHANGE_POSITION, 6000);
+                    break;
+                }
+            }
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -259,6 +333,7 @@ public:
             if (HealthBelowPct(10) && !done)
             {
                 done = true;
+                events.Reset();
                 me->GetMotionMaster()->MoveIdle();
                 me->RemoveAurasDueToSpell(SPELL_SPINNING_SHELL_V);
                 DoCast(me, SPELL_SHELL_BLOCK, true);
@@ -271,8 +346,16 @@ public:
 
             while (uint32 eventId = events.ExecuteEvent())
             {
-                if (eventId == EVENT_DESPAWN)
+                switch (eventId)
+                {
+                case EVENT_DESPAWN:
                     me->DespawnOrUnsummon();
+                    break;
+                case EVENT_CHANGE_POSITION:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 80.0f, true))
+                        me->GetMotionMaster()->MoveJump(target->GetPositionX(), target->GetPositionY(), me->GetPositionZ(), 21.0f, 0.0f, 2);
+                    break;
+                }
             }
         }
     };
@@ -320,6 +403,66 @@ public:
     }
 };
 
+//68219
+class npc_rockfall : public CreatureScript
+{
+public:
+    npc_rockfall() : CreatureScript("npc_rockfall") {}
+
+    struct npc_rockfallAI : public ScriptedAI
+    {
+        npc_rockfallAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetDisplayId(11686);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
+        }
+        InstanceScript* instance;
+        EventMap events;
+
+        void Reset()
+        {
+            events.ScheduleEvent(EVENT_ACTIVE, 500);
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            damage = 0;
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                case EVENT_ACTIVE:
+                    if (Player* pl = me->FindNearestPlayer(150.0f, true))
+                        DoCast(pl, SPELL_ROCKFALL, true);
+                    events.ScheduleEvent(EVENT_DESPAWN, 6000);
+                    break;
+                case EVENT_DESPAWN:
+                    me->DespawnOrUnsummon();
+                    break;
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_rockfallAI(creature);
+    }
+};
+
+//134920
 class spell_quake_stomp : public SpellScriptLoader
 {
 public:
@@ -339,9 +482,16 @@ public:
             }
         }
 
+        void HandleAfterCast()
+        {
+            if (GetCaster())
+                GetCaster()->CastSpell(GetCaster(), SPELL_ROCKFALL_AURA, true);
+        }
+
         void Register()
         {
             OnHit += SpellHitFn(spell_quake_stomp_SpellScript::DealDamage);
+            AfterCast += SpellCastFn(spell_quake_stomp_SpellScript::HandleAfterCast);
         }
     };
 
@@ -490,13 +640,43 @@ public:
     }
 };
 
+//140431
+class spell_rockfall_dummy : public SpellScriptLoader
+{
+public:
+    spell_rockfall_dummy() : SpellScriptLoader("spell_rockfall_dummy") { }
+
+    class spell_rockfall_dummy_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_rockfall_dummy_SpellScript);
+
+        void DealDamage()
+        {
+            if (GetCaster() && GetHitUnit())
+                GetCaster()->CastSpell(GetHitUnit(), SPELL_SUM_ROCKFALL, true);
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_rockfall_dummy_SpellScript::DealDamage);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_rockfall_dummy_SpellScript();
+    }
+};
+
 void AddSC_boss_tortos()
 {
     new boss_tortos();
     new npc_whirl_turtle();
     new npc_vampiric_cave_bat();
+    new npc_rockfall();
     new spell_quake_stomp();
     new spell_drain_the_weak();
     new spell_kick_shell_aura();
     new spell_kick_shell_dmg();
+    new spell_rockfall_dummy();
 }
