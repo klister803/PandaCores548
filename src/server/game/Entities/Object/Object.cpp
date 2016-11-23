@@ -3886,7 +3886,10 @@ void WorldObject::GetNearPosition(Position &pos, float dist, float angle, bool w
                     MovePosition(pos, dist, stepOfangle * (i + 1));
 
                     if (IsWithinLOS(pos.m_positionX, pos.m_positionY, pos.m_positionZ))
+                    {
+                        pos.SetOrientation(pos.GetAngle(GetPositionX(), GetPositionY()));
                         return;
+                    }
                 }
             }
 
@@ -3896,12 +3899,16 @@ void WorldObject::GetNearPosition(Position &pos, float dist, float angle, bool w
                 MovePosition(pos, dist, stepOfangle * q);
 
                 if (IsWithinLOS(pos.m_positionX, pos.m_positionY, pos.m_positionZ))
+                {
+                    pos.SetOrientation(pos.GetAngle(GetPositionX(), GetPositionY()));
                     return;
+                }
             }
 
             pos = savePos;
             MovePosition(pos, 0.1f, angle);
         }
+        pos.SetOrientation(pos.GetAngle(GetPositionX(), GetPositionY()));
     }
     else
         MovePosition(pos, dist, angle);
