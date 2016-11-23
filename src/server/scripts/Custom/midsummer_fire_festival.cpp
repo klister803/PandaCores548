@@ -633,7 +633,7 @@ class spell_hawka : public SpellScriptLoader
         }
 };
 
-// spell 62014 - даем ачивку
+// 62014
 class spell_turkey_tracker : public SpellScriptLoader
 {
     public:
@@ -645,21 +645,21 @@ class spell_turkey_tracker : public SpellScriptLoader
 
             void OnStackChange(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if(GetStackAmount() >= 39)
-                    if(Unit* caster = GetCaster())
+                if (GetStackAmount() >= 39)
+                    if (Unit* caster = GetCaster())
                         if (Player* player = caster->ToPlayer())
-                            if (AchievementEntry const *Achiev = sAchievementStore.LookupEntry(3578))
-                                player->CompletedAchievement(Achiev);
+                        {
+                            player->CastSpell(player, 62021, true);
+                            GetAura()->Remove();
+                        }
             }
 
-            // function registering
             void Register()
             {
                 OnEffectApply += AuraEffectApplyFn(spell_turkey_trackerAuraScript::OnStackChange, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
             }
         };
 
-        // function which creates AuraScript
         AuraScript* GetAuraScript() const
         {
             return new spell_turkey_trackerAuraScript();
@@ -682,7 +682,8 @@ class spell_pass_the_turkey : public SpellScriptLoader
                 if(Unit* caster = GetCaster())
                     if (Player* player = caster->GetCharmerOrOwnerPlayerOrPlayerItself())
                         if (AchievementEntry const *Achiev = sAchievementStore.LookupEntry(3579))
-                            player->CompletedAchievement(Achiev);
+                            if (!player->HasAchieved(Achiev->ID))
+                                player->CompletedAchievement(Achiev);
             }
 
             void Register()
