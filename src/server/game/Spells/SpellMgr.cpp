@@ -4208,6 +4208,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 115450: // Detox
                     spellInfo->Effects[EFFECT_2]->BasePoints = 0;
                     break;
+                case 117050: // Glave Toss
                 case 65148:  // Sacred Shield
                 case 113092: // Frost Bomb
                 case 18153:  // Kodo Kombobulator
