@@ -54,55 +54,54 @@ enum sActions
     ACTION_BREATH             = 1,
 };
 
-void ResetMegaeraHeads(InstanceScript* instance, Creature* caller, uint32 callerEntry)
+struct megaeraAI : public ScriptedAI
 {
-    if (caller && instance)
+    megaeraAI(Creature* creature) : ScriptedAI(creature)
     {
-        for (uint8 n = 0; n < 3; n++)
+        instance = creature->GetInstanceScript();
+    }
+    InstanceScript* instance;
+
+    void MegaeraHeadsReset()
+    {
+        for (int32 i = 0; i < 4; i++)
         {
-            if (Creature* mh = caller->GetCreature(*caller, instance->GetData64(megaera_entry[n])))
+            if (Creature* megaerahead = me->GetCreature(*me, instance->GetData64(megaera_entry[i])))
             {
-                if (mh->GetEntry() != callerEntry)
+                if (me->GetEntry() != megaerahead->GetEntry())
                 {
-                    if (!mh->isAlive())
+                    if (megaerahead->isAlive() && megaerahead->isInCombat())
+                        megaerahead->AI()->EnterEvadeMode();
+                    else
                     {
-                        mh->Respawn();
-                        mh->GetMotionMaster()->MoveTargetedHome();
+                        megaerahead->Respawn();
+                        megaerahead->GetMotionMaster()->MoveTargetedHome();
                     }
-                    else if (mh->isAlive() && mh->isInCombat())
-                        mh->AI()->EnterEvadeMode();
                 }
             }
         }
+        if (instance->GetBossState(DATA_MEGAERA != NOT_STARTED))
+            instance->SetBossState(DATA_MEGAERA, NOT_STARTED);
     }
-}
 
-void CallMegaeraHeads(InstanceScript* instance, Creature* caller, uint32 callerEntry)
-{
-    if (caller && instance)
+    void MegaeraHeadEnterCombat()
     {
-        for (uint8 n = 0; n < 3; n++)
-        {
-            if (Creature* mh = caller->GetCreature(*caller, instance->GetData64(megaera_entry[n])))
-            {
-                if (mh->GetEntry() != callerEntry)
-                {
-                    if (mh->isAlive() && !mh->isInCombat())
-                        mh->AI()->DoZoneInCombat(mh, 150.0f);
-                }
-            }
-        }
-    }
-}
+        for (int32 i = 0; i < 4; i++)
+            if (Creature* megaerahead = me->GetCreature(*me, instance->GetData64(megaera_entry[i])))
+                if (me->GetEntry() != megaerahead->GetEntry())
+                    if (megaerahead->isAlive() && !megaerahead->isInCombat())
+                        DoZoneInCombat(megaerahead, 150.0f);
 
-void CheckMegaeraHeads(InstanceScript* instance, Creature* caller, uint32 callerEntry)
-{
-    if (caller && instance)
+        if (instance->GetBossState(DATA_MEGAERA) != IN_PROGRESS)
+            instance->SetBossState(DATA_MEGAERA, IN_PROGRESS);
+    }
+
+    void CheckMegaeraHeads()
     {
         uint8 donecount = 0;
         for (uint8 n = 0; n < 3; n++)
         {
-            if (Creature* mh = caller->GetCreature(*caller, instance->GetData64(megaera_entry[n])))
+            if (Creature* mh = me->GetCreature(*me, instance->GetData64(megaera_entry[n])))
             {
                 if (!mh->isAlive())
                     donecount++;
@@ -110,26 +109,26 @@ void CheckMegaeraHeads(InstanceScript* instance, Creature* caller, uint32 caller
                     mh->SetFullHealth();
             }
         }
-        caller->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+        me->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
 
-        if (donecount == 3) 
+        if (donecount == 3)
         {
-            caller->setFaction(35);
-            if(!caller->GetMap()->IsLfr())
-                caller->SummonGameObject(218805, 6415.06f, 4527.67f, -209.1780f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 604800);
+            me->setFaction(35);
+            if (!me->GetMap()->IsLfr())
+                me->SummonGameObject(218805, 6415.06f, 4527.67f, -209.1780f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 604800);
             instance->SetBossState(DATA_MEGAERA, DONE);
             return;
         }
         
-        if (callerEntry == NPC_FROZEN_HEAD || callerEntry == NPC_VENOMOUS_HEAD)
+        if (me->GetEntry() == NPC_FROZEN_HEAD || me->GetEntry() == NPC_VENOMOUS_HEAD)
         {
-            if (Creature* fl_h = caller->GetCreature(*caller, instance->GetData64(NPC_FLAMING_HEAD)))
+            if (Creature* fl_h = me->GetCreature(*me, instance->GetData64(NPC_FLAMING_HEAD)))
             {
                 if (fl_h->isAlive() && fl_h->isInCombat())
                 {
                     if (fl_h->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                     {
-                        fl_h->GetMotionMaster()->MoveCharge(caller->GetPositionX(), caller->GetPositionY(), caller->GetPositionZ());
+                        fl_h->GetMotionMaster()->MoveCharge(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
                         fl_h->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                         fl_h->AI()->DoAction(ACTION_BREATH);
                     }
@@ -137,129 +136,130 @@ void CheckMegaeraHeads(InstanceScript* instance, Creature* caller, uint32 caller
             }
         }
     }
-}
+};
 
 class npc_megaera_head : public CreatureScript
 {
-    public:
-        npc_megaera_head() : CreatureScript("npc_megaera_head") {}
+public:
+    npc_megaera_head() : CreatureScript("npc_megaera_head") {}
 
-        struct npc_megaera_headAI : public ScriptedAI
+    struct npc_megaera_headAI : public megaeraAI
+    {
+        npc_megaera_headAI(Creature* creature) : megaeraAI(creature), summon(me)
         {
-            npc_megaera_headAI(Creature* creature) : ScriptedAI(creature), summon(me)
+            instance = creature->GetInstanceScript();
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+        }
+
+        InstanceScript* instance;
+        SummonList summon;
+        EventMap events;
+        uint32 checkvictim; //check distance to victim
+
+        void Reset()
+        {
+            MegaeraHeadsReset();
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+            summon.DespawnAll();
+            events.Reset();
+            me->setFaction(16);
+            me->SetReactState(REACT_AGGRESSIVE);
+            if (me->GetEntry() == NPC_FLAMING_HEAD)
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+            checkvictim = 0;
+        }
+
+        void EnterCombat(Unit* who)
+        {
+            MegaeraHeadEnterCombat();
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
+            if (me->GetEntry() != NPC_FLAMING_HEAD)
             {
-                instance = creature->GetInstanceScript();
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                events.ScheduleEvent(EVENT_BREATH, 16000);
+                checkvictim = 4000;
             }
+            else
+                events.ScheduleEvent(EVENT_CINDERS, 25000);
+        }
 
-            InstanceScript* instance;
-            SummonList summon;
-            EventMap events;
-            uint32 checkvictim; //check distance to victim
+        void JustSummoned(Creature* summons)
+        {
+            summon.Summon(summons);
+        }
 
-            void Reset()
+        void DoAction(int32 const action)
+        {
+            if (action == ACTION_BREATH)
             {
-                if (instance)
-                {
-                    ResetMegaeraHeads(instance, me, me->GetEntry());
-                    instance->SetBossState(DATA_MEGAERA, NOT_STARTED);
-                }
-                summon.DespawnAll();
-                events.Reset();
-                me->setFaction(16);
-                me->SetReactState(REACT_AGGRESSIVE);
-                if (me->GetEntry() == NPC_FLAMING_HEAD)
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                checkvictim = 0;
+                events.CancelEvent(EVENT_CINDERS);
+                events.ScheduleEvent(EVENT_BREATH, 16000);
+                checkvictim = 4000;
             }
+        }
 
-            void EnterCombat(Unit* who)
+        void JustDied(Unit* /*killer*/)
+        {
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+            CheckMegaeraHeads();
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
+
+            if (checkvictim)
             {
-                if (instance)
-                    CallMegaeraHeads(instance, me, me->GetEntry());
-                if (me->GetEntry() != NPC_FLAMING_HEAD)
+                if (checkvictim <= diff)
                 {
-                    events.ScheduleEvent(EVENT_BREATH, 16000);
+                    if (me->getVictim() && !me->IsWithinMeleeRange(me->getVictim()))
+                        DoCast(me->getVictim(), SPELL_MEGAERA_RAGE);
                     checkvictim = 4000;
                 }
-                else
-                    events.ScheduleEvent(EVENT_CINDERS, 25000);
+                else checkvictim -= diff;
             }
 
-            void JustSummoned(Creature* summons)
-            {
-                summon.Summon(summons);
-            }
+            events.Update(diff);
 
-            void DoAction(int32 const action)
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            while (uint32 eventId = events.ExecuteEvent())
             {
-                if (action == ACTION_BREATH)
+                switch (eventId)
                 {
-                    events.CancelEvent(EVENT_CINDERS);
-                    events.ScheduleEvent(EVENT_BREATH, 16000);
-                    checkvictim = 4000;
-                }
-            }
-
-            void JustDied(Unit* /*killer*/)
-            {
-                CheckMegaeraHeads(instance, me, me->GetEntry());
-            }
-
-            void UpdateAI(uint32 diff)
-            {
-                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
-
-                if (checkvictim)
+                case EVENT_BREATH:
                 {
-                    if (checkvictim <= diff)
+                    switch (me->GetEntry())
                     {
-                        if (me->getVictim() && !me->IsWithinMeleeRange(me->getVictim()))
-                            DoCast(me->getVictim(), SPELL_MEGAERA_RAGE);
-                        checkvictim = 4000;
-                    }
-                    else checkvictim -= diff;
-                }
-
-                events.Update(diff);
-
-                while (uint32 eventId = events.ExecuteEvent())
-                {
-                    switch (eventId)
-                    {
-                    case EVENT_BREATH:
-                        {
-                            switch (me->GetEntry())
-                            {
-                            case NPC_FLAMING_HEAD:
-                                DoCast(me, SPELL_IGNITE_FLESH);
-                                break;
-                            case NPC_FROZEN_HEAD:
-                                DoCast(me, SPELL_ARCTIC_FREEZE);
-                                break;
-                            case NPC_VENOMOUS_HEAD:
-                                DoCast(me, SPELL_ROT_ARMOR);
-                                break;
-                            }
-                            events.ScheduleEvent(EVENT_BREATH, 16000);
-                            break;
-                        }
-                    case EVENT_CINDERS:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 80.0f, true))
-                            DoCast(target, SPELL_CINDERS_DOT);
-                        events.ScheduleEvent(EVENT_CINDERS, 25000);
+                    case NPC_FLAMING_HEAD:
+                        DoCast(me, SPELL_IGNITE_FLESH);
+                        break;
+                    case NPC_FROZEN_HEAD:
+                        DoCast(me, SPELL_ARCTIC_FREEZE);
+                        break;
+                    case NPC_VENOMOUS_HEAD:
+                        DoCast(me, SPELL_ROT_ARMOR);
                         break;
                     }
+                    events.ScheduleEvent(EVENT_BREATH, 16000);
+                    break;
                 }
-                DoMeleeAttackIfReady();
+                case EVENT_CINDERS:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 80.0f, true))
+                        DoCast(target, SPELL_CINDERS_DOT);
+                    events.ScheduleEvent(EVENT_CINDERS, 25000);
+                    break;
+                }
             }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new npc_megaera_headAI(creature);
+            DoMeleeAttackIfReady();
         }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_megaera_headAI(creature);
+    }
 };
 
 //70432
@@ -310,29 +310,29 @@ public:
 //139822
 class spell_cinders : public SpellScriptLoader
 {
-    public:
-        spell_cinders() : SpellScriptLoader("spell_cinders") { }
+public:
+    spell_cinders() : SpellScriptLoader("spell_cinders") { }
 
-        class spell_cinders_AuraScript : public AuraScript
+    class spell_cinders_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_cinders_AuraScript);
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            PrepareAuraScript(spell_cinders_AuraScript);
-
-            void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (GetCaster() && GetTarget())
-                    GetCaster()->SummonCreature(NPC_CINDERS, GetTarget()->GetPositionX(), GetTarget()->GetPositionY(), GetTarget()->GetPositionZ());
-            }
-
-            void Register()
-            {
-                OnEffectRemove += AuraEffectRemoveFn(spell_cinders_AuraScript::HandleEffectRemove, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_cinders_AuraScript();
+            if (GetCaster() && GetTarget())
+                GetCaster()->SummonCreature(NPC_CINDERS, GetTarget()->GetPositionX(), GetTarget()->GetPositionY(), GetTarget()->GetPositionZ());
         }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_cinders_AuraScript::HandleEffectRemove, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_cinders_AuraScript();
+    }
 };
 
 void AddSC_boss_megaera()
