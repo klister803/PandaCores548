@@ -223,14 +223,14 @@ public:
                     {
                         for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
                         {
-                            //if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
-                            //{
+                            if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
+                            {
                                 num++;
                                 if (Creature* wt = me->SummonCreature(NPC_WHIRL_TURTLE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f))
                                     wt->GetMotionMaster()->MoveJump((*itr)->GetPositionX(), (*itr)->GetPositionY(), me->GetPositionZ(), 21.0f, 0.0f, 2);
                                 if (num == 3)
                                     break;
-                            //}
+                            }
                         }
                     }
                     events.ScheduleEvent(EVENT_CALL_OF_TORTOS, 60000);
