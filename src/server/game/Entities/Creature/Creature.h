@@ -666,7 +666,6 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         SpellSchoolMask GetMeleeDamageSchoolMask() const { return m_meleeDamageSchoolMask; }
         void SetMeleeDamageSchool(SpellSchools school) { m_meleeDamageSchoolMask = SpellSchoolMask(1 << school); }
 
-        void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs);
         void _AddCreatureSpellCooldown(uint32 spell_id, time_t end_time);
         void _AddCreatureCategoryCooldown(uint32 category, time_t apply_time);
         void AddCreatureSpellCooldown(uint32 spellid);
@@ -746,6 +745,8 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         SpellInfo const* reachWithSpellAttack(Unit* victim);
         SpellInfo const* reachWithSpellCure(Unit* victim);
+
+        uint32 schoolBlockTimer[MAX_SPELL_SCHOOL];
 
         uint32 m_temlate_spells[CREATURE_MAX_SPELLS];
         CreatureSpellCooldowns m_CreatureSpellCooldowns;

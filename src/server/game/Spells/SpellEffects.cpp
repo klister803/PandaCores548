@@ -4989,6 +4989,14 @@ void Spell::EffectInterruptCast(SpellEffIndex effIndex)
                 {
                     int32 duration = m_spellInfo->GetDuration();
                     unitTarget->ProhibitSpellSchool(curSpellInfo->GetSchoolMask(), unitTarget->ModSpellDuration(m_spellInfo, unitTarget, duration, false, 1 << effIndex, m_originalCaster));
+
+                    // Creature School Cooldown
+                    if (Creature* cTarget = unitTarget->ToCreature())
+                    {
+                        if (curSpellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE && !(curSpellInfo->Attributes & SPELL_ATTR0_DISABLED_WHILE_ACTIVE))
+                            if (curSpellInfo->GetSchoolMask())
+                                cTarget->schoolBlockTimer[curSpellInfo->GetSchoolMask()] = time(NULL) + duration / IN_MILLISECONDS;
+                    }
                 }
 
                 if (Creature* creature = unitTarget->ToCreature())

@@ -172,6 +172,8 @@ m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_o
     for (uint8 i = 0; i < CREATURE_MAX_SPELLS; ++i)
         m_temlate_spells[i] = 0;
 
+    memset(schoolBlockTimer, 0, sizeof(schoolBlockTimer));
+
     m_CreatureSpellCooldowns.clear();
     m_CreatureCategoryCooldowns.clear();
     DisableReputationGain = false;
@@ -3130,27 +3132,6 @@ bool Creature::IsPersonalLoot() const
 bool Creature::IsAutoLoot() const
 {
     return (GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_AUTO_LOOT);
-}
-
-void Creature::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
-{
-    for (uint8 i = 0; i < GetPetCastSpellSize(); ++i)
-    {
-        uint32 spellID = GetPetCastSpellOnPos(i);
-        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
-        if (!spellInfo)
-            continue;
-
-        // Not send cooldown for this spells
-        if (spellInfo->Attributes & SPELL_ATTR0_DISABLED_WHILE_ACTIVE)
-            continue;
-
-        if (spellInfo->PreventionType != SPELL_PREVENTION_TYPE_SILENCE)
-            continue;
-
-        if ((idSchoolMask & spellInfo->GetSchoolMask()) && _GetSpellCooldownDelay(spellID) < unTimeMs)
-            _AddCreatureSpellCooldown(spellID, time(NULL) + unTimeMs/IN_MILLISECONDS);
-    }
 }
 
 void Creature::HandleFollowCommand()
