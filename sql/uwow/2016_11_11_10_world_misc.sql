@@ -7,3 +7,5 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `caster`, `co
 
 INSERT INTO `spell_trigger` (`spell_id`, `spell_trigger`, `target`, `comment`) VALUES ('120694', '82716', '5', 'Dire Beast Focus Driver');
 UPDATE `spell_trigger` SET `caster`='4' WHERE (`spell_id`='120694') AND (`spell_trigger`='82716') AND (`option`='0') AND (`effectmask`='7') AND (`aura`='0') AND (`check_spell_id`='0');
+
+INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `option`, `addcaster`, `comments`) VALUES ('81280', '30', '16', '-1', 'Blood Burst');

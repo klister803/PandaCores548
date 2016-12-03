@@ -1995,20 +1995,35 @@ public:
 
             if (Unit* owner = target->GetOwner())
             {
-                int32 stacks = GetStackAmount() * 10;
-                int32 masterPct = int32(100.0f - owner->GetHealthPct());
-                AddPct(stacks, masterPct);
-                if (roll_chance_i(stacks))
+                if (owner->IsFullHealth())
+                    return;
+
+                uint32 chance = GetStackAmount() * 2;
+                
+                if (roll_chance_i(chance))
+                    Remove(AURA_REMOVE_BY_DEFAULT);
+            }
+        }
+
+        void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            Unit* target = GetTarget();
+            if (!target)
+                return;
+
+            if (AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode())
+                if (removeMode != AURA_REMOVE_BY_DEATH)
                 {
-                    float damage = GetStackAmount() * target->GetMaxHealth() * GetSpellInfo()->Effects[EFFECT_1]->BasePoints / 100.0f;
+                    float damage = CalculatePct(target->GetMaxHealth(), GetStackAmount() * GetSpellInfo()->Effects[EFFECT_1]->BasePoints);
                     target->CastCustomSpell(target, 81280, &damage, NULL, NULL, true);
                 }
-            }
+
         }
 
         void Register()
         {
             OnEffectApply += AuraEffectApplyFn(spell_dk_blood_gorged_AuraScript::OnStackChange, EFFECT_0, SPELL_AURA_MOD_SCALE, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+            OnEffectRemove += AuraEffectRemoveFn(spell_dk_blood_gorged_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_MOD_SCALE, AURA_EFFECT_HANDLE_REAL);
         }
     };
 
