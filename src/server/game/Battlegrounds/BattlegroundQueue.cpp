@@ -146,6 +146,7 @@ GroupQueueInfo* BattlegroundQueue::AddGroup(Player* leader, Group* grp, Battlegr
     ginfo->ignore                    = ignore;
     ginfo->RegTimer                  = 0;
     ginfo->QueueLvl                  = 0;
+    ginfo->NormalBgTypeId            = BgTypeId;
     ginfo->Players.clear();
 
     //compute index (if group is premade or joined a rated match) to queues
@@ -822,37 +823,43 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
         m_QueuedGroups[bracket_id][BG_QUEUE_NORMAL_HORDE].empty())
         return;
 
-    //battleground with free slot for player should be always in the beggining of the queue
-    // maybe it would be better to create bgfreeslotqueue for each bracket_id
-    BGFreeSlotQueueType::iterator itr, next;
-    for (itr = sBattlegroundMgr->BGFreeSlotQueue[bgTypeId].begin(); itr != sBattlegroundMgr->BGFreeSlotQueue[bgTypeId].end(); itr = next)
+    if (bgTypeId == BATTLEGROUND_RB)
+        CheckOtherBGs();
+    else
     {
-        next = itr;
-        ++next;
-        // DO NOT allow queue manager to invite new player to arena
-        if ((*itr)->isBattleground() && (*itr)->GetTypeID() == bgTypeId && (*itr)->GetBracketId() == bracket_id &&
-            (*itr)->GetStatus() > STATUS_WAIT_QUEUE && (*itr)->GetStatus() < STATUS_WAIT_LEAVE)
+        //battleground with free slot for player should be always in the beggining of the queue
+        // maybe it would be better to create bgfreeslotqueue for each bracket_id
+        BGFreeSlotQueueType::iterator itr, next;
+        for (itr = sBattlegroundMgr->BGFreeSlotQueue[bgTypeId].begin(); itr != sBattlegroundMgr->BGFreeSlotQueue[bgTypeId].end(); itr = next)
         {
-            Battleground* bg = *itr; //we have to store battleground pointer here, because when battleground is full, it is removed from free queue (not yet implemented!!)
-            // and iterator is invalid
+            next = itr;
+            ++next;
 
-            // clear selection pools
-            m_SelectionPools[BG_TEAM_ALLIANCE].Init();
-            m_SelectionPools[BG_TEAM_HORDE].Init();
-
-            // call a function that does the job for us
-            FillPlayersToBG(bg, bracket_id);
-
-            // now everything is set, invite players
-            for (GroupsQueueType::const_iterator citr = m_SelectionPools[BG_TEAM_ALLIANCE].SelectedGroups.begin(); citr != m_SelectionPools[BG_TEAM_ALLIANCE].SelectedGroups.end(); ++citr)
-                InviteGroupToBG((*citr), bg, (*citr)->Team);
-            for (GroupsQueueType::const_iterator citr = m_SelectionPools[BG_TEAM_HORDE].SelectedGroups.begin(); citr != m_SelectionPools[BG_TEAM_HORDE].SelectedGroups.end(); ++citr)
-                InviteGroupToBG((*citr), bg, (*citr)->Team);
-
-            if (!bg->HasFreeSlots())
+            // DO NOT allow queue manager to invite new player to arena
+            if ((*itr)->isBattleground() && (*itr)->GetTypeID() == bgTypeId && ((*itr)->GetBracketId() == bracket_id || (*itr)->GetBracketId() == BattlegroundBracketId(9)) &&
+                (*itr)->GetStatus() > STATUS_WAIT_QUEUE && (*itr)->GetStatus() < STATUS_WAIT_LEAVE)
             {
-                // remove BG from BGFreeSlotQueue
-                bg->RemoveFromBGFreeSlotQueue();
+                Battleground* bg = *itr; //we have to store battleground pointer here, because when battleground is full, it is removed from free queue (not yet implemented!!)
+                // and iterator is invalid
+
+                // clear selection pools
+                m_SelectionPools[BG_TEAM_ALLIANCE].Init();
+                m_SelectionPools[BG_TEAM_HORDE].Init();
+
+                // call a function that does the job for us
+                FillPlayersToBG(bg, bracket_id);
+
+                // now everything is set, invite players
+                for (GroupsQueueType::const_iterator citr = m_SelectionPools[BG_TEAM_ALLIANCE].SelectedGroups.begin(); citr != m_SelectionPools[BG_TEAM_ALLIANCE].SelectedGroups.end(); ++citr)
+                    InviteGroupToBG((*citr), bg, (*citr)->Team);
+                for (GroupsQueueType::const_iterator citr = m_SelectionPools[BG_TEAM_HORDE].SelectedGroups.begin(); citr != m_SelectionPools[BG_TEAM_HORDE].SelectedGroups.end(); ++citr)
+                    InviteGroupToBG((*citr), bg, (*citr)->Team);
+
+                if (!bg->HasFreeSlots())
+                {
+                    // remove BG from BGFreeSlotQueue
+                    bg->RemoveFromBGFreeSlotQueue();
+                }
             }
         }
     }
@@ -926,7 +933,12 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
             //invite those selection pools
             for (uint32 i = 0; i < BG_TEAMS_COUNT; i++)
                 for (GroupsQueueType::const_iterator citr = m_SelectionPools[BG_TEAM_ALLIANCE + i].SelectedGroups.begin(); citr != m_SelectionPools[BG_TEAM_ALLIANCE + i].SelectedGroups.end(); ++citr)
-                    InviteGroupToBG((*citr), bg2, (*citr)->Team);
+                {
+                    if (bgTypeId == BATTLEGROUND_RB)
+                        InviteGroupToBG_RB((*citr), bg2, (*citr)->Team);
+                    else
+                        InviteGroupToBG((*citr), bg2, (*citr)->Team);
+                }
             //start bg
             bg2->StartBattleground();
             //clear structures
@@ -953,7 +965,12 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
             // invite those selection pools
             for (uint32 i = 0; i < BG_TEAMS_COUNT; i++)
                 for (GroupsQueueType::const_iterator citr = m_SelectionPools[BG_TEAM_ALLIANCE + i].SelectedGroups.begin(); citr != m_SelectionPools[BG_TEAM_ALLIANCE + i].SelectedGroups.end(); ++citr)
-                    InviteGroupToBG((*citr), bg2, (*citr)->Team);
+                {
+                    if (bgTypeId == BATTLEGROUND_RB)
+                        InviteGroupToBG_RB((*citr), bg2, (*citr)->Team);
+                    else
+                        InviteGroupToBG((*citr), bg2, (*citr)->Team);
+                }
             // start bg
             bg2->StartBattleground();
         }
@@ -1304,4 +1321,78 @@ void BattlegroundQueue::StartArena(std::list<GroupQueueInfo*>::iterator itr_team
                 break;
         }
     }
+}
+
+void BattlegroundQueue::CheckOtherBGs()
+{
+    BGFreeSlotQueueType::iterator itr, next;
+    
+    for (uint8 i = 0; i < 11; i++)
+        for (itr = sBattlegroundMgr->BGFreeSlotQueue[m_OnlyBGsTypeIdList[i]].begin(); itr != sBattlegroundMgr->BGFreeSlotQueue[m_OnlyBGsTypeIdList[i]].end(); itr = next)
+        {
+            next = itr;
+            ++next;
+
+            if ((*itr)->isBattleground() && (*itr)->GetStatus() > STATUS_WAIT_QUEUE && (*itr)->GetStatus() < STATUS_WAIT_LEAVE)
+            {
+                Battleground* bg = *itr;
+
+                m_SelectionPools[BG_TEAM_ALLIANCE].Init();
+                m_SelectionPools[BG_TEAM_HORDE].Init();
+
+                FillPlayersToBG(bg, BattlegroundBracketId(9));
+
+                for (GroupsQueueType::const_iterator citr = m_SelectionPools[BG_TEAM_ALLIANCE].SelectedGroups.begin(); citr != m_SelectionPools[BG_TEAM_ALLIANCE].SelectedGroups.end(); ++citr)
+                    InviteGroupToBG_RB((*citr), bg, (*citr)->Team);
+                for (GroupsQueueType::const_iterator citr = m_SelectionPools[BG_TEAM_HORDE].SelectedGroups.begin(); citr != m_SelectionPools[BG_TEAM_HORDE].SelectedGroups.end(); ++citr)
+                    InviteGroupToBG_RB((*citr), bg, (*citr)->Team);
+
+                if (!bg->HasFreeSlots())
+                    bg->RemoveFromBGFreeSlotQueue();
+            }
+        }
+}
+
+bool BattlegroundQueue::InviteGroupToBG_RB(GroupQueueInfo* ginfo, Battleground* bg, uint32 side)
+{
+    if (side)
+        ginfo->Team = side;
+
+    if (!ginfo->IsInvitedToBGInstanceGUID)
+    {
+        ginfo->IsInvitedToBGInstanceGUID = bg->GetInstanceID();
+        ginfo->NormalBgTypeId = bg->GetTypeID();
+        BattlegroundTypeId bgTypeId = ginfo->BgTypeId;
+        BattlegroundQueueTypeId bgQueueTypeId = BattlegroundMgr::BGQueueTypeId(bgTypeId, bg->GetJoinType());
+        BattlegroundBracketId bracket_id = BattlegroundBracketId(9);
+
+        ginfo->RemoveInviteTime = getMSTime() + INVITE_ACCEPT_WAIT_TIME;
+
+        for (std::map<uint64, PlayerQueueInfo*>::iterator itr = ginfo->Players.begin(); itr != ginfo->Players.end(); ++itr)
+        {
+            Player* player = ObjectAccessor::FindPlayer(itr->first);
+
+            if (!player)
+                continue;
+
+            PlayerInvitedToBGUpdateAverageWaitTime(ginfo, bracket_id);
+            bg->IncreaseInvitedCount(ginfo->Team);
+            player->SetInviteForBattlegroundQueueType(bgQueueTypeId, ginfo->IsInvitedToBGInstanceGUID);
+
+            BGQueueInviteEvent* inviteEvent = new BGQueueInviteEvent(player->GetGUID(), ginfo->IsInvitedToBGInstanceGUID, bgTypeId, ginfo->RemoveInviteTime);
+            m_events.AddEvent(inviteEvent, m_events.CalculateTime(INVITATION_REMIND_TIME));
+
+            BGQueueRemoveEvent* removeEvent = new BGQueueRemoveEvent(player->GetGUID(), ginfo->IsInvitedToBGInstanceGUID, bgTypeId, bgQueueTypeId, ginfo->RemoveInviteTime);
+            m_events.AddEvent(removeEvent, m_events.CalculateTime(INVITE_ACCEPT_WAIT_TIME));
+
+            WorldPacket data;
+            uint32 queueSlot = player->GetBattlegroundQueueIndex(bgQueueTypeId);
+
+            sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, player, queueSlot, STATUS_WAIT_JOIN, INVITE_ACCEPT_WAIT_TIME, player->GetBattlegroundQueueJoinTime(bgTypeId), ginfo->JoinType, MAKE_NEW_GUID(BATTLEGROUND_RB, 0, 0x01F1));
+            player->GetSession()->SendPacket(&data);
+        }
+        return true;
+    }
+
+    return false;
 }

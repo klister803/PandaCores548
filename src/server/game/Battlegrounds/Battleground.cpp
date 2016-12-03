@@ -168,7 +168,6 @@ Battleground::Battleground()
     m_Events            = 0;
     m_IsRated           = false;
     m_BuffChange        = false;
-    m_IsRandom          = false;
     m_Name              = "";
     m_LevelMin          = 0;
     m_LevelMax          = 0;
@@ -1019,7 +1018,7 @@ void Battleground::EndBattleground(uint32 winner)
         // Reward winner team
         if (team == winner)
         {
-            if (isBattleground() && !IsRBG() && (IsRandom() || BattlegroundMgr::IsBGWeekend(GetTypeID())))
+            if (isBattleground() && !IsRBG() && (player->IsInvitedForBattlegroundQueueType(BATTLEGROUND_QUEUE_RB) || BattlegroundMgr::IsBGWeekend(GetTypeID())))
             {
                 UpdatePlayerScore(player, SCORE_BONUS_HONOR, winner_bonus);
                 if (!player->GetRandomWinner())
@@ -1050,7 +1049,7 @@ void Battleground::EndBattleground(uint32 winner)
         }
         else
         {
-            if (IsRandom() || BattlegroundMgr::IsBGWeekend(GetTypeID()))
+            if (player->IsInvitedForBattlegroundQueueType(BATTLEGROUND_QUEUE_RB) || BattlegroundMgr::IsBGWeekend(GetTypeID()))
                 UpdatePlayerScore(player, SCORE_BONUS_HONOR, loser_bonus);
         }
 

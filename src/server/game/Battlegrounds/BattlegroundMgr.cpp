@@ -179,14 +179,14 @@ void BattlegroundMgr::Update(uint32 diff)
 }
 
 //! ToDo: arenatype -> JoinType
-void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battleground* bg, Player * pPlayer, uint8 QueueSlot, uint8 StatusID, uint32 Time1, uint32 Time2, uint8 arenatype, uint8 uiFrame)
+void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battleground* bg, Player * pPlayer, uint8 QueueSlot, uint8 StatusID, uint32 Time1, uint32 Time2, uint8 arenatype, uint64 bgGUID)
 {
     // we can be in 2 queues in same time...
     if (!bg)
         StatusID = STATUS_NONE;
 
     ObjectGuid guidBytes1 = pPlayer->GetGUID();
-    ObjectGuid guidBytes2 = bg ? bg->GetGUID() : 0;
+    ObjectGuid guidBytes2 = bgGUID ? bgGUID : bg ? bg->GetGUID() : 0;
 
     switch (StatusID)
     {
@@ -780,6 +780,14 @@ uint32 BattlegroundMgr::CreateClientVisibleInstanceId(BattlegroundTypeId bgTypeI
 // create a new battleground that will really be used to play
 Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId, PvPDifficultyEntry const* bracketEntry, uint8 joinType, bool isRated, BattlegroundTypeId generatedType/*=bgTypeId*/)
 {
+    bool isRandom = false;
+
+    if (bgTypeId == BATTLEGROUND_RB)
+    {
+        isRandom = true;
+        bgTypeId = generatedType;
+    }
+
     // get the template BG
     Battleground* bg_template = GetBattlegroundTemplate(bgTypeId);
     BattlegroundSelectionWeightMap* selectionWeights = NULL;
@@ -791,7 +799,7 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
         return NULL;
     }
 
-    bool isRandom = bg_template->isArena() || bgTypeId == BATTLEGROUND_RB || bgTypeId == BATTLEGROUND_RATED_10_VS_10;
+    isRandom = bg_template->isArena() || bgTypeId == BATTLEGROUND_RATED_10_VS_10;
 
     // get templet for generated rbg type
     if (isRandom)
@@ -923,7 +931,6 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
     bg->SetStatus(STATUS_WAIT_JOIN);
     bg->SetJoinType(joinType);
     bg->SetRated(isRated);
-    bg->SetRandom(isRandom);
     bg->SetTypeID(isRandom ? oldbgTypeId : bgTypeId);       //oldbgTypeId can be BATTLEGROUND_RATED_10_VS_10 || BATTLEGROUND_RB
     bg->SetRBG(oldbgTypeId == BATTLEGROUND_RATED_10_VS_10);
     bg->SetRandomTypeID(bgTypeId);

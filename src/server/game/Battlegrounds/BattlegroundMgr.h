@@ -57,6 +57,21 @@ struct CreateBattlegroundData
     uint32 scriptId;
 };
 
+const BattlegroundTypeId m_OnlyBGsTypeIdList[11] =
+{
+    BATTLEGROUND_WS,
+    BATTLEGROUND_AB,
+    BATTLEGROUND_AV,
+    BATTLEGROUND_EY,
+    BATTLEGROUND_DG,
+    BATTLEGROUND_SSM,
+    BATTLEGROUND_BFG,
+    BATTLEGROUND_TP,
+    BATTLEGROUND_IC,
+    BATTLEGROUND_SA,
+    BATTLEGROUND_RB
+};
+
 struct QueueSchedulerItem
 {
     QueueSchedulerItem(uint32 MMRating, uint8 joinType, BattlegroundQueueTypeId bgQueueTypeId, 
@@ -92,7 +107,7 @@ class BattlegroundMgr
         void BuildStatusFailedPacket(WorldPacket* data, Battleground* bg, Player* player, uint8 QueueSlot, GroupJoinBattlegroundResult result);
         void BuildUpdateWorldStatePacket(WorldPacket* data, uint32 field, uint32 value);
         void BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg);
-        void BuildBattlegroundStatusPacket(WorldPacket* data, Battleground* bg, Player * pPlayer, uint8 QueueSlot, uint8 StatusID, uint32 Time1, uint32 Time2, uint8 arenatype, uint8 uiFrame = 1);
+        void BuildBattlegroundStatusPacket(WorldPacket* data, Battleground* bg, Player * pPlayer, uint8 QueueSlot, uint8 StatusID, uint32 Time1, uint32 Time2, uint8 arenatype, uint64 bgGUID = 0);
         void BuildPlaySoundPacket(WorldPacket* data, uint32 soundid);
         void SendAreaSpiritHealerQueryOpcode(Player* player, Battleground* bg, uint64 guid);
 

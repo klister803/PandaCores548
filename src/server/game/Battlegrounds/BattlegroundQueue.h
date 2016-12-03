@@ -51,6 +51,7 @@ struct GroupQueueInfo                                       // stores informatio
     std::map<uint64, PlayerQueueInfo*> Players;             // player queue info map
     uint32  Team;                                           // Player team (ALLIANCE/HORDE)
     BattlegroundTypeId BgTypeId;                            // battleground type id
+    BattlegroundTypeId NormalBgTypeId;                           // normal battleground type id
     bool    IsRated;                                        // rated
     uint8   JoinType;                                       // 2v2, 3v3, 5v5, 10v10 or 0 when BG
     uint32  GroupId;                                        // group id if rated match
@@ -84,6 +85,7 @@ class BattlegroundQueue
         ~BattlegroundQueue();
 
         void BattlegroundQueueUpdate(uint32 diff, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id, uint8 arenaType = 0, bool isRated = false, uint32 minRating = 0);
+        void CheckOtherBGs();
         void HandleArenaQueueUpdate(uint32 diff, uint8 JoinType);
         void StartArena(std::list<GroupQueueInfo*>::iterator itr_teams[BG_TEAMS_COUNT], PvPDifficultyEntry const* bracketEntry, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id, uint8 JoinType);
         void UpdateEvents(uint32 diff);
@@ -139,6 +141,7 @@ class BattlegroundQueue
     private:
 
         bool InviteGroupToBG(GroupQueueInfo* ginfo, Battleground* bg, uint32 side);
+        bool InviteGroupToBG_RB(GroupQueueInfo* ginfo, Battleground* bg, uint32 side);
         uint32 m_WaitTimes[BG_TEAMS_COUNT][MAX_BATTLEGROUND_BRACKETS][COUNT_OF_PLAYERS_TO_AVERAGE_WAIT_TIME];
         uint32 m_WaitTimeLastPlayer[BG_TEAMS_COUNT][MAX_BATTLEGROUND_BRACKETS];
         uint32 m_SumOfWaitTimes[BG_TEAMS_COUNT][MAX_BATTLEGROUND_BRACKETS];

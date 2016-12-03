@@ -2738,7 +2738,19 @@ class Player : public Unit, public GridObject<Player>
         BattlegroundTypeId GetBattlegroundTypeId() const { return m_bgData.bgTypeID; }
         Battleground* GetBattleground() const;
 
-        uint32 GetBattlegroundQueueJoinTime(uint32 bgTypeId) const { return m_bgData.bgQueuesJoinedTime.find(bgTypeId)->second; }
+        uint32 GetBattlegroundQueueJoinTime(uint32 bgTypeId) const 
+        {
+            if (m_bgData.bgQueuesJoinedTime.find(bgTypeId) == m_bgData.bgQueuesJoinedTime.end())
+            {
+                if (m_bgData.bgQueuesJoinedTime.find(BATTLEGROUND_RB) != m_bgData.bgQueuesJoinedTime.end())
+                    return m_bgData.bgQueuesJoinedTime.find(BATTLEGROUND_RB)->second;
+            }
+            else
+                return m_bgData.bgQueuesJoinedTime.find(bgTypeId)->second;
+
+            return 0;
+            
+        }
         void AddBattlegroundQueueJoinTime(uint32 bgTypeId, uint32 joinTime)
         {
             m_bgData.bgQueuesJoinedTime[bgTypeId] = joinTime;
@@ -2746,7 +2758,13 @@ class Player : public Unit, public GridObject<Player>
 
         void RemoveBattlegroundQueueJoinTime(uint32 bgTypeId)
         {
-            m_bgData.bgQueuesJoinedTime.erase(m_bgData.bgQueuesJoinedTime.find(bgTypeId)->second);
+            if (m_bgData.bgQueuesJoinedTime.find(bgTypeId) == m_bgData.bgQueuesJoinedTime.end())
+            {
+                if (m_bgData.bgQueuesJoinedTime.find(BATTLEGROUND_RB) != m_bgData.bgQueuesJoinedTime.end())
+                    m_bgData.bgQueuesJoinedTime.erase(m_bgData.bgQueuesJoinedTime.find(BATTLEGROUND_RB));
+            }
+            else
+                m_bgData.bgQueuesJoinedTime.erase(m_bgData.bgQueuesJoinedTime.find(bgTypeId));
         }
 
         bool InBattlegroundQueue() const
@@ -2761,14 +2779,14 @@ class Player : public Unit, public GridObject<Player>
         uint32 GetBattlegroundQueueIndex(BattlegroundQueueTypeId bgQueueTypeId) const
         {
             for (uint8 i = 0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
-                if (m_bgBattlegroundQueueID[i].bgQueueTypeId == bgQueueTypeId)
+                if (m_bgBattlegroundQueueID[i].bgQueueTypeId == bgQueueTypeId || m_bgBattlegroundQueueID[i].bgQueueTypeId == BATTLEGROUND_QUEUE_RB)
                     return i;
             return PLAYER_MAX_BATTLEGROUND_QUEUES;
         }
         bool IsInvitedForBattlegroundQueueType(BattlegroundQueueTypeId bgQueueTypeId) const
         {
             for (uint8 i = 0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
-                if (m_bgBattlegroundQueueID[i].bgQueueTypeId == bgQueueTypeId)
+                if (m_bgBattlegroundQueueID[i].bgQueueTypeId == bgQueueTypeId || m_bgBattlegroundQueueID[i].bgQueueTypeId == BATTLEGROUND_QUEUE_RB)
                     return m_bgBattlegroundQueueID[i].invitedToInstance != 0;
             return false;
         }
@@ -2806,7 +2824,7 @@ class Player : public Unit, public GridObject<Player>
         {
             for (uint8 i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
             {
-                if (m_bgBattlegroundQueueID[i].bgQueueTypeId == val)
+                if (m_bgBattlegroundQueueID[i].bgQueueTypeId == val || m_bgBattlegroundQueueID[i].bgQueueTypeId == BATTLEGROUND_QUEUE_RB)
                 {
                     m_bgBattlegroundQueueID[i].bgQueueTypeId = BATTLEGROUND_QUEUE_NONE;
                     m_bgBattlegroundQueueID[i].invitedToInstance = 0;
@@ -2817,7 +2835,7 @@ class Player : public Unit, public GridObject<Player>
         void SetInviteForBattlegroundQueueType(BattlegroundQueueTypeId bgQueueTypeId, uint32 instanceId)
         {
             for (uint8 i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
-                if (m_bgBattlegroundQueueID[i].bgQueueTypeId == bgQueueTypeId)
+                if (m_bgBattlegroundQueueID[i].bgQueueTypeId == bgQueueTypeId || m_bgBattlegroundQueueID[i].bgQueueTypeId == BATTLEGROUND_QUEUE_RB)
                     m_bgBattlegroundQueueID[i].invitedToInstance = instanceId;
         }
         bool IsInvitedForBattlegroundInstance(uint32 instanceId) const

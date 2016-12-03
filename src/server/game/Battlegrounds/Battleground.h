@@ -414,7 +414,6 @@ class Battleground
         uint32 GetHolidayId() const         { return m_holiday; }
         uint32 GetScriptId() const          { return ScriptId; }
         uint32 GetBonusHonorFromKill(uint32 kills) const;
-        bool IsRandom() const { return m_IsRandom; }
 
         // Set methods:
         void SetName(char const* Name)      { m_Name = Name; }
@@ -451,7 +450,6 @@ class Battleground
         void DecreaseInvitedCount(uint32 team)      { (team == ALLIANCE) ? --m_InvitedAlliance : --m_InvitedHorde; }
         void IncreaseInvitedCount(uint32 team)      { (team == ALLIANCE) ? ++m_InvitedAlliance : ++m_InvitedHorde; }
 
-        void SetRandom(bool isRandom) { m_IsRandom = isRandom; }
         uint32 GetInvitedCount(uint32 team) const   { return (team == ALLIANCE) ? m_InvitedAlliance : m_InvitedHorde; }
         bool HasFreeSlots() const;
         uint32 GetFreeSlotsForTeam(uint32 Team) const;
@@ -685,7 +683,6 @@ class Battleground
         uint32 StartMessageIds[BG_STARTING_EVENT_COUNT];
 
         bool   m_BuffChange;
-        bool   m_IsRandom;
 
         BGHonorMode m_HonorMode;
     private:
