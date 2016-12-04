@@ -2527,47 +2527,6 @@ class spell_dru_savage_roar : public SpellScriptLoader
         }
 };
 
-class spell_dru_survival_instincts : public SpellScriptLoader
-{
-    public:
-        spell_dru_survival_instincts() : SpellScriptLoader("spell_dru_survival_instincts") { }
-
-        class spell_dru_survival_instincts_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_dru_survival_instincts_AuraScript);
-
-            bool Validate(SpellInfo const* /*spell*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(DRUID_SURVIVAL_INSTINCTS))
-                    return false;
-                return true;
-            }
-
-            void AfterApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
-            {
-                Unit* target = GetTarget();
-                float bp0 = target->CountPctFromMaxHealth(aurEff->GetAmount());
-                target->CastCustomSpell(target, DRUID_SURVIVAL_INSTINCTS, &bp0, NULL, NULL, true);
-            }
-
-            void AfterRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                GetTarget()->RemoveAurasDueToSpell(DRUID_SURVIVAL_INSTINCTS);
-            }
-
-            void Register()
-            {
-                AfterEffectApply += AuraEffectApplyFn(spell_dru_survival_instincts_AuraScript::AfterApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK);
-                AfterEffectRemove += AuraEffectRemoveFn(spell_dru_survival_instincts_AuraScript::AfterRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_dru_survival_instincts_AuraScript();
-        }
-};
-
 class spell_druid_rejuvenation : public SpellScriptLoader
 {
     public:
@@ -3682,7 +3641,6 @@ void AddSC_druid_spell_scripts()
     new spell_dru_swift_flight_passive();
     new spell_dru_starfall_dummy();
     new spell_dru_savage_roar();
-    new spell_dru_survival_instincts();
     new spell_druid_rejuvenation();
     new spell_dru_incarnation();
     new spell_dru_incarnation_tree_of_life();
