@@ -87,11 +87,11 @@ public:
 
     static bool HandleUseMorphCommand(ChatHandler* handler, const char* args)
     {
-        Player *player = handler->GetSession()->GetPlayer();
+        Player* player = handler->GetSession()->GetPlayer();
         uint32 accountId = handler->GetSession()->GetAccountId();
 
         char* morphId = strtok((char*)args, " ");
-        if (!morphId)
+        if (!morphId || !player)
             return false;
 
         int32 morph = atoi(morphId);
@@ -101,10 +101,14 @@ public:
         QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = '%u' AND `type` = '1' AND itemEntry = '%u' AND `state` = '0';", accountId, morph);
         if (player->isGameMaster() || result)
         {
-            CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate(morph);
-            uint32 modelid = ci->GetRandomValidModelId();
-            player->SetCustomDisplayId(modelid);
-            player->SetDisplayId(modelid, true);
+            if (CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate(morph))
+            {
+                uint32 modelid = ci->GetRandomValidModelId();
+                player->SetCustomDisplayId(modelid);
+                player->SetDisplayId(modelid, true);
+            }
+            else
+                handler->PSendSysMessage("Cant find morph to use.");
         }
         else
             handler->PSendSysMessage("Cant find morph to use.");
