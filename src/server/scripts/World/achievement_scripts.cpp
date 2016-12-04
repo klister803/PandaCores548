@@ -339,7 +339,8 @@ class achievement_weighed_down : public AchievementCriteriaScript
                 return false;
 
             if (AchievementEntry const* achiev = sAchievementStore.LookupEntry(8355))
-                player->CompletedAchievement(achiev);
+                if (!player->HasAchieved(8355))
+                    player->CompletedAchievement(achiev);
 
             return false;
         }
