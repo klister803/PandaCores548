@@ -4479,10 +4479,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_CONFUSED;
                     spellInfo->AttributesEx |= SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY;
                     break;
-                case 61336: // Survival Instincts
-                    spellInfo->Effects[EFFECT_0]->BasePoints = -50;
-                    spellInfo->Effects[EFFECT_0]->ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
-                    break;
                 case 112974: //Leeching Poison
                 case 140197: // Wrathion's Wings
                 case 68722:  // Oil Refinery
@@ -6179,10 +6175,15 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 53652:  // Beacon of Light
                 case 117954: // Materialize Protector
-                case 120729: // Demonic Gateway
-                case 113896: // Demonic Gateway
                 case 2643: // Multi-Shot
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
+                    break;
+                case 120729: // Demonic Gateway
+                case 113896: // Demonic Gateway
+                    spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
+                    spellInfo->AttributesEx5 &= ~SPELL_ATTR5_USABLE_WHILE_FEARED;
+                    spellInfo->AttributesEx5 &= ~SPELL_ATTR5_USABLE_WHILE_STUNNED;
+                    spellInfo->AttributesEx5 &= ~SPELL_ATTR5_USABLE_WHILE_CONFUSED;
                     break;
                 case 113314: // Energizing Smash
                     spellInfo->Effects[EFFECT_0]->Effect = SPELL_EFFECT_APPLY_AURA;
@@ -6209,14 +6210,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 125786:
                     spellInfo->ExcludeTargetAuraSpell = 117964;
                     break;
+                case 105421: // Blinding Light
                 case 132169: // Stormbolt
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_IGNORE_HIT_RESULT;
                     break;
                 case 118905: // Static Charge
                     spellInfo->AttributesEx |= SPELL_ATTR1_CANT_BE_REFLECTED;
-                    break;
-                case 103965: // Metamorphosis - hotfix 5.4.8
-                    spellInfo->Effects[EFFECT_7]->BasePoints = 0;
                     break;
                 default:
                     break;
