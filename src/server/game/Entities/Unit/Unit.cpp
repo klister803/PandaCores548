@@ -186,7 +186,6 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     , _delayInterruptFlag(0)
     , m_onMount(false)
     , m_castCounter(0)
-    , m_controlledMask(0)
 {
 #ifdef _MSC_VER
 #pragma warning(default:4355)
@@ -374,20 +373,6 @@ void Unit::Update(uint32 p_time)
     // Spells must be processed with event system BEFORE they go to _UpdateSpells.
     // Or else we may have some SPELL_STATE_FINISHED spells stalled in pointers, that is bad.
     m_Events.Update(p_time);
-
-    if (uint16 _CMask = GetControlledMask())
-    {
-        if (_CMask & UNIT_STATE_ROOT)
-            SetControlled(true, UNIT_STATE_ROOT);
-        if (_CMask & UNIT_STATE_STUNNED)
-            SetControlled(true, UNIT_STATE_STUNNED);
-        if (_CMask & UNIT_STATE_CONFUSED)
-            SetControlled(true, UNIT_STATE_CONFUSED);
-        if (_CMask & UNIT_STATE_FLEEING)
-            SetControlled(true, UNIT_STATE_FLEEING);
-
-        ClearControlledMask();
-    }
 
     if (!IsInWorld())
         return;

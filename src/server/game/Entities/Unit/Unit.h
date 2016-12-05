@@ -1453,10 +1453,6 @@ class Unit : public WorldObject
         void SendMeleeAttackStart(Unit* victim);
         bool IsVisionObscured(Unit* victim);
 
-        void AddControlledMask(uint16 _mask) { m_controlledMask |= _mask; }
-        uint16 GetControlledMask() { return m_controlledMask; }
-        void ClearControlledMask() { m_controlledMask = 0; }
-
         void AddUnitState(uint32 f) { m_state |= f; }
         bool HasUnitState(const uint32 f) const { return (m_state & f); }
         void ClearUnitState(uint32 f) { m_state &= ~f; }
@@ -2656,8 +2652,6 @@ class Unit : public WorldObject
 
         CharmInfo* m_charmInfo;
         SharedVisionList m_sharedVision;
-
-        uint16 m_controlledMask;
 
         virtual SpellSchoolMask GetMeleeDamageSchoolMask() const;
 
