@@ -31,6 +31,40 @@ enum eData
     DATA_CHECK_VALIDATE_THUNDERING_THROW,
     DATA_GET_PHASE,
     DATA_SEND_DEST_POS,
+    DATA_GET_NEXT_HEAD,
+    DATA_CHECK_PROGRESS_MEGAERA,
+    DATA_GET_COUNT_RANGE_HEADS,
+    DATA_SEND_LAST_DIED_HEAD,
+};
+
+enum esAction
+{
+    ACTION_MEGAERA_IN_PROGRESS = 50,
+    ACTION_MEGAERA_RESET       = 51,
+    ACTION_MEGAERA_DONE        = 52,
+    ACTION_UNSUMMON            = 53,
+};
+
+Position const megaeraspawnpos[6] =
+{
+    { 6438.71f, 4533.36f, -209.609f, 2.7672f }, //left
+    { 6419.33f, 4504.38f, -209.609f, 2.3032f }, //right
+    { 6469.97f, 4483.59f, -209.609f, 2.4602f }, //center r far
+    { 6487.91f, 4502.82f, -209.609f, 2.4602f }, //center l far
+    { 6437.48f, 4564.84f, -209.609f, 3.6468f }, //left++
+    { 6394.25f, 4493.86f, -209.609f, 1.5930f }, //right++
+};
+
+Position const megaerarangespawnpos[8] =
+{
+    { 6469.97f, 4483.59f, -209.609f, 2.4602f },
+    { 6487.91f, 4502.82f, -209.609f, 2.4602f },
+    { 6446.96f, 4471.15f, -209.609f, 2.3289f },
+    { 6427.34f, 4459.08f, -209.609f, 1.9951f },
+    { 6403.90f, 4457.46f, -209.609f, 1.5467f },
+    { 6491.58f, 4520.66f, -209.609f, 2.9651f },
+    { 6492.65f, 4546.71f, -209.609f, 3.1222f },
+    { 6487.61f, 4577.31f, -209.609f, 3.4254f },
 };
 
 enum eCreatures
@@ -113,9 +147,13 @@ enum eCreatures
     //
     NPC_TORTOS              = 67977,
     //Megaera
-    NPC_FLAMING_HEAD        = 70212,
-    NPC_FROZEN_HEAD         = 70235,
-    NPC_VENOMOUS_HEAD       = 70247,
+    NPC_MEGAERA             = 68065,
+    NPC_FLAMING_HEAD_MELEE  = 70212,
+    NPC_FLAMING_HEAD_RANGE  = 70229,
+    NPC_VENOMOUS_HEAD_MELEE = 70247,
+    NPC_VENOMOUS_HEAD_RANGE = 70251,
+    NPC_FROZEN_HEAD_MELEE   = 70235,
+    NPC_FROZEN_HEAD_RANGE   = 70250,
     //
     NPC_JI_KUN              = 69712,
     NPC_DURUMU              = 68036,
@@ -137,6 +175,7 @@ enum eCreatures
 enum esSpell
 {
     SPELL_SHADO_PAN_ONSLAUGHT = 149070,
+    SPELL_HYDRA_FRENZY        = 139942,
 };
 
 enum eGameObjects
