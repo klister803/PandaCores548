@@ -118,6 +118,16 @@ uint32 councilentry[4] =
     NPC_SUL_SANDCRAWLER,
 };
 
+uint32 const loaspiritentry[6] =
+{
+    NPC_BLESSED_LOA_SPIRIT,
+    NPC_BLESSED_LOA_SPIRIT_2,
+    NPC_BLESSED_LOA_SPIRIT_3,
+    NPC_DARK_LOA_SPIRIT,
+    NPC_DARK_LOA_SPIRIT_2,
+    NPC_DARK_LOA_SPIRIT_3,
+};
+
 struct council_of_eldersAI : public ScriptedAI
 {
     council_of_eldersAI(Creature* creature) : ScriptedAI(creature)
@@ -339,6 +349,18 @@ public:
         void JustDied(Unit* /*killer*/)
         {
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+            if (instance->GetData(DATA_CHECK_COUNCIL_PROGRESS))
+                me->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+            else
+            {
+                std::list<Creature*>list;
+                list.clear();
+                for (uint8 n = 0; n < 6; n++)
+                    GetCreatureListWithEntryInGrid(list, me, loaspiritentry[n], 150.0f);
+                if (!list.empty())
+                    for (std::list<Creature*>::const_iterator itr = list.begin(); itr != list.end(); itr++)
+                        (*itr)->DespawnOrUnsummon();
+            }
         }
 
         void SpellHit(Unit* caster, SpellInfo const* spell)

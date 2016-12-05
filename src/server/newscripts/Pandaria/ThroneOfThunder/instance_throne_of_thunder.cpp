@@ -817,6 +817,15 @@ public:
                     if (GameObject* mogufont = instance->GetGameObject(*itr))
                         if (mogufont->GetGoState() == GO_STATE_READY)
                             return 1;
+            case DATA_CHECK_COUNCIL_PROGRESS:
+                if (!councilGuids.empty())
+                {
+                    for (std::vector<uint64>::const_iterator itr = councilGuids.begin(); itr != councilGuids.end(); itr++)
+                        if (Creature* council = instance->GetCreature(*itr))
+                            if (council->isAlive())
+                                return 1;
+                    return 0;
+                }
             case DATA_CHECK_PROGRESS_MEGAERA:
                 if (Creature* megaera = instance->GetCreature(megaeraGuid))
                 {
