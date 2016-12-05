@@ -74,13 +74,13 @@ public:
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NON_ATTACKABLE);
-            if (instance->GetBossState(DATA_MEGAERA != NOT_STARTED))
-                instance->SetBossState(DATA_MEGAERA, NOT_STARTED);
         }
         InstanceScript* instance;
 
         void Reset()
         {
+            if (instance->GetBossState(DATA_MEGAERA != NOT_STARTED))
+                instance->SetBossState(DATA_MEGAERA, NOT_STARTED);
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
             me->setPowerType(POWER_ENERGY);
             me->SetPower(POWER_ENERGY, 0);
