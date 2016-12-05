@@ -21709,7 +21709,10 @@ void Unit::SetRooted(bool apply)
         AddUnitMovementFlag(MOVEMENTFLAG_ROOT);
 
         if (GetTypeId() == TYPEID_PLAYER)
+        {
+            StopMoving();
             SendMoveRoot(m_rootTimes);
+        }
         else
         {
             ObjectGuid guid = GetGUID();
