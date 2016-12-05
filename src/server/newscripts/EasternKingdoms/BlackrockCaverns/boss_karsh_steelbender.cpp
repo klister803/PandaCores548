@@ -146,9 +146,10 @@ class achievement_too_hot_to_handle : public AchievementCriteriaScript
 
         bool OnCheck(Player* source, Unit* creature)
         {
-            if (Aura* aura = creature->GetAura(SPELL_SUPERHEATED_QUICKSILVER_ARMOR))
-                if (aura->GetStackAmount() >= 15)
-                    return true;
+            if (creature)
+                if (Aura* aura = creature->GetAura(SPELL_SUPERHEATED_QUICKSILVER_ARMOR))
+                    if (aura->GetStackAmount() >= 15)
+                        return true;
 
             return false;
         }
