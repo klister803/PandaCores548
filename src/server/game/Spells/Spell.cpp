@@ -6759,13 +6759,6 @@ SpellCastResult Spell::CheckCast(bool strict)
             return m_triggeredByAuraSpell ? SPELL_FAILED_DONT_REPORT : SPELL_FAILED_NO_CHARGES_REMAIN;
     }
 
-    // Creature School Cooldown
-    if (Creature const* creatureCaster = m_caster->ToCreature())
-    {
-        if (creatureCaster->schoolBlockTimer[m_spellInfo->GetSchoolMask()] > time(NULL))
-            return SPELL_FAILED_NOT_READY;
-    }
-
     if (AttributesCustomEx7 & SPELL_ATTR7_IS_CHEAT_SPELL && !m_caster->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_ALLOW_CHEAT_SPELLS))
     {
         m_customError = SPELL_CUSTOM_ERROR_GM_ONLY;
