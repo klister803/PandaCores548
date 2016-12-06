@@ -35,13 +35,14 @@ enum eSpells
     SPELL_IGNITE_FLESH        = 137729, 
     SPELL_CINDERS_DOT         = 139822,
     SPELL_CINDERS_AURA_DMG    = 139835,
+    SPELL_FL_MEGAERA_RAGE     = 139758,
     //Frozen Head
     SPELL_ARCTIC_FREEZE       = 139841,
     SPELLTORRENT_OF_ICE_T     = 139857,
+    SPELL_FR_MEGAERA_RAGE     = 139816,
     //Venomous Head
     SPELL_ROT_ARMOR           = 139838, 
-    //All
-    SPELL_MEGAERA_RAGE        = 139758,
+    SPELL_V_MEGAERA_RAGE      = 139818,
 };
 
 enum sEvents
@@ -284,10 +285,19 @@ public:
             }
         }
 
-        void JustDied(Unit* /*killer*/)
+        uint32 GetRageSpellEntry(uint32 megaeraheadentry)
         {
-            me->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
-            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+            switch (megaeraheadentry)
+            {
+            case NPC_FLAMING_HEAD_MELEE:
+                return SPELL_FL_MEGAERA_RAGE;
+            case NPC_VENOMOUS_HEAD_MELEE:
+                return SPELL_V_MEGAERA_RAGE;
+            case NPC_FROZEN_HEAD_MELEE:
+                return SPELL_FR_MEGAERA_RAGE;
+            default:
+                return 0;
+            }
         }
 
         void UpdateAI(uint32 diff)
@@ -321,7 +331,10 @@ public:
                 if (checkvictim <= diff)
                 {
                     if (me->getVictim() && !me->IsWithinMeleeRange(me->getVictim()))
-                        DoCast(me->getVictim(), SPELL_MEGAERA_RAGE);
+                    {
+                        uint32 spellentry = GetRageSpellEntry(me->GetEntry());
+                        DoCast(me->getVictim(), spellentry);
+                    }
                     checkvictim = 4000;
                 }
                 else checkvictim -= diff;

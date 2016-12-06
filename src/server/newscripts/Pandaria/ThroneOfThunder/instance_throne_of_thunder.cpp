@@ -294,6 +294,11 @@ public:
             //Megaera
             case NPC_MEGAERA:
                 megaeraGuid = creature->GetGUID();
+                if (!creature->isAlive()) //Megaera done, unsummon heads
+                    if (!megaeralist.empty())
+                        for (std::vector<uint64>::const_iterator itr = megaeralist.begin(); itr != megaeralist.end(); itr++)
+                            if (Creature* mh = instance->GetCreature(*itr))
+                                mh->DespawnOrUnsummon();
                 break;
             case NPC_FLAMING_HEAD_MELEE:
             case NPC_FLAMING_HEAD_RANGE:
