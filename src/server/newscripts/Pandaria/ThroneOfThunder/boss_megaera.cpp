@@ -40,9 +40,13 @@ enum eSpells
     SPELL_ARCTIC_FREEZE       = 139841,
     SPELLTORRENT_OF_ICE_T     = 139857,
     SPELL_FR_MEGAERA_RAGE     = 139816,
+    SPELL_TORRENT_OF_ICE_CH   = 139866, //channel - beam visual
     //Venomous Head
     SPELL_ROT_ARMOR           = 139838, 
     SPELL_V_MEGAERA_RAGE      = 139818,
+    SPELL_ACID_RAIN_S_VISUAL  = 139847,
+    SPELL_ACID_RAIN_EXPLOSE   = 139850,
+    SPELL_ACID_RAIN_TR_M      = 139848,
 };
 
 enum sEvents
@@ -51,14 +55,12 @@ enum sEvents
     EVENT_BREATH              = 1,
     //Flame Head
     EVENT_CINDERS             = 2,
-    EVENT_SPAWN_NEW_HEADS     = 3,
-    EVENT_DESPAWN             = 4,
-};
+    //Venomous
+    EVENT_ACID_RAIN           = 3,
 
-enum sActions
-{
-    //Flame Head
-    ACTION_BREATH             = 1,
+    //Special
+    EVENT_SPAWN_NEW_HEADS     = 4,
+    EVENT_DESPAWN             = 5,
 };
 
 //68065
@@ -193,9 +195,11 @@ public:
             case NPC_FLAMING_HEAD_RANGE:
                 events.ScheduleEvent(EVENT_CINDERS, 25000);
                 break;
+            case NPC_VENOMOUS_HEAD_RANGE:
+                events.ScheduleEvent(EVENT_ACID_RAIN, 26000);
+                break;
             default:
                 break;
-                //case NPC_VENOMOUS_HEAD_RANGE:
                 //case NPC_FROZEN_HEAD_RANGE:
             }
         }
@@ -209,6 +213,7 @@ public:
                 me->RemoveAllAuras();
                 me->SetAttackStop(true);
                 events.Reset();
+                me->InterruptNonMeleeSpells(true);
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
                 me->SetStandState(UNIT_STAND_STATE_DEAD);
                 instance->SetData(DATA_SEND_LAST_DIED_HEAD, me->GetEntry());
@@ -265,18 +270,15 @@ public:
         {
             switch (action)
             {
-            case ACTION_BREATH:
-                events.CancelEvent(EVENT_CINDERS);
-                events.ScheduleEvent(EVENT_BREATH, 16000);
-                checkvictim = 4000;
-                break;
             case ACTION_UNSUMMON:
                 events.Reset();
+                me->InterruptNonMeleeSpells(true);
                 me->SetStandState(UNIT_STAND_STATE_SUBMERGED);
                 events.ScheduleEvent(EVENT_DESPAWN, 2000);
                 break;
             case ACTION_MEGAERA_DONE:
                 events.Reset();
+                me->InterruptNonMeleeSpells(true);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 me->RemoveAllAuras();
                 me->SetStandState(UNIT_STAND_STATE_DEAD);
@@ -297,6 +299,32 @@ public:
                 return SPELL_FR_MEGAERA_RAGE;
             default:
                 return 0;
+            }
+        }
+
+        bool IsPlayerRangeDDOrHeal(Player* player)
+        {
+            switch (player->getClass())
+            {
+            case CLASS_PRIEST:
+            case CLASS_WARLOCK:
+            case CLASS_MAGE:
+            case CLASS_HUNTER:
+                return true;
+            case CLASS_PALADIN:
+                if (player->GetSpecializationId(player->GetActiveSpec()) == SPEC_PALADIN_HOLY)
+                    return true;
+            case CLASS_MONK:
+                if (player->GetSpecializationId(player->GetActiveSpec()) == SPEC_MONK_MISTWEAVER)
+                    return true;
+            case CLASS_SHAMAN:
+                if (player->GetSpecializationId(player->GetActiveSpec()) == SPEC_SHAMAN_ELEMENTAL || player->GetSpecializationId(player->GetActiveSpec()) == SPEC_SHAMAN_RESTORATION)
+                    return true;
+            case CLASS_DRUID:
+                if (player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DRUID_RESTORATION || player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DRUID_BALANCE)
+                    return true;
+            default:
+                return false;
             }
         }
 
@@ -367,10 +395,61 @@ public:
                     break;
                 }
                 case EVENT_CINDERS:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 80.0f, true))
-                        DoCast(target, SPELL_CINDERS_DOT);
+                {
+                    std::list<Player*>pllist;
+                    GetPlayerListInGrid(pllist, me, 150.0f);
+                    bool havetarget = false;
+                    if (!pllist.empty())
+                    {
+                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                        {
+                            if (IsPlayerRangeDDOrHeal(*itr))
+                            {
+                                DoCast(*itr, SPELL_CINDERS_DOT);
+                                havetarget = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!havetarget)
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 150.0f, true))
+                            DoCast(target, SPELL_CINDERS_DOT);
                     events.ScheduleEvent(EVENT_CINDERS, 25000);
-                    break;
+                }
+                break;
+                case EVENT_ACID_RAIN:
+                {
+                    std::list<Player*>pllist;
+                    GetPlayerListInGrid(pllist, me, 150.0f);
+                    bool havetarget = false;
+                    if (!pllist.empty())
+                    {
+                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                        {
+                            if (IsPlayerRangeDDOrHeal(*itr))
+                            {
+                                Position pos;
+                                (*itr)->GetPosition(&pos);
+                                if (Creature* ar = me->SummonCreature(NPC_ACID_RAIN, pos, 0, TEMPSUMMON_TIMED_DESPAWN, 15000))
+                                    DoCast(ar, SPELL_ACID_RAIN_TR_M);
+                                havetarget = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!havetarget)
+                    {
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 150.0f, true))
+                        {
+                            Position pos;
+                            target->GetPosition(&pos);
+                            if (Creature* ar = me->SummonCreature(NPC_ACID_RAIN, pos, 0, TEMPSUMMON_TIMED_DESPAWN, 15000))
+                                DoCast(ar, SPELL_ACID_RAIN_TR_M);
+                        }
+                    }
+                    events.ScheduleEvent(EVENT_ACID_RAIN, 26000);
+                }
+                break;
                 case EVENT_DESPAWN:
                     me->DespawnOrUnsummon();
                     break;
@@ -506,6 +585,51 @@ public:
     }
 };
 
+//70435
+class npc_acid_rain : public CreatureScript
+{
+public:
+    npc_acid_rain() : CreatureScript("npc_acid_rain") { }
+
+    struct npc_acid_rainAI : public ScriptedAI
+    {
+        npc_acid_rainAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        }
+        InstanceScript* m_pInstance;
+        uint32 despawn;
+        bool done;
+
+        void Reset()
+        {
+            done = false;
+            despawn = 0;
+            DoCast(me, SPELL_ACID_RAIN_S_VISUAL, true);
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (damage >= me->GetHealth())
+                damage = 0;
+        }
+
+        void EnterCombat(Unit* /*victim*/){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_acid_rainAI(pCreature);
+    }
+};
+
 //139822
 class spell_cinders : public SpellScriptLoader
 {
@@ -534,10 +658,48 @@ public:
     }
 };
 
+//139850
+class spell_acid_rain : public SpellScriptLoader
+{
+public:
+    spell_acid_rain() : SpellScriptLoader("spell_acid_rain") { }
+
+    class spell_acid_rain_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_acid_rain_SpellScript);
+
+        void DealDamage()
+        {
+            Unit* caster = GetCaster();
+            Unit* target = GetHitUnit();
+
+            if (!caster || !target)
+                return;
+
+            float distance = caster->GetExactDist2d(target);
+
+            if (distance >= 0 && distance <= 200)
+                SetHitDamage(GetHitDamage() * (1 - (distance / 200)));
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_acid_rain_SpellScript::DealDamage);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_acid_rain_SpellScript();
+    }
+};
+
 void AddSC_boss_megaera()
 {
     new npc_megaera();
     new npc_megaera_head();
     new npc_cinders();
+    new npc_acid_rain();
     new spell_cinders();
+    new spell_acid_rain();
 }

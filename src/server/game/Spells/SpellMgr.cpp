@@ -5026,6 +5026,13 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(2);
                     break;
                 //Megaera
+                case 139848: //Acid Rain Trigger Missile
+                    spellInfo->Effects[0]->TargetA = 25;
+                    spellInfo->Effects[0]->TargetB = 0;
+                    break;
+                case 139866: //Torrent of Ice
+                    spellInfo->Effects[0]->TargetA = 25;
+                    break;
                 case 139822: //Cinders dot
                 {
                     for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)

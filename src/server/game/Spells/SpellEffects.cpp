@@ -1806,6 +1806,13 @@ void Spell::EffectTriggerMissileSpell(SpellEffIndex effIndex)
             triggered_spell_id = 146365;
             break;
         }
+        case 139848: //Acid Rain Trigger Missile - Megaera[TT]
+            if (unitTarget && unitTarget->ToCreature())
+            {
+                unitTarget->RemoveAurasDueToSpell(139847); //Acid Rain Spawn Visual
+                unitTarget->CastSpell(unitTarget, 139850, true); //Acid Raind Explose
+            }
+            break;
         default:
             break;
     }

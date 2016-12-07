@@ -53,7 +53,6 @@ public:
         uint64 jinrokhexdoorGuid;
         uint64 horridonpredoorGuid;
         uint64 horridonentdoorGuid;
-        std::vector<uint64>horridonaddgateGuids;
         uint64 horridonexdoorGuid;
         uint64 councilexdoorGuid;
         uint64 councilex2doorGuid;
@@ -109,6 +108,8 @@ public:
         std::vector <uint64> jikunfeatherGuids;
         std::vector <uint64> massiveanimagolemGuids;
         std::vector <uint64> twinfencedoorGuids;
+        std::vector <uint64> horridonaddgateGuids;
+        std::vector <uint64> cinderlistGuids;
         
         void Initialize()
         {
@@ -178,6 +179,7 @@ public:
             massiveanimagolemGuids.clear();
             twinfencedoorGuids.clear();
             megaeralist.clear();
+            cinderlistGuids.clear();
             for (uint8 n = 0; n < 3; n++)
                 megaeraheadlist[n] = 0;
             CreateMegaeraHeads();
@@ -307,6 +309,9 @@ public:
             case NPC_FROZEN_HEAD_MELEE:
             case NPC_FROZEN_HEAD_RANGE:
                 megaeralist.push_back(creature->GetGUID());
+                break;
+            case NPC_CINDERS:
+                cinderlistGuids.push_back(creature->GetGUID());
                 break;
             case NPC_JI_KUN:  
                 jikunGuid = creature->GetGUID();
@@ -484,6 +489,14 @@ public:
             }
         }
 
+        void DespawnMegaeraSummons()
+        {
+            if (!cinderlistGuids.empty())
+                for (std::vector<uint64>::const_iterator itr = cinderlistGuids.begin(); itr != cinderlistGuids.end(); itr++)
+                    if (Creature* cinder = instance->GetCreature(*itr))
+                        cinder->DespawnOrUnsummon();
+        }
+
         bool SetBossState(uint32 id, EncounterState state)
         {
             if (!InstanceScript::SetBossState(id, state))
@@ -585,6 +598,7 @@ public:
                                     SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, mh);        
                     break;
                 case DONE:
+                    DespawnMegaeraSummons();
                     if (Creature* megaera = instance->GetCreature(megaeraGuid))
                     {
                         if (!megaeralist.empty())
@@ -601,6 +615,7 @@ public:
                     HandleGameObject(megaeraexdoorGuid, true);
                     break;
                 case FAIL:
+                    DespawnMegaeraSummons();
                     ResetMegaera();
                     break;
                 default:

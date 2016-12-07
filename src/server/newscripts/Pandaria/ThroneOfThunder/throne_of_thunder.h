@@ -97,6 +97,9 @@ enum eCreatures
     NPC_LIVING_SAND             = 69153,
     NPC_GARAJAL_SOUL            = 69182,
     NPC_ROCKFALL                = 68219,
+    NPC_ACID_RAIN               = 70435,
+    NPC_TORRENT_OF_ICE          = 70439,
+    NPC_ICY_GROUND              = 70446,
 
     NPC_BLESSED_LOA_SPIRIT      = 69480,
     NPC_BLESSED_LOA_SPIRIT_2    = 69491,
