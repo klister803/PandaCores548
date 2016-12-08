@@ -4212,6 +4212,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 115450: // Detox
                     spellInfo->Effects[EFFECT_2]->BasePoints = 0;
                     break;
+                case 124468: // Mind Flay
+                case 124464: // Shadow Word: Pain
+                case 124467: // Devouring Plague
+                case 124469: // Mind Sear
                 case 148859: // Shadowy Apparition
                 case 117050: // Glave Toss
                 case 65148:  // Sacred Shield
@@ -4227,6 +4231,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 124465: // Mastery: Vampiric Touch
                     spellInfo->CastTimeMin = 0;
                     spellInfo->CastTimeMax = 0;
+                    spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
                     break;
                 case 1329:   // Mutilate
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_CANT_TRIGGER_PROC;
