@@ -240,52 +240,6 @@ class spell_pri_power_word_solace : public SpellScriptLoader
         }
 };
 
-// Called by Shadow Word : Pain - 589
-// Shadow Word : Insanity (allowing cast) - 130733
-class spell_pri_shadow_word_insanity_allowing : public SpellScriptLoader
-{
-    public:
-        spell_pri_shadow_word_insanity_allowing() : SpellScriptLoader("spell_pri_shadow_word_insanity_allowing") { }
-
-        class spell_pri_shadow_word_insanity_allowing_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_pri_shadow_word_insanity_allowing_AuraScript);
-
-            std::list<Unit*> targetList;
-
-            void OnUpdate(uint32 diff, AuraEffect* aurEff)
-            {
-                aurEff->GetTargetList(targetList);
-
-                for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
-                {
-                    if (Unit* caster = GetCaster())
-                    {
-                        if (Aura* shadowWordPain = (*itr)->GetAura(PRIEST_SHADOW_WORD_PAIN, caster->GetGUID()))
-                        {
-                            if (shadowWordPain->GetDuration() <= (shadowWordPain->GetEffect(0)->GetAmplitude() * 2))
-                                caster->CastSpell(*itr, PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST, true);
-                            else
-                                (*itr)->RemoveAura(PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST);
-                        }
-                    }
-                }
-
-                targetList.clear();
-            }
-
-            void Register()
-            {
-                OnEffectUpdate += AuraEffectUpdateFn(spell_pri_shadow_word_insanity_allowing_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_pri_shadow_word_insanity_allowing_AuraScript();
-        }
-};
-
 // Called by Flash Heal - 2061
 // Surge of Light - 114255
 class spell_pri_surge_of_light : public SpellScriptLoader
@@ -2794,7 +2748,6 @@ void AddSC_priest_spell_scripts()
     new spell_pri_item_s12_4p_heal();
     new spell_pri_item_s12_2p_shadow();
     new spell_pri_power_word_solace();
-    new spell_pri_shadow_word_insanity_allowing();
     new spell_pri_surge_of_light();
     new spell_pri_body_and_soul();
     new spell_pri_prayer_of_mending_divine_insight();

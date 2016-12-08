@@ -1,0 +1,1 @@
+DELETE FROM `spell_script_names` WHERE (`spell_id`='589') AND (`ScriptName`='spell_pri_shadow_word_insanity_allowing');
