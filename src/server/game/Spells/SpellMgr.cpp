@@ -3870,6 +3870,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 770:   // Faerie Fire 
+                    spellInfo->AttributesEx &= ~SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE;
+                    break;
                 case 51755:
                     spellInfo->AuraInterruptFlags &= ~AURA_INTERRUPT_FLAG_CAST;
                     spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_ENTER_COMBAT;
