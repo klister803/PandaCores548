@@ -149,7 +149,7 @@ public:
     static bool HandleQuestComplete(ChatHandler* handler, const char* args)
     {
         Player* player = handler->getSelectedPlayer();
-        if (!player)
+        if (!player || !player->IsInWorld())
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
             handler->SetSentErrorMessage(true);
@@ -198,11 +198,12 @@ public:
         {
             int32 creature = quest->RequiredNpcOrGo[i];
             uint32 creaturecount = quest->RequiredNpcOrGoCount[i];
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(quest->RequiredSpellCast[i]);
 
-            if (uint32 spell_id = quest->RequiredSpellCast[i])
+            if (spellInfo)
             {
                 for (uint16 z = 0; z < creaturecount; ++z)
-                    player->CastedCreatureOrGO(creature, 0, spell_id);
+                    player->CastedCreatureOrGO(creature, 0, spellInfo->Id);
             }
             else if (creature > 0)
             {
