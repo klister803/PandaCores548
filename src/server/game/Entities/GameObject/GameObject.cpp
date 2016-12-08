@@ -427,10 +427,25 @@ void GameObject::Update(uint32 diff)
                     // search unfriendly creature
                     if (owner)                    // hunter trap
                     {
+                        std::list<Unit*> unitList;
                         Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck checker(this, owner, radius);
-                        Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck> searcher(this, ok, checker);
+                        Trinity::UnitListSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck> searcher(this, unitList, checker);
                         Trinity::VisitNearbyGridObject(this, radius, searcher);
-                        if (!ok) Trinity::VisitNearbyWorldObject(this, radius, searcher);
+                        Trinity::VisitNearbyWorldObject(this, radius, searcher);
+
+                        if (!unitList.empty())
+                        {
+                            float dist = radius;
+                            for (auto itr : unitList)
+                            {
+                                float getDist = GetExactDist2d(itr);
+                                if (getDist <= dist)
+                                {
+                                    dist = getDist;
+                                    ok = itr;
+                                }
+                            }
+                        }
                     }
                     else                                        // environmental trap
                     {
