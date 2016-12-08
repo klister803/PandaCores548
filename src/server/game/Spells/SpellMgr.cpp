@@ -4212,6 +4212,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 115450: // Detox
                     spellInfo->Effects[EFFECT_2]->BasePoints = 0;
                     break;
+                case 148859: // Shadowy Apparition
                 case 117050: // Glave Toss
                 case 65148:  // Sacred Shield
                 case 113092: // Frost Bomb
