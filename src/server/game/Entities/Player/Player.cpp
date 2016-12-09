@@ -7842,9 +7842,9 @@ bool Player::UpdatePosition(float x, float y, float z, float orientation, bool t
     if (gx >= MAX_NUMBER_OF_GRIDS || gy >= MAX_NUMBER_OF_GRIDS)
     {
         //Ban
-        std::ostringstream ss;
-        ss << "Out of Map " << GetMapId() << " x:" << x << " y:" << y  << " z:" << z;
-        sWorld->BanAccount(BAN_CHARACTER,GetName(),"45d", ss.str().c_str(), "System");
+        // std::ostringstream ss;
+        // ss << "Out of Map " << GetMapId() << " x:" << x << " y:" << y  << " z:" << z;
+        // sWorld->BanAccount(BAN_CHARACTER,GetName(),"45d", ss.str().c_str(), "System");
         return false;
     }
 
