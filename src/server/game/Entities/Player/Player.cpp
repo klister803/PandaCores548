@@ -25272,12 +25272,46 @@ void Player::AddSpellCooldown(uint32 spellid, uint32 itemid, double end_time)
     m_spellCooldowns[spellid] = sc;
 }
 
-void Player::AddRPPMSpellCooldown(uint32 spellid, uint32 itemid, double end_time)
+void Player::AddRPPMSpellCooldown(uint32 spellid, uint64 itemGUID, double end_time)
 {
-    SpellCooldown sc;
-    sc.end = end_time;
-    sc.itemid = itemid;
-    m_rppmspellCooldowns[spellid] = sc;
+    bool findIt = false;
+    for (RPPMSpellCooldowns::iterator itr = m_rppmspellCooldowns.begin(); itr != m_rppmspellCooldowns.end(); ++itr)
+        if (itr->spellId == spellid && itr->itemGUID == itemGUID)
+        {
+            findIt = true;
+            itr->end_time = end_time;
+        }
+
+    if (!findIt)
+    {
+        RPPMSpellCooldown sc;
+        sc.spellId = spellid;
+        sc.end_time = end_time;
+        sc.itemGUID = itemGUID;
+        sc.lastChanceToProc = 0;
+        sc.lastSuccessfulProc = 0;
+
+        m_rppmspellCooldowns.push_back(sc);
+    }
+}
+
+double Player::GetPPPMSpellCooldownDelay(uint32 spell_id, uint64 itemGUID)
+{
+    double cooldown = 0.0;
+
+    for (auto itr : m_rppmspellCooldowns)
+    {
+        if (itr.spellId == spell_id && itr.itemGUID == itemGUID)
+        {
+            double t = getPreciseTime();
+            double e_t = itr.end_time;
+
+            if (e_t > t)
+                cooldown = e_t - t;
+        }
+    }
+            
+    return cooldown;
 }
 
 void Player::SendCooldownEvent(SpellInfo const* spellInfo, uint32 itemId /*= 0*/, Spell* spell /*= NULL*/, bool setCooldown /*= true*/)
@@ -30978,15 +31012,15 @@ bool TeleportEvent::Schedule()
     return true;
 }
 
-bool Player::GetRPPMProcChance(double &cooldown, float RPPM, const SpellInfo* spellProto)
+bool Player::GetRPPMProcChance(double &cooldown, float RPPM, const SpellInfo* spellProto, uint64 itemGUID)
 {
     if (cooldown)
         return false;
 
     double preciseTime = getPreciseTime();
     double averageProcInterval = 60.0f / RPPM;
-    double timeSinceLastSuccessfulProc = preciseTime - GetLastSuccessfulProc(spellProto->Id);
-    double timeSinceLastChanceToProc   = preciseTime - GetLastChanceToProc(spellProto->Id);
+    double timeSinceLastSuccessfulProc = preciseTime - GetLastSuccessfulProc(spellProto->Id, itemGUID);
+    double timeSinceLastChanceToProc = preciseTime - GetLastChanceToProc(spellProto->Id, itemGUID);
 
     if (timeSinceLastChanceToProc > 10.0)
         timeSinceLastChanceToProc = 10.0;
@@ -31019,9 +31053,42 @@ bool Player::GetRPPMProcChance(double &cooldown, float RPPM, const SpellInfo* sp
 
     cooldown = spellProto->procTimeRec / 1000.0;
 
-    SetLastChanceToProc(spellProto->Id, preciseTime);
+    SetLastChanceToProc(spellProto->Id, preciseTime, itemGUID);
 
     return roll_chance_f(chance);
+}
+
+double Player::GetLastSuccessfulProc(uint32 spell_id, uint64 itemGUID)
+{
+    double lastSuccessfulProc = 0.0;
+
+    for (auto itr : m_rppmspellCooldowns)
+        if (itr.spellId == spell_id && itr.itemGUID == itemGUID)
+            lastSuccessfulProc = itr.lastSuccessfulProc;
+
+    return lastSuccessfulProc;
+}
+double Player::GetLastChanceToProc(uint32 spell_id, uint64 itemGUID)
+{
+    double lastChanceToProc = 0.0;
+
+    for (auto itr : m_rppmspellCooldowns)
+        if (itr.spellId == spell_id && itr.itemGUID == itemGUID)
+            lastChanceToProc = itr.lastChanceToProc;
+
+    return lastChanceToProc;
+}
+void Player::SetLastSuccessfulProc(uint32 spell_id, double time, uint64 itemGUID)
+{
+    for (RPPMSpellCooldowns::iterator itr = m_rppmspellCooldowns.begin(); itr != m_rppmspellCooldowns.end(); ++itr)
+        if (itr->spellId == spell_id && itr->itemGUID == itemGUID)
+            itr->lastSuccessfulProc = time;
+}
+void Player::SetLastChanceToProc(uint32 spell_id, double time, uint64 itemGUID)
+{
+    for (RPPMSpellCooldowns::iterator itr = m_rppmspellCooldowns.begin(); itr != m_rppmspellCooldowns.end(); ++itr)
+        if (itr->spellId == spell_id && itr->itemGUID == itemGUID)
+            itr->lastChanceToProc = time;
 }
 
 void Player::UpdateSpellHastDurationRecovery()
