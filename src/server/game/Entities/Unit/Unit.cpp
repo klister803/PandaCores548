@@ -19733,7 +19733,15 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     triggered_spell_id = abs(itr->spell_trigger);
 
                     if (itr->spell_trigger > 0)
-                        _caster->CastSpell(target, triggered_spell_id, true);
+                    {
+                        Item* item = NULL;
+
+                        if (Player* plr = _caster->ToPlayer())
+                            if (uint64 itmGUID = triggeredByAura->GetBase()->GetCastItemGUID())
+                                item = plr->GetItemByGuid(itmGUID);
+                        
+                        _caster->CastSpell(target, triggered_spell_id, true, item);
+                    }
                     else
                         _caster->RemoveAurasDueToSpell(triggered_spell_id);
 
