@@ -41,6 +41,9 @@ enum eSpells
     SPELLTORRENT_OF_ICE_T     = 139857,
     SPELL_FR_MEGAERA_RAGE     = 139816,
     SPELL_TORRENT_OF_ICE_CH   = 139866, //channel - beam visual
+    SPELL_TORRENT_OF_ICE_AURA = 139890,
+    SPELL_ICY_GROUND_AT       = 139875,
+    SPELL_ICY_GROUND_DMG      = 139909,
     //Venomous Head
     SPELL_ROT_ARMOR           = 139838, 
     SPELL_V_MEGAERA_RAGE      = 139818,
@@ -53,14 +56,16 @@ enum sEvents
 {
     //All
     EVENT_BREATH              = 1,
-    //Flame Head
+    //Flame
     EVENT_CINDERS             = 2,
     //Venomous
     EVENT_ACID_RAIN           = 3,
-
+    //Frozen
+    EVENT_TORRENT_OF_ICE      = 4,
     //Special
-    EVENT_SPAWN_NEW_HEADS     = 4,
-    EVENT_DESPAWN             = 5,
+    EVENT_SPAWN_NEW_HEADS     = 5,
+    EVENT_DESPAWN             = 6,
+    EVENT_ACTIVE_PURSUIT      = 7,
 };
 
 //68065
@@ -198,9 +203,11 @@ public:
             case NPC_VENOMOUS_HEAD_RANGE:
                 events.ScheduleEvent(EVENT_ACID_RAIN, 26000);
                 break;
+            case NPC_FROZEN_HEAD_RANGE:
+                events.ScheduleEvent(EVENT_TORRENT_OF_ICE, 27000);
+                break;
             default:
                 break;
-                //case NPC_FROZEN_HEAD_RANGE:
             }
         }
 
@@ -412,7 +419,7 @@ public:
                         }
                     }
                     if (!havetarget)
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 150.0f, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
                             DoCast(target, SPELL_CINDERS_DOT);
                     events.ScheduleEvent(EVENT_CINDERS, 25000);
                 }
@@ -439,7 +446,7 @@ public:
                     }
                     if (!havetarget)
                     {
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 150.0f, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
                         {
                             Position pos;
                             target->GetPosition(&pos);
@@ -448,6 +455,41 @@ public:
                         }
                     }
                     events.ScheduleEvent(EVENT_ACID_RAIN, 26000);
+                }
+                break;
+                case EVENT_TORRENT_OF_ICE:
+                {
+                    std::list<Player*>pllist;
+                    GetPlayerListInGrid(pllist, me, 150.0f);
+                    bool havetarget = false;
+                    if (!pllist.empty())
+                    {
+                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                        {
+                            if (IsPlayerRangeDDOrHeal(*itr))
+                            {
+                                if (Creature* torrent = me->SummonCreature(NPC_TORRENT_OF_ICE, (*itr)->GetPositionX() + 10.0f, (*itr)->GetPositionY(), (*itr)->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 9200))
+                                {
+                                    DoCast(torrent, SPELL_TORRENT_OF_ICE_CH);
+                                    torrent->AI()->SetGUID((*itr)->GetGUID(), 1);
+                                    havetarget = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (!havetarget)
+                    {
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
+                        {
+                            if (Creature* torrent = me->SummonCreature(NPC_TORRENT_OF_ICE, target->GetPositionX() + 10.0f, target->GetPositionY(), target->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 9200))
+                            {
+                                DoCast(torrent, SPELL_TORRENT_OF_ICE_CH);
+                                torrent->AI()->SetGUID(target->GetGUID(), 1);
+                            }
+                        }
+                    }
+                    events.ScheduleEvent(EVENT_TORRENT_OF_ICE, 27000);
                 }
                 break;
                 case EVENT_DESPAWN:
@@ -630,6 +672,116 @@ public:
     }
 };
 
+//70439
+class npc_torrent_of_ice : public CreatureScript
+{
+public:
+    npc_torrent_of_ice() : CreatureScript("npc_torrent_of_ice") { }
+
+    struct npc_torrent_of_iceAI : public ScriptedAI
+    {
+        npc_torrent_of_iceAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+            me->SetDisplayId(11686);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        }
+        InstanceScript* m_pInstance;
+        uint64 targetGuid;
+        EventMap events;
+
+        void Reset()
+        {
+            events.Reset();
+            targetGuid = 0;
+        }
+
+        void SetGUID(uint64 guid, int32 id)
+        {
+            targetGuid = guid;
+            events.ScheduleEvent(EVENT_ACTIVE_PURSUIT, 1000);
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (damage >= me->GetHealth())
+                damage = 0;
+        }
+
+        void EnterCombat(Unit* /*victim*/){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_ACTIVE_PURSUIT)
+                {
+                    if (Player* player = me->GetPlayer(*me, targetGuid))
+                    {
+                        DoCast(me, SPELL_TORRENT_OF_ICE_AURA, true);
+                        me->AddThreat(player, 50000000.0f);
+                        me->SetReactState(REACT_AGGRESSIVE);
+                        me->Attack(player, true);
+                        me->GetMotionMaster()->MoveChase(player);
+                    }
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_torrent_of_iceAI(pCreature);
+    }
+};
+
+//70446
+class npc_icy_ground : public CreatureScript
+{
+public:
+    npc_icy_ground() : CreatureScript("npc_icy_ground") { }
+
+    struct npc_icy_groundAI : public ScriptedAI
+    {
+        npc_icy_groundAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+            me->SetDisplayId(11686);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        }
+        InstanceScript* m_pInstance;
+
+        void Reset()
+        {
+            DoCast(me, SPELL_ICY_GROUND_AT, true);
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (damage >= me->GetHealth())
+                damage = 0;
+        }
+
+        void EnterCombat(Unit* /*victim*/){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_icy_groundAI(pCreature);
+    }
+};
+
 //139822
 class spell_cinders : public SpellScriptLoader
 {
@@ -670,16 +822,12 @@ public:
 
         void DealDamage()
         {
-            Unit* caster = GetCaster();
-            Unit* target = GetHitUnit();
-
-            if (!caster || !target)
-                return;
-
-            float distance = caster->GetExactDist2d(target);
-
-            if (distance >= 0 && distance <= 200)
-                SetHitDamage(GetHitDamage() * (1 - (distance / 200)));
+            if (GetCaster() && GetHitUnit())
+            {
+                float distance = GetCaster()->GetExactDist2d(GetHitUnit());
+                if (distance >= 0 && distance <= 200)
+                    SetHitDamage(GetHitDamage() * (1 - (distance / 200)));
+            }
         }
 
         void Register()
@@ -694,12 +842,60 @@ public:
     }
 };
 
+class TorrentOfIceFilterTarget
+{
+public:
+    bool operator()(WorldObject* unit) const
+    {
+        if (unit->ToCreature() && unit->GetEntry() == NPC_CINDERS)
+            return false;
+        return true;
+    }
+};
+
+//139889
+class spell_torrent_of_ice : public SpellScriptLoader
+{
+public:
+    spell_torrent_of_ice() : SpellScriptLoader("spell_torrent_of_ice") { }
+
+    class spell_torrent_of_ice_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_torrent_of_ice_SpellScript);
+
+        void HandleScript(SpellEffIndex effIndex)
+        {
+            if (GetHitUnit() && GetHitUnit()->ToCreature()) //for safe
+                GetHitUnit()->ToCreature()->DespawnOrUnsummon();
+        }
+
+        void FilterTarget(std::list<WorldObject*>&targets)
+        {
+            targets.remove_if(TorrentOfIceFilterTarget());
+        }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_torrent_of_ice_SpellScript::HandleScript, EFFECT_1, SPELL_EFFECT_SCRIPT_EFFECT);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_torrent_of_ice_SpellScript::FilterTarget, EFFECT_1, TARGET_UNIT_SRC_AREA_ENTRY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_torrent_of_ice_SpellScript();
+    }
+};
+
 void AddSC_boss_megaera()
 {
     new npc_megaera();
     new npc_megaera_head();
     new npc_cinders();
     new npc_acid_rain();
+    new npc_torrent_of_ice();
+    new npc_icy_ground();
     new spell_cinders();
     new spell_acid_rain();
+    new spell_torrent_of_ice();
 }

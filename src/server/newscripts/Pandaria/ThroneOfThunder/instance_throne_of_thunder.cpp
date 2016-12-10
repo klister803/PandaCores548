@@ -110,6 +110,8 @@ public:
         std::vector <uint64> twinfencedoorGuids;
         std::vector <uint64> horridonaddgateGuids;
         std::vector <uint64> cinderlistGuids;
+        std::vector <uint64> icygroundGuids;
+        std::vector <uint64> torrentoficeGuids;
         
         void Initialize()
         {
@@ -180,6 +182,8 @@ public:
             twinfencedoorGuids.clear();
             megaeralist.clear();
             cinderlistGuids.clear();
+            icygroundGuids.clear();
+            torrentoficeGuids.clear();
             for (uint8 n = 0; n < 3; n++)
                 megaeraheadlist[n] = 0;
             CreateMegaeraHeads();
@@ -312,6 +316,12 @@ public:
                 break;
             case NPC_CINDERS:
                 cinderlistGuids.push_back(creature->GetGUID());
+                break;
+            case NPC_ICY_GROUND:
+                icygroundGuids.push_back(creature->GetGUID());
+                break;
+            case NPC_TORRENT_OF_ICE:
+                torrentoficeGuids.push_back(creature->GetGUID());
                 break;
             case NPC_JI_KUN:  
                 jikunGuid = creature->GetGUID();
@@ -495,6 +505,16 @@ public:
                 for (std::vector<uint64>::const_iterator itr = cinderlistGuids.begin(); itr != cinderlistGuids.end(); itr++)
                     if (Creature* cinder = instance->GetCreature(*itr))
                         cinder->DespawnOrUnsummon();
+
+            if (!icygroundGuids.empty())
+                for (std::vector<uint64>::const_iterator itr = icygroundGuids.begin(); itr != icygroundGuids.end(); itr++)
+                    if (Creature* icyground = instance->GetCreature(*itr))
+                        icyground->DespawnOrUnsummon();
+
+            if (!torrentoficeGuids.empty())
+                for (std::vector<uint64>::const_iterator itr = torrentoficeGuids.begin(); itr != torrentoficeGuids.end(); itr++)
+                    if (Creature* torrentofice = instance->GetCreature(*itr))
+                        torrentofice->DespawnOrUnsummon();
         }
 
         bool SetBossState(uint32 id, EncounterState state)

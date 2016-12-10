@@ -5033,6 +5033,11 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 139866: //Torrent of Ice
                     spellInfo->Effects[0]->TargetA = 25;
                     break;
+                case 139889: //Torrent of ice
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_2, d))
+                            eff->TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
+                    break;
                 case 139822: //Cinders dot
                 {
                     for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
