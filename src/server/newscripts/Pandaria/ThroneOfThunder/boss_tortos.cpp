@@ -227,7 +227,7 @@ public:
                             {
                                 num++;
                                 if (Creature* wt = me->SummonCreature(NPC_WHIRL_TURTLE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f))
-                                    wt->GetMotionMaster()->MoveJump((*itr)->GetPositionX(), (*itr)->GetPositionY(), me->GetPositionZ(), 21.0f, 0.0f, 2);
+                                    wt->GetMotionMaster()->MoveJump((*itr)->GetPositionX(), (*itr)->GetPositionY(), me->GetPositionZ(), 8.0f, 0.0f, 2);
                                 if (num == 3)
                                     break;
                             }
@@ -303,7 +303,7 @@ public:
                     float x, y;
                     float ang = pl->GetOrientation();
                     GetPositionWithDistInOrientation(pl, 100.0f, ang, x, y);
-                    me->GetMotionMaster()->MoveJump(x, y, -61.2176f, 42.0f, 0.0f, 1);
+                    me->GetMotionMaster()->MoveJump(x, y, -61.2176f, 8.0f, 0.0f, 1);
                     me->AddAura(SPELL_KICK_SHELL_I_AURA, me);
                 }
             }
@@ -353,7 +353,7 @@ public:
                     break;
                 case EVENT_CHANGE_POSITION:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 80.0f, true))
-                        me->GetMotionMaster()->MoveJump(target->GetPositionX(), target->GetPositionY(), me->GetPositionZ(), 21.0f, 0.0f, 2);
+                        me->GetMotionMaster()->MoveJump(target->GetPositionX(), target->GetPositionY(), me->GetPositionZ(), 8.0f, 0.0f, 2);
                     break;
                 }
             }
@@ -640,6 +640,18 @@ public:
     }
 };
 
+class _TankFilter
+{
+public:
+    bool operator()(WorldObject* unit)
+    {
+        if (Player* target = unit->ToPlayer())
+            if (target->GetRoleForGroup(target->GetSpecializationId(target->GetActiveSpec())) != ROLES_TANK)
+                return false;
+        return true;
+    }
+};
+
 //140431
 class spell_rockfall_dummy : public SpellScriptLoader
 {
@@ -656,9 +668,18 @@ public:
                 GetCaster()->CastSpell(GetHitUnit(), SPELL_SUM_ROCKFALL, true);
         }
 
+        void FilterTarget(std::list<WorldObject*>&targets)
+        {
+            targets.remove_if(_TankFilter());
+            if (!targets.empty())
+                if (targets.size() > 1)
+                    targets.resize(1);
+        }
+
         void Register()
         {
             OnHit += SpellHitFn(spell_rockfall_dummy_SpellScript::DealDamage);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_rockfall_dummy_SpellScript::FilterTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
         }
     };
 
