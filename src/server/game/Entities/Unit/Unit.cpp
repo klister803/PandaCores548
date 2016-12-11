@@ -11496,7 +11496,7 @@ void Unit::ModifyAuraState(AuraStateType flag, bool apply)
             for (Unit::AuraApplicationMap::iterator itr = tAuras.begin(); itr != tAuras.end();)
             {
                 SpellInfo const* spellProto = (*itr).second->GetBase()->GetSpellInfo();
-                if (spellProto->CasterAuraState == uint32(flag))
+                if (spellProto && spellProto->CasterAuraState == uint32(flag))
                     RemoveAura(itr);
                 else
                     ++itr;
