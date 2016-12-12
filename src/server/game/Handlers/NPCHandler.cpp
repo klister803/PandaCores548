@@ -687,18 +687,22 @@ void WorldSession::HandleStableChangeSlot(WorldPacket & recv_data)
         return;
     }
 
+    Player* plr = GetPlayer();
     // remove fake death
-    if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
-        GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
+    if (plr->HasUnitState(UNIT_STATE_DIED))
+        plr->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
 
     Pet* pet = _player->GetPet();
 
     //If we move the pet already summoned...
     if (pet && pet->GetCharmInfo() && pet->GetCharmInfo()->GetPetNumber() == pet_number)
+    {
         _player->RemovePet(pet);
+        plr->m_currentPetNumber = 0;
+    }
 
     //If we move to the pet already summoned...
-    PetSlot curentSlot = GetPlayer()->GetSlotForPetId(GetPlayer()->m_currentPetNumber);
+    PetSlot curentSlot = plr->GetSlotForPetId(plr->m_currentPetNumber);
     if (pet && curentSlot == new_slot)
         _player->RemovePet(pet);
 
