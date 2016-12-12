@@ -30622,6 +30622,10 @@ void Player::setPetSlotWithStableMoveOrRealDelete(PetSlot slot, uint32 petID, bo
                 {
                     if (!m_PetSlots[i])
                     {
+                        for (uint32 i = PET_SLOT_HUNTER_FIRST; i < PET_SLOT_STABLE_FIRST; ++i)
+                            if (m_PetSlots[i] == petID)
+                                m_PetSlots[i] = 0; // reset active slot if find it here
+
                         m_PetSlots[i] = m_PetSlots[slot];
                         break;
                     }
