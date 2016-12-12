@@ -3546,7 +3546,15 @@ void Unit::InterruptSpell(CurrentSpellTypes spellType, bool withDelayed, bool wi
         // send autorepeat cancel message for autorepeat spells
         if (spellType == CURRENT_AUTOREPEAT_SPELL)
             if (GetTypeId() == TYPEID_PLAYER)
+            {
                 ToPlayer()->SendAutoRepeatCancel(this);
+
+                if (m_attacking)
+                {
+                    m_attacking->_removeAttacker(this);
+                    m_attacking = NULL;
+                }
+            }
 
         if (spell->getState() != SPELL_STATE_FINISHED)
             spell->cancel();
