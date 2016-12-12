@@ -50,6 +50,10 @@ enum eSpells
     SPELL_ACID_RAIN_S_VISUAL  = 139847,
     SPELL_ACID_RAIN_EXPLOSE   = 139850,
     SPELL_ACID_RAIN_TR_M      = 139848,
+    //Special
+    SPELL_FLAME_EBOM          = 139586,
+    SPELL_FROZEN_EBOM         = 139587,
+    SPELL_VENOMOUSE_EBOM      = 139588,
 };
 
 enum sEvents
@@ -335,6 +339,30 @@ public:
             }
         }
 
+        void UpdateElementalBloodofMegaera()
+        {
+            uint8 stack = instance->GetData(me->GetEntry());
+            if (stack)
+            {
+                uint32 spellentry = 0;
+                switch (me->GetEntry())
+                {
+                case NPC_FLAMING_HEAD_MELEE:
+                    spellentry = SPELL_FLAME_EBOM;
+                    break;
+                case NPC_FROZEN_HEAD_MELEE:
+                    spellentry = SPELL_FROZEN_EBOM;
+                    break;
+                case NPC_VENOMOUS_HEAD_MELEE:
+                    spellentry = SPELL_VENOMOUSE_EBOM;
+                    break;
+                default:
+                    break;
+                }
+                me->CastCustomSpell(spellentry, SPELLVALUE_AURA_STACK, stack, me);
+            }
+        }
+
         void UpdateAI(uint32 diff)
         {
             if (spawntimer)
@@ -348,6 +376,7 @@ public:
                     case NPC_FLAMING_HEAD_MELEE:
                     case NPC_VENOMOUS_HEAD_MELEE:
                     case NPC_FROZEN_HEAD_MELEE:
+                        UpdateElementalBloodofMegaera();
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         break;
                     default:
