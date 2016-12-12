@@ -10216,7 +10216,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
         {
             if (Player* plr = ToPlayer())
                 if (Pet* pet = plr->GetPet())
-                    pet->CastSpell(pet, 145737, true);
+                    plr->CastSpell(pet, 145737, true);
             break;
         }
         case 145738: // Item - Hunter T16 BM 4P Pet Driver
