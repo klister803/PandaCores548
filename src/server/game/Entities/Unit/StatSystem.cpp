@@ -591,8 +591,7 @@ void Player::UpdateCritPercentage(WeaponAttackType attType)
     float value = GetMeleeCritFromAgility();
     value += GetRatingBonusValue(cr);
     value += GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_PCT, true);
-    // Modify crit from weapon skill and maximized defense skill of same level victim difference
-    value += (int32(GetMaxSkillValueForLevel()) - int32(GetMaxSkillValueForLevel())) * 0.04f;
+
     SetExactCritPct(index, value);
     value = value < 0.0f ? 0.0f : value;
     SetStatFloatValue(index, value);
