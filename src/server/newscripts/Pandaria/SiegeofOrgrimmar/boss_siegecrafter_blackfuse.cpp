@@ -1154,7 +1154,34 @@ public:
             {
                 if (Unit* blackfuse = me->ToTempSummon()->GetSummoner())
                 {
-                    if (superheat)
+                    std::list<Player*>pllist;
+                    GetPlayerListInGrid(pllist, me, 150.0f);
+                    if (!pllist.empty())
+                    {
+                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                        {
+                            if (!(*itr)->HasAura(SPELL_PATTERN_RECOGNITION) && !(*itr)->HasAura(SPELL_ON_CONVEYOR) && !(*itr)->HasAura(SPELL_CRAWLER_MINE_FIXATE_PL))
+                            {
+                                if (IsPlayerRangeddOrHeal(*itr))
+                                {
+                                    if (Creature* laser = blackfuse->SummonCreature(NPC_LASER_TARGET, (*itr)->GetPositionX() + 10.0f, (*itr)->GetPositionY(), blackfuse->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 120000))
+                                    {
+                                        laser->CastSpell(*itr, SPELL_PURSUIT_LASER, true);
+                                        DoCast(laser, SPELL_DISINTEGRATION_LASER_V, true);
+                                        laser->AI()->SetGUID(0, 8);
+                                        laser->CastSpell(laser, SPELL_LASER_GROUND_PERIODIC_AT);
+                                        laser->AddThreat(*itr, 50000000.0f);
+                                        laser->SetReactState(REACT_AGGRESSIVE);
+                                        laser->TauntApply(*itr);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    events.ScheduleEvent(EVENT_DESPAWN, 16000);//for safe
+                    //Offline superhot mode
+                    /*if (superheat)
                     {
                         float x, y;
                         float dist;
@@ -1213,7 +1240,7 @@ public:
                             }
                         }
                         events.ScheduleEvent(EVENT_DESPAWN, 16000);//for safe
-                    }
+                    }*/
                 }
             }
         }
@@ -1513,9 +1540,11 @@ public:
             case 1:
                 cannonGuid = guid;
                 break;
+            default:
+                break;
             //HM Disentegration Laser
             //stalker proc
-            case 2:
+            /*case 2:
                 dist = 14.0f;
                 speed = 6.0f;
                 rotatespeed = 14000;
@@ -1558,7 +1587,7 @@ public:
             //Normal Disentegration Laser
             case 8:
                 events.ScheduleEvent(EVENT_DESPAWN, 15000);
-                break;
+                break;*/
             }
         }
 
@@ -1622,7 +1651,7 @@ public:
                         events.ScheduleEvent(EVENT_SHOCKWAVE_MISSILE, 3500);
                     }
                     break;
-                case EVENT_START_ROTATE: //from stalker(start)
+                /*case EVENT_START_ROTATE: //from stalker(start)
                     if (Creature* lturret = me->GetCreature(*me, instance->GetData64(NPC_ACTIVATED_LASER_TURRET)))
                     {
                         if (Creature* laser = me->GetCreature(*me, laserGuid))
@@ -1667,7 +1696,7 @@ public:
                 case EVENT_DESPAWN: //from laser
                     me->RemoveAurasDueToSpell(SPELL_DISINTEGRATION_LASER_V);
                     me->RemoveAurasDueToSpell(SPELL_LASER_GROUND_PERIODIC_AT);
-                    break;
+                    break;*/
                 }
             }
         }
