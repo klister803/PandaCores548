@@ -6364,13 +6364,13 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
                 {
                     case LINK_TARGET_DEFAULT:
                     {
-                        if(GetTargetCount() < i->targetCount)
+                        if (uint8(GetTargetCount()) < i->targetCount)
                             continue;
                         break;
                     }
                     case LINK_TARGET_FROM_EFFECT:
                     {
-                        if(GetEffectTargets().size() < i->targetCount)
+                        if (uint8(GetEffectTargets().size()) < i->targetCount)
                             continue;
                         break;
                     }
@@ -6988,11 +6988,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                         return SPELL_FAILED_LINE_OF_SIGHT;
 
                 if (m_spellInfo->RangeEntry->ID != 2 /*Combat Range*/ && m_caster->IsVisionObscured(target))
-                {
-                    if (m_caster->ToCreature() && m_caster->GetEntry() == 71529) //fix exploit on Thok Bloodthirsty
-                        m_caster->ToCreature()->AI()->EnterEvadeMode();
                     return SPELL_FAILED_VISION_OBSCURED; // smoke bomb, camouflage...
-                }
             }
         }
     }

@@ -269,7 +269,7 @@ public:
                 }
             }
             Talk(SAY_PULL);
-            evadecheck = 1500;
+            evadecheck = 5000;
             events.ScheduleEvent(EVENT_BERSERK, 600000);
             events.ScheduleEvent(me->GetEntry() == NPC_WAVEBINDER_KARDRIS ? EVENT_FROSTSTORM_BOLT : EVENT_FROSTSTORM_STRIKE, 6000);
         }
@@ -378,6 +378,11 @@ public:
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_IRON_PRISON);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TOXIC_MIST);
             }
+            else
+            {
+                me->SetLootRecipient(NULL);
+                me->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+            }
         }
         
         void UpdateAI(uint32 diff)
@@ -389,15 +394,26 @@ public:
             {
                 if (evadecheck <= diff)
                 {
+                    if (Creature* oshaman = GetOtherShaman())
+                    {
+                        if (!oshaman->isInCombat())
+                        {
+                            evadecheck = 0;
+                            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                            me->MonsterTextEmote(INSTANCE_DETECT_BUG_USE, 0, true);
+                            instance->SendWipe();
+                            return;
+                        }
+                    }
                     if (me->GetPositionX() <= minx || (me->GetPositionX() >= maxx && me->GetPositionY() <= miny))
                     {
                         evadecheck = 0;
                         me->SetReactState(REACT_PASSIVE);
                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                         EnterEvadeMode();
+                        return;
                     }
-                    else
-                        evadecheck = 1500;
+                    evadecheck = 1500;
                 }
                 else
                     evadecheck -= diff;

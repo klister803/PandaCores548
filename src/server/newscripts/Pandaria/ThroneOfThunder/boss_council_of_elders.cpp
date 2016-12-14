@@ -350,7 +350,10 @@ public:
         {
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
             if (instance->GetData(DATA_CHECK_COUNCIL_PROGRESS))
+            {
+                me->SetLootRecipient(NULL);
                 me->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+            }
             else
             {
                 std::list<Creature*>list;

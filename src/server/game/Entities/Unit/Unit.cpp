@@ -24011,6 +24011,10 @@ bool Unit::IsVisionObscured(Unit* victim)
     if ((myAura != NULL && myCaster == NULL) || (victimAura != NULL && victimCaster == NULL))
         return false; // Failed auras, will result in crash
 
+    if (victim->GetMap() && victim->GetMap()->IsDungeon()) //in instance, for trash or boss smoke bomb not work...
+        if (this->ToCreature() && victim->ToPlayer()) //for safe
+            return false;
+
     // E.G. Victim is in smoke bomb, and I'm not
     // Spells fail unless I'm friendly to the caster of victim's smoke bomb
     if (victimAura != NULL && myAura == NULL)
