@@ -68,15 +68,6 @@ enum eEvents
 
 const float maxpullpos = 4988.0f;
 
-Position batspawnpos[5] =
-{
-    { 6020.11f, 4974.91f, -47.3888f, 0.3043f},
-    { 6038.12f, 4966.69f, -47.3888f, 1.4588f},
-    { 6062.46f, 4964.91f, -47.3888f, 1.7690f},
-    { 6054.69f, 4992.02f, -47.3888f, 4.3569f},
-    { 6033.30f, 4994.31f, -47.3888f, 4.4826f},
-};
-
 class boss_tortos : public CreatureScript
 {
 public:
@@ -236,7 +227,7 @@ public:
                             {
                                 num++;
                                 if (Creature* wt = me->SummonCreature(NPC_WHIRL_TURTLE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f))
-                                    wt->GetMotionMaster()->MoveJump((*itr)->GetPositionX(), (*itr)->GetPositionY(), me->GetPositionZ(), 10.0f, 0.0f, 2);
+                                    wt->GetMotionMaster()->MoveJump((*itr)->GetPositionX(), (*itr)->GetPositionY(), me->GetPositionZ(), 8.0f, 0.0f, 2);
                                 if (num == 3)
                                     break;
                             }
@@ -247,7 +238,7 @@ public:
                 }
                 case EVENT_SUMMON_BATS:
                     for (uint8 n = 0; n < 5; n++)
-                        if (Creature* vb = me->SummonCreature(NPC_VAMPIRIC_CAVE_BAT, batspawnpos[n]))
+                        if (Creature* vb = me->SummonCreature(NPC_VAMPIRIC_CAVE_BAT, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f))
                             vb->AI()->DoZoneInCombat(vb, 100.0f);
                     events.ScheduleEvent(EVENT_SUMMON_BATS, 30000);
                     break;
@@ -312,7 +303,7 @@ public:
                     float x, y;
                     float ang = pl->GetOrientation();
                     GetPositionWithDistInOrientation(pl, 100.0f, ang, x, y);
-                    me->GetMotionMaster()->MoveJump(x, y, -61.2176f, 10.0f, 0.0f, 1);
+                    me->GetMotionMaster()->MoveJump(x, y, -61.2176f, 8.0f, 0.0f, 1);
                     me->AddAura(SPELL_KICK_SHELL_I_AURA, me);
                 }
             }
@@ -362,7 +353,7 @@ public:
                     break;
                 case EVENT_CHANGE_POSITION:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 80.0f, true))
-                        me->GetMotionMaster()->MoveJump(target->GetPositionX(), target->GetPositionY(), me->GetPositionZ(), 10.0f, 0.0f, 2);
+                        me->GetMotionMaster()->MoveJump(target->GetPositionX(), target->GetPositionY(), me->GetPositionZ(), 8.0f, 0.0f, 2);
                     break;
                 }
             }

@@ -209,9 +209,6 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     insightCount = 0;
     m_canDualWield = false;
 
-    for (uint8 i = 0; i < 10; ++i)
-        m_exactCritPct[i] = 0.0f;
-
     m_rootTimes = 0;
     m_timeForSpline = 0;
 
@@ -1541,7 +1538,7 @@ void Unit::CalculateMeleeDamage(Unit* victim, float damage, CalcDamageInfo* dama
         damageInfo->damage = damage;
 
     if (Unit* owner = GetAnyOwner()) //For pets chance calc from owner
-        damageInfo->hitOutCome = owner->RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType, false, isPet() ? this : NULL);
+        damageInfo->hitOutCome = owner->RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType, false);
     else
         damageInfo->hitOutCome = RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType);
 
@@ -2443,7 +2440,7 @@ void Unit::HandleProcExtraAttackFor(Unit* victim)
     }
 }
 
-MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackType attType, bool checkHitPenalty, Unit* pet) const
+MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackType attType, bool checkHitPenalty) const
 {
     // This is only wrapper
 
@@ -2452,10 +2449,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackTy
     float miss_chance = MeleeSpellMissChance(victim, attType, 0, checkHitPenalty);
 
     // Critical hit chance
-    float crit_chance = pet ? pet->GetUnitCriticalChance(attType, victim) : GetUnitCriticalChance(attType, victim);
-
-    if (crit_chance < 0.0f)
-        crit_chance = 0.0f;
+    float crit_chance = GetUnitCriticalChance(attType, victim);
 
     // stunned target cannot dodge and this is check in GetUnitDodgeChance() (returned 0 in this case)
     float dodge_chance = victim->GetUnitDodgeChance();
@@ -3282,23 +3276,20 @@ float Unit::GetUnitBlockChance() const
 
 float Unit::GetUnitCriticalChance(WeaponAttackType attackType, const Unit* victim, SpellInfo const* spellProto) const
 {
-    if (countCrit)
-        return countCrit;
-
     float crit;
 
-    if (GetTypeId() == TYPEID_PLAYER || isPet())
+    if (GetTypeId() == TYPEID_PLAYER)
     {
         switch (attackType)
         {
             case BASE_ATTACK:
-                crit = GetExactCritPct(PLAYER_CRIT_PERCENTAGE);
+                crit = GetFloatValue(PLAYER_CRIT_PERCENTAGE);
                 break;
             case OFF_ATTACK:
-                crit = GetExactCritPct(PLAYER_OFFHAND_CRIT_PERCENTAGE);
+                crit = GetFloatValue(PLAYER_OFFHAND_CRIT_PERCENTAGE);
                 break;
             case RANGED_ATTACK:
-                crit = GetExactCritPct(PLAYER_RANGED_CRIT_PERCENTAGE);
+                crit = GetFloatValue(PLAYER_RANGED_CRIT_PERCENTAGE);
                 break;
                 // Just for good manner
             default:
@@ -3329,7 +3320,9 @@ float Unit::GetUnitCriticalChance(WeaponAttackType attackType, const Unit* victi
     else
         crit += critMod;
 
-    return crit;
+    if (crit < 0.0f)
+        crit = 0.0f;
+    return countCrit ? countCrit: crit;
 }
 
 void Unit::_DeleteRemovedAuras()
@@ -3549,15 +3542,7 @@ void Unit::InterruptSpell(CurrentSpellTypes spellType, bool withDelayed, bool wi
         // send autorepeat cancel message for autorepeat spells
         if (spellType == CURRENT_AUTOREPEAT_SPELL)
             if (GetTypeId() == TYPEID_PLAYER)
-            {
                 ToPlayer()->SendAutoRepeatCancel(this);
-
-                if (m_attacking)
-                {
-                    m_attacking->_removeAttacker(this);
-                    m_attacking = NULL;
-                }
-            }
 
         if (spell->getState() != SPELL_STATE_FINISHED)
             spell->cancel();
@@ -4124,9 +4109,6 @@ void Unit::RemoveOwnedAura(uint32 spellId, uint64 casterGUID, uint32 reqEffMask,
         {
             RemoveOwnedAura(itr, removeMode);
             itr = m_ownedAuras.lower_bound(spellId);
-
-            if (removeMode == AURA_REMOVE_BY_CANCEL) // cant cancel several auras at the same time
-                break;
         }
         else
             ++itr;
@@ -4387,17 +4369,6 @@ void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit*
 
             return;
         }
-        else
-            ++iter;
-    }
-}
-
-void Unit::RemoveAllAurasFromItem(uint64 itemGUID)
-{
-    for (AuraApplicationMap::iterator iter = m_appliedAuras.begin(); iter != m_appliedAuras.end();)
-    {
-        if (iter->second->GetBase()->GetCastItemGUID() == itemGUID)
-            RemoveAura(iter);
         else
             ++iter;
     }
@@ -10219,7 +10190,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
         {
             if (Player* plr = ToPlayer())
                 if (Pet* pet = plr->GetPet())
-                    plr->CastSpell(pet, 145737, true);
+                    pet->CastSpell(pet, 145737, true);
             break;
         }
         case 145738: // Item - Hunter T16 BM 4P Pet Driver
@@ -13086,7 +13057,7 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
 
     float crit_chance = 0.0f;
     // Pets have 100% of owner's crit_chance
-    if (isAnySummons() && owner && !isPet())
+    if (isAnySummons() && owner)
         owner->isSpellCrit(victim, spellProto, schoolMask, attackType, crit_chance);
 
     switch (spellProto->DmgClass)
@@ -13100,7 +13071,7 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
 
                 for (int8 i = 0; i < MAX_SPELL_SCHOOL; ++i)
                 {
-                    float _crit = GetExactCritPct(PLAYER_SPELL_CRIT_PERCENTAGE1 + i);
+                    float _crit = GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + i);
                     if (_crit > maxCrit)
                         maxCrit = _crit;
                 }
@@ -13111,7 +13082,7 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                 crit_chance = 0.0f;
             // For other schools
             else if (GetTypeId() == TYPEID_PLAYER)
-                crit_chance = GetExactCritPct(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(schoolMask));
+                crit_chance = GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(schoolMask));
             else if(!isAnySummons() || !owner)
             {
                 crit_chance = (float)m_baseSpellCritChance;
@@ -13301,8 +13272,7 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                             }
                             case 23881: // Bloodthirst has double critical chance
                             {
-                                if (crit_chance > 0.0f)
-                                    crit_chance *= 2;
+                                crit_chance *= 2;
                                 break;
                             }
                             case 7384: // Overpower
@@ -18051,7 +18021,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         {
             if (itr->second->HasEffect(i))
             {
-                if (!IsTriggeredAtSpellProcEvent(target, spellProto, procSpell, procFlag, procExtra, attType, isVictim, active, triggerData.spellProcEvent, i, triggerData.aura->GetCastItemGUID()))
+                if (!IsTriggeredAtSpellProcEvent(target, spellProto, procSpell, procFlag, procExtra, attType, isVictim, active, triggerData.spellProcEvent, i))
                     continue;
                 AuraEffect* aurEff = itr->second->GetBase()->GetEffect(i);
                 // Skip this auras
@@ -19749,15 +19719,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     triggered_spell_id = abs(itr->spell_trigger);
 
                     if (itr->spell_trigger > 0)
-                    {
-                        Item* item = NULL;
-
-                        if (Player* plr = _caster->ToPlayer())
-                            if (uint64 itmGUID = triggeredByAura->GetBase()->GetCastItemGUID())
-                                item = plr->GetItemByGuid(itmGUID);
-                        
-                        _caster->CastSpell(target, triggered_spell_id, true, item);
-                    }
+                        _caster->CastSpell(target, triggered_spell_id, true);
                     else
                         _caster->RemoveAurasDueToSpell(triggered_spell_id);
 
@@ -20969,7 +20931,7 @@ void Unit::CalculateCastTimeFromDummy(int32& castTime, SpellInfo const* spellPro
     }
 }
 
-bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto, SpellInfo const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active, SpellProcEventEntry const* & spellProcEvent, uint8 effect, uint64 castItemGUID)
+bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto, SpellInfo const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active, SpellProcEventEntry const* & spellProcEvent, uint8 effect)
 {
     if(!spellProto)
         return false;
@@ -21077,22 +21039,13 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
     if (!isVictim && GetTypeId() == TYPEID_PLAYER)
     {
         Player* player = ToPlayer();
-        Item* mainHand = NULL;
-        Item* offHand  = NULL;
-
         if (spellProto->EquippedItemClass == ITEM_CLASS_WEAPON)
         {
             Item* item = NULL;
             if (attType == BASE_ATTACK)
-            {
                 item = player->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-                mainHand = item;
-            }
             else if (attType == OFF_ATTACK)
-            {
                 item = player->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-                offHand = item;
-            }
 
             if (player->IsInFeralForm())
                 return false;
@@ -21106,23 +21059,6 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
             Item* item = player->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
             if (!item || item->IsBroken() || item->GetTemplate()->Class != ITEM_CLASS_ARMOR || !((1<<item->GetTemplate()->SubClass) & spellProto->EquippedItemSubClassMask))
                 return false;
-        }
-
-        if (castItemGUID)
-        {
-            mainHand = mainHand ? mainHand : player->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-            offHand = offHand ? offHand : player->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-
-            if (mainHand && mainHand->GetGUID() == castItemGUID)
-            {
-                if (attType == OFF_ATTACK)
-                    return false;
-            }
-            else if (offHand && offHand->GetGUID() == castItemGUID)
-            {
-                if (attType == BASE_ATTACK)
-                    return false;
-            }
         }
     }
     // Get chance from spell
@@ -21162,12 +21098,12 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
                                 spellPPM *= procPPMmod->ppmRateMod + 1;
                     }
 
-                double cooldown = player->GetPPPMSpellCooldownDelay(spellProto->Id, castItemGUID); //base cap
-                bool procked = player->GetRPPMProcChance(cooldown, spellPPM, spellProto, castItemGUID);
+                double cooldown = player->GetPPPMSpellCooldownDelay(spellProto->Id); //base cap
+                bool procked = player->GetRPPMProcChance(cooldown, spellPPM, spellProto);
                 if(procked)
                 {
-                    player->SetLastSuccessfulProc(spellProto->Id, getPreciseTime(), castItemGUID);
-                    player->AddRPPMSpellCooldown(spellProto->Id, castItemGUID, getPreciseTime() + cooldown);
+                    player->SetLastSuccessfulProc(spellProto->Id, getPreciseTime());
+                    player->AddRPPMSpellCooldown(spellProto->Id, 0, getPreciseTime() + cooldown);
                 }
                 return procked;
             }
@@ -24011,10 +23947,6 @@ bool Unit::IsVisionObscured(Unit* victim)
     if ((myAura != NULL && myCaster == NULL) || (victimAura != NULL && victimCaster == NULL))
         return false; // Failed auras, will result in crash
 
-    if (victim->GetMap() && victim->GetMap()->IsDungeon()) //in instance, for trash or boss smoke bomb not work...
-        if (this->ToCreature() && victim->ToPlayer()) //for safe
-            return false;
-
     // E.G. Victim is in smoke bomb, and I'm not
     // Spells fail unless I'm friendly to the caster of victim's smoke bomb
     if (victimAura != NULL && myAura == NULL)
@@ -25614,33 +25546,4 @@ Unit* Unit::GetLastCastTarget()
     }
 
     return NULL;
-}
-
-void Unit::CalcExactCritPctForPets(uint16 idx, float val)
-{
-    val += GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_PCT, true);
-
-    if (idx >= PLAYER_SPELL_CRIT_PERCENTAGE1)
-        val += GetTotalAuraModifier(SPELL_AURA_MOD_SPELL_CRIT_CHANCE);
-
-    m_exactCritPct[idx - PLAYER_CRIT_PERCENTAGE] = val;
-}
-
-void Unit::UpdateAllExactCritPctForPets()
-{
-    if (Unit* owner = GetOwner())
-        if (Player* plr = owner->ToPlayer())
-        {
-            float crtAg = plr->GetMeleeCritFromAgility();
-            crtAg += plr->GetRatingBonusValue(CR_CRIT_MELEE);
-
-            float crtInt = plr->GetSpellCritFromIntellect();
-            crtInt += plr->GetRatingBonusValue(CR_CRIT_SPELL);
-
-            for (uint8 i = 0; i < MAX_ATTACK; i++)
-                CalcExactCritPctForPets(i + PLAYER_CRIT_PERCENTAGE, crtAg);
-
-            for (uint8 i = 0; i < MAX_SPELL_SCHOOL; i++)
-                CalcExactCritPctForPets(i + PLAYER_SPELL_CRIT_PERCENTAGE1, crtInt);
-        }
 }

@@ -194,15 +194,6 @@ struct SpellCooldown
     uint32 itemid;
 };
 
-struct RPPMSpellCooldown
-{
-    uint32 spellId;
-    uint64 itemGUID;
-    double end_time;
-    double lastSuccessfulProc;
-    double lastChanceToProc;
-};
-
 struct SpellChargeData
 {
     uint8 charges;
@@ -213,7 +204,9 @@ struct SpellChargeData
     uint32 chargeRegenTime;
 };
 
-typedef std::vector<RPPMSpellCooldown> RPPMSpellCooldowns;
+typedef std::map<uint32, double> RPPMLastSuccessfulProc;
+typedef std::map<uint32, double> RPPMLastChanceToProc;
+typedef std::map<uint32, SpellCooldown> RPPMSpellCooldowns;
 typedef std::map<uint32, SpellCooldown> SpellCooldowns;
 typedef std::map<uint32 /*categoryId*/, SpellChargeData> SpellChargeDataMap;
 typedef UNORDERED_MAP<uint32 /*instanceId*/, time_t/*releaseTime*/> InstanceTimeMap;
@@ -2258,15 +2251,20 @@ class Player : public Unit, public GridObject<Player>
             double t = getPreciseTime();
             return double(itr != m_spellCooldowns.end() && itr->second.end > t ? itr->second.end - t : 0.0);
         }
-        double GetPPPMSpellCooldownDelay(uint32 spell_id, uint64 itemGUID);
-        double GetLastSuccessfulProc(uint32 spell_id, uint64 itemGUID);
-        double GetLastChanceToProc(uint32 spell_id, uint64 itemGUID);
-        void SetLastSuccessfulProc(uint32 spell_id, double time, uint64 itemGUID);
-        void SetLastChanceToProc(uint32 spell_id, double time, uint64 itemGUID);
-        bool GetRPPMProcChance(double &cooldown, float RPPM, const SpellInfo* spellProto, uint64 itemGUID);
+        double GetPPPMSpellCooldownDelay(uint32 spell_id) const
+        {
+            RPPMSpellCooldowns::const_iterator itr = m_rppmspellCooldowns.find(spell_id);
+            double t = getPreciseTime();
+            return double(itr != m_rppmspellCooldowns.end() && itr->second.end > t ? itr->second.end - t : 0.0);
+        }
+        double GetLastSuccessfulProc(uint32 spell_id) { return m_rppmLastSuccessfulProc[spell_id]; }
+        double GetLastChanceToProc(uint32 spell_id) { return m_rppmLastChanceToProc[spell_id]; }
+        void SetLastSuccessfulProc(uint32 spell_id, double time) { m_rppmLastSuccessfulProc[spell_id] = time; }
+        void SetLastChanceToProc(uint32 spell_id, double time) { m_rppmLastChanceToProc[spell_id] = time; }
+        bool GetRPPMProcChance(double &cooldown, float RPPM, const SpellInfo* spellProto);
         void AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 itemId, Spell* spell = NULL, bool infinityCooldown = false);
         void AddSpellCooldown(uint32 spell_id, uint32 itemid, double end_time);
-        void AddRPPMSpellCooldown(uint32 spell_id, uint64 itemGUID, double end_time);
+        void AddRPPMSpellCooldown(uint32 spell_id, uint32 itemid, double end_time);
         void SendCooldownEvent(SpellInfo const* spellInfo, uint32 itemId = 0, Spell* spell = NULL, bool setCooldown = true);
         void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs);
         void RemoveSpellCooldown(uint32 spell_id, bool update = false);
@@ -2454,7 +2452,7 @@ class Player : public Unit, public GridObject<Player>
 
         float GetExpertiseDodgeOrParryReduction(WeaponAttackType attType) const;
         void UpdateBlockPercentage();
-        void UpdateCritPercentage(uint32 attTypeMask);
+        void UpdateCritPercentage(WeaponAttackType attType);
         void UpdateAllCritPercentages();
         void UpdateParryPercentage();
         void UpdateDodgePercentage();
@@ -2472,7 +2470,8 @@ class Player : public Unit, public GridObject<Player>
         void SetNeedUpdateRangeHastMod() { m_needUpdateRangeHastMod = true; }
         void SetNeedUpdateHastMod() { m_needUpdateHastMod = true; }
 
-        void UpdateSpellCritChance(uint32 schoolMask);
+        void UpdateAllSpellCritChances();
+        void UpdateSpellCritChance(uint32 school);
         void UpdateArmorPenetration(int32 amount);
         void UpdateExpertise();
         void ApplyManaRegenBonus(int32 amount, bool apply);
@@ -3674,6 +3673,8 @@ class Player : public Unit, public GridObject<Player>
         BattlePetMgr   m_battlePetMgr;
         AnticheatMgr  m_anticheatMgr;
 
+        RPPMLastChanceToProc m_rppmLastChanceToProc;
+        RPPMLastSuccessfulProc m_rppmLastSuccessfulProc;
         RPPMSpellCooldowns m_rppmspellCooldowns;
         SpellCooldowns m_spellCooldowns;
         SpellChargeDataMap m_spellChargeData;

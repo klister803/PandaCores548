@@ -44,7 +44,6 @@ public:
 
         //Special lists for Megaera heads mechanic
         std::vector<uint64>megaeralist;
-        uint8 ElementalBloodofMegaera[3]; //0 - flame, 1 - frozen, 2 - venomounce;
         uint32 megaeraheadlist[3];
         uint32 lastdiedhead;
 
@@ -113,7 +112,6 @@ public:
         std::vector <uint64> cinderlistGuids;
         std::vector <uint64> icygroundGuids;
         std::vector <uint64> torrentoficeGuids;
-        std::vector <uint64> acidraindGuids;
         
         void Initialize()
         {
@@ -186,7 +184,6 @@ public:
             cinderlistGuids.clear();
             icygroundGuids.clear();
             torrentoficeGuids.clear();
-            acidraindGuids.clear();
             for (uint8 n = 0; n < 3; n++)
                 megaeraheadlist[n] = 0;
             CreateMegaeraHeads();
@@ -194,9 +191,6 @@ public:
 
         void CreateMegaeraHeads()
         {
-            for (uint8 n = 0; n < 3; n++)
-                ElementalBloodofMegaera[n] = 0;
-
             uint8 mod = urand(0, 5);
             switch (mod)
             {
@@ -231,19 +225,14 @@ public:
                 megaeraheadlist[2] = NPC_FROZEN_HEAD_RANGE;
                 break;
             }
-
             for (uint8 n = 0; n < 3; n++)
                 instance->SummonCreature(megaeraheadlist[n], megaeraspawnpos[n]);
         }
 
         void ResetMegaera()
         {
-            for (uint8 n = 0; n < 3; n++)
-                ElementalBloodofMegaera[n] = 0;
-
             if (Creature* megaera = instance->GetCreature(megaeraGuid))
                 megaera->AI()->DoAction(ACTION_MEGAERA_RESET);
-
             if (!megaeralist.empty())
             {
                 for (std::vector<uint64>::const_iterator itr = megaeralist.begin(); itr != megaeralist.end(); itr++)
@@ -334,9 +323,6 @@ public:
             case NPC_TORRENT_OF_ICE:
                 torrentoficeGuids.push_back(creature->GetGUID());
                 break;
-            case NPC_ACID_RAIN:
-                acidraindGuids.push_back(creature->GetGUID());
-                break;
             case NPC_JI_KUN:  
                 jikunGuid = creature->GetGUID();
                 break;
@@ -386,10 +372,9 @@ public:
                 break;
             }
 
-            //5.4.8
-            if (IsRaidBoss(creature->GetEntry()))
+            /*if (IsRaidBoss(creature->GetEntry())) online in future(need script bosses)
                 if (creature->isAlive())
-                    creature->CastSpell(creature, SPELL_SHADO_PAN_ONSLAUGHT, true);
+                    creature->CastSpell(creature, SPELL_SHADO_PAN_ONSLAUGHT, true);*/ //Patch 5.4
         }
 
         void OnGameObjectCreate(GameObject* go)
@@ -516,7 +501,6 @@ public:
 
         void DespawnMegaeraSummons()
         {
-            //Despawn all triggers
             if (!cinderlistGuids.empty())
                 for (std::vector<uint64>::const_iterator itr = cinderlistGuids.begin(); itr != cinderlistGuids.end(); itr++)
                     if (Creature* cinder = instance->GetCreature(*itr))
@@ -531,17 +515,6 @@ public:
                 for (std::vector<uint64>::const_iterator itr = torrentoficeGuids.begin(); itr != torrentoficeGuids.end(); itr++)
                     if (Creature* torrentofice = instance->GetCreature(*itr))
                         torrentofice->DespawnOrUnsummon();
-
-            if (!acidraindGuids.empty())
-                for (std::vector<uint64>::const_iterator itr = acidraindGuids.begin(); itr != acidraindGuids.end(); itr++)
-                    if (Creature* acidrain = instance->GetCreature(*itr))
-                        acidrain->DespawnOrUnsummon();
-
-            //Clear all lists
-            cinderlistGuids.clear();
-            icygroundGuids.clear();
-            torrentoficeGuids.clear();
-            acidraindGuids.clear();
         }
 
         bool SetBossState(uint32 id, EncounterState state)
@@ -871,20 +844,6 @@ public:
                         }
                     }
                 }
-                switch (data)
-                {
-                case NPC_FLAMING_HEAD_MELEE:
-                    ElementalBloodofMegaera[0]++;
-                    break;
-                case NPC_FROZEN_HEAD_MELEE:
-                    ElementalBloodofMegaera[1]++;
-                    break;
-                case NPC_VENOMOUS_HEAD_MELEE:
-                    ElementalBloodofMegaera[2]++;
-                    break;
-                default:
-                    break;
-                }
                 break;
             }
         }
@@ -932,12 +891,6 @@ public:
                     }
                     return count;
                 }
-            case NPC_FLAMING_HEAD_MELEE:
-                return ElementalBloodofMegaera[0];
-            case NPC_FROZEN_HEAD_MELEE:
-                return ElementalBloodofMegaera[1];
-            case NPC_VENOMOUS_HEAD_MELEE:
-                return ElementalBloodofMegaera[2];
             }
             return 0;
         }

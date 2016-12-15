@@ -5835,14 +5835,9 @@ void AuraEffect::HandleModSpellCritChance(AuraApplication const* aurApp, uint8 m
     Unit* target = aurApp->GetTarget();
 
     if (target->GetTypeId() == TYPEID_PLAYER)
-        target->ToPlayer()->UpdateSpellCritChance(SPELL_SCHOOL_MASK_ALL);
+        target->ToPlayer()->UpdateAllSpellCritChances();
     else
-    {
-        if (target->isPet())
-            target->UpdateAllExactCritPctForPets();
-        else
-            target->m_baseSpellCritChance += (apply) ? GetAmount() : -GetAmount();
-    }
+        target->m_baseSpellCritChance += (apply) ? GetAmount():-GetAmount();
 }
 
 void AuraEffect::HandleModSpellCritChanceShool(AuraApplication const* aurApp, uint8 mode, bool /*apply*/) const
@@ -5855,7 +5850,9 @@ void AuraEffect::HandleModSpellCritChanceShool(AuraApplication const* aurApp, ui
     if (target->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    target->ToPlayer()->UpdateSpellCritChance(GetMiscValue());
+    for (int school = SPELL_SCHOOL_NORMAL; school < MAX_SPELL_SCHOOL; ++school)
+        if (GetMiscValue() & (1<<school))
+            target->ToPlayer()->UpdateSpellCritChance(school);
 }
 
 void AuraEffect::HandleAuraModCritPct(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -5867,11 +5864,7 @@ void AuraEffect::HandleAuraModCritPct(AuraApplication const* aurApp, uint8 mode,
 
     if (target->GetTypeId() != TYPEID_PLAYER)
     {
-        if (target->isPet())
-            target->UpdateAllExactCritPctForPets();
-        else
-            target->m_baseSpellCritChance += (apply) ? GetAmount():-GetAmount();
-
+        target->m_baseSpellCritChance += (apply) ? GetAmount():-GetAmount();
         return;
     }
 
@@ -5880,7 +5873,7 @@ void AuraEffect::HandleAuraModCritPct(AuraApplication const* aurApp, uint8 mode,
     target->ToPlayer()->HandleBaseModValue(RANGED_CRIT_PERCENTAGE,  FLAT_MOD, float (GetAmount()), apply);
 
     // included in Player::UpdateSpellCritChance calculation
-    target->ToPlayer()->UpdateSpellCritChance(SPELL_SCHOOL_MASK_ALL);
+    target->ToPlayer()->UpdateAllSpellCritChances();
 }
 
 void AuraEffect::HandleAuraModResiliencePct(AuraApplication const* aurApp, uint8 mode, bool apply) const

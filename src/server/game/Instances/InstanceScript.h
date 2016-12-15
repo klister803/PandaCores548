@@ -18,7 +18,6 @@
 
 #ifndef TRINITY_INSTANCE_DATA_H
 #define TRINITY_INSTANCE_DATA_H
-#define INSTANCE_DETECT_BUG_USE "Detect bug use, wipe raid"
 
 #include "ZoneScript.h"
 #include "World.h"
@@ -246,16 +245,6 @@ class InstanceScript : public ZoneScript
         }
 
         void SendEncounterUnit(uint32 type, Unit* unit = NULL, uint8 param1 = 0, uint8 param2 = 0);
-
-        void SendWipe()
-        {
-            Map::PlayerList const &PlayerList = instance->GetPlayers();
-            if (!PlayerList.isEmpty())
-                for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
-                    if (Player* player = Itr->getSource())
-                        if (player->isAlive() && !player->isGameMaster())
-                            player->Kill(player, true);
-        }
 
         // Check if all players are dead (except gamemasters)
         virtual bool IsWipe();
