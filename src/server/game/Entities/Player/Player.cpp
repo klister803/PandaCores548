@@ -19062,10 +19062,6 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     m_currentPetNumber = fields[61].GetInt32();
     LoadPetSlot(fields[62].GetCString());
 
-    for (uint32 i = PET_SLOT_HUNTER_FIRST; i < PET_SLOT_STABLE_FIRST; ++i)
-        if (m_PetSlots[i] == m_currentPetNumber)
-            m_currentSummonedSlot = PetSlot(i);
-
     InitDisplayIds();
 
     // cleanup inventory related item value fields (its will be filled correctly in _LoadInventory)
