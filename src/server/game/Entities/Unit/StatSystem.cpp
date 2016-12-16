@@ -76,7 +76,7 @@ bool Player::UpdateStats(Stats stat)
             break;
         case STAT_INTELLECT:
             UpdateMaxPower(POWER_MANA);
-            UpdateAllSpellCritChances();
+            UpdateSpellCritChance(SPELL_SCHOOL_MASK_ALL);
             UpdateArmor();                                  //SPELL_AURA_MOD_RESISTANCE_OF_INTELLECT_PERCENT, only armor currently
             break;
         case STAT_SPIRIT:
@@ -233,7 +233,7 @@ bool Player::UpdateAllStats()
 
     UpdateAllRatings();
     UpdateAllCritPercentages();
-    UpdateAllSpellCritChances();
+    UpdateSpellCritChance(SPELL_SCHOOL_MASK_ALL);
     UpdateBlockPercentage();
     UpdateParryPercentage();
     UpdateDodgePercentage();
@@ -562,39 +562,44 @@ void Player::UpdateBlockPercentage()
     SetStatFloatValue(PLAYER_BLOCK_PERCENTAGE, value);
 }
 
-void Player::UpdateCritPercentage(WeaponAttackType attType)
+void Player::UpdateCritPercentage(uint32 attTypeMask)
 {
-    BaseModGroup modGroup;
+    Pet* pet = GetPet();
+    float value = GetMeleeCritFromAgility();
+    float modCritPct = GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_PCT, true);
     uint16 index;
     CombatRating cr;
 
-    switch (attType)
-    {
-        case OFF_ATTACK:
-            modGroup = OFFHAND_CRIT_PERCENTAGE;
-            index = PLAYER_OFFHAND_CRIT_PERCENTAGE;
-            cr = CR_CRIT_MELEE;
-            break;
-        case RANGED_ATTACK:
-            modGroup = RANGED_CRIT_PERCENTAGE;
-            index = PLAYER_RANGED_CRIT_PERCENTAGE;
-            cr = CR_CRIT_RANGED;
-            break;
-        case BASE_ATTACK:
-        default:
-            modGroup = CRIT_PERCENTAGE;
-            index = PLAYER_CRIT_PERCENTAGE;
-            cr = CR_CRIT_MELEE;
-            break;
-    }
+    for (uint8 i = BASE_ATTACK; i < MAX_ATTACK; i++)
+        if (attTypeMask & (1 << i))
+        {
+            switch (WeaponAttackType(i))
+            {
+                case OFF_ATTACK:
+                    index = PLAYER_OFFHAND_CRIT_PERCENTAGE;
+                    cr = CR_CRIT_MELEE;
+                    break;
+                case RANGED_ATTACK:
+                    index = PLAYER_RANGED_CRIT_PERCENTAGE;
+                    cr = CR_CRIT_RANGED;
+                    break;
+                case BASE_ATTACK:
+                default:
+                    index = PLAYER_CRIT_PERCENTAGE;
+                    cr = CR_CRIT_MELEE;
+                    break;
+            }
 
-    float value = GetMeleeCritFromAgility();
-    value += GetRatingBonusValue(cr);
-    value += GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_PCT, true);
-    // Modify crit from weapon skill and maximized defense skill of same level victim difference
-    value += (int32(GetMaxSkillValueForLevel()) - int32(GetMaxSkillValueForLevel())) * 0.04f;
-    value = value < 0.0f ? 0.0f : value;
-    SetStatFloatValue(index, value);
+            float Val = value + GetRatingBonusValue(cr);
+
+            if (pet)
+                pet->CalcExactCritPctForPets(index, Val);
+
+            Val += modCritPct;
+            SetExactCritPct(index, Val);
+            Val = Val < 0.0f ? 0.0f : Val;
+            SetStatFloatValue(index, Val);
+        }
 }
 
 void Player::UpdateAllCritPercentages()
@@ -605,9 +610,7 @@ void Player::UpdateAllCritPercentages()
     SetBaseModValue(OFFHAND_CRIT_PERCENTAGE, PCT_MOD, value);
     SetBaseModValue(RANGED_CRIT_PERCENTAGE, PCT_MOD, value);
 
-    UpdateCritPercentage(BASE_ATTACK);
-    UpdateCritPercentage(OFF_ATTACK);
-    UpdateCritPercentage(RANGED_ATTACK);
+    UpdateCritPercentage((1 << BASE_ATTACK) | (1 << OFF_ATTACK) | (1 << RANGED_ATTACK));
 }
 
 const float m_diminishing_k[MAX_CLASSES] =
@@ -728,32 +731,38 @@ void Player::UpdateDodgePercentage()
     SetStatFloatValue(PLAYER_DODGE_PERCENTAGE, val);
 }
 
-void Player::UpdateSpellCritChance(uint32 school)
+void Player::UpdateSpellCritChance(uint32 schoolMask)
 {
-    // For normal school set zero crit chance
-    if (school == SPELL_SCHOOL_NORMAL)
-    {
-        SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1, 0.0f);
-        return;
-    }
-    // For others recalculate it from:
-    float crit = 0.0f;
-    // Crit from Intellect
-    crit += GetSpellCritFromIntellect();
-    // Increase crit from SPELL_AURA_MOD_SPELL_CRIT_CHANCE
-    crit += GetTotalAuraModifier(SPELL_AURA_MOD_SPELL_CRIT_CHANCE);
-    // Increase crit from SPELL_AURA_MOD_CRIT_PCT
-    crit += GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_PCT, true);
-    // Increase crit by school from SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL
-    crit += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, 1<<school);
-    // Increase crit from spell crit ratings
+    Pet* pet = GetPet();
+    float crit = GetSpellCritFromIntellect();
     crit += GetRatingBonusValue(CR_CRIT_SPELL);
 
-    if (crit < 0.0f)
-        crit = 0.0f;
+    float otherCritAuras = GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_PCT, true);
+    otherCritAuras += GetTotalAuraModifier(SPELL_AURA_MOD_SPELL_CRIT_CHANCE);
 
-    // Store crit value
-    SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + school, crit);
+    for (uint8 i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; i++)
+        if (schoolMask & (1 << i))
+        {
+            if (i == SPELL_SCHOOL_NORMAL)
+            {
+                SetExactCritPct(PLAYER_SPELL_CRIT_PERCENTAGE1, 0.0f);
+                SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1, 0.0f);
+                continue;
+            }
+
+            float Val = crit;
+
+            if (pet)
+                pet->CalcExactCritPctForPets(PLAYER_SPELL_CRIT_PERCENTAGE1 + i, Val);
+
+            Val += (otherCritAuras + GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, 1 << i));
+            SetExactCritPct(PLAYER_SPELL_CRIT_PERCENTAGE1 + i, Val);
+
+            if (Val < 0.0f)
+                Val = 0.0f;
+
+            SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + i, Val);
+        }
 }
 
 void Player::UpdateMeleeHitChances()
@@ -776,12 +785,6 @@ void Player::UpdateSpellHitChances()
     SetFloatValue(PLAYER_FIELD_UI_SPELL_HIT_MODIFIER, m_modSpellHitChance);
     
     m_modSpellHitChance += GetRatingBonusValue(CR_HIT_SPELL);
-}
-
-void Player::UpdateAllSpellCritChances()
-{
-    for (int i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; ++i)
-        UpdateSpellCritChance(i);
 }
 
 void Player::UpdateExpertise()
