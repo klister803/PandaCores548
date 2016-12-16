@@ -2454,7 +2454,7 @@ class Player : public Unit, public GridObject<Player>
 
         float GetExpertiseDodgeOrParryReduction(WeaponAttackType attType) const;
         void UpdateBlockPercentage();
-        void UpdateCritPercentage(uint32 attTypeMask);
+        void UpdateCritPercentage(WeaponAttackType attType);
         void UpdateAllCritPercentages();
         void UpdateParryPercentage();
         void UpdateDodgePercentage();
@@ -2472,7 +2472,8 @@ class Player : public Unit, public GridObject<Player>
         void SetNeedUpdateRangeHastMod() { m_needUpdateRangeHastMod = true; }
         void SetNeedUpdateHastMod() { m_needUpdateHastMod = true; }
 
-        void UpdateSpellCritChance(uint32 schoolMask);
+        void UpdateAllSpellCritChances();
+        void UpdateSpellCritChance(uint32 school);
         void UpdateArmorPenetration(int32 amount);
         void UpdateExpertise();
         void ApplyManaRegenBonus(int32 amount, bool apply);
