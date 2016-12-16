@@ -5837,12 +5837,7 @@ void AuraEffect::HandleModSpellCritChance(AuraApplication const* aurApp, uint8 m
     if (target->GetTypeId() == TYPEID_PLAYER)
         target->ToPlayer()->UpdateAllSpellCritChances();
     else
-    {
-        if (target->isPet())
-            target->UpdateAllExactCritPctForPets();
-        else
-            target->m_baseSpellCritChance += (apply) ? GetAmount() : -GetAmount();
-    }
+        target->m_baseSpellCritChance += (apply) ? GetAmount():-GetAmount();
 }
 
 void AuraEffect::HandleModSpellCritChanceShool(AuraApplication const* aurApp, uint8 mode, bool /*apply*/) const
@@ -5869,11 +5864,7 @@ void AuraEffect::HandleAuraModCritPct(AuraApplication const* aurApp, uint8 mode,
 
     if (target->GetTypeId() != TYPEID_PLAYER)
     {
-        if (target->isPet())
-            target->UpdateAllExactCritPctForPets();
-        else
-            target->m_baseSpellCritChance += (apply) ? GetAmount():-GetAmount();
-
+        target->m_baseSpellCritChance += (apply) ? GetAmount():-GetAmount();
         return;
     }
 

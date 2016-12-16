@@ -1541,7 +1541,7 @@ void Unit::CalculateMeleeDamage(Unit* victim, float damage, CalcDamageInfo* dama
         damageInfo->damage = damage;
 
     if (Unit* owner = GetAnyOwner()) //For pets chance calc from owner
-        damageInfo->hitOutCome = owner->RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType, false, isPet() ? this : NULL);
+        damageInfo->hitOutCome = owner->RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType, false);
     else
         damageInfo->hitOutCome = RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType);
 
@@ -2443,7 +2443,7 @@ void Unit::HandleProcExtraAttackFor(Unit* victim)
     }
 }
 
-MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackType attType, bool checkHitPenalty, Unit* pet) const
+MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackType attType, bool checkHitPenalty) const
 {
     // This is only wrapper
 
@@ -2452,7 +2452,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackTy
     float miss_chance = MeleeSpellMissChance(victim, attType, 0, checkHitPenalty);
 
     // Critical hit chance
-    float crit_chance = pet ? pet->GetUnitCriticalChance(attType, victim) : GetUnitCriticalChance(attType, victim);
+    float crit_chance = GetUnitCriticalChance(attType, victim);
 
     if (crit_chance < 0.0f)
         crit_chance = 0.0f;
@@ -3282,12 +3282,9 @@ float Unit::GetUnitBlockChance() const
 
 float Unit::GetUnitCriticalChance(WeaponAttackType attackType, const Unit* victim, SpellInfo const* spellProto) const
 {
-    if (countCrit)
-        return countCrit;
-
     float crit;
 
-    if (GetTypeId() == TYPEID_PLAYER || isPet())
+    if (GetTypeId() == TYPEID_PLAYER)
     {
         switch (attackType)
         {
@@ -3329,7 +3326,7 @@ float Unit::GetUnitCriticalChance(WeaponAttackType attackType, const Unit* victi
     else
         crit += critMod;
 
-    return crit;
+    return countCrit ? countCrit: crit;
 }
 
 void Unit::_DeleteRemovedAuras()
@@ -13086,7 +13083,7 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
 
     float crit_chance = 0.0f;
     // Pets have 100% of owner's crit_chance
-    if (isAnySummons() && owner && !isPet())
+    if (isAnySummons() && owner)
         owner->isSpellCrit(victim, spellProto, schoolMask, attackType, crit_chance);
 
     switch (spellProto->DmgClass)
@@ -25610,33 +25607,4 @@ Unit* Unit::GetLastCastTarget()
     }
 
     return NULL;
-}
-
-void Unit::CalcExactCritPctForPets(uint16 idx, float val)
-{
-    val += GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_PCT, true);
-
-    if (idx >= PLAYER_SPELL_CRIT_PERCENTAGE1)
-        val += GetTotalAuraModifier(SPELL_AURA_MOD_SPELL_CRIT_CHANCE);
-
-    m_exactCritPct[idx - PLAYER_CRIT_PERCENTAGE] = val;
-}
-
-void Unit::UpdateAllExactCritPctForPets()
-{
-    if (Unit* owner = GetOwner())
-        if (Player* plr = owner->ToPlayer())
-        {
-            float crtAg = plr->GetMeleeCritFromAgility();
-            crtAg += plr->GetRatingBonusValue(CR_CRIT_MELEE);
-
-            float crtInt = plr->GetSpellCritFromIntellect();
-            crtInt += plr->GetRatingBonusValue(CR_CRIT_SPELL);
-
-            for (uint8 i = 0; i < MAX_ATTACK; i++)
-                CalcExactCritPctForPets(i + PLAYER_CRIT_PERCENTAGE, crtAg);
-
-            for (uint8 i = 0; i < MAX_SPELL_SCHOOL; i++)
-                CalcExactCritPctForPets(i + PLAYER_SPELL_CRIT_PERCENTAGE1, crtInt);
-        }
 }

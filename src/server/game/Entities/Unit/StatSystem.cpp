@@ -590,10 +590,6 @@ void Player::UpdateCritPercentage(WeaponAttackType attType)
 
     float value = GetMeleeCritFromAgility();
     value += GetRatingBonusValue(cr);
-
-    if (Pet* pet = GetPet())
-        pet->CalcExactCritPctForPets(index, value);
-
     value += GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_PCT, true);
 
     SetExactCritPct(index, value);
@@ -745,18 +741,14 @@ void Player::UpdateSpellCritChance(uint32 school)
     float crit = 0.0f;
     // Crit from Intellect
     crit += GetSpellCritFromIntellect();
-    // Increase crit from spell crit ratings
-    crit += GetRatingBonusValue(CR_CRIT_SPELL);
-
-    if (Pet* pet = GetPet())
-        pet->CalcExactCritPctForPets(PLAYER_SPELL_CRIT_PERCENTAGE1 + school, crit);
-
-    // Increase crit from SPELL_AURA_MOD_CRIT_PCT
-    crit += GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_PCT, true);
     // Increase crit from SPELL_AURA_MOD_SPELL_CRIT_CHANCE
     crit += GetTotalAuraModifier(SPELL_AURA_MOD_SPELL_CRIT_CHANCE);
+    // Increase crit from SPELL_AURA_MOD_CRIT_PCT
+    crit += GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_PCT, true);
     // Increase crit by school from SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL
     crit += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, 1<<school);
+    // Increase crit from spell crit ratings
+    crit += GetRatingBonusValue(CR_CRIT_SPELL);
 
     SetExactCritPct(PLAYER_SPELL_CRIT_PERCENTAGE1 + school, crit);
 

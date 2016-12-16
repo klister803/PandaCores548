@@ -1409,10 +1409,8 @@ class Unit : public WorldObject
         bool IsWithinCombatRange(const Unit* obj, float dist2compare) const;
         bool IsWithinMeleeRange(const Unit* obj, float dist = MELEE_RANGE) const;
         void GetRandomContactPoint(const Unit* target, float &x, float &y, float &z, float distance2dMin, float distance2dMax) const;
-        void SetExactCritPct(uint16 idx, float val) { m_exactCritPct[idx - PLAYER_CRIT_PERCENTAGE] = val; }
-        float GetExactCritPct(uint16 idx) const { return m_exactCritPct[idx - PLAYER_CRIT_PERCENTAGE]; }
-        void CalcExactCritPctForPets(uint16 idx, float val);
-        void UpdateAllExactCritPctForPets();
+        void SetExactCritPct(uint16 idx, float val) { m_exactCritPct[idx - 1612] = val; }
+        float GetExactCritPct(uint16 idx) const { return m_exactCritPct[idx - 1612]; }
         uint32 m_extraAttacks;
         bool m_canDualWield;
         float countCrit;
@@ -1678,7 +1676,7 @@ class Unit : public WorldObject
         float GetWeaponProcChance() const;
         float GetPPMProcChance(uint32 WeaponSpeed, float PPM, const SpellInfo* spellProto) const;
 
-        MeleeHitOutcome RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackType attType, bool checkHitPenalty = true, Unit* pet = NULL) const;
+        MeleeHitOutcome RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackType attType, bool checkHitPenalty = true) const;
         MeleeHitOutcome RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackType attType, int32 crit_chance, int32 miss_chance, int32 dodge_chance, int32 parry_chance, int32 block_chance) const;
 
         bool isVendor()       const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_VENDOR); }
