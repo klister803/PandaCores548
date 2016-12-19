@@ -593,7 +593,6 @@ void Player::UpdateCritPercentage(WeaponAttackType attType)
     value += GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_PCT, true);
     // Modify crit from weapon skill and maximized defense skill of same level victim difference
     value += (int32(GetMaxSkillValueForLevel()) - int32(GetMaxSkillValueForLevel())) * 0.04f;
-    SetExactCritPct(index, value);
     value = value < 0.0f ? 0.0f : value;
     SetStatFloatValue(index, value);
 }
@@ -734,7 +733,6 @@ void Player::UpdateSpellCritChance(uint32 school)
     // For normal school set zero crit chance
     if (school == SPELL_SCHOOL_NORMAL)
     {
-        SetExactCritPct(PLAYER_SPELL_CRIT_PERCENTAGE1, 0.0f);
         SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1, 0.0f);
         return;
     }
@@ -750,8 +748,6 @@ void Player::UpdateSpellCritChance(uint32 school)
     crit += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, 1<<school);
     // Increase crit from spell crit ratings
     crit += GetRatingBonusValue(CR_CRIT_SPELL);
-
-    SetExactCritPct(PLAYER_SPELL_CRIT_PERCENTAGE1 + school, crit);
 
     if (crit < 0.0f)
         crit = 0.0f;

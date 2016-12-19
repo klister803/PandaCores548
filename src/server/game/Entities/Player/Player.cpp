@@ -8574,11 +8574,6 @@ void Player::_SaveCurrency(SQLTransaction& trans)
         if (!entry) // should never happen
             continue;
 
-        uint32 curentCap = itr->second.curentCap;
-
-        if (int32(curentCap) < 0)
-            curentCap = GetCurrencyWeekCap(entry);
-
         switch(itr->second.state)
         {
         case PLAYERCURRENCY_NEW:
@@ -8589,7 +8584,7 @@ void Player::_SaveCurrency(SQLTransaction& trans)
             stmt->setUInt32(3, itr->second.totalCount);
             stmt->setUInt32(4, itr->second.seasonTotal);
             stmt->setUInt8(5, itr->second.flags);
-            stmt->setUInt32(6, curentCap);
+            stmt->setUInt32(6, itr->second.curentCap);
             trans->Append(stmt);
             break;
         case PLAYERCURRENCY_CHANGED:
@@ -8598,7 +8593,7 @@ void Player::_SaveCurrency(SQLTransaction& trans)
             stmt->setUInt32(1, itr->second.totalCount);
             stmt->setUInt32(2, itr->second.seasonTotal);
             stmt->setUInt8(3, itr->second.flags);
-            stmt->setUInt32(4, curentCap);
+            stmt->setUInt32(4, itr->second.curentCap);
             stmt->setUInt32(5, GetGUIDLow());
             stmt->setUInt16(6, itr->first);
             trans->Append(stmt);
@@ -8742,7 +8737,6 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         cur.seasonTotal = 0;
         cur.flags = 0;
         cur.currencyEntry = currency;
-        cur.curentCap = 0;
         _currencyStorage[id] = cur;
         itr = _currencyStorage.find(id);
     }
@@ -8753,35 +8747,46 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         oldSeasonTotalCount = itr->second.seasonTotal;
     }
 
+    // count can't be more then weekCap if used (weekCap > 0)
     uint32 weekCap = GetCurrencyWeekCap(currency);
+    if (modifyWeek && weekCap && (count > int32(weekCap)))
+        count = weekCap;
+
+    // count can't be more then totalCap if used (totalCap > 0)
     uint32 totalCap = GetCurrencyTotalCap(currency);
+    if (totalCap && (count > int32(totalCap)))
+        count = totalCap;
 
-    if (int32(oldTotalCount) < 0)
-        oldTotalCount = 0;
+    int32 newTotalCount = int32(oldTotalCount) + count;
+    if (newTotalCount < 0)
+        newTotalCount = 0;
 
-    if (int32(oldWeekCount) < 0)
-        oldWeekCount = 0;
+    int32 newWeekCount = int32(oldWeekCount) + (count > 0 ? count : 0);
+    if (newWeekCount < 0)
+        newWeekCount = 0;
 
-    if (int32(oldSeasonTotalCount) < 0)
-        oldSeasonTotalCount = 0;
+    if (!modifyWeek)
+        newWeekCount = oldWeekCount;
 
-    int32 newWeekCount = oldWeekCount + (modifyWeek && count > 0 ? count : 0);
-
-    if (modifyWeek && weekCap && (newWeekCount > int32(weekCap)))
+    // if we get more then weekCap just set to limit
+    if (modifyWeek && weekCap && (int32(weekCap) < newWeekCount))
     {
-        count = weekCap - oldWeekCount;
+        newWeekCount = int32(weekCap);
+        // weekCap - oldWeekCount always >= 0 as we set limit before!
+        if(newTotalCount > int32(oldTotalCount))
+            newTotalCount = oldTotalCount;
+        else
+            newTotalCount = oldTotalCount + (weekCap - oldWeekCount);
+    }
+
+    // if we get more then totalCap set to maximum;
+    if (totalCap && (int32(totalCap) < newTotalCount))
+    {
+        newTotalCount = int32(totalCap);
         newWeekCount = weekCap;
     }
 
-    int32 newTotalCount = oldTotalCount + count;
-
-    if (totalCap && (newTotalCount > int32(totalCap)))
-    {
-        count = totalCap - oldTotalCount;
-        newTotalCount = totalCap;
-    }
-
-    int32 newSeasonTotalCount = oldSeasonTotalCount + (modifySeason && count > 0 ? count : 0);
+    int32 newSeasonTotalCount = int32(oldSeasonTotalCount) + (modifySeason && count > 0 ? count : 0);
 
     if (uint32(newTotalCount) != oldTotalCount)
     {
@@ -8865,9 +8870,6 @@ uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency)
     PlayerCurrenciesMap::iterator itr = _currencyStorage.find(currency->ID);
     if (itr != _currencyStorage.end())
         curentCap = itr->second.curentCap;
-
-    if (int32(curentCap) < 0)
-        curentCap = 0;
 
     switch (currency->ID)
     {
@@ -15894,10 +15896,7 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
                                 CastSpell(this, enchant_spell_id, true, item);
                         }
                         else
-                        {
                             RemoveAurasDueToItemSpell(item, enchant_spell_id);
-                            RemoveAllAurasFromItem(item->GetGUID());
-                        }
                     }
                     break;
                 case ITEM_ENCHANTMENT_TYPE_RESISTANCE:
@@ -25270,46 +25269,12 @@ void Player::AddSpellCooldown(uint32 spellid, uint32 itemid, double end_time)
     m_spellCooldowns[spellid] = sc;
 }
 
-void Player::AddRPPMSpellCooldown(uint32 spellid, uint64 itemGUID, double end_time)
+void Player::AddRPPMSpellCooldown(uint32 spellid, uint32 itemid, double end_time)
 {
-    bool findIt = false;
-    for (RPPMSpellCooldowns::iterator itr = m_rppmspellCooldowns.begin(); itr != m_rppmspellCooldowns.end(); ++itr)
-        if (itr->spellId == spellid && itr->itemGUID == itemGUID)
-        {
-            findIt = true;
-            itr->end_time = end_time;
-        }
-
-    if (!findIt)
-    {
-        RPPMSpellCooldown sc;
-        sc.spellId = spellid;
-        sc.end_time = end_time;
-        sc.itemGUID = itemGUID;
-        sc.lastChanceToProc = 0;
-        sc.lastSuccessfulProc = 0;
-
-        m_rppmspellCooldowns.push_back(sc);
-    }
-}
-
-double Player::GetPPPMSpellCooldownDelay(uint32 spell_id, uint64 itemGUID)
-{
-    double cooldown = 0.0;
-
-    for (auto itr : m_rppmspellCooldowns)
-    {
-        if (itr.spellId == spell_id && itr.itemGUID == itemGUID)
-        {
-            double t = getPreciseTime();
-            double e_t = itr.end_time;
-
-            if (e_t > t)
-                cooldown = e_t - t;
-        }
-    }
-            
-    return cooldown;
+    SpellCooldown sc;
+    sc.end = end_time;
+    sc.itemid = itemid;
+    m_rppmspellCooldowns[spellid] = sc;
 }
 
 void Player::SendCooldownEvent(SpellInfo const* spellInfo, uint32 itemId /*= 0*/, Spell* spell /*= NULL*/, bool setCooldown /*= true*/)
@@ -31010,15 +30975,15 @@ bool TeleportEvent::Schedule()
     return true;
 }
 
-bool Player::GetRPPMProcChance(double &cooldown, float RPPM, const SpellInfo* spellProto, uint64 itemGUID)
+bool Player::GetRPPMProcChance(double &cooldown, float RPPM, const SpellInfo* spellProto)
 {
     if (cooldown)
         return false;
 
     double preciseTime = getPreciseTime();
     double averageProcInterval = 60.0f / RPPM;
-    double timeSinceLastSuccessfulProc = preciseTime - GetLastSuccessfulProc(spellProto->Id, itemGUID);
-    double timeSinceLastChanceToProc = preciseTime - GetLastChanceToProc(spellProto->Id, itemGUID);
+    double timeSinceLastSuccessfulProc = preciseTime - GetLastSuccessfulProc(spellProto->Id);
+    double timeSinceLastChanceToProc   = preciseTime - GetLastChanceToProc(spellProto->Id);
 
     if (timeSinceLastChanceToProc > 10.0)
         timeSinceLastChanceToProc = 10.0;
@@ -31051,42 +31016,9 @@ bool Player::GetRPPMProcChance(double &cooldown, float RPPM, const SpellInfo* sp
 
     cooldown = spellProto->procTimeRec / 1000.0;
 
-    SetLastChanceToProc(spellProto->Id, preciseTime, itemGUID);
+    SetLastChanceToProc(spellProto->Id, preciseTime);
 
     return roll_chance_f(chance);
-}
-
-double Player::GetLastSuccessfulProc(uint32 spell_id, uint64 itemGUID)
-{
-    double lastSuccessfulProc = 0.0;
-
-    for (auto itr : m_rppmspellCooldowns)
-        if (itr.spellId == spell_id && itr.itemGUID == itemGUID)
-            lastSuccessfulProc = itr.lastSuccessfulProc;
-
-    return lastSuccessfulProc;
-}
-double Player::GetLastChanceToProc(uint32 spell_id, uint64 itemGUID)
-{
-    double lastChanceToProc = 0.0;
-
-    for (auto itr : m_rppmspellCooldowns)
-        if (itr.spellId == spell_id && itr.itemGUID == itemGUID)
-            lastChanceToProc = itr.lastChanceToProc;
-
-    return lastChanceToProc;
-}
-void Player::SetLastSuccessfulProc(uint32 spell_id, double time, uint64 itemGUID)
-{
-    for (RPPMSpellCooldowns::iterator itr = m_rppmspellCooldowns.begin(); itr != m_rppmspellCooldowns.end(); ++itr)
-        if (itr->spellId == spell_id && itr->itemGUID == itemGUID)
-            itr->lastSuccessfulProc = time;
-}
-void Player::SetLastChanceToProc(uint32 spell_id, double time, uint64 itemGUID)
-{
-    for (RPPMSpellCooldowns::iterator itr = m_rppmspellCooldowns.begin(); itr != m_rppmspellCooldowns.end(); ++itr)
-        if (itr->spellId == spell_id && itr->itemGUID == itemGUID)
-            itr->lastChanceToProc = time;
 }
 
 void Player::UpdateSpellHastDurationRecovery()

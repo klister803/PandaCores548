@@ -3870,13 +3870,6 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
-                case 142530: // Bloody Dancing Steel
-                case 120032: // Dancing Steel
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_ENCHANT_PROC;
-                    break;
-                case 770:    // Faerie Fire 
-                    spellInfo->AttributesEx &= ~SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE;
-                    break;
                 case 51755:
                     spellInfo->AuraInterruptFlags &= ~AURA_INTERRUPT_FLAG_CAST;
                     spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_ENTER_COMBAT;
@@ -4216,11 +4209,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 115450: // Detox
                     spellInfo->Effects[EFFECT_2]->BasePoints = 0;
                     break;
-                case 124468: // Mind Flay
-                case 124464: // Shadow Word: Pain
-                case 124467: // Devouring Plague
-                case 124469: // Mind Sear
-                case 148859: // Shadowy Apparition
                 case 117050: // Glave Toss
                 case 65148:  // Sacred Shield
                 case 113092: // Frost Bomb
@@ -4235,7 +4223,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 124465: // Mastery: Vampiric Touch
                     spellInfo->CastTimeMin = 0;
                     spellInfo->CastTimeMax = 0;
-                    spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
                     break;
                 case 1329:   // Mutilate
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_CANT_TRIGGER_PROC;

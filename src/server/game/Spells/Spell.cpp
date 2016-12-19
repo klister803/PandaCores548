@@ -6364,13 +6364,13 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
                 {
                     case LINK_TARGET_DEFAULT:
                     {
-                        if (uint8(GetTargetCount()) < i->targetCount)
+                        if(GetTargetCount() < i->targetCount)
                             continue;
                         break;
                     }
                     case LINK_TARGET_FROM_EFFECT:
                     {
-                        if (uint8(GetEffectTargets().size()) < i->targetCount)
+                        if(GetEffectTargets().size() < i->targetCount)
                             continue;
                         break;
                     }
