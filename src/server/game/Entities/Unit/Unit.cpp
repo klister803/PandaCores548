@@ -18035,7 +18035,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         {
             if (itr->second->HasEffect(i))
             {
-                if (!IsTriggeredAtSpellProcEvent(target, spellProto, procSpell, procFlag, procExtra, attType, isVictim, active, triggerData.spellProcEvent, i, triggerData.aura->GetCastItemGUID()))
+                if (!IsTriggeredAtSpellProcEvent(target, spellProto, procSpell, procFlag, procExtra, attType, isVictim, active, triggerData.spellProcEvent, i))
                     continue;
                 AuraEffect* aurEff = itr->second->GetBase()->GetEffect(i);
                 // Skip this auras
@@ -20945,7 +20945,7 @@ void Unit::CalculateCastTimeFromDummy(int32& castTime, SpellInfo const* spellPro
     }
 }
 
-bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto, SpellInfo const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active, SpellProcEventEntry const* & spellProcEvent, uint8 effect, uint64 castItemGUID)
+bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto, SpellInfo const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active, SpellProcEventEntry const* & spellProcEvent, uint8 effect)
 {
     if(!spellProto)
         return false;
@@ -21112,12 +21112,12 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
                                 spellPPM *= procPPMmod->ppmRateMod + 1;
                     }
 
-                double cooldown = player->GetPPPMSpellCooldownDelay(spellProto->Id, castItemGUID); //base cap
-                bool procked = player->GetRPPMProcChance(cooldown, spellPPM, spellProto, castItemGUID);
+                double cooldown = player->GetPPPMSpellCooldownDelay(spellProto->Id); //base cap
+                bool procked = player->GetRPPMProcChance(cooldown, spellPPM, spellProto);
                 if(procked)
                 {
-                    player->SetLastSuccessfulProc(spellProto->Id, getPreciseTime(), castItemGUID);
-                    player->AddRPPMSpellCooldown(spellProto->Id, castItemGUID, getPreciseTime() + cooldown);
+                    player->SetLastSuccessfulProc(spellProto->Id, getPreciseTime());
+                    player->AddRPPMSpellCooldown(spellProto->Id, 0, getPreciseTime() + cooldown);
                 }
                 return procked;
             }
