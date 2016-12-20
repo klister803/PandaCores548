@@ -3870,11 +3870,7 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
-                case 142530: // Bloody Dancing Steel
-                case 120032: // Dancing Steel
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_ENCHANT_PROC;
-                    break;
-                case 770:    // Faerie Fire 
+                case 770:   // Faerie Fire 
                     spellInfo->AttributesEx &= ~SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE;
                     break;
                 case 51755:
