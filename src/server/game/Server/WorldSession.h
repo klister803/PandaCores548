@@ -709,9 +709,9 @@ class WorldSession
         void SendItemSparseDb2Reply(uint32 entry);
         void SendItemeExtendedCostDb2Reply(uint32 entry);
         void SendBroadcastTextDb2Reply(uint32 entry);
-        void HandleSellItemOpcode(WorldPacket& recvPacket);
+        void AddToQueueSellItemOpcode(WorldPacket& recvPacket);
         void HandleBuyItemInSlotOpcode(WorldPacket& recvPacket);
-        void HandleBuyItemOpcode(WorldPacket& recvPacket);
+        void AddToQueueBuyItemOpcode(WorldPacket& recvPacket);
         void HandleListInventoryOpcode(WorldPacket& recvPacket);
         void HandleAutoStoreBagItemOpcode(WorldPacket& recvPacket);
         void HandleReadItem(WorldPacket& recvPacket);

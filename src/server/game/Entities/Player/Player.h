@@ -1025,6 +1025,26 @@ struct playerLootCooldown
     bool state;
 };
 
+struct buyItemOpcodeInfo
+{
+    uint64 bagGuid;
+    uint64 vendorguid;
+    uint32 count;
+    uint32 item;
+    uint32 slot;
+    uint32 bagSlot;
+    uint8 itemType;
+};
+
+struct sellItemOpcodeInfo
+{
+    uint64 itemGUID;
+    uint64 vendorguid;
+    uint32 count;
+};
+
+#define MAX_SELL_ITEMS_IN_QUEUE 10
+
 typedef UNORDERED_MAP<uint32, playerLootCooldown> PlayerLootCooldownMap;
 
 enum PlayerLootCooldownType
@@ -3625,8 +3645,18 @@ class Player : public Unit, public GridObject<Player>
 
         std::set<uint32> m_refundableItems;
         void SendRefundInfo(Item* item);
-        void RefundItem(Item* item);
+        void RefundItem(Item* item, bool saveInDB = true);
         void SendItemRefundResult(Item* item, ItemExtendedCostEntry const* iece, uint8 error);
+
+        void HandleSellItemOpcode();
+        bool AddToQueueSellItemOpcode(sellItemOpcodeInfo info);
+        void ClearSellItemList();
+        void HandleBuyItemOpcode();
+
+        uint32 m_sellItemTimer;
+        sellItemOpcodeInfo m_sellItemList[MAX_SELL_ITEMS_IN_QUEUE];
+        std::vector<uint64> m_sellItemListError;
+        std::vector<buyItemOpcodeInfo> m_buyItems;
 
         // know currencies are not removed at any point (0 displayed)
         void AddKnownCurrency(uint32 itemId);

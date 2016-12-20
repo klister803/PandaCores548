@@ -114,7 +114,7 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_BUG,                                     STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleBugOpcode                 );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_BUSY_TRADE,                              STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleBusyTradeOpcode           );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_BUY_BANK_SLOT,                           STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleBuyBankSlotOpcode         );
-    DEFINE_OPCODE_HANDLER(CMSG, CMSG_BUY_ITEM,                                STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleBuyItemOpcode             );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_BUY_ITEM,                                STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::AddToQueueBuyItemOpcode         );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_BUYBACK_ITEM,                            STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleBuybackItem               );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_CAGE_BATTLE_PET,                         STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleCageBattlePet             );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_CALENDAR_GET_CALENDAR,                   STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleCalendarGetCalendar       );
@@ -440,7 +440,7 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_SCENARIO_POI_QUERY,                      STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleScenarioPOIQuery          );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_SELECT_FACTION,                          STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleSetFactionOpcode          );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_SELF_RES,                                STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleSelfResOpcode             );
-    DEFINE_OPCODE_HANDLER(CMSG, CMSG_SELL_ITEM,                               STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleSellItemOpcode            );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_SELL_ITEM,                               STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::AddToQueueSellItemOpcode        );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_SEND_MAIL,                               STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleSendMail                  );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_SET_ACTION_BUTTON,                       STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleSetActionButtonOpcode     );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_SET_ACTIONBAR_TOGGLES,                   STATUS_AUTHED,    PROCESS_THREADUNSAFE, &WorldSession::HandleSetActionBarToggles       );

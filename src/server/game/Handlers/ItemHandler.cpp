@@ -633,10 +633,10 @@ void WorldSession::HandleReadItem(WorldPacket& recvData)
         _player->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, NULL, NULL);
 }
 
-void WorldSession::HandleSellItemOpcode(WorldPacket & recvData)
+void WorldSession::AddToQueueSellItemOpcode(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_SELL_ITEM");
-    ObjectGuid vendorguid, itemguid;
+    ObjectGuid itemguid, vendorguid;
     uint32 count;
 
     recvData >> count;
@@ -656,126 +656,13 @@ void WorldSession::HandleSellItemOpcode(WorldPacket & recvData)
     recvData.ReadGuidBytes<2>(vendorguid);
     recvData.ReadGuidBytes<7, 6>(itemguid);
 
-    if (!itemguid)
-    {
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleSellItemOpcode - itemguid not fount.");
-        return;
-    }
+    sellItemOpcodeInfo itr;
+    itr.count = count;
+    itr.vendorguid = vendorguid;
+    itr.itemGUID = itemguid;
 
-    Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
-    if (!creature)
-    {
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleSellItemOpcode - Unit (GUID: %u) not found or you can not interact with him.", uint32(GUID_LOPART(vendorguid)));
-        _player->SendSellError(SELL_ERR_VENDOR_HATES_YOU, NULL, itemguid);
-        return;
-    }
-
-    if (sObjectMgr->IsPlayerInLogList(GetPlayer()))
-    {
-        sObjectMgr->DumpDupeConstant(GetPlayer());
-        sLog->outDebug(LOG_FILTER_DUPE, "---HandleSellItemOpcode; vendor: %llu; item: %u; count %u", GUID_LOPART(vendorguid), GUID_LOPART(itemguid), count);
-    }
-
-    // remove fake death
-    if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
-        GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
-
-    Item* pItem = _player->GetItemByGuid(itemguid);
-    if (pItem)
-    {
-        // prevent sell not owner item
-        if (_player->GetGUID() != pItem->GetOwnerGUID())
-        {
-            _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, creature, itemguid);
-            return;
-        }
-
-        // prevent sell non empty bag by drag-and-drop at vendor's item list
-        if (pItem->IsNotEmptyBag())
-        {
-            _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, creature, itemguid);
-            return;
-        }
-
-        // prevent sell currently looted item
-        if (_player->GetLootGUID() == pItem->GetGUID())
-        {
-            _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, creature, itemguid);
-            return;
-        }
-
-        // prevent selling item for sellprice when the item is still refundable
-        // this probably happens when right clicking a refundable item, the client sends both
-        // CMSG_SELL_ITEM and CMSG_REFUND_ITEM (unverified)
-        if (pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_REFUNDABLE))
-        {
-            GetPlayer()->RefundItem(pItem);
-            return; // Therefore, no feedback to client
-        }
-
-        if(pItem->GetEntry() == 38186)
-            sLog->outDebug(LOG_FILTER_EFIR, "HandleBuyItemInSlotOpcode item %u; count = %u playerGUID %u vendorguid %u", pItem->GetEntry(), count, _player->GetGUID(), creature->GetGUID());
-
-        // special case at auto sell (sell all)
-        if (count == 0)
-            count = pItem->GetCount();
-        else
-        {
-            // prevent sell more items that exist in stack (possible only not from client)
-            if (count > pItem->GetCount())
-            {
-                _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, creature, itemguid);
-                return;
-            }
-        }
-
-        ItemTemplate const* pProto = pItem->GetTemplate();
-        if (pProto)
-        {
-            if (pProto->SellPrice > 0)
-            {
-                if (count < pItem->GetCount())               // need split items
-                {
-                    Item* pNewItem = pItem->CloneItem(count, _player);
-                    if (!pNewItem)
-                    {
-                        sLog->outError(LOG_FILTER_NETWORKIO, "WORLD: HandleSellItemOpcode - could not create clone of item %u; count = %u", pItem->GetEntry(), count);
-                        _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, creature, itemguid);
-                        return;
-                    }
-                    if(pItem->GetEntry() == 38186)
-                        sLog->outDebug(LOG_FILTER_EFIR, "HandleSellItemOpcode - CloneItem of item %u; count = %u playerGUID %u, itemGUID %u", pItem->GetEntry(), count, _player->GetGUID(), pItem->GetGUID());
-
-                    pItem->SetCount(pItem->GetCount() - count);
-                    _player->ItemRemovedQuestCheck(pItem->GetEntry(), count);
-                    if (_player->IsInWorld())
-                        pItem->SendUpdateToPlayer(_player);
-                    pItem->SetState(ITEM_CHANGED, _player);
-
-                    _player->AddItemToBuyBackSlot(pNewItem);
-                    if (_player->IsInWorld())
-                        pNewItem->SendUpdateToPlayer(_player);
-                }
-                else
-                {
-                    _player->ItemRemovedQuestCheck(pItem->GetEntry(), pItem->GetCount());
-                    _player->RemoveItem(pItem->GetBagSlot(), pItem->GetSlot(), true);
-                    pItem->RemoveFromUpdateQueueOf(_player);
-                    _player->AddItemToBuyBackSlot(pItem);
-                }
-
-                uint32 money = pProto->SellPrice * count;
-                _player->ModifyMoney(money);
-                _player->UpdateAchievementCriteria(CRITERIA_TYPE_MONEY_FROM_VENDORS, money);
-                _player->SendSellError(SELL_ERR_OK, creature, itemguid);
-            }
-            else
-                _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, creature, itemguid);
-            return;
-        }
-    }
-    _player->SendSellError(SELL_ERR_CANT_FIND_ITEM, creature, itemguid);
-    return;
+    if (!GetPlayer()->AddToQueueSellItemOpcode(itr))
+        _player->m_sellItemListError.push_back(itemguid);
 }
 
 void WorldSession::HandleBuybackItem(WorldPacket& recvData)
@@ -879,8 +766,11 @@ void WorldSession::HandleBuyItemInSlotOpcode(WorldPacket & recvData)
     GetPlayer()->BuyItemFromVendorSlot(vendorguid, slot, item, count, bag, bagslot);
 }
 
-void WorldSession::HandleBuyItemOpcode(WorldPacket& recvData)
+void WorldSession::AddToQueueBuyItemOpcode(WorldPacket& recvData)
 {
+    if (_player->m_buyItems.size() >= MAX_SELL_ITEMS_IN_QUEUE)
+        return;
+
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_BUY_ITEM");
     ObjectGuid vendorguid, bagGuid;
     uint32 item, slot, count, bagSlot;
@@ -927,25 +817,19 @@ void WorldSession::HandleBuyItemOpcode(WorldPacket& recvData)
     if(item == 38186)
         sLog->outDebug(LOG_FILTER_EFIR, "HandleBuyItemOpcode item %u; count = %u playerGUID %u", item, count, _player->GetGUID());
 
-    if (itemType == ITEM_VENDOR_TYPE_ITEM)
-    {
-        uint8 bag = NULL_BAG;
+    if (_player->m_buyItems.empty())
+        _player->m_sellItemTimer = 0;
 
-        if (bagGuid == _player->GetObjectGuid())
-            bag = INVENTORY_SLOT_BAG_0;
-        else
-        {
-            Item* bagItem = _player->GetItemByGuid(bagGuid);
-            if (bagItem && bagItem->IsBag())
-                bag = bagItem->GetSlot();
-        }
+    buyItemOpcodeInfo itr;
+    itr.count = count;
+    itr.vendorguid = vendorguid;
+    itr.bagGuid = bagGuid;
+    itr.bagSlot = bagSlot;
+    itr.item = item;
+    itr.slot = slot;
+    itr.itemType = itemType;
 
-        GetPlayer()->BuyItemFromVendorSlot(vendorguid, slot, item, count, bag, bagSlot);
-    }
-    else if (itemType == ITEM_VENDOR_TYPE_CURRENCY)
-        GetPlayer()->BuyCurrencyFromVendorSlot(vendorguid, slot, item, count);
-    else
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: received wrong itemType (%u) in HandleBuyItemOpcode", itemType);
+    _player->m_buyItems.push_back(itr);
 }
 
 void WorldSession::HandleListInventoryOpcode(WorldPacket & recvData)
