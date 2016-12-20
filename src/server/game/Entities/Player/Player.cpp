@@ -15938,10 +15938,7 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
                                 CastSpell(this, enchant_spell_id, true, item);
                         }
                         else
-                        {
                             RemoveAurasDueToItemSpell(item, enchant_spell_id);
-                            RemoveAllAurasFromItem(item->GetGUID());
-                        }
                     }
                     break;
                 case ITEM_ENCHANTMENT_TYPE_RESISTANCE:

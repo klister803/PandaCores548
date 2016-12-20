@@ -4374,17 +4374,6 @@ void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit*
     }
 }
 
-void Unit::RemoveAllAurasFromItem(uint64 itemGUID)
-{
-    for (AuraApplicationMap::iterator iter = m_appliedAuras.begin(); iter != m_appliedAuras.end();)
-    {
-        if (iter->second->GetBase()->GetCastItemGUID() == itemGUID)
-            RemoveAura(iter);
-        else
-            ++iter;
-    }
-}
-
 void Unit::RemoveAurasDueToItemSpell(Item* castItem, uint32 spellId)
 {
     for (AuraApplicationMap::iterator iter = m_appliedAuras.lower_bound(spellId); iter != m_appliedAuras.upper_bound(spellId);)
