@@ -8779,7 +8779,6 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         cur.seasonTotal = 0;
         cur.flags = 0;
         cur.currencyEntry = currency;
-        cur.curentCap = 0;
         _currencyStorage[id] = cur;
         itr = _currencyStorage.find(id);
     }
