@@ -8616,11 +8616,6 @@ void Player::_SaveCurrency(SQLTransaction& trans)
         if (!entry) // should never happen
             continue;
 
-        uint32 curentCap = itr->second.curentCap;
-
-        if (int32(curentCap) < 0)
-            curentCap = GetCurrencyWeekCap(entry);
-
         switch(itr->second.state)
         {
         case PLAYERCURRENCY_NEW:
@@ -8631,7 +8626,7 @@ void Player::_SaveCurrency(SQLTransaction& trans)
             stmt->setUInt32(3, itr->second.totalCount);
             stmt->setUInt32(4, itr->second.seasonTotal);
             stmt->setUInt8(5, itr->second.flags);
-            stmt->setUInt32(6, curentCap);
+            stmt->setUInt32(6, itr->second.curentCap);
             trans->Append(stmt);
             break;
         case PLAYERCURRENCY_CHANGED:
@@ -8640,7 +8635,7 @@ void Player::_SaveCurrency(SQLTransaction& trans)
             stmt->setUInt32(1, itr->second.totalCount);
             stmt->setUInt32(2, itr->second.seasonTotal);
             stmt->setUInt8(3, itr->second.flags);
-            stmt->setUInt32(4, curentCap);
+            stmt->setUInt32(4, itr->second.curentCap);
             stmt->setUInt32(5, GetGUIDLow());
             stmt->setUInt16(6, itr->first);
             trans->Append(stmt);
