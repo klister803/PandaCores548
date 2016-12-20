@@ -3671,11 +3671,10 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(ModifierTreeNode const* 
                 case 7427:  // celebrate 5-th wow
                 case 6577:  // celebrate 4-th wow
                     return false;
-                    break;
                 default:
                     break;
-
             }
+            break;
         }
         case CRITERIA_ADDITIONAL_CONDITION_DUNGEON_FIFFICULTY: // 68
         {
