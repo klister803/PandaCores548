@@ -38,7 +38,6 @@ enum eSpells
     SPELL_FL_MEGAERA_RAGE     = 139758,
     //Frozen Head
     SPELL_ARCTIC_FREEZE       = 139841,
-    SPELLTORRENT_OF_ICE_T     = 139857,
     SPELL_FR_MEGAERA_RAGE     = 139816,
     SPELL_TORRENT_OF_ICE_CH   = 139866, //channel - beam visual
     SPELL_TORRENT_OF_ICE_AURA = 139890,
@@ -50,6 +49,10 @@ enum eSpells
     SPELL_ACID_RAIN_S_VISUAL  = 139847,
     SPELL_ACID_RAIN_EXPLOSE   = 139850,
     SPELL_ACID_RAIN_TR_M      = 139848,
+    //Special
+    SPELL_FLAME_EBOM          = 139586,
+    SPELL_FROZEN_EBOM         = 139587,
+    SPELL_VENOMOUSE_EBOM      = 139588,
 };
 
 enum sEvents
@@ -66,6 +69,18 @@ enum sEvents
     EVENT_SPAWN_NEW_HEADS     = 5,
     EVENT_DESPAWN             = 6,
     EVENT_ACTIVE_PURSUIT      = 7,
+};
+
+class MegaeraTankFilter
+{
+public:
+    bool operator()(WorldObject* unit)
+    {
+        if (Player* target = unit->ToPlayer())
+            if (target->GetRoleForGroup(target->GetSpecializationId(target->GetActiveSpec())) != ROLES_TANK)
+                return false;
+        return true;
+    }
 };
 
 //68065
@@ -163,6 +178,7 @@ public:
             me->SetDisableGravity(true);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
             me->SetStandState(UNIT_STAND_STATE_SUBMERGED);
+            timermod = 0;
         }
         InstanceScript* instance;
         SummonList summon;
@@ -170,6 +186,7 @@ public:
         uint32 checkvictim;
         uint32 spawntimer;
         uint32 nextheadentry;
+        uint32 timermod = 0;
         bool done;
 
         void Reset()
@@ -198,17 +215,47 @@ public:
                 checkvictim = 4000;
                 break;
             case NPC_FLAMING_HEAD_RANGE:
-                events.ScheduleEvent(EVENT_CINDERS, 25000);
+                events.ScheduleEvent(EVENT_CINDERS, 25000 + timermod);
                 break;
             case NPC_VENOMOUS_HEAD_RANGE:
-                events.ScheduleEvent(EVENT_ACID_RAIN, 26000);
+                events.ScheduleEvent(EVENT_ACID_RAIN, 26000 + timermod);
                 break;
             case NPC_FROZEN_HEAD_RANGE:
-                events.ScheduleEvent(EVENT_TORRENT_OF_ICE, 27000);
+                events.ScheduleEvent(EVENT_TORRENT_OF_ICE, 27000 + timermod);
                 break;
             default:
                 break;
             }
+        }
+
+        void UpdateElementalBloodofMegaera()
+        {
+            uint8 stack = instance->GetData(me->GetEntry());
+            if (stack)
+            {
+                uint32 spellentry = 0;
+                switch (me->GetEntry())
+                {
+                case NPC_FLAMING_HEAD_MELEE:
+                    spellentry = SPELL_FLAME_EBOM;
+                    break;
+                case NPC_FROZEN_HEAD_MELEE:
+                    spellentry = SPELL_FROZEN_EBOM;
+                    break;
+                case NPC_VENOMOUS_HEAD_MELEE:
+                    spellentry = SPELL_VENOMOUSE_EBOM;
+                    break;
+                default:
+                    break;
+                }
+                me->CastCustomSpell(spellentry, SPELLVALUE_AURA_STACK, stack, me);
+            }
+        }
+
+        void SetData(uint32 type, uint32 data)
+        {
+            if (type == DATA_UPDATE_MOD_TIMER)
+                timermod = data;
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -348,6 +395,7 @@ public:
                     case NPC_FLAMING_HEAD_MELEE:
                     case NPC_VENOMOUS_HEAD_MELEE:
                     case NPC_FROZEN_HEAD_MELEE:
+                        UpdateElementalBloodofMegaera();
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         break;
                     default:
@@ -404,30 +452,42 @@ public:
                 case EVENT_CINDERS:
                 {
                     std::list<Player*>pllist;
+                    pllist.clear();
                     GetPlayerListInGrid(pllist, me, 150.0f);
+                    pllist.remove_if(MegaeraTankFilter());
                     bool havetarget = false;
                     if (!pllist.empty())
                     {
                         for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                         {
-                            if (IsPlayerRangeDDOrHeal(*itr))
+                            if (!(*itr)->HasAura(SPELL_CINDERS_DOT) && IsPlayerRangeDDOrHeal(*itr))
                             {
                                 DoCast(*itr, SPELL_CINDERS_DOT);
                                 havetarget = true;
                                 break;
                             }
                         }
+                        if (!havetarget)
+                        {
+                            for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                            {
+                                if (!(*itr)->HasAura(SPELL_CINDERS_DOT))
+                                {
+                                    DoCast(*itr, SPELL_CINDERS_DOT);
+                                    break;
+                                }
+                            }
+                        }
                     }
-                    if (!havetarget)
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
-                            DoCast(target, SPELL_CINDERS_DOT);
-                    events.ScheduleEvent(EVENT_CINDERS, 25000);
+                    events.ScheduleEvent(EVENT_CINDERS, 25000 + timermod);
                 }
                 break;
                 case EVENT_ACID_RAIN:
                 {
                     std::list<Player*>pllist;
+                    pllist.clear();
                     GetPlayerListInGrid(pllist, me, 150.0f);
+                    pllist.remove_if(MegaeraTankFilter());
                     bool havetarget = false;
                     if (!pllist.empty())
                     {
@@ -443,53 +503,58 @@ public:
                                 break;
                             }
                         }
-                    }
-                    if (!havetarget)
-                    {
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
+                        if (!havetarget)
                         {
+                            std::list<Player*>::iterator itr = pllist.begin();
+                            std::advance(itr, urand(0, pllist.size() - 1));
                             Position pos;
-                            target->GetPosition(&pos);
+                            (*itr)->GetPosition(&pos);
                             if (Creature* ar = me->SummonCreature(NPC_ACID_RAIN, pos, 0, TEMPSUMMON_TIMED_DESPAWN, 15000))
                                 DoCast(ar, SPELL_ACID_RAIN_TR_M);
                         }
                     }
-                    events.ScheduleEvent(EVENT_ACID_RAIN, 26000);
+                    events.ScheduleEvent(EVENT_ACID_RAIN, 26000 + timermod);
                 }
                 break;
                 case EVENT_TORRENT_OF_ICE:
                 {
                     std::list<Player*>pllist;
+                    pllist.clear();
                     GetPlayerListInGrid(pllist, me, 150.0f);
+                    pllist.remove_if(MegaeraTankFilter());
                     bool havetarget = false;
                     if (!pllist.empty())
                     {
                         for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                         {
-                            if (IsPlayerRangeDDOrHeal(*itr))
+                            if (!(*itr)->HasAura(SPELL_TORRENT_OF_ICE_T) && IsPlayerRangeDDOrHeal(*itr))
                             {
-                                if (Creature* torrent = me->SummonCreature(NPC_TORRENT_OF_ICE, (*itr)->GetPositionX() + 10.0f, (*itr)->GetPositionY(), (*itr)->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 9200))
+                                if (Creature* torrent = me->SummonCreature(NPC_TORRENT_OF_ICE, (*itr)->GetPositionX() + 10.0f, (*itr)->GetPositionY(), (*itr)->GetPositionZ()))
                                 {
-                                    DoCast(torrent, SPELL_TORRENT_OF_ICE_CH);
                                     torrent->AI()->SetGUID((*itr)->GetGUID(), 1);
+                                    DoCast(torrent, SPELL_TORRENT_OF_ICE_CH);
                                     havetarget = true;
                                     break;
                                 }
                             }
                         }
-                    }
-                    if (!havetarget)
-                    {
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
+                        if (!havetarget)
                         {
-                            if (Creature* torrent = me->SummonCreature(NPC_TORRENT_OF_ICE, target->GetPositionX() + 10.0f, target->GetPositionY(), target->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 9200))
+                            for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                             {
-                                DoCast(torrent, SPELL_TORRENT_OF_ICE_CH);
-                                torrent->AI()->SetGUID(target->GetGUID(), 1);
+                                if (!(*itr)->HasAura(SPELL_TORRENT_OF_ICE_T))
+                                {
+                                    if (Creature* torrent = me->SummonCreature(NPC_TORRENT_OF_ICE, (*itr)->GetPositionX() + 10.0f, (*itr)->GetPositionY(), (*itr)->GetPositionZ()))
+                                    {
+                                        torrent->AI()->SetGUID((*itr)->GetGUID(), 1);
+                                        DoCast(torrent, SPELL_TORRENT_OF_ICE_CH);
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
-                    events.ScheduleEvent(EVENT_TORRENT_OF_ICE, 27000);
+                    events.ScheduleEvent(EVENT_TORRENT_OF_ICE, 27000 + timermod);
                 }
                 break;
                 case EVENT_DESPAWN:
@@ -533,8 +598,13 @@ public:
                         if (!instance->GetData(DATA_GET_COUNT_RANGE_HEADS))
                         {
                             for (uint8 n = 2; n < 4; n++)
+                            {
                                 if (Creature* mh2 = megaera->SummonCreature(newheadsentry, megaeraspawnpos[n]))
+                                {
+                                    mh2->AI()->SetData(DATA_UPDATE_MOD_TIMER, (n - 2)* 2000);
                                     mh2->AI()->DoZoneInCombat(mh2, 150.0f);
+                                }
+                            }
                         }
                         else
                         {
@@ -559,7 +629,10 @@ public:
                                     {
                                         count++;
                                         if (Creature* mh3 = megaera->SummonCreature(newheadsentry, megaerarangespawnpos[n]))
+                                        {
+                                            mh3->AI()->SetData(DATA_UPDATE_MOD_TIMER, count * 2000);
                                             mh3->AI()->DoZoneInCombat(mh3, 150.0f);
+                                        }
                                     }
 
                                     if (count == 2)
@@ -638,6 +711,7 @@ public:
         npc_acid_rainAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
             m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+            me->SetDisplayId(11686);
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -700,7 +774,16 @@ public:
         void SetGUID(uint64 guid, int32 id)
         {
             targetGuid = guid;
-            events.ScheduleEvent(EVENT_ACTIVE_PURSUIT, 1000);
+            if (Player* pl = me->GetPlayer(*me, guid))
+            {
+                if (pl->isAlive())
+                {
+                    DoCast(pl, SPELL_TORRENT_OF_ICE_T, true);
+                    events.ScheduleEvent(EVENT_ACTIVE_PURSUIT, 1000);
+                    return;
+                }
+            }
+            me->DespawnOrUnsummon();
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -719,16 +802,28 @@ public:
 
             while (uint32 eventId = events.ExecuteEvent())
             {
-                if (eventId == EVENT_ACTIVE_PURSUIT)
+                switch (eventId)
                 {
+                case EVENT_ACTIVE_PURSUIT:
                     if (Player* player = me->GetPlayer(*me, targetGuid))
                     {
-                        DoCast(me, SPELL_TORRENT_OF_ICE_AURA, true);
-                        me->AddThreat(player, 50000000.0f);
-                        me->SetReactState(REACT_AGGRESSIVE);
-                        me->Attack(player, true);
-                        me->GetMotionMaster()->MoveChase(player);
+                        if (player->isAlive())
+                        {
+                            DoCast(me, SPELL_TORRENT_OF_ICE_AURA, true);
+                            me->AddThreat(player, 50000000.0f);
+                            me->SetReactState(REACT_AGGRESSIVE);
+                            me->Attack(player, true);
+                            me->GetMotionMaster()->MoveChase(player);
+                        }
                     }
+                    events.ScheduleEvent(EVENT_DESPAWN, 8200);
+                    break;
+                case EVENT_DESPAWN:
+                    if (Player* player = me->GetPlayer(*me, targetGuid))
+                        if (player->isAlive())
+                            player->RemoveAurasDueToSpell(SPELL_TORRENT_OF_ICE_T);
+                    me->DespawnOrUnsummon();
+                    break;   
                 }
             }
         }

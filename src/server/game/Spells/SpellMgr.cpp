@@ -5035,6 +5035,13 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(2);
                     break;
                 //Megaera
+                case 139857: //Torrent of Ice target aura
+                    spellInfo->Effects[0]->TargetA = 25;
+                    spellInfo->Effects[0]->TargetB = 0;
+                    spellInfo->Effects[1]->TargetA = 25;
+                    spellInfo->Effects[1]->TargetB = 0;
+                    spellInfo->Attributes |= SPELL_ATTR0_DEBUFF;
+                    break;
                 case 139848: //Acid Rain Trigger Missile
                     spellInfo->Effects[0]->TargetA = 25;
                     spellInfo->Effects[0]->TargetB = 0;

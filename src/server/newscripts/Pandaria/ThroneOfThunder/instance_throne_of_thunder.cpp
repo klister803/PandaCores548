@@ -44,8 +44,13 @@ public:
 
         //Special lists for Megaera heads mechanic
         std::vector<uint64>megaeralist;
+        uint8 ElementalBloodofMegaera[3]; //0 - flame, 1 - frozen, 2 - venomounce;
         uint32 megaeraheadlist[3];
         uint32 lastdiedhead;
+
+        //Special list for Jikun nest order
+        //uint64 jikunincubatelist[8];
+        //uint64 nestorderlist[16];
 
         //GameObjects
         uint64 jinrokhpredoorGuid;
@@ -112,6 +117,7 @@ public:
         std::vector <uint64> cinderlistGuids;
         std::vector <uint64> icygroundGuids;
         std::vector <uint64> torrentoficeGuids;
+        std::vector <uint64> acidraindGuids;
         
         void Initialize()
         {
@@ -184,13 +190,25 @@ public:
             cinderlistGuids.clear();
             icygroundGuids.clear();
             torrentoficeGuids.clear();
+            acidraindGuids.clear();
+
+            //for (uint8 m = 0; m < 16; m++)
+                //nestorderlist[m] = 0;
+
+            //for (uint8 b = 0; b < 8; b++)
+                //jikunincubatelist[b] = 0;
+
             for (uint8 n = 0; n < 3; n++)
                 megaeraheadlist[n] = 0;
+
             CreateMegaeraHeads();
         }
 
         void CreateMegaeraHeads()
         {
+            for (uint8 n = 0; n < 3; n++)
+                ElementalBloodofMegaera[n] = 0;
+
             uint8 mod = urand(0, 5);
             switch (mod)
             {
@@ -231,8 +249,12 @@ public:
 
         void ResetMegaera()
         {
+            for (uint8 n = 0; n < 3; n++)
+                ElementalBloodofMegaera[n] = 0;
+
             if (Creature* megaera = instance->GetCreature(megaeraGuid))
                 megaera->AI()->DoAction(ACTION_MEGAERA_RESET);
+
             if (!megaeralist.empty())
             {
                 for (std::vector<uint64>::const_iterator itr = megaeralist.begin(); itr != megaeralist.end(); itr++)
@@ -249,6 +271,28 @@ public:
             if (Creature* megaera = instance->GetCreature(megaeraGuid))
                 for (uint8 n = 0; n < 3; n++)
                     megaera->SummonCreature(megaeraheadlist[n], megaeraspawnpos[n]);
+        }
+
+        void CreateNestOrderList(uint8 raidmode)
+        {
+            /*In 10-man, the activation order is as follows.
+            Activations 1-3 activate a lower nest each.
+            Activations 4-6 activate an upper nest each.
+            Activations 7 and 8 activate a lower nest each.
+            Activations 9 and 10 happen at the same time, and they active a lower and an upper nest.
+            Activations 11 and 12 activate and upper nest each.
+            From this point on, the cycle restarts, but the fight should not last long beyond this point.
+
+            In 25-man, it is as we describe below.
+            Activations 1-4 activate a lower nest each.
+            Activations 5 and 6 happen at the same time, and they activate a lower and an upper nest.
+            Activations 7 and 8 activate an upper nest each.
+            Activations 9 and 10 happen at the same time, and they activate a lower and an upper nest.
+            Activations 11 and 12 happen at the same time, and they activate a lower and an upper nest.
+            Activations 13 and 14 activate a lower nest each.
+            Activations 15 and 16 happen at the same time, and they active a lower and an up upper nest.
+            This carries on in what appears to be a rather random order until the rest of the fight.
+            */
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -323,9 +367,30 @@ public:
             case NPC_TORRENT_OF_ICE:
                 torrentoficeGuids.push_back(creature->GetGUID());
                 break;
+            case NPC_ACID_RAIN:
+                acidraindGuids.push_back(creature->GetGUID());
+                break;
             case NPC_JI_KUN:  
                 jikunGuid = creature->GetGUID();
                 break;
+            /*case NPC_INCUBATER:
+                if (creature->GetPositionZ() == -70.551804f)      //north - east low  all time first
+                    jikunincubatelist[0] = creature->GetGUID();
+                else if (creature->GetPositionZ() == 41.017502f)  //north - east up
+                    jikunincubatelist[1] = creature->GetGUID();
+                else if (creature->GetPositionZ() == 37.581402f)  //north - east up
+                    jikunincubatelist[2] = creature->GetGUID();
+                else if (creature->GetPositionZ() == -101.667999f)//south - east low
+                    jikunincubatelist[3] = creature->GetGUID();
+                else if (creature->GetPositionZ() == -93.935402f) //south - west low
+                    jikunincubatelist[4] = creature->GetGUID();
+                else if (creature->GetPositionZ() == 43.440941f)  //south - west up
+                    jikunincubatelist[5] = creature->GetGUID();
+                else if (creature->GetPositionZ() == -70.741302f) //west   low
+                    jikunincubatelist[6] = creature->GetGUID();
+                else if (creature->GetPositionZ() == -59.078201f) //north low
+                    jikunincubatelist[7] = creature->GetGUID();
+                break;*/
             case NPC_DURUMU:  
                 durumuGuid = creature->GetGUID();
                 break;
@@ -371,10 +436,10 @@ public:
                 cvitaGuid = creature->GetGUID();
                 break;
             }
-
-            /*if (IsRaidBoss(creature->GetEntry())) online in future(need script bosses)
+            //Patch 5.4
+            if (IsRaidBoss(creature->GetEntry()))
                 if (creature->isAlive())
-                    creature->CastSpell(creature, SPELL_SHADO_PAN_ONSLAUGHT, true);*/ //Patch 5.4
+                    creature->CastSpell(creature, SPELL_SHADO_PAN_ONSLAUGHT, true);
         }
 
         void OnGameObjectCreate(GameObject* go)
@@ -515,6 +580,18 @@ public:
                 for (std::vector<uint64>::const_iterator itr = torrentoficeGuids.begin(); itr != torrentoficeGuids.end(); itr++)
                     if (Creature* torrentofice = instance->GetCreature(*itr))
                         torrentofice->DespawnOrUnsummon();
+
+            if (!acidraindGuids.empty())
+                for (std::vector<uint64>::const_iterator itr = acidraindGuids.begin(); itr != acidraindGuids.end(); itr++)
+                    if (Creature* acidrain = instance->GetCreature(*itr))
+                        acidrain->DespawnOrUnsummon();
+
+            //Clear all lists
+            cinderlistGuids.clear();
+            icygroundGuids.clear();
+            torrentoficeGuids.clear();
+            acidraindGuids.clear();
+            DoRemoveAurasDueToSpellOnPlayers(SPELL_TORRENT_OF_ICE_T);
         }
 
         bool SetBossState(uint32 id, EncounterState state)
@@ -844,6 +921,23 @@ public:
                         }
                     }
                 }
+                switch (data)
+                {
+                case NPC_FLAMING_HEAD_MELEE:
+                    ElementalBloodofMegaera[0]++;
+                    break;
+                case NPC_FROZEN_HEAD_MELEE:
+                    ElementalBloodofMegaera[1]++;
+                    break;
+                case NPC_VENOMOUS_HEAD_MELEE:
+                    ElementalBloodofMegaera[2]++;
+                    break;
+                default:
+                    break;
+                }
+                break;
+            case DATA_CREATE_NEST_LIST_ORDER:
+                CreateNestOrderList(data);
                 break;
             }
         }
@@ -891,6 +985,12 @@ public:
                     }
                     return count;
                 }
+            case NPC_FLAMING_HEAD_MELEE:
+                return ElementalBloodofMegaera[0];
+            case NPC_FROZEN_HEAD_MELEE:
+                return ElementalBloodofMegaera[1];
+            case NPC_VENOMOUS_HEAD_MELEE:
+                return ElementalBloodofMegaera[2];
             }
             return 0;
         }

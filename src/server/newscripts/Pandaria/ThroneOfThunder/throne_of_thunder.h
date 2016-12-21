@@ -36,6 +36,9 @@ enum eData
     DATA_CHECK_PROGRESS_MEGAERA,
     DATA_GET_COUNT_RANGE_HEADS,
     DATA_SEND_LAST_DIED_HEAD,
+    DATA_GET_ELEMENTAL_BLOOD_OF_MEGAERA,
+    DATA_CREATE_NEST_LIST_ORDER,
+    DATA_UPDATE_MOD_TIMER,
 };
 
 enum esAction
@@ -100,6 +103,7 @@ enum eCreatures
     NPC_ACID_RAIN               = 70435,
     NPC_TORRENT_OF_ICE          = 70439,
     NPC_ICY_GROUND              = 70446,
+    NPC_JUMP_TO_BOSS_PLATFORM   = 69885,
 
     NPC_BLESSED_LOA_SPIRIT      = 69480,
     NPC_BLESSED_LOA_SPIRIT_2    = 69491,
@@ -159,7 +163,12 @@ enum eCreatures
     NPC_FROZEN_HEAD_MELEE   = 70235,
     NPC_FROZEN_HEAD_RANGE   = 70250,
     //
+    //Jikun
     NPC_JI_KUN              = 69712,
+    NPC_YOUNG_EGG_OF_JI_KUN = 68194,
+    NPC_HATCHLING           = 68192,
+    NPC_INCUBATER           = 69626,
+    //
     NPC_DURUMU              = 68036,
     NPC_PRIMORDIUS          = 69017,
     NPC_DARK_ANIMUS         = 69427,
@@ -180,6 +189,7 @@ enum esSpell
 {
     SPELL_SHADO_PAN_ONSLAUGHT = 149070,
     SPELL_HYDRA_FRENZY        = 139942,
+    SPELL_TORRENT_OF_ICE_T    = 139857,
 };
 
 enum eGameObjects
