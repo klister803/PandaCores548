@@ -3132,6 +3132,11 @@ bool Creature::IsAutoLoot() const
     return (GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_AUTO_LOOT);
 }
 
+bool Creature::HasLootCD() const
+{
+    return !(GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NOT_LOOT_CD);
+}
+
 void Creature::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
 {
     for (uint8 i = 0; i < GetPetCastSpellSize(); ++i)

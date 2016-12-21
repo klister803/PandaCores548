@@ -25294,7 +25294,7 @@ void Unit::GeneratePersonalLoot(Creature* creature, Player* anyLooter)
                 loot->AutoStoreItems();
                 --cLoot->unlootedCount;
             }
-            if(creature->isWorldBoss())
+            if(creature->isWorldBoss() && creature->HasLootCD())
                 looter->AddPlayerLootCooldown(cooldownid, cooldowntype, true, creature->GetMap()->GetDifficulty());
 
             //sLog->outDebug(LOG_FILTER_LOOT, "Unit::GeneratePersonalLoot lootGUID %i", loot->GetGUID());

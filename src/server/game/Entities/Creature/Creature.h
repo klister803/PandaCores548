@@ -50,6 +50,7 @@ enum CreatureFlagsExtra
     CREATURE_FLAG_EXTRA_NO_TAUNT                        = 0x00000100,       // creature is immune to taunt auras and effect attack me
     CREATURE_FLAG_EXTRA_PERSONAL_LOOT                   = 0x00000200,       // Personal loot mobs and increment healths by player
     CREATURE_FLAG_EXTRA_AUTO_LOOT                       = 0x00000400,       // Do not die and send loot auto
+    CREATURE_FLAG_EXTRA_NOT_LOOT_CD                     = 0x00000800,       // Not CD for loot
     CREATURE_FLAG_EXTRA_WORLDEVENT                      = 0x00004000,       // custom flag for world event creatures (left room for merging)
     CREATURE_FLAG_EXTRA_GUARD                           = 0x00008000,       // Creature is guard
     CREATURE_FLAG_EXTRA_NO_CRIT                         = 0x00020000,       // creature can't do critical strikes
@@ -651,6 +652,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         bool _isDungeonBoss() const;
         bool IsPersonalLoot() const;
         bool IsAutoLoot() const;
+        bool HasLootCD() const;
 
         uint8 getLevelForTarget(WorldObject const* target) const; // overwrite Unit::getLevelForTarget for boss level support
 
