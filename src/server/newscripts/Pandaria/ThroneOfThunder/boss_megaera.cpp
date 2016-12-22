@@ -53,6 +53,14 @@ enum eSpells
     SPELL_FLAME_EBOM          = 139586,
     SPELL_FROZEN_EBOM         = 139587,
     SPELL_VENOMOUSE_EBOM      = 139588,
+    //Megaera Rampage Spells
+    SPELL_MEGAERA_RAMPAGE     = 139458,
+    SPELL_FLAME_RAMPAGE_DMG   = 139548,
+    SPELL_FROZEN_RAMPAGE_DMG  = 139549,
+    SPELL_VENOMOUSE_RAMPAGE_D = 139551,
+    SPELL_FL_VISUAL_RAMPAGE   = 139433,
+    SPELL_V_VISUAL_RAMPAGE    = 139504,
+    SPELL_FR_VISUAL_RAMPAGE   = 139440,
 };
 
 enum sEvents
@@ -255,7 +263,10 @@ public:
         void SetData(uint32 type, uint32 data)
         {
             if (type == DATA_UPDATE_MOD_TIMER)
+            {
                 timermod = data;
+                DoZoneInCombat(me, 150.0f);
+            }
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -598,13 +609,8 @@ public:
                         if (!instance->GetData(DATA_GET_COUNT_RANGE_HEADS))
                         {
                             for (uint8 n = 2; n < 4; n++)
-                            {
                                 if (Creature* mh2 = megaera->SummonCreature(newheadsentry, megaeraspawnpos[n]))
-                                {
                                     mh2->AI()->SetData(DATA_UPDATE_MOD_TIMER, (n - 2)* 2000);
-                                    mh2->AI()->DoZoneInCombat(mh2, 150.0f);
-                                }
-                            }
                         }
                         else
                         {
@@ -629,10 +635,7 @@ public:
                                     {
                                         count++;
                                         if (Creature* mh3 = megaera->SummonCreature(newheadsentry, megaerarangespawnpos[n]))
-                                        {
                                             mh3->AI()->SetData(DATA_UPDATE_MOD_TIMER, count * 2000);
-                                            mh3->AI()->DoZoneInCombat(mh3, 150.0f);
-                                        }
                                     }
 
                                     if (count == 2)
@@ -982,6 +985,86 @@ public:
     }
 };
 
+//139458
+class spell_megaera_rampage : public SpellScriptLoader
+{
+public:
+    spell_megaera_rampage() : SpellScriptLoader("spell_megaera_rampage") { }
+
+    class spell_megaera_rampage_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_megaera_rampage_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (GetCaster() && GetCaster()->ToCreature())
+            {
+                uint32 spellentry = 0;
+                uint32 visualspell = 0;
+                uint32 searchentry = 0;
+                uint32 searchentry2 = 0;
+
+                switch (GetCaster()->ToCreature()->GetEntry())
+                {
+                case NPC_FLAMING_HEAD_MELEE:
+                case NPC_FLAMING_HEAD_RANGE:
+                    spellentry = SPELL_FLAME_RAMPAGE_DMG;
+                    visualspell = SPELL_FL_VISUAL_RAMPAGE;
+                    searchentry = NPC_FLAMING_HEAD_MELEE;
+                    searchentry2 = NPC_FLAMING_HEAD_RANGE;
+                    break;
+                case NPC_VENOMOUS_HEAD_MELEE:
+                case NPC_VENOMOUS_HEAD_RANGE:
+                    spellentry = SPELL_VENOMOUSE_RAMPAGE_D;
+                    visualspell = SPELL_V_VISUAL_RAMPAGE;
+                    searchentry = NPC_VENOMOUS_HEAD_MELEE;
+                    searchentry2 = NPC_VENOMOUS_HEAD_RANGE;
+                    break;
+                case NPC_FROZEN_HEAD_MELEE:
+                case NPC_FROZEN_HEAD_RANGE:
+                    spellentry = SPELL_FROZEN_RAMPAGE_DMG;
+                    visualspell = SPELL_FR_VISUAL_RAMPAGE;
+                    searchentry = NPC_FROZEN_HEAD_MELEE;
+                    searchentry2 = NPC_FROZEN_HEAD_RANGE;
+                    break;
+                default:
+                    break;
+                }
+                std::list<Creature*>myheadlist;
+                myheadlist.clear();
+                GetCreatureListWithEntryInGrid(myheadlist, GetCaster(), searchentry, 150.0f);
+                GetCreatureListWithEntryInGrid(myheadlist, GetCaster(), searchentry2, 150.0f);
+
+                float misc = aurEff->GetAmount();                                      //percent damage
+                float mod = myheadlist.size() > 1 ? misc*myheadlist.size() - misc : 0; //increase percent from head count
+                SpellInfo const* spell = sSpellMgr->GetSpellInfo(spellentry);
+                float basepoint = spell->GetEffect(0)->BasePoints;                     //base damage from spell
+                float dmgmod = (basepoint*(mod / 100));                                //calculate damage from modifier percent
+                float dmg = basepoint + dmgmod;                                        //update damage
+
+                std::list<Player*>pllist;
+                pllist.clear();
+                GetPlayerListInGrid(pllist, GetCaster(), 150.0f);
+                std::list<Player*>::iterator itr = pllist.begin();
+                std::advance(itr, urand(0, pllist.size() - 1));
+
+                GetCaster()->CastSpell(*itr, visualspell, true);
+                GetCaster()->CastCustomSpell(spellentry, SPELLVALUE_BASE_POINT0, dmg, GetCaster(), true);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_megaera_rampage_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_megaera_rampage_AuraScript();
+    }
+};
+
 void AddSC_boss_megaera()
 {
     new npc_megaera();
@@ -993,4 +1076,5 @@ void AddSC_boss_megaera()
     new spell_cinders();
     new spell_acid_rain();
     new spell_torrent_of_ice();
+    new spell_megaera_rampage();
 }

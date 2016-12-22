@@ -5039,6 +5039,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(2);
                     break;
                 //Megaera
+                case 139458://Megaera Rampage
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(18); // 20s
+                    break;
                 case 139857: //Torrent of Ice target aura
                     spellInfo->Effects[0]->TargetA = 25;
                     spellInfo->Effects[0]->TargetB = 0;
