@@ -4109,6 +4109,9 @@ void Unit::RemoveOwnedAura(uint32 spellId, uint64 casterGUID, uint32 reqEffMask,
         {
             RemoveOwnedAura(itr, removeMode);
             itr = m_ownedAuras.lower_bound(spellId);
+
+            if (removeMode == AURA_REMOVE_BY_CANCEL) // cant cancel several auras at the same time
+                break;
         }
         else
             ++itr;
