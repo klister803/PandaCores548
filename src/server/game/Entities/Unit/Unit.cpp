@@ -21061,13 +21061,22 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
     if (!isVictim && GetTypeId() == TYPEID_PLAYER)
     {
         Player* player = ToPlayer();
+        Item* mainHand = NULL;
+        Item* offHand  = NULL;
+
         if (spellProto->EquippedItemClass == ITEM_CLASS_WEAPON)
         {
             Item* item = NULL;
             if (attType == BASE_ATTACK)
+            {
                 item = player->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+                mainHand = item;
+            }
             else if (attType == OFF_ATTACK)
+            {
                 item = player->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+                offHand = item;
+            }
 
             if (player->IsInFeralForm())
                 return false;
@@ -21081,6 +21090,23 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
             Item* item = player->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
             if (!item || item->IsBroken() || item->GetTemplate()->Class != ITEM_CLASS_ARMOR || !((1<<item->GetTemplate()->SubClass) & spellProto->EquippedItemSubClassMask))
                 return false;
+        }
+
+        if (castItemGUID)
+        {
+            mainHand = mainHand ? mainHand : player->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+            offHand = offHand ? offHand : player->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+
+            if (mainHand && mainHand->GetGUID() == castItemGUID)
+            {
+                if (attType == OFF_ATTACK)
+                    return false;
+            }
+            else if (offHand && offHand->GetGUID() == castItemGUID)
+            {
+                if (attType == BASE_ATTACK)
+                    return false;
+            }
         }
     }
     // Get chance from spell
