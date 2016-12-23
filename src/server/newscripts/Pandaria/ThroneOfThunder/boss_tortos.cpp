@@ -312,7 +312,7 @@ public:
                     float x, y;
                     float ang = pl->GetOrientation();
                     GetPositionWithDistInOrientation(pl, 100.0f, ang, x, y);
-                    me->GetMotionMaster()->MoveJump(x, y, -61.2176f, 8.0f, 0.0f, 1);
+                    me->GetMotionMaster()->MoveJump(x, y, -61.2176f, 42.0f, 0.0f, 1);
                     me->AddAura(SPELL_KICK_SHELL_I_AURA, me);
                 }
             }
