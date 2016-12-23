@@ -8914,6 +8914,9 @@ uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency)
     if (itr != _currencyStorage.end())
         curentCap = itr->second.curentCap;
 
+    if (int32(curentCap) < 0)
+        curentCap = 0;
+
     switch (currency->ID)
     {
             //original conquest not have week cap
