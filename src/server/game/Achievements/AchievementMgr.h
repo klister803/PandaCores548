@@ -429,7 +429,7 @@ class AchievementGlobalMgr
 
         AchievementCriteriaDataSet const* GetCriteriaDataSet(CriteriaTree const* Criteria) const
         {
-            return m_criteriaDataVector[Criteria->ID];
+            return m_criteriaDataVector[Criteria->CriteriaID];
         }
 
         bool IsRealmCompleted(AchievementEntry const* achievement) const
