@@ -46,7 +46,9 @@ public:
         std::vector<uint64>megaeralist;
         uint8 ElementalBloodofMegaera[3]; //0 - flame, 1 - frozen, 2 - venomounce;
         uint32 megaeraheadlist[3];
-        uint32 lastdiedhead;
+        uint32 othermeleehead;
+        uint32 lastdiedhead_convert;
+        uint32 othermeleehead_convert;
 
         //Special list for Jikun nest order
         //uint64 jikunincubatelist[8];
@@ -163,7 +165,9 @@ public:
             garajalsoulGuid       = 0;
             tortosGuid            = 0;
             megaeraGuid           = 0;
-            lastdiedhead          = 0;
+            othermeleehead        = 0;
+            lastdiedhead_convert  = 0;
+            othermeleehead_convert = 0;
             nextmegaeraheadGuid   = 0;
             jikunGuid             = 0;
             durumuGuid            = 0;
@@ -266,8 +270,12 @@ public:
                     }
                 }
             }
-            lastdiedhead = 0;
+
+            othermeleehead = 0;
+            lastdiedhead_convert = 0;
+            othermeleehead_convert = 0;
             megaeralist.clear();
+
             if (Creature* megaera = instance->GetCreature(megaeraGuid))
                 for (uint8 n = 0; n < 3; n++)
                     megaera->SummonCreature(megaeraheadlist[n], megaeraspawnpos[n]);
@@ -702,8 +710,12 @@ public:
                             for (std::vector<uint64>::const_iterator itr = megaeralist.begin(); itr != megaeralist.end(); itr++)
                                 if (Creature* mh = instance->GetCreature(*itr))
                                     mh->AI()->DoAction(ACTION_UNSUMMON);
-                        lastdiedhead = 0;
+
+                        othermeleehead = 0;
+                        lastdiedhead_convert = 0;
+                        othermeleehead_convert = 0;
                         megaeralist.clear();
+
                         megaera->setFaction(35);
                         if (!instance->IsLfr())
                             if (GameObject* chest = megaera->SummonGameObject(218805, 6415.06f, 4527.67f, -209.1780f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 604800))
@@ -906,15 +918,15 @@ public:
                         mogufont->SetGoState(GO_STATE_READY);
                 break;
             case DATA_SEND_LAST_DIED_HEAD:
-                lastdiedhead = data;
                 if (!megaeralist.empty())
                 {
                     for (std::vector<uint64>::const_iterator itr = megaeralist.begin(); itr != megaeralist.end(); itr++)
                     {
                         if (Creature* mh = instance->GetCreature(*itr))
                         {
-                            if (mh->GetEntry() != lastdiedhead && (mh->GetEntry() == NPC_FLAMING_HEAD_MELEE || mh->GetEntry() == NPC_FROZEN_HEAD_MELEE || mh->GetEntry() == NPC_VENOMOUS_HEAD_MELEE))
+                            if (mh->GetEntry() != data && (mh->GetEntry() == NPC_FLAMING_HEAD_MELEE || mh->GetEntry() == NPC_FROZEN_HEAD_MELEE || mh->GetEntry() == NPC_VENOMOUS_HEAD_MELEE))
                             {
+                                othermeleehead = mh->GetEntry();
                                 mh->SetFullHealth();
                                 mh->CastSpell(mh, SPELL_HYDRA_FRENZY, true);
                             }
@@ -925,12 +937,27 @@ public:
                 {
                 case NPC_FLAMING_HEAD_MELEE:
                     ElementalBloodofMegaera[0]++;
+                    lastdiedhead_convert = NPC_FLAMING_HEAD_RANGE;
                     break;
                 case NPC_FROZEN_HEAD_MELEE:
                     ElementalBloodofMegaera[1]++;
+                    lastdiedhead_convert = NPC_FROZEN_HEAD_RANGE;
                     break;
                 case NPC_VENOMOUS_HEAD_MELEE:
                     ElementalBloodofMegaera[2]++;
+                    lastdiedhead_convert = NPC_VENOMOUS_HEAD_RANGE;
+                    break;
+                }
+                switch (othermeleehead)
+                {
+                case NPC_FLAMING_HEAD_MELEE:
+                    othermeleehead_convert = NPC_FLAMING_HEAD_RANGE;
+                    break;
+                case NPC_FROZEN_HEAD_MELEE:
+                    othermeleehead_convert = NPC_FROZEN_HEAD_RANGE;
+                    break;
+                case NPC_VENOMOUS_HEAD_MELEE:
+                    othermeleehead_convert = NPC_VENOMOUS_HEAD_RANGE;
                     break;
                 default:
                     break;
@@ -1068,8 +1095,9 @@ public:
                 if (!megaeralist.empty())
                     for (std::vector<uint64>::const_iterator itr = megaeralist.begin(); itr != megaeralist.end(); itr++)
                         if (Creature* mh = instance->GetCreature(*itr))
-                            if (mh->GetEntry() != lastdiedhead && (mh->GetEntry() == NPC_FLAMING_HEAD_RANGE || mh->GetEntry() == NPC_FROZEN_HEAD_RANGE || mh->GetEntry() == NPC_VENOMOUS_HEAD_RANGE))
-                                return mh->GetGUID();
+                            if (mh->GetEntry() == NPC_FLAMING_HEAD_RANGE || mh->GetEntry() == NPC_FROZEN_HEAD_RANGE || mh->GetEntry() == NPC_VENOMOUS_HEAD_RANGE)
+                                if (mh->GetEntry() != othermeleehead_convert && mh->GetEntry() != lastdiedhead_convert)
+                                    return mh->GetGUID();
 
             case NPC_TORTOS: 
                 return tortosGuid;

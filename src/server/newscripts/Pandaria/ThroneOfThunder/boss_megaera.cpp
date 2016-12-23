@@ -19,16 +19,6 @@
 #include "NewScriptPCH.h"
 #include "throne_of_thunder.h"
 
-uint32 const megaeraheads[6] =
-{
-    NPC_FLAMING_HEAD_MELEE,
-    NPC_FROZEN_HEAD_MELEE,
-    NPC_VENOMOUS_HEAD_MELEE,
-    NPC_FLAMING_HEAD_RANGE,
-    NPC_VENOMOUS_HEAD_RANGE,
-    NPC_FROZEN_HEAD_RANGE,
-};
-
 enum eSpells
 {
     //Flame Head
@@ -77,6 +67,19 @@ enum sEvents
     EVENT_SPAWN_NEW_HEADS     = 5,
     EVENT_DESPAWN             = 6,
     EVENT_ACTIVE_PURSUIT      = 7,
+    EVENT_MEGAERA_RAMPAGE     = 8,
+    EVENT_RESET_EVENT         = 9,
+    EVENT_RESTART_EVENTS      = 10,
+};
+
+uint32 const megaeraheads[6] =
+{
+    NPC_FLAMING_HEAD_MELEE,
+    NPC_FROZEN_HEAD_MELEE,
+    NPC_VENOMOUS_HEAD_MELEE,
+    NPC_FLAMING_HEAD_RANGE,
+    NPC_VENOMOUS_HEAD_RANGE,
+    NPC_FROZEN_HEAD_RANGE,
 };
 
 class MegaeraTankFilter
@@ -107,9 +110,11 @@ public:
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NON_ATTACKABLE);
         }
         InstanceScript* instance;
+        EventMap events;
 
         void Reset()
         {
+            events.Reset();
             if (instance->GetBossState(DATA_MEGAERA != NOT_STARTED))
                 instance->SetBossState(DATA_MEGAERA, NOT_STARTED);
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
@@ -128,6 +133,9 @@ public:
                 if (me->isInCombat())
                     EnterEvadeMode();
                 break;
+            case ACTION_MEGAERA_RAMPAGE:
+                events.ScheduleEvent(EVENT_MEGAERA_RAMPAGE, 2000);
+                break;
             }
         }
 
@@ -142,7 +150,43 @@ public:
             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
         }
 
-        void UpdateAI(uint32 diff){}
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                case EVENT_MEGAERA_RAMPAGE:
+                {
+                    std::list<Creature*>megaeraheadlist;
+                    megaeraheadlist.clear();
+                    for (uint8 n = 0; n < 6; n++)
+                        GetCreatureListWithEntryInGrid(megaeraheadlist, me, megaeraheads[n], 200.0f);
+
+                    if (!megaeraheadlist.empty())
+                        for (std::list<Creature*>::const_iterator itr = megaeraheadlist.begin(); itr != megaeraheadlist.end(); itr++)
+                            (*itr)->AI()->DoAction(ACTION_MEGAERA_RAMPAGE);
+
+                    events.ScheduleEvent(EVENT_RESTART_EVENTS, 22000);
+                }
+                break;
+                case EVENT_RESTART_EVENTS:
+                {
+                    std::list<Creature*>megaeraheadlist;
+                    megaeraheadlist.clear();
+                    for (uint8 n = 0; n < 6; n++)
+                        GetCreatureListWithEntryInGrid(megaeraheadlist, me, megaeraheads[n], 200.0f);
+
+                    if (!megaeraheadlist.empty())
+                        for (std::list<Creature*>::const_iterator itr = megaeraheadlist.begin(); itr != megaeraheadlist.end(); itr++)
+                            (*itr)->AI()->DoAction(ACTION_RESTART_EVENTS);
+                }
+                break;
+                }
+            }
+        }
     };
 
     CreatureAI* GetAI(Creature* pCreature) const
@@ -187,6 +231,7 @@ public:
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
             me->SetStandState(UNIT_STAND_STATE_SUBMERGED);
             timermod = 0;
+            megaerarampage = false;
         }
         InstanceScript* instance;
         SummonList summon;
@@ -194,8 +239,9 @@ public:
         uint32 checkvictim;
         uint32 spawntimer;
         uint32 nextheadentry;
-        uint32 timermod = 0;
+        uint32 timermod;
         bool done;
+        bool megaerarampage;
 
         void Reset()
         {
@@ -219,7 +265,7 @@ public:
             case NPC_FLAMING_HEAD_MELEE:
             case NPC_VENOMOUS_HEAD_MELEE:
             case NPC_FROZEN_HEAD_MELEE:
-                events.ScheduleEvent(EVENT_BREATH, 16000);
+                events.ScheduleEvent(EVENT_BREATH, 6000);
                 checkvictim = 4000;
                 break;
             case NPC_FLAMING_HEAD_RANGE:
@@ -230,8 +276,6 @@ public:
                 break;
             case NPC_FROZEN_HEAD_RANGE:
                 events.ScheduleEvent(EVENT_TORRENT_OF_ICE, 27000 + timermod);
-                break;
-            default:
                 break;
             }
         }
@@ -262,15 +306,29 @@ public:
 
         void SetData(uint32 type, uint32 data)
         {
-            if (type == DATA_UPDATE_MOD_TIMER)
+            switch (type)
             {
+            case DATA_UPDATE_MOD_TIMER:
                 timermod = data;
                 DoZoneInCombat(me, 150.0f);
+                break;
+            case DATA_SPAWN_NEW_HEAD:
+                megaerarampage = true;
+                DoZoneInCombat(me, 150.0f);
+                instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
+                break;
             }
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
+            //Megaera head die only after rampage remove...
+            if (damage >= me->GetHealth() && me->HasAura(SPELL_MEGAERA_RAMPAGE))
+            {
+                damage = 0;
+                return;
+            }
+
             if (damage >= me->GetHealth() && !done)
             {
                 damage = 0;
@@ -349,6 +407,35 @@ public:
                 me->SetStandState(UNIT_STAND_STATE_DEAD);
                 events.ScheduleEvent(EVENT_DESPAWN, 3000);
                 break;
+            case ACTION_MEGAERA_RAMPAGE:
+                checkvictim = 0;
+                events.Reset();
+                me->InterruptNonMeleeSpells(true);
+                me->SetAttackStop(false);
+                DoCast(me, SPELL_MEGAERA_RAMPAGE, true);
+                events.ScheduleEvent(EVENT_RESET_EVENT, 21000);
+                break;
+            case ACTION_RESTART_EVENTS:
+                me->ReAttackWithZone();
+                switch (me->GetEntry())
+                {
+                case NPC_FLAMING_HEAD_MELEE:
+                case NPC_VENOMOUS_HEAD_MELEE:
+                case NPC_FROZEN_HEAD_MELEE:
+                    events.ScheduleEvent(EVENT_BREATH, 10000);
+                    checkvictim = 4000;
+                    break;
+                case NPC_FLAMING_HEAD_RANGE:
+                    events.ScheduleEvent(EVENT_CINDERS, 16000 + timermod);
+                    break;
+                case NPC_VENOMOUS_HEAD_RANGE:
+                    events.ScheduleEvent(EVENT_ACID_RAIN, 17000 + timermod);
+                    break;
+                case NPC_FROZEN_HEAD_RANGE:
+                    events.ScheduleEvent(EVENT_TORRENT_OF_ICE, 18000 + timermod);
+                    break;
+                }
+                break;
             }
         }
 
@@ -408,6 +495,9 @@ public:
                     case NPC_FROZEN_HEAD_MELEE:
                         UpdateElementalBloodofMegaera();
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                        if (megaerarampage)
+                            if (Creature* megaera = me->GetCreature(*me, instance->GetData64(NPC_MEGAERA)))
+                                megaera->AI()->DoAction(ACTION_MEGAERA_RAMPAGE);
                         break;
                     default:
                         break;
@@ -431,7 +521,8 @@ public:
                     }
                     checkvictim = 4000;
                 }
-                else checkvictim -= diff;
+                else
+                    checkvictim -= diff;
             }
 
             events.Update(diff);
@@ -457,7 +548,7 @@ public:
                         DoCast(me, SPELL_ROT_ARMOR);
                         break;
                     }
-                    events.ScheduleEvent(EVENT_BREATH, 16000);
+                    events.ScheduleEvent(EVENT_BREATH, 15000);
                     break;
                 }
                 case EVENT_CINDERS:
@@ -504,7 +595,7 @@ public:
                     {
                         for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                         {
-                            if (IsPlayerRangeDDOrHeal(*itr))
+                            if (!(*itr)->HasAura(SPELL_TORRENT_OF_ICE_T) && IsPlayerRangeDDOrHeal(*itr))
                             {
                                 Position pos;
                                 (*itr)->GetPosition(&pos);
@@ -585,10 +676,7 @@ public:
                             posmod = 1;
 
                         if (Creature* mh = megaera->SummonCreature(nextheadentry, megaeraspawnpos[posmod]))
-                        {
-                            mh->AI()->DoZoneInCombat(mh, 150.0f);
-                            instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, mh);
-                        }
+                            mh->AI()->SetData(DATA_SPAWN_NEW_HEAD, 0);
 
                         uint32 newheadsentry = 0;
                         switch (me->GetEntry())

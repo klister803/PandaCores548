@@ -39,6 +39,7 @@ enum eData
     DATA_GET_ELEMENTAL_BLOOD_OF_MEGAERA,
     DATA_CREATE_NEST_LIST_ORDER,
     DATA_UPDATE_MOD_TIMER,
+    DATA_SPAWN_NEW_HEAD,
 };
 
 enum esAction
@@ -47,6 +48,9 @@ enum esAction
     ACTION_MEGAERA_RESET       = 51,
     ACTION_MEGAERA_DONE        = 52,
     ACTION_UNSUMMON            = 53,
+    ACTION_MEGAERA_RAMPAGE     = 54,
+    ACTION_RESET_EVENTS        = 55,
+    ACTION_RESTART_EVENTS      = 56,
 };
 
 Position const megaeraspawnpos[6] =
