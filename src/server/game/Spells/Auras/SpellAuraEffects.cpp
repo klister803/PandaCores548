@@ -2970,8 +2970,6 @@ void AuraEffect::HandleSpiritOfRedemption(AuraApplication const* aurApp, uint8 m
         // call functions which may have additional effects after chainging state of unit
         target->setDeathState(JUST_DIED);
 
-    target->CombatStop();
-
     if (apply)
         target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     else

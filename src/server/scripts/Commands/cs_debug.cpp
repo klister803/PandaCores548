@@ -1726,9 +1726,6 @@ public:
         player->SetStatFloatValue(PLAYER_RANGED_CRIT_PERCENTAGE, Value);
         for (int school = SPELL_SCHOOL_NORMAL; school != MAX_SPELL_SCHOOL; ++school)
             player->SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1+school, Value);
-
-        for (uint8 i = 0; i < 10; i++)
-            player->SetExactCritPct(1612 + i, Value);
         return true;
     }
     static bool HandleDebugClientGUIDsCommand(ChatHandler* handler, const char* /*args*/)
