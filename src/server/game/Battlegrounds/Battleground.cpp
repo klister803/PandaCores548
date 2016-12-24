@@ -1021,6 +1021,7 @@ void Battleground::EndBattleground(uint32 winner)
             if (isBattleground() && !IsRBG() && (player->IsInvitedForBattlegroundQueueType(BATTLEGROUND_QUEUE_RB) || BattlegroundMgr::IsBGWeekend(GetTypeID())))
             {
                 UpdatePlayerScore(player, SCORE_BONUS_HONOR, winner_bonus);
+                player->AddItem(185212, 1);
                 if (!player->GetRandomWinner())
                 {
                     // 150cp awarded for the first rated battleground won each day 
