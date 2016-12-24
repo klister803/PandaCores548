@@ -51,6 +51,7 @@ enum esAction
     ACTION_MEGAERA_RAMPAGE     = 54,
     ACTION_RESET_EVENTS        = 55,
     ACTION_RESTART_EVENTS      = 56,
+    ACTION_PREPARE_TO_UNSUMMON = 57,
 };
 
 Position const megaeraspawnpos[6] =

@@ -49,6 +49,7 @@ public:
         uint32 othermeleehead;
         uint32 lastdiedhead_convert;
         uint32 othermeleehead_convert;
+        uint32 safedespawnmegaeratimer;
 
         //Special list for Jikun nest order
         //uint64 jikunincubatelist[8];
@@ -183,6 +184,7 @@ public:
             radenGuid             = 0;
             canimaGuid            = 0;
             cvitaGuid             = 0;
+            safedespawnmegaeratimer = 0;
 
             councilGuids.clear();
             mogufontsGuids.clear();
@@ -251,25 +253,26 @@ public:
                 instance->SummonCreature(megaeraheadlist[n], megaeraspawnpos[n]);
         }
 
+        void PrepareToUnsummonMegaera()
+        {
+            if (Creature* megaera = instance->GetCreature(megaeraGuid))
+                megaera->AI()->DoAction(ACTION_MEGAERA_RESET);
+
+            if (!megaeralist.empty())
+                for (std::vector<uint64>::const_iterator itr = megaeralist.begin(); itr != megaeralist.end(); itr++)
+                    if (Creature* mh = instance->GetCreature(*itr))
+                        mh->AI()->DoAction(ACTION_PREPARE_TO_UNSUMMON);
+        }
+
         void ResetMegaera()
         {
             for (uint8 n = 0; n < 3; n++)
                 ElementalBloodofMegaera[n] = 0;
 
-            if (Creature* megaera = instance->GetCreature(megaeraGuid))
-                megaera->AI()->DoAction(ACTION_MEGAERA_RESET);
-
             if (!megaeralist.empty())
-            {
                 for (std::vector<uint64>::const_iterator itr = megaeralist.begin(); itr != megaeralist.end(); itr++)
-                {
                     if (Creature* mh = instance->GetCreature(*itr))
-                    {
-                        SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, mh);
                         mh->DespawnOrUnsummon();
-                    }
-                }
-            }
 
             othermeleehead = 0;
             lastdiedhead_convert = 0;
@@ -720,12 +723,17 @@ public:
                         if (!instance->IsLfr())
                             if (GameObject* chest = megaera->SummonGameObject(218805, 6415.06f, 4527.67f, -209.1780f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 604800))
                                 chest->SetObjectScale(3.0f);
+                        megaera->Kill(megaera);
                     }
                     HandleGameObject(megaeraexdoorGuid, true);
                     break;
                 case FAIL:
-                    DespawnMegaeraSummons();
-                    ResetMegaera();
+                    if (!safedespawnmegaeratimer)
+                    {
+                        PrepareToUnsummonMegaera();
+                        DespawnMegaeraSummons();
+                        safedespawnmegaeratimer = 10000;
+                    }
                     break;
                 default:
                     break;
@@ -881,6 +889,20 @@ public:
                     LoadSecretRaDenDoor(go);
             }
             return true;
+        }
+
+        void Update(uint32 diff)
+        {
+            if (safedespawnmegaeratimer)
+            {
+                if (safedespawnmegaeratimer <= diff)
+                {
+                    safedespawnmegaeratimer = 0;
+                    ResetMegaera();
+                }
+                else
+                    safedespawnmegaeratimer -= diff;
+            }
         }
 
         void ResetHorridonAddGates()

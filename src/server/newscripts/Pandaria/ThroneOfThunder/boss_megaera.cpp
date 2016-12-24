@@ -395,8 +395,12 @@ public:
             {
             case ACTION_UNSUMMON:
                 events.Reset();
+                checkvictim = 0;
+                me->SetAttackStop(false);
                 me->InterruptNonMeleeSpells(true);
+                me->RemoveAllAuras();
                 me->SetStandState(UNIT_STAND_STATE_SUBMERGED);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 events.ScheduleEvent(EVENT_DESPAWN, 2000);
                 break;
             case ACTION_MEGAERA_DONE:
@@ -435,6 +439,16 @@ public:
                     events.ScheduleEvent(EVENT_TORRENT_OF_ICE, 18000 + timermod);
                     break;
                 }
+                break;
+            case ACTION_PREPARE_TO_UNSUMMON:
+                events.Reset();
+                checkvictim = 0;
+                me->SetAttackStop(false);
+                instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+                me->InterruptNonMeleeSpells(true);
+                me->RemoveAllAuras();
+                me->SetDisplayId(11686);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 break;
             }
         }
