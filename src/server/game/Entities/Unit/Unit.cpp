@@ -209,6 +209,9 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     insightCount = 0;
     m_canDualWield = false;
 
+    for (uint8 i = 0; i < 10; ++i)
+        m_exactCritPct[i] = 0.0f;
+
     m_rootTimes = 0;
     m_timeForSpline = 0;
 
@@ -2451,6 +2454,9 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackTy
     // Critical hit chance
     float crit_chance = GetUnitCriticalChance(attType, victim);
 
+    if (crit_chance < 0.0f)
+        crit_chance = 0.0f;
+
     // stunned target cannot dodge and this is check in GetUnitDodgeChance() (returned 0 in this case)
     float dodge_chance = victim->GetUnitDodgeChance();
     float block_chance = victim->GetUnitBlockChance();
@@ -3283,13 +3289,13 @@ float Unit::GetUnitCriticalChance(WeaponAttackType attackType, const Unit* victi
         switch (attackType)
         {
             case BASE_ATTACK:
-                crit = GetFloatValue(PLAYER_CRIT_PERCENTAGE);
+                crit = GetExactCritPct(PLAYER_CRIT_PERCENTAGE - PLAYER_CRIT_PERCENTAGE);
                 break;
             case OFF_ATTACK:
-                crit = GetFloatValue(PLAYER_OFFHAND_CRIT_PERCENTAGE);
+                crit = GetExactCritPct(PLAYER_OFFHAND_CRIT_PERCENTAGE - PLAYER_CRIT_PERCENTAGE);
                 break;
             case RANGED_ATTACK:
-                crit = GetFloatValue(PLAYER_RANGED_CRIT_PERCENTAGE);
+                crit = GetExactCritPct(PLAYER_RANGED_CRIT_PERCENTAGE - PLAYER_CRIT_PERCENTAGE);
                 break;
                 // Just for good manner
             default:
@@ -3320,8 +3326,6 @@ float Unit::GetUnitCriticalChance(WeaponAttackType attackType, const Unit* victi
     else
         crit += critMod;
 
-    if (crit < 0.0f)
-        crit = 0.0f;
     return countCrit ? countCrit: crit;
 }
 
@@ -13085,7 +13089,7 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
 
                 for (int8 i = 0; i < MAX_SPELL_SCHOOL; ++i)
                 {
-                    float _crit = GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + i);
+                    float _crit = GetExactCritPct(PLAYER_SPELL_CRIT_PERCENTAGE1 + i - PLAYER_CRIT_PERCENTAGE);
                     if (_crit > maxCrit)
                         maxCrit = _crit;
                 }
@@ -13096,7 +13100,7 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                 crit_chance = 0.0f;
             // For other schools
             else if (GetTypeId() == TYPEID_PLAYER)
-                crit_chance = GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(schoolMask));
+                crit_chance = GetExactCritPct(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(schoolMask) - PLAYER_CRIT_PERCENTAGE);
             else if(!isAnySummons() || !owner)
             {
                 crit_chance = (float)m_baseSpellCritChance;
@@ -13286,7 +13290,8 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                             }
                             case 23881: // Bloodthirst has double critical chance
                             {
-                                crit_chance *= 2;
+                                if (crit_chance > 0.0f)
+                                    crit_chance *= 2;
                                 break;
                             }
                             case 7384: // Overpower

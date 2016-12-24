@@ -1409,10 +1409,14 @@ class Unit : public WorldObject
         bool IsWithinCombatRange(const Unit* obj, float dist2compare) const;
         bool IsWithinMeleeRange(const Unit* obj, float dist = MELEE_RANGE) const;
         void GetRandomContactPoint(const Unit* target, float &x, float &y, float &z, float distance2dMin, float distance2dMax) const;
+        void SetExactCritPct(uint32 idx, float val) { m_exactCritPct[idx] = val; }
+        float GetExactCritPct(uint32 idx) const { return m_exactCritPct[idx]; }
         uint32 m_extraAttacks;
         bool m_canDualWield;
         float countCrit;
         uint8 insightCount;
+
+        float m_exactCritPct[10];
 
         void _addAttacker(Unit* pAttacker)                  // must be called only from Unit::Attack(Unit*)
         {
