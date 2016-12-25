@@ -231,7 +231,7 @@ public:
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
             me->SetStandState(UNIT_STAND_STATE_SUBMERGED);
             timermod = 0;
-            megaerarampage = false;
+            //megaerarampage = false;
         }
         InstanceScript* instance;
         SummonList summon;
@@ -241,7 +241,7 @@ public:
         uint32 nextheadentry;
         uint32 timermod;
         bool done;
-        bool megaerarampage;
+        //bool megaerarampage;
 
         void Reset()
         {
@@ -313,7 +313,7 @@ public:
                 DoZoneInCombat(me, 150.0f);
                 break;
             case DATA_SPAWN_NEW_HEAD:
-                megaerarampage = true;
+                //megaerarampage = true;
                 DoZoneInCombat(me, 150.0f);
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
                 break;
@@ -322,12 +322,12 @@ public:
 
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
-            //Megaera head die only after rampage remove...
+            /*//Megaera head die only after rampage remove...
             if (damage >= me->GetHealth() && me->HasAura(SPELL_MEGAERA_RAMPAGE))
             {
                 damage = 0;
                 return;
-            }
+            }*/
 
             if (damage >= me->GetHealth() && !done)
             {
@@ -509,9 +509,9 @@ public:
                     case NPC_FROZEN_HEAD_MELEE:
                         UpdateElementalBloodofMegaera();
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                        if (megaerarampage)
+                        /*if (megaerarampage)
                             if (Creature* megaera = me->GetCreature(*me, instance->GetData64(NPC_MEGAERA)))
-                                megaera->AI()->DoAction(ACTION_MEGAERA_RAMPAGE);
+                                megaera->AI()->DoAction(ACTION_MEGAERA_RAMPAGE);*/
                         break;
                     default:
                         break;

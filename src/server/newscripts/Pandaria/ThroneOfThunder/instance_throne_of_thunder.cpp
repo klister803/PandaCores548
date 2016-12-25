@@ -732,7 +732,7 @@ public:
                     {
                         PrepareToUnsummonMegaera();
                         DespawnMegaeraSummons();
-                        safedespawnmegaeratimer = 10000;
+                        safedespawnmegaeratimer = 5000;
                     }
                     break;
                 default:
