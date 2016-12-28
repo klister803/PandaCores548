@@ -195,6 +195,7 @@ enum esSpell
     SPELL_SHADO_PAN_ONSLAUGHT = 149070,
     SPELL_HYDRA_FRENZY        = 139942,
     SPELL_TORRENT_OF_ICE_T    = 139857,
+    SPELL_JIKUN_FLY           = 140013,
 };
 
 enum eGameObjects

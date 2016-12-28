@@ -748,8 +748,13 @@ public:
                         HandleGameObject(megaeraexdoorGuid, true);
                         HandleGameObject(jikunexdoorGuid, true);
                         for (std::vector <uint64>::const_iterator guid = jikunfeatherGuids.begin(); guid != jikunfeatherGuids.end(); guid++)
+                        {
                             if (GameObject* feather = instance->GetGameObject(*guid))
+                            {
+                                feather->SetRespawnTime(604800);
                                 feather->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+                            }
+                        }
                         break;
                     case IN_PROGRESS:
                         HandleGameObject(megaeraexdoorGuid, false);
@@ -888,6 +893,9 @@ public:
                 if (GameObject* go = instance->GetGameObject(secretradendoorGuid))
                     LoadSecretRaDenDoor(go);
             }
+            else if (state == IN_PROGRESS && id > DATA_JI_KUN)
+                DoRemoveAurasDueToSpellOnPlayers(SPELL_JIKUN_FLY); //for safe
+
             return true;
         }
 
