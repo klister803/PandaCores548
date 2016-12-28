@@ -521,6 +521,11 @@ public:
                 break;
             case GO_JI_KUN_FEATHER:
                 jikunfeatherGuids.push_back(go->GetGUID());
+                if (GetBossState(DATA_JI_KUN) == DONE)
+                {
+                    go->SetRespawnTime(604800);
+                    go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+                }
                 break;
             case GO_JI_KUN_EX_DOOR:
                 AddDoor(go, true);
