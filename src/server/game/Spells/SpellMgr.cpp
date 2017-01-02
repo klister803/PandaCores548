@@ -4216,6 +4216,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 115450: // Detox
                     spellInfo->Effects[EFFECT_2]->BasePoints = 0;
                     break;
+                case 118: // Polymorph
                 case 124468: // Mind Flay
                 case 124464: // Shadow Word: Pain
                 case 124467: // Devouring Plague
