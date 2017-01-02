@@ -32,8 +32,11 @@ inline void Trinity::VisibleNotifier::Visit(AnyMapType &m)
 {
     for (auto &object : m)
     {
-        vis_guids.erase(object->GetGUID());
-        i_player.UpdateVisibilityOf(object, i_data, i_visibleNow);
+        if (object)
+        {
+            vis_guids.erase(object->GetGUID());
+            i_player.UpdateVisibilityOf(object, i_data, i_visibleNow);
+        }
     }
 }
 
