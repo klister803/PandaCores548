@@ -37,7 +37,7 @@ enum eData
     DATA_GET_COUNT_RANGE_HEADS,
     DATA_SEND_LAST_DIED_HEAD,
     DATA_GET_ELEMENTAL_BLOOD_OF_MEGAERA,
-    DATA_CREATE_NEST_LIST_ORDER,
+    DATA_ACTIVE_NEXT_NEST,
     DATA_UPDATE_MOD_TIMER,
     DATA_SPAWN_NEW_HEAD,
 };
@@ -170,9 +170,13 @@ enum eCreatures
     //
     //Jikun
     NPC_JI_KUN              = 69712,
-    NPC_YOUNG_EGG_OF_JI_KUN = 68194,
+    //Eggs
+    NPC_YOUNG_EGG_OF_JIKUN  = 68194,
+    NPC_MATURE_EGG_OF_JIKUN = 69628,
+    //
     NPC_HATCHLING           = 68192,
     NPC_INCUBATER           = 69626,
+    NPC_FEED_POOL           = 70216,
     //
     NPC_DURUMU              = 68036,
     NPC_PRIMORDIUS          = 69017,
@@ -235,6 +239,7 @@ enum eGameObjects
     //Ji Kun
     GO_JI_KUN_FEATHER       = 218543,
     GO_JI_KUN_EX_DOOR       = 218888,
+    GO_JIKUN_EGG            = 218382,
     //Durumu
     GO_DURUMU_EX_DOOR       = 218390,
     //Primordius

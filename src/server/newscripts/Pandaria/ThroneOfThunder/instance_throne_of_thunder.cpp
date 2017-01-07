@@ -52,8 +52,9 @@ public:
         uint32 safedespawnmegaeratimer;
 
         //Special list for Jikun nest order
-        //uint64 jikunincubatelist[8];
-        //uint64 nestorderlist[16];
+        uint64 jikunincubatelist[10];
+        uint8 nestmod;
+        uint8 nestnum;
 
         //GameObjects
         uint64 jinrokhpredoorGuid;
@@ -198,11 +199,8 @@ public:
             torrentoficeGuids.clear();
             acidraindGuids.clear();
 
-            //for (uint8 m = 0; m < 16; m++)
-                //nestorderlist[m] = 0;
-
-            //for (uint8 b = 0; b < 8; b++)
-                //jikunincubatelist[b] = 0;
+            /*for (uint8 b = 0; b < 10; b++)
+                jikunincubatelist[b] = 0;*/
 
             for (uint8 n = 0; n < 3; n++)
                 megaeraheadlist[n] = 0;
@@ -284,26 +282,79 @@ public:
                     megaera->SummonCreature(megaeraheadlist[n], megaeraspawnpos[n]);
         }
 
-        void CreateNestOrderList(uint8 raidmode)
+        void ActiveNextNest()
         {
-            /*In 10-man, the activation order is as follows.
-            Activations 1-3 activate a lower nest each.
-            Activations 4-6 activate an upper nest each.
-            Activations 7 and 8 activate a lower nest each.
-            Activations 9 and 10 happen at the same time, and they active a lower and an upper nest.
-            Activations 11 and 12 activate and upper nest each.
-            From this point on, the cycle restarts, but the fight should not last long beyond this point.
+            //Take from DBM
 
-            In 25-man, it is as we describe below.
-            Activations 1-4 activate a lower nest each.
-            Activations 5 and 6 happen at the same time, and they activate a lower and an upper nest.
-            Activations 7 and 8 activate an upper nest each.
-            Activations 9 and 10 happen at the same time, and they activate a lower and an upper nest.
-            Activations 11 and 12 happen at the same time, and they activate a lower and an upper nest.
-            Activations 13 and 14 activate a lower nest each.
-            Activations 15 and 16 happen at the same time, and they active a lower and an up upper nest.
-            This carries on in what appears to be a rather random order until the rest of the fight.
-            */
+            //LFR
+                //NorthEast - low
+                //SouthEast - low
+                //SouthWest - low
+                //NorthEast - up
+                //SouthEast - up
+                //Middle    - up
+
+            //10 normal/heroic 
+                //NorthEast  - low
+                //SouthEast  - low
+                //SouthWest  - low
+                //NorthEast  - up
+                //SouthEast  - up
+                //Middle     - up
+                //NorthEast  - low
+                //SouthEast  - low
+                //SouthWest  - low, NorthEast - up
+                //SouthWest  - low, NorthEast - up
+                //SouthEast  - up
+                //Middle     - up
+                //NorthEast  - low
+                //SouthEast  - low
+                //SouthWest  - low, NorthEast - up
+                //SouthEast  - up
+                //Middle     - up
+
+            //25 normal
+                //NorthEast  - low
+                //SouthEast  - low
+                //SouthWest  - low
+                //West       - low
+                //NorthWest  - low, NorthEast - up
+                //SouthEast  - up
+                //Middle     - up
+                //NorthEast  - low, SouthWest - up
+                //SouthEast  - low, NorthWest - up
+                //SouthWest  - low
+                //West       - low
+                //NorthWest  - low, NorthEast - up
+                //SouthEast  - up
+                //NorthEast  - low, Middle    - up
+                //SouthEast  - low, SouthWest - up
+                //SouthWest  - low, NorthWest - up
+                //West       - low
+                //NorthWest  - low, NorthEast - up
+                //NorthEast  - low, SouthEast - up
+                //SouthEast  - low, MIddle    - up
+
+            //25 heroic
+                //NorthEast	- low
+                //SouthEast - low
+                //SouthWest	- low
+                //West      - low, NorthEast  - up
+                //NorthWest - low, SouthEast  - up
+                //Middle
+                //NorthEast - low, SouthWest  - up
+                //SouthEast - low, NorthWest  - up
+                //SouthWest	- low
+                //NorthEast - up, West        - low
+                //SouthEast - up, NorthWest   - low
+                //NorthEast - low, Middle     - up
+                //SouthEast - low, SouthWest  - low
+                //NorthEast - up, SouthWest   - low, NorthWest - up
+                //SouthEast - up, West        - low
+                //NorthEast - low, Middle25   - up, NorthWest  - low
+                //SouthEast - low, SouthWest  - up
+                //NorthEast - up, SouthWest   - low, NorthWest - up
+                //NorthWest - low, SouthEast  - up, NorthEast  - low
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -397,10 +448,14 @@ public:
                     jikunincubatelist[4] = creature->GetGUID();
                 else if (creature->GetPositionZ() == 43.440941f)  //south - west up
                     jikunincubatelist[5] = creature->GetGUID();
-                else if (creature->GetPositionZ() == -70.741302f) //west   low
+                else if (creature->GetPositionZ() == -70.741302f) //west  - low
                     jikunincubatelist[6] = creature->GetGUID();
-                else if (creature->GetPositionZ() == -59.078201f) //north low
+                else if (creature->GetPositionZ() == 66.061798f) //north  - west up
                     jikunincubatelist[7] = creature->GetGUID();
+                else if (creature->GetPositionZ() == -59.078201f) //north - low
+                    jikunincubatelist[8] = creature->GetGUID();
+                else if (creature->GetPositionZ() == 69.920601f) //center - up
+                    jikunincubatelist[9] = creature->GetGUID();
                 break;*/
             case NPC_DURUMU:  
                 durumuGuid = creature->GetGUID();
@@ -750,6 +805,7 @@ public:
                     {
                     case NOT_STARTED:
                     case DONE:
+                        nestnum = 0;
                         HandleGameObject(megaeraexdoorGuid, true);
                         HandleGameObject(jikunexdoorGuid, true);
                         for (std::vector <uint64>::const_iterator guid = jikunfeatherGuids.begin(); guid != jikunfeatherGuids.end(); guid++)
@@ -998,8 +1054,8 @@ public:
                     break;
                 }
                 break;
-            case DATA_CREATE_NEST_LIST_ORDER:
-                CreateNestOrderList(data);
+            case DATA_ACTIVE_NEXT_NEST:
+                ActiveNextNest();
                 break;
             }
         }

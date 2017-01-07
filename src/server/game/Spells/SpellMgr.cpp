@@ -5087,6 +5087,10 @@ void SpellMgr::LoadSpellCustomAttr()
                             eff->TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
                     break;
                 }
+                //JiKun
+                case 134338:
+                    spellInfo->Effects[0]->TargetA = TARGET_DEST_DEST;
+                    break;
                 //Primordius
                 case 136220: //Acidic explosion tr ef dmg
                 {

@@ -21,7 +21,6 @@
 
 enum eSpells
 {
-    //Special spells (feather - fly)
     SPELL_LESSON_OF_ICARUS      = 140571,
     SPELL_DAEDALIAN_WINGS       = 134339,//ovveride spells aura
     SPELL_INCUBATE_ZONE         = 137526,
@@ -30,12 +29,6 @@ enum eSpells
     SPELL_FEATHER_AT            = 134338,
 
     SPELL_JUMP_TO_B_PLATFORM    = 138360,
-
-    //From sniffs
-    //139168 м€гко но уверенно
-    //138360 jump to platform AT
-    //138406 заставить игрока прыгнуть на платформу
-
     SPELL_JI_KUN_FEATHER_AURA   = 140014,
     SPELL_JI_KUN_FEATHER_USE_EF = 140013,
 
@@ -65,19 +58,20 @@ public:
         {
             instance = creature->GetInstanceScript();
         }
-
         InstanceScript* instance;
+        uint8 nestordermod;
 
         void Reset()
         {
             _Reset();
+            nestordermod = 0;
             me->SetReactState(REACT_DEFENSIVE);
         }
 
         void EnterCombat(Unit* who)
         {
             _EnterCombat();
-            //instance->SetData(DATA_CREATE_NEST_LIST_ORDER, me->GetMap()->Is25ManRaid() ? 1 : 0);
+            //insnce->SetData(DATA_ACTIVE_NEXT_NEST, nestordermod);
             events.ScheduleEvent(EVENT_CAW, 35000);
             events.ScheduleEvent(EVENT_TALON_RAKE, 20000);
             events.ScheduleEvent(EVENT_QUILLS, 60000);
@@ -153,7 +147,7 @@ public:
         npc_incubaterAI(Creature* creature) : ScriptedAI(creature)
         {
             pInstance = creature->GetInstanceScript();
-            me->SetDisplayId(1126);
+            me->SetDisplayId(11686);
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
         }
@@ -190,13 +184,15 @@ public:
 
         void Reset(){}
 
-        void JustDied(Unit* killer)
+        /*void JustDied(Unit* killer)
         {
-            //DoCast(me, SPELL_FEATHER_AT, true);
-            /*float x, y;
-            GetPosInRadiusWithRandomOrientation(me, 3.0f, x, y);
-            me->SummonCreature(NPC_HATCHLING, x, y, me->GetPositionZ() + 3.0f);*/
-        }
+            if (Creature* incubate = me->FindNearestCreature(NPC_INCUBATER, 10.0f, true))
+            {
+                float x, y;
+                GetPosInRadiusWithRandomOrientation(me, 2.0f, x, y);
+                incubate->CastSpell(x, y, incubate->GetPositionZ(), SPELL_FEATHER_AT, true);
+            }
+        }*/
 
         void EnterCombat(Unit* who){}
 
@@ -264,13 +260,6 @@ public:
             player->CastSpell(player, SPELL_JIKUN_FLY, true);
 
         return true;
-
-        /*if (player->HasAura(SPELL_LESSON_OF_ICARUS))
-            return true;
-
-        player->CastCustomSpell(SPELL_DAEDALIAN_WINGS, SPELLVALUE_AURA_STACK, 4, player);
-        go->Delete();
-        return false;*/
     }
 };
 
@@ -326,6 +315,50 @@ public:
     }
 };
 
+//134339
+class spell_daedalian_wings : public SpellScriptLoader
+{
+public:
+    spell_daedalian_wings() : SpellScriptLoader("spell_daedalian_wings") { }
+
+    class spell_daedalian_wings_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_daedalian_wings_AuraScript);
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetTarget())
+                if (Aura* aura = GetTarget()->GetAura(SPELL_DAEDALIAN_WINGS))
+                    if (aura->GetStackAmount() < 4)
+                        aura->SetStackAmount(4);
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_daedalian_wings_AuraScript::OnApply, EFFECT_0, SPELL_AURA_OVERRIDE_SPELLS, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_daedalian_wings_AuraScript();
+    }
+};
+
+//8848
+class at_jikun_precipice : public AreaTriggerScript
+{
+public:
+    at_jikun_precipice() : AreaTriggerScript("at_jikun_precipice") { }
+
+    bool OnTrigger(Player* player, AreaTriggerEntry const* areaTrigger, bool enter)
+    {
+        if (enter)
+            player->NearTeleportTo(6139.60f, 4339.67f, -31.8621f, 0.0f);
+        return true;
+    }
+};
+
 void AddSC_boss_jikun()
 {
     new boss_jikun();
@@ -334,4 +367,6 @@ void AddSC_boss_jikun()
     new npc_jump_to_boss_platform();
     new go_ji_kun_feather();
     new spell_jikun_fly();
+    new spell_daedalian_wings();
+    new at_jikun_precipice();
 }
