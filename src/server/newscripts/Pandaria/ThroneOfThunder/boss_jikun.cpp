@@ -45,6 +45,7 @@ enum eEvents
     EVENT_CAW                   = 1,
     EVENT_QUILLS                = 2, 
     EVENT_TALON_RAKE            = 3,
+    EVENT_ACTIVE_NEST           = 4,
 };
 
 class boss_jikun : public CreatureScript
@@ -59,19 +60,18 @@ public:
             instance = creature->GetInstanceScript();
         }
         InstanceScript* instance;
-        uint8 nestordermod;
 
         void Reset()
         {
             _Reset();
-            nestordermod = 0;
             me->SetReactState(REACT_DEFENSIVE);
+            //me->SetReactState(REACT_PASSIVE);
         }
 
         void EnterCombat(Unit* who)
         {
             _EnterCombat();
-            //insnce->SetData(DATA_ACTIVE_NEXT_NEST, nestordermod);
+            //events.ScheduleEvent(EVENT_ACTIVE_NEST, 10000);
             events.ScheduleEvent(EVENT_CAW, 35000);
             events.ScheduleEvent(EVENT_TALON_RAKE, 20000);
             events.ScheduleEvent(EVENT_QUILLS, 60000);
@@ -96,6 +96,10 @@ public:
             {
                 switch (eventId)
                 {
+                case EVENT_ACTIVE_NEST:
+                    instance->SetData(DATA_ACTIVE_NEXT_NEST, 0);
+                    events.ScheduleEvent(EVENT_ACTIVE_NEST, 10000);
+                    break;
                 case EVENT_TALON_RAKE:
                     if (me->getVictim())
                     {
@@ -149,13 +153,82 @@ public:
             pInstance = creature->GetInstanceScript();
             me->SetDisplayId(11686);
             me->SetReactState(REACT_PASSIVE);
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE);
         }
         InstanceScript* pInstance;
 
         void Reset(){}
 
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (damage >= me->GetHealth())
+                damage = 0;
+        }
+
+        void SetData(uint32 type, uint32 data)
+        {
+            switch (type)
+            {
+            case DATA_ACTIVE_NEST:
+            {
+                DoCast(me, SPELL_INCUBATE_ZONE, true);
+                std::list<Creature*> egglist;
+                egglist.clear();
+                GetCreatureListWithEntryInGrid(egglist, me, NPC_YOUNG_EGG_OF_JIKUN, 20.0f);
+                uint8 maxsize = me->GetMap()->Is25ManRaid() ? 5 : 4;
+                if (egglist.size() > maxsize)
+                    egglist.resize(maxsize);
+                if (!egglist.empty())
+                {
+                    for (std::list<Creature*>::const_iterator itr = egglist.begin(); itr != egglist.end(); itr++)
+                    {
+                        (*itr)->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                        (*itr)->CastSpell(*itr, SPELL_INCUBATE_TARGET_AURA, true);
+                    }
+                }
+            }
+            break;
+            case DATA_RESET_NEST:
+                me->RemoveAurasDueToSpell(SPELL_INCUBATE_ZONE);
+                std::list<Creature*> egglist;
+                egglist.clear();
+                GetCreatureListWithEntryInGrid(egglist, me, NPC_YOUNG_EGG_OF_JIKUN, 20.0f);
+                GetCreatureListWithEntryInGrid(egglist, me, NPC_MATURE_EGG_OF_JIKUN, 20.0f);
+
+                if (!egglist.empty())
+                {
+                    for (std::list<Creature*>::const_iterator itr = egglist.begin(); itr != egglist.end(); itr++)
+                    {
+                        if (!(*itr)->isAlive())
+                            (*itr)->Respawn();
+                        else
+                        {
+                            (*itr)->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                            (*itr)->RemoveAurasDueToSpell(SPELL_INCUBATE_TARGET_AURA);
+                        }
+                    }
+                }
+
+                std::list<GameObject*> _egglist;
+                _egglist.clear();
+                GetGameObjectListWithEntryInGrid(_egglist, me, GO_JIKUN_EGG, 20.0f);
+                if (!_egglist.empty())
+                    for (std::list<GameObject*>::const_iterator Itr = _egglist.begin(); Itr != _egglist.end(); Itr++)
+                        (*Itr)->SetGoState(GO_STATE_READY);
+
+                std::list<AreaTrigger*> atlist;
+                atlist.clear();
+                me->GetAreaTriggersWithEntryInRange(atlist, 4628, me->GetGUID(), 15.0f);
+                if (!atlist.empty())
+                    for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
+                        (*itr)->RemoveFromWorld();
+                break;
+            }
+        }
+
         void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
 
         void UpdateAI(uint32 diff){}
     };
@@ -182,17 +255,21 @@ public:
         }
         InstanceScript* pInstance;
 
-        void Reset(){}
-
-        /*void JustDied(Unit* killer)
+        void Reset()
         {
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+        }
+
+        void JustDied(Unit* killer)
+        {
+            me->RemoveAurasDueToSpell(SPELL_INCUBATE_TARGET_AURA);
             if (Creature* incubate = me->FindNearestCreature(NPC_INCUBATER, 10.0f, true))
             {
                 float x, y;
                 GetPosInRadiusWithRandomOrientation(me, 2.0f, x, y);
                 incubate->CastSpell(x, y, incubate->GetPositionZ(), SPELL_FEATHER_AT, true);
             }
-        }*/
+        }
 
         void EnterCombat(Unit* who){}
 
@@ -202,6 +279,38 @@ public:
     CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_young_egg_of_jikunAI(creature);
+    }
+};
+
+//69628
+class npc_mature_egg_of_jikun : public CreatureScript
+{
+public:
+    npc_mature_egg_of_jikun() : CreatureScript("npc_mature_egg_of_jikun") {}
+
+    struct npc_mature_egg_of_jikunAI : public ScriptedAI
+    {
+        npc_mature_egg_of_jikunAI(Creature* creature) : ScriptedAI(creature)
+        {
+            pInstance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+        }
+        InstanceScript* pInstance;
+
+        void Reset()
+        {
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_mature_egg_of_jikunAI(creature);
     }
 };
 
@@ -364,6 +473,7 @@ void AddSC_boss_jikun()
     new boss_jikun();
     new npc_incubater();
     new npc_young_egg_of_jikun();
+    new npc_mature_egg_of_jikun();
     new npc_jump_to_boss_platform();
     new go_ji_kun_feather();
     new spell_jikun_fly();

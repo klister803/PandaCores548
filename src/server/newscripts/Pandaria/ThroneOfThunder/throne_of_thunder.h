@@ -40,6 +40,8 @@ enum eData
     DATA_ACTIVE_NEXT_NEST,
     DATA_UPDATE_MOD_TIMER,
     DATA_SPAWN_NEW_HEAD,
+    DATA_ACTIVE_NEST,
+    DATA_RESET_NEST,
 };
 
 enum esAction

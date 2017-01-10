@@ -53,8 +53,10 @@ public:
 
         //Special list for Jikun nest order
         uint64 jikunincubatelist[10];
+        std::vector<uint8>nestnumlist;
         uint8 nestmod;
         uint8 nestnum;
+        uint8 nestmaxcount;
 
         //GameObjects
         uint64 jinrokhpredoorGuid;
@@ -128,6 +130,30 @@ public:
             SetBossNumber(16);
             LoadDoorData(doorData);
 
+            nestnum = 0;
+            switch (instance->GetDifficulty())
+            {
+            case RAID_TOOL_DIFFICULTY:
+                nestmod = 1;
+                nestmaxcount = 5;
+                break;
+            case MAN10_DIFFICULTY:
+            case MAN10_HEROIC_DIFFICULTY:
+                nestmod = 2;
+                nestmaxcount = 16;
+                break;
+            case MAN25_DIFFICULTY:
+                nestmod = 3;
+                nestmaxcount = 20;
+                break;
+            case MAN25_HEROIC_DIFFICULTY:
+                nestmod = 4;
+                nestmaxcount = 19;
+                break;
+            default:
+                break;
+            }
+
             //GameObject
             jinrokhentdoorGuid    = 0;
             jinrokhexdoorGuid     = 0;
@@ -199,8 +225,8 @@ public:
             torrentoficeGuids.clear();
             acidraindGuids.clear();
 
-            /*for (uint8 b = 0; b < 10; b++)
-                jikunincubatelist[b] = 0;*/
+            for (uint8 b = 0; b < 10; b++)
+                jikunincubatelist[b] = 0;
 
             for (uint8 n = 0; n < 3; n++)
                 megaeraheadlist[n] = 0;
@@ -282,81 +308,6 @@ public:
                     megaera->SummonCreature(megaeraheadlist[n], megaeraspawnpos[n]);
         }
 
-        void ActiveNextNest()
-        {
-            //Take from DBM
-
-            //LFR
-                //NorthEast - low
-                //SouthEast - low
-                //SouthWest - low
-                //NorthEast - up
-                //SouthEast - up
-                //Middle    - up
-
-            //10 normal/heroic 
-                //NorthEast  - low
-                //SouthEast  - low
-                //SouthWest  - low
-                //NorthEast  - up
-                //SouthEast  - up
-                //Middle     - up
-                //NorthEast  - low
-                //SouthEast  - low
-                //SouthWest  - low, NorthEast - up
-                //SouthWest  - low, NorthEast - up
-                //SouthEast  - up
-                //Middle     - up
-                //NorthEast  - low
-                //SouthEast  - low
-                //SouthWest  - low, NorthEast - up
-                //SouthEast  - up
-                //Middle     - up
-
-            //25 normal
-                //NorthEast  - low
-                //SouthEast  - low
-                //SouthWest  - low
-                //West       - low
-                //NorthWest  - low, NorthEast - up
-                //SouthEast  - up
-                //Middle     - up
-                //NorthEast  - low, SouthWest - up
-                //SouthEast  - low, NorthWest - up
-                //SouthWest  - low
-                //West       - low
-                //NorthWest  - low, NorthEast - up
-                //SouthEast  - up
-                //NorthEast  - low, Middle    - up
-                //SouthEast  - low, SouthWest - up
-                //SouthWest  - low, NorthWest - up
-                //West       - low
-                //NorthWest  - low, NorthEast - up
-                //NorthEast  - low, SouthEast - up
-                //SouthEast  - low, MIddle    - up
-
-            //25 heroic
-                //NorthEast	- low
-                //SouthEast - low
-                //SouthWest	- low
-                //West      - low, NorthEast  - up
-                //NorthWest - low, SouthEast  - up
-                //Middle
-                //NorthEast - low, SouthWest  - up
-                //SouthEast - low, NorthWest  - up
-                //SouthWest	- low
-                //NorthEast - up, West        - low
-                //SouthEast - up, NorthWest   - low
-                //NorthEast - low, Middle     - up
-                //SouthEast - low, SouthWest  - low
-                //NorthEast - up, SouthWest   - low, NorthWest - up
-                //SouthEast - up, West        - low
-                //NorthEast - low, Middle25   - up, NorthWest  - low
-                //SouthEast - low, SouthWest  - up
-                //NorthEast - up, SouthWest   - low, NorthWest - up
-                //NorthWest - low, SouthEast  - up, NorthEast  - low
-        }
-
         void OnCreatureCreate(Creature* creature)
         {
             switch (creature->GetEntry())
@@ -435,28 +386,28 @@ public:
             case NPC_JI_KUN:  
                 jikunGuid = creature->GetGUID();
                 break;
-            /*case NPC_INCUBATER:
-                if (creature->GetPositionZ() == -70.551804f)      //north - east low  all time first
+            case NPC_INCUBATER:
+                if (creature->GetPositionZ() == -70.551804f)      //NorthEast low
                     jikunincubatelist[0] = creature->GetGUID();
-                else if (creature->GetPositionZ() == 41.017502f)  //north - east up
+                else if (creature->GetPositionZ() == 41.017502f)  //NorthEast up
                     jikunincubatelist[1] = creature->GetGUID();
-                else if (creature->GetPositionZ() == 37.581402f)  //north - east up
+                else if (creature->GetPositionZ() == 37.581402f)  //SouthEast up
                     jikunincubatelist[2] = creature->GetGUID();
-                else if (creature->GetPositionZ() == -101.667999f)//south - east low
+                else if (creature->GetPositionZ() == -101.667999f)//SouthEast low
                     jikunincubatelist[3] = creature->GetGUID();
-                else if (creature->GetPositionZ() == -93.935402f) //south - west low
+                else if (creature->GetPositionZ() == -93.935402f) //SouthWest low
                     jikunincubatelist[4] = creature->GetGUID();
-                else if (creature->GetPositionZ() == 43.440941f)  //south - west up
+                else if (creature->GetPositionZ() == 43.440941f)  //SouthWest up
                     jikunincubatelist[5] = creature->GetGUID();
-                else if (creature->GetPositionZ() == -70.741302f) //west  - low
+                else if (creature->GetPositionZ() == -70.741302f) //West low
                     jikunincubatelist[6] = creature->GetGUID();
-                else if (creature->GetPositionZ() == 66.061798f) //north  - west up
+                else if (creature->GetPositionZ() == 66.061798f)  //NorthWest up
                     jikunincubatelist[7] = creature->GetGUID();
-                else if (creature->GetPositionZ() == -59.078201f) //north - low
+                else if (creature->GetPositionZ() == -59.078201f) //NorthWest low
                     jikunincubatelist[8] = creature->GetGUID();
-                else if (creature->GetPositionZ() == 69.920601f) //center - up
+                else if (creature->GetPositionZ() == 69.920601f)  //Middle up
                     jikunincubatelist[9] = creature->GetGUID();
-                break;*/
+                break;
             case NPC_DURUMU:  
                 durumuGuid = creature->GetGUID();
                 break;
@@ -581,6 +532,9 @@ public:
                     go->SetRespawnTime(604800);
                     go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
                 }
+                break;
+            case GO_JIKUN_EGG:
+                go->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
                 break;
             case GO_JI_KUN_EX_DOOR:
                 AddDoor(go, true);
@@ -804,9 +758,11 @@ public:
                     switch (state)
                     {
                     case NOT_STARTED:
-                    case DONE:
+                        //ResetAllJiKunNests();
                         nestnum = 0;
                         HandleGameObject(megaeraexdoorGuid, true);
+                        break;
+                    case DONE:
                         HandleGameObject(jikunexdoorGuid, true);
                         for (std::vector <uint64>::const_iterator guid = jikunfeatherGuids.begin(); guid != jikunfeatherGuids.end(); guid++)
                         {
@@ -1279,6 +1235,273 @@ public:
                 return true;
             }
             return false;
+        }
+
+        //JiKun Nest Order
+        void ActiveNextNest()
+        {
+            nestnumlist.clear();
+            switch (nestmod)
+            {
+            case 1: //Lfr
+            {
+                switch (nestnum)
+                {
+                case 0:
+                    nestnumlist.push_back(0); //NorthEast low
+                    break;
+                case 1:
+                    nestnumlist.push_back(3); //SouthWest low
+                    break;
+                case 2:
+                    nestnumlist.push_back(4); //SouthWest low
+                    break;
+                case 3:
+                    nestnumlist.push_back(1); //NorthEast up
+                    break;
+                case 4:
+                    nestnumlist.push_back(2); //SouthEast up
+                    break;
+                case 5:
+                    nestnumlist.push_back(9); //Middle up
+                    break;
+                }
+                break;
+            }
+            case 2: //10 normal/heroic
+            {
+                switch (nestnum)
+                {
+                case 0:
+                    nestnumlist.push_back(0); //NorthEast low
+                    break;
+                case 1:
+                    nestnumlist.push_back(3); //SouthEast low
+                    break;
+                case 2:
+                    nestnumlist.push_back(4); //SouthWest low
+                    break;
+                case 3:
+                    nestnumlist.push_back(1); //NorthEast up
+                    break;
+                case 4:
+                    nestnumlist.push_back(2); //SouthEast up
+                    break;
+                case 5:
+                    nestnumlist.push_back(9); //Middle up
+                    break;
+                case 6:
+                    nestnumlist.push_back(0); //NorthEast low
+                    break;
+                case 7:
+                    nestnumlist.push_back(3); //SouthEast low
+                    break;
+                case 8:
+                    nestnumlist.push_back(4); //SouthWest low
+                    nestnumlist.push_back(1); //NorthEast up
+                    break;
+                case 9:
+                    nestnumlist.push_back(2); //SouthEast up
+                    break;
+                case 10:
+                    nestnumlist.push_back(9); //Middle up
+                    break;
+                case 11:
+                    nestnumlist.push_back(0); //NorthEast low
+                    break;
+                case 12:
+                    nestnumlist.push_back(3); //SouthEast low
+                    break;
+                case 13:
+                    nestnumlist.push_back(4); //SouthWest low
+                    nestnumlist.push_back(1); //NorthEast up
+                    break;
+                case 14:
+                    nestnumlist.push_back(2); //SouthEast up
+                    break;
+                case 15:
+                    nestnumlist.push_back(9); //Middle up
+                    break;
+                }
+                break;
+            }
+            case 3: //25 normal
+            {
+                switch (nestnum)
+                {
+                case 0:
+                    nestnumlist.push_back(0); //NorthEast low
+                    break;
+                case 1:
+                    nestnumlist.push_back(3); //SouthEast low
+                    break;
+                case 2:
+                    nestnumlist.push_back(4); //SouthWest low
+                    break;
+                case 3:
+                    nestnumlist.push_back(6); //West low
+                    break;
+                case 4:
+                    nestnumlist.push_back(8); //NorthWest low
+                    nestnumlist.push_back(1); //NorthEast up
+                    break;
+                case 5:
+                    nestnumlist.push_back(2); //SouthEast up
+                    break;
+                case 6:
+                    nestnumlist.push_back(9); //Middle up
+                    break;
+                case 7:
+                    nestnumlist.push_back(0); //NorthEast low
+                    nestnumlist.push_back(5); //SouthWest up
+                    break;
+                case 8:
+                    nestnumlist.push_back(3); //SouthEast low
+                    nestnumlist.push_back(7); //NorthWest up
+                    break;
+                case 9:
+                    nestnumlist.push_back(4); //SouthWest low
+                    break;
+                case 10:
+                    nestnumlist.push_back(6); //West low
+                    break;
+                case 11:
+                    nestnumlist.push_back(8); //NorthWest low
+                    nestnumlist.push_back(1); //NorthEast up
+                    break;
+                case 12:
+                    nestnumlist.push_back(2); //SouthEast up
+                    break;
+                case 13:
+                    nestnumlist.push_back(0); //NorthEast low
+                    nestnumlist.push_back(9); //Middle up
+                    break;
+                case 14:
+                    nestnumlist.push_back(3); //SouthEast low
+                    nestnumlist.push_back(5); //SouthWest up
+                    break;
+                case 15:
+                    nestnumlist.push_back(4); //SouthWest low
+                    nestnumlist.push_back(7); //NorthWest up
+                    break;
+                case 16:
+                    nestnumlist.push_back(6); //West low
+                    break;
+                case 17:
+                    nestnumlist.push_back(8); //NorthWest low
+                    nestnumlist.push_back(1); //NorthEast up
+                    break;
+                case 18:
+                    nestnumlist.push_back(0); //NorthEast low
+                    nestnumlist.push_back(2); //SouthEast up
+                    break;
+                case 19:
+                    nestnumlist.push_back(3); //SouthEast low
+                    nestnumlist.push_back(9); //MIddle up
+                    break;
+                }
+                break;
+            }
+            case 4: //25 heroic
+            {
+                switch (nestnum)
+                {
+                case 0:
+                    nestnumlist.push_back(0); //NorthEast low
+                    break;
+                case 1:
+                    nestnumlist.push_back(3); //SouthEast low
+                    break;
+                case 2:
+                    nestnumlist.push_back(4); //SouthWest low
+                    break;
+                case 3:
+                    nestnumlist.push_back(6); //West low
+                    nestnumlist.push_back(1); //NorthEast up
+                    break;
+                case 4:
+                    nestnumlist.push_back(8); //NorthWest low
+                    nestnumlist.push_back(2); //SouthEast up
+                    break;
+                case 5:
+                    nestnumlist.push_back(9); //Middle
+                    break;
+                case 6:
+                    nestnumlist.push_back(0); //NorthEast low
+                    nestnumlist.push_back(5); //SouthWest up
+                    break;
+                case 7:
+                    nestnumlist.push_back(3); //SouthEast low
+                    nestnumlist.push_back(7); //NorthWest up
+                    break;
+                case 8:
+                    nestnumlist.push_back(4); //SouthWest low
+                    break;
+                case 9:
+                    nestnumlist.push_back(1); //NorthEast up
+                    nestnumlist.push_back(6); //West low
+                    break;
+                case 10:
+                    nestnumlist.push_back(2); //SouthEast up 
+                    nestnumlist.push_back(8); //NorthWest low
+                    break;
+                case 11:
+                    nestnumlist.push_back(0); //NorthEast low
+                    nestnumlist.push_back(9); //Middle up
+                    break;
+                case 12:
+                    nestnumlist.push_back(3); //SouthEast low
+                    nestnumlist.push_back(4); //SouthWest low
+                    break;
+                case 13:
+                    nestnumlist.push_back(1); //NorthEast up
+                    nestnumlist.push_back(4); //SouthWest low
+                    nestnumlist.push_back(7); //NorthWest up
+                    break;
+                case 14:
+                    nestnumlist.push_back(2); //SouthEast up 
+                    nestnumlist.push_back(6); //West low
+                    break;
+                case 15:
+                    nestnumlist.push_back(0); //NorthEast low
+                    nestnumlist.push_back(9); //Middle up
+                    nestnumlist.push_back(8); //NorthWest low
+                    break;
+                case 16:
+                    nestnumlist.push_back(3); //SouthEast low
+                    nestnumlist.push_back(5); //SouthWest up
+                    break;
+                case 17:
+                    nestnumlist.push_back(1); //NorthEast up
+                    nestnumlist.push_back(4); //SouthWest low
+                    nestnumlist.push_back(7); //NorthWest up
+                    break;
+                case 18:
+                    nestnumlist.push_back(8); //NorthWest low
+                    nestnumlist.push_back(2); //SouthEast up
+                    nestnumlist.push_back(0); //NorthEast low
+                    break;
+                }
+            }
+            break;
+            }
+
+            if (!nestnumlist.empty())
+                for (std::vector < uint8 >::const_iterator itr = nestnumlist.begin(); itr != nestnumlist.end(); itr++)
+                    if (Creature* incubate = instance->GetCreature(jikunincubatelist[*itr]))
+                        incubate->AI()->SetData(DATA_ACTIVE_NEST, 0);
+
+            nestnumlist.clear();
+            nestnum++;
+            if (nestnum >= nestmaxcount)
+                nestnum = 0;
+        }
+
+        void ResetAllJiKunNests()
+        {
+            for (uint8 n = 0; n < 10; n++)
+                if (Creature* incubater = instance->GetCreature(jikunincubatelist[n]))
+                    incubater->AI()->SetData(DATA_RESET_NEST, 0);
         }
 
         std::string GetSaveData()
