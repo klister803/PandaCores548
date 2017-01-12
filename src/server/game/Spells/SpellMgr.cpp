@@ -5088,7 +5088,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 }
                 //JiKun
-                case 134338:
+                case 134338: //Feather AT
                     spellInfo->Effects[0]->TargetA = TARGET_DEST_DEST;
                     break;
                 //Primordius

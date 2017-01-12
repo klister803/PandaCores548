@@ -435,7 +435,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
         // movement anticheat
         plrMover->m_anti_JumpCount = 0;
         plrMover->m_anti_JumpBaseZ = 0;
-        if(!plrMover->Zliquid_status)
+        if(!plrMover->Zliquid_status && plrMover->GetMapId() != 1098)
             plrMover->HandleFall(movementInfo);
     }
 

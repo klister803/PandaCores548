@@ -38,6 +38,15 @@ enum eSpells
     SPELL_TALON_RAKE            = 134366,
     SPELL_INFECTED_TALONS       = 140092,
     SPELL_DOWN_DRAFT_AT         = 134370,
+    SPELL_DOWN_DRAFT            = 134370,
+
+    SPELL_SAFE_NET_TRIGGER      = 136524,//summon fallcatcher
+    SPELL_GENTLE_YET_FIRM       = 139168,
+    SPELL_CAST_FILTER           = 141062,
+
+    //Other Spells
+    SPELL_PARACHUTE              = 45472,
+    SPELL_PARACHUTE_BUFF         = 44795,
 };
 
 enum eEvents
@@ -46,6 +55,7 @@ enum eEvents
     EVENT_QUILLS                = 2, 
     EVENT_TALON_RAKE            = 3,
     EVENT_ACTIVE_NEST           = 4,
+    EVENT_FALLCATCHER_IN_POS    = 5,
 };
 
 class boss_jikun : public CreatureScript
@@ -148,7 +158,7 @@ public:
 
     struct npc_incubaterAI : public ScriptedAI
     {
-        npc_incubaterAI(Creature* creature) : ScriptedAI(creature)
+        npc_incubaterAI(Creature* creature) : ScriptedAI(creature), summon(me)
         {
             pInstance = creature->GetInstanceScript();
             me->SetDisplayId(11686);
@@ -156,8 +166,14 @@ public:
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE);
         }
         InstanceScript* pInstance;
+        SummonList summon;
 
         void Reset(){}
+
+        void JustSummoned(Creature* sum)
+        {
+            summon.Summon(sum);
+        }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
@@ -189,6 +205,7 @@ public:
             }
             break;
             case DATA_RESET_NEST:
+                summon.DespawnAll();
                 me->RemoveAurasDueToSpell(SPELL_INCUBATE_ZONE);
                 std::list<Creature*> egglist;
                 egglist.clear();
@@ -263,11 +280,23 @@ public:
         void JustDied(Unit* killer)
         {
             me->RemoveAurasDueToSpell(SPELL_INCUBATE_TARGET_AURA);
-            if (Creature* incubate = me->FindNearestCreature(NPC_INCUBATER, 10.0f, true))
+            if (killer != me)  //egg destroy
             {
-                float x, y;
-                GetPosInRadiusWithRandomOrientation(me, 2.0f, x, y);
-                incubate->CastSpell(x, y, incubate->GetPositionZ(), SPELL_FEATHER_AT, true);
+                if (Creature* incubate = me->FindNearestCreature(NPC_INCUBATER, 20.0f, true))
+                {
+                    float x, y;
+                    GetPosInRadiusWithRandomOrientation(me, 2.0f, x, y);
+                    incubate->CastSpell(x, y, incubate->GetPositionZ(), SPELL_FEATHER_AT, true);
+                }
+            }
+            else               //incubate complete
+            {
+                if (Creature* incubate = me->FindNearestCreature(NPC_INCUBATER, 20.0f, true))
+                {
+                    float x, y;
+                    GetPosInRadiusWithRandomOrientation(me, 2.0f, x, y);
+                    incubate->SummonCreature(NPC_HATCHLING, x, y, me->GetPositionZ() + 1.0f);
+                }
             }
         }
 
@@ -279,6 +308,38 @@ public:
     CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_young_egg_of_jikunAI(creature);
+    }
+};
+
+//68192
+class npc_hatchling : public CreatureScript
+{
+public:
+    npc_hatchling() : CreatureScript("npc_hatchling") { }
+
+    struct npc_hatchlingAI : public ScriptedAI
+    {
+        npc_hatchlingAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            me->SetReactState(REACT_PASSIVE);
+        }
+
+        void JustDied(Unit* killer)
+        {
+            if (Creature* incubate = me->FindNearestCreature(NPC_INCUBATER, 30.0f, true))
+                incubate->CastSpell(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), SPELL_FEATHER_AT, true);
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_hatchlingAI(pCreature);
     }
 };
 
@@ -350,6 +411,98 @@ public:
     CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_jump_to_boss_platformAI(creature);
+    }
+};
+
+class npc_fall_catcher : public CreatureScript
+{
+public:
+    npc_fall_catcher() : CreatureScript("npc_fall_catcher") {}
+
+    struct npc_fall_catcherAI : public ScriptedAI
+    {
+        npc_fall_catcherAI(Creature* creature) : ScriptedAI(creature)
+        {
+            pInstance = creature->GetInstanceScript();
+            me->SetDisplayId(11686);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE);
+        }
+        InstanceScript* pInstance;
+        EventMap events;
+
+        void Reset(){}
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (damage >= me->GetHealth())
+                damage = 0;
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            switch (pointId)
+            {
+            case 1:
+                if (Creature* jikun = me->GetCreature(*me, pInstance->GetData64(NPC_JI_KUN)))
+                {
+                    me->SetFacingToObject(jikun);
+                    events.ScheduleEvent(EVENT_FALLCATCHER_IN_POS, 500);
+                }
+                break;
+            case 2:
+                if (Vehicle* fallcatcher = me->GetVehicleKit())
+                {
+                    if (Unit* target = fallcatcher->GetPassenger(0))
+                    {
+                        target->ExitVehicle();
+                        target->SetCanFly(false);
+                        target->RemoveAurasDueToSpell(SPELL_PARACHUTE_BUFF);
+                        target->RemoveAurasDueToSpell(SPELL_PARACHUTE);
+                        target->RemoveAurasDueToSpell(SPELL_SAFE_NET_TRIGGER);
+                        target->RemoveAurasDueToSpell(SPELL_GENTLE_YET_FIRM);
+                        target->RemoveAurasDueToSpell(SPELL_CAST_FILTER);
+                        target->RemoveFlag(PLAYER_FLAGS, PLAYER_ALLOW_ONLY_ABILITY);
+                        me->DespawnOrUnsummon();
+                    }
+                }
+                break;
+            }
+        }
+
+
+        void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
+        {
+            me->GetMotionMaster()->MoveCharge(me->GetPositionX(), me->GetPositionY(), -28.29f, 20.0f, 1);
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_FALLCATCHER_IN_POS)
+                {
+                    if (Creature* jikun = me->GetCreature(*me, pInstance->GetData64(NPC_JI_KUN)))
+                    {
+                        float ang = me->GetAngle(jikun);
+                        float dist = me->GetExactDist2d(jikun);
+                        float destdist = dist - 35.0f;
+                        float x, y;
+                        GetPositionWithDistInOrientation(me, destdist, ang, x, y);
+                        me->GetMotionMaster()->MoveJump(x, y, -30.86f, 20.0f, 20.0f, 2);
+                    }
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_fall_catcherAI(creature);
     }
 };
 
@@ -454,6 +607,37 @@ public:
     }
 };
 
+//134347
+class spell_incubated : public SpellScriptLoader
+{
+public:
+    spell_incubated() : SpellScriptLoader("spell_incubated") { }
+
+    class spell_incubated_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_incubated_AuraScript);
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+        {
+            if (GetTarget() && GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+            {
+                if (GetTarget()->ToCreature())
+                    GetTarget()->Kill(GetTarget());
+            }
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_incubated_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_incubated_AuraScript();
+    }
+};
+
 //8848
 class at_jikun_precipice : public AreaTriggerScript
 {
@@ -463,7 +647,16 @@ public:
     bool OnTrigger(Player* player, AreaTriggerEntry const* areaTrigger, bool enter)
     {
         if (enter)
-            player->NearTeleportTo(6139.60f, 4339.67f, -31.8621f, 0.0f);
+        {
+            player->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);
+            player->SetCanFly(true);
+            player->StopMoving();
+            player->GetMotionMaster()->Clear(true);
+            player->RemoveAurasDueToSpell(SPELL_PARACHUTE_BUFF);
+            player->RemoveAurasDueToSpell(SPELL_PARACHUTE);
+            player->CastSpell(player, SPELL_SAFE_NET_TRIGGER, true);
+            player->SetFlag(PLAYER_FLAGS, PLAYER_ALLOW_ONLY_ABILITY); //for safe(block all ability)
+        }
         return true;
     }
 };
@@ -473,10 +666,13 @@ void AddSC_boss_jikun()
     new boss_jikun();
     new npc_incubater();
     new npc_young_egg_of_jikun();
+    new npc_hatchling();
     new npc_mature_egg_of_jikun();
     new npc_jump_to_boss_platform();
+    new npc_fall_catcher();
     new go_ji_kun_feather();
     new spell_jikun_fly();
     new spell_daedalian_wings();
+    new spell_incubated();
     new at_jikun_precipice();
 }

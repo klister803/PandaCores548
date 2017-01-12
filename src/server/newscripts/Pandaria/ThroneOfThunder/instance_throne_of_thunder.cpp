@@ -758,7 +758,7 @@ public:
                     switch (state)
                     {
                     case NOT_STARTED:
-                        //ResetAllJiKunNests();
+                        ResetAllJiKunNests();
                         nestnum = 0;
                         HandleGameObject(megaeraexdoorGuid, true);
                         break;
