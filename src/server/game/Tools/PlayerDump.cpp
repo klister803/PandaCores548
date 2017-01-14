@@ -23,7 +23,7 @@
 #include "ObjectMgr.h"
 #include "AccountMgr.h"
 
-#define DUMP_TABLE_COUNT 26
+#define DUMP_TABLE_COUNT 23
 struct DumpTable
 {
     char const* name;
@@ -51,14 +51,14 @@ static DumpTable dumpTables[DUMP_TABLE_COUNT] =
     { "character_reputation",             DTT_CHAR_TABLE, "guid, faction, standing, flags"},
     { "character_skills",                 DTT_CHAR_TABLE, "guid, skill, value, max"},
     { "character_spell",                  DTT_CHAR_TABLE, "guid, spell, active, disabled"},
-    { "character_spell_cooldown",         DTT_CHAR_TABLE, "guid, spell, item, time"},
-    { "character_talent",                 DTT_CHAR_TABLE, "guid, spell, spec"},
+   // { "character_spell_cooldown",         DTT_CHAR_TABLE, "guid, spell, item, time"},
+   // { "character_talent",                 DTT_CHAR_TABLE, "guid, spell, spec"},
     { "character_void_storage",           DTT_VS_TABLE,   "`itemId`, `playerGuid`, `itemEntry`, `slot`, `creatorGuid`, `randomProperty`, `suffixFactor`"},
     { "item_instance",                    DTT_ITEM,       "`guid`, `itemEntry`, `owner_guid`, `creatorGuid`, `giftCreatorGuid`, `count`, `duration`, `charges`, `flags`, `enchantments`, `randomPropertyId`, `reforgeId`, `transmogrifyId`, `upgradeId`, `durability`, `playedTime`, `text`"},
     { "mail",                             DTT_MAIL,       "id, messageType, stationery, mailTemplateId, sender, receiver, subject, body, has_items, expire_time, deliver_time, money, cod, checked"},
     { "mail_items",                       DTT_MAIL_ITEM,  "mail_id, item_guid, receiver"},
     { "pet_spell",                        DTT_PET_TABLE,  "guid, spell, active"},
-    { "pet_spell_cooldown",               DTT_PET_TABLE,  "guid, spell, time"},
+   // { "pet_spell_cooldown",               DTT_PET_TABLE,  "guid, spell, time"},
 };
 
 // Low level functions
