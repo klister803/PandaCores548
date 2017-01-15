@@ -194,7 +194,8 @@ bool OPvPCapturePointNA::HandlePlayerEnter(Player* player)
 
 void OPvPCapturePointNA::HandlePlayerLeave(Player* player)
 {
-    player->SendUpdateWorldState(NA_UI_TOWER_SLIDER_DISPLAY, 0);
+    if (player && player->IsInWorld())
+        player->SendUpdateWorldState(NA_UI_TOWER_SLIDER_DISPLAY, 0);
     OPvPCapturePoint::HandlePlayerLeave(player);
 }
 
