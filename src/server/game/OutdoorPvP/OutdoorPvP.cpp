@@ -248,12 +248,7 @@ OutdoorPvP::~OutdoorPvP()
 
 void OutdoorPvP::HandlePlayerEnterZone(Player* player, uint32 /*zone*/)
 {
-    PlayerSet::iterator itrSet = m_players[player->GetTeamId()].find(player);
-    if(itrSet != m_players[player->GetTeamId()].end())
-        return;
-
-    if (player && player->GetTeamId() < 2)
-        m_players[player->GetTeamId()].insert(player);
+    m_playerEnters.insert(player);
 }
 
 void OutdoorPvP::HandlePlayerLeaveZone(Player* player, uint32 /*zone*/)
@@ -281,6 +276,17 @@ void OutdoorPvP::HandlePlayerResurrects(Player* /*player*/, uint32 /*zone*/)
 
 bool OutdoorPvP::Update(uint32 diff)
 {
+    if (!m_playerEnters.empty())
+    {
+        PlayerSet tempPl;;
+        std::swap(tempPl, m_playerEnters);
+        for (PlayerSet::iterator itr = tempPl.begin(); itr != tempPl.end(); ++itr)
+            if (Player* player = *itr)
+                if (player->GetTeamId() < 2)
+                    m_players[player->GetTeamId()].insert(player);
+        tempPl.clear();
+    }
+
     bool objective_changed = false;
     for (OPvPCapturePointMap::iterator itr = m_capturePoints.begin(); itr != m_capturePoints.end(); ++itr)
     {

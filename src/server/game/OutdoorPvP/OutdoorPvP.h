@@ -254,6 +254,7 @@ class OutdoorPvP : public ZoneScript
         OPvPCapturePointMap m_capturePoints;
 
         PlayerSet m_players[2];
+        PlayerSet m_playerEnters;
 
         uint32 m_TypeId;
 
