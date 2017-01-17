@@ -21,41 +21,47 @@
 
 enum eSpells
 {
-    SPELL_LESSON_OF_ICARUS      = 140571,
-    SPELL_DAEDALIAN_WINGS       = 134339,//ovveride spells aura
-    SPELL_INCUBATE_ZONE         = 137526,
-    SPELL_INCUBATE_TARGET_AURA  = 134347,
-
-    SPELL_FEATHER_AT            = 134338,
-
-    SPELL_JUMP_TO_B_PLATFORM    = 138360,
-    SPELL_JI_KUN_FEATHER_AURA   = 140014,
-    SPELL_JI_KUN_FEATHER_USE_EF = 140013,
-
-    //Ji Kun
-    SPELL_CAW                   = 138926,
-    SPELL_QUILLS                = 134380,
-    SPELL_TALON_RAKE            = 134366,
-    SPELL_INFECTED_TALONS       = 140092,
-    SPELL_DOWN_DRAFT_AT         = 134370,
-    SPELL_DOWN_DRAFT            = 134370,
-
-    SPELL_SAFE_NET_TRIGGER      = 136524,//summon fallcatcher
-    SPELL_GENTLE_YET_FIRM       = 139168,
-    SPELL_CAST_FILTER           = 141062,
-
-    //Other Spells
-    SPELL_PARACHUTE              = 45472,
-    SPELL_PARACHUTE_BUFF         = 44795,
+    SPELL_LESSON_OF_ICARUS        = 140571,
+    SPELL_DAEDALIAN_WINGS         = 134339, //ovveride spells aura
+    SPELL_INCUBATE_ZONE           = 137526,
+    SPELL_INCUBATE_TARGET_AURA    = 134347,
+    SPELL_FEATHER_AT              = 134338,
+    SPELL_JUMP_TO_B_PLATFORM      = 138360,
+    SPELL_JI_KUN_FEATHER_AURA     = 140014,
+    SPELL_JI_KUN_FEATHER_USE_EF   = 140013,
+    SPELL_CAW_SEARCHER            = 138923,
+    SPELL_CAW_DMG                 = 138926,
+    SPELL_QUILLS                  = 134380,
+    SPELL_TALON_RAKE              = 134366,
+    SPELL_INFECTED_TALONS         = 140092,
+    SPELL_DOWN_DRAFT_AT           = 134370,
+    SPELL_SLIMED_AT               = 134255,
+    SPELL_SLIMED_DMG              = 134256,
+    SPELL_PRIMAL_NUTRIMENT        = 140741, //buff if catch slimed
+    SPELL_SAFE_NET_TRIGGER        = 136524, //summon fallcatcher
+    SPELL_GENTLE_YET_FIRM         = 139168,
+    SPELL_CAST_FILTER             = 141062,
+    SPELL_FEED_YOUNG              = 137528, //main spell
+    SPELL_JUMPS_DOWN_TO_HATCHLING = 138904, //68178 to 68192
+    SPELL_FEED_POOL_SPAWN_N       = 139284, //pool in nest
+    SPELL_FOOD_POOL_SPAWN_P       = 138854, //pool on platform
+    SPELL_FOOD_FALL_VISUAL        = 140788,
+    SPELL_SPAWN_FEED              = 138918, //change color
+    SPELL_CHEEP_LOW               = 139296,
+    SPELL_EAT_CHANNEL             = 134321,
+    SPELL_PARACHUTE               = 45472,
+    SPELL_PARACHUTE_BUFF          = 44795,
 };
 
 enum eEvents
 {
-    EVENT_CAW                   = 1,
-    EVENT_QUILLS                = 2, 
-    EVENT_TALON_RAKE            = 3,
-    EVENT_ACTIVE_NEST           = 4,
-    EVENT_FALLCATCHER_IN_POS    = 5,
+    EVENT_CAW                     = 1,
+    EVENT_QUILLS                  = 2,
+    EVENT_TALON_RAKE              = 3,
+    EVENT_ACTIVE_NEST             = 4,
+    EVENT_FALLCATCHER_IN_POS      = 5,
+    EVENT_DOWN_DRAFT              = 6,
+    EVENT_CHEEP                   = 10,
 };
 
 class boss_jikun : public CreatureScript
@@ -68,6 +74,7 @@ public:
         boss_jikunAI(Creature* creature) : BossAI(creature, DATA_JI_KUN)
         {
             instance = creature->GetInstanceScript();
+            //me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
         }
         InstanceScript* instance;
 
@@ -81,10 +88,12 @@ public:
         void EnterCombat(Unit* who)
         {
             _EnterCombat();
+            //After pool active first nest, add food 3 second timer
             //events.ScheduleEvent(EVENT_ACTIVE_NEST, 10000);
-            events.ScheduleEvent(EVENT_CAW, 35000);
+            events.ScheduleEvent(EVENT_CAW, 14000);
             events.ScheduleEvent(EVENT_TALON_RAKE, 20000);
-            events.ScheduleEvent(EVENT_QUILLS, 60000);
+            events.ScheduleEvent(EVENT_QUILLS, 42000);
+            events.ScheduleEvent(EVENT_DOWN_DRAFT, 97000);
         }
 
         void JustDied(Unit* /*killer*/)
@@ -131,12 +140,16 @@ public:
                     break;
                 case EVENT_QUILLS:
                     DoCast(me, SPELL_QUILLS);
-                    events.ScheduleEvent(EVENT_QUILLS, 60000);
+                    events.ScheduleEvent(EVENT_QUILLS, 62500);
                     break;
                 case EVENT_CAW:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30.0f, true))
-                        DoCast(target, SPELL_CAW);
-                    events.ScheduleEvent(EVENT_CAW, 35000);
+                    if (me->getVictim())
+                        DoCastVictim(SPELL_CAW_SEARCHER);
+                    events.ScheduleEvent(EVENT_CAW, 20000);
+                    break;
+                case EVENT_DOWN_DRAFT:
+                    DoCast(me, SPELL_DOWN_DRAFT_AT);
+                    events.ScheduleEvent(EVENT_DOWN_DRAFT, 97000);
                     break;
                 }
             }
@@ -321,7 +334,18 @@ public:
     {
         npc_hatchlingAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
-            me->SetReactState(REACT_PASSIVE);
+            me->SetReactState(REACT_DEFENSIVE);
+        }
+
+        EventMap events;
+
+        void IsSummonedBy(Unit* summoner)
+        {
+            if (Player* player = me->FindNearestPlayer(20.0f, true))
+            {
+                me->Attack(player, true);
+                events.ScheduleEvent(EVENT_CHEEP, 5000);
+            }
         }
 
         void JustDied(Unit* killer)
@@ -334,6 +358,22 @@ public:
         {
             if (!UpdateVictim())
                 return;
+
+            events.Update(diff);
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_CHEEP)
+                {
+                    if (me->getVictim())
+                        DoCastVictim(SPELL_CHEEP_LOW);
+                    events.ScheduleEvent(EVENT_CHEEP, 5000);
+                }
+            }
+            DoMeleeAttackIfReady();
         }
     };
 
@@ -506,6 +546,48 @@ public:
     }
 };
 
+//68178
+class npc_jikun_feed : public CreatureScript
+{
+public:
+    npc_jikun_feed() : CreatureScript("npc_jikun_feed") {}
+
+    struct npc_jikun_feedAI : public ScriptedAI
+    {
+        npc_jikun_feedAI(Creature* creature) : ScriptedAI(creature)
+        {
+            pInstance = creature->GetInstanceScript();
+            me->SetCanFly(true);
+            me->SetDisableGravity(true);
+            me->SetDisplayId(11686);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        }
+        InstanceScript* pInstance;
+
+        void Reset()
+        {
+            DoCast(me, SPELL_FOOD_FALL_VISUAL, true);
+            DoCast(me, SPELL_SLIMED_AT, true);
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (damage >= me->GetHealth())
+                damage = 0;
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_jikun_feedAI(creature);
+    }
+};
+
 //218543
 class go_ji_kun_feather : public GameObjectScript
 {
@@ -638,6 +720,85 @@ public:
     }
 };
 
+class TankFilter
+{
+public:
+    bool operator()(WorldObject* unit)
+    {
+        if (Player* target = unit->ToPlayer())
+            if (target->GetRoleForGroup(target->GetSpecializationId(target->GetActiveSpec())) != ROLES_TANK)
+                return false;
+        return true;
+    }
+};
+
+//138923
+class spell_caw_searcher : public SpellScriptLoader
+{
+public:
+    spell_caw_searcher() : SpellScriptLoader("spell_caw_searcher") { }
+
+    class spell_caw_searcher_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_caw_searcher_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*> &targets)
+        {
+            if (GetCaster())
+            {
+                targets.remove_if(TankFilter());
+                uint8 targetcount = GetCaster()->GetMap()->Is25ManRaid() ? 5 : 2;
+                if (targets.size() > targetcount)
+                    targets.resize(targetcount);
+            }
+        }
+
+        void HandleScript(SpellEffIndex effIndex)
+        {
+            if (GetCaster() && GetHitUnit())
+                GetCaster()->CastSpell(GetHitUnit(), SPELL_CAW_DMG, true);
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_caw_searcher_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+            OnEffectHitTarget += SpellEffectFn(spell_caw_searcher_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_caw_searcher_SpellScript();
+    }
+};
+
+//134385
+class spell_regurgitate : public SpellScriptLoader
+{
+public:
+    spell_regurgitate() : SpellScriptLoader("spell_regurgitate") { }
+
+    class spell_regurgitate_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_regurgitate_SpellScript);
+
+        void HandleScript(SpellEffIndex effIndex)
+        {
+            //need find active incubate and count hatchlings
+        }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_regurgitate_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_regurgitate_SpellScript();
+    }
+};
+
 //8848
 class at_jikun_precipice : public AreaTriggerScript
 {
@@ -670,9 +831,12 @@ void AddSC_boss_jikun()
     new npc_mature_egg_of_jikun();
     new npc_jump_to_boss_platform();
     new npc_fall_catcher();
+    new npc_jikun_feed();
     new go_ji_kun_feather();
     new spell_jikun_fly();
     new spell_daedalian_wings();
     new spell_incubated();
+    new spell_caw_searcher();
+    new spell_regurgitate();
     new at_jikun_precipice();
 }

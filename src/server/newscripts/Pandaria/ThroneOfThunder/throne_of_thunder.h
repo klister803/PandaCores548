@@ -178,6 +178,7 @@ enum eCreatures
     //
     NPC_HATCHLING           = 68192,
     NPC_INCUBATER           = 69626,
+    NPC_FEED                = 68178, //aura 134255
     NPC_FEED_POOL           = 70216,
     NPC_FALL_CATCHER        = 69839,
     //
