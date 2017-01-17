@@ -10921,6 +10921,8 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
 
 void Player::SendNotifyLootMoneyRemoved(uint64 gold, Loot* loot)
 {
+    if (!GetSession())
+        return;
     //! 5.4.1
     WorldPacket data(SMSG_COIN_REMOVED, 8);
     ObjectGuid guid = loot->personal ? loot->GetLootOwner()->GetGUID() : loot->GetGUID();
@@ -10933,6 +10935,8 @@ void Player::SendNotifyLootMoneyRemoved(uint64 gold, Loot* loot)
 
 void Player::SendNotifyLootItemRemoved(uint8 lootSlot, Loot* loot)
 {
+    if (!GetSession())
+        return;
     //sLog->outDebug(LOG_FILTER_LOOT, "SMSG_LOOT_REMOVED lootSlot lguid %u personal %i, lootGuid %u OwnerGuid %i objGuid %i", lootSlot, loot->personal, loot->GetGUID(), loot->GetLootOwner()->GetGUID(), loot->objGuid);
 
     //! 5.4.1
@@ -10969,6 +10973,9 @@ void Player::SendNotifyLootItemRemoved(uint8 lootSlot, Loot* loot)
 
 void Player::SendUpdateWorldState(uint32 Field, uint32 Value)
 {
+    if (!GetSession())
+        return;
+
     WorldPacket data(SMSG_UPDATE_WORLD_STATE, 4+4+1);
     data << uint8(0);   //zero bit
     data << uint32(Field);
@@ -10978,6 +10985,8 @@ void Player::SendUpdateWorldState(uint32 Field, uint32 Value)
 
 void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
 {
+    if (!GetSession())
+        return;
     // data depends on zoneid/mapid...
     Battleground* bg = GetBattleground();
     uint16 NumberOfFields = 0;
