@@ -876,11 +876,11 @@ public:
             {
                 if (InstanceScript* instance = GetCaster()->GetInstanceScript())
                 {
-                    if (Creature* incubate = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(DATA_GET_FIRST_NEST)))
+                    /*if (Creature* incubate = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(DATA_GET_FIRST_NEST)))
                     {
                         if (Creature* feed = GetCaster()->SummonCreature(NPC_FEED, GetCaster()->GetPositionX(), GetCaster()->GetPositionY(), GetCaster()->GetPositionZ() + 15.0f, 0.0f))
                             feed->CastSpell(incubate, SPELL_JUMPS_DOWN_TO_HATCHLING, true);
-                    }
+                    }*/
                 }
             }
         }
