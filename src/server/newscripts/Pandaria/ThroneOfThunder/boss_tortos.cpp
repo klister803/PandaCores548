@@ -558,8 +558,11 @@ public:
                 Aura* aura = GetCaster()->GetAura(SPELL_SHELL_BLOCK_DUMMY);
                 if (!aura)
                     return SPELL_FAILED_OUT_OF_RANGE;
+
+                GetCaster()->RemoveAurasDueToSpell(SPELL_SHELL_BLOCK);
+                return SPELL_CAST_OK;
             }
-            return SPELL_CAST_OK;
+            return SPELL_FAILED_BAD_TARGETS;
         }
 
         void Register()
@@ -585,17 +588,10 @@ public:
 
         void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
         {
-            if (GetCaster() && GetCaster()->ToPlayer() && GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
-            {
+            if (GetCaster() && GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
                 if (Aura* aura = GetCaster()->GetAura(SPELL_SHELL_BLOCK_DUMMY))
-                {
                     if (Creature* wt = aura->GetCaster()->ToCreature())
-                    {
-                        wt->RemoveAurasDueToSpell(SPELL_SHELL_BLOCK);
                         wt->AI()->SetGUID(GetCaster()->GetGUID(), 1);
-                    }
-                }
-            }
         }
 
         void Register()

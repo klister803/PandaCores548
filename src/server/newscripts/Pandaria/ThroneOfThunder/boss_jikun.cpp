@@ -21,36 +21,54 @@
 
 enum eSpells
 {
-    SPELL_LESSON_OF_ICARUS        = 140571,
-    SPELL_DAEDALIAN_WINGS         = 134339, //ovveride spells aura
-    SPELL_INCUBATE_ZONE           = 137526,
-    SPELL_INCUBATE_TARGET_AURA    = 134347,
-    SPELL_FEATHER_AT              = 134338,
-    SPELL_JUMP_TO_B_PLATFORM      = 138360,
-    SPELL_JI_KUN_FEATHER_AURA     = 140014,
-    SPELL_JI_KUN_FEATHER_USE_EF   = 140013,
+    //JiKun
     SPELL_CAW_SEARCHER            = 138923,
     SPELL_CAW_DMG                 = 138926,
     SPELL_QUILLS                  = 134380,
     SPELL_TALON_RAKE              = 134366,
     SPELL_INFECTED_TALONS         = 140092,
     SPELL_DOWN_DRAFT_AT           = 134370,
-    SPELL_SLIMED_AT               = 134255,
-    SPELL_SLIMED_DMG              = 134256,
+    SPELL_FEED_YOUNG              = 137528, //main spell
+
+    //Fly buffs and spells
+    SPELL_LESSON_OF_ICARUS        = 140571,
+    SPELL_DAEDALIAN_WINGS         = 134339, //ovveride spells aura
+    SPELL_FEATHER_AT              = 134338,
+    SPELL_JUMP_TO_B_PLATFORM      = 138360,
+    SPELL_JI_KUN_FEATHER_AURA     = 140014,
+    SPELL_JI_KUN_FEATHER_USE_EF   = 140013,
+
+    //Incubate
+    SPELL_INCUBATE_ZONE           = 137526,
+    SPELL_INCUBATE_TARGET_AURA    = 134347,
+
+    //Feed for nest
     SPELL_PRIMAL_NUTRIMENT        = 140741, //buff if catch slimed
+    SPELL_SLIMED_AT               = 134255, //feed fly AT (catch feed)
+    SPELL_FOOD_FALL_VISUAL        = 140788, //visual feed, then fly
+    SPELL_JUMPS_DOWN_TO_HATCHLING = 138904,
+    SPELL_FEED_POOL_SPAWN_N       = 139284, //pool in nest visual
+
+    //Feed for platform
+    SPELL_FEED_POOL_SPAWN_P       = 138854, //pool on platform visual
+    SPELL_FEED_POOL_DMG           = 138319,
+    SPELL_JUMP_DOWN_TO_PLATFORM   = 140575,
+    SPELL_SLIMED_DMG              = 134256,
+    SPELL_SLIMED_DEBUFF           = 138309,
+
+    //Young Hatchling
+    SPELL_CHEEP_LOW               = 139296,
+    SPELL_EAT_CHANNEL             = 134321,
+
+    //Fallcatcher
     SPELL_SAFE_NET_TRIGGER        = 136524, //summon fallcatcher
     SPELL_GENTLE_YET_FIRM         = 139168,
     SPELL_CAST_FILTER             = 141062,
-    SPELL_FEED_YOUNG              = 137528, //main spell
-    SPELL_JUMPS_DOWN_TO_HATCHLING = 138904, //68178 to 68192
-    SPELL_FEED_POOL_SPAWN_N       = 139284, //pool in nest
-    SPELL_FOOD_POOL_SPAWN_P       = 138854, //pool on platform
-    SPELL_FOOD_FALL_VISUAL        = 140788,
-    SPELL_SPAWN_FEED              = 138918, //change color
-    SPELL_CHEEP_LOW               = 139296,
-    SPELL_EAT_CHANNEL             = 134321,
     SPELL_PARACHUTE               = 45472,
     SPELL_PARACHUTE_BUFF          = 44795,
+
+    //Other
+    SPELL_SPAWN_FEED              = 138918, //change color
 };
 
 enum eEvents
@@ -61,6 +79,8 @@ enum eEvents
     EVENT_ACTIVE_NEST             = 4,
     EVENT_FALLCATCHER_IN_POS      = 5,
     EVENT_DOWN_DRAFT              = 6,
+    EVENT_FEED_YOUNG              = 7,
+    EVENT_FIND_PLAYER             = 8,
     EVENT_CHEEP                   = 10,
 };
 
@@ -83,12 +103,13 @@ public:
             _Reset();
             me->SetReactState(REACT_DEFENSIVE);
             //me->SetReactState(REACT_PASSIVE);
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SLIMED_DEBUFF);
         }
 
         void EnterCombat(Unit* who)
         {
             _EnterCombat();
-            //After pool active first nest, add food 3 second timer
+            //After pool active first nest, add feed 3 second timer
             //events.ScheduleEvent(EVENT_ACTIVE_NEST, 10000);
             events.ScheduleEvent(EVENT_CAW, 14000);
             events.ScheduleEvent(EVENT_TALON_RAKE, 20000);
@@ -99,6 +120,7 @@ public:
         void JustDied(Unit* /*killer*/)
         {
             _JustDied();
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SLIMED_DEBUFF);
         }
 
         void UpdateAI(uint32 diff)
@@ -116,8 +138,11 @@ public:
                 switch (eventId)
                 {
                 case EVENT_ACTIVE_NEST:
-                    instance->SetData(DATA_ACTIVE_NEXT_NEST, 0);
-                    events.ScheduleEvent(EVENT_ACTIVE_NEST, 10000);
+                    //instance->SetData(DATA_ACTIVE_NEXT_NEST, 0);
+                    //events.ScheduleEvent(EVENT_FEED_YOUNG, 3000);
+                    break;
+                case EVENT_FEED_YOUNG:
+                    DoCast(me, SPELL_FEED_YOUNG);
                     break;
                 case EVENT_TALON_RAKE:
                     if (me->getVictim())
@@ -143,8 +168,7 @@ public:
                     events.ScheduleEvent(EVENT_QUILLS, 62500);
                     break;
                 case EVENT_CAW:
-                    if (me->getVictim())
-                        DoCastVictim(SPELL_CAW_SEARCHER);
+                    DoCast(me, SPELL_CAW_SEARCHER);
                     events.ScheduleEvent(EVENT_CAW, 20000);
                     break;
                 case EVENT_DOWN_DRAFT:
@@ -571,6 +595,12 @@ public:
             DoCast(me, SPELL_SLIMED_AT, true);
         }
 
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (pointId == SPELL_JUMPS_DOWN_TO_HATCHLING)
+                me->DespawnOrUnsummon();
+        }
+
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
             if (damage >= me->GetHealth())
@@ -585,6 +615,65 @@ public:
     CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_jikun_feedAI(creature);
+    }
+};
+
+//68188
+class npc_jikun_feed_pool : public CreatureScript
+{
+public:
+    npc_jikun_feed_pool() : CreatureScript("npc_jikun_feed_pool") {}
+
+    struct npc_jikun_feed_poolAI : public ScriptedAI
+    {
+        npc_jikun_feed_poolAI(Creature* creature) : ScriptedAI(creature)
+        {
+            pInstance = creature->GetInstanceScript();
+            me->SetDisplayId(11686);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE /*| UNIT_FLAG_NOT_SELECTABLE*/);
+        }
+        InstanceScript* pInstance;
+        EventMap events;
+
+        void Reset()
+        {
+            DoCast(me, SPELL_FEED_POOL_SPAWN_P, true);
+            events.ScheduleEvent(EVENT_FIND_PLAYER, 1000);
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (damage >= me->GetHealth())
+                damage = 0;
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_FIND_PLAYER)
+                {
+                    std::list<Player*> pllist;
+                    pllist.clear();
+                    GetPlayerListInGrid(pllist, me, 3.0f);
+                    if (!pllist.empty())
+                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                            if (!(*itr)->HasAura(SPELL_FEED_POOL_DMG) && me->GetExactDist2d(*itr) <= 5.5f)
+                                me->CastSpell(*itr, SPELL_FEED_POOL_DMG, true);
+                    events.ScheduleEvent(EVENT_FIND_PLAYER, 1000);
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_jikun_feed_poolAI(creature);
     }
 };
 
@@ -702,10 +791,8 @@ public:
         void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
         {
             if (GetTarget() && GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
-            {
                 if (GetTarget()->ToCreature())
                     GetTarget()->Kill(GetTarget());
-            }
         }
 
         void Register()
@@ -782,9 +869,20 @@ public:
     {
         PrepareSpellScript(spell_regurgitate_SpellScript);
 
+        //this only test version
         void HandleScript(SpellEffIndex effIndex)
         {
-            //need find active incubate and count hatchlings
+            if (GetCaster() && GetCaster()->ToCreature())
+            {
+                if (InstanceScript* instance = GetCaster()->GetInstanceScript())
+                {
+                    if (Creature* incubate = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(DATA_GET_FIRST_NEST)))
+                    {
+                        if (Creature* feed = GetCaster()->SummonCreature(NPC_FEED, GetCaster()->GetPositionX(), GetCaster()->GetPositionY(), GetCaster()->GetPositionZ() + 15.0f, 0.0f))
+                            feed->CastSpell(incubate, SPELL_JUMPS_DOWN_TO_HATCHLING, true);
+                    }
+                }
+            }
         }
 
         void Register()
@@ -796,6 +894,74 @@ public:
     SpellScript* GetSpellScript() const
     {
         return new spell_regurgitate_SpellScript();
+    }
+};
+
+//138319
+class spell_jikun_feed_platform_p_dmg : public SpellScriptLoader
+{
+public:
+    spell_jikun_feed_platform_p_dmg() : SpellScriptLoader("spell_jikun_feed_platform_p_dmg") { }
+
+    class spell_jikun_feed_platform_p_dmg_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_jikun_feed_platform_p_dmg_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (GetCaster() && GetCaster()->ToCreature() && GetTarget())
+            {
+                if (aurEff->GetTickNumber() > 3)
+                {
+                    GetCaster()->ToCreature()->DespawnOrUnsummon();
+                    GetTarget()->RemoveAurasDueToSpell(SPELL_FEED_POOL_DMG);
+                    GetTarget()->CastSpell(GetTarget(), SPELL_SLIMED_DMG, true);
+                    return;
+                }
+                if (GetTarget()->GetExactDist2d(GetCaster()) > 6.0f)
+                    GetTarget()->RemoveAurasDueToSpell(SPELL_FEED_POOL_DMG);
+            }
+        }
+
+        
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_jikun_feed_platform_p_dmg_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_jikun_feed_platform_p_dmg_AuraScript();
+    }
+};
+
+//134256
+class spell_jikun_slimed_aura : public SpellScriptLoader
+{
+public:
+    spell_jikun_slimed_aura() : SpellScriptLoader("spell_jikun_slimed_aura") { }
+
+    class spell_jikun_slimed_aura_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_jikun_slimed_aura_AuraScript);
+
+        void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
+                GetTarget()->CastSpell(GetTarget(), SPELL_SLIMED_DEBUFF, true);
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_jikun_slimed_aura_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_jikun_slimed_aura_AuraScript();
     }
 };
 
@@ -832,11 +998,14 @@ void AddSC_boss_jikun()
     new npc_jump_to_boss_platform();
     new npc_fall_catcher();
     new npc_jikun_feed();
+    new npc_jikun_feed_pool();
     new go_ji_kun_feather();
     new spell_jikun_fly();
     new spell_daedalian_wings();
     new spell_incubated();
     new spell_caw_searcher();
     new spell_regurgitate();
+    new spell_jikun_feed_platform_p_dmg();
+    new spell_jikun_slimed_aura();
     new at_jikun_precipice();
 }
