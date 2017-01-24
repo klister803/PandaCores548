@@ -41,6 +41,7 @@ enum eSpells
     //Incubate
     SPELL_INCUBATE_ZONE           = 137526,
     SPELL_INCUBATE_TARGET_AURA    = 134347,
+    SPELL_INCUBATE_TARGET_AURA_2  = 134335,
 
     //Feed for nest
     SPELL_PRIMAL_NUTRIMENT        = 140741, //buff if catch slimed
@@ -59,6 +60,9 @@ enum eSpells
     //Young Hatchling
     SPELL_CHEEP_LOW               = 139296,
     SPELL_EAT_CHANNEL             = 134321,
+
+    //Juvenile
+    SPELL_CHEEP_HIGHT             = 140129,
 
     //Fallcatcher
     SPELL_SAFE_NET_TRIGGER        = 136524, //summon fallcatcher
@@ -82,6 +86,9 @@ enum eEvents
     EVENT_FEED_YOUNG              = 7,
     EVENT_FIND_PLAYER             = 8,
     EVENT_CHEEP                   = 10,
+    EVENT_TAKEOFF                 = 11,
+    EVENT_ENTERCOMBAT             = 12,
+    EVENT_TO_PATROL               = 13,
 };
 
 class boss_jikun : public CreatureScript
@@ -227,7 +234,17 @@ public:
                 DoCast(me, SPELL_INCUBATE_ZONE, true);
                 std::list<Creature*> egglist;
                 egglist.clear();
-                GetCreatureListWithEntryInGrid(egglist, me, NPC_YOUNG_EGG_OF_JIKUN, 20.0f);
+                uint32 incubatevisualpellid = 0;
+                if (me->GetPositionZ() >= 37.0f)
+                {
+                    incubatevisualpellid = SPELL_INCUBATE_TARGET_AURA_2;
+                    GetCreatureListWithEntryInGrid(egglist, me, NPC_MATURE_EGG_OF_JIKUN, 20.0f);
+                }
+                else
+                {
+                    incubatevisualpellid = SPELL_INCUBATE_TARGET_AURA;
+                    GetCreatureListWithEntryInGrid(egglist, me, NPC_YOUNG_EGG_OF_JIKUN, 20.0f);
+                }
                 uint8 maxsize = me->GetMap()->Is25ManRaid() ? 5 : 4;
                 if (egglist.size() > maxsize)
                     egglist.resize(maxsize);
@@ -236,7 +253,7 @@ public:
                     for (std::list<Creature*>::const_iterator itr = egglist.begin(); itr != egglist.end(); itr++)
                     {
                         (*itr)->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                        (*itr)->CastSpell(*itr, SPELL_INCUBATE_TARGET_AURA, true);
+                        (*itr)->CastSpell(*itr, incubatevisualpellid, true);
                     }
                 }
             }
@@ -248,7 +265,6 @@ public:
                 egglist.clear();
                 GetCreatureListWithEntryInGrid(egglist, me, NPC_YOUNG_EGG_OF_JIKUN, 20.0f);
                 GetCreatureListWithEntryInGrid(egglist, me, NPC_MATURE_EGG_OF_JIKUN, 20.0f);
-
                 if (!egglist.empty())
                 {
                     for (std::list<Creature*>::const_iterator itr = egglist.begin(); itr != egglist.end(); itr++)
@@ -428,6 +444,26 @@ public:
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
         }
 
+        void JustDied(Unit* killer)
+        {
+            me->RemoveAurasDueToSpell(SPELL_INCUBATE_TARGET_AURA_2);
+            if (killer != me)  //egg destroy
+            {
+                if (Creature* incubate = me->FindNearestCreature(NPC_INCUBATER, 20.0f, true))
+                {
+                    float x, y;
+                    GetPosInRadiusWithRandomOrientation(me, 2.0f, x, y);
+                    incubate->CastSpell(x, y, incubate->GetPositionZ(), SPELL_FEATHER_AT, true);
+                }
+            }
+            else               //incubate complete
+            {
+                if (Creature* incubate = me->FindNearestCreature(NPC_INCUBATER, 20.0f, true))
+                    if (Creature* juvenile = incubate->SummonCreature(NPC_JUVENILE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 5.0f))
+                        juvenile->AI()->SetData(DATA_TAKEOFF, 0);
+            }
+        }
+
         void EnterCombat(Unit* who){}
 
         void UpdateAI(uint32 diff){}
@@ -436,6 +472,86 @@ public:
     CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_mature_egg_of_jikunAI(creature);
+    }
+};
+
+//69836
+class npc_juvenile : public CreatureScript
+{
+public:
+    npc_juvenile() : CreatureScript("npc_juvenile") { }
+
+    struct npc_juvenileAI : public ScriptedAI
+    {
+        npc_juvenileAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            me->SetCanFly(true);
+            me->SetDisableGravity(true);
+            me->SetReactState(REACT_PASSIVE);
+            instance = pCreature->GetInstanceScript();
+        }
+        InstanceScript* instance;
+        EventMap events;
+
+        void SetData(uint32 type, uint32 data)
+        {
+            if (type == DATA_TAKEOFF)
+                events.ScheduleEvent(EVENT_TAKEOFF, 500);
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (type == EFFECT_MOTION_TYPE && pointId == 3)
+                events.ScheduleEvent(EVENT_ENTERCOMBAT, 500);
+        }
+
+        void JustDied(Unit* killer)
+        {
+            me->GetMotionMaster()->MoveFall();
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                case EVENT_TAKEOFF:
+                    if (Creature* jikun = me->GetCreature(*me, instance->GetData64(NPC_JI_KUN)))
+                    {
+                        float ang = me->GetAngle(jikun);
+                        float dist = me->GetExactDist2d(jikun);
+                        float destdist = dist - 15.0f;
+                        float x, y;
+                        GetPositionWithDistInOrientation(me, destdist, ang, x, y);
+                        me->GetMotionMaster()->MoveJump(x, y, jikun->GetPositionZ() + 50.0f, 20.0f, 20.0f, 3);
+                    }
+                    break;
+                case EVENT_ENTERCOMBAT:
+                    me->GetMotionMaster()->MoveIdle();
+                    DoZoneInCombat(me, 200.0f);
+                    events.ScheduleEvent(EVENT_TO_PATROL, 1000);
+                    break;
+                case EVENT_TO_PATROL:
+                    me->GetMotionMaster()->MoveRandom(5.0f);
+                    events.ScheduleEvent(EVENT_CHEEP, 5000);
+                    break;
+                case EVENT_CHEEP:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 200.0f, true))
+                        DoCast(target, SPELL_CHEEP_HIGHT);
+                    events.ScheduleEvent(EVENT_CHEEP, 8000);
+                    break;
+                }
+            }
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_juvenileAI(pCreature);
     }
 };
 
@@ -778,7 +894,7 @@ public:
     }
 };
 
-//134347
+//134347, 134335
 class spell_incubated : public SpellScriptLoader
 {
 public:
@@ -995,6 +1111,7 @@ void AddSC_boss_jikun()
     new npc_young_egg_of_jikun();
     new npc_hatchling();
     new npc_mature_egg_of_jikun();
+    new npc_juvenile();
     new npc_jump_to_boss_platform();
     new npc_fall_catcher();
     new npc_jikun_feed();
