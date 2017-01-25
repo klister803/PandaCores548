@@ -43,6 +43,7 @@ enum eData
     DATA_ACTIVE_NEST,
     DATA_RESET_NEST,
     DATA_TAKEOFF,
+    DATA_MORPH,
 };
 
 enum esAction
@@ -176,9 +177,12 @@ enum eCreatures
     //Eggs
     NPC_YOUNG_EGG_OF_JIKUN  = 68194,
     NPC_MATURE_EGG_OF_JIKUN = 69628,
+    NPC_JIKUN_FLEDGLING_EGG = 68202,
     //
     NPC_HATCHLING           = 68192,
     NPC_JUVENILE            = 69836,
+    NPC_JUVENILE_FROM_F_EGG = 70095,
+
     NPC_INCUBATER           = 69626,
     NPC_FEED                = 68178,
     NPC_FEED_NEST_POOL      = 70216, //nest pool

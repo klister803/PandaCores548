@@ -60,6 +60,9 @@ enum eSpells
     //Young Hatchling
     SPELL_CHEEP_LOW               = 139296,
     SPELL_EAT_CHANNEL             = 134321,
+    SPELL_MORPH                   = 134322,
+    //Morph Hatchling
+    SPELL_LAY_EGG                 = 134367,
 
     //Juvenile
     SPELL_CHEEP_HIGHT             = 140129,
@@ -87,8 +90,14 @@ enum eEvents
     EVENT_FIND_PLAYER             = 8,
     EVENT_CHEEP                   = 10,
     EVENT_TAKEOFF                 = 11,
-    EVENT_ENTERCOMBAT             = 12,
-    EVENT_TO_PATROL               = 13,
+    EVENT_TAKEOFF_2               = 12,
+    EVENT_ENTERCOMBAT             = 13,
+    EVENT_ENTERCOMBAT_2           = 14,
+    EVENT_TO_PATROL               = 15,
+    EVENT_MOVE_TO_DEST_POS        = 16,
+    EVENT_LAY_EGG                 = 17,
+    EVENT_TAKEOFF_3               = 18,
+    EVENT_MOVE_TO_DEST_POS_2      = 19,
 };
 
 class boss_jikun : public CreatureScript
@@ -375,9 +384,16 @@ public:
         npc_hatchlingAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
             me->SetReactState(REACT_DEFENSIVE);
+            instance = pCreature->GetInstanceScript();
         }
-
+        InstanceScript* instance;
         EventMap events;
+
+        void SetData(uint32 type, uint32 data)
+        {
+            if (type == DATA_MORPH)
+                events.ScheduleEvent(EVENT_LAY_EGG, 5000);
+        }
 
         void IsSummonedBy(Unit* summoner)
         {
@@ -406,11 +422,25 @@ public:
 
             while (uint32 eventId = events.ExecuteEvent())
             {
-                if (eventId == EVENT_CHEEP)
+                switch (eventId)
                 {
-                    if (me->getVictim())
-                        DoCastVictim(SPELL_CHEEP_LOW);
-                    events.ScheduleEvent(EVENT_CHEEP, 5000);
+                case EVENT_CHEEP:
+                    if (!me->HasAura(SPELL_MORPH))
+                    {
+                        if (me->getVictim())
+                            DoCastVictim(SPELL_CHEEP_LOW);
+                    }
+                    else
+                    {
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 200.0f, true))
+                            DoCast(target, SPELL_CHEEP_HIGHT);
+                    }
+                    events.ScheduleEvent(EVENT_CHEEP, 8000);
+                    break;
+                case EVENT_LAY_EGG:
+                    DoCast(me, SPELL_LAY_EGG);
+                    events.ScheduleEvent(EVENT_LAY_EGG, 15000);
+                    break;
                 }
             }
             DoMeleeAttackIfReady();
@@ -420,6 +450,44 @@ public:
     CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_hatchlingAI(pCreature);
+    }
+};
+
+//68202
+class npc_jikun_fledgling_egg : public CreatureScript
+{
+public:
+    npc_jikun_fledgling_egg() : CreatureScript("npc_jikun_fledgling_egg") {}
+
+    struct npc_jikun_fledgling_eggAI : public ScriptedAI
+    {
+        npc_jikun_fledgling_eggAI(Creature* creature) : ScriptedAI(creature)
+        {
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+        }
+
+        void Reset()
+        {
+            DoCast(me, SPELL_INCUBATE_TARGET_AURA, true);
+        }
+
+        void JustDied(Unit* killer)
+        {
+            if (killer == me) //incubate complete
+                if (Creature* incubate = me->FindNearestCreature(NPC_INCUBATER, 20.0f, true))
+                    if (Creature* juvenile = incubate->SummonCreature(NPC_JUVENILE_FROM_F_EGG, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 5.0f))
+                        juvenile->AI()->SetData(DATA_TAKEOFF, 2);
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_jikun_fledgling_eggAI(creature);
     }
 };
 
@@ -459,8 +527,11 @@ public:
             else               //incubate complete
             {
                 if (Creature* incubate = me->FindNearestCreature(NPC_INCUBATER, 20.0f, true))
+                {
+                    uint8 _data = incubate->GetPositionZ() >= 69.0f ? 1 : 0;
                     if (Creature* juvenile = incubate->SummonCreature(NPC_JUVENILE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 5.0f))
-                        juvenile->AI()->SetData(DATA_TAKEOFF, 0);
+                        juvenile->AI()->SetData(DATA_TAKEOFF, _data);
+                }
             }
         }
 
@@ -475,7 +546,7 @@ public:
     }
 };
 
-//69836
+//69836, 70095
 class npc_juvenile : public CreatureScript
 {
 public:
@@ -496,13 +567,55 @@ public:
         void SetData(uint32 type, uint32 data)
         {
             if (type == DATA_TAKEOFF)
-                events.ScheduleEvent(EVENT_TAKEOFF, 500);
+            {
+                switch (data)
+                {
+                //Upper nest front
+                case 0:
+                    events.ScheduleEvent(EVENT_TAKEOFF, 500);
+                    break;
+                //Upper nest middle
+                case 1:
+                    events.ScheduleEvent(EVENT_TAKEOFF_2, 500);
+                    break;
+                //Lowest nest front
+                case 2:
+                    events.ScheduleEvent(EVENT_TAKEOFF_3, 500);
+                    break;
+                }
+            }
         }
 
         void MovementInform(uint32 type, uint32 pointId)
         {
-            if (type == EFFECT_MOTION_TYPE && pointId == 3)
-                events.ScheduleEvent(EVENT_ENTERCOMBAT, 500);
+            if (type == EFFECT_MOTION_TYPE)
+            {
+                switch (pointId)
+                {
+                case 3:
+                    events.ScheduleEvent(EVENT_ENTERCOMBAT, 500);
+                    break;
+                case 4:
+                    events.ScheduleEvent(EVENT_MOVE_TO_DEST_POS, 500);
+                    break;
+                case 5:
+                    events.ScheduleEvent(EVENT_ENTERCOMBAT, 500);
+                    break;
+                case 6:
+                    events.ScheduleEvent(EVENT_MOVE_TO_DEST_POS_2, 500);
+                    break;
+                case 7:
+                    events.ScheduleEvent(EVENT_ENTERCOMBAT, 500);
+                    break;
+                }
+            }
+        }
+
+        float GetRandomAngle()
+        {
+            float mod = urand(0, 2);
+            float mod2 = urand(0, 8);
+            return mod + (mod2 / 10);
         }
 
         void JustDied(Unit* killer)
@@ -518,6 +631,7 @@ public:
             {
                 switch (eventId)
                 {
+                //Fly mechanic: juvenile - upper front nest
                 case EVENT_TAKEOFF:
                     if (Creature* jikun = me->GetCreature(*me, instance->GetData64(NPC_JI_KUN)))
                     {
@@ -526,18 +640,53 @@ public:
                         float destdist = dist - 15.0f;
                         float x, y;
                         GetPositionWithDistInOrientation(me, destdist, ang, x, y);
-                        me->GetMotionMaster()->MoveJump(x, y, jikun->GetPositionZ() + 50.0f, 20.0f, 20.0f, 3);
+                        me->GetMotionMaster()->MoveJump(x, y, jikun->GetPositionZ() + 50.0f, 10.0f, 10.0f, 3);
                     }
                     break;
                 case EVENT_ENTERCOMBAT:
                     me->GetMotionMaster()->MoveIdle();
+                    me->SetHomePosition(me->GetPosition());
                     DoZoneInCombat(me, 200.0f);
-                    events.ScheduleEvent(EVENT_TO_PATROL, 1000);
+                    events.ScheduleEvent(EVENT_TO_PATROL, 500);
                     break;
                 case EVENT_TO_PATROL:
                     me->GetMotionMaster()->MoveRandom(5.0f);
                     events.ScheduleEvent(EVENT_CHEEP, 5000);
                     break;
+                //Fly mechanic: juvenile - upper middle nest
+                case EVENT_TAKEOFF_2:
+                {
+                    float _ang = GetRandomAngle();
+                    me->SetFacingTo(_ang);
+                    float x, y;
+                    GetPositionWithDistInOrientation(me, urand(20, 25), _ang, x, y);
+                    me->GetMotionMaster()->MoveJump(x, y, me->GetPositionZ(), 10.0f, 10.0f, 4);
+                }
+                break;
+                case EVENT_MOVE_TO_DEST_POS:
+                    if (Creature* jikun = me->GetCreature(*me, instance->GetData64(NPC_JI_KUN)))
+                        me->GetMotionMaster()->MoveJump(me->GetPositionX(), me->GetPositionY(), jikun->GetPositionZ() + 50.0f, 10.0f, 10.0f, 5);
+                    break;
+                //Fly mechanic: juvenile - lowest front nest
+                case EVENT_TAKEOFF_3:
+                    if (Creature* jikun = me->GetCreature(*me, instance->GetData64(NPC_JI_KUN)))
+                    {
+                        me->SetFacingToObject(jikun);
+                        me->GetMotionMaster()->MoveJump(me->GetPositionX(), me->GetPositionY(), jikun->GetPositionZ() + 10.0f, 10.0f, 10.0f, 6);
+                    }
+                    break;
+                case EVENT_MOVE_TO_DEST_POS_2:
+                    if (Creature* jikun = me->GetCreature(*me, instance->GetData64(NPC_JI_KUN)))
+                    {
+                        float ang = me->GetAngle(jikun);
+                        float dist = me->GetExactDist2d(jikun);
+                        float destdist = dist - 15.0f;
+                        float x, y;
+                        GetPositionWithDistInOrientation(me, destdist, ang, x, y);
+                        me->GetMotionMaster()->MoveJump(x, y, jikun->GetPositionZ() + 50.0f, 10.0f, 10.0f, 7);
+                    }
+                    break;
+                //Battle Spell
                 case EVENT_CHEEP:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 200.0f, true))
                         DoCast(target, SPELL_CHEEP_HIGHT);
@@ -1081,6 +1230,34 @@ public:
     }
 };
 
+//134322
+class spell_hatchling_morph : public SpellScriptLoader
+{
+public:
+    spell_hatchling_morph() : SpellScriptLoader("spell_hatchling_morph") { }
+
+    class spell_hatchling_morph_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_hatchling_morph_AuraScript);
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetTarget() && GetTarget()->ToCreature())
+                GetTarget()->ToCreature()->AI()->SetData(DATA_MORPH, 0);
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_hatchling_morph_AuraScript::OnApply, EFFECT_0, SPELL_AURA_TRANSFORM, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_hatchling_morph_AuraScript();
+    }
+};
+
 //8848
 class at_jikun_precipice : public AreaTriggerScript
 {
@@ -1110,6 +1287,7 @@ void AddSC_boss_jikun()
     new npc_incubater();
     new npc_young_egg_of_jikun();
     new npc_hatchling();
+    new npc_jikun_fledgling_egg();
     new npc_mature_egg_of_jikun();
     new npc_juvenile();
     new npc_jump_to_boss_platform();
@@ -1124,5 +1302,6 @@ void AddSC_boss_jikun()
     new spell_regurgitate();
     new spell_jikun_feed_platform_p_dmg();
     new spell_jikun_slimed_aura();
+    new spell_hatchling_morph();
     new at_jikun_precipice();
 }
