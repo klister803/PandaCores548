@@ -37,6 +37,7 @@ enum eSpells
     SPELL_JUMP_TO_B_PLATFORM      = 138360,
     SPELL_JI_KUN_FEATHER_AURA     = 140014,
     SPELL_JI_KUN_FEATHER_USE_EF   = 140013,
+    SPELL_FLY                     = 133755,
 
     //Incubate
     SPELL_INCUBATE_ZONE           = 137526,
@@ -98,6 +99,8 @@ enum eEvents
     EVENT_LAY_EGG                 = 17,
     EVENT_TAKEOFF_3               = 18,
     EVENT_MOVE_TO_DEST_POS_2      = 19,
+    EVENT_EAT                     = 20,
+    EVENT_ACTIVE                  = 21,
 };
 
 class boss_jikun : public CreatureScript
@@ -383,25 +386,32 @@ public:
     {
         npc_hatchlingAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
-            me->SetReactState(REACT_DEFENSIVE);
+            me->SetReactState(REACT_PASSIVE);
             instance = pCreature->GetInstanceScript();
         }
         InstanceScript* instance;
         EventMap events;
+        uint64 feedGuid;
+
+        void Reset()
+        {
+            feedGuid = 0;
+            events.ScheduleEvent(EVENT_ACTIVE, 1000);
+        }
 
         void SetData(uint32 type, uint32 data)
         {
             if (type == DATA_MORPH)
-                events.ScheduleEvent(EVENT_LAY_EGG, 5000);
+            {
+                DoCast(me, SPELL_MORPH, true);
+                events.ScheduleEvent(EVENT_ENTERCOMBAT, 1000);
+            }
         }
 
-        void IsSummonedBy(Unit* summoner)
+        void MovementInform(uint32 type, uint32 pointId)
         {
-            if (Player* player = me->FindNearestPlayer(20.0f, true))
-            {
-                me->Attack(player, true);
-                events.ScheduleEvent(EVENT_CHEEP, 5000);
-            }
+            if (type == POINT_MOTION_TYPE)
+                events.ScheduleEvent(EVENT_EAT, 250);
         }
 
         void JustDied(Unit* killer)
@@ -412,9 +422,6 @@ public:
 
         void UpdateAI(uint32 diff)
         {
-            if (!UpdateVictim())
-                return;
-
             events.Update(diff);
 
             if (me->HasUnitState(UNIT_STATE_CASTING))
@@ -437,6 +444,33 @@ public:
                     }
                     events.ScheduleEvent(EVENT_CHEEP, 8000);
                     break;
+                case EVENT_ACTIVE:
+                    //find feed
+                    if (Creature* feed = me->FindNearestCreature(NPC_FEED_NEST_POOL, 20.0f, true))
+                    {
+                        feedGuid = feed->GetGUID();
+                        me->SetFacingToObject(feed);
+                        me->GetMotionMaster()->MoveCharge(feed->GetPositionX(), feed->GetPositionY(), feed->GetPositionZ(), 3.0f, 2);
+                        return;
+                    }
+                    //if no feed, attack nearest player
+                    if (Player* player = me->FindNearestPlayer(20.0f, true))
+                    {
+                        me->SetReactState(REACT_AGGRESSIVE);
+                        me->Attack(player, true);
+                        events.ScheduleEvent(EVENT_CHEEP, 5000);
+                    }
+                    break;
+                case EVENT_EAT:
+                    if (Creature* feed = me->GetCreature(*me, feedGuid))
+                        DoCast(feed, SPELL_EAT_CHANNEL);
+                    break;
+                case EVENT_ENTERCOMBAT:
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    DoZoneInCombat(me, 20.0f);
+                    events.ScheduleEvent(EVENT_CHEEP, 5000);
+                    events.ScheduleEvent(EVENT_LAY_EGG, 8000);
+                    break;
                 case EVENT_LAY_EGG:
                     DoCast(me, SPELL_LAY_EGG);
                     events.ScheduleEvent(EVENT_LAY_EGG, 15000);
@@ -450,6 +484,45 @@ public:
     CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_hatchlingAI(pCreature);
+    }
+};
+
+//70216
+class npc_jikun_feed_pool_nest : public CreatureScript
+{
+public:
+    npc_jikun_feed_pool_nest() : CreatureScript("npc_jikun_feed_pool_nest") { }
+
+    struct npc_jikun_feed_pool_nestAI : public ScriptedAI
+    {
+        npc_jikun_feed_pool_nestAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetDisplayId(11686);
+        }
+
+        void Reset()
+        {
+            DoCast(me, SPELL_FEED_POOL_SPAWN_N, true);
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (damage >= me->GetHealth())
+                damage = 0;
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_jikun_feed_pool_nestAI(pCreature);
     }
 };
 
@@ -474,6 +547,7 @@ public:
 
         void JustDied(Unit* killer)
         {
+            me->RemoveAurasDueToSpell(SPELL_INCUBATE_TARGET_AURA);
             if (killer == me) //incubate complete
                 if (Creature* incubate = me->FindNearestCreature(NPC_INCUBATER, 20.0f, true))
                     if (Creature* juvenile = incubate->SummonCreature(NPC_JUVENILE_FROM_F_EGG, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 5.0f))
@@ -1137,17 +1211,14 @@ public:
         //this only test version
         void HandleScript(SpellEffIndex effIndex)
         {
-            if (GetCaster() && GetCaster()->ToCreature())
+            /*if (GetCaster() && GetCaster()->ToCreature())
             {
                 if (InstanceScript* instance = GetCaster()->GetInstanceScript())
                 {
-                    /*if (Creature* incubate = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(DATA_GET_FIRST_NEST)))
-                    {
-                        if (Creature* feed = GetCaster()->SummonCreature(NPC_FEED, GetCaster()->GetPositionX(), GetCaster()->GetPositionY(), GetCaster()->GetPositionZ() + 15.0f, 0.0f))
-                            feed->CastSpell(incubate, SPELL_JUMPS_DOWN_TO_HATCHLING, true);
-                    }*/
+                    if (Creature* feed = GetCaster()->SummonCreature(NPC_FEED, GetCaster()->GetPositionX(), GetCaster()->GetPositionY(), GetCaster()->GetPositionZ() + 15.0f, 0.0f))
+                        feed->CastSpell(incubate, SPELL_JUMPS_DOWN_TO_HATCHLING, true);
                 }
-            }
+            }*/
         }
 
         void Register()
@@ -1230,31 +1301,75 @@ public:
     }
 };
 
-//134322
-class spell_hatchling_morph : public SpellScriptLoader
+//140741
+class spell_primal_nutriment : public SpellScriptLoader
 {
 public:
-    spell_hatchling_morph() : SpellScriptLoader("spell_hatchling_morph") { }
+    spell_primal_nutriment() : SpellScriptLoader("spell_primal_nutriment") { }
 
-    class spell_hatchling_morph_AuraScript : public AuraScript
+    class spell_primal_nutriment_SpellScript : public SpellScript
     {
-        PrepareAuraScript(spell_hatchling_morph_AuraScript);
+        PrepareSpellScript(spell_primal_nutriment_SpellScript);
 
-        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        SpellCastResult CheckCast()
         {
-            if (GetTarget() && GetTarget()->ToCreature())
-                GetTarget()->ToCreature()->AI()->SetData(DATA_MORPH, 0);
+            if (GetCaster() && GetCaster()->ToCreature() && GetExplTargetUnit())
+            {
+                if (!GetExplTargetUnit()->HasAura(SPELL_FLY))
+                    return SPELL_FAILED_UNKNOWN;
+
+                if (!GetExplTargetUnit()->HasUnitMovementFlag(MOVEMENTFLAG_FLYING))
+                    return SPELL_FAILED_UNKNOWN;
+
+                GetCaster()->ToCreature()->DespawnOrUnsummon();
+                return SPELL_CAST_OK;
+            }
+            return SPELL_FAILED_UNKNOWN;
         }
 
         void Register()
         {
-            OnEffectApply += AuraEffectApplyFn(spell_hatchling_morph_AuraScript::OnApply, EFFECT_0, SPELL_AURA_TRANSFORM, AURA_EFFECT_HANDLE_REAL);
+            OnCheckCast += SpellCheckCastFn(spell_primal_nutriment_SpellScript::CheckCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_primal_nutriment_SpellScript();
+    }
+};
+
+//134321
+class spell_jikun_hatchling_eat : public SpellScriptLoader
+{
+public:
+    spell_jikun_hatchling_eat() : SpellScriptLoader("spell_jikun_hatchling_eat") { }
+
+    class spell_jikun_hatchling_eat_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_jikun_hatchling_eat_AuraScript);
+
+        void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE && GetCaster() && GetTarget())
+            {
+                if (GetTarget()->ToCreature() && GetCaster()->ToCreature())
+                {
+                    GetTarget()->ToCreature()->DespawnOrUnsummon();
+                    GetCaster()->ToCreature()->AI()->SetData(DATA_MORPH, 0);
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_jikun_hatchling_eat_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
         }
     };
 
     AuraScript* GetAuraScript() const
     {
-        return new spell_hatchling_morph_AuraScript();
+        return new spell_jikun_hatchling_eat_AuraScript();
     }
 };
 
@@ -1287,6 +1402,7 @@ void AddSC_boss_jikun()
     new npc_incubater();
     new npc_young_egg_of_jikun();
     new npc_hatchling();
+    new npc_jikun_feed_pool_nest();
     new npc_jikun_fledgling_egg();
     new npc_mature_egg_of_jikun();
     new npc_juvenile();
@@ -1302,6 +1418,7 @@ void AddSC_boss_jikun()
     new spell_regurgitate();
     new spell_jikun_feed_platform_p_dmg();
     new spell_jikun_slimed_aura();
-    new spell_hatchling_morph();
+    new spell_primal_nutriment();
+    new spell_jikun_hatchling_eat();
     new at_jikun_precipice();
 }
