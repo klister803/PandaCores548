@@ -5091,6 +5091,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 }
                 //JiKun
+                case 134321: //Eat channel
+                    spellInfo->Effects[0]->TargetA = 25;
+                    spellInfo->Effects[0]->TargetB = 0;
+                    break;
                 case 134338: //Feather AT
                     spellInfo->Effects[0]->TargetA = TARGET_DEST_DEST;
                     break;
