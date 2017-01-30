@@ -1856,11 +1856,21 @@ public:
             case DATA_PLAY_FINAL_MOVIE:
             {
                 uint32 spell = GetData(DATA_TEAM_IN_INSTANCE) == HORDE ? SPELL_HORDE : SPELL_ALLIANCE;
+                uint32 _achievemententry = GetData(DATA_TEAM_IN_INSTANCE) == HORDE ? 8680 : 8679; //Liberator of Orgrimmar : Conqueror of Orgrimmar
                 Map::PlayerList const& PlayerList = instance->GetPlayers();
                 if (!PlayerList.isEmpty())
+                {
                     for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+                    {
                         if (Player* player = Itr->getSource())
+                        {
+                            if (AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(_achievemententry))
+                                if (!player->HasAchieved(_achievemententry))
+                                    player->CompletedAchievement(achievementEntry);
                             player->CastSpell(player, spell, true);
+                        }
+                    }
+                }
             }
             break;
             case DATA_CHECK_DIED_PLAYER_IN_REALM_OF_YSHARRJ:

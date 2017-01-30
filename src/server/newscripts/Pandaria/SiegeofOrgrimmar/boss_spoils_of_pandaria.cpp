@@ -390,7 +390,8 @@ public:
                                     player->UpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, 145904);
                                     if (me->GetMap()->IsHeroic())
                                         if (AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(8478))
-                                            player->CompletedAchievement(achievementEntry);
+                                            if (!player->HasAchieved(8478))
+                                                player->CompletedAchievement(achievementEntry);
                                 }
                             }
                         }
