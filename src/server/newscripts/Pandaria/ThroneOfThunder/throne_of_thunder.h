@@ -44,6 +44,8 @@ enum eData
     DATA_RESET_NEST,
     DATA_TAKEOFF,
     DATA_MORPH,
+    DATA_LAUNCH_FEED_NEST,
+    DATA_LAUNCH_FEED_PLATFORM,
 };
 
 enum esAction
@@ -196,7 +198,7 @@ enum eCreatures
     //Iron Qon Maunts
     NPC_ROSHAK              = 68079, //Fire
     NPC_QUETZAL             = 68080, //Storm
-    NPC_DAMREN              = 68081, //Froxen
+    NPC_DAMREN              = 68081, //Frozen
     //Twin consorts
     NPC_SULIN               = 68904,
     NPC_LULIN               = 68905,
@@ -207,10 +209,15 @@ enum eCreatures
 
 enum esSpell
 {
-    SPELL_SHADO_PAN_ONSLAUGHT = 149070,
-    SPELL_HYDRA_FRENZY        = 139942,
-    SPELL_TORRENT_OF_ICE_T    = 139857,
-    SPELL_JIKUN_FLY           = 140013,
+    SPELL_SHADO_PAN_ONSLAUGHT     = 149070,
+    SPELL_HYDRA_FRENZY            = 139942,
+    SPELL_TORRENT_OF_ICE_T        = 139857,
+    SPELL_JIKUN_FLY               = 140013,
+    SPELL_INCUBATE_ZONE           = 137526,
+    SPELL_JUMPS_DOWN_TO_HATCHLING = 138904,
+    SPELL_JUMP_DOWN_TO_PLATFORM   = 140575,
+    SPELL_SLIMED_AT               = 134255, //feed fly AT (catch feed)
+    SPELL_FEED_FALL_VISUAL        = 140788, //visual feed, then fly
 };
 
 enum eGameObjects

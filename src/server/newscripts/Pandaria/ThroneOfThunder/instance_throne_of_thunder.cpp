@@ -1013,6 +1013,69 @@ public:
             case DATA_ACTIVE_NEXT_NEST:
                 ActiveNextNest();
                 break;
+            case DATA_LAUNCH_FEED_NEST:
+                if (Creature* jikun = instance->GetCreature(GetData64(NPC_JI_KUN)))
+                {
+                    std::list<Creature*> activeincubatelist;
+                    activeincubatelist.clear();
+                    //find active nest and write in list
+                    for (uint8 n = 0; n < 10; n++)
+                        if (Creature* incubate = instance->GetCreature(jikunincubatelist[n]))
+                            if (incubate->GetPositionZ() < 36.0f && incubate->HasAura(SPELL_INCUBATE_ZONE))
+                                activeincubatelist.push_back(incubate);
+                    //launch feed in this nest
+                    if (!activeincubatelist.empty())
+                    {
+                        for (std::list<Creature*>::const_iterator Itr = activeincubatelist.begin(); Itr != activeincubatelist.end(); Itr++)
+                        {
+                            for (uint8 n = 0; n < 4; n++)
+                            {
+                                if (Creature* feed = jikun->SummonCreature(NPC_FEED, jikun->GetPositionX(), jikun->GetPositionY(), jikun->GetPositionZ() + 12.0f, 0.0f))
+                                {
+                                    float x, y;
+                                    GetPosInRadiusWithRandomOrientation(*Itr, 4.0f, x, y);
+                                    feed->SetDisplayId(11686);
+                                    feed->CastSpell(feed, SPELL_FEED_FALL_VISUAL, true);
+                                    feed->CastSpell(feed, SPELL_SLIMED_AT, true);
+                                    feed->CastSpell(x, y, (*Itr)->GetPositionZ() + 1.5f, SPELL_JUMPS_DOWN_TO_HATCHLING, true);
+                                }
+                            }
+                        }
+                    }
+                }
+                break;
+            case DATA_LAUNCH_FEED_PLATFORM:
+                if (Creature* jikun = instance->GetCreature(GetData64(NPC_JI_KUN)))
+                {
+                    std::list<Player*>pllist;
+                    pllist.clear();
+                    GetPlayerListInGrid(pllist, jikun, 50.0f);
+                    if (!pllist.empty())
+                    {
+                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end();)
+                        {
+                            if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) == ROLES_TANK)
+                                pllist.erase(itr++);
+                            else
+                                ++itr;
+                        }
+                        if (!pllist.empty())
+                        {
+                            if (pllist.size() > 4)
+                                pllist.resize(4);
+
+                            for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                            {
+                                if (Creature* feed = jikun->SummonCreature(NPC_FEED, jikun->GetPositionX(), jikun->GetPositionY(), jikun->GetPositionZ() + 12.0f, 0.0f))
+                                {
+                                    feed->SetDisplayId(48142); //blizzard change visual not spell
+                                    feed->CastSpell(*itr, SPELL_JUMP_DOWN_TO_PLATFORM, true);
+                                }
+                            }
+                        }
+                    }
+                }
+                break;
             }
         }
 

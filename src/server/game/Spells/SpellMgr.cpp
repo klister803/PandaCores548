@@ -5091,6 +5091,15 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 }
                 //JiKun
+                case 137528: //Feed Young
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                            eff->Amplitude = 2500;
+                    break;
+                case 138904: //Jump down to hatchling
+                    spellInfo->Effects[0]->TargetA = 87;
+                    spellInfo->Effects[0]->TargetB = 0;
+                    break;
                 case 134321: //Eat channel
                     spellInfo->Effects[0]->TargetA = 25;
                     spellInfo->Effects[0]->TargetB = 0;

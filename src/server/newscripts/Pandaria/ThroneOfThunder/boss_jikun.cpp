@@ -40,21 +40,17 @@ enum eSpells
     SPELL_FLY                     = 133755,
 
     //Incubate
-    SPELL_INCUBATE_ZONE           = 137526,
     SPELL_INCUBATE_TARGET_AURA    = 134347,
     SPELL_INCUBATE_TARGET_AURA_2  = 134335,
 
     //Feed for nest
     SPELL_PRIMAL_NUTRIMENT        = 140741, //buff if catch slimed
-    SPELL_SLIMED_AT               = 134255, //feed fly AT (catch feed)
-    SPELL_FOOD_FALL_VISUAL        = 140788, //visual feed, then fly
-    SPELL_JUMPS_DOWN_TO_HATCHLING = 138904,
+    SPELL_PRIMAL_NUTRIMENT_TR_S   = 112879,
     SPELL_FEED_POOL_SPAWN_N       = 139284, //pool in nest visual
 
     //Feed for platform
     SPELL_FEED_POOL_SPAWN_P       = 138854, //pool on platform visual
     SPELL_FEED_POOL_DMG           = 138319,
-    SPELL_JUMP_DOWN_TO_PLATFORM   = 140575,
     SPELL_SLIMED_DMG              = 134256,
     SPELL_SLIMED_DEBUFF           = 138309,
 
@@ -113,6 +109,7 @@ public:
         boss_jikunAI(Creature* creature) : BossAI(creature, DATA_JI_KUN)
         {
             instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_DEFENSIVE);
             //me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
         }
         InstanceScript* instance;
@@ -120,16 +117,36 @@ public:
         void Reset()
         {
             _Reset();
-            me->SetReactState(REACT_DEFENSIVE);
-            //me->SetReactState(REACT_PASSIVE);
+            DespawnAllTriggers();
+            RemoveDebuffsFromPlayers();
+        }
+
+        void DespawnAllTriggers()
+        {
+            std::list<Creature*> list;
+            list.clear();
+            me->GetCreatureListWithEntryInGrid(list, NPC_FEED_P_POOL, 100.0f);
+            if (!list.empty())
+                for (std::list<Creature*>::const_iterator itr = list.begin(); itr != list.end(); itr++)
+                    (*itr)->DespawnOrUnsummon();
+        }
+
+        void RemoveDebuffsFromPlayers()
+        {
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TALON_RAKE);
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SLIMED_DMG);
             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SLIMED_DEBUFF);
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PRIMAL_NUTRIMENT);
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PRIMAL_NUTRIMENT_TR_S);
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_DAEDALIAN_WINGS);
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FLY);
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_INFECTED_TALONS);
         }
 
         void EnterCombat(Unit* who)
         {
             _EnterCombat();
-            //After pool active first nest, add feed 3 second timer
-            //events.ScheduleEvent(EVENT_ACTIVE_NEST, 10000);
+            //events.ScheduleEvent(EVENT_ACTIVE_NEST, 1000);
             events.ScheduleEvent(EVENT_CAW, 14000);
             events.ScheduleEvent(EVENT_TALON_RAKE, 20000);
             events.ScheduleEvent(EVENT_QUILLS, 42000);
@@ -139,7 +156,7 @@ public:
         void JustDied(Unit* /*killer*/)
         {
             _JustDied();
-            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SLIMED_DEBUFF);
+            RemoveDebuffsFromPlayers();
         }
 
         void UpdateAI(uint32 diff)
@@ -157,8 +174,8 @@ public:
                 switch (eventId)
                 {
                 case EVENT_ACTIVE_NEST:
-                    //instance->SetData(DATA_ACTIVE_NEXT_NEST, 0);
-                    //events.ScheduleEvent(EVENT_FEED_YOUNG, 3000);
+                    instance->SetData(DATA_ACTIVE_NEXT_NEST, 0);
+                    events.ScheduleEvent(EVENT_FEED_YOUNG, 3000);
                     break;
                 case EVENT_FEED_YOUNG:
                     DoCast(me, SPELL_FEED_YOUNG);
@@ -290,6 +307,12 @@ public:
                         }
                     }
                 }
+
+                egglist.clear();
+                GetCreatureListWithEntryInGrid(egglist, me, NPC_FEED_NEST_POOL, 20.0f);
+                if (!egglist.empty())
+                    for (std::list<Creature*>::const_iterator itr = egglist.begin(); itr != egglist.end(); itr++)
+                        (*itr)->DespawnOrUnsummon();
 
                 std::list<GameObject*> _egglist;
                 _egglist.clear();
@@ -922,17 +945,12 @@ public:
             pInstance = creature->GetInstanceScript();
             me->SetCanFly(true);
             me->SetDisableGravity(true);
-            me->SetDisplayId(11686);
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         }
         InstanceScript* pInstance;
 
-        void Reset()
-        {
-            DoCast(me, SPELL_FOOD_FALL_VISUAL, true);
-            DoCast(me, SPELL_SLIMED_AT, true);
-        }
+        void Reset(){}
 
         void MovementInform(uint32 type, uint32 pointId)
         {
@@ -970,7 +988,7 @@ public:
             pInstance = creature->GetInstanceScript();
             me->SetDisplayId(11686);
             me->SetReactState(REACT_PASSIVE);
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE /*| UNIT_FLAG_NOT_SELECTABLE*/);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE);
         }
         InstanceScript* pInstance;
         EventMap events;
@@ -979,6 +997,12 @@ public:
         {
             DoCast(me, SPELL_FEED_POOL_SPAWN_P, true);
             events.ScheduleEvent(EVENT_FIND_PLAYER, 1000);
+        }
+
+        void IsSummonedBy(Unit* summoner)
+        {
+            if (summoner->ToCreature())
+                summoner->ToCreature()->DespawnOrUnsummon();
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -1198,41 +1222,6 @@ public:
     }
 };
 
-//134385
-class spell_regurgitate : public SpellScriptLoader
-{
-public:
-    spell_regurgitate() : SpellScriptLoader("spell_regurgitate") { }
-
-    class spell_regurgitate_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_regurgitate_SpellScript);
-
-        //this only test version
-        void HandleScript(SpellEffIndex effIndex)
-        {
-            /*if (GetCaster() && GetCaster()->ToCreature())
-            {
-                if (InstanceScript* instance = GetCaster()->GetInstanceScript())
-                {
-                    if (Creature* feed = GetCaster()->SummonCreature(NPC_FEED, GetCaster()->GetPositionX(), GetCaster()->GetPositionY(), GetCaster()->GetPositionZ() + 15.0f, 0.0f))
-                        feed->CastSpell(incubate, SPELL_JUMPS_DOWN_TO_HATCHLING, true);
-                }
-            }*/
-        }
-
-        void Register()
-        {
-            OnEffectHitTarget += SpellEffectFn(spell_regurgitate_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_regurgitate_SpellScript();
-    }
-};
-
 //138319
 class spell_jikun_feed_platform_p_dmg : public SpellScriptLoader
 {
@@ -1285,7 +1274,7 @@ public:
 
         void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
+            if (GetTarget() && GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
                 GetTarget()->CastSpell(GetTarget(), SPELL_SLIMED_DEBUFF, true);
         }
 
@@ -1373,6 +1362,50 @@ public:
     }
 };
 
+//137528
+class spell_jikun_feed_young : public SpellScriptLoader
+{
+public:
+    spell_jikun_feed_young() : SpellScriptLoader("spell_jikun_feed_young") { }
+
+    class spell_jikun_feed_young_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_jikun_feed_young_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (GetCaster() && GetCaster()->ToCreature())
+            {
+                if (InstanceScript* instance = GetCaster()->GetInstanceScript())
+                {
+                    uint32 tick = aurEff->GetTickNumber();
+                    switch (tick)
+                    {
+                    case 1:
+                        instance->SetData(DATA_LAUNCH_FEED_NEST, 0);
+                        break;
+                    case 2:
+                        instance->SetData(DATA_LAUNCH_FEED_PLATFORM, 0);
+                        break;
+                    default:
+                        break;
+                    }
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_jikun_feed_young_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_jikun_feed_young_AuraScript();
+    }
+};
+
 //8848
 class at_jikun_precipice : public AreaTriggerScript
 {
@@ -1415,10 +1448,10 @@ void AddSC_boss_jikun()
     new spell_daedalian_wings();
     new spell_incubated();
     new spell_caw_searcher();
-    new spell_regurgitate();
     new spell_jikun_feed_platform_p_dmg();
     new spell_jikun_slimed_aura();
     new spell_primal_nutriment();
     new spell_jikun_hatchling_eat();
+    new spell_jikun_feed_young();
     new at_jikun_precipice();
 }
