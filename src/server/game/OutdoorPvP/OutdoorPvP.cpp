@@ -52,6 +52,9 @@ bool OPvPCapturePoint::HandlePlayerEnter(Player* player)
 
 void OPvPCapturePoint::HandlePlayerLeave(Player* player)
 {
+    if (!player || !player->IsInWorld())
+        return;
+
     if (m_capturePoint)
         player->SendUpdateWorldState(m_capturePoint->GetGOInfo()->controlZone.worldState1, 0);
 
@@ -308,7 +311,10 @@ bool OPvPCapturePoint::Update(uint32 diff)
         for (PlayerSet::iterator itr = m_activePlayers[team].begin(); itr != m_activePlayers[team].end();)
         {
             Player* player = *itr;
-            ++itr;
+            if (!player || !player->IsInWorld())
+                m_activePlayers[team].erase(itr++);
+            else
+                ++itr;
             if (!m_capturePoint->IsWithinDistInMap(player, radius) || !player->IsOutdoorPvPActive())
                 HandlePlayerLeave(player);
         }
@@ -420,7 +426,8 @@ void OutdoorPvP::SendUpdateWorldState(uint32 field, uint32 value)
     if (m_sendUpdate)
         for (int i = 0; i < 2; ++i)
             for (PlayerSet::iterator itr = m_players[i].begin(); itr != m_players[i].end(); ++itr)
-                (*itr)->SendUpdateWorldState(field, value);
+                if ((*itr) && (*itr)->IsInWorld())
+                    (*itr)->SendUpdateWorldState(field, value);
 }
 
 void OPvPCapturePoint::SendUpdateWorldState(uint32 field, uint32 value)
@@ -429,9 +436,8 @@ void OPvPCapturePoint::SendUpdateWorldState(uint32 field, uint32 value)
     {
         // send to all players present in the area
         for (PlayerSet::iterator itr = m_activePlayers[team].begin(); itr != m_activePlayers[team].end(); ++itr)
-        {
-            (*itr)->SendUpdateWorldState(field, value);
-        }
+            if ((*itr) && (*itr)->IsInWorld())
+                (*itr)->SendUpdateWorldState(field, value);
     }
 }
 
@@ -452,7 +458,8 @@ void OPvPCapturePoint::SendObjectiveComplete(uint32 id, uint64 guid)
 
     // send to all players present in the area
     for (PlayerSet::iterator itr = m_activePlayers[team].begin(); itr != m_activePlayers[team].end(); ++itr)
-        (*itr)->KilledMonsterCredit(id, guid);
+        if ((*itr) && (*itr)->IsInWorld())
+            (*itr)->KilledMonsterCredit(id, guid);
 }
 
 void OutdoorPvP::HandleKill(Player* killer, Unit* killed)
