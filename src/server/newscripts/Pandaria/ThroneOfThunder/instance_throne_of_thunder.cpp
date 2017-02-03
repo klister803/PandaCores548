@@ -1052,7 +1052,7 @@ public:
                     GetPlayerListInGrid(pllist, jikun, 50.0f);
                     if (!pllist.empty())
                     {
-                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end();)
+                        for (std::list<Player*>::iterator itr = pllist.begin(); itr != pllist.end();)
                         {
                             if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) == ROLES_TANK)
                                 pllist.erase(itr++);
