@@ -46,6 +46,7 @@ enum eData
     DATA_MORPH,
     DATA_LAUNCH_FEED_NEST,
     DATA_LAUNCH_FEED_PLATFORM,
+    DATA_ENTERCOMBAT,
 };
 
 enum esAction

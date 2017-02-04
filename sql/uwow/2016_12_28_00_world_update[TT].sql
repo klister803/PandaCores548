@@ -1,5 +1,5 @@
 DELETE FROM `creature` WHERE `id` = '68192';
-UPDATE `creature_template` SET `ScriptName`='npc_young_egg_of_jikun' WHERE `entry`='68194'; 
+UPDATE `creature_template` SET `mechanic_immune_mask`='650854399',`ScriptName`='npc_young_egg_of_jikun' WHERE `entry`='68194'; 
 UPDATE `creature_template` SET `ScriptName`='npc_incubater' WHERE `entry`='69626';
 DELETE FROM `gameobject` WHERE `id`='213168' AND `map` = '1098';
 UPDATE `creature_template` SET `ScriptName`='npc_jump_to_boss_platform' WHERE `entry`='69885'; 

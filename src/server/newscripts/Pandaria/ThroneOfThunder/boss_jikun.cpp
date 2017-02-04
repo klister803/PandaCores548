@@ -96,7 +96,7 @@ enum eEvents
     EVENT_TAKEOFF_3               = 18,
     EVENT_MOVE_TO_DEST_POS_2      = 19,
     EVENT_EAT                     = 20,
-    EVENT_ACTIVE                  = 21,
+    EVENT_BATTLE_RESPAWN_NEST     = 21,
 };
 
 class boss_jikun : public CreatureScript
@@ -110,15 +110,18 @@ public:
         {
             instance = creature->GetInstanceScript();
             me->SetReactState(REACT_DEFENSIVE);
-            //me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
         }
         InstanceScript* instance;
+        uint32 checkvictim;
 
         void Reset()
         {
             _Reset();
+            me->SetFullHealth();
             DespawnAllTriggers();
             RemoveDebuffsFromPlayers();
+            checkvictim = 0;
         }
 
         void DespawnAllTriggers()
@@ -146,7 +149,8 @@ public:
         void EnterCombat(Unit* who)
         {
             _EnterCombat();
-            //events.ScheduleEvent(EVENT_ACTIVE_NEST, 1000);
+            checkvictim = 4000;
+            events.ScheduleEvent(EVENT_ACTIVE_NEST, 1000);
             events.ScheduleEvent(EVENT_CAW, 14000);
             events.ScheduleEvent(EVENT_TALON_RAKE, 20000);
             events.ScheduleEvent(EVENT_QUILLS, 42000);
@@ -164,6 +168,22 @@ public:
             if (!UpdateVictim())
                 return;
 
+            if (checkvictim)
+            {
+                if (checkvictim <= diff)
+                {
+                    if (me->getVictim())
+                    {
+                        if (!me->IsWithinMeleeRange(me->getVictim()))
+                            ScriptedAI::EnterEvadeMode();
+                        else
+                            checkvictim = 4000;
+                    }
+                }
+                else
+                    checkvictim -= diff;
+            }
+
             events.Update(diff);
 
             if (me->HasUnitState(UNIT_STATE_CASTING))
@@ -175,7 +195,8 @@ public:
                 {
                 case EVENT_ACTIVE_NEST:
                     instance->SetData(DATA_ACTIVE_NEXT_NEST, 0);
-                    events.ScheduleEvent(EVENT_FEED_YOUNG, 3000);
+                    events.ScheduleEvent(EVENT_FEED_YOUNG, 2000);
+                    events.ScheduleEvent(EVENT_ACTIVE_NEST, 30000);
                     break;
                 case EVENT_FEED_YOUNG:
                     DoCast(me, SPELL_FEED_YOUNG);
@@ -208,6 +229,7 @@ public:
                     events.ScheduleEvent(EVENT_CAW, 20000);
                     break;
                 case EVENT_DOWN_DRAFT:
+                    checkvictim = 12000;
                     DoCast(me, SPELL_DOWN_DRAFT_AT);
                     events.ScheduleEvent(EVENT_DOWN_DRAFT, 97000);
                     break;
@@ -239,6 +261,7 @@ public:
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE);
         }
         InstanceScript* pInstance;
+        EventMap events;
         SummonList summon;
 
         void Reset(){}
@@ -264,16 +287,19 @@ public:
                 std::list<Creature*> egglist;
                 egglist.clear();
                 uint32 incubatevisualpellid = 0;
+                uint32 eggentry = 0;
                 if (me->GetPositionZ() >= 37.0f)
                 {
                     incubatevisualpellid = SPELL_INCUBATE_TARGET_AURA_2;
-                    GetCreatureListWithEntryInGrid(egglist, me, NPC_MATURE_EGG_OF_JIKUN, 20.0f);
+                    eggentry = NPC_MATURE_EGG_OF_JIKUN;
                 }
                 else
                 {
                     incubatevisualpellid = SPELL_INCUBATE_TARGET_AURA;
-                    GetCreatureListWithEntryInGrid(egglist, me, NPC_YOUNG_EGG_OF_JIKUN, 20.0f);
+                    eggentry = NPC_YOUNG_EGG_OF_JIKUN;
+                    events.ScheduleEvent(EVENT_FEED_YOUNG, 11000);
                 }
+                GetCreatureListWithEntryInGrid(egglist, me, eggentry, 20.0f);
                 uint8 maxsize = me->GetMap()->Is25ManRaid() ? 5 : 4;
                 if (egglist.size() > maxsize)
                     egglist.resize(maxsize);
@@ -285,15 +311,17 @@ public:
                         (*itr)->CastSpell(*itr, incubatevisualpellid, true);
                     }
                 }
+                break;
             }
-            break;
             case DATA_RESET_NEST:
+            {
                 summon.DespawnAll();
                 me->RemoveAurasDueToSpell(SPELL_INCUBATE_ZONE);
                 std::list<Creature*> egglist;
                 egglist.clear();
                 GetCreatureListWithEntryInGrid(egglist, me, NPC_YOUNG_EGG_OF_JIKUN, 20.0f);
                 GetCreatureListWithEntryInGrid(egglist, me, NPC_MATURE_EGG_OF_JIKUN, 20.0f);
+                GetCreatureListWithEntryInGrid(egglist, me, NPC_JIKUN_FLEDGLING_EGG, 20.0f);
                 if (!egglist.empty())
                 {
                     for (std::list<Creature*>::const_iterator itr = egglist.begin(); itr != egglist.end(); itr++)
@@ -314,20 +342,14 @@ public:
                     for (std::list<Creature*>::const_iterator itr = egglist.begin(); itr != egglist.end(); itr++)
                         (*itr)->DespawnOrUnsummon();
 
-                std::list<GameObject*> _egglist;
-                _egglist.clear();
-                GetGameObjectListWithEntryInGrid(_egglist, me, GO_JIKUN_EGG, 20.0f);
-                if (!_egglist.empty())
-                    for (std::list<GameObject*>::const_iterator Itr = _egglist.begin(); Itr != _egglist.end(); Itr++)
-                        (*Itr)->SetGoState(GO_STATE_READY);
-
                 std::list<AreaTrigger*> atlist;
                 atlist.clear();
                 me->GetAreaTriggersWithEntryInRange(atlist, 4628, me->GetGUID(), 15.0f);
                 if (!atlist.empty())
                     for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
                         (*itr)->RemoveFromWorld();
-                break;
+            }
+            break;
             }
         }
 
@@ -335,7 +357,88 @@ public:
 
         void EnterEvadeMode(){}
 
-        void UpdateAI(uint32 diff){}
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                case EVENT_FEED_YOUNG:
+                {
+                    //Get hatchlings in nest
+                    std::list<Creature*>feedlist;
+                    feedlist.clear();
+                    GetCreatureListWithEntryInGrid(feedlist, me, NPC_FEED_NEST_POOL, 20.0f);
+
+                    //Get feed in nest
+                    std::list<Creature*>hatchlinglist;
+                    hatchlinglist.clear();
+                    GetCreatureListWithEntryInGrid(hatchlinglist, me, NPC_HATCHLING, 20.0f);
+
+                    //Push this creatures in vector lists for work
+                    std::vector<uint64>_hatchlinglist;
+                    _hatchlinglist.clear();
+                    for (std::list<Creature*>::const_iterator itr = hatchlinglist.begin(); itr != hatchlinglist.end(); itr++)
+                        _hatchlinglist.push_back((*itr)->GetGUID());
+
+                    std::vector<uint64>_feedlist;
+                    _feedlist.clear();
+                    for (std::list<Creature*>::const_iterator Itr = feedlist.begin(); Itr != feedlist.end(); Itr++)
+                        _feedlist.push_back((*Itr)->GetGUID());
+
+                    //Set unique feed for every hatchling, if feed not enough, hatchling launch combat
+                    for (uint8 n = 0; n < _hatchlinglist.size(); n++)
+                    {
+                        if (Creature* hatchling = me->GetCreature(*me, _hatchlinglist[n]))
+                        {
+                            if (n <= _feedlist.size() - 1)
+                            {
+                                if (Creature* feed = me->GetCreature(*me, _feedlist[n]))
+                                    hatchling->AI()->SetGUID(feed->GetGUID(), 1);
+                            }
+                            else
+                                hatchling->AI()->SetData(DATA_ENTERCOMBAT, 0);
+                        }
+                    }
+                    events.ScheduleEvent(EVENT_BATTLE_RESPAWN_NEST, 30000);
+                    break;
+                }
+                case EVENT_BATTLE_RESPAWN_NEST:
+                {
+                    //clear nest (prepare for next activation)
+                    std::list<Creature*> egglist;
+                    egglist.clear();
+                    GetCreatureListWithEntryInGrid(egglist, me, NPC_YOUNG_EGG_OF_JIKUN, 20.0f);
+                    if (!egglist.empty())
+                    {
+                        for (std::list<Creature*>::const_iterator itr = egglist.begin(); itr != egglist.end(); itr++)
+                        {
+                            if (!(*itr)->isAlive())
+                                (*itr)->Respawn();
+                            else
+                                (*itr)->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                        }
+                    }
+
+                    egglist.clear();
+                    GetCreatureListWithEntryInGrid(egglist, me, NPC_FEED_NEST_POOL, 20.0f);
+                    if (!egglist.empty())
+                        for (std::list<Creature*>::const_iterator itr = egglist.begin(); itr != egglist.end(); itr++)
+                            (*itr)->DespawnOrUnsummon();
+
+                    std::list<AreaTrigger*> atlist;
+                    atlist.clear();
+                    me->GetAreaTriggersWithEntryInRange(atlist, 4628, me->GetGUID(), 15.0f);
+                    if (!atlist.empty())
+                        for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
+                            (*itr)->RemoveFromWorld();
+                }
+                break;
+                }
+            }
+        }
     };
 
     CreatureAI* GetAI(Creature* creature) const
@@ -411,23 +514,41 @@ public:
         {
             me->SetReactState(REACT_PASSIVE);
             instance = pCreature->GetInstanceScript();
+            feedGuid = 0;
         }
         InstanceScript* instance;
         EventMap events;
         uint64 feedGuid;
 
-        void Reset()
-        {
-            feedGuid = 0;
-            events.ScheduleEvent(EVENT_ACTIVE, 1000);
-        }
+        void Reset(){}
 
         void SetData(uint32 type, uint32 data)
         {
-            if (type == DATA_MORPH)
+            switch (type)
             {
+            case DATA_MORPH:
                 DoCast(me, SPELL_MORPH, true);
                 events.ScheduleEvent(EVENT_ENTERCOMBAT, 1000);
+                break;
+            case DATA_ENTERCOMBAT:
+                if (Player* player = me->FindNearestPlayer(20.0f, true))
+                {
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    me->Attack(player, true);
+                    me->GetMotionMaster()->MoveChase(player);
+                }
+                events.ScheduleEvent(EVENT_CHEEP, 5000);
+                break;
+            }
+        }
+
+        void SetGUID(uint64 guid, int32 id)
+        {
+            if (Creature* feed = me->GetCreature(*me, guid))
+            {
+                feedGuid = guid;
+                me->SetFacingToObject(feed);
+                me->GetMotionMaster()->MoveCharge(feed->GetPositionX(), feed->GetPositionY(), feed->GetPositionZ(), 3.0f, 2);
             }
         }
 
@@ -466,23 +587,6 @@ public:
                             DoCast(target, SPELL_CHEEP_HIGHT);
                     }
                     events.ScheduleEvent(EVENT_CHEEP, 8000);
-                    break;
-                case EVENT_ACTIVE:
-                    //find feed
-                    if (Creature* feed = me->FindNearestCreature(NPC_FEED_NEST_POOL, 20.0f, true))
-                    {
-                        feedGuid = feed->GetGUID();
-                        me->SetFacingToObject(feed);
-                        me->GetMotionMaster()->MoveCharge(feed->GetPositionX(), feed->GetPositionY(), feed->GetPositionZ(), 3.0f, 2);
-                        return;
-                    }
-                    //if no feed, attack nearest player
-                    if (Player* player = me->FindNearestPlayer(20.0f, true))
-                    {
-                        me->SetReactState(REACT_AGGRESSIVE);
-                        me->Attack(player, true);
-                        events.ScheduleEvent(EVENT_CHEEP, 5000);
-                    }
                     break;
                 case EVENT_EAT:
                     if (Creature* feed = me->GetCreature(*me, feedGuid))
@@ -571,10 +675,12 @@ public:
         void JustDied(Unit* killer)
         {
             me->RemoveAurasDueToSpell(SPELL_INCUBATE_TARGET_AURA);
-            if (killer == me) //incubate complete
+            //incubate complete
+            if (killer == me)
                 if (Creature* incubate = me->FindNearestCreature(NPC_INCUBATER, 20.0f, true))
                     if (Creature* juvenile = incubate->SummonCreature(NPC_JUVENILE_FROM_F_EGG, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 5.0f))
                         juvenile->AI()->SetData(DATA_TAKEOFF, 2);
+            me->DespawnOrUnsummon();
         }
 
         void EnterCombat(Unit* who){}
