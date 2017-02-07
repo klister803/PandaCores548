@@ -133,7 +133,6 @@ public:
         {
             instance = creature->GetInstanceScript();
         }
-
         InstanceScript* instance;
         uint64 lastvictimGuid;
         uint32 berserk;
@@ -154,6 +153,12 @@ public:
             events.ScheduleEvent(EVENT_THUNDERING_THROW, 30000);
             if (me->GetMap()->IsHeroic())
                 berserk = 360000;
+        }
+
+        void JustDied(Unit* killer)
+        {
+            if (instance)
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_LIGHTNING_FISSURE_DMG);
         }
 
         void ChargeConductionWater()
