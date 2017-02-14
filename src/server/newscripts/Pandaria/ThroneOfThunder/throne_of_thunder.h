@@ -156,56 +156,68 @@ enum eCreatures
     NPC_H_GATE_CONTROLLER       = 90010,
 
     //Bosses
-    NPC_JINROKH             = 69465,
-    NPC_HORRIDON            = 68476,
-    NPC_JALAK               = 69374,
+    NPC_JINROKH                 = 69465,
+    NPC_HORRIDON                = 68476,
+    NPC_JALAK                   = 69374,
     //Council of Elders
-    NPC_FROST_KING_MALAKK   = 69131,
-    NPC_PRINCESS_MARLI      = 69132,
-    NPC_KAZRAJIN            = 69134,
-    NPC_SUL_SANDCRAWLER     = 69078,
+    NPC_FROST_KING_MALAKK       = 69131,
+    NPC_PRINCESS_MARLI          = 69132,
+    NPC_KAZRAJIN                = 69134,
+    NPC_SUL_SANDCRAWLER         = 69078,
     //
-    NPC_TORTOS              = 67977,
+    NPC_TORTOS                  = 67977,
     //Megaera
-    NPC_MEGAERA             = 68065,
-    NPC_FLAMING_HEAD_MELEE  = 70212,
-    NPC_FLAMING_HEAD_RANGE  = 70229,
-    NPC_VENOMOUS_HEAD_MELEE = 70247,
-    NPC_VENOMOUS_HEAD_RANGE = 70251,
-    NPC_FROZEN_HEAD_MELEE   = 70235,
-    NPC_FROZEN_HEAD_RANGE   = 70250,
+    NPC_MEGAERA                 = 68065,
+    NPC_FLAMING_HEAD_MELEE      = 70212,
+    NPC_FLAMING_HEAD_RANGE      = 70229,
+    NPC_VENOMOUS_HEAD_MELEE     = 70247,
+    NPC_VENOMOUS_HEAD_RANGE     = 70251,
+    NPC_FROZEN_HEAD_MELEE       = 70235,
+    NPC_FROZEN_HEAD_RANGE       = 70250,
     //
     //Jikun
-    NPC_JI_KUN              = 69712,
+    NPC_JI_KUN                  = 69712,
     //Eggs
-    NPC_YOUNG_EGG_OF_JIKUN  = 68194,
-    NPC_MATURE_EGG_OF_JIKUN = 69628,
-    NPC_JIKUN_FLEDGLING_EGG = 68202,
+    NPC_YOUNG_EGG_OF_JIKUN      = 68194,
+    NPC_MATURE_EGG_OF_JIKUN     = 69628,
+    NPC_JIKUN_FLEDGLING_EGG     = 68202,
     //
-    NPC_HATCHLING           = 68192,
-    NPC_JUVENILE            = 69836,
-    NPC_JUVENILE_FROM_F_EGG = 70095,
+    NPC_HATCHLING               = 68192,
+    NPC_JUVENILE                = 69836,
+    NPC_JUVENILE_FROM_F_EGG     = 70095,
 
-    NPC_INCUBATER           = 69626,
-    NPC_FEED                = 68178,
-    NPC_FEED_NEST_POOL      = 70216, //nest pool
-    NPC_FEED_P_POOL         = 68188, //platform pool
-    NPC_FALL_CATCHER        = 69839,
+    NPC_INCUBATER               = 69626,
+    NPC_FEED                    = 68178,
+    NPC_FEED_NEST_POOL          = 70216, //nest pool
+    NPC_FEED_P_POOL             = 68188, //platform pool
+    NPC_FALL_CATCHER            = 69839,
     //
-    NPC_DURUMU              = 68036,
-    NPC_PRIMORDIUS          = 69017,
-    NPC_DARK_ANIMUS         = 69427,
-    NPC_IRON_QON            = 68078,
+    NPC_DURUMU                  = 68036,
+    NPC_APPRAISING_EYE          = 67858,
+    NPC_MIND_EYE                = 67875,
+
+    NPC_RED_EYE                 = 67855,
+    NPC_RED_EYEBEAM_TARGET      = 67851,
+
+    NPC_BLUE_EYE                = 67854,
+    NPC_BLUE_EYEBEAM_TARGET     = 67829,
+
+    NPC_YELLOW_EYE              = 67856,
+    NPC_YELLOW_EYEBEAM_TARGET   = 67852,
+
+    NPC_PRIMORDIUS              = 69017,
+    NPC_DARK_ANIMUS             = 69427,
+    NPC_IRON_QON                = 68078,
     //Iron Qon Maunts
-    NPC_ROSHAK              = 68079, //Fire
-    NPC_QUETZAL             = 68080, //Storm
-    NPC_DAMREN              = 68081, //Frozen
+    NPC_ROSHAK                  = 68079, //Fire
+    NPC_QUETZAL                 = 68080, //Storm
+    NPC_DAMREN                  = 68081, //Frozen
     //Twin consorts
-    NPC_SULIN               = 68904,
-    NPC_LULIN               = 68905,
+    NPC_SULIN                   = 68904,
+    NPC_LULIN                   = 68905,
     //
-    NPC_LEI_SHEN            = 68397,
-    NPC_RA_DEN              = 69473,
+    NPC_LEI_SHEN                = 68397,
+    NPC_RA_DEN                  = 69473,
 };
 
 enum esSpell

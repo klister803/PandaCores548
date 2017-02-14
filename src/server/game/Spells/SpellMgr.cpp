@@ -5107,6 +5107,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 134338: //Feather AT
                     spellInfo->Effects[0]->TargetA = TARGET_DEST_DEST;
                     break;
+                //Durumu
+                case 134123: //Infrared Ligh (visual beam)
+                case 134124: //Bright Light  (visual beam)
+                case 134122: //Blue Ray      (visual beam)
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21);
+                    break;
                 //Primordius
                 case 136220: //Acidic explosion tr ef dmg
                 {

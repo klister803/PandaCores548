@@ -906,13 +906,8 @@ public:
             }
            
             if (state == DONE && id != DATA_RA_DEN)
-            {
                 if (GameObject* go = instance->GetGameObject(secretradendoorGuid))
                     LoadSecretRaDenDoor(go);
-            }
-            else if (state == IN_PROGRESS && id > DATA_JI_KUN)
-                DoRemoveAurasDueToSpellOnPlayers(SPELL_JIKUN_FLY); //for safe
-
             return true;
         }
 
