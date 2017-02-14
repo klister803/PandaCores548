@@ -872,8 +872,8 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 
     if (damagetype == DIRECT_DAMAGE || damagetype == SPELL_DIRECT_DAMAGE)
     {
-        m_damage_counters[DAMAGE_DONE_COUNTER][0] += health >= damage ? damage : health;
-        victim->m_damage_counters[DAMAGE_TAKEN_COUNTER][0] += health >= damage ? damage : health;
+        m_damage_counters[DAMAGE_DONE_COUNTER][0] += health >= damage ? damage + (cleanDamage ? cleanDamage->absorbed_damage : 0) : health;
+        victim->m_damage_counters[DAMAGE_TAKEN_COUNTER][0] += health >= damage ? damage + (cleanDamage ? cleanDamage->absorbed_damage : 0) : health;
     }
 
     if (health <= damage)
@@ -7607,6 +7607,22 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 }
                 case 44448: // Pyroblast Clearcasting Driver
                 {
+                    if (!procSpell)
+                        return false;
+
+                    if (!damage && !(procEx & PROC_EX_ABSORB))
+                        return false;
+
+                    if (procEx & PROC_EX_INTERNAL_DOT)
+                        return false;
+
+                    /// Prevent proc on victim fire mage
+                    if (procFlag & PROC_FLAG_TAKEN_DAMAGE)
+                        return false;
+
+                    if (procSpell->IsAffectingArea())
+                        return false;
+
                     bool RemoveHeatingUp = HasAura(48107) ? true: false;
 
                     if (procEx & PROC_EX_CRITICAL_HIT)

@@ -8147,7 +8147,6 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
 
     uint32 absorb = 0;
     uint32 resist = 0;
-    CleanDamage cleanDamage = CleanDamage(0, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
 
     // ignore non positive values (can be result apply spellmods to aura damage
     uint32 damage = std::max(RoundingFloatValue(GetAmount()), 0);
@@ -8329,6 +8328,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
     DamageInfo dmgInfoProc = DamageInfo(caster, target, damage, GetSpellInfo(), GetSpellInfo() ? SpellSchoolMask(GetSpellInfo()->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE, damageBeforeHit);
     dmgInfoProc.AbsorbDamage(absorb);
     dmgInfoProc.ResistDamage(resist);
+    CleanDamage cleanDamage = CleanDamage(0, absorb, BASE_ATTACK, MELEE_HIT_NORMAL);
 
     // Set trigger flag
     uint32 procAttacker = PROC_FLAG_DONE_PERIODIC;
@@ -8390,7 +8390,6 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster, S
 
     uint32 absorb = 0;
     uint32 resist = 0;
-    CleanDamage cleanDamage = CleanDamage(0, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
 
     uint32 damage = std::max(RoundingFloatValue(GetAmount()), 0);
     uint32 damageBeforeHit = target->SpellDamageBonusForDamageBeforeHit(caster, GetSpellInfo(), damage);
@@ -8423,6 +8422,7 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster, S
     DamageInfo dmgInfoProc = DamageInfo(caster, target, damage, GetSpellInfo(), GetSpellInfo() ? SpellSchoolMask(GetSpellInfo()->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE, damageBeforeHit);
     dmgInfoProc.AbsorbDamage(absorb);
     dmgInfoProc.ResistDamage(resist);
+    CleanDamage cleanDamage = CleanDamage(0, absorb, BASE_ATTACK, MELEE_HIT_NORMAL);
 
     // Set trigger flag
     uint32 procAttacker = PROC_FLAG_DONE_PERIODIC;
