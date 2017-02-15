@@ -328,6 +328,9 @@ int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellInfo const
         }
         case SPELLFAMILY_WARLOCK:
         {
+            // Curse of Exhaustion - limit in PvP
+            if (spellproto->Id == 18233 || spellproto->Id == 104233)
+                return 8 * IN_MILLISECONDS;
             // Banish - limit to 6 seconds in PvP
             if (spellproto->SpellFamilyFlags[1] & 0x8000000)
                 return 6 * IN_MILLISECONDS;
