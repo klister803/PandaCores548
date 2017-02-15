@@ -3387,7 +3387,7 @@ class spell_dru_ursocs_vigor : public SpellScriptLoader
             {
                 if (Player* caster = GetCaster()->ToPlayer())
                     if (AuraEffect const* aurEff = caster->GetAuraEffect(144887, EFFECT_0)) // Item - Druid T16 Guardian 4P Bonus
-                        amount = int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * float(aurEff->GetAmount() / 100.0f));
+                        amount = int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * float(aurEff->GetAmount() / 800.0f));
             }
 
             void Register()
