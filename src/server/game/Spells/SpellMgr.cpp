@@ -3875,6 +3875,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_ENCHANT_PROC;
                     break;
                 case 770:    // Faerie Fire 
+                case 102355:    
                     spellInfo->AttributesEx &= ~SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE;
                     break;
                 case 51755:
@@ -3919,9 +3920,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Attributes |= SPELL_ATTR0_PASSIVE;
                     spellInfo->EquippedItemClass = 2;
                     spellInfo->EquippedItemSubClassMask = (1 << ITEM_SUBCLASS_WEAPON_MACE);
-                    break;
-                case 31224:  // Cloak of Shadows
-                    spellInfo->Effects[EFFECT_1]->TriggerSpell = 81549;
                     break;
                 case 81549:  // Cloak of Shadows (Tr)
                     spellInfo->AttributesEx |= SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY;
@@ -6271,10 +6269,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 119414: //Sha of Fear - Breath of Fear
                 case 125786:
                     spellInfo->ExcludeTargetAuraSpell = 117964;
-                    break;
-                case 105421: // Blinding Light
-                case 132169: // Stormbolt
-                    spellInfo->AttributesEx3 &= ~SPELL_ATTR3_IGNORE_HIT_RESULT;
                     break;
                 case 118905: // Static Charge
                     spellInfo->AttributesEx |= SPELL_ATTR1_CANT_BE_REFLECTED;
