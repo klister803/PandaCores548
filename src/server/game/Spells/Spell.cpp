@@ -1433,43 +1433,6 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
                 }
                 break;
             }
-            case SPELLFAMILY_DRUID:
-            {
-                bool shouldCheck = false;
-                switch (m_spellInfo->Id)
-                {
-                    case 145110: // Ysera's Gift
-                    {
-                        checkOnFullHealth = true;
-                        maxSize = 1;
-                        power = POWER_HEALTH;
-                        break;
-                    }
-                    case 48438:  // Wild Growth
-                    {
-                        shouldCheck = true;
-                        maxSize = m_caster->HasAura(62970) ? 6 : 5; // Glyph of Wild Growth
-                        power = POWER_HEALTH;
-                        break;
-                    }
-                    default:
-                        break;
-                }
-
-                // Remove targets outside caster's raid
-                // WTF?????????? May be better to change targets?
-                if (shouldCheck)
-                {
-                    for (std::list<Unit*>::iterator itr = unitTargets.begin(); itr != unitTargets.end();)
-                        if (!(*itr)->IsInRaidWith(m_caster))
-                            itr = unitTargets.erase(itr);
-                        else
-                            ++itr;
-                }
-                break;
-            }
-            default:
-                break;
         }
 
         if (targetType.GetTarget() == TARGET_UNIT_FRIEND_OR_RAID)
