@@ -329,7 +329,7 @@ int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellInfo const
         case SPELLFAMILY_WARLOCK:
         {
             // Curse of Exhaustion - limit in PvP
-            if (spellproto->Id == 18233 || spellproto->Id == 104233)
+            if (spellproto->Id == 18233 || spellproto->Id == 104223)
                 return 8 * IN_MILLISECONDS;
             // Banish - limit to 6 seconds in PvP
             if (spellproto->SpellFamilyFlags[1] & 0x8000000)
@@ -3923,6 +3923,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Attributes |= SPELL_ATTR0_PASSIVE;
                     spellInfo->EquippedItemClass = 2;
                     spellInfo->EquippedItemSubClassMask = (1 << ITEM_SUBCLASS_WEAPON_MACE);
+                    break;
+                case 31224:  // Cloak of Shadows
+                    spellInfo->Effects[EFFECT_1]->TriggerSpell = 81549;
                     break;
                 case 81549:  // Cloak of Shadows (Tr)
                     spellInfo->AttributesEx |= SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY;
