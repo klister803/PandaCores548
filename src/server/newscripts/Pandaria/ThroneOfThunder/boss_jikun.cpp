@@ -380,26 +380,38 @@ public:
                     //Push this creatures in vector lists for work
                     std::vector<uint64>_hatchlinglist;
                     _hatchlinglist.clear();
-                    for (std::list<Creature*>::const_iterator itr = hatchlinglist.begin(); itr != hatchlinglist.end(); itr++)
-                        _hatchlinglist.push_back((*itr)->GetGUID());
+                    if (!hatchlinglist.empty())
+                        for (std::list<Creature*>::const_iterator itr = hatchlinglist.begin(); itr != hatchlinglist.end(); itr++)
+                            _hatchlinglist.push_back((*itr)->GetGUID());
 
                     std::vector<uint64>_feedlist;
                     _feedlist.clear();
-                    for (std::list<Creature*>::const_iterator Itr = feedlist.begin(); Itr != feedlist.end(); Itr++)
-                        _feedlist.push_back((*Itr)->GetGUID());
+                    if (!feedlist.empty())
+                        for (std::list<Creature*>::const_iterator Itr = feedlist.begin(); Itr != feedlist.end(); Itr++)
+                            _feedlist.push_back((*Itr)->GetGUID());
 
-                    //Set unique feed for every hatchling, if feed not enough, hatchling launch combat
-                    for (uint8 n = 0; n < _hatchlinglist.size(); n++)
+
+                    if (!_hatchlinglist.empty() && _feedlist.empty()) //if have alive hatchling but not feed
                     {
-                        if (Creature* hatchling = me->GetCreature(*me, _hatchlinglist[n]))
-                        {
-                            if (n <= _feedlist.size() - 1)
-                            {
-                                if (Creature* feed = me->GetCreature(*me, _feedlist[n]))
-                                    hatchling->AI()->SetGUID(feed->GetGUID(), 1);
-                            }
-                            else
+                        for (std::vector<uint64>::const_iterator itr = _hatchlinglist.begin(); itr != _hatchlinglist.end(); itr++)
+                            if (Creature* hatchling = me->GetCreature(*me, *itr))
                                 hatchling->AI()->SetData(DATA_ENTERCOMBAT, 0);
+                    }
+                    else if (!_hatchlinglist.empty() && !_feedlist.empty()) //if have alive hatchling and feed
+                    {
+                        //Set unique feed for every hatchling, if feed not enough, hatchling launch combat
+                        for (uint8 n = 0; n < _hatchlinglist.size(); n++)
+                        {
+                            if (Creature* hatchling = me->GetCreature(*me, _hatchlinglist[n]))
+                            {
+                                if (n <= _feedlist.size() - 1)
+                                {
+                                    if (Creature* feed = me->GetCreature(*me, _feedlist[n]))
+                                        hatchling->AI()->SetGUID(feed->GetGUID(), 1);
+                                }
+                                else
+                                    hatchling->AI()->SetData(DATA_ENTERCOMBAT, 0);
+                            }
                         }
                     }
                     events.ScheduleEvent(EVENT_BATTLE_RESPAWN_NEST, 30000);
