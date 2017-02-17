@@ -315,6 +315,7 @@ public:
             }
             case DATA_RESET_NEST:
             {
+                events.Reset();
                 summon.DespawnAll();
                 me->RemoveAurasDueToSpell(SPELL_INCUBATE_ZONE);
                 std::list<Creature*> egglist;
@@ -608,11 +609,11 @@ public:
                     me->SetReactState(REACT_AGGRESSIVE);
                     DoZoneInCombat(me, 20.0f);
                     events.ScheduleEvent(EVENT_CHEEP, 5000);
-                    events.ScheduleEvent(EVENT_LAY_EGG, 8000);
+                    events.ScheduleEvent(EVENT_LAY_EGG, 12000);
                     break;
                 case EVENT_LAY_EGG:
                     DoCast(me, SPELL_LAY_EGG);
-                    events.ScheduleEvent(EVENT_LAY_EGG, 15000);
+                    events.ScheduleEvent(EVENT_LAY_EGG, 24000);
                     break;
                 }
             }

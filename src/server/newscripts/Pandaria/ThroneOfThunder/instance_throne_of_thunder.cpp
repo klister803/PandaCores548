@@ -763,6 +763,7 @@ public:
                         HandleGameObject(megaeraexdoorGuid, true);
                         break;
                     case DONE:
+                        ResetAllJiKunNests();
                         HandleGameObject(jikunexdoorGuid, true);
                         for (std::vector <uint64>::const_iterator guid = jikunfeatherGuids.begin(); guid != jikunfeatherGuids.end(); guid++)
                         {
