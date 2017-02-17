@@ -8616,6 +8616,11 @@ void Player::_SaveCurrency(SQLTransaction& trans)
         if (!entry) // should never happen
             continue;
 
+        uint32 curentCap = itr->second.curentCap;
+
+        if (int32(curentCap) < 0)
+            curentCap = GetCurrencyWeekCap(entry);
+
         switch(itr->second.state)
         {
         case PLAYERCURRENCY_NEW:
@@ -8626,7 +8631,7 @@ void Player::_SaveCurrency(SQLTransaction& trans)
             stmt->setUInt32(3, itr->second.totalCount);
             stmt->setUInt32(4, itr->second.seasonTotal);
             stmt->setUInt8(5, itr->second.flags);
-            stmt->setUInt32(6, itr->second.curentCap);
+            stmt->setUInt32(6, curentCap);
             trans->Append(stmt);
             break;
         case PLAYERCURRENCY_CHANGED:
@@ -8635,7 +8640,7 @@ void Player::_SaveCurrency(SQLTransaction& trans)
             stmt->setUInt32(1, itr->second.totalCount);
             stmt->setUInt32(2, itr->second.seasonTotal);
             stmt->setUInt8(3, itr->second.flags);
-            stmt->setUInt32(4, itr->second.curentCap);
+            stmt->setUInt32(4, curentCap);
             stmt->setUInt32(5, GetGUIDLow());
             stmt->setUInt16(6, itr->first);
             trans->Append(stmt);
@@ -8779,6 +8784,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         cur.seasonTotal = 0;
         cur.flags = 0;
         cur.currencyEntry = currency;
+        cur.curentCap = 0;
         _currencyStorage[id] = cur;
         itr = _currencyStorage.find(id);
     }
@@ -8789,46 +8795,35 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         oldSeasonTotalCount = itr->second.seasonTotal;
     }
 
-    // count can't be more then weekCap if used (weekCap > 0)
     uint32 weekCap = GetCurrencyWeekCap(currency);
-    if (modifyWeek && weekCap && (count > int32(weekCap)))
-        count = weekCap;
-
-    // count can't be more then totalCap if used (totalCap > 0)
     uint32 totalCap = GetCurrencyTotalCap(currency);
-    if (totalCap && (count > int32(totalCap)))
-        count = totalCap;
 
-    int32 newTotalCount = int32(oldTotalCount) + count;
-    if (newTotalCount < 0)
-        newTotalCount = 0;
+    if (int32(oldTotalCount) < 0)
+        oldTotalCount = 0;
 
-    int32 newWeekCount = int32(oldWeekCount) + (count > 0 ? count : 0);
-    if (newWeekCount < 0)
-        newWeekCount = 0;
+    if (int32(oldWeekCount) < 0)
+        oldWeekCount = 0;
 
-    if (!modifyWeek)
-        newWeekCount = oldWeekCount;
+    if (int32(oldSeasonTotalCount) < 0)
+        oldSeasonTotalCount = 0;
 
-    // if we get more then weekCap just set to limit
-    if (modifyWeek && weekCap && (int32(weekCap) < newWeekCount))
+    int32 newWeekCount = oldWeekCount + (modifyWeek && count > 0 ? count : 0);
+
+    if (modifyWeek && weekCap && (newWeekCount > int32(weekCap)))
     {
-        newWeekCount = int32(weekCap);
-        // weekCap - oldWeekCount always >= 0 as we set limit before!
-        if(newTotalCount > int32(oldTotalCount))
-            newTotalCount = oldTotalCount;
-        else
-            newTotalCount = oldTotalCount + (weekCap - oldWeekCount);
-    }
-
-    // if we get more then totalCap set to maximum;
-    if (totalCap && (int32(totalCap) < newTotalCount))
-    {
-        newTotalCount = int32(totalCap);
+        count = weekCap - oldWeekCount;
         newWeekCount = weekCap;
     }
 
-    int32 newSeasonTotalCount = int32(oldSeasonTotalCount) + (modifySeason && count > 0 ? count : 0);
+    int32 newTotalCount = oldTotalCount + count;
+
+    if (totalCap && (newTotalCount > int32(totalCap)))
+    {
+        count = totalCap - oldTotalCount;
+        newTotalCount = totalCap;
+    }
+
+    int32 newSeasonTotalCount = oldSeasonTotalCount + (modifySeason && count > 0 ? count : 0);
 
     if (uint32(newTotalCount) != oldTotalCount)
     {
@@ -8912,6 +8907,9 @@ uint32 Player::GetCurrencyWeekCap(CurrencyTypesEntry const* currency)
     PlayerCurrenciesMap::iterator itr = _currencyStorage.find(currency->ID);
     if (itr != _currencyStorage.end())
         curentCap = itr->second.curentCap;
+
+    if (int32(curentCap) < 0)
+        curentCap = 0;
 
     switch (currency->ID)
     {
@@ -19114,6 +19112,10 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     m_currentPetNumber = fields[61].GetInt32();
     LoadPetSlot(fields[62].GetCString());
+
+    for (uint32 i = PET_SLOT_HUNTER_FIRST; i < PET_SLOT_STABLE_FIRST; ++i)
+        if (m_PetSlots[i] == m_currentPetNumber)
+            m_currentSummonedSlot = PetSlot(i);
 
     InitDisplayIds();
 
@@ -30672,6 +30674,10 @@ void Player::setPetSlotWithStableMoveOrRealDelete(PetSlot slot, uint32 petID, bo
                 {
                     if (!m_PetSlots[i])
                     {
+                        for (uint32 i = PET_SLOT_HUNTER_FIRST; i < PET_SLOT_STABLE_FIRST; ++i)
+                            if (m_PetSlots[i] == petID)
+                                m_PetSlots[i] = 0; // reset active slot if find it here
+
                         m_PetSlots[i] = m_PetSlots[slot];
                         break;
                     }

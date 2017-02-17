@@ -916,7 +916,7 @@ class spell_mage_combustion : public SpellScriptLoader
                         if(_player->HasAura(56368))
                             percent += 20;
 
-                        if (AuraEffect const* aurEff = target->GetAuraEffect(SPELL_MAGE_IGNITE, EFFECT_0))
+                        if (AuraEffect const* aurEff = target->GetAuraEffect(SPELL_MAGE_IGNITE, EFFECT_0, _player->GetGUID()))
                             combustionBp += CalculatePct(aurEff->GetAmount(), percent);
 
                         if (combustionBp)
