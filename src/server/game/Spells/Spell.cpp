@@ -3422,7 +3422,7 @@ void Spell::DoAllEffectOnTarget(ItemTargetInfo* target)
 bool Spell::UpdateChanneledTargetList()
 {
     // Automatically forces player to face target
-    if((m_spellInfo->AttributesEx & SPELL_ATTR1_CHANNEL_TRACK_TARGET) && !m_caster->HasInArc(static_cast<float>(M_PI), m_targets.GetUnitTarget()))
+    if((m_spellInfo->AttributesEx & SPELL_ATTR1_CHANNEL_TRACK_TARGET))
         m_caster->SetInFront(m_targets.GetUnitTarget());
 
     // Not need check return true

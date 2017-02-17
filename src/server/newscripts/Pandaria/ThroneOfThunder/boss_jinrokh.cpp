@@ -157,6 +157,7 @@ public:
 
         void JustDied(Unit* killer)
         {
+            _JustDied();
             if (instance)
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_LIGHTNING_FISSURE_DMG);
         }
