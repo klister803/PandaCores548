@@ -6279,9 +6279,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 118905: // Static Charge
                     spellInfo->AttributesEx |= SPELL_ATTR1_CANT_BE_REFLECTED;
                     break;
-                case 20271: // Judgement
-                    spellInfo->AttributesEx8 |= SPELL_ATTR8_CANT_MISS;
-                    break;
                 default:
                     break;
             }
