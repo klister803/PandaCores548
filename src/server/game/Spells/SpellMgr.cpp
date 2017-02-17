@@ -5112,10 +5112,17 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->TargetA = TARGET_DEST_DEST;
                     break;
                 //Durumu
-                case 134123: //Infrared Ligh (visual beam)
-                case 134124: //Bright Light  (visual beam)
-                case 134122: //Blue Ray      (visual beam)
-                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21);
+                case 133734: //Infrared Light visual cone
+                case 133672: //Blue Ray       visual cone
+                case 133740: //Bright Light   visual cone
+                    spellInfo->Effects[0]->TargetA = TARGET_UNIT_TARGET_ANY;
+                    break;
+                case 133732: //Infrared Light Cone Dmg
+                case 133677: //Blue Ray       Cone Dmg
+                case 133738: //Bright Light   Cone Dmg
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_1, d))
+                            eff->TargetA = TARGET_UNIT_CONE_ENEMY_110;
                     break;
                 //Primordius
                 case 136220: //Acidic explosion tr ef dmg

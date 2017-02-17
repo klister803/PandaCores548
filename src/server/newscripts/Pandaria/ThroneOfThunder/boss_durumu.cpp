@@ -36,22 +36,28 @@ enum eSpells
     SPELL_DURUMU_EYE_TRAIL_YELLOW = 141010,
     SPELL_FORCE_OF_WILL_2         = 136932,
 
+    SPELL_SUMMON_FOG_BEAST_RED    = 136128,
+
     //Red
     SPELL_INFRARED_LIGHT_T_AURA   = 133731, //target  aura
     SPELL_INFRARED_LIGHT_BEAM     = 134123, //channel beam
     SPELL_INFRARED_LIGHT_CONE     = 133734, //channel cone
+    SPELL_INFRARED_LIGHT_CONE_DMG = 133732,
     SPELL_INFRARED_LIGHT_EXPLOSE  = 133733,
+    SPELL_BURNING_EYE_FOUND       = 137002,
 
     //Blue
     SPELL_BLUE_RAY_T_AURA         = 133675, //target  aura
-    SPELL_BLUE_RAY_BEAM           = 133672, //channel beam
-    SPELL_BLUE_RAY_CONE           = 134122, //channel cone
+    SPELL_BLUE_RAY_BEAM           = 134122, //channel beam
+    SPELL_BLUE_RAY_CONE           = 133672, //channel cone
+    SPELL_BLUE_RAY_CONE_DMG       = 133677,
     SPELL_BLUE_RAY_EXPLOSE        = 133678,
 
     //Yellow
     SPELL_BRIGHT_LIGHT_T_AURA     = 133737, //target  aura
     SPELL_BRIGHT_LIGHT_BEAM       = 134124, //channel beam
     SPELL_BRIGHT_LIGHT_CONE       = 133740, //channel cone
+    SPELL_BRIGHT_LIGHT_CONE_DMG   = 133738,
     SPELL_BRIGHT_LIGHT_EXPLOSE    = 133739,
 };
 
@@ -66,12 +72,15 @@ enum sEvents
     EVENT_LINGERING_GAZE          = 7,
     EVENT_RESTART_MOVING          = 8,
     EVENT_COLORBLIND              = 9,
+    EVENT_PREPARE_BEAM            = 10,
+    EVENT_CREATE_CONE             = 11,
 };
 
 enum sActions
 {
     ACTION_RE_ATTACK              = 1,
     ACTION_LINGERING_GAZE         = 2,
+    ACTION_CREATE_CONE            = 3,
 };
 
 enum Phase
@@ -89,7 +98,7 @@ uint32 colorblindeyelist[3] =
     NPC_YELLOW_EYE,
 };
 
-Position Durumucenterpos = { 5895.52f, 4512.58f, 6.27f };
+Position Durumucenterpos = { 5895.52f, 4512.58f, -6.27f };
 
 class _TankFilter
 {
@@ -133,11 +142,22 @@ public:
 
         void Reset()
         {
+            RemoveDebuffFromPlayers();
             _Reset();
             phase = PHASE_NULL;
-            //me->SetReactState(REACT_PASSIVE);
-            me->SetReactState(REACT_DEFENSIVE);
+            me->SetReactState(REACT_PASSIVE);
+            //me->SetReactState(REACT_DEFENSIVE);
             checkvictim = 3000;
+        }
+
+        void RemoveDebuffFromPlayers()
+        {
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_INFRARED_LIGHT_BEAM);
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BLUE_RAY_BEAM);
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BRIGHT_LIGHT_BEAM);
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_INFRARED_LIGHT_CONE_DMG);
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BLUE_RAY_CONE_DMG);
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BRIGHT_LIGHT_CONE_DMG);
         }
 
         void EnterCombat(Unit* who)
@@ -146,10 +166,28 @@ public:
             phase = PHASE_NORMAL;
             //events.ScheduleEvent(EVENT_LINGERING_GAZE_PREPARE, 5000);
             //events.ScheduleEvent(EVENT_PREPARE_LINGERING_GAZE, 5000);
-            events.ScheduleEvent(EVENT_ENRAGE, 600000);
-            events.ScheduleEvent(EVENT_HARD_STARE, 12000);
-            events.ScheduleEvent(EVENT_FORCE_OF_WILL, 20000);
-            //events.ScheduleEvent(EVENT_COLORBLIND, 30000); //30sec after entercombat, and cooldawn 300000
+            //events.ScheduleEvent(EVENT_ENRAGE, 600000);
+            //events.ScheduleEvent(EVENT_HARD_STARE, 12000);
+            //events.ScheduleEvent(EVENT_FORCE_OF_WILL, 20000);
+            events.ScheduleEvent(EVENT_COLORBLIND, 5000); //30sec after entercombat, and cooldawn 300000
+        }
+
+        void SetData(uint32 type, uint32 data)
+        {
+            uint32 explosespell = 0;
+            switch (type)
+            {
+            case SPELL_INFRARED_LIGHT_CONE_DMG:
+                explosespell = SPELL_INFRARED_LIGHT_EXPLOSE;
+                break;
+            case SPELL_BLUE_RAY_CONE_DMG:
+                explosespell = SPELL_BLUE_RAY_EXPLOSE;
+                break;
+            case SPELL_BRIGHT_LIGHT_CONE_DMG:
+                explosespell = SPELL_BRIGHT_LIGHT_EXPLOSE;
+                break;
+            }
+            DoCast(me, explosespell, true);
         }
 
         void DoAction(int32 const action)
@@ -160,6 +198,7 @@ public:
 
         void JustDied(Unit* /*killer*/)
         {
+            RemoveDebuffFromPlayers();
             _JustDied();
         }
 
@@ -228,7 +267,7 @@ public:
                     GetPlayerListInGrid(pllist, me, 100.0f);
                     if (!pllist.empty())
                     {
-                        //pllist.remove_if(_TankFilter());
+                        pllist.remove_if(_TankFilter());
                         if (!pllist.empty())
                         {
                             for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
@@ -242,8 +281,8 @@ public:
                     }
                     if (Creature* appraisingeye = me->FindNearestCreature(NPC_APPRAISING_EYE, 50.0f, true))
                         appraisingeye->AI()->DoAction(ACTION_LINGERING_GAZE);
+                    break;
                 }
-                break;
                 //Color Blind phase
                 case EVENT_COLORBLIND:
                     events.Reset();
@@ -254,12 +293,45 @@ public:
                     GetPlayerListInGrid(pllist, me, 150.0f);
                     if (!pllist.empty())
                     {
-                        if (pllist.size() == 1)
+                        if (pllist.size() == 1) //WOD or Legion solo kill
                         {
-                            for (uint8 n = 0; n < 3; n++)
-                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
+                                for (uint8 n = 0; n < 3; n++)
                                     if (Creature* colorblindeye = me->SummonCreature(colorblindeyelist[n], Durumucenterpos))
                                         colorblindeye->AI()->SetGUID(target->GetGUID(), 1);
+                        }
+                        else if (pllist.size() == 2)
+                        {
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 150.0f, true)) 
+                                for (uint8 n = 0; n < 3; n++)
+                                    if (Creature* colorblindeye = me->SummonCreature(colorblindeyelist[n], Durumucenterpos))
+                                        colorblindeye->AI()->SetGUID(target->GetGUID(), 1);          
+                        }
+                        else if (pllist.size() == 3)
+                        {
+                            std::list<Player*>::const_iterator Itr;
+                            std::advance(Itr, urand(1, pllist.size() - 1));
+                            for (uint8 n = 0; n < 3; n++)
+                                if (Creature* colorblindeye = me->SummonCreature(colorblindeyelist[n], Durumucenterpos))
+                                    colorblindeye->AI()->SetGUID((*Itr)->GetGUID(), 1);
+                        }
+                        else if (pllist.size() >= 4)
+                        {
+                            uint8 index = 0;
+                            uint64 victimGuid = me->getVictim() ? me->getVictim()->GetGUID() : 0;
+                            for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                            {
+                                if ((*itr)->GetGUID() != victimGuid)
+                                {
+                                    if (Creature* colorblindeye = me->SummonCreature(colorblindeyelist[index], Durumucenterpos))
+                                    {
+                                        index++;
+                                        colorblindeye->AI()->SetGUID((*itr)->GetGUID(), 1);
+                                        if (index >= 2)
+                                            break;
+                                    }
+                                }
+                            }
                         }
                     }
                     break;
@@ -354,15 +426,23 @@ public:
     {
         npc_colorblind_eyeAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
+            instance = pCreature->GetInstanceScript();
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
             me->SetReactState(REACT_PASSIVE);
             me->SetDisplayId(11686);
             targetGuid = 0;
         }
+        InstanceScript* instance;
         EventMap events;
         uint64 targetGuid;
 
         void Reset(){}
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (damage >= me->GetHealth())
+                damage = 0;
+        }
 
         uint32 GetBeamSpellEntry()
         {
@@ -378,27 +458,79 @@ public:
             return 0;
         }
 
+        uint32 GetConeSpellEntry()
+        {
+            switch (me->GetEntry())
+            {
+            case NPC_RED_EYE:
+                return SPELL_INFRARED_LIGHT_CONE;
+            case NPC_BLUE_EYE:
+                return SPELL_BLUE_RAY_CONE;
+            case NPC_YELLOW_EYE:
+                return SPELL_BRIGHT_LIGHT_CONE;
+            }
+            return 0;
+        }
+
+        void DoAction(int32 const action)
+        {
+            if (action == ACTION_CREATE_CONE)
+                events.ScheduleEvent(EVENT_PREPARE_BEAM, 100);
+        }
+
         void SetGUID(uint64 guid, int32 id)
         {
             targetGuid = guid;
             uint32 beamspell = GetBeamSpellEntry();
             if (Player* pl = me->GetPlayer(*me, targetGuid))
-                DoCast(pl, beamspell);
-        }
-
-        void DamageTaken(Unit* attacker, uint32 &damage)
-        {
-            if (damage >= me->GetHealth())
-                damage = 0;
+                DoCast(pl, beamspell, true);
         }
 
         void UpdateAI(uint32 diff)
         {
             events.Update(diff);
 
-            /*while (uint32 eventId = events.ExecuteEvent())
+            while (uint32 eventId = events.ExecuteEvent())
             {
-            }*/
+                switch (eventId)
+                {
+                case EVENT_PREPARE_BEAM: //this event create for fix rotate lag, before launch cone spell
+                    if (Player* pl = me->GetPlayer(*me, targetGuid))
+                    {
+                        me->AddThreat(pl, 50000000.0f);
+                        me->SetReactState(REACT_AGGRESSIVE);
+                        me->Attack(pl, true);
+                    }
+                    events.ScheduleEvent(EVENT_CREATE_CONE, 250);
+                    break;
+                case EVENT_CREATE_CONE:
+                    if (Player* pl = me->GetPlayer(*me, targetGuid))
+                    {
+                        uint32 conespell = GetConeSpellEntry();
+                        uint32 beamspell = GetBeamSpellEntry();
+                        if (Player* pl = me->GetPlayer(*me, targetGuid))
+                        {
+                            if (me->GetEntry() == NPC_YELLOW_EYE)
+                            {
+                                float x, y;
+                                float ang = me->GetAngle(pl);
+                                me->GetNearPoint2D(x, y, 64.0f, ang);
+                                if (Creature* durumu = me->GetCreature(*me, instance->GetData64(NPC_DURUMU)))
+                                {
+                                    if (Creature* conetarget = durumu->SummonCreature(NPC_YELLOW_EYEBEAM_TARGET, x, y, me->GetPositionZ(), 0.0f))
+                                    {
+                                        DoCast(conetarget, conespell, true);
+                                        conetarget->AI()->SetGUID(me->GetGUID(), 2);
+                                    }
+                                }
+                            }
+                            else
+                                DoCast(pl, conespell, true);
+                        }
+                    }
+                    break;
+                }
+            }
         }
     };
 
@@ -421,10 +553,21 @@ public:
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             me->SetReactState(REACT_PASSIVE);
             me->SetDisplayId(11686);
+            colorblindeyeGuid = 0;
         }
         EventMap events;
+        uint64 colorblindeyeGuid;
 
         void Reset(){}
+
+        void SetGUID(uint64 guid, int32 id)
+        {
+            if (id == 2)
+            {
+                colorblindeyeGuid = guid;
+                events.ScheduleEvent(EVENT_START_MOVE, 1000);
+            }
+        }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
@@ -436,10 +579,21 @@ public:
         {
             events.Update(diff);
 
-            /*while (uint32 eventId = events.ExecuteEvent())
+            while (uint32 eventId = events.ExecuteEvent())
             {
-
-            }*/
+                if (eventId == EVENT_START_MOVE)
+                {
+                    if (Creature* colorblindeye = me->GetCreature(*me, colorblindeyeGuid))
+                    {
+                        float x, y;
+                        float ang = colorblindeye->GetAngle(me) - 0.5f;
+                        colorblindeye->GetNearPoint2D(x, y, 64.0f, ang);
+                        me->GetMotionMaster()->Clear(false);
+                        me->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), 5.0f, 1);
+                    }
+                    events.ScheduleEvent(EVENT_START_MOVE, 250);
+                }
+            }
         }
     };
 
@@ -547,6 +701,65 @@ public:
     }
 };
 
+//134123, 134122, 134124
+class spell_durumu_color_beam : public SpellScriptLoader
+{
+public:
+    spell_durumu_color_beam() : SpellScriptLoader("spell_durumu_color_beam") { }
+
+    class spell_durumu_color_beam_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_durumu_color_beam_AuraScript);
+
+        void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+                if (GetCaster() && GetCaster()->ToCreature())
+                    GetCaster()->ToCreature()->AI()->DoAction(ACTION_CREATE_CONE);
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_durumu_color_beam_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_durumu_color_beam_AuraScript();
+    }
+};
+
+//133732, 133677, 133738
+class spell_durumu_color_cone_dmg : public SpellScriptLoader
+{
+public:
+    spell_durumu_color_cone_dmg() : SpellScriptLoader("spell_durumu_color_cone_dmg") { }
+
+    class spell_durumu_color_cone_dmg_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_durumu_color_cone_dmg_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*>& targets)
+        {
+            if (GetCaster() && targets.empty())
+                if (InstanceScript* instance = GetCaster()->GetInstanceScript())
+                    if (Creature* durumu = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(NPC_DURUMU)))
+                        durumu->AI()->SetData(GetSpellInfo()->Id, 1);
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_durumu_color_cone_dmg_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_CONE_ENEMY_110);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_durumu_color_cone_dmg_SpellScript();
+    }
+};
+
 //8897
 class at_durumu_entrance : public AreaTriggerScript
 {
@@ -557,7 +770,6 @@ public:
     {
         if (enter)
             player->RemoveAurasDueToSpell(SPELL_JIKUN_FLY);
-
         return true;
     }
 };
@@ -571,5 +783,7 @@ void AddSC_boss_durumu()
     new spell_arterial_cut();
     new spell_force_of_will();
     new spell_lingering_gaze();
+    new spell_durumu_color_beam();
+    new spell_durumu_color_cone_dmg();
     new at_durumu_entrance();
 }
