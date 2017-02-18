@@ -4245,6 +4245,40 @@ class spell_gen_taunt_flag_targeting : public SpellScriptLoader
         }
 };
 
+//57405
+class spell_dalaran_arena_flush : public SpellScriptLoader
+{
+public:
+    spell_dalaran_arena_flush() : SpellScriptLoader("spell_dalaran_arena_flush") { }
+
+    class spell_dalaran_arena_flush_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_dalaran_arena_flush_AuraScript);
+
+        void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (!GetCaster() || !GetTarget() || !GetTarget()->ToPlayer())
+                return;
+                
+            float x, y, z;
+            GetCaster()->GetClosePoint(x, y, z, GetCaster()->GetObjectSize(), 50.0f);
+
+            if (GetTarget()->isAlive() && GetTarget()->GetPositionZ() > 12.0f)
+                GetTarget()->GetMotionMaster()->MoveJump(x, y, z, 30.0f, 10.0f);
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_dalaran_arena_flush_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_MECHANIC_IMMUNITY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_dalaran_arena_flush_AuraScript();
+    }
+};
+
 void AddSC_generic_spell_scripts()
 {
 //    new spell_gen_protect();
@@ -4338,4 +4372,5 @@ void AddSC_generic_spell_scripts()
     new spell_gen_bounce_achievement();
     new spell_gen_spirit_of_chi_ji();
     new spell_gen_taunt_flag_targeting();
+    new spell_dalaran_arena_flush();
 }
