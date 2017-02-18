@@ -489,6 +489,13 @@ enum BaseModGroup
     BASEMOD_END
 };
 
+enum CritTypes
+{
+    MELEE_CRIT,
+    RANGE_CRIT,
+    SPELL_CRIT
+};
+
 enum BaseModType
 {
     FLAT_MOD,
@@ -1409,10 +1416,22 @@ class Unit : public WorldObject
         bool IsWithinCombatRange(const Unit* obj, float dist2compare) const;
         bool IsWithinMeleeRange(const Unit* obj, float dist = MELEE_RANGE) const;
         void GetRandomContactPoint(const Unit* target, float &x, float &y, float &z, float distance2dMin, float distance2dMax) const;
+        void SetExactMeleeCritPct(float val) { m_exactMeleeCritPct = val; }
+        void SetExactRangeCritPct(float val) { m_exactRangeCritPct = val; }
+        void SetExactSpellCritPct(float val) { m_exactSpellCritPct = val; }
+        float GetExactMeleeCritPct() const { return m_exactMeleeCritPct; }
+        float GetExactRangeCritPct() const { return m_exactRangeCritPct; }
+        float GetExactSpellCritPct() const { return m_exactSpellCritPct; }
+        void CalcExactCritPctForPets(CritTypes idx, float val);
+        void UpdateAllExactCritPctForPets();
         uint32 m_extraAttacks;
         bool m_canDualWield;
         float countCrit;
         uint8 insightCount;
+
+        float m_exactMeleeCritPct;
+        float m_exactRangeCritPct;
+        float m_exactSpellCritPct;
 
         void _addAttacker(Unit* pAttacker)                  // must be called only from Unit::Attack(Unit*)
         {
@@ -1672,7 +1691,7 @@ class Unit : public WorldObject
         float GetWeaponProcChance() const;
         float GetPPMProcChance(uint32 WeaponSpeed, float PPM, const SpellInfo* spellProto) const;
 
-        MeleeHitOutcome RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackType attType, bool checkHitPenalty = true) const;
+        MeleeHitOutcome RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackType attType, bool checkHitPenalty = true, Unit* pet = NULL) const;
         MeleeHitOutcome RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackType attType, int32 crit_chance, int32 miss_chance, int32 dodge_chance, int32 parry_chance, int32 block_chance) const;
 
         bool isVendor()       const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_VENDOR); }

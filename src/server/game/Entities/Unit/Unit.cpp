@@ -209,6 +209,10 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     insightCount = 0;
     m_canDualWield = false;
 
+    m_exactMeleeCritPct = 0.0f;
+    m_exactRangeCritPct = 0.0f;
+    m_exactSpellCritPct = 0.0f;
+
     m_rootTimes = 0;
     m_timeForSpline = 0;
 
@@ -1538,7 +1542,7 @@ void Unit::CalculateMeleeDamage(Unit* victim, float damage, CalcDamageInfo* dama
         damageInfo->damage = damage;
 
     if (Unit* owner = GetAnyOwner()) //For pets chance calc from owner
-        damageInfo->hitOutCome = owner->RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType, false);
+        damageInfo->hitOutCome = owner->RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType, false, isPet() ? this : NULL);
     else
         damageInfo->hitOutCome = RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType);
 
@@ -2440,7 +2444,7 @@ void Unit::HandleProcExtraAttackFor(Unit* victim)
     }
 }
 
-MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackType attType, bool checkHitPenalty) const
+MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackType attType, bool checkHitPenalty, Unit* pet) const
 {
     // This is only wrapper
 
@@ -2449,7 +2453,10 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackTy
     float miss_chance = MeleeSpellMissChance(victim, attType, 0, checkHitPenalty);
 
     // Critical hit chance
-    float crit_chance = GetUnitCriticalChance(attType, victim);
+    float crit_chance = pet ? pet->GetUnitCriticalChance(attType, victim) : GetUnitCriticalChance(attType, victim);
+
+    if (crit_chance < 0.0f)
+        crit_chance = 0.0f;
 
     // stunned target cannot dodge and this is check in GetUnitDodgeChance() (returned 0 in this case)
     float dodge_chance = victim->GetUnitDodgeChance();
@@ -3276,20 +3283,21 @@ float Unit::GetUnitBlockChance() const
 
 float Unit::GetUnitCriticalChance(WeaponAttackType attackType, const Unit* victim, SpellInfo const* spellProto) const
 {
+    if (countCrit)
+        return countCrit;
+
     float crit;
 
-    if (GetTypeId() == TYPEID_PLAYER)
+    if (GetTypeId() == TYPEID_PLAYER || isPet())
     {
         switch (attackType)
         {
             case BASE_ATTACK:
-                crit = GetFloatValue(PLAYER_CRIT_PERCENTAGE);
-                break;
             case OFF_ATTACK:
-                crit = GetFloatValue(PLAYER_OFFHAND_CRIT_PERCENTAGE);
+                crit = GetExactMeleeCritPct();
                 break;
             case RANGED_ATTACK:
-                crit = GetFloatValue(PLAYER_RANGED_CRIT_PERCENTAGE);
+                crit = GetExactRangeCritPct();
                 break;
                 // Just for good manner
             default:
@@ -3320,9 +3328,7 @@ float Unit::GetUnitCriticalChance(WeaponAttackType attackType, const Unit* victi
     else
         crit += critMod;
 
-    if (crit < 0.0f)
-        crit = 0.0f;
-    return countCrit ? countCrit: crit;
+    return crit;
 }
 
 void Unit::_DeleteRemovedAuras()
@@ -13087,7 +13093,7 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
 
     float crit_chance = 0.0f;
     // Pets have 100% of owner's crit_chance
-    if (isAnySummons() && owner)
+    if (isAnySummons() && owner && !isPet())
         owner->isSpellCrit(victim, spellProto, schoolMask, attackType, crit_chance);
 
     switch (spellProto->DmgClass)
@@ -13113,6 +13119,8 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
             // For other schools
             else if (GetTypeId() == TYPEID_PLAYER)
                 crit_chance = GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(schoolMask));
+            else if (isPet())
+                crit_chance = GetExactSpellCritPct();
             else if(!isAnySummons() || !owner)
             {
                 crit_chance = (float)m_baseSpellCritChance;
@@ -13302,7 +13310,8 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                             }
                             case 23881: // Bloodthirst has double critical chance
                             {
-                                crit_chance *= 2;
+                                if (crit_chance > 0.0f)
+                                    crit_chance *= 2;
                                 break;
                             }
                             case 7384: // Overpower
@@ -25610,4 +25619,41 @@ Unit* Unit::GetLastCastTarget()
     }
 
     return NULL;
+}
+
+void Unit::CalcExactCritPctForPets(CritTypes idx, float val)
+{
+    val += GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_PCT, true);
+ 
+    switch (idx)
+    {
+        case MELEE_CRIT:
+            m_exactMeleeCritPct = val;
+            break;
+        case RANGE_CRIT:
+            m_exactRangeCritPct = val;
+            break;
+        case SPELL_CRIT:
+            val += GetTotalAuraModifier(SPELL_AURA_MOD_SPELL_CRIT_CHANCE);
+            m_exactSpellCritPct = val;
+            break;
+    
+    }
+}
+
+void Unit::UpdateAllExactCritPctForPets()
+{
+    if (Unit* owner = GetOwner())
+        if (Player* plr = owner->ToPlayer())
+        {
+            float crtAg = plr->GetMeleeCritFromAgility();
+            crtAg += plr->GetRatingBonusValue(CR_CRIT_MELEE);
+        
+            float crtInt = plr->GetSpellCritFromIntellect();
+            crtInt += plr->GetRatingBonusValue(CR_CRIT_SPELL);
+        
+            CalcExactCritPctForPets(MELEE_CRIT, crtAg);
+            CalcExactCritPctForPets(RANGE_CRIT, crtAg);
+            CalcExactCritPctForPets(SPELL_CRIT, crtInt);
+        }
 }

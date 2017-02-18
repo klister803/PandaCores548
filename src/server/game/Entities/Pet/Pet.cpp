@@ -939,6 +939,9 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
     else
         SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, 1000);
 
+    if (isPet())
+        UpdateAllExactCritPctForPets();
+
     InitLevelupSpellsForLevel();
 
     SetFullHealth();

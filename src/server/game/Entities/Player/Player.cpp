@@ -6995,9 +6995,9 @@ void Player::HandleBaseModValue(BaseModGroup modGroup, BaseModType modType, floa
 
     switch (modGroup)
     {
-        case CRIT_PERCENTAGE:              UpdateCritPercentage(BASE_ATTACK);                          break;
-        case RANGED_CRIT_PERCENTAGE:       UpdateCritPercentage(RANGED_ATTACK);                        break;
-        case OFFHAND_CRIT_PERCENTAGE:      UpdateCritPercentage(OFF_ATTACK);                           break;
+        case CRIT_PERCENTAGE:              UpdateCritPercentage((1 << BASE_ATTACK));                          break;
+        case RANGED_CRIT_PERCENTAGE:       UpdateCritPercentage((1 << RANGED_ATTACK));                        break;
+        case OFFHAND_CRIT_PERCENTAGE:      UpdateCritPercentage((1 << OFF_ATTACK));                           break;
         default: break;
     }
 }
@@ -7171,17 +7171,16 @@ void Player::UpdateRating(CombatRating cr)
         case CR_CRIT_MELEE:
             if (affectStats)
             {
-                UpdateCritPercentage(BASE_ATTACK);
-                UpdateCritPercentage(OFF_ATTACK);
+                UpdateCritPercentage((1 << BASE_ATTACK) | (1 << OFF_ATTACK));
             }
             break;
         case CR_CRIT_RANGED:
             if (affectStats)
-                UpdateCritPercentage(RANGED_ATTACK);
+                UpdateCritPercentage((1 << RANGED_ATTACK));
             break;
         case CR_CRIT_SPELL:
             if (affectStats)
-                UpdateAllSpellCritChances();
+                UpdateSpellCritChance(SPELL_SCHOOL_MASK_ALL);
             break;
         case CR_HIT_TAKEN_MELEE:                            // Deprecated since Cataclysm
         case CR_HIT_TAKEN_RANGED:                           // Deprecated since Cataclysm
