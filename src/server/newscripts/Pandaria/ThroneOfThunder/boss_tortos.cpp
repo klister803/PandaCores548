@@ -343,6 +343,8 @@ public:
             {
                 done = true;
                 events.Reset();
+                me->StopMoving();
+                me->GetMotionMaster()->Clear(false);
                 me->GetMotionMaster()->MoveIdle();
                 me->RemoveAurasDueToSpell(SPELL_SPINNING_SHELL_V);
                 DoCast(me, SPELL_SHELL_BLOCK, true);
@@ -361,8 +363,9 @@ public:
                     me->DespawnOrUnsummon();
                     break;
                 case EVENT_CHANGE_POSITION:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 80.0f, true))
-                        me->GetMotionMaster()->MoveJump(target->GetPositionX(), target->GetPositionY(), me->GetPositionZ(), 8.0f, 0.0f, 2);
+                    if (!me->HasAura(SPELL_SHELL_BLOCK))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 80.0f, true))
+                            me->GetMotionMaster()->MoveJump(target->GetPositionX(), target->GetPositionY(), me->GetPositionZ(), 8.0f, 0.0f, 2);
                     break;
                 }
             }
