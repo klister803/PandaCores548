@@ -5120,6 +5120,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 133732: //Infrared Light Cone Dmg
                 case 133677: //Blue Ray       Cone Dmg
                 case 133738: //Bright Light   Cone Dmg
+                    spellInfo->AttributesCu != SPELL_ATTR0_CU_SHARE_DAMAGE;
                     for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
                         if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_1, d))
                             eff->TargetA = TARGET_UNIT_CONE_ENEMY_110;

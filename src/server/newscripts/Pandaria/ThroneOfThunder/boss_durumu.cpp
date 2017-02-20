@@ -36,8 +36,6 @@ enum eSpells
     SPELL_DURUMU_EYE_TRAIL_YELLOW = 141010,
     SPELL_FORCE_OF_WILL_2         = 136932,
 
-    SPELL_SUMMON_FOG_BEAST_RED    = 136128,
-
     //Red
     SPELL_INFRARED_LIGHT_T_AURA   = 133731, //target  aura
     SPELL_INFRARED_LIGHT_BEAM     = 134123, //channel beam
@@ -45,6 +43,7 @@ enum eSpells
     SPELL_INFRARED_LIGHT_CONE_DMG = 133732,
     SPELL_INFRARED_LIGHT_EXPLOSE  = 133733,
     SPELL_BURNING_EYE_FOUND       = 137002,
+    SPELL_RED_FOG_INVISIBILITY    = 136116,
 
     //Blue
     SPELL_BLUE_RAY_T_AURA         = 133675, //target  aura
@@ -52,6 +51,7 @@ enum eSpells
     SPELL_BLUE_RAY_CONE           = 133672, //channel cone
     SPELL_BLUE_RAY_CONE_DMG       = 133677,
     SPELL_BLUE_RAY_EXPLOSE        = 133678,
+    SPELL_BLUE_FOG_INVISIBILITY   = 136118,
 
     //Yellow
     SPELL_BRIGHT_LIGHT_T_AURA     = 133737, //target  aura
@@ -59,6 +59,16 @@ enum eSpells
     SPELL_BRIGHT_LIGHT_CONE       = 133740, //channel cone
     SPELL_BRIGHT_LIGHT_CONE_DMG   = 133738,
     SPELL_BRIGHT_LIGHT_EXPLOSE    = 133739,
+    SPELL_YELLOW_FOG_INVISIBILITY = 136117,
+
+    //Crimson Fog
+    SPELL_CAUSTIC_SPIKE           = 136154, //While revealed
+    SPELL_CRIMSON_BLOOM           = 136122,
+
+    //Azure Fog
+    SPELL_ICY_GRASP               = 136177,
+    SPELL_ICY_GRASP_AURA          = 136179,
+    SPELL_FLASH_FREEZE            = 136124, //explose them die
 };
 
 enum sEvents
@@ -112,6 +122,21 @@ public:
     }
 };
 
+class VictimFilter
+{
+public:
+    VictimFilter(uint64 victimguid) : _victimguid(victimguid){}
+
+    bool operator()(WorldObject* unit)
+    {
+        if (unit->GetGUID() == _victimguid)
+            return true;
+        return false;
+    }
+private:
+    uint64 _victimguid;
+};
+
 class LingeringGazeFilter
 {
 public:
@@ -145,9 +170,58 @@ public:
             RemoveDebuffFromPlayers();
             _Reset();
             phase = PHASE_NULL;
-            me->SetReactState(REACT_PASSIVE);
-            //me->SetReactState(REACT_DEFENSIVE);
+            //me->SetReactState(REACT_PASSIVE);
+            me->SetReactState(REACT_DEFENSIVE);
             checkvictim = 3000;
+        }
+
+        float GetFogAngle(uint8 pos)
+        {
+            switch (pos)
+            {
+            case 0:
+            {
+                float mod = float(urand(0, 1));
+                float mod2 = !mod ? float(urand(0, 9)) / 10 : float(urand(0, 3)) / 10;
+                return mod + mod2;
+            }
+            case 1:
+            {
+                float mod = float(urand(1, 2));
+                float mod2 = mod == 1 ? float(urand(6, 9)) / 10 : float(urand(0, 9)) / 10;
+                return mod + mod2;
+            }
+            case 2:
+            {
+                float mod = float(urand(3, 4));
+                float mod2 = mod == 3 ? float(urand(2, 9)) / 10 : float(urand(0, 3)) / 10;
+                return mod + mod2;
+            }
+            case 3:
+            {
+                float mod = float(urand(4, 5));
+                float mod2 = mod == 4 ? float(urand(6, 9)) / 10 : float(urand(0, 9)) / 10;
+                return mod + mod2;
+            }
+            default:
+                return 0;
+            }
+        }
+
+        void SummonFogs()
+        {
+            float x, y;
+            float ang = 0;
+            uint32 fogentry = 0;
+            uint8 bluefog = urand(0, 3);
+            for (uint8 n = 0; n < 4; n++)
+            {
+                ang = GetFogAngle(n);
+                fogentry = bluefog == n ? NPC_AZURE_FOG : NPC_CRIMSON_FOG;
+                me->GetNearPoint2D(x, y, 12.0f, ang);
+                if (Creature* fog = me->SummonCreature(fogentry, x, y, -6.2778f, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000))
+                    fog->SetFacingToObject(me);
+            }
         }
 
         void RemoveDebuffFromPlayers()
@@ -166,10 +240,10 @@ public:
             phase = PHASE_NORMAL;
             //events.ScheduleEvent(EVENT_LINGERING_GAZE_PREPARE, 5000);
             //events.ScheduleEvent(EVENT_PREPARE_LINGERING_GAZE, 5000);
-            //events.ScheduleEvent(EVENT_ENRAGE, 600000);
-            //events.ScheduleEvent(EVENT_HARD_STARE, 12000);
-            //events.ScheduleEvent(EVENT_FORCE_OF_WILL, 20000);
-            events.ScheduleEvent(EVENT_COLORBLIND, 5000); //30sec after entercombat, and cooldawn 300000
+            events.ScheduleEvent(EVENT_ENRAGE, 600000);
+            events.ScheduleEvent(EVENT_HARD_STARE, 12000);
+            events.ScheduleEvent(EVENT_FORCE_OF_WILL, 20000);
+            //events.ScheduleEvent(EVENT_COLORBLIND, 5000); //30sec after entercombat, and cooldawn 300000
         }
 
         void SetData(uint32 type, uint32 data)
@@ -286,9 +360,16 @@ public:
                 //Color Blind phase
                 case EVENT_COLORBLIND:
                     events.Reset();
+                    SummonFogs();
                     me->InterruptNonMeleeSpells(true);
                     phase = PHASE_COLORBLIND;
-                    std::list<Player*>pllist;
+
+                    //For testing
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
+                        if (Creature* colorblindeye = me->SummonCreature(colorblindeyelist[0], Durumucenterpos))
+                            colorblindeye->AI()->SetGUID(target->GetGUID(), 1);
+
+                    /*std::list<Player*>pllist;
                     pllist.clear();
                     GetPlayerListInGrid(pllist, me, 150.0f);
                     if (!pllist.empty())
@@ -319,21 +400,19 @@ public:
                         {
                             uint8 index = 0;
                             uint64 victimGuid = me->getVictim() ? me->getVictim()->GetGUID() : 0;
+                            pllist.remove_if(VictimFilter(victimGuid));
                             for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
                             {
-                                if ((*itr)->GetGUID() != victimGuid)
+                                if (Creature* colorblindeye = me->SummonCreature(colorblindeyelist[index], Durumucenterpos))
                                 {
-                                    if (Creature* colorblindeye = me->SummonCreature(colorblindeyelist[index], Durumucenterpos))
-                                    {
-                                        index++;
-                                        colorblindeye->AI()->SetGUID((*itr)->GetGUID(), 1);
-                                        if (index >= 2)
-                                            break;
-                                    }
+                                    index++;
+                                    colorblindeye->AI()->SetGUID((*itr)->GetGUID(), 1);
+                                    if (index >= 2)
+                                        break;
                                 }
                             }
                         }
-                    }
+                    }*/
                     break;
                 }
             }
@@ -444,6 +523,25 @@ public:
                 damage = 0;
         }
 
+        void DoAction(int32 const action)
+        {
+            if (action == ACTION_CREATE_CONE)
+                events.ScheduleEvent(EVENT_PREPARE_BEAM, 100);
+        }
+
+        uint32 GetEyeBeamTargetEntry()
+        {
+            switch (me->GetEntry())
+            {
+            case NPC_RED_EYE:
+                return NPC_RED_EYEBEAM_TARGET;
+            case NPC_BLUE_EYE:
+                return NPC_BLUE_EYEBEAM_TARGET;
+            default:
+                return 0;
+            }
+        }
+
         uint32 GetBeamSpellEntry()
         {
             switch (me->GetEntry())
@@ -454,8 +552,9 @@ public:
                 return SPELL_BLUE_RAY_BEAM;
             case NPC_YELLOW_EYE:
                 return SPELL_BRIGHT_LIGHT_BEAM;
+            default:
+                return 0;
             }
-            return 0;
         }
 
         uint32 GetConeSpellEntry()
@@ -468,22 +567,79 @@ public:
                 return SPELL_BLUE_RAY_CONE;
             case NPC_YELLOW_EYE:
                 return SPELL_BRIGHT_LIGHT_CONE;
+            default:
+                return 0;
+            }
+        }
+
+        uint32 GetData(uint32 type)
+        {
+            if (type == DATA_IS_CONE_TARGET_CREATURE)
+            {
+                if (Unit* conetarget = me->GetUnit(*me, targetGuid))
+                {
+                    if (conetarget->ToCreature())
+                        return 1;
+                    else
+                        return 0;
+                }
             }
             return 0;
         }
 
-        void DoAction(int32 const action)
+        void SetData(uint32 type, uint32 data)
         {
-            if (action == ACTION_CREATE_CONE)
-                events.ScheduleEvent(EVENT_PREPARE_BEAM, 100);
+            //remove focus cone from trigger, and despawn him
+            if (type == DATA_DESPAWN_CREATURE_CONE_TARGET)
+            {
+                if (Creature* conetarget = me->GetCreature(*me, targetGuid))
+                {
+                    uint32 conespell = GetConeSpellEntry();
+                    conetarget->RemoveAurasDueToSpell(conespell);//for safe
+                    conetarget->DespawnOrUnsummon();
+                }
+            }
         }
 
         void SetGUID(uint64 guid, int32 id)
         {
             targetGuid = guid;
-            uint32 beamspell = GetBeamSpellEntry();
-            if (Player* pl = me->GetPlayer(*me, targetGuid))
-                DoCast(pl, beamspell, true);
+            switch (id)
+            {
+            case 1:
+            {
+                uint32 beamspell = GetBeamSpellEntry();
+                if (Player* pl = me->GetPlayer(*me, targetGuid))
+                    DoCast(pl, beamspell, true);
+                break;
+            }
+            //focus cone player died, create cone with trigger
+            case 2:
+                if (Creature* durumu = me->GetCreature(*me, instance->GetData64(NPC_DURUMU)))
+                {
+                    if (Player* pl = me->GetPlayer(*me, targetGuid))
+                    {
+                        Position pos;
+                        pl->GetPosition(&pos);
+                        uint32 conespell = GetConeSpellEntry();
+                        uint32 npceyebeamtarget = GetEyeBeamTargetEntry();
+                        if (Creature* conetarget = durumu->SummonCreature(npceyebeamtarget, pos))
+                        {
+                            targetGuid = conetarget->GetGUID();
+                            DoCast(conetarget, conespell, true);
+                        }
+                    }
+                }
+                break;
+            //create focus cone on new player
+            case 3:
+            {
+                uint32 conespell = GetConeSpellEntry();
+                if (Player* pl = me->GetPlayer(*me, targetGuid))
+                    DoCast(pl, conespell, true);
+            }
+            break;
+            }
         }
 
         void UpdateAI(uint32 diff)
@@ -507,7 +663,6 @@ public:
                     if (Player* pl = me->GetPlayer(*me, targetGuid))
                     {
                         uint32 conespell = GetConeSpellEntry();
-                        uint32 beamspell = GetBeamSpellEntry();
                         if (Player* pl = me->GetPlayer(*me, targetGuid))
                         {
                             if (me->GetEntry() == NPC_YELLOW_EYE)
@@ -600,6 +755,66 @@ public:
     CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_colorblind_eye_beam_targetAI(pCreature);
+    }
+};
+
+//69050, 69052
+class npc_durumu_fog : public CreatureScript
+{
+public:
+    npc_durumu_fog() : CreatureScript("npc_durumu_fog") {}
+
+    struct npc_durumu_fogAI : public ScriptedAI
+    {
+        npc_durumu_fogAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+            explose = false;
+            switch (me->GetEntry())
+            {
+                case NPC_CRIMSON_FOG:
+                    DoCast(me, SPELL_RED_FOG_INVISIBILITY, true);
+                    break;
+                case NPC_AZURE_FOG:
+                    DoCast(me, SPELL_BLUE_FOG_INVISIBILITY, true);
+                    break;
+                default:
+                    break;
+            }
+        }
+        InstanceScript* instance;
+        EventMap events;
+        bool explose;
+
+        void Reset(){}
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (me->GetEntry() != NPC_AZURE_FOG)
+                return;
+
+            if (damage >= me->GetHealth() && !explose)
+            {
+                explose = true;
+                DoCast(me, SPELL_FLASH_FREEZE, true);
+            }
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_durumu_fogAI(creature);
     }
 };
 
@@ -730,6 +945,37 @@ public:
     }
 };
 
+//133734, 133672, 133740
+class spell_durumu_color_cone : public SpellScriptLoader
+{
+public:
+    spell_durumu_color_cone() : SpellScriptLoader("spell_durumu_color_cone") { }
+
+    class spell_durumu_color_cone_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_durumu_color_cone_AuraScript);
+
+        void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            //if focus cone player died, need drop cone zone
+            if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_DEATH)
+                if (GetSpellInfo()->Id == SPELL_INFRARED_LIGHT_CONE || GetSpellInfo()->Id == SPELL_BLUE_RAY_CONE)
+                    if (GetTarget() && GetCaster() && GetCaster()->ToCreature())
+                        GetCaster()->ToCreature()->AI()->SetGUID(GetTarget()->GetGUID(), 2);
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_durumu_color_cone_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_durumu_color_cone_AuraScript();
+    }
+};
+
 //133732, 133677, 133738
 class spell_durumu_color_cone_dmg : public SpellScriptLoader
 {
@@ -742,10 +988,29 @@ public:
 
         void FilterTargets(std::list<WorldObject*>& targets)
         {
-            if (GetCaster() && targets.empty())
-                if (InstanceScript* instance = GetCaster()->GetInstanceScript())
-                    if (Creature* durumu = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(NPC_DURUMU)))
-                        durumu->AI()->SetData(GetSpellInfo()->Id, 1);
+            if (GetCaster() && GetCaster()->ToCreature())
+            {
+                if (targets.empty())
+                {
+                    if (InstanceScript* instance = GetCaster()->GetInstanceScript())
+                        if (Creature* durumu = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(NPC_DURUMU)))
+                            durumu->AI()->SetData(GetSpellInfo()->Id, 1);
+                }
+                else
+                {
+                    if (GetSpellInfo()->Id != SPELL_BRIGHT_LIGHT_CONE_DMG)
+                    {
+                        //if focus cone on creature (it means player drop it), who entrance in cone pick up him
+                        if (GetCaster()->ToCreature()->AI()->GetData(DATA_IS_CONE_TARGET_CREATURE))
+                        {
+                            GetCaster()->ToCreature()->AI()->SetData(DATA_DESPAWN_CREATURE_CONE_TARGET, 0);
+                            std::list<WorldObject*>::const_iterator itr = targets.begin();
+                            std::advance(itr, urand(0, targets.size() - 1));
+                            GetCaster()->ToCreature()->AI()->SetGUID((*itr)->GetGUID(), 3);
+                        }
+                    }
+                }
+            }
         }
 
         void Register()
@@ -780,10 +1045,12 @@ void AddSC_boss_durumu()
     new npc_appraising_eye();
     new npc_colorblind_eye();
     new npc_colorblind_eye_beam_target();
+    new npc_durumu_fog();
     new spell_arterial_cut();
     new spell_force_of_will();
     new spell_lingering_gaze();
     new spell_durumu_color_beam();
+    new spell_durumu_color_cone();
     new spell_durumu_color_cone_dmg();
     new at_durumu_entrance();
 }
