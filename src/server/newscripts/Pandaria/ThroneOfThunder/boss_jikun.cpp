@@ -160,6 +160,7 @@ public:
         void JustDied(Unit* /*killer*/)
         {
             _JustDied();
+            DespawnAllTriggers();
             RemoveDebuffsFromPlayers();
         }
 
