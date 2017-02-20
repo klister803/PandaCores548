@@ -3719,11 +3719,11 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(ModifierTreeNode const* 
                     break;
                 }
 
-                // InstanceMap* inst = referencePlayer->GetMap()->ToInstanceMap();
-                // if (uint32 instanceId = inst ? inst->GetInstanceId() : 0)
-                    // if (Scenario* progress = sScenarioMgr->GetScenario(instanceId))
-                        // if (progress->GetScenarioId() != reqValue)
-                            // check = false;
+                InstanceMap* inst = referencePlayer->GetMap()->ToInstanceMap();
+                if (uint32 instanceId = inst ? inst->GetInstanceId() : 0)
+                    if (ScenarioProgress* progress = sScenarioMgr->GetScenarioProgress(instanceId))
+                        if (progress->GetScenarioId() != reqValue)
+                            check = false;
                 break;
             }
             case CRITERIA_ADDITIONAL_CONDITION_ACHIEV_POINTS: // 76
