@@ -3930,11 +3930,10 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(ModifierTreeNode const* 
         if(saveReqType == -1)
         {
             if(check && reqType) //don`t save if false
-            {
-                saveReqType = reqType;
                 count++;
-            }
-            saveCheck = count >= tree->Entry->Amount;
+
+            saveReqType = reqType;
+            saveCheck = check;
         }
         else if(saveReqType != reqType)
         {
