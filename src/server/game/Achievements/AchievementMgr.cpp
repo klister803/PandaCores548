@@ -313,7 +313,7 @@ bool AchievementCriteriaData::Meets(uint32 criteria_id, Player const* source, Un
         case ACHIEVEMENT_CRITERIA_DATA_TYPE_S_AURA:
             return source->HasAuraEffect(aura.spell_id, aura.effect_idx);
         case ACHIEVEMENT_CRITERIA_DATA_TYPE_S_AREA:
-            return area.id == source->getCurrentUpdateZoneID() || area.id == source->GetAreaId();
+            return area.id == source->GetZoneId() || area.id == source->GetAreaId();
         case ACHIEVEMENT_CRITERIA_DATA_TYPE_T_AURA:
             return target && target->HasAuraEffect(aura.spell_id, aura.effect_idx);
         case ACHIEVEMENT_CRITERIA_DATA_TYPE_VALUE:
@@ -3382,408 +3382,576 @@ bool AchievementMgr<T>::RequirementsSatisfied(CriteriaTree const* tree, uint64 m
 template<class T>
 bool AchievementMgr<T>::AdditionalRequirementsSatisfied(ModifierTreeNode const* tree, uint64 miscValue1, uint64 miscValue2, uint64 miscValue3, Unit const* unit, Player* referencePlayer) const
 {
+
     // sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementMgr::AdditionalRequirementsSatisfied start miscValue1 %u%u, miscValue2 %u%u miscValue3 %u%u ModifierTree %u", miscValue1, miscValue2, miscValue3, tree->Entry->ID);
 
+    if (m_canUpdateAchiev != 1)
+        return false;
+
+    int32 saveReqType = -1;
+    int32 count = 0;
+    bool saveCheck = false;
+
     for (ModifierTreeNode const* node : tree->Children)
-        if (!AdditionalRequirementsSatisfied(node, miscValue1, miscValue2, miscValue3, unit, referencePlayer))
-            return false;
-
-    uint32 reqType = tree->Entry->Type;
-    if (!reqType)
-        return true;
-
-    uint32 reqValue = tree->Entry->Asset;
-    uint32 reqCount = tree->Entry->SecondaryAsset;
-
-    switch (CriteriaAdditionalCondition(reqType))
     {
-        case CRITERIA_ADDITIONAL_CONDITION_SOURCE_DRUNK_VALUE: // 1
+        if (!node->Children.empty())
+            if (!AdditionalRequirementsSatisfied(node, miscValue1, miscValue2, miscValue3, unit, referencePlayer))
+                return false;
+
+        uint32 reqType = node->Entry->Type;
+        if (!reqType)
+            return true;
+
+        uint32 reqValue = node->Entry->Asset;
+        uint32 reqCount = node->Entry->SecondaryAsset;
+        bool check = true;
+
+        switch (CriteriaAdditionalCondition(reqType))
         {
-            if(referencePlayer->GetDrunkValue() < reqValue)
-                return false;
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_ITEM_LEVEL: // 3
-        {
-            // miscValue1 is itemid
-            ItemTemplate const * item = sObjectMgr->GetItemTemplate(uint32(miscValue1));
-            if (!item || (int32)item->ItemLevel < reqValue)
-                return false;
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_TARGET_CREATURE_ENTRY: // 4
-            if (!unit || unit->GetEntry() != reqValue)
-                return false;
-            break;
-        case CRITERIA_ADDITIONAL_CONDITION_TARGET_MUST_BE_PLAYER: // 5
-            if (!unit || unit->GetTypeId() != TYPEID_PLAYER)
-                return false;
-            break;
-        case CRITERIA_ADDITIONAL_CONDITION_TARGET_MUST_BE_DEAD: // 6
-            if (!unit || unit->isAlive())
-                return false;
-            break;
-        case CRITERIA_ADDITIONAL_CONDITION_TARGET_MUST_BE_ENEMY: // 7
-            if (!unit)
-                return false;
-            else if (const Player* player = unit->ToPlayer())
-                if (player->GetTeam() == referencePlayer->GetTeam())
-                    return false;
-            break;
-        case CRITERIA_ADDITIONAL_CONDITION_SOURCE_HAS_AURA: // 8
-            if (!referencePlayer->HasAura(reqValue))
-                return false;
-            break;
-        case CRITERIA_ADDITIONAL_CONDITION_TARGET_HAS_AURA: // 10
-            if (!unit || !unit->HasAura(reqValue))
-                return false;
-            break;
-        case CRITERIA_ADDITIONAL_CONDITION_TARGET_MUST_BE_MOUNTED: // 11
-            if (!unit || !unit->IsMounted())
-                return false;
-            break;
-        case CRITERIA_ADDITIONAL_CONDITION_ITEM_QUALITY_MIN: // 14
-        case CRITERIA_ADDITIONAL_CONDITION_ITEM_QUALITY_EQUALS: // 15
-        {
-            // miscValue1 is itemid
-            ItemTemplate const * item = sObjectMgr->GetItemTemplate(uint32(miscValue1));
-            if (!item || (int32)item->Quality < reqValue)
-                return false;
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_SOURCE_AREA_OR_ZONE: // 17
-        {
-            if (referencePlayer->GetZoneId() != reqValue && referencePlayer->GetAreaId() != reqValue)
-                return false;
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_TARGET_AREA_OR_ZONE: // 18
-        {
-            if (!unit)
-                return false;
-            else
+            case CRITERIA_ADDITIONAL_CONDITION_SOURCE_DRUNK_VALUE: // 1
             {
-                if (unit->GetZoneId() != reqValue && unit->GetAreaId() != reqValue)
-                    return false;
+                if(referencePlayer->GetDrunkValue() < reqValue)
+                    check = false;
+                break;
             }
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_MAP_DIFFICULTY: // 20
-            if (sObjectMgr->GetDiffFromSpawn(referencePlayer->GetMap()->GetDifficulty()) != reqValue)
-                return false;
-            break;
-        case CRITERIA_ADDITIONAL_CONDITION_TARGET_CREATURE_YIELDS_XP: // 21
-        {
-            if (!unit)
-                return false;
-            else
+            case CRITERIA_ADDITIONAL_CONDITION_ITEM_LEVEL: // 3
             {
-                uint32 _xp = Trinity::XP::Gain(referencePlayer, const_cast<Unit*>(unit));
-                if (!_xp)
-                    return false;
+                // miscValue1 is itemid
+                ItemTemplate const * item = sObjectMgr->GetItemTemplate(uint32(miscValue1));
+                if (!item || (int32)item->ItemLevel < reqValue)
+                    check = false;
+                break;
             }
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_SOURCE_ARENA_TEAM_SIZE: // 24
-        {
-            Battleground* bg = referencePlayer->GetBattleground();
-            if (!bg || !bg->isArena() || !bg->isRated() || bg->GetJoinType() != reqValue)
-                return false;
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_SOURCE_RACE: // 25
-            if (referencePlayer->getRace() != reqValue)
-                return false;
-            break;
-        case CRITERIA_ADDITIONAL_CONDITION_SOURCE_CLASS: // 26
-            if (referencePlayer->getClass() != reqValue)
-                return false;
-            break;
-        case CRITERIA_ADDITIONAL_CONDITION_TARGET_RACE: // 27
-            if (!unit || unit->GetTypeId() != TYPEID_PLAYER || unit->getRace() != reqValue)
-                return false;
-            break;
-        case CRITERIA_ADDITIONAL_CONDITION_TARGET_CLASS: // 28
-            if (!unit || unit->GetTypeId() != TYPEID_PLAYER || unit->getClass() != reqValue)
-                return false;
-            break;
-        case CRITERIA_ADDITIONAL_CONDITION_MAX_GROUP_MEMBERS: // 29
-            if (referencePlayer->GetGroup() && (int32)referencePlayer->GetGroup()->GetMembersCount() >= reqValue)
-                return false;
-            break;
-        case CRITERIA_ADDITIONAL_CONDITION_TARGET_CREATURE_TYPE: // 30
-        {
-            if (miscValue1 != reqValue)
-                return false;
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_SOURCE_MAP: // 32
-            if (referencePlayer->GetMapId() != reqValue)
-                return false;
-            break;
-        case CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_LEVEL_IN_SLOT: // 34
-        {
-            for (uint8 i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
+            case CRITERIA_ADDITIONAL_CONDITION_TARGET_CREATURE_ENTRY: // 4
+                if (!unit || unit->GetEntry() != reqValue)
+                    check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_TARGET_MUST_BE_PLAYER: // 5
+                if (!unit || unit->GetTypeId() != TYPEID_PLAYER)
+                    check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_TARGET_MUST_BE_DEAD: // 6
+                if (!unit || unit->isAlive())
+                    check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_TARGET_MUST_BE_ENEMY: // 7
+                if (!unit)
+                    check = false;
+                else if (const Player* player = unit->ToPlayer())
+                    if (player->GetTeam() == referencePlayer->GetTeam())
+                        check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_SOURCE_HAS_AURA: // 8
+                if (!referencePlayer->HasAura(reqValue))
+                    check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_TARGET_HAS_AURA: // 10
+                if (!unit || !unit->HasAura(reqValue))
+                    check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_TARGET_MUST_BE_MOUNTED: // 11
+                if (!unit || !unit->IsMounted())
+                    check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_ITEM_QUALITY_MIN: // 14
+            case CRITERIA_ADDITIONAL_CONDITION_ITEM_QUALITY_EQUALS: // 15
             {
-                if (PetBattleSlot* _slot = referencePlayer->GetBattlePetMgr()->GetPetBattleSlot(i))
+                // miscValue1 is itemid
+                ItemTemplate const * item = sObjectMgr->GetItemTemplate(uint32(miscValue1));
+                if (!item || (int32)item->Quality < reqValue)
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_SOURCE_AREA_OR_ZONE: // 17
+            {
+                if (referencePlayer->GetZoneId() != reqValue && referencePlayer->GetAreaId() != reqValue)
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_TARGET_AREA_OR_ZONE: // 18
+            {
+                if (!unit)
+                    check = false;
+                else
                 {
-                    if (!_slot->IsEmpty())
+                    if (unit->GetZoneId() != reqValue && unit->GetAreaId() != reqValue)
+                        check = false;
+                }
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_ITEM_ENTRY: // 19
+            {
+                if (miscValue1 != reqValue)
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_MAP_DIFFICULTY: // 20
+                if (sObjectMgr->GetDiffFromSpawn(referencePlayer->GetMap()->GetDifficulty()) != reqValue)
+                    check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_TARGET_CREATURE_YIELDS_XP: // 21
+            {
+                if (!unit)
+                    check = false;
+                else
+                {
+                    uint32 _xp = Trinity::XP::Gain(referencePlayer, const_cast<Unit*>(unit));
+                    if (!_xp)
+                        check = false;
+                }
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_SOURCE_ARENA_TEAM_SIZE: // 24
+            {
+                Battleground* bg = referencePlayer->GetBattleground();
+                if (!bg || !bg->isArena() || !bg->isRated() || bg->GetJoinType() != reqValue)
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_SOURCE_RACE: // 25
+                if (referencePlayer->getRace() != reqValue)
+                    check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_SOURCE_CLASS: // 26
+                if (referencePlayer->getClass() != reqValue)
+                    check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_TARGET_RACE: // 27
+                if (!unit || unit->GetTypeId() != TYPEID_PLAYER || unit->getRace() != reqValue)
+                    check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_TARGET_CLASS: // 28
+                if (!unit || unit->GetTypeId() != TYPEID_PLAYER || unit->getClass() != reqValue)
+                    check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_MAX_GROUP_MEMBERS: // 29
+                if (referencePlayer->GetGroup() && (int32)referencePlayer->GetGroup()->GetMembersCount() >= reqValue)
+                    check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_TARGET_CREATURE_TYPE: // 30
+            {
+                if (miscValue1 != reqValue)
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_SOURCE_MAP: // 32
+                if (referencePlayer->GetMapId() != reqValue)
+                    check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_BUILD_VERSION: // 33
+                if (reqValue >= 50399) // Current version
+                    check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_LEVEL_IN_SLOT: // 34
+                if (!referencePlayer)
+                    check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_WITHOUT_GROUP: // 35
+                if (Group const* group = referencePlayer->GetGroup())
+                    check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_MIN_PERSONAL_RATING: // 37
+            {
+                Battleground* bg = referencePlayer->GetBattleground();
+                if (!bg || !bg->isArena() || !bg->isRated())
+                    check = false;
+                else
+                {
+                    Bracket* bracket = referencePlayer->getBracket(BattlegroundMgr::BracketByJoinType(bg->GetJoinType()));
+                    if (!bracket || bracket->getRating() < reqValue)
+                        check = false;
+                }
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_TITLE_BIT_INDEX: // 38
+                // miscValue1 is title's bit index
+                if (miscValue1 != reqValue)
+                    check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_SOURCE_LEVEL: // 39
+                if (referencePlayer->getLevel() != reqValue)
+                    check = false;
+            case CRITERIA_ADDITIONAL_CONDITION_TARGET_LEVEL: // 40
+                if (!unit || unit->getLevel() != reqValue)
+                    check = false;
+            case CRITERIA_ADDITIONAL_CONDITION_TARGET_ZONE: // 41
+                if (!unit || unit->GetZoneId() != reqValue)
+                    check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_SOURCE_NOT_ZONE: // 42
+                if (referencePlayer->GetZoneId() == reqValue)
+                    check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_TARGET_HEALTH_PERCENT_BELOW: // 46
+                if (!unit || unit->GetHealthPct() >= reqValue)
+                    check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_MIN_ACHIEVEMENT_POINTS: // 56
+                if ((int32)_achievementPoints < reqValue)
+                    check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_REQUIRES_LFG_GROUP: // 58
+                if (!referencePlayer->GetGroup() || !referencePlayer->GetGroup()->isLFGGroup())
+                    check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_REQUIRES_GUILD_GROUP: // 61
+            {
+                Map* map = referencePlayer->GetMap();
+                if (!referencePlayer->GetGroup() || !referencePlayer->GetGuildId() || !map)
+                    check = false;
+                else
+                {
+                    Group const* group = referencePlayer->GetGroup();
+                    uint32 guildId = referencePlayer->GetGuildId();
+                    uint32 count = 0;
+                    uint32 size = 0;
+
+                    for (GroupReference const* ref = group->GetFirstMember(); ref != NULL; ref = ref->next())
                     {
-                        if (PetJournalInfo* petInfo = referencePlayer->GetBattlePetMgr()->GetPetInfoByPetGUID(_slot->GetPet()))
-                        {
-                            if(petInfo->GetLevel() < reqValue)
-                                return false;
-                        }
+                        size = group->GetMembersCount();
+                        if (Player const* groupMember = ref->getSource())
+                            if (groupMember->GetGuildId() != guildId)
+                                count++;
+                    }
+                    if(map->GetInstanceId() && sObjectMgr->GetCountFromDifficulty(map->GetDifficulty()) > count)
+                        check = false;
+                    else if(!size || size != count)
+                        check = false;
+                }
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_GUILD_REPUTATION: // 62
+            {
+                if (referencePlayer->GetReputationMgr().GetReputation(REP_GUILD) < int32(reqValue))
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_RATED_BATTLEGROUND: // 63
+            {
+                Battleground* bg = referencePlayer->GetBattleground();
+                if (!bg || !bg->IsRBG())
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_PROJECT_RARITY: // 65
+            {
+                if (!miscValue1)
+                {
+                    check = false;
+                    break;
+                }
+
+                ResearchProjectEntry const* rp = sResearchProjectStore.LookupEntry(miscValue1);
+                if (!rp)
+                    check = false;
+                else
+                {
+                    if (rp->rare != reqValue)
+                        check = false;
+
+                    if (referencePlayer->IsCompletedProject(rp->ID, false))
+                        check = false;
+                }
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_PROJECT_RACE: // 66
+            {
+                if (!miscValue1)
+                {
+                    check = false;
+                    break;
+                }
+
+                ResearchProjectEntry const* rp = sResearchProjectStore.LookupEntry(miscValue1);
+                if (!rp)
+                    check = false;
+                else if (rp->branchId != reqValue)
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_SPEC_EVENT:  // 67
+            {
+                switch(reqValue)
+                {
+                    case 7091:  // Ahieve 3636
+                    case 14662: // celebrate 10-th wow
+                    case 12671: // celebrate 9-th wow
+                    case 9906:  // celebrate 8-th wow
+                    case 9463:  // celebrate 7-th wow
+                    case 8831:  // celebrate 6-th wow
+                    case 7427:  // celebrate 5-th wow
+                    case 6577:  // celebrate 4-th wow
+                        check = false;
+                    default:
+                        break;
+                }
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_DUNGEON_FIFFICULTY: // 68
+            {
+                if (!unit || !unit->GetMap() || unit->GetMap()->GetSpawnMode() != reqValue)
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_MIN_LEVEL: // 69
+            {
+                if (referencePlayer->getLevel() >= reqValue)
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_TARGET_MIN_LEVEL: // 70
+            {
+                if (!unit || unit->getLevel() >= reqValue)
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_TARGET_MAX_LEVEL: // 71
+            {
+                if (!unit || unit->getLevel() < reqValue)
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_ACTIVE_SCENARIO: // 74
+            {
+                if (!referencePlayer)
+                {
+                    check = false;
+                    break;
+                }
+
+                // InstanceMap* inst = referencePlayer->GetMap()->ToInstanceMap();
+                // if (uint32 instanceId = inst ? inst->GetInstanceId() : 0)
+                    // if (Scenario* progress = sScenarioMgr->GetScenario(instanceId))
+                        // if (progress->GetScenarioId() != reqValue)
+                            // check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_ACHIEV_POINTS: // 76
+            {
+                if ((int32)_achievementPoints < reqValue)
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_FEMALY: // 78
+            {
+                if (!miscValue3 || miscValue3 != reqValue)
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_HP_LOW_THAT: // 79
+            {
+                check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_COUNT_OF_GUILD_MEMBER_IN_GROUP:     // 80
+            {
+                if (!referencePlayer)
+                {
+                    check = false;
+                    break;
+                }
+
+                Group* group   = referencePlayer->GetGroup();
+                uint32 guildId = referencePlayer->GetGuildId();
+                if (!guildId || !group)
+                {
+                    check = false;
+                    break;
+                }
+
+                uint32 counter = 0;
+                for (GroupReference* groupRef = group->GetFirstMember(); groupRef != NULL; groupRef = groupRef->next())
+                {
+                    if (Player* player = groupRef->getSource())
+                    {
+                        if (player->GetGuildId() == guildId)
+                            ++counter;
                     }
                 }
-            }
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_WITHOUT_GROUP: // 35
-            if (Group const* group = referencePlayer->GetGroup())
-                return false;
-            break;
-        case CRITERIA_ADDITIONAL_CONDITION_MIN_PERSONAL_RATING: // 37
-        {
-            Battleground* bg = referencePlayer->GetBattleground();
-            if (!bg || !bg->isArena() || !bg->isRated())
-                return false;
-            else
-            {
-                Bracket* bracket = referencePlayer->getBracket(BattlegroundMgr::BracketByJoinType(bg->GetJoinType()));
-                if (!bracket || bracket->getRating() < reqValue)
-                    return false;
-            }
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_TITLE_BIT_INDEX: // 38
-            // miscValue1 is title's bit index
-            if (miscValue1 != reqValue)
-                return false;
-            break;
-        case CRITERIA_ADDITIONAL_CONDITION_SOURCE_LEVEL: // 39
-            if (referencePlayer->getLevel() != reqValue)
-                return false;
-        case CRITERIA_ADDITIONAL_CONDITION_TARGET_LEVEL: // 40
-            if (!unit || unit->getLevel() != reqValue)
-                return false;
-        case CRITERIA_ADDITIONAL_CONDITION_TARGET_ZONE: // 41
-            if (referencePlayer->getCurrentUpdateZoneID() != reqValue)
-                return false;
-            break;
-        case CRITERIA_ADDITIONAL_CONDITION_TARGET_HEALTH_PERCENT_BELOW: // 46
-            if (!unit || unit->GetHealthPct() >= reqValue)
-                return false;
-            break;
-        case CRITERIA_ADDITIONAL_CONDITION_MIN_ACHIEVEMENT_POINTS: // 56
-            if ((int32)_achievementPoints < reqValue)
-                return false;
-            break;
-        case CRITERIA_ADDITIONAL_CONDITION_REQUIRES_LFG_GROUP: // 58
-            if (!referencePlayer->GetGroup() || !referencePlayer->GetGroup()->isLFGGroup())
-                return false;
-            break;
-        case CRITERIA_ADDITIONAL_CONDITION_REQUIRES_GUILD_GROUP: // 61
-        {
-            Map* map = referencePlayer->GetMap();
-            if (!referencePlayer->GetGroup() || !referencePlayer->GetGuildId() || !map)
-                return false;
-            else
-            {
-                Group const* group = referencePlayer->GetGroup();
-                uint32 guildId = referencePlayer->GetGuildId();
-                uint32 count = 0;
-                uint32 size = 0;
 
-                for (GroupReference const* ref = group->GetFirstMember(); ref != NULL; ref = ref->next())
+                if (counter < reqValue)
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_MASTER_PET_TAMER: // 81
+            {
+                if (!miscValue2 || miscValue2 != reqValue)
+                    check = false;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_CHALANGER_RATE: // 83
+            {
+                if (!miscValue2)
+                   check = false;
+                else if (reqValue > miscValue2)            // Medal check
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_INCOMPLETE_QUEST: // 84
+            {
+                if (!referencePlayer)
                 {
-                    size = group->GetMembersCount();
-                    if (Player const* groupMember = ref->getSource())
-                        if (groupMember->GetGuildId() != guildId)
-                            count++;
-                }
-                if(map->GetInstanceId() && sObjectMgr->GetCountFromDifficulty(map->GetDifficulty()) > count)
-                    return false;
-                else if(!size || size != count)
-                    return false;
-            }
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_GUILD_REPUTATION: // 62
-        {
-            if (referencePlayer->GetReputationMgr().GetReputation(REP_GUILD) < int32(reqValue))
-                return false;
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_RATED_BATTLEGROUND: // 63
-        {
-            Battleground* bg = referencePlayer->GetBattleground();
-            if (!bg || !bg->IsRBG())
-                return false;
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_PROJECT_RARITY: // 65
-        {
-            if (!miscValue1)
-            {
-                return false;
-                break;
-            }
-
-            ResearchProjectEntry const* rp = sResearchProjectStore.LookupEntry(miscValue1);
-            if (!rp)
-                return false;
-            else
-            {
-                if (rp->rare != reqValue)
-                    return false;
-
-                if (referencePlayer->IsCompletedProject(rp->ID, false))
-                    return false;
-            }
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_PROJECT_RACE: // 66
-        {
-            if (!miscValue1)
-            {
-                return false;
-                break;
-            }
-
-            ResearchProjectEntry const* rp = sResearchProjectStore.LookupEntry(miscValue1);
-            if (!rp)
-                return false;
-            else if (rp->branchId != reqValue)
-                return false;
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_SPEC_EVENT:  // 67
-        {
-            switch(reqValue)
-            {
-                case 7091:  // Ahieve 3636
-                case 14662: // celebrate 10-th wow
-                case 12671: // celebrate 9-th wow
-                case 9906:  // celebrate 8-th wow
-                case 9463:  // celebrate 7-th wow
-                case 8831:  // celebrate 6-th wow
-                case 7427:  // celebrate 5-th wow
-                case 6577:  // celebrate 4-th wow
-                    return false;
-                default:
+                    check = false;
                     break;
+                }
+
+                if (referencePlayer->GetQuestStatus(reqValue) != QUEST_STATUS_INCOMPLETE)
+                    check = false;
+                break;
             }
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_DUNGEON_FIFFICULTY: // 68
-        {
-            if (!unit || !unit->GetMap() || unit->GetMap()->GetSpawnMode() != reqValue)
-                return false;
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_TARGET_MIN_LEVEL: // 70
-        {
-            if (!unit || unit->getLevel() >= reqValue)
-                return false;
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_TARGET_MAX_LEVEL: // 71
-        {
-            if (!unit || unit->getLevel() < reqValue)
-                return false;
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_FEMALY: // 78
-        {
-            if (!miscValue3 || miscValue3 != reqValue)
-                return false;
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_HP_LOW_THAT: // 79
-        {
-            PetBattleWild* petBattle = referencePlayer->GetBattlePetMgr()->GetPetBattleWild();
-            if (!petBattle || petBattle->GetFrontPet(TEAM_ENEMY)->GetHealthPct() >= reqValue)
-                return false;
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_MASTER_PET_TAMER: // 81
-        {
-            if (!miscValue2 || miscValue2 != reqValue)
-                return false;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_CHALANGER_RATE: // 83
-        {
-            if (!miscValue2)
-               return false;
-            else if (reqValue > miscValue2)            // Medal check
-                return false;
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_QUALITY: // 89
-        {
-            uint8 qPet = 0;
-            for (uint32 i = 0; i < sBattlePetBreedQualityStore.GetNumRows(); ++i)
+            case CRITERIA_ADDITIONAL_CONDITION_COMPLETE_ACHIEVEMENT: // 86
+            case CRITERIA_ADDITIONAL_CONDITION_NOT_COMPLETE_ACHIEVEMENT: // 87
             {
-                BattlePetBreedQualityEntry const* qEntry = sBattlePetBreedQualityStore.LookupEntry(i);
-                if (!qEntry)
-                    continue;
-
-                if (miscValue2 == qEntry->quality)
-                    qPet = qEntry->ID;
-
-                if (qPet != reqValue)
-                    return false;
+                if (_completedAchievementsArr[reqValue] == NULL)
+                    check = false;
+                break;
             }
-            break;
+            case CRITERIA_ADDITIONAL_CONDITION_REPUTATION_UNK: // 88
+            {
+                if (!referencePlayer)
+                    check = false;
+                else if (referencePlayer->GetReputationMgr().GetReputation(miscValue1) < int32(reqValue))
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_QUALITY: // 89
+            {
+                uint8 qPet = 0;
+                for (uint32 i = 0; i < sBattlePetBreedQualityStore.GetNumRows(); ++i)
+                {
+                    BattlePetBreedQualityEntry const* qEntry = sBattlePetBreedQualityStore.LookupEntry(i);
+                    if (!qEntry)
+                        continue;
+
+                    if (miscValue2 == qEntry->quality)
+                        qPet = qEntry->ID;
+
+                    if (qPet != reqValue)
+                        return false;
+                }
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_WIN_IN_PVP: // 90
+            case CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_SPECIES: // 91
+            {
+                if (!miscValue1 || miscValue1 != reqValue)
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_EXPANSION_LESS: // 92
+                if (reqValue >= (int32)sWorld->getIntConfig(CONFIG_EXPANSION))
+                    check = false;
+                break;
+            case CRITERIA_ADDITIONAL_CONDITION_REPUTATION: // 95
+            {
+                if (referencePlayer->GetReputationMgr().GetReputation(reqValue) < int32(reqCount))
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_ITEM_CLASS_AND_SUBCLASS: // 96
+            {
+                // miscValue1 is itemid
+                ItemTemplate const * item = sObjectMgr->GetItemTemplate(uint32(miscValue1));
+                if (!item || item->Class != reqValue || item->SubClass != reqCount)
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_REACH_SKILL_LEVEL: // 99
+            {
+                if (referencePlayer->GetBaseSkillValue(reqValue) < reqCount)
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_NOT_HAVE_ACTIVE_SPELL: // 104
+            {
+                if (!referencePlayer)
+                    check = false;
+                else if (referencePlayer->HasActiveSpell(reqValue))
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_HAS_ITEM_COUNT: // 105
+            case CRITERIA_ADDITIONAL_CONDITION_ITEM_COUNT: // 114
+            {
+                if (!referencePlayer)
+                    check = false;
+                else if (referencePlayer->GetItemCount(reqValue) != reqCount)
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_REQ_ADDON: // 106
+            {
+                if (reqValue != 5) // mop 5.0
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_START_QUEST: // 110
+            {
+                if (!referencePlayer)
+                {
+                    check = false;
+                    break;
+                }
+
+                if (referencePlayer->GetQuestStatus(reqValue) == QUEST_STATUS_NONE)
+                   check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_CURRENCY_COUNT: // 119
+            {
+                if ((int32)referencePlayer->GetCurrency(reqValue) != reqCount)
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_CURRENCY_ON_SEASON: // 121
+            {
+                if ((int32)referencePlayer->GetCurrencyOnSeason(reqValue) <= reqCount)
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_DEATH_COUNTER:   // 122
+            {
+                if (!referencePlayer || !referencePlayer->GetInstanceId() || referencePlayer->isAlive())
+                    check = false;
+                break;
+            }
+            case CRITERIA_ADDITIONAL_CONDITION_ARENA_SEASON: // 125
+            {
+                if (sWorld->getIntConfig(CONFIG_ARENA_SEASON_ID) != reqValue)
+                    check = false;
+                break;
+            }
+            default:
+                break;
         }
-        case CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_WIN_IN_PVP: // 90
+
+        // sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementMgr::AdditionalRequirementsSatisfied cheker end Modify %i, reqType %i reqValue %i reqCount %i saveCheck %i saveReqType %i check %i count %u Amount %u",
+        // node->Entry->ID, reqType, reqValue, reqCount, saveCheck, saveReqType, check, count, tree->Entry->Amount);
+
+        if(saveReqType == -1)
         {
-            if (!miscValue1 || miscValue1 != reqValue)
-                return false;
-            break;
+            if(check && reqType) //don`t save if false
+            {
+                saveReqType = reqType;
+                count++;
+            }
+            saveCheck = count >= tree->Entry->Amount;
         }
-        case CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_SPECIES: // 91
+        else if(saveReqType != reqType)
         {
-            if (!miscValue1 || miscValue1 != reqValue)
+            if(!saveCheck || !check)
                 return false;
-            break;
         }
-        case CRITERIA_ADDITIONAL_CONDITION_EXPANSION_LESS: // 92
-            if (reqValue >= (int32)sWorld->getIntConfig(CONFIG_EXPANSION))
-                return false;
-            break;
-        case CRITERIA_ADDITIONAL_CONDITION_REPUTATION: // 95
+        else if(saveReqType == reqType)
         {
-            if (referencePlayer->GetReputationMgr().GetReputation(reqValue) < int32(reqCount))
-                return false;
-            break;
+            if (check)
+                count++;
+            if(count >= tree->Entry->Amount)
+                return true;
         }
-        case CRITERIA_ADDITIONAL_CONDITION_ITEM_CLASS_AND_SUBCLASS: // 96
-        {
-            // miscValue1 is itemid
-            ItemTemplate const * item = sObjectMgr->GetItemTemplate(uint32(miscValue1));
-            if (!item || item->Class != reqValue || item->SubClass != reqCount)
-                return false;
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_CURRENCY: // 121
-        {
-            if ((int32)referencePlayer->GetCurrency(reqValue) <= reqCount)
-                return false;
-            break;
-        }
-        case CRITERIA_ADDITIONAL_CONDITION_ARENA_SEASON: // 125
-        {
-            if (sWorld->getIntConfig(CONFIG_ARENA_SEASON_ID) != reqValue)
-                return false;
-            break;
-        }
-        default:
-            break;
     }
 
-    return true;
+    // sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementMgr::AdditionalRequirementsSatisfied end ModifierTreeId %i, saveCheck %u saveReqType %i count %u Amount %u", tree->Entry->ID, saveCheck, saveReqType, count, tree->Entry->Amount);
+    return saveCheck;
 }
 
 template<class T>
