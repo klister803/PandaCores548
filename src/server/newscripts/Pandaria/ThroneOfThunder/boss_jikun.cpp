@@ -113,7 +113,7 @@ public:
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
         }
         InstanceScript* instance;
-        uint32 checkvictim;
+        uint32 checkmelee;
 
         void Reset()
         {
@@ -121,7 +121,7 @@ public:
             me->SetFullHealth();
             DespawnAllTriggers();
             RemoveDebuffsFromPlayers();
-            checkvictim = 0;
+            checkmelee = 0;
         }
 
         void DespawnAllTriggers()
@@ -137,6 +137,7 @@ public:
         void RemoveDebuffsFromPlayers()
         {
             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TALON_RAKE);
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FEED_POOL_DMG);
             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SLIMED_DMG);
             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SLIMED_DEBUFF);
             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PRIMAL_NUTRIMENT);
@@ -149,7 +150,7 @@ public:
         void EnterCombat(Unit* who)
         {
             _EnterCombat();
-            checkvictim = 4000;
+            checkmelee = 4000;
             events.ScheduleEvent(EVENT_ACTIVE_NEST, 1000);
             events.ScheduleEvent(EVENT_CAW, 14000);
             events.ScheduleEvent(EVENT_TALON_RAKE, 20000);
@@ -168,22 +169,6 @@ public:
         {
             if (!UpdateVictim())
                 return;
-
-            if (checkvictim)
-            {
-                if (checkvictim <= diff)
-                {
-                    if (me->getVictim())
-                    {
-                        if (!me->IsWithinMeleeRange(me->getVictim()))
-                            ScriptedAI::EnterEvadeMode();
-                        else
-                            checkvictim = 4000;
-                    }
-                }
-                else
-                    checkvictim -= diff;
-            }
 
             events.Update(diff);
 
@@ -230,12 +215,26 @@ public:
                     events.ScheduleEvent(EVENT_CAW, 20000);
                     break;
                 case EVENT_DOWN_DRAFT:
-                    checkvictim = 12000;
+                    checkmelee = 12000;
                     DoCast(me, SPELL_DOWN_DRAFT_AT);
                     events.ScheduleEvent(EVENT_DOWN_DRAFT, 97000);
                     break;
                 }
             }
+
+            if (checkmelee <= diff)
+            {
+                if (!me->HasUnitState(UNIT_STATE_CASTING))
+                    if (me->getVictim() && !me->IsWithinMeleeRange(me->getVictim()))
+                        DoCast(me, SPELL_QUILLS);
+                checkmelee = 4000;
+            }
+            else
+                checkmelee -= diff;
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
             DoMeleeAttackIfReady();
         }
     };
@@ -1367,8 +1366,6 @@ public:
                     GetTarget()->RemoveAurasDueToSpell(SPELL_FEED_POOL_DMG);
             }
         }
-
-        
 
         void Register()
         {
