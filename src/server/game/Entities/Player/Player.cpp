@@ -5320,7 +5320,7 @@ void Player::RemoveArenaSpellCooldowns(bool removeActivePetCooldowns)
             pet->m_CreatureSpellCooldowns.clear();
         }
 
-    //RestoreSpellCategoryCharges();
+    RestoreSpellCategoryCharges();
 }
 
 void Player::RemoveAllSpellCooldown()
