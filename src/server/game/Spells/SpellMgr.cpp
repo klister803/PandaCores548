@@ -4094,6 +4094,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->SchoolMask &= ~SPELL_SCHOOL_MASK_NATURE;
                     spellInfo->AttributesEx6 &= ~SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
                     break;
+                case 144791: // Engulfed Explosion
                 case 48743:  // Death Pact
                     spellInfo->AttributesEx6 &= ~SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
                     break;
