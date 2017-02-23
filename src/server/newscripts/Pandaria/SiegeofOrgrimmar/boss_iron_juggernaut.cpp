@@ -147,6 +147,7 @@ class boss_iron_juggernaut : public CreatureScript
 
             void EnterCombat(Unit* who)
             {
+                events.Reset();
                 _EnterCombat();
                 SendActionForAllPassenger(true);
                 PowerTimer = 1100;
