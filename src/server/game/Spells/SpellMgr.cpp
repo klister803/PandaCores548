@@ -6020,6 +6020,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0]->BasePoints = 50;
                     break;
                 case 20066: // Repentance
+                case 51963: // Gargoyle Strike
                     spellInfo->InterruptFlags |= SPELL_INTERRUPT_FLAG_INTERRUPT;
                     break;
                 case 53563: // Beacon of Light
