@@ -175,8 +175,8 @@ void CasterAI::UpdateAI(uint32 diff)
     if (me->HasUnitState(UNIT_STATE_CASTING))
         return;
 
-    if (events.GetEvent())
-        if (!me->IsWithinLOSInMap(me->getVictim()))
+    if (uint32 spell_Id = events.GetEvent())
+        if (!me->IsWithinLOSInMap(me->getVictim()) || me->HasSpellCooldown(spell_Id))
             if (MotionMaster* mMaster = me->GetMotionMaster())
             {
                 mMaster->MoveChase(me->getVictim(), 0.001f);
