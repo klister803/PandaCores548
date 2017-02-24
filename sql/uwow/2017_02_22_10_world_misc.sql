@@ -11,4 +11,6 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `hastalent`, 
 DELETE FROM `spell_proc_event` WHERE `entry` IN (146874);
 INSERT INTO `spell_proc_event` VALUES (146874, 0, 0, 0, 268435456, 2097152, 4096, 0, 0, 0, 100, 0, 7);
 
-INSERT INTO `spell_trigger` (`spell_id`, `spell_trigger`, `option`, `target`, `aura`, `comment`) VALUES ('146874', '144859', '20', '10', '144841', 'Item - Druid T16 Feral 4P Bonus')
+INSERT INTO `spell_trigger` (`spell_id`, `spell_trigger`, `option`, `target`, `aura`, `comment`) VALUES ('146874', '144859', '20', '10', '144841', 'Item - Druid T16 Feral 4P Bonus');
+
+UPDATE `pet_stats` SET `spd`='-0.7' WHERE (`entry`='27829');
