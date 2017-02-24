@@ -3575,8 +3575,13 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
         }
 
         SendCastResult(result);
-
         finish(false);
+
+        //old exploit, if between tank and boss have wall or other object, checkcast fail(LOS), boss can not use spells, too easy kill...
+        if (result == SPELL_FAILED_LINE_OF_SIGHT)
+            if (Creature* creature = m_caster->ToCreature())
+                if (creature->IsAIEnabled)
+                    creature->AI()->CreatureFailedCheckCastResult();
         return;
     }
 

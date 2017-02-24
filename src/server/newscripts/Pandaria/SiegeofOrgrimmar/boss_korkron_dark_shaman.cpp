@@ -201,6 +201,15 @@ public:
             return NULL;
         }
 
+        void CreatureFailedCheckCastResult()
+        {
+            if (me->getVictim() && me->getVictim()->isAlive())
+            {
+                me->MonsterTextEmote("Detect use exploit with LOS, destroy user", 0, true);
+                me->Kill(me->getVictim(), true);
+            }
+        }
+
         void DespawnAllSummons() //Despawn special creature and gameobject(summons from triggers)
         {
             std::list<Creature*> list;
