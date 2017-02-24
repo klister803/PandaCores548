@@ -19445,10 +19445,18 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
             if(!_caster)
                 _caster = this;
 
-            if(itr->target == 9) //get target select
+            if (itr->target == 9) //get target select
+            {
                 if (Player* _player = _caster->ToPlayer())
                     if (Unit* _select = _player->GetSelectedUnit())
                         target = _select;
+            }
+            else if (itr->target == 10) //get target comdoTarget
+            {
+                if (Player* _player = _caster->ToPlayer())
+                    if (Unit * comdoTarget = ObjectAccessor::GetUnit(*_player, _player->GetComboTarget()))
+                        target = comdoTarget;
+            }
 
             if(itr->targetaura == 1) //get caster aura
                 _targetAura = triggeredByAura->GetCaster();
