@@ -3902,7 +3902,7 @@ class npc_demonic_gateway : public CreatureScript
                                 aurastack->GetEffect(EFFECT_0)->ChangeAmount(stacks - 1);
                                 aurastack->SetNeedClientUpdateForTargets();
                                 //who->CastSpell(uGate, gate ? 120729 : 113896, true);
-                                who->CastCustomSpell(uGate, gate ? 120729 : 113896, NULL, NULL, NULL, true, NULL, NULL, owner->GetGUID());
+                                who->CastCustomSpell(uGate, gate ? 120729 : 113896, NULL, NULL, NULL, false, NULL, NULL, owner->GetGUID());
                                 for(int32 j = 5; j >= 0; --j)
                                 {
                                     if (uGate->HasAura(gwauras[!gate][j]))

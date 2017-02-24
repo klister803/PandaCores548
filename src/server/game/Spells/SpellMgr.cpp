@@ -6257,6 +6257,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 120729: // Demonic Gateway
                 case 113896: // Demonic Gateway
+                    spellInfo->AttributesEx4 &= ~SPELL_ATTR4_TRIGGERED;
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
                     spellInfo->AttributesEx5 &= ~SPELL_ATTR5_USABLE_WHILE_FEARED;
                     spellInfo->AttributesEx5 &= ~SPELL_ATTR5_USABLE_WHILE_STUNNED;
