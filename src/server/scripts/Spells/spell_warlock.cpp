@@ -2158,6 +2158,35 @@ class spell_warl_metamorphosis : public SpellScriptLoader
         }
 };
 
+// Dark Apotheosis 114168
+class spell_warl_dark_apotheosis : public SpellScriptLoader
+{
+public:
+    spell_warl_dark_apotheosis() : SpellScriptLoader("spell_warl_dark_apotheosis") { }
+
+    class spell_warl_dark_apotheosis_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_warl_dark_apotheosis_AuraScript);
+
+        void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (Unit* caster = GetCaster())
+                if (caster->GetPower(POWER_DEMONIC_FURY) > 200)
+                    caster->SetPower(POWER_DEMONIC_FURY, 200);
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectApplyFn(spell_warl_dark_apotheosis_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_MOD_IGNORE_SHAPESHIFT, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_warl_dark_apotheosis_AuraScript();
+    }
+};
+
 // Corruption - 146739 for Malefic Grasp 103103
 class spell_warl_corruption : public SpellScriptLoader
 {
@@ -2873,4 +2902,5 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_void_shield();
     new spell_warl_void_shield_damage();
     new spell_warl_burning_embers2();
+    new spell_warl_dark_apotheosis();
 }
