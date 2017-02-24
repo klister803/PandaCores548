@@ -122,6 +122,7 @@ public:
             DespawnAllTriggers();
             RemoveDebuffsFromPlayers();
             checkmelee = 0;
+            instance->SetData(DATA_JIKUN_RESET_ALL_NESTS, 0);
         }
 
         void DespawnAllTriggers()
@@ -163,6 +164,7 @@ public:
             _JustDied();
             DespawnAllTriggers();
             RemoveDebuffsFromPlayers();
+            instance->SetData(DATA_JIKUN_RESET_ALL_NESTS, 0);
         }
 
         void UpdateAI(uint32 diff)

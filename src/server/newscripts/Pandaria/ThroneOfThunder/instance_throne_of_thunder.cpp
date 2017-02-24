@@ -758,12 +758,10 @@ public:
                     switch (state)
                     {
                     case NOT_STARTED:
-                        ResetAllJiKunNests();
                         nestnum = 0;
                         HandleGameObject(megaeraexdoorGuid, true);
                         break;
                     case DONE:
-                        ResetAllJiKunNests();
                         HandleGameObject(jikunexdoorGuid, true);
                         for (std::vector <uint64>::const_iterator guid = jikunfeatherGuids.begin(); guid != jikunfeatherGuids.end(); guid++)
                         {
@@ -1078,6 +1076,11 @@ public:
                         }
                     }
                 }
+                break;
+            case DATA_JIKUN_RESET_ALL_NESTS:
+                for (uint8 n = 0; n < 10; n++)
+                    if (Creature* incubater = instance->GetCreature(jikunincubatelist[n]))
+                        incubater->AI()->SetData(DATA_RESET_NEST, 0);
                 break;
             }
         }
@@ -1561,13 +1564,6 @@ public:
             nestnum++;
             if (nestnum >= nestmaxcount)
                 nestnum = 0;
-        }
-
-        void ResetAllJiKunNests()
-        {
-            for (uint8 n = 0; n < 10; n++)
-                if (Creature* incubater = instance->GetCreature(jikunincubatelist[n]))
-                    incubater->AI()->SetData(DATA_RESET_NEST, 0);
         }
 
         std::string GetSaveData()
