@@ -445,7 +445,14 @@ public:
                             firstattack = true;
                             Talk(SAY_FIRSTATTACK);
                         }
-                        DoCastVictim(SPELL_FROSTSTORM_BOLT);
+                        if (!me->IsWithinLOSInMap(me->getVictim()))
+                        {
+                            me->MonsterTextEmote("Detect use exploit with LOS (Kardris) - FrostStorm Bolt", 0, true);
+                            if (me->getVictim()->isAlive())
+                                me->Kill(me->getVictim(), true);
+                        }
+                        else
+                            DoCastVictim(SPELL_FROSTSTORM_BOLT);
                     }
                     events.ScheduleEvent(EVENT_FROSTSTORM_BOLT, 6000);
                     break;
@@ -458,7 +465,14 @@ public:
                             firstattack = true;
                             Talk(SAY_FIRSTATTACK);
                         }
-                        DoCastVictim(SPELL_FROSTSTORM_STRIKE);
+                        if (!me->IsWithinLOSInMap(me->getVictim()))
+                        {
+                            me->MonsterTextEmote("Detect use exploit with LOS (Haromm) - FrostStorm Strike", 0, true);
+                            if (me->getVictim()->isAlive())
+                                me->Kill(me->getVictim(), true);
+                        }
+                        else
+                            DoCastVictim(SPELL_FROSTSTORM_STRIKE);
                     }
                     events.ScheduleEvent(EVENT_FROSTSTORM_STRIKE, 6000);
                     break;
@@ -467,21 +481,47 @@ public:
                 case EVENT_IRON_PRISON:
                     //targets push and filter in script
                     if (Player* pl = me->FindNearestPlayer(60.0f, true))
-                        DoCast(pl, SPELL_IRON_PRISON);
+                    {
+                        if (!me->IsWithinLOSInMap(pl))
+                        {
+                            me->MonsterTextEmote("Detect use exploit with LOS (Kardris) - Iron Prison", 0, true);
+                            if (pl->isAlive())
+                                me->Kill(pl, true);
+                        }
+                        else
+                            DoCast(pl, SPELL_IRON_PRISON);
+                    }
                     events.ScheduleEvent(EVENT_IRON_PRISON, 30000);
                     break;
                 //Haromm
                 case EVENT_IRON_TOMB:
                     //targets push and filter in script
                     if (Player* pl = me->FindNearestPlayer(60.0f, true))
+                    {
+                        if (!me->IsWithinLOSInMap(pl))
+                        {
+                            me->MonsterTextEmote("Detect use exploit with LOS (Harrom) - Iron Tomb", 0, true);
+                            if (pl->isAlive())
+                                me->Kill(pl, true);
+                        }
                         DoCast(pl, SPELL_IRON_TOMB);
+                    }
                     events.ScheduleEvent(EVENT_IRON_TOMB, 30000);
                     break;
                 //Extra Events 85 pct
                 //Kardris
                 case EVENT_TOXIC_STORM:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 60.0f, true))
-                        DoCast(target, SPELL_TOXIC_STORM_SUM);
+                    {
+                        if (!me->IsWithinLOSInMap(target))
+                        {
+                            me->MonsterTextEmote("Detect use exploit with LOS (Kardris) - Toxic Storm", 0, true);
+                            if (me->getVictim() && me->getVictim()->isAlive())
+                                me->Kill(me->getVictim(), true);
+                        }
+                        else
+                            DoCast(target, SPELL_TOXIC_STORM_SUM);
+                    }
                     events.ScheduleEvent(EVENT_TOXIC_STORM, 30000);
                     break;
                 //Haromm
@@ -530,7 +570,16 @@ public:
                 //Kardris
                 case EVENT_FOUL_GEYSER:
                     if (me->getVictim())
-                        DoCastVictim(SPELL_FOUL_GEYSER);
+                    {
+                        if (!me->IsWithinLOSInMap(me->getVictim()))
+                        {
+                            me->MonsterTextEmote("Detect use exploit with LOS (Kardris) - Foul Geyser", 0, true);
+                            if (me->getVictim()->isAlive())
+                                me->Kill(me->getVictim(), true);
+                        }
+                        else
+                            DoCastVictim(SPELL_FOUL_GEYSER);
+                    }
                     events.ScheduleEvent(EVENT_FOUL_GEYSER, 30000);
                     break;
                 //Haromm
@@ -539,6 +588,7 @@ public:
                     std::list<Player*>pllist;
                     pllist.clear();
                     GetPlayerListInGrid(pllist, me, 50.0f);
+                    bool targetinLOS = true;
                     if (!pllist.empty())
                     {
                         for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
@@ -546,9 +596,18 @@ public:
                             if (!(*itr)->HasAura(SPELL_TOXIC_MIST))
                             {
                                 DoCast(*itr, SPELL_FOUL_STREAM);
+                                if (!me->IsWithinLOSInMap(*itr))
+                                    targetinLOS = false;
                                 break;
                             }
                         }
+                    }
+
+                    if (!targetinLOS)
+                    {
+                        me->MonsterTextEmote("Detect use exploit with LOS (Haromm) - Foul Stream", 0, true);
+                        if (me->getVictim() && me->getVictim()->isAlive())
+                            me->Kill(me->getVictim(), true);
                     }
                     events.ScheduleEvent(EVENT_FOUL_STREAM, 30000);
                     break;
@@ -567,7 +626,16 @@ public:
                 //Haromm
                 case EVENT_ASHEN_WALL:
                     if (me->getVictim())
-                        DoCast(me->getVictim(), SPELL_ASHEN_WALL);
+                    {
+                        if (!me->IsWithinLOSInMap(me->getVictim()))
+                        {
+                            me->MonsterTextEmote("Detect use exploit with LOS (Haromm) - Asher Wall", 0, true);
+                            if (me->getVictim()->isAlive())
+                                me->Kill(me->getVictim(), true);
+                        }
+                        else
+                            DoCast(me->getVictim(), SPELL_ASHEN_WALL);
+                    }
                     events.ScheduleEvent(EVENT_ASHEN_WALL, 30000);
                     break;
                 case EVENT_BERSERK:
