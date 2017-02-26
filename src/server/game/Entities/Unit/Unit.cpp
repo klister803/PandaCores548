@@ -12911,11 +12911,6 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
 
     TakenTotalMod *= bestVal;
 
-    //Reactive Armor not work if attacker has Electrostatic Charge(Blackfuse)[SO]
-    if (HasAura(143387))
-        if (caster->HasAura(143385))
-            TakenTotalMod = 1.0f;
-
     // From caster spells
     AuraEffectList mOwnerTaken = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_FROM_CASTER);
     for (AuraEffectList::const_iterator i = mOwnerTaken.begin(); i != mOwnerTaken.end(); ++i)
@@ -14203,11 +14198,6 @@ uint32 Unit::MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage, WeaponAttackT
 
     // ..taken
     TakenTotalMod *= GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN, GetMeleeDamageSchoolMask());
-
-    //Reactive Armor not work if attacker has Electrostatic Charge(Blackfuse)[SO]
-    if (HasAura(143387))
-        if (attacker->HasAura(143385))
-            TakenTotalMod = 1.0f;
 
     // .. taken pct (special attacks)
     if (spellProto)

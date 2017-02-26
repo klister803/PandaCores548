@@ -336,7 +336,7 @@ public:
 
         void OnSpellClick(Unit* clicker)
         {
-            if (instance->GetBossState(DATA_THOK) == DONE)
+            if (instance->GetBossState(DATA_THOK) == DONE && instance->GetBossState(DATA_BLACKFUSE) == DONE)
             {
                 if (me->HasAura(SPELL_AURA_VISUAL_FS))
                 {
