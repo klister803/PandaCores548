@@ -3890,6 +3890,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_3]->ApplyAuraName = SPELL_AURA_NONE;
                     break;
                 case 26573:  // Consecration
+                case 116467:  
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME;
                     break;
                 case 134967: // Heroic Throw
