@@ -1320,7 +1320,7 @@ class spell_mage_alter_time : public SpellScriptLoader
                             if ((auraInfo->Attributes & SPELL_ATTR0_HIDDEN_CLIENTSIDE) && auraInfo->Id != 126084)
                                 continue;
 
-                            if (auraInfo->Attributes & SPELL_ATTR0_PASSIVE)
+                            if (auraInfo->Attributes & SPELL_ATTR0_PASSIVE || auraInfo->AttributesCu & SPELL_ATTR0_CU_NEED_BE_SAVED_IN_DB)
                                 continue;
 
                             if (aura->GetMaxDuration() == -1 && !auraInfo->RecoveryTime)
