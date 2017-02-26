@@ -4255,8 +4255,11 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_HAVE_STABLE_FLYTIME;
                     break;
                 case 2094:   // Blind
+                    spellInfo->AttributesEx3 &= ~SPELL_ATTR3_CANT_TRIGGER_PROC;
+                    break;
                 case 108446: // Soul Link
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_CANT_TRIGGER_PROC;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_CANT_BE_SAVED_IN_DB;
                     break;
                 case 123154: // Fists of Fury Visual Target
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(36);
@@ -6294,6 +6297,27 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 118905: // Static Charge
                     spellInfo->AttributesEx |= SPELL_ATTR1_CANT_BE_REFLECTED;
+                    break;
+                case 44413: // Incanter's Absorbtion - considering the minimal duration and problems with aura stacking
+                case 33763: // we skip saving this aura
+                case 67483: // When a druid logins, he doesnt have either eclipse power, nor the marker auras, nor the eclipse buffs. Dont save them.
+                case 67484:
+                case 48517:
+                case 48518:
+                case 107095:
+                case 118694:
+                case 119048:
+                case 68338:
+                case 69303:
+                case 72885:
+                case 104571:
+                case 124458:
+                case 130324:
+                case 126119:
+                case 114695:
+                case 144607:
+                case 110909:
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_CANT_BE_SAVED_IN_DB;
                     break;
                 default:
                     break;

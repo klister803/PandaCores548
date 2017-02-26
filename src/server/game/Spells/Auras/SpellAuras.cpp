@@ -1409,6 +1409,9 @@ bool Aura::CanBeSaved() const
     if (IsPassive() && !(GetSpellInfo()->AttributesCu & SPELL_ATTR0_CU_NEED_BE_SAVED_IN_DB))
         return false;
 
+    if (GetSpellInfo()->AttributesCu & SPELL_ATTR0_CU_CANT_BE_SAVED_IN_DB)
+        return false;
+
     if (GetCasterGUID() != GetOwner()->GetGUID())
         if (GetSpellInfo()->IsSingleTarget(GetCaster()))
             return false;
@@ -1435,35 +1438,6 @@ bool Aura::CanBeSaved() const
     // don't save auras casted by summons
     if (GetCaster() && GetCaster()->GetTypeId() != TYPEID_PLAYER && GetCaster()->isAnySummons())
         return false;
-
-    switch (GetId())
-    {
-        // Incanter's Absorbtion - considering the minimal duration and problems with aura stacking
-        // we skip saving this aura
-        case 44413:
-        // When a druid logins, he doesnt have either eclipse power, nor the marker auras, nor the eclipse buffs. Dont save them.
-        case 33763:
-        case 67483:
-        case 67484:
-        case 48517:
-        case 48518:
-        case 107095:
-        case 118694:
-        case 119048:
-        case 108446:
-        case 68338:
-        case 69303:
-        case 72885:
-        case 104571:
-        case 124458:
-        case 130324:
-        case 126119:
-        case 114695:
-        case 144607:
-            return false;
-        default:
-            break;
-    }
 
     // not save area auras (phase auras, e.t.c)
     SpellAreaMapBounds saBounds = sSpellMgr->GetSpellAreaMapBounds(GetId());
