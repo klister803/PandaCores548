@@ -313,6 +313,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              std::list<AreaTrigger*> atlist;
              atlist.clear();
              me->GetAreaTriggersWithEntryInRange(atlist, 4903, 0, 250.0f);
+             me->GetAreaTriggersWithEntryInRange(atlist, 4894, 0, 250.0f);
              if (!atlist.empty())
                  for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
                      (*itr)->RemoveFromWorld();
@@ -812,7 +813,7 @@ public:
             me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
             me->ApplySpellImmune(0, IMMUNITY_ID, 132469, true); //Typhoon
-            me->ApplySpellImmune(0, IMMUNITY_ID, 51490,  true);  //Thunderstorm
+            me->ApplySpellImmune(0, IMMUNITY_ID, 51490,  true); //Thunderstorm
             me->ApplySpellImmune(0, IMMUNITY_ID, 117962, true); //Crackling Jade Shock
             me->ApplySpellImmune(0, IMMUNITY_ID, 149575, true); //Explosive Trap
             me->ApplySpellImmune(0, IMMUNITY_ID, 143327, true);
