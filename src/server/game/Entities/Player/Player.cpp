@@ -5320,7 +5320,7 @@ void Player::RemoveArenaSpellCooldowns(bool removeActivePetCooldowns)
             pet->m_CreatureSpellCooldowns.clear();
         }
 
-    RestoreSpellCategoryCharges();
+    //RestoreSpellCategoryCharges();
 }
 
 void Player::RemoveAllSpellCooldown()
@@ -25635,11 +25635,6 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
             {
                 if (bg->GetStatus() == STATUS_IN_PROGRESS || bg->GetStatus() == STATUS_WAIT_JOIN || bg->GetRemainingTime() == 120000)
                     HandleArenaDeserter();
-
-                BracketType bType = BattlegroundMgr::BracketByJoinType(bg->GetJoinType());
-
-                if (Bracket* bracket = getBracket(bType))
-                    bracket->FinishGame(false, bg->GetMatchmakerRating(bg->GetOtherTeam(GetTeam())));
             }
         }
     }

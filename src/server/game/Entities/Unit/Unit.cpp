@@ -19414,59 +19414,41 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     continue;
             }
 
-            if (itr->target == 8 && target == this) //not trigger spell for self
+            if(itr->target == 8 && target == this) //not trigger spell for self
                 continue;
-            else if (itr->target == 1 || itr->target == 6 || !target) //get target self
+            if(itr->target == 1 || itr->target == 6 || !target) //get target self
                 target = this;
-            else if (itr->target == 3 && ToPlayer()) //get target owner
-            {
+            if(itr->target == 3 && ToPlayer()) //get target owner
                 if (Pet* pet = ToPlayer()->GetPet())
                     target = (Unit*)pet;
-            }
-            else if (itr->target == 4 && target->ToPlayer()) //get target pet
-            {
+            if(itr->target == 4 && target->ToPlayer()) //get target pet
                 if (Pet* pet = target->ToPlayer()->GetPet())
                     target = (Unit*)pet;
-            }
-            else if (itr->target == 5) //get target owner
-            {
+            if(itr->target == 5) //get target owner
                 if (Unit* owner = GetOwner())
                     target = owner;
-            }
-            else if (itr->target == 7) //get target self
+            if(itr->target == 7) //get target self
                 target = triggeredByAura->GetCaster();
 
             Unit* _caster = this;
             Unit* _casterAura = triggeredByAura->GetCaster();
             Unit* _targetAura = this;
 
-            if (itr->caster == 1) //get caster aura
+            if(itr->caster == 1) //get caster aura
                 _caster = triggeredByAura->GetCaster();
-            else if (itr->caster == 3 && ToPlayer()) //get caster owner
-            {
+            if(itr->caster == 3 && ToPlayer()) //get caster owner
                 if (Pet* pet = ToPlayer()->GetPet())
                     _caster = (Unit*)pet;
-            }
-            else if (itr->caster == 4) //get caster owner
-            {
+            if(itr->caster == 4) //get caster owner
                 if (Unit* owner = GetOwner())
                     _caster = owner;
-            }
-            else if (!_caster)
+            if(!_caster)
                 _caster = this;
 
-            if (itr->target == 9) //get target select
-            {
+            if(itr->target == 9) //get target select
                 if (Player* _player = _caster->ToPlayer())
                     if (Unit* _select = _player->GetSelectedUnit())
                         target = _select;
-            }
-            else if (itr->target == 10) //get target comdoTarget
-            {
-                if (Player* _player = _caster->ToPlayer())
-                    if (Unit * comdoTarget = ObjectAccessor::GetUnit(*_player, _player->GetComboTarget()))
-                        target = comdoTarget;
-            }
 
             if(itr->targetaura == 1) //get caster aura
                 _targetAura = triggeredByAura->GetCaster();

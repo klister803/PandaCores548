@@ -506,7 +506,9 @@ class boss_malkorok : public CreatureScript
                     case EVENT_RE_ATTACK:
                         me->StopMoving();
                         me->GetMotionMaster()->Clear(false);
-                        me->ReAttackWithZone();
+                        me->SetReactState(REACT_AGGRESSIVE);
+                        if (me->getVictim())
+                            me->GetMotionMaster()->MoveChase(me->getVictim());
                         break;
                     case EVENT_ERADICATE:
                         DoCastAOE(SPELL_ERADICATE);

@@ -1433,7 +1433,7 @@ bool Aura::CanBeSaved() const
         return false;
 
     // don't save auras casted by summons
-    if (GetCaster() && GetCaster()->GetTypeId() != TYPEID_PLAYER && GetCaster()->isAnySummons())
+    if (GetCaster() && GetCaster()->isAnySummons())
         return false;
 
     switch (GetId())

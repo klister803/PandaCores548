@@ -591,16 +591,13 @@ class spell_warr_heroic_leap : public SpellScriptLoader
             {
                 Unit* caster = GetCaster();
 
-                //hack fix, warrior can not jump on conveyer, Blacfuse[SO]
-                if (Creature* conveyertrigger = caster->FindNearestCreature(71520, 50.0f, true))
-                    return SPELL_FAILED_NOT_HERE;
-
                 WorldLocation* dest = const_cast<WorldLocation*>(GetExplTargetDest());
+
                 if (dest->GetPositionZ() > caster->GetPositionZ() + 5.0f)
                     return SPELL_FAILED_NOPATH;
                 else if (caster->HasAuraType(SPELL_AURA_MOD_ROOT))
                     return SPELL_FAILED_ROOTED;
-                
+
                 return SPELL_CAST_OK;
             }
 
