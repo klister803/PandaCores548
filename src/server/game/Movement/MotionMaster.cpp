@@ -390,6 +390,18 @@ void MotionMaster::MoveKnockbackFrom(float srcX, float srcY, float speedXY, floa
                 break;
         }
 
+        //hack, Blackfuse[SO] automated shredder vertical knock back... 144208
+        if (!dist && _owner->ToCreature())
+        {
+            if (_owner->GetEntry() == 71591)
+            {
+                x = _owner->GetPositionX();
+                y = _owner->GetPositionY();
+                z = _owner->GetPositionZ() + 26.0f;
+                speedXY = 30.0f;
+            }
+        }
+
         if (_owner->IsWithinLOS(x, y, z))
         {
             Movement::MoveSplineInit init(*_owner);

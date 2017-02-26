@@ -74,8 +74,6 @@ enum eEvents
     EVENT_ENGULFED_EXPLOSE        = 12,
     //Cutter Laser
     EVENT_ACTIVE_EXPLOSIVE_TAR    = 13,
-    //Special
-    EVENT_CHECK_PROGRESS          = 14,
 };
 
 Position const modpos[3] = 
@@ -147,13 +145,17 @@ class boss_iron_juggernaut : public CreatureScript
 
             void EnterCombat(Unit* who)
             {
-                events.Reset();
+                if (instance && instance->GetBossState(DATA_GALAKRAS) != DONE || !CheckPullPlayerPos(who))
+                {
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                    EnterEvadeMode();
+                    return;
+                }
                 _EnterCombat();
                 SendActionForAllPassenger(true);
                 PowerTimer = 1100;
                 checkvictim = 1500;
                 enrage = 600000;
-                events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
                 events.ScheduleEvent(EVENT_SUMMON_MINE, 30000);
                 events.ScheduleEvent(EVENT_DEMOLISHER_CANNON, 9000);
                 events.ScheduleEvent(EVENT_BORER_DRILL, 20000, 0, PHASE_ONE);
@@ -281,13 +283,6 @@ class boss_iron_juggernaut : public CreatureScript
                 {
                     switch (eventId)
                     {
-                    case EVENT_CHECK_PROGRESS:
-                        if (instance && instance->GetBossState(DATA_GALAKRAS) != DONE)
-                        {
-                            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                            EnterEvadeMode();
-                        }
-                        break;
                     case EVENT_BORER_DRILL:
                     {
                         DoCast(me, SPELL_BORER_DRILL_B_VISUAL, true);
@@ -301,7 +296,7 @@ class boss_iron_juggernaut : public CreatureScript
                         {
                             for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                             {
-                                if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK) 
+                                if ((*itr)->GetRoleForGroup((*itr)->GetSpecializationId((*itr)->GetActiveSpec())) != ROLES_TANK)
                                 {
                                     if (Creature* drill = me->SummonCreature(NPC_BORER_DRILL, pos, TEMPSUMMON_TIMED_DESPAWN, 10000))
                                     {
@@ -356,7 +351,7 @@ class boss_iron_juggernaut : public CreatureScript
                     case EVENT_SCATTER_LASER:
                         if (Unit* p = GetPassengerForCast(NPC_TAIL_GUN))
                         {
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 80.0f, true)) 
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 80.0f, true))
                             {
                                 p->SetFacingToObject(target);
                                 p->CastSpell(target, SPELL_SCATTER_LASER);
@@ -372,8 +367,10 @@ class boss_iron_juggernaut : public CreatureScript
                             y = target->GetPositionY();
                             z = target->GetPositionZ();
                             for (uint8 n = 0; n < 3; n++)
+                            {
                                 if (Creature* mine = me->SummonCreature(NPC_CRAWLER_MINE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()))
                                     mine->GetMotionMaster()->MoveCharge(x + modpos[n].GetPositionX(), y + modpos[n].GetPositionY(), z, 20.0f, 0);
+                            }
                         }
                         events.ScheduleEvent(EVENT_SUMMON_MINE, 30000);
                         break;
@@ -430,7 +427,8 @@ class boss_iron_juggernaut : public CreatureScript
             void JustDied(Unit* /*killer*/)
             {
                 _JustDied();
-                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BORER_DRILL_DMG);
+                if (instance)
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BORER_DRILL_DMG);
             }
 
             void SendActionForAllPassenger(bool action)
@@ -440,15 +438,19 @@ class boss_iron_juggernaut : public CreatureScript
                     if (action)
                     {
                         for (uint8 n = 0; n < 5; n++)
+                        {
                             if (Unit* p = ij->GetPassenger(n))
-                                if (p->ToCreature() && p->ToCreature()->AI())
+                                if(p->ToCreature() && p->ToCreature()->AI())
                                     p->ToCreature()->AI()->DoZoneInCombat(p->ToCreature(), 158.0f);
+                        }
                     }
                     else
                     {
                         for (uint8 n = 0; n < 5; n++)
+                        {
                             if (Unit* p = ij->GetPassenger(n))
                                 p->ToCreature()->AI()->EnterEvadeMode();
+                        }
                     }
                 }
             }
@@ -505,12 +507,11 @@ public:
 
         InstanceScript* instance;
 
-        void Reset()
-        {
-            me->SetReactState(REACT_PASSIVE);
-        }
+        void Reset(){}
         
         void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
         
         void UpdateAI(uint32 diff)
         {
@@ -550,7 +551,7 @@ public:
         {
             events.Reset();
             targetGuid = 0;
-            events.ScheduleEvent(EVENT_ACTIVE_DETONATE, urand(3000, 5000));
+            events.ScheduleEvent(EVENT_ACTIVE_DETONATE, urand(3000, 5000)); //test only
         }
 
         void OnSpellClick(Unit* clicker)

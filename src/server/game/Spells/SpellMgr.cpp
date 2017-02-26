@@ -4094,6 +4094,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->SchoolMask &= ~SPELL_SCHOOL_MASK_NATURE;
                     spellInfo->AttributesEx6 &= ~SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
                     break;
+                case 144791: // Engulfed Explosion
                 case 48743:  // Death Pact
                     spellInfo->AttributesEx6 &= ~SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
                     break;
@@ -6018,7 +6019,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 131086: // Bladestorm (Protection buff) DND
                     spellInfo->Effects[EFFECT_0]->BasePoints = 50;
                     break;
-                case 20066: // Repentance
+                case 20066:  // Repentance
+                case 51963:  // Gargoyle Strike
+                case 113792: // Psychic Horror
                     spellInfo->InterruptFlags |= SPELL_INTERRUPT_FLAG_INTERRUPT;
                     break;
                 case 53563: // Beacon of Light
@@ -6254,6 +6257,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 120729: // Demonic Gateway
                 case 113896: // Demonic Gateway
+                    spellInfo->AttributesEx4 &= ~SPELL_ATTR4_TRIGGERED;
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
                     spellInfo->AttributesEx5 &= ~SPELL_ATTR5_USABLE_WHILE_FEARED;
                     spellInfo->AttributesEx5 &= ~SPELL_ATTR5_USABLE_WHILE_STUNNED;

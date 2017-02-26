@@ -810,14 +810,25 @@ public:
             instance = creature->GetInstanceScript();
             me->ModifyAuraState(AURA_STATE_UNKNOWN22, true);
             me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
-            DoCast(me, SPELL_REACTIVE_ARMOR, true);
+            me->ApplySpellImmune(0, IMMUNITY_ID, 132469, true); //Typhoon
+            me->ApplySpellImmune(0, IMMUNITY_ID, 51490,  true);  //Thunderstorm
+            me->ApplySpellImmune(0, IMMUNITY_ID, 117962, true); //Crackling Jade Shock
+            me->ApplySpellImmune(0, IMMUNITY_ID, 149575, true); //Explosive Trap
+            me->ApplySpellImmune(0, IMMUNITY_ID, 143327, true);
         }
         InstanceScript* instance;
         EventMap events;
+        uint32 landing;
 
-        void Reset(){}
+        void Reset()
+        {
+            events.Reset();
+            me->SetReactState(REACT_AGGRESSIVE);
+            if (!me->HasAura(SPELL_REACTIVE_ARMOR))
+                DoCast(me, SPELL_REACTIVE_ARMOR, true);
+            landing = 0;
+        }
 
         void EnterCombat(Unit* who)
         {
@@ -832,10 +843,28 @@ public:
                     blackfuse->CastSpell(blackfuse, SPELL_PROTECTIVE_FRENZY, true);
         }
 
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (pointId == 0)
+                landing = 200;
+        }
+
         void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
+
+            if (landing)
+            {
+                if (landing <= diff)
+                {
+                    me->GetMotionMaster()->MoveCharge(me->GetPositionX(), me->GetPositionY(), -309.3269f, 10.0f, 1);
+                    me->AddUnitMovementFlag(MOVEMENTFLAG_FALLING);
+                    landing = 0;
+                }
+                else
+                    landing -= diff;
+            }
 
             events.Update(diff);
 
@@ -847,7 +876,7 @@ public:
                 switch (eventId)
                 {
                 case EVENT_DEATH_FROM_ABOVE:
-                    me->SetAttackStop(false);
+                    me->SetAttackStop(true);
                     DoCast(me, SPELL_DEATH_FROM_ABOVE_K_B);
                     events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 35000);
                     break;
@@ -1800,10 +1829,8 @@ public:
         void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
         {
             if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
-            {
                 if (GetCaster()->ToCreature())
                     GetCaster()->ToCreature()->ReAttackWithZone();
-            }
         }
 
         void Register()

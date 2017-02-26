@@ -12911,6 +12911,11 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
 
     TakenTotalMod *= bestVal;
 
+    //Reactive Armor not work if attacker has Electrostatic Charge(Blackfuse)[SO]
+    if (HasAura(143387))
+        if (caster->HasAura(143385))
+            TakenTotalMod = 1.0f;
+
     // From caster spells
     AuraEffectList mOwnerTaken = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_FROM_CASTER);
     for (AuraEffectList::const_iterator i = mOwnerTaken.begin(); i != mOwnerTaken.end(); ++i)
@@ -14198,6 +14203,11 @@ uint32 Unit::MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage, WeaponAttackT
 
     // ..taken
     TakenTotalMod *= GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN, GetMeleeDamageSchoolMask());
+
+    //Reactive Armor not work if attacker has Electrostatic Charge(Blackfuse)[SO]
+    if (HasAura(143387))
+        if (attacker->HasAura(143385))
+            TakenTotalMod = 1.0f;
 
     // .. taken pct (special attacks)
     if (spellProto)
@@ -19414,41 +19424,59 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     continue;
             }
 
-            if(itr->target == 8 && target == this) //not trigger spell for self
+            if (itr->target == 8 && target == this) //not trigger spell for self
                 continue;
-            if(itr->target == 1 || itr->target == 6 || !target) //get target self
+            else if (itr->target == 1 || itr->target == 6 || !target) //get target self
                 target = this;
-            if(itr->target == 3 && ToPlayer()) //get target owner
+            else if (itr->target == 3 && ToPlayer()) //get target owner
+            {
                 if (Pet* pet = ToPlayer()->GetPet())
                     target = (Unit*)pet;
-            if(itr->target == 4 && target->ToPlayer()) //get target pet
+            }
+            else if (itr->target == 4 && target->ToPlayer()) //get target pet
+            {
                 if (Pet* pet = target->ToPlayer()->GetPet())
                     target = (Unit*)pet;
-            if(itr->target == 5) //get target owner
+            }
+            else if (itr->target == 5) //get target owner
+            {
                 if (Unit* owner = GetOwner())
                     target = owner;
-            if(itr->target == 7) //get target self
+            }
+            else if (itr->target == 7) //get target self
                 target = triggeredByAura->GetCaster();
 
             Unit* _caster = this;
             Unit* _casterAura = triggeredByAura->GetCaster();
             Unit* _targetAura = this;
 
-            if(itr->caster == 1) //get caster aura
+            if (itr->caster == 1) //get caster aura
                 _caster = triggeredByAura->GetCaster();
-            if(itr->caster == 3 && ToPlayer()) //get caster owner
+            else if (itr->caster == 3 && ToPlayer()) //get caster owner
+            {
                 if (Pet* pet = ToPlayer()->GetPet())
                     _caster = (Unit*)pet;
-            if(itr->caster == 4) //get caster owner
+            }
+            else if (itr->caster == 4) //get caster owner
+            {
                 if (Unit* owner = GetOwner())
                     _caster = owner;
-            if(!_caster)
+            }
+            else if (!_caster)
                 _caster = this;
 
-            if(itr->target == 9) //get target select
+            if (itr->target == 9) //get target select
+            {
                 if (Player* _player = _caster->ToPlayer())
                     if (Unit* _select = _player->GetSelectedUnit())
                         target = _select;
+            }
+            else if (itr->target == 10) //get target comdoTarget
+            {
+                if (Player* _player = _caster->ToPlayer())
+                    if (Unit * comdoTarget = ObjectAccessor::GetUnit(*_player, _player->GetComboTarget()))
+                        target = comdoTarget;
+            }
 
             if(itr->targetaura == 1) //get caster aura
                 _targetAura = triggeredByAura->GetCaster();

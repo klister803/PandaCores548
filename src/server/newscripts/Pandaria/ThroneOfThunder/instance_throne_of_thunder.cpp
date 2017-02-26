@@ -758,10 +758,12 @@ public:
                     switch (state)
                     {
                     case NOT_STARTED:
+                        ResetAllJiKunNests();
                         nestnum = 0;
                         HandleGameObject(megaeraexdoorGuid, true);
                         break;
                     case DONE:
+                        ResetAllJiKunNests();
                         HandleGameObject(jikunexdoorGuid, true);
                         for (std::vector <uint64>::const_iterator guid = jikunfeatherGuids.begin(); guid != jikunfeatherGuids.end(); guid++)
                         {
@@ -1055,32 +1057,20 @@ public:
                         }
                         if (!pllist.empty())
                         {
-                            uint8 maxsize = urand(2, 3);
-                            std::vector<uint64> _pllist;
-                            _pllist.clear();
-                            for (std::list<Player*>::const_iterator Itr = pllist.begin(); Itr != pllist.end(); Itr++)
-                                _pllist.push_back((*Itr)->GetGUID());
-                            pllist.clear();
-                            std::random_shuffle(_pllist.begin(), _pllist.end());
-                            if (_pllist.size() > maxsize)
-                                _pllist.resize(maxsize);
-                            for (std::vector<uint64>::const_iterator itr = _pllist.begin(); itr != _pllist.end(); itr++)
+                            if (pllist.size() > 4)
+                                pllist.resize(4);
+
+                            for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
                             {
                                 if (Creature* feed = jikun->SummonCreature(NPC_FEED, jikun->GetPositionX(), jikun->GetPositionY(), jikun->GetPositionZ() + 12.0f, 0.0f))
                                 {
-                                    feed->SetDisplayId(48142);
-                                    if (Player* plr = jikun->GetPlayer(*jikun, *itr))
-                                        feed->CastSpell(plr, SPELL_JUMP_DOWN_TO_PLATFORM, true);
+                                    feed->SetDisplayId(48142); //blizzard change visual not spell
+                                    feed->CastSpell(*itr, SPELL_JUMP_DOWN_TO_PLATFORM, true);
                                 }
                             }
                         }
                     }
                 }
-                break;
-            case DATA_JIKUN_RESET_ALL_NESTS:
-                for (uint8 n = 0; n < 10; n++)
-                    if (Creature* incubater = instance->GetCreature(jikunincubatelist[n]))
-                        incubater->AI()->SetData(DATA_RESET_NEST, 0);
                 break;
             }
         }
@@ -1564,6 +1554,13 @@ public:
             nestnum++;
             if (nestnum >= nestmaxcount)
                 nestnum = 0;
+        }
+
+        void ResetAllJiKunNests()
+        {
+            for (uint8 n = 0; n < 10; n++)
+                if (Creature* incubater = instance->GetCreature(jikunincubatelist[n]))
+                    incubater->AI()->SetData(DATA_RESET_NEST, 0);
         }
 
         std::string GetSaveData()
