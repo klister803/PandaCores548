@@ -991,6 +991,10 @@ Player::Player(WorldSession* session) : Unit(true), m_achievementMgr(this), m_re
     ClearSellItemList();
     m_sellItemListError.clear();
     m_buyItems.clear();
+
+    m_alterTimeRemoveAuraList.clear();
+    m_alterTimePreAuraList.clear();
+    m_alterTimeON = false;
 }
 
 Player::~Player()

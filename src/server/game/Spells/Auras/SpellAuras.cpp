@@ -2159,6 +2159,40 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 break;
             }
         }
+
+        // Alter Time (Code for aura remove list)
+        if (target->getClass() == CLASS_MAGE)
+            if (Player* plr = target->ToPlayer())
+                if (plr->m_alterTimeON)
+                {
+                    uint32 auraId = GetId();
+                    if (auraId != 110909 && auraId != 144954) // Alter Time && Realm of Yshaarj - Garrosh[SO]
+                    {
+                        bool needToAdd = true;
+
+                        for (auto itr : plr->m_alterTimeRemoveAuraList)
+                            if (itr == auraId)
+                                needToAdd = false;
+
+                        if (needToAdd)
+                            for (auto itr : plr->m_alterTimePreAuraList)
+                                if (itr == auraId)
+                                    needToAdd = false;
+
+                        if (needToAdd &&
+                            (m_spellInfo->Attributes & SPELL_ATTR0_HIDDEN_CLIENTSIDE) && auraId != 126084 ||
+                            m_spellInfo->Attributes & SPELL_ATTR0_PASSIVE ||
+                            GetMaxDuration() == -1 && !m_spellInfo->RecoveryTime ||
+                            IsArea() && GetCasterGUID() != plr->GetGUID()) 
+                        {
+                            needToAdd = false;
+                        }
+
+                        if (needToAdd)
+                            plr->m_alterTimeRemoveAuraList.push_back(GetId());
+                    }
+                }
+
     }
     // mods at aura remove
     else

@@ -2973,6 +2973,10 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_currentPetNumber;
         PetSlot m_currentSummonedSlot;
 
+        std::vector<uint32> m_alterTimeRemoveAuraList;
+        std::vector<uint32> m_alterTimePreAuraList;
+        bool m_alterTimeON;
+
         void setPetSlotWithStableMoveOrRealDelete(PetSlot slot, uint32 petID, bool isHanterPet);
         int16 SetOnAnyFreeSlot(uint32 petID);
         void cleanPetSlotForMove(PetSlot slot, uint32 petID);

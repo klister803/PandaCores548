@@ -1335,11 +1335,14 @@ class spell_mage_alter_time : public SpellScriptLoader
                             if (auraInfo->Id == 144954)//Realm of Yshaarj - Garrosh[SO]
                                 continue;
 
+                            _player->m_alterTimePreAuraList.push_back(aura->GetId());
                             auras.insert(new auraData(auraInfo->Id, aura->GetDuration(), aura->GetStackAmount()));
                         }
                     }
                     mana = _player->GetPower(POWER_MANA);
                     health = _player->GetHealth();
+
+                    _player->m_alterTimeON = true;
                 }
             }
 
@@ -1347,13 +1350,15 @@ class spell_mage_alter_time : public SpellScriptLoader
             {
                 if (AuraApplication const* appl = GetTargetApplication())
                 {
-                    if (appl->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+                    if (Player* _player = GetTarget()->ToPlayer())
                     {
-                        if (map == uint32(-1))
-                            return;
+                        _player->m_alterTimeON = false;
 
-                        if (Player* _player = GetTarget()->ToPlayer())
+                        if (appl->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
                         {
+                            if (map == uint32(-1))
+                                return;
+
                             if (_player->GetMapId() != map)
                                 return;
 
@@ -1369,12 +1374,19 @@ class spell_mage_alter_time : public SpellScriptLoader
 
                                 delete itr;
                             }
-                            auras.clear();
+
+                            for (auto iter : _player->m_alterTimeRemoveAuraList)
+                                _player->RemoveAurasDueToSpell(iter);
+
                             _player->SetPower(POWER_MANA, mana);
                             _player->SetHealth(health);
                             if (!_player->HasAura(144954)) //Realm of Yshaarj - Garrosh[SO]
                                 _player->TeleportTo(map, posX, posY, posZ, orientation);
                         }
+
+                        _player->m_alterTimeRemoveAuraList.clear();
+                        _player->m_alterTimePreAuraList.clear();
+                        auras.clear();
                     }
                 }
             }
