@@ -1406,7 +1406,7 @@ bool Aura::IsDeathPersistent() const
 
 bool Aura::CanBeSaved() const
 {
-    if (IsPassive() && !(GetSpellInfo()->AttributesCu & SPELL_ATTR0_CU_CAN_BE_SAVED_IN_DB))
+    if (IsPassive() && !(GetSpellInfo()->AttributesCu & SPELL_ATTR0_CU_NEED_BE_SAVED_IN_DB))
         return false;
 
     if (GetCasterGUID() != GetOwner()->GetGUID())
@@ -2182,6 +2182,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         if (needToAdd &&
                             (m_spellInfo->Attributes & SPELL_ATTR0_HIDDEN_CLIENTSIDE) && auraId != 126084 ||
                             m_spellInfo->Attributes & SPELL_ATTR0_PASSIVE ||
+                            m_spellInfo->AttributesCu & SPELL_ATTR0_CU_NEED_BE_SAVED_IN_DB ||
                             GetMaxDuration() == -1 && !m_spellInfo->RecoveryTime ||
                             IsArea() && GetCasterGUID() != plr->GetGUID()) 
                         {

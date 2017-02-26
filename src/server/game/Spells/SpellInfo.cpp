@@ -1499,7 +1499,7 @@ bool SpellInfo::IsPassiveStackableWithRanks() const
 
 bool SpellInfo::IsMultiSlotAura() const
 {
-    if (AttributesCu & SPELL_ATTR0_CU_CAN_BE_SAVED_IN_DB)
+    if (AttributesCu & SPELL_ATTR0_CU_NEED_BE_SAVED_IN_DB)
         return false;
 
     return IsPassive();

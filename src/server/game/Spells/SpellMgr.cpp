@@ -3993,7 +3993,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx |= SPELL_ATTR1_DONT_DISPLAY_IN_AURA_BAR;
                     spellInfo->Attributes |= SPELL_ATTR0_PASSIVE;
                     spellInfo->Attributes |= SPELL_ATTR0_HIDE_IN_COMBAT_LOG;
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_CAN_BE_SAVED_IN_DB;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEED_BE_SAVED_IN_DB;
                     spellInfo->Effects[EFFECT_0]->Effect = SPELL_EFFECT_APPLY_AURA;
                     spellInfo->Effects[EFFECT_0]->TargetA = TARGET_UNIT_TARGET_ANY;
                     spellInfo->Effects[EFFECT_0]->TargetB = 0;
@@ -4002,6 +4002,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 125761: // Arena Deserter (Test Spell)
                     spellInfo->AttributesCu  = SPELL_ATTR0_CU_NEGATIVE_EFF0;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEED_BE_SAVED_IN_DB;
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(3);
                     spellInfo->Attributes    = 0x2D800100;
                     spellInfo->AttributesEx  = 0x000000A8;
@@ -4015,6 +4016,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0]->TargetB = 0;
                     spellInfo->Effects[EFFECT_0]->ApplyAuraName = SPELL_AURA_DUMMY;
                     spellInfo->Effects[EFFECT_0]->TriggerSpell = 0;
+                    break;
+                case 26013: // Deserter
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEED_BE_SAVED_IN_DB;
                     break;
                 case 25956: // Sanctity of Battle
                     spellInfo->Effects[EFFECT_1]->MiscValue = SPELLMOD_GLOBAL_COOLDOWN;
