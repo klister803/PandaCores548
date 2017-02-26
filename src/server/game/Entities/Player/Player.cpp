@@ -25634,12 +25634,14 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
             else if (bg->isArena())
             {
                 if (bg->GetStatus() == STATUS_IN_PROGRESS || bg->GetStatus() == STATUS_WAIT_JOIN || bg->GetRemainingTime() == 120000)
+                {
                     HandleArenaDeserter();
 
-                BracketType bType = BattlegroundMgr::BracketByJoinType(bg->GetJoinType());
+                    BracketType bType = BattlegroundMgr::BracketByJoinType(bg->GetJoinType());
 
-                if (Bracket* bracket = getBracket(bType))
-                    bracket->FinishGame(false, bg->GetMatchmakerRating(bg->GetOtherTeam(GetTeam())));
+                    if (Bracket* bracket = getBracket(bType))
+                        bracket->FinishGame(false, bg->GetMatchmakerRating(bg->GetOtherTeam(GetTeam())));
+                }
             }
         }
     }
