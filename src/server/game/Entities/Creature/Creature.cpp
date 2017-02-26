@@ -2570,6 +2570,12 @@ void Creature::SendZoneUnderAttackMessage(Player* attacker)
 void Creature::SetAttackStop(bool clearmove)
 {
     lastvictimGuid = getVictim() ? getVictim()->GetGUID() : 0;
+    lastvictimThreat = 0;
+    if (getVictim())
+    {   //Save Threat
+        if (Unit* target = GetUnit(*this, getVictim()->GetGUID()))
+            lastvictimThreat = getThreatManager().getThreat(target);
+    }
     AttackStop();
     SetReactState(REACT_PASSIVE);
     if (clearmove)
@@ -2583,11 +2589,12 @@ void Creature::ReAttackWithZone()
 {
     SetReactState(REACT_AGGRESSIVE);
     SetInCombatWithZone();
+    float newThreat = !lastvictimThreat ? 5000000.0f : lastvictimThreat;
     if (Unit* target = GetUnit(*this, lastvictimGuid))
     {
         if (target->isAlive())
         {
-            AddThreat(target, 500000.0f);
+            AddThreat(target, newThreat);
             TauntApply(target);
         }
     }

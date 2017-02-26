@@ -941,6 +941,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         float _GetHealthModPersonal(uint32 &count);
 
         uint64 lastvictimGuid;
+        float lastvictimThreat;
         uint64 m_lootRecipient;
         uint64 m_LootOtherRecipient;                        // Pet lotter for example
         uint32 m_lootRecipientGroup;
