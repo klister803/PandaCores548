@@ -33,9 +33,6 @@ enum PaladinSpells
     SPELL_BLESSING_OF_LOWER_CITY_PALADIN         = 37879,
     SPELL_BLESSING_OF_LOWER_CITY_PRIEST          = 37880,
     SPELL_BLESSING_OF_LOWER_CITY_SHAMAN          = 37881,
-    SPELL_DIVINE_STORM                           = 53385,
-    SPELL_DIVINE_STORM_DUMMY                     = 54171,
-    SPELL_DIVINE_STORM_HEAL                      = 54172,
     SPELL_FORBEARANCE                            = 25771,
     PALADIN_SPELL_WORD_OF_GLORY                  = 85673,
     PALADIN_SPELL_WORD_OF_GLORY_HEAL             = 130551,
@@ -759,31 +756,32 @@ class spell_pal_consecration : public SpellScriptLoader
         }
 };
 
-// Consecration - 26573
-class spell_pal_consecration_area : public SpellScriptLoader
+// Consecration (override, by glyph 54928) - 116467 (periodic dummy)
+class spell_pal_consecration_override : public SpellScriptLoader
 {
     public:
-        spell_pal_consecration_area() : SpellScriptLoader("spell_pal_consecration_area") { }
+        spell_pal_consecration_override() : SpellScriptLoader("spell_pal_consecration_override") { }
 
-        class spell_pal_consecration_area_SpellScript : public SpellScript
+        class spell_pal_consecration_override_AuraScript : public AuraScript
         {
-            PrepareSpellScript(spell_pal_consecration_area_SpellScript);
+            PrepareAuraScript(spell_pal_consecration_override_AuraScript);
 
-            void HandleAfterCast()
+            void OnTick(AuraEffect const* aurEff)
             {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    _player->CastSpell(_player, PALADIN_SPELL_CONSECRATION_AREA_DUMMY, true);
+                if (Unit* caster = GetCaster())
+                    if (DynamicObject* dynObj = caster->GetDynObject(PALADIN_SPELL_CONSECRATION_AREA_DUMMY))
+                        caster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), PALADIN_SPELL_CONSECRATION_DAMAGE, true);
             }
 
             void Register()
             {
-                AfterCast += SpellCastFn(spell_pal_consecration_area_SpellScript::HandleAfterCast);
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_pal_consecration_override_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
             }
         };
 
-        SpellScript* GetSpellScript() const
+        AuraScript* GetAuraScript() const
         {
-            return new spell_pal_consecration_area_SpellScript();
+            return new spell_pal_consecration_override_AuraScript();
         }
 };
 
@@ -887,48 +885,6 @@ class spell_pal_blessing_of_faith : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_pal_blessing_of_faith_SpellScript();
-        }
-};
-
-class spell_pal_divine_storm : public SpellScriptLoader
-{
-    public:
-        spell_pal_divine_storm() : SpellScriptLoader("spell_pal_divine_storm") { }
-
-        class spell_pal_divine_storm_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pal_divine_storm_SpellScript);
-
-            uint32 healPct;
-
-            bool Validate(SpellInfo const* /* spell */)
-            {
-                if (!sSpellMgr->GetSpellInfo(SPELL_DIVINE_STORM_DUMMY))
-                    return false;
-                return true;
-            }
-
-            bool Load()
-            {
-                healPct = GetSpellInfo()->Effects[EFFECT_1]->CalcValue(GetCaster());
-                return true;
-            }
-
-            void TriggerHeal()
-            {
-                Unit* caster = GetCaster();
-                caster->CastCustomSpell(SPELL_DIVINE_STORM_DUMMY, SPELLVALUE_BASE_POINT0, (GetHitDamage() * healPct) / 100, caster, true);
-            }
-
-            void Register()
-            {
-                AfterHit += SpellHitFn(spell_pal_divine_storm_SpellScript::TriggerHeal);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pal_divine_storm_SpellScript();
         }
 };
 
@@ -1626,10 +1582,9 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_holy_prism_effect();
     new spell_pal_holy_prism();
     new spell_pal_consecration();
-    new spell_pal_consecration_area();
+    new spell_pal_consecration_override();
     new spell_pal_ardent_defender();
     new spell_pal_blessing_of_faith();
-    new spell_pal_divine_storm();
     new spell_pal_lay_on_hands();
     new spell_pal_righteous_defense();
     new spell_pal_selfless_healer();
