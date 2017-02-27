@@ -1881,36 +1881,39 @@ class spell_mage_ring_of_frost : public SpellScriptLoader
             void FilterTargets(std::list<WorldObject*>& targets)
             {
                 if (Unit* caster = GetCaster())
-                for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end();)
                 {
-                    if (Unit* target = (*itr)->ToUnit())
+                    Position const* pos = GetExplTargetDest();
+                    for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end();)
                     {
-                        DiminishingLevels m_diminishLevel = target->GetDiminishing(DIMINISHING_DISORIENT);
-                        Position const* pos = GetExplTargetDest();
+                        if (Unit* target = (*itr)->ToUnit())
+                        {
+                            DiminishingLevels m_diminishLevel = target->GetDiminishing(DIMINISHING_DISORIENT);
 
-                        if (target->GetDistance2d(pos->GetPositionX(), pos->GetPositionY()) < 3.5f)
-                        {
-                            targets.erase(itr++);
-                            continue;
+                            if (target->GetDistance2d(pos->GetPositionX(), pos->GetPositionY()) < 2.0f)
+                            {
+                                targets.erase(itr++);
+                                continue;
+                            }
+                            else if (m_diminishLevel == DIMINISHING_LEVEL_IMMUNE)
+                            {
+                                targets.erase(itr++);
+                                continue;
+                            }
+                            else if (target->IsImmunedToSpell(GetSpellInfo()))
+                            {
+                                targets.erase(itr++);
+                                continue;
+                            }
+                            else if (!target->HasAura(82691) && !target->HasAura(91264))
+                            {
+                                ++itr;
+                                continue;
+                            }
                         }
-                        else if (m_diminishLevel == DIMINISHING_LEVEL_IMMUNE)
-                        {
-                            targets.erase(itr++);
-                            continue;
-                        }
-                        else if (target->IsImmunedToSpell(GetSpellInfo()))
-                        {
-                            targets.erase(itr++);
-                            continue;
-                        }
-                        else if (!target->HasAura(82691) && !target->HasAura(91264))
-                        {
-                            ++itr;
-                            continue;
-                        }
+                        targets.erase(itr++);
                     }
-                    targets.erase(itr++);
                 }
+
                 if(targets.size() > 10)
                     Trinity::Containers::RandomResizeList(targets, 10);
             }
