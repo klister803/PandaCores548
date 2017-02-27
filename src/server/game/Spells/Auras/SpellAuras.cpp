@@ -1055,7 +1055,7 @@ void Aura::Update(uint32 diff, Unit* caster)
     if (m_removeDelay > 0)
     {
         m_removeDelay += diff;
-        if (m_removeDelay >= 300)
+        if (m_removeDelay >= 500)
             GetUnitOwner()->RemoveOwnedAura(this, AURA_REMOVE_BY_DEFAULT);
     }
 
