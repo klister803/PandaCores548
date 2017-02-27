@@ -3776,7 +3776,7 @@ void Spell::cast(bool skipCheck)
     }
     SetExecutedCurrently(true);
 
-    if (m_originalCaster->GetTypeId() != TYPEID_PLAYER && m_targets.GetUnitTarget() && m_targets.GetUnitTarget() != m_originalCaster)
+    if (m_originalCaster && m_originalCaster->GetTypeId() != TYPEID_PLAYER && m_targets.GetUnitTarget() && m_targets.GetUnitTarget() != m_originalCaster)
         m_originalCaster->SetInFront(m_targets.GetUnitTarget());
 
     // Should this be done for original caster?
