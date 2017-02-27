@@ -3960,6 +3960,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 23920:  // Spell Reflection
                 case 8178:   // Grounding Totem
                 case 130493: // Nightstalker
+                case 48107:  // Heating Up
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_REMOVE_AFTER_DELAY;
                     break;
                 case 144964: // Flow of the Elements
