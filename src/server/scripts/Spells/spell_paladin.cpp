@@ -768,9 +768,12 @@ class spell_pal_consecration_override : public SpellScriptLoader
 
             void OnTick(AuraEffect const* aurEff)
             {
-                if (caster->m_SummonSlot[1])
-                    if (Creature* summon = caster->GetMap()->GetCreature(caster->m_SummonSlot[1]))
-                        caster->CastSpell(summon->GetPositionX(), summon->GetPositionY(), summon->GetPositionZ(), PALADIN_SPELL_CONSECRATION_DAMAGE, true);
+                if (Unit* caster = GetCaster())
+                {
+                    if(caster->m_SummonSlot[1])
+                        if(Creature* summon = caster->GetMap()->GetCreature(caster->m_SummonSlot[1]))
+                            caster->CastSpell(summon->GetPositionX(), summon->GetPositionY(), summon->GetPositionZ(), PALADIN_SPELL_CONSECRATION_DAMAGE, true);
+                }
             }
 
             void Register()
