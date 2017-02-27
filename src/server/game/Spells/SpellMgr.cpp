@@ -5380,6 +5380,13 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->TargetB = 0;
                     break;
                 //Korkron Dark Shaman
+                case 144214: //FrostStorm Bolt
+                    spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
+                    break;
+                case 144215: //Froststorm Strike
+                    spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(13); //200yards
+                    spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
+                    break;
                 case 144089: //Toxic Mist
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CANT_CRIT;
                     spellInfo->AttributesEx6 &= ~SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
@@ -5391,13 +5398,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 143987: //Fallen Ash Dmg
                     spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(1);
                     break;
-                case 144215: //Froststorm strike 
-                    spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(13); //200yards
-                    break;
                 case 144328: //Iron Tomb
                 case 144090: //Foul Stream
                 case 143990: //Foul Geyser
-                    spellInfo->AttributesEx2 &= ~SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
+                case 144005: //Toxic Storm
+                case 144070: //Asher Wall
+                    spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
                     break;
                 case 144334: //Iron Tomb dmg
                     spellInfo->Effects[0]->TargetA = TARGET_DEST_CASTER_FRONT;
@@ -5405,6 +5411,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 144330: //Iron Prison
                     spellInfo->Effects[0]->TriggerSpell = 0;
+                    spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
                     break;
                 case 142906: //Ancient Miasma Dmg
                 case 29604:  //Jom Gabbar
