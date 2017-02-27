@@ -3873,6 +3873,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 113074: // Healing Touch (Symbiosis)
+                    spellInfo->SpellFamilyName = SPELLFAMILY_MAGE;
+                    break;
                 case 142530: // Bloody Dancing Steel
                 case 120032: // Dancing Steel
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_ENCHANT_PROC;
