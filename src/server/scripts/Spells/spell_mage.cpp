@@ -1381,7 +1381,7 @@ class spell_mage_alter_time : public SpellScriptLoader
                             _player->SetPower(POWER_MANA, mana);
                             _player->SetHealth(health);
                             if (!_player->HasAura(144954)) //Realm of Yshaarj - Garrosh[SO]
-                                _player->TeleportTo(map, posX, posY, posZ, orientation);
+                                _player->TeleportTo(map, posX, posY, posZ, orientation, TELE_TO_NOT_LEAVE_COMBAT);
                         }
 
                         _player->m_alterTimeRemoveAuraList.clear();
