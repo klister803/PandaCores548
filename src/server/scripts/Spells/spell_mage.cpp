@@ -1930,7 +1930,7 @@ class spell_mage_ring_of_frost : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mage_ring_of_frost_AuraScript);
 
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void AfterRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* target = GetTarget())
                     target->AddAura(91264, target);
@@ -1938,7 +1938,7 @@ class spell_mage_ring_of_frost : public SpellScriptLoader
 
             void Register()
             {
-                OnEffectRemove += AuraEffectRemoveFn(spell_mage_ring_of_frost_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_mage_ring_of_frost_AuraScript::AfterRemove, EFFECT_0, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
@@ -1966,6 +1966,9 @@ class spell_mage_ring_of_frost_tick : public SpellScriptLoader
 
             void OnTick(AuraEffect const* aurEff)
             {
+                if (aurEff->GetTickNumber() < 15)
+                    return;
+
                 PreventDefaultAction();
                 if (Unit* caster = GetCaster())
                 {
