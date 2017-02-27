@@ -2043,7 +2043,32 @@ public:
         void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (GetTarget())
+            {
                 GetTarget()->RemoveAurasDueToSpell(SPELL_MAGNETIC_CRASH_DMG);
+
+                //Protect mechanic
+                if (Player* plr = GetTarget()->ToPlayer())
+                {
+                    if (plr->getClass() != CLASS_HUNTER && !plr->HasAura(SPELL_PATTERN_RECOGNITION))
+                    {
+                        plr->SetFlag(PLAYER_FLAGS, PLAYER_ALLOW_ONLY_ABILITY);
+                        plr->RemoveAurasDueToSpell(SPELL_ON_CONVEYOR);
+                        plr->GetMotionMaster()->MoveJump(1983.22f, -5559.18f, -309.3264f, 20.0f, 20.0f, 145351);
+                    }
+                    else if (plr->getClass() != CLASS_HUNTER && plr->HasAura(SPELL_PATTERN_RECOGNITION))
+                    {
+                        if (Aura* aura = plr->GetAura(SPELL_PATTERN_RECOGNITION))
+                        {
+                            if (aura->GetDuration() <= 55000)
+                            {
+                                plr->SetFlag(PLAYER_FLAGS, PLAYER_ALLOW_ONLY_ABILITY);
+                                plr->RemoveAurasDueToSpell(SPELL_ON_CONVEYOR);
+                                plr->GetMotionMaster()->MoveJump(1983.22f, -5559.18f, -309.3264f, 20.0f, 20.0f, 145351);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         void Register()

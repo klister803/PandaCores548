@@ -2384,8 +2384,9 @@ public:
                     {
                         if (player->isAlive() && player->HasAura(SPELL_ON_CONVEYOR))
                         {
+                            player->SetFlag(PLAYER_FLAGS, PLAYER_ALLOW_ONLY_ABILITY); //for safe(block all ability)
                             player->RemoveAurasDueToSpell(SPELL_ON_CONVEYOR);
-                            player->GetMotionMaster()->MoveJump(1983.22f, -5559.18f, -309.3264f, 20.0f, 20.0f);
+                            player->GetMotionMaster()->MoveJump(1983.22f, -5559.18f, -309.3264f, 30.0f, 30.0f, 145351);
                         }
                     }
                 }

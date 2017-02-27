@@ -5121,6 +5121,12 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->TargetA = TARGET_DEST_DEST;
                     break;
                 //Durumu
+                case 133731:
+                    spellInfo->Attributes |= SPELL_ATTR0_DEBUFF;
+                    break;
+                case 136120: //Infrared Light Creature Target Aura
+                    spellInfo->Effects[0]->TargetA = TARGET_UNIT_TARGET_ANY;
+                    break;
                 case 133734: //Infrared Light visual cone
                 case 133672: //Blue Ray       visual cone
                 case 133740: //Bright Light   visual cone
@@ -5129,7 +5135,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 133732: //Infrared Light Cone Dmg
                 case 133677: //Blue Ray       Cone Dmg
                 case 133738: //Bright Light   Cone Dmg
-                    spellInfo->AttributesCu != SPELL_ATTR0_CU_SHARE_DAMAGE;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
                         if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_1, d))
                             eff->TargetA = TARGET_UNIT_CONE_ENEMY_110;
@@ -5640,6 +5646,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21);
                     break;
                 //Siegecrafter Blackfuse
+                case 145358: //Magnetic Lasso stun
+                    spellInfo->Effects[1]->Effect = 0; //not need
+                    break;
                 case 143828: //Locked On
                     spellInfo->Effects[0]->TargetA = 25;
                     break;

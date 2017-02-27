@@ -23719,6 +23719,9 @@ void Unit::UnitMovementInform(uint32 Id)
     case 137161: //Thundering Throw Aura, emulation point (to ground) - Jinrok[TT]
         CastSpell(this, 137167, true); //Thundering Throw AOE Dmg on raid
         break;
+    case 145351: //Magnetic Lasso
+        RemoveFlag(PLAYER_FLAGS, PLAYER_ALLOW_ONLY_ABILITY);
+        break;
     default:
         break;
     }
