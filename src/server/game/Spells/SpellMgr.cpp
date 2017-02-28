@@ -3898,6 +3898,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 116467:  // Consecration
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME;
+                    spellInfo->Effects[EFFECT_1]->TargetB = TARGET_NONE;
                     break;
                 case 134967: // Heroic Throw
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(9);
