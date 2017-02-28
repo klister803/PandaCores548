@@ -1,1 +1,4 @@
 UPDATE `spell_radius` SET `effectradius0`='8', `comments`='5 yards' WHERE (`spell_id`='82691') AND (`effectradius0`='134') AND (`effectradius1`='0') AND (`effectradius2`='0') AND (`effectradius3`='0') AND (`effectradius4`='0') AND (`comments`='6.5 yards');
+
+UPDATE `creature_template` SET `ScriptName`='npc_static_target_for_spell' WHERE (`entry`='43499');
+UPDATE `creature_template` SET `ScriptName`='npc_static_target_for_spell' WHERE (`entry`='44199');
