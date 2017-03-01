@@ -2517,7 +2517,7 @@ public:
                         std::list<Player*> pllist;
                         pllist.clear();
                         GetPlayerListInGrid(pllist, GetCaster(), 400.0f);
-                        uint8 count = GetCaster()->GetMap()->Is25ManRaid() ? 7 : 4;
+                        uint8 count = 1;//GetCaster()->GetMap()->Is25ManRaid() ? 7 : 4;
                         if (!pllist.empty())
                         {
                             for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
