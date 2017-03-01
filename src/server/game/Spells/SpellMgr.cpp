@@ -3873,6 +3873,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 113074: // Healing Touch (Symbiosis)
+                    spellInfo->SpellFamilyName = SPELLFAMILY_MAGE;
+                    break;
                 case 142530: // Bloody Dancing Steel
                 case 120032: // Dancing Steel
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_ENCHANT_PROC;
@@ -3890,8 +3893,12 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_3]->ApplyAuraName = SPELL_AURA_NONE;
                     break;
                 case 26573:  // Consecration
-                case 116467:  
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME;
+                    spellInfo->Effects[EFFECT_2]->TargetA = TARGET_UNIT_CASTER;
+                    break;
+                case 116467:  // Consecration
+                    spellInfo->AttributesEx5 |= SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME;
+                    spellInfo->Effects[EFFECT_1]->TargetB = TARGET_NONE;
                     break;
                 case 134967: // Heroic Throw
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(9);
@@ -3957,6 +3964,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 23920:  // Spell Reflection
                 case 8178:   // Grounding Totem
                 case 130493: // Nightstalker
+                case 48107:  // Heating Up
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_REMOVE_AFTER_DELAY;
                     break;
                 case 144964: // Flow of the Elements

@@ -4102,17 +4102,17 @@ class npc_windwalk_totem : public CreatureScript
 };
 
 /*######
-## npc_ring_of_frost
+## npc_static_target_for_spell
 ######*/
 
-class npc_ring_of_frost : public CreatureScript
+class npc_static_target_for_spell : public CreatureScript
 {
     public:
-        npc_ring_of_frost() : CreatureScript("npc_ring_of_frost") { }
+        npc_static_target_for_spell() : CreatureScript("npc_static_target_for_spell") { }
 
-        struct npc_ring_of_frostAI : public Scripted_NoMovementAI
+        struct npc_static_target_for_spellAI : public Scripted_NoMovementAI
         {
-            npc_ring_of_frostAI(Creature *c) : Scripted_NoMovementAI(c)
+            npc_static_target_for_spellAI(Creature *c) : Scripted_NoMovementAI(c)
             {
                 me->SetReactState(REACT_PASSIVE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -4122,7 +4122,7 @@ class npc_ring_of_frost : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_ring_of_frostAI(pCreature);
+            return new npc_static_target_for_spellAI(pCreature);
         }
 };
 
@@ -4674,7 +4674,7 @@ void AddSC_npcs_special()
     new npc_dire_beast();
     new npc_wild_imp();
     new npc_windwalk_totem();
-    new npc_ring_of_frost();
+    new npc_static_target_for_spell();
     new npc_wild_mushroom();
     new npc_fungal_growth();
     new npc_brewfest_trigger;

@@ -7629,15 +7629,15 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     if (procSpell->IsAffectingArea())
                         return false;
 
-                    bool RemoveHeatingUp = HasAura(48107) ? true: false;
+                    Aura* HeatingUpAura = GetAura(48107);
 
                     if (procEx & PROC_EX_CRITICAL_HIT)
                     {
-                        uint32 aura = RemoveHeatingUp ? 48108: 48107;
+                        uint32 aura = HeatingUpAura ? 48108 : 48107;
                         CastSpell(this, aura, true);
                     }
-                    if (RemoveHeatingUp)
-                        RemoveAura(48107);
+                    if (HeatingUpAura)
+                        HeatingUpAura->Remove();
 
                     return true;
                 }

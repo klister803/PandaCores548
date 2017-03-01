@@ -1381,7 +1381,7 @@ class spell_mage_alter_time : public SpellScriptLoader
                             _player->SetPower(POWER_MANA, mana);
                             _player->SetHealth(health);
                             if (!_player->HasAura(144954)) //Realm of Yshaarj - Garrosh[SO]
-                                _player->TeleportTo(map, posX, posY, posZ, orientation);
+                                _player->TeleportTo(map, posX, posY, posZ, orientation, TELE_TO_NOT_LEAVE_COMBAT);
                         }
 
                         _player->m_alterTimeRemoveAuraList.clear();
@@ -1881,36 +1881,39 @@ class spell_mage_ring_of_frost : public SpellScriptLoader
             void FilterTargets(std::list<WorldObject*>& targets)
             {
                 if (Unit* caster = GetCaster())
-                for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end();)
                 {
-                    if (Unit* target = (*itr)->ToUnit())
+                    Position const* pos = GetExplTargetDest();
+                    for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end();)
                     {
-                        DiminishingLevels m_diminishLevel = target->GetDiminishing(DIMINISHING_DISORIENT);
-                        Position const* pos = GetExplTargetDest();
+                        if (Unit* target = (*itr)->ToUnit())
+                        {
+                            DiminishingLevels m_diminishLevel = target->GetDiminishing(DIMINISHING_DISORIENT);
 
-                        if (target->GetDistance2d(pos->GetPositionX(), pos->GetPositionY()) < 3.5f)
-                        {
-                            targets.erase(itr++);
-                            continue;
+                            if (target->GetDistance2d(pos->GetPositionX(), pos->GetPositionY()) < 2.0f)
+                            {
+                                targets.erase(itr++);
+                                continue;
+                            }
+                            else if (m_diminishLevel == DIMINISHING_LEVEL_IMMUNE)
+                            {
+                                targets.erase(itr++);
+                                continue;
+                            }
+                            else if (target->IsImmunedToSpell(GetSpellInfo()))
+                            {
+                                targets.erase(itr++);
+                                continue;
+                            }
+                            else if (!target->HasAura(82691) && !target->HasAura(91264))
+                            {
+                                ++itr;
+                                continue;
+                            }
                         }
-                        else if (m_diminishLevel == DIMINISHING_LEVEL_IMMUNE)
-                        {
-                            targets.erase(itr++);
-                            continue;
-                        }
-                        else if (target->IsImmunedToSpell(GetSpellInfo()))
-                        {
-                            targets.erase(itr++);
-                            continue;
-                        }
-                        else if (!target->HasAura(82691) && !target->HasAura(91264))
-                        {
-                            ++itr;
-                            continue;
-                        }
+                        targets.erase(itr++);
                     }
-                    targets.erase(itr++);
                 }
+
                 if(targets.size() > 10)
                     Trinity::Containers::RandomResizeList(targets, 10);
             }
@@ -1930,7 +1933,7 @@ class spell_mage_ring_of_frost : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mage_ring_of_frost_AuraScript);
 
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void AfterRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* target = GetTarget())
                     target->AddAura(91264, target);
@@ -1938,7 +1941,7 @@ class spell_mage_ring_of_frost : public SpellScriptLoader
 
             void Register()
             {
-                OnEffectRemove += AuraEffectRemoveFn(spell_mage_ring_of_frost_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_mage_ring_of_frost_AuraScript::AfterRemove, EFFECT_0, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
@@ -1966,6 +1969,9 @@ class spell_mage_ring_of_frost_tick : public SpellScriptLoader
 
             void OnTick(AuraEffect const* aurEff)
             {
+                if (aurEff->GetTickNumber() < 15)
+                    return;
+
                 PreventDefaultAction();
                 if (Unit* caster = GetCaster())
                 {
