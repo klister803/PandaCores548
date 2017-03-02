@@ -703,13 +703,6 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         damage = (cof / 100.0f) * eff1val;
                         break;
                     }
-                    case 31707: // Waterbolt
-                    {
-                        if (Unit* owner = m_caster->GetOwner())
-                            if (AuraEffect const* aurEff = owner->GetAuraEffect(76613, EFFECT_0))
-                                AddPct(damage, aurEff->GetAmount());
-                        break;
-                    }
                     default:
                         break;
                 }
