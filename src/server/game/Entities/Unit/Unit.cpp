@@ -7633,8 +7633,15 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
 
                     if (procEx & PROC_EX_CRITICAL_HIT)
                     {
-                        uint32 aura = HeatingUpAura ? 48108 : 48107;
-                        CastSpell(this, aura, true);
+                        if (HeatingUpAura)
+                        {
+                            RemoveOwnedAura(48107);
+                            CastSpell(this, 48108, true);
+                        }
+                        else
+                            CastSpell(this, 48107, true);
+                        
+                        return true;
                     }
                     if (HeatingUpAura)
                         HeatingUpAura->Remove();
