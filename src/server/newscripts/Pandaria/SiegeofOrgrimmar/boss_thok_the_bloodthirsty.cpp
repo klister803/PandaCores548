@@ -194,6 +194,10 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 phasecount = 0;
                 phasetwo = false;
                 enrage = 0;
+
+                if (!me->HasAura(SPELL_ON_CONVEYOR)) //fix exploits with - SPELL_AURA_INTERFERE_TARGETTING
+                    DoCast(me, SPELL_ON_CONVEYOR, true);
+
                 if (instance)
                 {
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);

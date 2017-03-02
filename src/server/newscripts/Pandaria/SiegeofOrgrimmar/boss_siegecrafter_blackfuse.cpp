@@ -935,7 +935,21 @@ public:
         bool done, superheat;
         std::vector<uint64>_sawbladelist;
 
-        void Reset(){}
+        void Reset()
+        {
+            //fix problems with - SPELL_AURA_INTERFERE_TARGETTING
+            switch (me->GetEntry())
+            {
+            case NPC_DISASSEMBLED_CRAWLER_MINE:
+            case NPC_DEACTIVATED_LASER_TURRET:
+            case NPC_DEACTIVATED_ELECTROMAGNET:
+            case NPC_DEACTIVATED_MISSILE_TURRET:
+                DoCast(me, SPELL_ON_CONVEYOR, true);
+                break;
+            default:
+                break;
+            }
+        }
 
         void EnterCombat(Unit* who){}
 
@@ -2042,7 +2056,7 @@ public:
 
         void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            if (GetTarget())
+            if (GetTarget() && GetTarget()->ToPlayer()) //only players
             {
                 GetTarget()->RemoveAurasDueToSpell(SPELL_MAGNETIC_CRASH_DMG);
 
