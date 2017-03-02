@@ -436,7 +436,13 @@ enum TriggerCastFlags
     TRIGGERED_DISALLOW_PROC_EVENTS                  = 0x00020000,   //! Disallows proc events from triggered spell (default)
     TRIGGERED_DONT_REPORT_CAST_ERROR                = 0x00040000,   //! Will return SPELL_FAILED_DONT_REPORT in CheckCast functions
     TRIGGERED_CASTED_BY_AREATRIGGER                 = 0x00080000,   //! Special case: spell dependent on areatrigger
-    TRIGGERED_FULL_MASK                             = 0xFFF7FFFF,   //! all flags except TRIGGERED_CASTED_BY_AREATRIGGER
+    TRIGGERED_REFLECTED                             = 0x00100000,   //! Reflected: Will ignore target checks
+
+
+    TRIGGERED_FULL_MASK                             = (TRIGGERED_IGNORE_GCD | TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD | TRIGGERED_IGNORE_POWER_AND_REAGENT_COST | TRIGGERED_IGNORE_CAST_ITEM | // !all flags except TRIGGERED_CASTED_BY_AREATRIGGER, TRIGGERED_REFLECTED
+                                                      TRIGGERED_IGNORE_AURA_SCALING | TRIGGERED_IGNORE_CAST_IN_PROGRESS | TRIGGERED_IGNORE_COMBO_POINTS | TRIGGERED_CAST_DIRECTLY |
+                                                      TRIGGERED_IGNORE_AURA_INTERRUPT_FLAGS | TRIGGERED_IGNORE_SET_FACING | TRIGGERED_IGNORE_SHAPESHIFT | TRIGGERED_IGNORE_CASTER_AURASTATE |
+                                                      TRIGGERED_IGNORE_CASTER_MOUNTED_OR_ON_VEHICLE | TRIGGERED_IGNORE_CASTER_AURAS | TRIGGERED_DISALLOW_PROC_EVENTS | TRIGGERED_DONT_REPORT_CAST_ERROR),
 };
 
 enum UnitMods

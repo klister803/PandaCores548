@@ -469,6 +469,9 @@ m_absorb(0), m_resist(0), m_blocked(0), m_interupted(false), m_effect_targets(NU
         _triggeredCastFlags &= ~TRIGGERED_DISALLOW_PROC_EVENTS;
     if (info->AttributesCu & SPELL_ATTR0_CU_DOESENT_INTERRUPT_CHANNELING)
         _triggeredCastFlags |= TRIGGERED_CAST_DIRECTLY;
+    if (Spell* curSpell = m_caster->GetCurrentSpell(CURRENT_GENERIC_SPELL))
+        if (curSpell->_triggeredCastFlags & TRIGGERED_REFLECTED)
+            _triggeredCastFlags |= TRIGGERED_REFLECTED;
 
     //Auto Shot & Shoot (wand)
     m_autoRepeat = m_spellInfo->IsAutoRepeatRangedSpell();
@@ -2880,6 +2883,9 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
 
     // All calculated do it!
     // Do healing and triggers
+
+    SpellNonMeleeDamage reflectedDmgInfoProc;
+
     if (m_healing > 0)
     {
         uint32 addhealth = m_healing;
@@ -2936,6 +2942,9 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         m_damage = damageInfo.damage;
 
         caster->DealSpellDamage(&damageInfo, true);
+
+        if (missInfo == SPELL_MISS_REFLECT)
+            reflectedDmgInfoProc = damageInfo;
 
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
@@ -2994,11 +3003,14 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     }
 
     // process reflect removal (delayed)
-//     if (missInfo == SPELL_MISS_REFLECT && target->timeDelay)
-//     {
-//         DamageInfo dmgInfoProc = DamageInfo(m_caster, unit, 1, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE, target->damageBeforeHit);
-//         caster->ProcDamageAndSpell(unit, procAttacker, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, procEx, &dmgInfoProc, BASE_ATTACK, m_spellInfo);
-//     }
+    if (missInfo == SPELL_MISS_REFLECT && target->timeDelay)
+    {
+        procEx &= ~PROC_EX_REFLECT;
+        _triggeredCastFlags |= TRIGGERED_REFLECTED;
+
+        DamageInfo dmgInfoProc = DamageInfo(reflectedDmgInfoProc, m_spellInfo);
+        caster->ProcDamageAndSpell(spellHitTarget, procAttacker, procVictim, procEx, &dmgInfoProc, BASE_ATTACK, m_spellInfo);
+    }
 
     if (missInfo != SPELL_MISS_EVADE && m_caster->IsValidAttackTarget(unit) && (!m_spellInfo->IsPositive() || m_spellInfo->HasEffect(SPELL_EFFECT_DISPEL)))
     {
@@ -6919,7 +6931,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     }
             }
         }
-        if(!targetCheck)
+        if (!targetCheck && !(_triggeredCastFlags & TRIGGERED_REFLECTED))
         {
             SpellCastResult castResult = m_spellInfo->CheckExplicitTarget(m_originalCaster ? m_originalCaster : m_caster, m_targets.GetObjectTarget(), m_targets.GetItemTarget());
             if (castResult != SPELL_CAST_OK)
