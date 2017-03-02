@@ -210,6 +210,8 @@ enum eCreatures
     NPC_YELLOW_EYE              = 67856,
     NPC_YELLOW_EYEBEAM_TARGET   = 67852,
 
+    NPC_CROSS_EYE               = 67857,
+
     NPC_PRIMORDIUS              = 69017,
     NPC_DARK_ANIMUS             = 69427,
     NPC_IRON_QON                = 68078,

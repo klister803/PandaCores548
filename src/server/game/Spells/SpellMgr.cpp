@@ -5148,6 +5148,13 @@ void SpellMgr::LoadSpellCustomAttr()
                         if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_1, d))
                             eff->TargetA = TARGET_UNIT_CONE_ENEMY_110;
                     break;
+                    //Summon Fogs
+                case 136128: //Red
+                case 136130: //Blue
+                case 136129: //Yellow
+                    spellInfo->Effects[0]->TargetA = TARGET_DEST_DEST;
+                    spellInfo->Effects[0]->TargetB = 0; //not needed
+                    break;
                 //Primordius
                 case 136220: //Acidic explosion tr ef dmg
                 {

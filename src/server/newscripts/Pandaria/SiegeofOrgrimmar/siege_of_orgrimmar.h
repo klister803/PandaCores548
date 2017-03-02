@@ -147,6 +147,7 @@ enum eCreatures
     NPC_SWIRL_TARGET                = 71550,
     NPC_FLASH_STALKER               = 90003,
     NPC_CONGEALED_SHA               = 71642,
+    NPC_SWIRL_TRIGGER               = 71548,
 
     NPC_IMMERSEUS                   = 71543,
 

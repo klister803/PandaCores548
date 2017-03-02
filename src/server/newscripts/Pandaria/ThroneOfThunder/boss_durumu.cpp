@@ -35,26 +35,32 @@ enum eSpells
     SPELL_DURUMU_EYE_TRAIL_BLUE   = 141009,
     SPELL_DURUMU_EYE_TRAIL_YELLOW = 141010,
     SPELL_FORCE_OF_WILL_2         = 136932,
+    SPELL_BRIGHT_LIGHT_DURUMU     = 136121,
 
     //Red
-    SPELL_INFRARED_LIGHT_T_AURA   = 133731, //target  aura
+    SPELL_INFRARED_LIGHT_P_T_AURA = 133731, //player target aura
+    SPELL_INFRARED_LIGHT_C_T_AURA = 136120, //creature target aura
     SPELL_INFRARED_LIGHT_BEAM     = 134123, //channel beam
     SPELL_INFRARED_LIGHT_CONE     = 133734, //channel cone
     SPELL_INFRARED_LIGHT_CONE_DMG = 133732,
     SPELL_INFRARED_LIGHT_EXPLOSE  = 133733,
     SPELL_BURNING_EYE_FOUND       = 137002,
     SPELL_RED_FOG_INVISIBILITY    = 136116,
+    SPELL_SUMMON_RED_FOG          = 136128,
 
     //Blue
-    SPELL_BLUE_RAY_T_AURA         = 133675, //target  aura
+    SPELL_BLUE_RAY_P_T_AURA       = 133675, //player target  aura
+    SPELL_BLUE_RAY_C_T_AURA       = 136119, //creature target aura
     SPELL_BLUE_RAY_BEAM           = 134122, //channel beam
     SPELL_BLUE_RAY_CONE           = 133672, //channel cone
     SPELL_BLUE_RAY_CONE_DMG       = 133677,
     SPELL_BLUE_RAY_EXPLOSE        = 133678,
     SPELL_BLUE_FOG_INVISIBILITY   = 136118,
+    SPELL_SUMMON_BLUE_FOG         = 136130,
 
     //Yellow
-    SPELL_BRIGHT_LIGHT_T_AURA     = 133737, //target  aura
+    SPELL_BRIGHT_LIGHT_P_T_AURA   = 133737, //target  aura
+    SPELL_BRIGHT_LIGHT_C_T_AURA   = 136121,
     SPELL_BRIGHT_LIGHT_BEAM       = 134124, //channel beam
     SPELL_BRIGHT_LIGHT_CONE       = 133740, //channel cone
     SPELL_BRIGHT_LIGHT_CONE_DMG   = 133738,
@@ -69,6 +75,10 @@ enum eSpells
     SPELL_ICY_GRASP               = 136177,
     SPELL_ICY_GRASP_AURA          = 136179,
     SPELL_FLASH_FREEZE            = 136124, //explose them die
+
+    SPELL_MAZE_STARTS_HERE        = 140911,
+
+    //136251
 };
 
 enum sEvents
@@ -84,6 +94,8 @@ enum sEvents
     EVENT_COLORBLIND              = 9,
     EVENT_PREPARE_BEAM            = 10,
     EVENT_CREATE_CONE             = 11,
+
+    EVENT_SEARCHER                = 12,
 };
 
 enum sActions
@@ -172,6 +184,7 @@ public:
             phase = PHASE_NULL;
             //me->SetReactState(REACT_PASSIVE);
             me->SetReactState(REACT_DEFENSIVE);
+            me->RemoveAurasDueToSpell(SPELL_BRIGHT_LIGHT_DURUMU);
             checkvictim = 3000;
         }
 
@@ -212,15 +225,14 @@ public:
         {
             float x, y;
             float ang = 0;
-            uint32 fogentry = 0;
+            uint32 summonspellentry = 0;
             uint8 bluefog = urand(0, 3);
             for (uint8 n = 0; n < 4; n++)
             {
                 ang = GetFogAngle(n);
-                fogentry = bluefog == n ? NPC_AZURE_FOG : NPC_CRIMSON_FOG;
+                summonspellentry = bluefog == n ? SPELL_SUMMON_BLUE_FOG : SPELL_SUMMON_RED_FOG;
                 me->GetNearPoint2D(x, y, 12.0f, ang);
-                if (Creature* fog = me->SummonCreature(fogentry, x, y, -6.2778f, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000))
-                    fog->SetFacingToObject(me);
+                me->CastSpell(x, y, -6.27f, summonspellentry, true);
             }
         }
 
@@ -572,6 +584,51 @@ public:
             }
         }
 
+        uint32 GetLightPlayerAura()
+        {
+            switch (me->GetEntry())
+            {
+            case NPC_RED_EYE:
+                return SPELL_INFRARED_LIGHT_P_T_AURA;
+            case NPC_BLUE_EYE:
+                return SPELL_BLUE_RAY_P_T_AURA;
+            case NPC_YELLOW_EYE:
+                return SPELL_BRIGHT_LIGHT_P_T_AURA;
+            default:
+                return 0;
+            }
+        }
+
+        uint32 GetLightFogAura()
+        {
+            switch (me->GetEntry())
+            {
+            case NPC_RED_EYE:
+                return SPELL_INFRARED_LIGHT_C_T_AURA;
+            case NPC_BLUE_EYE:
+                return SPELL_BLUE_RAY_C_T_AURA;
+            case NPC_YELLOW_EYE:
+                return 0;
+            default:
+                return 0;
+            }
+        }
+
+        uint32 GetSearcheFogEntry()
+        {
+            switch (me->GetEntry())
+            {
+            case NPC_RED_EYE:
+                return NPC_CRIMSON_FOG;
+            case NPC_BLUE_EYE:
+                return NPC_AZURE_FOG;
+            case NPC_YELLOW_EYE:
+                return 0;
+            default:
+                return 0;
+            }
+        }
+
         uint32 GetData(uint32 type)
         {
             if (type == DATA_IS_CONE_TARGET_CREATURE)
@@ -674,6 +731,7 @@ public:
                                 {
                                     if (Creature* conetarget = durumu->SummonCreature(NPC_YELLOW_EYEBEAM_TARGET, x, y, me->GetPositionZ(), 0.0f))
                                     {
+                                        durumu->CastSpell(durumu, SPELL_BRIGHT_LIGHT_DURUMU, true); //visual
                                         DoCast(conetarget, conespell, true);
                                         conetarget->AI()->SetGUID(me->GetGUID(), 2);
                                     }
@@ -682,8 +740,54 @@ public:
                             else
                                 DoCast(pl, conespell, true);
                         }
+                        events.ScheduleEvent(EVENT_SEARCHER, 1000);
                     }
                     break;
+                case EVENT_SEARCHER:
+                {
+                    //Searche players in cone
+                    uint32 lightaura = GetLightPlayerAura();
+                    std::list<Player*>pllist;
+                    GetPlayerListInGrid(pllist, me, 100.0f);
+                    if (!pllist.empty())
+                    {
+                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                        {
+                            if (me->isInFront(*itr, M_PI / 6))
+                            {
+                                if (!(*itr)->HasAura(lightaura))
+                                    (*itr)->CastSpell(*itr, lightaura, true);
+                            }
+                            else
+                                if ((*itr)->HasAura(lightaura))
+                                    (*itr)->RemoveAurasDueToSpell(lightaura);
+                        }
+                    }
+                    //Searche fogs in cone
+                    if (me->GetEntry() != NPC_YELLOW_EYE)
+                    {
+                        uint32 _lightaura = GetLightFogAura();
+                        uint32 fogentry = GetSearcheFogEntry();
+                        std::list<Creature*>foglist;
+                        GetCreatureListWithEntryInGrid(foglist, me, fogentry, 150.0f);
+                        if (!foglist.empty())
+                        {
+                            for (std::list<Creature*>::const_iterator Itr = foglist.begin(); Itr != foglist.end(); Itr++)
+                            {
+                                if (me->isInFront(*Itr, M_PI / 6))
+                                {
+                                    if (!(*Itr)->HasAura(_lightaura))
+                                        (*Itr)->CastSpell(*Itr, _lightaura, true);
+                                }
+                                else
+                                    if ((*Itr)->HasAura(_lightaura))
+                                        (*Itr)->RemoveAurasDueToSpell(_lightaura);
+                            }
+                        }
+                    }
+                    events.ScheduleEvent(EVENT_SEARCHER, 1000);
+                }
+                break;
                 }
             }
         }
@@ -802,6 +906,15 @@ public:
             }
         }
 
+        void SpellHit(Unit* caster, SpellInfo const *spell)
+        {
+            if (spell->Id == SPELL_INFRARED_LIGHT_C_T_AURA)
+            {
+                me->RemoveAurasDueToSpell(SPELL_RED_FOG_INVISIBILITY);
+                DoCast(me, SPELL_BURNING_EYE_FOUND, true);
+            }
+        }
+
         void UpdateAI(uint32 diff)
         {
             events.Update(diff);
@@ -831,10 +944,8 @@ public:
         void HandlePeriodicTick(AuraEffect const * /*aurEff*/)
         {
             if (GetTarget())
-            {
                 if (GetTarget()->GetHealth() == GetTarget()->GetMaxHealth())
                     GetTarget()->RemoveAurasDueToSpell(SPELL_ARTERIAL_CUT);
-            }
         }
 
         void Register()

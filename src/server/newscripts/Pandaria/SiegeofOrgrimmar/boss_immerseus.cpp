@@ -27,6 +27,8 @@ enum eSpells
     SPELL_SWIRL                 = 143309, 
     SPELL_SWIRL_AURA_DUMMY      = 113762,
     SPELL_SWIRL_DMG             = 143412,
+    SPELL_MINI_SWIRL_AT         = 143410,
+    SPELL_MINI_SWIRL_DMG        = 143413,
     SPELL_SEEPING_SHA           = 143286,
     SPELL_SEEPING_SHA_AT        = 143281,
     SPELL_SUBMERGE              = 139832,
@@ -275,6 +277,26 @@ uint32 const wave5[25] =
     NPC_CONTAMINATED_PUDDLE, 
     NPC_CONTAMINATED_PUDDLE,
     NPC_CONTAMINATED_PUDDLE,
+};
+
+Position northwestpos[6] =
+{
+    {1503.11f, 790.54f, 246.83f, 0.0f},
+    {1484.00f, 778.59f, 246.83f, 0.0f},
+    {1517.04f, 784.59f, 246.83f, 0.0f},
+    {1499.16f, 772.37f, 246.83f, 0.0f},
+    {1477.98f, 760.18f, 246.83f, 0.0f},
+    {1515.58f, 764.80f, 246.83f, 0.0f},
+};
+
+Position northeastpos[6] =
+{
+    {1477.57f, 743.81f, 246.83f, 0.0f},
+    {1517.99f, 736.69f, 246.83f, 0.0f},
+    {1490.39f, 731.63f, 246.83f, 0.0f},
+    {1504.58f, 731.19f, 246.83f, 0.0f},
+    {1517.66f, 718.20f, 246.83f, 0.0f},
+    {1492.11f, 716.08f, 246.83f, 0.0f},
 };
 
 class boss_immerseus : public CreatureScript
@@ -614,6 +636,48 @@ public:
     CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_immerseusAI(creature);
+    }
+};
+
+//71548
+class npc_swirl_trigger : public CreatureScript
+{
+public:
+    npc_swirl_trigger() : CreatureScript("npc_swirl_trigger") { }
+
+    struct npc_swirl_triggerAI : public ScriptedAI
+    {
+        npc_swirl_triggerAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetDisplayId(11686);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+        }
+        InstanceScript* pInstance;
+
+        void Reset()
+        {
+            me->CastSpell(me, SPELL_MINI_SWIRL_AT);
+            me->GetMotionMaster()->MoveRandom(6.0f);
+        }
+
+        void EnterEvadeMode(){}
+
+        void EnterCombat(Unit* who){}
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (damage >= me->GetHealth())
+                damage = 0;
+        }
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_swirl_triggerAI(pCreature);
     }
 };
 
@@ -1392,6 +1456,7 @@ public:
 void AddSC_boss_immerseus()
 {
     new boss_immerseus();
+    new npc_swirl_trigger();
     new npc_swirl_target();
     new npc_sha_pool();
     new npc_sha_puddle();
