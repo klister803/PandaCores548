@@ -3874,7 +3874,7 @@ void SpellMgr::LoadSpellCustomAttr()
             switch (spellInfo->Id)
             {
                 case 131078: // Glyph of Icy Veins
-                    spellInfo->Effects[EFFECT_0]->SpellClassMask[3] |= 32 + 256 + 64;
+                    spellInfo->Effects[EFFECT_0]->SpellClassMask[3] |= 1376;
                     break;
                 case 113074: // Healing Touch (Symbiosis)
                     spellInfo->SpellFamilyName = SPELLFAMILY_MAGE;
