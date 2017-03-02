@@ -2372,36 +2372,6 @@ class spell_mage_icicle_damage : public SpellScriptLoader
         }
 };
 
-// Glyph of Icy Veins - 131079, 131080, 131081
-class spell_mage_glyph_of_icy_veins_damage : public SpellScriptLoader
-{
-    public:
-        spell_mage_glyph_of_icy_veins_damage() : SpellScriptLoader("spell_mage_glyph_of_icy_veins_damage") { }
-
-        class spell_mage_glyph_of_icy_veins_damage_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_mage_glyph_of_icy_veins_damage_SpellScript)
-
-            void HandleDamage(SpellEffIndex /*effIndex*/)
-            {
-                if (Unit* target = GetHitUnit())
-                {
-                    SetHitDamage(int32(GetHitDamage() * 0.4f));
-                }
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_mage_glyph_of_icy_veins_damage_SpellScript::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_mage_glyph_of_icy_veins_damage_SpellScript();
-        }
-};
-
 void AddSC_mage_spell_scripts()
 {
     new spell_mage_pet_freeze();
@@ -2445,5 +2415,4 @@ void AddSC_mage_spell_scripts()
     new spell_mage_glyph_of_icy_veins();
     new spell_mage_glyph_of_conjure_familiar();
     new spell_mage_icicle_damage();
-    new spell_mage_glyph_of_icy_veins_damage();
 }

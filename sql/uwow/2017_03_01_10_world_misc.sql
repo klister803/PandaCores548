@@ -3,3 +3,7 @@ DELETE FROM `spell_proc_check` WHERE (`entry`='56218') AND (`entry2`='0') AND (`
 
 DELETE FROM `spell_proc_event` WHERE `entry` IN (56218);
 INSERT INTO `spell_proc_event` VALUES (56218, 0, 0, 6, 0, 0, 0, 0, 0, 0, 100, 0, 7);
+
+DELETE FROM `spell_script_names` WHERE (`spell_id`='131079') AND (`ScriptName`='spell_mage_glyph_of_icy_veins_damage');
+DELETE FROM `spell_script_names` WHERE (`spell_id`='131080') AND (`ScriptName`='spell_mage_glyph_of_icy_veins_damage');
+DELETE FROM `spell_script_names` WHERE (`spell_id`='131081') AND (`ScriptName`='spell_mage_glyph_of_icy_veins_damage');
