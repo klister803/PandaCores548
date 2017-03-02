@@ -12840,15 +12840,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             }
         }
 
-        // 76613 - Mastery: Frostburn
-        if (GetTypeId() == TYPEID_PLAYER && spellProto->SpellFamilyName == SPELLFAMILY_MAGE &&
-            getLevel() >= 80 && ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_MAGE_FROST)
-        {
-            if (AuraEffect const* aurEff = GetAuraEffect(76613, EFFECT_0))
-                if (victim->isFrozen() && aurEff->IsAffectingSpell(spellProto))
-                    AddPct(DoneTotalMod, aurEff->GetAmount());
-        }
-
         // Pyroblast
         if (spellProto && spellProto->Id == 11366)
         {
