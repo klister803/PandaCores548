@@ -2774,7 +2774,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
             m_spellInfo->SpellFamilyFlags[2] & 0x00024000)) // Explosive and Immolation Trap
             procAttacker |= PROC_FLAG_DONE_TRAP_ACTIVATION;
 
-        bool dmgSpell = bool(target->damage || target->damageBeforeHit || m_healing);
+        bool dmgSpell = bool(target->damage || target->damageBeforeHit || (m_healing > 0));
 
         if (m_damage > 0)
             positive = false;
