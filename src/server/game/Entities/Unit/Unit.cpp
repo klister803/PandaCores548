@@ -24511,7 +24511,7 @@ bool Unit::HandleIgnoreAurastateAuraProc(Unit* victim, DamageInfo* /*dmgInfoProc
         {
             RemoveAurasDueToSpell(126084);  // remove second visual
             if (triggeredByAura->GetBase()->ModStackAmount(-1))
-                RemoveAura(triggeredByAura->GetBase());
+                triggeredByAura->GetBase()->Remove();
             return true;
         }
     }
