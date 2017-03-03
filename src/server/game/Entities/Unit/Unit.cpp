@@ -21846,7 +21846,7 @@ void Unit::SetFeared(bool apply)
     {
         SetTarget(0);
 
-        uint32 mechanic_mask = (1 << MECHANIC_FEAR) | (1 << MECHANIC_HORROR);
+        uint32 mechanic_mask = (1 << MECHANIC_FEAR) | (1 << MECHANIC_HORROR) | (1 << MECHANIC_TURN);
 
         Unit* caster = NULL;
         Unit::AuraEffectList fearAuras = GetAuraEffectsByMechanic(mechanic_mask);
