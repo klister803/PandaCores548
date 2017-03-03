@@ -4625,6 +4625,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 44544: // Fingers of Frost
                     // affect Ice Lance
                     spellInfo->Effects[EFFECT_0]->SpellClassMask[0] |= 0x20000;
+                    spellInfo->Effects[EFFECT_0]->SpellClassMask[3] |= 256;
                     break;
                 case 117993:// Chi Torpedo : Heal
                 case 124040:// Chi Torpedo : Damage
