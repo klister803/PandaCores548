@@ -626,7 +626,7 @@ float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
         case SPELL_AURA_MOD_STUN:
         {
             if (m_spellInfo->Id == 82691)
-                amount = int32(target->CountPctFromMaxHealth(10));
+                amount = int32(target->CountPctFromMaxHealth(5));
             break;
         }
         case SPELL_AURA_MOD_SPEED_ALWAYS:
