@@ -13430,6 +13430,9 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if ((spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS))
         return healamount;
 
+    if (spellProto->AttributesEx6 & SPELL_ATTR6_IGNORE_CASTER_AURAS && spellProto->AttributesEx3 & SPELL_ATTR3_NO_DONE_BONUS)
+        return healamount;
+
     // No bonus healing for potion spells
     if (spellProto->SpellFamilyName == SPELLFAMILY_POTION)
         return healamount;
