@@ -701,6 +701,7 @@ class Spell
 
         // Damage and healing in effects need just calculate
         int32 m_damage;           // Damge   in effects count here
+        uint32 m_healBeforeTake;  // Heal amount after we calc caster auras
         int32 m_healing;          // Healing in effects count here
         int32 m_final_damage;     // Final damage in effects count here
         int32 m_absorb;           // Absorb

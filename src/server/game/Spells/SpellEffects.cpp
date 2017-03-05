@@ -2508,6 +2508,7 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
         else
             addhealth = caster->SpellHealingBonusDone(unitTarget, m_spellInfo, addhealth, HEAL, effIndex);
 
+        m_healBeforeTake = addhealth;
         addhealth = unitTarget->SpellHealingBonusTaken(caster, m_spellInfo, addhealth, HEAL, effIndex);
 
         // Mastery DeathKnight
@@ -2742,6 +2743,7 @@ void Spell::EffectHealPct(SpellEffIndex effIndex)
     if(damage)
     {
         heal = m_originalCaster->SpellHealingBonusDone(unitTarget, m_spellInfo, heal, HEAL, effIndex);
+        m_healBeforeTake = heal;
         heal = unitTarget->SpellHealingBonusTaken(m_originalCaster, m_spellInfo, heal, HEAL, effIndex);
     }
 
@@ -2762,7 +2764,7 @@ void Spell::EffectHealMechanical(SpellEffIndex effIndex)
         return;
 
     uint32 heal = m_originalCaster->SpellHealingBonusDone(unitTarget, m_spellInfo, uint32(damage), HEAL, effIndex);
-
+    m_healBeforeTake = heal;
     m_healing += unitTarget->SpellHealingBonusTaken(m_originalCaster, m_spellInfo, heal, HEAL, effIndex);
 }
 
@@ -2787,6 +2789,7 @@ void Spell::EffectHealthLeech(SpellEffIndex effIndex)
     if (m_caster->isAlive())
     {
         healthGain = m_caster->SpellHealingBonusDone(m_caster, m_spellInfo, healthGain, HEAL, effIndex);
+        m_healBeforeTake = healthGain;
         healthGain = m_caster->SpellHealingBonusTaken(m_caster, m_spellInfo, healthGain, HEAL, effIndex);
 
         m_caster->HealBySpell(m_caster, m_spellInfo, uint32(healthGain));
@@ -4953,6 +4956,7 @@ void Spell::EffectHealMaxHealth(SpellEffIndex effIndex)
         addhealth = unitTarget->GetMaxHealth() - unitTarget->GetHealth();
 
     addhealth = m_caster->SpellHealingBonusDone(m_caster, m_spellInfo, addhealth, HEAL, effIndex);
+    m_healBeforeTake = addhealth;
     addhealth = unitTarget->SpellHealingBonusTaken(m_caster, m_spellInfo, addhealth, HEAL, effIndex);
 
     m_healing += addhealth;
