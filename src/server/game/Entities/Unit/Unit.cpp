@@ -13435,7 +13435,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
         return healamount;
 
     // No bonus for Temporal Ripples or Desperate Prayer or Conductivity
-    if (spellProto->Id == 115611 || spellProto->Id == 19236 || spellProto->Id == 118800)
+    if (spellProto->Id == 115611 || spellProto->Id == 19236)
         return healamount;
 
     // No bonus for Devouring Plague heal or Atonement or Eminence
@@ -13455,7 +13455,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
         return healamount;
 
     // No bonus for Eminence (statue) and Eminence
-    if (spellProto->Id == 117895 || spellProto->Id == 126890)
+    if (spellProto->Id == 126890)
         return healamount;
 
     float DoneTotalMod = 1.0f;
