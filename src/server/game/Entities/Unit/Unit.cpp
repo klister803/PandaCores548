@@ -8693,7 +8693,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                             percent = triggerAmount; // 50% heal from all other heals
                             break;
                     }
-                    basepoints0 = CalculatePct(damage, percent);
+                    basepoints0 = CalculatePct(dmgInfoProc->GetDamageBeforeHit(), percent);
                     CastCustomSpell(beaconTarget, 53652, &basepoints0, NULL, NULL, true);
                     return true;
                 }
