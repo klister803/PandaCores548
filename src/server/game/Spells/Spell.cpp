@@ -4354,6 +4354,10 @@ void Spell::SendSpellCooldown()
         return;
     }
 
+    // do not set cooldown for triggered spells (needed by reincarnation)
+    if (_triggeredCastFlags & TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD)
+        return;
+
     // set infinity cooldown state for spells
     if (m_spellInfo->Attributes & SPELL_ATTR0_DISABLED_WHILE_ACTIVE)
     {
