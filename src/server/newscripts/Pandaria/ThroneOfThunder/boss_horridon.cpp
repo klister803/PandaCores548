@@ -320,6 +320,13 @@ public:
                 events.ScheduleEvent(EVENT_DOUBLE_SWIPE, urand(17000, 20000));
                 events.ScheduleEvent(EVENT_CHARGES, urand(50000, 60000));
                 break;
+            case ACTION_RE_ATTACK:
+                me->ReAttackWithZone();
+                ActiveOrOfflineGateEvent(true);
+                events.ScheduleEvent(EVENT_TRIPLE_PUNCTURE, urand(11000, 15000));
+                events.ScheduleEvent(EVENT_DOUBLE_SWIPE, urand(17000, 20000));
+                events.ScheduleEvent(EVENT_CHARGES, urand(50000, 60000));
+                break;
             }
         }
 
@@ -1512,8 +1519,12 @@ public:
         void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
         {
             if (GetTarget() && GetTarget()->ToCreature())
+            {
                 if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
                     GetTarget()->ToCreature()->AI()->DoAction(ACTION_CHARGE_TO_GATE);
+                else if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_CANCEL || GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_ENEMY_SPELL)
+                    GetTarget()->ToCreature()->AI()->DoAction(ACTION_RE_ATTACK);
+            }
         }
 
         void Register()
