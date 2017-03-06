@@ -24023,6 +24023,12 @@ void Unit::SendClearTarget()
 
 bool Unit::IsVisionObscured(Unit* victim)
 {
+    //smoke bomb, camouflage, dont work on raid boss
+    if (ToCreature() && victim->ToPlayer())
+        if (InstanceScript* instance = GetInstanceScript())
+            if (instance->IsRaidBoss(GetEntry()))
+                return false;
+
     Aura* victimAura = NULL;
     Aura* myAura = NULL;
     Unit* victimCaster = NULL;
