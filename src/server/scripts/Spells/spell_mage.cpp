@@ -823,34 +823,6 @@ class spell_mage_nether_tempest : public SpellScriptLoader
         }
 };
 
-// Blazing Speed - 108843
-class spell_mage_blazing_speed : public SpellScriptLoader
-{
-    public:
-        spell_mage_blazing_speed() : SpellScriptLoader("spell_mage_blazing_speed") { }
-
-        class spell_mage_blazing_speed_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_mage_blazing_speed_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    _player->RemoveMovementImpairingAuras();
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_mage_blazing_speed_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_mage_blazing_speed_SpellScript();
-        }
-};
-
 // Frostjaw - 102051
 class spell_mage_frostjaw : public SpellScriptLoader
 {
@@ -1401,44 +1373,6 @@ class spell_mage_alter_time : public SpellScriptLoader
         AuraScript* GetAuraScript() const
         {
             return new spell_mage_alter_time_AuraScript();
-        }
-};
-
-class spell_mage_cold_snap : public SpellScriptLoader
-{
-    public:
-        spell_mage_cold_snap() : SpellScriptLoader("spell_mage_cold_snap") { }
-
-        class spell_mage_cold_snap_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_mage_cold_snap_SpellScript);
-
-            bool Load()
-            {
-                return GetCaster()->GetTypeId() == TYPEID_PLAYER;
-            }
-
-            void HandleDummy(SpellEffIndex /*effIndex*/)
-            {
-                // immediately finishes the cooldown on Frost spells
-                if(Player* caster = GetCaster()->ToPlayer())
-                {
-                    caster->RemoveSpellCooldown(120, true);
-                    caster->RemoveSpellCooldown(122, true);
-                    caster->RemoveSpellCooldown(45438, true);
-                }
-            }
-
-            void Register()
-            {
-                // add dummy effect spell handler to Cold Snap
-                OnEffectHit += SpellEffectFn(spell_mage_cold_snap_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_mage_cold_snap_SpellScript();
         }
 };
 
@@ -2416,7 +2350,6 @@ void AddSC_mage_spell_scripts()
     new spell_mage_invocation();
     new spell_mage_frost_bomb();
     new spell_mage_nether_tempest();
-    new spell_mage_blazing_speed();
     new spell_mage_frostjaw();
     new spell_mage_combustion();
     new spell_mage_inferno_blast();
@@ -2426,7 +2359,6 @@ void AddSC_mage_spell_scripts()
     new spell_mage_time_warp();
     new spell_mage_alter_time_overrided();
     new spell_mage_alter_time();
-    new spell_mage_cold_snap();
     new spell_mage_incanters_absorbtion_absorb();
     new spell_mage_incanters_absorbtion_manashield();
     new spell_mage_polymorph_cast_visual();
