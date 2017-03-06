@@ -172,8 +172,8 @@ void Player::UpdateSpellDamageAndHealingBonus()
     if (HasAuraType(SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT))
         UpdateAttackPowerAndDamage();
 
-    //if (Pet* pet = GetPet())
-
+    if (GetPetGUID())
+        SetNeedToUpdate(PET_AP_AND_DAMAGE);
 }
 
 bool Player::UpdateAllStats()
@@ -420,14 +420,11 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
         if (attPowerMultiplier < 0)
             SetFloatValue(index_mult, attPowerMultiplier);  //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
     }
-
-    Pet* pet = GetPet();                                //update pet's AP
+                            
     //automatically update weapon damage after attack power modification
     if (ranged)
     {
         UpdateDamagePhysical(RANGED_ATTACK);
-        if (pet && pet->isHunterPet()) // At ranged attack change for hunter pet
-            pet->UpdateAttackPowerAndDamage();
     }
     else
     {
@@ -436,13 +433,13 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
             UpdateDamagePhysical(OFF_ATTACK);
         if (getClass() == CLASS_SHAMAN || getClass() == CLASS_PALADIN)                      // mental quickness
             UpdateSpellDamageAndHealingBonus();
-
-        if (pet)
-            pet->UpdateAttackPowerAndDamage();
     }
 
     if (HasAuraType(SPELL_AURA_OVERRIDE_SPELL_POWER_BY_AP_PCT))
         UpdateSpellDamageAndHealingBonus();
+
+    if (GetPetGUID()) //update pet's AP
+        SetNeedToUpdate(PET_AP_AND_DAMAGE);
 }
 
 void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& min_damage, float& max_damage)

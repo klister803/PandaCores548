@@ -2100,6 +2100,13 @@ void Player::Update(uint32 p_time)
                 UpdateAllRunesRegen();
                 m_needToUpdate[RUNES_REGEN] = false;
             }
+            if (m_needToUpdate[PET_AP_AND_DAMAGE])
+            {
+                if (Pet* pet = GetPet())
+                    pet->UpdateAttackPowerAndDamage();
+
+                m_needToUpdate[PET_AP_AND_DAMAGE] = false;
+            }
             m_statsUpdateTimer = 0;
         }
 

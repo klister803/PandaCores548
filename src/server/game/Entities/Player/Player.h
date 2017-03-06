@@ -1011,6 +1011,7 @@ enum StatsForUpdate
     HAST_MODS,
     RUNES_REGEN,
     SPELL_HAST_DURATION_RECOVERY,
+    PET_AP_AND_DAMAGE,
     MAX_SFU
 };
 
