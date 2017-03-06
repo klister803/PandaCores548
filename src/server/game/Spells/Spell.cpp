@@ -2894,6 +2894,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         {
             procEx |= PROC_EX_CRITICAL_HIT;
             addhealth = caster->SpellCriticalHealingBonus(m_spellInfo, addhealth, NULL);
+            m_healBeforeTake *= 2;
         }
         else
             procEx |= PROC_EX_NORMAL_HIT;
