@@ -761,12 +761,10 @@ Player::Player(WorldSession* session) : Unit(true), m_achievementMgr(this), m_re
     m_weaponChangeTimer = 0;
     m_statsUpdateTimer = 0;
     m_updateComboPointsTimer = 0;
-    m_needToUpdateRunesRegen = false;
-    m_needToUpdateSpellHastDurationRecovery = false;
-    m_needUpdateCastHastMods = false;
-    m_needUpdateMeleeHastMod = false;
-    m_needUpdateRangeHastMod = false;
-    m_needUpdateHastMod = false;
+    
+    for (uint8 i = 0; i < MAX_SFU; i++)
+        m_needToUpdate[i] = false;
+
     m_duelLock = false;
 
     m_zoneUpdateId = 0;
@@ -2072,35 +2070,35 @@ void Player::Update(uint32 p_time)
         m_statsUpdateTimer += p_time;
         if (m_statsUpdateTimer >= 200)
         {
-            if (m_needUpdateMeleeHastMod)
+            if (m_needToUpdate[MELEE_HAST_MODS])
             {
                 UpdateMeleeHastMod();
-                m_needUpdateMeleeHastMod = false;
+                m_needToUpdate[MELEE_HAST_MODS] = false;
             }
-            if (m_needUpdateRangeHastMod)
+            if (m_needToUpdate[RANGE_HAST_MODS])
             {
                 UpdateRangeHastMod();
-                m_needUpdateRangeHastMod = false;
+                m_needToUpdate[RANGE_HAST_MODS] = false;
             }
-            if (m_needUpdateHastMod)
+            if (m_needToUpdate[HAST_MODS])
             {
                 UpdateHastMod();
-                m_needUpdateHastMod = false;
+                m_needToUpdate[HAST_MODS] = false;
             }
-            if (m_needUpdateCastHastMods)
+            if (m_needToUpdate[CAST_HAST_MODS])
             {
                 UpdateCastHastMods();
-                m_needUpdateCastHastMods = false;
+                m_needToUpdate[CAST_HAST_MODS] = false;
             }
-            if (m_needToUpdateSpellHastDurationRecovery)
+            if (m_needToUpdate[SPELL_HAST_DURATION_RECOVERY])
             {
                 UpdateSpellHastDurationRecovery();
-                m_needToUpdateSpellHastDurationRecovery = false;
+                m_needToUpdate[SPELL_HAST_DURATION_RECOVERY] = false;
             }
-            if (m_needToUpdateRunesRegen)
+            if (m_needToUpdate[RUNES_REGEN])
             {
                 UpdateAllRunesRegen();
-                m_needToUpdateRunesRegen = false;
+                m_needToUpdate[RUNES_REGEN] = false;
             }
             m_statsUpdateTimer = 0;
         }
@@ -7194,16 +7192,16 @@ void Player::UpdateRating(CombatRating cr)
         case CR_CRIT_TAKEN_SPELL:                           // Deprecated since Cataclysm
             break;
         case CR_HASTE_MELEE:                                // Implemented in Player::ApplyRatingMod
-            SetNeedUpdateMeleeHastMod();
-            SetNeedUpdateCastHastMods();
+            SetNeedToUpdate(MELEE_HAST_MODS);
+            SetNeedToUpdate(CAST_HAST_MODS);
             break;
         case CR_HASTE_RANGED:
-            SetNeedUpdateRangeHastMod();
-            SetNeedUpdateCastHastMods();
+            SetNeedToUpdate(RANGE_HAST_MODS);
+            SetNeedToUpdate(CAST_HAST_MODS);
             break;
         case CR_HASTE_SPELL:
-            SetNeedUpdateHastMod();
-            SetNeedUpdateCastHastMods();
+            SetNeedToUpdate(HAST_MODS);
+            SetNeedToUpdate(CAST_HAST_MODS);
             break;
         case CR_WEAPON_SKILL_MAINHAND:                      // Implemented in Unit::RollMeleeOutcomeAgainst
         case CR_WEAPON_SKILL_OFFHAND:

@@ -1003,6 +1003,17 @@ enum PlayerRestState
     REST_STATE_RAF_LINKED                            = 0x06
 };
 
+enum StatsForUpdate
+{
+    CAST_HAST_MODS = 0,
+    MELEE_HAST_MODS,
+    RANGE_HAST_MODS,
+    HAST_MODS,
+    RUNES_REGEN,
+    SPELL_HAST_DURATION_RECOVERY,
+    MAX_SFU
+};
+
 enum PlayerCommandStates
 {
     CHEAT_NONE          = 0x00,
@@ -2485,12 +2496,7 @@ class Player : public Unit, public GridObject<Player>
 
         void HandleArenaDeserter();
 
-        void SetNeedToUpdateRunesRegen() { m_needToUpdateRunesRegen = true; }
-        void SetNeedToUpdateSpellHastDurationRecovery() { m_needToUpdateSpellHastDurationRecovery = true; }
-        void SetNeedUpdateCastHastMods() { m_needUpdateCastHastMods = true; }
-        void SetNeedUpdateMeleeHastMod() { m_needUpdateMeleeHastMod = true; }
-        void SetNeedUpdateRangeHastMod() { m_needUpdateRangeHastMod = true; }
-        void SetNeedUpdateHastMod() { m_needUpdateHastMod = true; }
+        void SetNeedToUpdate(StatsForUpdate stat) { m_needToUpdate[stat] = true; }
 
         void UpdateSpellCritChance(uint32 schoolMask);
         void UpdateArmorPenetration(int32 amount);
@@ -3305,14 +3311,8 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_contestedPvPTimer;
         uint32 m_statsUpdateTimer;
         int32 m_updateComboPointsTimer;
-        bool m_needToUpdateRunesRegen;
-        bool m_needToUpdateSpellHastDurationRecovery;
-        bool m_needUpdateCastHastMods = false;
-        bool m_needUpdateMeleeHastMod = false;
-        bool m_needUpdateRangeHastMod = false;
-        bool m_needUpdateHastMod = false;
+        bool m_needToUpdate[MAX_SFU];
         bool m_duelLock = false;
-
 
         /*********************************************************/
         /***               BATTLEGROUND SYSTEM                 ***/

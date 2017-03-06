@@ -5440,7 +5440,7 @@ void AuraEffect::HandleModPowerRegen(AuraApplication const* aurApp, uint8 mode, 
             break;
         case POWER_RUNES:
             if (target->GetTypeId() == TYPEID_PLAYER)
-                target->ToPlayer()->SetNeedToUpdateRunesRegen();
+                target->ToPlayer()->SetNeedToUpdate(RUNES_REGEN);
             break;
         default:
             target->UpdatePowerRegen(GetMiscValue());
@@ -5462,7 +5462,7 @@ void AuraEffect::HandleModPowerRegenPCT(AuraApplication const* aurApp, uint8 mod
             break;
         case POWER_RUNES:
             if (target->GetTypeId() == TYPEID_PLAYER)
-                target->ToPlayer()->SetNeedToUpdateRunesRegen();
+                target->ToPlayer()->SetNeedToUpdate(RUNES_REGEN);
             break;
         default:
             target->UpdatePowerRegen(GetMiscValue());
@@ -5485,7 +5485,7 @@ void AuraEffect::HandleModManaRegen(AuraApplication const* aurApp, uint8 mode, b
         return;
 
     //Note: an increase in regen does NOT cause threat.
-    target->ToPlayer()->SetNeedToUpdateRunesRegen();
+    target->ToPlayer()->SetNeedToUpdate(RUNES_REGEN);
 }
 
 void AuraEffect::HandleAuraModIncreaseHealth(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -5920,8 +5920,8 @@ void AuraEffect::HandleModCastingSpeed(AuraApplication const* aurApp, uint8 mode
 
     if (Player* plr = target->ToPlayer())
     {
-        plr->SetNeedUpdateHastMod();
-        plr->SetNeedUpdateCastHastMods();
+        plr->SetNeedToUpdate(HAST_MODS);
+        plr->SetNeedToUpdate(CAST_HAST_MODS);
     }
     else
     {
@@ -5944,9 +5944,9 @@ void AuraEffect::HandleModMeleeRangedSpeedPct(AuraApplication const* aurApp, uin
 
     if (Player* plr = target->ToPlayer())
     {
-        plr->SetNeedUpdateMeleeHastMod();
-        plr->SetNeedUpdateRangeHastMod();
-        plr->SetNeedUpdateCastHastMods();
+        plr->SetNeedToUpdate(MELEE_HAST_MODS);
+        plr->SetNeedToUpdate(RANGE_HAST_MODS);
+        plr->SetNeedToUpdate(CAST_HAST_MODS);
     }
     else
     {
@@ -5965,10 +5965,10 @@ void AuraEffect::HandleModCombatSpeedPct(AuraApplication const* aurApp, uint8 mo
     
     if (Player* plr = target->ToPlayer())
     {
-        plr->SetNeedUpdateMeleeHastMod();
-        plr->SetNeedUpdateRangeHastMod();
-        plr->SetNeedUpdateHastMod();
-        plr->SetNeedUpdateCastHastMods();
+        plr->SetNeedToUpdate(MELEE_HAST_MODS);
+        plr->SetNeedToUpdate(RANGE_HAST_MODS);
+        plr->SetNeedToUpdate(HAST_MODS);
+        plr->SetNeedToUpdate(CAST_HAST_MODS);
     }
     else
     {
@@ -6004,7 +6004,7 @@ void AuraEffect::HandleModMeleeSpeedPct(AuraApplication const* aurApp, uint8 mod
 
     if (Player* plr = target->ToPlayer())
     {
-        plr->SetNeedUpdateMeleeHastMod();
+        plr->SetNeedToUpdate(MELEE_HAST_MODS);
     }
     else
     {
@@ -6022,7 +6022,7 @@ void AuraEffect::HandleAuraModRangedHaste(AuraApplication const* aurApp, uint8 m
 
     if (Player* plr = target->ToPlayer())
     {
-        plr->SetNeedUpdateRangeHastMod();
+        plr->SetNeedToUpdate(RANGE_HAST_MODS);
     }
     else
     {

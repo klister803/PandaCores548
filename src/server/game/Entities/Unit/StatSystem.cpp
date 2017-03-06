@@ -171,6 +171,9 @@ void Player::UpdateSpellDamageAndHealingBonus()
 
     if (HasAuraType(SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT))
         UpdateAttackPowerAndDamage();
+
+    //if (Pet* pet = GetPet())
+
 }
 
 bool Player::UpdateAllStats()
@@ -1017,7 +1020,7 @@ void Unit::UpdateCastHastMods()
     SetFloatValue(UNIT_MOD_CAST_HASTE, value);
 
     if (getClass() == CLASS_MONK)
-        player->SetNeedToUpdateSpellHastDurationRecovery();
+        player->SetNeedToUpdate(SPELL_HAST_DURATION_RECOVERY);
 }
 
 void Unit::UpdateMeleeHastMod()
@@ -1077,7 +1080,7 @@ void Unit::UpdateMeleeHastMod()
     }
 
     if (player && getClass() == CLASS_DEATH_KNIGHT)
-        player->SetNeedToUpdateRunesRegen();
+        player->SetNeedToUpdate(RUNES_REGEN);
 
     if (Unit* owner = GetOwner())
         if (owner->getClass() == CLASS_HUNTER && (amount != 0.0f || (oldValue != 1.0f && value != oldValue)))
@@ -1139,7 +1142,7 @@ void Unit::UpdateHastMod()
     }
 
     if (player && getClass() == CLASS_DEATH_KNIGHT)
-        player->SetNeedToUpdateRunesRegen();
+        player->SetNeedToUpdate(RUNES_REGEN);
     UpdateManaRegen();
 }
 
@@ -1182,7 +1185,7 @@ void Unit::UpdateRangeHastMod()
         UpdateFocusRegen();
 
     if (player && getClass() == CLASS_DEATH_KNIGHT)
-        player->SetNeedToUpdateRunesRegen();
+        player->SetNeedToUpdate(RUNES_REGEN);
 }
 
 void Unit::UpdateEnergyRegen()
