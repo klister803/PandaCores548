@@ -383,6 +383,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     _Reset();
                     for (uint8 n = 0; n < 4; n++)
                         me->RemoveAurasDueToSpell(transformvisual[n]);
+                    me->RemoveAllNegativeAurasFromBoss();
                     me->SetReactState(REACT_DEFENSIVE);
                     phase = PHASE_NULL;
                     instance->SetData(DATA_RESET_REALM_OF_YSHAARJ, 0);

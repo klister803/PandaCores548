@@ -4727,6 +4727,29 @@ void Unit::RemoveAllAurasRequiringDeadTarget()
     }
 }
 
+void Unit::RemoveAllNegativeAurasFromBoss()
+{
+    for (AuraApplicationMap::iterator iter = m_appliedAuras.begin(); iter != m_appliedAuras.end();)
+    {
+        Aura const* aura = iter->second->GetBase();
+        Unit* caster = iter->second->GetBase()->GetCaster();
+        if (!aura->GetSpellInfo()->HasAura(SPELL_AURA_CONTROL_VEHICLE) && caster && caster->ToPlayer())
+            _UnapplyAura(iter, AURA_REMOVE_BY_DEFAULT);
+        else
+            ++iter;
+    }
+
+    for (AuraMap::iterator iter = m_ownedAuras.begin(); iter != m_ownedAuras.end();)
+    {
+        Aura* aura = iter->second;
+        Unit* caster = iter->second->GetCaster();
+        if (!aura->GetSpellInfo()->HasAura(SPELL_AURA_CONTROL_VEHICLE) && caster && caster->ToPlayer())
+            RemoveOwnedAura(iter, AURA_REMOVE_BY_DEFAULT);
+        else
+            ++iter;
+    }
+}
+
 void Unit::RemoveAllAurasExceptType(AuraType type)
 {
     for (AuraApplicationMap::iterator iter = m_appliedAuras.begin(); iter != m_appliedAuras.end();)

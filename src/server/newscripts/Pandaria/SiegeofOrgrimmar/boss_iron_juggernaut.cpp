@@ -124,6 +124,7 @@ class boss_iron_juggernaut : public CreatureScript
                 me->SetReactState(REACT_DEFENSIVE);
                 me->setPowerType(POWER_ENERGY);
                 me->SetPower(POWER_ENERGY, 0);
+                me->RemoveAllNegativeAurasFromBoss();
                 me->RemoveAurasDueToSpell(SPELL_SEISMIC_ACTIVITY);
                 me->RemoveAurasDueToSpell(SPELL_BERSERK);
                 me->RemoveAurasDueToSpell(SPELL_BERSERK2);

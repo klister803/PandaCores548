@@ -199,6 +199,7 @@ class boss_sha_of_pride : public CreatureScript
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_EAST);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_NORTH);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_SOUTH);
+                me->RemoveAllNegativeAurasFromBoss();
                 me->RemoveAurasDueToSpell(SPELL_UNLEASHED);
                 me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 100);

@@ -133,6 +133,7 @@ class boss_general_nazgrim : public CreatureScript
                 _Reset();
                 for (uint8 n = 0; n < 3; n++)
                     me->RemoveAurasDueToSpell(stances[n]);
+                me->RemoveAllNegativeAurasFromBoss();
                 me->RemoveAurasDueToSpell(SPELL_BERSERK);
                 me->SetCreateMana(100);
                 me->SetMaxPower(POWER_MANA, 100);

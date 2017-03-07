@@ -144,6 +144,7 @@ class boss_malkorok : public CreatureScript
             {
                 _Reset();
                 SetGasStateAndBuffPlayers(false);
+                me->RemoveAllNegativeAurasFromBoss();
                 me->RemoveAurasDueToSpell(SPELL_BLOOD_RAGE);
                 me->RemoveAurasDueToSpell(SPELL_FATAL_STRIKE);
                 me->RemoveAurasDueToSpell(SPELL_RELENTLESS_ASSAULT);

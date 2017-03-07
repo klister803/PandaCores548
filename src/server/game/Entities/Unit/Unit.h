@@ -1998,6 +1998,7 @@ class Unit : public WorldObject
         void RemoveArenaAuras();
         void RemoveAllAurasOnDeath();
         void RemoveAllAurasRequiringDeadTarget();
+        void RemoveAllNegativeAurasFromBoss();
         void RemoveAllAurasExceptType(AuraType type);
         void RemoveAllAurasByType(AuraType type);
         void DelayOwnedAuras(uint32 spellId, uint64 caster, int32 delaytime);

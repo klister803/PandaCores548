@@ -328,6 +328,7 @@ public:
                 pp->RemoveAurasDueToSpell(SPELL_SEEPING_SHA_AT);
             me->SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
             me->SetReactState(REACT_DEFENSIVE);
+            me->RemoveAllNegativeAurasFromBoss();
             me->RemoveAurasDueToSpell(SPELL_SWIRL_AURA_DUMMY);
             me->RemoveAurasDueToSpell(SPELL_SHA_POOL);
             me->RemoveAurasDueToSpell(SPELL_BERSERK);

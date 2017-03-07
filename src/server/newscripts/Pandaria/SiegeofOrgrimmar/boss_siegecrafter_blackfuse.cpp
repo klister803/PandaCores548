@@ -251,9 +251,11 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              berserk = 0;
              DespawnOverchargedElectromagnet();
              RemoveDebuffs();
+             me->RemoveAllNegativeAurasFromBoss();
              me->RemoveAurasDueToSpell(SPELL_PROTECTIVE_FRENZY);
              me->RemoveAurasDueToSpell(SPELL_AUTOMATIC_REPAIR_BEAM_AT);
              me->RemoveAurasDueToSpell(SPELL_ENERGIZED_DEFENSIVE_MATRIX);
+             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_ELECTROSTATIC_CHARGE);
              me->SetReactState(REACT_DEFENSIVE);
              ClearConveyerArray();
          }
