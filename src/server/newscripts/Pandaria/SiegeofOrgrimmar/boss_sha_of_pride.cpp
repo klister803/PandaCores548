@@ -1623,11 +1623,8 @@ public:
 
         void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            if (GetTarget())
-            {
-                if (Creature* roc = GetTarget()->FindNearestCreature(NPC_RIFT_OF_CORRUPTION, 5.0f, true))
-                    roc->AI()->DoAction(ACTION_CLOSE_RIFT_OF_CORRUPTION);
-            }
+            if (GetCaster() && GetCaster()->ToCreature())
+                GetCaster()->ToCreature()->AI()->DoAction(ACTION_CLOSE_RIFT_OF_CORRUPTION);
         }
 
         void Register()
