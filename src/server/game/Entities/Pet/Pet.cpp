@@ -57,6 +57,8 @@ m_auraRaidUpdateMask(0), m_declinedname(NULL)
         InitCharmInfo();
     }
 
+    m_spells.clear();
+
     m_name = "Pet";
     m_Update    = false;
 }
@@ -1597,7 +1599,6 @@ void Pet::InitPetCreateSpells()
 {
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Pet InitPetCreateSpells");
     m_charmInfo->InitPetActionBar();
-    m_spells.clear();
 
     LearnPetPassives();
     InitLevelupSpellsForLevel();

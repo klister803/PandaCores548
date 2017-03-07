@@ -3176,9 +3176,8 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
 
     if(petType == SUMMON_PET)
     {
-        pet->InitPetCreateSpells();
         pet->SynchronizeLevelWithOwner();
-        pet->LearnPetPassives();
+        pet->InitPetCreateSpells();
         pet->SavePetToDB();
         PetSpellInitialize();
         SendTalentsInfoData(true);
