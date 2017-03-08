@@ -5437,8 +5437,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->TriggerSpell = 0;
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
                     break;
-                case 142906: //Ancient Miasma Dmg
-                case 29604:  //Jom Gabbar
+                case 122281: // Healing Elixir
+                case 142906: // Ancient Miasma Dmg
+                case 29604:  // Jom Gabbar
                     spellInfo->AttributesEx6 |= SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
                     break;
                 //General Nazgrim
