@@ -412,7 +412,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     phase = PHASE_ONE;
                     realmnum = 0;
                     events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 4000);
-                    //events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
+                    events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
                     events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
                     events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 18000);
                     events.ScheduleEvent(EVENT_SUMMON_WOLF_RIDER, 30000);
@@ -2468,7 +2468,7 @@ public:
                         std::list<Player*> pllist;
                         pllist.clear();
                         GetPlayerListInGrid(pllist, GetCaster(), 400.0f);
-                        uint8 count = 1;//GetCaster()->GetMap()->Is25ManRaid() ? 7 : 4;
+                        uint8 count = GetCaster()->GetMap()->Is25ManRaid() ? 7 : 4;
                         if (!pllist.empty())
                         {
                             if (aurEff->GetTickNumber() == 1)
@@ -2520,7 +2520,7 @@ public:
                         std::list<Player*> pllist;
                         pllist.clear();
                         GetPlayerListInGrid(pllist, GetCaster(), 400.0f);
-                        uint8 count = 1;//GetCaster()->GetMap()->Is25ManRaid() ? 7 : 4;
+                        uint8 count = GetCaster()->GetMap()->Is25ManRaid() ? 7 : 4;
                         if (!pllist.empty())
                         {
                             for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
