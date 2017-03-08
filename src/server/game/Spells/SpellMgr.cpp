@@ -5849,6 +5849,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 146999: //Growing Power
                     spellInfo->Effects[0]->Amplitude = 1000;
+                    spellInfo->Effects[0]->ApplyAuraName = SPELL_AURA_PERIODIC_DUMMY;
                     break;
 
                 //World Bosses

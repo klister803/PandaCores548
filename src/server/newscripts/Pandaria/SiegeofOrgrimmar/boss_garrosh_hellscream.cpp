@@ -412,7 +412,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     phase = PHASE_ONE;
                     realmnum = 0;
                     events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 4000);
-                    events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
+                    //events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
                     events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
                     events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 18000);
                     events.ScheduleEvent(EVENT_SUMMON_WOLF_RIDER, 30000);
@@ -900,14 +900,15 @@ class boss_garrosh_hellscream : public CreatureScript
                     case EVENT_INTRO_PHASE_FOUR:
                     {
                         checkevade = 0;
+                        uint32 hppct = me->CountPctFromMaxHealth(60);
+                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                        me->SetHealth(hppct);
+                        me->SetPower(POWER_ENERGY, 0);
                         std::list<Player*>pllist;
                         GetPlayerListInGrid(pllist, me, 150.0f);
                         if (!pllist.empty())
                             for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                                 (*itr)->NearTeleportTo(lastpltppos.GetPositionX(), lastpltppos.GetPositionY(), lastpltppos.GetPositionZ(), lastpltppos.GetOrientation());
-                        me->SetPower(POWER_ENERGY, 0);
-                        uint32 hppct = me->CountPctFromMaxHealth(60);
-                        me->SetHealth(hppct);
                         me->NearTeleportTo(lastgtppos.GetPositionX(), lastgtppos.GetPositionY(), lastgtppos.GetPositionZ(), lastgtppos.GetOrientation());
                         events.ScheduleEvent(EVENT_PHASE_FOUR, 10000);
                     }
@@ -915,6 +916,8 @@ class boss_garrosh_hellscream : public CreatureScript
                     case EVENT_PHASE_FOUR:
                     {
                         phase = PHASE_FOUR;
+                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                        me->SetReactState(REACT_AGGRESSIVE);
                         me->ReAttackWithZone();
                         DoCast(me, SPELL_GARROSH_ENERGY_4, true);
                         events.ScheduleEvent(EVENT_MALICE, 30000);
@@ -2570,15 +2573,18 @@ public:
             {
                 if (GetCaster()->GetPower(POWER_ENERGY) == 99)
                 {
-                    GetCaster()->SetPower(POWER_ENERGY, 0);
+                    GetCaster()->SetPower(POWER_ENERGY, 100);
                     GetCaster()->CastSpell(GetCaster(), SPELL_MANIFEST_RAGE);
+                    GetCaster()->SetPower(POWER_ENERGY, 0);
                 }
+                else if (GetCaster()->GetPower(POWER_ENERGY) < 99)
+                    GetCaster()->SetPower(POWER_ENERGY, GetCaster()->GetPower(POWER_ENERGY) + 1);
             }
         }
 
         void Register()
         {
-            OnEffectPeriodic += AuraEffectPeriodicFn(spell_growing_power_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_ENERGIZE);
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_growing_power_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
         }
     };
 
