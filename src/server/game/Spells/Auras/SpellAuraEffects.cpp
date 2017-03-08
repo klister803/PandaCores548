@@ -7674,6 +7674,7 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
     SpellInfo const* triggeredSpellInfo = sSpellMgr->GetSpellInfo(triggerSpellId);
     SpellInfo const* auraSpellInfo = GetSpellInfo();
     uint32 auraId = auraSpellInfo->Id;
+    uint64 originalCaster = caster->GetGUID();
 
     // specific code for cases with no trigger spell provided in field
     if (triggeredSpellInfo == NULL)
@@ -7874,6 +7875,13 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
         // Spell exist but require custom code
         switch (auraId)
         {
+            case 123999:
+            {
+                if (Unit* owner = caster->GetOwner())
+                    originalCaster = owner->GetGUID();
+
+                break;
+            }
             case 123011: //Tsulong - Terrorize
                 target->CastSpell(target, triggerSpellId, true);
                 return;
@@ -8070,14 +8078,14 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
             {
                 SpellCastResult checkResult = triggeredSpellInfo->CheckExplicitTarget(triggerCaster, target);
                 if (checkResult == SPELL_CAST_OK)
-                    triggerCaster->CastSpell(target, triggeredSpellInfo, true, NULL, this);
+                    triggerCaster->CastSpell(target, triggeredSpellInfo, true, NULL, this, originalCaster);
                 else if (Unit* _target = (triggerCaster->ToPlayer() ? triggerCaster->ToPlayer()->GetSelectedUnit() : triggerCaster->getVictim()))
                 {
                     SpellCastResult checkResult = triggeredSpellInfo->CheckExplicitTarget(triggerCaster, _target);
                     if (checkResult == SPELL_CAST_OK)
-                        triggerCaster->CastSpell(_target, triggeredSpellInfo, true, NULL, this);
+                        triggerCaster->CastSpell(_target, triggeredSpellInfo, true, NULL, this, originalCaster);
                     else
-                        triggerCaster->CastSpell(triggerCaster, triggeredSpellInfo, true, NULL, this);
+                        triggerCaster->CastSpell(triggerCaster, triggeredSpellInfo, true, NULL, this, originalCaster);
                 }
             }
         }

@@ -424,6 +424,8 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             damage /= count;                    // divide to all targets
         }
 
+        Unit* _originalCaster = m_originalCaster;
+
         switch (m_spellInfo->SpellFamilyName)
         {
             case SPELLFAMILY_GENERIC:
@@ -787,6 +789,9 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                     case 121253: // Keg Smash
                         damage = CalculateMonkSpellDamage(_caster, 8.989f, 0.714f, 10);
                         break;
+                    case 123996: // Crackling Tiger Lightning
+                        _originalCaster = m_caster;
+                        break;
                     default:
                         break;
                 }
@@ -823,9 +828,9 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             }
         }
 
-        if (m_originalCaster && damage > 0)
+        if (_originalCaster && damage > 0)
         {
-            damage = m_originalCaster->SpellDamageBonusDone(unitTarget, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE, effIndex);
+            damage = _originalCaster->SpellDamageBonusDone(unitTarget, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE, effIndex);
         }
 
         m_damage += damage;
