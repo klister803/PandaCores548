@@ -900,9 +900,8 @@ class boss_garrosh_hellscream : public CreatureScript
                     case EVENT_INTRO_PHASE_FOUR:
                     {
                         checkevade = 0;
-                        uint32 hppct = me->CountPctFromMaxHealth(60);
+                        me->ModifyHealth(int32(me->CountPctFromMaxHealth(60)));
                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                        me->SetHealth(hppct);
                         me->SetPower(POWER_ENERGY, 0);
                         std::list<Player*>pllist;
                         GetPlayerListInGrid(pllist, me, 150.0f);
@@ -2469,7 +2468,7 @@ public:
                         std::list<Player*> pllist;
                         pllist.clear();
                         GetPlayerListInGrid(pllist, GetCaster(), 400.0f);
-                        uint8 count = GetCaster()->GetMap()->Is25ManRaid() ? 7 : 4;
+                        uint8 count = 1;//GetCaster()->GetMap()->Is25ManRaid() ? 7 : 4;
                         if (!pllist.empty())
                         {
                             if (aurEff->GetTickNumber() == 1)
@@ -2521,7 +2520,7 @@ public:
                         std::list<Player*> pllist;
                         pllist.clear();
                         GetPlayerListInGrid(pllist, GetCaster(), 400.0f);
-                        uint8 count = GetCaster()->GetMap()->Is25ManRaid() ? 7 : 4;
+                        uint8 count = 1;//GetCaster()->GetMap()->Is25ManRaid() ? 7 : 4;
                         if (!pllist.empty())
                         {
                             for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
@@ -2571,14 +2570,14 @@ public:
         {
             if (GetCaster() && GetCaster()->ToCreature())
             {
-                if (GetCaster()->GetPower(POWER_ENERGY) == 99)
-                {
-                    GetCaster()->SetPower(POWER_ENERGY, 100);
-                    GetCaster()->CastSpell(GetCaster(), SPELL_MANIFEST_RAGE);
-                    GetCaster()->SetPower(POWER_ENERGY, 0);
-                }
-                else if (GetCaster()->GetPower(POWER_ENERGY) < 99)
+                if (GetCaster()->GetPower(POWER_ENERGY) <= 99)
                     GetCaster()->SetPower(POWER_ENERGY, GetCaster()->GetPower(POWER_ENERGY) + 1);
+
+                if (GetCaster()->GetPower(POWER_ENERGY) == 100)
+                {
+                    GetCaster()->SetPower(POWER_ENERGY, 0);
+                    GetCaster()->CastSpell(GetCaster(), SPELL_MANIFEST_RAGE);
+                }
             }
         }
 
