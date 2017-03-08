@@ -1903,8 +1903,9 @@ class spell_mage_ring_of_frost_tick : public SpellScriptLoader
 
             void OnTick(AuraEffect const* aurEff)
             {
-                if (aurEff->GetTickNumber() < 15)
-                    return;
+                if (hasInstantCast)
+                    if (aurEff->GetTickNumber() < 15)
+                        return;
 
                 PreventDefaultAction();
                 if (Unit* caster = GetCaster())
@@ -1924,10 +1925,22 @@ class spell_mage_ring_of_frost_tick : public SpellScriptLoader
                 }
             }
 
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                hasInstantCast = true;
+
+                if (Unit* caster = GetCaster())
+                    if (Spell* _spell = caster->GetCurrentSpell(CURRENT_GENERIC_SPELL))
+                        if (_spell->GetSpellInfo()->Id == 113724)
+                            hasInstantCast = false;
+            }
+
             float x, y, z;
             bool find;
+            bool hasInstantCast;
             void Register()
             {
+                OnEffectApply += AuraEffectApplyFn(spell_mage_ring_of_frost_tick_AuraScript::OnApply, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_mage_ring_of_frost_tick_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
             }
         };
