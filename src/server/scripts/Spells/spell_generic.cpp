@@ -92,8 +92,8 @@ class spell_gen_battle_fatigue : public SpellScriptLoader
 
             void AfterApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
-                if (Unit* caster = GetUnitOwner())
-                    if (Player* plr = caster->ToPlayer())
+                if (Unit* owner = GetUnitOwner())
+                    if (Player* plr = owner->GetCharmerOrOwnerPlayerOrPlayerItself())
                         if (plr->InArena() || plr->InRBG())
                             if (Aura* aura = aurEff->GetBase())
                                 aura->SetDuration(7200000);

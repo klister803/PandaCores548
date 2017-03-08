@@ -6914,7 +6914,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 }
                 case 134732: // Battle Fatigue
                 {
-                    if (Player* plr = ToPlayer())
+                    if (Player* plr = GetCharmerOrOwnerPlayerOrPlayerItself())
                         if ((plr->InArena() || plr->InRBG()) && HasAura(134735))
                             return false;
 

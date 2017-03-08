@@ -1,0 +1,1 @@
+INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `hastalent`, `actiontype`, `comment`) VALUES ('115043', '134732', '-134732', '5', 'Battle Fatigue');

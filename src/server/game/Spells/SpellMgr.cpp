@@ -3873,6 +3873,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 134732: // Battle Fatigue
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_CANT_STACK_WITH_ITSELF;
+                    break;
                 case 131078: // Glyph of Icy Veins
                     spellInfo->Effects[EFFECT_0]->SpellClassMask[3] |= 1376;
                     break;
