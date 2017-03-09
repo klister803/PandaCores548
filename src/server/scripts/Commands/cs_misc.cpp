@@ -992,17 +992,33 @@ public:
         Player* target = handler->getSelectedPlayer();
         if (!target)
         {
-            handler->SendSysMessage(LANG_PLAYER_NOT_FOUND);
-            handler->SetSentErrorMessage(true);
-            return false;
+            if (WorldSession* _session = handler->GetSession())
+                target = _session->GetPlayer();
+
+            if (!target)
+            {
+                handler->SendSysMessage(LANG_PLAYER_NOT_FOUND);
+                handler->SetSentErrorMessage(true);
+                return false;
+            }
         }
 
         std::string nameLink = handler->GetNameLink(target);
+        std::string argstr = args;
 
         if (!*args)
         {
             target->RemoveAllSpellCooldown();
             handler->PSendSysMessage(LANG_REMOVEALL_COOLDOWN, nameLink.c_str());
+        }
+        else if (argstr == "s") // self
+        {
+            if (WorldSession* _session = handler->GetSession())
+                if (Player* plr = _session->GetPlayer())
+                {
+                    plr->RemoveAllSpellCooldown();
+                    handler->PSendSysMessage(LANG_REMOVEALL_COOLDOWN, "self");
+                }
         }
         else
         {
