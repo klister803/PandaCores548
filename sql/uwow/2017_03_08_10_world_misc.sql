@@ -12,3 +12,9 @@ INSERT INTO `spell_trigger` (`spell_id`, `spell_trigger`, `option`, `effectmask`
 INSERT INTO `spell_trigger` (`spell_id`, `spell_trigger`, `option`, `effectmask`, `chance`, `check_spell_id`, `comment`) VALUES ('77222', '45284', '20', '1', '101', '403', 'MasteryElementalOverload');
 INSERT INTO `spell_trigger` (`spell_id`, `spell_trigger`, `option`, `effectmask`, `chance`, `check_spell_id`, `comment`) VALUES ('77222', '45297', '20', '1', '101', '421', 'MasteryElementalOverload');
 INSERT INTO `spell_trigger` (`spell_id`, `spell_trigger`, `option`, `effectmask`, `chance`, `check_spell_id`, `comment`) VALUES ('77222', '120588', '20', '1', '101', '117014', 'MasteryElementalOverload');
+
+INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `comment`) VALUES ('117014', '118515', 'Elemental Blast');
+INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `comment`) VALUES ('117014', '118517', 'Elemental Blast');
+
+INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `comment`) VALUES ('120588', '118515', 'Elemental Blast');
+INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `comment`) VALUES ('120588', '118517', 'Elemental Blast');

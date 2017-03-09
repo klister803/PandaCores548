@@ -868,23 +868,9 @@ class spell_sha_elemental_blast : public SpellScriptLoader
                     }
             }
 
-            void HandleAfterCast()
-            {
-                if (Unit* caster = GetCaster())
-                    if (Player* _player = caster->ToPlayer())
-                    {
-                        if (Unit* target = GetExplTargetUnit())
-                        {
-                            _player->CastSpell(target, SPELL_SHA_ELEMENTAL_BLAST_FROST_VISUAL, true);
-                            _player->CastSpell(target, SPELL_SHA_ELEMENTAL_BLAST_NATURE_VISUAL, true);
-                        }
-                    }
-            }
-
             void Register()
             {
                 OnCast += SpellCastFn(spell_sha_elemental_blast_SpellScript::HandleOnCast);
-                AfterCast += SpellCastFn(spell_sha_elemental_blast_SpellScript::HandleAfterCast);
             }
         };
 
