@@ -186,8 +186,9 @@ enum sActions
     ACTION_INTRO_PHASE_THREE         = 4,
     ACTION_PHASE_THREE               = 5,
     ACTION_INTRO_PHASE_FOUR          = 6,
-    ACTION_CHANGE_TARGET             = 7,
-    ACTION_BOMBARTMENT               = 8,
+    ACTION_PHASE_FOUR                = 7,
+    ACTION_CHANGE_TARGET             = 8,
+    ACTION_BOMBARTMENT               = 9,
 };
 
 Position ironstarspawnpos[2] =
@@ -348,7 +349,6 @@ class boss_garrosh_hellscream : public CreatureScript
                 me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
             }
             InstanceScript* instance;
-            bool phasetwo;
             uint32 realmofyshaarjtimer;
             uint32 updatepower;
             uint32 checkevade;
@@ -356,30 +356,41 @@ class boss_garrosh_hellscream : public CreatureScript
             uint32 lastbombartmenttimer;
             uint8 bombartmentnum;
             uint8 realmnum;
+            bool phasetwo;
             Phase phase;
 
             void Reset()
             {
                 phasetwo = false;
                 checkevade = 0;
-                lastphaseready = 0;
                 updatepower = 0;
-                lastbombartmenttimer = 55000;
                 bombartmentnum = 0;
+                lastphaseready = 0;
                 realmofyshaarjtimer = 0;
+                lastbombartmenttimer = 55000;
                 me->RemoveAurasDueToSpell(SPELL_GARROSH_ENERGY_4);
                 me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 100);
                 me->SetPower(POWER_ENERGY, 0);
-                if (me->ToTempSummon()) //Realm of Yshaarj
-                {
-                    updatepower = 1500;
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
-                    me->SetReactState(REACT_PASSIVE);
-                    DoCast(me, SPELL_YSHAARJ_PROTECTION);
+                if (me->ToTempSummon())
+                {       //StormWind (Last phase Heroic) spawn   
+                    if (me->GetMap()->GetAreaId(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()) == 6816)
+                    {
+                        me->SetReactState(REACT_PASSIVE);
+                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                        me->AddAura(SPELL_PHASE_TWO_TRANSFORM, me);
+                        me->AddAura(SPELL_PHASE_THREE_TRANSFORM, me);
+                    }
+                    else
+                    {   //Realm of Yshaarj spawn
+                        updatepower = 1500;
+                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
+                        me->SetReactState(REACT_PASSIVE);
+                        DoCast(me, SPELL_YSHAARJ_PROTECTION);
+                    }
                 }
                 else
-                {                       //Main
+                {       //Main Garrosh
                     _Reset();
                     for (uint8 n = 0; n < 4; n++)
                         me->RemoveAurasDueToSpell(transformvisual[n]);
@@ -423,14 +434,16 @@ class boss_garrosh_hellscream : public CreatureScript
             void EnterEvadeMode()
             {
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                if (me->GetMap()->GetAreaId(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()) == 6816)
+                ScriptedAI::EnterEvadeMode();
+            }
+
+            void JustReachedHome()
+            {
+                if (!me->ToTempSummon())
                 {
-                    me->SetAttackStop(true);
-                    me->SetReactState(REACT_PASSIVE);
-                    me->NearTeleportTo(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY(), me->GetHomePosition().GetPositionZ(), me->GetHomePosition().GetOrientation());
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                    me->SetReactState(REACT_DEFENSIVE);
                 }
-                else
-                    ScriptedAI::EnterEvadeMode();
             }
 
             void KilledUnit(Unit* unit)
@@ -537,6 +550,9 @@ class boss_garrosh_hellscream : public CreatureScript
                     me->SetAttackStop(true);
                     events.ScheduleEvent(EVENT_INTRO_PHASE_FOUR, 20000);
                     break;
+                case ACTION_PHASE_FOUR:
+                    events.ScheduleEvent(EVENT_PHASE_FOUR, 10000);
+                    break;
                 }
             }
 
@@ -590,15 +606,6 @@ class boss_garrosh_hellscream : public CreatureScript
                 if (Creature* stalker = me->FindNearestCreature(NPC_HEART_OF_YSHAARJ, 80.0f, true))
                     return true;
                 return false;
-            }
-
-            void JustReachedHome()
-            {
-                if (!me->ToTempSummon())
-                {
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                    me->SetReactState(REACT_DEFENSIVE);
-                }
             }
 
             void UpdateAI(uint32 diff)
@@ -903,26 +910,31 @@ class boss_garrosh_hellscream : public CreatureScript
                         me->ModifyHealth(int32(me->CountPctFromMaxHealth(60)));
                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                         me->SetPower(POWER_ENERGY, 0);
-                        std::list<Player*>pllist;
-                        GetPlayerListInGrid(pllist, me, 150.0f);
-                        if (!pllist.empty())
-                            for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
-                                (*itr)->NearTeleportTo(lastpltppos.GetPositionX(), lastpltppos.GetPositionY(), lastpltppos.GetPositionZ(), lastpltppos.GetOrientation());
-                        me->NearTeleportTo(lastgtppos.GetPositionX(), lastgtppos.GetPositionY(), lastgtppos.GetPositionZ(), lastgtppos.GetOrientation());
-                        events.ScheduleEvent(EVENT_PHASE_FOUR, 10000);
+                        instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+                        uint32 hp = me->GetHealth();
+                        if (Creature* stormwindgarrosh = me->SummonCreature(NPC_GARROSH, lastgtppos.GetPositionX(), lastgtppos.GetPositionY(), lastgtppos.GetPositionZ(), lastgtppos.GetOrientation()))
+                        {
+                            stormwindgarrosh->SetHealth(hp);
+                            std::list<Player*>pllist;
+                            GetPlayerListInGrid(pllist, me, 150.0f);
+                            if (!pllist.empty())
+                                for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                                    (*itr)->NearTeleportTo(lastpltppos.GetPositionX(), lastpltppos.GetPositionY(), lastpltppos.GetPositionZ(), lastpltppos.GetOrientation());
+                            instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, stormwindgarrosh);
+                            stormwindgarrosh->AI()->DoAction(ACTION_PHASE_FOUR);
+                        }
+                        break;
                     }
-                    break;
                     case EVENT_PHASE_FOUR:
                     {
                         phase = PHASE_FOUR;
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                        me->SetReactState(REACT_AGGRESSIVE);
-                        me->ReAttackWithZone();
                         DoCast(me, SPELL_GARROSH_ENERGY_4, true);
+                        me->ReAttackWithZone();
                         events.ScheduleEvent(EVENT_MALICE, 30000);
                         events.ScheduleEvent(EVENT_BOMBARTMENT, lastbombartmenttimer);
+                        break;
                     }
-                    break;
                     case EVENT_MALICE:
                     {
                         std::list<Player*> pllist;
@@ -940,8 +952,8 @@ class boss_garrosh_hellscream : public CreatureScript
                             }
                         }
                         events.ScheduleEvent(EVENT_MALICE, 40000);
+                        break;
                     }
-                    break;
                     case EVENT_BOMBARTMENT:
                         if (Creature* kg = me->GetCreature(*me, instance->GetData64(NPC_KORKRON_GUNSHIP)))
                             kg->AI()->DoAction(ACTION_BOMBARTMENT);
@@ -955,6 +967,8 @@ class boss_garrosh_hellscream : public CreatureScript
                     }
                 }
                 if (!me->ToTempSummon())
+                    DoMeleeAttackIfReady();
+                else if (me->HasAura(SPELL_GARROSH_ENERGY_4))
                     DoMeleeAttackIfReady();
             }
         };
