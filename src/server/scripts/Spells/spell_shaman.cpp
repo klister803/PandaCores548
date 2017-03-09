@@ -662,74 +662,6 @@ class spell_sha_unleash_elements : public SpellScriptLoader
         }
 };
 
-// Called by Lightning Bolt - 403 and Chain Lightning - 421
-// Lightning Bolt (Mastery) - 45284 and Chain Lightning - 45297
-// Rolling Thunder - 88764
-class spell_sha_rolling_thunder : public SpellScriptLoader
-{
-    public:
-        spell_sha_rolling_thunder() : SpellScriptLoader("spell_sha_rolling_thunder") { }
-
-        class spell_sha_rolling_thunder_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_sha_rolling_thunder_SpellScript)
-
-            bool Validate(SpellInfo const * /*SpellInfo*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(403) || !sSpellMgr->GetSpellInfo(421))
-                    return false;
-                return true;
-            }
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        if (roll_chance_i(60) && _player->HasAura(88764))
-                        {
-                            if (Aura* lightningShield = _player->GetAura(324))
-                            {
-                                _player->CastSpell(_player, SPELL_SHA_ROLLING_THUNDER_ENERGIZE, true);
-
-                                uint8 lsCharges = lightningShield->GetCharges();
-
-                                if (lsCharges < 6)
-                                {
-                                    uint8 chargesBonus = _player->HasAura(SPELL_SHA_ITEM_T14_4P) ? 2 : 1;
-                                    lightningShield->SetCharges(lsCharges + chargesBonus);
-                                    lightningShield->RefreshDuration();
-                                }
-                                else if (lsCharges < 7)
-                                {
-                                    lightningShield->SetCharges(lsCharges + 1);
-                                    lightningShield->RefreshDuration();
-                                }
-
-                                // refresh to handle Fulmination visual
-                                lsCharges = lightningShield->GetCharges();
-
-                                if (lsCharges >= 7 && _player->HasAura(SPELL_SHA_FULMINATION))
-                                    _player->CastSpell(_player, SPELL_SHA_FULMINATION_INFO, true);
-                            }
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_sha_rolling_thunder_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript *GetSpellScript() const
-        {
-            return new spell_sha_rolling_thunder_SpellScript();
-        }
-};
-
 // 88766 Fulmination handled in 8042 Earth Shock
 class spell_sha_fulmination : public SpellScriptLoader
 {
@@ -1891,7 +1823,6 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_mana_tide();
     new spell_sha_fire_nova();
     new spell_sha_unleash_elements();
-    new spell_sha_rolling_thunder();
     new spell_sha_fulmination();
     new spell_sha_lava_surge();
     new spell_sha_elemental_blast();

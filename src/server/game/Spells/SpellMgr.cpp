@@ -5020,7 +5020,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 136769: //Horridon charge
                 case 53260:  // Cobra Strikes trigger
-                case 88764:  // Rolling Thunder
                 case 144278: //Generate rage
                 case 136991: //Bitting cold tr ef 
                 case 144766: //Detonation sequence

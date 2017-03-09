@@ -10258,6 +10258,32 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        case 88764: // Rolling Thunder
+        {
+            if (Aura* lightningShield = GetAura(324))
+            {
+                uint8 lsCharges = lightningShield->GetCharges();
+
+                if (lsCharges < 6)
+                {
+                    uint8 chargesBonus = HasAura(123124) ? 2 : 1;
+                    lightningShield->SetCharges(lsCharges + chargesBonus);
+                    lightningShield->RefreshDuration();
+                }
+                else if (lsCharges < 7)
+                {
+                    lightningShield->SetCharges(lsCharges + 1);
+                    lightningShield->RefreshDuration();
+                }
+
+                // refresh to handle Fulmination visual
+                lsCharges = lightningShield->GetCharges();
+
+                if (lsCharges >= 7 && HasAura(88766))
+                    CastSpell(this, 95774, true);
+            }
+            break;
+        }
         case 144671: // Item - Hunter T16 BM 4P Player Driver
         {
             if (Player* plr = ToPlayer())
