@@ -3873,6 +3873,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 45297: // Chain Lightning
+                    spellInfo->MaxLevel = 0;
+                    break;
                 case 134732: // Battle Fatigue
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_CANT_STACK_WITH_ITSELF;
                     break;
