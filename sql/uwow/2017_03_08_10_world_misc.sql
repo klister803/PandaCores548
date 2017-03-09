@@ -6,7 +6,7 @@ DELETE FROM `spell_script_names` WHERE (`spell_id`='403') AND (`ScriptName`='spe
 DELETE FROM `spell_script_names` WHERE (`spell_id`='421') AND (`ScriptName`='spell_mastery_elemental_overload');
 
 DELETE FROM `spell_proc_event` WHERE `entry` IN (77222);
-INSERT INTO `spell_proc_event` VALUES (77222, 0, 0, 1+2, 4096, 0, 4, 0, 0, 0, 100, 0, 7);
+INSERT INTO `spell_proc_event` VALUES (77222, 0, 0, 1+2, 4096+4, 0, 4, 0, 0, 0, 100, 0, 7);
 
 INSERT INTO `spell_trigger` (`spell_id`, `spell_trigger`, `option`, `effectmask`, `chance`, `check_spell_id`, `comment`) VALUES ('77222', '77451', '20', '1', '101', '51505', 'MasteryElementalOverload');
 INSERT INTO `spell_trigger` (`spell_id`, `spell_trigger`, `option`, `effectmask`, `chance`, `check_spell_id`, `comment`) VALUES ('77222', '45284', '20', '1', '101', '403', 'MasteryElementalOverload');
@@ -18,3 +18,6 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `comment`) VA
 
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `comment`) VALUES ('120588', '118515', 'Elemental Blast');
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `comment`) VALUES ('120588', '118517', 'Elemental Blast');
+
+INSERT INTO `spell_trigger` (`spell_id`, `spell_trigger`, `option`, `effectmask`, `chance`, `check_spell_id`, `comment`) VALUES ('77222', '114738', '20', '1', '101', '114074', 'MasteryElementalOverload');
+
