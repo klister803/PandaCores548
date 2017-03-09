@@ -6422,6 +6422,12 @@ bool Unit::HandleProcTriggerSpellCopy(Unit* victim, DamageInfo* dmgInfoProc, Aur
 
     CastSpell(victim, procSpellId, true, castItem, triggeredByAura);
 
+    if (victim->GetTypeId() == TYPEID_PLAYER)
+        cooldown = 4.0;
+    else if (Unit* owner = victim->GetOwner())
+        if (owner->GetTypeId() == TYPEID_PLAYER)
+            cooldown = 4.0;
+
     if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER)
         ToPlayer()->AddSpellCooldown(triggeredByAuraId, 0, getPreciseTime() + cooldown);
 
