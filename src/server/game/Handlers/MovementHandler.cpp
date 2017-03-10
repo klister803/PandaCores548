@@ -258,17 +258,17 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)
     GetPlayer()->ProcessDelayedOperations();
 
     // maybe send SMSG_MOVE_UPDATE_TELEPORT?
-    if(Unit* mover = _player->m_mover)
-    {
-        WorldPacket data(SMSG_MOVE_UPDATE);
-        mover->m_movementInfo.moveTime = getMSTime();
-        mover->m_movementInfo.position.m_positionX = mover->GetPositionX();
-        mover->m_movementInfo.position.m_positionY = mover->GetPositionY();
-        mover->m_movementInfo.position.m_positionZ = mover->GetPositionZ();
-        WorldSession::WriteMovementInfo(data, &mover->m_movementInfo);
-        mover->SendMessageToSet(&data, _player);
-        mover->ClearUnitState(UNIT_STATE_JUMPING);
-    }
+//     if(Unit* mover = _player->m_mover)
+//     {
+//         WorldPacket data(SMSG_MOVE_UPDATE);
+//         mover->m_movementInfo.moveTime = getMSTime();
+//         mover->m_movementInfo.position.m_positionX = mover->GetPositionX();
+//         mover->m_movementInfo.position.m_positionY = mover->GetPositionY();
+//         mover->m_movementInfo.position.m_positionZ = mover->GetPositionZ();
+//         WorldSession::WriteMovementInfo(data, &mover->m_movementInfo);
+//         mover->SendMessageToSet(&data, _player);
+//         mover->ClearUnitState(UNIT_STATE_JUMPING);
+//     }
 }
 
 void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
