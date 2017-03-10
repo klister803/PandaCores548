@@ -4398,6 +4398,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 118000: // Dragon Roar
                 case 107029: // Impale Aspect
                 case 106548:
+                case 118459: // Beast Cleave
                 case 22482: // Blade Flurry
                 case 144331: //Iron Prison Dmg
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
