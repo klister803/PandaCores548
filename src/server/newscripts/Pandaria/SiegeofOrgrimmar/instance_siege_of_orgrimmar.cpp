@@ -1900,6 +1900,19 @@ public:
                     if (Creature* kdsmaunt = instance->GetCreature(!n ? bloodclawGuid : darkfangGuid))
                         kdsmaunt->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                 break;
+            case DATA_PREPARE_REALM_OF_YSHAARJ:
+                switch (data)
+                {
+                case 0:
+                    ResetBuffOnEmbodiedDoubts();
+                    break;
+                case 1:
+                    ResetBuffOnEmbodiedFears();
+                    break;
+                default:
+                    break;
+                }
+                break;
             }
         }
 

@@ -189,6 +189,8 @@ enum sActions
     ACTION_PHASE_FOUR                = 7,
     ACTION_CHANGE_TARGET             = 8,
     ACTION_BOMBARTMENT               = 9,
+    ACTION_GARROSH_HM_DONE           = 10,
+    ACTION_MANIFEST_RAGE             = 11,
 };
 
 Position ironstarspawnpos[2] =
@@ -333,6 +335,7 @@ enum CreatureText
     //Realm of Yshaarj
     SAY_ENTER_REALM_OF_YSHAARJ      = 13,//Вы окажетесь в ловушке навеки! 38055
     SAY_HM_LAST_PHASE               = 14,//(долго злобно смеется) Думаете вы победили? Слепцы. Я раскрою вам глаза! 38057
+    SAY_MANIFEST_RAGE               = 15,//Я уничтожу все что вам было дорого! 38050
 };
 
 class boss_garrosh_hellscream : public CreatureScript
@@ -372,12 +375,12 @@ class boss_garrosh_hellscream : public CreatureScript
                 me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 100);
                 me->SetPower(POWER_ENERGY, 0);
+                phase = PHASE_NULL;
                 if (me->ToTempSummon())
                 {       //StormWind (Last phase Heroic) spawn   
                     if (me->GetMap()->GetAreaId(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()) == 6816)
                     {
                         me->SetReactState(REACT_PASSIVE);
-                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                         me->AddAura(SPELL_PHASE_TWO_TRANSFORM, me);
                         me->AddAura(SPELL_PHASE_THREE_TRANSFORM, me);
                     }
@@ -391,12 +394,17 @@ class boss_garrosh_hellscream : public CreatureScript
                 }
                 else
                 {       //Main Garrosh
+                    if (me->GetMap()->IsHeroic() && instance->GetBossState(DATA_GARROSH) == DONE)
+                    {
+                        me->SetVisible(false);
+                        return;
+                    }
+
                     _Reset();
                     for (uint8 n = 0; n < 4; n++)
                         me->RemoveAurasDueToSpell(transformvisual[n]);
                     me->RemoveAllNegativeAurasFromBoss();
                     me->SetReactState(REACT_DEFENSIVE);
-                    phase = PHASE_NULL;
                     instance->SetData(DATA_RESET_REALM_OF_YSHAARJ, 0);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROSH_ENERGY);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_DESECRATED);
@@ -454,14 +462,14 @@ class boss_garrosh_hellscream : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32 &damage)
             {
-                //Garrosh in realm of yshaarj
+                    //Copy of Garrosh(Realm of Yshaarj or StormWind)
                 if (me->ToTempSummon())
                 {
-                    if (damage >= me->GetHealth())
+                    if (damage >= me->GetHealth() && phase != PHASE_FOUR)
                         damage = 0;
                 }
                 else
-                {
+                {   //Real Garrosh
                     if (damage >= me->GetHealth())
                     {
                         if (!me->GetMap()->IsHeroic())
@@ -470,8 +478,7 @@ class boss_garrosh_hellscream : public CreatureScript
                                 damage = 0;
                         }
                         else
-                            if (phase != PHASE_FOUR)
-                                damage = 0;
+                            damage = 0;
                     }
 
                     if (HealthBelowPct(10) && phase == PHASE_ONE)
@@ -553,6 +560,23 @@ class boss_garrosh_hellscream : public CreatureScript
                 case ACTION_PHASE_FOUR:
                     events.ScheduleEvent(EVENT_PHASE_FOUR, 10000);
                     break;
+                case ACTION_MANIFEST_RAGE:
+                    Talk(SAY_MANIFEST_RAGE, 0);
+                    DoCast(me, SPELL_MANIFEST_RAGE);
+                    break;
+                case ACTION_GARROSH_HM_DONE:
+                    for (uint8 n = 0; n < 4; n++)
+                        me->RemoveAurasDueToSpell(transformvisual[n]);
+                    if (!summons.empty())
+                    {
+                        summons.DespawnEntry(NPC_MANIFESTATION_OF_RAGE);
+                        summons.DespawnEntry(NPC_KORKRON_IRON_STAR_HM);
+                    }
+                    me->SetDisplayId(11686);
+                    me->SetVisible(false);
+                    me->SetLootRecipient(NULL);
+                    me->Kill(me);
+                    break;
                 }
             }
 
@@ -578,17 +602,25 @@ class boss_garrosh_hellscream : public CreatureScript
                 }
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(Unit* killer)
             {
-                Talk(SAY_DIE, 0);
-                _JustDied();
-                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TOUCH_OF_YSHAARJ);
-                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EM_TOUCH_OF_YSHAARJ);
-                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_DESECRATED);
-                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EM_GRIPPING_DESPAIR);
-                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EXPLOSIVE_DESPAIR_DOT);
-                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_IRON_STAR);
-                instance->SetData(DATA_PLAY_FINAL_MOVIE, 0);
+                if (killer != me)
+                {
+                    Talk(SAY_DIE, 0);
+                    _JustDied();
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TOUCH_OF_YSHAARJ);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EM_TOUCH_OF_YSHAARJ);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_DESECRATED);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EM_GRIPPING_DESPAIR);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EXPLOSIVE_DESPAIR_DOT);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_IRON_STAR);
+                    instance->SetData(DATA_PLAY_FINAL_MOVIE, 0);
+                }
+
+                //StormWind copy of Garrosh die, need destroy and obscure real Garrosh...
+                if (me->ToTempSummon() && me->GetMap()->GetAreaId(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()) == 6816)
+                    if (Creature* realgarrosh = me->GetCreature(*me, instance->GetData64(DATA_GARROSH)))
+                        realgarrosh->AI()->DoAction(ACTION_GARROSH_HM_DONE);
             }
 
             bool IfTargetHavePlayersInRange(Player* target, uint8 count, float radius)
@@ -728,8 +760,8 @@ class boss_garrosh_hellscream : public CreatureScript
                         if (Creature* wrider = me->SummonCreature(NPC_WOLF_RIDER, wspos[pos]))
                             wrider->AI()->DoZoneInCombat(wrider, 200.0f);
                         events.ScheduleEvent(EVENT_SUMMON_WOLF_RIDER, 50000);
+                        break;
                     }
-                    break;
                     case EVENT_SUMMON_ENGINEER:
                         if (!summons.empty())
                         {
@@ -795,7 +827,10 @@ class boss_garrosh_hellscream : public CreatureScript
                         instance->SetData(DATA_RESET_REALM_OF_YSHAARJ, 0); //for safe
                         uint8 mod;
                         if (me->GetMap()->IsHeroic())
+                        {
                             mod = realmnum;
+                            instance->SetData(DATA_PREPARE_REALM_OF_YSHAARJ, mod);
+                        }
                         else
                             mod = uint8(instance->GetData(DATA_GET_REALM_OF_YSHAARJ));
                         if (Creature* garroshrealm = me->SummonCreature(NPC_GARROSH, gspos[mod]))
@@ -839,8 +874,8 @@ class boss_garrosh_hellscream : public CreatureScript
                                         if (player->HasAura(SPELL_REALM_OF_YSHAARJ))
                                             player->RemoveAura(SPELL_REALM_OF_YSHAARJ, AURA_REMOVE_BY_EXPIRE);
                         events.ScheduleEvent(EVENT_PHASE_TWO, 3000);
+                        break;
                     }
-                    break;
                     //Phase Two
                     case EVENT_PHASE_TWO:
                         if (Creature* garroshrealm = me->GetCreature(*me, instance->GetData64(DATA_GARROSH_REALM)))
@@ -888,9 +923,9 @@ class boss_garrosh_hellscream : public CreatureScript
                                 }
                             }
                         }
+                        events.ScheduleEvent(EVENT_TOUCH_OF_YSHAARJ, 45000);
+                        break;
                     }
-                    events.ScheduleEvent(EVENT_TOUCH_OF_YSHAARJ, 45000);
-                    break;
                     case EVENT_GRIPPING_DESPAIR:
                         if (me->getVictim())
                             DoCastVictim(me->GetPower(POWER_ENERGY) == 100 ? SPELL_EM_GRIPPING_DESPAIR : SPELL_GRIPPING_DESPAIR);
@@ -911,6 +946,12 @@ class boss_garrosh_hellscream : public CreatureScript
                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                         me->SetPower(POWER_ENERGY, 0);
                         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+                        if (!summons.empty())
+                        {
+                            summons.DespawnEntry(NPC_MINION_OF_YSHAARJ);
+                            summons.DespawnEntry(NPC_DESECRATED_WEAPON);
+                            summons.DespawnEntry(NPC_EMPOWERED_DESECRATED_WEAPON);
+                        }
                         uint32 hp = me->GetHealth();
                         if (Creature* stormwindgarrosh = me->SummonCreature(NPC_GARROSH, lastgtppos.GetPositionX(), lastgtppos.GetPositionY(), lastgtppos.GetPositionZ(), lastgtppos.GetOrientation()))
                         {
@@ -920,7 +961,6 @@ class boss_garrosh_hellscream : public CreatureScript
                             if (!pllist.empty())
                                 for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
                                     (*itr)->NearTeleportTo(lastpltppos.GetPositionX(), lastpltppos.GetPositionY(), lastpltppos.GetPositionZ(), lastpltppos.GetOrientation());
-                            instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, stormwindgarrosh);
                             stormwindgarrosh->AI()->DoAction(ACTION_PHASE_FOUR);
                         }
                         break;
@@ -929,6 +969,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     {
                         phase = PHASE_FOUR;
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                        instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
                         DoCast(me, SPELL_GARROSH_ENERGY_4, true);
                         me->ReAttackWithZone();
                         events.ScheduleEvent(EVENT_MALICE, 30000);
@@ -991,7 +1032,6 @@ public:
         {
             instance = creature->GetInstanceScript();
         }
-
         InstanceScript* instance;
         EventMap events;
         bool firstengeneerdied;
@@ -2349,14 +2389,20 @@ public:
 
         void OnPeriodic(AuraEffect const*aurEff)
         {
-            if (GetCaster() && GetCaster()->ToCreature())
+            if (GetCaster())
             {
-                for (uint8 n = 0; n < 4; n++)
+                if (InstanceScript* instance = GetCaster()->GetInstanceScript())
                 {
-                    float x, y;
-                    GetPosInRadiusWithRandomOrientation(GetCaster(), float(urand(20, 40)), x, y);
-                    if (Creature* mof = GetCaster()->SummonCreature(NPC_MANIFESTATION_OF_RAGE, x, y, GetCaster()->GetPositionZ(), 0.0f, TEMPSUMMON_CORPSE_DESPAWN))
-                        mof->AI()->DoZoneInCombat(mof, 150.0f);
+                    if (Creature* realgarrosh = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(DATA_GARROSH)))
+                    {
+                        for (uint8 n = 0; n < 4; n++)
+                        {
+                            float x, y;
+                            GetPosInRadiusWithRandomOrientation(GetCaster(), float(urand(20, 40)), x, y);
+                            if (Creature* mof = realgarrosh->SummonCreature(NPC_MANIFESTATION_OF_RAGE, x, y, GetCaster()->GetPositionZ(), 0.0f, TEMPSUMMON_CORPSE_DESPAWN))
+                                mof->AI()->DoZoneInCombat(mof, 150.0f);
+                        }
+                    }
                 }
             }
         }
@@ -2590,7 +2636,7 @@ public:
                 if (GetCaster()->GetPower(POWER_ENERGY) == 100)
                 {
                     GetCaster()->SetPower(POWER_ENERGY, 0);
-                    GetCaster()->CastSpell(GetCaster(), SPELL_MANIFEST_RAGE);
+                    GetCaster()->ToCreature()->AI()->DoAction(ACTION_MANIFEST_RAGE);
                 }
             }
         }
