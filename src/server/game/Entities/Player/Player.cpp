@@ -30933,7 +30933,7 @@ void Player::CheckItemCapLevel(bool hasCap)
                 continue;
 
             // not need remove
-            if (!hasCap && m_items[i]->GetLevel() == proto->ItemLevel)
+            if (!hasCap && m_items[i]->GetLevel() >= proto->ItemLevel)
                 continue;
 
             if (m_items[i]->IsEquipped() && isAlive())
