@@ -7674,7 +7674,7 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
     SpellInfo const* triggeredSpellInfo = sSpellMgr->GetSpellInfo(triggerSpellId);
     SpellInfo const* auraSpellInfo = GetSpellInfo();
     uint32 auraId = auraSpellInfo->Id;
-    uint64 originalCaster = caster->GetGUID();
+    uint64 originalCaster = caster ? caster->GetGUID() : 0;
 
     // specific code for cases with no trigger spell provided in field
     if (triggeredSpellInfo == NULL)

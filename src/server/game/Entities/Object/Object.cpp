@@ -284,6 +284,11 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) c
         }
     }
 
+    if (!(flags & UPDATEFLAG_LIVING))
+        if (WorldObject const* worldObject = dynamic_cast<WorldObject const*>(this))
+            if (worldObject->m_movementInfo.transportGUID)
+                flags |= UPDATEFLAG_GO_TRANSPORT_POSITION;
+
     if (ToUnit() && ToUnit()->getVictim())
         flags |= UPDATEFLAG_HAS_TARGET;
 
