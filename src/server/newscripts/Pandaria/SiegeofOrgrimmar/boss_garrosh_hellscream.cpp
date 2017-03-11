@@ -94,6 +94,7 @@ enum eSpells
     SPELL_EMBODIED_DOUBT_HM          = 149347,
     //Minion of Yshaarj
     SPELL_EMPOWERED                  = 145050,
+    SPELL_EMPOWERED_HM               = 148714,
 
     //Realm of Yshaarj
     SPELL_GARROSH_ENERGY             = 145801,
@@ -332,7 +333,6 @@ enum CreatureText
     SAY_LAST_PHASE                  = 10,//Начнется правление Истинной Орды. Я видел это. Он показал мне горы черепов и реки крови. Мир... будет... моим! 38056
     SAY_KILL_PLAYER                 = 11,//Ничтожество! 38065
     SAY_DIE                         = 12,//Это не может... кончиться... так... Нет... я же видел... 38046
-    //Realm of Yshaarj
     SAY_ENTER_REALM_OF_YSHAARJ      = 13,//Вы окажетесь в ловушке навеки! 38055
     SAY_HM_LAST_PHASE               = 14,//(долго злобно смеется) Думаете вы победили? Слепцы. Я раскрою вам глаза! 38057
     SAY_MANIFEST_RAGE               = 15,//Я уничтожу все что вам было дорого! 38050
@@ -946,6 +946,7 @@ class boss_garrosh_hellscream : public CreatureScript
                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                         me->SetPower(POWER_ENERGY, 0);
                         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+                        instance->SetData(DATA_KILL_PLAYERS_IN_MIND_CONTROL, 0);
                         if (!summons.empty())
                         {
                             summons.DespawnEntry(NPC_MINION_OF_YSHAARJ);
@@ -1067,6 +1068,8 @@ public:
                 }
                 me->SetReactState(REACT_AGGRESSIVE);
                 DoCast(me, SPELL_EMPOWERED);
+                if (me->GetMap()->IsHeroic())
+                    DoCast(me, SPELL_EMPOWERED_HM, true);
                 break;
             case NPC_EMBODIED_DOUBT:
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
@@ -2433,25 +2436,26 @@ public:
         {
             if (GetCaster())
             {
-                uint8 mod = GetCaster()->GetMap()->Is25ManRaid() ? 5 : 2;
-                if (targets.size() < mod)
+                uint8 countmod = GetCaster()->GetMap()->Is25ManRaid() ? 5 : 2;
+                if (targets.size() < countmod)
                 {
-                    uint8 _mod = 5 * (mod - targets.size());
+                    float mod = 5 * (countmod - targets.size());
                     if (InstanceScript* instance = GetCaster()->GetInstanceScript())
                         if (Creature* garrosh = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(DATA_GARROSH)))
-                            GetCaster()->CastCustomSpell(SPELL_MALICIOUS_ENERGY, SPELLVALUE_BASE_POINT0, _mod, garrosh, true);
+                            GetCaster()->CastCustomSpell(SPELL_MALICIOUS_ENERGY, SPELLVALUE_BASE_POINT0, mod, garrosh, true);
                 }
-                else if (targets.size() > mod)
-                    targets.resize(mod);
+                else if (targets.size() > countmod)
+                    targets.resize(countmod);
+                else if (!targets.empty())
+                    if (InstanceScript* instance = GetCaster()->GetInstanceScript())
+                        instance->SetData(DATA_WIPE_PLAYERS, 0);
             }
         }
 
         void DealDamage()
         {
-            if (GetCaster() && GetHitUnit())
-                if (InstanceScript* instance = GetCaster()->GetInstanceScript())
-                    if (Creature* garrosh = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(DATA_GARROSH)))
-                        garrosh->CastSpell(GetHitUnit(), SPELL_MALICIOUS_BLAST, true);
+            if (GetHitUnit())
+                GetHitUnit()->CastSpell(GetHitUnit(), SPELL_MALICIOUS_BLAST, true);
         }
 
         void Register()

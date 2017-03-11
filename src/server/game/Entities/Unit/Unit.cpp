@@ -6628,6 +6628,18 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         {
             switch (dummySpell->Id)
             {
+                case 148714: //Empowered HM - Minion of Yshaarj - Garrosh(Heroic)[SO]
+                {
+                    if (GetPower(POWER_ENERGY) <= 90)
+                        SetPower(POWER_ENERGY, GetPower(POWER_ENERGY) + 10);
+
+                    if (GetPower(POWER_ENERGY) == 100)
+                    {
+                        SetPower(POWER_ENERGY, 0);
+                        CastSpell(this, 149536, true);
+                    }
+                    return true;
+                }
                 case 144358: //Wounded Pride - Sha of Pride[SO]
                     if (Player* pl = ToPlayer())
                     {

@@ -1913,6 +1913,12 @@ public:
                     break;
                 }
                 break;
+            case DATA_WIPE_PLAYERS:
+                WipePlayers();
+                break;
+            case DATA_KILL_PLAYERS_IN_MIND_CONTROL:
+                KillPlayersInMindControl();
+                break;
             }
         }
 
@@ -1969,6 +1975,16 @@ public:
                     if (klaxxi->isAlive())
                         return false;
             return true;
+        }
+
+        void KillPlayersInMindControl()
+        {
+            Map::PlayerList const& PlayerList = instance->GetPlayers();
+            if (!PlayerList.isEmpty())
+                for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+                    if (Player* player = Itr->getSource())
+                        if (player->isAlive() && (player->HasAura(SPELL_TOUCH_OF_YSHAARJ) || player->HasAura(SPELL_EM_TOUCH_OF_YSHAARJ)))
+                            player->Kill(player, true);
         }
 
         void SomeActionsAfterGarroshEvade()
@@ -2237,6 +2253,8 @@ public:
                     }
                 case NPC_KORKRON_GUNSHIP:
                     return korkrongunshipGuid;
+                case DATA_GARROSH_STORMWIND:
+                    return garroshstormwindGuid;
             }
             std::map<uint32, uint64>::iterator itr = easyGUIDconteiner.find(type);
             if (itr != easyGUIDconteiner.end())
@@ -2442,6 +2460,15 @@ public:
             }
 
             return true;
+        }
+
+        void WipePlayers()
+        {
+            Map::PlayerList const &players = instance->GetPlayers();
+            for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+                if (Player* pl = i->getSource())
+                    if (pl->isAlive())
+                        pl->Kill(pl, true);
         }
 
         std::string GetSaveData()
