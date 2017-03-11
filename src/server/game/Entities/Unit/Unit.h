@@ -371,6 +371,8 @@ class Vehicle;
 class VehicleJoinEvent;
 class TransportBase;
 
+typedef std::lock_guard<std::recursive_mutex> RecursiveGuard;
+
 typedef std::list<Unit*> UnitList;
 typedef std::list< std::pair<Aura*, uint8> > DispelChargesList;
 
@@ -2669,6 +2671,8 @@ class Unit : public WorldObject
         AuraStateAurasMap m_auraStateAuras;        // Used for improve performance of aura state checks on aura apply/remove
         uint32 m_interruptMask;
         AuraIdList _SoulSwapDOTList;
+
+        std::recursive_mutex m_aura_lock;
 
         float m_auraModifiersGroup[UNIT_MOD_END][MODIFIER_TYPE_END];
         float m_weaponDamage[MAX_ATTACK][2];

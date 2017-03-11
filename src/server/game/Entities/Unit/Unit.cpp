@@ -3333,6 +3333,7 @@ float Unit::GetUnitCriticalChance(WeaponAttackType attackType, const Unit* victi
 
 void Unit::_DeleteRemovedAuras()
 {
+    RecursiveGuard _aura_lock(m_aura_lock);
     while (!m_removedAuras.empty())
     {
         delete m_removedAuras.front();
@@ -3344,6 +3345,8 @@ void Unit::_UpdateSpells(uint32 time)
 {
     if (!IsInWorld())
         return;
+
+    RecursiveGuard _aura_lock(m_aura_lock);
 
     if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL])
         _UpdateAutoRepeatSpell();
@@ -4084,6 +4087,7 @@ void Unit::_RegisterAuraEffect(AuraEffect* aurEff, bool apply)
 // All aura base removes should go threw this function!
 void Unit::RemoveOwnedAura(AuraMap::iterator &i, AuraRemoveMode removeMode)
 {
+    RecursiveGuard _aura_lock(m_aura_lock);
     Aura* aura = i->second;
     ASSERT(!aura->IsRemoved());
 
@@ -4445,6 +4449,8 @@ void Unit::RemoveAurasWithAttribute(uint32 flags)
 
 void Unit::RemoveNotOwnSingleTargetAuras(uint32 newPhase)
 {
+    RecursiveGuard _aura_lock(m_aura_lock);
+
     // single target auras from other casters
     for (AuraApplicationMap::iterator iter = m_appliedAuras.begin(); iter != m_appliedAuras.end();)
     {
@@ -4602,6 +4608,7 @@ void Unit::RemoveAreaAurasDueToLeaveWorld()
 
 void Unit::RemoveAllAuras()
 {
+    RecursiveGuard _aura_lock(m_aura_lock);
     // this may be a dead loop if some events on aura remove will continiously apply aura on remove
     // we want to have all auras removed, so use your brain when linking events
     /*while (!m_appliedAuras.empty() || !m_ownedAuras.empty())

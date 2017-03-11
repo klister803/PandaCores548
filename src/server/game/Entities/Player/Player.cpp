@@ -2707,6 +2707,9 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                     LeaveBattleground(false);                   // don't teleport to entry point
             }
 
+            sOutdoorPvPMgr->HandlePlayerLeaveZone(this, getCurrentUpdateZoneID());
+            sBattlefieldMgr->HandlePlayerLeaveZone(this, getCurrentUpdateZoneID());
+
             // remove arena spell coldowns/buffs now to also remove pet's cooldowns before it's temporarily unsummoned
             if (mEntry->IsBattleArena())
             {
