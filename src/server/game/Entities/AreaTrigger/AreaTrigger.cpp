@@ -99,6 +99,9 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
             _actionInfo[itr->id] = ActionInfo(&*itr);
     }
 
+    if (targetGuid && atInfo.HasAttached)
+        m_movementInfo.transportGUID = targetGuid;
+
     WorldObject::_Create(guidlow, HIGHGUID_AREATRIGGER, caster->GetPhaseMask());
     SetPhaseId(caster->GetPhaseId(), false);
 
