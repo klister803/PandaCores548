@@ -2143,6 +2143,12 @@ public:
 
     bool Execute(uint64 /*execTime*/, uint32 /*diff*/)
     {
+        if (!_caster || !_target)
+            return false;
+
+        if (!_caster->IsInWorld() || !_target->IsInWorld())
+            return false;
+
         _caster->CastSpell(_target, _spellId, TRIGGERED_FULL_MASK);
         return true;
     }
