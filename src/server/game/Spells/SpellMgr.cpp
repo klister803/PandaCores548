@@ -5854,6 +5854,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->Amplitude = 1000;
                     spellInfo->Effects[0]->ApplyAuraName = SPELL_AURA_PERIODIC_DUMMY;
                     break;
+                case 147235: //Malicious Blast
+                    spellInfo->Effects[1]->MiscValue = 32;
+                    break;
 
                 //World Bosses
                 //Sha of Anger
