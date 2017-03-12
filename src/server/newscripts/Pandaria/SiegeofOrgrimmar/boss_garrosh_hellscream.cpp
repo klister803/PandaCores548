@@ -381,6 +381,7 @@ class boss_garrosh_hellscream : public CreatureScript
                 {       //StormWind (Last phase Heroic) spawn   
                     if (me->GetMap()->GetAreaId(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()) == 6816)
                     {
+                        me->AddAura(SPELL_SUMMON_ADDS, me);
                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                         me->SetReactState(REACT_PASSIVE);
                         me->AddAura(SPELL_PHASE_TWO_TRANSFORM, me);
@@ -432,12 +433,12 @@ class boss_garrosh_hellscream : public CreatureScript
                     SpawnIronStar();
                     phase = PHASE_ONE;
                     realmnum = 0;
-                    events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 4000);
+                    //events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 4000);
                     //events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
-                    events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
-                    events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 18000);
-                    events.ScheduleEvent(EVENT_SUMMON_WOLF_RIDER, 30000);
-                    events.ScheduleEvent(EVENT_SUMMON_ENGINEER, 20000);
+                    //events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
+                    //events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 18000);
+                    //events.ScheduleEvent(EVENT_SUMMON_WOLF_RIDER, 30000);
+                    //events.ScheduleEvent(EVENT_SUMMON_ENGINEER, 20000);
                 }
             }
 
@@ -1236,7 +1237,7 @@ public:
                 //Embodied doubt
                 case EVENT_EMBODIED_DOUBT:
                     DoCast(me, SPELL_EMBODIED_DOUBT_HM);
-                    events.ScheduleEvent(EVENT_EMBODIED_DOUBT, 5000);
+                    events.ScheduleEvent(EVENT_EMBODIED_DOUBT, 4000);
                     break;
                 }
             }
@@ -1854,7 +1855,7 @@ public:
     }
 };
 
-//144798, 147173
+//144798
 class spell_exploding_iron_star : public SpellScriptLoader
 {
 public:
