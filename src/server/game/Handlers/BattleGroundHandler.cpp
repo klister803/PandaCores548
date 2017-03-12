@@ -33,6 +33,7 @@
 #include "DisableMgr.h"
 #include "Group.h"
 #include "Bracket.h"
+#include "LFG.h"
 
 void WorldSession::HandleBattlemasterHelloOpcode(WorldPacket & recvData)
 {
@@ -78,16 +79,17 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recvData)
     bool isPremade = false;
     Group* grp = NULL;
     IgnorMapInfo ignore;
+    uint8 role = lfg::PLAYER_ROLE_DAMAGE;
+    
     recvData >> ignore.map[0] >> ignore.map[1];
 
-    if (recvData.ReadBit())
-        instanceId = 8;
+    bool roleIsDamage = recvData.ReadBit();
     recvData.ReadGuidMask<2, 4, 0, 3, 7, 1>(guid);
     bool joinAsGroup = recvData.ReadBit();
     recvData.ReadGuidMask<5, 6>(guid);
     recvData.ReadGuidBytes<0, 1, 7, 2, 4, 6, 5, 3>(guid);
-    if (instanceId != 8)
-        recvData >> instanceId;
+    if (!roleIsDamage)
+        recvData >> role;
 
     bgTypeId_ = GUID_LOPART(guid);
 
@@ -116,12 +118,7 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recvData)
         return;
 
     // get bg instance or bg template if instance not found
-    Battleground* bg = NULL;
-    if (instanceId)
-        bg = sBattlegroundMgr->GetBattlegroundThroughClientInstance(instanceId, bgTypeId);
-
-    if (!bg)
-        bg = sBattlegroundMgr->GetBattlegroundTemplate(bgTypeId);
+    Battleground* bg = sBattlegroundMgr->GetBattlegroundTemplate(bgTypeId);
     if (!bg)
         return;
 
