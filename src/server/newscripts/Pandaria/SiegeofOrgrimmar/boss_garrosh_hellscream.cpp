@@ -1931,10 +1931,8 @@ public:
         void OnPeriodic(AuraEffect const* aurEff)
         {
             if (GetCaster() && GetCaster()->ToCreature())
-            {
                 if (Unit* target = GetCaster()->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
                     GetCaster()->CastSpell(target, SPELL_EM_WHIRLING_CORRUPTION_S, true);
-            }
         }
 
         void Register()
@@ -2442,11 +2440,6 @@ public:
             if (GetCaster())
             {
                 uint8 countmod = GetCaster()->GetMap()->Is25ManRaid() ? 5 : 2;
-                if (targets.empty())
-                {
-                    if (InstanceScript* instance = GetCaster()->GetInstanceScript())
-                        instance->SetData(DATA_WIPE_PLAYERS, 0);
-                }
                 if (targets.size() < countmod)
                 {
                     float mod = 5 * (countmod - targets.size());
@@ -2475,39 +2468,6 @@ public:
     SpellScript* GetSpellScript() const
     {
         return new spell_malice_dummy_SpellScript();
-    }
-};
-
-//147236
-class spell_malice_energy : public SpellScriptLoader
-{
-public:
-    spell_malice_energy() : SpellScriptLoader("spell_malice_energy") { }
-
-    class spell_malice_energy_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_malice_energy_SpellScript);
-
-        void HandleCast(SpellEffIndex effIndex)
-        {
-            if (GetHitUnit())
-            {
-                uint32 value = GetSpellInfo()->GetEffect(effIndex)->BasePoints;
-                uint32 mod = (value / 5) * 100000;
-                uint32 dmg = (urand(194998, 205000)) + mod;
-                GetHitUnit()->CastCustomSpell(SPELL_MALICIOUS_ENERGY_EXPLOSION, SPELLVALUE_BASE_POINT0, dmg, GetHitUnit(), true);
-            }
-        }
-
-        void Register()
-        {
-            OnEffectHitTarget += SpellEffectFn(spell_malice_energy_SpellScript::HandleCast, EFFECT_0, SPELL_EFFECT_ENERGIZE);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_malice_energy_SpellScript();
     }
 };
 
@@ -2725,7 +2685,6 @@ void AddSC_boss_garrosh_hellscream()
     new spell_crushing_fear();
     new spell_manifest_rage();
     new spell_malice_dummy();
-    new spell_malice_energy();
     new spell_fixate_iron_star();
     new spell_call_bombartment();
     new spell_growing_power();

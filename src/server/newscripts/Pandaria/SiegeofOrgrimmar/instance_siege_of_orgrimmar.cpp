@@ -1913,9 +1913,6 @@ public:
                     break;
                 }
                 break;
-            case DATA_WIPE_PLAYERS:
-                WipePlayers();
-                break;
             case DATA_KILL_PLAYERS_IN_MIND_CONTROL:
                 KillPlayersInMindControl();
                 break;
@@ -2460,15 +2457,6 @@ public:
             }
 
             return true;
-        }
-
-        void WipePlayers()
-        {
-            Map::PlayerList const &players = instance->GetPlayers();
-            for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
-                if (Player* pl = i->getSource())
-                    if (pl->isAlive())
-                        pl->Kill(pl, true);
         }
 
         std::string GetSaveData()
