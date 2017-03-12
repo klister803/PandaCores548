@@ -5844,7 +5844,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 147236: //Malicious Energy
                     spellInfo->Effects[0]->TargetA = 25;
-                    spellInfo->Effects[1]->TargetA = 25;
+                    spellInfo->Effects[1]->TriggerSpell = 0;
                     break;
                 case 147120: //Call Bombartment
                     spellInfo->Effects[0]->TriggerSpell = 0;

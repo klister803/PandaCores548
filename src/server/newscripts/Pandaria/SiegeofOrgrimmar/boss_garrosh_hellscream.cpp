@@ -50,6 +50,7 @@ enum eSpells
     SPELL_MALICE                     = 147209,
     SPELL_MALICIOUS_BLAST            = 147235,
     SPELL_MALICIOUS_ENERGY           = 147236,
+    SPELL_MALICIOUS_ENERGY_EXPLOSION = 147733,
     //Garrosh Special
     SPELL_TRANSITION_VISUAL_PHASE_2  = 144852,
     SPELL_TRANSITION_VISUAL_BASE     = 146756,
@@ -973,7 +974,7 @@ class boss_garrosh_hellscream : public CreatureScript
                         instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
                         DoCast(me, SPELL_GARROSH_ENERGY_4, true);
                         me->ReAttackWithZone();
-                        events.ScheduleEvent(EVENT_MALICE, 30000);
+                        events.ScheduleEvent(EVENT_MALICE, 14000);
                         events.ScheduleEvent(EVENT_BOMBARTMENT, lastbombartmenttimer);
                         break;
                     }
@@ -993,7 +994,7 @@ class boss_garrosh_hellscream : public CreatureScript
                                 }
                             }
                         }
-                        events.ScheduleEvent(EVENT_MALICE, 40000);
+                        events.ScheduleEvent(EVENT_MALICE, 28000);
                         break;
                     }
                     case EVENT_BOMBARTMENT:
@@ -1151,11 +1152,12 @@ public:
             case NPC_EMBODIED_DESPAIR:
                 if (me->GetMap()->IsHeroic())
                     DoCast(me, SPELL_ULTIMATE_DESPAIR);
-                events.ScheduleEvent(EVENT_EMBODIED_DESPAIR, 10000);
+                else
+                    events.ScheduleEvent(EVENT_EMBODIED_DESPAIR, 10000);
                 break;
             case NPC_EMBODIED_DOUBT:
                 if (me->GetMap()->IsHeroic())
-                    events.ScheduleEvent(EVENT_EMBODIED_DOUBT, urand(8000, 13000));
+                    events.ScheduleEvent(EVENT_EMBODIED_DOUBT, 2000);
                 break;
             default:
                 break;
@@ -1231,7 +1233,7 @@ public:
                 //Embodied doubt
                 case EVENT_EMBODIED_DOUBT:
                     DoCast(me, SPELL_EMBODIED_DOUBT_HM);
-                    events.ScheduleEvent(EVENT_EMBODIED_DOUBT, urand(8000, 13000));
+                    events.ScheduleEvent(EVENT_EMBODIED_DOUBT, 3000);
                     break;
                 }
             }
@@ -1849,7 +1851,7 @@ public:
     }
 };
 
-//144798
+//144798, 147173
 class spell_exploding_iron_star : public SpellScriptLoader
 {
 public:
@@ -1865,7 +1867,7 @@ public:
             {
                 float distance = GetCaster()->GetExactDist2d(GetHitUnit());
                 if (distance >= 0 && distance < 300)
-                    SetHitDamage((GetHitDamage()/3) * (1 - (distance / 300)));
+                    SetHitDamage((GetHitDamage() / 3) * (1 - (distance / 300)));
             }
         }
 
@@ -2437,6 +2439,11 @@ public:
             if (GetCaster())
             {
                 uint8 countmod = GetCaster()->GetMap()->Is25ManRaid() ? 5 : 2;
+                if (targets.empty())
+                {
+                    if (InstanceScript* instance = GetCaster()->GetInstanceScript())
+                        instance->SetData(DATA_WIPE_PLAYERS, 0);
+                }
                 if (targets.size() < countmod)
                 {
                     float mod = 5 * (countmod - targets.size());
@@ -2446,9 +2453,6 @@ public:
                 }
                 else if (targets.size() > countmod)
                     targets.resize(countmod);
-                else if (!targets.empty())
-                    if (InstanceScript* instance = GetCaster()->GetInstanceScript())
-                        instance->SetData(DATA_WIPE_PLAYERS, 0);
             }
         }
 
@@ -2468,6 +2472,39 @@ public:
     SpellScript* GetSpellScript() const
     {
         return new spell_malice_dummy_SpellScript();
+    }
+};
+
+//147236
+class spell_malice_energy : public SpellScriptLoader
+{
+public:
+    spell_malice_energy() : SpellScriptLoader("spell_malice_energy") { }
+
+    class spell_malice_energy_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_malice_energy_SpellScript);
+
+        void HandleCast(SpellEffIndex effIndex)
+        {
+            if (GetHitUnit())
+            {
+                uint32 value = GetSpellInfo()->GetEffect(effIndex)->BasePoints;
+                uint32 mod = (value / 5) * 100000;
+                uint32 dmg = (urand(194998, 205000)) + mod;
+                GetHitUnit()->CastCustomSpell(SPELL_MALICIOUS_ENERGY_EXPLOSION, SPELLVALUE_BASE_POINT0, dmg, GetHitUnit(), true);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_malice_energy_SpellScript::HandleCast, EFFECT_0, SPELL_EFFECT_ENERGIZE);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_malice_energy_SpellScript();
     }
 };
 
@@ -2578,7 +2615,6 @@ public:
                 case 1:
                 case 6:
                 case 12:
-                case 18:
                     if (InstanceScript* instance = GetCaster()->GetInstanceScript())
                     {
                         std::list<Player*> pllist;
@@ -2686,6 +2722,7 @@ void AddSC_boss_garrosh_hellscream()
     new spell_crushing_fear();
     new spell_manifest_rage();
     new spell_malice_dummy();
+    new spell_malice_energy();
     new spell_fixate_iron_star();
     new spell_call_bombartment();
     new spell_growing_power();
