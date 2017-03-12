@@ -381,6 +381,7 @@ class boss_garrosh_hellscream : public CreatureScript
                 {       //StormWind (Last phase Heroic) spawn   
                     if (me->GetMap()->GetAreaId(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()) == 6816)
                     {
+                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                         me->SetReactState(REACT_PASSIVE);
                         me->AddAura(SPELL_PHASE_TWO_TRANSFORM, me);
                         me->AddAura(SPELL_PHASE_THREE_TRANSFORM, me);
@@ -1135,6 +1136,8 @@ public:
                     instance->SetData(DATA_FIRST_ENGENEER_DIED, 1);
                 me->DespawnOrUnsummon();
             }
+            else if (me->GetEntry() == NPC_MINION_OF_YSHAARJ)
+                me->DespawnOrUnsummon(2000);
         }
 
         void EnterCombat(Unit* who)
@@ -1233,7 +1236,7 @@ public:
                 //Embodied doubt
                 case EVENT_EMBODIED_DOUBT:
                     DoCast(me, SPELL_EMBODIED_DOUBT_HM);
-                    events.ScheduleEvent(EVENT_EMBODIED_DOUBT, 3000);
+                    events.ScheduleEvent(EVENT_EMBODIED_DOUBT, 5000);
                     break;
                 }
             }
