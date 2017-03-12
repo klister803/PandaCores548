@@ -3561,8 +3561,10 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
 
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
         m_caster->ToPlayer()->SetSpellModTakingSpell(this, true);
-    // Fill cost data (not use power for item casts
-    m_powerCost = m_CastItem ? 0 : m_spellInfo->CalcPowerCost(m_caster, m_spellSchoolMask);
+
+    if (!m_powerCost)// Fill cost data (not use power for item casts
+        m_powerCost = m_CastItem ? 0 : m_spellInfo->CalcPowerCost(m_caster, m_spellSchoolMask);
+
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
         m_caster->ToPlayer()->SetSpellModTakingSpell(this, false);
 
@@ -7863,6 +7865,8 @@ SpellCastResult Spell::CheckCast(bool strict)
 
 SpellCastResult Spell::CheckPetCast(Unit* target)
 {
+    m_powerCost = m_spellInfo->CalcPowerCost(m_caster, m_spellSchoolMask);
+
     if (m_caster->HasUnitState(UNIT_STATE_CASTING) && !(_triggeredCastFlags & TRIGGERED_IGNORE_CAST_IN_PROGRESS))              //prevent spellcast interruption by another spellcast
         return SPELL_FAILED_SPELL_IN_PROGRESS;
 
