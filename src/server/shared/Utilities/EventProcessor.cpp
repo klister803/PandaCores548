@@ -91,6 +91,7 @@ void EventProcessor::KillAllEvents(bool force)
 
 void EventProcessor::AddEvent(BasicEvent* Event, uint64 e_time, bool set_addtime)
 {
+    std::lock_guard<std::recursive_mutex> _queue_lock(m_queue_lock);
     if (set_addtime) Event->m_addTime = m_time;
     Event->m_execTime = e_time;
     m_events_queue.insert(std::pair<uint64, BasicEvent*>(e_time, Event));
@@ -98,6 +99,7 @@ void EventProcessor::AddEvent(BasicEvent* Event, uint64 e_time, bool set_addtime
 
 void EventProcessor::AddEventsFromQueue()
 {
+    std::lock_guard<std::recursive_mutex> _queue_lock(m_queue_lock);
     EventList::iterator itr = m_events_queue.begin();
     for(; itr != m_events_queue.end(); ++itr)
     {

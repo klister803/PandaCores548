@@ -22,6 +22,7 @@
 #include "Define.h"
 
 #include <map>
+#include <mutex>
 
 // Note. All times are in milliseconds here.
 
@@ -68,5 +69,6 @@ class EventProcessor
         EventList m_events;
         EventList m_events_queue;
         bool m_aborting;
+        std::recursive_mutex m_queue_lock;
 };
 #endif
