@@ -2475,6 +2475,13 @@ class Player : public Unit, public GridObject<Player>
         void UpdateRating(CombatRating cr);
         void UpdateAllRatings();
 
+        void UpdateCastHastMods();
+        void UpdateMeleeHastMod();
+        void UpdateHastMod();
+        void UpdateRangeHastMod();
+        void UpdateFocusRegen();
+        void UpdateEnergyRegen();
+
         void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& min_damage, float& max_damage);
 
         inline void RecalculateRating(CombatRating cr) { ApplyRatingMod(cr, 0, true);}

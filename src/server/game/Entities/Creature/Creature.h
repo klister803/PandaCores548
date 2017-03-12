@@ -956,9 +956,16 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         ReactStates m_reactState;                           // for AI, not charmInfo
         void RegenerateMana();
         void RegenerateHealth();
-        void Regenerate(Powers power);
+        void Regenerate(Powers power, uint32 diff);
+        uint32 GetSendInterval() 
+        {
+            if (!m_sendInterval)
+                m_sendInterval = isAnySummons() ? PET_FOCUS_REGEN_INTERVAL : (GetCreatureTemplate()->rank == CREATURE_ELITE_WORLDBOSS ? BOSS_REGEN_INTERVAL : CREATURE_REGEN_INTERVAL);
+
+            return m_sendInterval; 
+        }
         uint32 m_regenTimerCount;
-        uint32 m_petregenTimer;
+        uint32 m_sendInterval;
         MovementGeneratorType m_defaultMovementType;
         uint32 m_DBTableGuid;                               ///< For new or temporary creatures is 0 for saved it is lowguid
         uint32 m_equipmentId;

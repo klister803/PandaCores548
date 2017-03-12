@@ -599,7 +599,7 @@ void Pet::Update(uint32 diff)
     m_Update = false;
 }
 
-void Creature::Regenerate(Powers power)
+void Creature::Regenerate(Powers power, uint32 diff)
 {
     int32 maxValue = GetMaxPower(power);
 
@@ -615,7 +615,6 @@ void Creature::Regenerate(Powers power)
 
     float addvalue = 0.0f;
     float regenTypeAndMod = 1.0f; // start type regen + or - for power
-    uint32 sendInterval = (isAnySummons() ? PET_FOCUS_REGEN_INTERVAL : (GetCreatureTemplate()->rank == CREATURE_ELITE_WORLDBOSS ? BOSS_REGEN_INTERVAL : CREATURE_REGEN_INTERVAL));
 
     switch (power)
     {
@@ -646,14 +645,14 @@ void Creature::Regenerate(Powers power)
         }
         case POWER_FOCUS:
         {
-            float defaultreg = 0.005f * m_petregenTimer;
-            addvalue += defaultreg * m_baseRHastRatingPct * sWorld->getRate(RATE_POWER_FOCUS);
+            float defaultreg = 0.005f * diff;
+            addvalue += defaultreg * sWorld->getRate(RATE_POWER_FOCUS);
             break;
         }
         case POWER_ENERGY:
         {
-            float defaultreg = 0.01f * m_petregenTimer;
-            addvalue += defaultreg * m_baseMHastRatingPct * sWorld->getRate(RATE_POWER_ENERGY);
+            float defaultreg = 0.01f * diff;
+            addvalue += defaultreg * sWorld->getRate(RATE_POWER_ENERGY);
             break;
         }
         default:
@@ -662,11 +661,9 @@ void Creature::Regenerate(Powers power)
 
     // Apply modifiers (if any).
     if (isInCombat())
-        addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER + powerIndex) * (0.001f * m_petregenTimer) * regenTypeAndMod;
+        addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER + powerIndex) * (0.001f * diff) * regenTypeAndMod;
     else
-        addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + powerIndex) * (0.001f * m_petregenTimer) * regenTypeAndMod;
-
-    m_petregenTimer = 0;
+        addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + powerIndex) * (0.001f * diff) * regenTypeAndMod;
 
     addvalue += m_powerFraction[powerIndex];
 
@@ -719,14 +716,10 @@ void Creature::Regenerate(Powers power)
         //Visualization for power
         //VisualForPower(power, curValue, integerValue, true);
     }
-
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Creature::Regenerate addvalue %f, modify %f, powerIndex %i, power %i, saveCur %i", addvalue, GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + powerIndex), powerIndex, power, saveCur);
 
-    if ((saveCur != maxValue && curValue == maxValue) || m_regenTimerCount >= sendInterval)
-    {
+    if ((saveCur != maxValue && curValue == maxValue) || m_regenTimerCount >= GetSendInterval())
         SetInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
-        m_regenTimerCount -= sendInterval;
-    }
     else
         UpdateInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
 }

@@ -19124,6 +19124,28 @@ Unit* Unit::GetNearbyVictim(Unit* exclude, float dist, bool IsInFront, bool IsNe
 void Unit::CalcAttackTimePercentMod(WeaponAttackType att, float val)
 {
     uint32 attackTime = GetAttackTime(att);
+
+    if (!attackTime)
+    {
+        if (isAnySummons())
+        {
+            if (att == RANGED_ATTACK)
+            {
+                if (CreatureTemplate const* cinfo = sObjectMgr->GetCreatureTemplate(GetEntry()))
+                    attackTime = cinfo->rangeattacktime;
+                else
+                    attackTime = BASE_ATTACK_TIME;
+            }
+            else
+            {
+                if (CreatureTemplate const* cinfo = sObjectMgr->GetCreatureTemplate(GetEntry()))
+                    attackTime = cinfo->baseattacktime;
+                else
+                    attackTime = BASE_ATTACK_TIME;
+            }
+        }
+    }
+
     float remainingTimePct = (float)m_attackTimer[att] / (attackTime * m_modAttackSpeedPct[att]);
     
     m_modAttackSpeedPct[att] = val;

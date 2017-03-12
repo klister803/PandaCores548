@@ -165,7 +165,6 @@ m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_o
 {
     m_followAngle = PET_FOLLOW_ANGLE;
     m_regenTimer = CREATURE_REGEN_INTERVAL;
-    m_petregenTimer = 0;
     m_valuesCount = UNIT_END;
     isCasterPet = false;
 
@@ -204,6 +203,8 @@ m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_o
     m_followOrientation = 0;
 
     m_creatureDiffData = NULL;
+
+    m_sendInterval = 0;
 }
 
 Creature::~Creature()
@@ -675,12 +676,14 @@ void Creature::Update(uint32 diff)
                     m_regenTimer -= diff;
             }
 
-            if(HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_REGENERATE_POWER))
+            if (HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_REGENERATE_POWER))
             {
                 m_regenTimerCount += diff;
-                m_petregenTimer += diff;
-                if(m_petregenTimer >= 400)
-                    Regenerate(getPowerType());
+
+                Regenerate(getPowerType(), diff);
+
+                if (m_regenTimerCount >= GetSendInterval())
+                    m_regenTimerCount -= m_sendInterval;
             }
 
             // creature can be dead after Unit::Update call

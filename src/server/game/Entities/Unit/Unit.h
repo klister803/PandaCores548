@@ -2111,8 +2111,6 @@ class Unit : public WorldObject
         void UpdateMeleeHastMod();
         void UpdateRangeHastMod();
         void UpdateHastMod();
-        void UpdateFocusRegen();
-        void UpdateEnergyRegen();
         void UpdateManaRegen();
         void UpdatePowerRegen(uint32 power);
         float GetBaseMHastRatingPct() const {return m_baseMHastRatingPct;}
