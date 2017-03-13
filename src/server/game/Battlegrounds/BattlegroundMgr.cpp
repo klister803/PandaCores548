@@ -52,6 +52,7 @@
 #include "Formulas.h"
 #include "DisableMgr.h"
 #include "BracketMgr.h"
+#include "LFG.h"
 
 /*********************************************************/
 /***            BATTLEGROUND MANAGER                   ***/
@@ -258,8 +259,10 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
         {
             //! 5.4.1
             data->Initialize(SMSG_BATTLEFIELD_STATUS_NEEDCONFIRMATION, 44);
+            
+            uint8 roles = pPlayer->GetBattleGroundRoles();
 
-            data->WriteBit(1);                              //!byte44
+            data->WriteBit(roles == lfg::PLAYER_ROLE_DAMAGE);
             data->WriteGuidMask<2>(guidBytes2);
             data->WriteGuidMask<1, 7>(guidBytes1);
             data->WriteGuidMask<5, 3, 7>(guidBytes2);
@@ -281,8 +284,10 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
             data->WriteGuidBytes<0, 1, 2, 3>(guidBytes2);
             data->WriteGuidBytes<7>(guidBytes1);
             *data << uint32(bg->GetClientInstanceID());
-            //if (byte44)
-            //   p.ReadByte("byte44");
+
+            if (roles != lfg::PLAYER_ROLE_DAMAGE)
+                *data << uint8(roles == lfg::PLAYER_ROLE_TANK ? 0 : 1);
+            
             *data << uint32(QueueSlot);
             data->WriteGuidBytes<7>(guidBytes2);
             *data << uint32(bg->GetMapId());

@@ -181,6 +181,8 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recvData)
             _player->GetSession()->SendPacket(&data);
             return;
         }
+        
+        _player->SetBattleGroundRoles(role);
 
         BattlegroundQueue& bgQueue = sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId];
 

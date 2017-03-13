@@ -2765,6 +2765,9 @@ class Player : public Unit, public GridObject<Player>
         uint32 GetBattlegroundId()  const                { return m_bgData.bgInstanceID; }
         BattlegroundTypeId GetBattlegroundTypeId() const { return m_bgData.bgTypeID; }
         Battleground* GetBattleground() const;
+        
+        uint8 GetBattleGroundRoles() const { return _bgRoles; }
+        void SetBattleGroundRoles(uint8 roles) { _bgRoles = roles; }
 
         uint32 GetBattlegroundQueueJoinTime(uint32 bgTypeId) const 
         {
@@ -3746,6 +3749,8 @@ class Player : public Unit, public GridObject<Player>
         AreaTriggerEntry const *LastAreaTrigger;
 
         std::mutex lockChennal;
+        
+        uint8 _bgRoles;
 };
 
 void AddItemsSetItem(Player*player, Item* item);
