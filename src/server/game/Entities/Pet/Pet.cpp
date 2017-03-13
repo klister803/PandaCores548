@@ -40,10 +40,15 @@ m_auraRaidUpdateMask(0), m_declinedname(NULL)
     m_slot = PET_SLOT_UNK_SLOT;
     m_owner = (Unit*)owner;
     m_loading = false;
-    if(m_owner && m_owner->getClass() == CLASS_HUNTER)
+    if (m_owner)
     {
-        type = HUNTER_PET;
-        setPetType(type);
+        if (m_owner->getClass() == CLASS_HUNTER)
+        {
+            type = HUNTER_PET;
+            setPetType(type);
+        }
+        else
+            setPetType(SUMMON_PET);
     }
     m_unitTypeMask &= ~UNIT_MASK_MINION;
 
@@ -1630,6 +1635,9 @@ bool Pet::Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, uint3
 
     m_DBTableGuid = guidlow;
     m_originalEntry = Entry;
+
+    if (Unit* owner = GetOwner())
+        owner->SetPetGUID(GetGUID());
 
     if (!InitEntry(Entry))
         return false;

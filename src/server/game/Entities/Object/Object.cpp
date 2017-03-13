@@ -3169,7 +3169,6 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     pet->SetUInt32Value(UNIT_NPC_FLAGS, 0);
     pet->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
     pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, spellId);
-    pet->InitStatsForLevel(getLevel());
 
     if(petType == SUMMON_PET)
         pet->GetCharmInfo()->SetPetNumber(pet_number, true);
@@ -3178,6 +3177,8 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     SetMinion(pet, true, stampeded);
 
     map->AddToMap(pet->ToCreature());
+
+    pet->InitStatsForLevel(getLevel());
 
     if(petType == SUMMON_PET)
     {
