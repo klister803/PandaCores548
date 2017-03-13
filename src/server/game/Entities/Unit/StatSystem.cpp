@@ -336,19 +336,97 @@ void Player::UpdateMaxPower(Powers power)
         SetMaxPower(power, uint32(value));
 }
 
-void Player::UpdateCastHastMods()
+void Player::UpdateHast(bool _melee, bool _range, bool _spell, bool _cast)
+{
+//     SPELL_AURA_MELEE_SLOW                  = 0;
+//     SPELL_AURA_MOD_MELEE_HASTE             = 1;
+//     SPELL_AURA_MOD_MELEE_HASTE_2           = 2;
+//     SPELL_AURA_MOD_MELEE_HASTE_3           = 3;
+//     SPELL_AURA_MOD_RANGED_HASTE            = 4;
+//     SPELL_AURA_MOD_RANGED_HASTE_3          = 5;
+//     SPELL_AURA_MOD_MELEE_RANGED_HASTE      = 6;
+//     SPELL_AURA_MOD_MELEE_RANGED_HASTE_2    = 7;
+//     SPELL_AURA_MOD_CASTING_SPEED           = 8;
+//     SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK = 9;
+//     SPELL_AURA_HASTE_SPELLS                = 10;
+
+    float hastAurasMod[11] = {0.0f};
+
+    if (_melee)
+    {
+        hastAurasMod[0] = GetTotalAuraMultiplier(SPELL_AURA_MELEE_SLOW, true);
+        hastAurasMod[1] = GetTotalAuraMultiplier(SPELL_AURA_MOD_MELEE_HASTE, true);
+        hastAurasMod[2] = GetTotalAuraMultiplier(SPELL_AURA_MOD_MELEE_HASTE_2, true);
+        hastAurasMod[3] = GetTotalAuraMultiplier(SPELL_AURA_MOD_MELEE_HASTE_3, true);
+        hastAurasMod[6] = GetTotalAuraMultiplier(SPELL_AURA_MOD_MELEE_RANGED_HASTE, true);
+        hastAurasMod[7] = GetTotalAuraMultiplier(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2, true);
+
+        UpdateMeleeHastMod(hastAurasMod[0] * hastAurasMod[1] * hastAurasMod[2] * hastAurasMod[3] * hastAurasMod[6] * hastAurasMod[7]);
+
+        if (GetPower(POWER_ENERGY))
+            UpdateEnergyRegen(hastAurasMod[0] * hastAurasMod[1] * hastAurasMod[6] * hastAurasMod[7]);
+
+        m_needToUpdate[MELEE_HAST_MODS] = false;
+    }
+
+    if (_range)
+    {
+        hastAurasMod[4] = GetTotalAuraMultiplier(SPELL_AURA_MOD_RANGED_HASTE, true);
+        hastAurasMod[5] = GetTotalAuraMultiplier(SPELL_AURA_MOD_RANGED_HASTE_3, true);
+
+        if (!_melee)
+        {
+            hastAurasMod[6] = GetTotalAuraMultiplier(SPELL_AURA_MOD_MELEE_RANGED_HASTE, true);
+            hastAurasMod[7] = GetTotalAuraMultiplier(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2, true);
+            hastAurasMod[0] = GetTotalAuraMultiplier(SPELL_AURA_MELEE_SLOW, true);
+        }
+
+        UpdateRangeHastMod(hastAurasMod[0] * hastAurasMod[4] * hastAurasMod[5] * hastAurasMod[6] * hastAurasMod[7]);
+
+        if (GetPower(POWER_FOCUS))
+            UpdateFocusRegen(hastAurasMod[4] * hastAurasMod[6] * hastAurasMod[0] * hastAurasMod[7]);
+
+        m_needToUpdate[RANGE_HAST_MODS] = false;
+    }
+
+    if (_spell)
+    {
+        hastAurasMod[9] = GetTotalAuraMultiplier(SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK, true);
+        hastAurasMod[8] = GetTotalAuraMultiplier(SPELL_AURA_MOD_CASTING_SPEED, true);
+        hastAurasMod[10] = GetTotalAuraMultiplier(SPELL_AURA_HASTE_SPELLS, true);
+
+        if (!_range && !_melee)
+            hastAurasMod[0] = GetTotalAuraMultiplier(SPELL_AURA_MELEE_SLOW, true);
+
+        UpdateHastMod(hastAurasMod[9] * hastAurasMod[8] * hastAurasMod[10] * hastAurasMod[0]);
+
+        m_needToUpdate[HAST_MODS] = false;
+    }
+
+    if (_cast)
+    {
+        if (!_spell)
+            hastAurasMod[9] = GetTotalAuraMultiplier(SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK, true);
+
+        if (!_melee && !_range)
+            hastAurasMod[7] = GetTotalAuraMultiplier(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2, true);
+
+        if (!_melee && !_range && !_spell)
+            hastAurasMod[0] = GetTotalAuraMultiplier(SPELL_AURA_MELEE_SLOW, true);
+
+        UpdateCastHastMods(hastAurasMod[0] * hastAurasMod[7] * hastAurasMod[9]);
+
+        m_needToUpdate[CAST_HAST_MODS] = false;
+    }
+}
+
+void Player::UpdateCastHastMods(float auraMods)
 {
     float amount = 100.0f;
     amount += GetRatingBonusValue(CR_HASTE_MELEE);
 
     m_baseMHastRatingPct = amount / 100.0f;
-
-    std::list<AuraType> auratypelist;
-    auratypelist.push_back(SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK);
-    auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2);
-    auratypelist.push_back(SPELL_AURA_MELEE_SLOW);
-
-    amount *= GetTotalForAurasMultiplier(&auratypelist);
+    amount *= auraMods;
     amount -= 100.0f;
 
     float value = 1.0f;
@@ -364,22 +442,13 @@ void Player::UpdateCastHastMods()
         SetNeedToUpdate(SPELL_HAST_DURATION_RECOVERY);
 }
 
-void Player::UpdateMeleeHastMod()
+void Player::UpdateMeleeHastMod(float auraMods)
 {
     float amount = 100.0f;
     amount += GetRatingBonusValue(CR_HASTE_MELEE);
 
     m_baseMHastRatingPct = amount / 100.0f;
-
-    std::list<AuraType> auratypelist;
-    auratypelist.push_back(SPELL_AURA_MOD_MELEE_HASTE);
-    auratypelist.push_back(SPELL_AURA_MOD_MELEE_HASTE_2);
-    auratypelist.push_back(SPELL_AURA_MOD_MELEE_HASTE_3);
-    auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE);
-    auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2);
-    auratypelist.push_back(SPELL_AURA_MELEE_SLOW);
-
-    amount *= GetTotalForAurasMultiplier(&auratypelist);
+    amount *= auraMods;
     amount -= 100.0f;
 
     //sLog->outError(LOG_FILTER_NETWORKIO, "UpdateMeleeHastMod mod %f", mod);
@@ -412,28 +481,19 @@ void Player::UpdateMeleeHastMod()
     if (getClass() == CLASS_DEATH_KNIGHT)
         SetNeedToUpdate(RUNES_REGEN);
 
-    if (GetPower(POWER_ENERGY))
-        UpdateEnergyRegen();
-
     if (Pet* pet = GetPet())
         if (pet->m_baseMHastRatingPct != m_baseMHastRatingPct)
             pet->UpdateMeleeHastMod();
 }
 
-void Player::UpdateHastMod()
+void Player::UpdateHastMod(float auraMods)
 {
     float amount = 100.0f;
     amount += GetRatingBonusValue(CR_HASTE_SPELL);
 
     m_baseHastRatingPct = amount / 100.0f;
 
-    std::list<AuraType> auratypelist;
-    auratypelist.push_back(SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK);
-    auratypelist.push_back(SPELL_AURA_MOD_CASTING_SPEED);
-    auratypelist.push_back(SPELL_AURA_HASTE_SPELLS);
-    auratypelist.push_back(SPELL_AURA_MELEE_SLOW);
-
-    amount *= GetTotalForAurasMultiplier(&auratypelist);
+    amount *= auraMods;
     amount -= 100.0f;
 
     //sLog->outDebug(LOG_FILTER_NETWORKIO, "UpdateHastMod amount %f", amount);
@@ -457,20 +517,12 @@ void Player::UpdateHastMod()
             pet->UpdateHastMod();
 }
 
-void Player::UpdateRangeHastMod()
+void Player::UpdateRangeHastMod(float auraMods)
 {
     float amount = 100.0f;
     amount += GetRatingBonusValue(CR_HASTE_RANGED);
     m_baseRHastRatingPct = amount / 100.0f;
-
-    std::list<AuraType> auratypelist;
-    auratypelist.push_back(SPELL_AURA_MOD_RANGED_HASTE);
-    auratypelist.push_back(SPELL_AURA_MOD_RANGED_HASTE_3);
-    auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE);
-    auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2);
-    auratypelist.push_back(SPELL_AURA_MELEE_SLOW);
-
-    amount *= GetTotalForAurasMultiplier(&auratypelist);
+    amount *= auraMods;
     amount -= 100.0f;
 
     //sLog->outError(LOG_FILTER_NETWORKIO, "UpdateRangeHastMod mod %f", mod);
@@ -485,9 +537,6 @@ void Player::UpdateRangeHastMod()
 
     CalcAttackTimePercentMod(RANGED_ATTACK, value);
 
-    if (GetPower(POWER_FOCUS))
-        UpdateFocusRegen();
-
     if (getClass() == CLASS_DEATH_KNIGHT)
         SetNeedToUpdate(RUNES_REGEN);
 
@@ -496,18 +545,11 @@ void Player::UpdateRangeHastMod()
             pet->UpdateRangeHastMod();
 }
 
-void Player::UpdateEnergyRegen()
+void Player::UpdateEnergyRegen(float auraMods)
 {
     float val = 1.0f / m_baseMHastRatingPct;
     float amount = 100.0f;
-
-    std::list<AuraType> auratypelist;
-    auratypelist.push_back(SPELL_AURA_MOD_MELEE_HASTE);
-    auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE);
-    auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2);
-    auratypelist.push_back(SPELL_AURA_MELEE_SLOW);
-
-    amount *= GetTotalForAurasMultiplier(&auratypelist);
+    amount *= auraMods;
     amount -= 100.0f;
 
     if (amount > 0)
@@ -520,18 +562,11 @@ void Player::UpdateEnergyRegen()
     UpdatePowerRegen(POWER_ENERGY);
 }
 
-void Player::UpdateFocusRegen()
+void Player::UpdateFocusRegen(float auraMods)
 {
     float val = 1.0f / m_baseRHastRatingPct;
     float amount = 100.0f;
-
-    std::list<AuraType> auratypelist;
-    auratypelist.push_back(SPELL_AURA_MOD_RANGED_HASTE);
-    auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE);
-    auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2);
-    auratypelist.push_back(SPELL_AURA_MELEE_SLOW);
-
-    amount *= GetTotalForAurasMultiplier(&auratypelist);
+    amount *= auraMods;
     amount -= 100.0f;
 
     if (amount > 0)
