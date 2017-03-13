@@ -559,7 +559,7 @@ public:
                 break;
             case NPC_KORVEN:
                 Talk(SAY_KORVEN_PULL, 0);
-                events.ScheduleEvent(EVENT_SHIELD_BASH, 17000);
+                events.ScheduleEvent(EVENT_SHIELD_BASH, 18000);
                 checkklaxxi = 2000;
                 break;
             case NPC_IYYOKYK:
@@ -1030,7 +1030,7 @@ public:
                 case EVENT_SHIELD_BASH:
                     if (me->getVictim())
                         DoCastVictim(SPELL_SHIELD_BASH);
-                    events.ScheduleEvent(EVENT_SHIELD_BASH, 15000);
+                    events.ScheduleEvent(EVENT_SHIELD_BASH, 17000);
                     break;
                     //Karoz
                 case EVENT_HURL_AMBER:

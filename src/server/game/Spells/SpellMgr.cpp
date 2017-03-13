@@ -5855,7 +5855,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->ApplyAuraName = SPELL_AURA_PERIODIC_DUMMY;
                     break;
                 case 147235: //Malicious Blast
-                    spellInfo->Effects[1]->MiscValue = 32;
+                    spellInfo->AttributesEx6 &= ~SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
                     break;
 
                 //World Bosses

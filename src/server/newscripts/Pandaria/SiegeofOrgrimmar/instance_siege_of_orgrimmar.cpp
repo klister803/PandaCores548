@@ -1989,35 +1989,24 @@ public:
             Map::PlayerList const& PlayerList = instance->GetPlayers();
             if (!PlayerList.isEmpty())
             {
-                if (Creature* heartofyshaarj = instance->GetCreature(heartofyshaarjGuid))
+                for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
                 {
-                    for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+                    if (Player* player = Itr->getSource())
                     {
-                        if (Player* player = Itr->getSource())
-                        {
-                            if (player->isAlive())
-                            {       //mind control
-                                if (player->HasAura(SPELL_TOUCH_OF_YSHAARJ) || player->HasAura(SPELL_EM_TOUCH_OF_YSHAARJ))
-                                    player->Kill(player, true);
-                            }
-                            else
-                            {       //player die in yshaarj realm
-                                if (player->HasAura(SPELL_REALM_OF_YSHAARJ))
-                                {
-                                    float x, y;
-                                    uint8 dist = urand(5, 25);
-                                    GetPosInRadiusWithRandomOrientation(heartofyshaarj, dist, x, y);
-                                    player->NearTeleportTo(x, y, Garroshroomcenterpos.GetPositionZ(), Garroshroomcenterpos.GetOrientation());
-                                    player->RemoveAurasDueToSpell(SPELL_REALM_OF_YSHAARJ);
-                                }  //player die in StormWind (Last phase Heroic)
-                                else if (player->GetMap()->GetAreaId(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ()) == 6816) //last phase Garrosh HM area
-                                {
-                                    float x, y;
-                                    uint8 dist = urand(5, 25);
-                                    GetPosInRadiusWithRandomOrientation(heartofyshaarj, dist, x, y);
-                                    player->NearTeleportTo(x, y, Garroshroomcenterpos.GetPositionZ(), Garroshroomcenterpos.GetOrientation());
-                                }
-                            }
+                        if (player->isAlive())
+                        {       //mind control
+                            if (player->HasAura(SPELL_TOUCH_OF_YSHAARJ) || player->HasAura(SPELL_EM_TOUCH_OF_YSHAARJ))
+                                player->Kill(player, true);
+                        }
+                        else
+                        {       //player die in yshaarj realm
+                            if (player->HasAura(SPELL_REALM_OF_YSHAARJ))
+                            {
+                                player->NearTeleportTo(Garroshroomcenterpos.GetPositionX(), Garroshroomcenterpos.GetPositionY(), Garroshroomcenterpos.GetPositionZ(), Garroshroomcenterpos.GetOrientation());
+                                player->RemoveAurasDueToSpell(SPELL_REALM_OF_YSHAARJ);
+                            }  //player die in StormWind (Last phase Heroic)
+                            else if (player->GetMap()->GetAreaId(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ()) == 6816) //last phase Garrosh HM area
+                                player->NearTeleportTo(Garroshroomcenterpos.GetPositionX(), Garroshroomcenterpos.GetPositionY(), Garroshroomcenterpos.GetPositionZ(), Garroshroomcenterpos.GetOrientation());
                         }
                     }
                 }

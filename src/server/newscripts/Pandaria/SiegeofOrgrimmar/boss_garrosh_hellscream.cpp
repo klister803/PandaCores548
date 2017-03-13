@@ -243,6 +243,7 @@ Position gspos[3] =
 
 Position lastpltppos = {-8485.50f, 1132.68f, 18.2643f, 4.4671f};
 Position lastgtppos  = {-8498.81f, 1079.69f, 17.9525f, 1.4708f};
+Position spspawnpos  = {-8501.24f, 1112.63f, 17.9674f, 4.6652f};
 
 Position crushingfeardest[60] =
 {
@@ -620,10 +621,15 @@ class boss_garrosh_hellscream : public CreatureScript
                     instance->SetData(DATA_PLAY_FINAL_MOVIE, 0);
                 }
 
-                //StormWind copy of Garrosh die, need destroy and obscure real Garrosh...
+                //StormWind copy of Garrosh died, need destroy and obscure real Garrosh...
                 if (me->ToTempSummon() && me->GetMap()->GetAreaId(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()) == 6816)
+                {
                     if (Creature* realgarrosh = me->GetCreature(*me, instance->GetData64(DATA_GARROSH)))
+                    {
                         realgarrosh->AI()->DoAction(ACTION_GARROSH_HM_DONE);
+                        me->SummonCreature(NPC_PORTAL_TO_REALITY, spspawnpos);
+                    }
+                }
             }
 
             bool IfTargetHavePlayersInRange(Player* target, uint8 count, float radius)
@@ -1855,6 +1861,41 @@ public:
     }
 };
 
+//74007
+class npc_portal_to_reality : public CreatureScript
+{
+public:
+    npc_portal_to_reality() : CreatureScript("npc_portal_to_reality") {}
+
+    struct npc_portal_to_realityAI : public ScriptedAI
+    {
+        npc_portal_to_realityAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+        }
+        InstanceScript* instance;
+
+        void Reset(){}
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void OnSpellClick(Unit* clicker)
+        {
+            clicker->NearTeleportTo(centerpos.GetPositionX(), centerpos.GetPositionY(), centerpos.GetPositionZ(), 0.0f);
+        }
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_portal_to_realityAI(creature);
+    }
+};
+
 //144798
 class spell_exploding_iron_star : public SpellScriptLoader
 {
@@ -2670,6 +2711,7 @@ void AddSC_boss_garrosh_hellscream()
     new npc_heart_of_yshaarj_realm();
     new npc_korkron_gunship();
     new npc_horde_cannon();
+    new npc_portal_to_reality();
     new spell_exploding_iron_star();
     new spell_whirling_corruption();
     new spell_empovered_whirling_corruption();

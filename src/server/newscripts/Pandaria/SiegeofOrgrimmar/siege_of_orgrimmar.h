@@ -431,6 +431,7 @@ enum eCreatures
     NPC_KORKRON_GUNSHIP             = 73065,
     NPC_HORDE_CANNON                = 73665,
     NPC_CLUMP                       = 73278,
+    NPC_PORTAL_TO_REALITY           = 74007,
 };
 
 enum eGameObjects
