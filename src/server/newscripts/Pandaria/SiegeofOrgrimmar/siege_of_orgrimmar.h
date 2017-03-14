@@ -627,6 +627,7 @@ enum esSpells
     SPELL_MASTER_OF_AMBER2             = 142616,
     SPELL_SUM_HUNGRY_KUNCHONG          = 146891,
     SPELL_CANNED_HEAT_BASE             = 143572,
+    SPELL_TORMENT_MAIN                 = 142983,
 
     //Blackfuse
     SPELL_PROTECTIVE_FRENZY            = 145365,

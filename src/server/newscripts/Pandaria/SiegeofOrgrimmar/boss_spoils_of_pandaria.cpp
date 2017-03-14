@@ -51,7 +51,7 @@ enum eSpells
     SPELL_WINDSTORM_AT                = 145286,
     SPELL_MATTER_SCRAMBLE             = 145288,
     SPELL_TORMENT_DUMMY               = 142942,
-    SPELL_TORMENT_MAIN                = 142983,
+    SPELL_TORMENT_DMG                 = 136885,
 
     //Small
     SPELL_EARTHEN_SHARD               = 144923,
@@ -152,6 +152,7 @@ enum Events
     EVENT_ANIMATED_STRIKE_FINISH      = 40,
     EVENT_ANIMATED_STRIKE_RESET       = 41,
     EVENT_SUMMON_STONE_STATUE         = 42,
+    EVENT_MOVE_STATUE                 = 43,
 };
 
 enum Says
@@ -1379,12 +1380,18 @@ public:
 
         void Reset()
         {
-            events.ScheduleEvent(EVENT_ANIMATED_STRIKE_START, 4000);
+            events.ScheduleEvent(EVENT_MOVE_STATUE, 1000);
         }
 
         void JustDied(Unit* killer)
         {
             me->DespawnOrUnsummon();
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (pointId == 5)
+                events.ScheduleEvent(EVENT_ANIMATED_STRIKE_START, 1000);
         }
 
         float GetRandomAngle()
@@ -1406,6 +1413,18 @@ public:
             {
                 switch (eventId)
                 {
+                case EVENT_MOVE_STATUE:
+                    if (me->ToTempSummon())
+                    {
+                        if (Unit* spoil = me->ToTempSummon()->GetSummoner())
+                        {
+                            float x, y;
+                            GetPosInRadiusWithRandomOrientation(spoil, urand(3, 15), x, y);
+                            me->GetMotionMaster()->MoveCharge(x, y, spoil->GetPositionZ(), 7.0f, 5);
+                        }
+                    }
+                    break;
+                //Strike Mechanic
                 case EVENT_ANIMATED_STRIKE_START:
                     me->SetFacingTo(GetRandomAngle());
                     DoCast(me, SPELL_ANIMATED_STRIKE_LAUNCH_V);
@@ -1417,11 +1436,11 @@ public:
                     break;
                 case EVENT_ANIMATED_STRIKE_FINISH:
                     DoCast(me, SPELL_ANIMATED_STRIKE_SIT);
-                    events.ScheduleEvent(EVENT_ANIMATED_STRIKE_RESET, 5000);
+                    events.ScheduleEvent(EVENT_ANIMATED_STRIKE_RESET, 2000);
                     break;
                 case EVENT_ANIMATED_STRIKE_RESET:
                     me->RemoveAurasDueToSpell(SPELL_ANIMATED_STRIKE_SIT);
-                    events.ScheduleEvent(EVENT_ANIMATED_STRIKE_START, 2000);
+                    events.ScheduleEvent(EVENT_MOVE_STATUE, 1000);
                     break;
                 }
             }
@@ -2226,86 +2245,6 @@ class spell_boss_matter_scramble_filter : public SpellScriptLoader
     }
 };
 
-// 142983 - Torment
-class spell_boss_torment : public SpellScriptLoader
-{
-    public:
-        spell_boss_torment() : SpellScriptLoader("spell_boss_torment") { }
-
-        class spell_boss_torment_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_boss_torment_AuraScript);
-
-            void OnTick(AuraEffect const* aurEff)
-            {
-                Unit* target = GetTarget();
-                if (!target)
-                    return;
-                Unit* caster = GetCaster();
-                if (!caster)
-                    return;
-
-                float amount = aurEff->GetAmount() + (aurEff->GetAmount() * 0.1f * aurEff->GetTickNumber());
-                caster->CastCustomSpell(target, 136885, &amount, 0, 0, true, 0, aurEff);
-            }
-
-            void HandleDispel(DispelInfo* /*dispelInfo*/)
-            {
-                if (Unit* owner = GetUnitOwner())
-                if (Unit* caster = GetCaster())
-                {
-                    if(!caster->ToCreature() || !caster->ToCreature()->AI())
-                        return;
-
-                    Unit* target = caster->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true);
-                    if(!target)
-                        return;
-                    owner->CastSpell(target, 142942, true, NULL, NULL, caster->GetGUID());
-                }
-            }
-
-            void Register()
-            {
-                AfterDispel += AuraDispelFn(spell_boss_torment_AuraScript::HandleDispel);
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_boss_torment_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_boss_torment_AuraScript();
-        }
-};
-
-//142942 - Torment
-class spell_boss_torment_visual : public SpellScriptLoader
-{
-    public:
-        spell_boss_torment_visual() : SpellScriptLoader("spell_boss_torment_visual") { }
-
-    class spell_boss_torment_visual_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_boss_torment_visual_SpellScript);
-
-        void HandleOnHit()
-        {
-            if(Unit* caster = GetOriginalCaster())
-                if(Unit* target = GetHitUnit())
-                    caster->CastSpell(target, 142983, true);
-        }
-
-        void Register()
-        {
-            OnHit += SpellHitFn(spell_boss_torment_visual_SpellScript::HandleOnHit);
-        };
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_boss_torment_visual_SpellScript();
-    }
-};
-
 // Staff of Resonating Water - 146098
 class spell_spoils_staff_of_resonating_water : public SpellScriptLoader
 {
@@ -2461,6 +2400,15 @@ public:
     {
         PrepareAuraScript(spell_torment_periodic_AuraScript);
 
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (GetTarget() && GetCaster())
+            {
+                float amount = aurEff->GetAmount() + (aurEff->GetAmount() * 0.1f * aurEff->GetTickNumber());
+                GetCaster()->CastCustomSpell(GetTarget(), SPELL_TORMENT_DMG, &amount, 0, 0, true, 0, aurEff);
+            }
+        }
+
         void HandleEffectRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
         {
             if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_ENEMY_SPELL)
@@ -2495,7 +2443,8 @@ public:
 
         void Register()
         {
-            OnEffectRemove += AuraEffectRemoveFn(spell_torment_periodic_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_torment_periodic_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            OnEffectRemove += AuraEffectRemoveFn(spell_torment_periodic_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
         }
     };
 
@@ -2707,8 +2656,6 @@ void AddSC_boss_spoils_of_pandaria()
     new spell_boss_gusting_bomb();
     new spell_boss_matter_scramble();
     new spell_boss_matter_scramble_filter();
-    new spell_boss_torment();
-    new spell_boss_torment_visual();
     new spell_spoils_staff_of_resonating_water();
     new spell_unstable_defense_system_dummy();
     new spell_spoils_encapsulated_pheromones();

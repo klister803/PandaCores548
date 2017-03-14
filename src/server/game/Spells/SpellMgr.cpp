@@ -5481,11 +5481,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 145998: //Strengh of the stone
                     spellInfo->StackAmount = 99;
                     break;
-                case 142983: //Torment
-                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
-                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
-                            eff->ApplyAuraName = SPELL_AURA_PERIODIC_DAMAGE;
-                    break;
                 case 145748: //Encapsulated Pheromones Dmg
                     for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
                     {

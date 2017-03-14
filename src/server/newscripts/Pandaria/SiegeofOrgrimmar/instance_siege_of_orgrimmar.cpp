@@ -2336,6 +2336,23 @@ public:
                     }
                 }
                 break;
+            case NPC_MOGU_SHADOW_RITUALIST:
+                RemoveTormentFromPlayers(creature->GetGUID());
+                break;
+            }
+        }
+
+        void RemoveTormentFromPlayers(uint64 CasterGuid)
+        {
+            Map::PlayerList const& PlayerList = instance->GetPlayers();
+            if (!PlayerList.isEmpty())
+            {
+                for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+                    if (Player* player = Itr->getSource())
+                        if (player->isAlive() && player->HasAura(SPELL_TORMENT_MAIN))
+                            if (Aura* tormentaura = player->GetAura(SPELL_TORMENT_MAIN))
+                                if (CasterGuid == tormentaura->GetCasterGUID())
+                                    player->RemoveAurasDueToSpell(SPELL_TORMENT_MAIN);
             }
         }
 
