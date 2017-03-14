@@ -1912,7 +1912,7 @@ public:
             {
                 float distance = GetCaster()->GetExactDist2d(GetHitUnit());
                 if (distance >= 0 && distance < 300)
-                    SetHitDamage(GetHitDamage() * (1 - (distance / 300)));
+                    SetHitDamage(GetHitDamage() * (1 - (distance / 200)));
             }
         }
 
