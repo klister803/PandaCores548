@@ -435,7 +435,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     phase = PHASE_ONE;
                     realmnum = 0;
                     events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 4000);
-                    events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
+                    //events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
                     events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
                     events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 18000);
                     events.ScheduleEvent(EVENT_SUMMON_WOLF_RIDER, 30000);
@@ -1912,7 +1912,7 @@ public:
             {
                 float distance = GetCaster()->GetExactDist2d(GetHitUnit());
                 if (distance >= 0 && distance < 300)
-                    SetHitDamage((GetHitDamage() / 3) * (1 - (distance / 300)));
+                    SetHitDamage(GetHitDamage() * (1 - (distance / 300)));
             }
         }
 
@@ -2486,7 +2486,7 @@ public:
                 {
                     float mod = 5 * (countmod - targets.size());
                     if (InstanceScript* instance = GetCaster()->GetInstanceScript())
-                        if (Creature* garrosh = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(DATA_GARROSH)))
+                        if (Creature* garrosh = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(DATA_GARROSH_STORMWIND)))
                             GetCaster()->CastCustomSpell(SPELL_MALICIOUS_ENERGY, SPELLVALUE_BASE_POINT0, mod, garrosh, true);
                 }
                 else if (targets.size() > countmod)
