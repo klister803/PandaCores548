@@ -435,7 +435,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     phase = PHASE_ONE;
                     realmnum = 0;
                     events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 4000);
-                    //events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
+                    events.ScheduleEvent(EVENT_CHECK_PROGRESS, 5000);
                     events.ScheduleEvent(EVENT_DESECRATED_WEAPON, 12000);
                     events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 18000);
                     events.ScheduleEvent(EVENT_SUMMON_WOLF_RIDER, 30000);
@@ -1911,8 +1911,8 @@ public:
             if (GetCaster() && GetHitUnit())
             {
                 float distance = GetCaster()->GetExactDist2d(GetHitUnit());
-                if (distance >= 0 && distance < 200)
-                    SetHitDamage(GetHitDamage() * (1 - (distance / 200)));
+                if (distance >= 0 && distance <= 300)
+                    SetHitDamage((GetHitDamage() / 3) * (1 - (distance / 300)));
             }
         }
 
