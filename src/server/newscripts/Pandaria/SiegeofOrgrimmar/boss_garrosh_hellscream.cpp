@@ -628,6 +628,9 @@ class boss_garrosh_hellscream : public CreatureScript
                     {
                         realgarrosh->AI()->DoAction(ACTION_GARROSH_HM_DONE);
                         me->SummonCreature(NPC_PORTAL_TO_REALITY, spspawnpos);
+                        instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MALICE);
+                        instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MALICIOUS_BLAST);
+                        instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_IRON_STAR);
                     }
                 }
             }
@@ -705,6 +708,7 @@ class boss_garrosh_hellscream : public CreatureScript
                     {
                         if (!CheckEvade())
                         {
+                            me->SetFullHealth();
                             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                             EnterEvadeMode();
                             return;
@@ -962,6 +966,9 @@ class boss_garrosh_hellscream : public CreatureScript
                             summons.DespawnEntry(NPC_DESECRATED_WEAPON);
                             summons.DespawnEntry(NPC_EMPOWERED_DESECRATED_WEAPON);
                         }
+                        instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GRIPPING_DESPAIR);
+                        instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EM_GRIPPING_DESPAIR);
+                        instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EXPLOSIVE_DESPAIR_DOT);
                         uint32 hp = me->GetHealth();
                         if (Creature* stormwindgarrosh = me->SummonCreature(NPC_GARROSH, lastgtppos.GetPositionX(), lastgtppos.GetPositionY(), lastgtppos.GetPositionZ(), lastgtppos.GetOrientation()))
                         {
@@ -1911,8 +1918,16 @@ public:
             if (GetCaster() && GetHitUnit())
             {
                 float distance = GetCaster()->GetExactDist2d(GetHitUnit());
-                if (distance >= 0 && distance <= 300)
-                    SetHitDamage((GetHitDamage() / 3) * (1 - (distance / 300)));
+                if (distance)
+                {
+                    //Better Scale Damage
+                    if (distance <= 50)
+                        SetHitDamage((GetHitDamage()) * (1 - (distance / 300)));
+                    else if (distance > 50 && distance <= 80)
+                        SetHitDamage((GetHitDamage() / 2) * (1 - (distance / 300)));
+                    else if (distance > 80 && distance <= 300)
+                        SetHitDamage((GetHitDamage() / 3) * (1 - (distance / 300)));
+                }
             }
         }
 
