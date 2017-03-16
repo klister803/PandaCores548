@@ -68,6 +68,12 @@ enum eSpells
     SPELL_ENCAPSULATED_PHEROMONES     = 142524,
     SPELL_ENCAPSULATED_VISUAL         = 142492,
     SPELL_ENCAPSULATED_PHEROMONES_AT  = 145285,
+    //burial urn
+    SPELL_SPARK_OF_LIFE_CREATER       = 142694,
+    //spark of life
+    SPELL_SPARK_OF_LIFE_VISUAL        = 142676,
+    SPELL_PULSE                       = 142765,
+    SPELL_NOVA                        = 142775,
 
     //Pandaren Relic Box
     SPELL_EMINENCE                    = 146189,
@@ -209,11 +215,11 @@ uint32 mediummantisentry[2] =
 //
 
 //Small
-uint32 smallmoguentry[2] = 
+uint32 smallmoguentry[3] =
 {
-    NPC_ANIMATED_STONE_MOGU,
-    //NPC_BURIAL_URN, not found visual id and not work spells
     NPC_QUILEN_GUARDIANS,
+    NPC_ANIMATED_STONE_MOGU,
+    NPC_BURIAL_URN,
 };
 
 uint32 smallmantisentry[3] =
@@ -933,7 +939,6 @@ public:
                 break;
             }
         }
-
         InstanceScript* instance;
         EventMap events;
         uint32 spawn;
@@ -1095,9 +1100,11 @@ public:
                 {
                     spawn = 0;
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                    if (me->GetEntry() != NPC_AMBER_ENCASED_KUNCHONG)
+                    if (me->GetEntry() != NPC_AMBER_ENCASED_KUNCHONG && me->GetEntry() != NPC_BURIAL_URN)
                         me->SetReactState(REACT_AGGRESSIVE);
                     DoRoomInCombat();
+                    if (me->GetEntry() == NPC_BURIAL_URN)
+                        DoCast(me, SPELL_SPARK_OF_LIFE_CREATER, true);
                 }
                 else 
                     spawn -= diff;
@@ -1453,6 +1460,70 @@ public:
     }
 };
 
+//71433
+class npc_spark_of_life : public CreatureScript
+{
+public:
+    npc_spark_of_life() : CreatureScript("npc_spark_of_life") {}
+
+    struct npc_spark_of_lifeAI : public ScriptedAI
+    {
+        npc_spark_of_lifeAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+        }
+        InstanceScript* instance;
+        EventMap events;
+
+        void Reset()
+        {
+            DoCast(me, SPELL_SPARK_OF_LIFE_VISUAL, true);
+        }
+
+        void JustDied(Unit* killer)
+        {
+            DoCast(me, SPELL_NOVA, true); //SPELL_ATTR0_CASTABLE_WHILE_DEAD
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (pointId == 4)
+                events.ScheduleEvent(EVENT_ACTIVE, 3000);
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_ACTIVE)
+                {
+                    if (me->ToTempSummon())
+                    {
+                        if (Unit* spoil = me->ToTempSummon()->GetSummoner())
+                        {
+                            float x, y;
+                            GetPosInRadiusWithRandomOrientation(spoil, urand(3, 30), x, y);
+                            me->GetMotionMaster()->MoveCharge(x, y, spoil->GetPositionZ(), 5.0f, 4);
+                        }
+                    }
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_spark_of_lifeAI(creature);
+    }
+};
+
 //73104
 class npc_unstable_spark : public CreatureScript
 {
@@ -1594,15 +1665,21 @@ public:
                     break;
                 case GO_SMALL_MOGU_BOX:
                 {
-                    uint8 entry = urand(0, 1);
-                    if (entry)
+                    uint8 entry = urand(0, 2);
+                    switch (entry)
                     {
+                    case 0:
                         for (uint8 n = 0; n < 3; n++)
                             go->SummonCreature(smallmoguentry[entry], pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
                         summoner->SummonCreature(smallmoguentry[entry], pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
-                    }
-                    else
+                        break;
+                    case 1:
                         summoner->SummonCreature(smallmoguentry[entry], pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+                        break;
+                    case 2:
+                        summoner->SummonCreature(smallmoguentry[entry], pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000);
+                        break;
+                    }
                     break;
                 }
                 case GO_SMALL_MANTIS_BOX:
@@ -2632,6 +2709,51 @@ public:
     }
 };
 
+//142695
+class spell_spark_of_life_creater : public SpellScriptLoader
+{
+public:
+    spell_spark_of_life_creater() : SpellScriptLoader("spell_spark_of_life_creater") { }
+
+    class spell_spark_of_life_creater_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_spark_of_life_creater_SpellScript);
+
+        void CheckTarget(SpellEffIndex effIndex)
+        {
+            if (GetCaster() && GetExplTargetDest())
+            {
+                float spawnx, spawny, spawnz;
+                GetExplTargetDest()->GetPosition(spawnx, spawny, spawnz);
+                if (GetCaster()->ToTempSummon())
+                {
+                    if (Unit* spoil = GetCaster()->ToTempSummon()->GetSummoner())
+                    {
+                        if (Creature* sparkoflife = spoil->SummonCreature(NPC_SPARK_OF_LIFE, spawnx, spawny, spawnz, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 4000))
+                        {
+                            float destx, desty;
+                            GetPosInRadiusWithRandomOrientation(spoil, urand(3, 30), destx, desty);
+                            sparkoflife->AddAura(SPELL_PULSE, sparkoflife);
+                            sparkoflife->GetMotionMaster()->MoveCharge(destx, desty, spoil->GetPositionZ(), 5.0f, 4);
+                        }
+                    }
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectHit += SpellEffectFn(spell_spark_of_life_creater_SpellScript::CheckTarget, EFFECT_0, SPELL_EFFECT_TRIGGER_MISSILE);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_spark_of_life_creater_SpellScript();
+    }
+};
+
+
 void AddSC_boss_spoils_of_pandaria()
 {
     new npc_ssop_spoils();
@@ -2640,6 +2762,7 @@ void AddSC_boss_spoils_of_pandaria()
     new npc_lift_hook();
     new npc_generic_sop_units();
     new npc_stone_statue();
+    new npc_spark_of_life();
     new npc_unstable_spark();
     new go_ssop_spoils();
     new go_generic_lever();
@@ -2666,4 +2789,5 @@ void AddSC_boss_spoils_of_pandaria()
     new spell_gusting_bomb_dmg();
     new spell_strength_of_the_stone();
     new spell_supernova();
+    new spell_spark_of_life_creater();
 }

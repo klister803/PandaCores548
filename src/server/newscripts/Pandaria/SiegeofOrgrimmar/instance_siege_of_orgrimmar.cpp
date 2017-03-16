@@ -1207,6 +1207,11 @@ public:
                     for (std::vector<uint64>::const_iterator itr = roomgateGuids.begin(); itr != roomgateGuids.end(); itr++)
                         HandleGameObject(*itr, true);
 
+                    //Block interact with all boxes
+                    for (std::vector<uint64>::const_iterator itr = sopboxGuids.begin(); itr != sopboxGuids.end(); itr++)
+                        if (GameObject* box = instance->GetGameObject(*itr))
+                            box->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+
                     HandleGameObject(spentdoorGuid, true);
                     HandleGameObject(spexdoorGuid, true);
                     //Remove all buffs

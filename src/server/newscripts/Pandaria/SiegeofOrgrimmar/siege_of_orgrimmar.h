@@ -326,7 +326,8 @@ enum eCreatures
     //Mogu
     NPC_ANIMATED_STONE_MOGU         = 71380,
     NPC_BURIAL_URN                  = 71382,
-    NPC_QUILEN_GUARDIANS            = 71378, 
+    NPC_QUILEN_GUARDIANS            = 71378,
+    NPC_SPARK_OF_LIFE               = 71433,
     //Mantis
     NPC_SRITHIK_BOMBARDIER          = 71385,
     NPC_AMBER_ENCASED_KUNCHONG      = 71388,
