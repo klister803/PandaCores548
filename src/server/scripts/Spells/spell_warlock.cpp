@@ -316,6 +316,55 @@ class spell_warl_archimondes_vengeance_cooldown : public SpellScriptLoader
         }
 };
 
+class spell_warl_soulburn_summ_cooldown : public SpellScriptLoader
+{
+public:
+    spell_warl_soulburn_summ_cooldown() : SpellScriptLoader("spell_warl_soulburn_summ_cooldown") { }
+
+    class spell_warl_soulburn_summ_cooldown_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_warl_soulburn_summ_cooldown_SpellScript);
+
+        void HandleAfterCast()
+        {
+            if (Unit* caster = GetCaster())
+                if (Player* plr = caster->ToPlayer())
+                    if (caster->HasAura(74434))
+                    {
+                        double end_time = getPreciseTime() + 60.0;
+
+                        plr->AddSpellCooldown(688, 0, end_time);
+                        plr->AddSpellCooldown(691, 0, end_time);
+                        plr->AddSpellCooldown(697, 0, end_time);
+                        plr->AddSpellCooldown(712, 0, end_time);
+                        plr->AddSpellCooldown(112866, 0, end_time);
+                        plr->AddSpellCooldown(112867, 0, end_time);
+                        plr->AddSpellCooldown(112868, 0, end_time);
+                        plr->AddSpellCooldown(112869, 0, end_time);
+
+                        plr->SendSpellCooldown(688, 0, 60000);
+                        plr->SendSpellCooldown(691, 0, 60000);
+                        plr->SendSpellCooldown(697, 0, 60000);
+                        plr->SendSpellCooldown(712, 0, 60000);
+                        plr->SendSpellCooldown(112866, 0, 60000);
+                        plr->SendSpellCooldown(112867, 0, 60000);
+                        plr->SendSpellCooldown(112868, 0, 60000);
+                        plr->SendSpellCooldown(112869, 0, 60000);
+                    }
+        }
+
+        void Register()
+        {
+            AfterCast += SpellCastFn(spell_warl_soulburn_summ_cooldown_SpellScript::HandleAfterCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_warl_soulburn_summ_cooldown_SpellScript();
+    }
+};
+
 // Archimonde's Vengeance - 108505
 class spell_warl_archimondes_vengance : public SpellScriptLoader
 {
@@ -2903,4 +2952,5 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_void_shield_damage();
     new spell_warl_burning_embers2();
     new spell_warl_dark_apotheosis();
+    new spell_warl_soulburn_summ_cooldown();
 }
