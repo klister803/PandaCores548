@@ -2555,6 +2555,7 @@ public:
             case NPC_RIKKAL:
             case NPC_HISEK:
             case NPC_GARROSH:
+            case NPC_KORKRON_IRON_STAR_HM: //safe for some exploits
                 return true;
             }
             return false;
