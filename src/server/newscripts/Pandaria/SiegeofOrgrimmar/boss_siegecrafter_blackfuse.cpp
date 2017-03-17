@@ -364,6 +364,7 @@ class boss_siegecrafter_blackfuse : public CreatureScript
              for (uint8 n = 1; n < 4; n++)
                  if (Creature* weapon = me->SummonCreature(wavearray[wavecount][n], spawnweaponpos[n - 1]))
                      weapon->GetMotionMaster()->MoveJump(destpos.GetPositionX(), destpos.GetPositionY(), destpos.GetPositionZ(), 8.0f, 0.0f, 0);
+             me->MonsterTextEmote("New Weapons Spawn on Conveyor", 0, true);
              weaponwavecount = weaponwavecount >= 5 ? 0 : ++weaponwavecount;
          }
 
