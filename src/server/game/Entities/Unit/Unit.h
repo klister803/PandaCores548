@@ -2189,7 +2189,6 @@ class Unit : public WorldObject
         float m_modMeleeHitChance;
         float m_modRangedHitChance;
         float m_modSpellHitChance;
-        float m_expertise;
         int32 m_baseSpellCritChance;
         LiquidData liquid_status;
         ZLiquidStatus Zliquid_status;

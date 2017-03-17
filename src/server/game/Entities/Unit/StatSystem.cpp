@@ -1049,6 +1049,8 @@ void Player::UpdateSpellHitChances()
 void Player::UpdateExpertise()
 {
     bool first = true;
+    float expertiseRating = GetRatingBonusValue(CR_EXPERTISE);
+
     for (uint8 i = BASE_ATTACK; i < MAX_ATTACK; ++i)
     {
         if (getClass() == CLASS_HUNTER)
@@ -1062,9 +1064,8 @@ void Player::UpdateExpertise()
                 continue;
         }
             
-        float expertise = GetRatingBonusValue(CR_EXPERTISE);
+        float expertise = expertiseRating;
         Item* weapon = GetWeaponForAttack(WeaponAttackType(i), true);
-
         AuraEffectList const& expAuras = GetAuraEffectsByType(SPELL_AURA_MOD_EXPERTISE);
         for (AuraEffectList::const_iterator itr = expAuras.begin(); itr != expAuras.end(); ++itr)
         {
@@ -1078,12 +1079,6 @@ void Player::UpdateExpertise()
 
         if (expertise < 0)
             expertise = 0.0f;
-
-        if (first || expertise > m_expertise)
-        {
-            m_expertise = expertise;
-            first = false;
-        }
 
         SetFloatValue(PLAYER_EXPERTISE + i, expertise);
     }
