@@ -705,12 +705,21 @@ public:
                     break;
                 case NPC_EMBODIED_DESPAIR:
                     edespairGuids.push_back(creature->GetGUID());
+                    creature->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                    creature->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                    creature->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
                     break;
                 case NPC_EMBODIED_DOUBT:
                     edoubtGuids.push_back(creature->GetGUID());
+                    creature->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                    creature->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                    creature->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
                     break;
                 case NPC_EMBODIED_FEAR:
                     efearGuids.push_back(creature->GetGUID());
+                    creature->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                    creature->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                    creature->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK_DEST, true);
                     break;
                 case NPC_SIEGE_ENGINEER:
                     engeneerGuids.push_back(creature->GetGUID());
@@ -2400,6 +2409,8 @@ public:
                             add->Respawn();
                             add->GetMotionMaster()->MoveTargetedHome();
                         }
+                        else
+                            add->SetFullHealth();
                     }
                 }
 
@@ -2412,6 +2423,8 @@ public:
                             add->Respawn();
                             add->GetMotionMaster()->MoveTargetedHome();
                         }
+                        else
+                            add->SetFullHealth();
                     }
                 }
 
@@ -2424,6 +2437,8 @@ public:
                             add->Respawn();
                             add->GetMotionMaster()->MoveTargetedHome();
                         }
+                        else
+                            add->SetFullHealth();
                     }
                 }
             }
