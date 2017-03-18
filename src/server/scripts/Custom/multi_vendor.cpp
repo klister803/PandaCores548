@@ -339,7 +339,7 @@ public:
 
     bool OnGossipHello(Player* player, Creature* creature)
     {
-        QueryResult result = CharacterDatabase.PQuery("SELECT itemguid, itemEntry, count FROM character_donate WHERE owner_guid = '%u' AND state = 0 AND `type` = 0", player->GetGUIDLow());
+        QueryResult result = CharacterDatabase.PQuery("SELECT itemguid, itemEntry, count, efircount FROM character_donate WHERE owner_guid = '%u' AND state = 0 AND `type` = 0", player->GetGUIDLow());
         if (!result)
         {
             LocaleConstant loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
@@ -356,6 +356,7 @@ public:
                 uint32 item_guid = fields[0].GetUInt32();
                 uint32 entry = fields[1].GetUInt32();
                 uint32 count = fields[2].GetUInt32();
+                uint32 efir = fields[3].GetUInt32() * 0.8;
                 ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(entry);
                 if (pProto && pProto->Stackable < 2)
                 {
@@ -366,8 +367,10 @@ public:
                         if (ItemLocale const* il = sObjectMgr->GetItemLocale(pProto->ItemId))
                             ObjectMgr::GetLocaleString(il->Name, loc_idx, Name);
                     }
+                    char printinfo[500];
+                    sprintf(printinfo, sObjectMgr->GetTrinityString(20043, loc_idx), Name.c_str(), efir);
 
-                    player->ADD_GOSSIP_ITEM_EXTENDED(0, Name, GOSSIP_SENDER_MAIN, item_guid, sObjectMgr->GetTrinityString(20042, loc_idx), 0, false);
+                    player->ADD_GOSSIP_ITEM_EXTENDED(0, printinfo, GOSSIP_SENDER_MAIN, item_guid, sObjectMgr->GetTrinityString(20042, loc_idx), 0, false);
                 }
             }while (result->NextRow());
         }
