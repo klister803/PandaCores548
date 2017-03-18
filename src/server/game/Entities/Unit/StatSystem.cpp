@@ -349,8 +349,11 @@ void Player::UpdateHast(bool _melee, bool _range, bool _spell, bool _cast)
 //     SPELL_AURA_MOD_CASTING_SPEED           = 8;
 //     SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK = 9;
 //     SPELL_AURA_HASTE_SPELLS                = 10;
+    if (!_melee && !_range && !_spell && !_cast)
+        return;
 
-    float hastAurasMod[11] = {0.0f};
+    std::vector<float>hastAurasMod;
+    hastAurasMod.assign(11, 1.0f);
 
     if (_melee)
     {
