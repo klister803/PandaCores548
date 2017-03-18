@@ -336,13 +336,16 @@ public:
 
         void OnSpellClick(Unit* clicker)
         {
-            if (instance->GetBossState(DATA_THOK) == DONE && instance->GetBossState(DATA_BLACKFUSE) == DONE)
+            if (instance->GetBossState(DATA_KLAXXI) != DONE)
             {
-                if (me->HasAura(SPELL_AURA_VISUAL_FS))
+                if (instance->GetBossState(DATA_THOK) == DONE && instance->GetBossState(DATA_BLACKFUSE) == DONE)
                 {
-                    me->RemoveAurasDueToSpell(SPELL_AURA_VISUAL_FS);
-                    if (Creature* ck = me->GetCreature(*me, instance->GetData64(NPC_KLAXXI_CONTROLLER)))
-                        ck->AI()->DoAction(ACTION_KLAXXI_START);
+                    if (me->HasAura(SPELL_AURA_VISUAL_FS))
+                    {
+                        me->RemoveAurasDueToSpell(SPELL_AURA_VISUAL_FS);
+                        if (Creature* ck = me->GetCreature(*me, instance->GetData64(NPC_KLAXXI_CONTROLLER)))
+                            ck->AI()->DoAction(ACTION_KLAXXI_START);
+                    }
                 }
             }
         }
