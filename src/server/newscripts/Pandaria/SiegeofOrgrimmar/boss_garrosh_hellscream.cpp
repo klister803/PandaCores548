@@ -1125,16 +1125,6 @@ public:
         {
             if (me->HasAura(SPELL_ANCESTRAL_FURY))
                 DoCast(me, SPELL_FURY, true);
-
-            if (me->GetEntry() == NPC_EMBODIED_DOUBT)
-            {
-                if (curSpellID == SPELL_EMBODIED_DOUBT_HM)
-                {
-                    events.CancelEvent(EVENT_EMBODIED_DOUBT);
-                    me->InterruptNonMeleeSpells(true);
-                    events.ScheduleEvent(EVENT_EMBODIED_DOUBT, 4000);
-                }
-            }
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
