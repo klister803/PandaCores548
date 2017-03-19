@@ -440,6 +440,11 @@ class boss_garrosh_hellscream : public CreatureScript
                     events.ScheduleEvent(EVENT_HELLSCREAM_WARSONG, 18000);
                     events.ScheduleEvent(EVENT_SUMMON_WOLF_RIDER, 30000);
                     events.ScheduleEvent(EVENT_SUMMON_ENGINEER, 20000);
+
+                    //For safe
+                    if (me->GetMap()->IsHeroic())
+                        if (Creature* kgs = me->GetCreature(*me, instance->GetData64(NPC_KORKRON_GUNSHIP)))
+                            kgs->AI()->DoAction(ACTION_RESET);
                 }
             }
 
@@ -1013,6 +1018,7 @@ class boss_garrosh_hellscream : public CreatureScript
                         break;
                     }
                     case EVENT_BOMBARTMENT:
+                        me->MonsterTextEmote("Warning: Bombartment", 0, true);
                         if (Creature* kg = me->GetCreature(*me, instance->GetData64(NPC_KORKRON_GUNSHIP)))
                             kg->AI()->DoAction(ACTION_BOMBARTMENT);
                         if (++bombartmentnum == 2)
@@ -1101,6 +1107,7 @@ public:
                     DoCast(me, SPELL_BLOOD_FRENZIED, true);
                     if (Player* pl = me->FindNearestPlayer(200.0f, true))
                     {
+                        me->GetMotionMaster()->Clear(false);
                         me->AddThreat(pl, 50000000.0f);
                         me->SetReactState(REACT_AGGRESSIVE);
                         me->Attack(pl, true);
@@ -1114,10 +1121,20 @@ public:
             }
         }
 
-        void OnInterruptCast(Unit* /*caster*/, uint32 /*spellId*/, uint32 /*curSpellID*/, uint32 /*schoolMask*/)
+        void OnInterruptCast(Unit* /*caster*/, uint32 /*spellId*/, uint32 curSpellID, uint32 /*schoolMask*/)
         {
             if (me->HasAura(SPELL_ANCESTRAL_FURY))
                 DoCast(me, SPELL_FURY, true);
+
+            if (me->GetEntry() == NPC_EMBODIED_DOUBT)
+            {
+                if (curSpellID == SPELL_EMBODIED_DOUBT_HM)
+                {
+                    events.CancelEvent(EVENT_EMBODIED_DOUBT);
+                    me->InterruptNonMeleeSpells(true);
+                    events.ScheduleEvent(EVENT_EMBODIED_DOUBT, 4000);
+                }
+            }
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -1793,16 +1810,16 @@ public:
             switch (action)
             {
             case ACTION_BOMBARTMENT:
-                DoCast(me, SPELL_CALL_BOMBARTMENT, true);
+                DoCast(me, SPELL_CALL_BOMBARTMENT);
                 break;
             case ACTION_RESET:
                 me->RemoveAurasDueToSpell(SPELL_CALL_BOMBARTMENT);
-                DespawnAllAT();
+                DespawnAllATAndSummons();
                 break;
             }
         }
 
-        void DespawnAllAT()
+        void DespawnAllATAndSummons()
         {
             std::list<AreaTrigger*> atlist;
             atlist.clear();
@@ -1810,6 +1827,13 @@ public:
             if (!atlist.empty())
                 for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
                     (*itr)->RemoveFromWorld();
+
+            std::list<Creature*> iistarlist;
+            iistarlist.clear();
+            GetCreatureListWithEntryInGrid(iistarlist, me, NPC_KORKRON_IRON_STAR_HM, 400.0f);
+            if (!iistarlist.empty())
+                for (std::list<Creature*>::const_iterator Itr = iistarlist.begin(); Itr != iistarlist.end(); Itr++)
+                    (*Itr)->DespawnOrUnsummon();
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -1988,8 +2012,22 @@ public:
         void OnPeriodic(AuraEffect const* aurEff)
         {
             if (GetCaster() && GetCaster()->ToCreature())
-                if (Unit* target = GetCaster()->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
-                    GetCaster()->CastSpell(target, SPELL_EM_WHIRLING_CORRUPTION_S, true);
+            {
+                switch (aurEff->GetTickNumber())
+                {
+                case 2:
+                case 4:
+                case 6:
+                case 8:
+                case 10:
+                case 12:
+                    if (Unit* target = GetCaster()->ToCreature()->AI()->SelectTarget(SELECT_TARGET_FARTHEST, 0, 100.0f, true))
+                        GetCaster()->CastSpell(target, SPELL_EM_WHIRLING_CORRUPTION_S, true);
+                    break;
+                default:
+                    break;
+                }
+            }
         }
 
         void Register()
@@ -2647,9 +2685,9 @@ public:
                             {
                                 if (IfTargetHavePlayersInRange(*itr, count, 8.0f))
                                 {
-                                    if (Creature* garrosh = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(DATA_GARROSH)))
+                                    if (Creature* garroshstormwind = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(DATA_GARROSH_STORMWIND)))
                                     {
-                                        garrosh->CastSpell(*itr, SPELL_FIRE_UNSTABLE_IRON_STAR);
+                                        garroshstormwind->CastSpell(*itr, SPELL_FIRE_UNSTABLE_IRON_STAR);
                                         break;
                                     }
                                 }
