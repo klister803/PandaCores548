@@ -1,0 +1,1 @@
+UPDATE `spell_proc_event` SET `Cooldown`='0' WHERE (`entry`='108558') AND (`effectmask`='7');
