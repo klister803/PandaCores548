@@ -2491,7 +2491,7 @@ public:
                             float x, y;
                             GetPosInRadiusWithRandomOrientation(GetCaster(), float(urand(20, 40)), x, y);
                             if (Creature* mof = realgarrosh->SummonCreature(NPC_MANIFESTATION_OF_RAGE, x, y, GetCaster()->GetPositionZ(), 0.0f, TEMPSUMMON_CORPSE_DESPAWN))
-                                mof->AI()->DoZoneInCombat(mof, 150.0f);
+                                mof->AI()->DoZoneInCombat(mof, 300.0f);
                         }
                     }
                 }
