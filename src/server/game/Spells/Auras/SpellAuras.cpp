@@ -421,6 +421,9 @@ Aura* Aura::TryRefreshStackOrCreate(SpellInfo const* spellproto, uint32 tryEffMa
     if (!effMask)
         return NULL;
 
+    if (caster && owner && caster->GetGUID() != owner->GetGUID())
+        caster->m_lastAurasTarget[spellproto->Id] = owner->GetGUID();
+
     Aura* foundAura = owner->ToUnit()->_TryStackingOrRefreshingExistingAura(spellproto, effMask, caster, baseAmount, castItem, casterGUID);
     if (foundAura != NULL && !stackAmount)
     {

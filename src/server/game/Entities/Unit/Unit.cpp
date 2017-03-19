@@ -3992,8 +3992,17 @@ void Unit::_UnapplyAura(AuraApplicationMap::iterator &i, AuraRemoveMode removeMo
 
         aura->HandleAuraSpecificMods(aurApp, caster, false, false);
 
-        if (!HasSomeCasterAura(caster->GetGUID()))
-            caster->m_unitsHasCasterAura.erase(GetGUID());
+        if (caster->GetGUID() != GetGUID())
+        {
+            if (!HasSomeCasterAura(caster->GetGUID()))
+                caster->m_unitsHasCasterAura.erase(GetGUID());
+
+            uint32 id = aura->GetId();
+
+            if (caster->m_lastAurasTarget.find(id) != caster->m_lastAurasTarget.end())
+                if (caster->m_lastAurasTarget[id] == GetGUID())
+                    caster->m_lastAurasTarget.erase(id);
+        }
     }
 
     // only way correctly remove all auras from list

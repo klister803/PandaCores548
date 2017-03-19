@@ -2583,6 +2583,7 @@ class Unit : public WorldObject
         void OnRelocated();
 
         std::set<uint64> m_unitsHasCasterAura;
+        std::map<uint32, uint64> m_lastAurasTarget;
 
         bool HasSomeCasterAura(uint64 guid);
         bool HasMyAura(uint32 spellId);
