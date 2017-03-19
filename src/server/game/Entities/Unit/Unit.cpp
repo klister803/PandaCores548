@@ -7934,6 +7934,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 }
                 case 108558: // Nightfall
                 {
+                    if (m_lastAurasTarget.find(procSpell->Id) == m_lastAurasTarget.end())
+                        return false;
+
+                    if (m_lastAurasTarget[procSpell->Id] != target->GetGUID())
+                        return false;
+
                     triggered_spell_id = 17941;
                     break;
                 }
