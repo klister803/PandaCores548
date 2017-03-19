@@ -8196,6 +8196,8 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
             case 103103: // Malefic Grasp
             {
                 float afflictionDamage = 0;
+                bool sendVisual = false;
+                uint32 deley = GetAmplitude() / 3;
 
                 // Every tick, Malefic Grasp deals instantly 50% of tick-damage for each affliction effects on the target
                 // Corruption ...
@@ -8208,6 +8210,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
                             afflictionDamage = CalculatePct(afflictionDamage, MGEff2->GetAmount());
 
                     caster->CastCustomSpell(target, 131740, &afflictionDamage, NULL, NULL, true);
+                    sendVisual = true;
                 }
                 // Unstable Affliction ...
                 if (Aura* unstableAffliction = target->GetAura(30108, caster->GetGUID()))
@@ -8218,7 +8221,8 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
                         if (AuraEffect* MGEff2 = Malefic_Grasp->GetEffect(EFFECT_2))
                             afflictionDamage = CalculatePct(afflictionDamage, MGEff2->GetAmount());
 
-                    caster->CastCustomSpell(target, 131736, &afflictionDamage, NULL, NULL, true);
+                    caster->CastCustomSpellAfterDeley(deley, target, 131736, afflictionDamage, NULL, NULL, true);
+                    sendVisual = true;
                 }
                 // Agony ...
                 if (Aura* agony = target->GetAura(980, caster->GetGUID()))
@@ -8229,9 +8233,13 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
                         if (AuraEffect* MGEff2 = Malefic_Grasp->GetEffect(EFFECT_2))
                             afflictionDamage = CalculatePct(afflictionDamage, MGEff2->GetAmount());
 
-                    caster->CastCustomSpell(target, 131737, &afflictionDamage, NULL, NULL, true);
+                    caster->CastCustomSpellAfterDeley(deley * 2, target, 131737, afflictionDamage, NULL, NULL, true);
                     agony->CalcAgonyTickDamage();
+                    sendVisual = true;
                 }
+
+                if (sendVisual)
+                    caster->SendCreateVisual(target, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 20.0f, 25955);
                 break;
             }
             case 1120: // Soul Drain
@@ -8250,6 +8258,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
                             AddPct(damage, eff5->GetAmount());
 
                         float afflictionDamage = 0;
+                        uint32 deley = GetAmplitude() / 3;
 
                         // ... and deals instantly 100% of tick-damage for each affliction effects on the target
                         // Corruption ...
@@ -8270,7 +8279,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
                             if (AuraEffect* Eff4 = Soul_Drain->GetEffect(EFFECT_4))
                                 afflictionDamage = CalculatePct(afflictionDamage, Eff4->GetAmount());
 
-                            caster->CastCustomSpell(target, 131736, &afflictionDamage, NULL, NULL, true);
+                            caster->CastCustomSpellAfterDeley(deley, target, 131736, afflictionDamage, NULL, NULL, true);
                         }
                         // Agony ...
                         if (Aura* agony = target->GetAura(980, caster->GetGUID()))
@@ -8280,7 +8289,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
                             if (AuraEffect* Eff4 = Soul_Drain->GetEffect(EFFECT_4))
                                 afflictionDamage = CalculatePct(afflictionDamage, Eff4->GetAmount());
 
-                            caster->CastCustomSpell(target, 131737, &afflictionDamage, NULL, NULL, true);
+                            caster->CastCustomSpellAfterDeley(deley * 2, target, 131737, afflictionDamage, NULL, NULL, true);
                         }
                     }
                 }

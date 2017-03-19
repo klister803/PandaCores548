@@ -25078,6 +25078,11 @@ void Unit::SendSpellCreateVisual(SpellInfo const* spellInfo, Position const* pos
         }
     }
 
+    SendCreateVisual(target, positionX, positionY, positionZ, speed, visual, unk1, unk2, positionFind);
+}
+
+void Unit::SendCreateVisual(Unit* target, float positionX, float positionY, float positionZ, float speed, uint32 visual, uint16 unk1, uint16 unk2, bool positionFind)
+{
     ObjectGuid casterGuid = GetObjectGuid();
     ObjectGuid targetGuid = target ? target->GetGUID() : NULL;
     WorldPacket data(SMSG_SPELL_CREATE_VISUAL, 50);
