@@ -1548,25 +1548,10 @@ class spell_mage_living_bomb : public SpellScriptLoader
                 if (Unit* caster = GetCaster())
                     if (Unit* target = GetTarget())
                         if (caster->HasAura(SPELL_MAGE_BRAIN_FREEZE))
-                        {
-                            uint64 procTarget = 0;
-                            int32 maxDuration = 0;
-
-                            for (std::set<uint64>::iterator iter = caster->m_unitsHasCasterAura.begin(); iter != caster->m_unitsHasCasterAura.end(); ++iter)
-                            {
-                                if (Unit* _target = ObjectAccessor::GetUnit(*caster, *iter))
-                                    if (Aura* aura = _target->GetAura(44457, caster->GetGUID()))
-                                        if (aura->GetDuration() >= maxDuration)
-                                        {
-                                            maxDuration = aura->GetDuration();
-                                            procTarget = *iter;
-                                        }
-                            }
-
-                            if (procTarget == target->GetGUID())
-                                if (roll_chance_i(25))
-                                    caster->CastSpell(caster, SPELL_MAGE_BRAIN_FREEZE_TRIGGERED, true);
-                        }
+                            if (caster->m_lastAurasTarget.find(44457) != caster->m_lastAurasTarget.end())
+                                if (caster->m_lastAurasTarget[44457] == target->GetGUID())
+                                    if (roll_chance_i(25))
+                                        caster->CastSpell(caster, SPELL_MAGE_BRAIN_FREEZE_TRIGGERED, true);
             }
 
             void AfterRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
