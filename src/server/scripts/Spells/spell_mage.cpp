@@ -2119,31 +2119,6 @@ class spell_mage_flameglow : public SpellScriptLoader
         }
 };
 
-class GlyphOfIcyVeins : public BasicEvent
-{
-public:
-    GlyphOfIcyVeins(Unit* caster, Unit* target, uint32 spellId) : _caster(caster), _target(target), _spellId(spellId)
-    {
-    }
-
-    bool Execute(uint64 /*execTime*/, uint32 /*diff*/)
-    {
-        if (!_caster || !_target)
-            return false;
-
-        if (!_caster->IsInWorld() || !_target->IsInWorld())
-            return false;
-
-        _caster->CastSpell(_target, _spellId, TRIGGERED_FULL_MASK);
-        return true;
-    }
-
-private:
-    Unit* _caster;
-    Unit* _target;
-    uint32 _spellId;
-};
-
 // Glyph of Icy Veins - 56364
 class spell_mage_glyph_of_icy_veins : public SpellScriptLoader
 {
@@ -2229,8 +2204,8 @@ class spell_mage_glyph_of_icy_veins : public SpellScriptLoader
                             {
                                 if (owner->HasAura(SPELL_MAGE_ICY_VEINS))
                                 {
-                                    caster->m_Events.AddEvent(new GlyphOfIcyVeins(caster, target, 131581), caster->m_Events.CalculateTime(200));
-                                    caster->m_Events.AddEvent(new GlyphOfIcyVeins(caster, target, 131581), caster->m_Events.CalculateTime(400));
+                                    caster->CastSpellAfterDeley(200, target, 131581, true);
+                                    caster->CastSpellAfterDeley(400, target, 131581, true);
                                 }
                             }
                         }
@@ -2238,18 +2213,18 @@ class spell_mage_glyph_of_icy_veins : public SpellScriptLoader
                         {
                             if (GetSpellInfo()->Id == SPELL_MAGE_FROSTBOLT)
                             {
-                                caster->m_Events.AddEvent(new GlyphOfIcyVeins(caster, target, 131079), caster->m_Events.CalculateTime(200));
-                                caster->m_Events.AddEvent(new GlyphOfIcyVeins(caster, target, 131079), caster->m_Events.CalculateTime(400));
+                                caster->CastSpellAfterDeley(200, target, 131079, true);
+                                caster->CastSpellAfterDeley(400, target, 131079, true);
                             }
                             else if (GetSpellInfo()->Id == SPELL_MAGE_ICE_LANCE)
                             {
-                                caster->m_Events.AddEvent(new GlyphOfIcyVeins(caster, target, 131080), caster->m_Events.CalculateTime(200));
-                                caster->m_Events.AddEvent(new GlyphOfIcyVeins(caster, target, 131080), caster->m_Events.CalculateTime(400));
+                                caster->CastSpellAfterDeley(200, target, 131080, true);
+                                caster->CastSpellAfterDeley(400, target, 131080, true);
                             }
                             else if (GetSpellInfo()->Id == SPELL_MAGE_FROSTFIRE_BOLT)
                             {
-                                caster->m_Events.AddEvent(new GlyphOfIcyVeins(caster, target, 131081), caster->m_Events.CalculateTime(200));
-                                caster->m_Events.AddEvent(new GlyphOfIcyVeins(caster, target, 131081), caster->m_Events.CalculateTime(400));
+                                caster->CastSpellAfterDeley(200, target, 131081, true);
+                                caster->CastSpellAfterDeley(400, target, 131081, true);
                             }
                         }
                     }
