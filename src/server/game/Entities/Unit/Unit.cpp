@@ -1186,52 +1186,6 @@ void Unit::CastStop(uint32 except_spellid)
             InterruptSpell(CurrentSpellTypes(i), false);
 }
 
-class CastAfterDeley : public BasicEvent
-{
-public:
-    CastAfterDeley(Unit* caster, Unit* target, uint32 spellId, float bp0, float bp1, float bp2, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster)
-        : _caster(caster), _target(target), _spellId(spellId), _bp0(bp0), _bp1(bp1), _bp2(bp2), _triggered(triggered), _castItem(castItem), _triggeredByAura(triggeredByAura), _originalCaster(originalCaster)
-    {
-    }
-
-    bool Execute(uint64 /*execTime*/, uint32 /*diff*/)
-    {
-        if (!_caster || !_target)
-            return false;
-
-        if (!_caster->IsInWorld() || !_target->IsInWorld())
-            return false;
-
-        if (_bp0 || _bp1 || _bp2)
-            _caster->CastCustomSpell(_target, _spellId, &_bp0, &_bp1, &_bp2, _triggered, _castItem, _triggeredByAura, _originalCaster);
-        else
-            _caster->CastSpell(_target, _spellId, _triggered, _castItem, _triggeredByAura, _originalCaster);
-        return true;
-    }
-
-private:
-    Unit* _caster;
-    Unit* _target;
-    uint32 _spellId;
-    bool _triggered;
-    Item* _castItem;
-    AuraEffect const* _triggeredByAura;
-    uint64 _originalCaster;
-    float _bp0;
-    float _bp1;
-    float _bp2;
-};
-
-void Unit::CastCustomSpellAfterDeley(uint32 deley, Unit* victim, uint32 spellId, float bp0, float bp1, float bp2, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster)
-{
-    m_Events.AddEvent(new CastAfterDeley(this, victim, spellId, bp0, bp1, bp2, triggered, castItem, triggeredByAura, originalCaster), m_Events.CalculateTime(deley));
-}
-
-void Unit::CastSpellAfterDeley(uint32 deley, Unit* victim, uint32 spellId, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster)
-{
-    m_Events.AddEvent(new CastAfterDeley(this, victim, spellId, 0, 0, 0, triggered, castItem, triggeredByAura, originalCaster), m_Events.CalculateTime(deley));
-}
-
 void Unit::CastSpell(SpellCastTargets const& targets, SpellInfo const* spellInfo, CustomSpellValues const* value, TriggerCastFlags triggerFlags, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster)
 {
     if (!spellInfo)

@@ -2192,6 +2192,21 @@ class spell_mage_glyph_of_icy_veins : public SpellScriptLoader
                 }
             }
 
+            void CastSpellAfterDeley(Unit* caster, Unit* target, uint32 spellId, uint32 deley)
+            {
+                caster->m_Functions.AddFunction([caster, target, spellId]()-> void
+                {
+                    if (!caster || !target)
+                        return;
+
+                    if (!caster->IsInWorld() || !target->IsInWorld())
+                        return;
+
+                    caster->CastSpell(target, spellId, true);
+
+                }, caster->m_Functions.CalculateTime(deley));
+            }
+
             void HandleAfterCast()
             {
                 if (Unit* caster = GetCaster())
@@ -2204,8 +2219,8 @@ class spell_mage_glyph_of_icy_veins : public SpellScriptLoader
                             {
                                 if (owner->HasAura(SPELL_MAGE_ICY_VEINS))
                                 {
-                                    caster->CastSpellAfterDeley(200, target, 131581, true);
-                                    caster->CastSpellAfterDeley(400, target, 131581, true);
+                                    CastSpellAfterDeley(caster, target, 131581, 300);
+                                    CastSpellAfterDeley(caster, target, 131581, 600);
                                 }
                             }
                         }
@@ -2213,18 +2228,18 @@ class spell_mage_glyph_of_icy_veins : public SpellScriptLoader
                         {
                             if (GetSpellInfo()->Id == SPELL_MAGE_FROSTBOLT)
                             {
-                                caster->CastSpellAfterDeley(200, target, 131079, true);
-                                caster->CastSpellAfterDeley(400, target, 131079, true);
+                                CastSpellAfterDeley(caster, target, 131079, 300);
+                                CastSpellAfterDeley(caster, target, 131079, 600);
                             }
                             else if (GetSpellInfo()->Id == SPELL_MAGE_ICE_LANCE)
                             {
-                                caster->CastSpellAfterDeley(200, target, 131080, true);
-                                caster->CastSpellAfterDeley(400, target, 131080, true);
+                                CastSpellAfterDeley(caster, target, 131080, 300);
+                                CastSpellAfterDeley(caster, target, 131080, 600);
                             }
                             else if (GetSpellInfo()->Id == SPELL_MAGE_FROSTFIRE_BOLT)
                             {
-                                caster->CastSpellAfterDeley(200, target, 131081, true);
-                                caster->CastSpellAfterDeley(400, target, 131081, true);
+                                CastSpellAfterDeley(caster, target, 131081, 300);
+                                CastSpellAfterDeley(caster, target, 131081, 600);
                             }
                         }
                     }

@@ -8221,7 +8221,12 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
                         if (AuraEffect* MGEff2 = Malefic_Grasp->GetEffect(EFFECT_2))
                             afflictionDamage = CalculatePct(afflictionDamage, MGEff2->GetAmount());
 
-                    caster->CastCustomSpellAfterDeley(deley, target, 131736, afflictionDamage, NULL, NULL, true);
+                    caster->m_Functions.AddFunction([caster, target, afflictionDamage]()-> void
+                    {
+                        if (caster && target)
+                            caster->CastCustomSpell(target, 131736, &afflictionDamage, NULL, NULL, true);
+                    }, caster->m_Functions.CalculateTime(deley));
+
                     sendVisual = true;
                 }
                 // Agony ...
@@ -8233,7 +8238,12 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
                         if (AuraEffect* MGEff2 = Malefic_Grasp->GetEffect(EFFECT_2))
                             afflictionDamage = CalculatePct(afflictionDamage, MGEff2->GetAmount());
 
-                    caster->CastCustomSpellAfterDeley(deley * 2, target, 131737, afflictionDamage, NULL, NULL, true);
+                    caster->m_Functions.AddFunction([caster, target, afflictionDamage]()-> void
+                    {
+                        if (caster && target)
+                            caster->CastCustomSpell(target, 131737, &afflictionDamage, NULL, NULL, true);
+                    }, caster->m_Functions.CalculateTime(deley * 2));
+
                     agony->CalcAgonyTickDamage();
                     sendVisual = true;
                 }
@@ -8279,7 +8289,11 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
                             if (AuraEffect* Eff4 = Soul_Drain->GetEffect(EFFECT_4))
                                 afflictionDamage = CalculatePct(afflictionDamage, Eff4->GetAmount());
 
-                            caster->CastCustomSpellAfterDeley(deley, target, 131736, afflictionDamage, NULL, NULL, true);
+                            caster->m_Functions.AddFunction([caster, target, afflictionDamage]()-> void
+                            {
+                                if (caster && target)
+                                    caster->CastCustomSpell(target, 131736, &afflictionDamage, NULL, NULL, true);
+                            }, caster->m_Functions.CalculateTime(deley));
                         }
                         // Agony ...
                         if (Aura* agony = target->GetAura(980, caster->GetGUID()))
@@ -8289,7 +8303,11 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
                             if (AuraEffect* Eff4 = Soul_Drain->GetEffect(EFFECT_4))
                                 afflictionDamage = CalculatePct(afflictionDamage, Eff4->GetAmount());
 
-                            caster->CastCustomSpellAfterDeley(deley * 2, target, 131737, afflictionDamage, NULL, NULL, true);
+                            caster->m_Functions.AddFunction([caster, target, afflictionDamage]()-> void
+                            {
+                                if (caster && target)
+                                    caster->CastCustomSpell(target, 131737, &afflictionDamage, NULL, NULL, true);
+                            }, caster->m_Functions.CalculateTime(deley * 2));
                         }
                     }
                 }
