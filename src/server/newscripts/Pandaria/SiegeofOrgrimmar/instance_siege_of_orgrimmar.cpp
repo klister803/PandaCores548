@@ -86,8 +86,9 @@ DoorData const doorData[] =
     {GO_RUSTY_BARS,                          DATA_KORKRON_D_SHAMAN,       DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {GO_NAZGRIM_EX_DOOR,                     DATA_GENERAL_NAZGRIM,        DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {GO_BLACKFUSE_ENT_DOOR,                  DATA_MALKOROK,               DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
-    {GO_ENT_GATE,                            DATA_MALKOROK,               DOOR_TYPE_PASSAGE,    BOUNDARY_NONE },
+    {GO_ENT_GATE,                            DATA_MALKOROK,               DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {GO_SP_EX_DOOR,                          DATA_SPOILS_OF_PANDARIA,     DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
+    {GO_KLAXXI_EX_DOOR,                      DATA_KLAXXI,                 DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {0,                                      0,                           DOOR_TYPE_ROOM,       BOUNDARY_NONE},
 };
 
@@ -913,6 +914,7 @@ public:
                     klaxxiarenagateGuid.push_back(go->GetGUID());
                     break;
                 case GO_KLAXXI_EX_DOOR:
+                    AddDoor(go, true);
                     klaxxiexdoorGuid = go->GetGUID();
                     break;
                 case GO_GARROSH_FENCH:

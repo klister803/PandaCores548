@@ -97,6 +97,7 @@ enum eEvents
     EVENT_MOVE_TO_DEST_POS_2      = 19,
     EVENT_EAT                     = 20,
     EVENT_BATTLE_RESPAWN_NEST     = 21,
+    EVENT_CHECK_PROGRESS          = 22,
 };
 
 class boss_jikun : public CreatureScript
@@ -153,6 +154,7 @@ public:
             _EnterCombat();
             checkmelee = 4000;
             events.ScheduleEvent(EVENT_ACTIVE_NEST, 1000);
+            events.ScheduleEvent(EVENT_CHECK_PROGRESS, 4000);
             events.ScheduleEvent(EVENT_CAW, 14000);
             events.ScheduleEvent(EVENT_TALON_RAKE, 20000);
             events.ScheduleEvent(EVENT_QUILLS, 42000);
@@ -181,6 +183,10 @@ public:
             {
                 switch (eventId)
                 {
+                case EVENT_CHECK_PROGRESS:
+                    if (instance->GetBossState(DATA_MEGAERA) != DONE)
+                        ScriptedAI::EnterEvadeMode();
+                    break;
                 case EVENT_ACTIVE_NEST:
                     instance->SetData(DATA_ACTIVE_NEXT_NEST, 0);
                     events.ScheduleEvent(EVENT_FEED_YOUNG, 2000);
