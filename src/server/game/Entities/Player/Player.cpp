@@ -8750,7 +8750,7 @@ bool Player::HasCurrency(uint32 id, uint32 count) const
     return itr != _currencyStorage.end() && itr->second.totalCount >= count;
 }
 
-void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bool ignoreMultipliers/* = false*/, bool modifyWeek/* = true*/, bool modifySeason/* = true*/)
+void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bool ignoreMultipliers/* = false*/, bool modifyWeek/* = true*/, bool modifySeason/* = true*/, bool refund/* = false*/)
 {
     if (!count)
         return;
@@ -8830,7 +8830,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         // probably excessive checks
         if (IsInWorld() && !GetSession()->PlayerLoading())
         {
-            if (count > 0)
+            if (count > 0 && !refund)
                 UpdateAchievementCriteria(CRITERIA_TYPE_CURRENCY, id, count);
 
             //! 5.4.1
@@ -29787,7 +29787,7 @@ void Player::RefundItem(Item* item, bool saveInDB)
 
         int32 cost = int32(iece->RequiredCurrencyCount[i]);
         sLog->outDebug(LOG_FILTER_NETWORKIO, "Player::RefundItem  cost %i, id %i)", cost, entry->ID);
-        ModifyCurrency(entry->ID, cost, false, true, false, false);
+        ModifyCurrency(entry->ID, cost, false, true, false, false, false);
     }
 
     SendItemRefundResult(item, iece, 0);
