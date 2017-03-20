@@ -2070,8 +2070,26 @@ void Player::Update(uint32 p_time)
         m_statsUpdateTimer += p_time;
         if (m_statsUpdateTimer >= 200)
         {
-            UpdateHast(m_needToUpdate[MELEE_HAST_MODS], m_needToUpdate[RANGE_HAST_MODS], m_needToUpdate[HAST_MODS], m_needToUpdate[CAST_HAST_MODS]);
-
+            if (m_needToUpdate[MELEE_HAST_MODS])
+            {
+                UpdateMeleeHastMod();
+                m_needToUpdate[MELEE_HAST_MODS] = false;
+            }
+            if (m_needToUpdate[RANGE_HAST_MODS])
+            {
+                UpdateRangeHastMod();
+                m_needToUpdate[RANGE_HAST_MODS] = false;
+            }
+            if (m_needToUpdate[HAST_MODS])
+            {
+                UpdateHastMod();
+                m_needToUpdate[HAST_MODS] = false;
+            }
+            if (m_needToUpdate[CAST_HAST_MODS])
+            {
+                UpdateCastHastMods();
+                m_needToUpdate[CAST_HAST_MODS] = false;
+            }
             if (m_needToUpdate[SPELL_HAST_DURATION_RECOVERY])
             {
                 UpdateSpellHastDurationRecovery();
