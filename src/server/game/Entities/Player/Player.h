@@ -2475,12 +2475,13 @@ class Player : public Unit, public GridObject<Player>
         void UpdateRating(CombatRating cr);
         void UpdateAllRatings();
 
-        void UpdateCastHastMods();
-        void UpdateMeleeHastMod();
-        void UpdateHastMod();
-        void UpdateRangeHastMod();
-        void UpdateFocusRegen();
-        void UpdateEnergyRegen();
+        void UpdateCastHastMods(float auraMods);
+        void UpdateMeleeHastMod(float auraMods);
+        void UpdateHastMod(float auraMods);
+        void UpdateRangeHastMod(float auraMods);
+        void UpdateFocusRegen(float auraMods);
+        void UpdateEnergyRegen(float auraMods);
+        void UpdateHast(bool _melee, bool _range, bool _spell, bool _cast);
 
         void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& min_damage, float& max_damage);
 
