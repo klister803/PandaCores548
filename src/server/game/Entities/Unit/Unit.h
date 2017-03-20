@@ -30,6 +30,7 @@
 #include "FollowerReference.h"
 #include "FollowerRefManager.h"
 #include "EventProcessor.h"
+#include "FunctionProcessor.h"
 #include "MotionMaster.h"
 #include "DBCStructure.h"
 #include "SpellInfo.h"
@@ -2203,6 +2204,7 @@ class Unit : public WorldObject
 
         // Event handler
         EventProcessor m_Events;
+        FunctionProcessor m_Functions;
 
         // stat system
         bool HandleStatModifier(UnitMods unitMod, UnitModifierType modifierType, float amount, bool apply);
