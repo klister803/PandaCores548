@@ -236,7 +236,7 @@ namespace Movement
             data << spline.getPoint(last_idx); // destination
         }
 
-        data << uint32(unit.movespline->GetId());
+        data << uint32(move_spline.GetId());
 
         data.WriteGuidBytes<1, 7, 4, 6, 0, 2, 5, 3>(transportGuid);
 
