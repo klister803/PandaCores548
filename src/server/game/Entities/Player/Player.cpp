@@ -29787,7 +29787,7 @@ void Player::RefundItem(Item* item, bool saveInDB)
 
         int32 cost = int32(iece->RequiredCurrencyCount[i]);
         sLog->outDebug(LOG_FILTER_NETWORKIO, "Player::RefundItem  cost %i, id %i)", cost, entry->ID);
-        ModifyCurrency(entry->ID, cost, false, true, false, false, false);
+        ModifyCurrency(entry->ID, cost, false, true, false, false, true);
     }
 
     SendItemRefundResult(item, iece, 0);
