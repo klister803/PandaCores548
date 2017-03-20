@@ -2041,7 +2041,6 @@ public:
     AuraScript* GetAuraScript() const
     {
         return new spell_empovered_whirling_corruption_AuraScript();
-
     }
 };
 
@@ -2216,7 +2215,6 @@ public:
     AuraScript* GetAuraScript() const
     {
         return new spell_transition_visual_AuraScript();
-
     }
 };
 
@@ -2733,7 +2731,7 @@ public:
                 if (GetCaster()->GetPower(POWER_ENERGY) <= 99)
                     GetCaster()->SetPower(POWER_ENERGY, GetCaster()->GetPower(POWER_ENERGY) + 1);
 
-                if (GetCaster()->GetPower(POWER_ENERGY) == 100)
+                if (GetCaster()->GetPower(POWER_ENERGY) == 100 && !GetCaster()->HasAura(SPELL_UNSTABLE_IRON_STAR_STUN))
                 {
                     GetCaster()->SetPower(POWER_ENERGY, 0);
                     GetCaster()->ToCreature()->AI()->DoAction(ACTION_MANIFEST_RAGE);
