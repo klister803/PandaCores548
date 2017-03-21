@@ -4247,6 +4247,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_2]->BasePoints = 0;
                     break;
                 case 118: // Polymorph
+                case 79136: // Venomous Wound
                 case 124468: // Mind Flay
                 case 124464: // Shadow Word: Pain
                 case 124467: // Devouring Plague
@@ -4259,7 +4260,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 145110:  // Ysera's Gift
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
                     break;
-                case 79136: // Venomous Wound
                 case 127802: // Touch of the Grave
                     spellInfo->Speed = 25.f;
                     break;
