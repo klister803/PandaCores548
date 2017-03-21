@@ -1636,8 +1636,9 @@ bool Pet::Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, uint3
     m_DBTableGuid = guidlow;
     m_originalEntry = Entry;
 
-    if (Unit* owner = GetOwner())
-        owner->SetPetGUID(GetGUID());
+    if (!m_Stampeded)
+        if (Unit* owner = GetOwner())
+            owner->SetPetGUID(GetGUID());
 
     if (!InitEntry(Entry))
         return false;
