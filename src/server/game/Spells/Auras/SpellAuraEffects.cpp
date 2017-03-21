@@ -5574,10 +5574,7 @@ void AuraEffect::HandleAuraModIncreaseEnergy(AuraApplication const* aurApp, uint
     // inside effect handlers is not a good idea
     //if (int32(powerType) != GetMiscValue())
     //    return;
-
-    UnitMods unitMod = UnitMods(UNIT_MOD_POWER_START + powerType);
-
-    target->HandleStatModifier(unitMod, TOTAL_VALUE, float(GetAmount()), apply);
+    target->UpdateMaxPower(powerType);
 }
 
 void AuraEffect::HandleAuraModIncreaseEnergyPercent(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -5595,19 +5592,7 @@ void AuraEffect::HandleAuraModIncreaseEnergyPercent(AuraApplication const* aurAp
     //if (int32(powerType) != GetMiscValue())
     //    return;
 
-    UnitMods unitMod = UnitMods(UNIT_MOD_POWER_START + powerType);
-    float amount = float(GetAmount());
-
-    if (apply)
-    {
-        target->HandleStatModifier(unitMod, TOTAL_PCT, amount, apply);
-        target->ModifyPowerPct(powerType, amount, apply);
-    }
-    else
-    {
-        target->ModifyPowerPct(powerType, amount, apply);
-        target->HandleStatModifier(unitMod, TOTAL_PCT, amount, apply);
-    }
+    target->UpdateMaxPower(powerType);
 }
 
 void AuraEffect::HandleAuraModMaxPower(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -5619,17 +5604,7 @@ void AuraEffect::HandleAuraModMaxPower(AuraApplication const* aurApp, uint8 mode
 
     Powers powerType = Powers(GetMiscValue());
 
-    UnitMods unitMod = UnitMods(UNIT_MOD_POWER_START + powerType);
-    float amount = float(GetAmount());
-
-    if (apply)
-    {
-        target->HandleStatModifier(unitMod, TOTAL_VALUE, amount, apply);
-    }
-    else
-    {
-        target->HandleStatModifier(unitMod, TOTAL_VALUE, amount, apply);
-    }
+    target->UpdateMaxPower(powerType);
 }
 
 void AuraEffect::HandleAuraModAddEnergyPercent(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -5641,17 +5616,7 @@ void AuraEffect::HandleAuraModAddEnergyPercent(AuraApplication const* aurApp, ui
 
     Powers powerType = Powers(GetMiscValue());
 
-    UnitMods unitMod = UnitMods(UNIT_MOD_POWER_START + powerType);
-    float amount = float(GetAmount());
-
-    if (apply)
-    {
-        target->HandleStatModifier(unitMod, TOTAL_PCT, amount, apply);
-    }
-    else
-    {
-        target->HandleStatModifier(unitMod, TOTAL_PCT, amount, apply);
-    }
+    target->UpdateMaxPower(powerType);
 }
 
 void AuraEffect::HandleAuraModIncreaseHealthPercent(AuraApplication const* aurApp, uint8 mode, bool apply) const

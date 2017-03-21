@@ -325,15 +325,16 @@ void Player::UpdateMaxPower(Powers power)
 {
     int32 cur_maxpower = GetMaxPower(power);
 
-    UnitMods unitMod = UnitMods(UNIT_MOD_POWER_START + power);
+    float value = GetCreatePowers(power);
+    value += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_INCREASE_ENERGY, power);
+    value += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_MAX_POWER, power);
+    value *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_INCREASE_ENERGY_PERCENT, power);
+    value *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_ADD_ENERGY_PERCENT, power);
 
-    float value = GetModifierValue(unitMod, BASE_VALUE) + GetCreatePowers(power);
-    value *= GetModifierValue(unitMod, BASE_PCT);
-    value += GetModifierValue(unitMod, TOTAL_VALUE);
-    value *= GetModifierValue(unitMod, TOTAL_PCT);
+    uint32 val = RoundingFloatValue(value);
 
-    if(cur_maxpower != uint32(value))
-        SetMaxPower(power, uint32(value));
+    if (cur_maxpower != val)
+        SetMaxPower(power, val);
 }
 
 void Player::UpdateHast(bool _melee, bool _range, bool _spell, bool _cast)
@@ -1843,22 +1844,33 @@ void Guardian::UpdateMaxHealth()
 
 void Guardian::UpdateMaxPower(Powers power)
 {
-    UnitMods unitMod = UnitMods(UNIT_MOD_POWER_START + power);
-
-    float value  = GetModifierValue(unitMod, BASE_VALUE) + GetCreatePowers(power);
-    value *= GetModifierValue(unitMod, BASE_PCT);
-    value += GetModifierValue(unitMod, TOTAL_VALUE);
-    value *= GetModifierValue(unitMod, TOTAL_PCT);
-
+    bool hasEnergy = true;
+    uint32 val = 0;
+    int32 cur_maxpower = GetMaxPower(power);
     uint32 creature_ID = isHunterPet() ? 1 : GetEntry();
+
     if (PetStats const* pStats = sObjectMgr->GetPetStats(creature_ID))
+        if (!pStats->energy && pStats->energy_type == 1)
+        {
+            val = pStats->energy;
+            hasEnergy = false;
+        }
+
+    if (hasEnergy)
     {
-        if(!pStats->energy && pStats->energy_type == 1)
-            value = pStats->energy;
+        float value = GetCreatePowers(power);
+        value += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_INCREASE_ENERGY, power);
+        value += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_MAX_POWER, power);
+        value *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_INCREASE_ENERGY_PERCENT, power);
+        value *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_ADD_ENERGY_PERCENT, power);
+
+        val = RoundingFloatValue(value);
     }
 
     //sLog->outDebug(LOG_FILTER_PETS, "Guardian::UpdateMaxPower value %f creature_ID %i", value, creature_ID);
-    SetMaxPower(power, uint32(value));
+
+    if (cur_maxpower != val)
+        SetMaxPower(power, val);
 }
 
 void Guardian::UpdateAttackPowerAndDamage(bool ranged)
