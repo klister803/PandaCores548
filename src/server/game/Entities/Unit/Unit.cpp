@@ -18496,7 +18496,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                             case 1776: // Gouge
                             case 2094: // Blind
                             {
-                                if (procExtra & PROC_EX_INTERNAL_DOT)
+                                if (procExtra & PROC_EX_INTERNAL_DOT || procSpell && procSpell->AttributesEx3 & SPELL_ATTR3_NO_INITIAL_AGGRO)
                                     if (procSpell->SpellFamilyName == SPELLFAMILY_ROGUE)
                                         if (Unit* rogue = dmgInfoProc->GetAttacker())
                                             if (rogue->HasAura(108216)) // Dirty Tricks
