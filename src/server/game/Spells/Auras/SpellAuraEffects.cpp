@@ -863,7 +863,7 @@ float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
                     {
                         aura->GetEffect(EFFECT_1)->SetCanBeRecalculated(true);
                         aura->GetEffect(EFFECT_1)->RecalculateAmount();
-                        aura->SetNeedClientUpdateForTargets();;
+                        aura->SetNeedClientUpdateForTargets();
                     }
                     break;
                 }
