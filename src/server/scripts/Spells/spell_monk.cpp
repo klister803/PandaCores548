@@ -2467,7 +2467,7 @@ class spell_monk_renewing_mist_selector : public SpellScriptLoader
                 Unit* caster = GetCaster();
                 Unit* originalCaster = GetOriginalCaster();
                 Unit* target = GetHitUnit();
-                if(!caster || !spellValue || !target)
+                if (!caster || !spellValue || !target || !originalCaster)
                     return;
 
                 float bp0 = spellValue->EffectBasePoints[0];
