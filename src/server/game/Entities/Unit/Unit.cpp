@@ -17694,7 +17694,11 @@ void CharmInfo::InitCharmCreateSpells(uint32 infoMask)
                 if (spellInfo->NeedsExplicitUnitTarget())
                 {
                     newstate = _charmSpellsType[x] ? ACT_ENABLED : ACT_DISABLED;
-                    ToggleCreatureAutocast(spellInfo, _charmSpellsType[x]);
+
+                    if (TempSummon* tSum = m_unit->ToTempSummon())
+                        tSum->ToggleAutocast(spellInfo, _charmSpellsType[x]);
+                    else
+                        ToggleCreatureAutocast(spellInfo, _charmSpellsType[x]);
                 }
                 else
                     newstate = _charmSpellsType[x] ? ACT_ENABLED : ACT_DISABLED;
