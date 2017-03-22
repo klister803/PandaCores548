@@ -8188,7 +8188,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
 
                     caster->m_Functions.AddFunction([caster, target, afflictionDamage]()-> void
                     {
-                        if (caster && target)
+                        if (caster && target && caster->IsInWorld() && target->IsInWorld())
                             caster->CastCustomSpell(target, 131736, &afflictionDamage, NULL, NULL, true);
                     }, caster->m_Functions.CalculateTime(deley));
 
@@ -8205,7 +8205,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
 
                     caster->m_Functions.AddFunction([caster, target, afflictionDamage]()-> void
                     {
-                        if (caster && target)
+                        if (caster && target && caster->IsInWorld() && target->IsInWorld())
                             caster->CastCustomSpell(target, 131737, &afflictionDamage, NULL, NULL, true);
                     }, caster->m_Functions.CalculateTime(deley * 2));
 
@@ -8256,7 +8256,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
 
                             caster->m_Functions.AddFunction([caster, target, afflictionDamage]()-> void
                             {
-                                if (caster && target)
+                                if (caster && target && caster->IsInWorld() && target->IsInWorld())
                                     caster->CastCustomSpell(target, 131736, &afflictionDamage, NULL, NULL, true);
                             }, caster->m_Functions.CalculateTime(deley));
                         }
@@ -8270,7 +8270,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
 
                             caster->m_Functions.AddFunction([caster, target, afflictionDamage]()-> void
                             {
-                                if (caster && target)
+                                if (caster && target && caster->IsInWorld() && target->IsInWorld())
                                     caster->CastCustomSpell(target, 131737, &afflictionDamage, NULL, NULL, true);
                             }, caster->m_Functions.CalculateTime(deley * 2));
                         }
