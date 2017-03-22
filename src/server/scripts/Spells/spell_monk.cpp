@@ -2390,7 +2390,7 @@ public:
     {
         PrepareAuraScript(spell_monk_renewing_mistAuraScript);
 
-        void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+        void AfterApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
         {
             if(Aura* aura = GetAura())
                 aura->SetStackAmount(aurEff->GetAmount());
@@ -2403,25 +2403,26 @@ public:
 
         void OnTick(AuraEffect const* aurEff)
         {
-            if (Unit* caster = GetCaster())
-            {
-                if (Aura* Uplift = caster->GetAura(123757))
-                    Uplift->RefreshTimers();
-
-                if(GetAura()->GetStackAmount() > 1)
+            if (Unit* owner = GetUnitOwner())
+                if (Unit* caster = GetCaster())
                 {
-                    float setstack = GetAura()->GetStackAmount() - 1;
-                    float amount = aurEff->GetAmount();
-                    caster->CastCustomSpell(caster, SPELL_MONK_RENEWING_MIST_JUMP_AURA, &amount, &setstack, NULL, true, NULL, aurEff, caster->GetGUID());
-                    GetAura()->SetStackAmount(1);
+                    if (Aura* Uplift = caster->GetAura(123757))
+                        Uplift->RefreshTimers();
+
+                    if(GetAura()->GetStackAmount() > 1)
+                    {
+                        float setstack = GetAura()->GetStackAmount() - 1;
+                        float amount = aurEff->GetAmount();
+                        owner->CastCustomSpell(owner, SPELL_MONK_RENEWING_MIST_JUMP_AURA, &amount, &setstack, NULL, true, NULL, aurEff, caster->GetGUID());
+                        GetAura()->SetStackAmount(1);
+                    }
                 }
-            }
         }
 
         void Register()
         {
             DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_monk_renewing_mistAuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
-            OnEffectApply += AuraEffectApplyFn(spell_monk_renewing_mistAuraScript::OnApply, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            AfterEffectApply += AuraEffectApplyFn(spell_monk_renewing_mistAuraScript::AfterApply, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
             OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_renewing_mistAuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
         }
     };
@@ -2444,8 +2445,14 @@ class spell_monk_renewing_mist_selector : public SpellScriptLoader
 
             void FilterTargets(std::list<WorldObject*>& targets)
             {
-                targets.remove_if(AuraCheck());
+                targets.remove(GetCaster());
                 targets.remove_if(DistanceCheck(GetCaster(), 20.0f));
+                std::list<WorldObject*> tempList = targets;
+                tempList.remove_if(AuraCheck());
+
+                if (!tempList.empty())
+                    targets = tempList;
+
                 targets.sort(CheckHealthState());
                 if (targets.size() > 1)
                     targets.resize(1);
@@ -2458,14 +2465,20 @@ class spell_monk_renewing_mist_selector : public SpellScriptLoader
             {
                 SpellValue const* spellValue = GetSpellValue();
                 Unit* caster = GetCaster();
+                Unit* originalCaster = GetOriginalCaster();
                 Unit* target = GetHitUnit();
                 if(!caster || !spellValue || !target)
                     return;
 
                 float bp0 = spellValue->EffectBasePoints[0];
                 float bp1 = spellValue->EffectBasePoints[1];
+                Aura* aura = target->GetAura(SPELL_MONK_RENEWING_MIST_HOT);
+
                 caster->CastSpell(target, 119647, true);
-                caster->CastCustomSpell(target, SPELL_MONK_RENEWING_MIST_HOT, &bp0, &bp1, NULL, true, NULL, NULL, caster->GetGUID());
+                caster->CastCustomSpell(target, SPELL_MONK_RENEWING_MIST_HOT, &bp0, &bp1, NULL, true, NULL, NULL, originalCaster->GetGUID());
+
+                if (aura)
+                    aura->SetStackAmount(aura->GetEffect(EFFECT_1)->GetBaseAmount());
             }
 
             void Register()
@@ -2540,7 +2553,12 @@ class spell_monk_renewing_mist_start : public SpellScriptLoader
                     return;
 
                 float bp0 = GetHitHeal();
+                Aura* aura = target->GetAura(SPELL_MONK_RENEWING_MIST_HOT);
+
                 caster->CastCustomSpell(target, SPELL_MONK_RENEWING_MIST_HOT, &bp0, NULL, NULL, true, NULL, NULL, caster->GetGUID());
+
+                if (aura)
+                    aura->SetStackAmount(aura->GetEffect(EFFECT_1)->GetBaseAmount());
             }
 
             void Register()
