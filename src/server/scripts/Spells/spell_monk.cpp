@@ -2448,7 +2448,7 @@ class spell_monk_renewing_mist_selector : public SpellScriptLoader
                 targets.remove(GetCaster());
                 targets.remove_if(DistanceCheck(GetCaster(), 20.0f));
                 std::list<WorldObject*> tempList = targets;
-                tempList.remove_if(AuraCheck());
+                tempList.remove_if(AuraCheck(GetOriginalCaster() ? GetOriginalCaster()->GetGUID() : 0));
 
                 if (!tempList.empty())
                     targets = tempList;
@@ -2472,7 +2472,7 @@ class spell_monk_renewing_mist_selector : public SpellScriptLoader
 
                 float bp0 = spellValue->EffectBasePoints[0];
                 float bp1 = spellValue->EffectBasePoints[1];
-                Aura* aura = target->GetAura(SPELL_MONK_RENEWING_MIST_HOT);
+                Aura* aura = target->GetAura(SPELL_MONK_RENEWING_MIST_HOT, originalCaster->GetGUID());
 
                 caster->CastSpell(target, 119647, true);
                 caster->CastCustomSpell(target, SPELL_MONK_RENEWING_MIST_HOT, &bp0, &bp1, NULL, true, NULL, NULL, originalCaster->GetGUID());
@@ -2506,12 +2506,14 @@ class spell_monk_renewing_mist_selector : public SpellScriptLoader
             class AuraCheck
             {
                 public:
-                    AuraCheck(){}
+                    AuraCheck(uint64 casterGUID) : _casterGUID(casterGUID) {}
 
                     bool operator()(WorldObject* unit)
                     {
-                       return (!unit->ToUnit() || unit->ToUnit()->HasAura(119611));
+                        return (!unit->ToUnit() || unit->ToUnit()->HasAura(119611, _casterGUID));
                     }
+                private:
+                    uint64 _casterGUID;
             };
             class DistanceCheck
             {
@@ -2553,7 +2555,7 @@ class spell_monk_renewing_mist_start : public SpellScriptLoader
                     return;
 
                 float bp0 = GetHitHeal();
-                Aura* aura = target->GetAura(SPELL_MONK_RENEWING_MIST_HOT);
+                Aura* aura = target->GetAura(SPELL_MONK_RENEWING_MIST_HOT, caster->GetGUID());
 
                 caster->CastCustomSpell(target, SPELL_MONK_RENEWING_MIST_HOT, &bp0, NULL, NULL, true, NULL, NULL, caster->GetGUID());
 
