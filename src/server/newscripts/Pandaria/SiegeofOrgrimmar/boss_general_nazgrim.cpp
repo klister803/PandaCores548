@@ -104,10 +104,20 @@ uint32 stances[3] =
     SPELL_DEFENSIVE_STANCE,
 };
 
-float angmod[2] =
+struct AfterShockAngle
 {
-    M_PI,
-    M_PI + 1.570796326795f,
+    float ang;
+    float ang2;
+};
+
+static AfterShockAngle angmod[6] =
+{
+    {M_PI, M_PI + 1.570796326795f},
+    {M_PI, 0.7853981633975f},
+    {M_PI, 1.570796326795f + 0.7853981633975f},
+    {M_PI + 1.570796326795f, 0.7853981633975f},
+    {M_PI + 1.570796326795f, 1.570796326795f + 0.7853981633975f},
+    {0.7853981633975f, 1.570796326795f + 0.7853981633975f},
 };
 
 class boss_general_nazgrim : public CreatureScript
@@ -135,6 +145,8 @@ class boss_general_nazgrim : public CreatureScript
                     me->RemoveAurasDueToSpell(stances[n]);
                 me->RemoveAllNegativeAurasFromBoss();
                 me->RemoveAurasDueToSpell(SPELL_BERSERK);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_ASSASINS_MARK);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_HUNTERS_MARK);
                 me->SetCreateMana(100);
                 me->SetMaxPower(POWER_MANA, 100);
                 me->SetPower(POWER_MANA, 0);
@@ -409,7 +421,12 @@ class boss_general_nazgrim : public CreatureScript
                 else if (power >= 70 && power < 100)
                     DoCastAOE(SPELL_WAR_SONG);
                 else if (power >= 50 && power < 70)
+                {
                     DoCast(me, SPELL_KORKRON_BANNER_SUM);
+                    float x, y;
+                    GetPosInRadiusWithRandomOrientation(me, 8.0f, x, y);
+                    me->SummonCreature(NPC_KORKRON_BANNER, x, y, me->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 60000);
+                }
                 else if (power >= 30 && power < 50)
                 {
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 80.0f, true))
@@ -518,6 +535,8 @@ class boss_general_nazgrim : public CreatureScript
             {
                 Talk(SAY_DIED);
                 _JustDied();
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_ASSASINS_MARK);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_HUNTERS_MARK);
             }
         };
 
@@ -1034,17 +1053,21 @@ public:
         {
             if (summoner->ToCreature() && summoner->GetEntry() != me->GetEntry())
             {
-                //main
+                uint8 mod = urand(0, 5);
                 float x, y;
-                for (uint8 n = 0; n < 2; n++)
+
+                GetPositionWithDistInOrientation(me, 20.0f, angmod[mod].ang, x, y);
+                if (Creature* as = me->SummonCreature(NPC_AFTER_SHOCK, x, y, me->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 9000))
                 {
-                    x = 0, y = 0;
-                    GetPositionWithDistInOrientation(me, 20.0f, angmod[n], x, y);
-                    if (Creature* as = me->SummonCreature(NPC_AFTER_SHOCK, x, y, me->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 9000))
-                    {
-                        as->SetFacingToObject(me);
-                        as->CastSpell(me, SPELL_AFTERSHOCK);
-                    }
+                    as->SetFacingToObject(me);
+                    as->CastSpell(me, SPELL_AFTERSHOCK);
+                }
+
+                GetPositionWithDistInOrientation(me, 20.0f, angmod[mod].ang2, x, y);
+                if (Creature* as = me->SummonCreature(NPC_AFTER_SHOCK, x, y, me->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 9000))
+                {
+                    as->SetFacingToObject(me);
+                    as->CastSpell(me, SPELL_AFTERSHOCK);
                 }
             }
         }

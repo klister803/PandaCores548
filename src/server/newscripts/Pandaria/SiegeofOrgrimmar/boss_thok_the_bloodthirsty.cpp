@@ -175,6 +175,8 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             uint32 findtargets; //find and kill player in front of boss
             uint8 phasecount;
             bool phasetwo;
+            bool summonbat;
+            bool summoneyti;
 
             void Reset()
             {
@@ -193,6 +195,8 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 pGuid = 0;    
                 phasecount = 0;
                 phasetwo = false;
+                summonbat = false;
+                summoneyti = false;
                 enrage = 0;
                 if (instance)
                 {
@@ -363,21 +367,27 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     events.ScheduleEvent(EVENT_MOVING, 2000);
                     break;
                 case ACTION_SUMMON_CAPTIVE_BAT:
-                {
-                    uint8 mod = urand(0, 5);
-                    for (uint8 n = 0; n < 6; n++)
+                    if (!summonbat)
                     {
-                        if (Creature* bat = me->SummonCreature(NPC_CAPTIVE_CAVE_BAT, ccbatspawnpos[n]))
+                        summonbat = true;
+                        uint8 mod = urand(0, 5);
+                        for (uint8 n = 0; n < 6; n++)
                         {
-                            if (mod == n)
-                                bat->AddAura(SPELL_VAMPIRIC_FRENZY, bat);
-                            bat->AI()->DoZoneInCombat(bat, 200.0f);
+                            if (Creature* bat = me->SummonCreature(NPC_CAPTIVE_CAVE_BAT, ccbatspawnpos[n]))
+                            {
+                                if (mod == n)
+                                    bat->AddAura(SPELL_VAMPIRIC_FRENZY, bat);
+                                bat->AI()->DoZoneInCombat(bat, 200.0f);
+                            }
                         }
                     }
-                }
-                break;
+                    break;
                 case ACTION_SUMMON_STARVED_EYTI:
-                    me->SummonCreature(NPC_STARVED_YETI, sumyetipos[urand(0, 3)]);
+                    if (!summoneyti)
+                    {
+                        summoneyti = true;
+                        me->SummonCreature(NPC_STARVED_YETI, sumyetipos[urand(0, 3)]);
+                    }
                     break;
                 }
             }

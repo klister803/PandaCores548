@@ -5446,6 +5446,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx6 |= SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
                     break;
                 //General Nazgrim
+                case 143591: //Korkron Banner
+                    spellInfo->Effects[0]->TriggerSpell = 0;
+                    break;
                 case 143494: //Sundering Blow
                     spellInfo->Effects[2]->Effect = 0;
                     break;
