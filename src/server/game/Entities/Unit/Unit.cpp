@@ -2334,7 +2334,7 @@ void Unit::CalcHealAbsorb(Unit* victim, const SpellInfo* healSpell, uint32 &heal
     healAmount = RemainingHeal;
 }
 
-uint32 Unit::CalcAbsorb(Unit* victim, SpellInfo const* spellProto, uint32 amount)
+float Unit::CalcAbsorb(Unit* victim, SpellInfo const* spellProto, float amount)
 {
     if (!victim || !spellProto)
         return amount;
