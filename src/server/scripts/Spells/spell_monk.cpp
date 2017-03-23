@@ -469,20 +469,20 @@ class spell_monk_guard : public SpellScriptLoader
 
                 if (Player* _plr = GetCaster()->ToPlayer())
                 {
-                    amount += int32(_plr->GetTotalAttackPowerValue(BASE_ATTACK) * 1.971f);
+                    amount += _plr->GetTotalAttackPowerValue(BASE_ATTACK) * 1.971f;
 
                     if (_plr->HasAura(ITEM_MONK_T14_TANK_4P))
-                        amount = int32(amount * 1.2f);
+                        amount = amount * 1.2f;
                 }
                 // For Black Ox Statue
                 else if (GetCaster()->GetOwner())
                 {
                     if (Player* _plr = GetCaster()->GetOwner()->ToPlayer())
                     {
-                        amount += int32(_plr->GetTotalAttackPowerValue(BASE_ATTACK) * 1.971f);
+                        amount += _plr->GetTotalAttackPowerValue(BASE_ATTACK) * 1.971f;
 
                         if (_plr->HasAura(ITEM_MONK_T14_TANK_4P))
-                            amount = int32(amount * 1.2f);
+                            amount = amount * 1.2f;
                     }
                 }
             }

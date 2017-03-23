@@ -1655,6 +1655,9 @@ float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
             m_aura_amount = amount;
             break;
         }
+        case SPELL_AURA_SCHOOL_ABSORB:
+            amount = RoundingFloatValue(amount);
+            break;
         default:
             break;
     }
