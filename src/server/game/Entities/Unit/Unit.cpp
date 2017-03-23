@@ -3277,7 +3277,7 @@ float Unit::GetUnitBlockChance() const
             return 0.0f;
         else
         {
-            float block = 5.0f;
+            float block = 0.0f;
             block += GetTotalAuraModifier(SPELL_AURA_MOD_BLOCK_PERCENT);
             return block > 0.0f ? block : 0.0f;
         }
