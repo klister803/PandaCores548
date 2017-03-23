@@ -168,28 +168,31 @@ public:
         SummonList summon;
         EventMap events;
         uint32 evadecheck;
-        uint8 nextpct;
+        //uint8 nextpct;
         bool firstpull, firstattack;
+        bool stage, stage2, stage3, stage4, stage5;
         
         void Reset()
         {
-            if (instance)
-            {
-                events.Reset();
-                summon.DespawnAll();
-                DespawnAllSummons();
-                me->SetReactState(REACT_PASSIVE);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                instance->SetBossState(DATA_KORKRON_D_SHAMAN, NOT_STARTED);
-                if (firstpull)
-                    SummonAndSeatOnMount(me->GetEntry());
-                if (me->GetMap()->IsHeroic())
-                    nextpct = 95;
-                else
-                    nextpct = 85;
-                firstattack = false;
-                evadecheck = 0;
-            }
+            events.Reset();
+            summon.DespawnAll();
+            DespawnAllSummons();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+            instance->SetBossState(DATA_KORKRON_D_SHAMAN, NOT_STARTED);
+            if (firstpull)
+                SummonAndSeatOnMount(me->GetEntry());
+            /*if (me->GetMap()->IsHeroic())
+                nextpct = 95;
+            else
+                nextpct = 85;*/
+            firstattack = false;
+            stage = false;
+            stage2 = false;
+            stage3 = false;
+            stage4 = false;
+            stage5 = false;
+            evadecheck = 0;
         }
 
         Creature* GetOtherShaman()
@@ -290,13 +293,50 @@ public:
         
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
-            if (Creature* oshaman = GetOtherShaman())
+            if (attacker != me)
+            {
+                if (Creature* oshaman = GetOtherShaman())
+                {
+                    if (damage >= me->GetHealth())
+                        oshaman->Kill(oshaman, true);
+                    else
+                        oshaman->DealDamage(oshaman, damage);
+                }
+            }
+
+            if (me->GetMap()->IsHeroic() && HealthBelowPct(95) && !stage)
+            {
+                stage = true;
+                SetExtraEvents(85);
+            }
+            else if (HealthBelowPct(85) && !stage2)
+            {
+                stage2 = true;
+                SetExtraEvents(65);
+            }
+            else if (HealthBelowPct(65) && !stage3)
+            {
+                stage3 = true;
+                SetExtraEvents(50);
+            }
+            else if (HealthBelowPct(50) && !stage4)
+            {
+                stage4 = true;
+                SetExtraEvents(25);
+            }
+            else if (HealthBelowPct(25) && !stage5)
+            {
+                stage5 = true;
+                SetExtraEvents(0);
+            }
+            //old version
+            /*if (Creature* oshaman = GetOtherShaman())
             {
                 if (damage >= me->GetHealth())
                     oshaman->Kill(oshaman, true);
                 else
                     oshaman->SetHealth(oshaman->GetHealth() - damage);
-            }
+            }*/
         }
         
         void SetExtraEvents(uint8 phase)
@@ -403,7 +443,8 @@ public:
                     evadecheck -= diff;
             }
 
-            if (HealthBelowPct(nextpct))
+            //old version
+            /*if (HealthBelowPct(nextpct))
             {
                 switch (nextpct)
                 {
@@ -424,7 +465,7 @@ public:
                     break;
                 }
                 SetExtraEvents(nextpct);
-            }
+            }*/
 
             events.Update(diff);
 
