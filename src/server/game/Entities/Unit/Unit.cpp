@@ -2500,6 +2500,8 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackT
 
     bool canDodge = dodge_chance >= 0;
     bool canParry = parry_chance >= 0;
+    bool canBlock = true;
+    bool canCrit = true;
     dodgeChance += dodge_chance;
     parryChance += parry_chance;
 
@@ -2508,6 +2510,22 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackT
 
     if (dodgeExpertise > 750)
         parryExpertise = dodgeExpertise - 750;
+
+    if (victim->GetTypeId() == TYPEID_UNIT)
+    {
+        uint32 flagEx = victim->ToCreature()->GetCreatureTemplate()->flags_extra;
+        if (flagEx & CREATURE_FLAG_EXTRA_NO_PARRY)
+            canParry = false;
+
+        if (flagEx & CREATURE_FLAG_EXTRA_NO_DODGE)
+            canDodge = false;
+        // Check creatures flags_extra for disable block
+        if (flagEx & CREATURE_FLAG_EXTRA_NO_BLOCK)
+            canBlock = false;
+
+        if (flagEx & CREATURE_FLAG_EXTRA_NO_CRIT)
+            canCrit = false;
+    }
 
     // Dodge chance
     // only players can't dodge if attacker is behind
@@ -2543,38 +2561,32 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackT
     {
         if (canParry)
         {
-            if (victim->GetTypeId() == TYPEID_PLAYER || !(victim->ToCreature()->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_PARRY))
-            {
-                parryChance -= parryExpertise;
+            parryChance -= parryExpertise;
 
-                if (parryChance > 0 && roll < parryChance)       // check if unit _can_ parry
-                {
-                    sLog->outDebug(LOG_FILTER_UNITS, "RollMeleeOutcomeAgainst: PARRY");
-                    return MELEE_HIT_PARRY;
-                }
+            if (parryChance > 0 && roll < parryChance)       // check if unit _can_ parry
+            {
+                sLog->outDebug(LOG_FILTER_UNITS, "RollMeleeOutcomeAgainst: PARRY");
+                return MELEE_HIT_PARRY;
             }
         }
 
-        if (victim->GetTypeId() == TYPEID_PLAYER || !(victim->ToCreature()->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK))
+        if (block_chance > 0 && roll < block_chance)      // check if unit _can_ block
         {
-            if (block_chance > 0 && roll < block_chance)      // check if unit _can_ block
-            {
-                sLog->outDebug(LOG_FILTER_UNITS, "RollMeleeOutcomeAgainst: BLOCK");
-                return MELEE_HIT_BLOCK;
-            }
+            sLog->outDebug(LOG_FILTER_UNITS, "RollMeleeOutcomeAgainst: BLOCK");
+            return MELEE_HIT_BLOCK;
         }
     }
 
     // Critical chance
 
-    if (crit_chance > 0 && roll < crit_chance)
+    if (!canCrit)
+        sLog->outDebug(LOG_FILTER_UNITS, "RollMeleeOutcomeAgainst: CRIT DISABLED)");
+    else if (crit_chance > 0 && roll < crit_chance)
     {
         sLog->outDebug(LOG_FILTER_UNITS, "RollMeleeOutcomeAgainst: CRIT");
-        if (GetTypeId() == TYPEID_UNIT && (ToCreature()->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_CRIT))
-            sLog->outDebug(LOG_FILTER_UNITS, "RollMeleeOutcomeAgainst: CRIT DISABLED)");
-        else
-            return MELEE_HIT_CRIT;
+        return MELEE_HIT_CRIT;
     }
+    
 
 //     int32 attackerMaxSkillValueForLevel = GetMaxSkillValueForLevel(victim);
 //     int32 victimMaxSkillValueForLevel = victim->GetMaxSkillValueForLevel(this);
@@ -2924,6 +2936,9 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
         uint32 flagEx = victim->ToCreature()->GetCreatureTemplate()->flags_extra;
         if (flagEx & CREATURE_FLAG_EXTRA_NO_PARRY)
             canParry = false;
+
+        if (flagEx & CREATURE_FLAG_EXTRA_NO_DODGE)
+            canDodge = false;
         // Check creatures flags_extra for disable block
         if (flagEx & CREATURE_FLAG_EXTRA_NO_BLOCK)
             canBlock = false;
