@@ -214,6 +214,13 @@ Position rsspos[3] =
     {1012.70f, -5711.02f, -317.7060f, 6.1730f},
 };
 
+Position rdestpos[3] =
+{
+    {1060.23f, -5656.00f, -317.6279f, 0.0f},
+    {1064.52f, -5658.68f, -317.6323f, 0.0f},
+    {1069.67f, -5659.76f, -317.5973f, 0.0f},
+};
+
 Position lsspos[3] = 
 {
     {1028.11f, -5572.19f, -317.6992f, 6.1730f},
@@ -221,10 +228,17 @@ Position lsspos[3] =
     {1029.31f, -5556.24f, -317.7059f, 6.1730f},
 };
 
+Position ldestpos[3] =
+{
+    {1064.12f, -5620.54f, -317.6365f, 0.0f},
+    {1068.99f, -5619.15f, -317.6217f, 0.0f},
+    {1073.68f, -5619.27f, -317.5790f, 0.0f},
+};
+
 Position wspos[2] =
 {
-    {1020.22f, -5703.03f, -317.6922f, 6.1730f},
-    {1034.52f, -5565.62f, -317.6930f, 6.1730f},
+    {1020.22f, -5703.03f, -317.6922f, 6.1730f}, //r
+    {1034.52f, -5565.62f, -317.6930f, 6.1730f}, //l
 };
 
 Position tppos[3] =
@@ -761,9 +775,11 @@ class boss_garrosh_hellscream : public CreatureScript
                     case EVENT_SUMMON_WARBRINGERS:
                         instance->SetData(DATA_OPEN_SOLDIER_FENCH, 0);
                         for (uint8 n = 0; n < 3; n++)
-                            me->SummonCreature(NPC_WARBRINGER, rsspos[n]);
+                            if (Creature* warbringer = me->SummonCreature(NPC_WARBRINGER, rsspos[n]))
+                                warbringer->GetMotionMaster()->MoveCharge(rdestpos[n].GetPositionX(), rdestpos[n].GetPositionY(), rdestpos[n].GetPositionZ(), 10.0f + n*2, 5);
                         for (uint8 n = 0; n < 3; n++)
-                            me->SummonCreature(NPC_WARBRINGER, lsspos[n]);
+                            if (Creature* warbringer = me->SummonCreature(NPC_WARBRINGER, lsspos[n]))
+                                warbringer->GetMotionMaster()->MoveCharge(ldestpos[n].GetPositionX(), ldestpos[n].GetPositionY(), ldestpos[n].GetPositionZ(), 10.0f + n*2, 5);
                         events.ScheduleEvent(EVENT_SUMMON_WARBRINGERS, 45000);
                         break;
                     case EVENT_HELLSCREAM_WARSONG:
@@ -776,7 +792,7 @@ class boss_garrosh_hellscream : public CreatureScript
                         Talk(SAY_SUMMON_WOLF_RIDER, 0);
                         uint8 pos = urand(0, 1);
                         if (Creature* wrider = me->SummonCreature(NPC_WOLF_RIDER, wspos[pos]))
-                            wrider->AI()->DoZoneInCombat(wrider, 200.0f);
+                            wrider->GetMotionMaster()->MoveCharge(centerpos.GetPositionX(), centerpos.GetPositionY(), centerpos.GetPositionZ(), 10.0f, 5);
                         events.ScheduleEvent(EVENT_SUMMON_WOLF_RIDER, 50000);
                         break;
                     }
@@ -1098,27 +1114,20 @@ public:
                 me->SetReactState(REACT_AGGRESSIVE);
                 break;
             case NPC_WARBRINGER:
+            case NPC_WOLF_RIDER:
+                me->SetAttackStop(false);
                 me->AddAura(SPELL_SUMMON_ADDS, me);
-                if (!me->GetMap()->IsHeroic())
-                    DoZoneInCombat(me, 200.0f);
-                else
-                {
-                    me->SetAttackStop(false);
-                    DoCast(me, SPELL_BLOOD_FRENZIED, true);
-                    if (Player* pl = me->FindNearestPlayer(200.0f, true))
-                    {
-                        me->GetMotionMaster()->Clear(false);
-                        me->AddThreat(pl, 50000000.0f);
-                        me->SetReactState(REACT_AGGRESSIVE);
-                        me->Attack(pl, true);
-                        me->GetMotionMaster()->MoveChase(pl);
-                    }
-                }
                 break;
             default:
                 me->AddAura(SPELL_SUMMON_ADDS, me);
                 break;
             }
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (pointId == 5 && (me->GetEntry() == NPC_WARBRINGER || me->GetEntry() == NPC_WOLF_RIDER))
+                events.ScheduleEvent(EVENT_ACTIVE, 100);
         }
 
         void OnInterruptCast(Unit* /*caster*/, uint32 /*spellId*/, uint32 curSpellID, uint32 /*schoolMask*/)
@@ -1216,6 +1225,10 @@ public:
                     }
                     break;
                     //Warbringer
+                case EVENT_ACTIVE:
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    DoZoneInCombat(me, 150.0f);
+                    break;
                 case EVENT_HAMSTRING:
                     if (me->getVictim() && me->ToTempSummon())
                         if (Unit* garrosh = me->ToTempSummon()->GetSummoner())
