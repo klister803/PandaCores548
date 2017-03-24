@@ -1217,7 +1217,7 @@ public:
 
                 std::list<Player*> pllist;
                 pllist.clear();
-                for (std::list<HostileReference*>::iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
+                for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
                     if (Unit* target = (*itr)->getTarget())
                         if (target->ToPlayer())
                             pllist.push_back(target->ToPlayer());
