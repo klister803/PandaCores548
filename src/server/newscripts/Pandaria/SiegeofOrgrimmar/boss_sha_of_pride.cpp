@@ -1217,7 +1217,7 @@ public:
 
                 std::list<Player*> pllist;
                 pllist.clear();
-                for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
+                for (std::list<HostileReference*>::iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
                     if (Unit* target = (*itr)->getTarget())
                         if (target->ToPlayer())
                             pllist.push_back(target->ToPlayer());
@@ -1225,7 +1225,7 @@ public:
                 if (pllist.empty())
                     return;
 
-                std::list<Player*>::const_iterator itr = pllist.begin();
+                std::list<Player*>::iterator itr = pllist.begin();
                 std::advance(itr, urand(0, pllist.size() - 1));
                 TargetListGUIDs.insert((*itr)->GetGUID());
                 pllist.erase(itr);
@@ -1236,7 +1236,7 @@ public:
                         break;
 
                     havetarget = false;
-                    for (std::list<Player*>::const_iterator Itr = pllist.begin(); Itr != pllist.end();)
+                    for (std::list<Player*>::iterator Itr = pllist.begin(); Itr != pllist.end();)
                     {
                         if ((*Itr)->GetPower(POWER_ALTERNATE_POWER) != selfreflectionstage[n])
                             ++Itr;
@@ -1251,7 +1251,7 @@ public:
 
                     if (!havetarget && !pllist.empty())
                     {
-                        std::list<Player*>::const_iterator itr = pllist.begin();
+                        std::list<Player*>::iterator itr = pllist.begin();
                         std::advance(itr, urand(0, pllist.size() - 1));
                         TargetListGUIDs.insert((*itr)->GetGUID());
                         pllist.erase(itr);
@@ -1260,7 +1260,7 @@ public:
 
                 if (!TargetListGUIDs.empty())
                 {
-                    for (std::set<uint64>::const_iterator _itr = TargetListGUIDs.begin(); _itr != TargetListGUIDs.end(); ++_itr)
+                    for (std::set<uint64>::iterator _itr = TargetListGUIDs.begin(); _itr != TargetListGUIDs.end(); ++_itr)
                     {
                         if (Player* plr = GetCaster()->GetPlayer(*GetCaster(), *_itr))
                         {
