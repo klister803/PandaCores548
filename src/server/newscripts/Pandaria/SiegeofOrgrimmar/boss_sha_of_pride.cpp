@@ -83,6 +83,11 @@ enum eSpells
 
     //
     SPELL_ORB_OF_LIGHT              = 145345, //Orb of Light
+
+    //Изгнание аура на игрока       145215
+    //Создание сферы для лабиринта  145299
+    //Осквернённый осколок          72569 - аура 145684 AnimKitID: 1615
+    //Бестелесная скверна           73972 - аура 149027
 };
 
 Position const Sha_of_pride_taranzhu  = {748.1805f, 1058.264f, 356.1557f, 5.566918f };
@@ -159,6 +164,14 @@ public:
                     return true;
         return false;
     }
+};
+
+uint8 selfreflectionstage[4] =
+{
+    25,
+    50,
+    75,
+    100,
 };
 
 class boss_sha_of_pride : public CreatureScript
@@ -1062,7 +1075,7 @@ public:
 
         void Reset()
         {
-            events.RescheduleEvent(EVENT_SPAWN, 3000);
+            events.RescheduleEvent(EVENT_SPAWN, 2000);
             events.RescheduleEvent(EVENT_SPELL_SELF_REFLECTION_CAST, 6000);
             me->AddAura(SPELL_SELF_REFLECTION_SPAWN, me);
         }
@@ -1111,8 +1124,6 @@ public:
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
         }
-
-        bool onSpawn;
         EventMap events;
         InstanceScript* instance;
 
@@ -1184,59 +1195,94 @@ public:
 //144800
 class spell_sha_of_pride_self_reflection : public SpellScriptLoader
 {
-    public:
-        spell_sha_of_pride_self_reflection() : SpellScriptLoader("spell_sha_of_pride_self_reflection") { }
+public:
+    spell_sha_of_pride_self_reflection() : SpellScriptLoader("spell_sha_of_pride_self_reflection") { }
+    
+    class spell_sha_of_pride_self_reflection_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_sha_of_pride_self_reflection_SpellScript);
 
+        std::set<uint64> TargetListGUIDs;
 
-        class spell_sha_of_pride_self_reflection_AuraScript : public AuraScript
+        void HandleAfterCast()
         {
-            PrepareAuraScript(spell_sha_of_pride_self_reflection_AuraScript);
-            std::set<uint64> alreadyHitGUID;
-
-            void OnTick(AuraEffect const* aurEff)
+            if (GetCaster())
             {
-                Unit* caster = GetCaster();
-                if (!caster)
-                    return;
+                bool havetarget;
+                TargetListGUIDs.clear();
+                std::list<HostileReference*> const &threatlist = GetCaster()->getThreatManager().getThreatList();
 
-                std::list<HostileReference*> const& threatlist = caster->getThreatManager().getThreatList();
                 if (threatlist.empty())
                     return;
 
-                Unit *target = NULL;
-                int32 current_power = 0;
-                Unit *selected = NULL;
-
+                std::list<Player*> pllist;
+                pllist.clear();
                 for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
-                {
-                    target = (*itr)->getTarget();
-                    if (target->GetTypeId() != TYPEID_PLAYER || alreadyHitGUID.find(target->GetGUID()) != alreadyHitGUID.end())
-                        continue;
+                    if (Unit* target = (*itr)->getTarget())
+                        if (target->ToPlayer())
+                            pllist.push_back(target->ToPlayer());
 
-                    if (target->GetPower(POWER_ALTERNATE_POWER) >= current_power)
+                if (pllist.empty())
+                    return;
+
+                std::list<Player*>::const_iterator itr = pllist.begin();
+                std::advance(itr, urand(0, pllist.size() - 1));
+                TargetListGUIDs.insert((*itr)->GetGUID());
+                pllist.erase(itr);
+
+                for (uint8 n = 0; n < 4; n++)
+                {
+                    if (pllist.empty())
+                        break;
+
+                    havetarget = false;
+                    for (std::list<Player*>::const_iterator Itr = pllist.begin(); Itr != pllist.end();)
                     {
-                        current_power = target->GetPower(POWER_ALTERNATE_POWER);
-                        selected = target;
+                        if ((*Itr)->GetPower(POWER_ALTERNATE_POWER) != selfreflectionstage[n])
+                            ++Itr;
+                        else
+                        {
+                            havetarget = true;
+                            TargetListGUIDs.insert((*Itr)->GetGUID());
+                            pllist.erase(Itr);
+                            break;
+                        }
+                    }
+
+                    if (!havetarget && !pllist.empty())
+                    {
+                        std::list<Player*>::const_iterator itr = pllist.begin();
+                        std::advance(itr, urand(0, pllist.size() - 1));
+                        TargetListGUIDs.insert((*itr)->GetGUID());
+                        pllist.erase(itr);
                     }
                 }
 
-                if (selected)
+                if (!TargetListGUIDs.empty())
                 {
-                    alreadyHitGUID.insert(selected->GetGUID());
-                    caster->SummonCreature(NPC_REFLECTION, *selected, TEMPSUMMON_DEAD_DESPAWN);
+                    for (std::set<uint64>::const_iterator _itr = TargetListGUIDs.begin(); _itr != TargetListGUIDs.end(); ++_itr)
+                    {
+                        if (Player* plr = GetCaster()->GetPlayer(*GetCaster(), *_itr))
+                        {
+                            Position pos;
+                            plr->GetPosition(&pos);
+                            GetCaster()->SummonCreature(NPC_REFLECTION, pos, TEMPSUMMON_DEAD_DESPAWN);
+                        }
+                    }
                 }
             }
-
-            void Register()
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_sha_of_pride_self_reflection_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_sha_of_pride_self_reflection_AuraScript();
         }
+
+        void Register()
+        {
+            AfterCast += SpellCastFn(spell_sha_of_pride_self_reflection_SpellScript::HandleAfterCast);
+        }
+    };
+    
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_sha_of_pride_self_reflection_SpellScript();
+    }
 };
 
 //146822
