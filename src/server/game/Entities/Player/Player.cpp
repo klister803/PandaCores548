@@ -10014,7 +10014,7 @@ void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply,
         }
         CastSpell(this, spellInfo, true, item);
 
-        if (addItemSpellCooldown)
+        if (addItemSpellCooldown && spellInfo->ProcFlags)
             AddSpellCooldown(spellInfo->Id, item ? item->GetEntry() : 0, getPreciseTime() + 30);
 
         HandleItemSpellList(spellInfo->Id, true);
