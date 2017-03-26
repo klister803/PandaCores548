@@ -4045,6 +4045,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Attributes |= SPELL_ATTR0_CANT_USED_IN_COMBAT;
                     spellInfo->AttributesEx4 &= ~SPELL_ATTR4_TRIGGERED;
                     break;
+                case 86172:  // Divine Purpose
                 case 144671: // Item - Hunter T16 BM 4P Player Driver
                 case 145738: // Item - Hunter T16 BM 4P Pet Driver
                 case 14190:  // Seal Fate

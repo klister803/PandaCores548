@@ -8598,16 +8598,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         {
             switch (dummySpell->Id)
             {
-                case 86172: // Divine Purpose
-                {
-                    if (!RequiresCurrentSpellsToHolyPower(dummySpell))
-                        return false;
-
-                    if (!roll_chance_f(triggerAmount))
-                        return false;
-
-                    break;
-                }
                 case 54936: // Glyph of Word of Glory
                 {
                     basepoints0 = triggerAmount * GetComboPointsMod();
