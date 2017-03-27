@@ -18,3 +18,5 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `hastalent`, 
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `hastalent`, `chance`, `hitmask`, `comment`) VALUES ('114163', '90174', '86172', '25', '1', 'Divine Purpose');
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `hastalent`, `chance`, `hitmask`, `comment`) VALUES ('136494', '90174', '86172', '25', '1', 'Divine Purpose');
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `hastalent`, `chance`, `hitmask`, `comment`) VALUES ('138165', '90174', '86172', '25', '1', 'Divine Purpose');
+
+INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `option`, `comments`) VALUES ('145110', '56', '16', 'Дар Изеры');
