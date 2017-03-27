@@ -20,3 +20,10 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `hastalent`, 
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `hastalent`, `chance`, `hitmask`, `comment`) VALUES ('138165', '90174', '86172', '25', '1', 'Divine Purpose');
 
 INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `option`, `comments`) VALUES ('145110', '56', '16', 'Дар Изеры');
+
+DELETE FROM `spell_target_filter` WHERE (`spellId`='48438') AND (`targetId`='31') AND (`option`='3');
+DELETE FROM `spell_target_filter` WHERE (`spellId`='48438') AND (`targetId`='31') AND (`option`='4');
+
+INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `aura`, `count`, `addcount`, `comments`) VALUES ('48438', '31', '62970', '5', '1', 'Wild Growth');
+UPDATE `spell_target_filter` SET `resizeType`='1' WHERE (`spellId`='48438') AND (`targetId`='31') AND (`option`='0');
+INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `option`, `aura`, `resizeType`, `count`, `comments`) VALUES ('48438', '31', '6', '62970', '1', '5', 'Wild Growth');
