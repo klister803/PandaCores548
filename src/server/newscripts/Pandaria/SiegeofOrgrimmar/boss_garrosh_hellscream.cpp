@@ -1226,9 +1226,55 @@ public:
                     break;
                     //Warbringer
                 case EVENT_ACTIVE:
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    DoZoneInCombat(me, 150.0f);
+                    if (me->GetEntry() == NPC_WARBRINGER)
+                    {
+                        if (!me->GetMap()->IsHeroic())
+                        {
+                            me->SetReactState(REACT_AGGRESSIVE);
+                            DoZoneInCombat(me, 150.0f);
+                        }
+                        else
+                        {
+                            if (Player* pl = me->FindNearestPlayer(150.0f, true))
+                            {
+                                me->AddThreat(pl, 50000000.0f);
+                                me->SetReactState(REACT_AGGRESSIVE);
+                                me->Attack(pl, true);
+                                me->GetMotionMaster()->MoveChase(pl);
+                            }
+                            events.ScheduleEvent(EVENT_CHANGE_TARGET, urand(4000, 6000));
+                        }
+                    }
+                    else if (me->GetEntry() == NPC_WOLF_RIDER)
+                    {
+                        me->SetReactState(REACT_AGGRESSIVE);
+                        DoZoneInCombat(me, 150.0f);
+                    }
                     break;
+                case EVENT_CHANGE_TARGET:
+                {
+                    uint64 LastTargetGuid = me->getVictim() ? me->getVictim()->GetGUID() : 0;
+                    std::list<Player*>pllist;
+                    pllist.clear();
+                    GetPlayerListInGrid(pllist, me, 150.0f);
+                    if (pllist.size() > 1) //if have any targets
+                    {
+                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
+                        {
+                            if ((*itr)->GetGUID() != LastTargetGuid)
+                            {
+                                me->SetAttackStop(true);
+                                me->AddThreat(*itr, 50000000.0f);
+                                me->SetReactState(REACT_AGGRESSIVE);
+                                me->Attack(*itr, true);
+                                me->GetMotionMaster()->MoveChase(*itr);
+                                break;
+                            }
+                        }
+                    }
+                    events.ScheduleEvent(EVENT_CHANGE_TARGET, urand(4000, 6000));
+                    break;
+                }
                 case EVENT_HAMSTRING:
                     if (me->getVictim() && me->ToTempSummon())
                         if (Unit* garrosh = me->ToTempSummon()->GetSummoner())
