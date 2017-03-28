@@ -109,6 +109,7 @@ enum eSpells
     SPELL_SUMMON_ADDS                = 144489,
     SPELL_HEARTBEAT_SOUND            = 148591,
     SPELL_ENTER_REALM_OF_YSHAARJ     = 144867,
+    SPELL_WEAKENED_BLOWS             = 115798,
 
     //Remove this absorb aura when player on mind control
     SPELL_SPIRIT_SHELL               = 114908,
@@ -1226,7 +1227,9 @@ public:
                     break;
                     //Warbringer
                 case EVENT_ACTIVE:
-                    if (me->GetEntry() == NPC_WARBRINGER)
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    DoZoneInCombat(me, 150.0f);
+                    /*if (me->GetEntry() == NPC_WARBRINGER)
                     {
                         if (!me->GetMap()->IsHeroic())
                         {
@@ -1249,7 +1252,7 @@ public:
                     {
                         me->SetReactState(REACT_AGGRESSIVE);
                         DoZoneInCombat(me, 150.0f);
-                    }
+                    }*/
                     break;
                 case EVENT_CHANGE_TARGET:
                 {
@@ -2406,8 +2409,12 @@ public:
         {
             if (GetTarget())
                 GetTarget()->ApplySpellImmune(0, IMMUNITY_ID, SPELL_DESECRATED, false);
+
             if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
+            {
+                GetTarget()->RemoveAurasDueToSpell(SPELL_WEAKENED_BLOWS);
                 GetTarget()->SetFullHealth();
+            }
         }
 
         void Register()
