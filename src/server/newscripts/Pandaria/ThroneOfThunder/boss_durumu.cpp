@@ -49,12 +49,13 @@ enum eSpells
     SPELL_SUMMON_RED_FOG          = 136128,
 
     //Blue
-    SPELL_BLUE_RAY_P_T_AURA       = 133675, //player target  aura
+    SPELL_BLUE_RAY_P_T_AURA       = 133675, //player target aura
     SPELL_BLUE_RAY_C_T_AURA       = 136119, //creature target aura
     SPELL_BLUE_RAY_BEAM           = 134122, //channel beam
     SPELL_BLUE_RAY_CONE           = 133672, //channel cone
     SPELL_BLUE_RAY_CONE_DMG       = 133677,
     SPELL_BLUE_RAY_EXPLOSE        = 133678,
+    SPELL_COLD_EYE_FOUND          = 137054,
     SPELL_BLUE_FOG_INVISIBILITY   = 136118,
     SPELL_SUMMON_BLUE_FOG         = 136130,
 
@@ -96,6 +97,9 @@ enum sEvents
     EVENT_CREATE_CONE             = 11,
 
     EVENT_SEARCHER                = 12,
+
+    //Fog events
+    EVENT_CAUSTIC_SPIKE           = 13,
 };
 
 enum sActions
@@ -103,6 +107,8 @@ enum sActions
     ACTION_RE_ATTACK              = 1,
     ACTION_LINGERING_GAZE         = 2,
     ACTION_CREATE_CONE            = 3,
+    ACTION_IN_CONE                = 4,
+    ACTION_NOT_IN_CONE            = 5,
 };
 
 enum Phase
@@ -186,6 +192,7 @@ public:
             me->SetReactState(REACT_DEFENSIVE);
             me->RemoveAurasDueToSpell(SPELL_BRIGHT_LIGHT_DURUMU);
             checkvictim = 3000;
+            //instance->SetData(DATA_CLEAR_CRIMSON_FOG_LIST, 0);
         }
 
         float GetFogAngle(uint8 pos)
@@ -278,8 +285,15 @@ public:
 
         void DoAction(int32 const action)
         {
-            if (action == ACTION_RE_ATTACK)
+            switch (action)
+            {
+            case ACTION_RE_ATTACK:
                 me->ReAttackWithZone();
+                break;
+            case ACTION_COLORBLIND_PHASE_DONE:
+                me->MonsterTextEmote("Colorblind Phase Done", 0, true);
+                break;
+            }
         }
 
         void JustDied(Unit* /*killer*/)
@@ -745,7 +759,7 @@ public:
                     break;
                 case EVENT_SEARCHER:
                 {
-                    //Searche players in cone
+                    //Search players in cone
                     uint32 lightaura = GetLightPlayerAura();
                     std::list<Player*>pllist;
                     GetPlayerListInGrid(pllist, me, 100.0f);
@@ -763,7 +777,7 @@ public:
                                     (*itr)->RemoveAurasDueToSpell(lightaura);
                         }
                     }
-                    //Searche fogs in cone
+                    //Search fogs in cone
                     if (me->GetEntry() != NPC_YELLOW_EYE)
                     {
                         uint32 _lightaura = GetLightFogAura();
@@ -890,9 +904,50 @@ public:
         }
         InstanceScript* instance;
         EventMap events;
+        uint32 invisibilyaura;
+        uint32 foundspell;
         bool explose;
 
-        void Reset(){}
+        void Reset()
+        {
+            switch (me->GetEntry())
+            {
+            case NPC_CRIMSON_FOG:
+                invisibilyaura = SPELL_RED_FOG_INVISIBILITY;
+                foundspell = SPELL_BURNING_EYE_FOUND;
+                break;
+            case NPC_AZURE_FOG:
+                invisibilyaura = SPELL_BLUE_FOG_INVISIBILITY;
+                foundspell = SPELL_COLD_EYE_FOUND;
+                break;
+            default:
+                invisibilyaura = 0;
+                foundspell = 0;
+                break;
+            }
+        }
+
+        void DoAction(int32 const action)
+        {
+            switch (action)
+            {
+            case ACTION_IN_CONE:
+                me->RemoveAurasDueToSpell(invisibilyaura);
+                DoCast(me, foundspell, true);
+                if (me->GetEntry() == NPC_CRIMSON_FOG)
+                    events.ScheduleEvent(EVENT_CAUSTIC_SPIKE, 2000);
+                else if (me->GetEntry() == NPC_AZURE_FOG)
+                    DoCast(me, SPELL_ICY_GRASP_AURA, true);
+                break;
+            case ACTION_NOT_IN_CONE:
+                events.Reset();
+                me->InterruptNonMeleeSpells(true);
+                if (me->GetEntry() == NPC_CRIMSON_FOG)
+                    DoCast(me, SPELL_CRIMSON_BLOOM, true);
+                me->AddAura(invisibilyaura, me);
+                break;
+            }
+        }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
@@ -906,21 +961,17 @@ public:
             }
         }
 
-        void SpellHit(Unit* caster, SpellInfo const *spell)
-        {
-            if (spell->Id == SPELL_INFRARED_LIGHT_C_T_AURA)
-            {
-                me->RemoveAurasDueToSpell(SPELL_RED_FOG_INVISIBILITY);
-                DoCast(me, SPELL_BURNING_EYE_FOUND, true);
-            }
-        }
-
         void UpdateAI(uint32 diff)
         {
             events.Update(diff);
 
             while (uint32 eventId = events.ExecuteEvent())
             {
+                if (eventId == EVENT_CAUSTIC_SPIKE)
+                {
+                    DoCastAOE(SPELL_CAUSTIC_SPIKE);
+                    events.ScheduleEvent(EVENT_CAUSTIC_SPIKE, 3000);
+                }
             }
         }
     };
@@ -1136,6 +1187,137 @@ public:
     }
 };
 
+//136120 (red), 136119(blue)
+class spell_durumu_color_creature_aura : public SpellScriptLoader
+{
+public:
+    spell_durumu_color_creature_aura() : SpellScriptLoader("spell_durumu_color_creature_aura") { }
+
+    class spell_durumu_color_creature_aura_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_durumu_color_creature_aura_AuraScript);
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetTarget() && GetTarget()->ToCreature())
+                GetTarget()->ToCreature()->AI()->DoAction(ACTION_IN_CONE);
+        }
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+        {
+            if (GetTarget() && GetTarget()->ToCreature() && GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_DEATH)
+                GetTarget()->ToCreature()->AI()->DoAction(ACTION_NOT_IN_CONE);    
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_durumu_color_creature_aura_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            OnEffectRemove += AuraEffectRemoveFn(spell_durumu_color_creature_aura_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_durumu_color_creature_aura_AuraScript();
+    }
+};
+
+//136154
+class spell_caustic_spike : public SpellScriptLoader
+{
+public:
+    spell_caustic_spike() : SpellScriptLoader("spell_caustic_spike") { }
+
+    class spell_caustic_spike_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_caustic_spike_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*> &targets)
+        {
+            if (targets.size() > 1)
+                targets.resize(1);
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_caustic_spike_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_caustic_spike_SpellScript();
+    }
+};
+
+//136179
+class spell_icy_grasp_aura : public SpellScriptLoader
+{
+public:
+    spell_icy_grasp_aura() : SpellScriptLoader("spell_icy_grasp_aura") { }
+
+    class spell_icy_grasp_aura_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_icy_grasp_aura_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (GetCaster())
+                GetCaster()->CastSpell(GetCaster(), SPELL_ICY_GRASP, true);
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_icy_grasp_aura_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_icy_grasp_aura_AuraScript();
+    }
+};
+
+class IcyGraspFilter
+{
+public:
+    bool operator()(WorldObject* unit) const
+    {
+        if (Player* pl = unit->ToPlayer())
+            if (pl->HasAura(SPELL_BLUE_RAY_P_T_AURA))
+                return false;
+        return true;
+    }
+};
+
+//136177
+class spell_icy_grasp_dmg : public SpellScriptLoader
+{
+public:
+    spell_icy_grasp_dmg() : SpellScriptLoader("spell_icy_grasp_dmg") { }
+
+    class spell_icy_grasp_dmg_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_icy_grasp_dmg_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*> &targets)
+        {
+            if (!targets.empty())
+                targets.remove_if(IcyGraspFilter());
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_icy_grasp_dmg_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_icy_grasp_dmg_SpellScript();
+    }
+};
+
 //8897
 class at_durumu_entrance : public AreaTriggerScript
 {
@@ -1163,5 +1345,9 @@ void AddSC_boss_durumu()
     new spell_durumu_color_beam();
     new spell_durumu_color_cone();
     new spell_durumu_color_cone_dmg();
+    new spell_durumu_color_creature_aura();
+    new spell_caustic_spike();
+    new spell_icy_grasp_aura();
+    new spell_icy_grasp_dmg();
     new at_durumu_entrance();
 }

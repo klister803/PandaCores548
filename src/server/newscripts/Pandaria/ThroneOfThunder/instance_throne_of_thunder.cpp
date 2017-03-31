@@ -124,6 +124,7 @@ public:
         std::vector <uint64> icygroundGuids;
         std::vector <uint64> torrentoficeGuids;
         std::vector <uint64> acidraindGuids;
+        std::vector <uint64> crimsonfogGuids;
         
         void Initialize()
         {
@@ -224,6 +225,7 @@ public:
             icygroundGuids.clear();
             torrentoficeGuids.clear();
             acidraindGuids.clear();
+            crimsonfogGuids.clear();
 
             for (uint8 b = 0; b < 10; b++)
                 jikunincubatelist[b] = 0;
@@ -410,6 +412,10 @@ public:
                 break;
             case NPC_DURUMU:  
                 durumuGuid = creature->GetGUID();
+                break;
+            case NPC_CRIMSON_FOG:
+                if (creature->ToTempSummon())
+                    crimsonfogGuids.push_back(creature->GetGUID());
                 break;
             case NPC_PRIMORDIUS: 
                 primordiusGuid = creature->GetGUID();
@@ -1082,6 +1088,9 @@ public:
                     if (Creature* incubater = instance->GetCreature(jikunincubatelist[n]))
                         incubater->AI()->SetData(DATA_RESET_NEST, 0);
                 break;
+            case DATA_CLEAR_CRIMSON_FOG_LIST:
+                crimsonfogGuids.clear();
+                break;
             }
         }
 
@@ -1154,6 +1163,20 @@ public:
                                 return;
 
                     SetBossState(DATA_COUNCIL_OF_ELDERS, DONE);
+                }
+                break;
+            case NPC_CRIMSON_FOG:
+                if (!crimsonfogGuids.empty())
+                {
+                    for (std::vector<uint64>::const_iterator itr = crimsonfogGuids.begin(); itr != crimsonfogGuids.end(); itr++)
+                        if (Creature* cfog = instance->GetCreature(*itr))
+                            if (cfog->isAlive())
+                                return;
+
+                    crimsonfogGuids.clear();
+                    if (Creature* durumu = instance->GetCreature(durumuGuid))
+                        if (durumu->isAlive() && durumu->isInCombat())
+                            durumu->AI()->DoAction(ACTION_COLORBLIND_PHASE_DONE);
                 }
                 break;
             default:
