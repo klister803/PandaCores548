@@ -307,6 +307,7 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid
                     break;
                 case COMMAND_MOVE_TO:
                 {
+                    pet->AttackStop();
 
                     if (!pet->HasUnitState(UNIT_STATE_LOST_CONTROL | UNIT_STATE_NOT_MOVE))
                     {
