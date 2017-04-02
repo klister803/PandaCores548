@@ -4000,6 +4000,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 31117: // Unstable Affliction (Silence)
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_IGNORE_HIT_RESULT;
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_HAVE_STABLE_FLYTIME;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_DOESENT_INTERRUPT_CHANNELING;
                     break;
                 case 32645:  // Envenom
                 case 53651:  // Beacon of Light
