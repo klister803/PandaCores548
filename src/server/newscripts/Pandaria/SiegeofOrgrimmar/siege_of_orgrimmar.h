@@ -630,6 +630,9 @@ enum esSpells
     SPELL_CANNED_HEAT_BASE             = 143572,
     SPELL_TORMENT_MAIN                 = 142983,
 
+    //Spoils of Pandaria
+    SPELL_MOGU_RUNE_OF_POWER_AURA      = 145458,
+
     //Blackfuse
     SPELL_PROTECTIVE_FRENZY            = 145365,
     SPELL_ENERGIZED_DEFENSIVE_MATRIX   = 148990,

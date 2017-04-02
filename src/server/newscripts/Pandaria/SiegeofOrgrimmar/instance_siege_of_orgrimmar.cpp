@@ -1223,6 +1223,7 @@ public:
                         if (GameObject* box = instance->GetGameObject(*itr))
                             box->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
 
+                    DoRemoveAurasDueToSpellOnPlayers(SPELL_MOGU_RUNE_OF_POWER_AURA);
                     HandleGameObject(spentdoorGuid, true);
                     HandleGameObject(spexdoorGuid, true);
                     //Remove all buffs
@@ -1393,6 +1394,9 @@ public:
                 if (id < DATA_GARROSH && CheckProgressForGarrosh())
                     HandleGameObject(klaxxiexdoorGuid, true);
             }
+            else if (state == IN_PROGRESS)
+                DoRemoveAurasDueToSpellOnPlayers(SPELL_MOGU_RUNE_OF_POWER_AURA);
+
             return true;
         }
 

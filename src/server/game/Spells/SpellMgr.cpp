@@ -5472,6 +5472,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Attributes |= SPELL_ATTR0_IMPOSSIBLE_DODGE_PARRY_BLOCK;
                     break;
                 //Spoils of Pandaria
+                case 145458: //Mogu Rune of Power
+                    spellInfo->AreaGroupId = 6738;
+                    break;
                 case 148582: //Jade Tempest Dummy
                 case 148583: //Jade Tempest Dmg
                 case 148518: //Molten Fist Dummy
