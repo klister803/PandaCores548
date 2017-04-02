@@ -551,6 +551,8 @@ class Spell
 
         UsedSpellMods m_appliedMods;
 
+        bool m_canLostTarget;
+
         uint32 AttributesCustom;
         uint32 AttributesCustomEx;
         uint32 AttributesCustomEx2;

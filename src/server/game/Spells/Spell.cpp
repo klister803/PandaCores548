@@ -413,7 +413,7 @@ m_delayStart(0), m_delayAtDamageCount(0), m_count_dispeling(0), m_applyMultiplie
 m_CastItem(NULL), m_castItemGUID(0), unitTarget(NULL), m_originalTarget(NULL), itemTarget(NULL), gameObjTarget(NULL), focusObject(NULL),
 m_cast_count(0), m_glyphIndex(0), m_preCastSpell(0), m_triggeredByAuraSpell(NULL), m_spellAura(NULL), find_target(false), m_spellState(SPELL_STATE_NULL),
 m_runesState(0), m_powerCost(0), m_casttime(0), m_timer(0), m_channelTargetEffectMask(0), _triggeredCastFlags(triggerFlags), m_spellValue(NULL), m_currentExecutedEffect(SPELL_EFFECT_NONE),
-m_absorb(0), m_resist(0), m_blocked(0), m_interupted(false), m_effect_targets(NULL), m_replaced(replaced), m_triggeredByAura(NULL), m_originalTargetGUID(0)
+m_absorb(0), m_resist(0), m_blocked(0), m_interupted(false), m_effect_targets(NULL), m_replaced(replaced), m_triggeredByAura(NULL), m_originalTargetGUID(0), m_canLostTarget(true)
 {
     m_diffMode = m_caster->GetMap() ? m_caster->GetMap()->GetSpawnMode() : 0;
     m_spellValue = new SpellValue(m_spellInfo, m_diffMode);
@@ -2706,6 +2706,10 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     // Get original caster (if exist) and calculate damage/healing from him data
     Unit* caster = m_originalCaster ? m_originalCaster : m_caster;
 
+    if (m_canLostTarget)
+        if (unit->HasAura(58984)) // I found only one spell, but maybe exist more
+            return;
+
     // Skip if m_originalCaster not avaiable
     if (!caster)
         return;
@@ -4089,7 +4093,10 @@ void Spell::cast(bool skipCheck)
     }
 
     if (!hasDeley) // Immediate spell, no big deal
+    {
+        m_canLostTarget = false;
         handle_immediate();
+    }
 
     CallScriptAfterCastHandlers();
 
@@ -4103,6 +4110,11 @@ void Spell::cast(bool skipCheck)
     }
 
     LinkedSpell(m_caster, m_targets.GetUnitTarget());
+
+    if (hasDeley)
+        if (Unit* target = m_targets.GetUnitTarget())
+            if (target->HasAura(58984)) // I found only one spell, but maybe exist more
+                m_canLostTarget = false;
 
     if (Player* plr = m_caster->ToPlayer())
     { 
