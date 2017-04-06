@@ -5143,8 +5143,17 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->TargetA = TARGET_DEST_DEST;
                     break;
                 //Durumu
-                case 133731:
-                    spellInfo->Attributes |= SPELL_ATTR0_DEBUFF;
+                case 133776: //Disintegration Beam visual
+                case 134169: //Disintegration Beam prepare visual
+                    spellInfo->Effects[0]->TargetA = 25;
+                    break;
+                case 136177: //Icy Grasp
+                    spellInfo->Effects[0]->BasePoints = 12000; //min dmg from sniff
+                    break;
+                case 133731: //Infrared light player aura
+                case 133675: //Blue Ray player aura
+                case 133737: //Bright Light player aura
+                    spellInfo->Attributes |= SPELL_ATTR0_CANT_CANCEL;
                     break;
                 case 136120: //Infrared Light Creature Target Aura
                     spellInfo->Effects[0]->TargetA = TARGET_UNIT_TARGET_ANY;

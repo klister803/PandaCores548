@@ -52,7 +52,7 @@ enum eSpells
     SPELL_BLUE_RAY_P_T_AURA       = 133675, //player target aura
     SPELL_BLUE_RAY_C_T_AURA       = 136119, //creature target aura
     SPELL_BLUE_RAY_BEAM           = 134122, //channel beam
-    SPELL_BLUE_RAY_CONE           = 133672, //channel cone
+    SPELL_BLUE_RAY_CONE           = 133675, //channel cone
     SPELL_BLUE_RAY_CONE_DMG       = 133677,
     SPELL_BLUE_RAY_EXPLOSE        = 133678,
     SPELL_COLD_EYE_FOUND          = 137054,
@@ -60,8 +60,8 @@ enum eSpells
     SPELL_SUMMON_BLUE_FOG         = 136130,
 
     //Yellow
-    SPELL_BRIGHT_LIGHT_P_T_AURA   = 133737, //target  aura
-    SPELL_BRIGHT_LIGHT_C_T_AURA   = 136121,
+    SPELL_BRIGHT_LIGHT_P_T_AURA   = 133737, //player target  aura
+    SPELL_BRIGHT_LIGHT_C_T_AURA   = 136121, //creature target aura
     SPELL_BRIGHT_LIGHT_BEAM       = 134124, //channel beam
     SPELL_BRIGHT_LIGHT_CONE       = 133740, //channel cone
     SPELL_BRIGHT_LIGHT_CONE_DMG   = 133738,
@@ -77,9 +77,18 @@ enum eSpells
     SPELL_ICY_GRASP_AURA          = 136179,
     SPELL_FLASH_FREEZE            = 136124, //explose them die
 
+    //Disentegration Phase
+    SPELL_MIND_DAGGERS_AURA       = 139108,
+    SPELL_MIND_DAGGERS_DMG        = 139107,
+    SPELL_DISINTEGRATION_LASER    = 133776,
+    SPELL_DISINTEGRATION_LASER_P  = 134169, //Prepare
+    SPELL_DISINTEGRATION_LASER_S  = 133775, //Summon eyebeam target
+
     SPELL_MAZE_STARTS_HERE        = 140911,
 
-    //136251
+    SPELL_DURUMU_SPAWN            = 139089,
+
+    //136251 Name: ƒуруму Ц иллюзи€ платформы
 };
 
 enum sEvents
@@ -100,6 +109,8 @@ enum sEvents
 
     //Fog events
     EVENT_CAUSTIC_SPIKE           = 13,
+    EVENT_DISINTEGRATION_LASER    = 14,
+    EVENT_DISINTEGRATION_LASER_L  = 15,
 };
 
 enum sActions
@@ -109,6 +120,7 @@ enum sActions
     ACTION_CREATE_CONE            = 3,
     ACTION_IN_CONE                = 4,
     ACTION_NOT_IN_CONE            = 5,
+    ACTION_LAUNCH_ROTATE          = 6,
 };
 
 enum Phase
@@ -127,6 +139,7 @@ uint32 colorblindeyelist[3] =
 };
 
 Position Durumucenterpos = { 5895.52f, 4512.58f, -6.27f };
+Position Eyebeamtargetpos = { 5965.542f, 4512.609f, -2.433161f };
 
 class _TankFilter
 {
@@ -178,10 +191,12 @@ public:
         {
             instance = creature->GetInstanceScript();
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+            DoCast(me, SPELL_DURUMU_SPAWN, true);
         }
         InstanceScript* instance;
         Phase phase;
         uint32 checkvictim;
+        uint64 eyebeamtargetGuid;
 
         void Reset()
         {
@@ -192,6 +207,7 @@ public:
             me->SetReactState(REACT_DEFENSIVE);
             me->RemoveAurasDueToSpell(SPELL_BRIGHT_LIGHT_DURUMU);
             checkvictim = 3000;
+            eyebeamtargetGuid = 0;
             //instance->SetData(DATA_CLEAR_CRIMSON_FOG_LIST, 0);
         }
 
@@ -263,6 +279,7 @@ public:
             events.ScheduleEvent(EVENT_HARD_STARE, 12000);
             events.ScheduleEvent(EVENT_FORCE_OF_WILL, 20000);
             //events.ScheduleEvent(EVENT_COLORBLIND, 5000); //30sec after entercombat, and cooldawn 300000
+            //events.ScheduleEvent(EVENT_DISINTEGRATION_LASER, 5000);
         }
 
         void SetData(uint32 type, uint32 data)
@@ -439,6 +456,22 @@ public:
                             }
                         }
                     }*/
+                    break;
+                case EVENT_DISINTEGRATION_LASER:
+                    phase = PHASE_DISINTEGRATION_BEAM;
+                    events.Reset();
+                    me->InterruptNonMeleeSpells(true);
+                    me->SetAttackStop(false);
+                    if (Creature* eyebeamtarget = me->SummonCreature(NPC_EYEBEAM_TARGET_DURUMU, Eyebeamtargetpos, 0, TEMPSUMMON_TIMED_DESPAWN, 54000))
+                    {
+                        me->SetFacingToObject(eyebeamtarget);
+                        eyebeamtargetGuid = eyebeamtarget->GetGUID();
+                    }
+                    events.ScheduleEvent(EVENT_DISINTEGRATION_LASER_L, 250);
+                    break;
+                case EVENT_DISINTEGRATION_LASER_L:
+                    if (Creature* eyebeamtarget = me->GetCreature(*me, eyebeamtargetGuid))
+                        DoCast(eyebeamtarget, SPELL_DISINTEGRATION_LASER_P);
                     break;
                 }
             }
@@ -982,6 +1015,83 @@ public:
     }
 };
 
+//67882
+class npc_durumu_eyebeam_target : public CreatureScript
+{
+public:
+    npc_durumu_eyebeam_target() : CreatureScript("npc_durumu_eyebeam_target") {}
+
+    struct npc_durumu_eyebeam_targetAI : public ScriptedAI
+    {
+        npc_durumu_eyebeam_targetAI(Creature* creature) : ScriptedAI(creature)
+        {
+            pInstance = creature->GetInstanceScript();
+            me->SetDisplayId(11686);
+            me->SetCanFly(true);
+            me->SetDisableGravity(true);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        }
+        InstanceScript* pInstance;
+        EventMap events;
+        uint8 rotatedirection;
+        float disttodurumu;
+
+        void Reset()
+        {
+            if (Creature* durumu = me->GetCreature(*me, pInstance->GetData64(NPC_DURUMU)))
+                disttodurumu = me->GetExactDist2d(durumu) - 20.0f;
+        }
+
+        void DoAction(int32 const action)
+        {
+            if (action == ACTION_LAUNCH_ROTATE)
+            {
+                rotatedirection = urand(0, 1);
+                events.ScheduleEvent(EVENT_START_MOVE, 100);
+            }
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (damage >= me->GetHealth())
+                damage = 0;
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_START_MOVE)
+                {
+                    if (Creature* durumu = me->GetCreature(*me, pInstance->GetData64(NPC_DURUMU)))
+                    {
+                        float x, y;
+                        float ang = 0;
+                        if (!rotatedirection)
+                            ang = durumu->GetAngle(me) - 0.5f; //left
+                        else
+                            ang = durumu->GetAngle(me) + 0.5f; //right
+                        durumu->GetNearPoint2D(x, y, disttodurumu, ang);
+                        me->GetMotionMaster()->Clear(false);
+                        me->GetMotionMaster()->MoveJump(x, y, -2.433161f, 10.0f, 0.0f, 1);
+                    }
+                    events.ScheduleEvent(EVENT_START_MOVE, 250);
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_durumu_eyebeam_targetAI(creature);
+    }
+};
+
 //133768
 class spell_arterial_cut : public SpellScriptLoader
 {
@@ -1318,6 +1428,67 @@ public:
     }
 };
 
+//139107
+class spell_mind_daggers_dmg : public SpellScriptLoader
+{
+public:
+    spell_mind_daggers_dmg() : SpellScriptLoader("spell_mind_daggers_dmg") { }
+
+    class spell_mind_daggers_dmg_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_mind_daggers_dmg_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*> &targets)
+        {
+            if (GetCaster())
+                if (targets.size() > 10)
+                    targets.resize(10);
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_mind_daggers_dmg_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_mind_daggers_dmg_SpellScript();
+    }
+};
+
+//134169
+class spell_disintegration_laser_prepare : public SpellScriptLoader
+{
+public:
+    spell_disintegration_laser_prepare() : SpellScriptLoader("spell_disintegration_laser_prepare") { }
+
+    class spell_disintegration_laser_prepare_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_disintegration_laser_prepare_AuraScript);
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+        {
+            if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE && GetCaster() && GetTarget())
+            {
+                GetCaster()->CastSpell(GetTarget(), SPELL_DISINTEGRATION_LASER);
+                if (GetTarget() && GetTarget()->ToCreature())
+                    GetTarget()->ToCreature()->AI()->DoAction(ACTION_LAUNCH_ROTATE);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_disintegration_laser_prepare_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_disintegration_laser_prepare_AuraScript();
+    }
+};
+
 //8897
 class at_durumu_entrance : public AreaTriggerScript
 {
@@ -1339,6 +1510,7 @@ void AddSC_boss_durumu()
     new npc_colorblind_eye();
     new npc_colorblind_eye_beam_target();
     new npc_durumu_fog();
+    new npc_durumu_eyebeam_target();
     new spell_arterial_cut();
     new spell_force_of_will();
     new spell_lingering_gaze();
@@ -1349,5 +1521,7 @@ void AddSC_boss_durumu()
     new spell_caustic_spike();
     new spell_icy_grasp_aura();
     new spell_icy_grasp_dmg();
+    new spell_mind_daggers_dmg();
+    new spell_disintegration_laser_prepare();
     new at_durumu_entrance();
 }
