@@ -100,7 +100,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     }
 
     //test implemented attach areatrigger to unit
-    if (atInfo.spellId == 133778)
+    if (targetGuid && atInfo.HasAttached)
     {
         m_movementInfo.transportGUID = targetGuid;
         m_updateFlag |= UPDATEFLAG_GO_TRANSPORT_POSITION;
