@@ -212,7 +212,8 @@ enum eCreatures
     NPC_YELLOW_EYE              = 67856,
     NPC_YELLOW_EYEBEAM_TARGET   = 67852,
 
-    NPC_CROSS_EYE               = 67857,
+    NPC_CROSS_EYE               = 67857, //cast 134755
+    NPC_HUNGRY_EYE              = 67859, //cast 137727, 133796
     NPC_EYEBEAM_TARGET_DURUMU   = 67882,
 
     NPC_PRIMORDIUS              = 69017,
@@ -283,6 +284,8 @@ enum eGameObjects
     GO_JIKUN_EGG            = 218382,
     //Durumu
     GO_DURUMU_EX_DOOR       = 218390,
+    GO_THUNDER_KING_SMALL   = 218395,
+    GO_THUNDER_KING_LARGE   = 218396,
     //Primordius
     GO_PRIMORDIUS_ENT_DOOR  = 218584,
     GO_PRIMORDIUS_EX_DOOR   = 218585,

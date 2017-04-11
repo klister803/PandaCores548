@@ -72,6 +72,8 @@ public:
         uint64 megaeraexdoorGuid;
         uint64 jikunexdoorGuid;
         uint64 durumuexdoorGuid;
+        uint64 durumucombatfenchGuid;
+        uint64 durumucombatfench2Guid;
         uint64 primordiusentdoorGuid;
         uint64 secretradendoorGuid;
         uint64 primordiusexdoorGuid;
@@ -169,6 +171,8 @@ public:
             megaeraexdoorGuid     = 0;
             jikunexdoorGuid       = 0;
             durumuexdoorGuid      = 0;
+            durumucombatfenchGuid = 0;
+            durumucombatfench2Guid = 0;
             primordiusentdoorGuid = 0;
             secretradendoorGuid   = 0;
             primordiusexdoorGuid  = 0;
@@ -550,6 +554,12 @@ public:
                 AddDoor(go, true);
                 durumuexdoorGuid = go->GetGUID();
                 break;
+            case GO_THUNDER_KING_SMALL:
+                durumucombatfench2Guid = go->GetGUID();
+                break;
+            case GO_THUNDER_KING_LARGE:
+                durumucombatfenchGuid = go->GetGUID();
+                break;
             case GO_PRIMORDIUS_ENT_DOOR:
                 primordiusentdoorGuid = go->GetGUID();
                 break;
@@ -787,10 +797,26 @@ public:
                     }
                 }
                 break;
-            case DATA_DURUMU: 
-                if (state == DONE)
+            case DATA_DURUMU:
+            {
+                switch (state)
+                {
+                case NOT_STARTED:
+                    HandleGameObject(durumucombatfench2Guid, false);
+                    HandleGameObject(durumucombatfenchGuid, false);
+                    break;
+                case IN_PROGRESS:
+                    HandleGameObject(durumucombatfench2Guid, true);
+                    HandleGameObject(durumucombatfenchGuid, true);
+                    break;
+                case DONE:
                     HandleGameObject(durumuexdoorGuid, true);
+                    HandleGameObject(durumucombatfench2Guid, false);
+                    HandleGameObject(durumucombatfenchGuid, false);
+                    break;
+                }
                 break;
+            }
             case DATA_PRIMORDIUS:
                 {
                     switch (state)

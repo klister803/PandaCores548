@@ -22677,7 +22677,7 @@ void Player::_SaveSpells(SQLTransaction& trans)
             continue;
         }
 
-        if (itr->second.state == PLAYERSPELL_TEMPORARY)
+        if (itr->second->state == PLAYERSPELL_TEMPORARY)
             continue;
 
         if (itr->second->state == PLAYERSPELL_REMOVED || itr->second->state == PLAYERSPELL_CHANGED)
