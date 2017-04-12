@@ -72,6 +72,7 @@ enum Events
     EVENT_START_ROTATE          = 12,
     EVENT_UPDATE_ROTATE         = 13,
     EVENT_UPDATE_POINT          = 14,
+    EVENT_SPAWN                 = 15,
 };
 
 enum Actions
@@ -279,24 +280,56 @@ uint32 const wave5[25] =
     NPC_CONTAMINATED_PUDDLE,
 };
 
-Position northwestpos[6] =
+Position swirltriggerspawnpos[48] =
 {
-    {1503.11f, 790.54f, 246.83f, 0.0f},
-    {1484.00f, 778.59f, 246.83f, 0.0f},
-    {1517.04f, 784.59f, 246.83f, 0.0f},
-    {1499.16f, 772.37f, 246.83f, 0.0f},
-    {1477.98f, 760.18f, 246.83f, 0.0f},
-    {1515.58f, 764.80f, 246.83f, 0.0f},
-};
-
-Position northeastpos[6] =
-{
-    {1477.57f, 743.81f, 246.83f, 0.0f},
-    {1517.99f, 736.69f, 246.83f, 0.0f},
-    {1490.39f, 731.63f, 246.83f, 0.0f},
-    {1504.58f, 731.19f, 246.83f, 0.0f},
-    {1517.66f, 718.20f, 246.83f, 0.0f},
-    {1492.11f, 716.08f, 246.83f, 0.0f},
+    {1503.11f, 790.54f, 246.83f,   0.0f},
+    {1484.00f, 778.59f, 246.83f,   0.0f},
+    {1517.04f, 784.59f, 246.83f,   0.0f},
+    {1499.16f, 772.37f, 246.83f,   0.0f},
+    {1477.98f, 760.18f, 246.83f,   0.0f},
+    {1515.58f, 764.80f, 246.83f,   0.0f},
+    {1477.57f, 743.81f, 246.83f,   0.0f},
+    {1517.99f, 736.69f, 246.83f,   0.0f},
+    {1490.39f, 731.63f, 246.83f,   0.0f},
+    {1504.58f, 731.19f, 246.83f,   0.0f},
+    {1517.66f, 718.20f, 246.83f,   0.0f},
+    {1492.11f, 716.08f, 246.83f,   0.0f},
+    {1463.28f, 715.59f, 246.8380f, 0.0f},
+    {1487.96f, 680.39f, 246.8357f, 0.0f},
+    {1467.84f, 695.48f, 246.8405f, 0.0f},
+    {1470.54f, 679.32f, 246.8402f, 0.0f},
+    {1453.25f, 691.09f, 246.8467f, 0.0f},
+    {1449.36f, 701.75f, 246.2595f, 0.0f},
+    {1439.94f, 713.27f, 246.2595f, 0.0f},
+    {1441.28f, 678.05f, 246.2595f, 0.0f},
+    {1430.18f, 698.05f, 246.8376f, 0.0f},
+    {1416.14f, 674.73f, 246.8449f, 0.0f},
+    {1417.18f, 711.23f, 246.8368f, 0.0f},
+    {1404.28f, 694.41f, 246.8383f, 0.0f},
+    {1398.79f, 724.17f, 246.8354f, 0.0f},
+    {1369.23f, 706.64f, 246.8354f, 0.0f},
+    {1378.66f, 725.02f, 246.8354f, 0.0f},
+    {1401.93f, 744.52f, 246.8354f, 0.0f},
+    {1362.98f, 733.04f, 246.8354f, 0.0f},
+    {1373.13f, 745.15f, 246.8354f, 0.0f},
+    {1381.15f, 762.37f, 246.8355f, 0.0f},
+    {1359.80f, 770.43f, 246.8355f, 0.0f},
+    {1402.84f, 766.08f, 246.8355f, 0.0f},
+    {1381.12f, 778.54f, 246.8355f, 0.0f},
+    {1373.18f, 792.70f, 246.8355f, 0.0f},
+    {1396.71f, 781.58f, 246.8355f, 0.0f},
+    {1424.31f, 788.55f, 246.8352f, 0.0f},
+    {1439.69f, 796.66f, 246.8352f, 0.0f},
+    {1453.77f, 790.09f, 246.8352f, 0.0f},
+    {1401.69f, 800.04f, 246.8349f, 0.0f},
+    {1421.91f, 804.12f, 246.8352f, 0.0f},
+    {1437.24f, 815.48f, 246.8356f, 0.0f},
+    {1450.44f, 808.34f, 246.8339f, 0.0f},
+    {1470.79f, 798.65f, 246.8339f, 0.0f},
+    {1409.69f, 821.80f, 246.8352f, 0.0f},
+    {1431.02f, 826.63f, 246.8352f, 0.0f},
+    {1460.02f, 829.52f, 246.8352f, 0.0f},
+    {1488.93f, 826.60f, 246.8336f, 0.0f},
 };
 
 class boss_immerseus : public CreatureScript
@@ -418,6 +451,8 @@ public:
             if (damage >= me->GetHealth() && !phase_two)
             {
                 me->InterruptNonMeleeSpells(true);
+                if (!summons.empty())
+                    summons.DespawnEntry(NPC_SWIRL_TRIGGER);
                 damage = 0;
                 phase_two = true;
                 events.Reset();
@@ -574,6 +609,8 @@ public:
                                 st->AI()->SetGUID(pp->GetGUID(), 2);
                             }
                             events.DelayEvents(16000);
+                            for (uint8 n = 0; n < 48; n++)
+                                me->SummonCreature(NPC_SWIRL_TRIGGER, swirltriggerspawnpos[n], 0, TEMPSUMMON_TIMED_DESPAWN, 14000);
                         }
                     }
                     events.ScheduleEvent(EVENT_SWIRL, 48000);
@@ -653,14 +690,21 @@ public:
             pInstance = (InstanceScript*)pCreature->GetInstanceScript();
             me->SetReactState(REACT_PASSIVE);
             me->SetDisplayId(11686);
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         }
         InstanceScript* pInstance;
+        EventMap events;
 
         void Reset()
         {
-            me->CastSpell(me, SPELL_MINI_SWIRL_AT);
-            me->GetMotionMaster()->MoveRandom(6.0f);
+            events.Reset();
+            events.ScheduleEvent(EVENT_SPAWN, 500);
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (pointId == 4)
+                events.ScheduleEvent(EVENT_UPDATE_POINT, 500);
         }
 
         void EnterEvadeMode(){}
@@ -673,7 +717,30 @@ public:
                 damage = 0;
         }
 
-        void UpdateAI(uint32 diff){}
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                case EVENT_SPAWN:
+                {
+                    float x, y;
+                    GetPosInRadiusWithRandomOrientation(me, urand(3, 8), x, y);
+                    me->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), 5.0f, 4);
+                    me->CastSpell(me, SPELL_MINI_SWIRL_AT);
+                    break;
+                }
+                case EVENT_UPDATE_POINT:
+                    float x, y;
+                    GetPosInRadiusWithRandomOrientation(me, urand(3, 8), x, y);
+                    me->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), 5.0f, 4);
+                    break;
+                }
+            }
+        }
     };
 
     CreatureAI* GetAI(Creature* pCreature) const
@@ -783,13 +850,8 @@ public:
             if (action == ACTION_MOVE)
             {
                 if (me->ToTempSummon())
-                {
                     if (Unit* i = me->ToTempSummon()->GetSummoner())
-                    {
-                        me->RemoveAurasDueToSpell(SPELL_SHA_SPLASH_AT);
                         me->GetMotionMaster()->MoveCharge(i->GetPositionX(), i->GetPositionY(), i->GetPositionZ(), 4.0f, 0);
-                    }
-                }
             }
         }
 

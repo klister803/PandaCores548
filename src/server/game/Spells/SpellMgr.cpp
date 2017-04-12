@@ -5238,6 +5238,13 @@ void SpellMgr::LoadSpellCustomAttr()
 
                 //Siege of Orgrimmar
                 //Immerseus
+                case 143413: //Swirl trigger dmg
+                    spellInfo->Effects[0]->TargetA = 25;
+                    spellInfo->Effects[1]->TargetA = 25;
+                    break;
+                case 143410: //Swirl trigger
+                    spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_MOVING;
+                    break;
                 case 143309: //Swirl
                     spellInfo->Effects[0]->TargetA = 25;
                     spellInfo->AttributesEx |= SPELL_ATTR0_CASTABLE_WHILE_MOUNTED;
