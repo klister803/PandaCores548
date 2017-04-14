@@ -5143,6 +5143,14 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->TargetA = TARGET_DEST_DEST;
                     break;
                 //Durumu
+                case 136318: //Disintegration Beam rework to dummy for AT
+                    spellInfo->Effects[0]->Effect = SPELL_EFFECT_DUMMY;
+                    spellInfo->Effects[0]->TargetA = 25;
+                    spellInfo->Effects[0]->TargetB = 0;
+                    spellInfo->Effects[0]->MiscValue = 0;
+                    spellInfo->Effects[0]->MiscValueB = 0;
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(0);
+                    break;
                 case 133776: //Disintegration Beam visual
                 case 134169: //Disintegration Beam prepare visual
                     spellInfo->Effects[0]->TargetA = 25;

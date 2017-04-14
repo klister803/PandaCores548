@@ -81,6 +81,7 @@ enum eSpells
     SPELL_MIND_DAGGERS_AURA       = 139108,
     SPELL_MIND_DAGGERS_DMG        = 139107,
     SPELL_DISINTEGRATION_LASER    = 133776,
+    SPELL_DISINTEGRATION_LASER_AT = 133778,
     SPELL_DISINTEGRATION_LASER_P  = 134169, //Prepare
     SPELL_DISINTEGRATION_LASER_S  = 133775, //Summon eyebeam target
 
@@ -89,6 +90,15 @@ enum eSpells
     SPELL_DURUMU_SPAWN            = 139089,
 
     //136251 Name: ƒуруму Ц иллюзи€ платформы
+
+    /*
+    Id: 136235
+    Name: Whole Room Slice 4
+    Id: 136553
+    Name: Thunder King Raid - Durumu - Whole Room Maze - Whole Slice 1x “уман
+    Id: 140898
+    Name: MAZE STARTS HERE - 1 - безопасна€ зона
+    133777 instancekill */
 };
 
 enum sEvents
@@ -206,6 +216,7 @@ public:
             //me->SetReactState(REACT_PASSIVE);
             me->SetReactState(REACT_DEFENSIVE);
             me->RemoveAurasDueToSpell(SPELL_BRIGHT_LIGHT_DURUMU);
+            me->RemoveAurasDueToSpell(SPELL_DISINTEGRATION_LASER_AT);
             checkvictim = 3000;
             eyebeamtargetGuid = 0;
             //instance->SetData(DATA_CLEAR_CRIMSON_FOG_LIST, 0);
@@ -1489,6 +1500,34 @@ public:
     }
 };
 
+//136318
+class spell_disintegration_laser_dummy : public SpellScriptLoader
+{
+public:
+    spell_disintegration_laser_dummy() : SpellScriptLoader("spell_disintegration_laser_dummy") { }
+
+    class spell_disintegration_laser_dummy_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_disintegration_laser_dummy_SpellScript);
+
+        void DealDamage()
+        {
+            if (GetHitUnit())
+                GetHitUnit()->Kill(GetHitUnit(), true);
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_disintegration_laser_dummy_SpellScript::DealDamage);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_disintegration_laser_dummy_SpellScript();
+    }
+};
+
 //8897
 class at_durumu_entrance : public AreaTriggerScript
 {
@@ -1523,5 +1562,6 @@ void AddSC_boss_durumu()
     new spell_icy_grasp_dmg();
     new spell_mind_daggers_dmg();
     new spell_disintegration_laser_prepare();
+    new spell_disintegration_laser_dummy();
     new at_durumu_entrance();
 }
