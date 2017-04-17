@@ -89,16 +89,14 @@ enum eSpells
 
     SPELL_DURUMU_SPAWN            = 139089,
 
-    //136251 Name: Дуруму – иллюзия платформы
-
     /*
+    136251 Name: Дуруму – иллюзия платформы
     Id: 136235
     Name: Whole Room Slice 4
     Id: 136553
     Name: Thunder King Raid - Durumu - Whole Room Maze - Whole Slice 1x Туман
     Id: 140898
-    Name: MAZE STARTS HERE - 1 - безопасная зона
-    133777 instancekill */
+    Name: MAZE STARTS HERE - 1 - безопасная зона*/
 };
 
 enum sEvents
@@ -150,6 +148,16 @@ uint32 colorblindeyelist[3] =
 
 Position Durumucenterpos = { 5895.52f, 4512.58f, -6.27f };
 Position Eyebeamtargetpos = { 5965.542f, 4512.609f, -2.433161f };
+
+enum CreatureText
+{
+    SAY_ENTERCOMBAT          = 1, //Узрите силу Бездны!                                    35336
+    SAY_KILL_PLAYER          = 2, //Наблюдайте за своей смертью.                           35345
+    SAY_FORCE_OF_WILL        = 3, //Я слежу за вами…                                       35344
+    SAY_COLORBLIND           = 4, //Туманы хранят много секретов, если знать, где искать…  35343
+    SAY_DISINTEGRATION_START = 5, //Смотрите под ноги…                                     35342
+    SAY_DIE                  = 6, //Бездна зовёт меня…                                     35338
+};
 
 class _TankFilter
 {
@@ -222,6 +230,12 @@ public:
             //instance->SetData(DATA_CLEAR_CRIMSON_FOG_LIST, 0);
         }
 
+        void KilledUnit(Unit* unit)
+        {
+            if (unit->ToPlayer())
+                Talk(SAY_KILL_PLAYER);
+        }
+
         float GetFogAngle(uint8 pos)
         {
             switch (pos)
@@ -284,6 +298,7 @@ public:
         {
             _EnterCombat();
             phase = PHASE_NORMAL;
+            Talk(SAY_ENTERCOMBAT, 0);
             //events.ScheduleEvent(EVENT_LINGERING_GAZE_PREPARE, 5000);
             //events.ScheduleEvent(EVENT_PREPARE_LINGERING_GAZE, 5000);
             events.ScheduleEvent(EVENT_ENRAGE, 600000);
@@ -326,6 +341,7 @@ public:
 
         void JustDied(Unit* /*killer*/)
         {
+            Talk(SAY_DIE, 0);
             RemoveDebuffFromPlayers();
             _JustDied();
         }
@@ -370,6 +386,7 @@ public:
                 case EVENT_FORCE_OF_WILL:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 50.0f, true))
                     {
+                        Talk(SAY_FORCE_OF_WILL, 0);
                         me->SetAttackStop(false);
                         me->SetFacingToObject(target);
                         DoCast(target, SPELL_FORCE_OF_WILL);
@@ -417,6 +434,7 @@ public:
                     SummonFogs();
                     me->InterruptNonMeleeSpells(true);
                     phase = PHASE_COLORBLIND;
+                    Talk(SAY_COLORBLIND, 0);
 
                     //For testing
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
@@ -473,6 +491,7 @@ public:
                     events.Reset();
                     me->InterruptNonMeleeSpells(true);
                     me->SetAttackStop(false);
+                    Talk(SAY_DISINTEGRATION_START, 0);
                     if (Creature* eyebeamtarget = me->SummonCreature(NPC_EYEBEAM_TARGET_DURUMU, Eyebeamtargetpos, 0, TEMPSUMMON_TIMED_DESPAWN, 54000))
                     {
                         me->SetFacingToObject(eyebeamtarget);
