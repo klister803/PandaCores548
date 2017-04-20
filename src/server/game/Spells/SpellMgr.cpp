@@ -6119,6 +6119,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 131086: // Bladestorm (Protection buff) DND
                     spellInfo->Effects[EFFECT_0]->BasePoints = 50;
                     break;
+				case 31687:  // Summon Water Elemental
                 case 20066:  // Repentance
                 case 51963:  // Gargoyle Strike
                 case 113792: // Psychic Horror
