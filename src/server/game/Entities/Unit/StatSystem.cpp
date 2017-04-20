@@ -486,8 +486,7 @@ void Player::UpdateMeleeHastMod(float auraMods)
         SetNeedToUpdate(RUNES_REGEN);
 
     if (Pet* pet = GetPet())
-        if (pet->m_baseMHastRatingPct != m_baseMHastRatingPct)
-            pet->UpdateMeleeHastMod();
+		pet->UpdateMeleeHastMod(auraMods);
 }
 
 void Player::UpdateHastMod(float auraMods)
@@ -517,8 +516,7 @@ void Player::UpdateHastMod(float auraMods)
     UpdateManaRegen();
 
     if (Pet* pet = GetPet())
-        if (pet->m_baseHastRatingPct != m_baseHastRatingPct)
-            pet->UpdateHastMod();
+		pet->UpdateHastMod(auraMods);
 }
 
 void Player::UpdateRangeHastMod(float auraMods)
@@ -545,8 +543,7 @@ void Player::UpdateRangeHastMod(float auraMods)
         SetNeedToUpdate(RUNES_REGEN);
 
     if (Pet* pet = GetPet())
-        if (pet->m_baseRHastRatingPct != m_baseRHastRatingPct)
-            pet->UpdateRangeHastMod();
+		pet->UpdateRangeHastMod(auraMods);
 }
 
 void Player::UpdateEnergyRegen(float auraMods)
@@ -1254,7 +1251,7 @@ void Unit::UpdateCastHastMods()
     SetFloatValue(UNIT_MOD_CAST_HASTE, value);
 }
 
-void Unit::UpdateMeleeHastMod()
+void Unit::UpdateMeleeHastMod(float ownerMods)
 {
     float amount = 100.0f;
     Unit* owner = GetCharmerOrOwner();
@@ -1271,6 +1268,11 @@ void Unit::UpdateMeleeHastMod()
     auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE);
     auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2);
     auratypelist.push_back(SPELL_AURA_MELEE_SLOW);
+
+	if (ownerMods)
+		amount *= ownerMods;
+	else if (owner)
+		amount *= owner->GetTotalForAurasMultiplier(&auratypelist);
 
     amount *= GetTotalForAurasMultiplier(&auratypelist);
 
@@ -1295,7 +1297,7 @@ void Unit::UpdateMeleeHastMod()
             owner->SetFloatValue(PLAYER_FIELD_MOD_PET_HASTE, value);
 }
 
-void Unit::UpdateHastMod()
+void Unit::UpdateHastMod(float ownerMods)
 {
     float amount = 100.0f;
     Unit* owner = GetCharmerOrOwner();
@@ -1310,6 +1312,11 @@ void Unit::UpdateHastMod()
     auratypelist.push_back(SPELL_AURA_MOD_CASTING_SPEED);
     auratypelist.push_back(SPELL_AURA_HASTE_SPELLS);
     auratypelist.push_back(SPELL_AURA_MELEE_SLOW);
+
+	if (ownerMods)
+		amount *= ownerMods;
+	else if (owner)
+		amount *= owner->GetTotalForAurasMultiplier(&auratypelist);
 
     amount *= GetTotalForAurasMultiplier(&auratypelist);
     
@@ -1328,7 +1335,7 @@ void Unit::UpdateHastMod()
     UpdateManaRegen();
 }
 
-void Unit::UpdateRangeHastMod()
+void Unit::UpdateRangeHastMod(float ownerMods)
 {
     float amount = 100.0f;
     Unit* owner = GetCharmerOrOwner();
@@ -1345,8 +1352,12 @@ void Unit::UpdateRangeHastMod()
     auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2);
     auratypelist.push_back(SPELL_AURA_MELEE_SLOW);
 
-    amount *= GetTotalForAurasMultiplier(&auratypelist);
+	if (ownerMods)
+		amount *= ownerMods;
+	else if (owner)
+		amount *= owner->GetTotalForAurasMultiplier(&auratypelist);
 
+    amount *= GetTotalForAurasMultiplier(&auratypelist);
 
     amount -= 100.0f;
     //sLog->outError(LOG_FILTER_NETWORKIO, "UpdateRangeHastMod mod %f", mod);

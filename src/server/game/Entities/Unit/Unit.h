@@ -2108,10 +2108,10 @@ class Unit : public WorldObject
         float GetCreateStat(Stats stat) const { return m_createStats[stat]; }
 
         // Update Mod Hast
-        void UpdateCastHastMods();
-        void UpdateMeleeHastMod();
-        void UpdateRangeHastMod();
-        void UpdateHastMod();
+		void UpdateCastHastMods();
+		void UpdateMeleeHastMod(float ownerMods = 0.f);
+		void UpdateRangeHastMod(float ownerMods = 0.f);
+		void UpdateHastMod(float ownerMods = 0.f);
         void UpdateManaRegen();
         void UpdatePowerRegen(uint32 power);
         float GetBaseMHastRatingPct() const {return m_baseMHastRatingPct;}
