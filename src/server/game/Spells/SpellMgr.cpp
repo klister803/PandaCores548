@@ -4106,9 +4106,29 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->StackAmount = 0;
                     spellInfo->ProcFlags = 0;
                     break;
+				case 145958: // Readiness - Death Knight Blood
+				case 145992: // Readiness - Warrior Protection
+				case 145962: // Readiness - Druid Guardian
+				case 145976: // Readiness - Paladin Protection
+				case 145967: // Readiness - Monk Brewmaster
+				case 145978: // Readiness - Paladin Retribution
+				case 145990: // Readiness - Warrior Arms
+				case 145991: // Readiness - Warrior Fury
+				case 145959: // Readiness - Death Knight Frost
+				case 145960: // Readiness - Death Knight Unholy
+				case 145983: // Readiness - Rogue Assassination
+				case 145984: // Readiness - Rogue Combat
+				case 145985: // Readiness - Rogue Subtlety
+				case 145964: // Readiness - Hunter Beast Mastery
+				case 145965: // Readiness - Hunter Marksmanship
+				case 145966: // Readiness - Hunter Survival
+				case 145969: // Readiness - Monk Windwalker
+				case 145961: // Readiness - Druid Feral
+				case 145986: // Readiness - Shaman Enhancement
                 case 116023: // Sparring
                 case 111397: // Blood Horror
                 case 115191: // Stealth
+				case 139832: // Submerge
                     spellInfo->AuraInterruptFlags = 0;
                     break;
                 case 121471: // Shadow Blades
@@ -5268,9 +5288,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx9 |= SPELL_ATTR9_UNK20;
                     spellInfo->AttributesEx11 |= SPELL_ATTR11_UNK6;
                     spellInfo->InterruptFlags = 0;
-                    break;
-                case 139832: //Submerge
-                    spellInfo->AuraInterruptFlags = 0;
                     break;
                 case 143461: //Sha pool dummy
                     spellInfo->Effects[0]->Effect = SPELL_EFFECT_DUMMY;
