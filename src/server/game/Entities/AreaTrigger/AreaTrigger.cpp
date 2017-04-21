@@ -120,33 +120,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     SetDuration(duration);
     SetObjectScale(1);
 
-    // on some spells radius set on dummy aura, not on create effect.
-    // overwrite by radius from spell if exist.
-    bool find = false;
-    if(atInfo.polygon)
-    {
-        _radius = CalculateRadius();
-        find = true;
-    }
-    else
-    {
-        for (uint32 j = 0; j < MAX_SPELL_EFFECTS; ++j)
-        {
-            if (float r = info->Effects[j]->CalcRadius(caster))
-            {
-                _radius = r * (spell ? spell->m_spellValue->RadiusMod : 1.0f);
-                find = true;
-            }
-        }
-    }
-
-    if (!find)
-    {
-        if(atInfo.Radius)
-            _radius = atInfo.Radius;
-        else if(atInfo.RadiusTarget)
-            _radius = atInfo.RadiusTarget;
-    }
+    CalculateRadius(spell);
 
     if (atInfo.Height && !atInfo.polygon)
         _areaTriggerCylinder = true;
@@ -966,7 +940,43 @@ bool AreaTrigger::IsInPolygon(Unit* unit, WorldObject const* obj)
     return w != 0;
 }
 
-float AreaTrigger::CalculateRadius()
+void AreaTrigger::CalculateRadius(Spell* spell/* = nullptr*/)
+{
+    Unit* caster = GetCaster();
+
+    if(atInfo.polygon)
+        _radius = CalculateRadiusPolygon();
+    else
+    {
+        bool find = false;
+        if(atInfo.Radius || atInfo.RadiusTarget)
+        {
+            if(atInfo.Radius > atInfo.RadiusTarget)
+                _radius = atInfo.Radius;
+            else
+                _radius = atInfo.RadiusTarget;
+            find = true;
+        }
+
+        if(caster && !find && m_spellInfo)
+        {
+            for (uint32 j = 0; j < MAX_SPELL_EFFECTS; ++j)
+            {
+                if (m_spellInfo->EffectMask < uint32(1 << j))
+                    break;
+
+                if (float r = m_spellInfo->Effects[j]->CalcRadius(GetCaster()))
+                    _radius = r * (spell ? spell->m_spellValue->RadiusMod : 1.0f);
+            }
+        }
+    }
+
+    if (caster && m_spellInfo)
+        if (Player* modOwner = caster->GetSpellModOwner())
+            modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_RADIUS, _radius, spell);
+}
+
+float AreaTrigger::CalculateRadiusPolygon()
 {
     //calc maxDist for search zone
     float distance = 0.0f;
@@ -977,7 +987,8 @@ float AreaTrigger::CalculateRadius()
         if(distsq > distance)
             distance = distsq;
     }
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::CalculateRadius distance %f", distance);
+
+    // sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::CalculateRadius distance %f", distance);
 
     return distance;
 }

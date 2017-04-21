@@ -217,7 +217,8 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         void PutObjectUpdateMovement(ByteBuffer* data) const;
         bool IsInHeight(Unit* unit, WorldObject const* obj);
         bool IsInPolygon(Unit* target, WorldObject const* obj);
-        float CalculateRadius();
+        void CalculateRadius(Spell* spell = nullptr);
+        float CalculateRadiusPolygon();
 
     private:
         bool _HasActionsWithCharges(AreaTriggerActionMoment action = AT_ACTION_MOMENT_ENTER);
