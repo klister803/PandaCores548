@@ -18278,7 +18278,7 @@ void Player::ItemRemovedQuestCheck(uint32 entry, uint32 count)
     UpdateForQuestWorldObjects();
 }
 
-void Player::KilledMonster(CreatureTemplate const* cInfo, uint64 guid)
+void Player::KilledMonster(CreatureTemplate const* cInfo, uint64 guid, bool runAchiev)
 {
     if (cInfo->Entry)
         KilledMonsterCredit(cInfo->Entry, guid);
@@ -18288,7 +18288,7 @@ void Player::KilledMonster(CreatureTemplate const* cInfo, uint64 guid)
             KilledMonsterCredit(cInfo->KillCredit[i], 0);
 }
 
-void Player::KilledMonsterCredit(uint32 entry, uint64 guid)
+void Player::KilledMonsterCredit(uint32 entry, uint64 guid, bool runAchiev)
 {
     uint16 addkillcount = 1;
     uint32 real_entry = entry;
@@ -18298,7 +18298,7 @@ void Player::KilledMonsterCredit(uint32 entry, uint64 guid)
         if (killed && killed->GetEntry())
             real_entry = killed->GetEntry();
 
-        if(killed)
+        if(killed && runAchiev)
         {
             UpdateAchievementCriteria(CRITERIA_TYPE_KILL_CREATURE_TYPE, killed->GetCreatureType(), addkillcount, 0, guid ? GetMap()->GetCreature(guid) : NULL);
             if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
@@ -18306,9 +18306,12 @@ void Player::KilledMonsterCredit(uint32 entry, uint64 guid)
         }
     }
 
-    GetAchievementMgr().StartTimedAchievement(CRITERIA_TIMED_TYPE_CREATURE, real_entry);   // MUST BE CALLED FIRST
-    GetAchievementMgr().StartTimedAchievement(CRITERIA_TIMED_TYPE_CREATURE2, real_entry);   // MUST BE CALLED FIRST
-    UpdateAchievementCriteria(CRITERIA_TYPE_KILL_CREATURE, real_entry, addkillcount, 0, guid ? GetMap()->GetCreature(guid) : NULL);
+    if (runAchiev)
+    {
+        GetAchievementMgr().StartTimedAchievement(CRITERIA_TIMED_TYPE_CREATURE, real_entry);   // MUST BE CALLED FIRST
+        GetAchievementMgr().StartTimedAchievement(CRITERIA_TIMED_TYPE_CREATURE2, real_entry);   // MUST BE CALLED FIRST
+        UpdateAchievementCriteria(CRITERIA_TYPE_KILL_CREATURE, real_entry, addkillcount, 0, guid ? GetMap()->GetCreature(guid) : NULL);
+    }
 
     for (uint8 i = 0; i < MAX_QUEST_LOG_SIZE; ++i)
     {

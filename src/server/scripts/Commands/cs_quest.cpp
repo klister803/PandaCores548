@@ -209,7 +209,7 @@ public:
             {
                 if (CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(creature))
                     for (uint16 z = 0; z < creaturecount; ++z)
-                        player->KilledMonster(cInfo, 0);
+                        player->KilledMonster(cInfo, 0, false);
             }
             else if (creature < 0)
             {
