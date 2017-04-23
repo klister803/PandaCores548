@@ -2477,7 +2477,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackT
     sLog->outDebug(LOG_FILTER_UNITS, "RollMeleeOutcomeAgainst: miss %d, dodge %d, parry %d, block %d, crit %d",
         miss_chance, dodge_chance, parry_chance, block_chance, crit_chance);
 
-    if (miss_chance > 0 && urand(0, 10000) < miss_chance)
+	if (miss_chance > 0 && irand(0, 10000) < miss_chance)
     {
         sLog->outDebug(LOG_FILTER_UNITS, "RollMeleeOutcomeAgainst: MISS");
         return MELEE_HIT_MISS;
@@ -2495,6 +2495,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackT
     Player const* plr = ToPlayer();
     dodgeChance += 150 * lvldiff;
     int32 parryChance = dodgeChance;
+	int32 expertiseCap = dodgeChance;
 
     bool canDodge = dodge_chance >= 0;
     bool canParry = parry_chance >= 0;
@@ -2506,8 +2507,8 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackT
     int32 parryExpertise = 0;
     int32 dodgeExpertise = plr ? RoundingFloatValue(plr->GetExpertiseDodgeOrParryReduction(attType) * 100): 0;
 
-    if (dodgeExpertise > 750)
-        parryExpertise = dodgeExpertise - 750;
+	if (dodgeExpertise > expertiseCap)
+		parryExpertise = dodgeExpertise - expertiseCap;
 
     if (victim->GetTypeId() == TYPEID_UNIT)
     {
@@ -2542,7 +2543,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackT
 
             dodgeChance -= dodgeExpertise;
 
-            if (dodgeChance > 0 && urand(0, 10000) < dodgeChance)
+			if (dodgeChance > 0 && irand(0, 10000) < dodgeChance)
             {
                 sLog->outDebug(LOG_FILTER_UNITS, "RollMeleeOutcomeAgainst: DODGE");
                 return MELEE_HIT_DODGE;
@@ -2561,14 +2562,14 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackT
         {
             parryChance -= parryExpertise;
 
-            if (parryChance > 0 && urand(0, 10000) < parryChance)       // check if unit _can_ parry
+			if (parryChance > 0 && irand(0, 10000) < parryChance)       // check if unit _can_ parry
             {
                 sLog->outDebug(LOG_FILTER_UNITS, "RollMeleeOutcomeAgainst: PARRY");
                 return MELEE_HIT_PARRY;
             }
         }
 
-        if (block_chance > 0 && urand(0, 10000) < block_chance)      // check if unit _can_ block
+		if (block_chance > 0 && irand(0, 10000) < block_chance)      // check if unit _can_ block
         {
             sLog->outDebug(LOG_FILTER_UNITS, "RollMeleeOutcomeAgainst: BLOCK");
             return MELEE_HIT_BLOCK;
@@ -2579,7 +2580,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackT
 
     if (!canCrit)
         sLog->outDebug(LOG_FILTER_UNITS, "RollMeleeOutcomeAgainst: CRIT DISABLED)");
-    else if (crit_chance > 0 && urand(0, 10000) < crit_chance)
+	else if (crit_chance > 0 && irand(0, 10000) < crit_chance)
     {
         sLog->outDebug(LOG_FILTER_UNITS, "RollMeleeOutcomeAgainst: CRIT");
         return MELEE_HIT_CRIT;
@@ -2856,7 +2857,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
 
     int32 missChance = int32(MeleeSpellMissChance(victim, attType, spell->Id) * 100.0f);
     // Roll miss
-    if (missChance > 0 && urand(0, 10000) < missChance)
+    if (missChance > 0 && irand(0, 10000) < missChance)
         return SPELL_MISS_MISS;
 
     // Chance resist mechanic (select max value from every mechanic spell effect)
@@ -2873,7 +2874,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
         }
     }
     // Roll chance
-    if (resist_mech > 0 && urand(0, 10000) < resist_mech)
+	if (resist_mech > 0 && irand(0, 10000) < resist_mech)
         return SPELL_MISS_RESIST;
 
     bool canDodge = true;
@@ -2887,7 +2888,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
     // Chance resist mechanic
     int32 resist_chance = victim->GetMechanicResistChance(spell) * 100;
 
-    if (resist_chance > 0 && urand(0, 10000) < resist_chance)
+	if (resist_chance > 0 && irand(0, 10000) < resist_chance)
         return SPELL_MISS_RESIST;
 
     // Ranged attacks can only miss, resist and deflect
@@ -2898,7 +2899,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
         {
             int32 deflect_chance = victim->GetTotalAuraModifier(SPELL_AURA_DEFLECT_SPELLS) * 100;
 
-            if (deflect_chance > 0 && urand(0, 10000) < deflect_chance)
+			if (deflect_chance > 0 && irand(0, 10000) < deflect_chance)
                 return SPELL_MISS_DEFLECT;
         }
 
@@ -2974,6 +2975,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
     Player const* plr = ToPlayer();
     int32 dodgelvl = 300;
     dodgelvl += lvldiff * 150;
+	int32 expertiseCap = dodgelvl;
     int32 dodgeExpertise = plr ? RoundingFloatValue(plr->GetExpertiseDodgeOrParryReduction(attType) * 100) : 0; // Reduce dodge chance by attacker expertise rating
 
     if (dodgeChance < 0)
@@ -2987,7 +2989,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
         dodgeChance = int32(float(dodgeChance) * GetTotalAuraMultiplier(SPELL_AURA_MOD_ENEMY_DODGE));
         dodgeChance -= dodgeExpertise;
 
-        if (dodgeChance > 0 && urand(0, 10000) < dodgeChance) // Roll dodge
+		if (dodgeChance > 0 && irand(0, 10000) < dodgeChance) // Roll dodge
             return SPELL_MISS_DODGE;
     }
 
@@ -3004,12 +3006,12 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
         int32 parryExpertise = 0;
         parryChance += dodgelvl;
 
-        if (dodgeExpertise > 750)
-            parryExpertise = dodgeExpertise - 750;
+		if (dodgeExpertise > expertiseCap)
+			parryExpertise = dodgeExpertise - expertiseCap;
         
         parryChance -= parryExpertise; // Reduce parry chance by attacker expertise rating
 
-        if (parryChance > 0 && urand(0, 10000) < parryChance)         // Roll parry
+		if (parryChance > 0 && irand(0, 10000) < parryChance)         // Roll parry
             return SPELL_MISS_PARRY;
     }
 
@@ -3017,7 +3019,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
     {
         int32 blockChance = int32(victim->GetUnitBlockChance() * 100.0f);
 
-        if (blockChance > 0 && urand(0, 10000) < blockChance)
+		if (blockChance > 0 && irand(0, 10000) < blockChance)
             return SPELL_MISS_BLOCK;
     }
 
