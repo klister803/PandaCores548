@@ -21366,9 +21366,6 @@ bool Unit::HandleAuraRaidProcFromChargeWithValue(AuraEffect* triggeredByAura)
     // jumps
     int32 jumps = triggeredByAura->GetBase()->GetCharges()-1;
 
-    // current aura expire
-    triggeredByAura->GetBase()->SetCharges(1);             // will removed at next charges decrease
-
     // next target selection
     if (jumps > 0)
     {
@@ -21380,18 +21377,19 @@ bool Unit::HandleAuraRaidProcFromChargeWithValue(AuraEffect* triggeredByAura)
             {
                 CastCustomSpell(target, spellProto->Id, &heal, NULL, NULL, true, NULL, triggeredByAura, caster_guid);
                 Aura* aura = target->GetAura(spellProto->Id, caster->GetGUID());
-                if (aura != NULL)
-                    aura->SetCharges(jumps);
+				if (aura != NULL)
+					aura->SetCharges(jumps);
             }
-            if(caster->HasAura(55685) && jumps == 3) // Glyph of Prayer of Mending
-                heal *= 1.6f;
             if(caster->HasAura(109186) && roll_chance_i(15)) // hack for From Darkness, Comes Light
                 CastSpell(this, 114255, true);
         }
     }
 
     // heal
-    CastCustomSpell(this, 33110, &heal, NULL, NULL, true, NULL, NULL, caster_guid);
+	CastCustomSpell(this, 33110, &heal, NULL, NULL, true, NULL, triggeredByAura, caster_guid);
+
+	// current aura expire
+	triggeredByAura->GetBase()->SetCharges(1);             // will removed at next charges decrease
     return true;
 
 }
