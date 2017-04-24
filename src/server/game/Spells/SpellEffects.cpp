@@ -2536,15 +2536,15 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
         
         switch (m_spellInfo->Id)
         {
-			case 33110:  // Glyph of Prayer of Mending
-			{
-				if (caster->HasAura(55685))
-					if (m_triggeredByAura)
-						if (Aura* aura = m_triggeredByAura->GetBase())
-							if (aura->GetCharges() == 4)
-								AddPct(addhealth, 60);
-				break;
-			}
+            case 33110:  // Glyph of Prayer of Mending
+            {
+	            if (caster->HasAura(55685))
+		            if (m_triggeredByAura)
+			            if (Aura* aura = m_triggeredByAura->GetBase())
+				            if (aura->GetCharges() == 4)
+					            AddPct(addhealth, 60);
+	            break;
+            }
             case 73921:  // Healing Rain
             {
                 if (m_UniqueTargetInfo.size() > 6)
