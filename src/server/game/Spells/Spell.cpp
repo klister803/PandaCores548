@@ -8583,7 +8583,7 @@ SpellCastResult Spell::CheckItems()
                 // do not allow adding usable enchantments to items that have use effect already
                 if (pEnchant && isItemUsable)
                     for (uint8 s = 0; s < MAX_ITEM_ENCHANTMENT_EFFECTS; ++s)
-						if (pEnchant->Effect[s] == ITEM_ENCHANTMENT_TYPE_USE_SPELL)
+                        if (pEnchant->Effect[s] == ITEM_ENCHANTMENT_TYPE_USE_SPELL)
                             return SPELL_FAILED_ON_USE_ENCHANT;
 
                 // Not allow enchant in trade slot for some enchant type
@@ -8591,7 +8591,7 @@ SpellCastResult Spell::CheckItems()
                 {
                     if (!pEnchant)
                         return SPELL_FAILED_ERROR;
-					if (pEnchant->Flags & ENCHANTMENT_CAN_SOULBOUND)
+                    if (pEnchant->Flags & ENCHANTMENT_CAN_SOULBOUND)
                         return SPELL_FAILED_NOT_TRADEABLE;
                 }
                 break;
@@ -8608,7 +8608,7 @@ SpellCastResult Spell::CheckItems()
                     SpellItemEnchantmentEntry const* pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
                     if (!pEnchant)
                         return SPELL_FAILED_ERROR;
-					if (pEnchant->Flags & ENCHANTMENT_CAN_SOULBOUND)
+                    if (pEnchant->Flags & ENCHANTMENT_CAN_SOULBOUND)
                         return SPELL_FAILED_NOT_TRADEABLE;
                 }
                 break;

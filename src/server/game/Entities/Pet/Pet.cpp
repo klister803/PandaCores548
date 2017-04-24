@@ -946,8 +946,8 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
 
     SetFullHealth();
 
-	if (owner)
-		CalcExpertiseAndHitChance(owner->ToPlayer());
+    if (owner)
+        CalcExpertiseAndHitChance(owner->ToPlayer());
 
     return true;
 }

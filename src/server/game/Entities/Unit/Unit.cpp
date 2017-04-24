@@ -263,7 +263,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_modMeleeHitChance = 0.0f;
     m_modRangedHitChance = 0.0f;
     m_modSpellHitChance = 0.0f;
-	m_modExpertise = 0.f;
+    m_modExpertise = 0.f;
     m_baseSpellCritChance = 5;
     m_anti_JupmTime = 0;                // Jump Time
     m_anti_FlightTime = 0;                // Jump Time
@@ -1925,11 +1925,11 @@ uint32 Unit::CalcArmorReducedDamage(Unit* victim, const uint32 damage, SpellInfo
 
     float levelModifier = getLevel();
     if ( levelModifier > 85 )
- 		levelModifier = levelModifier + (4.5 * (levelModifier - 59)) + (20 * (levelModifier - 80)) + (22 * (levelModifier - 85));
- 	else if ( levelModifier > 80 )
- 		levelModifier = levelModifier + (4.5 * (levelModifier - 59)) + (20 * (levelModifier - 80));
- 	else if ( levelModifier > 59 )
- 		levelModifier = levelModifier + (4.5 * (levelModifier - 59));
+        levelModifier = levelModifier + (4.5 * (levelModifier - 59)) + (20 * (levelModifier - 80)) + (22 * (levelModifier - 85));
+    else if ( levelModifier > 80 )
+        levelModifier = levelModifier + (4.5 * (levelModifier - 59)) + (20 * (levelModifier - 80));
+    else if ( levelModifier > 59 )
+        levelModifier = levelModifier + (4.5 * (levelModifier - 59));
 
     float tmpvalue = 0.1f * armor / (8.5f * levelModifier + 40);
     tmpvalue = tmpvalue / (1.0f + tmpvalue);
@@ -2444,31 +2444,31 @@ void Unit::HandleProcExtraAttackFor(Unit* victim)
 
 void Unit::CalcExpertiseAndHitChance(Player* owner)
 {
-	if (!owner)
-		return;
+    if (!owner)
+        return;
 
-	float s_int = owner->GetStat(STAT_INTELLECT);
+    float s_int = owner->GetStat(STAT_INTELLECT);
 
-	if (owner->GetStat(STAT_AGILITY) < s_int && s_int > owner->GetStat(STAT_STRENGTH))
-	{
-		m_modExpertise = owner->m_modSpellHitChance;
-		m_modMeleeHitChance = owner->m_modSpellHitChance / 2.f;
-	}
-	else if (owner->getClass() == CLASS_HUNTER)
-	{
-		// Pet Hit = 50% of Master Hit + 50% of Master Exp
-		// Pet Exp = 50% of Master Hit + 50% of Master Exp
-		m_modExpertise = (owner->GetExpertiseDodgeOrParryReduction(RANGED_ATTACK) / 2.f) + (owner->m_modRangedHitChance / 2.f);
-		m_modMeleeHitChance = m_modExpertise;
-	}
-	else
-	{
-		// Pet Hit = 50% of Master Hit + 50% of Master Exp
-		// Pet Exp = 50% of Master Hit + 50% of Master Exp
-		m_modExpertise = (owner->GetExpertiseDodgeOrParryReduction(BASE_ATTACK) / 2.f) + (owner->m_modMeleeHitChance / 2.f);
-		m_modMeleeHitChance = m_modExpertise;
-	}
-	m_modSpellHitChance = m_modMeleeHitChance;
+    if (owner->GetStat(STAT_AGILITY) < s_int && s_int > owner->GetStat(STAT_STRENGTH))
+    {
+        m_modExpertise = owner->m_modSpellHitChance;
+        m_modMeleeHitChance = owner->m_modSpellHitChance / 2.f;
+    }
+    else if (owner->getClass() == CLASS_HUNTER)
+    {
+        // Pet Hit = 50% of Master Hit + 50% of Master Exp
+        // Pet Exp = 50% of Master Hit + 50% of Master Exp
+        m_modExpertise = (owner->GetExpertiseDodgeOrParryReduction(RANGED_ATTACK) / 2.f) + (owner->m_modRangedHitChance / 2.f);
+        m_modMeleeHitChance = m_modExpertise;
+    }
+    else
+    {
+        // Pet Hit = 50% of Master Hit + 50% of Master Exp
+        // Pet Exp = 50% of Master Hit + 50% of Master Exp
+        m_modExpertise = (owner->GetExpertiseDodgeOrParryReduction(BASE_ATTACK) / 2.f) + (owner->m_modMeleeHitChance / 2.f);
+        m_modMeleeHitChance = m_modExpertise;
+    }
+    m_modSpellHitChance = m_modMeleeHitChance;
 }
 
 MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackType attType) const
@@ -2504,7 +2504,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackT
     sLog->outDebug(LOG_FILTER_UNITS, "RollMeleeOutcomeAgainst: miss %d, dodge %d, parry %d, block %d, crit %d",
         miss_chance, dodge_chance, parry_chance, block_chance, crit_chance);
 
-	if (miss_chance > 0 && irand(0, 10000) < miss_chance)
+    if (miss_chance > 0 && irand(0, 10000) < miss_chance)
     {
         sLog->outDebug(LOG_FILTER_UNITS, "RollMeleeOutcomeAgainst: MISS");
         return MELEE_HIT_MISS;
@@ -2522,7 +2522,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackT
     Player const* plr = ToPlayer();
     dodgeChance += 150 * lvldiff;
     int32 parryChance = dodgeChance;
-	int32 expertiseCap = dodgeChance;
+    int32 expertiseCap = dodgeChance;
 
     bool canDodge = dodge_chance >= 0;
     bool canParry = parry_chance >= 0;
@@ -2532,10 +2532,10 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackT
     parryChance += parry_chance;
 
     int32 parryExpertise = 0;
-	int32 dodgeExpertise = plr ? RoundingFloatValue(plr->GetExpertiseDodgeOrParryReduction(attType) * 100.f) : RoundingFloatValue(m_modExpertise * 100.f);
+    int32 dodgeExpertise = plr ? RoundingFloatValue(plr->GetExpertiseDodgeOrParryReduction(attType) * 100.f) : RoundingFloatValue(m_modExpertise * 100.f);
 
-	if (dodgeExpertise > expertiseCap)
-		parryExpertise = dodgeExpertise - expertiseCap;
+    if (dodgeExpertise > expertiseCap)
+        parryExpertise = dodgeExpertise - expertiseCap;
 
     if (victim->GetTypeId() == TYPEID_UNIT)
     {
@@ -2570,7 +2570,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackT
 
             dodgeChance -= dodgeExpertise;
 
-			if (dodgeChance > 0 && irand(0, 10000) < dodgeChance)
+            if (dodgeChance > 0 && irand(0, 10000) < dodgeChance)
             {
                 sLog->outDebug(LOG_FILTER_UNITS, "RollMeleeOutcomeAgainst: DODGE");
                 return MELEE_HIT_DODGE;
@@ -2589,14 +2589,14 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackT
         {
             parryChance -= parryExpertise;
 
-			if (parryChance > 0 && irand(0, 10000) < parryChance)       // check if unit _can_ parry
+            if (parryChance > 0 && irand(0, 10000) < parryChance)       // check if unit _can_ parry
             {
                 sLog->outDebug(LOG_FILTER_UNITS, "RollMeleeOutcomeAgainst: PARRY");
                 return MELEE_HIT_PARRY;
             }
         }
 
-		if (block_chance > 0 && irand(0, 10000) < block_chance)      // check if unit _can_ block
+        if (block_chance > 0 && irand(0, 10000) < block_chance)      // check if unit _can_ block
         {
             sLog->outDebug(LOG_FILTER_UNITS, "RollMeleeOutcomeAgainst: BLOCK");
             return MELEE_HIT_BLOCK;
@@ -2607,7 +2607,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackT
 
     if (!canCrit)
         sLog->outDebug(LOG_FILTER_UNITS, "RollMeleeOutcomeAgainst: CRIT DISABLED)");
-	else if (crit_chance > 0 && irand(0, 10000) < crit_chance)
+    else if (crit_chance > 0 && irand(0, 10000) < crit_chance)
     {
         sLog->outDebug(LOG_FILTER_UNITS, "RollMeleeOutcomeAgainst: CRIT");
         return MELEE_HIT_CRIT;
@@ -2901,7 +2901,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
         }
     }
     // Roll chance
-	if (resist_mech > 0 && irand(0, 10000) < resist_mech)
+    if (resist_mech > 0 && irand(0, 10000) < resist_mech)
         return SPELL_MISS_RESIST;
 
     bool canDodge = true;
@@ -2915,7 +2915,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
     // Chance resist mechanic
     int32 resist_chance = victim->GetMechanicResistChance(spell) * 100;
 
-	if (resist_chance > 0 && irand(0, 10000) < resist_chance)
+    if (resist_chance > 0 && irand(0, 10000) < resist_chance)
         return SPELL_MISS_RESIST;
 
     // Ranged attacks can only miss, resist and deflect
@@ -2926,7 +2926,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
         {
             int32 deflect_chance = victim->GetTotalAuraModifier(SPELL_AURA_DEFLECT_SPELLS) * 100;
 
-			if (deflect_chance > 0 && irand(0, 10000) < deflect_chance)
+            if (deflect_chance > 0 && irand(0, 10000) < deflect_chance)
                 return SPELL_MISS_DEFLECT;
         }
 
@@ -3002,8 +3002,8 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
     Player const* plr = ToPlayer();
     int32 dodgelvl = 300;
     dodgelvl += lvldiff * 150;
-	int32 expertiseCap = dodgelvl;
-	int32 dodgeExpertise = plr ? RoundingFloatValue(plr->GetExpertiseDodgeOrParryReduction(attType) * 100.f) : RoundingFloatValue(m_modExpertise * 100.f); // Reduce dodge chance by attacker expertise rating
+    int32 expertiseCap = dodgelvl;
+    int32 dodgeExpertise = plr ? RoundingFloatValue(plr->GetExpertiseDodgeOrParryReduction(attType) * 100.f) : RoundingFloatValue(m_modExpertise * 100.f); // Reduce dodge chance by attacker expertise rating
 
     if (dodgeChance < 0)
         canDodge = false;
@@ -3016,7 +3016,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
         dodgeChance = int32(float(dodgeChance) * GetTotalAuraMultiplier(SPELL_AURA_MOD_ENEMY_DODGE));
         dodgeChance -= dodgeExpertise;
 
-		if (dodgeChance > 0 && irand(0, 10000) < dodgeChance) // Roll dodge
+        if (dodgeChance > 0 && irand(0, 10000) < dodgeChance) // Roll dodge
             return SPELL_MISS_DODGE;
     }
 
@@ -3033,12 +3033,12 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
         int32 parryExpertise = 0;
         parryChance += dodgelvl;
 
-		if (dodgeExpertise > expertiseCap)
-			parryExpertise = dodgeExpertise - expertiseCap;
+        if (dodgeExpertise > expertiseCap)
+            parryExpertise = dodgeExpertise - expertiseCap;
         
         parryChance -= parryExpertise; // Reduce parry chance by attacker expertise rating
 
-		if (parryChance > 0 && irand(0, 10000) < parryChance)         // Roll parry
+        if (parryChance > 0 && irand(0, 10000) < parryChance)         // Roll parry
             return SPELL_MISS_PARRY;
     }
 
@@ -3046,7 +3046,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
     {
         int32 blockChance = int32(victim->GetUnitBlockChance() * 100.0f);
 
-		if (blockChance > 0 && irand(0, 10000) < blockChance)
+        if (blockChance > 0 && irand(0, 10000) < blockChance)
             return SPELL_MISS_BLOCK;
     }
 
@@ -3211,8 +3211,8 @@ SpellMissInfo Unit::SpellHitResult(Unit* victim, SpellInfo const* spell, bool Ca
             return MeleeSpellHitResult(victim, spell);
         case SPELL_DAMAGE_CLASS_NONE:
             return SPELL_MISS_NONE;
-		case SPELL_DAMAGE_CLASS_MAGIC:
-			return MagicSpellHitResult(victim, spell);
+        case SPELL_DAMAGE_CLASS_MAGIC:
+            return MagicSpellHitResult(victim, spell);
 
     }
     return SPELL_MISS_NONE;
@@ -9120,7 +9120,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     Item* addWeapon = player->GetWeaponForAttack(attType == BASE_ATTACK ? OFF_ATTACK : BASE_ATTACK, true);
                     uint32 enchant_id_add = addWeapon ? addWeapon->GetEnchantmentId(EnchantmentSlot(TEMP_ENCHANTMENT_SLOT)) : 0;
                     SpellItemEnchantmentEntry const* pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id_add);
-					if (pEnchant && pEnchant->EffectSpellID[0] == dummySpell->Id)
+                    if (pEnchant && pEnchant->EffectSpellID[0] == dummySpell->Id)
                         chance += 14;
 
                     if (!roll_chance_i(chance))
@@ -11244,7 +11244,7 @@ ReputationRank Unit::GetReactionTo(Unit const* target) const
         return REP_FRIENDLY;
 
     if (!target)
-    	return REP_FRIENDLY;
+        return REP_FRIENDLY;
 
     // always friendly to charmer or owner
     if (GetCharmerOrOwnerOrSelf() == target->GetCharmerOrOwnerOrSelf())
@@ -12884,7 +12884,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             ApCoeffMod = damagetype == DOT ? bonus->ap_dot_bonus : bonus->ap_bonus;
         }
 
-		bool calcSPDBonus = (SPDCoeffMod > 0) && getClass() != CLASS_MONK;
+        bool calcSPDBonus = (SPDCoeffMod > 0) && getClass() != CLASS_MONK;
 
         if (ApCoeffMod > 0)
         {
@@ -16786,7 +16786,7 @@ float Unit::GetSpellMaxRangeForTarget(Unit const* target, SpellInfo const* spell
         return spellInfo->GetMaxRange();
 
     if (!target)
-    	return spellInfo->RangeEntry->maxRangeFriend;
+        return spellInfo->RangeEntry->maxRangeFriend;
 
     return spellInfo->GetMaxRange(!IsHostileTo(target));
 }
@@ -21378,7 +21378,7 @@ bool Unit::HandleAuraRaidProcFromChargeWithValue(AuraEffect* triggeredByAura)
                 CastCustomSpell(target, spellProto->Id, &heal, NULL, NULL, true, NULL, triggeredByAura, caster_guid);
                 Aura* aura = target->GetAura(spellProto->Id, caster->GetGUID());
                 if (aura != NULL)
-	                aura->SetCharges(jumps);
+                    aura->SetCharges(jumps);
             }
             if(caster->HasAura(109186) && roll_chance_i(15)) // hack for From Darkness, Comes Light
                 CastSpell(this, 114255, true);

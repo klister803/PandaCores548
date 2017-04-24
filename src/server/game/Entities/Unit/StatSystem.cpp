@@ -486,7 +486,7 @@ void Player::UpdateMeleeHastMod(float auraMods)
         SetNeedToUpdate(RUNES_REGEN);
 
     if (Pet* pet = GetPet())
-		pet->UpdateMeleeHastMod(auraMods);
+        pet->UpdateMeleeHastMod(auraMods);
 }
 
 void Player::UpdateHastMod(float auraMods)
@@ -516,7 +516,7 @@ void Player::UpdateHastMod(float auraMods)
     UpdateManaRegen();
 
     if (Pet* pet = GetPet())
-		pet->UpdateHastMod(auraMods);
+        pet->UpdateHastMod(auraMods);
 }
 
 void Player::UpdateRangeHastMod(float auraMods)
@@ -543,7 +543,7 @@ void Player::UpdateRangeHastMod(float auraMods)
         SetNeedToUpdate(RUNES_REGEN);
 
     if (Pet* pet = GetPet())
-		pet->UpdateRangeHastMod(auraMods);
+        pet->UpdateRangeHastMod(auraMods);
 }
 
 void Player::UpdateEnergyRegen(float auraMods)
@@ -1032,8 +1032,8 @@ void Player::UpdateMeleeHitChances()
 
     m_modMeleeHitChance += GetRatingBonusValue(CR_HIT_MELEE);
 
-	if (Pet* pet = GetPet())
-		pet->CalcExpertiseAndHitChance(this);
+    if (Pet* pet = GetPet())
+        pet->CalcExpertiseAndHitChance(this);
 }
 
 void Player::UpdateRangedHitChances()
@@ -1041,8 +1041,8 @@ void Player::UpdateRangedHitChances()
     m_modRangedHitChance = (float)GetTotalAuraModifier(SPELL_AURA_MOD_HIT_CHANCE);
     m_modRangedHitChance += GetRatingBonusValue(CR_HIT_RANGED);
 
-	if (Pet* pet = GetPet())
-		pet->CalcExpertiseAndHitChance(this);
+    if (Pet* pet = GetPet())
+        pet->CalcExpertiseAndHitChance(this);
 }
 
 void Player::UpdateSpellHitChances()
@@ -1052,8 +1052,8 @@ void Player::UpdateSpellHitChances()
     
     m_modSpellHitChance += GetRatingBonusValue(CR_HIT_SPELL);
 
-	if (Pet* pet = GetPet())
-		pet->CalcExpertiseAndHitChance(this);
+    if (Pet* pet = GetPet())
+        pet->CalcExpertiseAndHitChance(this);
 }
 
 void Player::UpdateExpertise()
@@ -1093,8 +1093,8 @@ void Player::UpdateExpertise()
         SetFloatValue(PLAYER_EXPERTISE + i, expertise);
     }
 
-	if (Pet* pet = GetPet())
-		pet->CalcExpertiseAndHitChance(this);
+    if (Pet* pet = GetPet())
+        pet->CalcExpertiseAndHitChance(this);
 }
 
 void Player::ApplyManaRegenBonus(int32 amount, bool apply)
@@ -1281,10 +1281,10 @@ void Unit::UpdateMeleeHastMod(float ownerMods)
     auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2);
     auratypelist.push_back(SPELL_AURA_MELEE_SLOW);
 
-	if (ownerMods)
-		amount *= ownerMods;
-	else if (owner)
-		amount *= owner->GetTotalForAurasMultiplier(&auratypelist);
+    if (ownerMods)
+        amount *= ownerMods;
+    else if (owner)
+        amount *= owner->GetTotalForAurasMultiplier(&auratypelist);
 
     amount *= GetTotalForAurasMultiplier(&auratypelist);
 
@@ -1325,10 +1325,10 @@ void Unit::UpdateHastMod(float ownerMods)
     auratypelist.push_back(SPELL_AURA_HASTE_SPELLS);
     auratypelist.push_back(SPELL_AURA_MELEE_SLOW);
 
-	if (ownerMods)
-		amount *= ownerMods;
-	else if (owner)
-		amount *= owner->GetTotalForAurasMultiplier(&auratypelist);
+    if (ownerMods)
+        amount *= ownerMods;
+    else if (owner)
+        amount *= owner->GetTotalForAurasMultiplier(&auratypelist);
 
     amount *= GetTotalForAurasMultiplier(&auratypelist);
     
@@ -1364,10 +1364,10 @@ void Unit::UpdateRangeHastMod(float ownerMods)
     auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2);
     auratypelist.push_back(SPELL_AURA_MELEE_SLOW);
 
-	if (ownerMods)
-		amount *= ownerMods;
-	else if (owner)
-		amount *= owner->GetTotalForAurasMultiplier(&auratypelist);
+    if (ownerMods)
+        amount *= ownerMods;
+    else if (owner)
+        amount *= owner->GetTotalForAurasMultiplier(&auratypelist);
 
     amount *= GetTotalForAurasMultiplier(&auratypelist);
 

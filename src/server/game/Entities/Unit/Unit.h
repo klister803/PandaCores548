@@ -1702,7 +1702,7 @@ class Unit : public WorldObject
 
         MeleeHitOutcome RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackType attType) const;
         MeleeHitOutcome RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackType attType, int32 crit_chance, int32 miss_chance, int32 dodge_chance, int32 parry_chance, int32 block_chance) const;
-		void CalcExpertiseAndHitChance(Player* owner = NULL);
+        void CalcExpertiseAndHitChance(Player* owner = NULL);
 
         bool isVendor()       const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_VENDOR); }
         bool isTrainer()      const { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_TRAINER); }
@@ -2109,10 +2109,10 @@ class Unit : public WorldObject
         float GetCreateStat(Stats stat) const { return m_createStats[stat]; }
 
         // Update Mod Hast
-		void UpdateCastHastMods();
-		void UpdateMeleeHastMod(float ownerMods = 0.f);
-		void UpdateRangeHastMod(float ownerMods = 0.f);
-		void UpdateHastMod(float ownerMods = 0.f);
+        void UpdateCastHastMods();
+        void UpdateMeleeHastMod(float ownerMods = 0.f);
+        void UpdateRangeHastMod(float ownerMods = 0.f);
+        void UpdateHastMod(float ownerMods = 0.f);
         void UpdateManaRegen();
         void UpdatePowerRegen(uint32 power);
         float GetBaseMHastRatingPct() const {return m_baseMHastRatingPct;}
@@ -2192,7 +2192,7 @@ class Unit : public WorldObject
         float m_modMeleeHitChance;
         float m_modRangedHitChance;
         float m_modSpellHitChance;
-		float m_modExpertise;
+        float m_modExpertise;
         int32 m_baseSpellCritChance;
         LiquidData liquid_status;
         ZLiquidStatus Zliquid_status;
