@@ -1031,12 +1031,18 @@ void Player::UpdateMeleeHitChances()
     SetFloatValue(PLAYER_FIELD_UI_HIT_MODIFIER, m_modMeleeHitChance);
 
     m_modMeleeHitChance += GetRatingBonusValue(CR_HIT_MELEE);
+
+	if (Pet* pet = GetPet())
+		pet->CalcExpertiseAndHitChance(this);
 }
 
 void Player::UpdateRangedHitChances()
 {
     m_modRangedHitChance = (float)GetTotalAuraModifier(SPELL_AURA_MOD_HIT_CHANCE);
     m_modRangedHitChance += GetRatingBonusValue(CR_HIT_RANGED);
+
+	if (Pet* pet = GetPet())
+		pet->CalcExpertiseAndHitChance(this);
 }
 
 void Player::UpdateSpellHitChances()
@@ -1045,6 +1051,9 @@ void Player::UpdateSpellHitChances()
     SetFloatValue(PLAYER_FIELD_UI_SPELL_HIT_MODIFIER, m_modSpellHitChance);
     
     m_modSpellHitChance += GetRatingBonusValue(CR_HIT_SPELL);
+
+	if (Pet* pet = GetPet())
+		pet->CalcExpertiseAndHitChance(this);
 }
 
 void Player::UpdateExpertise()
@@ -1083,6 +1092,9 @@ void Player::UpdateExpertise()
 
         SetFloatValue(PLAYER_EXPERTISE + i, expertise);
     }
+
+	if (Pet* pet = GetPet())
+		pet->CalcExpertiseAndHitChance(this);
 }
 
 void Player::ApplyManaRegenBonus(int32 amount, bool apply)

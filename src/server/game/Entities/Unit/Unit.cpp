@@ -263,6 +263,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_modMeleeHitChance = 0.0f;
     m_modRangedHitChance = 0.0f;
     m_modSpellHitChance = 0.0f;
+	m_modExpertise = 0.f;
     m_baseSpellCritChance = 5;
     m_anti_JupmTime = 0;                // Jump Time
     m_anti_FlightTime = 0;                // Jump Time
@@ -1541,10 +1542,7 @@ void Unit::CalculateMeleeDamage(Unit* victim, float damage, CalcDamageInfo* dama
     else
         damageInfo->damage = damage;
 
-    if (Unit* owner = GetAnyOwner()) //For pets chance calc from owner
-        damageInfo->hitOutCome = owner->RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType, false, isPet() ? this : NULL);
-    else
-        damageInfo->hitOutCome = RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType);
+   damageInfo->hitOutCome = RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType);
 
     switch (damageInfo->hitOutCome)
     {
@@ -2444,16 +2442,45 @@ void Unit::HandleProcExtraAttackFor(Unit* victim)
     }
 }
 
-MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackType attType, bool checkHitPenalty, Unit* pet) const
+void Unit::CalcExpertiseAndHitChance(Player* owner)
+{
+	if (!owner)
+		return;
+
+	float s_int = owner->GetStat(STAT_INTELLECT);
+
+	if (owner->GetStat(STAT_AGILITY) < s_int && s_int > owner->GetStat(STAT_STRENGTH))
+	{
+		m_modExpertise = owner->m_modSpellHitChance;
+		m_modMeleeHitChance = owner->m_modSpellHitChance / 2.f;
+	}
+	else if (owner->getClass() == CLASS_HUNTER)
+	{
+		// Pet Hit = 50% of Master Hit + 50% of Master Exp
+		// Pet Exp = 50% of Master Hit + 50% of Master Exp
+		m_modExpertise = (owner->GetExpertiseDodgeOrParryReduction(RANGED_ATTACK) / 2.f) + (owner->m_modRangedHitChance / 2.f);
+		m_modMeleeHitChance = m_modExpertise;
+	}
+	else
+	{
+		// Pet Hit = 50% of Master Hit + 50% of Master Exp
+		// Pet Exp = 50% of Master Hit + 50% of Master Exp
+		m_modExpertise = (owner->GetExpertiseDodgeOrParryReduction(BASE_ATTACK) / 2.f) + (owner->m_modMeleeHitChance / 2.f);
+		m_modMeleeHitChance = m_modExpertise;
+	}
+	m_modSpellHitChance = m_modMeleeHitChance;
+}
+
+MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackType attType) const
 {
     // This is only wrapper
 
     // Miss chance based on melee
     //float miss_chance = MeleeMissChanceCalc(victim, attType);
-    float miss_chance = MeleeSpellMissChance(victim, attType, 0, checkHitPenalty);
+    float miss_chance = MeleeSpellMissChance(victim, attType, 0);
 
     // Critical hit chance
-    float crit_chance = pet ? pet->GetUnitCriticalChance(attType, victim) : GetUnitCriticalChance(attType, victim);
+    float crit_chance = GetUnitCriticalChance(attType, victim);
 
     if (crit_chance < 0.0f)
         crit_chance = 0.0f;
@@ -2505,7 +2532,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackT
     parryChance += parry_chance;
 
     int32 parryExpertise = 0;
-    int32 dodgeExpertise = plr ? RoundingFloatValue(plr->GetExpertiseDodgeOrParryReduction(attType) * 100): 0;
+	int32 dodgeExpertise = plr ? RoundingFloatValue(plr->GetExpertiseDodgeOrParryReduction(attType) * 100.f) : RoundingFloatValue(m_modExpertise * 100.f);
 
 	if (dodgeExpertise > expertiseCap)
 		parryExpertise = dodgeExpertise - expertiseCap;
@@ -2976,7 +3003,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
     int32 dodgelvl = 300;
     dodgelvl += lvldiff * 150;
 	int32 expertiseCap = dodgelvl;
-    int32 dodgeExpertise = plr ? RoundingFloatValue(plr->GetExpertiseDodgeOrParryReduction(attType) * 100) : 0; // Reduce dodge chance by attacker expertise rating
+	int32 dodgeExpertise = plr ? RoundingFloatValue(plr->GetExpertiseDodgeOrParryReduction(attType) * 100.f) : RoundingFloatValue(m_modExpertise * 100.f); // Reduce dodge chance by attacker expertise rating
 
     if (dodgeChance < 0)
         canDodge = false;
@@ -3079,7 +3106,7 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit* victim, SpellInfo const* spell)
 
     int32 HitChance = modHitChance * 100;
 
-    float expertise = 0.0f;
+    float expertise = m_modExpertise;
     if (Player* plr = ToPlayer())
         expertise = plr->GetExpertiseDodgeOrParryReduction(BASE_ATTACK);
 
@@ -3177,16 +3204,16 @@ SpellMissInfo Unit::SpellHitResult(Unit* victim, SpellInfo const* spell, bool Ca
         }
     }
 
-    Unit* checker = (GetTypeId() == TYPEID_UNIT && GetAnyOwner()) ? GetAnyOwner() : this;
     switch (spell->DmgClass)
     {
         case SPELL_DAMAGE_CLASS_RANGED:
         case SPELL_DAMAGE_CLASS_MELEE:
-            return checker->MeleeSpellHitResult(victim, spell);
+            return MeleeSpellHitResult(victim, spell);
         case SPELL_DAMAGE_CLASS_NONE:
             return SPELL_MISS_NONE;
-        case SPELL_DAMAGE_CLASS_MAGIC:
-            return checker->MagicSpellHitResult(victim, spell);
+		case SPELL_DAMAGE_CLASS_MAGIC:
+			return MagicSpellHitResult(victim, spell);
+
     }
     return SPELL_MISS_NONE;
 }
@@ -22559,7 +22586,7 @@ void Unit::ApplyResilience(Unit const* victim, float* damage, bool isCrit) const
 
 // Melee based spells can be miss, parry or dodge on this step
 // Crit or block - determined on damage calculation phase! (and can be both in some time)
-float Unit::MeleeSpellMissChance(const Unit* victim, WeaponAttackType attType, uint32 spellId, bool checkHitPenalty) const
+float Unit::MeleeSpellMissChance(const Unit* victim, WeaponAttackType attType, uint32 spellId) const
 {
     //calculate miss chance
     float missChance = victim->GetUnitMissChance(attType);
@@ -22575,7 +22602,7 @@ float Unit::MeleeSpellMissChance(const Unit* victim, WeaponAttackType attType, u
     missChance += 1.5f * level_diff;
 
 
-    if (checkHitPenalty && !spellId && haveOffhandWeapon())
+    if (GetTypeId() == TYPEID_PLAYER && !spellId && haveOffhandWeapon())
         missChance += 20;
 
     // Calculate hit chance
