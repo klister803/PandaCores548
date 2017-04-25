@@ -166,7 +166,7 @@ m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_o
     m_followAngle = PET_FOLLOW_ANGLE;
     m_regenTimer = CREATURE_REGEN_INTERVAL;
     m_valuesCount = UNIT_END;
-    isCasterPet = false;
+    casterPetType = CPT_NOT_THE_CASTER;
 
     for (uint8 i = 0; i < CREATURE_MAX_SPELLS; ++i)
         m_temlate_spells[i] = 0;

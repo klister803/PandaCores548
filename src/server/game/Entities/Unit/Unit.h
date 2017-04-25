@@ -1327,6 +1327,13 @@ enum ReactiveType
     REACTIVE_OVERPOWER    = 2
 };
 
+enum CasterPetType
+{
+    CPT_NOT_THE_CASTER  = 0,
+    CPT_CASTER          = 1,
+    CPT_POSETIVE_CASTER = 2
+};
+
 #define MAX_REACTIVE 3
 #define AUTO_SUMMON_SLOT   -1
 #define SUMMON_SLOT_PET     0
@@ -2601,8 +2608,8 @@ class Unit : public WorldObject
         void SendDispelFailed(uint64 targetGuid, uint32 spellId, std::list<uint32>& spellList);
         void SendDispelLog(uint64 targetGuid, uint32 spellId, std::list<uint32>& spellList, bool broke, bool stolen);
 
-        void SetCasterPet(bool isCaster) { isCasterPet = isCaster; }
-        bool GetCasterPet() { return isCasterPet; }
+        void SetCasterPet(CasterPetType casterType) { casterPetType = casterType; }
+        CasterPetType GetCasterPet() { return casterPetType; }
         void SetAttackDist(float dist) { m_attackDist = dist; }
         float GetAttackDist() { return m_attackDist; }
         
@@ -2693,7 +2700,7 @@ class Unit : public WorldObject
 
         uint32 m_reactiveTimer[MAX_REACTIVE];
         uint32 m_regenTimer;
-        bool isCasterPet;
+        CasterPetType casterPetType;
         float m_attackDist;
 
         std::list<uint64> m_threatlistpersonal;

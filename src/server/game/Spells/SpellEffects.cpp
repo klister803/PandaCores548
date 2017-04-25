@@ -7806,7 +7806,7 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
                     {
                         PetStats const* pStats = sObjectMgr->GetPetStats(entry);
                         if(!pStats)
-                            summon->SetCasterPet(true);
+                            summon->SetCasterPet(CPT_NOT_THE_CASTER);
                         if(!sInfo->IsPositive())
                             summon->SetAttackDist(sInfo->GetMaxRange(false));
                     }

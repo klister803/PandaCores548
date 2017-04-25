@@ -388,7 +388,7 @@ bool TempSummon::InitBaseStat(uint32 creatureId, bool& damageSet)
             SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(owner->GetFloatValue(UNIT_FIELD_MINDAMAGE) * pStats->damage));
         }
         if(pStats->type)
-            SetCasterPet(true);
+            SetCasterPet(CasterPetType(pStats->type));
         //Not scale haste for any pets
         if(!pStats->haste)
         {

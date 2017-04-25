@@ -381,7 +381,7 @@ void AnyPetAI::InitializeAI()
                 if (owner && !owner->isInCombat())
                     owner->SetInCombatWith(victim);
 
-                if(me->GetCasterPet())
+                if(me->GetCasterPet() == CPT_CASTER)
                     AttackStartCaster(victim, me->GetAttackDist() - 0.5f);
                 else
                     AttackStart(victim);
@@ -409,6 +409,8 @@ void AnyPetAI::UpdateAI(uint32 diff)
     Unit* owner = me->GetCharmerOrOwner();
     Unit* target = me->getAttackerForHelper();
     Unit* targetOwner = NULL;
+    bool goToFollow = false;
+
     if(!me->HasReactState(REACT_PASSIVE))
     {
         if (owner)
@@ -424,9 +426,9 @@ void AnyPetAI::UpdateAI(uint32 diff)
 
         if(targetOwner != NULL && targetOwner != target)
         {
-            if(me->GetCasterPet())
+            if (me->GetCasterPet() == CPT_CASTER)
                 AttackStartCaster(targetOwner, me->GetAttackDist() - 0.5f);
-            else
+            else if (me->GetCasterPet() != CPT_POSETIVE_CASTER)
                 AttackStart(targetOwner);
 
             //sLog->outDebug(LOG_FILTER_PETS, "AnyPetAI::UpdateAI AttackStart");
@@ -446,9 +448,9 @@ void AnyPetAI::UpdateAI(uint32 diff)
             if(!me->GetCasterPet())
                 DoMeleeAttackIfReady();
         }
-        else if (owner && !me->HasUnitState(UNIT_STATE_FOLLOW))
+        else if (owner && !me->HasUnitState(UNIT_STATE_FOLLOW) && !me->HasUnitState(UNIT_STATE_CASTING))
         {
-            me->HandleFollowCommand();
+            goToFollow = true;
             //sLog->outDebug(LOG_FILTER_PETS, "AnyPetAI::UpdateAI PET_FOLLOW_DIST");
         }
     }
@@ -478,10 +480,10 @@ void AnyPetAI::UpdateAI(uint32 diff)
 
             if (spellInfo->IsPositive())
             {
-                if (spellInfo->CanBeUsedInCombat())
+                if (!spellInfo->CanBeUsedInCombat())
                 {
                     // Check if we're in combat
-                    if (!me->isInCombat())
+                    if (me->isInCombat())
                         continue;
                 }
 
@@ -495,6 +497,11 @@ void AnyPetAI::UpdateAI(uint32 diff)
                         targetSpellStore.push_back(std::make_pair(target, spell));
                         spellUsed = true;
                     }
+                }
+                else
+                {
+                    targetSpellStore.push_back(std::make_pair(me, spell));
+                    spellUsed = true;
                 }
 
                 // No enemy, check friendly
@@ -566,6 +573,7 @@ void AnyPetAI::UpdateAI(uint32 diff)
             me->AddCreatureSpellCooldown(spell->m_spellInfo->Id);
 
             spell->prepare(&targets);
+            goToFollow = false;
         }
         //else
             //sLog->outDebug(LOG_FILTER_PETS, "AnyPetAI::UpdateAI targetSpellStore is empty");
@@ -575,8 +583,11 @@ void AnyPetAI::UpdateAI(uint32 diff)
             delete itr->second;
 
         if (me->HasReactState(REACT_PASSIVE))
-            me->HandleFollowCommand();
+            goToFollow = true;
     }
+
+    if (goToFollow)
+        me->HandleFollowCommand();
 
     if(!me->GetCasterPet())
         DoMeleeAttackIfReady();

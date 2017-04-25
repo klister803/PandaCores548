@@ -133,7 +133,7 @@ void ScriptedAI::AttackStart(Unit* who)
 
     if (who && me->Attack(who, true))
     {
-        if(me->GetCasterPet())
+        if(me->GetCasterPet() == CPT_CASTER)
         {
             if(!me->IsWithinMeleeRange(who, me->GetAttackDist()))
                 me->GetMotionMaster()->MoveChase(who, me->GetAttackDist() - 0.5f);
