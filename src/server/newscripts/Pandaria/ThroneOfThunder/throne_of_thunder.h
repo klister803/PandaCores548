@@ -310,4 +310,9 @@ enum eGameObjects
     GO_RA_DEN_ENT_DOOR      = 218555,
 };
 
+enum sWorldStates
+{
+    WORLD_STATE_ALIVE_FOG_COUNT = 7889,
+};
+
 #endif THRONEOFTHUNDER

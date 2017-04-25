@@ -5163,6 +5163,17 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->TargetA = TARGET_DEST_DEST;
                     break;
                 //Durumu
+                case 136413: //Force of will knock back
+                    spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(1);
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                    {
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                        {
+                            eff->TargetA = TARGET_UNIT_CONE_ENEMY_104;
+                            eff->TargetB = 0;
+                        }
+                    }
+                    break;
                 case 136318: //Disintegration Beam rework to dummy for AT
                     spellInfo->Effects[0]->Effect = SPELL_EFFECT_DUMMY;
                     spellInfo->Effects[0]->TargetA = 25;

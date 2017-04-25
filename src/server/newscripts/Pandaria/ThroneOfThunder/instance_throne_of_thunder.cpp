@@ -102,6 +102,7 @@ public:
         uint64 nextmegaeraheadGuid;
         uint64 jikunGuid;
         uint64 durumuGuid;
+        uint64 durumueyetargetGuid;
         uint64 primordiusGuid;
         uint64 darkanimusGuid;
         uint64 ironqonGuid;
@@ -204,6 +205,7 @@ public:
             nextmegaeraheadGuid   = 0;
             jikunGuid             = 0;
             durumuGuid            = 0;
+            durumueyetargetGuid   = 0;
             primordiusGuid        = 0;
             darkanimusGuid        = 0;
             ironqonGuid           = 0;
@@ -416,6 +418,9 @@ public:
                 break;
             case NPC_DURUMU:  
                 durumuGuid = creature->GetGUID();
+                break;
+            case NPC_EYEBEAM_TARGET_DURUMU:
+                durumueyetargetGuid = creature->GetGUID();
                 break;
             case NPC_CRIMSON_FOG:
                 if (creature->ToTempSummon())
@@ -1194,11 +1199,19 @@ public:
             case NPC_CRIMSON_FOG:
                 if (!crimsonfogGuids.empty())
                 {
+                    uint8 alivecount = 0;
                     for (std::vector<uint64>::const_iterator itr = crimsonfogGuids.begin(); itr != crimsonfogGuids.end(); itr++)
                         if (Creature* cfog = instance->GetCreature(*itr))
                             if (cfog->isAlive())
-                                return;
+                                alivecount++;
 
+                    if (alivecount)
+                    {
+                        DoUpdateWorldState(WORLD_STATE_ALIVE_FOG_COUNT, alivecount);
+                        return;
+                    }
+
+                    DoUpdateWorldState(WORLD_STATE_ALIVE_FOG_COUNT, 0);
                     crimsonfogGuids.clear();
                     if (Creature* durumu = instance->GetCreature(durumuGuid))
                         if (durumu->isAlive() && durumu->isInCombat())
@@ -1270,6 +1283,8 @@ public:
                 return jikunGuid;
             case NPC_DURUMU:  
                 return durumuGuid;
+            case NPC_EYEBEAM_TARGET_DURUMU:
+                return durumueyetargetGuid;
             case NPC_PRIMORDIUS: 
                 return primordiusGuid;
             case NPC_DARK_ANIMUS:  
