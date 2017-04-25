@@ -1,0 +1,1 @@
+UPDATE `pet_stats` SET `type`='2' WHERE (`entry`='54983');
