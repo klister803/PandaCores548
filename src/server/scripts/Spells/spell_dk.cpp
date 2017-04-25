@@ -789,6 +789,9 @@ class spell_dk_purgatory_absorb : public SpellScriptLoader
                 if (dmgInfo.GetDamage() < target->GetHealth())
                     return;
 
+                if (target->HasAura(146193) && !target->HasAura(148010))
+                    return;
+
                 // No damage received under Shroud of Purgatory
                 if (target->ToPlayer()->HasAura(DK_SPELL_SHROUD_OF_PURGATORY))
                 {
