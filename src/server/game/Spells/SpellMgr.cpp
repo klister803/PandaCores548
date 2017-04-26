@@ -5163,6 +5163,26 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->TargetA = TARGET_DEST_DEST;
                     break;
                 //Durumu
+                case 133798: //Life Drain Dmg
+                    for (uint8 b = NONE_DIFFICULTY; b < MAX_DIFFICULTY; ++b)
+                    {
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, b))
+                        {
+                            eff->TargetA = 0;
+                            eff->TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
+                        }
+                    }
+
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                    {
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_1, d))
+                        {
+                            eff->TargetA = 0;
+                            eff->TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
+                        }
+                    }
+
+                    break;
                 case 136413: //Force of will knock back
                     spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(1);
                     for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)

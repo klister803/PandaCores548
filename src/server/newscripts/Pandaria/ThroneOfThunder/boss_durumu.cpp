@@ -40,6 +40,7 @@ enum eSpells
     SPELL_LIFE_DRAIN_WARNING      = 140866,
     SPELL_LIFE_DRAIN_STUN         = 137727,
     SPELL_LIFE_DRAIN_DMG          = 133798,
+    SPELL_LIFE_DRAIN_HEAL         = 133807,
 
     //Red
     SPELL_INFRARED_LIGHT_P_T_AURA = 133731, //player target aura
@@ -268,7 +269,8 @@ public:
             _Reset();
             phase = PHASE_NULL;
             RemoveDebuffFromPlayers();
-            me->SetReactState(REACT_DEFENSIVE);
+            //me->SetReactState(REACT_DEFENSIVE);
+            me->SetReactState(REACT_PASSIVE);
             me->RemoveAurasDueToSpell(SPELL_BRIGHT_LIGHT_DURUMU);
             me->RemoveAurasDueToSpell(SPELL_DISINTEGRATION_LASER_AT);
             checkvictim = 0;
@@ -350,11 +352,12 @@ public:
             checkvictim = 3000;
             phase = PHASE_NORMAL;
             Talk(SAY_ENTERCOMBAT, 0);
-            events.ScheduleEvent(EVENT_ENRAGE, 600000);
+            /*events.ScheduleEvent(EVENT_ENRAGE, 600000);
             events.ScheduleEvent(EVENT_HARD_STARE, 12000);
             events.ScheduleEvent(EVENT_LINGERING_GAZE_PREPARE, 13000);
             events.ScheduleEvent(EVENT_FORCE_OF_WILL_PREPARE, 30000);
-            events.ScheduleEvent(EVENT_COLORBLIND, 42000); //42sec
+            events.ScheduleEvent(EVENT_COLORBLIND, 42000);*/
+            events.ScheduleEvent(EVENT_LIFE_DRAIN_PREPARE, 5000);
         }
 
         void SetData(uint32 type, uint32 data)
@@ -903,7 +906,7 @@ public:
                 targetGuid = guid;
                 me->SetFacingToObject(pl);
                 DoCast(pl, SPELL_LIFE_DRAIN_WARNING, true);
-                events.ScheduleEvent(EVENT_LIFE_DRAIN_LAUNCH, 250);
+                events.ScheduleEvent(EVENT_LIFE_DRAIN_LAUNCH, 100);
             }
         }
 
@@ -1973,6 +1976,128 @@ public:
     }
 };
 
+//133798
+class spell_durumu_life_drain : public SpellScriptLoader
+{
+public:
+    spell_durumu_life_drain() : SpellScriptLoader("spell_durumu_life_drain") { }
+
+    class spell_durumu_life_drain_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_durumu_life_drain_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*>& targets)
+        {
+            if (GetCaster())
+            {
+                targets.clear();
+                uint64 maintargetGuid = 0;
+                std::list<Player*> pllist;
+                pllist.clear();
+                GetPlayerListInGrid(pllist, GetCaster(), 100.0f);
+
+                if (pllist.empty())
+                    return;
+
+                for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end();)
+                {
+                    if ((*itr)->HasAura(SPELL_LIFE_DRAIN_STUN))
+                    {
+                        maintargetGuid = (*itr)->GetGUID();
+                        pllist.erase(itr);
+                        break;
+                    }
+                    else
+                        ++itr;
+                }
+
+                if (!maintargetGuid)
+                    return;
+
+                if (!pllist.empty()) //check if anybody stay between caster and target
+                {
+                    if (Player* mtarget = GetCaster()->GetPlayer(*GetCaster(), maintargetGuid))
+                    {
+                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end();)
+                        {
+                            if (!(*itr)->IsInBetween(GetCaster(), mtarget, 3.0f))
+                                pllist.erase(itr++);
+                            else
+                                ++itr;
+                        }
+                    }
+                }
+
+                if (pllist.size() > 1)
+                {
+                    uint64 newtargetGuid = 0;
+                    float range = 100; //max spell range
+
+                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                        if (GetCaster()->GetExactDist2d((*itr)) < range)
+                            range = GetCaster()->GetExactDist2d((*itr));
+
+                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                        if (GetCaster()->GetExactDist2d((*itr)) <= range)
+                            newtargetGuid = (*itr)->GetGUID();
+
+                    if (!newtargetGuid)
+                        return;
+
+                    if (Player* target = GetCaster()->GetPlayer(*GetCaster(), newtargetGuid))
+                        targets.push_back(target);
+                }
+                else if (pllist.size() == 1)
+                {
+                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                        targets.push_back(*itr);
+                }
+                else if (pllist.empty())
+                {
+                    if (Player* target = GetCaster()->GetPlayer(*GetCaster(), maintargetGuid))
+                        targets.push_back(target);
+                }
+            }
+        }
+
+        void DealDamage()
+        {
+            if (GetCaster() && GetHitUnit())
+            {
+                uint32 dmg = GetHitDamage(); //default;
+                if (GetHitUnit()->HasAura(SPELL_LIFE_DRAIN_DMG))
+                {
+                    uint8 stack = GetHitUnit()->GetAura(SPELL_LIFE_DRAIN_DMG)->GetStackAmount();
+                    uint32 mod = GetHitDamage() * 0.6; //increase on 60% from stack
+                    uint32 moddmg = mod*stack;
+                    dmg = dmg + moddmg;
+                    SetHitDamage(dmg);
+                }
+                else
+                    SetHitDamage(dmg);
+
+                uint32 healcount = dmg * 0.25f; //25% from dmg
+                if (InstanceScript* instance = GetCaster()->GetInstanceScript())
+                    if (Creature* durumu = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(NPC_DURUMU)))
+                        if (durumu->isAlive())
+                            GetCaster()->CastCustomSpell(SPELL_LIFE_DRAIN_HEAL, SPELLVALUE_BASE_POINT0, healcount, durumu, true);
+            }
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_durumu_life_drain_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_durumu_life_drain_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_SRC_AREA_ENEMY);
+            OnHit += SpellHitFn(spell_durumu_life_drain_SpellScript::DealDamage);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_durumu_life_drain_SpellScript();
+    }
+};
+
 //8897
 class at_durumu_entrance : public AreaTriggerScript
 {
@@ -2011,5 +2136,6 @@ void AddSC_boss_durumu()
     new spell_disintegration_laser_dummy();
     new spell_force_of_will_dummy();
     new spell_force_of_will();
+    new spell_durumu_life_drain();
     new at_durumu_entrance();
 }
