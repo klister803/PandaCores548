@@ -11405,6 +11405,9 @@ bool Unit::Attack(Unit* victim, bool meleeAttack)
     if (!isAlive() || !victim->IsInWorld() || !victim->isAlive())
         return false;
 
+    if (victim->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
+        return false;
+
     // player cannot attack in mount state
     if (GetTypeId() == TYPEID_PLAYER && IsMounted())
         return false;
