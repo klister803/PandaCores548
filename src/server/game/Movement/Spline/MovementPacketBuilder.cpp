@@ -43,11 +43,11 @@ namespace Movement
         MonsterMoveFacingAngle  = 4
     };
 
-    void PacketBuilder::WriteStopMovement(Vector3 const& pos, WorldPacket& data, Unit& unit)
+    void PacketBuilder::WriteStopMovement(const MoveSpline& move_spline, Vector3 const& pos, WorldPacket& data, Unit& unit)
     {
         ObjectGuid guid = unit.GetObjectGuid();
         ObjectGuid transportGuid = unit.GetTransGUID();
-        MoveSplineFlag splineFlags = unit.movespline->splineflags;
+        MoveSplineFlag splineFlags = move_spline.splineflags;
 
         data.WriteBit(0);
         data.WriteGuidMask<0>(guid);
@@ -73,7 +73,7 @@ namespace Movement
         data.WriteBit(1);
         data.WriteBit(1);
 
-        data << uint32(unit.movespline->GetId());
+        data << uint32(move_spline.GetId());
 
         data.WriteGuidBytes<1, 7, 4, 6, 0, 2, 5, 3>(transportGuid);
 
@@ -85,7 +85,7 @@ namespace Movement
         {
             MoveSplineFlag splineflags2 = splineFlags;
             splineflags2 &= ~MoveSplineFlag::Mask_No_Monster_Move;
-            data << uint32(unit.movespline->splineflags.raw());
+            data << uint32(move_spline.splineflags.raw());
         }
         data.WriteGuidBytes<5, 6>(guid);
 
@@ -151,6 +151,9 @@ namespace Movement
 
     void PacketBuilder::WriteMonsterMove(const MoveSpline& move_spline, WorldPacket& data, Unit& unit)
     {
+        if (!unit.IsInWorld())
+            return;
+
         MoveSplineFlag splineflags = move_spline.splineflags;
         ObjectGuid transportGuid = unit.GetTransGUID();
         ObjectGuid guid = unit.GetObjectGuid();

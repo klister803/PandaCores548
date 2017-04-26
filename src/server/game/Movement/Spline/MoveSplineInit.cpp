@@ -146,7 +146,7 @@ namespace Movement
         move_spline.Initialize(args);
 
         WorldPacket data(SMSG_MONSTER_MOVE, 64);
-        PacketBuilder::WriteStopMovement(loc, data, unit);
+        PacketBuilder::WriteStopMovement(move_spline, loc, data, unit);
         unit.SendMessageToSet(&data, true);
     }
 
