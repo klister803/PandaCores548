@@ -742,7 +742,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
     }
 
     // Rage from Damage made (only from direct weapon damage)
-    if (cleanDamage && damagetype == DIRECT_DAMAGE && this != victim && getPowerType() == POWER_RAGE)
+    if (cleanDamage && !cleanDamage->splited && damagetype == DIRECT_DAMAGE && this != victim && getPowerType() == POWER_RAGE)
     {
         uint32 rage = uint32(GetAttackTime(cleanDamage->attackType) / 1000 * 8.125f);
         float ragewarrior = float(3.5f * ((GetAttackTime(cleanDamage->attackType)) / 1000.0f) * 0.5f);
@@ -2217,7 +2217,7 @@ void Unit::CalcAbsorbResist(Unit* victim, SpellSchoolMask schoolMask, DamageEffe
             DamageInfo dmgInfoProc = DamageInfo(damageInfo, spellInfo);
             ProcDamageAndSpell(caster, m_procAttacker, m_procVictim, PROC_EX_NORMAL_HIT, &dmgInfoProc, BASE_ATTACK, spellInfo);
 
-            CleanDamage cleanDamage = CleanDamage(splitted, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
+            CleanDamage cleanDamage = CleanDamage(splitted, 0, BASE_ATTACK, MELEE_HIT_NORMAL, true);
             DealDamage(caster, splitted, &cleanDamage, DIRECT_DAMAGE, schoolMask, (*itr)->GetSpellInfo(), false);
         }
     }

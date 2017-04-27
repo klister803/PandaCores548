@@ -944,14 +944,16 @@ public:
 
 struct CleanDamage
 {
-    CleanDamage(uint32 mitigated, uint32 absorbed, WeaponAttackType _attackType, MeleeHitOutcome _hitOutCome) :
-    absorbed_damage(absorbed), mitigated_damage(mitigated), attackType(_attackType), hitOutCome(_hitOutCome) {}
+    CleanDamage(uint32 mitigated, uint32 absorbed, WeaponAttackType _attackType, MeleeHitOutcome _hitOutCome, bool _splited = false) :
+        absorbed_damage(absorbed), mitigated_damage(mitigated), attackType(_attackType), hitOutCome(_hitOutCome), splited(_splited){}
 
     uint32 absorbed_damage;
     uint32 mitigated_damage;
 
     WeaponAttackType attackType;
     MeleeHitOutcome hitOutCome;
+
+    bool splited;
 };
 
 struct CalcDamageInfo;
