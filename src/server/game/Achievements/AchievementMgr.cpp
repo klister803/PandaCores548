@@ -3571,9 +3571,11 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(ModifierTreeNode const* 
             case CRITERIA_ADDITIONAL_CONDITION_SOURCE_LEVEL: // 39
                 if (referencePlayer->getLevel() != reqValue)
                     check = false;
+                break;
             case CRITERIA_ADDITIONAL_CONDITION_TARGET_LEVEL: // 40
                 if (!unit || unit->getLevel() != reqValue)
                     check = false;
+                break;
             case CRITERIA_ADDITIONAL_CONDITION_TARGET_ZONE: // 41
                 if (!unit || unit->GetZoneId() != reqValue)
                     check = false;
@@ -3777,6 +3779,7 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(ModifierTreeNode const* 
             {
                 if (!miscValue2 || miscValue2 != reqValue)
                     check = false;
+                break;
             }
             case CRITERIA_ADDITIONAL_CONDITION_CHALANGER_RATE: // 83
             {
