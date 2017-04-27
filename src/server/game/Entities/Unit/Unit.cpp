@@ -8744,10 +8744,10 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
             {
                 Unit* beaconTarget = NULL;
 
-                for (auto itr : m_unitsHasCasterAura)
-                    if (Unit* _target = ObjectAccessor::GetUnit(*this, itr))
-                        if (_target->HasAura(53563, GetGUID()))
-                            beaconTarget = _target;
+                auto itr = m_lastAurasTarget.find(53563);
+                if (itr != m_lastAurasTarget.end())
+                    if (Unit* _target = ObjectAccessor::GetUnit(*this, itr->second))
+                        beaconTarget = _target;
 
                 if (!beaconTarget)
                     if (HasAura(53563, GetGUID()))
