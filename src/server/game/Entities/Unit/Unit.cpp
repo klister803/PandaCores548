@@ -422,7 +422,7 @@ void Unit::Update(uint32 p_time)
         // These flags are reset after target dies or another command is given.
         if (m_CombatTimer <= p_time) // m_CombatTimer set at aura start and it will be freeze until aura removing
         {
-            if (m_HostileRefManager.isEmpty() && leaveCombat)
+            if (m_attackers.empty() && leaveCombat)
                 ClearInCombat();
             else
                 m_CombatTimer = 0;
@@ -11417,6 +11417,10 @@ bool Unit::Attack(Unit* victim, bool meleeAttack)
     {
         if (victim->ToPlayer()->isGameMaster())
             return false;
+
+        if (Creature* cre = ToCreature())
+            if (cre->IsInEvadeMode())
+                return false;
     }
     else
     {
