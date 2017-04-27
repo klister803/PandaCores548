@@ -4007,7 +4007,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_DOESENT_INTERRUPT_CHANNELING;
                     break;
                 case 32645:  // Envenom
-                case 53651:  // Beacon of Light
                 case 90289:  // Removing Death Grip cooldown
                 case 36563:  // Shadowstep
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_HAVE_STABLE_FLYTIME;

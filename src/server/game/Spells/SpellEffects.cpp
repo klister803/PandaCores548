@@ -1651,6 +1651,18 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
         // special cases
         switch (triggered_spell_id)
         {
+            case 53651: // Beacon of Light
+            {
+                auto itr = m_caster->m_lastAurasTarget.find(53563);
+                if (itr != m_caster->m_lastAurasTarget.end())
+                {
+                    if (Unit* _target = ObjectAccessor::GetUnit(*m_caster, itr->second))
+                        _target->RemoveAurasDueToSpell(53563, m_originalCasterGUID);
+                }
+                else if (m_caster->HasAura(53563, m_originalCasterGUID))
+                    m_caster->RemoveAurasDueToSpell(53563, m_originalCasterGUID);
+                break;
+            }
             // Demonic Fury (not exist)
             case 104330:
             {
