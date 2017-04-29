@@ -89,34 +89,26 @@ enum eSpells
     SPELL_DISINTEGRATION_LASER_AT = 133778,
     SPELL_DISINTEGRATION_LASER_P  = 134169, //Prepare
     SPELL_DISINTEGRATION_LASER_S  = 133775, //Summon eyebeam target
-
     SPELL_MAZE_STARTS_HERE        = 140911,
-
     SPELL_DURUMU_SPAWN            = 139089,
-
     SPELL_MAZE_COLLECTED          = 140911,
 
-    /*
-    136251 Name: ƒуруму Ц иллюзи€ платформы
-    Id: 136235
-    Name: Whole Room Slice 4
-    Id: 136553
-    Name: Thunder King Raid - Durumu - Whole Room Maze - Whole Slice 1x “уман
-    Id: 140898
-    Name: MAZE STARTS HERE - 1 - безопасна€ зона
-    NPC_CROSS_EYE = 67857, Thunder King Raid
-    */
+    //Thunder King Raid - Durumu - Whole Room Maze - Whole Slice
+    SPELL_TKR_WHOLE_SLICE_X_1     = 136553,
 };
 
 enum sEvents
 {
     //Normal phase
-    EVENT_ENRAGE = 1,
-    EVENT_HARD_STARE,
+    EVENT_HARD_STARE = 1,
     EVENT_LINGERING_GAZE_PREPARE,
     EVENT_LINGERING_GAZE,
     EVENT_FORCE_OF_WILL_PREPARE,
     EVENT_FORCE_OF_WILL,
+
+    EVENT_PREPARE_TO_MIST,
+    EVENT_CREATE_MIST,
+    EVENT_ADVANCE_PHASE,
     //
 
     EVENT_MOVE_TO_POINT,
@@ -128,8 +120,8 @@ enum sEvents
     EVENT_SEARCHER,
     //Fog events
     EVENT_CAUSTIC_SPIKE,
-    EVENT_DISINTEGRATION_LASER,
-    EVENT_DISINTEGRATION_LASER_L,
+    EVENT_DISINTEGRATION_BEAM,
+    EVENT_DISINTEGRATION_BEAM_P,
 
     //After Disintegration phase
     EVENT_LIFE_DRAIN_PREPARE,
@@ -152,6 +144,7 @@ enum Phase
     PHASE_NORMAL,
     PHASE_COLORBLIND,
     PHASE_DISINTEGRATION_BEAM,
+    PHASE_ADVANCE,
 };
 
 uint32 colorblindeyelist[3] =
@@ -174,38 +167,25 @@ enum CreatureText
     SAY_DIE                  = 6, //Ѕездна зовЄт мен€Е                                     35338
 };
 
-Position mazepos =  {5897.926f, 4514.828f, -6.277899f, 0.1f }; //center
-Position mazepos2 = {5897.926f, 4514.828f, -6.277899f, 0.5235987f}; //right near
-Position mazepos3 = {5897.926f, 4514.828f, -6.277899f, 1.047198f};  //right far
-
-Position triggerspawnpos[] =
+Position triggerspawnpos[12] =
 {
-    { 5897.926f, 4514.828f, -6.277899f, 2.094395f },
-    { 5897.926f, 4514.828f, -6.277899f, 5.235987f },
-    { 5897.926f, 4514.828f, -6.277899f, 2.617994f },
-    { 5897.926f, 4514.828f, -6.277899f, 4.712389f },
-    { 5897.926f, 4514.828f, -6.277899f, 3.141593f },
-    { 5897.926f, 4514.828f, -6.277899f, 4.18879f  },
-    { 5897.926f, 4514.828f, -6.277899f, 3.665191f },
-    { 5897.926f, 4514.828f, -6.277899f, 5.759586f },
-    { 5897.926f, 4514.828f, -6.277899f, 1.570796f },
+    //minimap - north -> west                                            // From center
+    { 5897.926f, 4514.828f, -6.277899f, 0.100000f }, // 0                // 0
+    { 5897.926f, 4514.828f, -6.277899f, 0.523598f }, // 1    maze right  // 1
+    { 5897.926f, 4514.828f, -6.277899f, 1.047198f }, // 2                // 2
+
+    { 5897.926f, 4514.828f, -6.277899f, 1.570796f }, // 3
+    { 5897.926f, 4514.828f, -6.277899f, 2.094395f }, // 4
+    { 5897.926f, 4514.828f, -6.277899f, 2.617994f }, // 5
+
+    { 5897.926f, 4514.828f, -6.277899f, 3.141593f }, // 6
+    { 5897.926f, 4514.828f, -6.277899f, 3.665191f }, // 7
+    { 5897.926f, 4514.828f, -6.277899f, 4.188790f }, // 8
+
+    { 5897.926f, 4514.828f, -6.277899f, 4.712389f }, // 9                // 2
+    { 5897.926f, 4514.828f, -6.277899f, 5.235987f }, // 10   maze left   // 1
+    { 5897.926f, 4514.828f, -6.277899f, 5.759586f }, // 11               // 0
 };
-
-/* ReCreate lastphase
-
-    full cone
-    NPC_CROSS_EYE = 67857 (5897.926f, 4514.828f, -6.277899f) x, y, z
-
-    2.094395f - 136553
-    5.235987f - 136553
-    2.617994f - 136554
-    4.712389f - 136554
-    3.141593f - 136555
-    4.18879f  - 136555
-    3.665191f - 136556
-    5.759586f - 136560
-    1.570796f - 136560
-*/
 
 class _TankFilter
 {
@@ -263,18 +243,22 @@ public:
         Phase phase;
         uint32 checkvictim;
         uint64 eyebeamtargetGuid;
+        uint32 enragetimer;
+        bool rotatedirection;
 
         void Reset()
         {
             _Reset();
             phase = PHASE_NULL;
+            checkvictim = 0;
+            enragetimer = 0;
+            eyebeamtargetGuid = 0;
+            rotatedirection = false;
             RemoveDebuffFromPlayers();
-            //me->SetReactState(REACT_DEFENSIVE);
-            me->SetReactState(REACT_PASSIVE);
+            me->SetReactState(REACT_DEFENSIVE);
+            me->RemoveAurasDueToSpell(SPELL_MIND_DAGGERS_AURA);
             me->RemoveAurasDueToSpell(SPELL_BRIGHT_LIGHT_DURUMU);
             me->RemoveAurasDueToSpell(SPELL_DISINTEGRATION_LASER_AT);
-            checkvictim = 0;
-            eyebeamtargetGuid = 0;
             instance->SetData(DATA_CLEAR_CRIMSON_FOG_LIST, 0);
             instance->DoUpdateWorldState(WORLD_STATE_ALIVE_FOG_COUNT, 0);
         }
@@ -283,6 +267,13 @@ public:
         {
             if (unit->ToPlayer())
                 Talk(SAY_KILL_PLAYER);
+        }
+
+        uint32 GetData(uint32 type)
+        {
+            if (type == DATA_GET_DURUMU_ROTATE_DIRECTION)
+                return uint32(rotatedirection);
+            return 0;
         }
 
         float GetFogAngle(uint8 pos)
@@ -349,15 +340,14 @@ public:
         void EnterCombat(Unit* who)
         {
             _EnterCombat();
-            checkvictim = 3000;
             phase = PHASE_NORMAL;
             Talk(SAY_ENTERCOMBAT, 0);
-            /*events.ScheduleEvent(EVENT_ENRAGE, 600000);
+            checkvictim = 3000;
+            enragetimer = 600000;
             events.ScheduleEvent(EVENT_HARD_STARE, 12000);
             events.ScheduleEvent(EVENT_LINGERING_GAZE_PREPARE, 13000);
             events.ScheduleEvent(EVENT_FORCE_OF_WILL_PREPARE, 30000);
-            events.ScheduleEvent(EVENT_COLORBLIND, 42000);*/
-            events.ScheduleEvent(EVENT_LIFE_DRAIN_PREPARE, 5000);
+            events.ScheduleEvent(EVENT_COLORBLIND, 42000);
         }
 
         void SetData(uint32 type, uint32 data)
@@ -393,9 +383,11 @@ public:
                 RemoveDebuffFromPlayers();
                 phase = PHASE_NORMAL;
                 me->RemoveAurasDueToSpell(SPELL_BRIGHT_LIGHT_DURUMU);
+                events.ScheduleEvent(EVENT_HARD_STARE, 12000);
                 events.ScheduleEvent(EVENT_LINGERING_GAZE, 4000);
                 events.ScheduleEvent(EVENT_FORCE_OF_WILL, 8000);
-                events.ScheduleEvent(EVENT_COLORBLIND, 62000);
+                events.ScheduleEvent(EVENT_COLORBLIND, 65000);
+                //events.ScheduleEvent(EVENT_DISINTEGRATION_BEAM, 65000); not ready
             }
         }
 
@@ -429,23 +421,31 @@ public:
                     checkvictim -= diff;
             }
 
+            if (enragetimer)
+            {
+                if (enragetimer <= diff)
+                {
+                    enragetimer = 0;
+                    DoCastAOE(SPELL_OBLITERATE);
+                }
+                else
+                    enragetimer -= diff;
+            }
+
             events.Update(diff);
 
-            if (me->HasUnitState(UNIT_STATE_CASTING))
+            if (me->HasUnitState(UNIT_STATE_CASTING) && phase != PHASE_DISINTEGRATION_BEAM)
                 return;
 
             while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
-                //Normal phase
+                //Normal and Advance phase
                 case EVENT_HARD_STARE:
                     if (me->getVictim())
                         DoCast(me->getVictim(), SPELL_HARD_STARE);
                     events.ScheduleEvent(EVENT_HARD_STARE, 12000);
-                    break;
-                case EVENT_ENRAGE:
-                    DoCastAOE(SPELL_OBLITERATE);
                     break;
                 case EVENT_FORCE_OF_WILL_PREPARE:
                 {
@@ -455,8 +455,8 @@ public:
                     me->GetNearPoint2D(x, y, -15.0f, ang);
                     me->SummonCreature(NPC_MIND_EYE, x, y, -2.0f, 0.0f);
                     events.ScheduleEvent(EVENT_FORCE_OF_WILL, 5000);
+                    break;
                 }
-                break;
                 case EVENT_FORCE_OF_WILL:
                     Talk(SAY_FORCE_OF_WILL, 0);
                     if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 80.0f, true))
@@ -472,8 +472,8 @@ public:
                     me->GetNearPoint2D(x, y, -15.0f, ang);
                     me->SummonCreature(NPC_APPRAISING_EYE, x, y, 2.46f, 0.0f);
                     events.ScheduleEvent(EVENT_LINGERING_GAZE, 5000);
+                    break;
                 }
-                break;
                 case EVENT_LINGERING_GAZE:
                 {
                     uint8 maxnum = me->GetMap()->Is25ManRaid() ? 5 : 2;
@@ -500,7 +500,26 @@ public:
                     events.ScheduleEvent(EVENT_LINGERING_GAZE, 35000);
                     break;
                 }
-                //ColorBlind phase
+                case EVENT_LIFE_DRAIN_PREPARE:
+                {
+                    Creature* hungryeye = me->FindNearestCreature(NPC_HUNGRY_EYE, 100.0f, true);
+                    if (!hungryeye)
+                    {
+                        float x, y;
+                        float mod = urand(0, 6);
+                        float ang = mod <= 5 ? mod + float(urand(1, 9)) / 10 : mod;
+                        me->GetNearPoint2D(x, y, -15.0f, ang);
+                        me->SummonCreature(NPC_HUNGRY_EYE, x, y, 1.0f, 0.0f);
+                    }
+                    events.ScheduleEvent(EVENT_LIFE_DRAIN, 5000);
+                    break;
+                }
+                case EVENT_LIFE_DRAIN:
+                    if (Creature* hungryeye = me->FindNearestCreature(NPC_HUNGRY_EYE, 50.0f, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
+                            hungryeye->AI()->SetGUID(target->GetGUID(), 1);
+                    break;
+                //Colorblind phase
                 case EVENT_COLORBLIND:
                 {
                     events.CancelEvent(EVENT_FORCE_OF_WILL);
@@ -554,9 +573,10 @@ public:
                     instance->DoUpdateWorldState(WORLD_STATE_ALIVE_FOG_COUNT, 1);
                     instance->DoUpdateWorldState(WORLD_STATE_ALIVE_FOG_COUNT, 3);
                     SummonFogs();
+                    break;
                 }
-                break;
-                case EVENT_DISINTEGRATION_LASER:
+                //Disintegration beam phase
+                case EVENT_DISINTEGRATION_BEAM_P:
                     phase = PHASE_DISINTEGRATION_BEAM;
                     events.Reset();
                     me->InterruptNonMeleeSpells(true);
@@ -567,107 +587,64 @@ public:
                         me->SetFacingToObject(eyebeamtarget);
                         eyebeamtargetGuid = eyebeamtarget->GetGUID();
                     }
-                    events.ScheduleEvent(EVENT_DISINTEGRATION_LASER_L, 250);
+                    events.ScheduleEvent(EVENT_DISINTEGRATION_BEAM, 250);
+                    events.ScheduleEvent(EVENT_ADVANCE_PHASE, 55000);
                     break;
-                case EVENT_DISINTEGRATION_LASER_L:
+                case EVENT_DISINTEGRATION_BEAM:
                     if (Creature* eyebeamtarget = me->GetCreature(*me, eyebeamtargetGuid))
                         DoCast(eyebeamtarget, SPELL_DISINTEGRATION_LASER_P);
-                    CreateWholeRoom();//test
+                    DoCast(me, SPELL_MIND_DAGGERS_AURA);
+                    rotatedirection = urand(0, 1);
+                    events.ScheduleEvent(EVENT_PREPARE_TO_MIST, 6000);
                     break;
-                case EVENT_LIFE_DRAIN_PREPARE:
-                {
-                    float x, y;
-                    float mod = urand(0, 6);
-                    float ang = mod <= 5 ? mod + float(urand(1, 9)) / 10 : mod;
-                    me->GetNearPoint2D(x, y, -15.0f, ang);
-                    me->SummonCreature(NPC_HUNGRY_EYE, x, y, 1.0f, 0.0f);
-                    events.ScheduleEvent(EVENT_LIFE_DRAIN, 5000);
+                case EVENT_PREPARE_TO_MIST:
+                {   //Create safe zone on platform
+                    switch (rotatedirection)
+                    {
+                    case 0:       //left
+                        for (uint8 b = 11; b > 8; b--)
+                            if (Creature* lce = me->SummonCreature(NPC_CROSS_EYE, triggerspawnpos[b]))
+                                lce->CastSpell(lce, SPELL_MAZE_COLLECTED);
+                        break;
+                    case 1:       //right
+                        for (uint8 n = 0; n < 3; n++)
+                            if (Creature* rce = me->SummonCreature(NPC_CROSS_EYE, triggerspawnpos[n]))
+                                rce->CastSpell(rce, SPELL_MAZE_COLLECTED);
+                        break;
+                    }
+                    events.ScheduleEvent(EVENT_CREATE_MIST, 2000);
+                    break;
                 }
-                break;
-                case EVENT_LIFE_DRAIN:
-                    if (Creature* hungryeye = me->FindNearestCreature(NPC_HUNGRY_EYE, 50.0f, true))
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
-                            hungryeye->AI()->SetGUID(target->GetGUID(), 1);
-                break;
+                case EVENT_CREATE_MIST:
+                {
+                    switch (rotatedirection)
+                    {
+                    case 0:
+                        for (uint8 b = 0; b < 9; b++)
+                            if (Creature* lce = me->SummonCreature(NPC_CROSS_EYE, triggerspawnpos[b]))
+                                lce->AI()->SetData(DATA_CREATE_MIST, 1000 + b * 650);
+                        break;
+                    case 1:
+                        for (uint8 n = 11; n > 2; n--)
+                            if (Creature* rce = me->SummonCreature(NPC_CROSS_EYE, triggerspawnpos[n]))
+                                rce->AI()->SetData(DATA_CREATE_MIST, 1000 + (11 - n) * 650);
+                        break;
+                    }
+                    break;
+                }
+                case EVENT_ADVANCE_PHASE:
+                    phase = PHASE_ADVANCE;
+                    me->ReAttackWithZone();
+                    summons.DespawnEntry(NPC_CROSS_EYE);
+                    events.ScheduleEvent(EVENT_HARD_STARE, 12000);
+                    events.ScheduleEvent(EVENT_LIFE_DRAIN_PREPARE, 13000);
+                    events.ScheduleEvent(EVENT_LINGERING_GAZE, 15000);
+                    events.ScheduleEvent(EVENT_FORCE_OF_WILL, 35000);
+                    events.ScheduleEvent(EVENT_COLORBLIND, 42000);
+                    break;
                 }
             }
             DoMeleeAttackIfReady();
-        }
-
-        //Test ReCreate
-        void CreateWholeRoom()
-        {
-            if (Creature* ce = me->SummonCreature(NPC_CROSS_EYE, mazepos))
-            {
-                ce->SetAttackStop(false);
-                ce->CastSpell(ce, SPELL_MAZE_COLLECTED);
-            }
-
-            if (Creature* ce = me->SummonCreature(NPC_CROSS_EYE, mazepos2))
-            {
-                ce->SetAttackStop(false);
-                ce->CastSpell(ce, SPELL_MAZE_COLLECTED);
-            }
-
-            if (Creature* ce = me->SummonCreature(NPC_CROSS_EYE, mazepos3))
-            {
-                ce->SetAttackStop(false);
-                ce->CastSpell(ce, SPELL_MAZE_COLLECTED);
-            }
-
-            if (Creature* ce = me->SummonCreature(NPC_CROSS_EYE, triggerspawnpos[0]))
-            {
-                ce->SetAttackStop(false);
-                ce->CastSpell(ce, 136553);
-            }
-
-            if (Creature* ce = me->SummonCreature(NPC_CROSS_EYE, triggerspawnpos[1]))
-            {
-                ce->SetAttackStop(false);
-                ce->CastSpell(ce, 136553);
-            }
-
-            if (Creature* ce = me->SummonCreature(NPC_CROSS_EYE, triggerspawnpos[2]))
-            {
-                ce->SetAttackStop(false);
-                ce->CastSpell(ce, 136554);
-            }
-
-            if (Creature* ce = me->SummonCreature(NPC_CROSS_EYE, triggerspawnpos[3]))
-            {
-                ce->SetAttackStop(false);
-                ce->CastSpell(ce, 136554);
-            }
-
-            if (Creature* ce = me->SummonCreature(NPC_CROSS_EYE, triggerspawnpos[4]))
-            {
-                ce->SetAttackStop(false);
-                ce->CastSpell(ce, 136555);
-            }
-
-            if (Creature* ce = me->SummonCreature(NPC_CROSS_EYE, triggerspawnpos[5]))
-            {
-                ce->SetAttackStop(false);
-                ce->CastSpell(ce, 136555);
-            }
-
-            if (Creature* ce = me->SummonCreature(NPC_CROSS_EYE, triggerspawnpos[6]))
-            {
-                ce->SetAttackStop(false);
-                ce->CastSpell(ce, 136555);
-            }
-
-            if (Creature* ce = me->SummonCreature(NPC_CROSS_EYE, triggerspawnpos[7]))
-            {
-                ce->SetAttackStop(false);
-                ce->CastSpell(ce, 136560);
-            }
-
-            if (Creature* ce = me->SummonCreature(NPC_CROSS_EYE, triggerspawnpos[8]))
-            {
-                ce->SetAttackStop(false);
-                ce->CastSpell(ce, 136560);
-            }
         }
     };
 
@@ -1442,7 +1419,7 @@ public:
         }
         InstanceScript* pInstance;
         EventMap events;
-        uint8 rotatedirection;
+        bool rotatedirection;
         float disttodurumu;
 
         void Reset()
@@ -1455,8 +1432,11 @@ public:
         {
             if (action == ACTION_LAUNCH_ROTATE)
             {
-                rotatedirection = urand(0, 1);
-                events.ScheduleEvent(EVENT_START_MOVE, 100);
+                if (Creature* durumu = me->GetCreature(*me, pInstance->GetData64(NPC_DURUMU)))
+                {
+                    rotatedirection = durumu->AI()->GetData(DATA_GET_DURUMU_ROTATE_DIRECTION);
+                    events.ScheduleEvent(EVENT_START_MOVE, 100);
+                }
             }
         }
 
@@ -1497,6 +1477,58 @@ public:
     CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_durumu_eyebeam_targetAI(creature);
+    }
+};
+
+//67857
+class npc_cross_eye : public CreatureScript
+{
+public:
+    npc_cross_eye() : CreatureScript("npc_cross_eye") { }
+
+    struct npc_cross_eyeAI : public ScriptedAI
+    {
+        npc_cross_eyeAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetDisplayId(11686);
+        }
+        EventMap events;
+
+        void Reset(){}
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void SetData(uint32 type, uint32 data)
+        {
+            if (type == DATA_CREATE_MIST)
+                events.ScheduleEvent(EVENT_CREATE_MIST, data);
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (damage >= me->GetHealth())
+                damage = 0;
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_CREATE_MIST)
+                    DoCast(me, SPELL_TKR_WHOLE_SLICE_X_1, true);
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_cross_eyeAI(pCreature);
     }
 };
 
@@ -2122,6 +2154,7 @@ void AddSC_boss_durumu()
     new npc_colorblind_eye_beam_target();
     new npc_durumu_fog();
     new npc_durumu_eyebeam_target();
+    new npc_cross_eye();
     new spell_arterial_cut();
     new spell_lingering_gaze();
     new spell_durumu_color_beam();
