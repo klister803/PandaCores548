@@ -214,7 +214,7 @@ public:
             else if (creature < 0)
             {
                 for (uint16 z = 0; z < creaturecount; ++z)
-                    player->CastedCreatureOrGO(creature, 0, 0);
+                    player->CastedCreatureOrGO(abs(creature), 0, 0);
             }
         }
 
