@@ -162,6 +162,7 @@ public:
         if (!cId)
             return false;
 
+        handler->PSendSysMessage("----------------------");
         uint32 entry = atol(cId);
 
         Quest const* quest = sObjectMgr->GetQuestTemplate(entry);
@@ -200,7 +201,7 @@ public:
             uint32 creaturecount = quest->RequiredNpcOrGoCount[i];
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(quest->RequiredSpellCast[i]);
 
-            handler->PSendSysMessage("creature: %d , creaturecount %d", creature, creaturecount);
+            handler->PSendSysMessage("i = %d, creature: %d , creaturecount %d", i, creature, creaturecount);
 
             if (spellInfo)
             {
