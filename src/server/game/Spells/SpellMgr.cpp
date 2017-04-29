@@ -3876,10 +3876,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 45297: // Chain Lightning
                     spellInfo->MaxLevel = 0;
                     break;
-                case 5672: // Healing Stream
-                case 114941: // Healing Tide
-                    spellInfo->AttributesEx5 |= SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME;
-                    break;
                 case 134732: // Battle Fatigue
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_CANT_STACK_WITH_ITSELF;
                     break;
