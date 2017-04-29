@@ -209,14 +209,12 @@ public:
             }
             else if (creature > 0)
             {
-                handler->PSendSysMessage("creature > 0 : creature: %d , creaturecount %d", creature, creaturecount);
                 if (CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(creature))
                     for (uint16 z = 0; z < creaturecount; ++z)
                         player->KilledMonster(cInfo, 0, false);
             }
             else if (creature < 0)
             {
-                handler->PSendSysMessage("creature < 0 : creature: %d , creaturecount %d", creature, creaturecount);
                 for (uint16 z = 0; z < creaturecount; ++z)
                     player->CastedCreatureOrGO(abs(creature), 0, 0);
             }
