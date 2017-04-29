@@ -200,22 +200,23 @@ public:
             uint32 creaturecount = quest->RequiredNpcOrGoCount[i];
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(quest->RequiredSpellCast[i]);
 
-            if (spellInfo)
-            {
-                for (uint16 z = 0; z < creaturecount; ++z)
-                    player->CastedCreatureOrGO(creature, 0, spellInfo->Id);
-            }
-            else if (creature > 0)
-            {
-                if (CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(creature))
-                    for (uint16 z = 0; z < creaturecount; ++z)
-                        player->KilledMonster(cInfo, 0, false);
-            }
-            else if (creature < 0)
-            {
-                for (uint16 z = 0; z < creaturecount; ++z)
-                    player->CastedCreatureOrGO(abs(creature), 0, 0);
-            }
+            handler->PSendSysMessage("creature: %d , creaturecount %d", quest->RequiredNpcOrGo[i], quest->RequiredNpcOrGoCount[i]);
+//             if (spellInfo)
+//             {
+//                 for (uint16 z = 0; z < creaturecount; ++z)
+//                     player->CastedCreatureOrGO(creature, 0, spellInfo->Id);
+//             }
+//             else if (creature > 0)
+//             {
+//                 if (CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(creature))
+//                     for (uint16 z = 0; z < creaturecount; ++z)
+//                         player->KilledMonster(cInfo, 0, false);
+//             }
+//             else if (creature < 0)
+//             {
+//                 for (uint16 z = 0; z < creaturecount; ++z)
+//                     player->CastedCreatureOrGO(abs(creature), 0, 0);
+//             }
         }
 
         // If the quest requires reputation to complete
