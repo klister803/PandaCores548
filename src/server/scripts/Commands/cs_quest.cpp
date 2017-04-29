@@ -200,8 +200,10 @@ public:
             uint32 creaturecount = quest->RequiredNpcOrGoCount[i];
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(quest->RequiredSpellCast[i]);
 
-            if (!creature && !creaturecount)
-                continue;
+            if (!creature || !creaturecount)
+                break;
+
+            handler->PSendSysMessage("i = %d, creature: %d , creaturecount %d", i, creature, creaturecount);
 
             if (spellInfo)
             {
