@@ -2031,7 +2031,7 @@ public:
                 if (pllist.empty())
                     return;
 
-                for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end();)
+                for (std::list<Player*>::iterator itr = pllist.begin(); itr != pllist.end();)
                 {
                     if ((*itr)->HasAura(SPELL_LIFE_DRAIN_STUN))
                     {
@@ -2050,7 +2050,7 @@ public:
                 {
                     if (Player* mtarget = GetCaster()->GetPlayer(*GetCaster(), maintargetGuid))
                     {
-                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end();)
+                        for (std::list<Player*>::iterator itr = pllist.begin(); itr != pllist.end();)
                         {
                             if (!(*itr)->IsInBetween(GetCaster(), mtarget, 3.0f))
                                 pllist.erase(itr++);
@@ -2065,11 +2065,11 @@ public:
                     uint64 newtargetGuid = 0;
                     float range = 100; //max spell range
 
-                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                    for (std::list<Player*>::iterator itr = pllist.begin(); itr != pllist.end(); itr++)
                         if (GetCaster()->GetExactDist2d((*itr)) < range)
                             range = GetCaster()->GetExactDist2d((*itr));
 
-                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                    for (std::list<Player*>::iterator itr = pllist.begin(); itr != pllist.end(); itr++)
                         if (GetCaster()->GetExactDist2d((*itr)) <= range)
                             newtargetGuid = (*itr)->GetGUID();
 
@@ -2081,7 +2081,7 @@ public:
                 }
                 else if (pllist.size() == 1)
                 {
-                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                    for (std::list<Player*>::iterator itr = pllist.begin(); itr != pllist.end(); itr++)
                         targets.push_back(*itr);
                 }
                 else if (pllist.empty())
