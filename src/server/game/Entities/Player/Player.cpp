@@ -7997,6 +7997,9 @@ void Player::SendCinematicStart(uint32 CinematicSequenceId)
 void Player::SendMovieStart(uint32 MovieId)
 {
     //! 5.4.1
+    if (isWatchingMovie())
+        return;
+
     WorldPacket data(SMSG_TRIGGER_MOVIE, 4);
     data << uint32(MovieId);
     SendDirectMessage(&data);
