@@ -194,6 +194,8 @@ public:
             }
         }
 
+        handler->PSendSysMessage("QUEST_OBJECTIVES_COUNT %d", QUEST_OBJECTIVES_COUNT);
+
         // All creature/GO slain/casted (not required, but otherwise it will display "Creature slain 0/10")
         for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
         {
@@ -201,7 +203,7 @@ public:
             uint32 creaturecount = quest->RequiredNpcOrGoCount[i];
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(quest->RequiredSpellCast[i]);
 
-            handler->PSendSysMessage("i = %d, creature: %d , creaturecount %d", i, creature, creaturecount);
+            //handler->PSendSysMessage("i = %d, creature: %d , creaturecount %d", i, creature, creaturecount);
 
             if (spellInfo)
             {
