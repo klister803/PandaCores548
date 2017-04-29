@@ -162,7 +162,6 @@ public:
         if (!cId)
             return false;
 
-        handler->PSendSysMessage("----------------------");
         uint32 entry = atol(cId);
 
         Quest const* quest = sObjectMgr->GetQuestTemplate(entry);
@@ -195,9 +194,8 @@ public:
         }
 
         // All creature/GO slain/casted (not required, but otherwise it will display "Creature slain 0/10")
-        for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+        for (uint8 i = 0; i < 10; ++i)
         {
-            handler->PSendSysMessage("QUEST_OBJECTIVES_COUNT %d", QUEST_OBJECTIVES_COUNT);
             int32 creature = quest->RequiredNpcOrGo[i];
             uint32 creaturecount = quest->RequiredNpcOrGoCount[i];
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(quest->RequiredSpellCast[i]);
