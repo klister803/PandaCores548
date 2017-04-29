@@ -5,3 +5,8 @@ INSERT INTO `phase_definitions` (`zoneId`, `entry`, `phasemask`, `terrainswapmap
 
 INSERT INTO `spell_area` (`spell`, `area`, `quest_end`, `autocast`, `quest_start_status`) VALUES ('68481', '4714', '14375', '1', '74');
 INSERT INTO `spell_area` (`spell`, `area`, `quest_end`, `autocast`, `quest_start_status`) VALUES ('68481', '4786', '14375', '1', '74');
+
+UPDATE `spell_linked_spell` SET `chance`='32409' WHERE (`spell_trigger`='118') AND (`spell_effect`='-3') AND (`type`='0') AND (`hastalent`='56375') AND (`actiontype`='2');
+UPDATE `spell_linked_spell` SET `chance`='32409' WHERE (`spell_trigger`='19503') AND (`spell_effect`='-3') AND (`type`='0') AND (`hastalent`='119407') AND (`actiontype`='2');
+UPDATE `spell_linked_spell` SET `chance`='32409' WHERE (`spell_trigger`='3355') AND (`spell_effect`='-3') AND (`type`='2') AND (`hastalent`='119407') AND (`actiontype`='2');
+UPDATE `spell_linked_spell` SET `chance`='32409' WHERE (`spell_trigger`='2094') AND (`spell_effect`='-3') AND (`type`='0') AND (`hastalent`='91299') AND (`actiontype`='2');
