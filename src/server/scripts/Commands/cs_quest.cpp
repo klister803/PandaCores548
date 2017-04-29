@@ -127,7 +127,7 @@ public:
         }
 
         // remove all quest entries for 'entry' from quest log
-        for (uint8 slot = 0; slot < MAX_QUEST_LOG_SIZE; ++slot)
+        for (uint8 slot = 0; slot < MAX_QUEST_LOG_SIZE; slot++)
         {
             uint32 logQuest = player->GetQuestSlotQuestId(slot);
             if (logQuest == entry)
@@ -175,7 +175,7 @@ public:
         }
 
         // Add quest items for quests that require items
-        for (uint8 x = 0; x < QUEST_ITEM_OBJECTIVES_COUNT; ++x)
+        for (uint8 x = 0; x < QUEST_ITEM_OBJECTIVES_COUNT; x++)
         {
             uint32 id = quest->RequiredItemId[x];
             uint32 count = quest->RequiredItemCount[x];
@@ -194,28 +194,26 @@ public:
         }
 
         // All creature/GO slain/casted (not required, but otherwise it will display "Creature slain 0/10")
-        for (uint8 i = 0; i < 10; ++i)
+        for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
         {
             int32 creature = quest->RequiredNpcOrGo[i];
             uint32 creaturecount = quest->RequiredNpcOrGoCount[i];
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(quest->RequiredSpellCast[i]);
 
-            //handler->PSendSysMessage("i = %d, creature: %d , creaturecount %d", i, creature, creaturecount);
-
             if (spellInfo)
             {
-                for (uint16 z = 0; z < creaturecount; ++z)
+                for (uint16 z = 0; z < creaturecount; z++)
                     player->CastedCreatureOrGO(creature, 0, spellInfo->Id);
             }
             else if (creature > 0)
             {
                 if (CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(creature))
-                    for (uint16 z = 0; z < creaturecount; ++z)
+                    for (uint16 z = 0; z < creaturecount; z++)
                         player->KilledMonster(cInfo, 0, false);
             }
             else if (creature < 0)
             {
-                for (uint16 z = 0; z < creaturecount; ++z)
+                for (uint16 z = 0; z < creaturecount; z++)
                     player->CastedCreatureOrGO(abs(creature), 0, 0);
             }
         }
