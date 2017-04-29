@@ -196,6 +196,9 @@ public:
         // All creature/GO slain/casted (not required, but otherwise it will display "Creature slain 0/10")
         for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
         {
+            if (i >= 10)
+                break;
+
             int32 creature = quest->RequiredNpcOrGo[i];
             uint32 creaturecount = quest->RequiredNpcOrGoCount[i];
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(quest->RequiredSpellCast[i]);
