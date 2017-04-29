@@ -3007,44 +3007,6 @@ class spell_monk_mana_tea_glyph : public SpellScriptLoader
         }
 };
 
-// Glyph of Paralysis - 115078
-class spell_monk_glyph_of_paralysis : public SpellScriptLoader
-{
-    public:
-        spell_monk_glyph_of_paralysis() : SpellScriptLoader("spell_monk_glyph_of_paralysis") { }
-
-        class spell_monk_glyph_of_paralysis_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_monk_glyph_of_paralysis_SpellScript);
-
-            void HandleBeforeCast()
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    if (Unit* target = GetExplTargetUnit())
-                    {
-                        if (caster->HasAura(125755))
-                        {
-                            target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
-                            target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE_PERCENT);
-                            target->RemoveAurasByType(SPELL_AURA_PERIODIC_LEECH);
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                BeforeCast += SpellCastFn(spell_monk_glyph_of_paralysis_SpellScript::HandleBeforeCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_monk_glyph_of_paralysis_SpellScript();
-        }
-};
-
 //Glyph of Surging Mist - 123273
 class spell_monk_glyph_of_surging_mist : public SpellScriptLoader
 {
@@ -3629,7 +3591,6 @@ void AddSC_monk_spell_scripts()
     new spell_monk_leer_of_the_ox();
     new spell_monk_clash_stun();
     new spell_monk_mana_tea_glyph();
-    new spell_monk_glyph_of_paralysis();
     new spell_monk_glyph_of_surging_mist();
     new spell_monk_glyph_of_targeted_expulsion();
     new spell_monk_chi_wave_filter();
