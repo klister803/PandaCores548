@@ -3873,6 +3873,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 49016: // Unholy Frenzy
+                    spellInfo->AttributesEx3 &= ~SPELL_ATTR3_CANT_TRIGGER_PROC;
+                    break;
                 case 45297: // Chain Lightning
                     spellInfo->MaxLevel = 0;
                     break;
