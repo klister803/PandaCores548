@@ -15,3 +15,6 @@ DELETE FROM `spell_script_names` WHERE (`spell_id`='115078') AND (`ScriptName`='
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `hastalent`, `chance`, `hitmask`, `actiontype`, `comment`) VALUES ('115078', '-3', '125755', '32409', '1', '2', 'Glyph of Paralysis');
 
 DELETE FROM `spell_proc_event` WHERE (`entry`='57934') AND (`effectmask`='7');
+
+INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `caster`, `hastalent`, `chance`, `hitmask`, `actiontype`, `comment`) VALUES ('115268', '-3', '2', '56249', '32409', '1', '2', 'Mesmerize');
+INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `caster`, `hastalent`, `chance`, `hitmask`, `actiontype`, `comment`) VALUES ('6358', '-3', '2', '56249', '32409', '1', '2', 'Seduction');
