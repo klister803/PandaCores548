@@ -32,3 +32,6 @@ INSERT INTO `spell_proc_check` (`entry`, `checkspell`, `effectmask`, `comment`) 
 
 DELETE FROM `spell_group` WHERE (`id`='2017') AND (`spell_id`='-2016');
 DELETE FROM `spell_group` WHERE (`id`='2016') AND (`spell_id`='31884');
+
+DELETE FROM `spell_group` WHERE (`id`='2017') AND (`spell_id`='-2011');
+DELETE FROM `spell_group` WHERE (`id`='2011') AND (`spell_id`='49016');
