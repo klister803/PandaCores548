@@ -1880,29 +1880,8 @@ class spell_monk_blackout_kick : public SpellScriptLoader
                     SetHitDamage(int32(GetHitDamage() * 0.5f));
             }
 
-            void HandleAfterCast()
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    // Brewmaster : Training - you gain Shuffle, increasing parry chance and stagger amount by 20%
-                    if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_MONK_BREWMASTER)
-                    {
-                        if (Aura* aura = caster->GetAura(SPELL_MONK_SHUFFLE))
-                        {
-                            int32 _duration = int32(aura->GetDuration() + 6000);
-                            aura->SetDuration(_duration);
-                            if (_duration > aura->GetMaxDuration())
-                                aura->SetMaxDuration(_duration);
-                        }
-                        else
-                            caster->CastSpell(caster, SPELL_MONK_SHUFFLE, true);
-                    }
-                }
-            }
-
             void Register()
             {
-                AfterCast += SpellCastFn(spell_monk_blackout_kick_SpellScript::HandleAfterCast);
                 AfterHit += SpellHitFn(spell_monk_blackout_kick_SpellScript::HandleAfterHit);
                 OnEffectHitTarget += SpellEffectFn(spell_monk_blackout_kick_SpellScript::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
             }

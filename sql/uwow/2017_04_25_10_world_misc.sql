@@ -20,3 +20,12 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `caster`, `ha
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `caster`, `hastalent`, `chance`, `hitmask`, `actiontype`, `comment`) VALUES ('6358', '-3', '2', '56249', '32409', '1', '2', 'Seduction');
 
 UPDATE `spell_trigger` SET `bp0`='0', `bp1`='120000', `aura`='84963' WHERE (`spell_id`='63225') AND (`spell_trigger`='84963') AND (`option`='21') AND (`effectmask`='7') AND (`aura`='0') AND (`check_spell_id`='0');
+
+UPDATE `spell_proc_event` SET `SpellFamilyMask0`='1040' WHERE (`entry`='117967') AND (`effectmask`='7');
+UPDATE `spell_proc_event` SET `procFlags`='16' WHERE (`entry`='117967') AND (`effectmask`='7');
+
+INSERT INTO `spell_trigger` (`spell_id`, `spell_trigger`, `option`, `bp0`, `effectmask`, `comment`) VALUES ('117967', '115307', '21', '6000', '2', 'Brewmaster : Training');
+UPDATE `spell_trigger` SET `target`='1' WHERE (`spell_id`='117967') AND (`spell_trigger`='115307') AND (`option`='21') AND (`effectmask`='2') AND (`aura`='0') AND (`check_spell_id`='0');
+
+INSERT INTO `spell_proc_check` (`entry`, `checkspell`, `effectmask`, `comment`) VALUES ('117967', '-100784', '1', 'Brewmaster : Training');
+INSERT INTO `spell_proc_check` (`entry`, `checkspell`, `effectmask`, `comment`) VALUES ('117967', '-100787', '2', 'Brewmaster : Training');
