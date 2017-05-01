@@ -18110,8 +18110,12 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         if (procAura && procAura->Id == itr->first)
             continue;
         ProcTriggeredData triggerData(itr->second->GetBase());
+        SpellInfo const* spellProto = triggerData.aura->GetSpellInfo();
 
-        if (triggerData.aura->GetSpellInfo()->IsPassive())
+        if (getLevel() < spellProto->SpellLevel)
+            continue;
+
+        if (spellProto->IsPassive())
             if (Player* player = ToPlayer())
                 if (player->HasSpellCooldown(triggerData.aura->GetId()))
                     continue;
@@ -18124,13 +18128,13 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             if((procFlag & SPELL_PROC_FROM_CAST_MASK) && !(procExtra & PROC_EX_ON_CAST))
                 continue;
         }
-        else if ((procFlag & SPELL_PROC_FROM_CAST_MASK) && (procExtra & PROC_EX_ON_CAST) && !(triggerData.aura->GetSpellInfo()->AttributesCu & SPELL_ATTR0_CU_PROC_ONLY_ON_CAST))
+        else if ((procFlag & SPELL_PROC_FROM_CAST_MASK) && (procExtra & PROC_EX_ON_CAST) && !(spellProto->AttributesCu & SPELL_ATTR0_CU_PROC_ONLY_ON_CAST))
             continue;
-        else if ((procFlag & SPELL_PROC_FROM_CAST_MASK) && !(procExtra & PROC_EX_ON_CAST) && (triggerData.aura->GetSpellInfo()->AttributesCu & SPELL_ATTR0_CU_PROC_ONLY_ON_CAST))
+        else if ((procFlag & SPELL_PROC_FROM_CAST_MASK) && !(procExtra & PROC_EX_ON_CAST) && (spellProto->AttributesCu & SPELL_ATTR0_CU_PROC_ONLY_ON_CAST))
             continue;
 
         // only auras that has triggered spell should proc from fully absorbed damage
-        SpellInfo const* spellProto = itr->second->GetBase()->GetSpellInfo();
+        
         if ((procExtra & PROC_EX_ABSORB && isVictim) || ((procFlag & PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG) && spellProto->DmgClass == SPELL_DAMAGE_CLASS_MAGIC))
         {
             bool triggerSpell = false;
@@ -18149,13 +18153,13 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
 
         if (procSpell && !(procSpell->AuraInterruptFlags & (AURA_INTERRUPT_FLAG_TAKE_DAMAGE)))
             // time for hardcode! Some spells can proc on absorb
-            if (triggerData.aura && triggerData.aura->GetSpellInfo() && (triggerData.aura->GetSpellInfo()->Id == 33757 || triggerData.aura->GetSpellInfo()->SpecificType == SPELL_SPECIFIC_SEAL ||
-                triggerData.aura->GetSpellInfo()->HasAura(SPELL_AURA_MOD_STEALTH) || triggerData.aura->GetSpellInfo()->HasAura(SPELL_AURA_MOD_INVISIBILITY)))
+            if (spellProto && (spellProto->Id == 33757 || spellProto->SpecificType == SPELL_SPECIFIC_SEAL ||
+                spellProto->HasAura(SPELL_AURA_MOD_STEALTH) || spellProto->HasAura(SPELL_AURA_MOD_INVISIBILITY)))
                 active = true;
 
         if (isVictim)
         {
-            if (triggerData.aura->GetSpellInfo()->HasAura(SPELL_AURA_MOD_STEALTH))
+            if (spellProto->HasAura(SPELL_AURA_MOD_STEALTH))
             {
                 if (procSpell && procSpell->IsPositive())
                     continue;
