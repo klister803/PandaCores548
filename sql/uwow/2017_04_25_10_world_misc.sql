@@ -13,3 +13,5 @@ UPDATE `spell_linked_spell` SET `chance`='32409' WHERE (`spell_trigger`='2094') 
 
 DELETE FROM `spell_script_names` WHERE (`spell_id`='115078') AND (`ScriptName`='spell_monk_glyph_of_paralysis');
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `hastalent`, `chance`, `hitmask`, `actiontype`, `comment`) VALUES ('115078', '-3', '125755', '32409', '1', '2', 'Glyph of Paralysis');
+
+DELETE FROM `spell_proc_event` WHERE (`entry`='57934') AND (`effectmask`='7');
