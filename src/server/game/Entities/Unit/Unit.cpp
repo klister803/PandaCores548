@@ -19947,7 +19947,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
 
                     if (Aura* aura = target->GetAura(triggered_spell_id, GetGUID()))
                     {
-                        int32 _duration = bp0 ? int32(bp0) : int32(aura->GetDuration() + RoundingFloatValue(triggerAmount * 1000.0f));
+                        int32 _duration = int32(aura->GetDuration() + (bp0 ? int32(bp0) : RoundingFloatValue(triggerAmount * 1000.0f)));
 
                         if (bp1 && bp1 < _duration) // bp1 = is a limit duration
                             _duration = int32(bp1);
