@@ -29,3 +29,6 @@ UPDATE `spell_trigger` SET `target`='1' WHERE (`spell_id`='117967') AND (`spell_
 
 INSERT INTO `spell_proc_check` (`entry`, `checkspell`, `effectmask`, `comment`) VALUES ('117967', '-100784', '1', 'Brewmaster : Training');
 INSERT INTO `spell_proc_check` (`entry`, `checkspell`, `effectmask`, `comment`) VALUES ('117967', '-100787', '2', 'Brewmaster : Training');
+
+DELETE FROM `spell_group` WHERE (`id`='2017') AND (`spell_id`='-2016');
+DELETE FROM `spell_group` WHERE (`id`='2016') AND (`spell_id`='31884');
