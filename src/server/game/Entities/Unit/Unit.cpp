@@ -19943,16 +19943,22 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 }
                 case SPELL_TRIGGER_UPDATE_DUR_TO_IGNORE_MAX: //21
                 {
-                    if(Aura* aura = target->GetAura(abs(itr->spell_trigger), GetGUID()))
+                    triggered_spell_id = abs(itr->spell_trigger);
+
+                    if (Aura* aura = target->GetAura(triggered_spell_id, GetGUID()))
                     {
-                        int32 _duration = int32(aura->GetDuration() + RoundingFloatValue(triggerAmount * 1000.0f));
-                        if(bp0 && bp0 < _duration)
-                            _duration = int32(bp0);
+                        int32 _duration = bp0 ? int32(bp0) : int32(aura->GetDuration() + RoundingFloatValue(triggerAmount * 1000.0f));
+
+                        if (bp1 && bp1 < _duration) // bp1 = is a limit duration
+                            _duration = int32(bp1);
 
                         aura->SetDuration(_duration, true);
                         if (_duration > aura->GetMaxDuration())
                             aura->SetMaxDuration(_duration);
                     }
+                    else
+                        _caster->CastSpell(target, triggered_spell_id, true);
+
                     check = true;
                 }
                 break;

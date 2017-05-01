@@ -18,3 +18,5 @@ DELETE FROM `spell_proc_event` WHERE (`entry`='57934') AND (`effectmask`='7');
 
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `caster`, `hastalent`, `chance`, `hitmask`, `actiontype`, `comment`) VALUES ('115268', '-3', '2', '56249', '32409', '1', '2', 'Mesmerize');
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `caster`, `hastalent`, `chance`, `hitmask`, `actiontype`, `comment`) VALUES ('6358', '-3', '2', '56249', '32409', '1', '2', 'Seduction');
+
+UPDATE `spell_trigger` SET `bp0`='0', `bp1`='120000', `aura`='84963' WHERE (`spell_id`='63225') AND (`spell_trigger`='84963') AND (`option`='21') AND (`effectmask`='7') AND (`aura`='0') AND (`check_spell_id`='0');
