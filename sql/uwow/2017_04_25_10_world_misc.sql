@@ -41,3 +41,11 @@ DELETE FROM `spell_group` WHERE (`id`='2013') AND (`spell_id`='12292');
 
 DELETE FROM `spell_group` WHERE (`id`='2014') AND (`spell_id`='12042');
 DELETE FROM `spell_group` WHERE (`id`='2017') AND (`spell_id`='-2014');
+
+DELETE FROM `spell_group` WHERE (`id`='2015') AND (`spell_id`='34471');
+DELETE FROM `spell_group` WHERE (`id`='2017') AND (`spell_id`='-2015');
+
+DELETE FROM `spell_group` WHERE (`id`='2017') AND (`spell_id`='-2012');
+DELETE FROM `spell_group` WHERE (`id`='2012') AND (`spell_id`='57933');
+
+DELETE FROM `spell_group_stack_rules` WHERE (`group_id`='2017');
