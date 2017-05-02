@@ -1089,19 +1089,18 @@ uint32 Unit::CalcStaggerDamage(uint32 damage, SpellSchoolMask damageSchoolMask, 
         }
         else
         {
-            if (HasAura(117967))
+            if (Aura* Stance_of_the_Sturdy_OxAura = GetAura(115069))
             {
-                if (Aura* Stance_of_the_Sturdy_OxAura = GetAura(115069))
-                    stagger += float(Stance_of_the_Sturdy_OxAura->GetSpellInfo()->Effects[EFFECT_7]->BasePoints);
+                stagger += Stance_of_the_Sturdy_OxAura->GetSpellInfo()->Effects[EFFECT_7]->BasePoints;
 
                 if (AuraEffect const* mastery = GetAuraEffect(117906, EFFECT_0))
-                    stagger += float(mastery->GetAmount());
+                    stagger += mastery->GetAmount();
 
                 if (AuraEffect const* Fortifying_Brew = GetAuraEffect(120954, EFFECT_4))
-                    stagger += float(Fortifying_Brew->GetAmount());
+                    stagger += Fortifying_Brew->GetAmount();
 
                 if (AuraEffect const* Shuffle = GetAuraEffect(115307, EFFECT_1))
-                    stagger += float(Shuffle->GetAmount());
+                    stagger += Shuffle->GetAmount();
 
                 if (stagger > 100.0f)
                     stagger = 100.0f;
@@ -1117,7 +1116,7 @@ uint32 Unit::CalcStaggerDamage(uint32 damage, SpellSchoolMask damageSchoolMask, 
                     AuraEffect* eff0 = staggerBleedAura->GetEffect(EFFECT_0);
                     AuraEffect* eff1 = staggerBleedAura->GetEffect(EFFECT_1);
 
-                    bp0 = RoundingFloatValue(float(bp1 + eff1->GetAmount()) / 10.0f);
+                    bp0 = RoundingFloatValue((bp1 + eff1->GetAmount()) / 10.0f);
                     bp1 = bp0 * 10;
 
                     if (bp1 > int32(CountPctFromMaxHealth(60)))
