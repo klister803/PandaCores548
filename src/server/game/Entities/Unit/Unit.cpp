@@ -19935,7 +19935,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                         _caster->CastSpell(target, triggered_spell_id, true, item);
                     }
                     else
-                        _caster->RemoveAurasDueToSpell(triggered_spell_id);
+                        _caster->RemoveAurasDueToSpell(triggered_spell_id, 0, 0, AuraRemoveMode(RoundingFloatValue(bp0)));
 
                     check = true;
                     break;
