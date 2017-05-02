@@ -49,3 +49,6 @@ DELETE FROM `spell_group` WHERE (`id`='2017') AND (`spell_id`='-2012');
 DELETE FROM `spell_group` WHERE (`id`='2012') AND (`spell_id`='57933');
 
 DELETE FROM `spell_group_stack_rules` WHERE (`group_id`='2017');
+
+DELETE FROM `spell_trigger` WHERE (`spell_id`='124081') AND (`spell_trigger`='124101') AND (`option`='20') AND (`effectmask`='7') AND (`aura`='0') AND (`check_spell_id`='0');
+UPDATE `spell_trigger` SET `spell_trigger`='-124081', `bp0`='4' WHERE (`spell_id`='124081') AND (`spell_trigger`='125033') AND (`option`='20') AND (`effectmask`='7') AND (`aura`='0') AND (`check_spell_id`='0');

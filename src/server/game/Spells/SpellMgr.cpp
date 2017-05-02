@@ -4567,8 +4567,13 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0]->ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
                     spellInfo->Effects[EFFECT_0]->MiscValue = SPELL_SCHOOL_MASK_ALL;
                     break;
-                case 44457: // Living Bomb
                 case 124081: // Zen Sphere
+                    spellInfo->AttributesEx5 &= ~SPELL_ATTR5_SINGLE_TARGET_SPELL;
+                    spellInfo->Effects[EFFECT_1]->Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_1]->ApplyAuraName = SPELL_AURA_DUMMY;
+                    spellInfo->Effects[EFFECT_1]->TargetA = TARGET_UNIT_CASTER;
+                    break;
+                case 44457: // Living Bomb
                     spellInfo->AttributesEx5 &= ~SPELL_ATTR5_SINGLE_TARGET_SPELL;
                     break;
                 case 44461: // Living Bomb
