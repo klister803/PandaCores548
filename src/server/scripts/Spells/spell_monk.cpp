@@ -1166,7 +1166,7 @@ class spell_monk_zen_sphere : public SpellScriptLoader
                 if(caster && target)
                 {
                     AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
-                    if (removeMode == AURA_REMOVE_BY_EXPIRE || removeMode == AURA_REMOVE_BY_CANCEL)
+                    if (removeMode == AURA_REMOVE_BY_EXPIRE || removeMode == AURA_REMOVE_BY_ENEMY_SPELL)
                     {
                         caster->CastSpell(target, SPELL_MONK_ZEN_SPHERE_DETONATE_HEAL, true);
                         caster->CastSpell(target, SPELL_MONK_ZEN_SPHERE_DETONATE_DAMAGE, true);
