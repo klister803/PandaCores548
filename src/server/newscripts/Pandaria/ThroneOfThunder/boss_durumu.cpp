@@ -95,6 +95,21 @@ enum eSpells
 
     //Thunder King Raid - Durumu - Whole Room Maze - Whole Slice
     SPELL_TKR_WHOLE_SLICE_X_1     = 136553,
+
+    //Whole Room Slice
+    SPELL_WHOLE_ROOM_SLICE_1      = 136232,
+    SPELL_WHOLE_ROOM_SLICE_2      = 136233,
+    SPELL_WHOLE_ROOM_SLICE_3      = 136234,
+    SPELL_WHOLE_ROOM_SLICE_4      = 136235,
+    SPELL_WHOLE_ROOM_SLICE_5      = 136236,
+    SPELL_WHOLE_ROOM_SLICE_6      = 136237,
+    SPELL_WHOLE_ROOM_SLICE_7      = 136238,
+    SPELL_WHOLE_ROOM_SLICE_8      = 136239,
+    SPELL_WHOLE_ROOM_SLICE_9      = 136240,
+    SPELL_WHOLE_ROOM_SLICE_10     = 136241,
+    SPELL_WHOLE_ROOM_SLICE_11     = 136242,
+    SPELL_WHOLE_ROOM_SLICE_12     = 136243,
+    SPELL_WHOLE_ROOM_SLICE_13     = 136244,
 };
 
 enum sEvents
@@ -122,6 +137,7 @@ enum sEvents
     EVENT_CAUSTIC_SPIKE,
     EVENT_DISINTEGRATION_BEAM,
     EVENT_DISINTEGRATION_BEAM_P,
+    EVENT_UPDATE_MIST,
 
     //After Disintegration phase
     EVENT_LIFE_DRAIN_PREPARE,
@@ -131,11 +147,11 @@ enum sEvents
 
 enum sActions
 {
-    ACTION_LINGERING_GAZE         = 1,
-    ACTION_CREATE_CONE            = 2,
-    ACTION_IN_CONE                = 3,
-    ACTION_NOT_IN_CONE            = 4,
-    ACTION_LAUNCH_ROTATE          = 5,
+    ACTION_LINGERING_GAZE = 1,
+    ACTION_CREATE_CONE,
+    ACTION_IN_CONE,
+    ACTION_NOT_IN_CONE,
+    ACTION_LAUNCH_ROTATE,
 };
 
 enum Phase
@@ -170,7 +186,7 @@ enum CreatureText
 Position triggerspawnpos[12] =
 {
     //minimap - north -> west                                            // From center
-    { 5897.926f, 4514.828f, -6.277899f, 0.100000f }, // 0                // 0
+    { 5897.926f, 4514.828f, -6.277899f, 0.000000f }, // 0                // 0
     { 5897.926f, 4514.828f, -6.277899f, 0.523598f }, // 1    maze right  // 1
     { 5897.926f, 4514.828f, -6.277899f, 1.047198f }, // 2                // 2
 
@@ -185,6 +201,23 @@ Position triggerspawnpos[12] =
     { 5897.926f, 4514.828f, -6.277899f, 4.712389f }, // 9                // 2
     { 5897.926f, 4514.828f, -6.277899f, 5.235987f }, // 10   maze left   // 1
     { 5897.926f, 4514.828f, -6.277899f, 5.759586f }, // 11               // 0
+};
+
+uint32 wholeroomslice[13] =
+{
+    SPELL_WHOLE_ROOM_SLICE_1,
+    SPELL_WHOLE_ROOM_SLICE_2,
+    SPELL_WHOLE_ROOM_SLICE_3,
+    SPELL_WHOLE_ROOM_SLICE_4,
+    SPELL_WHOLE_ROOM_SLICE_5,
+    SPELL_WHOLE_ROOM_SLICE_6,
+    SPELL_WHOLE_ROOM_SLICE_7,
+    SPELL_WHOLE_ROOM_SLICE_8,
+    SPELL_WHOLE_ROOM_SLICE_9,
+    SPELL_WHOLE_ROOM_SLICE_10,
+    SPELL_WHOLE_ROOM_SLICE_11,
+    SPELL_WHOLE_ROOM_SLICE_12,
+    SPELL_WHOLE_ROOM_SLICE_13,
 };
 
 class _TankFilter
@@ -245,6 +278,9 @@ public:
         uint64 eyebeamtargetGuid;
         uint32 enragetimer;
         bool rotatedirection;
+        std::vector<uint64>crosseyelist;
+        uint8 lastmiststage;
+        uint8 nextmiststage;
 
         void Reset()
         {
@@ -252,8 +288,11 @@ public:
             phase = PHASE_NULL;
             checkvictim = 0;
             enragetimer = 0;
+            lastmiststage = 0;
+            nextmiststage = 0;
             eyebeamtargetGuid = 0;
             rotatedirection = false;
+            crosseyelist.clear();
             RemoveDebuffFromPlayers();
             me->SetReactState(REACT_DEFENSIVE);
             me->RemoveAurasDueToSpell(SPELL_MIND_DAGGERS_AURA);
@@ -348,6 +387,9 @@ public:
             events.ScheduleEvent(EVENT_LINGERING_GAZE_PREPARE, 13000);
             events.ScheduleEvent(EVENT_FORCE_OF_WILL_PREPARE, 30000);
             events.ScheduleEvent(EVENT_COLORBLIND, 42000);
+
+            //test events
+            //events.ScheduleEvent(EVENT_DISINTEGRATION_BEAM_P, 5000);
         }
 
         void SetData(uint32 type, uint32 data)
@@ -370,8 +412,9 @@ public:
 
         void DoAction(int32 const action)
         {
-            if (action == ACTION_COLORBLIND_PHASE_DONE)
+            switch (action)
             {
+            case ACTION_COLORBLIND_PHASE_DONE:
                 summons.DespawnEntry(NPC_RED_EYE);
                 summons.DespawnEntry(NPC_BLUE_EYE);
                 summons.DespawnEntry(NPC_YELLOW_EYE);
@@ -388,6 +431,12 @@ public:
                 events.ScheduleEvent(EVENT_FORCE_OF_WILL, 8000);
                 events.ScheduleEvent(EVENT_COLORBLIND, 65000);
                 //events.ScheduleEvent(EVENT_DISINTEGRATION_BEAM, 65000); not ready
+                break;
+            case ACTION_LAUNCH_ROTATE:
+                lastmiststage = 0;
+                nextmiststage = 1;
+                events.ScheduleEvent(EVENT_UPDATE_MIST, 2000);
+                break;
             }
         }
 
@@ -594,7 +643,7 @@ public:
                     if (Creature* eyebeamtarget = me->GetCreature(*me, eyebeamtargetGuid))
                         DoCast(eyebeamtarget, SPELL_DISINTEGRATION_LASER_P);
                     DoCast(me, SPELL_MIND_DAGGERS_AURA);
-                    rotatedirection = urand(0, 1);
+                    rotatedirection = true;
                     events.ScheduleEvent(EVENT_PREPARE_TO_MIST, 6000);
                     break;
                 case EVENT_PREPARE_TO_MIST:
@@ -603,13 +652,23 @@ public:
                     {
                     case 0:       //left
                         for (uint8 b = 11; b > 8; b--)
+                        {
                             if (Creature* lce = me->SummonCreature(NPC_CROSS_EYE, triggerspawnpos[b]))
+                            {
+                                crosseyelist.push_back(lce->GetGUID());
                                 lce->CastSpell(lce, SPELL_MAZE_COLLECTED);
+                            }
+                        }
                         break;
                     case 1:       //right
                         for (uint8 n = 0; n < 3; n++)
+                        {
                             if (Creature* rce = me->SummonCreature(NPC_CROSS_EYE, triggerspawnpos[n]))
+                            {
+                                crosseyelist.push_back(rce->GetGUID());
                                 rce->CastSpell(rce, SPELL_MAZE_COLLECTED);
+                            }
+                        }
                         break;
                     }
                     events.ScheduleEvent(EVENT_CREATE_MIST, 2000);
@@ -617,21 +676,56 @@ public:
                 }
                 case EVENT_CREATE_MIST:
                 {
+                    std::list<Creature*>swaplist;
+                    swaplist.clear();
+
                     switch (rotatedirection)
                     {
                     case 0:
                         for (uint8 b = 0; b < 9; b++)
+                        {
                             if (Creature* lce = me->SummonCreature(NPC_CROSS_EYE, triggerspawnpos[b]))
+                            {
+                                swaplist.push_back(lce);
                                 lce->AI()->SetData(DATA_CREATE_MIST, 1000 + b * 650);
+                            }
+                        }
+                        if (!swaplist.empty())
+                        {
+                            swaplist.reverse();
+                            for (std::list<Creature*>::const_iterator itr = swaplist.begin(); itr != swaplist.end(); itr++)
+                                crosseyelist.push_back((*itr)->GetGUID());
+                        }
                         break;
                     case 1:
                         for (uint8 n = 11; n > 2; n--)
+                        {
                             if (Creature* rce = me->SummonCreature(NPC_CROSS_EYE, triggerspawnpos[n]))
+                            {
+                                swaplist.push_back(rce);
                                 rce->AI()->SetData(DATA_CREATE_MIST, 1000 + (11 - n) * 650);
+                            }
+                        }
+                        if (!swaplist.empty())
+                        {
+                            swaplist.reverse();
+                            for (std::list<Creature*>::const_iterator itr = swaplist.begin(); itr != swaplist.end(); itr++)
+                                crosseyelist.push_back((*itr)->GetGUID());
+                        }
                         break;
                     }
                     break;
                 }
+                case EVENT_UPDATE_MIST:
+                    if (nextmiststage > 2 && nextmiststage <= 11)
+                        if (Creature* nextcrosseye = me->GetCreature(*me, crosseyelist[nextmiststage]))
+                            if (AreaTrigger* at = nextcrosseye->GetAreaObject(SPELL_TKR_WHOLE_SLICE_X_1))
+                                at->RemoveFromWorld();
+
+                    nextmiststage++;
+                    lastmiststage++;
+                    events.ScheduleEvent(EVENT_UPDATE_MIST, nextmiststage <= 3 ? 1000 : 3500); //right
+                    break;
                 case EVENT_ADVANCE_PHASE:
                     phase = PHASE_ADVANCE;
                     me->ReAttackWithZone();
@@ -1434,6 +1528,7 @@ public:
             {
                 if (Creature* durumu = me->GetCreature(*me, pInstance->GetData64(NPC_DURUMU)))
                 {
+                    durumu->AI()->DoAction(ACTION_LAUNCH_ROTATE);
                     rotatedirection = durumu->AI()->GetData(DATA_GET_DURUMU_ROTATE_DIRECTION);
                     events.ScheduleEvent(EVENT_START_MOVE, 100);
                 }
@@ -1490,11 +1585,15 @@ public:
     {
         npc_cross_eyeAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
+            instance = pCreature->GetInstanceScript();
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
             me->SetReactState(REACT_PASSIVE);
             me->SetDisplayId(11686);
+            rotatedirection = false;
         }
+        InstanceScript* instance;
         EventMap events;
+        bool rotatedirection;
 
         void Reset(){}
 
@@ -1505,7 +1604,13 @@ public:
         void SetData(uint32 type, uint32 data)
         {
             if (type == DATA_CREATE_MIST)
-                events.ScheduleEvent(EVENT_CREATE_MIST, data);
+            {
+                if (Creature* durumu = me->GetCreature(*me, instance->GetData64(NPC_DURUMU)))
+                {
+                    rotatedirection = durumu->AI()->GetData(DATA_GET_DURUMU_ROTATE_DIRECTION);
+                    events.ScheduleEvent(EVENT_CREATE_MIST, data);
+                }
+            }
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)

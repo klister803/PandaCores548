@@ -5171,6 +5171,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->TargetA = TARGET_DEST_DEST;
                     break;
                 //Durumu
+                case 136553: //Whole Slice x 1, full cone
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21);
+                    break;
                 case 133798: //Life Drain Dmg
                     for (uint8 b = NONE_DIFFICULTY; b < MAX_DIFFICULTY; ++b)
                     {
