@@ -618,11 +618,19 @@ bool OutdoorPvP::HasPlayer(Player* player) const
 void OutdoorPvP::TeamCastSpell(TeamId team, int32 spellId)
 {
     if (spellId > 0)
+    {
         for (PlayerSet::iterator itr = m_players[team].begin(); itr != m_players[team].end(); ++itr)
-            (*itr)->CastSpell(*itr, (uint32)spellId, true);
+        {
+            if (Player* player = (*itr))
+                player->m_Functions.AddFunction([player, spellId]() -> void { if (!player) return; player->CastSpell(player, (uint32)spellId, true); }, player->m_Functions.CalculateTime(100));
+        }
+    }
     else
         for (PlayerSet::iterator itr = m_players[team].begin(); itr != m_players[team].end(); ++itr)
-            (*itr)->RemoveAura((uint32)-spellId); // by stack?
+        {
+            if (Player* player = (*itr))
+                player->m_Functions.AddFunction([player, spellId]() -> void { if (!player) return; player->RemoveAura((uint32)-spellId);; }, player->m_Functions.CalculateTime(100));
+        }
 }
 
 void OutdoorPvP::TeamApplyBuff(TeamId team, uint32 spellId, uint32 spellId2)
