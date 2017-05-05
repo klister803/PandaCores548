@@ -137,7 +137,8 @@ enum sEvents
     EVENT_CAUSTIC_SPIKE,
     EVENT_DISINTEGRATION_BEAM,
     EVENT_DISINTEGRATION_BEAM_P,
-    EVENT_UPDATE_MIST,
+    EVENT_OPEN_WAY_IN_MIST,
+    EVENT_CLOSE_SAFE_ZONE_IN_MIST,
 
     //After Disintegration phase
     EVENT_LIFE_DRAIN_PREPARE,
@@ -203,10 +204,8 @@ Position triggerspawnpos[12] =
     { 5897.926f, 4514.828f, -6.277899f, 5.759586f }, // 11               // 0
 };
 
-uint32 wholeroomslice[13] =
+uint32 wholeroomslice[11] =
 {
-    SPELL_WHOLE_ROOM_SLICE_1,
-    SPELL_WHOLE_ROOM_SLICE_2,
     SPELL_WHOLE_ROOM_SLICE_3,
     SPELL_WHOLE_ROOM_SLICE_4,
     SPELL_WHOLE_ROOM_SLICE_5,
@@ -281,6 +280,8 @@ public:
         std::vector<uint64>crosseyelist;
         uint8 lastmiststage;
         uint8 nextmiststage;
+        uint8 way;   //first safe line in mist
+        uint8 way2;  //second safe line on mist
 
         void Reset()
         {
@@ -288,8 +289,6 @@ public:
             phase = PHASE_NULL;
             checkvictim = 0;
             enragetimer = 0;
-            lastmiststage = 0;
-            nextmiststage = 0;
             eyebeamtargetGuid = 0;
             rotatedirection = false;
             crosseyelist.clear();
@@ -435,7 +434,9 @@ public:
             case ACTION_LAUNCH_ROTATE:
                 lastmiststage = 0;
                 nextmiststage = 1;
-                events.ScheduleEvent(EVENT_UPDATE_MIST, 2000);
+                way = urand(3, 6);
+                way2 = urand(8, 10);
+                events.ScheduleEvent(EVENT_OPEN_WAY_IN_MIST, 2000);
                 break;
             }
         }
@@ -636,6 +637,7 @@ public:
                         me->SetFacingToObject(eyebeamtarget);
                         eyebeamtargetGuid = eyebeamtarget->GetGUID();
                     }
+                    crosseyelist.clear();
                     events.ScheduleEvent(EVENT_DISINTEGRATION_BEAM, 250);
                     events.ScheduleEvent(EVENT_ADVANCE_PHASE, 55000);
                     break;
@@ -643,11 +645,11 @@ public:
                     if (Creature* eyebeamtarget = me->GetCreature(*me, eyebeamtargetGuid))
                         DoCast(eyebeamtarget, SPELL_DISINTEGRATION_LASER_P);
                     DoCast(me, SPELL_MIND_DAGGERS_AURA);
-                    rotatedirection = true;
+                    rotatedirection = bool(urand(0, 1));
                     events.ScheduleEvent(EVENT_PREPARE_TO_MIST, 6000);
                     break;
                 case EVENT_PREPARE_TO_MIST:
-                {   //Create safe zone on platform
+                {
                     switch (rotatedirection)
                     {
                     case 0:       //left
@@ -716,16 +718,44 @@ public:
                     }
                     break;
                 }
-                case EVENT_UPDATE_MIST:
+                case EVENT_OPEN_WAY_IN_MIST:
+                {
                     if (nextmiststage > 2 && nextmiststage <= 11)
+                    {
                         if (Creature* nextcrosseye = me->GetCreature(*me, crosseyelist[nextmiststage]))
+                        {
                             if (AreaTrigger* at = nextcrosseye->GetAreaObject(SPELL_TKR_WHOLE_SLICE_X_1))
                                 at->RemoveFromWorld();
 
+                            for (uint8 n = 0; n < 11; n++)
+                                if (n != way && n != way2)
+                                    nextcrosseye->CastSpell(nextcrosseye, wholeroomslice[n]);
+                        }
+                    }
+
+                    if (nextmiststage > 11)
+                        return;
+
+                    uint32 timer = 0; //timer - open way in mist
+                    uint32 data = 0;  //timer - close safe zone
+                    switch (rotatedirection)
+                    {
+                    case 0:      //left
+                        timer = nextmiststage <= 3 ? 2000 : 4000;
+                        data = nextmiststage <= 3 ? 4000 : 7000;
+                        break;
+                    case 1:      //right
+                        timer = nextmiststage <= 3 ? 1000 : 4000;
+                        data = nextmiststage < 3 ? 2500 : 5500;
+                        break;
+                    }
+                    events.ScheduleEvent(EVENT_OPEN_WAY_IN_MIST, timer);
+                    if (Creature* lastcrosseye = me->GetCreature(*me, crosseyelist[lastmiststage]))
+                        lastcrosseye->AI()->SetData(DATA_CLOSE_SAFE_ZONE_IN_MIST, data);
                     nextmiststage++;
                     lastmiststage++;
-                    events.ScheduleEvent(EVENT_UPDATE_MIST, nextmiststage <= 3 ? 1000 : 3500); //right
                     break;
+                }
                 case EVENT_ADVANCE_PHASE:
                     phase = PHASE_ADVANCE;
                     me->ReAttackWithZone();
@@ -1595,7 +1625,10 @@ public:
         EventMap events;
         bool rotatedirection;
 
-        void Reset(){}
+        void Reset()
+        {
+            DoZoneInCombat(me, 100.0f);
+        }
 
         void EnterCombat(Unit* who){}
 
@@ -1603,13 +1636,18 @@ public:
 
         void SetData(uint32 type, uint32 data)
         {
-            if (type == DATA_CREATE_MIST)
+            switch (type)
             {
+            case DATA_CREATE_MIST:
                 if (Creature* durumu = me->GetCreature(*me, instance->GetData64(NPC_DURUMU)))
                 {
                     rotatedirection = durumu->AI()->GetData(DATA_GET_DURUMU_ROTATE_DIRECTION);
                     events.ScheduleEvent(EVENT_CREATE_MIST, data);
                 }
+                break;
+            case DATA_CLOSE_SAFE_ZONE_IN_MIST:
+                events.ScheduleEvent(EVENT_CLOSE_SAFE_ZONE_IN_MIST, data);
+                break;
             }
         }
 
@@ -1625,8 +1663,13 @@ public:
 
             while (uint32 eventId = events.ExecuteEvent())
             {
-                if (eventId == EVENT_CREATE_MIST)
+                switch (eventId)
+                {
+                case EVENT_CREATE_MIST:
+                case EVENT_CLOSE_SAFE_ZONE_IN_MIST:
                     DoCast(me, SPELL_TKR_WHOLE_SLICE_X_1, true);
+                    break;
+                }
             }
         }
     };
