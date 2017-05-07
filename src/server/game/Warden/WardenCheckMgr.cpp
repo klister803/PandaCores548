@@ -123,7 +123,7 @@ void WardenCheckMgr::LoadWardenChecks()
                 OtherChecksIdPool.push_back(id);
         }
 
-        if (checkType == MEM_CHECK || checkType == PAGE_CHECK_A || checkType == PAGE_CHECK_B || checkType == PROC_CHECK)
+        if (checkType == MEM_CHECK || checkType == PAGE_CHECK_A || checkType == PAGE_CHECK_B)
         {
             wardenCheck->Address = address;
             wardenCheck->Length = length;
@@ -136,7 +136,7 @@ void WardenCheckMgr::LoadWardenChecks()
         CheckStore[id] = wardenCheck;
 
         if (checkType == MPQ_CHECK || checkType == MEM_CHECK || checkType == PAGE_CHECK_A || checkType == PAGE_CHECK_B
-            || checkType == DRIVER_CHECK || checkType == MODULE_CHECK)
+            || checkType == DRIVER_CHECK || checkType == MODULE_CHECK || checkType == PROC_CHECK)
         {
             WardenCheckResult *wr = new WardenCheckResult();
             wr->Result = checkResult;

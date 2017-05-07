@@ -109,14 +109,14 @@ void Warden::Update(uint32 diff)
         }
 
         // independent second thread - dynamic checks
-        if (sWorld->getBoolConfig(CONFIG_WARDEN_ENABLED_DYNAMIC_CHECKS))
+        /*if (sWorld->getBoolConfig(CONFIG_WARDEN_ENABLED_DYNAMIC_CHECKS))
         {
             if (!_dynDataSent)
             {
                 if (_dynamicCheckTimer)
                     DynamicCheatChecksTimerUpdate(diff);
             }
-        }
+        }*/
     }
 }
 

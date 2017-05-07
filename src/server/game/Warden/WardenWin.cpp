@@ -264,14 +264,14 @@ void WardenWin::RequestStaticData()
 
         switch (wd->Type)
         {
-        case MPQ_CHECK:
-        case LUA_STR_CHECK:
-        case DRIVER_CHECK:
-            buff << uint8(wd->Str.size());
-            buff.append(wd->Str.c_str(), wd->Str.size());
-            break;
-        default:
-            break;
+            case MPQ_CHECK:
+            case LUA_STR_CHECK:
+            case DRIVER_CHECK:
+                buff << uint8(wd->Str.size());
+                buff.append(wd->Str.c_str(), wd->Str.size());
+                break;
+            default:
+                break;
         }
     }
 
@@ -325,55 +325,52 @@ void WardenWin::RequestStaticData()
         buff << uint8(type ^ xorByte);
         switch (type)
         {
-        case MEM_CHECK:
-        {
-            buff << uint8(0x00);
-            buff << uint8(0xF);
-            buff << uint32(wd->Address);
-            buff << uint8(wd->Length);
-            break;
-        }
-        case PAGE_CHECK_A:
-        case PAGE_CHECK_B:
-        {
-            buff.append(wd->Data.AsByteArray(0, false), wd->Data.GetNumBytes());
-            buff << uint32(wd->Address);
-            buff << uint8(wd->Length);
-            break;
-        }
-        case MPQ_CHECK:
-        case LUA_STR_CHECK:
-        {
-            buff << uint8(index++);
-            break;
-        }
-        case DRIVER_CHECK:
-        {
-            buff.append(wd->Data.AsByteArray(0, false), wd->Data.GetNumBytes());
-            buff << uint8(index++);
-            break;
-        }
-        case MODULE_CHECK:
-        {
-            uint32 seed = static_cast<uint32>(rand32());
-            buff << uint32(seed);
-            HmacHash hmac(4, (uint8*)&seed);
-            hmac.UpdateData(wd->Str);
-            hmac.Finalize();
-            buff.append(hmac.GetDigest(), hmac.GetLength());
-            break;
-        }
-        case PROC_CHECK:
-        {
-            buff.append(wd->Data.AsByteArray(0, false), wd->Data.GetNumBytes());
-            buff << uint8(index++);
-            buff << uint8(index++);
-            buff << uint32(wd->Address);
-            buff << uint8(wd->Length);
-            break;
-        }
-        default:
-            break;                                      // Should never happen
+            case MEM_CHECK:
+            {
+                buff << uint8(0x00);
+                buff << uint8(0xF);
+                buff << uint32(wd->Address);
+                buff << uint8(wd->Length);
+                break;
+            }
+            case PAGE_CHECK_A:
+            case PAGE_CHECK_B:
+            {
+                buff.append(wd->Data.AsByteArray(0, false), wd->Data.GetNumBytes());
+                buff << uint32(wd->Address);
+                buff << uint8(wd->Length);
+                break;
+            }
+            case MPQ_CHECK:
+            case LUA_STR_CHECK:
+            {
+                buff << uint8(index++);
+                break;
+            }
+            case DRIVER_CHECK:
+            {
+                buff.append(wd->Data.AsByteArray(0, false), wd->Data.GetNumBytes());
+                buff << uint8(index++);
+                break;
+            }
+            case MODULE_CHECK:
+            {
+                uint32 seed = static_cast<uint32>(rand32());
+                buff << uint32(seed);
+                HmacHash hmac(4, (uint8*)&seed);
+                hmac.UpdateData(wd->Str);
+                hmac.Finalize();
+                buff.append(hmac.GetDigest(), hmac.GetLength());
+                break;
+            }
+            case PROC_CHECK:
+            {
+                uint32 seed = static_cast<uint32>(rand32());
+                buff << uint32(seed);
+                break;
+            }
+            default:
+                break;                                      // Should never happen
         }
     }
 
@@ -510,108 +507,109 @@ void WardenWin::HandleStaticData(ByteBuffer &buff)
         type = rd->Type;
         switch (type)
         {
-        case MEM_CHECK:
-        {
-            uint8 Mem_Result;
-            buff >> Mem_Result;
-
-            if (Mem_Result != 0)
+            case MEM_CHECK:
             {
-                //sLog->outWarden("RESULT MEM_CHECK not 0x00, CheckId %u account Id %u", *itr, _session->GetAccountId());
-                buff.rpos(buff.wpos());
-                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
-                return;
-            }
+                uint8 Mem_Result;
+                buff >> Mem_Result;
 
-            std::string packet_data = ConvertPacketDataToString(buff.contents() + buff.rpos(), rd->Length);
-            if (strcmp(rs->Result.c_str(), packet_data.c_str()))
+                if (Mem_Result != 0)
+                {
+                    //sLog->outWarden("RESULT MEM_CHECK not 0x00, CheckId %u account Id %u", *itr, _session->GetAccountId());
+                    buff.rpos(buff.wpos());
+                    //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
+                    return;
+                }
+
+                std::string packet_data = ConvertPacketDataToString(buff.contents() + buff.rpos(), rd->Length);
+                if (strcmp(rs->Result.c_str(), packet_data.c_str()))
+                {
+                    //sLog->outWarden("RESULT MEM_CHECK fail CheckId %u, account Id %u, Failed data %s", *itr, _session->GetAccountId(), packet_data.c_str());
+                    buff.rpos(buff.wpos());
+                    //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
+                    return;
+                }
+
+                buff.rpos(buff.rpos() + rd->Length);
+                break;
+            }
+            case PAGE_CHECK_A:
+            case PAGE_CHECK_B:
+            case DRIVER_CHECK:
+            case MODULE_CHECK:
+            case PROC_CHECK:
             {
-                //sLog->outWarden("RESULT MEM_CHECK fail CheckId %u, account Id %u, Failed data %s", *itr, _session->GetAccountId(), packet_data.c_str());
-                buff.rpos(buff.wpos());
-                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
-                return;
-            }
+                std::string packet_data = ConvertPacketDataToString(buff.contents() + buff.rpos(), 1);
+                if (strcmp(rs->Result.c_str(), packet_data.c_str()))
+                {
+                    if (type == PAGE_CHECK_A || type == PAGE_CHECK_B)
+                        //sLog->outWarden("RESULT PAGE_CHECK fail, CheckId %u, account Id %u", *itr, _session->GetAccountId());
+                    if (type == MODULE_CHECK)
+                        //sLog->outWarden("RESULT MODULE_CHECK fail, CheckId %u, account Id %u", *itr, _session->GetAccountId());
+                    if (type == DRIVER_CHECK)
+                        //sLog->outWarden("RESULT DRIVER_CHECK fail, CheckId %u, account Id %u", *itr, _session->GetAccountId());
 
-            buff.rpos(buff.rpos() + rd->Length);
-            break;
-        }
-        case PAGE_CHECK_A:
-        case PAGE_CHECK_B:
-        case DRIVER_CHECK:
-        case MODULE_CHECK:
-        {
-            std::string packet_data = ConvertPacketDataToString(buff.contents() + buff.rpos(), 1);
-            if (strcmp(rs->Result.c_str(), packet_data.c_str()))
+                    buff.rpos(buff.wpos());
+                    sLog->outWarn(LOG_FILTER_WARDEN, "%s failed Warden check %u. Action: %s", _session->GetPlayerName(false).c_str(), *itr, Penalty(rd).c_str());
+                    return;
+                }
+
+                buff.rpos(buff.rpos() + 1);
+                break;
+            }
+            case LUA_STR_CHECK:
             {
-                if (type == PAGE_CHECK_A || type == PAGE_CHECK_B)
-                    //sLog->outWarden("RESULT PAGE_CHECK fail, CheckId %u, account Id %u", *itr, _session->GetAccountId());
-                if (type == MODULE_CHECK)
-                    //sLog->outWarden("RESULT MODULE_CHECK fail, CheckId %u, account Id %u", *itr, _session->GetAccountId());
-                if (type == DRIVER_CHECK)
-                    //sLog->outWarden("RESULT DRIVER_CHECK fail, CheckId %u, account Id %u", *itr, _session->GetAccountId());
+                uint8 Lua_Result;
+                buff >> Lua_Result;
 
-                buff.rpos(buff.wpos());
-                sLog->outWarn(LOG_FILTER_WARDEN, "%s failed Warden check %u. Action: %s", _session->GetPlayerName(false).c_str(), *itr, Penalty(rd).c_str());
-                return;
+                //if (Lua_Result != 0)
+                    //sLog->outWarden("unk byte in LUA_STR_CHECK is equal 1, CheckId %u, account Id %u", *itr, _session->GetAccountId());
+
+                uint8 luaStrLen;
+                buff >> luaStrLen;
+
+                if (luaStrLen != 0)
+                {
+                    char *str = new char[luaStrLen + 1];
+                    memset(str, 0, luaStrLen + 1);
+                    memcpy(str, buff.contents() + buff.rpos(), luaStrLen);
+                    //sLog->outWarden("RESULT LUA_STR_CHECK fail, CheckId %u, account Id %u", *itr, _session->GetAccountId());
+                    //sLog->outWarden("Lua string found: %s", str);
+                    delete[] str;
+
+                    buff.rpos(buff.wpos());
+                    //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
+                    return;
+                }
+
+                break;
             }
-
-            buff.rpos(buff.rpos() + 1);
-            break;
-        }
-        case LUA_STR_CHECK:
-        {
-            uint8 Lua_Result;
-            buff >> Lua_Result;
-
-            //if (Lua_Result != 0)
-                //sLog->outWarden("unk byte in LUA_STR_CHECK is equal 1, CheckId %u, account Id %u", *itr, _session->GetAccountId());
-
-            uint8 luaStrLen;
-            buff >> luaStrLen;
-
-            if (luaStrLen != 0)
+            case MPQ_CHECK:
             {
-                char *str = new char[luaStrLen + 1];
-                memset(str, 0, luaStrLen + 1);
-                memcpy(str, buff.contents() + buff.rpos(), luaStrLen);
-                //sLog->outWarden("RESULT LUA_STR_CHECK fail, CheckId %u, account Id %u", *itr, _session->GetAccountId());
-                //sLog->outWarden("Lua string found: %s", str);
-                delete[] str;
+                uint8 Mpq_Result;
+                buff >> Mpq_Result;
 
-                buff.rpos(buff.wpos());
-                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
-                return;
+                if (Mpq_Result != 0)
+                {
+                    //sLog->outWarden("RESULT MPQ_CHECK not 0x00 account id %u", _session->GetAccountId());
+                    buff.rpos(buff.wpos());
+                    //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
+                    return;
+                }
+
+                std::string packet_data = ConvertPacketDataToString(buff.contents() + buff.rpos(), rd->Length);
+                if (strcmp(rs->Result.c_str(), packet_data.c_str()))
+                {
+                    //sLog->outWarden("RESULT MPQ_CHECK fail, CheckId %u, account Id %u", *itr, _session->GetAccountId());
+                    buff.rpos(buff.wpos());
+                    //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
+                    return;
+                }
+
+                buff.rpos(buff.rpos() + 20);                // 20 bytes SHA1
+                break;
             }
-
-            break;
-        }
-        case MPQ_CHECK:
-        {
-            uint8 Mpq_Result;
-            buff >> Mpq_Result;
-
-            if (Mpq_Result != 0)
-            {
-                //sLog->outWarden("RESULT MPQ_CHECK not 0x00 account id %u", _session->GetAccountId());
-                buff.rpos(buff.wpos());
-                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
-                return;
-            }
-
-            std::string packet_data = ConvertPacketDataToString(buff.contents() + buff.rpos(), rd->Length);
-            if (strcmp(rs->Result.c_str(), packet_data.c_str()))
-            {
-                //sLog->outWarden("RESULT MPQ_CHECK fail, CheckId %u, account Id %u", *itr, _session->GetAccountId());
-                buff.rpos(buff.wpos());
-                //sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(rd).c_str());
-                return;
-            }
-
-            buff.rpos(buff.rpos() + 20);                // 20 bytes SHA1
-            break;
-        }
-        default:                                        // Should never happen
-            break;
+            default:                                        // Should never happen
+                break;
         }
     }
 }
