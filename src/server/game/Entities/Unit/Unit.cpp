@@ -793,6 +793,14 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
             }
         }
     }
+
+    uint32 health = victim->GetHealth();
+
+    if (damagetype == DIRECT_DAMAGE || damagetype == SPELL_DIRECT_DAMAGE)
+    {
+        m_damage_counters[DAMAGE_DONE_COUNTER][0] += health >= damage ? damage + (cleanDamage ? cleanDamage->absorbed_damage : 0) : health;
+        victim->m_damage_counters[DAMAGE_TAKEN_COUNTER][0] += health >= damage ? damage + (cleanDamage ? cleanDamage->absorbed_damage : 0) : health;
+    }
     
     if (!damage)
     {
@@ -804,8 +812,6 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
     }
 
     sLog->outDebug(LOG_FILTER_UNITS, "DealDamageStart");
-
-    uint32 health = victim->GetHealth();
     sLog->outInfo(LOG_FILTER_UNITS, "deal dmg:%d to health:%d to %s", damage, health, GetString().c_str());
 
     // duel ends when player has 1 or less hp
@@ -873,12 +879,6 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 
         if (IsControlledByPlayer())
             victim->ToCreature()->LowerPlayerDamageReq(health < damage ?  health : damage);
-    }
-
-    if (damagetype == DIRECT_DAMAGE || damagetype == SPELL_DIRECT_DAMAGE)
-    {
-        m_damage_counters[DAMAGE_DONE_COUNTER][0] += health >= damage ? damage + (cleanDamage ? cleanDamage->absorbed_damage : 0) : health;
-        victim->m_damage_counters[DAMAGE_TAKEN_COUNTER][0] += health >= damage ? damage + (cleanDamage ? cleanDamage->absorbed_damage : 0) : health;
     }
 
     if (health <= damage)
