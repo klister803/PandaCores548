@@ -4045,6 +4045,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 25956: // Sanctity of Battle
                     spellInfo->Effects[EFFECT_1]->MiscValue = SPELLMOD_GLOBAL_COOLDOWN;
                     break;
+                case 50371:
+                    spellInfo->Effects[EFFECT_5]->SpellClassMask[3] = 0;
+                    spellInfo->Effects[EFFECT_6]->SpellClassMask[3] = 0;
+                    break;
                 case 145591: // Sha Cloud
                     spellInfo->Attributes |= SPELL_ATTR0_CANT_USED_IN_COMBAT;
                     spellInfo->AttributesEx4 &= ~SPELL_ATTR4_TRIGGERED;
