@@ -10856,6 +10856,13 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
                 return false;
             break;
         }
+        case 136050: //Malformed Blood (Primordius) [TT]
+            if (!victim->ToCreature())
+                return false;
+
+            if (victim->ToCreature() && victim->ToCreature()->GetEntry() != 69069) //living fluid
+                return false;
+            break;
         case 143574: //Swelling corruption (Immerseus HM)
             {
                 if (ToCreature())

@@ -104,6 +104,7 @@ public:
         uint64 durumuGuid;
         uint64 durumueyetargetGuid;
         uint64 primordiusGuid;
+        uint64 atcasterstalkerGuid;
         uint64 darkanimusGuid;
         uint64 ironqonGuid;
         uint64 roshakGuid;
@@ -207,6 +208,7 @@ public:
             durumuGuid            = 0;
             durumueyetargetGuid   = 0;
             primordiusGuid        = 0;
+            atcasterstalkerGuid   = 0;
             darkanimusGuid        = 0;
             ironqonGuid           = 0;
             roshakGuid            = 0;
@@ -428,6 +430,9 @@ public:
                 break;
             case NPC_PRIMORDIUS: 
                 primordiusGuid = creature->GetGUID();
+                break;
+            case NPC_AT_CASTER_STALKER:
+                atcasterstalkerGuid = creature->GetGUID();
                 break;
             case NPC_MASSIVE_ANIMA_GOLEM:
                 massiveanimagolemGuids.push_back(creature->GetGUID());
@@ -1287,6 +1292,8 @@ public:
                 return durumueyetargetGuid;
             case NPC_PRIMORDIUS: 
                 return primordiusGuid;
+            case NPC_AT_CASTER_STALKER:
+                return atcasterstalkerGuid;
             case NPC_DARK_ANIMUS:  
                 return darkanimusGuid;
             case NPC_IRON_QON:

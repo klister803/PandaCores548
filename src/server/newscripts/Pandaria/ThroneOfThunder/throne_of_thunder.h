@@ -54,6 +54,8 @@ enum eData
     DATA_GET_DURUMU_ROTATE_DIRECTION,
     DATA_CREATE_MIST,
     DATA_CLOSE_SAFE_ZONE_IN_MIST,
+    DATA_MUTATE,
+    DATA_REMOVE_MUTATE,
 };
 
 enum esAction
@@ -107,6 +109,7 @@ enum eCreatures
     NPC_VAMPIRIC_CAVE_BAT       = 69352,
     NPC_CINDERS                 = 70432,
     NPC_LIVING_FLUID            = 69069,
+    NPC_AT_CASTER_STALKER       = 69081,
     NPC_ANIMA_GOLEM             = 69701,
     NPC_LARGE_ANIMA_GOLEM       = 69700,
     NPC_MASSIVE_ANIMA_GOLEM     = 69699,

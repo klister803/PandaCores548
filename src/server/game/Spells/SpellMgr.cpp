@@ -4593,7 +4593,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 50227:  // Sword and Board
                 case 113901: // Demonic Gateway
                 case 131116: // Raging Blow!
-                case 136050: // Malformed Blood
                     spellInfo->ProcCharges = 0;
                     break;
                 case 82926: // Fire ! (for Master Marksman)
@@ -5249,6 +5248,38 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->TargetB = 0; //not needed
                     break;
                 //Primordius
+                case 136050: // Malformed Blood
+                    spellInfo->ProcCharges = 0;
+                    spellInfo->Effects[0]->TargetA = 25;
+                    spellInfo->Effects[0]->ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL_WITH_VALUE;
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_1, d))
+                            eff->TargetA = 25;
+                    break;
+                case 140509: //Volatile Mutate Primodrius
+                    spellInfo->Effects[0]->TargetA = 25;
+                    spellInfo->Effects[1]->TargetB = 25;
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_2, d))
+                            eff->TargetA = 25;
+                    break;
+                case 136049: //Mutagenic Pool AT
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_1, d))
+                            eff->TargetA = 25;
+                    break;
+                case 136218: //Acidic Spines
+                    spellInfo->Effects[0]->TriggerSpell = 0;
+                    break;
+                case 136203: //Mutate Primordius
+                    spellInfo->Effects[0]->TargetA = 25;
+                    break;
+                case 140546: //Fully Mutated
+                    spellInfo->AreaGroupId = 3576;
+                    for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
+                        if (SpellEffectInfo* eff = spellInfo->GetDifficultyEffectInfo(EFFECT_0, d))
+                            eff->MiscValue = 22;
+                    break;
                 case 136220: //Acidic explosion tr ef dmg
                 {
                     for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
