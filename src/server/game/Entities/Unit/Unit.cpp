@@ -10422,16 +10422,13 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
         }
         case 49509: // Scent of Blood
         {
-            if (GetTypeId() != TYPEID_PLAYER)
-                return false;
+            float roll = 0.f;
+            if (Player* plr = ToPlayer())
+                if (Item* weap = plr->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND + dmgInfoProc->GetAttackType()))
+                    if (ItemTemplate const* temp = weap->GetTemplate())
+                        roll = float(temp->Delay) / 3600.f * 100.f;
 
-            if (getClass() != CLASS_DEATH_KNIGHT)
-                return false;
-
-            if (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) != SPEC_DK_BLOOD)
-                return false;
-
-            if (!roll_chance_i(15))
+            if (!roll_chance_f(roll))
                 return false;
 
             break;
