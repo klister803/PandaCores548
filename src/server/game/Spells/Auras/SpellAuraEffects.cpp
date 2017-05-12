@@ -1596,6 +1596,17 @@ float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
                 amount = 0;
             if ((plr->InRBG() || plr->InArena()) && m_spellInfo->AttributesEx4 & SPELL_ATTR4_NOT_USABLE_IN_ARENA_OR_RATED_BG)
                 amount = 0;
+
+            // Epicurean
+            if (m_spellInfo->AttributesEx2 & SPELL_ATTR2_FOOD_BUFF)
+            {
+                if (caster->getRace() == RACE_PANDAREN_ALLI ||
+                    caster->getRace() == RACE_PANDAREN_HORDE ||
+                    caster->getRace() == RACE_PANDAREN_NEUTRAL)
+                    {
+                        amount *= 2;
+                    }
+            }
         }
     }
 

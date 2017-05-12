@@ -3932,20 +3932,6 @@ void Unit::_ApplyAura(AuraApplication * aurApp, uint32 effMask)
     if (aura->GetCasterGUID() != GetGUID() && caster)
         caster->m_unitsHasCasterAura.insert(GetGUID());
 
-    // Epicurean
-    if (GetTypeId() == TYPEID_PLAYER &&
-        getRace() == RACE_PANDAREN_ALLI ||
-        getRace() == RACE_PANDAREN_HORDE ||
-        getRace() == RACE_PANDAREN_NEUTRAL)
-    {
-        if (spellInfo->AttributesEx2 & SPELL_ATTR2_FOOD_BUFF)
-        {
-            for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
-                if (aura->GetEffect(i))
-                    aura->GetEffect(i)->SetAmount(spellInfo->GetEffect(i, GetSpawnMode())->BasePoints * 2);
-        }
-    }
-
     // apply effects of the aura
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
