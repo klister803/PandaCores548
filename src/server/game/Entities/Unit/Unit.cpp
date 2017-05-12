@@ -9360,8 +9360,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         pPet->CastSpell(pPet->getVictim(), procSpell->Id, true);
                     else
                     {
-                        if (procSpell)
-                            pPet->SendSpellNonMeleeDamageLog(pPet->getVictim(), procSpell->Id, procDmg, procSpell->GetSchoolMask(), 0, 0, false, 0, false);
                         pPet->DealDamage(pPet->getVictim(), procDmg);
                     }
                     break;

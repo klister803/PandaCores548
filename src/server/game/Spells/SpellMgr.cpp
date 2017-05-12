@@ -4059,6 +4059,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 50034:  // Blood Rites
                 case 34487:  // Master Marksman
                 case 76659:  // Mastery: Wild Quiver
+                case 49028:  // Dancing Rune Weapon
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_PROC_ONLY_ON_CAST;
                     break;
                 case 101545: // Flying Serpent Kick
