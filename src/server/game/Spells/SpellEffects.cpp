@@ -5879,7 +5879,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                         if(Aura* aura = unitTarget->GetAura(55095, m_caster->GetGUID())) // stop spamm update
                         {
                             if(aura->GetDuration() < aura->GetMaxDuration())
-                                m_caster->CastSpell(unitTarget, 55078, true);
+                                m_caster->CastSpell(unitTarget, 55095, true);
                         }
                         else
                             m_caster->CastSpell(unitTarget, 55095, true);
