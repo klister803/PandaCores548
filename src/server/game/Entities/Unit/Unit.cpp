@@ -20051,7 +20051,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     if (bp < minBp)
                         bp = minBp;
 
-                    int32 maxVal = int32(GetMaxHealth() * 0.5f);
+                    int32 maxVal = int32(GetMaxHealth());
 
                     if (bp > maxVal)
                         bp = maxVal;
