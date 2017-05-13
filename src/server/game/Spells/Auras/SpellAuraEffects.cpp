@@ -854,6 +854,15 @@ float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
 
             switch (GetId())
             {
+                case 137639: // Storm, Earth and Fire
+                {
+                    if (Aura* aura = GetBase())
+                        if (AuraEffect* eff = aura->GetEffect(EFFECT_1))
+                            amount = abs(eff->GetAmount());
+
+                    CalcStack = false;
+                    break;
+                }
                 case 77219: // Mastery: Master Demonologist
                 {
                     if (m_effIndex != EFFECT_0)
