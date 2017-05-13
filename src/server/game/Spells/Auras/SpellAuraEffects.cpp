@@ -2913,6 +2913,16 @@ void AuraEffect::HandleModStealth(AuraApplication const* aurApp, uint8 mode, boo
         target->SetStandFlags(UNIT_STAND_FLAGS_CREEP);
         //if (target->GetTypeId() == TYPEID_PLAYER)
             //target->SetByteFlag(PLAYER_FIELD_BYTES2, 3, PLAYER_FIELD_BYTE2_STEALTH); // TODO : Check PLAYER_FIELD_AURA_VISION
+
+        switch (m_spellInfo->Id)
+        {
+            case 58984:  // Shadowmeld
+            case 119032: // Spectral Guise
+                target->CombatStop();
+                break;
+            default:
+                break;
+        }
     }
     else
     {

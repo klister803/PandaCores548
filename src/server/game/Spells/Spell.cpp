@@ -4577,12 +4577,6 @@ void Spell::finish(bool ok)
         m_caster->AttackStop();
     }
     
-    // Hack Shadowmeld
-    if (m_spellInfo->Id == 58984)
-    {
-        m_caster->CombatStop();
-    }
-    
     if (m_castItemGUID && m_caster->GetTypeId() == TYPEID_PLAYER)
         if (Item* item = m_caster->ToPlayer()->GetItemByGuid(m_castItemGUID))
             if (item->IsEquipable() && !item->IsEquipped())
