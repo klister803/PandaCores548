@@ -1628,9 +1628,35 @@ void Creature::UpdateDamagePhysical(WeaponAttackType attType)
     float total_pct   = GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, SPELL_SCHOOL_MASK_NORMAL);
     SetModifierValue(unitMod, TOTAL_PCT, total_pct);
     float dmg_multiplier = GetCreatureTemplate()->dmg_multiplier;
-    if(CreatureDifficultyStat const* _stats = GetCreatureDiffStat())
-        if(GetMobDifficulty() == 1 || GetMobDifficulty() == 3)
-            dmg_multiplier *= _stats->dmg_multiplier;
+    if (CreatureDifficultyStat const* _stats = GetCreatureDiffStat())
+    {
+        switch (GetMobDifficulty())
+        {
+            case 1:
+            {
+                dmg_multiplier *= _stats->dmg_multiplier;
+                break;
+            }
+            case 2:
+            {
+                if (RoundingFloatValue(_stats->dmg_multiplier * 100.f) != 115)
+                    dmg_multiplier *= _stats->dmg_multiplier;
+                else
+                    dmg_multiplier *= 1.3f;
+                break;
+            }
+            case 3:
+            {
+                if (RoundingFloatValue(_stats->dmg_multiplier * 100.f) != 115)
+                    dmg_multiplier *= _stats->dmg_multiplier;
+                else
+                    dmg_multiplier *= 1.45f;
+                break;
+            }
+            default:
+                break;
+        }
+    }
 
     if (!CanUseAttackType(attType))
     {
