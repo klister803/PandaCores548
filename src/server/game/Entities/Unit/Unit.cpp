@@ -20034,22 +20034,39 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     triggered_spell_id = itr->spell_trigger;
 
                     float _percent = (triggerAmount / 100.0f);
-                    int32 minBp = CalculatePct(alldamage, _percent * 5.0f);
+
+                    if (procSpell)
+                        _percent = 3.75f; // This will be 1.5% of the damage or 3.75% of the damage that won't be mitigated by armor (like magic and bleeds).
+                    else
+                        basepoints2 = 1.f;
 
                     float bp = 0;
 
                     if (Aura* oldAura = GetAura(triggered_spell_id, GetGUID()))
                     {
-                        if (AuraEffect* oldEff = oldAura->GetEffect(EFFECT_0))
+                        if (AuraEffect* oldEff2 = oldAura->GetEffect(EFFECT_2))
+                            if (!oldEff2->GetAmount())
+                            {
+                                if (!procSpell)
+                                    _percent = 15.f; // Your initial vengeance at a pull will be 50 % of the max you can get in the 20 sec period
+                            }
+                            else
+                                basepoints2 = 1.f;
+
+                        if (AuraEffect* oldEff0 = oldAura->GetEffect(EFFECT_0))
                         {
-                            float oldamount = oldEff->GetAmount() * float(oldAura->GetDuration()) / float(oldAura->GetMaxDuration());
+                            float oldamount = oldEff0->GetAmount() * float(oldAura->GetDuration()) / float(oldAura->GetMaxDuration());
                             bp = CalculatePct(alldamage, _percent / count);
                             bp += oldamount;
                         }
                     }
+                    else
+                    {
+                        if (!procSpell)
+                            _percent = 15.f; // Your initial vengeance at a pull will be 50 % of the max you can get in the 20 sec period
 
-                    if (bp < minBp)
-                        bp = minBp;
+                        bp = CalculatePct(alldamage, _percent);
+                    }
 
                     int32 maxVal = int32(GetMaxHealth());
 
@@ -20060,11 +20077,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     basepoints1 = bp;
 
                     _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints1, &basepoints2, true, castItem, triggeredByAura, originalCaster);
-                    if (itr->target == 6)
-                    {
-                        if (Guardian* pet = GetGuardianPet())
-                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &basepoints1, &basepoints2, true);
-                    }
+
                     check = true;
                     break;
                 }

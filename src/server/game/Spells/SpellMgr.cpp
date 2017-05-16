@@ -3873,6 +3873,14 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 132365: // Vengeance
+                    spellInfo->EffectMask = 7;
+                    spellInfo->Effects[EFFECT_2]->SetEffectIndex(EFFECT_2);
+                    spellInfo->Effects[EFFECT_2]->Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_2]->ApplyAuraName = SPELL_AURA_DUMMY;
+                    spellInfo->Effects[EFFECT_2]->BasePoints = 0;
+                    spellInfo->Effects[EFFECT_2]->TargetA = TARGET_UNIT_CASTER;
+                    break;
                 case 124280: // Touch of Karma
                 case 49016:  // Unholy Frenzy
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_CANT_TRIGGER_PROC;

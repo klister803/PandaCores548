@@ -304,6 +304,7 @@ public:
     float CalcBaseValue(float value) const;
     float CalcValueMultiplier(Unit* caster, Spell* spell = NULL) const;
     float CalcDamageMultiplier(Unit* caster, Spell* spell = NULL) const;
+    void SetEffectIndex(uint8 indx) { _effIndex = indx; }
 
     bool HasRadius() const;
     float CalcRadius(Unit* caster = NULL, Spell* = NULL) const;
