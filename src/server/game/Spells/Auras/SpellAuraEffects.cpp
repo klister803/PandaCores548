@@ -4303,6 +4303,12 @@ void AuraEffect::HandleModTaunt(AuraApplication const* aurApp, uint8 mode, bool 
         target->TauntApply(caster);
     else
     {
+        // In order to prevent that tank from instantly pulling off of you again all taunts temporarily grant the tank a 200% bonus Vengeance modifier for 4 seconds
+        if (Aura* veng = caster->GetAura(132365))
+            if (AuraEffect* eff = veng->GetEffect(EFFECT_2))
+                if (RoundingFloatValue(eff->GetAmount()) == 2)
+                    eff->SetAmount(1.f);
+
         // When taunt aura fades out, mob will switch to previous target if current has less than 1.1 * secondthreat
         target->TauntFadeOut(caster);
     }

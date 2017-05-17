@@ -20045,13 +20045,30 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     if (Aura* oldAura = GetAura(triggered_spell_id, GetGUID()))
                     {
                         if (AuraEffect* oldEff2 = oldAura->GetEffect(EFFECT_2))
-                            if (!oldEff2->GetAmount())
+                        {
+                            switch (RoundingFloatValue(oldEff2->GetAmount()))
                             {
-                                if (!procSpell)
-                                    _percent = 15.f; // Your initial vengeance at a pull will be 50 % of the max you can get in the 20 sec period
+                                case 0:
+                                {
+                                    if (!procSpell)
+                                        _percent = 15.f; // Your initial vengeance at a pull will be 50 % of the max you can get in the 20 sec period
+                                    break;
+                                }
+                                case 2:
+                                {
+                                    basepoints2 = 2.f; 
+                                    // In order to prevent that tank from instantly pulling off of you again 
+                                    // all taunts temporarily grant the tank a 200% bonus Vengeance modifier for 4 seconds
+                                    _percent *= 2.f;
+                                    break;
+                                }
+                                default:
+                                {
+                                    basepoints2 = 1.f;
+                                    break;
+                                }
                             }
-                            else
-                                basepoints2 = 1.f;
+                        }
 
                         if (AuraEffect* oldEff0 = oldAura->GetEffect(EFFECT_0))
                         {
