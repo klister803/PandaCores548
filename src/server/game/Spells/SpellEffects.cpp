@@ -4646,6 +4646,17 @@ void Spell::EffectTaunt(SpellEffIndex /*effIndex*/)
             unitTarget->getThreatManager().addThreat(m_caster, itsThreat - myThreat);
     }
 
+    if (Player* plr = m_caster->ToPlayer())
+        if (plr->isInTankSpec())
+            if (!plr->HasAura(132365))
+                if (Unit* victim = unitTarget->getVictim())
+                    if (Aura* veng = victim->GetAura(132365))
+                    {
+                        float bp0 = veng->GetEffect(EFFECT_0)->GetAmount() / 2.f; // When you taunt a target that is currently attacking another tank, you will be given half of that tank's Vengeance
+                        float bp3 = 2.f;
+                        m_caster->CastCustomSpell(m_caster, 132365, &bp0, &bp0, &bp3, true);
+                    }
+
     //Set aggro victim to caster
     if (!unitTarget->getThreatManager().getOnlineContainer().empty())
         if (HostileReference* forcedVictim = unitTarget->getThreatManager().getOnlineContainer().getReferenceByTarget(m_caster))
