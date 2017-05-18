@@ -1,0 +1,1 @@
+UPDATE `spell_trigger` SET `targetaura`='1' WHERE (`spell_id`='120267') AND (`spell_trigger`='132365') AND (`option`='24') AND (`effectmask`='7') AND (`aura`='115069') AND (`check_spell_id`='0');

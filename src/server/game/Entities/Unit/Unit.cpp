@@ -20042,7 +20042,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
 
                     float bp = 0;
 
-                    if (Aura* oldAura = GetAura(triggered_spell_id, GetGUID()))
+                    if (Aura* oldAura = _casterAura->GetAura(triggered_spell_id))
                     {
                         if (AuraEffect* oldEff2 = oldAura->GetEffect(EFFECT_2))
                         {
@@ -20085,7 +20085,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                         bp = CalculatePct(alldamage, _percent);
                     }
 
-                    int32 maxVal = int32(GetMaxHealth());
+                    int32 maxVal = int32(_casterAura->GetMaxHealth());
 
                     if (bp > maxVal)
                         bp = maxVal;
@@ -20093,7 +20093,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     basepoints0 = bp;
                     basepoints1 = bp;
 
-                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints1, &basepoints2, true, castItem, triggeredByAura, originalCaster);
+                    _casterAura->CastCustomSpell(_casterAura, triggered_spell_id, &basepoints0, &basepoints1, &basepoints2, true, castItem, triggeredByAura, originalCaster);
 
                     check = true;
                     break;
