@@ -1793,6 +1793,11 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
                                 learnSpell(itr->spellId);
                             break;
                         }
+                        case 5: // AddAuras
+                        {
+                            _caster->AddAura(itr->spellId, _target);
+                            break;
+                        }
                     }
                 }
             }
