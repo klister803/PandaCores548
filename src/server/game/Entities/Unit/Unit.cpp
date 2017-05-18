@@ -20041,6 +20041,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                         basepoints2 = 1.f;
 
                     float bp = 0;
+                    float critMod = (procEx & PROC_EX_CRITICAL_HIT) ? (1.f / 1.5f) : 1.f; // Vengeance gains from being critically hit have been reduced by 50%.
 
                     if (Aura* oldAura = _casterAura->GetAura(triggered_spell_id))
                     {
@@ -20073,6 +20074,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                         if (AuraEffect* oldEff0 = oldAura->GetEffect(EFFECT_0))
                         {
                             float oldamount = oldEff0->GetAmount() * float(oldAura->GetDuration()) / float(oldAura->GetMaxDuration());
+                            _percent *= critMod;
                             bp = CalculatePct(alldamage, _percent / count);
                             bp += oldamount;
                         }
@@ -20082,6 +20084,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                         if (!procSpell)
                             _percent = 15.f; // Your initial vengeance at a pull will be 50 % of the max you can get in the 20 sec period
 
+                        _percent *= critMod;
                         bp = CalculatePct(alldamage, _percent);
                     }
 
