@@ -99,7 +99,7 @@ m_playerRecentlyLogout(false), m_playerSave(false),
 m_sessionDbcLocale(sWorld->GetAvailableDbcLocale(locale)),
 m_sessionDbLocaleIndex(locale),
 m_latency(0), m_TutorialsChanged(false), recruiterId(recruiter),
-isRecruiter(isARecruiter), timeCharEnumOpcode(0), playerLoginCounter(0)
+isRecruiter(isARecruiter), timeCharEnumOpcode(0), playerLoginCounter(0), wardenModuleFailed(false)
 {
     _warden = NULL;
     _filterAddonMessages = false;

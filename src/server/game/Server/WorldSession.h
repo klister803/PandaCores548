@@ -262,6 +262,8 @@ class WorldSession
         void SendAddonsInfo();
         bool IsAddonRegistered(const std::string& prefix);
 
+        Warden* GetWarden() { return _warden; }
+
         void ReadMovementInfo(WorldPacket& data, MovementInfo* mi);
         static void WriteMovementInfo(WorldPacket& data, MovementInfo* mi, Unit* unit = NULL);
 
@@ -1065,6 +1067,9 @@ class WorldSession
         void HandleWarGameAccept(WorldPacket& recvPacket);
 
         void LootCorps(uint64 corpsGUID, WorldObject* lootedBy = NULL);
+
+        void SetWardenModuleFailed(bool s) { wardenModuleFailed = s; }
+        bool IsWardenModuleFailed() { return wardenModuleFailed; }
     private:
         void InitializeQueryCallbackParameters();
         void ProcessQueryCallbacks();
@@ -1132,6 +1137,8 @@ class WorldSession
         ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvQueue;
         time_t timeCharEnumOpcode;
         uint8 playerLoginCounter;
+
+        bool wardenModuleFailed;
 
         uint32 antispamm[PACKETS_COUNT][2];//0 count, 1 savetime
 

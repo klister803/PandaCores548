@@ -541,12 +541,12 @@ void WardenWin::HandleStaticData(ByteBuffer &buff)
                 std::string packet_data = ConvertPacketDataToString(buff.contents() + buff.rpos(), 1);
                 if (strcmp(rs->Result.c_str(), packet_data.c_str()))
                 {
-                    if (type == PAGE_CHECK_A || type == PAGE_CHECK_B)
-                        //sLog->outWarden("RESULT PAGE_CHECK fail, CheckId %u, account Id %u", *itr, _session->GetAccountId());
+                    /*if (type == PAGE_CHECK_A || type == PAGE_CHECK_B)
+                        sLog->outWarden("RESULT PAGE_CHECK fail, CheckId %u, account Id %u", *itr, _session->GetAccountId());
                     if (type == MODULE_CHECK)
-                        //sLog->outWarden("RESULT MODULE_CHECK fail, CheckId %u, account Id %u", *itr, _session->GetAccountId());
+                        sLog->outWarden("RESULT MODULE_CHECK fail, CheckId %u, account Id %u", *itr, _session->GetAccountId());
                     if (type == DRIVER_CHECK)
-                        //sLog->outWarden("RESULT DRIVER_CHECK fail, CheckId %u, account Id %u", *itr, _session->GetAccountId());
+                        sLog->outWarden("RESULT DRIVER_CHECK fail, CheckId %u, account Id %u", *itr, _session->GetAccountId());*/
 
                     buff.rpos(buff.wpos());
                     sLog->outWarn(LOG_FILTER_WARDEN, "%s failed Warden check %u. Action: %s", _session->GetPlayerName(false).c_str(), *itr, Penalty(rd).c_str());
