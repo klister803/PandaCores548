@@ -3875,9 +3875,7 @@ void SpellMgr::LoadSpellCustomAttr()
             {
                 case 132365: // Vengeance
                 {
-                    spellInfo->EffectMask = 7;
-                    spellInfo->Effects[EFFECT_2] = new SpellEffectInfo(spellInfo->NullEffect);
-                    spellInfo->Effects[EFFECT_2]->SetEffectIndex(EFFECT_2);
+                    spellInfo->CreateCustomEffect(EFFECT_2);
                     spellInfo->Effects[EFFECT_2]->Effect = SPELL_EFFECT_APPLY_AURA;
                     spellInfo->Effects[EFFECT_2]->ApplyAuraName = SPELL_AURA_DUMMY;
                     spellInfo->Effects[EFFECT_2]->BasePoints = 0;
@@ -4001,6 +3999,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0]->ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
                     break;
                 case 123738: // Heart of the Wild VENGEANCE
+                    spellInfo->CreateCustomEffect(EFFECT_5);
                     spellInfo->Effects[EFFECT_5]->Effect = SPELL_EFFECT_APPLY_AURA;
                     spellInfo->Effects[EFFECT_5]->ApplyAuraName = SPELL_AURA_DUMMY;
                     spellInfo->Effects[EFFECT_5]->BasePoints = 150;
@@ -4084,6 +4083,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_CANT_CAST_ROOTED;
                     break;
                 case 137049: // Hotfix Passive 
+                    spellInfo->CreateCustomEffect(EFFECT_5);
                     spellInfo->Effects[EFFECT_5]->Effect = SPELL_EFFECT_APPLY_AURA;
                     spellInfo->Effects[EFFECT_5]->BasePoints = 100;
                     spellInfo->Effects[EFFECT_5]->TargetA = TARGET_UNIT_CASTER;
@@ -4651,6 +4651,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0]->MiscValue = 164639;
                     break;
                 case 110588:// Misdirection (Symbiosis)
+                    spellInfo->CreateCustomEffect(EFFECT_2);
                     spellInfo->Effects[EFFECT_2]->Effect = SPELL_EFFECT_APPLY_AURA;
                     spellInfo->Effects[EFFECT_2]->ApplyAuraName = SPELL_AURA_MOD_SCALE;
                     spellInfo->Effects[EFFECT_2]->BasePoints = 30;
@@ -6027,20 +6028,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0]->TriggerSpell = 0;
                     spellInfo->Effects[EFFECT_1]->TriggerSpell = 0;
                     break;
-                // Dalaran arena knockback
-                case 61698:
-                    spellInfo->Attributes = 536871296;
-                    spellInfo->AttributesEx = 269058048;
-                    spellInfo->AttributesEx2 = 67108868;
-                    spellInfo->AttributesEx3 = 268894272;
-                    spellInfo->AttributesEx4 = 2048;
-                    spellInfo->AttributesEx6 = 1024;
-                    spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(1);
-                    spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(1);
-                    spellInfo->EquippedItemClass = -1;
-                    spellInfo->Effects[EFFECT_0]->Effect = SPELL_EFFECT_DUMMY;
-                    spellInfo->Effects[EFFECT_0]->TargetA = SpellImplicitTargetInfo(25);
-                    break;
                 case 130649: // Life Spirit
                     spellInfo->Effects[EFFECT_0]-> BasePoints = 10000;
                     break;
@@ -6328,6 +6315,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 105367: // Lightning Conduit dummy 1
                     spellInfo->SetDurationIndex(39); // 1 secs
                     spellInfo->Effects[EFFECT_0]->TriggerSpell = 0;
+                    spellInfo->CreateCustomEffect(EFFECT_1);
                     spellInfo->Effects[EFFECT_1]->Effect = SPELL_EFFECT_APPLY_AURA;
                     spellInfo->Effects[EFFECT_1]->ApplyAuraName = SPELL_AURA_PERIODIC_DUMMY;
                     spellInfo->Effects[EFFECT_1]->Amplitude = 1000;

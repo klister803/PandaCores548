@@ -3581,6 +3581,13 @@ bool SpellInfo::NoPower() const
     return true;
 }
 
+void SpellInfo::CreateCustomEffect(SpellEffIndex indx)
+{
+    Effects[indx] = new SpellEffectInfo(NullEffect);
+    EffectMask += (1 << indx);
+    Effects[indx]->SetEffectIndex(indx);
+}
+
 bool SpellInfo::CanNonFacing(Unit const * caster) const
 {
     //can with Glyph of Gouge

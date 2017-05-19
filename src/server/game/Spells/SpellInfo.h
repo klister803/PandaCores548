@@ -624,6 +624,7 @@ public:
     bool HasPower(Powers power) const;
     bool NoPower() const;
     bool CanNonFacing(Unit const * caster) const;
+    void CreateCustomEffect(SpellEffIndex indx);
 };
 
 #endif // _SPELLINFO_H
