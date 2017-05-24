@@ -1347,6 +1347,7 @@ void World::LoadConfigSettings(bool reload)
     // Warden
     m_bool_configs[CONFIG_WARDEN_ENABLED] = ConfigMgr::GetBoolDefault("Warden.Enabled", false);
     m_bool_configs[CONFIG_WARDEN_ENABLED_DYNAMIC_CHECKS] = ConfigMgr::GetBoolDefault("Warden.EnabledDynamicChecks", false);
+    m_bool_configs[CONFIG_WARDEN_ENABLE_CHECK_BAD_VERSION] = ConfigMgr::GetBoolDefault("Warden.EnableCheckBadVersion", false);
     m_int_configs[CONFIG_WARDEN_NUM_MEM_CHECKS] = ConfigMgr::GetIntDefault("Warden.NumMemChecks", 10);
     m_int_configs[CONFIG_WARDEN_NUM_OTHER_CHECKS] = ConfigMgr::GetIntDefault("Warden.NumOtherChecks", 10);
     m_int_configs[CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF] = ConfigMgr::GetIntDefault("Warden.ClientCheckHoldOff", 20000);

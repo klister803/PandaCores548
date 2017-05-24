@@ -338,7 +338,8 @@ void WorldSession::HandleWardenDataOpcode(WorldPacket& recvData)
             break;
         case WARDEN_CMSG_MODULE_FAILED:
             sLog->outWarn(LOG_FILTER_WARDEN, "WARDEN_CMSG_MODULE_FAILED received, kick player %s!", GetPlayerName(false).c_str());
-            SetWardenModuleFailed(true);
+            if (sWorld->getBoolConfig(CONFIG_WARDEN_ENABLE_CHECK_BAD_VERSION))
+                SetWardenModuleFailed(true);
             break;
         default:
             sLog->outDebug(LOG_FILTER_WARDEN, "Got unknown warden opcode %02X of size %u.", opcode, uint32(recvData.size() - 1));
