@@ -53,6 +53,7 @@ float GetChanceAgainst(int ownRating, int opponentRating)
 
 int GetRatingMod(int ownRating, int opponentRating, bool won /*, float confidence_factor*/)
 {
+    // Calc Arena Rating
     // 'Chance' calculation - to beat the opponent
     // This is a simulation. Not much info on how it really works
     float chance = GetChanceAgainst(ownRating, opponentRating);
@@ -84,6 +85,9 @@ int GetRatingMod(int ownRating, int opponentRating, bool won /*, float confidenc
 	// in any way should be decrase
 	if (!won && mod == 0.0f && ownRating > 0)
 		return -1.0f;
+
+    if (won)
+        return (int)RoundingFloatValue(std::max(mod, 1.f));
 
     return (int)RoundingFloatValue(mod);
 
