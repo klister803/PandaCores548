@@ -195,7 +195,8 @@ bool OPvPCapturePointNA::HandlePlayerEnter(Player* player)
 void OPvPCapturePointNA::HandlePlayerLeave(Player* player)
 {
     if (player && player->IsInWorld())
-        player->SendUpdateWorldState(NA_UI_TOWER_SLIDER_DISPLAY, 0);
+        player->m_Functions.AddFunction([player, field, value]() -> void { if (!player) return; player->SendUpdateWorldState(NA_UI_TOWER_SLIDER_DISPLAY, 0); }, player->m_Functions.CalculateTime(100));
+
     OPvPCapturePoint::HandlePlayerLeave(player);
 }
 

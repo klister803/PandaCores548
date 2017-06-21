@@ -624,14 +624,16 @@ void OutdoorPvP::TeamCastSpell(TeamId team, int32 spellId)
         for (PlayerSet::iterator itr = m_players[team].begin(); itr != m_players[team].end(); ++itr)
         {
             if (Player* player = (*itr))
-                player->m_Functions.AddFunction([player, spellId]() -> void { if (!player) return; player->CastSpell(player, (uint32)spellId, true); }, player->m_Functions.CalculateTime(100));
+                if (player->IsInWorld())
+                    player->m_Functions.AddFunction([player, spellId]() -> void { if (!player) return; player->CastSpell(player, (uint32)spellId, true); }, player->m_Functions.CalculateTime(100));
         }
     }
     else
         for (PlayerSet::iterator itr = m_players[team].begin(); itr != m_players[team].end(); ++itr)
         {
             if (Player* player = (*itr))
-                player->m_Functions.AddFunction([player, spellId]() -> void { if (!player) return; player->RemoveAura((uint32)-spellId);; }, player->m_Functions.CalculateTime(100));
+                if (player->IsInWorld())
+                    player->m_Functions.AddFunction([player, spellId]() -> void { if (!player) return; player->RemoveAura((uint32)-spellId);; }, player->m_Functions.CalculateTime(100));
         }
 }
 
