@@ -34,7 +34,7 @@
 
 WardenWin::WardenWin(WorldSession* session) : Warden(session)
 {
-    _currentModule = _wardenMgr->GetModuleByName("79C0768D657977D697E10BAD956CCED1", "Win");
+    _currentModule = _wardenMgr->GetModuleByName("083B5E0EA6D1BFE9CF604D5B794FD9594C90AA8ABC0339C1DA2F6E1BC41ED6DE", "Win");
 }
 
 WardenWin::~WardenWin()
@@ -341,6 +341,9 @@ void WardenWin::RequestBaseData()
     BuildBaseChecksList(buff);
     buff << uint8(xorByte);
 
+    //test
+    sLog->outWarden("DATA: %s", _wardenMgr->ByteArrayToString(const_cast<uint8*>(buff.contents()), buff.size()));
+
     // Encrypt with warden RC4 key
     EncryptData(const_cast<uint8*>(buff.contents()), buff.size());
 
@@ -361,10 +364,10 @@ void WardenWin::RequestBaseData()
     //sLog->outWarden("%s", stream.str().c_str());
     //sWorld->SendServerMessage(SERVER_MSG_STRING, stream.str().c_str(), _session->GetPlayer());
 
-    WorldPacket data1(SMSG_SERVERTIME, 8);
-    data1 << uint32(12755321);
-    data1 << uint32(13904220);
-    _session->SendPacket(&data1);
+    //WorldPacket data1(SMSG_SERVERTIME, 8);
+    //data1 << uint32(12755321);
+    //data1 << uint32(13904220);
+    //_session->SendPacket(&data1);
 }
 
 void WardenWin::HandleData(ByteBuffer &buff)
@@ -383,7 +386,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
     if (!ValidatePacket(buff))
         return;
 
-    uint8 timeCheckResult;
+    /*uint8 timeCheckResult;
     buff >> timeCheckResult;
 
     if (!timeCheckResult)
@@ -403,7 +406,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
     sLog->outDebug(LOG_FILTER_WARDEN, "ServerTicks %u", ticksNow);         // Now
     sLog->outDebug(LOG_FILTER_WARDEN, "RequestTicks %u", _serverTicks);    // At request
     sLog->outDebug(LOG_FILTER_WARDEN, "Ticks %u", newClientTicks);         // At response
-    sLog->outDebug(LOG_FILTER_WARDEN, "Ticks diff %u", ourTicks - newClientTicks);
+    sLog->outDebug(LOG_FILTER_WARDEN, "Ticks diff %u", ourTicks - newClientTicks);*/
 
     if (!ValidatePacketHeader(buff))
     {

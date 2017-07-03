@@ -31,7 +31,7 @@
 #include "Warden.h"
 #include "AccountMgr.h"
 
-Warden::Warden(WorldSession* session) : _session(session), _checkTimer(0), _discardKeysTimer(0), _clientResponseTimer(0), _pendingKickTimer(0), _state(WARDEN_NOT_INITIALIZED)
+Warden::Warden(WorldSession* session) : _session(session), _checkTimer(0), _clientResponseTimer(0), _pendingKickTimer(0), _state(WARDEN_NOT_INITIALIZED)
 {
     _lastUpdateTime = getMSTime();
 }
@@ -80,7 +80,7 @@ void Warden::RequestModule()
     WardenModuleUse request;
     request.Command = WARDEN_SMSG_MODULE_USE;
 
-    memcpy(request.ModuleId, _currentModule->ID, 16);
+    memcpy(request.ModuleId, _currentModule->ID, 32);
     memcpy(request.ModuleKey, _currentModule->Key, 16);
     request.Size = _currentModule->CompressedSize;
 

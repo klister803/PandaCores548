@@ -69,7 +69,7 @@ enum WardenState
 struct WardenModuleUse
 {
     uint8 Command;
-    uint8 ModuleId[16];
+    uint8 ModuleId[32];
     uint8 ModuleKey[16];
     uint32 Size;
 };
@@ -148,8 +148,6 @@ class Warden
         void DecryptData(uint8* buffer, uint32 length);
         void EncryptData(uint8* buffer, uint32 length);
 
-        void FillInRedirectData(WorldPacket &packet);
-
         //uint8* GetInputKey() { return _clientKeySeed; }
         //uint8* GetOutputKey() { return _serverKeySeed; }
 
@@ -199,11 +197,8 @@ class Warden
 
         uint32 _checkTimer;                          // Timer for sending check requests
         uint32 _checkTimer2;
-        uint32 _discardKeysTimer;
         uint32 _clientResponseTimer;                 // Timer for client response delay
         uint32 _pendingKickTimer;
-        bool _dataSent;
-        bool _dataSent2;
         uint32 _lastUpdateTime;
 };
 

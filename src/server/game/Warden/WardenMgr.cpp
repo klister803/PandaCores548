@@ -293,7 +293,7 @@ WardenModule* WardenMgr::GetModuleByName(std::string name, std::string os)
         if (mod->os != os)
             continue;
 
-        if (name == ByteArrayToString(mod->ID, 16))
+        if (name == ByteArrayToString(mod->ID, 32))
             return mod;
     }
 
