@@ -81,16 +81,17 @@ void WardenWin::InitializeMPQCheckFunc(ByteBuffer& buff)
 void WardenWin::InitializeLuaCheckFunc(ByteBuffer& buff)
 {
     buff << uint8(WARDEN_SMSG_MODULE_INITIALIZE);
-    buff << uint16(8);
+    buff << uint16(12);
 
     WardenInitModuleLUAFunc request;
     request.Type = 4;
     request.Flag = 0;
     request.StringBlock = 0;
     request.GetText = 0x00050AC1;
+    request.GetLocalizedText = 0x00409F01;
     request.LuaFuncType = 1;
 
-    buff << uint32(BuildChecksum((uint8*)&request, 8));
+    buff << uint32(BuildChecksum((uint8*)&request, 12));
     buff.append(request);
 }
 
