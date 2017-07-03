@@ -378,14 +378,16 @@ void WorldSession::HandleWardenDataOpcode(WorldPacket& recvData)
         {
             if (GetOS() != "OSX")
             {
-                sLog->outWarden("CMSG_MODULE_FAILED received, kick player %s!", GetPlayerName());
+                sLog->outWarden("CMSG_MODULE_FAILED received, kick account %s!", GetAccountName().c_str());
                 KickPlayer();
             }
+            else
+                _warden->SetState(WARDEN_MODULE_LOADED);
             break;
         }
         default:
         {
-            sLog->outWarden("Unknown CMSG opcode %02X, size %u, player - %s, module state - %u", opcode, uint32(recvData.size() - 1), GetPlayerName(), uint8(_warden->GetState()));
+            sLog->outWarden("Unknown CMSG opcode %02X, size %u, account %s, module state - %u", opcode, uint32(recvData.size() - 5), GetAccountName().c_str(), uint8(_warden->GetState()));
             break;
         }
     }
