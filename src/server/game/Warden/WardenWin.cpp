@@ -48,7 +48,7 @@ void WardenWin::InitializeModule()
     ByteBuffer buff;
     InitializeMPQCheckFunc(buff);
     InitializeLuaCheckFunc(buff);
-    InitializeTimeCheckFunc(buff);
+    //InitializeTimeCheckFunc(buff);
 
     // Encrypt with warden RC4 key.
     EncryptData(const_cast<uint8*>(buff.contents()), buff.size());
@@ -342,9 +342,6 @@ void WardenWin::RequestBaseData()
     BuildBaseChecksList(buff);
     buff << uint8(xorByte);
 
-    //test
-    sLog->outWarden("DATA: %s", _wardenMgr->ByteArrayToString(const_cast<uint8*>(buff.contents()), buff.size()));
-
     // Encrypt with warden RC4 key
     EncryptData(const_cast<uint8*>(buff.contents()), buff.size());
 
@@ -365,10 +362,10 @@ void WardenWin::RequestBaseData()
     //sLog->outWarden("%s", stream.str().c_str());
     //sWorld->SendServerMessage(SERVER_MSG_STRING, stream.str().c_str(), _session->GetPlayer());
 
-    //WorldPacket data1(SMSG_SERVERTIME, 8);
-    //data1 << uint32(12755321);
-    //data1 << uint32(13904220);
-    //_session->SendPacket(&data1);
+    WorldPacket data1(SMSG_SERVERTIME, 8);
+    data1 << uint32(12755321);
+    data1 << uint32(13904220);
+    _session->SendPacket(&data1);
 }
 
 void WardenWin::HandleData(ByteBuffer &buff)

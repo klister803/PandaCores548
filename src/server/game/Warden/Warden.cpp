@@ -272,11 +272,7 @@ void Warden::SetPlayerLocked(uint16 checkId, WardenCheck* wd)
             case PAGE_CHECK_A:
             case PAGE_CHECK_B:
             {
-                if (checkId == 1)
-                    message = "uWoW Anticheat: WPE PRO detected. You are flagged for further sanctions";
-                else if (checkId == 3)
-                    message = "uWoW Anticheat: XYZ cheat detected. You are flagged for further sanctions";
-                else if (checkId == 35 || checkId == 36 || checkId == 37)
+                if (checkId == 9 || checkId == 10 || checkId == 11)
                     message = "uWoW Anticheat: PQR Bot detected. You are flagged for further sanctions";
                 else
                     message = "uWoW Anticheat: Banned DLLs detected. You are flagged for further sanctions";
@@ -284,12 +280,7 @@ void Warden::SetPlayerLocked(uint16 checkId, WardenCheck* wd)
             }
             case MEM_CHECK:
             {
-                if (checkId == 2)
-                    message = "uWoW Anticheat: WoWEmuHacker detected. You are flagged for further sanctions";
-                else if (checkId == 22)
-                    message = "uWoW Anticheat: SimpleFly detected. You are flagged for further sanctions";
-                else
-                    message = "uWoW Anticheat: Unknown cheat detected. You are flagged for further sanctions";
+                message = "uWoW Anticheat: Unknown cheat detected. You are flagged for further sanctions";
                 break;
             }
             default: message = "uWoW Anticheat: Unknown suspicious program detected. You are flagged for further sanctions"; break;
