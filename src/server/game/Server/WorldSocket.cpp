@@ -1226,7 +1226,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     LoginDatabase.Execute(stmt);
 
     // NOTE ATM the socket is single-threaded, have this in mind ...
-    ACE_NEW_RETURN(m_Session, WorldSession(id, this, AccountTypes(security), expansion, mutetime, locale, recruiter, isRecruiter), -1);
+    ACE_NEW_RETURN(m_Session, WorldSession(id, account, this, AccountTypes(security), expansion, mutetime, locale, recruiter, isRecruiter), -1);
 
     m_Crypt.Init(&k);
 
@@ -1234,9 +1234,17 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     m_Session->LoadTutorialsData();
     m_Session->ReadAddonsInfo(addonsData);
 
+    m_Session->SetOS(os);
+
     // Initialize Warden system only if it is enabled by config
     if (sWorld->getBoolConfig(CONFIG_WARDEN_ENABLED))
-        m_Session->InitWarden(&k, os);
+    {
+        if (!m_Session->InitWarden(&k, os))
+        {
+            sLog->outError(LOG_FILTER_NETWORKIO, "WorldSocket::HandleAuthSession: Warden initializtion failed for account: %u ('%s') address: %s", id, account.c_str(), address.c_str());
+            return -1;
+        }
+    }
 
     // Sleep this Network thread for
     uint32 sleepTime = sWorld->getIntConfig(CONFIG_SESSION_ADD_DELAY);

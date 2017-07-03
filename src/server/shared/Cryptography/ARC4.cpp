@@ -76,7 +76,7 @@ void ARC4::rc4_process(RC4_Context * ctx, uint8 * data, int datalen)
 
     for (i = 0; i < datalen; ++i)
     {
-        (ctx->x++) % 256;
+        ctx->x = (ctx->x + 1) % 256;
         ctx->y = (ctx->y + ctx->S[ctx->x]) % 256;
         std::swap(ctx->S[ctx->x], ctx->S[ctx->y]);
         j = (ctx->S[ctx->x] + ctx->S[ctx->y]) % 256;

@@ -34,6 +34,8 @@ enum WardenCheckType
     MODULE_CHECK    = 6,
     LUA_STR_CHECK   = 7,
     PROC_CHECK      = 8,
+    UNK_CHECK       = 9,
+    UNK_CHECK_1     = 10,
     MAX_CHECK_TYPE
 };
 
@@ -41,7 +43,7 @@ struct WardenModule
 {
     WardenModule()
     {
-        memset(ID, 0, 16);
+        memset(ID, 0, 32);
         memset(Key, 0, 16);
         memset(Seed, 0, 16);
         memset(ServerKeySeed, 0, 16);
@@ -51,7 +53,7 @@ struct WardenModule
         os = "";
     }
 
-    uint8 ID[16];
+    uint8 ID[32];
     uint8 Key[16];
     uint8 Seed[16];
     uint8 ServerKeySeed[16];

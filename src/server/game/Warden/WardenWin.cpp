@@ -23,7 +23,6 @@
 #include "Log.h"
 #include "Opcodes.h"
 #include "ByteBuffer.h"
-#include <openssl/md5.h>
 #include "Database/DatabaseEnv.h"
 #include "World.h"
 #include "Player.h"
@@ -54,7 +53,8 @@ void WardenWin::InitializeModule()
     // Encrypt with warden RC4 key.
     EncryptData(const_cast<uint8*>(buff.contents()), buff.size());
 
-    WorldPacket pkt(SMSG_WARDEN_DATA, buff.size());
+    WorldPacket pkt(SMSG_WARDEN_DATA, buff.size() + sizeof(uint32));
+    pkt << uint32(buff.size());
     pkt.append(buff);
     _session->SendPacket(&pkt);
 }
@@ -69,10 +69,10 @@ void WardenWin::InitializeMPQCheckFunc(ByteBuffer& buff)
     request.Flag = 0;
     request.MpqFuncType = 2;
     request.StringBlock = 0;
-    request.OpenFile = 0x00024F80;
-    request.GetFileSize = 0x000218C0;
-    request.ReadFile = 0x00022530;
-    request.CloseFile = 0x00022910;
+    request.OpenFile = 0x0001466C;
+    request.GetFileSize = 0x00012048;
+    request.ReadFile = 0x00012EF4;
+    request.CloseFile = 0x000137A8;
 
     buff << uint32(BuildChecksum((uint8*)&request, 20));
     buff.append(request);
@@ -87,7 +87,7 @@ void WardenWin::InitializeLuaCheckFunc(ByteBuffer& buff)
     request.Type = 4;
     request.Flag = 0;
     request.StringBlock = 0;
-    request.GetText = 0x00419D40;
+    request.GetText = 0x00050AC1;
     request.LuaFuncType = 1;
 
     buff << uint32(BuildChecksum((uint8*)&request, 8));
@@ -103,7 +103,7 @@ void WardenWin::InitializeTimeCheckFunc(ByteBuffer& buff)
     request.Type = 1;
     request.Flag = 1;
     request.StringBlock = 0;
-    request.PerfCounter = 0x0046AE20;
+    request.PerfCounter = 0x0010D627;
     request.TimeFuncType = 1;
 
     buff << uint32(BuildChecksum((uint8*)&request, 8));
@@ -117,7 +117,7 @@ void WardenWin::HandleHashResult(ByteBuffer &buff, bool newCrypto)
     if (!newCrypto)
     {
         // Verify key
-        if (memcmp(buff.contents() + 1, _currentModule->ClientKeySeedHash, 20) != 0)
+        if (memcmp(buff.contents() + 5, _currentModule->ClientKeySeedHash, 20) != 0)
         {
             sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: Request hash reply - failed");
             sLog->outWarden("Player %s (guid: %u, account: %u) failed hash reply. Action: Kick",
@@ -133,7 +133,7 @@ void WardenWin::HandleHashResult(ByteBuffer &buff, bool newCrypto)
     ARC4::rc4_init(&_serverRC4State, _currentModule->ServerKeySeed, 16);
 
     _state = WARDEN_MODULE_READY;
-    _checkTimer = sWorld->getIntConfig(CONFIG_WARDEN_STATIC_CHECK_HOLDOFF);
+    _checkTimer = sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF);
 }
 
 bool WardenWin::ValidatePacket(ByteBuffer &buff)
@@ -207,12 +207,12 @@ void WardenWin::BuildBaseChecksList(ByteBuffer &buff)
 
     // TIME_CHECK
     dataBuff << uint8(0x00);
-    dataBuff << uint8(_currentModule->CheckTypes[TIME_CHECK] ^ xorByte);
 
     // Header
     dataBuff << uint8(_currentModule->CheckTypes[MEM_CHECK] ^ xorByte);
     dataBuff << uint8(0x00);
-    dataBuff << uint32(0x00A0F5F0);
+    dataBuff << uint8(0xF);
+    dataBuff << uint32(0xD87AA0);
     dataBuff << uint8(0x6);
 
     uint8 index = 1;
@@ -270,6 +270,7 @@ uint16 WardenWin::BuildCheckData(WardenCheck* wd, ByteBuffer &buff, ByteBuffer &
         case MEM_CHECK:
         {
             buff << uint8(0x00);
+            buff << uint8(0xF);
             buff << uint32(wd->Address);
             buff << uint8(wd->Length);
             break;
@@ -339,12 +340,12 @@ void WardenWin::RequestBaseData()
     buff << uint8(WARDEN_SMSG_CHEAT_CHECKS_REQUEST);
     BuildBaseChecksList(buff);
     buff << uint8(xorByte);
-    buff.hexlike();
 
     // Encrypt with warden RC4 key
     EncryptData(const_cast<uint8*>(buff.contents()), buff.size());
 
-    WorldPacket pkt(SMSG_WARDEN_DATA, buff.size());
+    WorldPacket pkt(SMSG_WARDEN_DATA, buff.size() + sizeof(uint32));
+    pkt << uint32(buff.size());
     pkt.append(buff);
     _session->SendPacket(&pkt);
 
@@ -359,6 +360,11 @@ void WardenWin::RequestBaseData()
     //sLog->outDebug(LOG_FILTER_WARDEN, "%s", stream.str().c_str());
     //sLog->outWarden("%s", stream.str().c_str());
     //sWorld->SendServerMessage(SERVER_MSG_STRING, stream.str().c_str(), _session->GetPlayer());
+
+    WorldPacket data1(SMSG_SERVERTIME, 8);
+    data1 << uint32(12755321);
+    data1 << uint32(13904220);
+    _session->SendPacket(&data1);
 }
 
 void WardenWin::HandleData(ByteBuffer &buff)
@@ -414,7 +420,7 @@ void WardenWin::HandleBaseData(ByteBuffer &buff)
 
     // TODO:
     _state = WARDEN_MODULE_READY;
-    _checkTimer = sWorld->getIntConfig(CONFIG_WARDEN_STATIC_CHECK_HOLDOFF);
+    _checkTimer = sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF);
 
     ACE_READ_GUARD(ACE_RW_Mutex, g, _wardenMgr->_checkStoreLock);
 

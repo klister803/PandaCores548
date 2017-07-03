@@ -57,8 +57,7 @@ enum WardenState
     WARDEN_MODULE_INITIALIZED         = 3,
     WARDEN_MODULE_READY               = 4,
     WARDEN_MODULE_WAIT_RESPONSE       = 5,
-    WARDEN_MODULE_SUSPENDED           = 6, // special state while player redirected
-    WARDEN_MODULE_PLAYER_LOCKED       = 7
+    WARDEN_MODULE_PLAYER_LOCKED       = 6
 };
 
 #if defined(__GNUC__)
@@ -139,9 +138,6 @@ class Warden
         void RequestHash();
         void Update();
 
-        // tests
-        void TestDiscardModule();
-
         virtual void InitializeModule() = 0;
         virtual void HandleHashResult(ByteBuffer &buff, bool newCrypto = false) = 0;
         virtual void RequestBaseData() = 0;
@@ -172,7 +168,7 @@ class Warden
             }
             else
             {
-                if (_state == WARDEN_MODULE_LOADED || _state == WARDEN_MODULE_SUSPENDED)
+                if (_state == WARDEN_MODULE_LOADED)
                     return true;
             }
 
@@ -188,7 +184,6 @@ class Warden
 
         // TODO : rewrite timer system
         void ClientResponseTimerUpdate(uint32 diff);
-        void DiscardKeysTimerUpdate(uint32 diff);
         void PendingKickTimerUpdate(uint32 diff);
 
         void StaticCheatChecksTimerUpdate(uint32 diff);

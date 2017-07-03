@@ -91,15 +91,15 @@ bool WorldSessionFilter::Process(WorldPacket* packet)
 }
 
 /// WorldSession constructor
-WorldSession::WorldSession(uint32 id, WorldSocket* sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter):
+WorldSession::WorldSession(uint32 id, std::string account_name, WorldSocket* sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter) :
 m_muteTime(mute_time), m_timeOutTime(0), _player(NULL), m_Socket(sock),
 _security(sec), _accountId(id), m_expansion(expansion), _logoutTime(0),
 m_inQueue(false), m_playerLoading(false), m_playerLogout(false),
 m_playerRecentlyLogout(false), m_playerSave(false),
 m_sessionDbcLocale(sWorld->GetAvailableDbcLocale(locale)),
-m_sessionDbLocaleIndex(locale),
+m_sessionDbLocaleIndex(locale), _clientOS("Unk"),
 m_latency(0), m_TutorialsChanged(false), recruiterId(recruiter),
-isRecruiter(isARecruiter), timeCharEnumOpcode(0), playerLoginCounter(0), wardenModuleFailed(false)
+isRecruiter(isARecruiter), _account_name(account_name), timeCharEnumOpcode(0), playerLoginCounter(0), wardenModuleFailed(false)
 {
     _warden = NULL;
     _filterAddonMessages = false;
@@ -488,11 +488,10 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             delete packet;
     }
 
-    if (m_Socket && _warden)
+    if (m_Socket && !m_Socket->IsClosed())
     {
-        // check closed socket
-        if (!m_Socket->IsClosed())
-            _warden->Update(diff);
+        if (_warden)
+            _warden->Update();
     }
 
     ProcessQueryCallbacks();
@@ -505,9 +504,6 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
         ///- If necessary, log the player out
         if (ShouldLogOut(currTime) && !m_playerLoading)
             LogoutPlayer(true);
-
-        if (m_Socket && GetPlayer() && _warden)
-            _warden->Update(diff);
 
         ///- Cleanup socket pointer if need
         if (m_Socket && m_Socket->IsClosed())
@@ -1519,19 +1515,17 @@ void WorldSession::ProcessQueryCallbacks()
     }
 }
 
-void WorldSession::InitWarden(BigNumber* k, std::string os)
+bool WorldSession::InitWarden(BigNumber* k, std::string os)
 {
     if (os == "Win")
-    {
-        _warden = new WardenWin();
-        _warden->Init(this, k);
-    }
-    else if (os == "OSX")
-    {
-        // Disabled as it is causing the client to crash
-        // _warden = new WardenMac();
-        // _warden->Init(this, k);
-    }
+        _warden = new WardenWin(this);
+    else
+        _warden = new WardenMac(this);
+
+    if (_warden && _warden->Init(k))
+        return true;
+
+    return false;
 }
 
 PacketSendEvent::~PacketSendEvent()

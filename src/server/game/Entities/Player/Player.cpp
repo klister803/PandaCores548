@@ -25,6 +25,7 @@
 #include "World.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
+#include "Warden.h"
 #include "UpdateMask.h"
 #include "Player.h"
 #include "Vehicle.h"
@@ -1781,6 +1782,17 @@ void Player::Update(uint32 p_time)
 
     // tick update server-side anticheat module - highest priority
     GetAnticheatMgr()->Update(p_time);
+
+    // kick player if warden not correctly initialized
+    if (Warden* warden = GetSession()->GetWarden())
+    {
+        if (warden && !warden->IsValidStateForUpdate(GetSession()->GetOS()))
+        {
+            sLog->outWarden("Warden (%s) not correctly initialized (state: %u) on account %u, player %s", GetSession()->GetOS().c_str(), uint8(warden->GetState()), GetSession()->GetAccountId(), GetSession()->GetPlayerName());
+            GetSession()->KickPlayer();
+            return;
+        }
+    }
 
     m_sellItemTimer += p_time;
     if (m_sellItemTimer > 1000)

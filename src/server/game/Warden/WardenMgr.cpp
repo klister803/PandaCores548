@@ -20,7 +20,7 @@
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "Log.h"
-#include <openssl/md5.h>
+#include "SHA2.h"
 #include "Database/DatabaseEnv.h"
 #include "Util.h"
 #include "WardenMgr.h"
@@ -54,8 +54,7 @@ void WardenMgr::LoadWardenChecks()
 
     if (!result)
     {
-        sLog->outString(">> Loaded 0 Warden checks. DB table `warden_checks` is empty!");
-        sLog->outString();
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 Warden checks. DB table `warden_checks` is empty!");
         return;
     }
 
@@ -96,8 +95,7 @@ void WardenMgr::LoadWardenChecks()
         ++count;
     } while (result->NextRow());
 
-    sLog->outString(">> Loaded %u warden checks.", count);
-    sLog->outString();
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u warden checks.", count);
 }
 
 void WardenMgr::LoadWardenOverrides()
@@ -107,8 +105,7 @@ void WardenMgr::LoadWardenOverrides()
 
     if (!result)
     {
-        sLog->outString(">> Loaded 0 Warden action overrides. DB table `warden_action` is empty!");
-        sLog->outString();
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 Warden action overrides. DB table `warden_action` is empty!");
         return;
     }
 
@@ -125,10 +122,10 @@ void WardenMgr::LoadWardenOverrides()
 
         // Check if action value is in range (0-2, see WardenActions enum)
         if (action > WARDEN_ACTION_BAN)
-            sLog->outError("Warden check override action out of range (ID: %u, action: %u)", checkId, action);
+            sLog->outError(LOG_FILTER_SQL, "Warden check override action out of range (ID: %u, action: %u)", checkId, action);
         // Check if check actually exists before accessing the CheckStore vector
         else if (checkId > checkStore.size())
-            sLog->outError("Warden check action override for non-existing check (ID: %u, action: %u), skipped", checkId, action);
+            sLog->outError(LOG_FILTER_SQL, "Warden check action override for non-existing check (ID: %u, action: %u), skipped", checkId, action);
         else
         {
             checkStore[checkId]->Action = WardenActions(action);
@@ -136,8 +133,7 @@ void WardenMgr::LoadWardenOverrides()
         }
     } while (result->NextRow());
 
-    sLog->outString(">> Loaded %u warden action overrides.", count);
-    sLog->outString();
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u warden action overrides.", count);
 }
 
 void WardenMgr::LoadWardenModules(std::string os)
@@ -196,13 +192,13 @@ void WardenMgr::LoadWardenModules(std::string os)
     {
         if (LoadModule(fil.cFileName, os))
             ++count;
-    } while (FindNextFile(hFil, &fil));
+    } 
+    while (FindNextFile(hFil, &fil));
 
     FindClose(hFil);
 
 #endif
-    sLog->outString(">> Loaded %u %s warden modules.", count, os.c_str());
-    sLog->outString();
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u %s warden modules.", count, os.c_str());
 }
 
 bool WardenMgr::LoadModule(const char * fileName, std::string os)
@@ -228,11 +224,14 @@ bool WardenMgr::LoadModule(const char * fileName, std::string os)
     mod->CompressedData = new uint8[len];
     fread(mod->CompressedData, len, 1, f_mod);
 
-    // md5 hash
-    MD5_CTX ctx;
-    MD5_Init(&ctx);
-    MD5_Update(&ctx, mod->CompressedData, len);
-    MD5_Final((uint8*)&mod->ID, &ctx);
+    // SHA-2 hash
+    SHA256Hash sha;
+    sha.Initialize();
+    sha.UpdateData(mod->CompressedData, len);
+    sha.Finalize();
+
+    for (uint8 i = 0; i < 32; i++)
+        mod->ID[i] = sha.GetDigest()[i];
 
     fclose(f_mod);
 

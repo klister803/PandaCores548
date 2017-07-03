@@ -77,7 +77,7 @@
 #include "CreatureTextMgr.h"
 #include "SmartAI.h"
 #include "Channel.h"
-#include "WardenCheckMgr.h"
+#include "WardenMgr.h"
 #include "Warden.h"
 #include "CalendarMgr.h"
 #include "BattlefieldMgr.h"
@@ -1520,6 +1520,24 @@ void World::SetInitialWorldSettings()
     ///- Initialize game event manager
     sGameEventMgr->Initialize();
 
+    ///- Initialize warden and anticheat systems
+    if (m_bool_configs[CONFIG_WARDEN_ENABLED])
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "---INITIALIZE WARDEN SYSTEM---");
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Warden Modules...");
+        _wardenMgr->LoadWardenModules("Win");
+        _wardenMgr->LoadWardenModules("OSX");
+
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Warden Checks...");
+        _wardenMgr->LoadWardenChecks();
+
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Warden Action Overrides...");
+        _wardenMgr->LoadWardenOverrides();
+    }
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "---INITIALIZE ANTICHEAT SYSTEM---");
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Load anticheat data...");
+
     ///- Loading strings. Getting no records means core load has to be canceled because no error message can be output.
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Trinity strings...");
@@ -2102,13 +2120,6 @@ void World::SetInitialWorldSettings()
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Transport NPCs...");
     sMapMgr->LoadTransportNPCs();
-
-    ///- Initialize Warden
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Warden Checks...");
-    sWardenCheckMgr->LoadWardenChecks();
-
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Warden Action Overrides...");
-    sWardenCheckMgr->LoadWardenOverrides();
 
     // Banned addons
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Banned Addons...");

@@ -250,7 +250,7 @@ class CharacterCreateInfo
 class WorldSession
 {
     public:
-        WorldSession(uint32 id, WorldSocket* sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter);
+        WorldSession(uint32 id, std::string account_name, WorldSocket* sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter);
         ~WorldSession();
 
         bool PlayerLoading() const { return m_playerLoading; }
@@ -261,8 +261,6 @@ class WorldSession
         void ReadAddonsInfo(WorldPacket& data);
         void SendAddonsInfo();
         bool IsAddonRegistered(const std::string& prefix);
-
-        Warden* GetWarden() { return _warden; }
 
         void ReadMovementInfo(WorldPacket& data, MovementInfo* mi);
         static void WriteMovementInfo(WorldPacket& data, MovementInfo* mi, Unit* unit = NULL);
@@ -286,6 +284,7 @@ class WorldSession
 
         AccountTypes GetSecurity() const { return _security; }
         uint32 GetAccountId() const { return _accountId; }
+        std::string GetAccountName() { return _account_name; }
         Player* GetPlayer() const { return _player; }
         std::string GetPlayerName(bool simple = true) const;
 
@@ -295,7 +294,7 @@ class WorldSession
         void SetPlayer(Player* player);
         uint8 Expansion() const { return m_expansion; }
 
-        void InitWarden(BigNumber* k, std::string os);
+        bool InitWarden(BigNumber* k, std::string os);
 
         /// Session in auth.queue currently
         void SetInQueue(bool state) { m_inQueue = state; }
@@ -407,6 +406,12 @@ class WorldSession
 
         uint32 GetLatency() const { return m_latency; }
         void SetLatency(uint32 latency) { m_latency = latency; }
+
+        std::string GetOS() const { return _clientOS; }
+        void SetOS(std::string os) { _clientOS = os; }
+
+        Warden* GetWarden() { return _warden; }
+
         uint32 getDialogStatus(Player* player, Object* questgiver, uint32 defstatus);
 
         time_t m_timeOutTime;
@@ -1109,7 +1114,10 @@ class WorldSession
 
         AccountTypes _security;
         uint32 _accountId;
+        std::string _account_name;
         uint8 m_expansion;
+
+        std::string _clientOS;
 
         typedef std::list<AddonInfo> AddonsList;
 

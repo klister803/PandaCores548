@@ -36,7 +36,7 @@ EndScriptData */
 #include "SkillExtraItems.h"
 #include "Chat.h"
 #include "WaypointManager.h"
-#include "WardenCheckMgr.h"
+#include "WardenMgr.h"
 #include "ScriptSystem.h"
 #include "GuildMgr.h"
 #include "WordFilterMgr.h"
@@ -749,7 +749,7 @@ public:
         }
 
         sLog->outInfo(LOG_FILTER_GENERAL, "Re-Loading warden_action Table!");
-        sWardenCheckMgr->LoadWardenOverrides();
+        _wardenMgr->LoadWardenOverrides();
         handler->SendGlobalGMSysMessage("DB table `warden_action` reloaded.");
         return true;
     }

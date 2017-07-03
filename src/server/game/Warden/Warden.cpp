@@ -87,36 +87,10 @@ void Warden::RequestModule()
     // Encrypt with warden RC4 key.
     EncryptData((uint8*)&request, sizeof(WardenModuleUse));
 
-    WorldPacket pkt(SMSG_WARDEN_DATA, sizeof(WardenModuleUse));
+    WorldPacket pkt(SMSG_WARDEN_DATA, sizeof(WardenModuleUse) + sizeof(uint32));
+    pkt << uint32(sizeof(WardenModuleUse));
     pkt.append((uint8*)&request, sizeof(WardenModuleUse));
     _session->SendPacket(&pkt);
-}
-
-void Warden::TestDiscardModule()
-{
-    _state = WARDEN_MODULE_SUSPENDED;
-
-    BigNumber k;
-    QueryResult result = LoginDatabase.PQuery("SELECT `sessionkey` FROM `account` WHERE `id` = %u", _session->GetAccountId());
-    if (result)
-    {
-        Field* fields = result->Fetch();
-        k.SetHexStr(fields[0].GetCString());
-    }
-
-    uint8 tempClientKeySeed[16];
-    uint8 tempServerKeySeed[16];
-
-    SHA1Randx WK(k.AsByteArray(), k.GetNumBytes());
-    WK.Generate(tempClientKeySeed, 16);
-    WK.Generate(tempServerKeySeed, 16);
-
-    ARC4::rc4_init(&_clientRC4State, tempClientKeySeed, 16);
-    ARC4::rc4_init(&_serverRC4State, tempServerKeySeed, 16);
-
-    //sLog->outWarden("Module Key: %s", ByteArrayToHexStr(_module->Key, 16).c_str());
-    //sLog->outWarden("Module ID: %s", ByteArrayToHexStr(_module->Id, 16).c_str());
-    RequestModule();
 }
 
 void Warden::SendModuleToClient()
@@ -140,7 +114,9 @@ void Warden::SendModuleToClient()
 
         uint16 packetSize = sizeof(uint8) + sizeof(uint16) + chunkSize;
         EncryptData((uint8*)&packet, packetSize);
-        WorldPacket pkt(SMSG_WARDEN_DATA, packetSize);
+
+        WorldPacket pkt(SMSG_WARDEN_DATA, packetSize + sizeof(uint32));
+        pkt << uint32(packetSize);
         pkt.append((uint8*)&packet, packetSize);
         _session->SendPacket(&pkt);
     }
@@ -158,7 +134,8 @@ void Warden::RequestHash()
     // Encrypt with warden RC4 key.
     EncryptData((uint8*)&Request, sizeof(WardenHashRequest));
 
-    WorldPacket pkt(SMSG_WARDEN_DATA, sizeof(WardenHashRequest));
+    WorldPacket pkt(SMSG_WARDEN_DATA, sizeof(WardenHashRequest) + sizeof(uint32));
+    pkt << uint32(sizeof(WardenHashRequest));
     pkt.append((uint8*)&Request, sizeof(WardenHashRequest));
     _session->SendPacket(&pkt);
 }
@@ -203,12 +180,6 @@ void Warden::Update()
 
             break;
         }
-        case WARDEN_MODULE_SUSPENDED:
-        {
-            if (_discardKeysTimer)
-                DiscardKeysTimerUpdate(diff);
-            break;
-        }
         case WARDEN_MODULE_PLAYER_LOCKED:
         {
             if (_pendingKickTimer)
@@ -246,17 +217,6 @@ void Warden::StaticCheatChecksTimerUpdate(uint32 diff)
         _checkTimer -= diff;
 }
 
-void Warden::DiscardKeysTimerUpdate(uint32 diff)
-{
-    if (_discardKeysTimer <= diff)
-    {
-        _discardKeysTimer = 0;
-        RequestHash();
-    }
-    else
-        _discardKeysTimer -= diff;
-}
-
 void Warden::PendingKickTimerUpdate(uint32 diff)
 {
     if (_pendingKickTimer <= diff)
@@ -276,19 +236,6 @@ void Warden::DecryptData(uint8* buffer, uint32 length)
 void Warden::EncryptData(uint8* buffer, uint32 length)
 {
     ARC4::rc4_process(&_serverRC4State, buffer, length);
-}
-
-void Warden::FillInRedirectData(WorldPacket &packet)
-{
-    _state = WARDEN_MODULE_SUSPENDED;
-
-    packet.append(_clientRC4State.S, 256);
-    packet << _clientRC4State.x;
-    packet << _clientRC4State.y;
-
-    packet.append(_serverRC4State.S, 256);
-    packet << _serverRC4State.x;
-    packet << _serverRC4State.y;
 }
 
 bool Warden::IsValidCheckSum(uint32 checksum, const uint8* data, const uint16 length)
@@ -380,7 +327,7 @@ std::string Warden::Penalty(uint16 checkId)
                 if (check->BanTime == 0)
                     duration << sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_BAN_DURATION) << "s";
                 else
-                    duration << check->BanTime * DAY << "s";
+                    duration << check->BanTime << "s";
 
                 std::string accountName;
                 AccountMgr::GetName(_session->GetAccountId(), accountName);
@@ -404,11 +351,12 @@ std::string Warden::Penalty(uint16 checkId)
 
 void WorldSession::HandleWardenDataOpcode(WorldPacket& recvData)
 {
-    _warden->DecryptData(const_cast<uint8*>(recvData.contents()), recvData.size());
+    uint32 cryptedSize;
+    recvData >> cryptedSize;
+    _warden->DecryptData(const_cast<uint8*>(recvData.contents() + sizeof(uint32)), cryptedSize);
     uint8 opcode;
     recvData >> opcode;
     sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: CMSG opcode %02X, size %u", opcode, uint32(recvData.size()));
-    recvData.hexlike();
     //sLog->outWarden("Raw Packet Decrypted Data - %s", ByteArrayToHexStr(const_cast<uint8*>(recvData.contents()), recvData.size()).c_str());
 
     switch (opcode)
@@ -437,20 +385,16 @@ void WorldSession::HandleWardenDataOpcode(WorldPacket& recvData)
         }
         case WARDEN_CMSG_MODULE_FAILED:
         {
-            sLog->outWarden("CMSG_MODULE_FAILED received, kick player %s!", GetPlayerName());
-            KickPlayer();
+            if (GetOS() != "OSX")
+            {
+                sLog->outWarden("CMSG_MODULE_FAILED received, kick player %s!", GetPlayerName());
+                KickPlayer();
+            }
             break;
         }
         default:
         {
-            //sLog->outWarden("Unknown CMSG opcode %02X, size %u, player - %s, module state - %u", opcode, uint32(recvData.size() - 1), GetPlayerName(), uint8(_warden->GetModuleState()));
-            //sLog->outWarden("Raw Packet Decrypted Data (1) - %s", ByteArrayToHexStr(const_cast<uint8*>(recvData.contents()), recvData.size()).c_str());
-            // try decrypt again
-            //_warden->DecryptData(const_cast<uint8*>(recvData.contents()), recvData.size());
-            //sLog->outWarden("Raw Packet Decrypted Data (2) - %s", ByteArrayToHexStr(const_cast<uint8*>(recvData.contents()), recvData.size()).c_str());
-            // small hack, because in some cases out of sync encryption state while redirection
-            if (_warden->GetState() == WARDEN_MODULE_SUSPENDED && recvData.size() == 21)
-                _warden->HandleHashResult(recvData, true);
+            sLog->outWarden("Unknown CMSG opcode %02X, size %u, player - %s, module state - %u", opcode, uint32(recvData.size() - 1), GetPlayerName(), uint8(_warden->GetState()));
             break;
         }
     }
