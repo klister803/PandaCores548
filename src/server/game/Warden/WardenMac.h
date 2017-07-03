@@ -31,16 +31,18 @@ class Warden;
 class WardenMac : public Warden
 {
     public:
-        WardenMac();
+        WardenMac(WorldSession* session);
         ~WardenMac();
 
-        void Init(WorldSession* session, BigNumber* k);
-        ClientWardenModule* GetModuleForClient();
-        void InitializeModule(bool recall);
-        void RequestHash();
-        void HandleHashResult(ByteBuffer& buff);
-        void RequestData();
-        void HandleData(ByteBuffer& buff);
+        void InitializeModule() {}
+        void HandleHashResult(ByteBuffer &buff, bool newCrypto = false) {}
+        void RequestBaseData() {}
+        void RequestExtendedData() {}
+
+        void HandleData(ByteBuffer &buff) {}
+        void HandleBaseData(ByteBuffer &buff) {}
+        void HandleExtendedData(ByteBuffer &buff) {}
+        void TestFunc();
 };
 
 #endif

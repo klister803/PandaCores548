@@ -16,9 +16,10 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "Cryptography/WardenKeyGeneration.h"
 #include "Common.h"
-#include "WorldPacket.h"
 #include "WorldSession.h"
+#include "WorldPacket.h"
 #include "Log.h"
 #include "Opcodes.h"
 #include "ByteBuffer.h"
@@ -30,93 +31,192 @@
 #include "Warden.h"
 #include "AccountMgr.h"
 
-Warden::Warden() : _inputCrypto(16), _outputCrypto(16), _checkTimer(15000), _dynamicCheckTimer(10000), _dataSent(false), _dynDataSent(false), _initialized(false),
-m_speedAlert(0), m_speedExtAlert(0), m_moveFlagsAlert(0), m_failedCoordsAlert(0), m_clientResponseAlert(0)
+Warden::Warden(WorldSession* session) : _session(session), _checkTimer(0), _discardKeysTimer(0), _clientResponseTimer(0), _pendingKickTimer(0), _state(WARDEN_NOT_INITIALIZED)
 {
+    _lastUpdateTime = getMSTime();
 }
 
 Warden::~Warden()
 {
-    delete[] _module->CompressedData;
-    delete _module;
-    _module = NULL;
-    _initialized = false;
 }
 
-void Warden::SendModuleToClient()
+bool Warden::Init(BigNumber *k)
 {
-    sLog->outDebug(LOG_FILTER_WARDEN, "Send module to client");
-
-    // Create packet structure
-    WardenModuleTransfer packet;
-
-    uint32 sizeLeft = _module->CompressedSize;
-    uint32 pos = 0;
-    uint16 burstSize;
-    while (sizeLeft > 0)
+    if (!_currentModule)
     {
-        burstSize = sizeLeft < 500 ? sizeLeft : 500;
-        packet.Command = WARDEN_SMSG_MODULE_CACHE;
-        packet.DataSize = burstSize;
-        memcpy(packet.Data, &_module->CompressedData[pos], burstSize);
-        sizeLeft -= burstSize;
-        pos += burstSize;
-
-        uint32 realChunkSize = sizeof(uint8) + sizeof(uint16) + burstSize;
-        EncryptData((uint8*)&packet, realChunkSize);
-        WorldPacket pkt1(SMSG_WARDEN_DATA, realChunkSize + sizeof(uint32));
-        pkt1 << uint32(realChunkSize);
-        pkt1.append((uint8*)&packet, realChunkSize);
-        _session->SendPacket(&pkt1);
+        sLog->outWarden("Current module is not found. Abort Warden (%s)! Account %u (%s)", _session->GetOS().c_str(), _session->GetAccountId(), _session->GetAccountName().c_str());
+        return false;
     }
+
+    uint8 tempClientKeySeed[16];
+    uint8 tempServerKeySeed[16];
+
+    SHA1Randx WK(k->AsByteArray(), k->GetNumBytes());
+    WK.Generate(tempClientKeySeed, 16);
+    WK.Generate(tempServerKeySeed, 16);
+
+    ARC4::rc4_init(&_clientRC4State, tempClientKeySeed, 16);
+    ARC4::rc4_init(&_serverRC4State, tempServerKeySeed, 16);
+
+    //sLog->outWarden("Module Key: %s", ByteArrayToHexStr(_module->Key, 16).c_str());
+    //sLog->outWarden("Module ID: %s", ByteArrayToHexStr(_module->Id, 16).c_str());
+    RequestModule();
+
+    //sLog->outDebug(LOG_FILTER_WARDEN, "Server side warden for client %u initializing...", session->GetAccountId());
+    //sLog->outDebug(LOG_FILTER_WARDEN, "C->S Key: %s", ByteArrayToHexStr(_inputKey, 16).c_str());
+    //sLog->outDebug(LOG_FILTER_WARDEN, "S->C Key: %s", ByteArrayToHexStr(_outputKey, 16).c_str());
+    //sLog->outDebug(LOG_FILTER_WARDEN, "Seed: %s", ByteArrayToHexStr(_seed, 16).c_str());
+    //sLog->outDebug(LOG_FILTER_WARDEN, "Loading Module...");
+    _state = WARDEN_MODULE_NOT_LOADED;
+
+    return true;
 }
 
 void Warden::RequestModule()
 {
-    sLog->outDebug(LOG_FILTER_WARDEN, "Request module");
+    sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: Request module(0x00)");
 
     // Create packet structure
     WardenModuleUse request;
     request.Command = WARDEN_SMSG_MODULE_USE;
 
-    memcpy(request.ModuleId, _module->Id, 32);
-    memcpy(request.ModuleKey, _module->Key, 16);
-    request.Size = _module->CompressedSize;
+    memcpy(request.ModuleId, _currentModule->ID, 16);
+    memcpy(request.ModuleKey, _currentModule->Key, 16);
+    request.Size = _currentModule->CompressedSize;
 
     // Encrypt with warden RC4 key.
     EncryptData((uint8*)&request, sizeof(WardenModuleUse));
 
-    WorldPacket pkt(SMSG_WARDEN_DATA, sizeof(WardenModuleUse) + sizeof(uint32));
-    pkt << uint32(sizeof(WardenModuleUse));
+    WorldPacket pkt(SMSG_WARDEN_DATA, sizeof(WardenModuleUse));
     pkt.append((uint8*)&request, sizeof(WardenModuleUse));
     _session->SendPacket(&pkt);
 }
 
-void Warden::Update(uint32 diff)
+void Warden::TestDiscardModule()
 {
-    if (_initialized)
-    {
-        // first thread - static checks
-        if (_dataSent)
-        {
-            //if (_clientResponseTimer)
-                //ClientResponseTimerUpdate(diff);
-        }
-        else
-        {
-            if (_checkTimer)
-                StaticCheatChecksTimerUpdate(diff);
-        }
+    _state = WARDEN_MODULE_SUSPENDED;
 
-        // independent second thread - dynamic checks
-        /*if (sWorld->getBoolConfig(CONFIG_WARDEN_ENABLED_DYNAMIC_CHECKS))
+    BigNumber k;
+    QueryResult result = LoginDatabase.PQuery("SELECT `sessionkey` FROM `account` WHERE `id` = %u", _session->GetAccountId());
+    if (result)
+    {
+        Field* fields = result->Fetch();
+        k.SetHexStr(fields[0].GetCString());
+    }
+
+    uint8 tempClientKeySeed[16];
+    uint8 tempServerKeySeed[16];
+
+    SHA1Randx WK(k.AsByteArray(), k.GetNumBytes());
+    WK.Generate(tempClientKeySeed, 16);
+    WK.Generate(tempServerKeySeed, 16);
+
+    ARC4::rc4_init(&_clientRC4State, tempClientKeySeed, 16);
+    ARC4::rc4_init(&_serverRC4State, tempServerKeySeed, 16);
+
+    //sLog->outWarden("Module Key: %s", ByteArrayToHexStr(_module->Key, 16).c_str());
+    //sLog->outWarden("Module ID: %s", ByteArrayToHexStr(_module->Id, 16).c_str());
+    RequestModule();
+}
+
+void Warden::SendModuleToClient()
+{
+    sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: Send module to client(0x01)");
+
+    // Create packet structure
+    WardenModuleTransfer packet;
+
+    uint32 sizeLeft = _currentModule->CompressedSize;
+    uint32 pos = 0;
+    uint16 chunkSize = 0;
+    while (sizeLeft > 0)
+    {
+        chunkSize = sizeLeft < 500 ? sizeLeft : 500;
+        packet.Command = WARDEN_SMSG_MODULE_CACHE;
+        packet.ChunkSize = chunkSize;
+        memcpy(packet.Data, &_currentModule->CompressedData[pos], chunkSize);
+        sizeLeft -= chunkSize;
+        pos += chunkSize;
+
+        uint16 packetSize = sizeof(uint8) + sizeof(uint16) + chunkSize;
+        EncryptData((uint8*)&packet, packetSize);
+        WorldPacket pkt(SMSG_WARDEN_DATA, packetSize);
+        pkt.append((uint8*)&packet, packetSize);
+        _session->SendPacket(&pkt);
+    }
+}
+
+void Warden::RequestHash()
+{
+    sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: Request hash(0x05)");
+
+    // Create packet structure
+    WardenHashRequest Request;
+    Request.Command = WARDEN_SMSG_HASH_REQUEST;
+    memcpy(Request.Seed, _currentModule->Seed, 16);
+
+    // Encrypt with warden RC4 key.
+    EncryptData((uint8*)&Request, sizeof(WardenHashRequest));
+
+    WorldPacket pkt(SMSG_WARDEN_DATA, sizeof(WardenHashRequest));
+    pkt.append((uint8*)&Request, sizeof(WardenHashRequest));
+    _session->SendPacket(&pkt);
+}
+
+void Warden::Update()
+{
+    uint32 currentUpdateTime = getMSTime();
+    uint32 diff = currentUpdateTime - _lastUpdateTime;
+    _lastUpdateTime = currentUpdateTime;
+
+    // disable update for mac
+    if (_session->GetOS() == "OSX")
+        return;
+
+    switch (_state)
+    {
+        // need check it
+        case WARDEN_NOT_INITIALIZED:
+        case WARDEN_MODULE_NOT_LOADED:
+        case WARDEN_MODULE_LOADED:
+        case WARDEN_MODULE_INITIALIZED:
+            break;
+        case WARDEN_MODULE_READY:
+        case WARDEN_MODULE_WAIT_RESPONSE:
         {
-            if (!_dynDataSent)
+            if (Player* player = _session->GetPlayer())
             {
-                if (_dynamicCheckTimer)
-                    DynamicCheatChecksTimerUpdate(diff);
+                if (player->IsInWorld() && !player->IsBeingTeleported())
+                {
+                    if (_state == WARDEN_MODULE_READY)
+                    {
+                        if (_checkTimer)
+                            StaticCheatChecksTimerUpdate(diff);
+                    }
+                    else
+                    {
+                        if (_clientResponseTimer)
+                            ClientResponseTimerUpdate(diff);
+                    }
+                }
             }
-        }*/
+
+            break;
+        }
+        case WARDEN_MODULE_SUSPENDED:
+        {
+            if (_discardKeysTimer)
+                DiscardKeysTimerUpdate(diff);
+            break;
+        }
+        case WARDEN_MODULE_PLAYER_LOCKED:
+        {
+            if (_pendingKickTimer)
+                PendingKickTimerUpdate(diff);
+            break;
+        }
+        default:
+            break;
     }
 }
 
@@ -125,18 +225,11 @@ void Warden::ClientResponseTimerUpdate(uint32 diff)
     // TODO: Kick player if client response delays more than set in config
     if (_clientResponseTimer <= diff)
     {
-        if (m_clientResponseAlert >= sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_RESPONSE_DELAY_ALERTS))
-        {
-            sLog->outWarden("Player %s (guid: %u, account: %u, latency: %u, IP: %s) exceeded Warden module response delay for more than 60s after %u tries - disconnecting client",
-                _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), _session->GetLatency(), _session->GetRemoteAddress().c_str(), sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_RESPONSE_DELAY_ALERTS));
-            _session->KickPlayer();
-            return;
-        }
-
-        //sLog->outWarden("Player %s (guid: %u, account: %u, latency: %u, IP: %s) exceeded Warden module response delay for more than 60s - disconnecting client",
-        //_session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), _session->GetLatency(), _session->GetRemoteAddress().c_str());
         _clientResponseTimer = 0;
-        m_clientResponseAlert++;
+        sLog->outWarden("Player %s (guid: %u, account: %u, latency: %u, IP: %s) with module state %u exceeded Warden module (%s) response delay for more than 60s - disconnecting client", 
+            _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId(), _session->GetLatency(), _session->GetRemoteAddress().c_str(), uint8(_state), _session->GetOS().c_str());
+        _session->KickPlayer();
+        return;
     }
     else
         _clientResponseTimer -= diff;
@@ -147,38 +240,55 @@ void Warden::StaticCheatChecksTimerUpdate(uint32 diff)
     if (_checkTimer <= diff)
     {
         _checkTimer = 0;
-        RequestStaticData();
+        RequestBaseData();
     }
     else
         _checkTimer -= diff;
 }
 
-void Warden::DynamicCheatChecksTimerUpdate(uint32 diff)
+void Warden::DiscardKeysTimerUpdate(uint32 diff)
 {
-    // dynamic checks must be separate thread
-    if (_dynamicCheckTimer <= diff)
+    if (_discardKeysTimer <= diff)
     {
-        if (_session->GetPlayer() && _session->GetPlayer()->IsInWorld() && !_session->GetPlayer()->IsBeingTeleported())
-        {
-            _dynamicCheckTimer = 0;
-            RequestDynamicData();
-        }
-        else
-            // forced request after teleport or other - new timer latency because with high latency low timer useless
-            _dynamicCheckTimer = _session->GetLatency() ? _session->GetLatency() : 1;
+        _discardKeysTimer = 0;
+        RequestHash();
     }
     else
-        _dynamicCheckTimer -= diff;
+        _discardKeysTimer -= diff;
+}
+
+void Warden::PendingKickTimerUpdate(uint32 diff)
+{
+    if (_pendingKickTimer <= diff)
+    {
+        _pendingKickTimer = 0;
+        _session->KickPlayer();
+    }
+    else
+        _pendingKickTimer -= diff;
 }
 
 void Warden::DecryptData(uint8* buffer, uint32 length)
 {
-    _inputCrypto.UpdateData(length, buffer);
+    ARC4::rc4_process(&_clientRC4State, buffer, length);
 }
 
 void Warden::EncryptData(uint8* buffer, uint32 length)
 {
-    _outputCrypto.UpdateData(length, buffer);
+    ARC4::rc4_process(&_serverRC4State, buffer, length);
+}
+
+void Warden::FillInRedirectData(WorldPacket &packet)
+{
+    _state = WARDEN_MODULE_SUSPENDED;
+
+    packet.append(_clientRC4State.S, 256);
+    packet << _clientRC4State.x;
+    packet << _clientRC4State.y;
+
+    packet.append(_serverRC4State.S, 256);
+    packet << _serverRC4State.x;
+    packet << _serverRC4State.y;
 }
 
 bool Warden::IsValidCheckSum(uint32 checksum, const uint8* data, const uint16 length)
@@ -186,15 +296,9 @@ bool Warden::IsValidCheckSum(uint32 checksum, const uint8* data, const uint16 le
     uint32 newChecksum = BuildChecksum(data, length);
 
     if (checksum != newChecksum)
-    {
-        sLog->outDebug(LOG_FILTER_WARDEN, "CHECKSUM IS NOT VALID");
         return false;
-    }
     else
-    {
-        sLog->outDebug(LOG_FILTER_WARDEN, "CHECKSUM IS VALID");
         return true;
-    }
 }
 
 uint32 Warden::BuildChecksum(const uint8* data, uint32 length)
@@ -208,114 +312,104 @@ uint32 Warden::BuildChecksum(const uint8* data, uint32 length)
     return checkSum;
 }
 
-void Warden::ClearAlerts()
+void Warden::SetPlayerLocked(uint16 checkId, WardenCheck* wd)
 {
-    m_speedAlert = 0;
-    m_speedExtAlert = 0;
-    m_moveFlagsAlert = 0;
-    m_failedCoordsAlert = 0;
+    std::string message = "uWoW Anticheat: Unknown internal error";
+
+    if (wd)
+    {
+        switch (wd->Type)
+        {
+            case MPQ_CHECK: message = "uWoW Anticheat: Banned MPQ patches detected. You are flagged for further sanctions"; break;
+            case LUA_STR_CHECK: message = "uWoW Anticheat: Banned addons detected. You are flagged for further sanctions"; break;
+            case PAGE_CHECK_A:
+            case PAGE_CHECK_B:
+            {
+                if (checkId == 1)
+                    message = "uWoW Anticheat: WPE PRO detected. You are flagged for further sanctions";
+                else if (checkId == 3)
+                    message = "uWoW Anticheat: XYZ cheat detected. You are flagged for further sanctions";
+                else if (checkId == 35 || checkId == 36 || checkId == 37)
+                    message = "uWoW Anticheat: PQR Bot detected. You are flagged for further sanctions";
+                else
+                    message = "uWoW Anticheat: Banned DLLs detected. You are flagged for further sanctions";
+                break;
+            }
+            case MEM_CHECK:
+            {
+                if (checkId == 2)
+                    message = "uWoW Anticheat: WoWEmuHacker detected. You are flagged for further sanctions";
+                else if (checkId == 22)
+                    message = "uWoW Anticheat: SimpleFly detected. You are flagged for further sanctions";
+                else
+                    message = "uWoW Anticheat: Unknown cheat detected. You are flagged for further sanctions";
+                break;
+            }
+            default: message = "uWoW Anticheat: Unknown suspicious program detected. You are flagged for further sanctions"; break;
+        }
+    }
+
+    if (Player* player = _session->GetPlayer())
+    {
+        WorldPacket data(SMSG_MESSAGECHAT, 200);
+        player->BuildMonsterChat(&data, CHAT_MSG_RAID_BOSS_EMOTE, message.c_str(), LANG_UNIVERSAL, player->GetName(), player->GetGUID());
+        player->SendDirectMessage(&data);
+    }
+
+    _state = WARDEN_MODULE_PLAYER_LOCKED;
+    _pendingKickTimer = 8000;
 }
 
-void Warden::ClearAddresses()
+std::string Warden::Penalty(uint16 checkId)
 {
-    playerBase = 0;
-    offset = 0;
-    playerDynamicBase = 0;
-
-    if (_dynDataSent)
-        _dynDataSent = false;
-}
-
-/*void Warden::TestSendMemCheck()
-{
-    ByteBuffer buff;
-    buff << uint8(WARDEN_SMSG_CHEAT_CHECKS_REQUEST);
-    //buff << uint8(0x04);
-    //buff << uint32(0x65786540);
-    buff << uint8(0x00);
-    // Test Unk Check
-    //buff << uint8(0x69);
-    // Test Mem Check
-    //buff << uint8(0x82);
-    //buff << uint8(0x00);
-    //buff << uint32(0x0629933C);
-    //buff << uint8(0xA);
-    //buff << uint8(0x1D);
-    // test WPE check
-    WardenCheck* wd = sWardenCheckMgr->GetWardenDataById(1);
-    buff << uint8(0x06);
-    /*buff << uint32(0xA444519C);
-    //uint8 p[20] = { 0xC4, 0x19, 0x52, 0x1B, 0x6D, 0x39, 0x99, 0x0C, 0x1D, 0x95, 0x32, 0x9C, 0x8D, 0x94, 0xB5, 0x92, 0x26, 0xCB, 0xAA, 0x98 };
-    uint8 p1[20] = { 0x98, 0xAA, 0xCB, 0x26, 0x92, 0xB5, 0x94, 0x8D, 0x9C, 0x32, 0x95, 0x1D, 0x0C, 0x99, 0x39, 0x6D, 0x1B, 0x52, 0x19, 0xC4 };
-    buff.append(p1, 20);
-    buff << uint32(16507);
-    buff << uint8(32);
-    buff.append(wd->Data.AsByteArray(0, false), wd->Data.GetNumBytes());
-    buff << uint32(wd->Address);
-    buff << uint8(wd->Length);
-    buff << uint8(0x1D);
-
-    sLog->outInfo(LOG_FILTER_NETWORKIO, "Uncrypted 0x02 packet - %s", ByteArrayToHexStr(const_cast<uint8*>(buff.contents()), buff.size()).c_str());
-
-    // Encrypt with warden RC4 key
-    EncryptData(const_cast<uint8*>(buff.contents()), buff.size());
-
-    sLog->outInfo(LOG_FILTER_NETWORKIO, "Crypted 0x02 packet - %s", ByteArrayToHexStr(const_cast<uint8*>(buff.contents()), buff.size()).c_str());
-
-    WorldPacket pkt(SMSG_WARDEN_DATA, buff.size());
-    pkt << uint32(buff.size());
-    pkt.append(buff);
-    _session->SendPacket(&pkt);
-}*/
-
-std::string Warden::Penalty(WardenCheck* check /*= NULL*/)
-{
-    WardenActions action;
+    WardenCheck* check = _wardenMgr->GetCheckDataById(checkId);
 
     if (check)
-        action = check->Action;
-    else
-        action = WardenActions(sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_FAIL_ACTION));
-
-    switch (action)
     {
-    case WARDEN_ACTION_LOG:
-        return "None";
-        break;
-    case WARDEN_ACTION_KICK:
-        _session->KickPlayer();
-        return "Kick";
-        break;
-    case WARDEN_ACTION_BAN:
+        switch (check->Action)
         {
-            std::stringstream duration;
-            duration << sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_BAN_DURATION) << "s";
-            std::string accountName;
-            AccountMgr::GetName(_session->GetAccountId(), accountName);
-            std::stringstream banReason;
-            // Check can be NULL, for example if the client sent a wrong signature in the warden packet (CHECKSUM FAIL)
-            if (check)
-                banReason << check->Comment;
+            case WARDEN_ACTION_LOG:
+                return "None";
+            case WARDEN_ACTION_KICK:
+                _session->KickPlayer();
+                return "Kick";
+            case WARDEN_ACTION_BAN:
+            {
+                std::stringstream duration;
 
-            sWorld->BanAccount(BAN_ACCOUNT, accountName, duration.str(), banReason.str(), "Warden Anticheat");
+                if (check->BanTime == 0)
+                    duration << sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_BAN_DURATION) << "s";
+                else
+                    duration << check->BanTime * DAY << "s";
 
-            return "Ban";
+                std::string accountName;
+                AccountMgr::GetName(_session->GetAccountId(), accountName);
+                std::stringstream banReason;
+                banReason << "Cheat detected";
+                // Check can be NULL, for example if the client sent a wrong signature in the warden packet (CHECKSUM FAIL)
+                if (check)
+                    banReason << ": " << check->Comment << " (CheckId: " << checkId << ")";
+
+                sWorld->BanAccount(BAN_ACCOUNT, accountName, duration.str(), banReason.str(), "uWoW Anticheat");
+                return "Ban";
+            }
+            default:
+                break;
         }
-    default:
-        break;
     }
+
+    _session->KickPlayer();
     return "Undefined";
 }
 
 void WorldSession::HandleWardenDataOpcode(WorldPacket& recvData)
 {
-    uint32 cryptedSize;
-    recvData >> cryptedSize;
-    _warden->DecryptData(const_cast<uint8*>(recvData.contents() + sizeof(uint32)), cryptedSize);
+    _warden->DecryptData(const_cast<uint8*>(recvData.contents()), recvData.size());
     uint8 opcode;
     recvData >> opcode;
-    sLog->outDebug(LOG_FILTER_WARDEN, "Got packet, opcode %02X, size %u", opcode, uint32(recvData.size()));
+    sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: CMSG opcode %02X, size %u", opcode, uint32(recvData.size()));
     recvData.hexlike();
+    //sLog->outWarden("Raw Packet Decrypted Data - %s", ByteArrayToHexStr(const_cast<uint8*>(recvData.contents()), recvData.size()).c_str());
 
     switch (opcode)
     {
@@ -323,26 +417,41 @@ void WorldSession::HandleWardenDataOpcode(WorldPacket& recvData)
             _warden->SendModuleToClient();
             break;
         case WARDEN_CMSG_MODULE_OK:
-            _warden->RequestHash();
+        {
+            _warden->SetState(WARDEN_MODULE_LOADED);
+            if (GetOS() != "OSX")
+                _warden->RequestHash();
             break;
+        }
         case WARDEN_CMSG_CHEAT_CHECKS_RESULT:
             _warden->HandleData(recvData);
             break;
         case WARDEN_CMSG_MEM_CHECKS_RESULT:
-            sLog->outDebug(LOG_FILTER_WARDEN, "NYI WARDEN_CMSG_MEM_CHECKS_RESULT received!");
+            sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: CMSG_MEM_CHECKS_RESULT received!");
             break;
         case WARDEN_CMSG_HASH_RESULT:
+        {
             _warden->HandleHashResult(recvData);
-            _warden->InitializeModule(false);
-            //_warden->TestSendMemCheck();
+            _warden->InitializeModule();
             break;
+        }
         case WARDEN_CMSG_MODULE_FAILED:
-            sLog->outWarn(LOG_FILTER_WARDEN, "WARDEN_CMSG_MODULE_FAILED received, kick player %s!", GetPlayerName(false).c_str());
-            if (sWorld->getBoolConfig(CONFIG_WARDEN_ENABLE_CHECK_BAD_VERSION))
-                SetWardenModuleFailed(true);
+        {
+            sLog->outWarden("CMSG_MODULE_FAILED received, kick player %s!", GetPlayerName());
+            KickPlayer();
             break;
+        }
         default:
-            sLog->outDebug(LOG_FILTER_WARDEN, "Got unknown warden opcode %02X of size %u.", opcode, uint32(recvData.size() - 1));
+        {
+            //sLog->outWarden("Unknown CMSG opcode %02X, size %u, player - %s, module state - %u", opcode, uint32(recvData.size() - 1), GetPlayerName(), uint8(_warden->GetModuleState()));
+            //sLog->outWarden("Raw Packet Decrypted Data (1) - %s", ByteArrayToHexStr(const_cast<uint8*>(recvData.contents()), recvData.size()).c_str());
+            // try decrypt again
+            //_warden->DecryptData(const_cast<uint8*>(recvData.contents()), recvData.size());
+            //sLog->outWarden("Raw Packet Decrypted Data (2) - %s", ByteArrayToHexStr(const_cast<uint8*>(recvData.contents()), recvData.size()).c_str());
+            // small hack, because in some cases out of sync encryption state while redirection
+            if (_warden->GetState() == WARDEN_MODULE_SUSPENDED && recvData.size() == 21)
+                _warden->HandleHashResult(recvData, true);
             break;
+        }
     }
 }

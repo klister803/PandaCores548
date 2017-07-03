@@ -23,7 +23,12 @@
 #include "Cryptography/ARC4.h"
 #include "Cryptography/BigNumber.h"
 #include "ByteBuffer.h"
-#include "WardenCheckMgr.h"
+#include "WardenMgr.h"
+
+#define BASE_CHECKS_HEADER "686561646572"
+#define EXTENDED_CHECKS_HEADER "53595354454D"
+
+class WorldSession;
 
 enum WardenOpcodes
 {
@@ -44,19 +49,16 @@ enum WardenOpcodes
     WARDEN_SMSG_HASH_REQUEST                    = 5
 };
 
-enum WardenCheckType
+enum WardenState
 {
-    MEM_CHECK               = 0x9F, // 243: byte moduleNameIndex + byte mask + byte[maskData] offsetArray + byte Len (check to ensure memory isn't modified)
-    PAGE_CHECK_A            = 0xBA, // 178: uint Seed + byte[20] SHA1 + uint Addr + byte Len (scans all pages for specified hash)
-    PAGE_CHECK_B            = 0x1B, // 191: uint Seed + byte[20] SHA1 + uint Addr + byte Len (scans only pages starts with MZ+PE headers for specified hash)
-    MPQ_CHECK               = 0x59, // 152: byte fileNameIndex (check to ensure MPQ file isn't modified)
-    LUA_STR_CHECK           = 0xF8, // 139: byte luaNameIndex (check to ensure LUA string isn't used)
-    DRIVER_CHECK            = 0xD5, // 113: uint Seed + byte[20] SHA1 + byte driverNameIndex (check to ensure driver isn't loaded)
-    TIMING_CHECK            = 0x13, //  87: empty (check to ensure GetTickCount() isn't detoured)
-    PROC_CHECK              = 0x36, // 126: uint Seed + byte[20] SHA1 + byte moluleNameIndex + byte procNameIndex + uint Offset + byte Len (check to ensure proc isn't detoured)
-    MODULE_CHECK            = 0xDD, // 217: uint Seed + byte[20] SHA1 (check to ensure module isn't injected)
-    UNK_CHECK               = 0x97, // 151: byte unkIndex + byte unkIndex2
-    UNK_CHECK_2             = 0x74, // 116: empty
+    WARDEN_NOT_INITIALIZED            = 0,
+    WARDEN_MODULE_NOT_LOADED          = 1,
+    WARDEN_MODULE_LOADED              = 2,
+    WARDEN_MODULE_INITIALIZED         = 3,
+    WARDEN_MODULE_READY               = 4,
+    WARDEN_MODULE_WAIT_RESPONSE       = 5,
+    WARDEN_MODULE_SUSPENDED           = 6, // special state while player redirected
+    WARDEN_MODULE_PLAYER_LOCKED       = 7
 };
 
 #if defined(__GNUC__)
@@ -68,7 +70,7 @@ enum WardenCheckType
 struct WardenModuleUse
 {
     uint8 Command;
-    uint8 ModuleId[32];
+    uint8 ModuleId[16];
     uint8 ModuleKey[16];
     uint32 Size;
 };
@@ -76,8 +78,38 @@ struct WardenModuleUse
 struct WardenModuleTransfer
 {
     uint8 Command;
-    uint16 DataSize;
+    uint16 ChunkSize;
     uint8 Data[500];
+};
+
+struct WardenInitModuleMPQFunc
+{
+    uint8 Type;
+    uint8 Flag;
+    uint8 MpqFuncType;
+    uint8 StringBlock;
+    uint32 OpenFile;
+    uint32 GetFileSize;
+    uint32 ReadFile;
+    uint32 CloseFile;
+};
+
+struct WardenInitModuleLUAFunc
+{
+    uint8 Type;
+    uint8 Flag;
+    uint8 StringBlock;
+    uint32 GetText;
+    uint8 LuaFuncType;
+};
+
+struct WardenInitModuleTimeFunc
+{
+    uint8 Type;
+    uint8 Flag;
+    uint8 StringBlock;
+    uint32 PerfCounter;
+    uint8 TimeFuncType;
 };
 
 struct WardenHashRequest
@@ -92,84 +124,92 @@ struct WardenHashRequest
 #pragma pack(pop)
 #endif
 
-struct ClientWardenModule
-{
-    uint8 Id[32];
-    uint8 Key[16];
-    uint32 CompressedSize;
-    uint8* CompressedData;
-};
-
-class WorldSession;
-
 class Warden
 {
     friend class WardenWin;
     friend class WardenMac;
 
     public:
-        Warden();
+        Warden(WorldSession* session);
         virtual ~Warden();
 
-        virtual void Init(WorldSession* session, BigNumber* k) = 0;
-        virtual ClientWardenModule* GetModuleForClient() = 0;
-        virtual void InitializeModule(bool recall) = 0;
-        virtual void RequestHash() = 0;
-        virtual void HandleHashResult(ByteBuffer &buff) = 0;
-
-        virtual void RequestStaticData() = 0;
-        virtual void RequestDynamicData() = 0;
-
-        virtual void HandleData(ByteBuffer &buff) = 0;
-        virtual void HandleStaticData(ByteBuffer &buff) = 0;
-        virtual void HandleDynamicData(ByteBuffer &buff) = 0;
-
+        bool Init(BigNumber *k);
         void SendModuleToClient();
         void RequestModule();
-        void Update(uint32 diff);
+        void RequestHash();
+        void Update();
+
+        // tests
+        void TestDiscardModule();
+
+        virtual void InitializeModule() = 0;
+        virtual void HandleHashResult(ByteBuffer &buff, bool newCrypto = false) = 0;
+        virtual void RequestBaseData() = 0;
+
+        virtual void HandleData(ByteBuffer &buff) = 0;
+        virtual void HandleBaseData(ByteBuffer &buff) = 0;
+
         void DecryptData(uint8* buffer, uint32 length);
         void EncryptData(uint8* buffer, uint32 length);
+
+        void FillInRedirectData(WorldPacket &packet);
+
+        //uint8* GetInputKey() { return _clientKeySeed; }
+        //uint8* GetOutputKey() { return _serverKeySeed; }
+
+        WardenState GetState() { return _state; }
+        void SetState(WardenState state) { _state = state;  }
+        bool IsValidStateForUpdate(std::string os)
+        {
+            // not check internal state, because this state in update is IMPOSSIBLE
+            if (_state == WARDEN_NOT_INITIALIZED)
+                return true;
+
+            if (os == "Win")
+            {
+                if (_state >= WARDEN_MODULE_READY)
+                    return true;
+            }
+            else
+            {
+                if (_state == WARDEN_MODULE_LOADED || _state == WARDEN_MODULE_SUSPENDED)
+                    return true;
+            }
+
+            return false;
+        }
 
         static bool IsValidCheckSum(uint32 checksum, const uint8 *data, const uint16 length);
         static uint32 BuildChecksum(const uint8 *data, uint32 length);
 
         // If no check is passed, the default action from config is executed
-        std::string Penalty(WardenCheck* check = NULL);
+        std::string Penalty(uint16 checkId);
+        void SetPlayerLocked(uint16 checkId, WardenCheck* wd);
 
-        void ClearAlerts();
-        void ClearAddresses();
+        // TODO : rewrite timer system
+        void ClientResponseTimerUpdate(uint32 diff);
+        void DiscardKeysTimerUpdate(uint32 diff);
+        void PendingKickTimerUpdate(uint32 diff);
 
-        void TestSendMemCheck();
         void StaticCheatChecksTimerUpdate(uint32 diff);
         void DynamicCheatChecksTimerUpdate(uint32 diff);
-        void ClientResponseTimerUpdate(uint32 diff);
 
     private:
         WorldSession* _session;
-        uint8 _inputKey[16];
-        uint8 _outputKey[16];
-        uint8 _seed[16];
-        ARC4 _inputCrypto;
-        ARC4 _outputCrypto;
+        WardenModule* _currentModule;
+
+        RC4_Context _clientRC4State;
+        RC4_Context _serverRC4State;
+        WardenState _state;
+
         uint32 _checkTimer;                          // Timer for sending check requests
-        uint32 _dynamicCheckTimer;
+        uint32 _checkTimer2;
+        uint32 _discardKeysTimer;
         uint32 _clientResponseTimer;                 // Timer for client response delay
+        uint32 _pendingKickTimer;
         bool _dataSent;
-        bool _dynDataSent;
-        time_t _requestSent;                         // DEBUG CODE
-        uint32 _previousTimestamp;
-        ClientWardenModule* _module;
-        bool _initialized;
-
-        uint32 playerBase;
-        uint32 offset;
-        uint32 playerDynamicBase;
-
-        int8 m_speedAlert;
-        int8 m_speedExtAlert;
-        int8 m_moveFlagsAlert;
-        int8 m_failedCoordsAlert;
-        int8 m_clientResponseAlert;
+        bool _dataSent2;
+        uint32 _lastUpdateTime;
 };
 
 #endif
