@@ -22,6 +22,13 @@
 #include "Define.h"
 #include <openssl/evp.h>
 
+struct RC4_Context
+{
+    uint8 S[256];
+    uint8 x;
+    uint8 y;
+};
+
 class ARC4
 {
     public:
@@ -30,6 +37,9 @@ class ARC4
         ~ARC4();
         void Init(uint8 *seed);
         void UpdateData(int len, uint8 *data);
+
+        static void rc4_init(RC4_Context * ctx, const uint8 * seed, int seedlen);
+        static void rc4_process(RC4_Context * ctx, uint8 * data, int datalen);
     private:
         EVP_CIPHER_CTX m_ctx;
 };

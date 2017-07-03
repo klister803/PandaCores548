@@ -18,6 +18,7 @@
 
 #include "ARC4.h"
 #include <openssl/sha.h>
+#include <set>
 
 ARC4::ARC4(uint8 len) : m_ctx()
 {
@@ -49,4 +50,36 @@ void ARC4::UpdateData(int len, uint8 *data)
     int outlen = 0;
     EVP_EncryptUpdate(&m_ctx, data, &outlen, data, len);
     EVP_EncryptFinal_ex(&m_ctx, data, &outlen);
+}
+
+void ARC4::rc4_init(RC4_Context * ctx, const uint8 * seed, int seedlen)
+{
+    for (int i = 0; i < 256; ++i)
+        ctx->S[i] = i;
+
+    ctx->x = 0;
+    ctx->y = 0;
+
+    int j = 0;
+
+    for (int i = 0; i < 256; ++i)
+    {
+        j = (j + ctx->S[i] + seed[i % seedlen]) % 256;
+        std::swap(ctx->S[i], ctx->S[j]);
+    }
+}
+
+void ARC4::rc4_process(RC4_Context * ctx, uint8 * data, int datalen)
+{
+    int i = 0;
+    int j = 0;
+
+    for (i = 0; i < datalen; ++i)
+    {
+        (ctx->x++) % 256;
+        ctx->y = (ctx->y + ctx->S[ctx->x]) % 256;
+        std::swap(ctx->S[ctx->x], ctx->S[ctx->y]);
+        j = (ctx->S[ctx->x] + ctx->S[ctx->y]) % 256;
+        data[i] ^= ctx->S[j];
+    }
 }
