@@ -53,6 +53,14 @@ enum PathType
     PATHFIND_NOT_USING_PATH = 0x0010    // used when we are either flying/swiming or on map w/o mmaps
 };
 
+enum PathOptions
+{
+    PathOption_Normal           = 0x00,   // normal path
+    PathOption_UseStraightPath  = 0x01,   // type of path will be generated
+    PathOption_ForceDestination = 0x02,   // when set, we will always arrive at given point
+    PathOption_PathForCharge    = 0x04,   // use this for divide path
+};
+
 class PathFinderMovementGenerator
 {
     public:
@@ -61,11 +69,17 @@ class PathFinderMovementGenerator
 
         // Calculate the path from owner to given destination
         // return: true if new path was calculated, false otherwise (no change needed)
-        bool calculate(float destX, float destY, float destZ, bool forceDest = false);
+        bool calculate(float destX, float destY, float destZ, PathOptions option = PathOption_Normal);
 
         // option setters - use optional
-        void setUseStrightPath(bool useStraightPath) { m_useStraightPath = useStraightPath; };
         void setPathLengthLimit(float distance) { m_pointPathLimit = std::min<uint32>(uint32(distance/SMOOTH_PATH_STEP_SIZE), MAX_POINT_PATH_LENGTH); };
+        void HandlePathOptions(PathOptions option, bool remove = false)
+        {
+            if (remove)
+                _options &= ~option;
+            else
+                _options |= option;
+        }
 
         // result getters
         Vector3 getStartPosition()      const { return m_startPosition; }
@@ -99,8 +113,8 @@ class PathFinderMovementGenerator
         PointsArray    m_pathPoints;       // our actual (x,y,z) path to the target
         PathType       m_type;             // tells what kind of path this is
 
-        bool           m_useStraightPath;  // type of path will be generated
-        bool           m_forceDestination; // when set, we will always arrive at given point
+        uint8 _options;
+
         uint32         m_pointPathLimit;   // limit point path size; min(this, MAX_POINT_PATH_LENGTH)
 
         Vector3        m_startPosition;    // {x, y, z} of current location
@@ -116,6 +130,7 @@ class PathFinderMovementGenerator
         void setStartPosition(Vector3 point) { m_startPosition = point; }
         void setEndPosition(Vector3 point) { m_actualEndPosition = point; m_endPosition = point; }
         void setActualEndPosition(Vector3 point) { m_actualEndPosition = point; }
+        void NormalizePath();
 
         void clear()
         {
@@ -139,15 +154,16 @@ class PathFinderMovementGenerator
         void createFilter();
         void updateFilter();
 
+        uint32 DividePath(float const* startPos, float const* endPos, float* path, uint8 parts, uint32 pathNum, uint32 additionalPoints);
+
         // smooth path aux functions
         uint32 fixupCorridor(dtPolyRef* path, uint32 npath, uint32 maxPath,
                              const dtPolyRef* visited, uint32 nvisited);
         bool getSteerTarget(const float* startPos, const float* endPos, float minTargetDist,
                             const dtPolyRef* path, uint32 pathSize, float* steerPos,
                             unsigned char& steerPosFlag, dtPolyRef& steerPosRef);
-        dtStatus findSmoothPath(const float* startPos, const float* endPos,
-                              const dtPolyRef* polyPath, uint32 polyPathSize,
-                              float* smoothPath, int* smoothPathSize, uint32 smoothPathMaxSize);
+        dtStatus findSmoothPath(const float* startPos, const float* endPos, const dtPolyRef* polyPath, uint32 polyPathSize, 
+                                float* smoothPath, int* additionalPoints, int* smoothPathSize, uint32 smoothPathMaxSize);
         ACE_Thread_Mutex Lock;
 };
 

@@ -2625,6 +2625,8 @@ class Unit : public WorldObject
 
         void SetDynamicWorldEffects(uint32 effect, uint32 slot);
 
+        void SetChargeHandicap(uint32 delay) { m_chargeHandicapTimer = delay; }
+
     protected:
         explicit Unit (bool isWorldObject);
 
@@ -2649,6 +2651,8 @@ class Unit : public WorldObject
         bool m_onMount;
 
         DeathState m_deathState;
+
+        uint32 m_chargeHandicapTimer;
 
         int32 m_procDeep;
         int32 m_timeForSpline;

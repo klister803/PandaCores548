@@ -154,7 +154,7 @@ void ChargeMovementGenerator::_setTargetLocation(Unit &unit)
     if(!i_path)
         i_path = new PathFinderMovementGenerator(&unit);
 
-    i_path->calculate(i_x, i_y, i_z, false);
+    i_path->calculate(i_x, i_y, i_z, unit.GetTypeId() == TYPEID_PLAYER ? PathOption_PathForCharge : PathOption_Normal);
 
     if (i_path->getPathType() & PATHFIND_NOPATH)
         return;
@@ -170,6 +170,10 @@ void ChargeMovementGenerator::_setTargetLocation(Unit &unit)
         init.MoveTo(i_x, i_y, i_z);
     else
         init.MovebyPath(i_path->getPath());
+
+    if (unit.GetTypeId() == TYPEID_PLAYER)
+        unit.SetChargeHandicap(600);
+
     if (speed > 0.0f)
         init.SetVelocity(speed);
     init.Launch();

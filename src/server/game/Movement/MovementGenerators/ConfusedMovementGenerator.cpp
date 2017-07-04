@@ -125,7 +125,7 @@ bool ConfusedMovementGenerator<T>::DoUpdate(T &unit, const uint32 &diff)
 
             PathFinderMovementGenerator path(&unit);
             path.setPathLengthLimit(30.0f);
-            path.setUseStrightPath(false);
+            path.HandlePathOptions(PathOption_UseStraightPath, true);
 
             if (!unit.IsWithinLOS(x, y, z) || !path.calculate(x, y, z) || path.getPathType() & PATHFIND_NOPATH)
             {

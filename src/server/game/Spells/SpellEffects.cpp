@@ -6816,7 +6816,7 @@ void Spell::EffectCharge(SpellEffIndex effIndex)
         unitTarget->GetContactPoint(m_caster, pos.m_positionX, pos.m_positionY, pos.m_positionZ);
         unitTarget->GetFirstCollisionPosition(pos, unitTarget->GetObjectSize(), angle);
 
-        if(!m_caster->GetMotionMaster()->SpellMoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ + unitTarget->GetObjectSize(), SPEED_CHARGE, EVENT_CHARGE, triggered_spell_id))
+        if (!m_caster->GetMotionMaster()->SpellMoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ, SPEED_CHARGE, EVENT_CHARGE, triggered_spell_id))
             return;
 
         switch (m_spellInfo->Id)

@@ -2274,16 +2274,23 @@ void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
             // for server controlled moves playr work same as creature (but it can always swim)
             if (!ToPlayer()->CanFly())
             {
-                float ground_z = z;
-                float max_z = GetBaseMap()->GetWaterOrGroundLevel(x, y, z + _offset, &ground_z, !ToUnit()->HasAuraType(SPELL_AURA_WATER_WALK));
-                max_z += GetPositionH();
-                ground_z += GetPositionH();
-                if (max_z > INVALID_HEIGHT)
+                float ground_z, max_z;
+
+                for (uint8 i = 0; i < 5; i++)
                 {
-                    if (z > max_z)
-                        z = max_z;
-                    else if (z < ground_z)
-                        z = ground_z;
+                    ground_z = z;
+                    max_z = GetBaseMap()->GetWaterOrGroundLevel(x, y, z, &ground_z, !ToUnit()->HasAuraType(SPELL_AURA_WATER_WALK));
+
+                    if (max_z > INVALID_HEIGHT)
+                    {
+                        if (z > max_z)
+                            z = max_z;
+                        else if (z < ground_z)
+                            z = ground_z;
+                        break;
+                    }
+                    else
+                        z += 2.f;
                 }
             }
             else

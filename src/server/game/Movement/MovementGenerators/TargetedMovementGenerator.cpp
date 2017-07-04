@@ -104,7 +104,7 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
     if (Creature* c = owner.ToCreature())
         forceDest |= c->isWorldBoss() || c->IsDungeonBoss();
 
-    i_path->calculate(x, y, z, forceDest);
+    i_path->calculate(x, y, z, forceDest ? PathOption_ForceDestination : PathOption_Normal);
 
     //sLog->outDebug(LOG_FILTER_PETS, "_setTargetLocation Pet %u (%f %f %f) forceDest %i PathType %i Length %f size %i type %u",
     //owner.GetEntry(), x, y, z, forceDest, i_path->getPathType(), i_path->GetTotalLength(), i_path->getPath().size(), static_cast<D*>(this)->GetMovementGeneratorType());
