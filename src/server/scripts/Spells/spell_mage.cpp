@@ -329,12 +329,12 @@ class spell_mage_cauterize : public SpellScriptLoader
                 if (dmgInfo.GetDamage() < target->GetHealth())
                     return;
 
-                if (target->ToPlayer()->HasSpellCooldown(SPELL_MAGE_CAUTERIZE))
+                if (target->ToPlayer()->HasAura(87024))
                     return;
 
                 float bp1 = target->CountPctFromMaxHealth(healtPct);
                 target->CastCustomSpell(target, SPELL_MAGE_CAUTERIZE, NULL, &bp1, NULL, true);
-                target->ToPlayer()->AddSpellCooldown(SPELL_MAGE_CAUTERIZE, 0, getPreciseTime() + 60);
+                target->CastCustomSpell(target, 87024, NULL, &bp1, NULL, true);
 
                 absorbAmount = dmgInfo.GetDamage();
             }
