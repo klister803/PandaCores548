@@ -502,81 +502,6 @@ class spell_warr_raging_blow : public SpellScriptLoader
         }
 };
 
-// Called by Devastate - 20243
-// Sword and Board - 46953
-class spell_warr_sword_and_board : public SpellScriptLoader
-{
-    public:
-        spell_warr_sword_and_board() : SpellScriptLoader("spell_warr_sword_and_board") { }
-
-        class spell_warr_sword_and_board_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warr_sword_and_board_SpellScript);
-
-            void HandleOnHit()
-            {
-                // Fix Sword and Board
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        if (roll_chance_i(30))
-                        {
-                            _player->CastSpell(_player, WARRIOR_SPELL_SWORD_AND_BOARD, true);
-                            _player->RemoveSpellCooldown(WARRIOR_SPELL_SHIELD_SLAM, true);
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_warr_sword_and_board_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warr_sword_and_board_SpellScript();
-        }
-};
-
-// Mortal strike - 12294
-class spell_warr_mortal_strike : public SpellScriptLoader
-{
-    public:
-        spell_warr_mortal_strike() : SpellScriptLoader("spell_warr_mortal_strike") { }
-
-        class spell_warr_mortal_strike_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warr_mortal_strike_SpellScript);
-
-            void HandleOnHit()
-            {
-                // Fix Apply Mortal strike buff on player only if he has the correct glyph
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        if (_player->HasAura(WARRIOR_SPELL_MORTAL_STRIKE_AURA))
-                            if (!_player->HasAura(WARRIOR_SPELL_GLYPH_OF_MORTAL_STRIKE))
-                                _player->RemoveAura(WARRIOR_SPELL_MORTAL_STRIKE_AURA);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_warr_mortal_strike_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warr_mortal_strike_SpellScript();
-        }
-};
-
 // Heroic leap - 6544
 class spell_warr_heroic_leap : public SpellScriptLoader
 {
@@ -610,34 +535,6 @@ class spell_warr_heroic_leap : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_warr_heroic_leap_SpellScript();
-        }
-};
-
-// Heroic Leap (damage) - 52174
-class spell_warr_heroic_leap_damage : public SpellScriptLoader
-{
-    public:
-        spell_warr_heroic_leap_damage() : SpellScriptLoader("spell_warr_heroic_leap_damage") { }
-
-        class spell_warr_heroic_leap_damage_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warr_heroic_leap_damage_SpellScript);
-
-            void HandleOnHit()
-            {
-                if(Unit* caster = GetCaster())
-                    SetHitDamage(int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.5f));
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_warr_heroic_leap_damage_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warr_heroic_leap_damage_SpellScript();
         }
 };
 
@@ -686,83 +583,6 @@ class spell_warr_shockwave : public SpellScriptLoader
         }
 };
 
-// Bloodthirst - 23881
-class spell_warr_bloodthirst : public SpellScriptLoader
-{
-    public:
-        spell_warr_bloodthirst() : SpellScriptLoader("spell_warr_bloodthirst") { }
-
-        class spell_warr_bloodthirst_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warr_bloodthirst_SpellScript);
-
-            bool Validate(SpellInfo const* /*SpellInfo*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(WARRIOR_SPELL_BLOODTHIRST))
-                    return false;
-                return true;
-            }
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        if (GetHitDamage())
-                            _player->CastSpell(_player, WARRIOR_SPELL_BLOODTHIRST_HEAL, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_warr_bloodthirst_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warr_bloodthirst_SpellScript();
-        }
-};
-
-// Victory Rush - 34428
-class spell_warr_victory_rush : public SpellScriptLoader
-{
-    public:
-        spell_warr_victory_rush() : SpellScriptLoader("spell_warr_victory_rush") { }
-
-        class spell_warr_victory_rush_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warr_victory_rush_SpellScript);
-
-            bool Validate(SpellInfo const* /*SpellInfo*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(WARRIOR_SPELL_VICTORY_RUSH_DAMAGE))
-                    return false;
-                return true;
-            }
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        _player->CastSpell(_player, WARRIOR_SPELL_VICTORY_RUSH_HEAL, true);
-                        if (_player->HasAura(WARRIOR_SPELL_VICTORIOUS_STATE))
-                            _player->RemoveAura(WARRIOR_SPELL_VICTORIOUS_STATE);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_warr_victory_rush_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warr_victory_rush_SpellScript();
-        }
-};
-
 class spell_warr_last_stand : public SpellScriptLoader
 {
     public:
@@ -798,65 +618,6 @@ class spell_warr_last_stand : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_warr_last_stand_SpellScript();
-        }
-};
-
-// Thunder Clap - 6343
-class spell_warr_thunder_clap : public SpellScriptLoader
-{
-    public:
-        spell_warr_thunder_clap() : SpellScriptLoader("spell_warr_thunder_clap") { }
-
-        class spell_warr_thunder_clap_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warr_thunder_clap_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        _player->CastSpell(target, WARRIOR_SPELL_WEAKENED_BLOWS, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_warr_thunder_clap_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warr_thunder_clap_SpellScript();
-        }
-};
-
-// Avatar - 107574
-class spell_war_avatar : public SpellScriptLoader
-{
-    public:
-        spell_war_avatar() : SpellScriptLoader("spell_war_avatar") { }
-
-        class spell_war_avatar_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_war_avatar_SpellScript);
-
-            void HandleOnCast()
-            {
-                if (Unit* player = GetCaster())
-                {
-                    player->RemoveMovementImpairingAuras();
-                }
-            }
-
-            void Register()
-            {
-                OnCast += SpellCastFn(spell_war_avatar_SpellScript::HandleOnCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_war_avatar_SpellScript();
         }
 };
 
@@ -1045,35 +806,6 @@ class spell_warr_shield_visual : public SpellScriptLoader
         }
 };
 
-// Slam AOE - 146361
-class spell_war_slam_aoe : public SpellScriptLoader
-{
-    public:
-        spell_war_slam_aoe() : SpellScriptLoader("spell_war_slam_aoe") { }
-
-        class spell_war_slam_aoe_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_war_slam_aoe_SpellScript);
-
-            void FilterTargets(std::list<WorldObject*>& targets)
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if(Unit* target = _player->GetSelectedUnit())
-                        targets.remove(target);
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_war_slam_aoe_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_war_slam_aoe_SpellScript();
-        }
-};
-
 // Intervene - 3411
 class spell_war_intervene : public SpellScriptLoader
 {
@@ -1240,21 +972,13 @@ void AddSC_warrior_spell_scripts()
     new spell_warr_sudden_death();
     new spell_warr_mocking_banner();
     new spell_warr_raging_blow();
-    new spell_warr_sword_and_board();
-    new spell_warr_mortal_strike();
-    new spell_warr_heroic_leap_damage();
     new spell_warr_heroic_leap();
     new spell_warr_shockwave();
-    new spell_warr_bloodthirst();
-    new spell_warr_victory_rush();
     new spell_warr_last_stand();
-    new spell_warr_thunder_clap();
-    new spell_war_avatar();
     new spell_war_glyph_of_die_by_the_sword();
     new spell_glyph_of_gag_order();
     new spell_warr_raging_blow_remove();
     new spell_warr_shield_visual();
-    new spell_war_slam_aoe();
     new spell_war_intervene();
     new spell_warr_charge_drop_fire();
     new spell_warr_dragon_roar();
