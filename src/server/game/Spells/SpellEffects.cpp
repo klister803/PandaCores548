@@ -3935,13 +3935,6 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
     uint32 dispelMask  = SpellInfo::GetDispelMask(DispelType(dispel_type));
     bool LastDispelEff = false;
 
-    // Epuration can dispell Magic with Sacred Cleansing
-    if (m_spellInfo->Id == 4987 && m_caster->HasAura(53551))
-        dispelMask = DISPEL_ALL_MASK;
-    // Nature's Cure can dispell all Magic, Curse and poison
-    else if (m_spellInfo->Id == 88423)
-        dispelMask = ((1<<DISPEL_MAGIC) | (1<<DISPEL_CURSE) | (1<<DISPEL_POISON));
-
     DispelChargesList dispel_list;
     DispelChargesList predicted_dispel_list;
     unitTarget->GetDispellableAuraList(m_caster, dispelMask, dispel_list);
