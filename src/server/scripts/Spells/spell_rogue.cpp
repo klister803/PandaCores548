@@ -118,12 +118,11 @@ class spell_rog_cheat_death : public SpellScriptLoader
                     if (dmgInfo.GetDamage() < target->GetHealth())
                         return;
 
-                    if (target->ToPlayer()->HasSpellCooldown(45181))
+                    if (target->ToPlayer()->HasAura(45181))
                         return;
 
-                    target->CastSpell(target, 45181, true);
                     target->CastSpell(target, ROGUE_SPELL_CHEAT_DEATH_REDUCE_DAMAGE, true);
-                    target->ToPlayer()->AddSpellCooldown(45181, 0, getPreciseTime() + 90.0);
+                    target->CastSpell(target, 45181, true);
 
                     uint32 health10 = target->CountPctFromMaxHealth(10);
 
@@ -783,189 +782,6 @@ class spell_rog_shiv : public SpellScriptLoader
         }
 };
 
-// All Poisons
-// Deadly Poison - 2823, Wound Poison - 8679, Mind-numbing Poison - 5761, Leeching Poison - 108211, Paralytic Poison - 108215 or Crippling Poison - 3408
-class spell_rog_poisons : public SpellScriptLoader
-{
-    public:
-        spell_rog_poisons() : SpellScriptLoader("spell_rog_poisons") { }
-
-        class spell_rog_poisons_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_rog_poisons_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    switch (GetSpellInfo()->Id)
-                    {
-                        case ROGUE_SPELL_WOUND_POISON:
-                        {
-                            if (_player->HasAura(ROGUE_SPELL_DEADLY_POISON))
-                                _player->RemoveAura(ROGUE_SPELL_DEADLY_POISON);
-                            break;
-                        }
-                        case ROGUE_SPELL_MIND_NUMBLING_POISON:
-                        {
-                            if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
-                                _player->RemoveAura(ROGUE_SPELL_CRIPPLING_POISON);
-                            if (_player->HasAura(ROGUE_SPELL_LEECHING_POISON))
-                                _player->RemoveAura(ROGUE_SPELL_LEECHING_POISON);
-                            if (_player->HasAura(ROGUE_SPELL_PARALYTIC_POISON))
-                                _player->RemoveAura(ROGUE_SPELL_PARALYTIC_POISON);
-                            break;
-                        }
-                        case ROGUE_SPELL_CRIPPLING_POISON:
-                        {
-                            if (_player->HasAura(ROGUE_SPELL_MIND_NUMBLING_POISON))
-                                _player->RemoveAura(ROGUE_SPELL_MIND_NUMBLING_POISON);
-                            if (_player->HasAura(ROGUE_SPELL_LEECHING_POISON))
-                                _player->RemoveAura(ROGUE_SPELL_LEECHING_POISON);
-                            if (_player->HasAura(ROGUE_SPELL_PARALYTIC_POISON))
-                                _player->RemoveAura(ROGUE_SPELL_PARALYTIC_POISON);
-                            break;
-                        }
-                        case ROGUE_SPELL_LEECHING_POISON:
-                        {
-                            if (_player->HasAura(ROGUE_SPELL_MIND_NUMBLING_POISON))
-                                _player->RemoveAura(ROGUE_SPELL_MIND_NUMBLING_POISON);
-                            if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
-                                _player->RemoveAura(ROGUE_SPELL_CRIPPLING_POISON);
-                            if (_player->HasAura(ROGUE_SPELL_PARALYTIC_POISON))
-                                _player->RemoveAura(ROGUE_SPELL_PARALYTIC_POISON);
-                            break;
-                        }
-                        case ROGUE_SPELL_PARALYTIC_POISON:
-                        {
-                            if (_player->HasAura(ROGUE_SPELL_MIND_NUMBLING_POISON))
-                                _player->RemoveAura(ROGUE_SPELL_MIND_NUMBLING_POISON);
-                            if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
-                                _player->RemoveAura(ROGUE_SPELL_CRIPPLING_POISON);
-                            if (_player->HasAura(ROGUE_SPELL_LEECHING_POISON))
-                                _player->RemoveAura(ROGUE_SPELL_LEECHING_POISON);
-                            break;
-                        }
-                        case ROGUE_SPELL_DEADLY_POISON:
-                        {
-                            if (_player->HasAura(ROGUE_SPELL_WOUND_POISON))
-                                _player->RemoveAura(ROGUE_SPELL_WOUND_POISON);
-                            break;
-                        }
-                        default:
-                            break;
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_rog_poisons_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_rog_poisons_SpellScript();
-        }
-};
-
-class spell_rog_deadly_poison : public SpellScriptLoader
-{
-    public:
-        spell_rog_deadly_poison() : SpellScriptLoader("spell_rog_deadly_poison") { }
-
-        class spell_rog_deadly_poison_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_rog_deadly_poison_SpellScript);
-
-            bool Load()
-            {
-                _stackAmount = 0;
-                // at this point CastItem must already be initialized
-                return GetCaster()->GetTypeId() == TYPEID_PLAYER && GetCastItem();
-            }
-
-            void HandleBeforeHit()
-            {
-                if (Unit* target = GetHitUnit())
-                    // Deadly Poison
-                    if (AuraEffect const* aurEff = target->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_ROGUE, 0x10000, 0x80000, 0, GetCaster()->GetGUID()))
-                        _stackAmount = aurEff->GetBase()->GetStackAmount();
-            }
-
-            void HandleAfterHit()
-            {
-                if (_stackAmount < 5)
-                    return;
-
-                Player* player = GetCaster()->ToPlayer();
-
-                if (Unit* target = GetHitUnit())
-                {
-
-                    Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-
-                    if (item == GetCastItem())
-                        item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-
-                    if (!item)
-                        return;
-
-                    // item combat enchantments
-                    for (uint8 slot = 0; slot < MAX_ENCHANTMENT_SLOT; ++slot)
-                    {
-                        if (slot > PRISMATIC_ENCHANTMENT_SLOT || slot < PROP_ENCHANTMENT_SLOT_0)    // not holding enchantment id
-                            continue;
-
-                        SpellItemEnchantmentEntry const* enchant = sSpellItemEnchantmentStore.LookupEntry(item->GetEnchantmentId(EnchantmentSlot(slot)));
-                        if (!enchant)
-                            continue;
-
-                        for (uint8 s = 0; s < 3; ++s)
-                        {
-							if (enchant->Effect[s] != ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
-                                continue;
-
-							SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(enchant->EffectSpellID[s]);
-                            if (!spellInfo)
-                            {
-								sLog->outError(LOG_FILTER_SPELLS_AURAS, "Player::CastItemCombatSpell Enchant %i, player (Name: %s, GUID: %u) cast unknown spell %i", enchant->ID, player->GetName(), player->GetGUIDLow(), enchant->EffectSpellID[s]);
-                                continue;
-                            }
-
-                            // Proc only rogue poisons
-                            if (spellInfo->SpellFamilyName != SPELLFAMILY_ROGUE || spellInfo->Dispel != DISPEL_POISON)
-                                continue;
-
-                            // Do not reproc deadly
-                            if (spellInfo->SpellFamilyFlags.IsEqual(0x10000, 0x80000, 0))
-                                continue;
-
-                            if (spellInfo->IsPositive())
-								player->CastSpell(player, enchant->EffectSpellID[s], true, item);
-                            else
-								player->CastSpell(target, enchant->EffectSpellID[s], true, item);
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                BeforeHit += SpellHitFn(spell_rog_deadly_poison_SpellScript::HandleBeforeHit);
-                AfterHit += SpellHitFn(spell_rog_deadly_poison_SpellScript::HandleAfterHit);
-            }
-
-            uint8 _stackAmount;
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_rog_deadly_poison_SpellScript();
-        }
-};
-
 // Shadow Step - 36554
 class spell_rog_shadowstep : public SpellScriptLoader
 {
@@ -1369,8 +1185,6 @@ void AddSC_rogue_spell_scripts()
     new spell_rog_deadly_poison_instant_damage();
     new spell_rog_paralytic_poison();
     new spell_rog_shiv();
-    new spell_rog_poisons();
-    new spell_rog_deadly_poison();
     new spell_rog_shadowstep();
     new spell_rog_eviscerate();
     new spell_rog_distract();
