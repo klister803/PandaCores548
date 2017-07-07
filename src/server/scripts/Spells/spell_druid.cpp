@@ -1617,42 +1617,6 @@ class spell_dru_cat_form : public SpellScriptLoader
         }
 };
 
-// Skull Bash - 80964
-// Skull Bash - 80965
-class spell_dru_skull_bash : public SpellScriptLoader
-{
-    public:
-        spell_dru_skull_bash() : SpellScriptLoader("spell_dru_skull_bash") { }
-
-        class spell_dru_skull_bash_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dru_skull_bash_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        _player->CastSpell(target, SPELL_DRUID_SKULL_BASH_MANA_COST, true);
-                        _player->CastSpell(target, SPELL_DRUID_SKULL_BASH_INTERUPT, true);
-                        _player->CastSpell(target, SPELL_DRUID_SKULL_BASH_CHARGE, true);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_dru_skull_bash_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dru_skull_bash_SpellScript();
-        }
-};
-
 // Faerie Swarm - 102355
 class spell_dru_faerie_swarm : public SpellScriptLoader
 {
@@ -1846,6 +1810,7 @@ class spell_dru_wild_mushroom_bloom : public SpellScriptLoader
                                     dynObj->SetDuration(0);
                                 summon->CastSpell(summon, 116302, true); // Explosion visual and suicide
                                 summon->CastSpell(summon, 116305, true); // Explosion visual and suicide
+                                summon->DespawnOrUnsummon(500);
                             }
                         }
                     }
@@ -3623,7 +3588,6 @@ void AddSC_druid_spell_scripts()
     new spell_dru_mark_of_the_wild();
     new spell_dru_glyph_of_regrowth();
     new spell_dru_cat_form();
-    new spell_dru_skull_bash();
     new spell_dru_faerie_swarm();
     new spell_dru_wild_mushroom_bloom();
     new spell_dru_wild_mushroom_detonate();
