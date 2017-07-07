@@ -88,3 +88,39 @@ REPLACE INTO `spell_group`(`id`,`spell_id`) VALUES ('2823','2823'), ('2823','867
 REPLACE INTO `spell_group`(`id`,`spell_id`) VALUES ('3408','3408'), ('3408','5761'), ('3408','108211'), ('3408','108215');
 REPLACE INTO `spell_group_stack_rules`(`group_id`,`stack_rule`) VALUES ('2823','1'), ('3408','1'); 
 DELETE FROM `spell_script_names` WHERE `ScriptName`='spell_rog_deadly_poison';
+
+-- Исправлен баг, когда http://ru.wowhead.com/spell=5308 http://ru.wowhead.com/spell=118000 не получали бонус от пассивной способности http://ru.wowhead.com/spell=12712
+DELETE FROM `spell_aura_dummy` WHERE `spellDummyId`='12712';
+INSERT INTO `spell_aura_dummy`(`spellId`,`spellDummyId`,`option`,`target`,`caster`,`targetaura`,`aura`,`removeAura`,`effectDummy`,`effectmask`,`chance`,`attr`,`attrValue`,`custombp`,`specId`,`comment`) VALUES 
+('6343','12712','9','0','0','0','0','0','0','1','0','0','0','20','0','Умелый воин'),
+('118000','12712','9','0','0','0','0','0','0','1','0','0','0','20','0','Умелый воин'),
+('5308','12712','9','0','0','0','0','0','0','1','0','0','0','20','0','Умелый воин'); 
+-- Доработки "Символ подрезанного сухожилия"
+DELETE FROM `spell_proc_check` WHERE `entry`='115945';
+DELETE FROM `spell_proc_check` WHERE `entry`='58385';
+DELETE FROM `spell_proc_event` WHERE `entry`='115945'; 
+DELETE FROM `spell_proc_event` WHERE `entry`='58385'; 
+INSERT INTO `spell_proc_event`(`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFamilyMask0`,`SpellFamilyMask1`,`SpellFamilyMask2`,`SpellFamilyMask3`,`procFlags`,`procEx`,`ppmRate`,`CustomChance`,`Cooldown`,`effectmask`) VALUES 
+('58385','0','4','2','0','0','0','0','0','0','0','10','7'),
+('115945','0','4','2','0','0','0','0','0','0','0','0','7');
+INSERT INTO `spell_proc_check`(`entry`,`entry2`,`entry3`,`checkspell`,`hastalent`,`chance`,`target`,`effectmask`,`powertype`,`dmgclass`,`specId`,`spellAttr0`,`targetTypeMask`,`mechanicMask`,`fromlevel`,`perchp`,`spelltypeMask`,`combopoints`,`deathstateMask`,`hasDuration`,`comment`) VALUES 
+('58385','0','0','0','0','0','0','7','1','-1','0','0','0','0','0','0','0','0','0','0','Символ подрезанного сухожилия');
+-- Исправлен баг, когда сервисная аура 130320 (http://ru.wowhead.com/spell=107428), увеличивающая урон от других способностей попадала даже, когда противник полностью избегает урон этой атаки
+UPDATE `spell_linked_spell` SET `hitmask`='1' WHERE `spell_trigger`='107428' AND `spell_effect`='130320';
+-- Доработки к наложению эффекта http://ru.wowhead.com/spell=115804 способностями http://ru.wowhead.com/spell=100130 http://ru.wowhead.com/spell=12294 и http://ru.wowhead.com/spell=107428. Теперь, чтобы эффект наложился, вам нужно попасть по цели. Исправлен баг, когда эффект всегда срабатывал, минуя эффекты избегания.
+DELETE FROM `spell_aura_dummy` WHERE `comment`='Смертельное ранение' AND `option`='4';
+INSERT INTO `spell_aura_dummy`(`spellId`,`spellDummyId`,`option`,`target`,`caster`,`targetaura`,`aura`,`removeAura`,`effectDummy`,`effectmask`,`chance`,`attr`,`attrValue`,`custombp`,`specId`,`comment`) VALUES 
+('12294','-137047','4','0','0','0','0','0','0','1','0','0','0','0','0','Смертельное ранение'),
+('100130','-137047','4','0','0','0','0','0','0','1','0','0','0','0','0','Смертельное ранение'),
+('107428','-137022','4','0','0','0','0','0','0','2','0','0','0','0','0','Смертельное ранение'); 
+DELETE FROM `spell_linked_spell` WHERE `spell_effect`='115804';
+INSERT INTO `spell_linked_spell`(`spell_trigger`,`spell_effect`,`type`,`caster`,`target`,`hastype`,`hastalent`,`hastype2`,`hastalent2`,`chance`,`cooldown`,`duration`,`hitmask`,`removeMask`,`targetCountType`,`targetCount`,`actiontype`,`group`,`comment`) VALUES 
+('12294','115804','1','0','0','0','0','0','0','0','0','0','0','0','0','-1','0','0','Смертельное ранение'),
+('100130','115804','1','0','0','0','0','0','0','0','0','0','0','0','0','-1','0','0','Смертельное ранение'),
+('107428','115804','1','0','0','0','0','0','0','0','0','0','0','0','0','-1','0','0','Смертельное ранение'); 
+-- Корректировки внутренних кулдаунов запускаемых талантом "Разрушающий крик" и "Зуботычина" (для хитрожопых)
+DELETE FROM `spell_linked_spell` WHERE `spell_trigger`='6552' AND `spell_effect`='102060';
+DELETE FROM `spell_linked_spell` WHERE `spell_trigger`='102560' AND `spell_effect`='6552';
+INSERT INTO `spell_linked_spell`(`spell_trigger`,`spell_effect`,`type`,`caster`,`target`,`hastype`,`hastalent`,`hastype2`,`hastalent2`,`chance`,`cooldown`,`duration`,`hitmask`,`removeMask`,`targetCountType`,`targetCount`,`actiontype`,`group`,`comment`) VALUES 
+('6552','102060','0','0','0','0','0','0','0','0','15','0','0','0','0','-1','3','0','Разрушающий крик - Зуботычина (серверное кд)'),
+('102060','6552','0','0','0','0','0','0','0','0','15','0','0','0','0','-1','3','0','Разрушающий крик - Зуботычина (серверное кд)'); 
