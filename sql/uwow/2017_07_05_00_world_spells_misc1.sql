@@ -124,3 +124,18 @@ DELETE FROM `spell_linked_spell` WHERE `spell_trigger`='102560' AND `spell_effec
 INSERT INTO `spell_linked_spell`(`spell_trigger`,`spell_effect`,`type`,`caster`,`target`,`hastype`,`hastalent`,`hastype2`,`hastalent2`,`chance`,`cooldown`,`duration`,`hitmask`,`removeMask`,`targetCountType`,`targetCount`,`actiontype`,`group`,`comment`) VALUES 
 ('6552','102060','0','0','0','0','0','0','0','0','15','0','0','0','0','-1','3','0','Разрушающий крик - Зуботычина (серверное кд)'),
 ('102060','6552','0','0','0','0','0','0','0','0','15','0','0','0','0','-1','3','0','Разрушающий крик - Зуботычина (серверное кд)'); 
+
+-- Теперь пассивный эффект способности "Чистота" будет дополнительно давать бонус исцеляющей ауре тотема http://ru.wowhead.com/spell=52042 .
+DELETE FROM `spell_aura_dummy` WHERE `spellId`='52042' AND `spellDummyId`='16213';
+INSERT INTO `spell_aura_dummy`(`spellId`,`spellDummyId`,`option`,`target`,`caster`,`targetaura`,`aura`,`removeAura`,`effectDummy`,`effectmask`,`chance`,`attr`,`attrValue`,`custombp`,`specId`,`comment`) VALUES 
+('52042','16213','9','0','2','0','0','0','0','1','0','0','0','0','0','Чистота'); 
+-- Переписан прок "Оружие жизни земли". Теперь некоторые исцеляющие способности прямого действия будет с вероятностью 100% вызывать данный эффект, когда у цели остается менее 35% от ее максимального запаса здоровья
+DELETE FROM `spell_proc_event` WHERE `entry`='52007'; 
+DELETE FROM `spell_proc_check` WHERE `entry`='52007';
+DELETE FROM `spell_proc_check` WHERE `entry2`='52007';
+INSERT INTO `spell_proc_check`(`entry`,`entry2`,`entry3`,`checkspell`,`hastalent`,`chance`,`target`,`effectmask`,`powertype`,`dmgclass`,`specId`,`spellAttr0`,`targetTypeMask`,`mechanicMask`,`fromlevel`,`perchp`,`spelltypeMask`,`combopoints`,`deathstateMask`,`hasDuration`,`comment`) VALUES 
+('52007','0','0','0','0','20','0','7','-1','-1','0','0','0','0','0','35','0','0','0','0','Earthliving Weapon (Passive)'),
+('52007','0','0','8004','0','100','0','7','-1','-1','0','0','0','0','0','-35','0','0','0','0','Earthliving Weapon (Passive)'),
+('52007','0','0','331','0','100','0','7','-1','-1','0','0','0','0','0','-35','0','0','0','0','Earthliving Weapon (Passive)'),
+('52007','0','0','73685','0','100','0','7','-1','-1','0','0','0','0','0','-35','0','0','0','0','Earthliving Weapon (Passive)'),
+('52007','0','0','77472','0','100','0','7','-1','-1','0','0','0','0','0','-35','0','0','0','0','Earthliving Weapon (Passive)');
