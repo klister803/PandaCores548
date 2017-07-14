@@ -198,7 +198,7 @@ void Warden::ClientResponseTimerUpdate(uint32 diff)
     {
         _clientResponseTimer = 0;
         sLog->outWarden("Player %s (guid: %u, account: %u, latency: %u, IP: %s) with module state %u exceeded Warden module (%s) response delay for more than 60s - disconnecting client", 
-            _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId(), _session->GetLatency(), _session->GetRemoteAddress().c_str(), uint8(_state), _session->GetOS().c_str());
+            _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), _session->GetLatency(), _session->GetRemoteAddress().c_str(), uint8(_state), _session->GetOS().c_str());
         _session->KickPlayer();
         return;
     }

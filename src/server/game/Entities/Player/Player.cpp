@@ -1788,7 +1788,7 @@ void Player::Update(uint32 p_time)
     {
         if (warden && !warden->IsValidStateForUpdate(GetSession()->GetOS()))
         {
-            sLog->outWarden("Warden (%s) not correctly initialized (state: %u) on account %u, player %s", GetSession()->GetOS().c_str(), uint8(warden->GetState()), GetSession()->GetAccountId(), GetSession()->GetPlayerName());
+            sLog->outWarden("Warden (%s) not correctly initialized (state: %u) on account %u, player %s", GetSession()->GetOS().c_str(), uint8(warden->GetState()), GetSession()->GetAccountId(), GetSession()->GetPlayerName().c_str());
             GetSession()->KickPlayer();
             return;
         }
