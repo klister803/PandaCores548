@@ -338,11 +338,10 @@ public:
                     uint32 games = Fields[3].GetUInt32();
                     uint32 rating = Fields[4].GetUInt32();
 
+                    uint32 titleId = 0;
+                    uint32 efirCount = 0;
                     if(!debugOnly)
                     {
-                        uint32 titleId = 0;
-                        uint32 efirCount = 0;
-                        std::string commandArg = name;
                         if (teamNumber >= 1 && teamNumber <= 3)
                         {
                                 titleId = 42;
@@ -353,7 +352,7 @@ public:
                                 titleId = 43;
                                 efirCount = 100;
                         }
-                        if (teamNumber >= 12 && teamNumber <= 25)
+                        if (teamNumber >= 13 && teamNumber <= 25)
                         {
                                 titleId = 44;
                                 efirCount = 70;
@@ -376,9 +375,9 @@ public:
                         }
                         // CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", guid, 500054); //Tabard winter 2017
                         // CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','150')", guid, 38186);
-                        sLog->outArena("За %u место в топе 2на2 получил %s(%u) %u эфира, побед %u, игр %u, рейтинг %u", teamNumber, name.c_str(), guid, efirCount, wins, games, rating);
                     }
 
+                    sLog->outArena("За %u место в топе 2на2 получил %s(%u) %u эфира, побед %u, игр %u, рейтинг %u", teamNumber, name.c_str(), guid, efirCount, wins, games, rating);
                     teamNumber++;
                 }
                 while (teamResult->NextRow());
