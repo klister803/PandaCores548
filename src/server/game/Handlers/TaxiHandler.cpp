@@ -226,10 +226,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recvData)
 
     uint32 curDest = GetPlayer()->m_taxi.GetTaxiDestination();
     if (!curDest)
-    {
-        GetPlayer()->SetChargeHandicap(0);
         return;
-    }
 
     TaxiNodesEntry const* curDestNode = sTaxiNodesStore.LookupEntry(curDest);
 

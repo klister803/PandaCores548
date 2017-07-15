@@ -28,8 +28,9 @@
 
 ////////////////// PathFinderMovementGenerator //////////////////
 PathFinderMovementGenerator::PathFinderMovementGenerator(const Unit* owner) :
-    m_polyLength(0), m_type(PATHFIND_BLANK), m_pointPathLimit(MAX_POINT_PATH_LENGTH), 
-    m_sourceUnit(owner), m_navMesh(NULL), m_navMeshQuery(NULL), _options(0)
+    m_polyLength(0), m_type(PATHFIND_BLANK),
+    m_useStraightPath(false), m_forceDestination(false), m_pointPathLimit(MAX_POINT_PATH_LENGTH),
+    m_sourceUnit(owner), m_navMesh(NULL), m_navMeshQuery(NULL)
 {
     //sLog->outDebug(LOG_FILTER_MAPS, "++ PathFinderMovementGenerator::PathFinderMovementGenerator for %u \n", m_sourceUnit->GetGUIDLow());
 
@@ -49,7 +50,7 @@ PathFinderMovementGenerator::~PathFinderMovementGenerator()
     //sLog->outDebug(LOG_FILTER_MAPS, "++ PathFinderMovementGenerator::~PathFinderMovementGenerator() for %u \n", m_sourceUnit->GetGUIDLow());
 }
 
-bool PathFinderMovementGenerator::calculate(float destX, float destY, float destZ, PathOptions option)
+bool PathFinderMovementGenerator::calculate(float destX, float destY, float destZ, bool forceDest)
 {
     if (!Trinity::IsValidMapCoord(destX, destY, destZ) ||
         !Trinity::IsValidMapCoord(m_sourceUnit->GetPositionX(), m_sourceUnit->GetPositionY(), m_sourceUnit->GetPositionZ()))
@@ -64,7 +65,7 @@ bool PathFinderMovementGenerator::calculate(float destX, float destY, float dest
     Vector3 start(x, y, z);
     setStartPosition(start);
 
-    _options = option;
+    m_forceDestination = forceDest;
 
     //sLog->outDebug(LOG_FILTER_MAPS, "++ PathFinderMovementGenerator::calculate() for %u \n", m_sourceUnit->GetGUIDLow());
 
@@ -402,9 +403,8 @@ void PathFinderMovementGenerator::BuildPointPath(const float *startPoint, const 
 {
     float pathPoints[MAX_POINT_PATH_LENGTH*VERTEX_SIZE];
     uint32 pointCount = 0;
-    uint32 additionalPointCount = 0;
     dtStatus dtResult = DT_FAILURE;
-    if (_options & PathOption_UseStraightPath)
+    if (m_useStraightPath)
     {
         dtResult = m_navMeshQuery->findStraightPath(
                 startPoint,         // start position
@@ -425,7 +425,6 @@ void PathFinderMovementGenerator::BuildPointPath(const float *startPoint, const 
                 m_pathPolyRefs,     // current path
                 m_polyLength,       // length of current path
                 pathPoints,         // [out] path corner points
-                (int*)&additionalPointCount,
                 (int*)&pointCount,
                 m_pointPathLimit);    // maximum number of points
     }
@@ -441,20 +440,15 @@ void PathFinderMovementGenerator::BuildPointPath(const float *startPoint, const 
         return;
     }
 
-    uint32 rlPointCount = pointCount + additionalPointCount;
-
-    m_pathPoints.resize(rlPointCount);
-    for (uint32 i = 0; i < rlPointCount; ++i)
+    m_pathPoints.resize(pointCount);
+    for (uint32 i = 0; i < pointCount; ++i)
         m_pathPoints[i] = Vector3(pathPoints[i*VERTEX_SIZE+2], pathPoints[i*VERTEX_SIZE], pathPoints[i*VERTEX_SIZE+1]);
 
-    if (_options & PathOption_PathForCharge)
-        NormalizePath();
-
     // first point is always our current location - we need the next one
-    setActualEndPosition(m_pathPoints[rlPointCount - 1]);
+    setActualEndPosition(m_pathPoints[pointCount-1]);
 
     // force the given destination, if needed
-    if ((_options & PathOption_ForceDestination) &&
+    if(m_forceDestination &&
         (!(m_type & PATHFIND_NORMAL) || !inRange(getEndPosition(), getActualEndPosition(), 1.0f, 1.0f)))
     {
         // we may want to keep partial subpath
@@ -474,12 +468,6 @@ void PathFinderMovementGenerator::BuildPointPath(const float *startPoint, const 
     }
 
     //sLog->outDebug(LOG_FILTER_MAPS, "++ PathFinderMovementGenerator::BuildPointPath path type %d size %d poly-size %d\n", m_type, pointCount, m_polyLength);
-}
-
-void PathFinderMovementGenerator::NormalizePath()
-{
-    for (uint32 i = 0; i < m_pathPoints.size(); ++i)
-        m_sourceUnit->UpdateAllowedPositionZ(m_pathPoints[i].x, m_pathPoints[i].y, m_pathPoints[i].z);
 }
 
 void PathFinderMovementGenerator::BuildShortcut()
@@ -523,32 +511,6 @@ void PathFinderMovementGenerator::createFilter()
     m_filter.setExcludeFlags(excludeFlags);
 
     updateFilter();
-}
-
-uint32 PathFinderMovementGenerator::DividePath(float const* startPos, float const* endPos, float* path, uint8 parts, uint32 pathNum, uint32 additionalPoints)
-{
-    float diff[3], curPoint[3];
-
-    dtVsub(diff, endPos, startPos);
-
-
-    if (diff[0] != 0.f && diff[2] != 0.f)
-    {
-        diff[0] /= parts;
-        diff[1] /= parts;
-        diff[2] /= parts;
-
-        dtVcopy(curPoint, startPos);
-
-        for (uint8 i = 1; i < parts; i++)
-        {
-            dtVadd(curPoint, curPoint, diff);
-            dtVcopy(&path[(pathNum + additionalPoints)*VERTEX_SIZE], curPoint);
-            additionalPoints++;
-        }
-    }
-
-    return additionalPoints;
 }
 
 void PathFinderMovementGenerator::updateFilter()
@@ -675,21 +637,11 @@ bool PathFinderMovementGenerator::getSteerTarget(const float* startPos, const fl
 }
 
 dtStatus PathFinderMovementGenerator::findSmoothPath(const float* startPos, const float* endPos,
-                                     const dtPolyRef* polyPath, uint32 polyPathSize, float* smoothPath, 
-                                     int* additionalPoints, int* smoothPathSize, uint32 maxSmoothPathSize)
+                                     const dtPolyRef* polyPath, uint32 polyPathSize,
+                                     float* smoothPath, int* smoothPathSize, uint32 maxSmoothPathSize)
 {
     *smoothPathSize = 0;
     uint32 nsmoothPath = 0;
-    uint32 nadditionalPoints = 0;
-    uint8 divideCount = 0;
-
-    if (_options & PathOption_PathForCharge)
-    {
-        if (polyPathSize * 3 < MAX_POINT_PATH_LENGTH)
-            divideCount = 3;
-        else if (polyPathSize * 2 < MAX_POINT_PATH_LENGTH)
-            divideCount = 2;
-    }
 
     dtPolyRef polys[MAX_PATH_LENGTH];
     memcpy(polys, polyPath, sizeof(dtPolyRef)*polyPathSize);
@@ -744,23 +696,16 @@ dtStatus PathFinderMovementGenerator::findSmoothPath(const float* startPos, cons
 
         m_navMeshQuery->getPolyHeight(polys[0], result, &result[1]);
         result[1] += 0.5f;
-
-        if (divideCount)
-            nadditionalPoints = DividePath(iterPos, result, smoothPath, divideCount, nsmoothPath, nadditionalPoints);
-
         dtVcopy(iterPos, result);
 
         // Handle end of path and off-mesh links when close enough.
         if (endOfPath && inRangeYZX(iterPos, steerPos, SMOOTH_PATH_SLOP, 1.0f))
         {
-            if (divideCount)
-                nadditionalPoints = DividePath(iterPos, targetPos, smoothPath, divideCount, nsmoothPath, nadditionalPoints);
-
             // Reached end of path.
             dtVcopy(iterPos, targetPos);
             if (nsmoothPath < maxSmoothPathSize)
             {
-                dtVcopy(&smoothPath[(nsmoothPath + nadditionalPoints)*VERTEX_SIZE], iterPos);
+                dtVcopy(&smoothPath[nsmoothPath*VERTEX_SIZE], iterPos);
                 nsmoothPath++;
             }
             break;
@@ -789,7 +734,7 @@ dtStatus PathFinderMovementGenerator::findSmoothPath(const float* startPos, cons
             {
                 if (nsmoothPath < maxSmoothPathSize)
                 {
-                    dtVcopy(&smoothPath[(nsmoothPath + nadditionalPoints)*VERTEX_SIZE], startPos);
+                    dtVcopy(&smoothPath[nsmoothPath*VERTEX_SIZE], startPos);
                     nsmoothPath++;
                 }
                 // Move position at the other side of the off-mesh link.
@@ -802,13 +747,12 @@ dtStatus PathFinderMovementGenerator::findSmoothPath(const float* startPos, cons
         // Store results.
         if (nsmoothPath < maxSmoothPathSize)
         {
-            dtVcopy(&smoothPath[(nsmoothPath + nadditionalPoints)*VERTEX_SIZE], iterPos);
+            dtVcopy(&smoothPath[nsmoothPath*VERTEX_SIZE], iterPos);
             nsmoothPath++;
         }
     }
 
     *smoothPathSize = nsmoothPath;
-    *additionalPoints = nadditionalPoints;
 
     // this is most likely a loop
     return nsmoothPath < MAX_POINT_PATH_LENGTH ? DT_SUCCESS : DT_FAILURE;

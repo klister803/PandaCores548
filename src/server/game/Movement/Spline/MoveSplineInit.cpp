@@ -186,7 +186,7 @@ namespace Movement
         if (generatePath)
         {
             PathFinderMovementGenerator path(&unit);
-            path.calculate(dest.x, dest.y, dest.z, forceDestination ? PathOption_ForceDestination : PathOption_Normal);
+            path.calculate(dest.x, dest.y, dest.z, forceDestination);
             MovebyPath(path.getPath());
         }
         else

@@ -216,8 +216,6 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_rootTimes = 0;
     m_timeForSpline = 0;
 
-    m_chargeHandicapTimer = 0;
-
     m_state = 0;
     m_deathState = ALIVE;
 
@@ -451,18 +449,8 @@ void Unit::Update(uint32 p_time)
         ModifyAuraState(AURA_STATE_HEALTH_ABOVE_75_PERCENT, HealthAbovePct(75));
     }
 
-    if (!m_chargeHandicapTimer)
-    {
-        UpdateSplineMovement(p_time);
-        i_motionMaster.UpdateMotion(p_time);
-    }
-    else
-    {
-        if (m_chargeHandicapTimer < p_time)
-            m_chargeHandicapTimer = 0;
-        else
-            m_chargeHandicapTimer -= p_time;
-    }
+    UpdateSplineMovement(p_time);
+    i_motionMaster.UpdateMotion(p_time);
 }
 
 bool Unit::haveOffhandWeapon() const
