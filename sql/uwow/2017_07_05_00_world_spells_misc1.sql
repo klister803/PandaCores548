@@ -19,9 +19,10 @@ DELETE FROM `spell_script_names` WHERE `spell_id`='6343' AND `ScriptName`='spell
 DELETE FROM `spell_linked_spell` WHERE `spell_effect`='115798';
 INSERT INTO `spell_linked_spell`(`spell_trigger`,`spell_effect`,`type`,`caster`,`target`,`hastype`,`hastalent`,`hastype2`,`hastalent2`,`chance`,`cooldown`,`duration`,`hitmask`,`removeMask`,`targetCountType`,`targetCount`,`actiontype`,`group`,`comment`) VALUES 
 ('77758','115798','1','0','0','0','0','0','0','0','0','0','0','0','0','-1','0','0','Слабые удары'),
+('106830','115798','1','0','0','0','0','0','0','0','0','0','0','0','0','-1','0','0','Слабые удары'),
 ('35395','115798','1','0','0','0','0','0','0','0','0','0','0','0','0','-1','0','0','Слабые удары'),
 ('6343','115798','1','0','0','0','0','0','0','0','0','0','0','0','0','-1','0','0','Слабые удары'),
-('48721','115798','1','0','0','0','81132','0','0','0','0','0','0','0','0','-1','0','0','Слабые удары'); 
+('48721','115798','1','0','0','0','81132','0','0','0','0','0','0','0','0','-1','0','0','Слабые удары');  
 -- Переписана пассивная способность http://ru.wowhead.com/spell=46953 . Исправлен баг, когда при срабатывании визуального оповещения у вас не сбрасывался кулдаун. Теперь же кулдаун способности http://ru.wowhead.com/spell=23922 будет сбрасываться сразу же с проком этой визуалки
 DELETE FROM `spell_script_names` WHERE `spell_id`='20243' AND `ScriptName`='spell_warr_sword_and_board'; 
 DELETE FROM `spell_linked_spell` WHERE `spell_trigger`='50227' AND `spell_effect`='23922';
@@ -118,12 +119,10 @@ INSERT INTO `spell_linked_spell`(`spell_trigger`,`spell_effect`,`type`,`caster`,
 ('12294','115804','1','0','0','0','0','0','0','0','0','0','0','0','0','-1','0','0','Смертельное ранение'),
 ('100130','115804','1','0','0','0','0','0','0','0','0','0','0','0','0','-1','0','0','Смертельное ранение'),
 ('107428','115804','1','0','0','0','0','0','0','0','0','0','0','0','0','-1','0','0','Смертельное ранение'); 
--- Корректировки внутренних кулдаунов запускаемых талантом "Разрушающий крик" и "Зуботычина" (для хитрожопых)
 DELETE FROM `spell_linked_spell` WHERE `spell_trigger`='6552' AND `spell_effect`='102060';
 DELETE FROM `spell_linked_spell` WHERE `spell_trigger`='102560' AND `spell_effect`='6552';
-INSERT INTO `spell_linked_spell`(`spell_trigger`,`spell_effect`,`type`,`caster`,`target`,`hastype`,`hastalent`,`hastype2`,`hastalent2`,`chance`,`cooldown`,`duration`,`hitmask`,`removeMask`,`targetCountType`,`targetCount`,`actiontype`,`group`,`comment`) VALUES 
-('6552','102060','0','0','0','0','0','0','0','0','15','0','0','0','0','-1','3','0','Разрушающий крик - Зуботычина (серверное кд)'),
-('102060','6552','0','0','0','0','0','0','0','0','15','0','0','0','0','-1','3','0','Разрушающий крик - Зуботычина (серверное кд)'); 
+-- Исправлен баг, когда ваша способность http://ru.wowhead.com/spell=107570 всегда накладывала эффект оглушения, даже если вы промахнулись
+UPDATE `spell_linked_spell` SET `hitmask`='1' WHERE `spell_trigger`='107570' AND `spell_effect`='132169';
 
 -- Теперь пассивный эффект способности "Чистота" будет дополнительно давать бонус исцеляющей ауре тотема http://ru.wowhead.com/spell=52042 .
 DELETE FROM `spell_aura_dummy` WHERE `spellId`='52042' AND `spellDummyId`='16213';
