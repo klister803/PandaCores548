@@ -134,6 +134,13 @@ public:
             if (!list.empty())
                 for (std::list<Creature*>::const_iterator itr = list.begin(); itr != list.end(); itr++)
                     (*itr)->DespawnOrUnsummon();
+
+            list.clear();
+            me->GetCreatureListWithEntryInGrid(list, NPC_JUVENILE, 150.0f);
+            me->GetCreatureListWithEntryInGrid(list, NPC_JUVENILE_FROM_F_EGG, 150.0f);
+            if (!list.empty())
+                for (std::list<Creature*>::const_iterator itr = list.begin(); itr != list.end(); itr++)
+                    (*itr)->DespawnOrUnsummon();
         }
 
         void RemoveDebuffsFromPlayers()
@@ -328,9 +335,9 @@ public:
                 me->RemoveAurasDueToSpell(SPELL_INCUBATE_ZONE);
                 std::list<Creature*> egglist;
                 egglist.clear();
-                GetCreatureListWithEntryInGrid(egglist, me, NPC_YOUNG_EGG_OF_JIKUN, 20.0f);
-                GetCreatureListWithEntryInGrid(egglist, me, NPC_MATURE_EGG_OF_JIKUN, 20.0f);
-                GetCreatureListWithEntryInGrid(egglist, me, NPC_JIKUN_FLEDGLING_EGG, 20.0f);
+                GetCreatureListWithEntryInGrid(egglist, me, NPC_YOUNG_EGG_OF_JIKUN, 40.0f);
+                GetCreatureListWithEntryInGrid(egglist, me, NPC_MATURE_EGG_OF_JIKUN, 40.0f);
+                GetCreatureListWithEntryInGrid(egglist, me, NPC_JIKUN_FLEDGLING_EGG, 40.0f);
                 if (!egglist.empty())
                 {
                     for (std::list<Creature*>::const_iterator itr = egglist.begin(); itr != egglist.end(); itr++)
@@ -346,14 +353,14 @@ public:
                 }
 
                 egglist.clear();
-                GetCreatureListWithEntryInGrid(egglist, me, NPC_FEED_NEST_POOL, 20.0f);
+                GetCreatureListWithEntryInGrid(egglist, me, NPC_FEED_NEST_POOL, 40.0f);
                 if (!egglist.empty())
                     for (std::list<Creature*>::const_iterator itr = egglist.begin(); itr != egglist.end(); itr++)
                         (*itr)->DespawnOrUnsummon();
 
                 std::list<AreaTrigger*> atlist;
                 atlist.clear();
-                me->GetAreaTriggersWithEntryInRange(atlist, 4628, me->GetGUID(), 15.0f);
+                me->GetAreaTriggersWithEntryInRange(atlist, 4628, me->GetGUID(), 25.0f);
                 if (!atlist.empty())
                     for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
                         (*itr)->RemoveFromWorld();
