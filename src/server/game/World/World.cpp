@@ -3721,7 +3721,6 @@ void World::ProcessMailboxQueue()
                 do
                 {
                     f = select->Fetch();
-                    uint32 mailId = sObjectMgr->GenerateMailID();
 
                     time_t deliver_time = m_gameTime;
                     time_t expire_time = deliver_time + 30 * DAY;
@@ -3749,71 +3748,126 @@ void World::ProcessMailboxQueue()
                     if(itemid && !pProto)
                         continue;
 
-                    Item *attachment = NULL;
-                    Player * receiver = ObjectAccessor::FindPlayer(receiver_guid);
-                    SQLTransaction trans = CharacterDatabase.BeginTransaction();
-
-                    if(itemid != 0)
+                    uint8 countmails = 1;
+                    uint32 stack = pProto ? pProto->GetMaxStackSize() : uint32(0x7FFFFFFF-1);
+                    if (itemid != 0)
                     {
-                        attachment = Item::CreateItem ( itemid, itemcount, receiver );
-                        if(attachment)
-                            attachment->SaveToDB(trans);
-                    }
-
-                    // Add to DB
-                    CharacterDatabase.EscapeString(subject);
-                    CharacterDatabase.EscapeString(body);
-                    trans->PAppend("REPLACE INTO mail (id,messageType,stationery,mailTemplateId,sender,receiver,subject,body,has_items,expire_time,deliver_time,money,cod,checked) VALUES ('%u', '%u', '%u', '%u', '%u', '%u', '%s', '%s', '%u', '" UI64FMTD "','" UI64FMTD "', '%u', '%u', '%d')",
-                        mailId, messageType, stationery, 0, sender_guid, receiver_guid, subject.c_str(), body.c_str(), (attachment != NULL ? 1 : 0), (uint64)expire_time, (uint64)deliver_time, money, 0, 0);
-         
-                    if(attachment != NULL)
-                    {
-                        trans->PAppend("REPLACE INTO mail_items (mail_id,item_guid,receiver) VALUES ('%u', '%u', '%u')", mailId, attachment->GetGUIDLow(), receiver_guid);
-                        if(forefir)
-                            trans->PAppend("REPLACE INTO character_donate (`owner_guid`, `itemguid`, `itemEntry`, `efircount`, `count`) VALUES ('%u', '%u', '%u', '%u', '%u')", receiver_guid, attachment->GetGUIDLow(), itemid, forefir, itemcount);
-                    }
-                    sLog->outError(LOG_FILTER_REMOTECOMMAND,"Sending mail to %u, Item:%u , ItemCount:%u, %s", receiver_guid, itemid,itemcount,body.c_str());
-
-                    CharacterDatabase.CommitTransaction(trans);
-
-                    // For online receiver update in game mail status and data
-                    if (receiver)
-                    {
-                        receiver->AddNewMailDeliverTime(deliver_time);
-
-                        if (receiver->IsMailsLoaded())
+                        if (itemcount > MAX_MAIL_ITEMS*stack)
                         {
-                            Mail *m = new Mail;
-                            m->messageID = mailId;
-                            m->messageType = messageType;
-                            m->stationery = stationery;
-                            m->mailTemplateId = 0;
-                            m->sender = sender_guid;
-                            m->receiver = receiver->GetGUIDLow();
-                            m->subject = subject;
-                            m->body = body;
-
-                            if(attachment)
-                                m->AddItem(attachment->GetGUIDLow(),attachment->GetEntry());
-
-                            m->expire_time = expire_time;
-                            m->deliver_time = deliver_time;
-                            m->money = money;
-                            m->COD = 0;
-                            m->checked = 0;
-                            m->state = MAIL_STATE_UNCHANGED;
-
-                            receiver->AddMail(m);                           // to insert new mail to beginning of maillist
-
-                            if(attachment)
-                                receiver->AddMItem(attachment);
+                            uint32 tempitemcount = itemcount;
+                            while (tempitemcount > MAX_MAIL_ITEMS*stack)
+                            {
+                                countmails++;
+                                tempitemcount -= MAX_MAIL_ITEMS*stack;
+                            }
                         }
-                        else if (attachment)
-                            delete attachment;
                     }
-                    else if (attachment)
-                        delete attachment;
+                    for (uint8 j = 0; j < countmails; ++j)
+                    {
+                        uint32 mailId = sObjectMgr->GenerateMailID();
+                        Player * receiver = ObjectAccessor::FindPlayer(receiver_guid);
+                        
+                        std::vector<Item*> ItemsOnMail;
+                        ItemsOnMail.clear();
+                        
+                        uint32 countitems = 0;
+                        if (itemid != 0)
+                        {
+                            if (itemcount <= MAX_MAIL_ITEMS*stack)
+                                countitems = itemcount;
+                            else
+                            {
+                                countitems = MAX_MAIL_ITEMS*stack;
+                                itemcount -= MAX_MAIL_ITEMS*stack;
+                            }
+                        }
+                        
+                        SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
+                        uint32 tempcountitems = countitems;
+                        while (countitems && itemid)
+                        {
+                            Item *attachment = NULL;
+
+                            if (itemid != 0)
+                            {
+                                if (countitems > stack)
+                                {
+                                    attachment = Item::CreateItem ( itemid, stack, receiver );
+                                    countitems -= stack;
+                                }
+                                else
+                                {
+                                    attachment = Item::CreateItem ( itemid, countitems, receiver );
+                                    countitems = 0;
+                                }
+                                if (attachment)
+                                {
+                                    attachment->SaveToDB(trans);
+                                    ItemsOnMail.push_back(attachment);
+                                }
+                            }
+                            if(attachment != NULL)
+                            {
+                                trans->PAppend("REPLACE INTO mail_items (mail_id,item_guid,receiver) VALUES ('%u', '%u', '%u')", mailId, attachment->GetGUIDLow(), receiver_guid);
+                                if(forefir)
+                                    trans->PAppend("REPLACE INTO character_donate (`owner_guid`, `itemguid`, `itemEntry`, `efircount`, `count`) VALUES ('%u', '%u', '%u', '%u', '%u')", receiver_guid, attachment->GetGUIDLow(), itemid, forefir, tempcountitems);
+                            }
+                        }
+
+                        // Add to DB
+                        CharacterDatabase.EscapeString(subject);
+                        CharacterDatabase.EscapeString(body);
+                        trans->PAppend("REPLACE INTO mail (id,messageType,stationery,mailTemplateId,sender,receiver,subject,body,has_items,expire_time,deliver_time,money,cod,checked) VALUES ('%u', '%u', '%u', '%u', '%u', '%u', '%s', '%s', '%u', '" UI64FMTD "','" UI64FMTD "', '%u', '%u', '%d')",
+                            mailId, messageType, stationery, 0, sender_guid, receiver_guid, subject.c_str(), body.c_str(), (tempcountitems != 0 ? 1 : 0), (uint64)expire_time, (uint64)deliver_time, money, 0, 0);
+             
+                        sLog->outError(LOG_FILTER_REMOTECOMMAND,"Sending mail to %u, Item:%u , ItemCount:%u, %s", receiver_guid, itemid,tempcountitems,body.c_str());
+
+                        CharacterDatabase.CommitTransaction(trans);
+
+                        // For online receiver update in game mail status and data
+                        if (receiver)
+                        {
+                            receiver->AddNewMailDeliverTime(deliver_time);
+
+                            if (receiver->IsMailsLoaded())
+                            {
+                                Mail *m = new Mail;
+                                m->messageID = mailId;
+                                m->messageType = messageType;
+                                m->stationery = stationery;
+                                m->mailTemplateId = 0;
+                                m->sender = sender_guid;
+                                m->receiver = receiver->GetGUIDLow();
+                                m->subject = subject;
+                                m->body = body;
+
+                                if(!ItemsOnMail.empty())
+                                    for (Item* pitem : ItemsOnMail)
+                                        m->AddItem(pitem->GetGUIDLow(), pitem->GetEntry());
+
+                                m->expire_time = expire_time;
+                                m->deliver_time = deliver_time;
+                                m->money = money;
+                                m->COD = 0;
+                                m->checked = 0;
+                                m->state = MAIL_STATE_UNCHANGED;
+
+                                receiver->AddMail(m);                           // to insert new mail to beginning of maillist
+
+                                if(!ItemsOnMail.empty())
+                                    for (Item* pitem : ItemsOnMail)
+                                        receiver->AddMItem(pitem);
+                            }
+                            else if(!ItemsOnMail.empty())
+                                for (Item* pitem : ItemsOnMail)
+                                    delete pitem;
+                        }
+                        else if(!ItemsOnMail.empty())
+                            for (Item* pitem : ItemsOnMail)
+                                delete pitem;
+
+                    }
                     CharacterDatabase.PExecute("DELETE FROM mailbox_queue WHERE id = '%u'", id);
                 } while (select->NextRow());
             }
