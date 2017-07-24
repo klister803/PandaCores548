@@ -1025,6 +1025,25 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     uint32 accountNameLength = recvPacket.ReadBits(11);
     account = recvPacket.ReadString(accountNameLength);
+    
+    // if (ConfigMgr::GetBoolDefault("Login.with.email", false))
+    {
+        const char* c_login = account.c_str();
+        if (c_login)
+        {
+            char* sobaka = strchr((char*)c_login, '@');
+            if (sobaka != NULL) // email
+            {
+                PreparedStatement* stmt1 = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_BY_EMAIL);
+                stmt1->setString(0, account);
+                if (PreparedQueryResult result = LoginDatabase.Query(stmt1)) // select acc for auth process
+                {
+                    Field* field = result->Fetch();
+                    account = field[0].GetString();
+                }
+            }
+        }
+    } 
 
     if (sWorld->IsClosed())
     {
