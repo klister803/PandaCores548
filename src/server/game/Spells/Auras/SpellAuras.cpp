@@ -766,6 +766,10 @@ Aura::~Aura()
         m_loadedScripts.erase(itr);
     }
 
+    // free effects memory
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+         delete m_effects[i];
+
     ASSERT(m_applications.empty());
     _DeleteRemovedApplications();
 }

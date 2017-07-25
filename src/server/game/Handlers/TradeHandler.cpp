@@ -467,6 +467,10 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& recvPacket)
             trader->GetSession()->SendNotification(LANG_NOT_PARTNER_FREE_TRADE_SLOTS);
             my_trade->SetAccepted(false);
             his_trade->SetAccepted(false);
+            if (my_spell)
+                delete my_spell;
+            if (his_spell)
+                delete his_spell;
             return;
         }
         else if (!hisCanCompleteTrade)
@@ -477,6 +481,10 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& recvPacket)
             trader->GetSession()->SendNotification(LANG_NOT_FREE_TRADE_SLOTS);
             my_trade->SetAccepted(false);
             his_trade->SetAccepted(false);
+            if (my_spell)
+                delete my_spell;
+            if (his_spell)
+                delete his_spell;
             return;
         }
 
