@@ -268,7 +268,14 @@ void Warden::SetPlayerLocked(uint16 checkId, WardenCheck* wd)
         switch (wd->Type)
         {
             case MPQ_CHECK: message = "uWoW Anticheat: Banned MPQ patches detected. You are flagged for further sanctions"; break;
-            case LUA_STR_CHECK: message = "uWoW Anticheat: Banned addons detected. You are flagged for further sanctions"; break;
+            case LUA_STR_CHECK:
+            {
+                if (checkId > 11)
+                    message = "uWoW Anticheat: PQR Bot detected. You are flagged for further sanctions";
+                else
+                    message = "uWoW Anticheat: Banned addons detected. You are flagged for further sanctions";
+                break;
+            }
             case PAGE_CHECK_A:
             case PAGE_CHECK_B:
             {
@@ -344,7 +351,9 @@ void WorldSession::HandleWardenDataOpcode(WorldPacket& recvData)
 {
     uint32 cryptedSize;
     recvData >> cryptedSize;
+
     _warden->DecryptData(const_cast<uint8*>(recvData.contents() + sizeof(uint32)), cryptedSize);
+
     uint8 opcode;
     recvData >> opcode;
     sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: CMSG opcode %02X, size %u", opcode, uint32(recvData.size()));
