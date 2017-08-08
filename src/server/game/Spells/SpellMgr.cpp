@@ -129,6 +129,8 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             // Curses/etc
             if ((spellproto->SpellFamilyFlags[0] & 0x80000000) || (spellproto->SpellFamilyFlags[1] & 0x200))
                 return DIMINISHING_LIMITONLY;
+            else if (spellproto->Id == 18223 || spellproto->Id == 104223)
+                return DIMINISHING_LIMITONLY;
             // Seduction
             else if (spellproto->Id == 6358 || spellproto->Id == 132412)
                 return DIMINISHING_FEAR;
@@ -145,6 +147,9 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             // Nature's Grasp
             if (spellproto->SpellFamilyFlags[0] & 0x00000200)
                 return DIMINISHING_CONTROLLED_ROOT;
+            // Sleep
+            else if (spellproto->Id == 2637)
+                return DIMINISHING_DISORIENT;
 
             switch (spellproto->Id)
             {
@@ -201,7 +206,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             if (spellproto->SpellFamilyFlags[0] & 0x100000)
                 return DIMINISHING_LIMITONLY;
             // Turn Evil
-            else if (spellproto->Id == 10326 || spellproto->Id == 145067)
+            else if (spellproto->Id == 10326 || spellproto->Id == 145067 || spellproto->Id == 105421)
                 return DIMINISHING_FEAR;
             break;
         }
