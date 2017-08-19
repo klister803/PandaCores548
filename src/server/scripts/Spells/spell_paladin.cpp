@@ -1567,6 +1567,38 @@ class spell_pal_shield_of_glory : public SpellScriptLoader
         }
 };
 
+// Sacred shield - 65148
+class spell_pal_sacred_shield_absorb : public SpellScriptLoader
+{
+    public:
+        spell_pal_sacred_shield_absorb() : SpellScriptLoader("spell_pal_sacred_shield_absorb") { }
+
+        class spell_pal_sacred_shield_absorb_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pal_sacred_shield_absorb_AuraScript);
+
+            void CalculateAmount(AuraEffect const*, float & amount, bool &)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    float critChance = caster->ToPlayer()->GetFloatValue(PLAYER_CRIT_PERCENTAGE);
+                    if (roll_chance_f(critChance))
+                        amount *= 2;
+                }
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pal_sacred_shield_absorb_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pal_sacred_shield_absorb_AuraScript();
+        }
+};
+
 void AddSC_paladin_spell_scripts()
 {
     new spell_pal_glyph_of_avenging_wrath();
@@ -1604,4 +1636,5 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_judgment();
     new spell_pal_exorcism();
     new spell_pal_shield_of_glory();
+    new spell_pal_sacred_shield_absorb();
 }
