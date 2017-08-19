@@ -208,6 +208,8 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             // Turn Evil
             else if (spellproto->Id == 10326 || spellproto->Id == 145067 || spellproto->Id == 105421)
                 return DIMINISHING_FEAR;
+            else if (spellproto->Id == 115752)
+                return DIMINISHING_STUN;
             break;
         }
         case SPELLFAMILY_DEATHKNIGHT:
