@@ -1567,7 +1567,7 @@ class spell_pal_shield_of_glory : public SpellScriptLoader
         }
 };
 
-/*// Sacred shield - 65148
+// Sacred shield - 65148
 class spell_pal_sacred_shield_absorb : public SpellScriptLoader
 {
     public:
@@ -1597,7 +1597,7 @@ class spell_pal_sacred_shield_absorb : public SpellScriptLoader
         {
             return new spell_pal_sacred_shield_absorb_AuraScript();
         }
-};*/
+};
 
 void AddSC_paladin_spell_scripts()
 {
@@ -1636,5 +1636,5 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_judgment();
     new spell_pal_exorcism();
     new spell_pal_shield_of_glory();
-    // new spell_pal_sacred_shield_absorb();
+    new spell_pal_sacred_shield_absorb();
 }
