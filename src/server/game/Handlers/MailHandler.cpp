@@ -500,9 +500,6 @@ void WorldSession::HandleMailTakeItem(WorldPacket& recvData)
     if(!item)
         return;
 
-    if(item->GetEntry() == 38186)
-        sLog->outDebug(LOG_FILTER_EFIR, "HandleMailTakeItem - item %u; count = %u playerGUID %u, itemGUID %u", item->GetEntry(), item->GetCount(), player->GetGUID(), item->GetGUID());
-
     item->SetOwnerGUID(player->GetGUID());
     ItemPosCountVec dest;
     uint8 msg = _player->CanStoreItem(NULL_BAG, NULL_SLOT, dest, item, false);

@@ -347,6 +347,9 @@ class Item : public Object
         uint32 GetRefundRecipient() { return m_refundRecipient; }
         uint32 GetPaidMoney() { return m_paidMoney; }
         uint32 GetPaidExtendedCost() { return m_paidExtendedCost; }
+        
+        void SetDonateItem(bool apply) {DonateItem = apply;};
+        bool GetDonateItem() const {return DonateItem;}; // can't be traded, selled or add on auction
 
         void UpdatePlayedTime(Player* owner);
         uint32 GetPlayedTime();
@@ -406,6 +409,7 @@ class Item : public Object
         uint32 m_refundRecipient;
         uint32 m_paidMoney;
         uint32 m_paidExtendedCost;
+        bool DonateItem = false;
         AllowedLooterSet allowedGUIDs;
         uint32 ItemLevel;
         uint32 ItemLevelBeforeCap;

@@ -279,12 +279,6 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
     ItemPosCountVec dest;
     InventoryResult msg;
 
-    if (sObjectMgr->IsPlayerInLogList(player))
-    {
-        sObjectMgr->DumpDupeConstant(player);
-        sLog->outDebug(LOG_FILTER_DUPE, "---HandleVoidStorageTransfer; depositCount: %u;", depositCount);
-    }
-
     for (std::vector<ObjectGuid>::iterator itr = itemIds.begin(); itr != itemIds.end(); ++itr)
     {
         itemVS = player->GetVoidStorageItem(*itr, slot);
@@ -429,12 +423,6 @@ void WorldSession::HandleVoidSwapItem(WorldPacket& recvData)
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleVoidSwapItem - Player (GUID: %u, name: %s) requested swapping an invalid item (slot: %u, itemid: " UI64FMTD ").", player->GetGUIDLow(), player->GetName(), newSlot, uint64(itemId));
         return;
-    }
-
-    if (sObjectMgr->IsPlayerInLogList(player))
-    {
-        sObjectMgr->DumpDupeConstant(player);
-        sLog->outDebug(LOG_FILTER_DUPE, "---HandleVoidSwapItem; oldSlot: %u; newSlot %u", oldSlot, newSlot);
     }
 
     bool usedSrcSlot = player->GetVoidStorageItem(oldSlot) != NULL; // should be always true

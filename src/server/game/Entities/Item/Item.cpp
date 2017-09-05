@@ -339,6 +339,8 @@ void Item::SaveToDB(SQLTransaction& trans)
     bool isInTransaction = !(trans.null());
     if (!isInTransaction)
         trans = CharacterDatabase.BeginTransaction();
+    
+    SQLTransaction transs = LoginDatabase.BeginTransaction();
 
     uint32 guid = GetGUIDLow();
     switch (uState)
@@ -387,6 +389,9 @@ void Item::SaveToDB(SQLTransaction& trans)
             stmt->setUInt32(++index, GetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME));
             //stmt->setString(++index, m_text);
             stmt->setString(++index, "");
+            
+            stmt->setBool(++index, GetDonateItem());
+            
             stmt->setUInt32(++index, guid);
 
             trans->Append(stmt);
@@ -412,11 +417,19 @@ void Item::SaveToDB(SQLTransaction& trans)
                 stmt->setUInt32(0, guid);
                 trans->Append(stmt);
             }
+            uint8 index = 0;
+            stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_HISTORY_STATUS);
+            stmt->setUInt32(  index, 1);
+            stmt->setUInt64(  ++index, guid); 
+            stmt->setUInt32(  ++index, realmID); 
+            
+            transs->Append(stmt);
 
             if (!isInTransaction)
                 CharacterDatabase.CommitTransaction(trans);
 
-            CharacterDatabase.PExecute("UPDATE character_donate SET state = 1, deletedate = '%s' WHERE itemguid = '%u'", TimeToTimestampStr(time(NULL)).c_str(), guid);
+            LoginDatabase.CommitTransaction(transs);
+            
             delete this;
             return;
         }
@@ -572,7 +585,16 @@ void Item::DeleteFromDB(SQLTransaction& trans, uint32 itemGuid)
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_INSTANCE);
     stmt->setUInt32(0, itemGuid);
     trans->Append(stmt);
-    CharacterDatabase.PExecute("UPDATE character_donate SET state = 1, deletedate = '%s' WHERE itemguid = '%u'", TimeToTimestampStr(time(NULL)).c_str(), itemGuid);
+    SQLTransaction transs = LoginDatabase.BeginTransaction();
+
+    uint8 index = 0;
+    stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_HISTORY_STATUS);
+    stmt->setUInt32(  index, 1);
+    stmt->setUInt64(  ++index, itemGuid); 
+    stmt->setUInt32(  ++index, realmID); 
+            
+    transs->Append(stmt);
+    LoginDatabase.CommitTransaction(transs);
 }
 
 void Item::DeleteFromDB(SQLTransaction& trans)
@@ -838,6 +860,9 @@ bool Item::CanBeTraded(bool mail, bool trade) const
         return false;
 
     if ((!mail || !IsBoundAccountWide()) && (IsSoulBound() && (!HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_BOP_TRADEABLE) || !trade)))
+        return false;
+    
+    if (GetDonateItem())
         return false;
 
     if (IsBag() && (Player::IsBagPos(GetPos()) || !((Bag const*)this)->IsEmpty()))

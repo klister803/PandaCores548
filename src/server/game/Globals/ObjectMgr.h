@@ -371,6 +371,43 @@ struct SpellClickInfo
     bool IsFitToRequirements(Unit const* clicker, Unit const* clickee) const;
 };
 
+struct DonVenCat
+{
+    uint32 action;
+    std::string NameEn;
+    std::string NameKo;
+    std::string NameFr;
+    std::string NameDe;
+    std::string NameCn;
+    std::string NameTw;
+    std::string NameEs;
+    std::string NameEm;
+    std::string NameRu;
+    std::string NamePt;
+    std::string NameIt;
+    std::string NameUa;
+    uint32 type;
+};
+
+struct DonVenAdd
+{
+    int32 action;
+    uint32 cost;
+    std::string NameEn;
+    std::string NameKo;
+    std::string NameFr;
+    std::string NameDe;
+    std::string NameCn;
+    std::string NameTw;
+    std::string NameEs;
+    std::string NameEm;
+    std::string NameRu;
+    std::string NamePt;
+    std::string NameIt;
+    std::string NameUa;
+    uint32 type;
+};
+
 typedef std::multimap<uint32, SpellClickInfo> SpellClickInfoContainer;
 typedef std::pair<SpellClickInfoContainer::const_iterator, SpellClickInfoContainer::const_iterator> SpellClickInfoMapBounds;
 
@@ -613,7 +650,9 @@ struct GraveYardData
 typedef std::multimap<uint32, GraveYardData> GraveYardContainer;
 
 typedef UNORDERED_MAP<uint32, VendorItemData> CacheVendorItemContainer;
+typedef UNORDERED_MAP<int32, VendorItemData> CacheDonateVendorItemContainer;
 typedef UNORDERED_MAP<uint32, TrainerSpellData> CacheTrainerSpellContainer;
+typedef UNORDERED_MAP<uint8, float> PriceForLevelUp;
 
 enum SkillRangeType
 {
@@ -873,6 +912,11 @@ class ObjectMgr
 
         typedef UNORDERED_MAP<uint32, uint32> AreaTriggerScriptContainer;
 
+        typedef UNORDERED_MAP<int32, std::vector<DonVenCat>> DonateVendorCat;
+        typedef UNORDERED_MAP<int32, std::vector<int32>> FakeDonateVendorCat;
+        typedef UNORDERED_MAP<int32, std::vector<int32>> ReversFakeDonateVendorCat;
+        typedef UNORDERED_MAP<int32, std::vector<DonVenAdd>> DonateVendorAdd;
+        
         typedef std::map<AccessRequirementKey, AccessRequirement> AccessRequirementContainer;
 
         typedef UNORDERED_MAP<uint32, RepRewardRate > RepRewardRateContainer;
@@ -884,14 +928,6 @@ class ObjectMgr
         typedef std::vector<std::string> ScriptNameContainer;
 
         typedef std::map<uint32, uint32> CharacterConversionMap;
-
-        typedef std::set<uint64> DupeLogMap;
-        DupeLogMap m_dupeLogMap;
-
-        void AddCharToDupeLog(uint64 guid);
-        bool IsPlayerInLogList(Player *player);
-        void RemoveCharFromDupeList(uint64 guid);
-        void DumpDupeConstant(Player *player);
 
         typedef std::list<CurrencyLoot> CurrencysLoot;
         std::list<CurrencyLoot> GetCurrencyLoot(uint32 entry, uint8 type, uint8 spawnMode);
@@ -1229,6 +1265,7 @@ class ObjectMgr
         void LoadGossipMenuItems();
 
         void LoadVendors();
+        void LoadDonateVendors();
         void LoadTrainerSpell();
         void AddSpellToTrainer(uint32 entry, uint32 spell, uint32 spellCost, uint32 reqSkill, uint32 reqSkillValue, uint32 reqLevel);
 
@@ -1484,6 +1521,57 @@ class ObjectMgr
 
             return &iter->second;
         }
+        
+        VendorItemData const* GetNpcDonateVendorItemList(int32 entry) const
+        {
+            CacheDonateVendorItemContainer::const_iterator itr = _cacheDonateVendorItemStore.find(entry);
+            if (itr == _cacheDonateVendorItemStore.end())
+                return NULL;
+
+            return &itr->second;
+        }
+        
+        std::vector<DonVenCat> const* GetDonateVendorCat(int32 entry) const
+        {        
+            DonateVendorCat::const_iterator itr = _donvendorcat.find(entry);
+            if (itr == _donvendorcat.end())
+                return NULL;
+            return &itr->second;
+        }
+        
+        std::vector<int32> const* GetFakeDonateVendorCat(int32 entry) const
+        {        
+            FakeDonateVendorCat::const_iterator itr = _fakedonvendorcat.find(entry);
+            if (itr == _fakedonvendorcat.end())
+                return NULL;
+            return &itr->second;
+        }
+        
+        std::vector<int32> const* GetRealDonateVendorCat(int32 entry) const
+        {        
+            ReversFakeDonateVendorCat::const_iterator itr = _reversfakedonvendorcat.find(entry);
+            if (itr == _reversfakedonvendorcat.end())
+                return NULL;
+            return &itr->second;
+        }
+        
+        std::vector<DonVenAdd> const* GetDonateVendorAdd(int32 entry) const
+        {        
+            DonateVendorAdd::const_iterator itr = _donvendoradd.find(entry);
+            if (itr == _donvendoradd.end())
+                return NULL;
+            return &itr->second;
+        }
+        
+        float const* GetPriceForLevelUp(uint8 level) 
+        {
+            PriceForLevelUp::const_iterator itr = _priceforlevelupStore.find(level);
+            if (itr == _priceforlevelupStore.end())
+                return NULL;
+
+            return &itr->second;
+        };
+        
         void AddVendorItem(uint32 entry, uint32 item, int32 maxcount, uint32 incrtime, uint32 extendedCost, uint8 type, bool persist = true); // for event
         bool RemoveVendorItem(uint32 entry, uint32 item, uint8 type, bool persist = true); // for event
         bool IsVendorItemValid(uint32 vendor_entry, uint32 id, int32 maxcount, uint32 ptime, uint32 ExtendedCost, uint8 type, Player* player = NULL, std::set<uint32>* skip_vendors = NULL, uint32 ORnpcflag = 0) const;
@@ -1827,6 +1915,8 @@ class ObjectMgr
         PointOfInterestLocaleContainer _pointOfInterestLocaleStore;
 
         CacheVendorItemContainer _cacheVendorItemStore;
+        CacheDonateVendorItemContainer _cacheDonateVendorItemStore;
+        PriceForLevelUp _priceforlevelupStore;
         CacheTrainerSpellContainer _cacheTrainerSpellStore;
 
         enum CreatureLinkedRespawnType
@@ -1839,6 +1929,11 @@ class ObjectMgr
         HotfixData _hotfixData;
 
         AreaTriggerInfoMap _areaTriggerData;
+        
+        DonateVendorCat _donvendorcat;
+        FakeDonateVendorCat _fakedonvendorcat;
+        ReversFakeDonateVendorCat _reversfakedonvendorcat;
+        DonateVendorAdd _donvendoradd;
 };
 
 uint32 GetItemArmor(uint32 itemlevel, uint32 itemClass, uint32 itemSubclass, uint32 quality, uint32 inventoryType);

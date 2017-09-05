@@ -44,7 +44,7 @@ void LoginDatabaseConnection::DoPrepareStatements()
     PrepareStatement(LOGIN_SEL_FAILEDLOGINS, "SELECT id, failed_logins FROM account WHERE username = ?", CONNECTION_SYNCH);
     PrepareStatement(LOGIN_SEL_ACCOUNT_ID_BY_NAME, "SELECT id FROM account WHERE username = ?", CONNECTION_SYNCH);
     PrepareStatement(LOGIN_SEL_ACCOUNT_LIST_BY_NAME, "SELECT id, username FROM account WHERE username = ?", CONNECTION_SYNCH);
-    PrepareStatement(LOGIN_SEL_ACCOUNT_INFO_BY_NAME, "SELECT id, sessionkey, last_ip, locked, v, s, expansion, mutetime, locale, recruiter, os FROM account WHERE username = ?", CONNECTION_SYNCH);
+    PrepareStatement(LOGIN_SEL_ACCOUNT_INFO_BY_NAME, "SELECT id, sessionkey, last_ip, locked, v, s, expansion, mutetime, locale, recruiter, os, battlenet_account FROM account WHERE username = ?", CONNECTION_SYNCH);
     PrepareStatement(LOGIN_SEL_ACCOUNT_LIST_BY_EMAIL, "SELECT id, username FROM account WHERE email = ?", CONNECTION_SYNCH);
     PrepareStatement(LOGIN_SEL_NUM_CHARS_ON_REALM, "SELECT numchars FROM realmcharacters WHERE realmid = ? AND acctid= ?", CONNECTION_SYNCH);
     PrepareStatement(LOGIN_SEL_ACCOUNT_BY_IP, "SELECT id, username FROM account WHERE last_ip = ?", CONNECTION_SYNCH);
@@ -94,4 +94,23 @@ void LoginDatabaseConnection::DoPrepareStatements()
     PrepareStatement(LOGIN_SET_DUMP, "INSERT INTO `transferts` (`account`, `perso_guid`, `from`, `to`, `state`, `dump`) VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
     PrepareStatement(LOGIN_UPD_DUMP, "UPDATE transferts SET dump = ? ,state = ? WHERE id = ?", CONNECTION_ASYNC);
     PrepareStatement(LOGIN_ADD_TRANSFERTS_LOGS, "INSERT INTO transferts_logs (`id`, `account`, `perso_guid`, `from`, `to`, `dump`, `toacc`, `newguid`, `transferId`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
+    
+    PrepareStatement(LOGIN_SELECT_DONATE_TOKEN, "SELECT `balans` from battlenet_accounts WHERE id = ?;", CONNECTION_SYNCH);
+    PrepareStatement(LOGIN_UPD_DESTROY_DONATE_TOKEN, "UPDATE battlenet_accounts SET balans = balans - ? WHERE id = ?;", CONNECTION_ASYNC);
+    PrepareStatement(LOGIN_UPD_ADD_DONATE_TOKEN, "UPDATE battlenet_accounts SET balans = balans + ? WHERE id = ?;", CONNECTION_ASYNC);
+    PrepareStatement(LOGIN_INS_STORE_ADD_ITEM_LOG, "INSERT INTO `store_history` (`realm`, `account`, `bnet_account`, `char_guid`, `item_guid`, `item`, `count`, `token`, `char_level`, `product`, `bonus`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, (select `bonus` from `store_products` where id = ?));", CONNECTION_ASYNC);
+    PrepareStatement(LOGIN_INS_STORE_ADD_ITEM_LOG_SERVICE, "INSERT INTO `store_history` (`realm`, `account`, `bnet_account`, `char_guid`, `item_guid`, `item`, `count`, `token`, `char_level`, `product`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, (select `id` from `store_products` where `item` = ?));", CONNECTION_ASYNC);
+    PrepareStatement(LOGIN_INS_STORE_ADD_ITEM_LOG_BONUS, "INSERT INTO `store_history` (`realm`, `account`, `bnet_account`, `char_guid`, `item_guid`, `item`, `count`, `token`, `char_level`, `product`, `bonus`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, (select `id` from `store_products` where `item` = ?), ?);", CONNECTION_ASYNC);
+    PrepareStatement(LOGIN_UPD_HISTORY_GUID, "UPDATE `store_history` SET item_guid = ? WHERE id = ? AND item = ?;", CONNECTION_ASYNC);
+    PrepareStatement(LOGIN_UPD_HISTORY_STATUS, "UPDATE `store_history` SET `status` = ? WHERE `item_guid` = ? and `realm` = ? and (`status` = 0 or `status` = 6)", CONNECTION_ASYNC);
+    PrepareStatement(LOGIN_UPD_HISTORY_STATUS_AND_GUID_BY_STATUS, "UPDATE `store_history` SET `status` = ?, `item_guid` = ? WHERE `item_guid` = ? and `realm` = ? and `status` = ?", CONNECTION_ASYNC);
+    PrepareStatement(LOGIN_UPD_HISTORY_RETURN, "UPDATE `store_history` SET `status` = 7, dt_return = NOW() WHERE `item_guid` = ? and `realm` = ? and (`status` = 0 or `status` = 6)", CONNECTION_ASYNC);
+    // 0 - по умолчанию, игрок получил предмет
+    // 1 - удалён
+    // 2 - продан
+    // 3 - использован и удален
+    // 4 - распылён
+    // 5 - в хранилище (продолжаем следить при возврате)
+    // 6 - использован, но не удален (многоразовый?) (продолжаем следить)
+    // 7 - возвращен
 }

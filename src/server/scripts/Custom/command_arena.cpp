@@ -40,18 +40,18 @@ public:
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
 
-        static ChatCommand logCommandTable[] =
-        {
-            { "addchar",        SEC_GAMEMASTER,     false, &HandleAddCharCommand,               "", NULL },
-            { "removechar",     SEC_GAMEMASTER,     false, &HandleRemoveCharCommand,            "", NULL },
-            { NULL,             0,                  false, NULL,                                "", NULL }
-        };
+        // static ChatCommand logCommandTable[] =
+        // {
+            // { "addchar",        SEC_GAMEMASTER,     false, &HandleAddCharCommand,               "", NULL },
+            // { "removechar",     SEC_GAMEMASTER,     false, &HandleRemoveCharCommand,            "", NULL },
+            // { NULL,             0,                  false, NULL,                                "", NULL }
+        // };
 
         static ChatCommand commandTable[] =
         {
             { "custom",         SEC_GAMEMASTER,     false, NULL,                                "", customCommandTable },
             { "arena",          SEC_GAMEMASTER,     false, NULL,                                "", arenaCommandTable },
-            { "log",            SEC_GAMEMASTER,   false, NULL,                                  "", logCommandTable },
+            // { "log",            SEC_GAMEMASTER,   false, NULL,                                  "", logCommandTable },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
 
@@ -645,29 +645,29 @@ public:
         return true;
     }
 
-    static bool HandleAddCharCommand(ChatHandler* handler, const char* args)
-    {
-        std::string name = args;
-        if (uint64 guid = sObjectMgr->GetPlayerGUIDByName(name))
-        {
-            sObjectMgr->AddCharToDupeLog(guid);
-            handler->PSendSysMessage("Added.");
-        }
+    // static bool HandleAddCharCommand(ChatHandler* handler, const char* args)
+    // {
+        // std::string name = args;
+        // if (uint64 guid = sObjectMgr->GetPlayerGUIDByName(name))
+        // {
+            // sObjectMgr->AddCharToDupeLog(guid);
+            // handler->PSendSysMessage("Added.");
+        // }
 
-        return true;
-    }
+        // return true;
+    // }
 
-    static bool HandleRemoveCharCommand(ChatHandler* handler, const char* args)
-    {
-        std::string name = args;
-        if (uint64 guid = sObjectMgr->GetPlayerGUIDByName(name))
-        {
-            sObjectMgr->RemoveCharFromDupeList(guid);
-            handler->PSendSysMessage("Removed.");
-        }
+    // static bool HandleRemoveCharCommand(ChatHandler* handler, const char* args)
+    // {
+        // std::string name = args;
+        // if (uint64 guid = sObjectMgr->GetPlayerGUIDByName(name))
+        // {
+            // sObjectMgr->RemoveCharFromDupeList(guid);
+            // handler->PSendSysMessage("Removed.");
+        // }
 
-        return true;
-    }
+        // return true;
+    // }
     
     static bool HandleCharacterItemsCheckCommand(ChatHandler* handler, const char* args) //проверяет, есть нужные итемы у игрока или нет
     {         

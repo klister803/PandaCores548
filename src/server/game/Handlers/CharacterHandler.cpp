@@ -1798,12 +1798,6 @@ void WorldSession::HandleEquipmentSetUse(WorldPacket& recvData)
 
     recvData.rfinish();
 
-    if (sObjectMgr->IsPlayerInLogList(GetPlayer()))
-    {
-        sObjectMgr->DumpDupeConstant(GetPlayer());
-        sLog->outDebug(LOG_FILTER_DUPE, "---WorldSession::HandleEquipmentSetUse");
-    }
-
     EquipmentSlots startSlot = _player->isInCombat() ? EQUIPMENT_SLOT_MAINHAND : EQUIPMENT_SLOT_START;
     for (uint32 i = 0; i < EQUIPMENT_SLOT_END; ++i)
     {

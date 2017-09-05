@@ -250,7 +250,7 @@ class CharacterCreateInfo
 class WorldSession
 {
     public:
-        WorldSession(uint32 id, std::string account_name, WorldSocket* sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter);
+        WorldSession(uint32 id, std::string account_name, WorldSocket* sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter, uint32 bnetacc);
         ~WorldSession();
 
         bool PlayerLoading() const { return m_playerLoading; }
@@ -284,6 +284,7 @@ class WorldSession
 
         AccountTypes GetSecurity() const { return _security; }
         uint32 GetAccountId() const { return _accountId; }
+        uint32 GetBattlenetAccountId() const { return BnetAcc; }
         std::string GetAccountName() { return _account_name; }
         Player* GetPlayer() const { return _player; }
         std::string GetPlayerName(bool simple = true) const;
@@ -1141,6 +1142,7 @@ class WorldSession
         std::mutex _registeredAddonLock;
         bool _filterAddonMessages;
         uint32 recruiterId;
+        uint32 BnetAcc;
         bool isRecruiter;
         ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvQueue;
         time_t timeCharEnumOpcode;

@@ -2918,9 +2918,6 @@ void Spell::DoCreateItem(uint32 /*i*/, uint32 itemtype)
             return;
         }
 
-        if(pItem->GetEntry() == 38186)
-            sLog->outDebug(LOG_FILTER_EFIR, "DoCreateItem - StoreNewItem of item %u; 1 = %u playerGUID %u, itemGUID %u spellId %u", pItem->GetEntry(), 1, player->GetGUID(), pItem->GetGUID(), m_spellInfo->Id);
-
         // set the "Crafted by ..." property of the item
         if (pItem->GetTemplate()->Class != ITEM_CLASS_CONSUMABLE && pItem->GetTemplate()->Class != ITEM_CLASS_QUEST && newitemid != 6265 && newitemid != 6948)
             pItem->SetUInt32Value(ITEM_FIELD_CREATOR, player->GetGUIDLow());
@@ -3513,9 +3510,6 @@ void Spell::EffectSummonChangeItem(SpellEffIndex effIndex)
     Item* pNewItem = Item::CreateItem(newitemid, 1, player);
     if (!pNewItem)
         return;
-
-    if(pNewItem->GetEntry() == 38186)
-        sLog->outDebug(LOG_FILTER_EFIR, "EffectSummonChangeItem - CreateItem of item %u; 1 = %u playerGUID %u, itemGUID %u m_CastItem %i", pNewItem->GetEntry(), 1, player->GetGUID(), pNewItem->GetGUID(), m_CastItem->GetEntry());
 
     for (uint8 j = PERM_ENCHANTMENT_SLOT; j <= TEMP_ENCHANTMENT_SLOT; ++j)
         if (m_CastItem->GetEnchantmentId(EnchantmentSlot(j)))
@@ -6315,6 +6309,23 @@ void Spell::EffectDisEnchant(SpellEffIndex /*effIndex*/)
 
     if (!itemTarget || !itemTarget->GetTemplate()->DisenchantID)
         return;
+    
+    if (itemTarget->GetDonateItem())
+        return;
+    
+    { // по идее не надо, но пока оставлю, мало ли
+        // donate
+        SQLTransaction transs = LoginDatabase.BeginTransaction();
+
+        uint8 index = 0;
+        PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_HISTORY_STATUS);
+        stmt->setUInt32(  index, 4);
+        stmt->setUInt64(  ++index, itemTarget->GetGUIDLow()); 
+        stmt->setUInt32(  ++index, realmID); 
+
+        transs->Append(stmt);
+        LoginDatabase.CommitTransaction(transs); 
+    }
 
     if (Player* caster = m_caster->ToPlayer())
     {
