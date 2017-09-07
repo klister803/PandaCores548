@@ -122,6 +122,9 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             // Charge Stun (own diminishing)
             else if (spellproto->SpellFamilyFlags[0] & 0x01000000)
                 return DIMINISHING_CHARGE;
+            // Dragon Roar 
+            else if (spellproto->Id == 118895)
+                return DIMINISHING_CHARGE;
             break;
         }
         case SPELLFAMILY_WARLOCK:
@@ -175,7 +178,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
                 return DIMINISHING_FEAR;
             // Paralytic Poison
              else if (spellproto->SpellFamilyFlags[2] & 0x00000001)
-                 return DIMINISHING_OPENING_STUN;
+                return DIMINISHING_CHARGE;
             // Crippling poison - Limit to 10 seconds in PvP (No SpellFamilyFlags)
             else if (spellproto->SpellIconID == 163)
                 return DIMINISHING_LIMITONLY;
@@ -219,6 +222,12 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             // Mark of Blood
             else if (((spellproto->SpellFamilyFlags[0] & 0x10000000) && spellproto->SpellIconID == 2285) || spellproto->Id == 50435)
                 return DIMINISHING_LIMITONLY;
+            break;
+        }
+        case SPELLFAMILY_SHAMAN:
+        {
+            if (spellproto->Id == 77505)
+                return DIMINISHING_CHARGE;
             break;
         }
         case SPELLFAMILY_MONK:
@@ -273,7 +282,7 @@ DiminishingReturnsType GetDiminishingReturnsGroupType(DiminishingGroup group)
         case DIMINISHING_TAUNT:
         case DIMINISHING_CONTROLLED_STUN:
         case DIMINISHING_STUN:
-        case DIMINISHING_OPENING_STUN:
+        // case DIMINISHING_OPENING_STUN:
         case DIMINISHING_CYCLONE:
         case DIMINISHING_CHARGE:
             return DRTYPE_ALL;
@@ -382,7 +391,7 @@ bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group)
         case DIMINISHING_FEAR:
         case DIMINISHING_HORROR:
         case DIMINISHING_MIND_CONTROL:
-        case DIMINISHING_OPENING_STUN:
+        // case DIMINISHING_OPENING_STUN:
         case DIMINISHING_ROOT:
         case DIMINISHING_STUN:
         case DIMINISHING_SLEEP:
