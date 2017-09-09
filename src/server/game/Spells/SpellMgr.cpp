@@ -177,7 +177,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             else if (spellproto->SpellFamilyFlags[0] & 0x1000000)
                 return DIMINISHING_FEAR;
             // Paralytic Poison
-             else if (spellproto->SpellFamilyFlags[2] & 0x00000001)
+            else if (spellproto->SpellFamilyFlags[2] & 0x00000001)
                 return DIMINISHING_CHARGE;
             // Crippling poison - Limit to 10 seconds in PvP (No SpellFamilyFlags)
             else if (spellproto->SpellIconID == 163)
@@ -3889,6 +3889,14 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 12294: // Mortal Strike
+                case 100130: // Wild strike
+                case 113004: // Intimidating Roar
+                    spellInfo->Effects[0]->TriggerSpell = 0;
+                    break;
+                case 107428: // Rising Sun Kick
+                    spellInfo->Effects[1]->TriggerSpell = 0;
+                    break;
                 case 132365: // Vengeance
                 {
                     spellInfo->CreateCustomEffect(EFFECT_2);
