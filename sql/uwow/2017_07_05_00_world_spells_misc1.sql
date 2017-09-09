@@ -138,3 +138,32 @@ INSERT INTO `spell_proc_check`(`entry`,`entry2`,`entry3`,`checkspell`,`hastalent
 ('52007','0','0','331','0','100','0','7','-1','-1','0','0','0','0','0','-35','0','0','0','0','Earthliving Weapon (Passive)'),
 ('52007','0','0','73685','0','100','0','7','-1','-1','0','0','0','0','0','-35','0','0','0','0','Earthliving Weapon (Passive)'),
 ('52007','0','0','77472','0','100','0','7','-1','-1','0','0','0','0','0','-35','0','0','0','0','Earthliving Weapon (Passive)');
+
+-- 01.08 - 31.08
+-- Исправлен баг, когда ваша способность http://ru.wowhead.com/spell=107570 всегда накладывала эффект оглушения, даже если вы промахнулись
+UPDATE `spell_linked_spell` SET `hitmask`='1' WHERE `spell_trigger`='107570' AND `spell_effect`='132169';
+
+DELETE FROM `spell_proc_event` WHERE `entry`='102351'; 
+INSERT INTO `spell_proc_event`(`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFamilyMask0`,`SpellFamilyMask1`,`SpellFamilyMask2`,`SpellFamilyMask3`,`procFlags`,`procEx`,`ppmRate`,`CustomChance`,`Cooldown`,`effectmask`) VALUES 
+('102351','0','0','0','0','0','0','1048576','0','0','0','0','7'); 
+
+DELETE FROM `areatrigger_actions` WHERE `entry`='983'; 
+INSERT INTO `areatrigger_actions`(`entry`,`id`,`moment`,`actionType`,`targetFlags`,`spellId`,`maxCharges`,`aura`,`hasspell`,`chargeRecoveryTime`,`scale`,`hitMaxCount`,`amount`,`comment`) VALUES 
+('983','0','1','0','4098','81261','0','0','0','0','0','0','0','Столп солнечного света'),
+('983','1','42','1','4098','81261','0','0','0','0','0','0','0','Столп солнечного света'); 
+
+DELETE FROM `spell_proc_check` WHERE `entry`='76669' AND `checkspell`='-53652';
+INSERT INTO `spell_proc_check`(`entry`,`checkspell`,`comment`) VALUES 
+('76669','-53652','Озаряющее исцеление'); 
+
+DELETE FROM `spell_script_names` WHERE `spell_id`='65148' AND `ScriptName`='spell_pal_sacred_shield_absorb'; 
+INSERT INTO `spell_script_names`(`spell_id`,`ScriptName`) VALUES ('65148','spell_pal_sacred_shield_absorb'); 
+
+-- 09.09
+DELETE FROM `spell_aura_dummy` WHERE `spellId`='12294' AND `spellDummyId`='-137047' AND `option`='4'; 
+DELETE FROM `spell_aura_dummy` WHERE `spellId`='100130' AND `spellDummyId`='-137047' AND `option`='4'; 
+DELETE FROM `spell_aura_dummy` WHERE `spellId`='107428' AND `spellDummyId`='-137022' AND `option`='4'; 
+
+DELETE FROM `spell_linked_spell` WHERE `spell_trigger`='113004' AND `spell_effect`='113056';
+INSERT INTO `spell_linked_spell`(`spell_trigger`,`spell_effect`,`type`,`comment`) VALUES 
+('113004','113056','5','Устрашающий рев');
