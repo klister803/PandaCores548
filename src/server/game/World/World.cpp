@@ -3805,10 +3805,10 @@ void World::ProcessMailboxQueue()
                                 }
                                 if (attachment)
                                 {
-                                    attachment->SaveToDB(trans);
-                                    ItemsOnMail.push_back(attachment);
                                     if(store_history)
                                         attachment->SetDonateItem(true);
+                                    attachment->SaveToDB(trans);
+                                    ItemsOnMail.push_back(attachment);;
                                 }
                             }
                             if(attachment != NULL)
