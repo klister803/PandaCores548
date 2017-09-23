@@ -7235,6 +7235,17 @@ SpellCastResult Spell::CheckCast(bool strict)
                 
                 switch (m_spellInfo->Id)
                 {
+                    case 91647: // Totem Overcharge
+                    {
+                        if (Unit* target = m_targets.GetUnitTarget())
+                        {
+                            if (target->GetEntry() != 49177) //Winterfall Earth Totem
+                            {
+                                return SPELL_FAILED_BAD_TARGETS;
+                            }
+                        }
+                        break;
+                    }
                     case 104316: // Glyph of Imp Swarm
                     {
                         if (Player* plr = m_caster->ToPlayer())
