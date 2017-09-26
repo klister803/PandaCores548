@@ -35,13 +35,16 @@ class WardenMac : public Warden
         ~WardenMac();
 
         void InitializeModule() {}
-        void HandleHashResult(ByteBuffer &buff, bool newCrypto = false) {}
+        void HandleHashResult(ByteBuffer &buff) {}
+        void HandleModuleFailed() { _state = WARDEN_MODULE_LOADED; }
         void RequestBaseData() {}
         void RequestExtendedData() {}
 
         void HandleData(ByteBuffer &buff) {}
-        void HandleBaseData(ByteBuffer &buff) {}
-        void HandleExtendedData(ByteBuffer &buff) {}
+
+        void CommonChecksHandler(ByteBuffer &buff) {}
+        void ExtendedChecksHandler(ByteBuffer &buff) {}
+
         void TestFunc();
 };
 

@@ -31,7 +31,7 @@
 #include "Warden.h"
 #include "AccountMgr.h"
 
-Warden::Warden(WorldSession* session) : _session(session), _checkTimer(0), _clientResponseTimer(0), _pendingKickTimer(0), _state(WARDEN_NOT_INITIALIZED)
+Warden::Warden(WorldSession* session) : _session(session), _checkTimer(0), _clientResponseTimer(0), _pendingKickTimer(0), _reInitTimer(0), _state(WARDEN_NOT_INITIALIZED)
 {
     _lastUpdateTime = getMSTime();
 }
@@ -124,6 +124,11 @@ void Warden::SendModuleToClient()
 
 void Warden::RequestHash()
 {
+    _state = WARDEN_MODULE_LOADED;
+
+    if (_session->GetOS() == "OSX")
+        return;
+
     sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: Request hash(0x05)");
 
     // Create packet structure
@@ -150,40 +155,57 @@ void Warden::Update()
     if (_session->GetOS() == "OSX")
         return;
 
+    Player* player = _session->GetPlayer();
+
+    // removing player with incorrect state from world
+    if (player && player->IsInWorld() && !player->IsBeingTeleported())
+    {
+        if (!IsValidStateInWorld(_session->GetOS()))
+        {
+            sLog->outWarden("Warden (%s) not correctly initialized (state: %u) on account %u, player %s", _session->GetOS().c_str(), uint8(_state), _session->GetAccountId(), _session->GetPlayerName());
+            _state = WARDEN_MODULE_SET_PLAYER_LOCK;
+            _pendingKickTimer = 10 * IN_MILLISECONDS;
+        }
+        else
+        {
+            // custom state for pending lock after MPQ checks on auth
+            if (_state == WARDEN_MODULE_SET_PLAYER_PENDING_LOCK)
+            {
+                sLog->outWarden("Warden (%s) set pending lock on account %u, player %s", _session->GetOS().c_str(), _session->GetAccountId(), _session->GetPlayerName());
+                SetPlayerLocked("uWoW Anticheat: Banned MPQ patches detected.");
+            }
+        }
+    }
+
     switch (_state)
     {
         // need check it
         case WARDEN_NOT_INITIALIZED:
         case WARDEN_MODULE_NOT_LOADED:
         case WARDEN_MODULE_LOADED:
-        case WARDEN_MODULE_INITIALIZED:
+        case WARDEN_MODULE_SPECIAL_DBC_CHECKS:
+        case WARDEN_MODULE_SET_PLAYER_PENDING_LOCK:
             break;
+        case WARDEN_MODULE_WAIT_INITIALIZE:
+        {
+            ReInitTimerUpdate(diff);
+            break;
+        }
         case WARDEN_MODULE_READY:
         case WARDEN_MODULE_WAIT_RESPONSE:
         {
-            if (Player* player = _session->GetPlayer())
+            if (player && player->IsInWorld() && !player->IsBeingTeleported())
             {
-                if (player->IsInWorld() && !player->IsBeingTeleported())
-                {
-                    if (_state == WARDEN_MODULE_READY)
-                    {
-                        if (_checkTimer)
-                            StaticCheatChecksTimerUpdate(diff);
-                    }
-                    else
-                    {
-                        if (_clientResponseTimer)
-                            ClientResponseTimerUpdate(diff);
-                    }
-                }
+                if (_state == WARDEN_MODULE_READY)
+                    StaticCheatChecksTimerUpdate(diff);
+                else
+                    ClientResponseTimerUpdate(diff);
             }
-
             break;
         }
-        case WARDEN_MODULE_PLAYER_LOCKED:
+        case WARDEN_MODULE_SET_PLAYER_LOCK:
         {
-            if (_pendingKickTimer)
-                PendingKickTimerUpdate(diff);
+            PendingKickTimerUpdate(diff);
             break;
         }
         default:
@@ -193,12 +215,14 @@ void Warden::Update()
 
 void Warden::ClientResponseTimerUpdate(uint32 diff)
 {
-    // TODO: Kick player if client response delays more than set in config
+    if (!_clientResponseTimer)
+        return;
+
     if (_clientResponseTimer <= diff)
     {
         _clientResponseTimer = 0;
-        sLog->outWarden("Player %s (guid: %u, account: %u, latency: %u, IP: %s) with module state %u exceeded Warden module (%s) response delay for more than 60s - disconnecting client", 
-            _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), _session->GetLatency(), _session->GetRemoteAddress().c_str(), uint8(_state), _session->GetOS().c_str());
+        sLog->outWarden("Player %s (guid: %u, account: %u, latency: %u, IP: %s) with module state %u exceeded Warden module (%s) response delay for more than 90s - disconnecting client",
+            _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId(), _session->GetLatency(), _session->GetRemoteAddress().c_str(), uint8(_state), _session->GetOS().c_str());
         _session->KickPlayer();
         return;
     }
@@ -208,6 +232,9 @@ void Warden::ClientResponseTimerUpdate(uint32 diff)
 
 void Warden::StaticCheatChecksTimerUpdate(uint32 diff)
 {
+    if (!_checkTimer)
+        return;
+
     if (_checkTimer <= diff)
     {
         _checkTimer = 0;
@@ -219,6 +246,9 @@ void Warden::StaticCheatChecksTimerUpdate(uint32 diff)
 
 void Warden::PendingKickTimerUpdate(uint32 diff)
 {
+    if (!_pendingKickTimer)
+        return;
+
     if (_pendingKickTimer <= diff)
     {
         _pendingKickTimer = 0;
@@ -226,6 +256,20 @@ void Warden::PendingKickTimerUpdate(uint32 diff)
     }
     else
         _pendingKickTimer -= diff;
+}
+
+void Warden::ReInitTimerUpdate(uint32 diff)
+{
+    if (!_reInitTimer)
+        return;
+
+    if (_reInitTimer <= diff)
+    {
+        _reInitTimer = 0;
+        InitializeMPQCheckFuncFake();
+    }
+    else
+        _reInitTimer -= diff;
 }
 
 void Warden::DecryptData(uint8* buffer, uint32 length)
@@ -259,6 +303,19 @@ uint32 Warden::BuildChecksum(const uint8* data, uint32 length)
     return checkSum;
 }
 
+void Warden::SetPlayerLocked(std::string message)
+{
+    if (Player* player = _session->GetPlayer())
+    {
+        WorldPacket data(SMSG_MESSAGECHAT, 200);
+        player->BuildMonsterChat(&data, CHAT_MSG_RAID_BOSS_EMOTE, message.c_str(), LANG_UNIVERSAL, player->GetName(), player->GetGUID());
+        player->SendDirectMessage(&data);
+    }
+
+    _state = WARDEN_MODULE_SET_PLAYER_LOCK;
+    _pendingKickTimer = 5 * IN_MILLISECONDS;
+}
+
 void Warden::SetPlayerLocked(uint16 checkId, WardenCheck* wd)
 {
     std::string message = "uWoW Anticheat: Unknown internal error";
@@ -267,31 +324,22 @@ void Warden::SetPlayerLocked(uint16 checkId, WardenCheck* wd)
     {
         switch (wd->Type)
         {
-            case MPQ_CHECK: message = "uWoW Anticheat: Banned MPQ patches detected. You are flagged for further sanctions"; break;
-            case LUA_STR_CHECK:
-            {
-                if (checkId > 11)
-                    message = "uWoW Anticheat: PQR Bot detected. You are flagged for further sanctions";
-                else
-                    message = "uWoW Anticheat: Banned addons detected. You are flagged for further sanctions";
-                break;
-            }
+            case MPQ_CHECK: message = "uWoW Anticheat: Banned MPQ patches detected."; break;
+            case LUA_STR_CHECK: message = "uWoW Anticheat: Banned addons detected."; break;
             case PAGE_CHECK_A:
             case PAGE_CHECK_B:
             {
-                if (checkId == 9 || checkId == 10 || checkId == 11)
-                    message = "uWoW Anticheat: PQR Bot detected. You are flagged for further sanctions";
-                else
-                    message = "uWoW Anticheat: Banned DLLs detected. You are flagged for further sanctions";
+                message = "uWoW Anticheat: Injected cheat code detected.";
                 break;
             }
-            case MEM_CHECK:
-            {
-                message = "uWoW Anticheat: Unknown cheat detected. You are flagged for further sanctions";
-                break;
-            }
-            default: message = "uWoW Anticheat: Unknown suspicious program detected. You are flagged for further sanctions"; break;
+            case MEM_CHECK: message = "uWoW Anticheat: Unknown cheat detected."; break;
+            case MODULE_CHECK: message = "uWoW Anticheat: Banned DLLs detected."; break;
+            case PROC_CHECK: message = "uWoW Anticheat: API hooks detected."; break;
+            default: message = "uWoW Anticheat: Unknown suspicious program detected."; break;
         }
+
+        if (wd->BanReason != "")
+            message = "uWoW Anticheat: " + wd->BanReason + " detected.";
     }
 
     if (Player* player = _session->GetPlayer())
@@ -301,8 +349,8 @@ void Warden::SetPlayerLocked(uint16 checkId, WardenCheck* wd)
         player->SendDirectMessage(&data);
     }
 
-    _state = WARDEN_MODULE_PLAYER_LOCKED;
-    _pendingKickTimer = 8000;
+    _state = WARDEN_MODULE_SET_PLAYER_LOCK;
+    _pendingKickTimer = 5 * IN_MILLISECONDS;
 }
 
 std::string Warden::Penalty(uint16 checkId)
@@ -315,15 +363,18 @@ std::string Warden::Penalty(uint16 checkId)
         {
             case WARDEN_ACTION_LOG:
                 return "None";
-            case WARDEN_ACTION_KICK:
+            case WARDEN_ACTION_INSTANT_KICK:
+            {
                 _session->KickPlayer();
-                return "Kick";
+                return "Kick (instant)";
+            }
             case WARDEN_ACTION_BAN:
             {
                 std::stringstream duration;
 
+                // permaban
                 if (check->BanTime == 0)
-                    duration << sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_BAN_DURATION) << "s";
+                    duration << "-1";
                 else
                     duration << check->BanTime << "s";
 
@@ -331,20 +382,52 @@ std::string Warden::Penalty(uint16 checkId)
                 AccountMgr::GetName(_session->GetAccountId(), accountName);
                 std::stringstream banReason;
                 banReason << "Cheat detected";
-                // Check can be NULL, for example if the client sent a wrong signature in the warden packet (CHECKSUM FAIL)
-                if (check)
-                    banReason << ": " << check->Comment << " (CheckId: " << checkId << ")";
+
+                if (check->BanReason == "")
+                    banReason << ": " << "Unknown Hack" << " (CheckId: " << checkId << ")";
+                else
+                    banReason << ": " << check->BanReason << " (CheckId: " << checkId << ")";
 
                 sWorld->BanAccount(BAN_ACCOUNT, accountName, duration.str(), banReason.str(), "uWoW Anticheat");
                 return "Ban";
+            }
+            case WARDEN_ACTION_PENDING_KICK:
+            {
+                SetPlayerLocked(checkId, check);
+                return "Kick (with message)";
             }
             default:
                 break;
         }
     }
 
+    // impossible, but..
     _session->KickPlayer();
-    return "Undefined";
+    return "Unknown Error";
+}
+
+bool Warden::IsValidStateInWorld(std::string os)
+{
+    // not check internal state, because this state in update is IMPOSSIBLE
+    if (_state == WARDEN_NOT_INITIALIZED)
+        return true;
+
+    if (os == "Win")
+    {
+        if (_state >= WARDEN_MODULE_READY)
+            return true;
+
+        // waiting reInit timer triggered
+        if (_reInitTimer && _state == WARDEN_MODULE_WAIT_INITIALIZE)
+            return true;
+    }
+    else
+    {
+        if (_state == WARDEN_MODULE_LOADED)
+            return true;
+    }
+
+    return false;
 }
 
 void WorldSession::HandleWardenDataOpcode(WorldPacket& recvData)
@@ -362,36 +445,35 @@ void WorldSession::HandleWardenDataOpcode(WorldPacket& recvData)
     switch (opcode)
     {
         case WARDEN_CMSG_MODULE_MISSING:
+        {
             _warden->SendModuleToClient();
             break;
+        }
         case WARDEN_CMSG_MODULE_OK:
         {
-            _warden->SetState(WARDEN_MODULE_LOADED);
-            if (GetOS() != "OSX")
-                _warden->RequestHash();
+            _warden->RequestHash();
             break;
         }
         case WARDEN_CMSG_CHEAT_CHECKS_RESULT:
+        {
             _warden->HandleData(recvData);
             break;
+        }
         case WARDEN_CMSG_MEM_CHECKS_RESULT:
+        {
             sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: CMSG_MEM_CHECKS_RESULT received!");
             break;
+        }
         case WARDEN_CMSG_HASH_RESULT:
         {
             _warden->HandleHashResult(recvData);
             _warden->InitializeModule();
+            _warden->SendDbcChecks();
             break;
         }
         case WARDEN_CMSG_MODULE_FAILED:
         {
-            if (GetOS() != "OSX")
-            {
-                sLog->outWarden("CMSG_MODULE_FAILED received, kick account %s!", GetAccountName().c_str());
-                KickPlayer();
-            }
-            else
-                _warden->SetState(WARDEN_MODULE_LOADED);
+            _warden->HandleModuleFailed();
             break;
         }
         default:

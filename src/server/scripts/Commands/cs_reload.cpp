@@ -157,7 +157,7 @@ public:
             { "spell_threats",                SEC_ADMINISTRATOR, true,  &HandleReloadSpellThreatsCommand,               "", NULL },
             { "spell_group_stack_rules",      SEC_ADMINISTRATOR, true,  &HandleReloadSpellGroupStackRulesCommand,       "", NULL },
             { "trinity_string",               SEC_ADMINISTRATOR, true,  &HandleReloadTrinityStringCommand,              "", NULL },
-            { "warden_action",                SEC_ADMINISTRATOR, true,  &HandleReloadWardenactionCommand,               "", NULL },
+            { "warden_data",                  SEC_ADMINISTRATOR, true,  &HandleReloadWardenDataCommand,                 "", NULL },
             { "waypoint_scripts",             SEC_ADMINISTRATOR, true,  &HandleReloadWpScriptsCommand,                  "", NULL },
             { "waypoint_data",                SEC_ADMINISTRATOR, true,  &HandleReloadWpCommand,                         "", NULL },
             { "vehicle_accessory",            SEC_ADMINISTRATOR, true,  &HandleReloadVehicleAccessoryCommand,           "", NULL },
@@ -740,7 +740,7 @@ public:
         return true;
     }
 
-    static bool HandleReloadWardenactionCommand(ChatHandler* handler, const char* /*args*/)
+    static bool HandleReloadWardenDataCommand(ChatHandler* handler, const char* /*args*/)
     {
         if (!sWorld->getBoolConfig(CONFIG_WARDEN_ENABLED))
         {
@@ -749,9 +749,9 @@ public:
             return false;
         }
 
-        sLog->outInfo(LOG_FILTER_GENERAL, "Re-Loading warden_action Table!");
+        sLog->outInfo(LOG_FILTER_GENERAL, "Re-Loading warden_overrides Table!");
         _wardenMgr->LoadWardenOverrides();
-        handler->SendGlobalGMSysMessage("DB table `warden_action` reloaded.");
+        handler->SendGlobalGMSysMessage("DB table `warden_overrides` reloaded.");
         return true;
     }
 

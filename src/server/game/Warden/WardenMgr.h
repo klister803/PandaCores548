@@ -69,15 +69,16 @@ struct WardenModule
 
 enum WardenActions
 {
-    WARDEN_ACTION_LOG,
-    WARDEN_ACTION_KICK,
-    WARDEN_ACTION_BAN
+    WARDEN_ACTION_LOG          = 0,
+    WARDEN_ACTION_INSTANT_KICK = 1,
+    WARDEN_ACTION_BAN          = 2,
+    WARDEN_ACTION_PENDING_KICK = 3
 };
 
 struct WardenCheck
 {
-    WardenCheck(uint8 checkType, std::string data, std::string str, uint32 address, uint8 length, std::string result, std::string comment, WardenActions action, uint32 bantime) : Type(checkType),
-        Data(data), Str(str), Address(address), Length(length), Result(result), Comment(comment), Action(action), BanTime(bantime) {}
+    WardenCheck(uint8 checkType, std::string data, std::string str, uint32 address, uint8 length, std::string result, std::string banReason, WardenActions action, uint32 bantime, std::string comment) : Type(checkType),
+        Data(data), Str(str), Address(address), Length(length), Result(result), BanReason(banReason), Action(action), BanTime(bantime), Enabled(true), Comment(comment) {}
 
     uint8 Type;
     std::string Data;
@@ -85,9 +86,19 @@ struct WardenCheck
     uint32 Address;
     uint8 Length;
     std::string Result;
-    std::string Comment;
+    std::string BanReason;
     enum WardenActions Action;
     uint32 BanTime;
+    bool Enabled;
+    std::string Comment;
+};
+
+struct WardenCustomMPQ
+{
+    std::string FileName;
+    std::string Hash;
+    int32 Locale;
+    std::string Comment;
 };
 
 class WardenMgr
@@ -99,13 +110,13 @@ class WardenMgr
     public:
         // We have a linear key without any gaps, so we use vector for fast access
         typedef std::vector<WardenCheck*> CheckContainer;
-        typedef std::unordered_map<uint32, WardenModule*> ModuleContainer;
+        typedef std::unordered_map<std::string, WardenModule*> ModuleContainer;
+        typedef std::unordered_map<uint16, WardenCustomMPQ> CustomMPQDataContainer;
 
         // module helpers
         void LoadWardenModules(std::string os);
         bool LoadModule(const char * FileName, std::string os);
-        WardenModule* GetModuleByName(std::string name, std::string os);
-        WardenModule* GetModuleById(uint8 Id);
+        WardenModule* GetModuleById(std::string name, std::string os);
 
         // check helpers
         WardenCheck* GetCheckDataById(uint16 Id);
@@ -114,10 +125,15 @@ class WardenMgr
 
         void LoadWardenChecks();
         void LoadWardenOverrides();
+        void LoadWardenCustomMPQData();
 
         // utlities
         std::string ByteArrayToString(const uint8 * packet_data, uint16 length);
         std::vector<uint16>::iterator GetRandomCheckFromList(std::vector<uint16>::iterator begin, std::vector<uint16>::iterator end);
+
+        // mpq helpers
+        std::string GetLocalesMPQHash(std::string filename, uint32 locale);
+        bool CheckCustomMPQDataHash(std::string filename, std::string& result, std::string packet, std::string& comment);
 
         ACE_RW_Mutex _checkStoreLock;
         ACE_RW_Mutex _moduleStoreLock;
@@ -125,6 +141,7 @@ class WardenMgr
     private:
         CheckContainer checkStore;
         ModuleContainer moduleStore;
+        CustomMPQDataContainer customMPQDataStore;
 };
 
 #define _wardenMgr ACE_Singleton<WardenMgr, ACE_Null_Mutex>::instance()

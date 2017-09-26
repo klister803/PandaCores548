@@ -32,7 +32,7 @@
 
 WardenMac::WardenMac(WorldSession* session) : Warden(session)
 {
-    _currentModule = _wardenMgr->GetModuleByName("802C6D76B51E20309CE0C8E754A5699A6E46DA2F04A80750664C94842E5900E2", "OSX");
+    _currentModule = _wardenMgr->GetModuleById("802C6D76B51E20309CE0C8E754A5699A6E46DA2F04A80750664C94842E5900E2", "OSX");
 }
 
 WardenMac::~WardenMac()

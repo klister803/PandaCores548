@@ -1534,6 +1534,9 @@ void World::SetInitialWorldSettings()
 
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Warden Action Overrides...");
         _wardenMgr->LoadWardenOverrides();
+
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Warden Custom MPQ Data...");
+        _wardenMgr->LoadWardenCustomMPQData();
     }
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "---INITIALIZE ANTICHEAT SYSTEM---");

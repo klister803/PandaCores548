@@ -34,7 +34,8 @@
 
 WardenWin::WardenWin(WorldSession* session) : Warden(session)
 {
-    _currentModule = _wardenMgr->GetModuleByName("083B5E0EA6D1BFE9CF604D5B794FD9594C90AA8ABC0339C1DA2F6E1BC41ED6DE", "Win");
+    //_currentModule = _wardenMgr->GetModuleByName("A4724A9A523363F17BDFCF39D5F9738EE5E3447E0E91D12D29EB9927EE7F4C07", "Win");
+    _currentModule = _wardenMgr->GetModuleById("083B5E0EA6D1BFE9CF604D5B794FD9594C90AA8ABC0339C1DA2F6E1BC41ED6DE", "Win");
 }
 
 WardenWin::~WardenWin()
@@ -78,6 +79,35 @@ void WardenWin::InitializeMPQCheckFunc(ByteBuffer& buff)
     buff.append(request);
 }
 
+void WardenWin::InitializeMPQCheckFuncFake()
+{
+    ByteBuffer buff;
+    buff << uint8(WARDEN_SMSG_MODULE_INITIALIZE);
+    buff << uint16(20);
+
+    WardenInitModuleMPQFunc request;
+    request.Type = 1;
+    request.Flag = 0;
+    request.MpqFuncType = 2;
+    request.StringBlock = 0;
+    request.OpenFile = 0x00419210;   // FrameScript::Execute
+    request.GetFileSize = 0x000218C0;
+    request.ReadFile = 0x00022530;
+    request.CloseFile = 0x00022910;
+
+    buff << uint32(BuildChecksum((uint8*)&request, 20));
+    buff.append(request);
+
+    // Encrypt with warden RC4 key.
+    EncryptData(const_cast<uint8*>(buff.contents()), buff.size());
+
+    WorldPacket pkt(SMSG_WARDEN_DATA, buff.size());
+    pkt.append(buff);
+    _session->SendPacket(&pkt);
+
+    _state = WARDEN_MODULE_READY;
+}
+
 void WardenWin::InitializeLuaCheckFunc(ByteBuffer& buff)
 {
     buff << uint8(WARDEN_SMSG_MODULE_INITIALIZE);
@@ -111,84 +141,54 @@ void WardenWin::InitializeTimeCheckFunc(ByteBuffer& buff)
     buff.append(request);
 }
 
-void WardenWin::HandleHashResult(ByteBuffer &buff, bool newCrypto)
+void WardenWin::SendDbcChecks()
 {
-    buff.rfinish();
+    _state = WARDEN_MODULE_SPECIAL_DBC_CHECKS;
 
-    if (!newCrypto)
+    uint8 xorByte = _currentModule->ClientKeySeed[0];
+
+    ByteBuffer buff;
+    buff << uint8(WARDEN_SMSG_CHEAT_CHECKS_REQUEST);
+    BuildMPQCHecksList(buff);
+    buff << uint8(xorByte);
+    // Encrypt with warden RC4 key
+    EncryptData(const_cast<uint8*>(buff.contents()), buff.size());
+
+    WorldPacket pkt(SMSG_WARDEN_DATA, buff.size());
+    pkt.append(buff);
+    _session->SendPacket(&pkt);
+}
+
+void WardenWin::HandleHashResult(ByteBuffer &buff)
+{
+    uint8 clientSeedHash[20];
+    buff.read(clientSeedHash, 20);
+
+    std::string hashStr = _wardenMgr->ByteArrayToString(clientSeedHash, 20);
+    std::string realHashStr = _wardenMgr->ByteArrayToString(_currentModule->ClientKeySeedHash, 20);
+
+    if (strcmp(hashStr.c_str(), realHashStr.c_str()))
     {
-        // Verify key
-        if (memcmp(buff.contents() + 5, _currentModule->ClientKeySeedHash, 20) != 0)
-        {
-            sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: Request hash reply - failed");
-            sLog->outWarden("Player %s (guid: %u, account: %u) failed hash reply. Action: Kick",
-                _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
-            _session->KickPlayer();
-            return;
-        }
-
-        sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: Request hash reply - succeed");
+        sLog->outWarden("Player %s (guid: %u, account: %u) failed hash reply. Action: Kick",
+            _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId());
+        _session->KickPlayer();
+        return;
     }
+
+    sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: Request hash reply - succeeded");
 
     ARC4::rc4_init(&_clientRC4State, _currentModule->ClientKeySeed, 16);
     ARC4::rc4_init(&_serverRC4State, _currentModule->ServerKeySeed, 16);
 
+    _checkTimer = 20 * IN_MILLISECONDS;
+    _clientResponseTimer = 0;
     _state = WARDEN_MODULE_READY;
-    _checkTimer = sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF);
 }
 
-bool WardenWin::ValidatePacket(ByteBuffer &buff)
+void WardenWin::HandleModuleFailed()
 {
-    uint16 length;
-    buff >> length;
-    uint32 checksum;
-    buff >> checksum;
-
-    if (!length)
-    {
-        buff.rfinish();
-        sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: packet length failed");
-        sLog->outWarden("Player %s (guid: %u, account: %u) failed packet length. Action: Kick", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
-        _session->KickPlayer();
-        return false;
-    }
-
-    if (!IsValidCheckSum(checksum, buff.contents() + buff.rpos(), length))
-    {
-        buff.rfinish();
-        sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: packet checksum failed");
-        sLog->outWarden("Player %s (guid: %u, account: %u) failed checksum. Action: Kick", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
-        _session->KickPlayer();
-        return false;
-    }
-
-    return true;
-}
-
-bool WardenWin::ValidatePacketHeader(ByteBuffer &buff)
-{
-    uint8 headerRes;
-    buff >> headerRes;
-
-    if (headerRes)
-        return false;
-
-    uint8 bytes[6];
-    buff.read(bytes, 6);
-    std::string headerStr = _wardenMgr->ByteArrayToString(bytes, 6);
-
-    if (headerStr == BASE_CHECKS_HEADER)
-    {
-        HandleBaseData(buff);
-        return true;
-    }
-    else if (headerStr == EXTENDED_CHECKS_HEADER)
-    {
-        //HandleExtendedData(buff);
-        return true;
-    }
-    else
-        return false;
+    sLog->outWarden("Player %s (guid: %u, account: %u) has received CMSG_WARDEN_MODULE_FAILED. Action: Kick", _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId());
+    _session->KickPlayer();
 }
 
 void WardenWin::BuildBaseChecksList(ByteBuffer &buff)
@@ -234,6 +234,15 @@ void WardenWin::BuildBaseChecksList(ByteBuffer &buff)
         if (!wd)
             continue;
 
+        if (wd->Type == INTERNAL_CHECK)
+            continue;
+
+        if (!wd->Enabled)
+            continue;
+
+        if (wd->Type == MPQ_CHECK && !wd->Address)
+            continue;
+
         if (!_currentModule->CheckTypes[wd->Type])
             continue;
 
@@ -242,9 +251,55 @@ void WardenWin::BuildBaseChecksList(ByteBuffer &buff)
     } 
     while (currentPacketSize < totalPacketSize);
 
+    if (!stringBuff.empty())
+        buff.append(stringBuff);
+    buff.append(dataBuff);
+}
+
+void WardenWin::BuildMPQCHecksList(ByteBuffer &buff)
+{
+    _currentChecks.clear();
+
+    if (_baseChecksList.empty())
+        _baseChecksList.assign(_wardenMgr->BaseChecksIdPool.begin(), _wardenMgr->BaseChecksIdPool.end());
+
+    ByteBuffer stringBuff;
+    ByteBuffer dataBuff;
+
+    uint8 xorByte = _currentModule->ClientKeySeed[0];
+    uint8 index = 1;
+
+    // separator
+    dataBuff << uint8(0x00);
+    // get client locale
+    dataBuff << uint8(_currentModule->CheckTypes[MEM_CHECK] ^ xorByte);
+    dataBuff << uint8(0x00);
+    dataBuff << uint8(0xF);
+    dataBuff << uint32(0x00C5DE9C);
+    dataBuff << uint8(0x4);
+
+    ACE_READ_GUARD(ACE_RW_Mutex, g, _wardenMgr->_checkStoreLock);
+
+    for (auto &checkId : _baseChecksList)
+    {
+        WardenCheck* wd = _wardenMgr->GetCheckDataById(checkId);
+
+        if (!wd)
+            continue;
+
+        if (wd->Type != MPQ_CHECK)
+            continue;
+
+        // TODO: temp hack for divide MPQ_CHECKS, with 0 - real MPQ checks, 1 - fake MPQ checks
+        if (wd->Type == MPQ_CHECK && wd->Address)
+            continue;
+
+        BuildCheckData(wd, dataBuff, stringBuff, index);
+        _currentChecks.push_back(checkId);
+    }
+
     buff.append(stringBuff);
     buff.append(dataBuff);
-    return;
 }
 
 uint16 WardenWin::BuildCheckData(WardenCheck* wd, ByteBuffer &buff, ByteBuffer &stringBuff, uint8 &index)
@@ -260,6 +315,13 @@ uint16 WardenWin::BuildCheckData(WardenCheck* wd, ByteBuffer &buff, ByteBuffer &
         case DRIVER_CHECK:
             stringBuff << uint8(wd->Str.size());
             stringBuff.append(wd->Str.c_str(), wd->Str.size());
+            // only for default module!
+            if (wd->Type == PROC_CHECK)
+            {
+                std::string procName = "VirtualQuery";
+                stringBuff << uint8(procName.size());
+                stringBuff.append(procName.c_str(), procName.size());
+            }
             break;
         default:
             break;
@@ -310,15 +372,16 @@ uint16 WardenWin::BuildCheckData(WardenCheck* wd, ByteBuffer &buff, ByteBuffer &
             buff.append(hmac.GetDigest(), hmac.GetLength());
             break;
         }
-        /*case PROC_CHECK:
+        case PROC_CHECK:
         {
-            buff.append(wd->i.AsByteArray(0, false), wd->i.GetNumBytes());
-            buff << uint8(index++);
-            buff << uint8(index++);
-            buff << uint32(wd->Address);
-            buff << uint8(wd->Length);
+            uint32 seed = static_cast<uint32>(rand32());
+            buff << uint32(seed);
+            HmacHash hmac(4, (uint8*)&seed);
+            hmac.UpdateData(wd->Str);
+            hmac.Finalize();
+            buff.append(hmac.GetDigest(), hmac.GetLength());
             break;
-        }*/
+        }
         default:
             break;                                      // Should never happen
     }
@@ -330,9 +393,6 @@ uint16 WardenWin::BuildCheckData(WardenCheck* wd, ByteBuffer &buff, ByteBuffer &
 void WardenWin::RequestBaseData()
 {
     sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: Request static data");
-
-    if (GetState() != WARDEN_MODULE_READY)
-        return;
 
     _serverTicks = getMSTime();
     uint8 xorByte = _currentModule->ClientKeySeed[0];
@@ -351,21 +411,21 @@ void WardenWin::RequestBaseData()
     _session->SendPacket(&pkt);
 
     _state = WARDEN_MODULE_WAIT_RESPONSE;
-    _clientResponseTimer = sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_RESPONSE_DELAY);
+    _clientResponseTimer = 90 * IN_MILLISECONDS;
 
-    //std::stringstream stream;
-    //stream << "WARDEN: Sent check id's: ";
-    //for (std::vector<uint16>::iterator itr = _currentChecks.begin(); itr != _currentChecks.end(); ++itr)
-        //stream << *itr << " ";
+    std::stringstream stream;
+    stream << "WARDEN: Sent check id's: ";
+    for (std::vector<uint16>::iterator itr = _currentChecks.begin(); itr != _currentChecks.end(); ++itr)
+        stream << *itr << " ";
 
-    //sLog->outDebug(LOG_FILTER_WARDEN, "%s", stream.str().c_str());
-    //sLog->outWarden("%s", stream.str().c_str());
-    //sWorld->SendServerMessage(SERVER_MSG_STRING, stream.str().c_str(), _session->GetPlayer());
+    sLog->outDebug(LOG_FILTER_WARDEN, "%s", stream.str().c_str());
+    sLog->outWarden("%s", stream.str().c_str());
+    sWorld->SendServerMessage(SERVER_MSG_STRING, stream.str().c_str(), _session->GetPlayer());
 
-    WorldPacket data1(SMSG_SERVERTIME, 8);
-    data1 << uint32(12755321);
-    data1 << uint32(13904220);
-    _session->SendPacket(&data1);
+    //WorldPacket data1(SMSG_SERVERTIME, 8);
+    //data1 << uint32(12755321);
+    //data1 << uint32(13904220);
+    //_session->SendPacket(&data1);
 }
 
 void WardenWin::HandleData(ByteBuffer &buff)
@@ -375,15 +435,43 @@ void WardenWin::HandleData(ByteBuffer &buff)
     // reset response wait timer
     _clientResponseTimer = 0;
 
-    if (GetState() != WARDEN_MODULE_WAIT_RESPONSE)
+    // read and validate length+checksum - for all packets
+    uint16 length;
+    buff >> length;
+    uint32 checksum;
+    buff >> checksum;
+
+    if (!length)
     {
         buff.rfinish();
+        sLog->outWarden("Player %s (guid: %u, account: %u) failed packet length. Action: Kick", _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId());
+        _session->KickPlayer();
         return;
     }
 
-    if (!ValidatePacket(buff))
+    if (!IsValidCheckSum(checksum, buff.contents() + buff.rpos(), length))
+    {
+        buff.rfinish();
+        sLog->outWarden("Player %s (guid: %u, account: %u) failed checksum. Action: Kick", _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId());
+        _session->KickPlayer();
         return;
+    }
 
+    // handlers (header + payload) - divide packets
+    if (GetState() == WARDEN_MODULE_WAIT_RESPONSE)
+        HandleBaseChecksData(buff);
+    //else if (GetState() == WARDEN_MODULE_SPECIAL_DBC_CHECKS)
+        //HandleDbcChecksData(buff);
+    else
+    {
+        buff.rfinish();
+        sLog->outWarden("Player %s (guid: %u, account: %u) has received wrong Warden packet. Action: Kick", _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId());
+        _session->KickPlayer();
+    }
+}
+
+void WardenWin::HandleBaseChecksData(ByteBuffer &buff)
+{
     /*uint8 timeCheckResult;
     buff >> timeCheckResult;
 
@@ -406,22 +494,110 @@ void WardenWin::HandleData(ByteBuffer &buff)
     sLog->outDebug(LOG_FILTER_WARDEN, "Ticks %u", newClientTicks);         // At response
     sLog->outDebug(LOG_FILTER_WARDEN, "Ticks diff %u", ourTicks - newClientTicks);*/
 
-    if (!ValidatePacketHeader(buff))
+    uint8 headerRes;
+    buff >> headerRes;
+
+    if (headerRes)
     {
         buff.rfinish();
-        sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed validate Warden packet header. Player kicked", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
+        sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed validate Warden packet header. Action: Kick", _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId());
         _session->KickPlayer();
+        return;
+    }
+
+    uint8 bytes[6];
+    buff.read(bytes, 6);
+    std::string headerStr = _wardenMgr->ByteArrayToString(bytes, 6);
+
+    if (headerStr == BASE_CHECKS_HEADER)
+        CommonChecksHandler(buff);
+    //else if (headerStr == EXTENDED_CHECKS_HEADER)
+        //ExtendedChecksHandler(buff);
+    else
+    {
+        buff.rfinish();
+        sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed validate Warden packet header. Action: Kick", _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId());
+        _session->KickPlayer();
+        return;
     }
 }
 
-void WardenWin::HandleBaseData(ByteBuffer &buff)
+void WardenWin::HandleDbcChecksData(ByteBuffer &buff)
+{
+    ACE_READ_GUARD(ACE_RW_Mutex, g, _wardenMgr->_checkStoreLock);
+
+    uint8 memResult;
+    buff >> memResult;
+
+    if (memResult)
+    {
+        buff.rfinish();
+        sLog->outWarden("Function for MEM_CHECK hasn't been called, CheckId Special account Id %u. Action: Kick", _session->GetAccountId());
+        _session->KickPlayer();
+        return;
+    }
+
+    uint32 clientLocale;
+    buff >> clientLocale;
+
+    for (std::vector<uint16>::iterator itr = _currentChecks.begin(); itr != _currentChecks.end(); ++itr)
+    {
+        WardenCheck* rd = _wardenMgr->GetCheckDataById(*itr);
+
+        // remove whole packet if data array is corrupted or check in packet was disabled
+        if (!rd || !rd->Enabled)
+        {
+            buff.rfinish();
+            sLog->outWarden("Warden check with Id %u has disabled or checkStorage has corrupted data for player %s (guid: %u, account: %u). Action: None", *itr, _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId());
+            return;
+        }
+
+        uint8 mpqResult;
+        buff >> mpqResult;
+
+        if (mpqResult)
+        {
+            buff.rfinish();
+            sLog->outWarden("Function for MPQ_CHECK hasn't been called, CheckId %u account Id %u. Action: Kick", *itr, _session->GetAccountId());
+            _session->KickPlayer();
+            return;
+        }
+
+        std::string result = rd->Result;
+        std::string packet_data = _wardenMgr->ByteArrayToString(buff.contents() + buff.rpos(), 20);
+
+        // handle custom MPQ data - mpq with locale strings and custom allowed patches
+        std::string customHash = GetCustomMPQData(rd->Str, packet_data, clientLocale);
+
+        if (customHash != "")
+            result = customHash;
+
+        // debug
+        //sLog->outWarden("RESULT MPQ_CHECK, CheckId %u account Id %u, realData - %s, packetData - %s, client locale - %u", *itr, _session->GetAccountId(), rd->Result.c_str(), packet_data.c_str(), clientLocale);
+
+        if (strcmp(result.c_str(), packet_data.c_str()))
+        {
+            buff.rfinish();
+            sLog->outWarden("RESULT MPQ_CHECK fail, CheckId %u account Id %u, realData - %s, failedData - %s", *itr, _session->GetAccountId(), result.c_str(), packet_data.c_str());
+            sLog->outWarden("Account %s (Id: %u) failed Warden check %u. Action: %s", _session->GetAccountName().c_str(), _session->GetAccountId(), *itr, Penalty(*itr).c_str());
+            _state = WARDEN_MODULE_SET_PLAYER_PENDING_LOCK;
+            return;
+        }
+
+        buff.rpos(buff.rpos() + 20);
+    }
+
+    _state = WARDEN_MODULE_WAIT_INITIALIZE;
+    _reInitTimer = 4 * IN_MILLISECONDS;
+}
+
+void WardenWin::CommonChecksHandler(ByteBuffer &buff)
 {
     WardenCheck *rd = nullptr;
-    uint8 type = 0;
 
     // TODO:
     _state = WARDEN_MODULE_READY;
-    _checkTimer = sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF);
+    _checkTimer = 33 * IN_MILLISECONDS;
 
     ACE_READ_GUARD(ACE_RW_Mutex, g, _wardenMgr->_checkStoreLock);
 
@@ -432,7 +608,15 @@ void WardenWin::HandleBaseData(ByteBuffer &buff)
         if (!rd)
             continue;
 
-        type = rd->Type;
+        // remove whole packet if data array is corrupted or check in packet was disabled
+        if (!rd || !rd->Enabled)
+        {
+            buff.rfinish();
+            sLog->outWarden("Warden check with Id %u has disabled or checkStorage has corrupted data for player %s (guid: %u, account: %u). Action: None", *itr, _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId());
+            return;
+        }
+
+        uint8 type = rd->Type;
 
         switch (type)
         {
@@ -455,7 +639,6 @@ void WardenWin::HandleBaseData(ByteBuffer &buff)
                     buff.rfinish();
                     sLog->outWarden("RESULT MEM_CHECK fail CheckId %u account Id %u, realData - %s, failedData - %s", *itr, _session->GetAccountId(), rd->Result.c_str(), packet_data.c_str());
                     sLog->outWarden("Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(*itr).c_str());
-                    SetPlayerLocked(*itr, rd);
                     return;
                 }
 
@@ -466,6 +649,7 @@ void WardenWin::HandleBaseData(ByteBuffer &buff)
             case PAGE_CHECK_B:
             case DRIVER_CHECK:
             case MODULE_CHECK:
+            case PROC_CHECK:
             {
                 std::string packet_data = _wardenMgr->ByteArrayToString(buff.contents() + buff.rpos(), 1);
                 if (strcmp(rd->Result.c_str(), packet_data.c_str()))
@@ -478,9 +662,10 @@ void WardenWin::HandleBaseData(ByteBuffer &buff)
                         sLog->outWarden("RESULT MODULE_CHECK fail, CheckId %u, account Id %u, realData - %s, failedData - %s", *itr, _session->GetAccountId(), rd->Result.c_str(), packet_data.c_str());
                     if (type == DRIVER_CHECK)
                         sLog->outWarden("RESULT DRIVER_CHECK fail, CheckId %u, account Id %u, realData - %s, failedData - %s", *itr, _session->GetAccountId(), rd->Result.c_str(), packet_data.c_str());
+                    if (type == PROC_CHECK)
+                        sLog->outWarden("RESULT PROC_CHECK fail, CheckId %u, account Id %u, realData - %s, failedData - %s", *itr, _session->GetAccountId(), rd->Result.c_str(), packet_data.c_str());
 
                     sLog->outWarden("Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(*itr).c_str());
-                    SetPlayerLocked(*itr, rd);
                     return;
                 }
 
@@ -492,7 +677,7 @@ void WardenWin::HandleBaseData(ByteBuffer &buff)
                 uint8 mpqResult;
                 buff >> mpqResult;
 
-                if (mpqResult)
+                /*if (mpqResult)
                 {
                     buff.rfinish();
                     sLog->outWarden("Function for MPQ_CHECK hasn't been called, CheckId %u account Id %u", *itr, _session->GetAccountId());
@@ -516,7 +701,7 @@ void WardenWin::HandleBaseData(ByteBuffer &buff)
                     return;
                 }
 
-                buff.rpos(buff.rpos() + 20);
+                buff.rpos(buff.rpos() + 20);*/
                 break;
             }
             case LUA_STR_CHECK:
@@ -546,7 +731,6 @@ void WardenWin::HandleBaseData(ByteBuffer &buff)
 
                     buff.rfinish();
                     sLog->outWarden("Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(*itr).c_str());
-                    SetPlayerLocked(*itr, rd);
                     return;
                 }
                 break;
@@ -561,28 +745,28 @@ void WardenWin::HandleBaseData(ByteBuffer &buff)
     //_checkTimer = sWorld->getIntConfig(CONFIG_WARDEN_STATIC_CHECK_HOLDOFF);
 }
 
-std::string WardenWin::GetMPQHashForLocales(uint16 checkId)
+std::string WardenWin::GetCustomMPQData(std::string dbcName, std::string packet, uint32 clientLocale)
 {
-    // TODO: rewrite it
-    std::string res = "";
+    std::string result = "";
 
-    if (checkId != 38)
-        return res;
+    // get normalize fileName
+    dbcName = dbcName.substr(14, dbcName.size());
 
-    uint8 locale = uint8(_session->GetSessionDbLocaleIndex());
+    // check locales
+    if (clientLocale != LOCALE_ruRU)
+        result = _wardenMgr->GetLocalesMPQHash(dbcName, clientLocale);
 
-    if (locale == 8)
-        return res;
-
-    switch (locale)
+    // logged koKR, zhCN, zhTW and allowed it
+    if (clientLocale == LOCALE_koKR || clientLocale == LOCALE_zhCN || clientLocale == LOCALE_zhTW)
     {
-        case 0: res = "C641C7FAE6884C47A658F0917F42775ABC1FA029"; break;
-        case 1: res = "33BACB99BE0281A19C3769FAA500EB2D2747E74C"; break;
-        case 2: res = "63908B6B7B6B0C92E2B3B619E77B2291E43C50A5"; break;
-        case 3: res = "0DA690C5DF94A6518645BE2A90F86CACDD24D2E8"; break;
-        case 6: res = "FF6A52D40F4A1234261F10FCF1F00E9489ECE05D"; break;
-        case 7: res = "0618F583338A7E8E94580F2E56B65830E6CEBF69"; break;
+        sLog->outWarden("Detect rare locale %u, data from packet %s for future fixes", clientLocale, packet.c_str());
+        result = packet;
     }
 
-    return res;
+    // check custom patches
+    std::string comment = "";
+    if (_wardenMgr->CheckCustomMPQDataHash(dbcName, result, packet, comment))
+        sLog->outWarden("Account %s (id: %u) have custom MPQ patch (%s). Action: None", _session->GetAccountName().c_str(), _session->GetAccountId(), comment.c_str());
+
+    return result;
 }

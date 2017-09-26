@@ -51,13 +51,15 @@ enum WardenOpcodes
 
 enum WardenState
 {
-    WARDEN_NOT_INITIALIZED            = 0,
-    WARDEN_MODULE_NOT_LOADED          = 1,
-    WARDEN_MODULE_LOADED              = 2,
-    WARDEN_MODULE_INITIALIZED         = 3,
-    WARDEN_MODULE_READY               = 4,
-    WARDEN_MODULE_WAIT_RESPONSE       = 5,
-    WARDEN_MODULE_PLAYER_LOCKED       = 6
+    WARDEN_NOT_INITIALIZED                = 0,
+    WARDEN_MODULE_NOT_LOADED              = 1,
+    WARDEN_MODULE_LOADED                  = 2,
+    WARDEN_MODULE_SPECIAL_DBC_CHECKS      = 3,
+    WARDEN_MODULE_WAIT_INITIALIZE         = 4,
+    WARDEN_MODULE_READY                   = 5,
+    WARDEN_MODULE_WAIT_RESPONSE           = 6,
+    WARDEN_MODULE_SET_PLAYER_LOCK         = 7,
+    WARDEN_MODULE_SET_PLAYER_PENDING_LOCK = 8  // TODO: now only for checks on login screen, in future rewrited more universal way
 };
 
 #if defined(__GNUC__)
@@ -140,11 +142,16 @@ class Warden
         void Update();
 
         virtual void InitializeModule() = 0;
-        virtual void HandleHashResult(ByteBuffer &buff, bool newCrypto = false) = 0;
+        virtual void HandleHashResult(ByteBuffer &buff) = 0;
+        virtual void HandleModuleFailed() = 0;
         virtual void RequestBaseData() = 0;
 
         virtual void HandleData(ByteBuffer &buff) = 0;
-        virtual void HandleBaseData(ByteBuffer &buff) = 0;
+
+        virtual void CommonChecksHandler(ByteBuffer &buff) = 0;
+
+        virtual void SendDbcChecks() {};
+        virtual void InitializeMPQCheckFuncFake() {};
 
         void DecryptData(uint8* buffer, uint32 length);
         void EncryptData(uint8* buffer, uint32 length);
@@ -154,36 +161,21 @@ class Warden
 
         WardenState GetState() { return _state; }
         void SetState(WardenState state) { _state = state;  }
-        bool IsValidStateForUpdate(std::string os)
-        {
-            // not check internal state, because this state in update is IMPOSSIBLE
-            if (_state == WARDEN_NOT_INITIALIZED)
-                return true;
-
-            if (os == "Win")
-            {
-                if (_state >= WARDEN_MODULE_READY)
-                    return true;
-            }
-            else
-            {
-                if (_state == WARDEN_MODULE_LOADED)
-                    return true;
-            }
-
-            return false;
-        }
 
         static bool IsValidCheckSum(uint32 checksum, const uint8 *data, const uint16 length);
         static uint32 BuildChecksum(const uint8 *data, uint32 length);
 
+        bool IsValidStateInWorld(std::string os);
+
         // If no check is passed, the default action from config is executed
         std::string Penalty(uint16 checkId);
         void SetPlayerLocked(uint16 checkId, WardenCheck* wd);
+        void SetPlayerLocked(std::string message);
 
         // TODO : rewrite timer system
         void ClientResponseTimerUpdate(uint32 diff);
         void PendingKickTimerUpdate(uint32 diff);
+        void ReInitTimerUpdate(uint32 diff);
 
         void StaticCheatChecksTimerUpdate(uint32 diff);
         void DynamicCheatChecksTimerUpdate(uint32 diff);
@@ -200,6 +192,7 @@ class Warden
         uint32 _checkTimer2;
         uint32 _clientResponseTimer;                 // Timer for client response delay
         uint32 _pendingKickTimer;
+        uint32 _reInitTimer;
         uint32 _lastUpdateTime;
 };
 

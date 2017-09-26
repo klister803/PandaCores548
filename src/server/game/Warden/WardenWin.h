@@ -39,19 +39,25 @@ class WardenWin : public Warden
         void InitializeLuaCheckFunc(ByteBuffer& buff);
         void InitializeTimeCheckFunc(ByteBuffer& buff);
 
-        void HandleHashResult(ByteBuffer &buff, bool newCrypto = false);
+        void InitializeMPQCheckFuncFake();
+
+        void SendDbcChecks();
+
+        void HandleHashResult(ByteBuffer &buff);
+        void HandleModuleFailed();
         void RequestBaseData();
 
         void HandleData(ByteBuffer &buff);
-        void HandleBaseData(ByteBuffer &buff);
-
-        bool ValidatePacket(ByteBuffer &buff);
-        bool ValidatePacketHeader(ByteBuffer &buff);
+        void HandleBaseChecksData(ByteBuffer &buff);
+        void HandleDbcChecksData(ByteBuffer &buff);
+        void CommonChecksHandler(ByteBuffer &buff);
+        //void ExtendedChecksHandler(ByteBuffer &buff);
 
         void BuildBaseChecksList(ByteBuffer &buff);
+        void BuildMPQCHecksList(ByteBuffer &buff);
         uint16 BuildCheckData(WardenCheck* wd, ByteBuffer &buff, ByteBuffer &stringBuf, uint8 &index);
 
-        std::string GetMPQHashForLocales(uint16 checkId);
+        std::string GetCustomMPQData(std::string dbcName, std::string packet, uint32 clientLocale);
 
     private:
         uint32 _serverTicks;
