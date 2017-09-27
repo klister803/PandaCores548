@@ -101,7 +101,8 @@ void WardenWin::InitializeMPQCheckFuncFake()
     // Encrypt with warden RC4 key.
     EncryptData(const_cast<uint8*>(buff.contents()), buff.size());
 
-    WorldPacket pkt(SMSG_WARDEN_DATA, buff.size());
+    WorldPacket pkt(SMSG_WARDEN_DATA, buff.size() + sizeof(uint32));
+    pkt << uint32(buff.size());
     pkt.append(buff);
     _session->SendPacket(&pkt);
 
@@ -154,7 +155,8 @@ void WardenWin::SendDbcChecks()
     // Encrypt with warden RC4 key
     EncryptData(const_cast<uint8*>(buff.contents()), buff.size());
 
-    WorldPacket pkt(SMSG_WARDEN_DATA, buff.size());
+    WorldPacket pkt(SMSG_WARDEN_DATA, buff.size() + sizeof(uint32));
+    pkt << uint32(buff.size());
     pkt.append(buff);
     _session->SendPacket(&pkt);
 }
@@ -275,7 +277,7 @@ void WardenWin::BuildMPQCHecksList(ByteBuffer &buff)
     dataBuff << uint8(_currentModule->CheckTypes[MEM_CHECK] ^ xorByte);
     dataBuff << uint8(0x00);
     dataBuff << uint8(0xF);
-    dataBuff << uint32(0x00C5DE9C);
+    dataBuff << uint32(0x0106ED50);
     dataBuff << uint8(0x4);
 
     ACE_READ_GUARD(ACE_RW_Mutex, g, _wardenMgr->_checkStoreLock);
@@ -460,8 +462,8 @@ void WardenWin::HandleData(ByteBuffer &buff)
     // handlers (header + payload) - divide packets
     if (GetState() == WARDEN_MODULE_WAIT_RESPONSE)
         HandleBaseChecksData(buff);
-    //else if (GetState() == WARDEN_MODULE_SPECIAL_DBC_CHECKS)
-        //HandleDbcChecksData(buff);
+    else if (GetState() == WARDEN_MODULE_SPECIAL_DBC_CHECKS)
+        HandleDbcChecksData(buff);
     else
     {
         buff.rfinish();
