@@ -68,9 +68,9 @@ void WardenWin::InitializeMPQCheckFunc(ByteBuffer& buff)
     WardenInitModuleMPQFunc request;
     request.Type = 1;
     request.Flag = 0;
-    request.MpqFuncType = 1;
+    request.MpqFuncType = 2;
     request.StringBlock = 0;
-    request.OpenFile = 0x0001466C;
+    request.OpenFile = 0x0004F9EC; //fake
     request.GetFileSize = 0x00012048;
     request.ReadFile = 0x000131D6;
     request.CloseFile = 0x000137A8;
