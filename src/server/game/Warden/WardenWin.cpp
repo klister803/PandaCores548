@@ -72,7 +72,7 @@ void WardenWin::InitializeMPQCheckFunc(ByteBuffer& buff)
     request.StringBlock = 0;
     request.OpenFile = 0x0001466C;
     request.GetFileSize = 0x00012048;
-    request.ReadFile = 0x00012EF4;
+    request.ReadFile = 0x000131D6;
     request.CloseFile = 0x000137A8;
 
     buff << uint32(BuildChecksum((uint8*)&request, 20));
