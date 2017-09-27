@@ -34,8 +34,8 @@ enum WardenCheckType
     MODULE_CHECK    = 6,
     LUA_STR_CHECK   = 7,
     PROC_CHECK      = 8,
-    UNK_CHECK       = 9,
-    UNK_CHECK_1     = 10,
+    LUA_EXEC_CHECK  = 9,
+    GET_SYSTEM_INFO = 10,
     MAX_CHECK_TYPE
 };
 

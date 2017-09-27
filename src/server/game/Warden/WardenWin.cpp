@@ -119,7 +119,7 @@ void WardenWin::InitializeLuaCheckFunc(ByteBuffer& buff)
     request.Flag = 0;
     request.StringBlock = 0;
     request.GetText = 0x00050AC1;
-    request.GetLocalizedText = 0x00409F01;
+    request.UnkFunction = 0x0004F9EC;
     request.LuaFuncType = 1;
 
     buff << uint32(BuildChecksum((uint8*)&request, 12));
@@ -315,6 +315,7 @@ uint16 WardenWin::BuildCheckData(WardenCheck* wd, ByteBuffer &buff, ByteBuffer &
         case MPQ_CHECK:
         case LUA_STR_CHECK:
         case DRIVER_CHECK:
+        case LUA_EXEC_CHECK:
             stringBuff << uint8(wd->Str.size());
             stringBuff.append(wd->Str.c_str(), wd->Str.size());
             // only for default module!
@@ -323,6 +324,12 @@ uint16 WardenWin::BuildCheckData(WardenCheck* wd, ByteBuffer &buff, ByteBuffer &
                 std::string procName = "VirtualQuery";
                 stringBuff << uint8(procName.size());
                 stringBuff.append(procName.c_str(), procName.size());
+            }
+            if (wd->Type == LUA_EXEC_CHECK)
+            {
+                std::string luaStr = "LU";
+                stringBuff << uint8(luaStr.size());
+                stringBuff.append(luaStr.c_str(), luaStr.size());
             }
             break;
         default:

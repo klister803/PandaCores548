@@ -101,7 +101,7 @@ struct WardenInitModuleLUAFunc
     uint8 Flag;
     uint8 StringBlock;
     uint32 GetText;
-    uint32 GetLocalizedText;
+    uint32 UnkFunction;
     uint8 LuaFuncType;
 };
 
