@@ -309,16 +309,16 @@ uint16 WardenWin::BuildCheckData(WardenCheck* wd, ByteBuffer &buff, ByteBuffer &
     uint16 prevDataSize = buff.size() + stringBuff.size();
     uint8 xorByte = _currentModule->ClientKeySeed[0];
 
-    // TODO: support PROC_CHECK double string
+    // TODO: support PROC_CHECK double string - ONLY FOR BLIZZARD SIGNED MODULES (NOT CUSTOM!)
     switch (wd->Type)
     {
         case MPQ_CHECK:
         case LUA_STR_CHECK:
         case DRIVER_CHECK:
+        case PROC_CHECK:
         case LUA_EXEC_CHECK:
             stringBuff << uint8(wd->Str.size());
             stringBuff.append(wd->Str.c_str(), wd->Str.size());
-            // only for default module!
             if (wd->Type == PROC_CHECK)
             {
                 std::string procName = "VirtualQuery";
@@ -363,12 +363,6 @@ uint16 WardenWin::BuildCheckData(WardenCheck* wd, ByteBuffer &buff, ByteBuffer &
             buff << uint8(index++);
             break;
         }
-        case LUA_EXEC_CHECK:
-        {
-            buff << uint8(index++);
-            buff << uint8(index++);
-            break;
-        }
         case DRIVER_CHECK:
         {
             BigNumber d;
@@ -389,12 +383,27 @@ uint16 WardenWin::BuildCheckData(WardenCheck* wd, ByteBuffer &buff, ByteBuffer &
         }
         case PROC_CHECK:
         {
-            uint32 seed = static_cast<uint32>(rand32());
+            // custom
+            /*uint32 seed = static_cast<uint32>(rand32());
             buff << uint32(seed);
             HmacHash hmac(4, (uint8*)&seed);
             hmac.UpdateData(wd->Str);
             hmac.Finalize();
             buff.append(hmac.GetDigest(), hmac.GetLength());
+            break;*/
+            BigNumber d;
+            d.SetHexStr(wd->Data.c_str());
+            buff.append(d.AsByteArray(24, false), 24);
+            buff << uint8(index++);
+            buff << uint8(index++);
+            buff << uint32(wd->Address);
+            buff << uint8(wd->Length);
+            break;
+        }
+        case LUA_EXEC_CHECK:
+        {
+            buff << uint8(index++);
+            buff << uint8(index++);
             break;
         }
         default:
