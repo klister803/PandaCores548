@@ -468,7 +468,7 @@ void WorldSession::HandleWardenDataOpcode(WorldPacket& recvData)
         {
             _warden->HandleHashResult(recvData);
             _warden->InitializeModule();
-            _warden->SendDbcChecks();
+            //_warden->SendDbcChecks();
             break;
         }
         case WARDEN_CMSG_MODULE_FAILED:
