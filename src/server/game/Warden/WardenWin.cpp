@@ -363,6 +363,12 @@ uint16 WardenWin::BuildCheckData(WardenCheck* wd, ByteBuffer &buff, ByteBuffer &
             buff << uint8(index++);
             break;
         }
+        case LUA_EXEC_CHECK:
+        {
+            buff << uint8(index++);
+            buff << uint8(index++);
+            break;
+        }
         case DRIVER_CHECK:
         {
             BigNumber d;
@@ -714,6 +720,7 @@ void WardenWin::CommonChecksHandler(ByteBuffer &buff)
                 break;
             }
             case LUA_STR_CHECK:
+            case LUA_EXEC_CHECK:
             {
                 uint8 luaResult;
                 buff >> luaResult;

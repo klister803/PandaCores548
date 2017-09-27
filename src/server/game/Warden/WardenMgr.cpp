@@ -295,7 +295,7 @@ bool WardenMgr::LoadModule(const char * fileName, std::string os)
     fread(mod->ServerKeySeed, 16, 1, f_key);
     fread(mod->ClientKeySeed, 16, 1, f_key);
     fread(mod->ClientKeySeedHash, 20, 1, f_key);
-    fread(mod->CheckTypes, 9, 1, f_key);
+    fread(mod->CheckTypes, 11, 1, f_key);
 
     fclose(f_key);
 
