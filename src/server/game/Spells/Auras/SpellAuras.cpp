@@ -1441,11 +1441,21 @@ bool Aura::CanBeSaved() const
     // don't save auras casted by summons
     if (GetCaster() && GetCaster()->GetTypeId() != TYPEID_PLAYER && GetCaster()->isAnySummons())
         return false;
+    
+    switch(GetId())
+    {
+        case 81748:
+        case 81744:
+            return false;
+        default:
+             break;
+    }
 
     // not save area auras (phase auras, e.t.c)
     SpellAreaMapBounds saBounds = sSpellMgr->GetSpellAreaMapBounds(GetId());
     if (saBounds.first != saBounds.second)
         return false;
+   
 
     // for correct work it should send cast packets. Never save it. 
     // If need save it -> perfome manual cast for example spell_area table or by script.

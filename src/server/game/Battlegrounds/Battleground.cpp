@@ -1287,9 +1287,6 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
         player->SetBGTeam(0);
         player->SetByteValue(PLAYER_BYTES_3, 3, 0);
         player->RemoveBattlegroundQueueJoinTime(bgTypeId);
-        
-        if (player->GetBGTeam() != player->GetTeam())
-            player->setFaction(player->GetTeam() == ALLIANCE ? 1 : 2);
 
         if (Transport)
             player->TeleportToBGEntryPoint();
@@ -1383,9 +1380,10 @@ void Battleground::AddPlayer(Player* player)
 
     if (IsRBG() || (isBattleground() && sWorld->getBoolConfig(CONFIG_CROSSFACTIONBG)))
     {
-        uint32 realTeam = player->GetTeam();
-        if (realTeam != team)
-            player->setFaction(team == ALLIANCE ? 1 : 2);
+        if (!player->HasAura(SPELL_BG_SET_FACTION_HORDE) && player->GetTeam() == ALLIANCE && player->GetBGTeam() != ALLIANCE)
+            player->CastSpell(player, SPELL_BG_SET_FACTION_HORDE, true);
+        else if (!player->HasAura(SPELL_BG_SET_FACTION_ALLIANCE) && player->GetTeam() == HORDE && player->GetBGTeam() != HORDE)
+            player->CastSpell(player, SPELL_BG_SET_FACTION_ALLIANCE, true);
         
         if (IsRBG())
             player->CastSpell(player, SPELL_BATTLE_FATIGUE, true);

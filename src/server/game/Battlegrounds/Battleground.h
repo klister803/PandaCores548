@@ -104,7 +104,9 @@ enum BattlegroundSpells
     SPELL_HONORABLE_DEFENDER_60Y    = 66157,                // +50% honor when standing at a capture point that you control, 60yards radius (added in 3.2), probably for 40+ player battlegrounds
     SPELL_THE_LAST_STANDING         = 26549,                // Arena achievement related
     SPELL_ARENA_DUMPENING           = 110310,               // Arena. Cast on all every 10 sec.
-    SPELL_BATTLE_FATIGUE            = 134735
+    SPELL_BATTLE_FATIGUE            = 134735,
+    SPELL_SET_FACTION_ALLIANCE      = 81748,
+    SPELL_SET_FACTION_HORDE         = 81744
 };
 
 enum BattlegroundTimeIntervals
