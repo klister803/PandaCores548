@@ -1061,10 +1061,6 @@ void Battleground::EndBattleground(uint32 winner)
 
         if (IsRBG())
         {
-            uint32 realTeam = player->GetTeam();
-            if (realTeam != team)
-                player->setFactionForRace(player->getRace());
-
             player->getBracket(BRACKET_TYPE_RATED_BG)->FinishGame(team == winner, GetMatchmakerRating(team == winner ? GetOtherTeam(winner) : winner));
 
             if (team == winner)
@@ -1203,12 +1199,6 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
             player->SpawnCorpseBones();
         }
 
-        if (IsRBG())
-        {
-            uint32 realTeam = player->GetTeam();
-            if (realTeam != team)
-                player->setFactionForRace(player->getRace());
-        }
         player->RemoveAura(SPELL_BATTLE_FATIGUE);
     }
 
@@ -1297,6 +1287,9 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
         player->SetBGTeam(0);
         player->SetByteValue(PLAYER_BYTES_3, 3, 0);
         player->RemoveBattlegroundQueueJoinTime(bgTypeId);
+        
+        if (player->GetBGTeam() != player->GetTeam())
+            player->setFaction(player->GetTeam() == ALLIANCE ? 1 : 2);
 
         if (Transport)
             player->TeleportToBGEntryPoint();
@@ -1388,13 +1381,14 @@ void Battleground::AddPlayer(Player* player)
     player->RemoveAurasByType(SPELL_AURA_MOUNTED);
     player->RemoveAurasByType(SPELL_AURA_FLY);
 
-    if (IsRBG())
+    if (IsRBG() || (isBattleground() && sWorld->getBoolConfig(CONFIG_CROSSFACTIONBG)))
     {
         uint32 realTeam = player->GetTeam();
         if (realTeam != team)
             player->setFaction(team == ALLIANCE ? 1 : 2);
-
-        player->CastSpell(player, SPELL_BATTLE_FATIGUE, true);
+        
+        if (IsRBG())
+            player->CastSpell(player, SPELL_BATTLE_FATIGUE, true);
     }
 
     // add arena specific auras
@@ -1455,6 +1449,9 @@ void Battleground::AddPlayer(Player* player)
     {
         if (GetStatus() == STATUS_WAIT_JOIN)                 // not started yet
             player->CastSpell(player, SPELL_PREPARATION, true);   // reduces all mana cost of spells.
+            
+            if (isBattleground() && !IsRBG() && sWorld->getBoolConfig(CONFIG_CROSSFACTIONBG) && player->GetBGTeam() != player->GetTeam())
+                player->SetByteValue(PLAYER_BYTES_3, 3, player->GetBGTeam() == HORDE ? 0 : 1);
     }
 
     if (GetStatus() == STATUS_WAIT_JOIN)

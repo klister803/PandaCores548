@@ -140,7 +140,17 @@ GroupQueueInfo* BattlegroundQueue::AddGroup(Player* leader, Group* grp, Battlegr
     ginfo->IsInvitedToBGInstanceGUID = 0;
     ginfo->JoinTime                  = getMSTime();
     ginfo->RemoveInviteTime          = 0;
-    ginfo->Team                      = leader->GetTeam();
+    if (sWorld->getBoolConfig(CONFIG_CROSSFACTIONBG) && JoinType == 0)
+    {
+        if (m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() ==  m_SelectionPools[TEAM_HORDE].GetPlayerCount())
+            ginfo->Team = leader->GetBGTeam();
+        else if (m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() > m_SelectionPools[TEAM_HORDE].GetPlayerCount())
+            ginfo->Team = HORDE;
+        else
+            ginfo->Team = ALLIANCE;
+    }
+    else
+        ginfo->Team                      = leader->GetBGTeam();
     ginfo->MatchmakerRating          = mmr;
     ginfo->OpponentsMatchmakerRating = 0;
     ginfo->ignore                    = ignore;
