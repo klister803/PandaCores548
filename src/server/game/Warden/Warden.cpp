@@ -162,7 +162,7 @@ void Warden::Update()
     {
         if (!IsValidStateInWorld(_session->GetOS()))
         {
-            sLog->outWarden("Warden (%s) not correctly initialized (state: %u) on account %u, player %s", _session->GetOS().c_str(), uint8(_state), _session->GetAccountId(), _session->GetPlayerName());
+            sLog->outWarden("Warden (%s) not correctly initialized (state: %u) on account %u, player %s", _session->GetOS().c_str(), uint8(_state), _session->GetAccountId(), _session->GetPlayerName().c_str());
             _state = WARDEN_MODULE_SET_PLAYER_LOCK;
             _pendingKickTimer = 10 * IN_MILLISECONDS;
         }
@@ -171,7 +171,7 @@ void Warden::Update()
             // custom state for pending lock after MPQ checks on auth
             if (_state == WARDEN_MODULE_SET_PLAYER_PENDING_LOCK)
             {
-                sLog->outWarden("Warden (%s) set pending lock on account %u, player %s", _session->GetOS().c_str(), _session->GetAccountId(), _session->GetPlayerName());
+                sLog->outWarden("Warden (%s) set pending lock on account %u, player %s", _session->GetOS().c_str(), _session->GetAccountId(), _session->GetPlayerName().c_str());
                 SetPlayerLocked("uWoW Anticheat: Banned MPQ patches detected.");
             }
         }
@@ -222,7 +222,7 @@ void Warden::ClientResponseTimerUpdate(uint32 diff)
     {
         _clientResponseTimer = 0;
         sLog->outWarden("Player %s (guid: %u, account: %u, latency: %u, IP: %s) with module state %u exceeded Warden module (%s) response delay for more than 90s - disconnecting client",
-            _session->GetPlayerName(), _session->GetGuidLow(), _session->GetAccountId(), _session->GetLatency(), _session->GetRemoteAddress().c_str(), uint8(_state), _session->GetOS().c_str());
+            _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), _session->GetLatency(), _session->GetRemoteAddress().c_str(), uint8(_state), _session->GetOS().c_str());
         _session->KickPlayer();
         return;
     }
