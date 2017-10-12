@@ -437,14 +437,14 @@ void WardenWin::RequestBaseData()
     _state = WARDEN_MODULE_WAIT_RESPONSE;
     _clientResponseTimer = 90 * IN_MILLISECONDS;
 
-    std::stringstream stream;
-    stream << "WARDEN: Sent check id's: ";
-    for (std::vector<uint16>::iterator itr = _currentChecks.begin(); itr != _currentChecks.end(); ++itr)
-        stream << *itr << " ";
+    // std::stringstream stream;
+    // stream << "WARDEN: Sent check id's: ";
+    // for (std::vector<uint16>::iterator itr = _currentChecks.begin(); itr != _currentChecks.end(); ++itr)
+        // stream << *itr << " ";
 
-    sLog->outDebug(LOG_FILTER_WARDEN, "%s", stream.str().c_str());
-    sLog->outWarden("%s", stream.str().c_str());
-    sWorld->SendServerMessage(SERVER_MSG_STRING, stream.str().c_str(), _session->GetPlayer());
+    // sLog->outDebug(LOG_FILTER_WARDEN, "%s", stream.str().c_str());
+    // sLog->outWarden("%s", stream.str().c_str());
+    // sWorld->SendServerMessage(SERVER_MSG_STRING, stream.str().c_str(), _session->GetPlayer());
 
     WorldPacket data1(SMSG_SERVERTIME, 8);
     data1 << uint32(12755321);
