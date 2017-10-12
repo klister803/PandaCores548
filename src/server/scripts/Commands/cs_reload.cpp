@@ -164,7 +164,6 @@ public:
             { "vehicle_template_accessory",   SEC_ADMINISTRATOR, true,  &HandleReloadVehicleTemplateAccessoryCommand,   "", NULL },
             { "world_visible_distance",       SEC_ADMINISTRATOR, true,  &HandleReloadWorldVisibleDistanceCommand,       "", NULL },
             { "antispamm",                    SEC_ADMINISTRATOR, true,  &HandleReloadAntispammCommand,                  "", NULL },
-            { "donate_vendor",                SEC_ADMINISTRATOR, true,  &HandleReloadNpcDonateVendorCommand,            "", NULL },
             { NULL,                           0,                 false, NULL,                                           "", NULL }
         };
         static ChatCommand commandTable[] =
@@ -1385,14 +1384,6 @@ public:
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Reloading Anti spamm table...");
         sWorld->LoadWorldAntispamm();
         handler->SendGlobalGMSysMessage("Anti spamm data reloaded.");
-        return true;
-    }
-    
-    static bool HandleReloadNpcDonateVendorCommand(ChatHandler* handler, const char* /*args*/)
-    {
-        sLog->outInfo(LOG_FILTER_GENERAL, "Re-Loading `store_products` Table!");
-        sObjectMgr->LoadDonateVendors();
-        handler->SendGlobalGMSysMessage("DB table `store_products` reloaded.");
         return true;
     }
 };

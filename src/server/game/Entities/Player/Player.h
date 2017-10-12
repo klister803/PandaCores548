@@ -1644,10 +1644,6 @@ class Player : public Unit, public GridObject<Player>
         bool IsValidPos(uint8 bag, uint8 slot, bool explicit_pos);
         uint8 GetBankBagSlotCount() const { return GetByteValue(PLAYER_BYTES_2, 2); }
         void SetBankBagSlotCount(uint8 count) { SetByteValue(PLAYER_BYTES_2, 2, count); }
-        bool HasDonateToken(uint32 count) const;
-        bool DestroyDonateTokenCount(uint32 count);
-        void AddDonateTokenCount(uint32 count);
-        void UpdateDonateStatistics(int32 entry);
         bool HasItemCount(uint32 item, uint32 count = 1, bool inBankAlso = false) const;
         bool HasItemFitToSpellRequirements(SpellInfo const* spellInfo, Item const* ignoreItem = NULL);
         bool CanNoReagentCast(SpellInfo const* spellInfo) const;

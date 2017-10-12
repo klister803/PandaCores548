@@ -12308,89 +12308,6 @@ bool Player::IsValidPos(uint8 bag, uint8 slot, bool explicit_pos)
     return false;
 }
 
-bool Player::HasDonateToken(uint32 count) const
-{
-    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SELECT_DONATE_TOKEN);
-    
-    stmt->setUInt32(0, GetSession()->GetBattlenetAccountId());
-    
-    PreparedQueryResult result_don = LoginDatabase.Query(stmt);
-    
-    if (!result_don)
-        return false;
-    
-    Field* fields = result_don->Fetch();
-    uint32 balans = fields[0].GetUInt32();
-    
-    if (balans >= count)    
-        return true;
-    else
-        return false;
-}
-
-bool Player::DestroyDonateTokenCount(uint32 count)
-{
-  //  LoginDatabase.PExecute("Update battlenet_accounts set balans = balans - %u where id in (select battlenet_account from account where id = %u)", count, GetSession()->GetAccountId());
-    
-    if (sWorld->getBoolConfig(CONFIG_DONATE_ON_TESTS)) // if test, then free donate
-        return true;
-        
-    if (!HasDonateToken(count))
-        return false;
-    
-    SQLTransaction trans = LoginDatabase.BeginTransaction();
-    
-    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_DESTROY_DONATE_TOKEN);
-    stmt->setUInt32(0, count);
-    stmt->setUInt32(1, GetSession()->GetBattlenetAccountId());
-    trans->Append(stmt);
-    LoginDatabase.CommitTransaction(trans);
-    
-    ChatHandler chH = ChatHandler(this);
-    chH.PSendSysMessage(20062, count);
-    return true;
-}
-
-void Player::AddDonateTokenCount(uint32 count)
-{
-    SQLTransaction trans = LoginDatabase.BeginTransaction();
-    
-    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_ADD_DONATE_TOKEN);
-    stmt->setUInt32(0, count);
-    stmt->setUInt32(1, GetSession()->GetBattlenetAccountId());
-    trans->Append(stmt);
-    LoginDatabase.CommitTransaction(trans);
-    
-    ChatHandler chH = ChatHandler(this);
-    chH.PSendSysMessage(20063, count);
-}
-
-void Player::UpdateDonateStatistics(int32 entry)
-{
-    if (sWorld->getBoolConfig(CONFIG_DONATE_ON_TESTS))
-        return;
-    
-    if (entry < 0 ) // service?
-    {
-        QueryResult result1 = LoginDatabase.PQuery("SELECT `sp`.`id` FROM `store_products` AS sp LEFT JOIN `store_product_realms` AS spr ON `spr`.`product` = `sp`.`id` WHERE `sp`.`item` = '%d' and `sp`.`enable` = '1' AND `spr`.`realm` = '%u'", entry, realmID);
-        if (result1)
-        {
-            Field* fields = result1->Fetch();
-            entry = fields[0].GetInt32();
-        }
-    }
-    QueryResult result = LoginDatabase.PQuery("SELECT buy FROM store_statistics where product = '%d' and realm = '%u'", entry, realmID);
-    int32 count = 1;
-    if (result)
-    {
-        Field* fields = result->Fetch();
-        count += fields[0].GetInt32();
-        LoginDatabase.PExecute("UPDATE store_statistics set `buy` = '%d' where product = '%d' and realm = '%u'", count, entry, realmID);
-    }
-    else
-        LoginDatabase.PExecute("INSERT INTO `store_statistics` (`product`, `realm`, `buy`) VALUES ('%d', '%u', '%d');", entry, realmID, count);
-}
-
 bool Player::HasItemCount(uint32 item, uint32 count, bool inBankAlso) const
 {
     uint32 tempcount = 0;
@@ -13877,6 +13794,8 @@ Item* Player::StoreNewItem(ItemPosCountVec const& dest, uint32 item, bool update
     Item* pItem = Item::CreateItem(item, count, this);
     if (pItem)
     {
+        if(pItem->GetEntry() == 38186)
+            sLog->outDebug(LOG_FILTER_EFIR, "Player::StoreNewItem - CreateItem of item %u; count = %u playerGUID %u, itemGUID %u", pItem->GetEntry(), count, GetGUID(), pItem->GetGUID());
         ItemAddedQuestCheck(item, count);
         UpdateAchievementCriteria(CRITERIA_TYPE_RECEIVE_EPIC_ITEM, item, count);
         UpdateAchievementCriteria(CRITERIA_TYPE_OWN_ITEM, item, 1);
@@ -13951,6 +13870,10 @@ Item* Player::_StoreItem(uint16 pos, Item* pItem, uint32 count, bool clone, bool
             pItem = pItem->CloneItem(count, this);
         else
             pItem->SetCount(count);
+
+        if(pItem->GetEntry() == 38186)
+            sLog->outDebug(LOG_FILTER_EFIR, "Player::_StoreItem - CloneItem clone %i of item %u; count = %u playerGUID %u, itemGUID %u bag %u slot %u",
+                clone, pItem->GetEntry(), count, GetGUID(), pItem->GetGUID(), bag, slot);
 
         if (!pItem)
             return NULL;
@@ -14418,6 +14341,15 @@ void Player::MoveItemToInventory(ItemPosCountVec const& dest, Item* pItem, bool 
     ItemAddedQuestCheck(pItem->GetEntry(), pItem->GetCount());
     UpdateAchievementCriteria(CRITERIA_TYPE_RECEIVE_EPIC_ITEM, pItem->GetEntry(), pItem->GetCount());
 
+    if(pItem->GetEntry() == 38186)
+        sLog->outDebug(LOG_FILTER_EFIR, "Player::MoveItemToInventory - item %u; count = %u playerGUID %u, itemGUID %u", pItem->GetEntry(), pItem->GetCount(), GetGUID(), pItem->GetGUID());
+
+    if (sObjectMgr->IsPlayerInLogList(this))
+    {
+        sObjectMgr->DumpDupeConstant(this);
+        sLog->outDebug(LOG_FILTER_DUPE, "Player::MoveItemToInventory - item %u; count = %u playerGUID %u, itemGUID %u", pItem->GetEntry(), pItem->GetCount(), GetGUID(), pItem->GetGUID());
+    }
+
     // store item
     Item* pLastItem = StoreItem(dest, pItem, update);
 
@@ -14832,6 +14764,17 @@ void Player::SplitItem(uint16 src, uint16 dst, uint32 count)
         SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, pSrcItem, NULL);
         return;
     }
+    if(pNewItem->GetEntry() == 38186)
+    {
+        if (pSrcItem->IsNotEmptyBag())
+            sLog->outDebug(LOG_FILTER_EFIR, "Player::SplitItem IsNotEmptyBag pSrcItem %u; count = %u playerGUID %u", pSrcItem->GetEntry(), pSrcItem->GetCount(), GetGUID());
+
+        if (IsBagPos(src) || IsBagPos(dst))
+            sLog->outDebug(LOG_FILTER_EFIR, "Player::SplitItem IsBagPos pSrcItem %u; count = %u playerGUID %u", pSrcItem->GetEntry(), pSrcItem->GetCount(), GetGUID());
+
+        sLog->outDebug(LOG_FILTER_EFIR, "Player::SplitItem - CloneItem of item %u; count = %u playerGUID %u, itemGUID %u sEntry %u sitemGUID %u srcbag %i, srcslot %i, dstbag %i, dstslot %i sCount %i",
+        pNewItem->GetEntry(), count, GetGUID(), pNewItem->GetGUID(), pSrcItem->GetEntry(), pSrcItem->GetGUID(), srcbag, srcslot, dstbag, dstslot, pSrcItem->GetCount());
+    }
 
     if (IsInventoryPos(dst))
     {
@@ -14956,10 +14899,29 @@ void Player::SwapItem(uint16 src, uint16 dst)
         return;
     }
 
+    if(pSrcItem->GetEntry() == 38186)
+        sLog->outDebug(LOG_FILTER_EFIR, "Player::SwapItem pSrcItem %u; count = %u playerGUID %u IsNotEmptyBag %u",
+            pSrcItem->GetEntry(), pSrcItem->GetCount(), GetGUID(), pSrcItem->IsNotEmptyBag());
+
+    if (sObjectMgr->IsPlayerInLogList(this))
+    {
+        sObjectMgr->DumpDupeConstant(this);
+        sLog->outDebug(LOG_FILTER_DUPE, "---Player::SwapItem pSrcItem %u; count = %u GUID %u GetSlot %u",
+            pSrcItem->GetEntry(), pSrcItem->GetCount(), pSrcItem->GetGUID(), pSrcItem->GetSlot());
+
+        if(pDstItem)
+            sLog->outDebug(LOG_FILTER_DUPE, "Player::SwapItem pDstItem %u; count = %u GUID %u GetSlot %u",
+                pDstItem->GetEntry(), pDstItem->GetCount(), pDstItem->GetGUID(), pDstItem->GetSlot());
+    }
+
     // DST checks
 
     if (pDstItem)
     {
+        if(pDstItem->GetEntry() == 38186)
+            sLog->outDebug(LOG_FILTER_EFIR, "Player::SwapItem pDstItem %u; count = %u playerGUID %u IsNotEmptyBag %u IsNotEmptyBag %u",
+                pDstItem->GetEntry(), pDstItem->GetCount(), GetGUID(), pDstItem->IsNotEmptyBag(), pSrcItem->IsNotEmptyBag());
+
         if (pDstItem->m_lootGenerated)                       // prevent swap looting item
         {
             //best error message found for attempting to swap while looting
@@ -19857,6 +19819,12 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         }
     }
 
+    if (sObjectMgr->IsPlayerInLogList(this))
+    {
+        sObjectMgr->DumpDupeConstant(this);
+        sLog->outDebug(LOG_FILTER_DUPE, "---PlayerLoaded;");
+    }
+
     /// Quest "A Test of Valor"
     if (!GetQuestRewardStatus(32474) && !GetQuestRewardStatus(32476))
     {
@@ -20141,8 +20109,6 @@ void Player::_LoadInventory(PreparedQueryResult result, uint32 timeDiff)
             {
                 uint32 bagGuid  = fields[14].GetUInt32();
                 uint8  slot     = fields[15].GetUInt8();
-
-                item->SetDonateItem(fields[19].GetBool());
 
                 uint8 err = EQUIP_ERR_OK;
                 // Item is not in bag
@@ -22199,6 +22165,12 @@ void Player::_SaveAuras(SQLTransaction& trans)
 
 void Player::_SaveInventory(SQLTransaction& trans)
 {
+    if (sObjectMgr->IsPlayerInLogList(this))
+    {
+        sObjectMgr->DumpDupeConstant(this);
+        sLog->outDebug(LOG_FILTER_DUPE, "---_SaveInventory;");
+    }
+
     PreparedStatement* stmt = NULL;
     // force items in buyback slots to new state
     // and remove those that aren't already
@@ -22304,6 +22276,11 @@ void Player::_SaveInventory(SQLTransaction& trans)
                 stmt->setUInt8 (2, item->GetSlot());
                 stmt->setUInt32(3, item->GetGUIDLow());
                 trans->Append(stmt);
+                if (sObjectMgr->IsPlayerInLogList(this))
+                {
+                    sObjectMgr->DumpDupeConstant(this);
+                    sLog->outDebug(LOG_FILTER_DUPE, "---_SaveInventory item Guid %u Slot %u Entry %u State %u BagSlot %u", item->GetGUIDLow(), item->GetSlot(), item->GetEntry(), item->GetState(), item->GetBagSlot());
+                }
                 break;
             case ITEM_REMOVED:
                 stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_INVENTORY_BY_ITEM);
@@ -24621,7 +24598,12 @@ void Player::TakeExtendedCost(uint32 extendedCostId, uint32 count)
 
     for (uint8 i = 0; i < MAX_ITEM_EXT_COST_ITEMS; ++i)
     {
-        if (extendedCost->RequiredItem[i])
+        if(extendedCost->RequiredItem[i] == 38186)
+        {
+            uint32 uicount = extendedCost->RequiredItemCount[i] * count * sWorld->getRate(RATE_DONATE);
+            DestroyItemCount(extendedCost->RequiredItem[i], uicount, true);
+        }
+        else if (extendedCost->RequiredItem[i])
             DestroyItemCount(extendedCost->RequiredItem[i], (extendedCost->RequiredItemCount[i] * count), true);
     }
 
@@ -24647,7 +24629,8 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
     ItemPosCountVec vDest;
     uint16 uiDest = 0;
     uint32 uicount = 0;
-    
+    bool isTransDonate = pVendor->GetEntry() == 220024 || pVendor->GetEntry() == 220022 || (pVendor->GetEntry() >= 200200 && pVendor->GetEntry() <= 200205) || pVendor->GetEntry() == 220031;
+
     InventoryResult msg = bStore ?
         CanStoreNewItem(bag, slot, vDest, item, count) :
         CanEquipNewItem(slot, uiDest, item, false);
@@ -24657,11 +24640,7 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
         return false;
     }
 
-    if (!crItem->DonateCost)
-        ModifyMoney(-price);
-    else
-        if (!DestroyDonateTokenCount(price))
-            return false;
+ //   ModifyMoney(-price); перенес в if 
 
     if (crItem->ExtendedCost) // case for new honor system
     {
@@ -24670,7 +24649,13 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
         {
             if (iece->RequiredItem[i])
             {
-                DestroyItemCount(iece->RequiredItem[i], iece->RequiredItemCount[i], true);
+                if(iece->RequiredItem[i] == 38186)
+                {
+                    uicount = iece->RequiredItemCount[i] * sWorld->getRate(RATE_DONATE);
+                    DestroyItemCount(iece->RequiredItem[i], uicount, true);
+                }
+                else
+                    DestroyItemCount(iece->RequiredItem[i], iece->RequiredItemCount[i], true);
             }
         }
 
@@ -24682,8 +24667,12 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
             if (iece->RequiredCurrency[i])
                 ModifyCurrency(iece->RequiredCurrency[i], -int32(iece->RequiredCurrencyCount[i]), true, true);
         }
+        
+        if(iece->RequiredItem[0] != 38186)
+            ModifyMoney(-price);
     }
-
+    else
+        ModifyMoney(-price);
 
     Item* it = bStore ?
         StoreNewItem(vDest, item, true) :
@@ -24709,7 +24698,7 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
         if (!bStore)
             AutoUnequipOffhandIfNeed();
 
-        if (pProto->Flags & ITEM_FLAG_ITEM_PURCHASE_RECORD && crItem->ExtendedCost && pProto->GetMaxStackSize() == 1 && !crItem->DonateCost)
+        if (!isTransDonate && pProto->Flags & ITEM_FLAG_ITEM_PURCHASE_RECORD && crItem->ExtendedCost && pProto->GetMaxStackSize() == 1)
         {
             it->SetFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_REFUNDABLE);
             it->SetRefundRecipient(GetGUIDLow());
@@ -24719,36 +24708,20 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
             AddRefundReference(it->GetGUIDLow());
         }
 
-        if (crItem->DonateCost)
+        if (uicount)
         {
-            SQLTransaction trans = LoginDatabase.BeginTransaction();
+            SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
-            if (!sWorld->getBoolConfig(CONFIG_DONATE_ON_TESTS))
-            {  
-                uint8 index = 0;
-                PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_STORE_ADD_ITEM_LOG);
-                stmt->setUInt32(  index, realmID);
-                stmt->setUInt32(  ++index, GetSession()->GetAccountId()); 
-                stmt->setUInt32(  ++index, GetSession()->GetBattlenetAccountId()); // select battlenet_account from account where id = %u
-                stmt->setUInt64(  ++index, GetGUIDLow());
-                stmt->setUInt64(  ++index, it->GetGUIDLow()); // item_guid
-                stmt->setUInt32(  ++index, it->GetEntry()); // item entry
-                stmt->setUInt32(  ++index, 1); // item count
-                stmt->setInt64(  ++index, price); // cost
-                stmt->setUInt32(  ++index, getLevel()); // level
-                stmt->setInt32(  ++index, crItem->DonateStoreId); // donate Store id
-                stmt->setInt32(  ++index, crItem->DonateStoreId); // select for bonus
-                
-                trans->Append(stmt);
-                LoginDatabase.CommitTransaction(trans);
-                UpdateDonateStatistics(crItem->DonateStoreId);
-                it->SetDonateItem(true);
-            }
-            it->SetState(ITEM_CHANGED, this);
-            it->SetBinding(true);
-            SaveToDB();
-            SQLTransaction temp = SQLTransaction(NULL);
-            it->SaveToDB(temp);
+            uint8 index = 0;
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_ADD_ITEM_DONATE);
+            stmt->setUInt64(  index, GetGUIDLow());
+            stmt->setUInt64(  ++index, it->GetGUIDLow());
+            stmt->setUInt32(  ++index, it->GetEntry());
+            stmt->setUInt32(  ++index, uicount);
+            stmt->setUInt32(  ++index, count);
+            stmt->setUInt32(  ++index, isTransDonate ? 2 : 0);
+            trans->Append(stmt);
+            CharacterDatabase.CommitTransaction(trans);
 
             //CharacterDatabase.PExecute("INSERT INTO character_donate (`owner_guid`, `itemguid`, `itemEntry`, `efircount`, `count`)"
             //" VALUES('%u', '%u', '%u', '%u', '%u')", GetGUIDLow(), it->GetGUIDLow(), it->GetEntry(), uicount, count);
@@ -24874,12 +24847,7 @@ bool Player::BuyCurrencyFromVendorSlot(uint64 vendorGuid, uint32 vendorSlot, uin
         }
     }
 
-    if (crItem->DonateCost)
-    {
-        if (!DestroyDonateTokenCount(crItem->DonateCost))
-            return false;
-    }
-    else if (crItem->ExtendedCost)
+    if (crItem->ExtendedCost)
         TakeExtendedCost(crItem->ExtendedCost, count);
 
     ModifyCurrency(currency, crItem->maxcount * proto->GetPrecision(), true, true);
@@ -24889,7 +24857,9 @@ bool Player::BuyCurrencyFromVendorSlot(uint64 vendorGuid, uint32 vendorSlot, uin
 
 // Return true is the bought item has a max count to force refresh of window by caller
 bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot)
-{    
+{
+    bool checkmoney = true;
+    
     // cheating attempt
     if (count < 1) count = 1;
 
@@ -24920,7 +24890,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
 
     VendorItemData const* vItems;
     if (CustomMultiDonate && (creature->GetEntry() == 220030 || creature->GetEntry() == 220031))
-         vItems = sObjectMgr->GetNpcDonateVendorItemList(CustomMultiDonate);   
+         vItems = sObjectMgr->GetNpcVendorItemList(CustomMultiDonate);   
     else
          vItems = creature->GetVendorItems();
      
@@ -24977,17 +24947,18 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
             return false;
         }
 
-        if(crItem->DonateCost)
+        for (uint8 i = 0; i < MAX_ITEM_EXT_COST_ITEMS; ++i)
         {
-            if (!HasDonateToken(crItem->DonateCost * stacks))
+            if(iece->RequiredItem[i] == 38186)
             {
-                SendEquipError(EQUIP_ERR_VENDOR_MISSING_TURNINS, NULL, NULL);
-                return false;
+                if (iece->RequiredItem[i] && !HasItemCount(iece->RequiredItem[i], (iece->RequiredItemCount[i] * stacks * sWorld->getRate(RATE_DONATE))))
+                {
+                    SendEquipError(EQUIP_ERR_VENDOR_MISSING_TURNINS, NULL, NULL);
+                    return false;
+                }
+                checkmoney = false;
             }
-        }
-        else
-        {
-            for (uint8 i = 0; i < MAX_ITEM_EXT_COST_ITEMS; ++i)
+            else
             {
                 if (iece->RequiredItem[i] && !HasItemCount(iece->RequiredItem[i], (iece->RequiredItemCount[i] * stacks)))
                 {
@@ -25036,44 +25007,41 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
         }
     }
 
-    if (!crItem->DonateCost)  // BOA on donate
+    std::vector<GuildReward> const& rewards = sGuildMgr->GetGuildRewards();
+
+    for (std::vector<GuildReward>::const_iterator reward = rewards.begin(); reward != rewards.end(); ++reward)
     {
-        std::vector<GuildReward> const& rewards = sGuildMgr->GetGuildRewards();
+        if (pProto->ItemId != reward->Entry)
+            continue;
 
-        for (std::vector<GuildReward>::const_iterator reward = rewards.begin(); reward != rewards.end(); ++reward)
+        Guild* guild = sGuildMgr->GetGuildById(this->GetGuildId());
+
+        if (!guild)
         {
-            if (pProto->ItemId != reward->Entry)
-                continue;
+            SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
+            return false;
+        }
 
-            Guild* guild = sGuildMgr->GetGuildById(this->GetGuildId());
-
-            if (!guild)
+        if (reward->Standing)
+            if (this->GetReputationRank(REP_GUILD) < reward->Standing)
             {
                 SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
                 return false;
             }
 
-            if (reward->Standing)
-                if (this->GetReputationRank(REP_GUILD) < reward->Standing)
-                {
-                    SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
-                    return false;
-                }
+        if (reward->AchievementId)
+            if (!guild->GetAchievementMgr().HasAchieved(reward->AchievementId))
+            {
+                SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
+                return false;
+            }
 
-            if (reward->AchievementId)
-                if (!guild->GetAchievementMgr().HasAchieved(reward->AchievementId))
-                {
-                    SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
-                    return false;
-                }
-
-            if (reward->Racemask)
-                if (!(this->getRaceMask() & reward->Racemask))
-                {
-                    SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
-                    return false;
-                }
-        }
+        if (reward->Racemask)
+            if (!(this->getRaceMask() & reward->Racemask))
+            {
+                SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
+                return false;
+            }
     }
 
     uint64 price = 0;
@@ -25092,19 +25060,12 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
 
         //if (int32 priceMod = GetTotalAuraModifier(SPELL_AURA_MOD_VENDOR_ITEMS_PRICES))
             //price -= CalculatePct(price, priceMod);
-        
-        if (!HasEnoughMoney(price) && !crItem->DonateCost)
+
+        if (!HasEnoughMoney(price) && checkmoney)
         {
             SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, creature, item, 0);
             return false;
         }
-    }
-    
-    if (crItem->DonateCost)
-    {
-        //Hack for donate
-        uint32 stacks = count / pProto->BuyCount;
-        price = crItem->DonateCost * stacks;
     }
 
 
@@ -29706,7 +29667,10 @@ void Player::SendRefundInfo(Item* item)
     for (uint8 i = 0; i < MAX_ITEM_EXT_COST_ITEMS; ++i)                             // item cost data
     {
         data << uint32(iece->RequiredItem[i]);
-        data << uint32(iece->RequiredItemCount[i]);
+        if (iece->RequiredItem[i] == 38186)
+            data << uint32(iece->RequiredItemCount[i] * sWorld->getRate(RATE_DONATE));
+        else
+            data << uint32(iece->RequiredItemCount[i]);
     }
     data.WriteGuidBytes<3>(guid);
     data << uint32(GetTotalPlayedTime() - item->GetPlayedTime());
@@ -29741,6 +29705,12 @@ bool Player::AddItem(uint32 itemId, uint32 count, uint32* noSpaceForCount)
         // -- TODO: Send to mailbox if no space
         ChatHandler(this).PSendSysMessage("You don't have any space in your bags.");
         return false;
+    }
+
+    if (sObjectMgr->IsPlayerInLogList(this))
+    {
+        sObjectMgr->DumpDupeConstant(this);
+        sLog->outDebug(LOG_FILTER_DUPE, "---AddItem; item: %u; count: %u;", itemId, count);
     }
 
     Item* item = StoreNewItem(dest, itemId, true, Item::GenerateItemRandomPropertyId(itemId));
@@ -29819,6 +29789,8 @@ void Player::RefundItem(Item* item, bool saveInDB)
     {
         uint32 count = iece->RequiredItemCount[i];
         uint32 itemid = iece->RequiredItem[i];
+        if(itemid == 38186)
+            count = uint32(count * sWorld->getRate(RATE_DONATE));
 
         if (count && itemid)
         {
@@ -29873,6 +29845,8 @@ void Player::RefundItem(Item* item, bool saveInDB)
     {
         uint32 count = iece->RequiredItemCount[i];
         uint32 itemid = iece->RequiredItem[i];
+        if(itemid == 38186)
+            count = uint32(count * sWorld->getRate(RATE_DONATE));
 
         if (count && itemid)
         {
@@ -31687,6 +31661,12 @@ void Player::HandleSellItemOpcode()
             continue;
         }
 
+        if (sObjectMgr->IsPlayerInLogList(this))
+        {
+            sObjectMgr->DumpDupeConstant(this);
+            sLog->outDebug(LOG_FILTER_DUPE, "---HandleSellItemOpcode; vendor: %llu; item: %u; count %u", GUID_LOPART(vendorguid), GUID_LOPART(itemguid), count);
+        }
+
         // remove fake death
         if (HasUnitState(UNIT_STATE_DIED))
             RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
@@ -31723,12 +31703,9 @@ void Player::HandleSellItemOpcode()
                 RefundItem(pItem, false);
                 continue; // Therefore, no feedback to client
             }
-            
-            if (pItem->GetDonateItem())
-            {
-                SendSellError(SELL_ERR_CANT_SELL_ITEM, creature, itemguid);
-                return;
-            }
+
+            if (pItem->GetEntry() == 38186)
+                sLog->outDebug(LOG_FILTER_EFIR, "HandleBuyItemInSlotOpcode item %u; count = %u playerGUID %u vendorguid %u", pItem->GetEntry(), count, GetGUID(), creature->GetGUID());
 
             // special case at auto sell (sell all)
             if (count == 0)
@@ -31757,6 +31734,8 @@ void Player::HandleSellItemOpcode()
                             SendSellError(SELL_ERR_CANT_SELL_ITEM, creature, itemguid);
                             continue;
                         }
+                        if (pItem->GetEntry() == 38186)
+                            sLog->outDebug(LOG_FILTER_EFIR, "HandleSellItemOpcode - CloneItem of item %u; count = %u playerGUID %u, itemGUID %u", pItem->GetEntry(), count, GetGUID(), pItem->GetGUID());
 
                         pItem->SetCount(pItem->GetCount() - count);
                         ItemRemovedQuestCheck(pItem->GetEntry(), count);
@@ -31780,17 +31759,6 @@ void Player::HandleSellItemOpcode()
                     ModifyMoney(money);
                     UpdateAchievementCriteria(CRITERIA_TYPE_MONEY_FROM_VENDORS, money);
                     SendSellError(SELL_ERR_OK, creature, itemguid);
-                    
-                    SQLTransaction transs = LoginDatabase.BeginTransaction();
-
-                    uint8 index = 0;
-                    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_HISTORY_STATUS);
-                    stmt->setUInt32(  index, 2);
-                    stmt->setUInt32(  ++index, pItem->GetGUIDLow());
-                    stmt->setUInt32(  ++index, realmID);                 
-                
-                    transs->Append(stmt);
-                    LoginDatabase.CommitTransaction(transs);
                 }
                 else
                     SendSellError(SELL_ERR_CANT_SELL_ITEM, creature, itemguid);

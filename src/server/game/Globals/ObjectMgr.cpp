@@ -265,15 +265,6 @@ ObjectMgr::~ObjectMgr()
 
     for (CacheVendorItemContainer::iterator itr = _cacheVendorItemStore.begin(); itr != _cacheVendorItemStore.end(); ++itr)
         itr->second.Clear();
-    
-    for (CacheDonateVendorItemContainer::iterator itr = _cacheDonateVendorItemStore.begin(); itr != _cacheDonateVendorItemStore.end(); ++itr)
-        itr->second.Clear();
-    
-    for (DonateVendorAdd::iterator itr = _donvendoradd.begin(); itr != _donvendoradd.end(); ++itr)
-        itr->second.clear();
-    
-    for (DonateVendorCat::iterator itr = _donvendorcat.begin(); itr != _donvendorcat.end(); ++itr)
-        itr->second.clear();
 
     _cacheTrainerSpellStore.clear();
 
@@ -8622,268 +8613,6 @@ void ObjectMgr::LoadVendors()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %d Vendors in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
-void ObjectMgr::LoadDonateVendors()
-{ 
-    // donate venodrs for Tokens    
-    uint32 oldMSTime = getMSTime();
-    
-    for (CacheDonateVendorItemContainer::iterator itr = _cacheDonateVendorItemStore.begin(); itr != _cacheDonateVendorItemStore.end(); ++itr)
-        itr->second.Clear();
-    _cacheDonateVendorItemStore.clear();
-    
-    _fakedonvendorcat.clear();
-
-    _reversfakedonvendorcat.clear();
-    
-    uint32 count = 0;  
-    
-    float discount;
-    
-    QueryResult result_discount = LoginDatabase.PQuery("SELECT rate from store_discounts where enable = 1 AND UNIX_TIMESTAMP(start) <= UNIX_TIMESTAMP() AND UNIX_TIMESTAMP(end) >= UNIX_TIMESTAMP()");
-    
-    if (!result_discount)
-        discount = 1;
-    else
-    {
-        Field* fielddi = result_discount->Fetch();
-        discount = fielddi[0].GetFloat();
-    }
-    
-    QueryResult result_don = LoginDatabase.PQuery("SELECT `sp`.`category`, `sp`.`item`, `spr`.`token`, `sp`.`enable`, `sp`.`bonus`, `sp`.`id` FROM `store_products` AS sp LEFT JOIN `store_product_realms` AS spr ON `spr`.`product` = `sp`.`id` WHERE `sp`.`enable` = '1' AND `spr`.`realm` = '%u' AND `spr`.`enable` = 1 ORDER by `sp`.`category`;", realmID);
-    if (!result_don)
-    {
-        sLog->outError(LOG_FILTER_SERVER_LOADING, ">>  Loaded 0 Donate vendors. DB table `store_products` is empty!");
-    }
-    else
-    {
-        // it's some magic
-        int32 currentFakeCat = 250000;
-        int32 currentCat = 0;
-        int32 currentcount = 1;
-        bool useFakeCat = false;
-        do
-        {
-            Field* fields = result_don->Fetch();
-
-            int32 entry        = fields[0].GetInt32();
-            int32 item_id       = fields[1].GetInt32();
-            uint32 DonateCost = uint32(fields[2].GetUInt32() * discount); //цениик
-            uint8 enable        = fields[3].GetUInt8();
-            std::vector<uint32> bonusListIDs;
-            Tokenizer BonusListID(fields[4].GetString(), ':');
-            for (char const* token : BonusListID)
-                bonusListIDs.push_back(atol(token));
-            
-            int32 storeId       = fields[5].GetInt32();
-            
-            uint32 ExtendedCost     = 0;
-            uint32 incrtime     = 0;
-            uint8  type         = ITEM_VENDOR_TYPE_ITEM;
-            uint64 money     = 0;
-            
-            if (!enable || enable == 0)
-                continue;
-            if (DonateCost == 0)
-                continue;
-            
-            if (currentCat != entry)
-            {
-                currentCat = entry;
-                currentcount = 0;
-                useFakeCat = false;
-            } 
-            else if (currentcount > 150)
-            {
-                ++currentFakeCat;
-                currentcount -= 150;
-                _fakedonvendorcat[entry].push_back(currentFakeCat);
-                _reversfakedonvendorcat[currentFakeCat].push_back(entry);
-                useFakeCat = true;
-                sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Continue in new FakeCat = %d from old cat = %d", currentFakeCat, entry);
-            }
-            
-            if (useFakeCat)
-                entry = currentFakeCat;
-
-            // if (!IsVendorItemValid(entry, item_id, maxcount, incrtime, ExtendedCost, type, NULL, &skip_vendors))
-              //  continue;
-
-            VendorItemData& vList = _cacheDonateVendorItemStore[entry];
-
-            vList.AddItem(item_id, 0, incrtime, ExtendedCost, type, storeId, DonateCost);
-            ++count;
-            ++currentcount;
-        
-        }
-        while (result_don->NextRow());
-
-        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %d Donate Vendors in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
-    }
-    
-    
-    
-    oldMSTime = getMSTime();
-    count = 0;
-    
-    
-    // for reload
-     for (DonateVendorCat::iterator itr = _donvendorcat.begin(); itr != _donvendorcat.end(); ++itr)
-        itr->second.clear();
-    _donvendorcat.clear();
-
-    QueryResult result_cat = LoginDatabase.PQuery("SELECT `sc`.`pid`, `sc`.`id`, `scr`.`return`, `scl`.`ru`, `scl`.`en`, `scl`.`fr`, `scl`.`de`, `scl`.`cn`, `scl`.`tw`, `scl`.`es`, `scl`.`em`, `scl`.`ko`, `sc`.`type` FROM `store_categories` AS sc LEFT JOIN `store_category_locales` AS scl ON `scl`.`category` = `sc`.`id` LEFT JOIN `store_category_realms` AS scr ON `scr`.`category` = `sc`.`id` WHERE `sc`.`enable` = '1' AND `scr`.`realm` = '%u' AND `scr`.`enable` = 1 GROUP BY `sc`.`id` ORDER BY `sc`.`sort` DESC;", realmID);
-    
-    if (!result_cat)
-    {
-        sLog->outError(LOG_FILTER_SERVER_LOADING, ">>  Loaded 0 Donate Vendor Categories. DB table `store_categories`` is empty!");
-    }   
-    else
-    {
-    
-         do
-        {
-            Field* fields = result_cat->Fetch();
-
-            DonVenCat data;
-            uint32 index = 0;
-            int32 Parent        = fields[index].GetInt32();
-            int32 action = fields[++index].GetInt32();
-            data.action = action;
-            bool returnable = fields[++index].GetBool();
-            data.NameRu = fields[++index].GetString();
-            if (returnable)
-                data.NameRu = data.NameRu + "[Возвращаемые]";
-            data.NameEn = (!fields[++index].GetString().empty() ? (returnable ? fields[index].GetString() + "[Returnable]" : fields[index].GetString()) : data.NameRu);
-            data.NameFr = (!fields[++index].GetString().empty() ? (returnable ? fields[index].GetString() + "[Returnable]" : fields[index].GetString()): data.NameEn);
-            data.NameDe = (!fields[++index].GetString().empty() ? (returnable ? fields[index].GetString() + "[Returnable]" : fields[index].GetString()): data.NameEn);
-            data.NameCn = (!fields[++index].GetString().empty() ? (returnable ? fields[index].GetString() + "[Returnable]" : fields[index].GetString()): data.NameEn);
-            data.NameTw = (!fields[++index].GetString().empty() ? (returnable ? fields[index].GetString() + "[Returnable]" : fields[index].GetString()): data.NameEn);
-            data.NameEs = (!fields[++index].GetString().empty() ? (returnable ? fields[index].GetString() + "[Returnable]" : fields[index].GetString()): data.NameEn);
-            data.NameEm = (!fields[++index].GetString().empty() ? (returnable ? fields[index].GetString() + "[Returnable]" : fields[index].GetString()): data.NameEn);
-            data.NameKo = (!fields[++index].GetString().empty() ? (returnable ? fields[index].GetString() + "[Returnable]" : fields[index].GetString()): data.NameEn);     
-            
-            _donvendorcat[Parent].push_back(data);
-            
-            uint32 typetemp = fields[++index].GetUInt32();
-            if (typetemp > 0)
-            {
-                DonVenCat dataT;
-                dataT.type = typetemp;
-                _donvendorcat[action].push_back(dataT);
-            }
-            
-            if(std::vector<int32> const* fakeCat = sObjectMgr->GetFakeDonateVendorCat(action)) // push fake cat on this menu
-            {
-                if (fakeCat)
-                {
-                    int8 counter = 2;
-                    for (std::vector<int32>::const_iterator itr = fakeCat->begin(); itr != fakeCat->end(); ++itr)
-                    {
-                        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> FakeCat = %d was created succesfull", *itr);
-                        DonVenCat datafake;
-                        datafake.action = uint32(*itr);
-                        datafake.NameRu = data.NameRu + " #" + std::to_string(counter);
-                        datafake.NameEn = data.NameEn + " #" + std::to_string(counter);
-                        datafake.NameFr = data.NameFr + " #" + std::to_string(counter);
-                        datafake.NameDe = data.NameDe + " #" + std::to_string(counter);
-                        datafake.NameCn = data.NameCn + " #" + std::to_string(counter);
-                        datafake.NameTw = data.NameTw + " #" + std::to_string(counter);
-                        datafake.NameEs = data.NameEs + " #" + std::to_string(counter);
-                        datafake.NameEm = data.NameEm + " #" + std::to_string(counter);
-                        datafake.NameKo = data.NameKo + " #" + std::to_string(counter);
-                        
-                        _donvendorcat[Parent].push_back(datafake);
-                        ++counter;
-                    }
-                }
-            }
-            
-            ++count;    
-        }
-        while (result_cat->NextRow());
-        
-        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %d Donate Vendor Categories in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
-    }
-  /*  
-    oldMSTime = getMSTime();
-    count = 0;
-    
-    // reload
-    for (DonateVendorAdd::iterator itr = _donvendoradd.begin(); itr != _donvendoradd.end(); ++itr)
-        itr->second.clear();
-    _donvendoradd.clear();
-    
-    QueryResult result_donate = LoginDatabase.PQuery("SELECT `sp`.`category`, `sp`.`item`, `sp`.`token` ,`sl`.`ru`, `sl`.`en`, `sl`.`fr`, `sl`.`de`, `sl`.`cn`, `sl`.`tw`, `sl`.`es`, `sl`.`em`, `sl`.`ko`  FROM `store_products` AS sp JOIN `store_categories` AS sc ON `sc`.`id` = `sp`.`category` LEFT JOIN `store_product_locales` AS sl ON `sl`.`product` = `sp`.`item` WHERE `sc`.`type` > '0' AND `sp`.`enable` = 1 ");
-    
-    if (!result_donate)
-    {
-        sLog->outError(LOG_FILTER_SERVER_LOADING, ">>  Loaded 0 Donate Vendor Addition. DB table `store_products` with additional products is empty!");
-    }   
-    else
-    {
-    
-        do
-        {
-            Field* fields = result_donate->Fetch();
-
-            DonVenAdd data;
-            uint32 index = 0;
-            uint32 Parent        = fields[index].GetUInt32();
-            uint32 action = fields[++index].GetUInt32();
-            data.action = action;
-            data.cost = fields[++index].GetUInt32() * discount;
-            data.NameRu = fields[++index].GetString();
-            data.NameEn = (!fields[++index].GetString().empty() ? fields[index].GetString() : data.NameRu);
-            data.NameFr = (!fields[++index].GetString().empty() ? fields[index].GetString() : data.NameEn);
-            data.NameDe = (!fields[++index].GetString().empty() ? fields[index].GetString() : data.NameEn);
-            data.NameCn = (!fields[++index].GetString().empty() ? fields[index].GetString() : data.NameEn);
-            data.NameTw = (!fields[++index].GetString().empty() ? fields[index].GetString() : data.NameEn);
-            data.NameEs = (!fields[++index].GetString().empty() ? fields[index].GetString() : data.NameEn);
-            data.NameEm = (!fields[++index].GetString().empty() ? fields[index].GetString() : data.NameEn);
-            data.NameKo = (!fields[++index].GetString().empty() ? fields[index].GetString() : data.NameEn); 
-            
-            _donvendoradd[Parent].push_back(data);
-            
-            ++count;    
-        } while (result_donate->NextRow());
-        
-        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %d Donate Vendor Addition in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
-    }
-     */
-    // reload
-    oldMSTime = getMSTime();
-    count = 0;
-    
-    _priceforlevelupStore.clear();
-    
-    QueryResult result_level = LoginDatabase.PQuery("SELECT level, token, type FROM `store_level_prices` WHERE realm = %u", realmID);
-    
-    if (!result_level)
-    {
-        sLog->outError(LOG_FILTER_SERVER_LOADING, ">>  Loaded 0 Cost for levelup. DB table `store_level_prices` with price for levelup is empty!");
-    } 
-    else
-    {
-    
-        do
-        {
-            Field* fields = result_level->Fetch();
-
-            uint32 level        = fields[0].GetUInt32();
-            float cost          = fields[1].GetFloat() * discount;
-            uint8 type          = fields[2].GetUInt8();
-            
-            if (type == 0)
-                _priceforlevelupStore[level] = cost;
-            
-            ++count;    
-        } while (result_level->NextRow());
-        
-        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %d cost for levelup in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
-    }
-}
-
-
 void ObjectMgr::LoadGossipMenu()
 {
     uint32 oldMSTime = getMSTime();
@@ -10313,3 +10042,31 @@ AreaTriggerInfo const* ObjectMgr::GetAreaTriggerInfo(uint32 entry)
     return itr != _areaTriggerData.end() ? &itr->second : NULL;
 }
 
+void ObjectMgr::AddCharToDupeLog(uint64 guid)
+{
+    m_dupeLogMap.insert(guid);
+}
+
+bool ObjectMgr::IsPlayerInLogList(Player *player)
+{
+    if(m_dupeLogMap.empty())
+        return false;
+
+    uint64 guid = player->GetGUID();
+    DupeLogMap::iterator itr = m_dupeLogMap.find(guid);
+    if (itr != m_dupeLogMap.end())
+        return true;
+
+    return false;
+}
+
+void ObjectMgr::RemoveCharFromDupeList(uint64 guid)
+{
+    m_dupeLogMap.erase(guid);
+}
+
+void ObjectMgr::DumpDupeConstant(Player *player)
+{
+    sLog->outDebug(LOG_FILTER_DUPE, "Name: %s. Items: %u; Pos: map - %u; %f; %f; %f;", player->GetName(), player->GetItemCount(38186, true),
+                  player->GetMapId(), player->GetPositionX(), player->GetPositionY(), player->GetPositionZ());
+}

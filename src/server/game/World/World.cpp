@@ -1451,7 +1451,6 @@ void World::LoadConfigSettings(bool reload)
     m_bool_configs[CONFIG_PET_BATTLES_ENABLED] = ConfigMgr::GetBoolDefault("PetBattles.Enabled", true);
 
     // Custom content
-    m_bool_configs[CONFIG_DONATE_ON_TESTS] = ConfigMgr::GetBoolDefault("Donate.On.Tests", false);
     m_bool_configs[CONFIG_CUSTOM_CONTENT_ENABLED] = ConfigMgr::GetBoolDefault("Custom.Content.Enabled", false);
     m_int_configs[CONFIG_CUSTOM_CONTENT_VERSION] = ConfigMgr::GetIntDefault("Custom.Content.Version", 548);
 
@@ -1951,10 +1950,7 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadGossipMenuItems();
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Vendors...");
-    sObjectMgr->LoadVendors();     // must be after load CreatureTemplate and ItemTemplate
-    
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Donate Vendors...");
-    sObjectMgr->LoadDonateVendors(); 
+    sObjectMgr->LoadVendors();                                   // must be after load CreatureTemplate and ItemTemplate
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Trainers...");
     sObjectMgr->LoadTrainerSpell();                              // must be after load CreatureTemplate
@@ -3743,12 +3739,14 @@ void World::ProcessMailboxQueue()
                     uint32 money = f[i++].GetUInt32();
                     uint32 itemid = f[i++].GetUInt32();
                     uint32 itemcount = f[i++].GetUInt32();
-                    uint32 store_history = f[i++].GetUInt32();
 
                     uint32 forefir = 0;
 
                     if(itemid != 0 && itemid != 49426 && itemid != 38186 && itemid != 62062 && itemid != 47241 && money)
+                    {
+                        forefir = money / 10000;
                         money = 0;
+                    }
 
                     ItemTemplate const *pProto = sObjectMgr->GetItemTemplate(itemid);
                     if(itemid && !pProto)
@@ -3809,35 +3807,15 @@ void World::ProcessMailboxQueue()
                                 }
                                 if (attachment)
                                 {
-                                    if(store_history)
-                                        attachment->SetDonateItem(true);
                                     attachment->SaveToDB(trans);
-                                    ItemsOnMail.push_back(attachment);;
+                                    ItemsOnMail.push_back(attachment);
                                 }
                             }
                             if(attachment != NULL)
                             {
                                 trans->PAppend("REPLACE INTO mail_items (mail_id,item_guid,receiver) VALUES ('%u', '%u', '%u')", mailId, attachment->GetGUIDLow(), receiver_guid);
-                                if(store_history)
-                                {
-                                    SQLTransaction transs = LoginDatabase.BeginTransaction();
-
-                                    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_HISTORY_GUID);
-                                    stmt->setUInt64(0, attachment->GetGUIDLow());
-                                    stmt->setUInt32(1, store_history);
-                                    stmt->setUInt32(2, itemid);
-                                    transs->Append(stmt);
-                                    LoginDatabase.CommitTransaction(transs);
-                                    /*
-                                    stmt = CharacterDatabase.GetPreparedStatement(CHAR_ADD_ITEM_DONATE);
-                                    stmt->setUInt64(0, receiver_guid.GetCounter());
-                                    stmt->setUInt64(1, attachment->GetGUIDLow());
-                                    stmt->setUInt32(2, itemid);
-                                    stmt->setUInt32(3, forefir);
-                                    stmt->setUInt32(4, itemcount);
-                                    stmt->setUInt32(5, 0);
-                                    trans->Append(stmt); */
-                                }
+                                if(forefir)
+                                    trans->PAppend("REPLACE INTO character_donate (`owner_guid`, `itemguid`, `itemEntry`, `efircount`, `count`) VALUES ('%u', '%u', '%u', '%u', '%u')", receiver_guid, attachment->GetGUIDLow(), itemid, forefir, tempcountitems);
                             }
                         }
 

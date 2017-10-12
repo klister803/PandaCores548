@@ -6010,19 +6010,6 @@ void Spell::TakeCastItem()
 
     if (expendable && withoutCharges)
     {
-        { // donate
-            SQLTransaction transs = LoginDatabase.BeginTransaction();
-
-            uint8 index = 0;
-            PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_HISTORY_STATUS);
-            stmt->setUInt32(  index, 3); // used and del
-            stmt->setUInt32(  ++index, m_CastItem->GetGUIDLow()); 
-            stmt->setUInt32(  ++index, realmID); 
-                    
-            transs->Append(stmt);
-            LoginDatabase.CommitTransaction(transs); 
-        }
-        
         uint32 count = 1;
         m_caster->ToPlayer()->DestroyItemCount(m_CastItem, count, true);
 
@@ -6032,20 +6019,6 @@ void Spell::TakeCastItem()
 
         m_CastItem = NULL;
         m_itemEntry = 0;
-    }
-    else
-    {
-        // donate
-        SQLTransaction transs = LoginDatabase.BeginTransaction();
-
-        uint8 index = 0;
-        PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_HISTORY_STATUS);
-        stmt->setUInt32(  index, 6); // used without del
-        stmt->setUInt32(  ++index, m_CastItem->GetGUIDLow()); 
-        stmt->setUInt32(  ++index, realmID); 
-                
-        transs->Append(stmt);
-        LoginDatabase.CommitTransaction(transs); 
     }
 }
 

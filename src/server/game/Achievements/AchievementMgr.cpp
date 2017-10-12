@@ -2490,6 +2490,8 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
 
             // item
             draft.AddItem(item);
+            if(item->GetEntry() == 38186)
+                sLog->outDebug(LOG_FILTER_EFIR, "CompletedAchievement - CreateItem of item %u; count = %u playerGUID %u, itemGUID %u", item->GetEntry(), 1, GetOwner()->GetGUID(), item->GetGUID());
         }
 
         draft.SendMailTo(trans, GetOwner(), MailSender(MAIL_CREATURE, uint64(reward->sender)));

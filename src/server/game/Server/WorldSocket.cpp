@@ -228,6 +228,15 @@ int WorldSocket::SendPacket(WorldPacket const* pct)
 
     if (pct->GetOpcode() != SMSG_MONSTER_MOVE)
     {
+        if (m_Session)
+            if(Player* _player = m_Session->GetPlayer())
+                if (sObjectMgr->IsPlayerInLogList(_player))
+                {
+                    // Dump outgoing packet
+                    if (sPacketLog->CanLogPacket())
+                        sPacketLog->LogPacket(*pct, SERVER_TO_CLIENT);
+                    sLog->outDebug(LOG_FILTER_DUPE, "S->C: %s", GetOpcodeNameForLogging(pct->GetOpcode()).c_str());
+                }
         #ifdef WIN32
         sLog->outInfo(LOG_FILTER_OPCODES, "S->C: %s len %u", GetOpcodeNameForLogging(pct->GetOpcode()).c_str(), pct->wpos());
         #endif
@@ -830,6 +839,15 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
         #ifdef WIN32
         sLog->outInfo(LOG_FILTER_OPCODES, "C->S: %s", GetOpcodeNameForLogging(opcode).c_str());
         #endif
+        if (m_Session)
+            if(Player* _player = m_Session->GetPlayer())
+                if (sObjectMgr->IsPlayerInLogList(_player))
+                {
+                    // Dump received packet.
+                    if (sPacketLog->CanLogPacket())
+                        sPacketLog->LogPacket(*new_pct, CLIENT_TO_SERVER);
+                    sLog->outDebug(LOG_FILTER_DUPE, "C->S: %s", GetOpcodeNameForLogging(opcode).c_str());
+                }
     }
 
     try
@@ -1121,7 +1139,6 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     uint32 recruiter = fields[9].GetUInt32();
     std::string os = fields[10].GetString();
-    uint32 bnet_acc = fields[11].GetUInt32();
 
     // Checks gmlevel per Realm
     stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_GMLEVEL_BY_REALMID);
@@ -1228,7 +1245,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     LoginDatabase.Execute(stmt);
 
     // NOTE ATM the socket is single-threaded, have this in mind ...
-    ACE_NEW_RETURN(m_Session, WorldSession(id, account, this, AccountTypes(security), expansion, mutetime, locale, recruiter, isRecruiter, bnet_acc), -1);
+    ACE_NEW_RETURN(m_Session, WorldSession(id, account, this, AccountTypes(security), expansion, mutetime, locale, recruiter, isRecruiter), -1);
 
     m_Crypt.Init(&k);
 

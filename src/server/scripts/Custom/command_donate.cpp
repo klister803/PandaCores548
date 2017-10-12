@@ -68,17 +68,16 @@ public:
     {
         Player *player = handler->GetSession()->GetPlayer();
         uint32 accountId = handler->GetSession()->GetAccountId();
-        uint32 bnaccountId  = handler->GetSession()->GetBattlenetAccountId();
 
-        QueryResult result = LoginDatabase.PQuery("SELECT bonus FROM store_history WHERE account = '%u' AND bnet_account = '%u' AND `item` = '-9' AND `status` = '0' AND realm = '%u';", accountId, bnaccountId, realmID);
+        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = '%u' AND `type` = '1' AND `state` = '0';", accountId);
         if(result)
         {
             do
             {
                 Field * fetch = result->Fetch();
-                std::string entry = fetch[0].GetString();
+                uint32 entry = fetch[0].GetUInt32();
 
-                handler->PSendSysMessage(".donate morph use %s", entry.c_str());
+                handler->PSendSysMessage(".donate morph use %u", entry);
             } while ( result->NextRow() );
         }
         else
@@ -90,7 +89,6 @@ public:
     {
         Player* player = handler->GetSession()->GetPlayer();
         uint32 accountId = handler->GetSession()->GetAccountId();
-        uint32 bnaccountId  = handler->GetSession()->GetBattlenetAccountId();
 
         char* morphId = strtok((char*)args, " ");
         if (!morphId || !player)
@@ -100,7 +98,7 @@ public:
         if (!morph)
             return false;
 
-        QueryResult result = LoginDatabase.PQuery("SELECT bonus FROM store_history WHERE account = '%u' AND bnet_account = '%u' AND `item` = '-9' AND `status` = '0' AND bonus = '%u' AND realm = '%u';", accountId, bnaccountId, morph, realmID);
+        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = '%u' AND `type` = '1' AND itemEntry = '%u' AND `state` = '0';", accountId, morph);
         if (player->isGameMaster() || result)
         {
             if (CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate(morph))
@@ -133,7 +131,7 @@ public:
         char* morphStr;
         handler->extractOptFirstArg((char*)args, &nameStr, &morphStr);
 
-        char* tokenCountStr = strtok(NULL, "\r");
+        char* efirCountStr = strtok(NULL, "\r");
        
         Player* player = handler->GetSession()->GetPlayer();
         Player* target;
@@ -146,37 +144,27 @@ public:
         if (!target)
             return false;
         uint32 accountId = target->GetSession()->GetAccountId();
-        uint32 bnaccountId  = target->GetSession()->GetBattlenetAccountId();
 
         if (!morphStr)
             return false;
         uint32 morphId = atoi(morphStr);
         
-        if (!tokenCountStr)
+        if (!efirCountStr)
             return false;
-        uint32 tokenCount = atoi(tokenCountStr);
+        uint32 efirCount = atoi(efirCountStr);
 
-        if (!target->HasDonateToken(tokenCount))
+        if (target->GetItemCount(38186, false) < efirCount)
         {
-            handler->PSendSysMessage("Target don`t have token count %u in bags", tokenCount);
+            handler->PSendSysMessage("Target don`t have efir count %u in bags", efirCount);
             return true;
         }
-        
-        if (!target->DestroyDonateTokenCount(tokenCount))
+        else
         {
-            handler->PSendSysMessage("Target don`t have token count %u in bags", tokenCount);
-            return true;
+           target->DestroyItemCount(38186, efirCount, true);
         }
         
-        QueryResult result = LoginDatabase.PQuery("select `id` from `store_products` where `item` = %d;", -9);
-        if (!result)
-        {
-            handler->PSendSysMessage("On your realm don't activate this service");
-            return true;
-        }
-        
-       LoginDatabase.PExecute("INSERT INTO `store_history` (`realm`, `account`, `bnet_account`, `char_guid`, `item_guid`, `item`, `count`, `token`, `char_level`, `product`, `bonus`) VALUES (%u, %u, %u, %u, %u, %d, 1, %u, %u, (select `id` from `store_products` where `item` = %d), %u);", realmID, accountId, bnaccountId, target_guid, 0, -9, tokenCount, target->getLevel(), -9, morphId);
-       handler->PSendSysMessage("Morph add %u for %u tokens", morphId, tokenCount);
+       CharacterDatabase.PExecute("replace into `character_donate` (`owner_guid`, `itemguid`, `type`, `itemEntry`, `efircount`, `count`, `account`) value ('%u', '%u', '1', '%u', '%u', '1', '%u');", target_guid, morphId, morphId, efirCount, accountId);
+       handler->PSendSysMessage("Morph add %u for %u efirs", morphId, efirCount);
 
         return true;
     }    
@@ -197,23 +185,22 @@ public:
         if (!target)
             return false;
         uint32 accountId = target->GetSession()->GetAccountId();
-        uint32 bnaccountId  = target->GetSession()->GetBattlenetAccountId();
 
         if (!morphStr)
             return false;
         uint32 morphId = atoi(morphStr);
         
-        QueryResult result = LoginDatabase.PQuery("SELECT token FROM store_history WHERE account = '%u' AND bnet_account = '%u' AND `item` = '-9' AND `status` = '0' AND bonus = '%u' and realm = '%u';", accountId, bnaccountId, morphId, realmID);
+        QueryResult result = CharacterDatabase.PQuery("SELECT efirCount FROM character_donate WHERE account = '%u' AND `type` = '1' AND itemEntry = '%u' AND `state` = '0';", accountId, morphId);
         if (result)
         {  
             do
             {
                 Field * fetch = result->Fetch();
-                uint32 tokenCount = fetch[0].GetUInt32();
+                uint32 efirCount = fetch[0].GetUInt32();
 
-                target->AddDonateTokenCount(tokenCount);
-                LoginDatabase.PExecute("update `store_history` set `status` = 7 WHERE account = '%u' AND bnet_account = '%u' AND `item` = '-9' AND `status` = '0' AND bonus = '%u' and realm = '%u';", accountId, bnaccountId, morphId, realmID);
-                handler->PSendSysMessage("Morph %u delete and %u tokens give player", morphId, tokenCount);
+                target->AddItem(38186, efirCount);
+                CharacterDatabase.PExecute("delete from `character_donate` WHERE account = '%u' AND `type` = '1' AND itemEntry = '%u' AND `state` = '0' and efirCount = '%u';", accountId, morphId, efirCount);
+                handler->PSendSysMessage("Morph %u delete and %u efirs give player", morphId, efirCount);
             } while ( result->NextRow() );
         }
         else
@@ -227,17 +214,16 @@ public:
     {
         Player *player = handler->GetSession()->GetPlayer();
         uint32 accountId = handler->GetSession()->GetAccountId();
-        uint32 bnaccountId  = handler->GetSession()->GetBattlenetAccountId();
 
-        QueryResult result = LoginDatabase.PQuery("SELECT bonus FROM store_history WHERE account = '%u' AND bnet_account = '%u' AND `item` = '-11' AND `status` = '0' AND realm = '%u';", accountId, bnaccountId, realmID);
+        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = '%u' AND `type` = '2' AND `state` = '0';", accountId);
         if(result)
         {
             do
             {
                 Field * fetch = result->Fetch();
-                std::string entry = fetch[0].GetString();
+                uint32 entry = fetch[0].GetUInt32();
 
-                handler->PSendSysMessage(".donate mount fly use %s", entry.c_str());
+                handler->PSendSysMessage(".donate mount fly use %u", entry);
             } while ( result->NextRow() );
         }
         else
@@ -249,7 +235,6 @@ public:
     {
         Player *player = handler->GetSession()->GetPlayer();
         uint32 accountId = handler->GetSession()->GetAccountId();
-        uint32 bnaccountId  = handler->GetSession()->GetBattlenetAccountId();
 
         char* mountId = strtok((char*)args, " ");
         if (!mountId)
@@ -273,10 +258,10 @@ public:
            return true;
         }
          
-        QueryResult result = LoginDatabase.PQuery("SELECT bonus FROM store_history WHERE account = '%u' AND bnet_account = '%u' AND `item` = '-11' AND `status` = '0' AND bonus = '%u' AND realm = '%u';", accountId, bnaccountId, mount, realmID);
+        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 2 AND itemEntry = '%u' AND `state` = '0';", accountId, mount);
         if (result)
         {
-           player->CastSpell(player, 121805); // 121805
+           player->CastSpell(player, 121805);
            //player->Mount(displayID, ci->VehicleId, mount);
            new mount_set_display_fly(player, mount);
         }
@@ -292,7 +277,7 @@ public:
         char* mountStr;
         handler->extractOptFirstArg((char*)args, &nameStr, &mountStr);
 
-        char* tokenCountStr = strtok(NULL, "\r");
+        char* efirCountStr = strtok(NULL, "\r");
        
         Player* player = handler->GetSession()->GetPlayer();
         Player* target;
@@ -305,36 +290,27 @@ public:
         if (!target)
             return false;
         uint32 accountId = target->GetSession()->GetAccountId();
-        uint32 bnaccountId  = target->GetSession()->GetBattlenetAccountId();
 
         if (!mountStr)
             return false;
         uint32 mountId = atoi(mountStr);
         
-        if (!tokenCountStr)
+        if (!efirCountStr)
             return false;
-        uint32 tokenCount = atoi(tokenCountStr);
+        uint32 efirCount = atoi(efirCountStr);
 
-        if (!target->HasDonateToken(tokenCount))
+        if (target->GetItemCount(38186, false) < efirCount)
         {
-            handler->PSendSysMessage("Target don`t have token count %u in bags", tokenCount);
+            handler->PSendSysMessage("Target don`t have efir count %u in bags", efirCount);
             return true;
         }
-        if (!target->DestroyDonateTokenCount(tokenCount))
+        else
         {
-            handler->PSendSysMessage("Target don`t have token count %u in bags", tokenCount);
-            return true;
-        }
-        
-        QueryResult result = LoginDatabase.PQuery("select `id` from `store_products` where `item` = %d;", -11);
-        if (!result)
-        {
-            handler->PSendSysMessage("On your realm don't activate this service");
-            return true;
+           target->DestroyItemCount(38186, efirCount, true);
         }
         
-       LoginDatabase.PExecute("INSERT INTO `store_history` (`realm`, `account`, `bnet_account`, `char_guid`, `item_guid`, `item`, `count`, `token`, `char_level`, `product`, `bonus`) VALUES (%u, %u, %u, %u, %u, %d, 1, %u, %u, (select `id` from `store_products` where `item` = %d), %u);", realmID, accountId, bnaccountId, target_guid, 0, -11, tokenCount, target->getLevel(), -11, mountId);
-       handler->PSendSysMessage("Fly mount add %u for %u tokens", mountId, tokenCount);
+       CharacterDatabase.PExecute("replace into `character_donate` (`owner_guid`, `itemguid`, `type`, `itemEntry`, `efircount`, `count`, `account`) value ('%u', '%u', '2', '%u', '%u', '1', '%u');", target_guid, mountId, mountId, efirCount, accountId);
+       handler->PSendSysMessage("Fly mount add %u for %u efirs", mountId, efirCount);
 
         return true;
     }
@@ -356,23 +332,22 @@ public:
         if (!target)
             return false;
         uint32 accountId = target->GetSession()->GetAccountId();
-        uint32 bnaccountId  = target->GetSession()->GetBattlenetAccountId();
 
         if (!morphStr)
             return false;
         uint32 morphId = atoi(morphStr);
         
-        QueryResult result = LoginDatabase.PQuery("SELECT token FROM store_history WHERE account = '%u' AND bnet_account = '%u' AND `item` = '-11' AND `status` = '0' AND bonus = '%u' and realm = '%u';", accountId, bnaccountId, morphId, realmID);
+        QueryResult result = CharacterDatabase.PQuery("SELECT efirCount FROM character_donate WHERE account = %u AND `type` = 2 AND itemEntry = '%u' AND `state` = '0';", accountId, morphId);
         if (result)
         {  
             do
             {
                 Field * fetch = result->Fetch();
-                uint32 tokenCount = fetch[0].GetUInt32();
+                uint32 efirCount = fetch[0].GetUInt32();
 
-                target->AddDonateTokenCount(tokenCount);
-                LoginDatabase.PExecute("update `store_history` set `status` = 7 WHERE account = '%u' AND bnet_account = '%u' AND `item` = '-11' AND `status` = '0' AND bonus = '%u' and realm = '%u';", accountId, bnaccountId, morphId, realmID);
-                handler->PSendSysMessage("Fly mount %u delete and %u tokens give player", morphId, tokenCount);
+                target->AddItem(38186, efirCount);
+                CharacterDatabase.PExecute("delete from `character_donate` WHERE account = %u AND `type` = 2 AND itemEntry = '%u' AND `state` = '0' and efirCount = '%u';", accountId, morphId, efirCount);
+                handler->PSendSysMessage("Fly mount %u delete and %u efirs give player", morphId, efirCount);
             } while ( result->NextRow() );
         }
         else
@@ -386,16 +361,16 @@ public:
     {
         Player *player = handler->GetSession()->GetPlayer();
         uint32 accountId = handler->GetSession()->GetAccountId();
-        uint32 bnaccountId  = handler->GetSession()->GetBattlenetAccountId();
 
-        QueryResult result = LoginDatabase.PQuery("SELECT bonus FROM store_history WHERE account = '%u' AND bnet_account = '%u' AND `item` = '-10' AND `status` = '0' AND realm = '%u';", accountId, bnaccountId, realmID);
+        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 3 AND `state` = '0';", accountId);
         if(result)
         {
             do
             {
                 Field * fetch = result->Fetch();
-                std::string entry = fetch[0].GetString();
-                handler->PSendSysMessage(".donate mount ground use %s", entry.c_str());
+                uint32 entry = fetch[0].GetUInt32();
+
+                handler->PSendSysMessage(".donate mount ground use %u", entry);
             } while ( result->NextRow() );
         }
         else
@@ -407,7 +382,6 @@ public:
     {
         Player *player = handler->GetSession()->GetPlayer();
         uint32 accountId = handler->GetSession()->GetAccountId();
-        uint32 bnaccountId  = handler->GetSession()->GetBattlenetAccountId();
 
         char* mountId = strtok((char*)args, " ");
         if (!mountId)
@@ -431,7 +405,7 @@ public:
            return true;
         }
          
-        QueryResult result = LoginDatabase.PQuery("SELECT bonus FROM store_history WHERE account = '%u' AND bnet_account = '%u' AND `item` = '-10' AND `status` = '0' AND bonus = '%u' AND realm = '%u';", accountId, bnaccountId, mount, realmID);
+        QueryResult result = CharacterDatabase.PQuery("SELECT itemEntry FROM character_donate WHERE account = %u AND `type` = 3 AND itemEntry = '%u' AND `state` = '0';", accountId, mount);
         if (result)
         {
            player->CastSpell(player, 58819);
@@ -451,7 +425,7 @@ public:
         char* mountStr;
         handler->extractOptFirstArg((char*)args, &nameStr, &mountStr);
 
-        char* tokenCountStr = strtok(NULL, "\r");
+        char* efirCountStr = strtok(NULL, "\r");
        
         Player* player = handler->GetSession()->GetPlayer();
         Player* target;
@@ -464,36 +438,27 @@ public:
         if (!target)
             return false;
         uint32 accountId = target->GetSession()->GetAccountId();
-        uint32 bnaccountId  = target->GetSession()->GetBattlenetAccountId();
 
         if (!mountStr)
             return false;
         uint32 mountId = atoi(mountStr);
         
-        if (!tokenCountStr)
+        if (!efirCountStr)
             return false;
-        uint32 tokenCount = atoi(tokenCountStr);
+        uint32 efirCount = atoi(efirCountStr);
 
-        if (!target->HasDonateToken(tokenCount))
+        if (target->GetItemCount(38186, false) < efirCount)
         {
-            handler->PSendSysMessage("Target don`t have token count %u in bags", tokenCount);
+            handler->PSendSysMessage("Target don`t have efir count %u in bags", efirCount);
             return true;
         }
-        if (!target->DestroyDonateTokenCount(tokenCount))
+        else
         {
-            handler->PSendSysMessage("Target don`t have token count %u in bags", tokenCount);
-            return true;
-        }
-        
-        QueryResult result = LoginDatabase.PQuery("select `id` from `store_products` where `item` = %d;", -10);
-        if (!result)
-        {
-            handler->PSendSysMessage("On your realm don't activate this service");
-            return true;
+           target->DestroyItemCount(38186, efirCount, true);
         }
         
-       LoginDatabase.PExecute("INSERT INTO `store_history` (`realm`, `account`, `bnet_account`, `char_guid`, `item_guid`, `item`, `count`, `token`, `char_level`, `product`, `bonus`) VALUES (%u, %u, %u, %u, %u, %d, 1, %u, %u, (select `id` from `store_products` where `item` = %d), %u);", realmID, accountId, bnaccountId, target_guid, 0, -10, tokenCount, target->getLevel(), -10, mountId);
-       handler->PSendSysMessage("Ground mount add %u for %u tokens", mountId, tokenCount);
+       CharacterDatabase.PExecute("replace into `character_donate` (`owner_guid`, `itemguid`, `type`, `itemEntry`, `efircount`, `count`, `account`) value ('%u', '%u', '3', '%u', '%u', '1', '%u');", target_guid, mountId, mountId, efirCount, accountId);
+       handler->PSendSysMessage("Ground mount add %u for %u efirs", mountId, efirCount);
 
         return true;
     }    
@@ -515,23 +480,22 @@ public:
         if (!target)
             return false;
         uint32 accountId = target->GetSession()->GetAccountId();
-        uint32 bnaccountId  = target->GetSession()->GetBattlenetAccountId();
 
         if (!morphStr)
             return false;
         uint32 morphId = atoi(morphStr);
         
-        QueryResult result = LoginDatabase.PQuery("SELECT token FROM store_history WHERE account = '%u' AND bnet_account = '%u' AND `item` = '-10' AND `status` = '0' AND bonus = '%u' and realm = '%u';", accountId, bnaccountId, morphId, realmID);
+        QueryResult result = CharacterDatabase.PQuery("SELECT efirCount FROM character_donate WHERE account = %u AND `type` = 3 AND itemEntry = '%u' AND `state` = '0';", accountId, morphId);
         if (result)
         {  
             do
             {
                 Field * fetch = result->Fetch();
-                uint32 tokenCount = fetch[0].GetUInt32();
+                uint32 efirCount = fetch[0].GetUInt32();
 
-                target->AddDonateTokenCount(tokenCount);
-                LoginDatabase.PExecute("update `store_history` set `status` = 7 WHERE account = '%u' AND bnet_account = '%u' AND `item` = '-10' AND `status` = '0' AND bonus = '%u' and realm = '%u';", accountId, bnaccountId, morphId, realmID);
-                handler->PSendSysMessage("Ground mount %u delete and %u tokens give player", morphId, tokenCount);
+                target->AddItem(38186, efirCount);
+                CharacterDatabase.PExecute("delete from `character_donate` WHERE account = %u AND `type` = 3 AND itemEntry = '%u' AND `state` = '0' and efirCount = '%u';", accountId, morphId, efirCount);
+                handler->PSendSysMessage("Ground mount %u delete and %u efirs give player", morphId, efirCount);
             } while ( result->NextRow() );
         }
         else
@@ -546,8 +510,8 @@ public:
         char* itemStr;
         handler->extractOptFirstArg((char*)args, &nameStr, &itemStr);
 
-        char* tokenCountStr = strtok(NULL, "\r");
-
+        char* efirCountStr = strtok(NULL, "\r");
+       
         Player* player = handler->GetSession()->GetPlayer();
         Player* target;
         uint64 target_guid;
@@ -559,45 +523,25 @@ public:
         if (!target)
             return false;
         uint32 accountId = target->GetSession()->GetAccountId();
-        uint32 bnaccountId  = target->GetSession()->GetBattlenetAccountId();
 
         if (!itemStr)
             return false;
         uint32 itemId = atoi(itemStr);
-
-        if (!tokenCountStr)
+        
+        if (!efirCountStr)
             return false;
-        uint32 tokenCount = atoi(tokenCountStr);
+        uint32 efirCount = atoi(efirCountStr);
 
-        if (!target->HasDonateToken(tokenCount))
+        if (target->GetItemCount(38186, false) < efirCount)
         {
-            handler->PSendSysMessage("Target don`t have token count %u in bags", tokenCount);
+            handler->PSendSysMessage("Target don`t have efir count %u in bags", efirCount);
             return false;
         }
-        if (!target->DestroyDonateTokenCount(tokenCount))
+        else
         {
-            handler->PSendSysMessage("Target don`t have token count %u in bags", tokenCount);
-            return true;
+           target->DestroyItemCount(38186, efirCount, true);
+           target->AddItem(itemId, 1);
         }
-        
-        target->AddItem(itemId, 1);
-        
-        // PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_STORE_ADD_ITEM_LOG);
-        // stmt->setUInt32(  index, realmID);
-        // stmt->setUInt32(  ++index, accountId); 
-        // stmt->setUInt32(  ++index, bnaccountId); // select battlenet_account from account where id = %u
-        // stmt->setUInt64(  ++index, GetGUIDLow());
-        // stmt->setUInt64(  ++index, it->GetGUIDLow()); // item_guid
-        // stmt->setUInt32(  ++index, it->GetEntry()); // item entry
-        // stmt->setUInt32(  ++index, 1); // item count
-        // stmt->setInt64(  ++index, price); // cost
-        // stmt->setUInt32(  ++index, getLevel()); // level
-        // stmt->setInt32(  ++index, crItem->DonateStoreId); // donate Store id
-        // stmt->setInt32(  ++index, crItem->DonateStoreId); // select for bonus
-
-        // trans->Append(stmt);
-        // LoginDatabase.CommitTransaction(trans);
-        // UpdateDonateStatistics(crItem->DonateStoreId);        
         return true;
     }
     
