@@ -1380,10 +1380,10 @@ void Battleground::AddPlayer(Player* player)
 
     if (IsRBG() || (isBattleground() && sWorld->getBoolConfig(CONFIG_CROSSFACTIONBG)))
     {
-        if (!player->HasAura(SPELL_BG_SET_FACTION_HORDE) && player->GetTeam() == ALLIANCE && player->GetBGTeam() != ALLIANCE)
-            player->CastSpell(player, SPELL_BG_SET_FACTION_HORDE, true);
-        else if (!player->HasAura(SPELL_BG_SET_FACTION_ALLIANCE) && player->GetTeam() == HORDE && player->GetBGTeam() != HORDE)
-            player->CastSpell(player, SPELL_BG_SET_FACTION_ALLIANCE, true);
+        if (!player->HasAura(SPELL_SET_FACTION_HORDE) && player->GetTeam() == ALLIANCE && player->GetBGTeam() != ALLIANCE)
+            player->CastSpell(player, SPELL_SET_FACTION_HORDE, true);
+        else if (!player->HasAura(SPELL_SET_FACTION_ALLIANCE) && player->GetTeam() == HORDE && player->GetBGTeam() != HORDE)
+            player->CastSpell(player, SPELL_SET_FACTION_ALLIANCE, true);
         
         if (IsRBG())
             player->CastSpell(player, SPELL_BATTLE_FATIGUE, true);
