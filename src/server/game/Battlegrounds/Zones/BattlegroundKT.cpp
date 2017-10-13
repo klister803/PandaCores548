@@ -83,7 +83,7 @@ void BattlegroundKT::PostUpdateImpl(uint32 diff)
                     if (m_playersZone.find(guid) != m_playersZone.end())
                         if (Player* player = ObjectAccessor::FindPlayer(guid))
                         {
-                            AccumulateScore(player->GetTeamId(), m_playersZone[guid]);
+                            AccumulateScore(player->GetBGTeamId(), m_playersZone[guid]);
                             UpdatePlayerScore(player, SCORE_ORB_SCORE, m_playersZone[guid]);
                             player->UpdateAchievementCriteria(CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, BG_KT_OBJECTIVE_ORB_COUNT, m_playersZone[guid] + 3);
                         }
@@ -146,9 +146,9 @@ void BattlegroundKT::EventPlayerClickedOnOrb(Player* source, GameObject* target_
         if (m_OrbKeepers[i] == source->GetGUID())
             return;
 
-    PlaySoundToAll(source->GetTeamId() == TEAM_ALLIANCE ? BG_KT_SOUND_A_ORB_PICKED_UP: BG_KT_SOUND_H_ORB_PICKED_UP);
+    PlaySoundToAll(source->GetBGTeamId() == TEAM_ALLIANCE ? BG_KT_SOUND_A_ORB_PICKED_UP: BG_KT_SOUND_H_ORB_PICKED_UP);
     source->CastSpell(source, BG_KT_ORBS_SPELLS[index], true);
-    source->CastSpell(source, source->GetTeamId() == TEAM_ALLIANCE ? BG_KT_ALLIANCE_INSIGNIA: BG_KT_HORDE_INSIGNIA, true);
+    source->CastSpell(source, source->GetBGTeamId() == TEAM_ALLIANCE ? BG_KT_ALLIANCE_INSIGNIA: BG_KT_HORDE_INSIGNIA, true);
 
     UpdatePlayerScore(source, SCORE_ORB_HANDLES, 1);
 
@@ -159,7 +159,7 @@ void BattlegroundKT::EventPlayerClickedOnOrb(Player* source, GameObject* target_
     if (Creature* aura = GetBGCreature(BG_KT_CREATURE_ORB_AURA_1 + index))
         aura->RemoveAllAuras();
 
-    SendMessageToAll(LANG_BG_KT_PICKEDUP_1 + index, source->GetTeamId() == TEAM_ALLIANCE ? CHAT_MSG_BG_SYSTEM_ALLIANCE: CHAT_MSG_BG_SYSTEM_HORDE, source);
+    SendMessageToAll(LANG_BG_KT_PICKEDUP_1 + index, source->GetBGTeamId() == TEAM_ALLIANCE ? CHAT_MSG_BG_SYSTEM_ALLIANCE: CHAT_MSG_BG_SYSTEM_HORDE, source);
     source->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
 }
 
@@ -179,7 +179,7 @@ void BattlegroundKT::EventPlayerDroppedFlag(Player* source)
             break;
     }
 
-    PlaySoundToAll(source->GetTeamId() == TEAM_ALLIANCE ? BG_KT_SOUND_A_ORB_PICKED_UP: BG_KT_SOUND_H_ORB_PICKED_UP);
+    PlaySoundToAll(source->GetBGTeamId() == TEAM_ALLIANCE ? BG_KT_SOUND_A_ORB_PICKED_UP: BG_KT_SOUND_H_ORB_PICKED_UP);
     source->RemoveAurasDueToSpell(BG_KT_ORBS_SPELLS[index]);
     source->RemoveAurasDueToSpell(BG_KT_ALLIANCE_INSIGNIA);
     source->RemoveAurasDueToSpell(BG_KT_HORDE_INSIGNIA);
@@ -191,7 +191,7 @@ void BattlegroundKT::EventPlayerDroppedFlag(Player* source)
         aura->AddAura(BG_KT_ORBS_AURA[index], aura);
 
     UpdateWorldState(BG_KT_ICON_A, 0);
-    SendWarningToAll(LANG_BG_KT_DROPPED_1 + index, source->GetTeamId() == TEAM_ALLIANCE ? CHAT_MSG_BG_SYSTEM_ALLIANCE: CHAT_MSG_BG_SYSTEM_HORDE, source);
+    SendWarningToAll(LANG_BG_KT_DROPPED_1 + index, source->GetBGTeamId() == TEAM_ALLIANCE ? CHAT_MSG_BG_SYSTEM_ALLIANCE: CHAT_MSG_BG_SYSTEM_HORDE, source);
     source->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
 }
 
@@ -365,7 +365,7 @@ WorldSafeLocsEntry const* BattlegroundKT::GetClosestGraveYard(Player* player)
     //if a player dies in preparation phase - then the player can't cheat
     //and teleport to the graveyard outside the flagroom
     //and start running around, while the doors are still closed
-    if (player->GetTeam() == ALLIANCE)
+    if (player->GetBGTeamId() == ALLIANCE)
     {
         if (GetStatus() == STATUS_IN_PROGRESS)
             return sWorldSafeLocsStore.LookupEntry(KT_GRAVEYARD_RECTANGLEA1);

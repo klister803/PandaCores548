@@ -520,7 +520,7 @@ void BattlegroundWS::EventPlayerDroppedFlag(Player* Source)
     {
         // if not running, do not cast things at the dropper player (prevent spawning the "dropped" flag), neither send unnecessary messages
         // just take off the aura
-        if (Source->GetTeam() == ALLIANCE)
+        if (Source->GetBGTeam() == ALLIANCE)
         {
             if (!this->IsHordeFlagPickedup())
                 return;
@@ -547,7 +547,7 @@ void BattlegroundWS::EventPlayerDroppedFlag(Player* Source)
 
     bool set = false;
 
-    if (Source->GetTeam() == ALLIANCE)
+    if (Source->GetBGTeam() == ALLIANCE)
     {
         if (!IsHordeFlagPickedup())
             return;
@@ -578,9 +578,9 @@ void BattlegroundWS::EventPlayerDroppedFlag(Player* Source)
     if (set)
     {
         Source->CastSpell(Source, SPELL_RECENTLY_DROPPED_FLAG, true);
-        UpdateFlagState(Source->GetTeam(), 1);
+        UpdateFlagState(Source->GetBGTeam(), 1);
 
-        if (Source->GetTeam() == ALLIANCE)
+        if (Source->GetBGTeam() == ALLIANCE)
         {
             SendMessageToAll(LANG_BG_WS_DROPPED_HF, CHAT_MSG_BG_SYSTEM_HORDE, Source);
             UpdateWorldState(BG_WS_FLAG_UNK_HORDE, uint32(-1));
@@ -591,7 +591,7 @@ void BattlegroundWS::EventPlayerDroppedFlag(Player* Source)
             UpdateWorldState(BG_WS_FLAG_UNK_ALLIANCE, uint32(-1));
         }
 
-        _flagsDropTimer[GetTeamIndexByTeamId(Source->GetTeam()) ? 0 : 1] = BG_WS_FLAG_DROP_TIME;
+        _flagsDropTimer[GetTeamIndexByTeamId(Source->GetBGTeam()) ? 0 : 1] = BG_WS_FLAG_DROP_TIME;
     }
 }
 

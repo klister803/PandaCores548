@@ -784,7 +784,7 @@ inline Player* Battleground::_GetPlayerForTeam(uint32 teamId, BattlegroundPlayer
     {
         uint32 team = itr->second.Team;
         if (!team)
-            team = player->GetTeam();
+            team = player->GetBGTeam();
         if (team != teamId)
             player = NULL;
     }
@@ -1213,7 +1213,7 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
         {
             player->ClearAfkReports();
 
-            if (!team) team = player->GetTeam();
+            if (!team) team = player->GetBGTeam();
 
             // if arena, remove the specific arena auras
             if (isArena() || IsRBG())
@@ -1478,7 +1478,7 @@ void Battleground::AddPlayer(Player* player)
            player->SetDisplayId(MORPH_CUSTOM, true);
            player->SetCustomDisplayId(MORPH_CUSTOM); 
            player->Yell(TEXT, LANG_UNIVERSAL);
-           if (player->GetTeamId() == TEAM_ALLIANCE)
+           if (player->GetBGTeamId() == TEAM_ALLIANCE)
            {
                SendMessage2ToAll(LANG_SELECT_DEF, CHAT_MSG_BG_SYSTEM_ALLIANCE, player);
                SendMessage2ToAll(LANG_SELECT_ATTACK, CHAT_MSG_BG_SYSTEM_HORDE, player);
@@ -2166,7 +2166,7 @@ void Battleground::HandleKillPlayer(Player* victim, Player* killer)
             if (!creditedPlayer || creditedPlayer == killer)
                 continue;
 
-            if (creditedPlayer->GetTeam() == killer->GetTeam() && creditedPlayer->IsAtGroupRewardDistance(victim))
+            if (creditedPlayer->GetBGTeam() == killer->GetBGTeam() && creditedPlayer->IsAtGroupRewardDistance(victim))
                 UpdatePlayerScore(creditedPlayer, SCORE_HONORABLE_KILLS, 1);
         }
     }
@@ -2198,7 +2198,7 @@ if (isBattleground() && sWorld->getBoolConfig(CONFIG_CUSTOM_BATTLEGROUND))
            killer->Yell(TEXT, LANG_UNIVERSAL);
            killer->GetSession()->SendNotification(notification);
            ChatHandler(killer->GetSession()).PSendSysMessage(notification);
-           if (killer->GetTeamId() == TEAM_ALLIANCE)
+           if (killer->GetBGTeamId() == TEAM_ALLIANCE)
            {
                SendMessage2ToAll(LANG_SELECT_DEF, CHAT_MSG_BG_SYSTEM_ALLIANCE, killer);
                SendMessage2ToAll(LANG_SELECT_ATTACK, CHAT_MSG_BG_SYSTEM_HORDE, killer);
@@ -2220,7 +2220,7 @@ if (isBattleground() && sWorld->getBoolConfig(CONFIG_CUSTOM_BATTLEGROUND))
            killer->SetDisplayId(MORPH_CUSTOM, true);
            killer->SetCustomDisplayId(MORPH_CUSTOM); 
            killer->Yell(TEXT, LANG_UNIVERSAL);
-           if (killer->GetTeamId() == TEAM_ALLIANCE)
+           if (killer->GetBGTeamId() == TEAM_ALLIANCE)
            {
                SendMessage2ToAll(LANG_SELECT_DEF, CHAT_MSG_BG_SYSTEM_ALLIANCE, killer);
                SendMessage2ToAll(LANG_SELECT_ATTACK, CHAT_MSG_BG_SYSTEM_HORDE, killer);
@@ -2434,9 +2434,9 @@ void Battleground::SendFlagsPositionsUpdate(uint32 diff)
 
         packet << player->GetPositionY();
         packet.WriteGuidBytes<2, 3, 7, 0, 1, 6>(guids[i]);
-        packet << uint8(player->GetTeamId() == TEAM_ALLIANCE ? 1 : 2);
+        packet << uint8(player->GetBGTeamId() == TEAM_ALLIANCE ? 1 : 2);
         packet.WriteGuidBytes<5, 4>(guids[i]);
-        packet << uint8(player->GetTeamId() == TEAM_ALLIANCE ? 3 : 2);
+        packet << uint8(player->GetBGTeamId() == TEAM_ALLIANCE ? 3 : 2);
         packet << player->GetPositionX();
     }
 

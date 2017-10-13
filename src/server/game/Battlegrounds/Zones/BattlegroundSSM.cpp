@@ -438,6 +438,6 @@ void BattlegroundSSM::RemovePlayer(Player* player, uint64 guid, uint32 /*team*/)
 
 WorldSafeLocsEntry const* BattlegroundSSM::GetClosestGraveYard(Player* player)
 {
-    return (player->GetTeam() == ALLIANCE) ? sWorldSafeLocsStore.LookupEntry(BG_SSM_ALLIANCE_GRAVEYARD) :
+    return (player->GetBGTeam() == ALLIANCE) ? sWorldSafeLocsStore.LookupEntry(BG_SSM_ALLIANCE_GRAVEYARD) :
                                              sWorldSafeLocsStore.LookupEntry(BG_SSM_HORDE_GRAVEYARD);
 }
