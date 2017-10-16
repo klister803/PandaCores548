@@ -14888,7 +14888,8 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
     if (!isAlive())
         return;
 
-    SetCombatTimer(5000);
+    if (PvP)
+        SetCombatTimer(5000);
 
     if (isInCombat() || HasUnitState(UNIT_STATE_EVADE))
         return;
