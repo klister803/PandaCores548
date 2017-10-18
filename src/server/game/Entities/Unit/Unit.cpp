@@ -22354,7 +22354,19 @@ void Unit::RemoveCharmedBy(Unit* charmer)
 void Unit::RestoreFaction()
 {
     if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->setFactionForRace(getRace());
+    {
+        if (HasAuraType(SPELL_AURA_MOD_FACTION))
+        {
+            AuraEffectList const& auraEffList = GetAuraEffectsByType(SPELL_AURA_MOD_FACTION);
+            for (AuraEffectList::const_iterator itr = auraEffList.begin(); itr != auraEffList.end(); ++itr)
+            {
+                ToPlayer()->setFactionForRace((*itr)->GetMiscValue());
+                break;
+            }
+        }
+        else
+            ToPlayer()->setFactionForRace(getRace());
+    }
     else
     {
         if (HasUnitTypeMask(UNIT_MASK_MINION))

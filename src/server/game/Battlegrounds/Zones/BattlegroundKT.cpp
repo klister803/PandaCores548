@@ -365,7 +365,7 @@ WorldSafeLocsEntry const* BattlegroundKT::GetClosestGraveYard(Player* player)
     //if a player dies in preparation phase - then the player can't cheat
     //and teleport to the graveyard outside the flagroom
     //and start running around, while the doors are still closed
-    if (player->GetBGTeamId() == ALLIANCE)
+    if (player->GetBGTeam() == ALLIANCE)
     {
         if (GetStatus() == STATUS_IN_PROGRESS)
             return sWorldSafeLocsStore.LookupEntry(KT_GRAVEYARD_RECTANGLEA1);
