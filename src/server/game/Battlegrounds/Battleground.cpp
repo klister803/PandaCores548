@@ -1561,6 +1561,15 @@ void Battleground::EventPlayerLoggedIn(Player* player)
         }
     }
     m_Players[guid].OfflineRemoveTime = 0;
+    
+    if (IsRBG() || (isBattleground() && sWorld->getBoolConfig(CONFIG_CROSSFACTIONBG)))
+    {
+        if (!player->HasAura(SPELL_SET_FACTION_HORDE) && player->GetTeam() == ALLIANCE && player->GetBGTeam() != ALLIANCE)
+            player->CastSpell(player, SPELL_SET_FACTION_HORDE, true);
+        else if (!player->HasAura(SPELL_SET_FACTION_ALLIANCE) && player->GetTeam() == HORDE && player->GetBGTeam() != HORDE)
+            player->CastSpell(player, SPELL_SET_FACTION_ALLIANCE, true);
+    }
+    
     PlayerAddedToBGCheckIfBGIsRunning(player);
     // if battleground is starting, then add preparation aura
     // we don't have to do that, because preparation aura isn't removed when player logs out
