@@ -1568,6 +1568,8 @@ void Battleground::EventPlayerLoggedIn(Player* player)
             player->CastSpell(player, SPELL_SET_FACTION_HORDE, true);
         else if (!player->HasAura(SPELL_SET_FACTION_ALLIANCE) && player->GetTeam() == HORDE && player->GetBGTeam() != HORDE)
             player->CastSpell(player, SPELL_SET_FACTION_ALLIANCE, true);
+        
+        player->SetByteValue(PLAYER_BYTES_3, 3, player->GetBGTeam() == HORDE ? 0 : 1);
     }
     
     PlayerAddedToBGCheckIfBGIsRunning(player);
