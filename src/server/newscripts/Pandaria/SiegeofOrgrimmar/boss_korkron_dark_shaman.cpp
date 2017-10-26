@@ -151,6 +151,7 @@ static SpecialModifier mod[] =
 float const minx = 1483.13f;
 float const maxx = 1744.00f;
 float const miny = -4417.83f;
+
 class boss_korkron_dark_shaman : public CreatureScript
 {
 public:
@@ -237,19 +238,22 @@ public:
             uint32 mauntentry = 0;
             switch (entry)
             {
-            case NPC_WAVEBINDER_KARDRIS:
-                mauntentry = NPC_BLOODCLAW;
-                break;
-            case NPC_EARTHBREAKER_HAROMM:
-                mauntentry = NPC_DARKFANG;
-                break;
+                case NPC_WAVEBINDER_KARDRIS:
+                    mauntentry = NPC_BLOODCLAW;
+                    break;
+                case NPC_EARTHBREAKER_HAROMM:
+                    mauntentry = NPC_DARKFANG;
+                    break;
             }
+
             if (Creature* mount = me->SummonCreature(mauntentry, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()))
             {
                 if (!firstpull)
                     mount->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+
                 me->EnterVehicle(mount->ToUnit(), 0);
             }
+
             instance->SetData(DATA_CHECK_KDS_RESET_IS_DONE, 0);
         }
         
@@ -279,16 +283,12 @@ public:
 
         void EnterEvadeMode()
         {
-            me->NearTeleportTo(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY(), me->GetHomePosition().GetPositionZ(), me->GetHomePosition().GetOrientation());
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
             ScriptedAI::EnterEvadeMode();
+
             if (Creature* oshaman = GetOtherShaman())
-            {
                 if (oshaman->isInCombat())
-                {
-                    oshaman->NearTeleportTo(oshaman->GetHomePosition().GetPositionX(), oshaman->GetHomePosition().GetPositionY(), oshaman->GetHomePosition().GetPositionZ(), oshaman->GetHomePosition().GetOrientation());
                     oshaman->AI()->EnterEvadeMode();
-                }
-            }
         }
         
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -432,8 +432,6 @@ public:
                     if (me->GetPositionX() <= minx || (me->GetPositionX() >= maxx && me->GetPositionY() <= miny))
                     {
                         evadecheck = 0;
-                        me->SetReactState(REACT_PASSIVE);
-                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                         EnterEvadeMode();
                     }
                     else

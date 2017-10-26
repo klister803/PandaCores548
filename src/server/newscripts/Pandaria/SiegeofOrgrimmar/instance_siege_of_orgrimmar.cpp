@@ -142,6 +142,8 @@ public:
         uint32 TeamInInstance;
         uint32 EventfieldOfSha;
         uint32 lingering_corruption_count;
+        uint32 kdshamansresetready;
+        uint8 kdsresetcount;
 
         //Galakras worldstate
         uint16 ShowCannon;
@@ -266,6 +268,8 @@ public:
             crawlerminenum = 0;
             rycount = 0;
             lastsuperheatweapon = 0;
+            kdshamansresetready = 0;
+            kdsresetcount = 0;
 
             //GameObject
             immerseusexdoorGUID     = 0;
@@ -1907,18 +1911,11 @@ public:
                     HandleGameObject(*guid, false);
                 break;
             case DATA_CHECK_KDS_RESET_IS_DONE:
-                for (uint8 n = 0; n < 2; n++)
-                {
-                    Creature* kdsmaunt = instance->GetCreature(!n ? bloodclawGuid : darkfangGuid);
-                    if (!kdsmaunt)
-                        return;
-                    if (!kdsmaunt->isAlive() || kdsmaunt->isInCombat())
-                        return;
-                }
+                if (++kdsresetcount != 2)
+                    return;
 
-                for (uint8 n = 0; n < 2; n++)
-                    if (Creature* kdsmaunt = instance->GetCreature(!n ? bloodclawGuid : darkfangGuid))
-                        kdsmaunt->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                kdsresetcount = 0;
+                kdshamansresetready = 5000;
                 break;
             case DATA_PREPARE_REALM_OF_YSHAARJ:
                 switch (data)
@@ -2584,6 +2581,20 @@ public:
 
         void Update(uint32 diff)
         {
+            if (kdshamansresetready)
+            {
+                if (kdshamansresetready <= diff)
+                {
+                    kdshamansresetready = 0;
+
+                    for (uint8 n = 0; n < 2; n++)
+                        if (Creature* kdsmaunt = instance->GetCreature(!n ? bloodclawGuid : darkfangGuid))
+                            kdsmaunt->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                }
+                else
+                    kdshamansresetready -= diff;
+            }
+
             Events.Update(diff);
 
             while (uint32 eventId = Events.ExecuteEvent())
