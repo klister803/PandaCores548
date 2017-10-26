@@ -173,6 +173,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             uint64 fplGuid, jGuid, pGuid;
             uint32 enrage;
             uint32 findtargets; //find and kill player in front of boss
+            uint32 checkfixatetarget; //exploit fix: player suicide when thok casting fixate
             uint8 phasecount;
             bool phasetwo;
             bool summonbat;
@@ -190,6 +191,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 me->SetMaxPower(POWER_MANA, 100);
                 me->SetPower(POWER_MANA, 0);
                 findtargets = 0;
+                checkfixatetarget = 0;
                 fplGuid = 0;  
                 jGuid = 0;   
                 pGuid = 0;    
@@ -234,7 +236,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             }
 
             //Debug (for testing)
-            void SpellHit(Unit* caster, SpellInfo const *spell)
+            /*void SpellHit(Unit* caster, SpellInfo const *spell)
             {
                 if (spell->Id == SPELL_BLOODIED && me->HasAura(SPELL_POWER_REGEN))
                 {
@@ -242,7 +244,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     me->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
                     me->ToCreature()->AI()->DoAction(ACTION_PHASE_TWO);
                 }
-            }
+            }*/
 
             void EnterCombat(Unit* who)
             {
@@ -261,6 +263,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 {   //End phase two, go to kill prisoner
                     fplGuid = 0;
                     events.Reset();
+                    checkfixatetarget = 0;
                     findtargets = 0;
                     pGuid = Guid;
                     me->InterruptNonMeleeSpells(true);
@@ -438,6 +441,19 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         findtargets -= diff;
                 }
 
+                if (checkfixatetarget)
+                {
+                    if (checkfixatetarget <= diff)
+                    {
+                        checkfixatetarget = 0;
+                        Player* pl = me->GetPlayer(*me, fplGuid);
+                        if (!pl || !pl->isAlive() || !pl->HasAura(SPELL_FIXATE_PL))
+                            DoAction(ACTION_FIXATE);
+                    }
+                    else
+                        checkfixatetarget -= diff;
+                }
+
                 if (enrage)
                 {
                     if (enrage <= diff)
@@ -564,6 +580,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         {
                             DoCast(pl, SPELL_FIXATE_PL);
                             fplGuid = pl->GetGUID();
+                            checkfixatetarget = 2100;
                         }
                         else
                         {
@@ -582,7 +599,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         }
                         else
                         {
-                            me->MonsterTextEmote("Not found my fixate target, EnterEvadeMode", 0, true);
+                            me->MonsterTextEmote("Not found fixate target, EnterEvadeMode", 0, true);
                             EnterEvadeMode();
                         }
                         break;
