@@ -654,6 +654,8 @@ enum esSpells
     //Movie Garrosh
     SPELL_HORDE                        = 149978,
     SPELL_ALLIANCE                     = 149979,
+
+    SPELL_PURIFIED                     = 144452,
 };
 
 

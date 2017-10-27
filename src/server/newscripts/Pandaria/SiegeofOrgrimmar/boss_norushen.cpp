@@ -69,7 +69,6 @@ enum eSpells
 
     /*   C H A L L E N GE*/
     SPELL_PURIFIED_CHALLENGE        = 146022,
-    SPELL_PURIFIED                  = 144452,
 
     SPELL_BOTTOMLESS_PIT_AT         = 146793,
     SPELL_BOTTOMLESS_PIT_DMG        = 146703,

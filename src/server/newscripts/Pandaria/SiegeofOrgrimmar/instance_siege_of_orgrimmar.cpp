@@ -1390,16 +1390,23 @@ public:
             break;
             }
 
-            if (state == DONE)
+            switch (state)
             {
-                DoSummoneEventCreatures();
-                if (id == DATA_BLACKFUSE || id == DATA_SPOILS_OF_PANDARIA || id == DATA_THOK)
-                    CheckProgressForKlaxxi();
-                if (id < DATA_GARROSH && CheckProgressForGarrosh())
-                    HandleGameObject(klaxxiexdoorGuid, true);
+                case IN_PROGRESS:
+                    DoRemoveAurasDueToSpellOnPlayers(SPELL_MOGU_RUNE_OF_POWER_AURA);
+                    DoRemoveAurasDueToSpellOnPlayers(SPELL_PURIFIED);
+                    break;
+                case DONE:
+                    DoSummoneEventCreatures();
+                    DoRemoveAurasDueToSpellOnPlayers(SPELL_PURIFIED);
+                    if (id == DATA_BLACKFUSE || id == DATA_SPOILS_OF_PANDARIA || id == DATA_THOK)
+                        CheckProgressForKlaxxi();
+                    if (id < DATA_GARROSH && CheckProgressForGarrosh())
+                        HandleGameObject(klaxxiexdoorGuid, true);
+                    break;
+                default:
+                    break;
             }
-            else if (state == IN_PROGRESS)
-                DoRemoveAurasDueToSpellOnPlayers(SPELL_MOGU_RUNE_OF_POWER_AURA);
 
             return true;
         }
