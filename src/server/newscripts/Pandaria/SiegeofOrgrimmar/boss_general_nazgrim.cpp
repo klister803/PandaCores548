@@ -930,7 +930,7 @@ public:
             if (Unit* target = me->GetUnit(*me, targetGuid))
                 if (target->isAlive())
                     return target;
-            return 0;
+            return NULL;
         }
 
         void SetGUID(uint64 tGuid, int32 type)
@@ -985,16 +985,21 @@ public:
                 {
                 case EVENT_SHOOT:
                 {
-                    Unit* target = GetTarget() ? GetTarget() : SelectTarget(SELECT_TARGET_FARTHEST, 0, 80.0f, true);
-                    if (me->GetDistance(target) > 30.0f)
+                    Unit* target = GetTarget();
+                    if (!target)
+                        target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 80.0f, true);
+                    if (target)
                     {
-                        events.Reset();
-                        float x, y;
-                        GetPositionWithDistInOrientation(target, 30.0f, me->GetFollowAngle(), x, y);
-                        me->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), 15.0f, 3);
-                        return;
+                        if (me->GetDistance(target) > 30.0f)
+                        {
+                            events.Reset();
+                            float x, y;
+                            GetPositionWithDistInOrientation(target, 30.0f, me->GetFollowAngle(), x, y);
+                            me->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), 15.0f, 3);
+                            return;
+                        }
+                        DoCast(target, SPELL_SHOOT);
                     }
-                    DoCast(target, SPELL_SHOOT);
                     events.ScheduleEvent(EVENT_SHOOT, 4000);
                 }
                 break;

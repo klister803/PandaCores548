@@ -625,7 +625,7 @@ class spell_ultraxion_hour_of_twilight_dmg : public SpellScriptLoader
 
             void HandleHitTarget(SpellEffIndex /*effIndex*/)
             {
-                if (!GetCaster() || !GetCaster()->GetInstanceScript()->instance->IsHeroic())
+                if (!GetCaster() || !GetCaster()->GetInstanceScript() || !GetCaster()->GetInstanceScript()->instance || !GetCaster()->GetInstanceScript()->instance->IsHeroic())
                     return;
 
                 if (Unit* target = GetHitUnit())

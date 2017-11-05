@@ -8243,10 +8243,12 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
                         if (AuraEffect* MGEff2 = Malefic_Grasp->GetEffect(EFFECT_2))
                             afflictionDamage = CalculatePct(afflictionDamage, MGEff2->GetAmount());
 
-                    caster->m_Functions.AddFunction([caster, target, afflictionDamage]()-> void
+                    uint64 targetGuid = target->GetGUID();
+                    caster->m_Functions.AddFunction([caster, targetGuid, afflictionDamage]()-> void
                     {
-                        if (caster && target && caster->IsInWorld() && target->IsInWorld())
-                            caster->CastCustomSpell(target, 131737, &afflictionDamage, NULL, NULL, true);
+                        if (caster)
+                            if (Unit* target = ObjectAccessor::GetUnit(*caster, targetGuid))
+                                caster->CastCustomSpell(target, 131737, &afflictionDamage, NULL, NULL, true);
                     }, caster->m_Functions.CalculateTime(deley * 2));
 
                     agony->CalcAgonyTickDamage();
