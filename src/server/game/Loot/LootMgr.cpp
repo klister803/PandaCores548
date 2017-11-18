@@ -540,8 +540,6 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
 
     if(personal)
         tab->ProcessPersonal(*this);
-    else if(lootOwner->getCurrentUpdateZoneID() == 6757)  //Hack for Timeless Isle
-        tab->Process(*this, false);          // Processing is done there, callback via Loot::AddItem()
     else
         tab->Process(*this, store.IsRatesAllowed());          // Processing is done there, callback via Loot::AddItem()
 
