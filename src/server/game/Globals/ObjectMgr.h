@@ -1650,9 +1650,12 @@ class ObjectMgr
         {
             switch (difficulty)
             {
+                case MAN25_HEROIC_DIFFICULTY:
+                    return 3;
+                case MAN25_DIFFICULTY:
+                    return 2;
                 case HEROIC_DIFFICULTY:
                 case MAN10_HEROIC_DIFFICULTY:
-                case MAN25_HEROIC_DIFFICULTY:
                     return 1;
                 default:
                     return 0;
