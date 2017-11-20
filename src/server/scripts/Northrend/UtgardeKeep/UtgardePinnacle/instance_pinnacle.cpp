@@ -70,6 +70,7 @@ public:
         uint32 m_auiEncounter[MAX_ENCOUNTER];
 
         std::string str_data;
+        std::vector<uint64>ritualchannelerlist;
 
         void Initialize()
         {
@@ -93,6 +94,7 @@ public:
 
             uiSvala = 0;
             uiSacrificedPlayer = 0;
+            ritualchannelerlist.clear();
         }
 
         bool IsEncounterInProgress() const
@@ -118,6 +120,9 @@ public:
                 case MOB_FEROCIOUS_RHINO:     uiFerociousRhino = creature->GetGUID();    break;
                 case MOB_SVALA:               uiSvala = creature->GetGUID();             break;
                 case MOB_PALEHOOF_ORB:        uiPalehoofOrb = creature->GetGUID();       break;
+                case NPC_RITUAL_CHANNELER:
+                    ritualchannelerlist.push_back(creature->GetGUID());
+                    break;
             }
         }
 
@@ -150,6 +155,10 @@ public:
             {
                 case DATA_SVALA_SORROWGRAVE_EVENT:
                     m_auiEncounter[0] = data;
+
+                    if (data == NOT_STARTED)
+                        ritualchannelerlist.clear();
+
                     break;
                 case DATA_GORTOK_PALEHOOF_EVENT:
                     m_auiEncounter[1] = data;
@@ -164,10 +173,41 @@ public:
                         HandleGameObject(uiKingYmironDoor, true);
                     m_auiEncounter[3] = data;
                     break;
+                case DATA_KILL_RITUAL_CHANNELER:
+                    if (!ritualchannelerlist.empty())
+                        for (std::vector<uint64>::const_iterator Itr = ritualchannelerlist.begin(); Itr != ritualchannelerlist.end(); ++Itr)
+                            if (Creature* rc = instance->GetCreature(*Itr))
+                                if (rc->isAlive())
+                                    rc->Kill(rc, false);
+                    break;
             }
 
             if (data == DONE)
                 SaveToDB();
+        }
+
+        void CreatureDies(Creature* creature, Unit* killer)
+        {
+            if (!instance->IsHeroic())
+                return;
+
+            if (!killer->ToCreature())
+                return;
+
+            //hack fix incredible hulk
+            if (creature->GetEntry() == 26555 && killer->ToCreature()->GetEntry() == 29281)
+            {
+                Map::PlayerList const &PlayerList = instance->GetPlayers();
+
+                if (PlayerList.isEmpty())
+                    return;
+
+                for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+                    if (Player* player = Itr->getSource())
+                        if (AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(2043))
+                            if (!player->HasAchieved(2043))
+                                player->CompletedAchievement(achievementEntry);
+            }
         }
 
         void SetData64(uint32 type, uint64 data)

@@ -6017,6 +6017,17 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx6 &= ~SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
                     break;
 
+                //Utgarde Pinnacle
+                   //Svala
+                case 54142: //Arthas Transforming Svala
+                    spellInfo->Effects[0]->TargetA = TARGET_UNIT_TARGET_ANY;
+                    break;
+                case 48331: //Ritual Strike
+                    spellInfo->Speed = 0.8f;
+                    spellInfo->Effects[0]->TargetA = TARGET_DEST_TARGET_ANY;
+                    spellInfo->Effects[1]->TargetA = TARGET_DEST_TARGET_ANY;
+                    break;
+
                 //World Bosses
                 //Sha of Anger
                 case 119487: //Anger
