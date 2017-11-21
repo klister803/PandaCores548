@@ -351,9 +351,12 @@ class spell_rog_nerve_strike : public SpellScriptLoader
 
             void CalculateMaxDuration(int32& duration)
             {
+                if (GetId() == 1833) // don't increase duration for Cheap Shot
+                    return;
+
                 Unit* caster = GetCaster();
                 Unit* target = GetUnitOwner();
-                if(!caster || !target)
+                if (!caster || !target)
                     return;
 
                 if (AuraEffect* aurEff = target->GetAuraEffect(84617, 2, caster->GetGUID()))
