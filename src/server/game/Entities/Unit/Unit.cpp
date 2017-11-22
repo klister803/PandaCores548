@@ -376,8 +376,11 @@ void Unit::Update(uint32 p_time)
     // WARNING! Order of execution here is important, do not change.
     // Spells must be processed with event system BEFORE they go to _UpdateSpells.
     // Or else we may have some SPELL_STATE_FINISHED spells stalled in pointers, that is bad.
-    m_Events.Update(p_time);
-    m_Functions.Update(p_time);
+    if (!m_cleanupDone) // May be crashed
+    {
+        m_Events.Update(p_time);
+        m_Functions.Update(p_time);
+    }
 
     if (!IsInWorld())
         return;
@@ -1188,6 +1191,9 @@ void Unit::CastStop(uint32 except_spellid)
 
 void Unit::CastSpell(SpellCastTargets const& targets, SpellInfo const* spellInfo, CustomSpellValues const* value, TriggerCastFlags triggerFlags, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster)
 {
+    if(m_cleanupDone)
+        return;
+
     if (!spellInfo || !this)
     {
         sLog->outError(LOG_FILTER_UNITS, "CastSpell: unknown spell by caster: %s %u)", (GetTypeId() == TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"), (GetTypeId() == TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
@@ -1210,11 +1216,17 @@ void Unit::CastSpell(SpellCastTargets const& targets, SpellInfo const* spellInfo
 
 void Unit::CastSpell(Unit* victim, uint32 spellId, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster)
 {
+    if(m_cleanupDone)
+        return;
+
     CastSpell(victim, spellId, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE, castItem, triggeredByAura, originalCaster);
 }
 
 void Unit::CastSpell(Unit* victim, uint32 spellId, TriggerCastFlags triggerFlags /*= TRIGGER_NONE*/, Item* castItem /*= NULL*/, AuraEffect const* triggeredByAura /*= NULL*/, uint64 originalCaster /*= 0*/)
 {
+    if(m_cleanupDone)
+        return;
+
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
     {
@@ -1227,11 +1239,17 @@ void Unit::CastSpell(Unit* victim, uint32 spellId, TriggerCastFlags triggerFlags
 
 void Unit::CastSpell(Unit* victim, SpellInfo const* spellInfo, bool triggered, Item* castItem/*= NULL*/, AuraEffect const* triggeredByAura /*= NULL*/, uint64 originalCaster /*= 0*/)
 {
+    if(m_cleanupDone)
+        return;
+
     CastSpell(victim, spellInfo, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE, castItem, triggeredByAura, originalCaster);
 }
 
 void Unit::CastSpell(Unit* victim, SpellInfo const* spellInfo, TriggerCastFlags triggerFlags, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster)
 {
+    if(m_cleanupDone)
+        return;
+
     SpellCastTargets targets;
     targets.SetUnitTarget(victim);
     CastSpell(targets, spellInfo, NULL, triggerFlags, castItem, triggeredByAura, originalCaster);
@@ -1239,6 +1257,9 @@ void Unit::CastSpell(Unit* victim, SpellInfo const* spellInfo, TriggerCastFlags 
 
 void Unit::CastCustomSpell(Unit* target, uint32 spellId, float const* bp0, float const* bp1, float const* bp2, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster)
 {
+    if(m_cleanupDone)
+        return;
+
     CustomSpellValues values;
     if (bp0)
         values.AddSpellMod(SPELLVALUE_BASE_POINT0, *bp0);
@@ -1251,6 +1272,9 @@ void Unit::CastCustomSpell(Unit* target, uint32 spellId, float const* bp0, float
 
 void Unit::CastCustomSpell(Unit* target, uint32 spellId, float const* bp0, float const* bp1, float const* bp2, float const* bp3, float const* bp4, float const* bp5, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster)
 {
+    if(m_cleanupDone)
+        return;
+
     CustomSpellValues values;
     if (bp0)
         values.AddSpellMod(SPELLVALUE_BASE_POINT0, *bp0);
@@ -1269,6 +1293,9 @@ void Unit::CastCustomSpell(Unit* target, uint32 spellId, float const* bp0, float
 
 void Unit::CastCustomSpell(uint32 spellId, SpellValueMod mod, float value, Unit* target, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster)
 {
+    if(m_cleanupDone)
+        return;
+
     CustomSpellValues values;
     values.AddSpellMod(mod, value);
     CastCustomSpell(spellId, values, target, triggered, castItem, triggeredByAura, originalCaster);
@@ -1276,6 +1303,9 @@ void Unit::CastCustomSpell(uint32 spellId, SpellValueMod mod, float value, Unit*
 
 void Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const& value, Unit* victim, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster)
 {
+    if(m_cleanupDone)
+        return;
+
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
     {
@@ -1290,6 +1320,9 @@ void Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const& value, Unit*
 
 void Unit::CastSpell(float x, float y, float z, uint32 spellId, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster)
 {
+    if(m_cleanupDone)
+        return;
+
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
     {
@@ -1304,6 +1337,9 @@ void Unit::CastSpell(float x, float y, float z, uint32 spellId, bool triggered, 
 
 void Unit::CastSpell(float x, float y, float z, uint32 spellId, TriggerCastFlags triggeredCastFlags, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster)
 {
+    if(m_cleanupDone)
+        return;
+
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
     {
@@ -1318,6 +1354,9 @@ void Unit::CastSpell(float x, float y, float z, uint32 spellId, TriggerCastFlags
 
 void Unit::CastSpell(GameObject* go, uint32 spellId, bool triggered, Item* castItem, AuraEffect* triggeredByAura, uint64 originalCaster)
 {
+    if(m_cleanupDone)
+        return;
+
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
     {
@@ -3370,7 +3409,7 @@ void Unit::_DeleteRemovedAuras()
 
 void Unit::_UpdateSpells(uint32 time)
 {
-    if (!IsInWorld())
+    if (!IsInWorld() || m_cleanupDone)
         return;
 
     RecursiveGuard _aura_lock(m_aura_lock);
@@ -3809,7 +3848,9 @@ Aura* Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint3
 
 void Unit::_AddAura(UnitAura* aura, Unit* caster)
 {
-    ASSERT(!m_cleanupDone);
+    if(m_cleanupDone)
+        return;
+
     m_ownedAuras.insert(AuraMap::value_type(aura->GetId(), aura));
 
     _RemoveNoStackAurasDueToAura(aura);
@@ -3852,9 +3893,14 @@ void Unit::_AddAura(UnitAura* aura, Unit* caster)
 AuraApplication * Unit::_CreateAuraApplication(Aura* aura, uint32 effMask)
 {
     // can't apply aura on unit which is going to be deleted - to not create a memory leak
-    ASSERT(!m_cleanupDone);
+    // ASSERT(!m_cleanupDone);
+    if(m_cleanupDone)
+        return NULL;
+
     // aura musn't be removed
-    ASSERT(!aura->IsRemoved());
+    // ASSERT(!aura->IsRemoved());
+    if(aura->IsRemoved())
+        return NULL;
 
     // aura mustn't be already applied on target
     ASSERT (!aura->IsAppliedOnTarget(GetGUID()) && "Unit::_CreateAuraApplication: aura musn't be applied on target");
@@ -4471,6 +4517,9 @@ void Unit::RemoveAurasWithAttribute(uint32 flags)
 
 void Unit::RemoveNotOwnSingleTargetAuras(uint32 newPhase)
 {
+    if (m_cleanupDone && isSummon())
+        return;
+
     RecursiveGuard _aura_lock(m_aura_lock);
 
     // single target auras from other casters
@@ -17488,6 +17537,8 @@ void Unit::RemoveFromWorld()
 
 void Unit::CleanupBeforeRemoveFromMap(bool finalCleanup)
 {
+    m_cleanupDone = true;
+
     // This needs to be before RemoveFromWorld to make GetCaster() return a valid pointer on aura removal
     InterruptNonMeleeSpells(true);
     RemoveAllAuras();
@@ -17502,9 +17553,6 @@ void Unit::CleanupBeforeRemoveFromMap(bool finalCleanup)
     ASSERT(m_ownedAuras.empty());
     ASSERT(GetGUID());
 
-    if (finalCleanup)
-        m_cleanupDone = true;
-
     // A unit may be in removelist and not in world, but it is still in grid
     // and may have some references during delete
     RemoveAllGameObjects();
@@ -17516,6 +17564,7 @@ void Unit::CleanupBeforeRemoveFromMap(bool finalCleanup)
     DeleteThreatList();
     getHostileRefManager().setOnlineOfflineState(false);
     GetMotionMaster()->Clear(false);                    // remove different non-standard movement generators.
+    m_cleanupDone = false;
 }
 
 void Unit::CleanupsBeforeDelete(bool finalCleanup)
