@@ -196,7 +196,7 @@ m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_o
     m_spawnMode = 0;
     m_playerCount = 0;
     m_Stampeded = false;
-    m_despan = false;
+    m_despawn = false;
 
     m_needToUpdatePetFollowPosition = true;
     m_petFollowPositionTimer = 0;
@@ -293,7 +293,7 @@ void Creature::RemoveCorpse(bool setSpawnTime)
     m_corpseRemoveTime = time(NULL);
     setDeathState(DEAD);
     RemoveAllAuras();
-    UpdateObjectVisibility();
+    //UpdateObjectVisibility();
     loot.clear();
     uint32 respawnDelay = m_respawnDelay;
     if (IsAIEnabled)
@@ -1940,9 +1940,8 @@ void Creature::setDeathState(DeathState s)
     }
 }
 
-void Creature::Respawn(bool force)
+void Creature::Respawn(bool force, uint32 timer)
 {
-	Movement::MoveSplineInit(*this).Stop(true);
     DestroyForNearbyPlayers();
 
     if (force)
@@ -1953,8 +1952,17 @@ void Creature::Respawn(bool force)
             setDeathState(CORPSE);
     }
 
-    RemoveCorpse(false);
-    m_despan = false;
+    if (getDeathState() == CORPSE)
+    {
+        RemoveCorpse(false);
+
+        if (timer)
+            m_respawnTime = time(NULL) + timer;
+
+        return;
+    }
+
+    m_despawn = false;
 
     if (getDeathState() == DEAD)
     {
@@ -2022,7 +2030,7 @@ void Creature::ForcedDespawn(uint32 timeMSToDespawn)
 
 void Creature::DespawnOrUnsummon(uint32 msTimeToDespawn /*= 0*/)
 {
-    if (m_despan || !IsInWorld())
+    if (m_despawn || !IsInWorld())
         return;
 
     if (TempSummon* summon = this->ToTempSummon())
@@ -2030,7 +2038,7 @@ void Creature::DespawnOrUnsummon(uint32 msTimeToDespawn /*= 0*/)
     else
         ForcedDespawn(msTimeToDespawn);
 
-    m_despan = true;
+    m_despawn = true;
 }
 
 bool Creature::IsImmunedToSpell(SpellInfo const* spellInfo)

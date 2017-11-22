@@ -790,7 +790,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         time_t const& GetRespawnTime() const { return m_respawnTime; }
         time_t GetRespawnTimeEx() const;
         void SetRespawnTime(uint32 respawn) { m_respawnTime = respawn ? time(NULL) + respawn : 0; }
-        void Respawn(bool force = false);
+        void Respawn(bool force = false, uint32 timer = 2);
         void SaveRespawnTime();
 
         uint32 GetRemoveCorpseDelay() const { return m_corpseRemoveTime; }
@@ -920,7 +920,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         bool onVehicleAccessoryInit() const { return m_onVehicleAccessory; }
         void SetVehicleAccessoryInit(bool r) { m_onVehicleAccessory = r; }
 
-        bool IsDespawn() const { return m_despan; }
+        bool IsDespawn() const { return m_despawn; }
 
         uint32 GetVignetteId() const { return m_creatureInfo ? m_creatureInfo->VignetteId : 0; }
 
@@ -996,7 +996,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         uint8 m_spawnMode;
         uint32 m_playerCount;
         float m_followAngle;
-        bool m_despan;
+        bool m_despawn;
 
         bool IsInvisibleDueToDespawn() const;
         bool CanAlwaysSee(WorldObject const* obj) const;
