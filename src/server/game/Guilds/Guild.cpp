@@ -3550,10 +3550,10 @@ uint32 Guild::RepGainedBy(Player* player, uint32 amount)
         return 0;
 
     amount = std::min(amount, uint32(GUILD_WEEKLY_REP_CAP - member->GetWeekReputation()));
-    
+
     // Guild Champion Tabard        
-    Unit::AuraEffectList const& auras = player->GetAuraEffectsByType(SPELL_AURA_MOD_REPUTATION_GAIN_PCT);
-    for (Unit::AuraEffectList::const_iterator i = auras.begin(); i != auras.end(); ++i)
+    if (Unit::AuraEffectList const* auras = player->GetAuraEffectsByType(SPELL_AURA_MOD_REPUTATION_GAIN_PCT))
+    for (Unit::AuraEffectList::const_iterator i = auras->begin(); i != auras->end(); ++i)
         AddPct(amount, (*i)->GetAmount());
 
     if (amount)

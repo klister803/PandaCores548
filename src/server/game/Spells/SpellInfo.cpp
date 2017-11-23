@@ -2752,7 +2752,7 @@ uint32 SpellInfo::CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask) 
 
         SpellSchools school = GetFirstSchoolInMask(schoolMask);
         // Flat mod from caster auras by spell school
-        for (auto itr : caster->GetAuraEffectsByType(SPELL_AURA_MOD_POWER_COST_SCHOOL))
+        for (auto itr : *caster->GetAuraEffectsByType(SPELL_AURA_MOD_POWER_COST_SCHOOL))
             if ((1 << power.powerType) & itr->GetMiscValueB())
                 if (schoolMask & itr->GetMiscValue())
                     powerCost += itr->GetAmount();

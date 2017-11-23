@@ -568,8 +568,8 @@ inline void KillRewarder::_RewardXP(Player* player, float rate)
     if (xp)
     {
         // 4.2.2. Apply auras modifying rewarded XP (SPELL_AURA_MOD_XP_PCT).
-        Unit::AuraEffectList const& auras = player->GetAuraEffectsByType(SPELL_AURA_MOD_XP_PCT);
-        for (Unit::AuraEffectList::const_iterator i = auras.begin(); i != auras.end(); ++i)
+        if (Unit::AuraEffectList const* auras = player->GetAuraEffectsByType(SPELL_AURA_MOD_XP_PCT))
+        for (Unit::AuraEffectList::const_iterator i = auras->begin(); i != auras->end(); ++i)
             AddPct(xp, (*i)->GetAmount());
 
         // 4.2.3. Calculate expansion penalty
@@ -1568,8 +1568,8 @@ int32 Player::getMaxTimer(MirrorTimerType timer)
             if (!isAlive() || HasAuraType(SPELL_AURA_WATER_BREATHING) || GetSession()->GetSecurity() >= AccountTypes(sWorld->getIntConfig(CONFIG_DISABLE_BREATHING)))
                 return DISABLED_MIRROR_TIMER;
             int32 UnderWaterTime = 3 * MINUTE * IN_MILLISECONDS;
-            AuraEffectList const& mModWaterBreathing = GetAuraEffectsByType(SPELL_AURA_MOD_WATER_BREATHING);
-            for (AuraEffectList::const_iterator i = mModWaterBreathing.begin(); i != mModWaterBreathing.end(); ++i)
+            if (AuraEffectList const* mModWaterBreathing = GetAuraEffectsByType(SPELL_AURA_MOD_WATER_BREATHING))
+            for (AuraEffectList::const_iterator i = mModWaterBreathing->begin(); i != mModWaterBreathing->end(); ++i)
                 AddPct(UnderWaterTime, (*i)->GetAmount());
             return UnderWaterTime;
         }
@@ -1909,10 +1909,10 @@ void Player::Update(uint32 p_time)
                 bool canCancel = true;
                 bool isWithinMeleeRange = IsWithinMeleeRange(victim);
 
-                AuraEffectList const& replacementMeleeAttacks = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_AUTOATTACK);
-                if (!replacementMeleeAttacks.empty())
+                if (AuraEffectList const* replacementMeleeAttacks = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_AUTOATTACK))
+                if (!replacementMeleeAttacks->empty())
                 {
-                    for (AuraEffectList::const_iterator itr = replacementMeleeAttacks.begin(); itr != replacementMeleeAttacks.end(); ++itr)
+                    for (AuraEffectList::const_iterator itr = replacementMeleeAttacks->begin(); itr != replacementMeleeAttacks->end(); ++itr)
                     {
                         triggerSpellId = (*itr)->GetTriggerSpell();
 
@@ -1972,10 +1972,10 @@ void Player::Update(uint32 p_time)
                 bool canCancel = true;
                 bool isWithinMeleeRange = IsWithinMeleeRange(victim);
 
-                AuraEffectList const& replacementMeleeAttacks = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_AUTOATTACK);
-                if (!replacementMeleeAttacks.empty())
+                if (AuraEffectList const* replacementMeleeAttacks = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_AUTOATTACK))
+                if (!replacementMeleeAttacks->empty())
                 {
-                    for (AuraEffectList::const_iterator itr = replacementMeleeAttacks.begin(); itr != replacementMeleeAttacks.end(); ++itr)
+                    for (AuraEffectList::const_iterator itr = replacementMeleeAttacks->begin(); itr != replacementMeleeAttacks->end(); ++itr)
                     {
                         triggerSpellId = (*itr)->GetMiscValue();
 
@@ -3341,8 +3341,8 @@ void Player::RegenerateHealth()
             else 
                 addvalue = 0.01f*((float)GetMaxHealth())*HealthIncreaseRate;
 
-            AuraEffectList const& mModHealthRegenPct = GetAuraEffectsByType(SPELL_AURA_MOD_HEALTH_REGEN_PERCENT);
-            for (AuraEffectList::const_iterator i = mModHealthRegenPct.begin(); i != mModHealthRegenPct.end(); ++i)
+            if (AuraEffectList const* mModHealthRegenPct = GetAuraEffectsByType(SPELL_AURA_MOD_HEALTH_REGEN_PERCENT))
+            for (AuraEffectList::const_iterator i = mModHealthRegenPct->begin(); i != mModHealthRegenPct->end(); ++i)
                 AddPct(addvalue, (*i)->GetAmount());
 
             addvalue += GetTotalAuraModifier(SPELL_AURA_MOD_REGEN) * 2 * IN_MILLISECONDS / (5 * IN_MILLISECONDS);
@@ -6399,8 +6399,8 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
     // set health/powers (0- will be set in caller)
     if (restore_percent > 0.0f)
     {
-        AuraEffectList const& mResurrectedHealthByGuildMember = GetAuraEffectsByType(SPELL_AURA_MOD_RESURRECTED_HEALTH_BY_GUILD_MEMBER);
-        for (AuraEffectList::const_iterator i = mResurrectedHealthByGuildMember.begin(); i != mResurrectedHealthByGuildMember.end(); ++i)
+        if (AuraEffectList const* mResurrectedHealthByGuildMember = GetAuraEffectsByType(SPELL_AURA_MOD_RESURRECTED_HEALTH_BY_GUILD_MEMBER))
+        for (AuraEffectList::const_iterator i = mResurrectedHealthByGuildMember->begin(); i != mResurrectedHealthByGuildMember->end(); ++i)
             AddPct(restore_percent, (*i)->GetAmount());
 
         SetHealth(uint32(GetMaxHealth()*restore_percent));
@@ -7145,13 +7145,13 @@ void Player::UpdateRating(CombatRating cr)
 
     // Apply bonus from SPELL_AURA_MOD_RATING_FROM_STAT
     // stat used stored in miscValueB for this aura
-    AuraEffectList const& modRatingFromStat = GetAuraEffectsByType(SPELL_AURA_MOD_RATING_FROM_STAT);
-    for (AuraEffectList::const_iterator i = modRatingFromStat.begin(); i != modRatingFromStat.end(); ++i)
+    if (AuraEffectList const* modRatingFromStat = GetAuraEffectsByType(SPELL_AURA_MOD_RATING_FROM_STAT))
+    for (AuraEffectList::const_iterator i = modRatingFromStat->begin(); i != modRatingFromStat->end(); ++i)
         if ((*i)->GetMiscValue() & (1<<cr))
             amount += int32(CalculatePct(GetStat(Stats((*i)->GetMiscValueB())), (*i)->GetAmount()));
 
-    AuraEffectList const& modIncreaseHasteFromItemsByPct = GetAuraEffectsByType(SPELL_AURA_INCREASE_HASTE_FROM_ITEMS_BY_PCT);
-    for (AuraEffectList::const_iterator i = modIncreaseHasteFromItemsByPct.begin(); i != modIncreaseHasteFromItemsByPct.end(); ++i)
+    if (AuraEffectList const* modIncreaseHasteFromItemsByPct = GetAuraEffectsByType(SPELL_AURA_INCREASE_HASTE_FROM_ITEMS_BY_PCT))
+    for (AuraEffectList::const_iterator i = modIncreaseHasteFromItemsByPct->begin(); i != modIncreaseHasteFromItemsByPct->end(); ++i)
         if ((*i)->GetMiscValue() & (1<<cr))
             AddPct(amount, (*i)->GetAmount());
     
@@ -7584,22 +7584,22 @@ void Player::SetSkill(uint16 id, uint16 step, uint16 newVal, uint16 maxVal)
                 SetUInt16Value(PLAYER_SKILL_TALENT_0 + field, offset, 0);
 
                 // temporary bonuses
-                AuraEffectList const& mModSkill = GetAuraEffectsByType(SPELL_AURA_MOD_SKILL);
-                for (AuraEffectList::const_iterator j = mModSkill.begin(); j != mModSkill.end(); ++j)
-                    if ((*j)->GetMiscValue() == int32(id))
-                        (*j)->HandleEffect(this, AURA_EFFECT_HANDLE_SKILL, true);
+                if (AuraEffectList const* mModSkill = GetAuraEffectsByType(SPELL_AURA_MOD_SKILL))
+                    for (AuraEffectList::const_iterator j = mModSkill->begin(); j != mModSkill->end(); ++j)
+                        if ((*j)->GetMiscValue() == int32(id))
+                            (*j)->HandleEffect(this, AURA_EFFECT_HANDLE_SKILL, true);
 
                 // temporary bonuses
-                AuraEffectList const& mModSkill2 = GetAuraEffectsByType(SPELL_AURA_MOD_SKILL_2);
-                for (AuraEffectList::const_iterator j = mModSkill2.begin(); j != mModSkill2.end(); ++j)
-                    if ((*j)->GetMiscValue() == int32(id))
-                        (*j)->HandleEffect(this, AURA_EFFECT_HANDLE_SKILL, true);
+                if (AuraEffectList const* mModSkill2 = GetAuraEffectsByType(SPELL_AURA_MOD_SKILL_2))
+                    for (AuraEffectList::const_iterator j = mModSkill2->begin(); j != mModSkill2->end(); ++j)
+                        if ((*j)->GetMiscValue() == int32(id))
+                            (*j)->HandleEffect(this, AURA_EFFECT_HANDLE_SKILL, true);
 
                 // permanent bonuses
-                AuraEffectList const& mModSkillTalent = GetAuraEffectsByType(SPELL_AURA_MOD_SKILL_TALENT);
-                for (AuraEffectList::const_iterator j = mModSkillTalent.begin(); j != mModSkillTalent.end(); ++j)
-                    if ((*j)->GetMiscValue() == int32(id))
-                        (*j)->HandleEffect(this, AURA_EFFECT_HANDLE_SKILL, true);
+                if (AuraEffectList const* mModSkillTalent = GetAuraEffectsByType(SPELL_AURA_MOD_SKILL_TALENT))
+                    for (AuraEffectList::const_iterator j = mModSkillTalent->begin(); j != mModSkillTalent->end(); ++j)
+                        if ((*j)->GetMiscValue() == int32(id))
+                            (*j)->HandleEffect(this, AURA_EFFECT_HANDLE_SKILL, true);
 
                 // Learn all spells for skill
                 learnSkillRewardedSpells(id, newVal);
@@ -8537,8 +8537,8 @@ bool Player::RewardHonor(Unit* victim, uint32 groupsize, int32 honor, bool pvpto
 
     if (victim)
     {
-        AuraEffectList const& mMultipliers = GetAuraEffectsByType(SPELL_AURA_MOD_CURRENCY_GAIN_FROM_CREATURE);
-        for (AuraEffectList::const_iterator itr = mMultipliers.begin(); itr != mMultipliers.end(); ++itr)
+        if (AuraEffectList const* mMultipliers = GetAuraEffectsByType(SPELL_AURA_MOD_CURRENCY_GAIN_FROM_CREATURE))
+        for (AuraEffectList::const_iterator itr = mMultipliers->begin(); itr != mMultipliers->end(); ++itr)
         {
             if ((*itr)->GetMiscValueB() == victim->GetCreatureType() && (*itr)->GetMiscValue() == CURRENCY_TYPE_HONOR_POINTS)
                 AddPct(honor, (*itr)->GetAmount());
@@ -17406,8 +17406,8 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
     uint32 XP = rewarded ? 0 : uint32(quest->XPValue(this) * QuestXpRate);
 
     // handle SPELL_AURA_MOD_XP_QUEST_PCT auras
-    Unit::AuraEffectList const& ModXPPctAuras = GetAuraEffectsByType(SPELL_AURA_MOD_XP_QUEST_PCT);
-    for (Unit::AuraEffectList::const_iterator i = ModXPPctAuras.begin(); i != ModXPPctAuras.end(); ++i)
+    if (Unit::AuraEffectList const* ModXPPctAuras = GetAuraEffectsByType(SPELL_AURA_MOD_XP_QUEST_PCT))
+    for (Unit::AuraEffectList::const_iterator i = ModXPPctAuras->begin(); i != ModXPPctAuras->end(); ++i)
         AddPct(XP, (*i)->GetAmount());
 
     int32 moneyRew = 0;
@@ -24448,10 +24448,10 @@ void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
 
     data.WriteGuidBytes<7, 2, 1, 6, 5, 4, 3, 0>(guid);
 
-    Unit::AuraEffectList swaps = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS);
-    Unit::AuraEffectList const& swaps2 = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS_2);
-    if (!swaps2.empty())
-        swaps.insert(swaps.end(), swaps2.begin(), swaps2.end());
+    Unit::AuraEffectList swaps = *GetAuraEffectsByType(SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS);
+    if (Unit::AuraEffectList const* swaps2 = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS_2))
+    if (!swaps2->empty())
+        swaps.insert(swaps.end(), swaps2->begin(), swaps2->end());
 
     double curTime = getPreciseTime();
     uint32 count = 0;
@@ -25283,8 +25283,8 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
         if (G3D::fuzzyGt(catrec, 0.0) && !(spellInfo->AttributesEx6 & SPELL_ATTR6_IGNORE_CATEGORY_COOLDOWN_MODS))
             ApplySpellMod(spellInfo->Id, SPELLMOD_COOLDOWN, catrec, spell);
 
-        AuraEffectList const& spellCooldownByHaste = GetAuraEffectsByType(SPELL_AURA_MOD_SPELL_COOLDOWN_BY_HASTE);
-        for (AuraEffectList::const_iterator itr = spellCooldownByHaste.begin(); itr != spellCooldownByHaste.end(); ++itr)
+        if (AuraEffectList const* spellCooldownByHaste = GetAuraEffectsByType(SPELL_AURA_MOD_SPELL_COOLDOWN_BY_HASTE))
+        for (AuraEffectList::const_iterator itr = spellCooldownByHaste->begin(); itr != spellCooldownByHaste->end(); ++itr)
             if ((*itr)->IsAffectingSpell(spellInfo))
                 rec *= GetFloatValue(UNIT_MOD_HASTE);
 
@@ -25616,9 +25616,9 @@ void Player::SetBattlegroundEntryPoint()
         // Mount spell id storing
         if (IsMounted())
         {
-            AuraEffectList const& auras = GetAuraEffectsByType(SPELL_AURA_MOUNTED);
-            if (!auras.empty())
-                m_bgData.mountSpell = (*auras.begin())->GetId();
+            if (AuraEffectList const* auras = GetAuraEffectsByType(SPELL_AURA_MOUNTED))
+            if (!auras->empty())
+                m_bgData.mountSpell = (*auras->begin())->GetId();
         }
         else
             m_bgData.mountSpell = 0;
@@ -26306,9 +26306,9 @@ void Player::SendInitialPacketsAfterAddToMap()
     };
     for (AuraType const* itr = &auratypes[0]; itr && itr[0] != SPELL_AURA_NONE; ++itr)
     {
-        Unit::AuraEffectList const& auraList = GetAuraEffectsByType(*itr);
-        if (!auraList.empty())
-            auraList.front()->HandleEffect(this, AURA_EFFECT_HANDLE_SEND_FOR_CLIENT, true);
+        if (Unit::AuraEffectList const* auraList = GetAuraEffectsByType(*itr))
+        if (!auraList->empty())
+            auraList->front()->HandleEffect(this, AURA_EFFECT_HANDLE_SEND_FOR_CLIENT, true);
     }
 
     if (HasAuraType(SPELL_AURA_MOD_STUN))
@@ -27985,10 +27985,12 @@ void Player::InitGlyphsForLevel()
 
 bool Player::isTotalImmune()
 {
-    AuraEffectList const& immune = GetAuraEffectsByType(SPELL_AURA_SCHOOL_IMMUNITY);
+    AuraEffectList const* immune = GetAuraEffectsByType(SPELL_AURA_SCHOOL_IMMUNITY);
+    if (!immune)
+        return false;
 
     uint32 immuneMask = 0;
-    for (AuraEffectList::const_iterator iter = immune.begin(), next; iter != immune.end();iter = next)
+    for (AuraEffectList::const_iterator iter = immune->begin(), next; iter != immune->end();iter = next)
     {
         next = iter;
         ++next;
@@ -28040,9 +28042,8 @@ void Player::SetTitle(CharTitlesEntry const* title, bool lost)
 
 bool Player::isTotalImmunity()
 {
-    AuraEffectList const& immune = GetAuraEffectsByType(SPELL_AURA_SCHOOL_IMMUNITY);
-
-    for (AuraEffectList::const_iterator itr = immune.begin(); itr != immune.end(); ++itr)
+    if (AuraEffectList const* immune = GetAuraEffectsByType(SPELL_AURA_SCHOOL_IMMUNITY))
+    for (AuraEffectList::const_iterator itr = immune->begin(); itr != immune->end(); ++itr)
     {
         if (((*itr)->GetMiscValue() & SPELL_SCHOOL_MASK_ALL) !=0)   // total immunity
         {
@@ -28050,7 +28051,7 @@ bool Player::isTotalImmunity()
         }
         if (((*itr)->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL) !=0)   // physical damage immunity
         {
-            for (AuraEffectList::const_iterator i = immune.begin(); i != immune.end(); ++i)
+            for (AuraEffectList::const_iterator i = immune->begin(); i != immune->end(); ++i)
             {
                 if (((*i)->GetMiscValue() & SPELL_SCHOOL_MASK_MAGIC) !=0)   // magic immunity
                 {
@@ -28138,8 +28139,8 @@ void Player::UpdateCharmedAI()
     {
         if (charmer->IsInEvadeMode())
         {
-            AuraEffectList const& auras = GetAuraEffectsByType(SPELL_AURA_MOD_CHARM);
-            for (AuraEffectList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
+            if (AuraEffectList const* auras = GetAuraEffectsByType(SPELL_AURA_MOD_CHARM))
+            for (AuraEffectList::const_iterator iter = auras->begin(); iter != auras->end(); ++iter)
             {
                 if ((*iter)->GetCasterGUID() == charmer->GetGUID() && (*iter)->GetBase()->IsPermanent())
                 {
@@ -30589,8 +30590,8 @@ void Player::SendCemeteryList(bool onMap)
 void Player::SendCategoryCooldownMods()
 {
     std::map<uint32, int32> categoryMods;
-    Unit::AuraEffectList const& list = GetAuraEffectsByType(SPELL_AURA_MOD_SPELL_CATEGORY_COOLDOWN);
-    for (Unit::AuraEffectList::const_iterator itr = list.begin(); itr != list.end(); ++itr)
+    if (Unit::AuraEffectList const* list = GetAuraEffectsByType(SPELL_AURA_MOD_SPELL_CATEGORY_COOLDOWN))
+    for (Unit::AuraEffectList::const_iterator itr = list->begin(); itr != list->end(); ++itr)
     {
         std::map<uint32, int32>::iterator cItr = categoryMods.find((*itr)->GetMiscValue());
         if (cItr == categoryMods.end())
@@ -30600,8 +30601,8 @@ void Player::SendCategoryCooldownMods()
     }
 
     //! 5.4.1
-    WorldPacket data(SMSG_SPELL_CATEGORY_COOLDOWN, 4 + (int(list.size()) * 8));
-    data.WriteBits<int>(list.size(), 21);
+    WorldPacket data(SMSG_SPELL_CATEGORY_COOLDOWN, 4 + (int(categoryMods.size()) * 8));
+    data.WriteBits<int>(categoryMods.size(), 21);
     data.FlushBits();
     for (std::map<uint32, int32>::const_iterator itr = categoryMods.begin(); itr != categoryMods.end(); ++itr)
     {
@@ -30850,10 +30851,10 @@ bool Player::CanSpeakLanguage(uint32 lang_id) const
     if (langDesc->skill_id != 0 && !HasSkill(langDesc->skill_id))
     {
         // also check SPELL_AURA_COMPREHEND_LANGUAGE (client offers option to speak in that language)
-        Unit::AuraEffectList const& langAuras = GetAuraEffectsByType(SPELL_AURA_COMPREHEND_LANGUAGE);
-        for (Unit::AuraEffectList::const_iterator i = langAuras.begin(); i != langAuras.end(); ++i)
-            if ((*i)->GetMiscValue() == int32(langDesc->lang_id))
-                return true;
+        if (Unit::AuraEffectList const* langAuras = GetAuraEffectsByType(SPELL_AURA_COMPREHEND_LANGUAGE))
+            for (Unit::AuraEffectList::const_iterator i = langAuras->begin(); i != langAuras->end(); ++i)
+                if ((*i)->GetMiscValue() == int32(langDesc->lang_id))
+                    return true;
 
         return false;
     }

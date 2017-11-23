@@ -2691,14 +2691,14 @@ void Spell::EffectHealPct(SpellEffIndex effIndex)
     if (m_spellInfo->AttributesEx11 & SPELL_ATTR11_UNK4)
     {
         bool resetHeal = true;
-        Unit::AuraEffectList const& mTotalAuraList = m_caster->GetAuraEffectsByType(SPELL_AURA_DUMMY);
-        for (Unit::AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
-            if ((*i)->GetMiscValue() == 11)
-                if ((*i)->GetAmount() == m_spellInfo->Id)
-                {
-                    (*i)->SetAmount(NULL);
-                    resetHeal = false;
-                }
+        if (Unit::AuraEffectList const* mTotalAuraList = m_caster->GetAuraEffectsByType(SPELL_AURA_DUMMY))
+            for (Unit::AuraEffectList::const_iterator i = mTotalAuraList->begin(); i != mTotalAuraList->end(); ++i)
+                if ((*i)->GetMiscValue() == 11)
+                    if ((*i)->GetAmount() == m_spellInfo->Id)
+                    {
+                        (*i)->SetAmount(NULL);
+                        resetHeal = false;
+                    }
 
         if (resetHeal)
             damage = 0;
@@ -3970,8 +3970,8 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
     if (dispel_list.empty())
         return;
 
-    Unit::AuraEffectList const& mTotalAuraList = m_caster->GetAuraEffectsByType(SPELL_AURA_DUMMY);
-    for (Unit::AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+    if (Unit::AuraEffectList const* mTotalAuraList = m_caster->GetAuraEffectsByType(SPELL_AURA_DUMMY))
+    for (Unit::AuraEffectList::const_iterator i = mTotalAuraList->begin(); i != mTotalAuraList->end(); ++i)
         if ((*i)->GetMiscValue() == 11 && (*i)->GetSpellInfo()->SpellIconID == m_spellInfo->SpellIconID)
             (*i)->SetAmount(m_spellInfo->Id);
 
@@ -5293,8 +5293,8 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                 // Glyph of Scourge Strike
                 case 69961:
                 {
-                    Unit::AuraEffectList const &mPeriodic = unitTarget->GetAuraEffectsByType(SPELL_AURA_PERIODIC_DAMAGE);
-                    for (Unit::AuraEffectList::const_iterator i = mPeriodic.begin(); i != mPeriodic.end(); ++i)
+                    if (Unit::AuraEffectList const* mPeriodic = unitTarget->GetAuraEffectsByType(SPELL_AURA_PERIODIC_DAMAGE))
+                    for (Unit::AuraEffectList::const_iterator i = mPeriodic->begin(); i != mPeriodic->end(); ++i)
                     {
                         AuraEffect const* aurEff = *i;
                         SpellInfo const* spellInfo = aurEff->GetSpellInfo();
@@ -7078,8 +7078,8 @@ void Spell::EffectDispelMechanic(SpellEffIndex effIndex)
 
     if (hasPredictedDispel == 1)
     {
-        Unit::AuraEffectList const& mTotalAuraList = m_caster->GetAuraEffectsByType(SPELL_AURA_DUMMY);
-        for (Unit::AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+        if (Unit::AuraEffectList const* mTotalAuraList = m_caster->GetAuraEffectsByType(SPELL_AURA_DUMMY))
+        for (Unit::AuraEffectList::const_iterator i = mTotalAuraList->begin(); i != mTotalAuraList->end(); ++i)
             if ((*i)->GetMiscValue() == 11 && (*i)->GetSpellInfo()->SpellIconID == m_spellInfo->SpellIconID)
                 (*i)->SetAmount(m_spellInfo->Id);
 

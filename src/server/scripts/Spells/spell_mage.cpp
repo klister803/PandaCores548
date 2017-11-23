@@ -1633,8 +1633,8 @@ class spell_mage_greater_invisibility : public SpellScriptLoader
                 if (Unit* caster = GetCaster())
                 {
                     int32 count = 0;
-                    Unit::AuraEffectList const mPeriodic = caster->GetAuraEffectsByType(SPELL_AURA_PERIODIC_DAMAGE);
-                    for (Unit::AuraEffectList::const_iterator iter = mPeriodic.begin(); iter != mPeriodic.end(); ++iter)
+                    if (Unit::AuraEffectList const* mPeriodic = caster->GetAuraEffectsByType(SPELL_AURA_PERIODIC_DAMAGE))
+                    for (Unit::AuraEffectList::const_iterator iter = mPeriodic->begin(); iter != mPeriodic->end(); ++iter)
                     {
                         if (!(*iter)) // prevent crash
                             continue;

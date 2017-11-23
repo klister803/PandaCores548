@@ -1389,6 +1389,7 @@ class Unit : public WorldObject
         typedef std::multimap<uint32,  AuraApplication*> AuraApplicationMap;
         typedef std::multimap<AuraStateType,  AuraApplication*> AuraStateAurasMap;
         typedef std::list<AuraEffect*> AuraEffectList;
+        typedef std::map<uint32, AuraEffectList*> AuraEffectListMap;
         typedef std::list<Aura*> AuraList;
         typedef std::list<AuraApplication *> AuraApplicationList;
         typedef std::list<DiminishingReturn> Diminishing;
@@ -2020,10 +2021,10 @@ class Unit : public WorldObject
         void _RemoveAllAuraStatMods();
         void _ApplyAllAuraStatMods();
 
-        AuraEffectList const& GetAuraEffectsByType(AuraType type) const { return m_modAuras[type]; }
+        AuraEffectList const* GetAuraEffectsByType(AuraType type) const { return m_modAuras[type]; }
         AuraEffectList GetAuraEffectsByMechanic(uint32 mechanic_mask) const;
         AuraEffectList GetTotalNotStuckAuraEffectByType(AuraType auratype) const;
-        AuraEffectList GetAuraEffectsByType(AuraType type) { return m_modAuras[type]; }
+        AuraEffectList* GetAuraEffectsByType(AuraType type) { return m_modAuras[type]; }
 
         AuraList      & GetSingleCastAuras()       { return m_scAuras; }
         AuraList const& GetSingleCastAuras() const { return m_scAuras; }
@@ -2047,6 +2048,7 @@ class Unit : public WorldObject
         uint32 GetAuraCount(uint32 spellId) const;
         bool HasAura(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint32 reqEffMask = 0) const;
         bool HasAuraType(AuraType auraType) const;
+        uint32 GetAuraTypeCount(AuraType auraType) const;
         bool HasAuraTypeWithCaster(AuraType auratype, uint64 caster) const;
         bool HasAuraTypeWithMiscvalue(AuraType auratype, int32 miscvalue) const;
         bool HasAuraTypeWithAffectMask(AuraType auratype, SpellInfo const* affectedSpell) const;
@@ -2676,7 +2678,8 @@ class Unit : public WorldObject
         AuraMap::iterator m_auraUpdateIterator;
         uint32 m_removedAurasCount;
 
-        AuraEffectList m_modAuras[TOTAL_AURAS];
+        AuraEffectList* m_modAuras[TOTAL_AURAS];
+        AuraEffectListMap m_modMapAuras;
         AuraList m_scAuras;                        // casted singlecast auras
         AuraList m_my_Auras;                       // casted auras
         AuraApplicationList m_interruptableAuras;             // auras which have interrupt mask applied on unit
