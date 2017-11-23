@@ -452,13 +452,13 @@ public:
 
         for (uint16 i = 0; i < TOTAL_AURAS; ++i)
         {
-            Unit::AuraEffectList const* auraList = unit->GetAuraEffectsByType(AuraType(i));
-            if (!auraList || auraList->empty())
+            Unit::AuraEffectList const& auraList = unit->GetAuraEffectsByType(AuraType(i));
+            if (auraList.empty())
                 continue;
 
-            handler->PSendSysMessage(LANG_COMMAND_TARGET_LISTAURATYPE, auraList->size(), i);
+            handler->PSendSysMessage(LANG_COMMAND_TARGET_LISTAURATYPE, auraList.size(), i);
 
-            for (Unit::AuraEffectList::const_iterator itr = auraList->begin(); itr != auraList->end(); ++itr)
+            for (Unit::AuraEffectList::const_iterator itr = auraList.begin(); itr != auraList.end(); ++itr)
                 handler->PSendSysMessage(LANG_COMMAND_TARGET_AURASIMPLE, (*itr)->GetId(), (*itr)->GetEffIndex(), (*itr)->GetAmount());
         }
 

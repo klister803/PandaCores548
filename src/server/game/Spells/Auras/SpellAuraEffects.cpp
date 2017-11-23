@@ -608,8 +608,8 @@ float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
             if (caster)
             {
                 // Glyphs increasing damage cap
-                if (Unit::AuraEffectList const* overrideClassScripts = caster->GetAuraEffectsByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS))
-                for (Unit::AuraEffectList::const_iterator itr = overrideClassScripts->begin(); itr != overrideClassScripts->end(); ++itr)
+                Unit::AuraEffectList const& overrideClassScripts = caster->GetAuraEffectsByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
+                for (Unit::AuraEffectList::const_iterator itr = overrideClassScripts.begin(); itr != overrideClassScripts.end(); ++itr)
                 {
                     if ((*itr)->IsAffectingSpell(m_spellInfo))
                     {
@@ -2724,17 +2724,15 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             }
         }
 
+        const Unit::AuraEffectList& shapeshifts = target->GetAuraEffectsByType(SPELL_AURA_MOD_SHAPESHIFT);
         AuraEffect* newAura = NULL;
         // Iterate through all the shapeshift auras that the target has, if there is another aura with SPELL_AURA_MOD_SHAPESHIFT, then this aura is being removed due to that one being applied
-        if (Unit::AuraEffectList* shapeshifts = target->GetAuraEffectsByType(SPELL_AURA_MOD_SHAPESHIFT))
+        for (Unit::AuraEffectList::const_iterator itr = shapeshifts.begin(); itr != shapeshifts.end(); ++itr)
         {
-            for (Unit::AuraEffectList::iterator itr = shapeshifts->begin(); itr != shapeshifts->end(); ++itr)
+            if ((*itr) != this)
             {
-                if ((*itr) != this)
-                {
-                    newAura = *itr;
-                    break;
-                }
+                newAura = *itr;
+                break;
             }
         }
         Unit::AuraApplicationMap& tAuras = target->GetAppliedAuras();
@@ -2838,15 +2836,13 @@ void AuraEffect::HandleModInvisibility(AuraApplication const* aurApp, uint8 mode
         else
         {
             bool found = false;
-            if (Unit::AuraEffectList const* invisAuras = target->GetAuraEffectsByType(SPELL_AURA_MOD_INVISIBILITY))
+            Unit::AuraEffectList const& invisAuras = target->GetAuraEffectsByType(SPELL_AURA_MOD_INVISIBILITY);
+            for (Unit::AuraEffectList::const_iterator i = invisAuras.begin(); i != invisAuras.end(); ++i)
             {
-                for (Unit::AuraEffectList::const_iterator i = invisAuras->begin(); i != invisAuras->end(); ++i)
+                if (GetMiscValue() == (*i)->GetMiscValue())
                 {
-                    if (GetMiscValue() == (*i)->GetMiscValue())
-                    {
-                        found = true;
-                        break;
-                    }
+                    found = true;
+                    break;
                 }
             }
             if (!found)
@@ -3060,14 +3056,14 @@ void AuraEffect::HandlePhase(AuraApplication const* aurApp, uint8 mode, bool app
     else
     {
         uint32 newPhase = 0;
-        if (Unit::AuraEffectList const* phases = target->GetAuraEffectsByType(SPELL_AURA_PHASE))
-        if (!phases->empty())	
-            for (Unit::AuraEffectList::const_iterator itr = phases->begin(); itr != phases->end(); ++itr)
+        Unit::AuraEffectList const& phases = target->GetAuraEffectsByType(SPELL_AURA_PHASE);	
+        if (!phases.empty())	
+            for (Unit::AuraEffectList::const_iterator itr = phases.begin(); itr != phases.end(); ++itr)	
                 newPhase |= (*itr)->GetMiscValue();
 
-        if (Unit::AuraEffectList const* phases2 = target->GetAuraEffectsByType(SPELL_AURA_PHASE_2))
-        if (!phases2->empty())
-            for (Unit::AuraEffectList::const_iterator itr = phases2->begin(); itr != phases2->end(); ++itr)
+        Unit::AuraEffectList const& phases2 = target->GetAuraEffectsByType(SPELL_AURA_PHASE_2);	
+        if (!phases2.empty())	
+            for (Unit::AuraEffectList::const_iterator itr = phases2.begin(); itr != phases2.end(); ++itr)	
                 newPhase |= (*itr)->GetMiscValue();
 
         if (!newPhase)
@@ -3498,7 +3494,7 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
                     target->SetDisplayId(model_id);
 
                     // Dragonmaw Illusion (set mount model also)
-                    if (GetId() == 42016 && target->GetMountID() && target->GetAuraTypeCount(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED))
+                    if (GetId() == 42016 && target->GetMountID() && !target->GetAuraEffectsByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED).empty())
                         target->SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID, 16314);
                 }
             }
@@ -3531,10 +3527,9 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
         // Dragonmaw Illusion (restore mount model)
         if (GetId() == 42016 && target->GetMountID() == 16314)
         {
-            if (Unit::AuraEffectList* mounts = target->GetAuraEffectsByType(SPELL_AURA_MOUNTED))
-            if (!mounts->empty())
+            if (!target->GetAuraEffectsByType(SPELL_AURA_MOUNTED).empty())
             {
-                uint32 cr_id = mounts->front()->GetMiscValue();
+                uint32 cr_id = target->GetAuraEffectsByType(SPELL_AURA_MOUNTED).front()->GetMiscValue();
                 if (CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate(cr_id))
                 {
                     uint32 team = 0;
@@ -3728,7 +3723,7 @@ void AuraEffect::HandleAuraModDisarm(AuraApplication const* aurApp, uint8 mode, 
     AuraType type = GetAuraType();
 
     //Prevent handling aura twice
-    if ((apply) ? target->GetAuraTypeCount(type) > 1 : target->HasAuraType(type))
+    if ((apply) ? target->GetAuraEffectsByType(type).size() > 1 : target->HasAuraType(type))
         return;
 
     uint32 field, flag, slot;
@@ -5040,8 +5035,8 @@ void AuraEffect::HandleAuraModSchoolImmunity(AuraApplication const* aurApp, uint
         else
         {
             bool banishFound = false;
-            if (Unit::AuraEffectList const* banishAuras = target->GetAuraEffectsByType(GetAuraType()))
-            for (Unit::AuraEffectList::const_iterator i = banishAuras->begin(); i != banishAuras->end(); ++i)
+            Unit::AuraEffectList const& banishAuras = target->GetAuraEffectsByType(GetAuraType());
+            for (Unit::AuraEffectList::const_iterator i = banishAuras.begin(); i != banishAuras.end(); ++i)
                 if ((*i)->GetSpellInfo()->Mechanic == MECHANIC_BANISH)
                 {
                     banishFound = true;
@@ -6379,8 +6374,8 @@ void AuraEffect::HandleNoReagentUseAura(AuraApplication const* aurApp, uint8 mod
         return;
 
     flag128 mask;
-    if (Unit::AuraEffectList const* noReagent = target->GetAuraEffectsByType(SPELL_AURA_NO_REAGENT_USE))
-        for (Unit::AuraEffectList::const_iterator i = noReagent->begin(); i != noReagent->end(); ++i)
+    Unit::AuraEffectList const& noReagent = target->GetAuraEffectsByType(SPELL_AURA_NO_REAGENT_USE);
+        for (Unit::AuraEffectList::const_iterator i = noReagent.begin(); i != noReagent.end(); ++i)
             mask |= (*i)->m_spellInfo->Effects[(*i)->m_effIndex]->SpellClassMask;
 
     target->SetUInt32Value(PLAYER_NO_REAGENT_COST_1  , mask[0]);
@@ -6799,8 +6794,8 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                             else
                                 creatureEntry = 15665;
                         }
-                        else if (Unit::AuraEffectList* mounts = target->GetAuraEffectsByType(SPELL_AURA_MOUNTED))
-                            creatureEntry = mounts->front()->GetMiscValue();
+                        else
+                            creatureEntry = target->GetAuraEffectsByType(SPELL_AURA_MOUNTED).front()->GetMiscValue();
 
                         if (CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(creatureEntry))
                         {
@@ -9119,10 +9114,10 @@ void AuraEffect::HandleOverrideActionbarSpells(AuraApplication const* aurApp, ui
 
     if (!apply)
     {
-        Unit::AuraEffectList swaps = *target->GetAuraEffectsByType(SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS);
-        Unit::AuraEffectList const* swaps2 = target->GetAuraEffectsByType(SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS_2);
-        if (swaps2 && !swaps2->empty())
-            swaps.insert(swaps.end(), swaps2->begin(), swaps2->end());
+        Unit::AuraEffectList swaps = target->GetAuraEffectsByType(SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS);
+        Unit::AuraEffectList const& swaps2 = target->GetAuraEffectsByType(SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS_2);
+        if (!swaps2.empty())
+            swaps.insert(swaps.end(), swaps2.begin(), swaps2.end());
 
         SpellInfo const* thisInfo = GetSpellInfo();
 
@@ -9268,8 +9263,8 @@ void AuraEffect::HandleAuraModSpellVisual(AuraApplication const* aurApp, uint8 m
 
     if(apply)
     {
-        Unit::AuraEffectList const* auras = target->GetAuraEffectsByType(GetAuraType());
-        uint8 count = auras ? (auras->size() + 1) * 2 : 1;
+        Unit::AuraEffectList const& auras = target->GetAuraEffectsByType(GetAuraType());
+        uint8 count = (auras.size() + 1) * 2;
 
         for (int i = 0; i <= count;)
         {
@@ -9285,8 +9280,8 @@ void AuraEffect::HandleAuraModSpellVisual(AuraApplication const* aurApp, uint8 m
     }
     else
     {
-        Unit::AuraEffectList const* auras = target->GetAuraEffectsByType(GetAuraType());
-        uint8 count = auras ? auras->size() * 2 : 0;
+        Unit::AuraEffectList const& auras = target->GetAuraEffectsByType(GetAuraType());
+        uint8 count = auras.size() * 2;
 
         for (int i = 0; i <= count;)
         {

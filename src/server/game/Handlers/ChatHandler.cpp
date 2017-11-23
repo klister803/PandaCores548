@@ -210,9 +210,9 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
                 }
 
                 // but overwrite it by SPELL_AURA_MOD_LANGUAGE auras (only single case used)
-                if (Unit::AuraEffectList const* ModLangAuras = sender->GetAuraEffectsByType(SPELL_AURA_MOD_LANGUAGE))
-                if (!ModLangAuras->empty())
-                    lang = ModLangAuras->front()->GetMiscValue();
+                Unit::AuraEffectList const& ModLangAuras = sender->GetAuraEffectsByType(SPELL_AURA_MOD_LANGUAGE);
+                if (!ModLangAuras.empty())
+                    lang = ModLangAuras.front()->GetMiscValue();
             }
         }
     }

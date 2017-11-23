@@ -1985,9 +1985,9 @@ class spell_warl_unbound_will : public SpellScriptLoader
 
                     for (std::list<AuraType>::iterator auratype = auratypelist.begin(); auratype != auratypelist.end(); ++auratype)
                     {
-                        std::list<AuraEffect*> const* effList = player->GetAuraEffectsByType(*auratype);
-                        if (effList && !effList->empty())
-                            for (std::list<AuraEffect*>::const_iterator itr = effList->begin(); itr != effList->end(); ++itr)
+                        std::list<AuraEffect*> const& effList = player->GetAuraEffectsByType(*auratype);
+                        if (!effList.empty())
+                            for (std::list<AuraEffect*>::const_iterator itr = effList.begin(); itr != effList.end(); ++itr)
                                 if (AuraEffect* eff = (*itr))
                                     removeAuraId.push_back(eff->GetId());
                     }

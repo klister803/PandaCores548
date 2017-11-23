@@ -154,8 +154,8 @@ void WorldSession::HandleSetVehicleRecId(WorldPacket& recvData)
 {
     recvData.rfinish();
     uint32 vehicleId = 0;
-    if (Unit::AuraEffectList const* transforms = _player->GetAuraEffectsByType(SPELL_AURA_SET_VEHICLE_ID))
-    for (Unit::AuraEffectList::const_iterator i = transforms->begin(); i != transforms->end(); ++i)
+    Unit::AuraEffectList const& transforms = _player->GetAuraEffectsByType(SPELL_AURA_SET_VEHICLE_ID);
+    for (Unit::AuraEffectList::const_iterator i = transforms.begin(); i != transforms.end(); ++i)
         vehicleId = (*i)->GetMiscValue();
 
     WorldPacket data(SMSG_SET_VEHICLE_REC_ID, 8 + 1 + 4);

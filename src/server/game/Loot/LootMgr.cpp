@@ -392,8 +392,8 @@ LootItem::LootItem(LootStoreItem const& li, Loot* loot)
             float mult = 1.0f;
             if (Player const* lootOwner = loot->GetLootOwner())
             {
-                if (Unit::AuraEffectList const* auras = lootOwner->GetAuraEffectsByType(SPELL_AURA_MOD_ITEM_LOOT))
-                for (Unit::AuraEffectList::const_iterator itr = auras->begin(); itr != auras->end(); ++itr)
+                Unit::AuraEffectList const& auras = lootOwner->GetAuraEffectsByType(SPELL_AURA_MOD_ITEM_LOOT);
+                for (Unit::AuraEffectList::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
                     if ((*itr)->GetMiscValue() == proto->Class && (*itr)->GetMiscValueB() & (1 << proto->SubClass))
                         mult *= ((*itr)->GetAmount() + 100.0f) / 100.0f;
             }

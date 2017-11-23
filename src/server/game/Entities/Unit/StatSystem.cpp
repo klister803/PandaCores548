@@ -98,8 +98,8 @@ bool Player::UpdateStats(Stats stat)
 
     // Update ratings in exist SPELL_AURA_MOD_RATING_FROM_STAT and only depends from stat
     uint32 mask = 0;
-    if (AuraEffectList const* modRatingFromStat = GetAuraEffectsByType(SPELL_AURA_MOD_RATING_FROM_STAT))
-    for (AuraEffectList::const_iterator i = modRatingFromStat->begin(); i != modRatingFromStat->end(); ++i)
+    AuraEffectList const& modRatingFromStat = GetAuraEffectsByType(SPELL_AURA_MOD_RATING_FROM_STAT);
+    for (AuraEffectList::const_iterator i = modRatingFromStat.begin(); i != modRatingFromStat.end(); ++i)
         if (Stats((*i)->GetMiscValueB()) == stat)
             mask |= (*i)->GetMiscValue();
     if (mask)
@@ -144,10 +144,10 @@ void Player::UpdateSpellDamageAndHealingBonus()
     int32 amount = 0;
     amount += m_baseSpellPower;
 
-    AuraEffectList const* mOverrideSpellPowerAuras = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_SPELL_POWER_BY_AP_PCT);
-    if (mOverrideSpellPowerAuras && !mOverrideSpellPowerAuras->empty())
+    AuraEffectList const& mOverrideSpellPowerAuras = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_SPELL_POWER_BY_AP_PCT);
+    if (!mOverrideSpellPowerAuras.empty())
     {
-        for (AuraEffectList::const_iterator itr = mOverrideSpellPowerAuras->begin(); itr != mOverrideSpellPowerAuras->end(); ++itr)
+        for (AuraEffectList::const_iterator itr = mOverrideSpellPowerAuras.begin(); itr != mOverrideSpellPowerAuras.end(); ++itr)
             amount = int32(GetTotalAttackPowerValue(BASE_ATTACK) * (*itr)->GetAmount() / 100.0f);
 
         SetStatFloatValue(PLAYER_FIELD_OVERRIDE_SPELL_POWER_BY_AP_PCT, GetTotalAuraModifier(SPELL_AURA_OVERRIDE_SPELL_POWER_BY_AP_PCT));
@@ -273,8 +273,8 @@ void Player::UpdateArmor()
     value += GetModifierValue(unitMod, TOTAL_VALUE);
 
     //add dynamic flat mods
-    if (AuraEffectList const* mResbyIntellect = GetAuraEffectsByType(SPELL_AURA_MOD_RESISTANCE_OF_STAT_PERCENT))
-    for (AuraEffectList::const_iterator i = mResbyIntellect->begin(); i != mResbyIntellect->end(); ++i)
+    AuraEffectList const& mResbyIntellect = GetAuraEffectsByType(SPELL_AURA_MOD_RESISTANCE_OF_STAT_PERCENT);
+    for (AuraEffectList::const_iterator i = mResbyIntellect.begin(); i != mResbyIntellect.end(); ++i)
     {
         if ((*i)->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL)
             value += CalculatePct(GetStat(Stats((*i)->GetMiscValueB())), (*i)->GetAmount());
@@ -469,14 +469,14 @@ void Player::UpdateMeleeHastMod(float auraMods)
     for (uint8 i = BASE_ATTACK; i < RANGED_ATTACK; ++i)
         CalcAttackTimePercentMod(WeaponAttackType(i), value);
 
-    if (Unit::AuraEffectList const* CooldownByMeleeHaste = GetAuraEffectsByType(SPELL_AURA_MOD_SPELL_COOLDOWN_BY_MELEE_HASTE))
-    for (Unit::AuraEffectList::const_iterator itr = CooldownByMeleeHaste->begin(); itr != CooldownByMeleeHaste->end(); ++itr)
+    Unit::AuraEffectList const& CooldownByMeleeHaste = GetAuraEffectsByType(SPELL_AURA_MOD_SPELL_COOLDOWN_BY_MELEE_HASTE);
+    for (Unit::AuraEffectList::const_iterator itr = CooldownByMeleeHaste.begin(); itr != CooldownByMeleeHaste.end(); ++itr)
     {
         (*itr)->SetCanBeRecalculated(true);
         (*itr)->RecalculateAmount(this);
     }
-    if (Unit::AuraEffectList const* GcdByMeleeHaste = GetAuraEffectsByType(SPELL_AURA_MOD_SPELL_GDC_BY_MELEE_HASTE))
-    for (Unit::AuraEffectList::const_iterator itr = GcdByMeleeHaste->begin(); itr != GcdByMeleeHaste->end(); ++itr)
+    Unit::AuraEffectList const& GcdByMeleeHaste = GetAuraEffectsByType(SPELL_AURA_MOD_SPELL_GDC_BY_MELEE_HASTE);
+    for (Unit::AuraEffectList::const_iterator itr = GcdByMeleeHaste.begin(); itr != GcdByMeleeHaste.end(); ++itr)
     {
         (*itr)->SetCanBeRecalculated(true);
         (*itr)->RecalculateAmount(this);
@@ -635,8 +635,8 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
         //add dynamic flat mods
         if (!ranged && HasAuraType(SPELL_AURA_MOD_ATTACK_POWER_OF_ARMOR))
         {
-            if (AuraEffectList const* mAPbyArmor = GetAuraEffectsByType(SPELL_AURA_MOD_ATTACK_POWER_OF_ARMOR))
-            for (AuraEffectList::const_iterator iter = mAPbyArmor->begin(); iter != mAPbyArmor->end(); ++iter)
+            AuraEffectList const& mAPbyArmor = GetAuraEffectsByType(SPELL_AURA_MOD_ATTACK_POWER_OF_ARMOR);
+            for (AuraEffectList::const_iterator iter = mAPbyArmor.begin(); iter != mAPbyArmor.end(); ++iter)
                 // always: ((*i)->GetModifier()->m_miscvalue == 1 == SPELL_SCHOOL_MASK_NORMAL)
                 attPowerMod += int32(GetArmor() / (*iter)->GetAmount());
         }
@@ -1076,8 +1076,8 @@ void Player::UpdateExpertise()
             
         float expertise = expertiseRating;
         Item* weapon = GetWeaponForAttack(WeaponAttackType(i), true);
-        if (AuraEffectList const* expAuras = GetAuraEffectsByType(SPELL_AURA_MOD_EXPERTISE))
-        for (AuraEffectList::const_iterator itr = expAuras->begin(); itr != expAuras->end(); ++itr)
+        AuraEffectList const& expAuras = GetAuraEffectsByType(SPELL_AURA_MOD_EXPERTISE);
+        for (AuraEffectList::const_iterator itr = expAuras.begin(); itr != expAuras.end(); ++itr)
         {
             // item neutral spell
             if ((*itr)->GetSpellInfo()->EquippedItemClass == -1)
@@ -1146,8 +1146,8 @@ void Player::UpdateAllRunesRegen()
     for (uint8 i = 0; i < NUM_RUNE_TYPES; i++)
         coef[i] = val;
 
-    if (AuraEffectList const* mTotalAuraList = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT))
-    for (AuraEffectList::const_iterator i = mTotalAuraList->begin(); i != mTotalAuraList->end(); ++i)
+    AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
+    for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
         if ((*i)->GetMiscValue() == POWER_RUNES)
             AddPct(coef[(*i)->GetMiscValueB()], (*i)->GetAmount());
 
@@ -1203,8 +1203,8 @@ void Unit::UpdateManaRegen()
     // manaMod% of base mana every 5 seconds is base for all classes
     float baseRegen = CalculatePct(GetCreateMana(), manaMod) / 5;
     float auraMp5regen = 0.0f;
-    if (AuraEffectList const* ModPowerRegenAuras = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN))
-    for (AuraEffectList::const_iterator i = ModPowerRegenAuras->begin(); i != ModPowerRegenAuras->end(); ++i)
+    AuraEffectList const& ModPowerRegenAuras = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN);
+    for (AuraEffectList::const_iterator i = ModPowerRegenAuras.begin(); i != ModPowerRegenAuras.end(); ++i)
     {
         if (Powers((*i)->GetMiscValue()) == POWER_MANA)
         {
