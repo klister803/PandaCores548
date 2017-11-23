@@ -22909,7 +22909,7 @@ public:
         UpdateVisibility(m_owner);
 
         if (m_loadGrids)
-            m_owner->GetMap()->loadGridsInRange(*m_owner, MAX_VISIBILITY_DISTANCE);
+            m_owner->GetMap()->loadGridsInRange(*m_owner, m_owner->CalcVisibilityRange());
 
         return true;
     }
