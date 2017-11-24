@@ -522,7 +522,7 @@ void Creature::UpdateStat()
     CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(level, cInfo->unit_class);
 
     // health
-    float healthmod = _GetHealthMod(cInfo->rank);
+    float healthmod = _GetHealthMod(cInfo->rank, GetMapId());
 
     uint32 basehp = stats->GenerateHealth(cInfo, diffStats);
     uint32 health = uint32(basehp * healthmod);
@@ -1322,7 +1322,7 @@ void Creature::SelectLevel(const CreatureTemplate* cinfo)
     CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(level, cinfo->unit_class);
 
     // health
-    float healthmod = _GetHealthMod(rank);
+    float healthmod = _GetHealthMod(rank, GetMapId());
 
     uint32 basehp = stats->GenerateHealth(cinfo, diffStats);
     uint32 health = uint32(basehp * healthmod);
@@ -1431,9 +1431,9 @@ void Creature::CalculateBaseDamage(const CreatureTemplate* cinfo, uint8 level)
     }
 }
 
-float Creature::_GetHealthMod(int32 Rank)
+float Creature::_GetHealthMod(int32 Rank, uint16 mapId)
 {
-    if (GetMapId() == 1098)
+    if (mapId == 1098)
         return 0.8f;
 
     switch (Rank)                                           // define rates for each elite rank
@@ -1497,9 +1497,9 @@ float Creature::_GetDamageMod(int32 Rank)
     }
 }
 
-float Creature::_GetDamageModMulti(int32 Rank)
+float Creature::_GetDamageModMulti(int32 Rank, uint16 mapId)
 {
-    if (GetMapId() == 1098)
+    if (mapId == 1098)
         return 0.8f;
 
     switch (Rank)                                           // define rates for each elite rank
@@ -1627,7 +1627,7 @@ bool Creature::LoadCreatureFromDB(uint32 guid, Map* map, bool addToMap)
         curhealth = data->curhealth;
         if (curhealth)
         {
-            curhealth = uint32(curhealth*_GetHealthMod(GetCreatureTemplate()->rank));
+            curhealth = uint32(curhealth*_GetHealthMod(GetCreatureTemplate()->rank, GetMapId()));
             if (curhealth < 1)
                 curhealth = 1;
         }

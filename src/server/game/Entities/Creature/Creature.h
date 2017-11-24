@@ -881,7 +881,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         void SetOriginalEntry(uint32 entry) { m_originalEntry = entry; }
 
         static float _GetDamageMod(int32 Rank);
-        static float _GetDamageModMulti(int32 Rank);
+        static float _GetDamageModMulti(int32 Rank, uint16 mapId);
 
         float m_SightDistance, m_CombatDistance;
 
@@ -937,7 +937,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         // vendor items
         VendorItemCounts m_vendorItemCounts;
 
-        static float _GetHealthMod(int32 Rank);
+        static float _GetHealthMod(int32 Rank, uint16 mapId);
         float _GetHealthModPersonal(uint32 &count);
 
         uint64 lastvictimGuid;

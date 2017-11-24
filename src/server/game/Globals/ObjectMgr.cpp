@@ -866,8 +866,6 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
         sLog->outError(LOG_FILTER_SQL, "Table `creature_template` lists creature (Entry: %u) with disallowed `flags_extra` %u, removing incorrect flag.", cInfo->Entry, badFlags);
         const_cast<CreatureTemplate*>(cInfo)->flags_extra &= CREATURE_FLAG_EXTRA_DB_ALLOWED;
     }
-
-    const_cast<CreatureTemplate*>(cInfo)->dmg_multiplier *= Creature::_GetDamageModMulti(cInfo->rank);
 }
 
 void ObjectMgr::LoadCreatureAddons()
