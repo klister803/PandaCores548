@@ -317,7 +317,7 @@ public:
         bool debugOnly = false;
         if(!debugOnly)
             sWorld->SendWorldText(LANG_ARENA_CLOSESEASON_START);
-        sLog->outArena("Окончание сезона Октябрь 2015");
+        sLog->outArena("Окончание сезона Ноябрь 2017");
         // by default:
         // 0 type - 1 - 3
         // 2 type - 4 - 12
@@ -328,6 +328,13 @@ public:
             QueryResult teamResult = CharacterDatabase.Query("SELECT ch.guid, ch.name, wins, games, rating FROM `character_brackets_info` cbi LEFT JOIN characters ch ON ch.guid = cbi.guid WHERE `bracket` = 0 ORDER BY rating DESC");
             if (teamResult && teamResult->GetRowCount())
             {
+                uint32 playerCount = teamResult->GetRowCount();
+                uint32 firstWinTypeCount = 1;
+                uint32 secondWinTypeCount = uint32(playerCount * 0.1f);
+                uint32 thirdWinTypeCount  = uint32(playerCount * 0.3f);
+                uint32 fothWinTypeCount  = uint32(playerCount * 0.5f);
+                uint32 fifthWinTypeCount  = uint32(playerCount * 1.0f);
+
                 uint32 teamNumber = 1;
                 do
                 {
@@ -342,25 +349,30 @@ public:
                     uint32 efirCount = 0;
                     if(!debugOnly)
                     {
-                        if (teamNumber >= 1 && teamNumber <= 3)
+                        if (teamNumber >= firstWinTypeCount && teamNumber <= firstWinTypeCount)
                         {
-                                titleId = 42;
-                                efirCount = 500;
+                            titleId = 279;
+                            efirCount = 500;
                         }
-                        if (teamNumber >= 4 && teamNumber <= 12)
+                        if (teamNumber > firstWinTypeCount && teamNumber <= secondWinTypeCount)
                         {
-                                titleId = 43;
-                                efirCount = 100;
+                            titleId = 42;
+                            efirCount = 250;
                         }
-                        if (teamNumber >= 13 && teamNumber <= 25)
+                        if (teamNumber > secondWinTypeCount && teamNumber <= thirdWinTypeCount)
                         {
-                                titleId = 44;
-                                efirCount = 70;
+                            titleId = 43;
+                            efirCount = 100;
                         }
-                        if (teamNumber >= 26 && teamNumber <= 50)
+                        if (teamNumber > thirdWinTypeCount && teamNumber <= fothWinTypeCount)
                         {
-                                titleId = 45;
-                                efirCount = 50;
+                            titleId = 44;
+                            efirCount = 75;
+                        }
+                        if (teamNumber > fothWinTypeCount && teamNumber <= fifthWinTypeCount)
+                        {
+                            titleId = 45;
+                            efirCount = 50;
                         }
 
                         if (efirCount)
@@ -376,13 +388,16 @@ public:
                         // CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", guid, 500054); //Tabard winter 2017
                         // CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','150')", guid, 38186);
                     }
-
                     sLog->outArena("За %u место в топе 2на2 получил %s(%u) %u эфира, побед %u, игр %u, рейтинг %u", teamNumber, name.c_str(), guid, efirCount, wins, games, rating);
+
                     teamNumber++;
                 }
                 while (teamResult->NextRow());
             }
         }
+
+        if (realmID != 43) // x100 only
+            return true;
 
         // by default:
         // 1 - top offlokie 0.1%
@@ -394,10 +409,11 @@ public:
         {
             if(QueryResult arenaWinner = CharacterDatabase.PQuery("SELECT ch.guid, ch.name, wins, games, rating FROM `character_brackets_info` cbi LEFT JOIN characters ch ON ch.guid = cbi.guid WHERE `bracket` = 1 and rating > 1000 AND wins > 49 ORDER BY rating DESC"))
             {
-                uint32 count = 1;
                 uint32 playerCount = arenaWinner->GetRowCount();
                 uint32 firstWinTypeCount = 3;
-                uint32 secondWinTypeCount = 6;
+                uint32 secondWinTypeCount  = uint32(playerCount * 0.005f);
+                if(secondWinTypeCount < 6)
+                    secondWinTypeCount = 6;
                 uint32 thirdWinTypeCount  = uint32(playerCount * 0.03f);
                 if(thirdWinTypeCount < 6)
                     thirdWinTypeCount = 6;
@@ -410,6 +426,7 @@ public:
 
                 sLog->outArena("Количество чаров %u первая %u, вторая %u, третья %u, четвертая %u, петая %u", playerCount, firstWinTypeCount, secondWinTypeCount, thirdWinTypeCount, fothWinTypeCount, fifthWinTypeCount);
 
+                uint32 teamNumber = 1;
                 do
                 {
                     Field* Fields = arenaWinner->Fetch();
@@ -420,74 +437,64 @@ public:
                     uint32 rating = Fields[4].GetUInt32();
 
                     //Season achivement Гладиатор / Gladiator
-                    if(count <= firstWinTypeCount)
+                    if (teamNumber >= firstWinTypeCount && teamNumber <= firstWinTypeCount)
                     {
-                        if(!debugOnly)
-                        {
-                            // CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", guid, 71954); //item
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','400')", guid, 38186); //item
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 420); // achivement
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 80); //Title
-                        }
+                        // CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", guid, 71954); //item
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','900')", guid, 38186); //item
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 8214); // achivement
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 343); //Title
 
-                        sLog->outArena("За %u место в топе 3на3(0.1) получил %s(%u) efir=400, achiv=420, title=80, побед %u, игр %u, рейтинг %u", count, name.c_str(), guid, wins, games, rating);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 2091);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 42);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 2092);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 43);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 2093);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 44);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 2090);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 45);
+                        sLog->outArena("За %u место в топе 3на3(0.001) получил %s(%u) achiv=2090, title=45, побед %u, игр %u, рейтинг %u", teamNumber, name.c_str(), guid, wins, games, rating);
                     }
-
-                    //Гладиатор / Gladiator
-                    if(count <= secondWinTypeCount)
+                    if (teamNumber > firstWinTypeCount && teamNumber <= secondWinTypeCount)
                     {
-                        if(!debugOnly && (count > firstWinTypeCount))
-                        {
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','600')", guid, 38186);
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 8666);
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 379);
-                            sLog->outArena("За %u место в топе 3на3(0.5) получил %s(%u) efir=600, achiv=8666, title=379, побед %u, игр %u, рейтинг %u", count, name.c_str(), guid, wins, games, rating);
-                        }
-
-                        if(!debugOnly)
-                        {
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 2091);
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 42);
-                        }
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','600')", guid, 38186); //item
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 2091);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 42);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 2092);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 43);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 2093);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 44);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 2090);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 45);
+                        sLog->outArena("За %u место в топе 3на3(0.005) получил %s(%u) achiv=2090, title=45, побед %u, игр %u, рейтинг %u", teamNumber, name.c_str(), guid, wins, games, rating);
                     }
-
-                    //Дуэлянт / Duelist
-                    if(count <= thirdWinTypeCount)
+                    if (teamNumber > secondWinTypeCount && teamNumber <= thirdWinTypeCount)
                     {
-                        if(!debugOnly)
-                        {
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 2092);
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 43);
-                        }
-
-                        sLog->outArena("За %u место в топе 3на3(3.0) получил %s(%u) achiv=2092, title=43, побед %u, игр %u, рейтинг %u", count, name.c_str(), guid, wins, games, rating);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','250')", guid, 38186); //item
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 2092);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 43);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 2093);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 44);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 2090);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 45);
+                        sLog->outArena("За %u место в топе 3на3(0.03) получил %s(%u) achiv=2090, title=45, побед %u, игр %u, рейтинг %u", teamNumber, name.c_str(), guid, wins, games, rating);
                     }
-
-                    //Фаворит / Rival
-                    if(count <= fothWinTypeCount)
+                    if (teamNumber > thirdWinTypeCount && teamNumber <= fothWinTypeCount)
                     {
-                        if(!debugOnly)
-                        {
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 2093);
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 44);
-                        }
-
-                        sLog->outArena("За %u место в топе 3на3(10.0) получил %s(%u) achiv=2093, title=44, побед %u, игр %u, рейтинг %u", count, name.c_str(), guid, wins, games, rating);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','100')", guid, 38186); //item
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 2093);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 44);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 2090);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 45);
+                        sLog->outArena("За %u место в топе 3на3(0.1) получил %s(%u) achiv=2090, title=45, побед %u, игр %u, рейтинг %u", teamNumber, name.c_str(), guid, wins, games, rating);
                     }
-
-                    //Претендент / Challenger
-                    if(count <= fifthWinTypeCount)
+                    if (teamNumber > fothWinTypeCount && teamNumber <= fifthWinTypeCount)
                     {
-                        if(!debugOnly)
-                        {
-                            // CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", guid, 500054); //Tabard winter 2017
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 2090);
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 45);
-                        }
-
-                        sLog->outArena("За %u место в топе 3на3(35.0) получил %s(%u) achiv=2090, title=45, побед %u, игр %u, рейтинг %u", count, name.c_str(), guid, wins, games, rating);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','75')", guid, 38186); //item
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, 2090);
+                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 45);
+                        sLog->outArena("За %u место в топе 3на3(0.1) получил %s(%u) achiv=2090, title=45, побед %u, игр %u, рейтинг %u", teamNumber, name.c_str(), guid, wins, games, rating);
                     }
-                    count++;
+                    teamNumber++;
                 }
                 while (arenaWinner->NextRow());
             }
@@ -602,43 +609,43 @@ public:
         // by default:
         // 1 - top offlokie 0.5%
         // RBG
-        {
-            if(QueryResult arenaWinner = CharacterDatabase.PQuery("SELECT ch.guid, ch.name, wins, games, rating, ch.race FROM `character_brackets_info` cbi LEFT JOIN characters ch ON ch.guid = cbi.guid WHERE `bracket` = 3 and rating > 1000 AND wins > 49 ORDER BY rating DESC"))
-            {
-                uint32 count = 1;
-                uint32 playerCount = arenaWinner->GetRowCount();
-                uint32 firstWinTypeCount = uint32(playerCount * 0.005f);
-                if(firstWinTypeCount < 10)
-                    firstWinTypeCount = 10;
+        // {
+            // if(QueryResult arenaWinner = CharacterDatabase.PQuery("SELECT ch.guid, ch.name, wins, games, rating, ch.race FROM `character_brackets_info` cbi LEFT JOIN characters ch ON ch.guid = cbi.guid WHERE `bracket` = 3 and rating > 1000 AND wins > 49 ORDER BY rating DESC"))
+            // {
+                // uint32 count = 1;
+                // uint32 playerCount = arenaWinner->GetRowCount();
+                // uint32 firstWinTypeCount = uint32(playerCount * 0.005f);
+                // if(firstWinTypeCount < 10)
+                    // firstWinTypeCount = 10;
 
-                do
-                {
-                    Field* Fields = arenaWinner->Fetch();
-                    uint64 guid = Fields[0].GetUInt64();
-                    std::string name = Fields[1].GetString();
-                    uint32 wins = Fields[2].GetUInt32();
-                    uint32 games = Fields[3].GetUInt32();
-                    uint32 rating = Fields[4].GetUInt32();
-                    uint32 team = Player::TeamForRace(Fields[5].GetUInt8());
-                    uint32 achivement = team == HORDE ? 6941 : 6942;
+                // do
+                // {
+                    // Field* Fields = arenaWinner->Fetch();
+                    // uint64 guid = Fields[0].GetUInt64();
+                    // std::string name = Fields[1].GetString();
+                    // uint32 wins = Fields[2].GetUInt32();
+                    // uint32 games = Fields[3].GetUInt32();
+                    // uint32 rating = Fields[4].GetUInt32();
+                    // uint32 team = Player::TeamForRace(Fields[5].GetUInt8());
+                    // uint32 achivement = team == HORDE ? 6941 : 6942;
 
-                    //Season achivement Герой Орды / Hero of the Horde / Hero of the Alliance / Герой Альянса
-                    if(count <= firstWinTypeCount)
-                    {
-                        if(!debugOnly)
-                        {
-                            // CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", guid, 500022); //Tabard winter 2016
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','250')", guid, 38186);
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, achivement);
-                        }
+                    // //Season achivement Герой Орды / Hero of the Horde / Hero of the Alliance / Герой Альянса
+                    // if(count <= firstWinTypeCount)
+                    // {
+                        // if(!debugOnly)
+                        // {
+                            // // CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", guid, 500022); //Tabard winter 2016
+                            // CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','250')", guid, 38186);
+                            // CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','1','%u','0')", guid, achivement);
+                        // }
 
-                        sLog->outArena("За %u место в топе РБГ(0.5) получил %s(%u) efir=250, achiv=%u побед %u, игр %u, рейтинг %u", count, name.c_str(), guid, achivement, wins, games, rating);
-                    }
-                    count++;
-                }
-                while (arenaWinner->NextRow());
-            }
-        }
+                        // sLog->outArena("За %u место в топе РБГ(0.5) получил %s(%u) efir=250, achiv=%u побед %u, игр %u, рейтинг %u", count, name.c_str(), guid, achivement, wins, games, rating);
+                    // }
+                    // count++;
+                // }
+                // while (arenaWinner->NextRow());
+            // }
+        // }
 
         if(!debugOnly)
             sWorld->SendWorldText(LANG_ARENA_CLOSESEASON_END);
