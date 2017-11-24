@@ -1627,7 +1627,7 @@ void Creature::UpdateDamagePhysical(WeaponAttackType attType)
     float total_value = GetModifierValue(unitMod, TOTAL_VALUE);
     float total_pct   = GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, SPELL_SCHOOL_MASK_NORMAL);
     SetModifierValue(unitMod, TOTAL_PCT, total_pct);
-    float dmg_multiplier = GetCreatureTemplate()->dmg_multiplier * _GetDamageModMulti(cInfo->rank, GetMapId());
+    float dmg_multiplier = GetCreatureTemplate()->dmg_multiplier * _GetDamageModMulti(GetCreatureTemplate()->rank, GetMapId());
     if (CreatureDifficultyStat const* _stats = GetCreatureDiffStat())
     {
         switch (GetMobDifficulty())
