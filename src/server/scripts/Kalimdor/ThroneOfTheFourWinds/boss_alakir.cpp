@@ -184,13 +184,10 @@ public:
         void Reset()
         {
             _Reset();
-
-            instance->DoSendNotifyToInstance("INSTANCE MESSAGE: Al'Akir _Reset");
-
             SetPhase(PHASE_ONE, true);
 
-            if (GameObject* Go = GetClosestGameObjectWithEntry(me, GO_FLOOR_ALAKIR, 1000.0f))
-                Go->SetDestructibleState(GO_DESTRUCTIBLE_REBUILDING);
+            //if (GameObject* Go = GetClosestGameObjectWithEntry(me, GO_FLOOR_ALAKIR, 1000.0f))
+                //Go->SetDestructibleState(GO_DESTRUCTIBLE_REBUILDING);
 
             Map* pMap = me->GetMap();
             Map::PlayerList const &PlayerList = pMap->GetPlayers();

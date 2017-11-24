@@ -18,6 +18,8 @@ enum SlipstreamEnums
     SPELL_SLIPSTREAM_BUFF                   = 87740,
     SPELL_SLIPSTREAM_PLAYER_VISUAL          = 85063,
     SPELL_SLEET_STORM_ULTIMATE              = 84644,
+
+    EVENT_SEARCH_PLAYERS                    = 1,
 };
 
 Position const SlipstreamPositions[8] =
@@ -32,101 +34,102 @@ Position const SlipstreamPositions[8] =
     {-245.653870f,  774.446472f,    197.507156f,    0},
 };
 
+class SlipStreamFilter
+{
+public:
+    bool operator()(WorldObject* unit)
+    {
+        if (!unit->ToPlayer())
+            return true;
+
+        if (unit->ToPlayer()->HasAura(SPELL_SLIPSTREAM_BUFF))
+            return true;
+
+        return false;
+    }
+};
+
+//47066
 class npc_slipstream_raid : public CreatureScript
 {
 public:
     npc_slipstream_raid() : CreatureScript("npc_slipstream_raid") { }
 
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new npc_slipstream_raidAI (creature);
-    }
-
     struct npc_slipstream_raidAI : public ScriptedAI
     {
-        npc_slipstream_raidAI(Creature* creature) : ScriptedAI(creature), isActive(true), linkedSlipstreamObject(NULL), linkedBoss(NULL), isUltimate(NULL)
+        npc_slipstream_raidAI(Creature* creature) : ScriptedAI(creature)
         {
-            creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetDisplayId(11686);
+        }
 
+        EventMap events;
+        uint8 SlipstreamPosition;
+
+        void Reset()
+        {
             SlipstreamPosition = 8;
 
             for (uint8 i = 0; i <= 7; i++)
+            {
                 if (me->GetDistance2d(SlipstreamPositions[i].GetPositionX(), SlipstreamPositions[i].GetPositionY()) < 10)
                 {
                     SlipstreamPosition = i;
                     break;
                 }
+            }
 
-                if (SlipstreamPosition >= DIR_ERROR)
-                    return;
-
-                SlipstreamPosition += (SlipstreamPosition == DIR_WEST_TO_SOUTH || SlipstreamPosition == DIR_NORTH_TO_WEST ||
-                    SlipstreamPosition == DIR_EAST_TO_NORTH || SlipstreamPosition == DIR_SOUTH_TO_EAST ) ? 1 : -1;
-
-                // Assign linked Boss and Slipstream to disabled slipstreams if the bosses casts Ultimate
-        }
-
-        uint8 SlipstreamPosition;
-        bool isUltimate;
-        bool isActive;
-
-        GameObject* linkedSlipstreamObject;
-        Unit* linkedBoss;
-
-        void MoveInLineOfSight(Unit* who)
-        {
-            if (SlipstreamPosition >= DIR_ERROR || who->GetTypeId() != TYPEID_PLAYER || !isActive)
+            if (SlipstreamPosition >= DIR_ERROR)
                 return;
 
-            if (who->GetExactDist(me) <= 5.0f)
-            {
-                me->AddAura(SPELL_SLIPSTREAM_BUFF, who);
-                me->AddAura(SPELL_SLIPSTREAM_PLAYER_VISUAL, who);
+            SlipstreamPosition += (SlipstreamPosition == DIR_WEST_TO_SOUTH || SlipstreamPosition == DIR_NORTH_TO_WEST ||
+                SlipstreamPosition == DIR_EAST_TO_NORTH || SlipstreamPosition == DIR_SOUTH_TO_EAST) ? 1 : -1;
 
-                // if we use the motion master only to relocate the player
-                // it will cause bugs
-                if (who->GetOrientation() != SlipstreamPositions[SlipstreamPosition].GetOrientation())
-                    who->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TURNING);
-
-                me->GetMap()->PlayerRelocation(who->ToPlayer(), SlipstreamPositions[SlipstreamPosition].GetPositionX(), SlipstreamPositions[SlipstreamPosition].GetPositionY(), SlipstreamPositions[SlipstreamPosition].GetPositionZ(), SlipstreamPositions[SlipstreamPosition].GetOrientation());
-
-                who->GetMotionMaster()->MoveJump(SlipstreamPositions[SlipstreamPosition].GetPositionX(), SlipstreamPositions[SlipstreamPosition].GetPositionY(), 198.458481f, 1, 6);
-            }
+            events.ScheduleEvent(EVENT_SEARCH_PLAYERS, 750);
         }
 
         void UpdateAI(uint32 diff)
         {
-            // The Slipstreams are Deactivated before each Ultimate ability
+            events.Update(diff);
 
-            if (linkedSlipstreamObject && linkedBoss)
+            while (uint32 eventId = events.ExecuteEvent())
             {
-
-            }
-            
-            else if (isUltimate)
-                isUltimate = false;	
-
-            if (!isUltimate != isActive)
-            {
-                if (isActive)
+                if (eventId == EVENT_SEARCH_PLAYERS)
                 {
-                    // Activate Slipstream
-                    if (linkedSlipstreamObject)
-                        linkedSlipstreamObject->SetPhaseMask(PHASEMASK_NORMAL, true);
-                }
+                    std::list<Player*>pllist;
+                    pllist.clear();
+                    GetPlayerListInGrid(pllist, me, 10.0f);
+                    if (!pllist.empty())
+                    {
+                        pllist.remove_if(SlipStreamFilter());
+                        if (!pllist.empty())
+                        {
+                            for (std::list<Player*>::const_iterator Itr = pllist.begin(); Itr != pllist.end(); ++Itr)
+                            {
+                                me->AddAura(SPELL_SLIPSTREAM_BUFF, *Itr);
+                                me->AddAura(SPELL_SLIPSTREAM_PLAYER_VISUAL, *Itr);
 
-                else
-                {
-                    // Deactivate Slipstream
-                    if (linkedSlipstreamObject)
-                        linkedSlipstreamObject->SetPhaseMask(2, true);
-                }
+                                if ((*Itr)->GetOrientation() != SlipstreamPositions[SlipstreamPosition].GetOrientation())
+                                    (*Itr)->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TURNING);
 
-                isActive = !isActive;
+                                me->GetMap()->PlayerRelocation((*Itr), SlipstreamPositions[SlipstreamPosition].GetPositionX(), SlipstreamPositions[SlipstreamPosition].GetPositionY(), SlipstreamPositions[SlipstreamPosition].GetPositionZ(), SlipstreamPositions[SlipstreamPosition].GetOrientation());
+                                (*Itr)->GetMotionMaster()->MoveJump(SlipstreamPositions[SlipstreamPosition].GetPositionX(), SlipstreamPositions[SlipstreamPosition].GetPositionY(), 198.458481f, 1, 6);
+                            }
+                        }
+                    }
+                    events.ScheduleEvent(EVENT_SEARCH_PLAYERS, 750);
+                }
             }
         }
     };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_slipstream_raidAI(creature);
+    }
 };
+
 
 void AddSC_throne_of_the_four_winds()
 {
