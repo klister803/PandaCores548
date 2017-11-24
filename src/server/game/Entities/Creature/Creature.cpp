@@ -1433,6 +1433,9 @@ void Creature::CalculateBaseDamage(const CreatureTemplate* cinfo, uint8 level)
 
 float Creature::_GetHealthMod(int32 Rank)
 {
+    if (GetMapId() == 1098)
+        return 0.8f;
+
     switch (Rank)                                           // define rates for each elite rank
     {
         case CREATURE_ELITE_NORMAL:
@@ -1496,6 +1499,9 @@ float Creature::_GetDamageMod(int32 Rank)
 
 float Creature::_GetDamageModMulti(int32 Rank)
 {
+    if (GetMapId() == 1098)
+        return 0.8f;
+
     switch (Rank)                                           // define rates for each elite rank
     {
         case CREATURE_ELITE_NORMAL:
