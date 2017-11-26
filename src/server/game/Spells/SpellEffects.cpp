@@ -2473,12 +2473,17 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
             {
                 SpellInfo const* _triggerInfo = sSpellMgr->GetSpellInfo(115129);
                 addhealth = CalculateMonkSpellDamage(m_caster, 7.0f / 1.1125f, 0.5f, 7);
-                Unit* target = m_caster->SelectNearbyTarget(m_caster, _triggerInfo->Effects[0]->CalcRadius());
+                uint32 curhealth = m_caster->GetHealth();
+                uint32 maxhealth = m_caster->GetMaxHealth();
 
-                if (target && m_caster->IsValidAttackTarget(target))
+                if ((curhealth + uint32(addhealth)) <= maxhealth)
                 {
-                    float bp = CalculatePct(addhealth, _triggerInfo->Effects[1]->BasePoints);
-                    m_caster->CastCustomSpell(target, _triggerInfo->Id, &bp, NULL, NULL, true);
+                    Unit* target = m_caster->SelectNearbyTarget(m_caster, _triggerInfo->Effects[0]->CalcRadius());
+                    if (target && m_caster->IsValidAttackTarget(target))
+                    {
+                        float bp = CalculatePct(addhealth, _triggerInfo->Effects[1]->BasePoints);
+                        m_caster->CastCustomSpell(target, _triggerInfo->Id, &bp, NULL, NULL, true);
+                    }
                 }
                 break;
             }
