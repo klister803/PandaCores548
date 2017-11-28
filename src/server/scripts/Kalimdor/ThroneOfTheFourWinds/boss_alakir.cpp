@@ -166,16 +166,12 @@ class boss_alakir : public CreatureScript
 public:
     boss_alakir() : CreatureScript("boss_alakir") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new boss_alakirAI(pCreature);
-    }
-
     struct boss_alakirAI : public BossAI
     {
         boss_alakirAI(Creature* pCreature) : BossAI(pCreature, DATA_ALAKIR)
         {
             instance = pCreature->GetInstanceScript();
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
             _phase = PHASE_NONE;
             me->ApplySpellImmune(0, IMMUNITY_EFFECT,    SPELL_EFFECT_KNOCK_BACK,    true);
             me->ApplySpellImmune(0, IMMUNITY_MECHANIC,  MECHANIC_GRIP,              true);
@@ -184,28 +180,14 @@ public:
         void Reset()
         {
             _Reset();
+            me->SetLootRecipient(NULL);
+            me->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 6.8f);
+            me->SetFloatValue(UNIT_FIELD_COMBATREACH, 68.0f);
             SetPhase(PHASE_ONE, true);
-
-            //if (GameObject* Go = GetClosestGameObjectWithEntry(me, GO_FLOOR_ALAKIR, 1000.0f))
-                //Go->SetDestructibleState(GO_DESTRUCTIBLE_REBUILDING);
-
-            Map* pMap = me->GetMap();
-            Map::PlayerList const &PlayerList = pMap->GetPlayers();
-
-            if (PlayerList.isEmpty())
-                return;
-
-            me->SetReactState(REACT_AGGRESSIVE);
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-
-            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)							
-            {
-                Player* plr = i->getSource();
-                if (plr->isAlive())
-                {
-                    plr->RemoveAurasDueToSpell(SPELL_EYE_OFTHE_STORM);
-                }
-            }
+            if (instance->GetBossState(DATA_CONCLAVE_OF_WIND) == DONE)
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_IMMUNE_TO_PC);
+            me->SetReactState(REACT_DEFENSIVE);
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EYE_OFTHE_STORM);
             SendWeather(WEATHER_STATE_FINE);
         }
 
@@ -237,26 +219,24 @@ public:
         {
             switch (_phase)
             {
-            case PHASE_ONE:
-                events.ScheduleEvent(EVENT_STATIC_SHOCK,        12000,  0, _phase);
-                events.ScheduleEvent(EVENT_ELECTROCUE,          20000,  0, _phase);
-                events.ScheduleEvent(EVENT_WIND_BURST,          3000,   0, _phase);
-                events.ScheduleEvent(EVENT_LIGHTNING_STRIKE,    18000,  0, _phase);
-                break;
-
-            case PHASE_TWO:
-                events.ScheduleEvent(EVENT_STATIC_SHOCK2,       8000,   0, _phase);
-                events.ScheduleEvent(EVENT_ACID_RAIN,           2000,   0, _phase);
-                events.ScheduleEvent(EVENT_ELECTROCUE2,         5000,   0, _phase);
-                break;
-
-            case PHASE_THREE:
-                events.ScheduleEvent(EVENT_WIND_BURST2,         25000,  0, _phase);
-                events.ScheduleEvent(EVENT_LIGHTING_ROD,        20000,  0, _phase);
-                events.ScheduleEvent(EVENT_LIGHTING,            25000,  0, _phase);
-                break;
-            default:
-                break;
+                case PHASE_ONE:
+                    events.ScheduleEvent(EVENT_STATIC_SHOCK,        12000,  0, _phase);
+                    events.ScheduleEvent(EVENT_ELECTROCUE,          20000,  0, _phase);
+                    events.ScheduleEvent(EVENT_WIND_BURST,          3000,   0, _phase);
+                    events.ScheduleEvent(EVENT_LIGHTNING_STRIKE,    18000,  0, _phase);
+                    break;
+                case PHASE_TWO:
+                    events.ScheduleEvent(EVENT_STATIC_SHOCK2,       8000,   0, _phase);
+                    events.ScheduleEvent(EVENT_ACID_RAIN,           2000,   0, _phase);
+                    events.ScheduleEvent(EVENT_ELECTROCUE2,         5000,   0, _phase);
+                    break;
+                case PHASE_THREE:
+                    events.ScheduleEvent(EVENT_WIND_BURST2,         25000,  0, _phase);
+                    events.ScheduleEvent(EVENT_LIGHTING_ROD,        20000,  0, _phase);
+                    events.ScheduleEvent(EVENT_LIGHTING,            25000,  0, _phase);
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -270,31 +250,21 @@ public:
         void StartPhaseThree()
         {
             SetPhase(PHASE_THREE, true);
+            if (GameObject* floor = me->GetMap()->GetGameObject(instance->GetData64(GO_ALAKIR_PLATFORM)))
+                floor->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_DESTROYED);
 
-            GameObject* floor = me->FindNearestGameObject(GO_FLOOR_ALAKIR, 200);
-            if (floor)
-                floor->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_DESTROYED);	
-
-            me->AddAura(SPELL_RELENTLESS_STORM, me);	
-
+            me->AddAura(SPELL_RELENTLESS_STORM, me);
+            me->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 12.8f);
+            me->SetFloatValue(UNIT_FIELD_COMBATREACH, 136.0f);
             SendWeather(WEATHER_STATE_FINE);
-
             SendLightOverride(DARK, 5000);
 
-            Map* pMap = me->GetMap();
-            Map::PlayerList const &PlayerList = pMap->GetPlayers();
-
-            if (PlayerList.isEmpty())
-                return;
-
-            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)							
-            {
-                Player* plr = i->getSource();
-                if (plr->isAlive())
-                {
-                    plr->CastSpell(plr, SPELL_EYE_OFTHE_STORM, false);
-                }
-            }
+            Map::PlayerList const &PlayerList = me->GetMap()->GetPlayers();
+            if (!PlayerList.isEmpty())
+                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                    if (Player* plr = i->getSource())
+                        if (plr->isAlive())
+                            plr->CastSpell(plr, SPELL_EYE_OFTHE_STORM);
         }
 
         void EnterCombat(Unit* /*who*/)
@@ -302,15 +272,26 @@ public:
             Talk(SAY_AGGRO);
             _EnterCombat();
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
             events.SetPhase(PHASE_ONE);
             events.ScheduleEvent(EVENT_BERSERK, 10 * MINUTE * IN_MILLISECONDS);
         }
 
         void JustDied(Unit* killer)
         {
+            me->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
             _JustDied();
-            me->SummonGameObject(GO_HEART_OF_THE_WIND, 25.359699f, 777.276733f, 200.264008f, 0, 0, 0, 0, 0, 100000);
+
+            Map::PlayerList const &PlayerList = me->GetMap()->GetPlayers();
+            if (!PlayerList.isEmpty())
+                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                    if (Player* plr = i->getSource())
+                        if (plr->isAlive())
+                            plr->CastSpell(plr, SPELL_TFW_SERENITY, true);
+
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            me->setFaction(35);
+            me->SummonGameObject(me->GetMap()->IsHeroic() ? GO_HEART_OF_THE_WIND_H : GO_HEART_OF_THE_WIND, 25.359699f, 777.276733f, 200.264008f, 0, 0, 0, 0, 0, 604800);
+            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EYE_OFTHE_STORM);
         }
 
         void DamageTaken(Unit* /*attacker*/, uint32& damage)
@@ -336,79 +317,64 @@ public:
             {
                 switch (eventId)
                 {
-                /*case EVENT_BERSERK:
-                    DoCast(me, SPELL_BERSERK);
-                    break;*/
-                case EVENT_WIND_BURST:
-                    Talk(SAY_WIND_BURST);
-                    if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM))
-                    {
-                        DoCast(pTarget, SPELL_BLAST_OF_AIR);
-                        DoCast(pTarget, RAID_MODE(SPELL_WIND_BURST_N_10, SPELL_WIND_BURST_H_10, SPELL_WIND_BURST_N_25, SPELL_WIND_BURST_H_25));
-                    }
-                    events.ScheduleEvent(EVENT_WIND_BURST, 25000, 0, PHASE_ONE);
-                    break;
-
-                case EVENT_LIGHTNING_STRIKE:
-                    DoCastVictim(RAID_MODE(SPELL_LIGHTNING_STRIKE_N_10, SPELL_LIGHTNING_STRIKE_H_10, SPELL_LIGHTNING_STRIKE_N_25, SPELL_LIGHTNING_STRIKE_H_25));
-                    events.ScheduleEvent(EVENT_LIGHTNING_STRIKE, 20000, 0, PHASE_ONE);
-                    break;
-
-                case EVENT_ELECTROCUE:
-                    if (Unit* pTarget = me->getVictim())
-                        if (me->IsWithinDistInMap(pTarget, 5.0f))
-                            DoCast(me->getVictim(), SPELL_ELECTROCUE);
-                    events.ScheduleEvent(EVENT_ELECTROCUE, 17000, 0, PHASE_ONE);
-                    break;
-
-                case EVENT_STATIC_SHOCK:
-                    DoCast(me->getVictim(), SPELL_STATIC_SHOCK);
-                    events.ScheduleEvent(EVENT_STATIC_SHOCK, 17000, 0, PHASE_ONE);
-                    break;
-
-                case EVENT_STATIC_SHOCK2:
-                    DoCast(me->getVictim(), SPELL_STATIC_SHOCK);
-                    events.ScheduleEvent(EVENT_STATIC_SHOCK2, 17000, 0, PHASE_TWO);
-                    break;
-
-                case EVENT_ELECTROCUE2:
-                    if (Unit* pTarget = me->getVictim())
-                        if (me->IsWithinDistInMap(pTarget, 5.0f))
-                            DoCast(me->getVictim(), SPELL_ELECTROCUE);
-                    events.ScheduleEvent(EVENT_ELECTROCUE2, 17000, 0, PHASE_TWO);
-                    break;
-
-                case EVENT_ACID_RAIN:
-                    DoCastAOE(RAID_MODE(SPELL_ACID_RAIN_N_10, SPELL_ACID_RAIN_H_10, SPELL_ACID_RAIN_N_25, SPELL_ACID_RAIN_H_25));
-                    events.ScheduleEvent(EVENT_ACID_RAIN, 15000, 0, PHASE_TWO);
-                    break;
-
-                case EVENT_WIND_BURST2:
-                    Talk(SAY_WIND_BURST);
-                    if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM))
-                    {
-                        DoCast(pTarget, RAID_MODE(SPELL_WIND_BURST2_N_10, SPELL_WIND_BURST2_H_10, SPELL_WIND_BURST2_N_25, SPELL_WIND_BURST2_H_25));
-                    }
-                    events.ScheduleEvent(EVENT_WIND_BURST2, 5000, 0, PHASE_THREE);
-                    break;
-
-                case EVENT_LIGHTING_ROD:
-                    if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM))
-                    {
-                        DoCast(pTarget, RAID_MODE(SPELL_LIGHTING_ROD_N_10, SPELL_LIGHTING_ROD_H_10, SPELL_LIGHTING_ROD_N_25, SPELL_LIGHTING_ROD_H_25));
-                    }
-                    events.ScheduleEvent(EVENT_LIGHTING_ROD, 15000, 0, PHASE_THREE);
-                    break;
-
-                case EVENT_LIGHTING:
-                    if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM))
-                    {
-                        DoCast(pTarget, RAID_MODE(SPELL_LIGHTNING_N_10, SPELL_LIGHTNING_H_10, SPELL_LIGHTNING_N_25, SPELL_LIGHTNING_H_25));
-                    }
-                    events.ScheduleEvent(EVENT_LIGHTING, 20000, 0, PHASE_THREE);
-                    break;
-                default:
-                    break;
+                    /*case EVENT_BERSERK:
+                        DoCast(me, SPELL_BERSERK);
+                        break;*/
+                    case EVENT_WIND_BURST:
+                        Talk(SAY_WIND_BURST);
+                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM))
+                        {
+                            DoCast(pTarget, SPELL_BLAST_OF_AIR);
+                            DoCast(pTarget, RAID_MODE(SPELL_WIND_BURST_N_10, SPELL_WIND_BURST_H_10, SPELL_WIND_BURST_N_25, SPELL_WIND_BURST_H_25));
+                        }
+                        events.ScheduleEvent(EVENT_WIND_BURST, 25000, 0, PHASE_ONE);
+                        break;
+                    case EVENT_LIGHTNING_STRIKE:
+                        DoCastVictim(RAID_MODE(SPELL_LIGHTNING_STRIKE_N_10, SPELL_LIGHTNING_STRIKE_H_10, SPELL_LIGHTNING_STRIKE_N_25, SPELL_LIGHTNING_STRIKE_H_25));
+                        events.ScheduleEvent(EVENT_LIGHTNING_STRIKE, 20000, 0, PHASE_ONE);
+                        break;
+                    case EVENT_ELECTROCUE:
+                        if (Unit* pTarget = me->getVictim())
+                            if (me->IsWithinDistInMap(pTarget, 5.0f))
+                                DoCast(me->getVictim(), SPELL_ELECTROCUE);
+                        events.ScheduleEvent(EVENT_ELECTROCUE, 17000, 0, PHASE_ONE);
+                        break;
+                    case EVENT_STATIC_SHOCK:
+                        DoCast(me->getVictim(), SPELL_STATIC_SHOCK);
+                        events.ScheduleEvent(EVENT_STATIC_SHOCK, 17000, 0, PHASE_ONE);
+                        break;
+                    case EVENT_STATIC_SHOCK2:
+                        DoCast(me->getVictim(), SPELL_STATIC_SHOCK);
+                        events.ScheduleEvent(EVENT_STATIC_SHOCK2, 17000, 0, PHASE_TWO);
+                        break;
+                    case EVENT_ELECTROCUE2:
+                        if (Unit* pTarget = me->getVictim())
+                            if (me->IsWithinDistInMap(pTarget, 5.0f))
+                                DoCast(me->getVictim(), SPELL_ELECTROCUE);
+                        events.ScheduleEvent(EVENT_ELECTROCUE2, 17000, 0, PHASE_TWO);
+                        break;
+                    case EVENT_ACID_RAIN:
+                        DoCastAOE(RAID_MODE(SPELL_ACID_RAIN_N_10, SPELL_ACID_RAIN_H_10, SPELL_ACID_RAIN_N_25, SPELL_ACID_RAIN_H_25));
+                        events.ScheduleEvent(EVENT_ACID_RAIN, 15000, 0, PHASE_TWO);
+                        break;
+                    case EVENT_WIND_BURST2:
+                        Talk(SAY_WIND_BURST);
+                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM))
+                            DoCast(pTarget, RAID_MODE(SPELL_WIND_BURST2_N_10, SPELL_WIND_BURST2_H_10, SPELL_WIND_BURST2_N_25, SPELL_WIND_BURST2_H_25));
+                        events.ScheduleEvent(EVENT_WIND_BURST2, 5000, 0, PHASE_THREE);
+                        break;
+                    case EVENT_LIGHTING_ROD:
+                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM))
+                            DoCast(pTarget, RAID_MODE(SPELL_LIGHTING_ROD_N_10, SPELL_LIGHTING_ROD_H_10, SPELL_LIGHTING_ROD_N_25, SPELL_LIGHTING_ROD_H_25));
+                        events.ScheduleEvent(EVENT_LIGHTING_ROD, 15000, 0, PHASE_THREE);
+                        break;
+                    case EVENT_LIGHTING:
+                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM))
+                            DoCast(pTarget, RAID_MODE(SPELL_LIGHTNING_N_10, SPELL_LIGHTNING_H_10, SPELL_LIGHTNING_N_25, SPELL_LIGHTNING_H_25));
+                        events.ScheduleEvent(EVENT_LIGHTING, 20000, 0, PHASE_THREE);
+                        break;
+                    default:
+                        break;
                 }
             }
             DoMeleeAttackIfReady();
@@ -447,6 +413,11 @@ public:
         uint8 _phase;
         uint32 phase;
     };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new boss_alakirAI(pCreature);
+    }
 };
 
 class npc_stormling : public CreatureScript

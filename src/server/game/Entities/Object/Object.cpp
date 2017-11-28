@@ -1940,6 +1940,18 @@ bool WorldObject::IsWithinLOSInMap(const WorldObject* obj) const
     if (!IsInMap(obj))
         return false;
 
+    //Throne of the Four Wind, hack fix for Alakir
+    if (GetMapId() == 754)
+    {
+        if (Creature const* victim = obj->ToCreature())
+            if (victim->GetEntry() == 46753)
+                return true;
+
+        if (Creature const* attacker = ToCreature())
+            if (attacker->GetEntry() == 46753)
+                return true;
+    }
+
     float ox, oy, oz;
     obj->GetPosition(ox, oy, oz);
     return IsWithinLOS(ox, oy, oz);

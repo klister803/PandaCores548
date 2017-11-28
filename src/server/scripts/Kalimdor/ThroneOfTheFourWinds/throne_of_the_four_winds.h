@@ -3,16 +3,14 @@
 
 enum Data
 {
-    DATA_CONCLAVE_OF_WIND_EVENT,
-    DATA_ALAKIR_EVENT,
-};
-
-enum Data64
-{
-    DATA_ANSHAL,
-    DATA_NEZIR,
-    DATA_ROHASH,
+    DATA_CONCLAVE_OF_WIND,
     DATA_ALAKIR,
+    DATA_MAX_BOSSES,
+
+    DATA_IS_CONCLAVE_DONE,
+    DATA_CONCLAVE_RESET,
+    DATA_CONCLAVE_DONE,
+    DATA_HEAL_DONE,
 };
 
 enum CreatureIds
@@ -29,6 +27,7 @@ enum CreatureIds
     NPC_RAVENOUS_CREEPER_TRIGGER    = 45813,
     NPC_ICE_PATCH                   = 46186,
     NPC_CYCLONE                     = 46419,
+    NPC_SPLIP_STREAM                = 47066,
 };
 
 enum InstanceSpells
@@ -40,8 +39,9 @@ enum InstanceSpells
 
 enum ObjectIds
 {
-    GO_FLOOR_ALAKIR                     = 207737,
+    GO_ALAKIR_PLATFORM                  = 207737,
     GO_HEART_OF_THE_WIND				= 207891,
+    GO_HEART_OF_THE_WIND_H              = 207892,
 
     GOB_WIND_DRAFTEFFECT_CENTER         = 207922,
 
@@ -62,6 +62,12 @@ enum ObjectIds
 enum areatrig
 {
     AREA_TO4W = 5638,
+};
+
+enum InstanceSpell
+{
+    SPELL_TFW_SERENITY                  = 89750,
+    SPELL_ALAKIR_SLIPSTREAM             = 87713,
 };
 
 #endif

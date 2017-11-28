@@ -59,9 +59,7 @@ public:
     {
         npc_slipstream_raidAI(Creature* creature) : ScriptedAI(creature)
         {
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
             me->SetReactState(REACT_PASSIVE);
-            me->SetDisplayId(11686);
         }
 
         EventMap events;
@@ -83,10 +81,19 @@ public:
             if (SlipstreamPosition >= DIR_ERROR)
                 return;
 
+            me->SetDisplayId(11686);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
+
             SlipstreamPosition += (SlipstreamPosition == DIR_WEST_TO_SOUTH || SlipstreamPosition == DIR_NORTH_TO_WEST ||
                 SlipstreamPosition == DIR_EAST_TO_NORTH || SlipstreamPosition == DIR_SOUTH_TO_EAST) ? 1 : -1;
 
             events.ScheduleEvent(EVENT_SEARCH_PLAYERS, 750);
+        }
+
+        void OnSpellClick(Unit* clicker)
+        {
+            if (me->HasAura(SPELL_ALAKIR_SLIPSTREAM))
+                clicker->NearTeleportTo(-108.43f, 823.46f, 191.0190f, 6.1496f);
         }
 
         void UpdateAI(uint32 diff)
