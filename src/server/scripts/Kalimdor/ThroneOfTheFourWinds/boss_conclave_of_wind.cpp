@@ -1036,7 +1036,7 @@ public:
         {
             if (GetCaster())
                 if (Creature* caster = GetCaster()->ToCreature())
-                    caster->ToCreature()->AI()->SetData(DATA_HEAL_DONE, 0);
+                    caster->AI()->SetData(DATA_HEAL_DONE, 0);
         }
 
         void Register()
