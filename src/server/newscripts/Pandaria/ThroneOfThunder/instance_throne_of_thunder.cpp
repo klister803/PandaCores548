@@ -542,7 +542,7 @@ public:
                 tortosex2doorGuid = go->GetGUID();
                 break;
             case GO_MEGAERA_EX_DOOR:
-                AddDoor(go, true);
+                //AddDoor(go, true);
                 megaeraexdoorGuid = go->GetGUID();
                 break;
             case GO_JI_KUN_FEATHER:

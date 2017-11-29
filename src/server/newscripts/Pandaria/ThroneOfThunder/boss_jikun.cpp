@@ -161,7 +161,7 @@ public:
             _EnterCombat();
             checkmelee = 4000;
             events.ScheduleEvent(EVENT_ACTIVE_NEST, 1000);
-            events.ScheduleEvent(EVENT_CHECK_PROGRESS, 4000);
+            //events.ScheduleEvent(EVENT_CHECK_PROGRESS, 4000);
             events.ScheduleEvent(EVENT_CAW, 14000);
             events.ScheduleEvent(EVENT_TALON_RAKE, 20000);
             events.ScheduleEvent(EVENT_QUILLS, 42000);
