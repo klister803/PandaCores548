@@ -315,6 +315,10 @@ class boss_deathbringer_saurfang : public CreatureScript
             {
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MARK_OF_THE_FALLEN_CHAMPION);
                 instance->DoRemoveAurasDueToSpellOnPlayers(72260);
+
+                //Gunship Battle, auto complete
+                instance->DoCompleteAchievement(RAID_MODE(4536, 4612, 4536, 4612));
+                instance->DoCastSpellOnPlayers(72959);
             }
 
             void AttackStart(Unit* victim)
