@@ -1027,6 +1027,12 @@ class boss_toxitron : public CreatureScript
                     me->Kill(magmatron);
                 if (Creature* omnotroncontroller = Unit::GetCreature(*me, instance->GetData64(DATA_OMNOTRON)))
                     omnotroncontroller->Kill(omnotroncontroller);
+
+                Map::PlayerList const& players = me->GetMap()->GetPlayers();
+                if (!players.isEmpty())
+                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                        if (Player* player = itr->getSource())
+                            player->KilledMonsterCredit(me->GetEntry(), true);
             }
 
             void UpdateAI(uint32 diff)
