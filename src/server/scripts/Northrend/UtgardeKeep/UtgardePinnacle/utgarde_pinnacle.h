@@ -47,18 +47,26 @@ enum Data64
 
 enum eCreatures
 {
-    BOSS_SVALA_SORROWGRAVE   = 26668,
-    BOSS_GORTOK_PALEHOOF     = 26687,
-    BOSS_SKADI_RUTHLESS      = 26693,
-    BOSS_KING_YMIRON         = 26861,
-    MOB_FRENZIED_WORGEN      = 26683,
-    MOB_RAVENOUS_FURBOLG     = 26684,
-    MOB_MASSIVE_JORMUNGAR    = 26685,
-    MOB_FEROCIOUS_RHINO      = 26686,
-    MOB_SVALA                = 29281,
-    MOB_PALEHOOF_ORB         = 26688,
-    NPC_RITUAL_TARGET        = 27327,
-    NPC_RITUAL_CHANNELER     = 27281,
+    BOSS_SVALA_SORROWGRAVE     = 26668,
+    BOSS_GORTOK_PALEHOOF       = 26687,
+    BOSS_SKADI_RUTHLESS        = 26693,
+    BOSS_KING_YMIRON           = 26861,
+    MOB_FRENZIED_WORGEN        = 26683,
+    MOB_RAVENOUS_FURBOLG       = 26684,
+    MOB_MASSIVE_JORMUNGAR      = 26685,
+    MOB_FEROCIOUS_RHINO        = 26686,
+    MOB_SVALA                  = 29281,
+    MOB_PALEHOOF_ORB           = 26688,
+    NPC_RITUAL_TARGET          = 27327,
+    NPC_RITUAL_CHANNELER       = 27281,
+    CREATURE_ARTHAS            = 29280, // Image of Arthas
+    CREATURE_SVALA_SORROWGRAVE = 26668, // Svala after transformation
+    CREATURE_SVALA             = 29281, // Svala before transformation
+    CREATURE_RITUAL_CHANNELER  = 27281,
+    CREATURE_SPECTATOR         = 26667,
+    CREATURE_RITUAL_TARGET     = 27327,
+    CREATURE_FLAME_BRAZIER     = 27273,
+    CREATURE_SCOURGE_HULK      = 26555,
 };
 
 enum SomeData

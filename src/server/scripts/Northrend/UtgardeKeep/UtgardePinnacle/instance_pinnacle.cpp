@@ -191,22 +191,24 @@ public:
             if (!instance->IsHeroic())
                 return;
 
-            if (!killer->ToCreature())
+            if (creature->GetEntry() != CREATURE_SCOURGE_HULK)
                 return;
 
-            //hack fix incredible hulk
-            if (creature->GetEntry() == 26555 && killer->ToCreature()->GetEntry() == 29281)
+            if (Creature* _killer = killer->ToCreature())
             {
-                Map::PlayerList const &PlayerList = instance->GetPlayers();
+                if (_killer->GetEntry() == CREATURE_SVALA_SORROWGRAVE)
+                {
+                    Map::PlayerList const &PlayerList = instance->GetPlayers();
 
-                if (PlayerList.isEmpty())
-                    return;
+                    if (PlayerList.isEmpty())
+                        return;
 
-                for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
-                    if (Player* player = Itr->getSource())
-                        if (AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(2043))
-                            if (!player->HasAchieved(2043))
-                                player->CompletedAchievement(achievementEntry);
+                    for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+                        if (Player* player = Itr->getSource())
+                            if (AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(2043))
+                                if (!player->HasAchieved(2043))
+                                    player->CompletedAchievement(achievementEntry);
+                }
             }
         }
 

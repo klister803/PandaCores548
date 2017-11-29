@@ -73,18 +73,6 @@ enum Yells
     SAY_DIALOG_OF_ARTHAS_2 = 1
 };
 
-enum Creatures
-{
-    CREATURE_ARTHAS = 29280, // Image of Arthas
-    CREATURE_SVALA_SORROWGRAVE = 26668, // Svala after transformation
-    CREATURE_SVALA = 29281, // Svala before transformation
-    CREATURE_RITUAL_CHANNELER = 27281,
-    CREATURE_SPECTATOR = 26667,
-    CREATURE_RITUAL_TARGET = 27327,
-    CREATURE_FLAME_BRAZIER = 27273,
-    CREATURE_SCOURGE_HULK = 26555
-};
-
 enum Objects
 {
     OBJECT_UTGARDE_MIRROR = 191745
@@ -585,7 +573,7 @@ public:
             if (!UpdateVictim())
                 return;
 
-            if (mightyBlow <= diff)
+            /*if (mightyBlow <= diff)
             {
                 if (Unit* victim = me->getVictim())
                     if (!victim->HasUnitState(UNIT_STATE_STUNNED))    // Prevent knocking back a ritual player
@@ -601,7 +589,7 @@ public:
                 volatileInfection = urand(13000, 17000);
             }
             else
-                volatileInfection -= diff;
+                volatileInfection -= diff;*/
 
             DoMeleeAttackIfReady();
         }
