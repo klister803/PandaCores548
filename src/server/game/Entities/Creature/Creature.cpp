@@ -293,7 +293,7 @@ void Creature::RemoveCorpse(bool setSpawnTime)
     m_corpseRemoveTime = time(NULL);
     setDeathState(DEAD);
     RemoveAllAuras();
-    //UpdateObjectVisibility();
+    UpdateObjectVisibility();
     loot.clear();
     uint32 respawnDelay = m_respawnDelay;
     if (IsAIEnabled)
@@ -1958,15 +1958,16 @@ void Creature::Respawn(bool force, uint32 timer)
             setDeathState(CORPSE);
     }
 
-    if (getDeathState() == CORPSE)
+    RemoveCorpse(false);
+    /*if (getDeathState() == CORPSE)
     {
         RemoveCorpse(false);
 
         if (timer)
-            m_respawnTime = time(NULL) + timer;
+            //m_respawnTime = time(NULL) + timer;
 
         return;
-    }
+    }*/
 
     m_despawn = false;
 
