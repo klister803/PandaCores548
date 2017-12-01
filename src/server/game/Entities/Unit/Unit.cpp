@@ -21777,6 +21777,14 @@ void Unit::Kill(Unit* victim, bool durabilityLoss, SpellInfo const* spellProto)
 
         if (!creature->isPet())
         {
+            std::list<HostileReference*>& threatlist = creature->getThreatManager().getThreatList();
+            for (std::list<HostileReference*>::iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
+            {
+                if (Unit* unit = Unit::GetUnit(*creature, (*itr)->getUnitGuid()))
+                    if (unit->IsPlayer())
+                        if (unit->m_attackers.empty())
+                            unit->SetCombatTimer(0);
+            }
             creature->DeleteThreatList();
             CreatureTemplate const* cInfo = creature->GetCreatureTemplate();
             if (cInfo && (cInfo->lootid || cInfo->maxgold > 0))
@@ -21817,6 +21825,9 @@ void Unit::Kill(Unit* victim, bool durabilityLoss, SpellInfo const* spellProto)
             }
         }
     }
+
+    if (m_attackers.empty())
+        SetCombatTimer(0);
 
     // outdoor pvp things, do these after setting the death state, else the player activity notify won't work... doh...
     // handle player kill only if not suicide (spirit of redemption for example)
