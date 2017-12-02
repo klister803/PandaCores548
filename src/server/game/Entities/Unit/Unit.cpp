@@ -21781,7 +21781,7 @@ void Unit::Kill(Unit* victim, bool durabilityLoss, SpellInfo const* spellProto)
             for (std::list<HostileReference*>::iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
             {
                 if (Unit* unit = Unit::GetUnit(*creature, (*itr)->getUnitGuid()))
-                    if (unit->IsPlayer())
+                    if (unit->ToPlayer())
                         if (unit->m_attackers.empty())
                             unit->SetCombatTimer(0);
             }
