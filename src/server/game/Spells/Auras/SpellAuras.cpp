@@ -1126,9 +1126,10 @@ void Aura::Update(uint32 diff, Unit* caster)
                     }
                     else
                     {
-                        int32 reqPower = power.powerPerSecond;
+                        int32 reqPower = m_spellInfo->CalcPowerCost(caster, GetSpellInfo()->GetSchoolMask());
+                        /*int32 reqPower = power.powerPerSecond;
                         if (power.powerPerSecondPercentage)
-                            reqPower += caster->CountPctFromMaxPower(power.powerPerSecondPercentage, powertype);
+                            reqPower += caster->CountPctFromMaxPower(power.powerPerSecondPercentage, powertype);*/
 
                         if (reqPower <= caster->GetPower(powertype))
                             caster->ModifyPower(powertype, -1 * reqPower, true);
