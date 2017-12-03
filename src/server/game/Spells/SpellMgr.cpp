@@ -4098,6 +4098,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 34487:  // Master Marksman
                 case 76659:  // Mastery: Wild Quiver
                 case 49028:  // Dancing Rune Weapon
+                case 77222:  // Mastery: Elemental Overload
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_PROC_ONLY_ON_CAST;
                     break;
                 case 101545: // Flying Serpent Kick
