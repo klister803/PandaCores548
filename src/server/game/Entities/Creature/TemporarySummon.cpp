@@ -480,6 +480,8 @@ bool ForcedUnsummonDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 
 void TempSummon::RemoveFromWorld()
 {
+    onUnload = true;
+
     if (!IsInWorld())
         return;
 
@@ -524,7 +526,9 @@ void Minion::RemoveFromWorld()
     if (!IsInWorld() || !m_owner || !this)
         return;
 
-    m_owner->SetMinion(this, false);
+    if (Unit* owner = GetSummoner())
+        owner->SetMinion(this, false);
+
     TempSummon::RemoveFromWorld();
 }
 
