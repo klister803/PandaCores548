@@ -597,7 +597,7 @@ public:
                         }
                         else if (pllist.size() == 3)
                         {
-                            std::list<Player*>::const_iterator Itr;
+                            std::list<Player*>::const_iterator Itr = pllist.begin();
                             std::advance(Itr, urand(1, pllist.size() - 1));
                             for (uint8 n = 0; n < 3; n++)
                                 if (Creature* colorblindeye = me->SummonCreature(colorblindeyelist[n], Durumucenterpos))
