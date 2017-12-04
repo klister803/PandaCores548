@@ -4620,6 +4620,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 44461: // Living Bomb
                     spellInfo->CustomMaxAffectedTargets = 3; //used if empty on dbc SpellTargetRestrictionsEntry
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
+                    spellInfo->AttributesEx2 &= ~SPELL_ATTR2_CAN_TARGET_DEAD;
                     break;
                 case 114205: // Demoralizing Banner
                 case 140130: // Summon Intro Scene (hack scene)
