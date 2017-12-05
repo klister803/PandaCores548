@@ -99,6 +99,7 @@ class Aura
         static Aura* Create(SpellInfo const* spellproto, uint32 effMask, WorldObject* owner, Unit* caster, float* baseAmount, Item* castItem, uint64 casterGUID, uint16 stackAmount = 0, Spell* spell = NULL);
         explicit Aura(SpellInfo const* spellproto, WorldObject* owner, Unit* caster, Item* castItem, uint64 casterGUID, uint16 stackAmount = 0);
         void _InitEffects(uint32 effMask, Unit* caster, float *baseAmount);
+        void _InitEffect(uint8 effIndex, Unit* caster, float *baseAmount);
         virtual ~Aura();
         static uint32 CalculateEffMaskFromDummy(Unit* caster, WorldObject* target, uint32 effMask, SpellInfo const* spellproto);
         void CalculateDurationFromDummy(int32 &duration);

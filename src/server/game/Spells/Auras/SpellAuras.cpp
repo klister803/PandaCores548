@@ -755,6 +755,11 @@ void Aura::_InitEffects(uint32 effMask, Unit* caster, float *baseAmount)
     }
 }
 
+void Aura::_InitEffect(uint8 effIndex, Unit* caster, float *baseAmount)
+{
+    m_effects[effIndex] = new AuraEffect(this, effIndex, baseAmount ? baseAmount + effIndex : NULL, caster);
+}
+
 Aura::~Aura()
 {
     // unload scripts

@@ -3813,7 +3813,15 @@ Aura* Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint3
             for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
             {
                 if (!foundAura->HasEffect(i))
-                    continue;
+                {
+                    if (effMask & (1 << i))
+                    {
+                        float* baseBP = const_cast<float*>(&(foundAura->GetSpellInfo()->Effects[i]->BasePoints));
+                        foundAura->_InitEffect(i, caster, baseBP);
+                    }
+                    else
+                        continue;
+                }
 
                 int bp;
                 if (baseAmount)
