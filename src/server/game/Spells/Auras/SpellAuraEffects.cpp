@@ -1066,10 +1066,10 @@ float AuraEffect::CalculateAmount(Unit* caster, float &m_aura_amount)
 
                     // In feral spec : 0.484 * $AP * cp
                     if (caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_DRUID_CAT)
-                        amount += int32(cp * AP * 0.484f);
+                        amount += floor(cp * AP * 0.5808f);
                     // In other spec : 0.387 * $AP * cp
                     else
-                        amount += int32(cp * AP * 0.387f);
+                        amount += floor(cp * AP * 0.387f);
 
                     amount /= int32(m_spellInfo->GetMaxDuration() / GetBase()->GetEffect(0)->GetAmplitude());
                     break;
