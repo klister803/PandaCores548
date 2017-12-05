@@ -4584,10 +4584,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 116: // Frost Bolt
                     spellInfo->PreventionType = SPELL_PREVENTION_TYPE_SILENCE;
                     break;
-                case 102793:
-                    spellInfo->Effects[EFFECT_0]->Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[EFFECT_0]->ApplyAuraName = SPELL_AURA_MOD_DECREASE_SPEED;
-                    break;
                 case 108201:// Desecrated Ground
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_FEARED;
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_STUNNED;
