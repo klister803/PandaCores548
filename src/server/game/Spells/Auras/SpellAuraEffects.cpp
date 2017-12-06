@@ -2926,7 +2926,7 @@ void AuraEffect::HandleModStealth(AuraApplication const* aurApp, uint8 mode, boo
         switch (m_spellInfo->Id)
         {
             case 58984:  // Shadowmeld
-            case 119032: // Spectral Guise
+            // case 119032: // Spectral Guise (not sure this is right, wrongly informed)
                 target->CombatStop();
                 break;
             default:
