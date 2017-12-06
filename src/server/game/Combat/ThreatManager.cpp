@@ -318,6 +318,9 @@ HostileReference* ThreatContainer::selectNextVictim(Creature* attacker, HostileR
     bool found = false;
     bool noPriorityTargetFound = false;
 
+    if (iThreatList.empty())
+        return NULL;
+
     std::list<HostileReference*>::const_iterator lastRef = iThreatList.end();
     --lastRef;
 
