@@ -222,7 +222,7 @@ public:
                 case PHASE_ONE:
                     events.ScheduleEvent(EVENT_STATIC_SHOCK,        12000,  0, _phase);
                     events.ScheduleEvent(EVENT_ELECTROCUE,          20000,  0, _phase);
-                    events.ScheduleEvent(EVENT_WIND_BURST,          3000,   0, _phase);
+                    //events.ScheduleEvent(EVENT_WIND_BURST,          3000,   0, _phase);
                     events.ScheduleEvent(EVENT_LIGHTNING_STRIKE,    18000,  0, _phase);
                     break;
                 case PHASE_TWO:
@@ -321,13 +321,13 @@ public:
                         DoCast(me, SPELL_BERSERK);
                         break;*/
                     case EVENT_WIND_BURST:
-                        Talk(SAY_WIND_BURST);
+                        /*Talk(SAY_WIND_BURST);
                         if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM))
                         {
                             DoCast(pTarget, SPELL_BLAST_OF_AIR);
                             DoCast(pTarget, RAID_MODE(SPELL_WIND_BURST_N_10, SPELL_WIND_BURST_H_10, SPELL_WIND_BURST_N_25, SPELL_WIND_BURST_H_25));
                         }
-                        events.ScheduleEvent(EVENT_WIND_BURST, 25000, 0, PHASE_ONE);
+                        events.ScheduleEvent(EVENT_WIND_BURST, 25000, 0, PHASE_ONE);*/
                         break;
                     case EVENT_LIGHTNING_STRIKE:
                         DoCastVictim(RAID_MODE(SPELL_LIGHTNING_STRIKE_N_10, SPELL_LIGHTNING_STRIKE_H_10, SPELL_LIGHTNING_STRIKE_N_25, SPELL_LIGHTNING_STRIKE_H_25));
