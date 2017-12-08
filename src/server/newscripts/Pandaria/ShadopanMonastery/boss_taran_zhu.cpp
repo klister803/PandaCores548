@@ -46,6 +46,7 @@ enum eEvents
     EVENT_GRIP_OF_HATE              = 5,
 };
 
+//56884
 class boss_taran_zhu : public CreatureScript
 {
     public:
@@ -60,39 +61,80 @@ class boss_taran_zhu : public CreatureScript
             }
 
             InstanceScript* pInstance;
+            bool done;
+            std::set<uint64>hatredpllist;
 
             void Reset()
             {
                 _Reset();
+                done = false;
                 summons.DespawnAll();
+                hatredpllist.clear();
             }
 
             void EnterCombat(Unit*who)
             {
                 if (instance)
                     instance->SetBossState(DATA_TARAN_ZHU, IN_PROGRESS);
+
                 events.ScheduleEvent(EVENT_RISING_HATE,             urand(25000, 35000));
                 events.ScheduleEvent(EVENT_RING_OF_MALICE,          urand(7500,  12500));
                 events.ScheduleEvent(EVENT_SHA_BLAST,               urand(2500,  5000));
                 events.ScheduleEvent(EVENT_SUMMON_GRIPPING_HATRED,  urand(10000, 15000));
             }
 
+            void SetGUID(uint64 guid, int32 Id)
+            {
+                hatredpllist.insert(guid);
+            }
+
             void DamageDealt(Unit* target, uint32& damage, DamageEffectType damageType)
             {
                 if (Player* player = target->ToPlayer())
                 {
-                    uint32 newPower = player->GetPower(POWER_ALTERNATE_POWER) + std::floor(damage / 1000.0f);
-                    player->SetPower(POWER_ALTERNATE_POWER, newPower > 100 ? 100: newPower);
+                    uint32 newPower = player->GetPower(POWER_ALTERNATE_POWER) + urand(1, 2);
+                    player->SetPower(POWER_ALTERNATE_POWER, newPower >= 60 ? 60 : newPower);
                 }
+            }
+
+            void HateLeadstoSuffering()
+            {
+                if (!me->GetMap()->IsHeroic())
+                    return;
+
+                if (hatredpllist.empty())
+                    return;
+
+                std::list<Player*>pllist;
+                GetPlayerListInGrid(pllist, me, 100.0f);
+
+                if (pllist.empty())
+                    return;
+
+                for (std::list<Player*>::const_iterator Itr = pllist.begin(); Itr != pllist.end(); ++Itr)
+                    for (std::set<uint64>::const_iterator itr = hatredpllist.begin(); itr != hatredpllist.end(); ++itr)
+                        if (Player* hplr = me->GetPlayer(*me, *itr))
+                            if (hplr->GetGUID() != (*Itr)->GetGUID())
+                                return;
+
+                for (std::list<Player*>::const_iterator _Itr = pllist.begin(); _Itr != pllist.end(); ++_Itr)
+                    if (AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(6471))
+                        if (!(*_Itr)->HasAchieved(6471))
+                            (*_Itr)->CompletedAchievement(achievementEntry);
             }
 
             void DamageTaken(Unit* who, uint32& damage)
             {
-                if (damage >= me->GetHealth())
+                if (damage >= me->GetHealth() && !done)
                 {
+                    done = true;
                     damage = 0;
+
+                    HateLeadstoSuffering();
+
                     if (instance)
                         instance->SetBossState(DATA_TARAN_ZHU, DONE);
+
                     me->setFaction(35);
                     me->SetFullHealth();
                     me->RemoveAurasDueToSpell(SPELL_CORRUPTED);
@@ -106,10 +148,10 @@ class boss_taran_zhu : public CreatureScript
                 if (!UpdateVictim())
                     return;
 
+                events.Update(diff);
+
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
-
-                events.Update(diff);
 
                 switch(events.ExecuteEvent())
                 {
@@ -189,12 +231,20 @@ class spell_taran_zhu_hate : public SpellScriptLoader
             void HandlePeriodic(AuraEffect const* /*aurEff*/)
             {
                 if (Unit* target = GetTarget())
-                    if (target->GetPower(POWER_ALTERNATE_POWER) >= 100)
+                {
+                    if (target->GetPower(POWER_ALTERNATE_POWER) >= 60)
+                    {
                         if (!target->HasAura(SPELL_HAZE_OF_HATE))
                         {
                             target->CastSpell(target, SPELL_HAZE_OF_HATE, true);
                             target->CastSpell(target, SPELL_HAZE_OF_HATE_VISUAL, true);
+
+                            if (InstanceScript* instance = target->GetInstanceScript())
+                                if (Creature* TaranZhu = target->GetCreature(*target, instance->GetData64(NPC_TARAN_ZHU)))
+                                    TaranZhu->AI()->SetGUID(target->GetGUID(), 1);
                         }
+                    }
+                }
             }
 
             void Register()
@@ -221,12 +271,14 @@ class spell_taran_zhu_meditation : public SpellScriptLoader
             void OnRemove(AuraEffect const*, AuraEffectHandleModes)
             {
                 if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+                {
                     if (Unit* target = GetTarget())
                     {
                         target->SetPower(POWER_ALTERNATE_POWER, 0);
                         target->RemoveAurasDueToSpell(SPELL_HAZE_OF_HATE);
                         target->RemoveAurasDueToSpell(SPELL_HAZE_OF_HATE_VISUAL);
                     }
+                }
             }
 
             void Register()
