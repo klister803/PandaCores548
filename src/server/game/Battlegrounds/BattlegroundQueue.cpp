@@ -839,7 +839,7 @@ bool BattlegroundQueue::SelectRatedTeams(BattlegroundBracketId bracket_id, Group
 
         uint32 selectedRating = selectedTeam->MatchmakerRating;
 
-        float mmrSteps = floor(float((getMSTime() - selectedTeam->JoinTime) / 60)); // every 1 minute
+        float mmrSteps = floor(float((getMSTime() - selectedTeam->JoinTime) / 60000)); // every 1 minute
         uint32 mmrMaxDiff = mmrSteps * 100;
 
         uint32 MinRating = (selectedRating <= sBattlegroundMgr->GetMaxRatingDifference()) ? 0 : selectedRating - sBattlegroundMgr->GetMaxRatingDifference();

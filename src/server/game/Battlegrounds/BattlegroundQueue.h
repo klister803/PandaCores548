@@ -80,7 +80,7 @@ class BattlegroundQueue
         BattlegroundQueue();
         ~BattlegroundQueue();
 
-        void BattlegroundQueueUpdate(uint32 diff, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id, uint8 arenaType = 0, bool isRated = false, uint32 minRating = 0);
+        void BattlegroundQueueUpdate(uint32 diff, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id, uint8 arenaType = 0, bool isRated = false);
         void CheckOtherBGs();
         void UpdateEvents(uint32 diff);
 
