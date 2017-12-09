@@ -416,7 +416,7 @@ void Item::SaveToDB(SQLTransaction& trans)
             if (!isInTransaction)
                 CharacterDatabase.CommitTransaction(trans);
 
-            CharacterDatabase.PExecute("UPDATE character_donate SET state = 1, deletedate = '%s' WHERE itemguid = '%u'", TimeToTimestampStr(time(NULL)).c_str(), guid);
+            CharacterDatabase.PExecute("UPDATE character_donate SET state = 1, deletedate = '%s' WHERE itemguid = '%u' and state != 5", TimeToTimestampStr(time(NULL)).c_str(), guid);
             delete this;
             return;
         }
@@ -572,7 +572,7 @@ void Item::DeleteFromDB(SQLTransaction& trans, uint32 itemGuid)
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_INSTANCE);
     stmt->setUInt32(0, itemGuid);
     trans->Append(stmt);
-    CharacterDatabase.PExecute("UPDATE character_donate SET state = 1, deletedate = '%s' WHERE itemguid = '%u'", TimeToTimestampStr(time(NULL)).c_str(), itemGuid);
+    CharacterDatabase.PExecute("UPDATE character_donate SET state = 1, deletedate = '%s' WHERE itemguid = '%u' and state != 5", TimeToTimestampStr(time(NULL)).c_str(), itemGuid);
 }
 
 void Item::DeleteFromDB(SQLTransaction& trans)

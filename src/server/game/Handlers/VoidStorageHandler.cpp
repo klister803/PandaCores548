@@ -263,6 +263,8 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
         uint8 slot = player->AddVoidStorageItem(itemVS);
 
         depositItems[depositCount++] = std::make_pair(itemVS, slot);
+        
+        CharacterDatabase.PExecute("UPDATE character_donate SET state = 5, itemguid = %u WHERE itemguid = '%u' and state = 0 and owner_guid = %u", itemVS.ItemId, item->GetGUIDLow(), player->GetGUIDLow());
 
         player->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
     }
@@ -308,6 +310,8 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
         item->SetUInt64Value(ITEM_FIELD_CREATOR, uint64(itemVS->CreatorGuid));
         item->SetBinding(true);
         player->SendNewItem(item, 1, false, false, false);
+        
+        CharacterDatabase.PExecute("UPDATE character_donate SET state = 0, itemguid = %u WHERE itemguid = '%u' and state = 5 and  owner_guid = %u", item->GetGUIDLow(), itemVS->ItemId, player->GetGUIDLow());
 
         withdrawItems[withdrawCount++] = *itemVS;
 
