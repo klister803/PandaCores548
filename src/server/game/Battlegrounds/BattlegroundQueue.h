@@ -42,28 +42,24 @@ struct IgnorMapInfo
 struct GroupQueueInfo;                                      // type predefinition
 struct PlayerQueueInfo                                      // stores information for players in queue
 {
-    uint32  LastOnlineTime;                                 // for tracking and removing offline players from queue after 5 minutes
-    GroupQueueInfo* GroupInfo;                             // pointer to the associated groupqueueinfo
+    uint32 LastOnlineTime;                                  // for tracking and removing offline players from queue after 5 minutes
+    GroupQueueInfo* GroupInfo;                              // pointer to the associated groupqueueinfo
 };
 
 struct GroupQueueInfo                                       // stores information about the group in queue (also used when joined as solo!)
 {
     std::map<uint64, PlayerQueueInfo*> Players;             // player queue info map
-    uint32  Team;                                           // Player team (ALLIANCE/HORDE)
+    uint32 Team;                                            // Player team (ALLIANCE/HORDE)
     BattlegroundTypeId BgTypeId;                            // battleground type id
-    BattlegroundTypeId NormalBgTypeId;                           // normal battleground type id
-    bool    IsRated;                                        // rated
-    uint8   JoinType;                                       // 2v2, 3v3, 5v5, 10v10 or 0 when BG
-    uint32  GroupId;                                        // group id if rated match
-    uint32  JoinTime;                                       // time when group was added
-    uint32  RemoveInviteTime;                               // time when we will remove invite for players in group
-    uint32  IsInvitedToBGInstanceGUID;                      // was invited to certain BG
-    uint32  MatchmakerRating;                               // if rated match, inited to the rating of the team
-    uint32  OpponentsMatchmakerRating;                      // for rated arena matches
-    uint16  RbgMMV;
-    uint16  OponentsRbgMMV;
-    uint32  RegTimer;
-    uint32  QueueLvl;
+    BattlegroundTypeId NormalBgTypeId;                      // normal battleground type id
+    bool   IsRated;                                         // rated
+    uint8  JoinType;                                        // 2v2, 3v3, 5v5, 10v10 or 0 when BG
+    uint32 GroupId;                                         // group id if rated match
+    uint32 JoinTime;                                        // time when group was added
+    uint32 RemoveInviteTime;                                // time when we will remove invite for players in group
+    uint32 IsInvitedToBGInstanceGUID;                       // was invited to certain BG
+    uint32 MatchmakerRating;                                // if rated match, inited to the rating of the team
+    uint32 OpponentsMatchmakerRating;                       // for rated arena matches
     IgnorMapInfo ignore;
 };
 
@@ -86,16 +82,15 @@ class BattlegroundQueue
 
         void BattlegroundQueueUpdate(uint32 diff, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id, uint8 arenaType = 0, bool isRated = false, uint32 minRating = 0);
         void CheckOtherBGs();
-        void HandleArenaQueueUpdate(uint32 diff, uint8 JoinType);
-        void StartArena(std::list<GroupQueueInfo*>::iterator itr_teams[BG_TEAMS_COUNT], PvPDifficultyEntry const* bracketEntry, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id, uint8 JoinType);
         void UpdateEvents(uint32 diff);
 
+        ///@ used for generate rbg and arena maps.
+        BattlegroundTypeId GenerateRandomMap(BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id);
         void FillPlayersToBG(Battleground* bg, BattlegroundBracketId bracket_id);
         bool CheckPremadeMatch(BattlegroundBracketId bracket_id, uint32 MinPlayersPerTeam, uint32 MaxPlayersPerTeam);
         bool CheckNormalMatch(Battleground* bg_template, BattlegroundBracketId bracket_id, uint32 minPlayers, uint32 maxPlayers);
-        ///@ used for generate rbg and arena maps.
-        BattlegroundTypeId GenerateRandomMap(BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id);
         bool CheckSkirmishForSameFaction(BattlegroundBracketId bracket_id, uint32 minPlayersPerTeam);
+        bool SelectRatedTeams(BattlegroundBracketId bracket_id, GroupQueueInfo* & team1, GroupQueueInfo* & team2);
         GroupQueueInfo* AddGroup(Player* leader, Group* group, BattlegroundTypeId bgTypeId, PvPDifficultyEntry const*  bracketEntry, uint8 ArenaType, bool isRated, bool isPremade, IgnorMapInfo ignore, uint32 mmr = 0);
         void RemovePlayer(uint64 guid, bool decreaseInvitedCount);
         bool IsPlayerInvited(uint64 pl_guid, const uint32 bgInstanceGuid, const uint32 removeTime);

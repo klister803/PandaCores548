@@ -146,7 +146,7 @@ void BattlegroundMgr::Update(uint32 diff)
             BattlegroundQueueTypeId bgQueueTypeId = scheduled[i]->_bgQueueTypeId;
             BattlegroundTypeId bgTypeId = scheduled[i]->_bgTypeId;
             BattlegroundBracketId bracket_id = scheduled[i]->_bracket_id;
-            m_BattlegroundQueues[bgQueueTypeId].BattlegroundQueueUpdate(diff, bgTypeId, bracket_id, joinType, MMRating > 0, MMRating);
+            m_BattlegroundQueues[bgQueueTypeId].BattlegroundQueueUpdate(diff, bgTypeId, bracket_id, joinType, MMRating > 0);
         }
            
         for (std::vector<QueueSchedulerItem*>::iterator itr = scheduled.begin();
@@ -154,29 +154,29 @@ void BattlegroundMgr::Update(uint32 diff)
             delete *itr;
     }
 
-    for (uint8 i = BATTLEGROUND_QUEUE_2v2; i <= BATTLEGROUND_QUEUE_5v5; i++)
-        m_BattlegroundQueues[i].HandleArenaQueueUpdate(diff, BattlegroundMgr::BGJoinType(BattlegroundQueueTypeId(i)));
-
     // if rating difference counts, maybe force-update queues
-//     if (sWorld->getIntConfig(CONFIG_ARENA_MAX_RATING_DIFFERENCE) && sWorld->getIntConfig(CONFIG_ARENA_RATED_UPDATE_TIMER))
-//     {
-//         // it's time to force update
-//         if (m_NextRatedArenaUpdate < diff)
-//         {
-//             // forced update for rated arenas (scan all, but skipped non rated)
-//             sLog->outDebug(LOG_FILTER_BATTLEGROUND, "BattlegroundMgr: UPDATING ARENA QUEUES");
-//             for (int qtype = BATTLEGROUND_QUEUE_2v2; qtype <= BATTLEGROUND_QUEUE_5v5; ++qtype)
-//                 for (int bracket = BG_BRACKET_ID_FIRST; bracket < MAX_BATTLEGROUND_BRACKETS; ++bracket)
-//                 {
-//                     m_BattlegroundQueues[qtype].BattlegroundQueueUpdate(diff, BATTLEGROUND_AA, BattlegroundBracketId(bracket),
-//                         BattlegroundMgr::BGJoinType(BattlegroundQueueTypeId(qtype)), false, 0);
-//                 }
-// 
-//             m_NextRatedArenaUpdate = sWorld->getIntConfig(CONFIG_ARENA_RATED_UPDATE_TIMER);
-//         }
-//         else
-//             m_NextRatedArenaUpdate -= diff;
-//     }
+    if (sWorld->getIntConfig(CONFIG_ARENA_MAX_RATING_DIFFERENCE) && sWorld->getIntConfig(CONFIG_ARENA_RATED_UPDATE_TIMER))
+    {
+        // it's time to force update
+        if (m_NextRatedArenaUpdate < diff)
+        {
+            // forced update for rated arenas (scan all, but skipped non rated)
+            sLog->outDebug(LOG_FILTER_BATTLEGROUND, "BattlegroundMgr: UPDATING ARENA QUEUES");
+            for (int qtype = BATTLEGROUND_QUEUE_2v2; qtype <= BATTLEGROUND_QUEUE_5v5; ++qtype)
+                for (int bracket = BG_BRACKET_ID_FIRST; bracket < MAX_BATTLEGROUND_BRACKETS; ++bracket)
+                {
+                    m_BattlegroundQueues[qtype].BattlegroundQueueUpdate(diff, BATTLEGROUND_AA, BattlegroundBracketId(bracket),
+                        BattlegroundMgr::BGJoinType(BattlegroundQueueTypeId(qtype)), true);
+                }
+            //Rated Battleground
+            for (int bracket = BG_BRACKET_ID_FIRST; bracket < MAX_BATTLEGROUND_BRACKETS; ++bracket)
+                m_BattlegroundQueues[BATTLEGROUND_QUEUE_RBG].BattlegroundQueueUpdate(diff, BATTLEGROUND_RATED_10_VS_10, BattlegroundBracketId(bracket), BattlegroundMgr::BGJoinType(BattlegroundQueueTypeId(BATTLEGROUND_QUEUE_RBG)), true);
+
+            m_NextRatedArenaUpdate = sWorld->getIntConfig(CONFIG_ARENA_RATED_UPDATE_TIMER);
+        }
+        else
+            m_NextRatedArenaUpdate -= diff;
+    }
 }
 
 //! ToDo: arenatype -> JoinType
