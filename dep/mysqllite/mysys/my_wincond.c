@@ -89,19 +89,19 @@ static void check_native_cond_availability(void)
 static DWORD get_milliseconds(const struct timespec *abstime)
 {
   long long millis; 
-  union ft64 now;
+  FILETIME now;
 
   if (abstime == NULL)
    return INFINITE;
 
-  GetSystemTimeAsFileTime(&now.ft);
+  GetSystemTimeAsFileTime(&now);
 
   /*
     Calculate time left to abstime
     - subtract start time from current time(values are in 100ns units)
     - convert to millisec by dividing with 10000
   */
-  millis= (abstime->tv.i64 - now.i64) / 10000;
+  millis= (abstime->tv_sec - *(time_t*)&now) / 10000;
   
   /* Don't allow the timeout to be negative */
   if (millis < 0)
@@ -111,8 +111,8 @@ static DWORD get_milliseconds(const struct timespec *abstime)
     Make sure the calculated timeout does not exceed original timeout
     value which could cause "wait for ever" if system time changes
   */
-  if (millis > abstime->max_timeout_msec)
-    millis= abstime->max_timeout_msec;
+  if (millis > abstime->tv_nsec)
+    millis= abstime->tv_nsec;
   
   if (millis > UINT_MAX)
     millis= UINT_MAX;

@@ -90,29 +90,23 @@ typedef volatile LONG my_pthread_once_t;
   windows implementation of pthread_cond_timedwait
 */
 
-/*
-   Declare a union to make sure FILETIME is properly aligned
-   so it can be used directly as a 64 bit value. The value
-   stored is in 100ns units.
- */
- union ft64 {
-  FILETIME ft;
-  __int64 i64;
- };
+#if defined(_MSC_VER) && _MSC_VER < 1900
 struct timespec {
-  union ft64 tv;
+  time_t tv_sec;
   /* The max timeout value in millisecond for pthread_cond_timedwait */
-  long max_timeout_msec;
+  long tv_nsec;
 };
+#endif
+
 #define set_timespec(ABSTIME,SEC) { \
-  GetSystemTimeAsFileTime(&((ABSTIME).tv.ft)); \
-  (ABSTIME).tv.i64+= (__int64)(SEC)*10000000; \
-  (ABSTIME).max_timeout_msec= (long)((SEC)*1000); \
+  GetSystemTimeAsFileTime(&((ABSTIME).tv_sec)); \
+  (ABSTIME).tv_sec+= (__int64)(SEC)*10000000; \
+  (ABSTIME).tv_nsec= (long)((SEC)*1000); \
 }
 #define set_timespec_nsec(ABSTIME,NSEC) { \
-  GetSystemTimeAsFileTime(&((ABSTIME).tv.ft)); \
-  (ABSTIME).tv.i64+= (__int64)(NSEC)/100; \
-  (ABSTIME).max_timeout_msec= (long)((NSEC)/1000000); \
+  GetSystemTimeAsFileTime(&((ABSTIME).tv_sec)); \
+  (ABSTIME).tv_sec+= (__int64)(NSEC)/100; \
+  (ABSTIME).tv_nsec= (long)((NSEC)/1000000); \
 }
 
 /**

@@ -22,6 +22,10 @@
 #define DELIM ':'
 #endif
 
+#ifndef P_tmpdir
+# define P_tmpdir "\\"
+#endif
+
 my_bool init_tmpdir(MY_TMPDIR *tmpdir, const char *pathlist)
 {
   char *end, *copy;
