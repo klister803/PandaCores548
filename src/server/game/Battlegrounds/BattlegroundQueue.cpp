@@ -1070,7 +1070,7 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
         if (!aTeam || !hTeam)
             return;
 
-        Battleground* bg = sBattlegroundMgr->CreateNewBattleground(bgTypeId, bracketEntry, JoinType, true);
+        Battleground* bg = sBattlegroundMgr->CreateNewBattleground(bgTypeId, bracketEntry, JoinType, true, GenerateRandomMap(bgTypeId, bracket_id));
         if (!bg)
         {
             sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundQueue::Update couldn't create bg instance for rated bg match!");
