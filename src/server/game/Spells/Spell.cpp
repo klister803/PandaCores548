@@ -4333,7 +4333,7 @@ void Spell::_handle_immediate_phase()
                 Unit::AuraEffectList const& mModCastingSpeedNotStack = m_caster->GetAuraEffectsByType(*auratype);
                 for (Unit::AuraEffectList::const_iterator i = mModCastingSpeedNotStack.begin(); i != mModCastingSpeedNotStack.end(); ++i)
                     if (SpellInfo const* sinfo = (*i)->GetSpellInfo())
-                        if (sinfo->ProcCharges && !(*i)->HasSpellClassMask() && sinfo->Id != 114108) //Exclude - Soul of the Forest, proc aura [Druid]
+                        if (sinfo->ProcCharges && !(*i)->HasSpellClassMask()) // && sinfo->Id != 114108) //Exclude - Soul of the Forest, proc aura [Druid]
                             spellId.push_back(sinfo->Id);
             }
 
