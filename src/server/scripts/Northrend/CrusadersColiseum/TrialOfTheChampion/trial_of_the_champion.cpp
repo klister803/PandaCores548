@@ -26,7 +26,7 @@ EndScriptData */
 npc_announcer_toc5
 EndContentData */
 
-#include "NorthrendPCH.h"
+#include "ScriptPCH.h"
 #include "trial_of_the_champion.h"
 #include "Vehicle.h"
 #include "Containers.h"

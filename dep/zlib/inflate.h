@@ -18,38 +18,38 @@
 
 /* Possible inflate modes between inflate() calls */
 typedef enum {
-    HEAD        =0,       /* i: waiting for magic header */
-    FLAGS       =1,      /* i: waiting for method and flags (gzip) */
-    TIME        =2,       /* i: waiting for modification time (gzip) */
-    OS          =3,         /* i: waiting for extra flags and operating system (gzip) */
-    EXLEN       =4,      /* i: waiting for extra length (gzip) */
-    EXTRA       =5,      /* i: waiting for extra bytes (gzip) */
-    NAME        =6,       /* i: waiting for end of file name (gzip) */
-    COMMENT     =7,    /* i: waiting for end of comment (gzip) */
-    HCRC        =8,       /* i: waiting for header crc (gzip) */
-    DICTID      =9,     /* i: waiting for dictionary check value */
-    DICT        =10,       /* waiting for inflateSetDictionary() call */
-        TYPE    =11,       /* i: waiting for type bits, including last-flag bit */
-        TYPEDO  =12,     /* i: same, but skip check to exit inflate on new block */
-        STORED  =13,     /* i: waiting for stored size (length and complement) */
-        COPY_   =14,      /* i/o: same as COPY below, but only first time in */
-        COPY    =15,       /* i/o: waiting for input or output to copy stored block */
-        TABLE   =16,      /* i: waiting for dynamic block table lengths */
-        LENLENS =17,    /* i: waiting for code length code lengths */
-        CODELENS=18,   /* i: waiting for length/lit and distance code lengths */
-            LEN_=19,       /* i: same as LEN below, but only first time in */
-            LEN =20,        /* i: waiting for length/lit/eob code */
-            LENEXT  =21,     /* i: waiting for length extra bits */
-            DIST    =22,       /* i: waiting for distance code */
-            DISTEXT =23,    /* i: waiting for distance extra bits */
-            MATCH   =24,      /* o: waiting for output space to copy string */
-            LIT     =25,        /* o: waiting for output space to write literal */
-    CHECK           =26,      /* i: waiting for 32-bit check value */
-    LENGTH          =27,     /* i: waiting for 32-bit length (gzip) */
-    DONE            =28,       /* finished check, done -- remain here until reset */
-    BAD             =29,        /* got a data error -- remain here until reset */
-    MEM             =30,        /* got an inflate() memory error -- remain here until reset */
-    SYNC            =31        /* looking for synchronization bytes to restart inflate() */
+    HEAD,       /* i: waiting for magic header */
+    FLAGS,      /* i: waiting for method and flags (gzip) */
+    TIME,       /* i: waiting for modification time (gzip) */
+    OS,         /* i: waiting for extra flags and operating system (gzip) */
+    EXLEN,      /* i: waiting for extra length (gzip) */
+    EXTRA,      /* i: waiting for extra bytes (gzip) */
+    NAME,       /* i: waiting for end of file name (gzip) */
+    COMMENT,    /* i: waiting for end of comment (gzip) */
+    HCRC,       /* i: waiting for header crc (gzip) */
+    DICTID,     /* i: waiting for dictionary check value */
+    DICT,       /* waiting for inflateSetDictionary() call */
+        TYPE,       /* i: waiting for type bits, including last-flag bit */
+        TYPEDO,     /* i: same, but skip check to exit inflate on new block */
+        STORED,     /* i: waiting for stored size (length and complement) */
+        COPY_,      /* i/o: same as COPY below, but only first time in */
+        COPY,       /* i/o: waiting for input or output to copy stored block */
+        TABLE,      /* i: waiting for dynamic block table lengths */
+        LENLENS,    /* i: waiting for code length code lengths */
+        CODELENS,   /* i: waiting for length/lit and distance code lengths */
+            LEN_,       /* i: same as LEN below, but only first time in */
+            LEN,        /* i: waiting for length/lit/eob code */
+            LENEXT,     /* i: waiting for length extra bits */
+            DIST,       /* i: waiting for distance code */
+            DISTEXT,    /* i: waiting for distance extra bits */
+            MATCH,      /* o: waiting for output space to copy string */
+            LIT,        /* o: waiting for output space to write literal */
+    CHECK,      /* i: waiting for 32-bit check value */
+    LENGTH,     /* i: waiting for 32-bit length (gzip) */
+    DONE,       /* finished check, done -- remain here until reset */
+    BAD,        /* got a data error -- remain here until reset */
+    MEM,        /* got an inflate() memory error -- remain here until reset */
+    SYNC        /* looking for synchronization bytes to restart inflate() */
 } inflate_mode;
 
 /*

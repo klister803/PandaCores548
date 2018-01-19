@@ -1,7 +1,16 @@
+# Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
+#
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 macro(GroupSources dir)
   # Skip this if WITH_SOURCE_TREE is not set (empty string).
-  if (NOT ${_WITH_SOURCE_TREE} STREQUAL "")
+  if (NOT ${WITH_SOURCE_TREE} STREQUAL "")
     # Include all header and c files
     file(GLOB_RECURSE elements RELATIVE ${dir} *.h *.hpp *.c *.cpp *.cc)
 
@@ -12,7 +21,7 @@ macro(GroupSources dir)
 
       if (NOT ${element_dir} STREQUAL "")
         # If the file is in a subdirectory use it as source group.
-        if (${_WITH_SOURCE_TREE} STREQUAL "flat")
+        if (${WITH_SOURCE_TREE} STREQUAL "flat")
           # Build flat structure by using only the first subdirectory.
           string(FIND ${element_dir} "/" delemiter_pos)
           if (NOT ${delemiter_pos} EQUAL -1)
@@ -35,3 +44,8 @@ macro(GroupSources dir)
     endforeach()
   endif()
 endmacro()
+
+if (WITH_SOURCE_TREE STREQUAL "hierarchical-folders")
+  # Use folders
+  set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+endif()

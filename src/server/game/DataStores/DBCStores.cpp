@@ -47,13 +47,13 @@ struct WMOAreaTableTripple
     int32 adtId;
 };
 
-static UNORDERED_MAP<uint32, std::vector<CriteriaTreeEntry const*> > sCriteriaTreeList;
-static UNORDERED_MAP<uint32, std::vector<ModifierTreeEntry const*> > sModifierTreeList;
-static UNORDERED_MAP<uint32, std::list<uint32> > sSpellProcsPerMinuteModEntryList;
-static UNORDERED_MAP<uint32, AchievementEntry const* > sAchievementParentList;
-static UNORDERED_MAP<uint32, std::list<uint32> > sItemSpecsList;
-static UNORDERED_MAP<uint32, uint32 > sRevertLearnSpellList;
-static UNORDERED_MAP<uint32, uint32 > sReversTriggerSpellList;
+static std::unordered_map<uint32, std::vector<CriteriaTreeEntry const*> > sCriteriaTreeList;
+static std::unordered_map<uint32, std::vector<ModifierTreeEntry const*> > sModifierTreeList;
+static std::unordered_map<uint32, std::list<uint32> > sSpellProcsPerMinuteModEntryList;
+static std::unordered_map<uint32, AchievementEntry const* > sAchievementParentList;
+static std::unordered_map<uint32, std::list<uint32> > sItemSpecsList;
+static std::unordered_map<uint32, uint32 > sRevertLearnSpellList;
+static std::unordered_map<uint32, uint32 > sReversTriggerSpellList;
 static std::unordered_map<uint32, std::vector<ItemSpecOverrideEntry const*>> _itemSpecOverrides;
 
 typedef std::map<WMOAreaTableTripple, WMOAreaTableEntry const*> WMOAreaInfoByTripple;
@@ -967,7 +967,7 @@ std::vector<ItemSpecOverrideEntry const*> const* GetItemSpecOverrides(uint32 ite
 
 AchievementEntry const* GetsAchievementByTreeList(uint32 criteriaTree)
 {
-    UNORDERED_MAP<uint32, AchievementEntry const* >::const_iterator itr = sAchievementParentList.find(criteriaTree);
+    std::unordered_map<uint32, AchievementEntry const* >::const_iterator itr = sAchievementParentList.find(criteriaTree);
     if(itr != sAchievementParentList.end())
         return itr->second;
     return 0;
@@ -976,7 +976,7 @@ AchievementEntry const* GetsAchievementByTreeList(uint32 criteriaTree)
 
 uint32 GetLearnSpell(uint32 trigerSpell)
 {
-    UNORDERED_MAP<uint32, uint32 >::const_iterator itr = sRevertLearnSpellList.find(trigerSpell);
+    std::unordered_map<uint32, uint32 >::const_iterator itr = sRevertLearnSpellList.find(trigerSpell);
     if(itr != sRevertLearnSpellList.end())
         return itr->second;
     return 0;
@@ -984,7 +984,7 @@ uint32 GetLearnSpell(uint32 trigerSpell)
 
 uint32 GetSpellByTrigger(uint32 trigerSpell)
 {
-    UNORDERED_MAP<uint32, uint32 >::const_iterator itr = sReversTriggerSpellList.find(trigerSpell);
+    std::unordered_map<uint32, uint32 >::const_iterator itr = sReversTriggerSpellList.find(trigerSpell);
     if(itr != sReversTriggerSpellList.end())
         return itr->second;
     return 0;
@@ -992,7 +992,7 @@ uint32 GetSpellByTrigger(uint32 trigerSpell)
 
 std::vector<CriteriaTreeEntry const*> const* GetCriteriaTreeList(uint32 parent)
 {
-    UNORDERED_MAP<uint32, std::vector<CriteriaTreeEntry const*> >::const_iterator itr = sCriteriaTreeList.find(parent);
+    std::unordered_map<uint32, std::vector<CriteriaTreeEntry const*> >::const_iterator itr = sCriteriaTreeList.find(parent);
     if(itr != sCriteriaTreeList.end())
         return &itr->second;
     return NULL;
@@ -1000,7 +1000,7 @@ std::vector<CriteriaTreeEntry const*> const* GetCriteriaTreeList(uint32 parent)
 
 std::vector<ModifierTreeEntry const*> const* GetModifierTreeList(uint32 parent)
 {
-    UNORDERED_MAP<uint32, std::vector<ModifierTreeEntry const*> >::const_iterator itr = sModifierTreeList.find(parent);
+    std::unordered_map<uint32, std::vector<ModifierTreeEntry const*> >::const_iterator itr = sModifierTreeList.find(parent);
     if(itr != sModifierTreeList.end())
         return &itr->second;
     return NULL;
@@ -1008,7 +1008,7 @@ std::vector<ModifierTreeEntry const*> const* GetModifierTreeList(uint32 parent)
 
 std::list<uint32> const* GetSpellProcsPerMinuteModList(uint32 PerMinId)
 {
-    UNORDERED_MAP<uint32, std::list<uint32> >::const_iterator itr = sSpellProcsPerMinuteModEntryList.find(PerMinId);
+    std::unordered_map<uint32, std::list<uint32> >::const_iterator itr = sSpellProcsPerMinuteModEntryList.find(PerMinId);
     if(itr != sSpellProcsPerMinuteModEntryList.end())
         return &itr->second;
     return NULL;

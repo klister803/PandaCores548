@@ -27,7 +27,7 @@ EndScriptData */
 #include "Chat.h"
 #include "AccountMgr.h"
 #include "World.h"
-#include <ting/shared_mutex.hpp>
+#include "shared_mutex.hpp"
 #include <mutex>
 
 class gm_commandscript : public CommandScript

@@ -322,7 +322,6 @@ set(ace_STAT_SRCS
 
 if (USE_COREPCH)
   set(ace_PCH_HDR PrecompiledHeaders/WinAcePCH.h)
-  set(ace_PCH_SRC PrecompiledHeaders/WinAcePCH.cpp)
 endif()
 
 include_directories(
@@ -338,16 +337,34 @@ add_definitions(-DACE_BUILD_DLL)
 
 add_library(ace SHARED
   ${ace_STAT_SRCS}
-  ${ace_PCH_SRC}
 )
 
+target_include_directories(ace 
+  PUBLIC
+  ${CMAKE_SOURCE_DIR}/dep/acelite
+  ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders
+  ${CMAKE_SOURCE_DIR}/dep/zlib
+)
+
+target_link_libraries(ace 
+    trinity-dependency-interface
+    trinity-no-warning-interface
+)
+	  
+set_target_properties(ace PROPERTIES LINKER_LANGUAGE CXX)
+
+set_target_properties(ace
+  PROPERTIES
+    FOLDER
+      "dep")
+	
 if (MINGW) # GCC ignores "#prama comment"
   target_link_libraries(ace ws2_32 iphlpapi netapi32 mswsock)
 endif()
 
 # Generate precompiled header
 if( USE_COREPCH )
-  add_cxx_pch(ace ${ace_PCH_HDR} ${ace_PCH_SRC})
+  add_cxx_pch(ace ${ace_PCH_HDR})
 endif()
 
 install(TARGETS ace RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}")

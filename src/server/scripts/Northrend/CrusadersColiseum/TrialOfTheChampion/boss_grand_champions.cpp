@@ -23,7 +23,7 @@ SDComment: Is missing the ai to make the npcs look for a new mount and use it.
 SDCategory: Trial Of the Champion
 EndScriptData */
 
-#include "NorthrendPCH.h"
+#include "ScriptPCH.h"
 #include "Vehicle.h"
 #include "trial_of_the_champion.h"
 

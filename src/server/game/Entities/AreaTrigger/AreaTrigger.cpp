@@ -23,6 +23,8 @@
 #include "GridNotifiers.h"
 #include "Chat.h"
 
+using G3D::Vector3;
+
 AreaTrigger::AreaTrigger() : WorldObject(false), _duration(0), _activationDelay(0), _updateDelay(0), _on_unload(false), _caster(NULL),
     _radius(1.0f), atInfo(), _on_despawn(false), m_spellInfo(NULL), _moveSpeed(0.0f), _moveTime(0), _realEntry(0), _hitCount(1), _areaTriggerCylinder(false),
     _on_remove(false), _waitTime(0)

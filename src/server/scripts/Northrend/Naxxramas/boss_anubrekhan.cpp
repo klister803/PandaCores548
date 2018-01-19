@@ -15,7 +15,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "NorthrendPCH.h"
+#include "ScriptPCH.h"
 #include "naxxramas.h"
 
 #define SAY_GREET           RAND(-1533000,-1533004,-1533005,-1533006,-1533007)

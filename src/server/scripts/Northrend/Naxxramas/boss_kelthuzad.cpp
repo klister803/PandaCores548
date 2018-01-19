@@ -23,7 +23,7 @@ SDComment: VERIFY SCRIPT
 SDCategory: Naxxramas
 EndScriptData */
 
-#include "NorthrendPCH.h"
+#include "ScriptPCH.h"
 #include "naxxramas.h"
 
 enum Yells

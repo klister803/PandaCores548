@@ -179,12 +179,12 @@ struct PlayerVignette
     Position position;
 };
 
-typedef UNORDERED_MAP<uint32, PlayerTalent*> PlayerTalentMap;
-typedef UNORDERED_MAP<uint32, PlayerSpell*> PlayerSpellMap;
+typedef std::unordered_map<uint32, PlayerTalent*> PlayerTalentMap;
+typedef std::unordered_map<uint32, PlayerSpell*> PlayerSpellMap;
 typedef std::list<SpellModifier*> SpellModList;
 typedef std::list<uint32> ItemSpellList;
-typedef UNORDERED_MAP<uint32, PlayerCurrency> PlayerCurrenciesMap;
-typedef UNORDERED_MAP<uint64, PlayerVignette> PlayerVignettesMap;
+typedef std::unordered_map<uint32, PlayerCurrency> PlayerCurrenciesMap;
+typedef std::unordered_map<uint64, PlayerVignette> PlayerVignettesMap;
 
 typedef std::list<uint64> WhisperListContainer;
 
@@ -216,7 +216,7 @@ struct SpellChargeData
 typedef std::vector<RPPMSpellCooldown> RPPMSpellCooldowns;
 typedef std::map<uint32, SpellCooldown> SpellCooldowns;
 typedef std::map<uint32 /*categoryId*/, SpellChargeData> SpellChargeDataMap;
-typedef UNORDERED_MAP<uint32 /*instanceId*/, time_t/*releaseTime*/> InstanceTimeMap;
+typedef std::unordered_map<uint32 /*instanceId*/, time_t/*releaseTime*/> InstanceTimeMap;
 
 enum TrainerSpellState
 {
@@ -605,7 +605,7 @@ struct SkillStatusData
     SkillUpdateState uState;
 };
 
-typedef UNORDERED_MAP<uint32, SkillStatusData> SkillStatusMap;
+typedef std::unordered_map<uint32, SkillStatusData> SkillStatusMap;
 
 class Quest;
 class Spell;
@@ -1064,7 +1064,7 @@ struct sellItemOpcodeInfo
 
 #define MAX_SELL_ITEMS_IN_QUEUE 10
 
-typedef UNORDERED_MAP<uint32, playerLootCooldown> PlayerLootCooldownMap;
+typedef std::unordered_map<uint32, playerLootCooldown> PlayerLootCooldownMap;
 
 enum PlayerLootCooldownType
 {
@@ -1386,7 +1386,7 @@ private:
     PlayerTalentInfo(PlayerTalentInfo const&);
 };
 
-typedef UNORDERED_MAP<uint8, Bracket*> BracketList;
+typedef std::unordered_map<uint8, Bracket*> BracketList;
 
 struct PetData
 {
@@ -2121,7 +2121,7 @@ class Player : public Unit, public GridObject<Player>
         uint8 unReadMails;
         time_t m_nextMailDelivereTime;
 
-        typedef UNORDERED_MAP<uint32, Item*> ItemMap;
+        typedef std::unordered_map<uint32, Item*> ItemMap;
 
         ItemMap mMitems;                                    //template defined in objectmgr.cpp
 
@@ -3074,7 +3074,7 @@ class Player : public Unit, public GridObject<Player>
         /***                 INSTANCE SYSTEM                   ***/
         /*********************************************************/
 
-        typedef UNORDERED_MAP< uint32 /*mapId*/, InstancePlayerBind > BoundInstancesMap;
+        typedef std::unordered_map< uint32 /*mapId*/, InstancePlayerBind > BoundInstancesMap;
 
         void UpdateHomebindTime(uint32 time);
 
@@ -3354,7 +3354,7 @@ class Player : public Unit, public GridObject<Player>
         //We allow only one timed quest active at the same time. Below can then be simple value instead of set.
         typedef std::set<uint32> QuestSet;
         typedef std::set<uint32> SeasonalQuestSet;
-        typedef UNORDERED_MAP<uint32,SeasonalQuestSet> SeasonalEventQuestMap;
+        typedef std::unordered_map<uint32,SeasonalQuestSet> SeasonalEventQuestMap;
         QuestSet m_timedquests;
         QuestSet m_weeklyquests;
         QuestSet m_dailyquests;

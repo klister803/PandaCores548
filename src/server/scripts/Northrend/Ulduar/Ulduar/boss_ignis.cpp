@@ -21,7 +21,7 @@ SDAuthor: PrinceCreed
 SD%Complete: 100
 EndScriptData */
 
-#include "NorthrendPCH.h"
+#include "ScriptPCH.h"
 #include "ulduar.h"
 #include "SpellAuraEffects.h"
 #include "Vehicle.h"

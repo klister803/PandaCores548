@@ -15,7 +15,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "NorthrendPCH.h"
+#include "ScriptPCH.h"
 #include "naxxramas.h"
 
 #define SAY_AGGRO           RAND(-1533109, -1533110, -1533111)

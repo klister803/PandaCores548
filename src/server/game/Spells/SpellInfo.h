@@ -324,8 +324,8 @@ private:
     static StaticData _data[TOTAL_SPELL_EFFECTS];
 };
 
-typedef UNORDERED_MAP<uint16, SpellEffectInfo> SpellEffectInfoMap;
-typedef UNORDERED_MAP<uint16, SpellTargetRestrictionsEntry const*> SpellTargetRestrictionsMap;
+typedef std::unordered_map<uint16, SpellEffectInfo> SpellEffectInfoMap;
+typedef std::unordered_map<uint16, SpellTargetRestrictionsEntry const*> SpellTargetRestrictionsMap;
 class SpellInfo
 {
 public:

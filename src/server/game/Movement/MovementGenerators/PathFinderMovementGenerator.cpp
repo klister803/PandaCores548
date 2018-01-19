@@ -25,6 +25,7 @@
 
 #include "DetourCommon.h"
 #include "DetourNavMeshQuery.h"
+#include "DisableMgr.h"
 
 ////////////////// PathFinderMovementGenerator //////////////////
 PathFinderMovementGenerator::PathFinderMovementGenerator(const Unit* owner) :
@@ -35,7 +36,7 @@ PathFinderMovementGenerator::PathFinderMovementGenerator(const Unit* owner) :
     //sLog->outDebug(LOG_FILTER_MAPS, "++ PathFinderMovementGenerator::PathFinderMovementGenerator for %u \n", m_sourceUnit->GetGUIDLow());
 
     uint32 mapId = m_sourceUnit->GetMapId();
-    if (MMAP::MMapFactory::IsPathfindingEnabled(mapId))
+    if (DisableMgr::IsPathfindingEnabled(mapId))
     {
         MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
         m_navMesh = mmap->GetNavMesh(mapId);
@@ -130,7 +131,7 @@ dtPolyRef PathFinderMovementGenerator::getPathPolyByPosition(const dtPolyRef *po
     }
 
     if (distance)
-        *distance = dtSqrt(minDist3d);
+        *distance = sqrtf(minDist3d);
 
     return (minDist2d < 3.0f) ? nearestPoly : INVALID_POLYREF;
 }
@@ -553,8 +554,7 @@ bool PathFinderMovementGenerator::HaveTile(const Vector3 &p) const
     return (m_navMesh->getTileAt(tx, ty) != NULL);
 }
 
-uint32 PathFinderMovementGenerator::fixupCorridor(dtPolyRef* path, uint32 npath, uint32 maxPath,
-                               const dtPolyRef* visited, uint32 nvisited)
+uint32 PathFinderMovementGenerator::fixupCorridor(dtPolyRef* path, uint32 npath, uint32 maxPath, const dtPolyRef* visited, uint32 nvisited)
 {
     int32 furthestPath = -1;
     int32 furthestVisited = -1;
@@ -675,7 +675,7 @@ dtStatus PathFinderMovementGenerator::findSmoothPath(const float* startPos, cons
         // Find movement delta.
         float delta[VERTEX_SIZE];
         dtVsub(delta, steerPos, iterPos);
-        float len = dtSqrt(dtVdot(delta,delta));
+        float len = sqrtf(dtVdot(delta,delta));
         // If the steer target is end of path or off-mesh link, do not move past the location.
         if ((endOfPath || offMeshConnection) && len < SMOOTH_PATH_STEP_SIZE)
             len = 1.0f;

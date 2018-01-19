@@ -787,12 +787,12 @@ private:
         void CanStoreItemInTab(Item* pItem, uint8 skipSlotId, bool merge, uint32& count);
     };
 
-    typedef UNORDERED_MAP<uint32, Member*> Members;
+    typedef std::unordered_map<uint32, Member*> Members;
     typedef std::vector<RankInfo> Ranks;
     typedef std::vector<BankTab*> BankTabs;
 
 public:
-    typedef UNORDERED_MAP<uint32, KnownRecipes> KnownRecipesMap;
+    typedef std::unordered_map<uint32, KnownRecipes> KnownRecipesMap;
 
     static void SendCommandResult(WorldSession* session, GuildCommandType type, GuildCommandError errCode, const std::string& param = "");
     static void SendSaveEmblemResult(WorldSession* session, GuildEmblemError errCode);

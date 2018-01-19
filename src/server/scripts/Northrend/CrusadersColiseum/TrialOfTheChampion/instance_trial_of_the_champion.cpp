@@ -20,7 +20,7 @@ SDName: Instance Trial of the Champion
 SDCategory: Trial Of the Champion
 EndScriptData */
 
-#include "NorthrendPCH.h"
+#include "ScriptPCH.h"
 #include "trial_of_the_champion.h"
 
 #define MAX_ENCOUNTER 4

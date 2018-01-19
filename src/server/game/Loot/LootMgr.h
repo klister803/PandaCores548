@@ -203,7 +203,7 @@ typedef std::vector<QuestItem> QuestItemList;
 typedef std::vector<LootItem> LootItemList;
 typedef std::map<uint32, QuestItemList*> QuestItemMap;
 typedef std::vector<LootStoreItem> LootStoreItemList;
-typedef UNORDERED_MAP<uint32, LootTemplate*> LootTemplateMap;
+typedef std::unordered_map<uint32, LootTemplate*> LootTemplateMap;
 
 typedef std::set<uint32> LootIdSet;
 

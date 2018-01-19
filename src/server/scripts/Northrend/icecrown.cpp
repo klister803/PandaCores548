@@ -27,7 +27,7 @@ EndScriptData */
 npc_arete
 EndContentData */
 
-#include "NorthrendPCH.h"
+#include "ScriptPCH.h"
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 #include "ScriptedGossip.h"

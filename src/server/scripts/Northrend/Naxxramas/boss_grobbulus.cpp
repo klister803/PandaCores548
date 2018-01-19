@@ -15,7 +15,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "NorthrendPCH.h"
+#include "ScriptPCH.h"
 #include "naxxramas.h"
 
 #define SPELL_BOMBARD_SLIME         28280

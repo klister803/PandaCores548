@@ -22,7 +22,7 @@ SD%Complete: 100
 SDComments:
 EndScriptData */
 
-#include "NorthrendPCH.h"
+#include "ScriptPCH.h"
 #include "ulduar.h"
 #include "ObjectVisitors.hpp"
 

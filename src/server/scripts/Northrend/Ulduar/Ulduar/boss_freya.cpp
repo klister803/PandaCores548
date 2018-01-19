@@ -22,7 +22,7 @@ SD%Complete: 100
 SD%Comments:
 EndScriptData */
 
-#include "NorthrendPCH.h"
+#include "ScriptPCH.h"
 #include "ulduar.h"
 
 enum Yells

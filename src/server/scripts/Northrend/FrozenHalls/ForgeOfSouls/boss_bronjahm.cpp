@@ -15,7 +15,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "NorthrendPCH.h"
+#include "ScriptPCH.h"
 #include "SpellAuraEffects.h"
 #include "forge_of_souls.h"
 

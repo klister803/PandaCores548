@@ -23,8 +23,8 @@
 #include "DBCEnums.h"
 #include "DB2Stores.h"
 #include "Map.h"
+#include "shared_mutex.hpp"
 
-#include <ting/shared_mutex.hpp>
 #include <mutex>
 
 static uint16 const MAX_ACHIEVEMENT = 9000;

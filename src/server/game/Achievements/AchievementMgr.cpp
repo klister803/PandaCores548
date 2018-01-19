@@ -43,7 +43,7 @@
 #include "Bracket.h"
 #include "ScenarioMgr.h"
 #include "Formulas.h"
-#include "ScriptPCH.h"
+#include "Chat.h"
 
 namespace Trinity
 {

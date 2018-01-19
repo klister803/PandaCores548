@@ -23,7 +23,7 @@ SDComment:  Only Horde Heroic
 SDCategory:
 Script Data End */
 
-#include "NorthrendPCH.h"
+#include "ScriptPCH.h"
 
 #define SPELL_BATTLE_SHOUT                                       31403
 #define SPELL_CHARGE                                             60067

@@ -26,6 +26,7 @@
 #include <ace/OS_NS_time.h>
 #include <time.h>
 #include "Util.h"
+#include <ace/Stack_Trace.h>
 
 
 #define BITS_1 uint8 _1
