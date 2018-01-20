@@ -23,6 +23,12 @@ if(SERVERS OR TOOLS)
   add_subdirectory(jemalloc)
 endif()
 
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+  if(SERVERS AND NOT NOJEM)
+    add_subdirectory(jemalloc)  
+  endif()
+endif()
+
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
   if(SERVERS)
     add_subdirectory(acelite)
