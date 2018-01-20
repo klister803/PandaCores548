@@ -20,7 +20,7 @@ if(SERVERS OR TOOLS)
   add_subdirectory(utf8cpp)
   add_subdirectory(valgrind)
   add_subdirectory(openssl)
-  add_subdirectory(jemalloc)
+#  add_subdirectory(jemalloc)
 endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
