@@ -6525,7 +6525,11 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_CANT_BE_SAVED_IN_DB;
                     break;
                 case 129185: // Sha Energy Low Visual PH
-                    spellInfo->AttributesEx |= SPELL_ATTR1_DONT_DISPLAY_IN_AURA_BAR;
+                    spellInfo->Attributes |= SPELL_ATTR0_HIDDEN_CLIENTSIDE;
+                    break;
+                case 148022: // Icicle
+                    spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
+                    spellInfo->AttributesEx6 &= ~SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
                     break;
                 default:
                     break;
