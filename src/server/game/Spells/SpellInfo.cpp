@@ -2379,8 +2379,7 @@ AuraStateType SpellInfo::GetAuraState() const
     if (Id == 770 || Id == 102355 || Id == 94528)
         return AURA_STATE_FAERIE_FIRE;
 
-    // Sting (hunter's pet ability)
-    if (Category == 1133)
+    if (Id == 34709) // Shadow Sight
         return AURA_STATE_FAERIE_FIRE;
 
     if (Id == 132951) // Flare
