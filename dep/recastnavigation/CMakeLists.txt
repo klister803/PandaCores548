@@ -1,4 +1,4 @@
-#
+# Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
 # Copyright (C) 2005-2011 MaNGOS project <http://getmangos.com/>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -16,19 +16,5 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
-include_directories(
-  ${CMAKE_BINARY_DIR}
-  ${ACE_INCLUDE_DIR}
-  ${CMAKE_SOURCE_DIR}/src/server/shared
-  ${CMAKE_SOURCE_DIR}/src/server/shared/Database
-  ${CMAKE_SOURCE_DIR}/src/server/shared/Database/Implementation
-  ${CMAKE_SOURCE_DIR}/src/server/shared/Threading
-  ${CMAKE_SOURCE_DIR}/src/server/shared/Logging
-  ${CMAKE_SOURCE_DIR}/src/server/shared/Utilities
-  ${CMAKE_SOURCE_DIR}/src/server/shared/Dynamic
-  ${CMAKE_SOURCE_DIR}/src/server/shared/Dynamic/LinkedReference
-)
-
 add_subdirectory(Detour)
 add_subdirectory(Recast)
-
