@@ -1101,6 +1101,7 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
 
         sLog->outDebug(LOG_FILTER_BATTLEGROUND, "Starting rated bg match!");
         bg->StartBattleground();
+        StartArena(aTeam, hTeam, bg);
     }
 }
 
@@ -1193,6 +1194,68 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 void BGQueueRemoveEvent::Abort(uint64 /*e_time*/)
 {
     //do nothing
+}
+
+void BattlegroundQueue::StartArena(GroupQueueInfo* aTeam, GroupQueueInfo* hTeam, Battleground* arena)
+{
+    sLog->outDebug(LOG_FILTER_BATTLEGROUND, "Starting rated arena match!");
+
+    if (arena->isRated())
+    {
+        const char* team1[10];
+        const char* team2[10];
+        for (uint8 i = 0; i < 10; ++i)
+        {
+            team1[i] = "";
+            team2[i] = "";
+        }
+        uint8 i = 0;
+        for (std::map<uint64, PlayerQueueInfo*>::iterator itr = aTeam->Players.begin(); itr != aTeam->Players.end(); ++itr)
+        {
+            if (Player* player = ObjectAccessor::FindPlayer(itr->first))
+            {
+                arena->AddNameInNameList(aTeam->Team, player->GetName());
+                team1[i] = player->GetName();
+                i++;
+            }
+        }
+
+        i = 0;
+
+        for (std::map<uint64, PlayerQueueInfo*>::iterator itr = hTeam->Players.begin(); itr != hTeam->Players.end(); ++itr)
+        {
+            if (Player* player = ObjectAccessor::FindPlayer(itr->first))
+            {
+                arena->AddNameInNameList(hTeam->Team, player->GetName());
+                team2[i] = player->GetName();
+                i++;
+            }
+        }
+
+        switch (arena->GetJoinType())
+        {
+            case 2:
+            {
+                sLog->outArena("START:  Arena match type: 2v2 --- --- (%s, %s) vs (%s, %s).", team1[0], team1[1], team2[0], team2[1]);
+                break;
+            }
+            case 3:
+            {
+                sLog->outArena("START:  Arena match type: --- 3v3 --- (%s, %s, %s) vs (%s, %s, %s).", team1[0], team1[1], team1[2], team2[0], team2[1], team2[2]);
+                break;
+            }
+            case 5:
+            {
+                sLog->outArena("START:  Arena match type: --- --- 5v5 (%s, %s, %s, %s, %s) vs (%s, %s, %s, %s, %s).", team1[0], team1[1], team1[2], team1[3], team1[4], team2[0], team2[1], team2[2], team2[3], team2[4]);
+                break;
+            }
+            default:
+                sLog->outArena("START: RBG for (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) vs (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", 
+                    team1[0], team1[1], team1[2], team1[3], team1[4], team1[5], team1[6], team1[7], team1[8], team1[9], 
+                    team2[0], team2[1], team2[2], team2[3], team2[4], team2[5], team2[6], team2[7], team2[8], team2[9]);
+                break;
+        }
+    }
 }
 
 void BattlegroundQueue::CheckOtherBGs()

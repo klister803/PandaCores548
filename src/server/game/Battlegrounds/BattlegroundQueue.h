@@ -82,6 +82,7 @@ class BattlegroundQueue
 
         void BattlegroundQueueUpdate(uint32 diff, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id, uint8 arenaType = 0, bool isRated = false);
         void CheckOtherBGs();
+        void StartArena(GroupQueueInfo* aTeam, GroupQueueInfo* hTeam, Battleground* arena);
         void UpdateEvents(uint32 diff);
 
         ///@ used for generate rbg and arena maps.
